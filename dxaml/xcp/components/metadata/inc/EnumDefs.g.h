@@ -2197,6 +2197,14 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(WindowInteractionState);
 
+    enum class WindowPlacementMode : uint8_t
+    {
+        RestoreAndSave = 0,
+        SaveOnClose = 1,
+        Manual = 2,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(WindowPlacementMode);
+
     enum class WindowVisualState : uint8_t
     {
         Normal = 0,

@@ -125,6 +125,15 @@ namespace OM.Idl
         }
 
         /// <summary>
+        /// Gets or sets whether the imported IDL marks this type [experimental].
+        /// </summary>
+        public bool IsExperimental
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Gets or sets whether this type only exists in the private IDL.
         /// </summary>
         public bool IsPrivateIdlOnly

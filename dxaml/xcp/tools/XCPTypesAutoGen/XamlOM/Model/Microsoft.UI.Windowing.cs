@@ -10,4 +10,11 @@ namespace Microsoft.UI.Windowing
     public sealed class AppWindow
     {
     }
+
+    // Experimental in IXP. Used by Window.TryLoadPlacementDetails.
+    [Imported("microsoft.ui.windowing.idl", IsExperimental = true)]
+    [WindowsTypePattern]
+    public sealed class AppWindowPlacementDetails
+    {
+    }
 }

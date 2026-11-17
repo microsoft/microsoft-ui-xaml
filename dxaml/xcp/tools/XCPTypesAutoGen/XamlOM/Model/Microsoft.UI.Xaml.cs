@@ -3583,6 +3583,30 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
+        // Window placement prototype. See docs\design-notes\window-placement-appwindow-alignment-scenarios.md.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        public Microsoft.UI.Xaml.WindowPlacementMode PlacementMode
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Microsoft.UI.Windowing.AppWindowPlacementDetails TryLoadPlacementDetails()
+        {
+            return default(Microsoft.UI.Windowing.AppWindowPlacementDetails);
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void SavePlacementDetails()
+        {
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
 
         public void SetTitleBar([Optional] Microsoft.UI.Xaml.UIElement titleBar)
@@ -4908,6 +4932,16 @@ namespace Microsoft.UI.Xaml
         CodeActivated = 0,
         Deactivated = 1,
         PointerActivated = 2,
+    }
+
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    public enum WindowPlacementMode
+    {
+        RestoreAndSave = 0,
+        SaveOnClose = 1,
+        Manual = 2,
     }
 
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]

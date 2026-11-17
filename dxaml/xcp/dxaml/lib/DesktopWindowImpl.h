@@ -38,6 +38,10 @@ namespace DirectUI
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
         _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value) override;
         _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_PlacementModeImpl(_Out_ xaml::WindowPlacementMode* value) override;
+        _Check_return_ HRESULT put_PlacementModeImpl(xaml::WindowPlacementMode value) override;
+        _Check_return_ HRESULT TryLoadPlacementDetailsImpl(_Outptr_result_maybenull_ ixp::IAppWindowPlacementDetails** value) override;
+        _Check_return_ HRESULT SavePlacementDetailsImpl() override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
@@ -139,9 +143,20 @@ namespace DirectUI
     private:
         _Check_return_ HRESULT ApplyInitialWindowPlacement();
         void TryApplySavedWindowPlacement();
+        // Reads the live presenter kind. Apps can switch presenters between activation and close.
+        bool TryGetPresenterKind(_Out_ ixp::AppWindowPresenterKind* kind);
         bool HasOverlappedPresenter();
         void RefreshWindowPlacementEligibility();
+        // Saves on close or session end, if the window is eligible (see RefreshWindowPlacementEligibility).
         _Check_return_ HRESULT SaveWindowPlacement();
+        // Saves now, with no eligibility check. Does nothing without a PlacementId.
+        _Check_return_ HRESULT SaveCurrentPlacement();
+        // Gets the placement to save from AppWindow.GetCurrentPlacement. In FullScreen, AppWindow returns
+        // the overlapped placement underneath it (normal, maximized, or snapped). WinUI doesn't save full screen.
+        _Check_return_ HRESULT GetPlacementToSave(_Outptr_result_maybenull_ ixp::IAppWindowPlacementDetails** details);
+        // Applies details with AppWindow.SetCurrentPlacement, using the AppWindow's PlacementRestorationBehavior.
+        _Check_return_ HRESULT ApplyPlacementDetails(_In_ ixp::IAppWindowPlacementDetails* details, _Out_ bool* applied);
+        void MarkPlacementSaved();
 
         LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnSizeChanged(WPARAM wParam, LPARAM lParam);
@@ -201,6 +216,7 @@ namespace DirectUI
         // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
         // presenter, and re-applies the Min/Max size constraints once we're back on an OverlappedPresenter.
         _Check_return_ HRESULT OnAppWindowChanged(_In_ ixp::IAppWindow* sender, _In_ ixp::IAppWindowChangedEventArgs* args);
+        _Check_return_ HRESULT OnAppWindowDestroying(_In_ ixp::IAppWindow* sender, _In_ IInspectable* args);
         
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
@@ -238,7 +254,7 @@ namespace DirectUI
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
 
-        // Tracks initial placement progress, presenter eligibility, and saving during window destruction.
+        // Tracks initial placement progress, presenter eligibility, and whether the close-time save happened.
         // This is separate from native activation and normal/maximized window state.
         enum class PlacementState
         {
@@ -247,10 +263,17 @@ namespace DirectUI
             InitialPlacementAttempted,
             ReadyToSave,
             SavingDisabledForPresenter,
-            SavingOnDestroy,
+            // Placement was saved during close (Shutdown or AppWindow.Destroying). Don't save again.
+            Saved,
         };
         WindowPlacement m_windowPlacement;
         PlacementState m_placementState = PlacementState::NotStarted;
+        // RestoreAndSave: the first Window.Activate applies saved placement. SaveOnClose and Manual: the app applies placement.
+        xaml::WindowPlacementMode m_placementMode = xaml::WindowPlacementMode_RestoreAndSave;
+        // Set when the window has real normal (restored) bounds: it used the Overlapped presenter, or
+        // initial placement came from saved data or the app (Manual). A window that starts in FullScreen only has
+        // the default CreateWindow bounds, so WinUI doesn't save it over the existing record.
+        bool m_hasNormalBoundsToSave = false;
 
         // --------------------------------------------------
         // Window sizing support
@@ -296,6 +319,7 @@ namespace DirectUI
 
         EventRegistrationToken m_takeFocusRequestedEventToken;
         EventRegistrationToken m_appWindowChangedToken{};
+        EventRegistrationToken m_appWindowDestroyingToken{};
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
         HWND m_positioningBridgeWindowHandle = NULL;

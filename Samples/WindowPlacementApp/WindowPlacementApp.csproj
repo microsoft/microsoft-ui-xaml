@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+
+  <!-- Test app for Window placement phase 2 (PlacementId, PlacementMode,
+       TryLoadPlacementDetails, SavePlacementDetails).
+       Uses experimental APIs only, so it doesn't build against final-release WinUI. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(SamplesTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <PublishProfile>win-$(Platform).pubxml</PublishProfile>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <AppxPackageName>WindowPlacementApp</AppxPackageName>
+    <AppxBundleNameForOutput>WindowPlacementApp</AppxBundleNameForOutput>
+    <NoWarn>
+      8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
+      NU1605
+    </NoWarn>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <Content Include="Images\*.png" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CSWinRT" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+
+  <!-- The self-contained msix doesn't get InProcessServer registrations for the WinUI dlls
+       (MUX, MUXC, etc.), so activating e.g. XamlControlsXamlMetaDataProvider fails with
+       REGDB_E_CLASSNOTREG. Merge them in from the WinUI package's registrations xml. -->
+  <Target Name="AddLiftedClassRegistrations"
+          BeforeTargets="_GenerateAppxPackageFile"
+          Condition="Exists('$(FinalAppxManifestName)')">
+    <PropertyGroup>
+      <_LiftedRegistrationsXml>$(PkgMicrosoft_WindowsAppSDK_WinUI)\buildTransitive\native\LiftedWinRTClassRegistrations.xml</_LiftedRegistrationsXml>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_LiftedRegistrationsXml)')" Text="Can't find LiftedWinRTClassRegistrations.xml (looked at '$(_LiftedRegistrationsXml)')." />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)AddLiftedClassRegistrations.ps1&quot; -ManifestPath &quot;$(FinalAppxManifestName)&quot; -RegistrationsPath &quot;$(_LiftedRegistrationsXml)&quot;" />
+  </Target>
+</Project>

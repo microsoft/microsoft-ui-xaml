@@ -447,6 +447,28 @@ _Check_return_ HRESULT UWPWindowImpl::put_PlacementIdImpl(_In_opt_ HSTRING /*val
     return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
 }
 
+_Check_return_ HRESULT UWPWindowImpl::get_PlacementModeImpl(_Out_ xaml::WindowPlacementMode* value)
+{
+    *value = xaml::WindowPlacementMode_RestoreAndSave;
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_PlacementModeImpl(xaml::WindowPlacementMode /*value*/)
+{
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::TryLoadPlacementDetailsImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** value)
+{
+    *value = nullptr;
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::SavePlacementDetailsImpl()
+{
+    return ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP);
+}
+
 _Check_return_ HRESULT UWPWindowImpl::ActivateImpl()
 {
     HRESULT hr = S_OK;

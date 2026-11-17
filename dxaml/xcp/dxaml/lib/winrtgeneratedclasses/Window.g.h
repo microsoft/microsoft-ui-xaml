@@ -48,8 +48,12 @@ namespace ctl
         IFACEMETHOD(put_MinWidth)(DOUBLE value) override { return This()->put_MinWidth(value); }
         IFACEMETHOD(get_PlacementId)(_Out_ HSTRING* pValue) override { return This()->get_PlacementId(pValue); }
         IFACEMETHOD(put_PlacementId)(_In_opt_ HSTRING value) override { return This()->put_PlacementId(value); }
+        IFACEMETHOD(get_PlacementMode)(_Out_ ABI::Microsoft::UI::Xaml::WindowPlacementMode* pValue) override { return This()->get_PlacementMode(pValue); }
+        IFACEMETHOD(put_PlacementMode)(ABI::Microsoft::UI::Xaml::WindowPlacementMode value) override { return This()->put_PlacementMode(value); }
         IFACEMETHOD(get_Width)(_Out_ DOUBLE* pValue) override { return This()->get_Width(pValue); }
         IFACEMETHOD(put_Width)(DOUBLE value) override { return This()->put_Width(value); }
+        IFACEMETHOD(SavePlacementDetails)() override { return This()->SavePlacementDetails(); }
+        IFACEMETHOD(TryLoadPlacementDetails)(_Outptr_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** ppReturnValue) override { return This()->TryLoadPlacementDetails(ppReturnValue); }
     };
 }
 #pragma endregion
@@ -123,6 +127,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinWidth(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PlacementId(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_PlacementId(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PlacementMode(_Out_ ABI::Microsoft::UI::Xaml::WindowPlacementMode* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_PlacementMode(ABI::Microsoft::UI::Xaml::WindowPlacementMode value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
@@ -150,10 +156,16 @@ namespace DirectUI
         IFACEMETHOD(Hide)() override;
         IFACEMETHOD(MoveWindow)(INT x, INT y, INT width, INT height) override;
         IFACEMETHOD(ReleaseGraphicsDeviceOnSuspend)(BOOLEAN enable) override;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE SavePlacementDetails();
+#endif
         IFACEMETHOD(SetAtlasRequestCallback)(_In_opt_ ABI::Microsoft::UI::Xaml::IAtlasRequestCallback* pCallback) override;
         IFACEMETHOD(SetAtlasSizeHint)(UINT width, UINT height) override;
         IFACEMETHOD(SetTitleBar)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTitleBar) override;
         IFACEMETHOD(Show)() override;
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE TryLoadPlacementDetails(_Outptr_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** ppReturnValue);
+#endif
 
 
     protected:
@@ -203,7 +215,7 @@ namespace DirectUI
         
         
         
-
+        
 
         // Attached properties.
 

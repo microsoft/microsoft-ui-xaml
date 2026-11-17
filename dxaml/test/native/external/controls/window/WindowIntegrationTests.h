@@ -185,7 +185,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementSkipsUnsupportedPresenters)
-            TEST_METHOD_PROPERTY(L"Description", L"Does not restore or save while FullScreen or CompactOverlay is active.")
+            TEST_METHOD_PROPERTY(L"Description", L"Does not restore while FullScreen or CompactOverlay is active at first activation, and does not save after switching to CompactOverlay.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -225,7 +225,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementNativeDestructionSkipsUnsupportedPresenters)
-            TEST_METHOD_PROPERTY(L"Description", L"Native destruction after switching to FullScreen or CompactOverlay preserves the earlier Overlapped placement.")
+            TEST_METHOD_PROPERTY(L"Description", L"Native destruction after switching to CompactOverlay preserves the earlier Overlapped placement.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
@@ -283,6 +283,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Checks the available native path's snap-setting behavior and restores the original setting after testing.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        // Window placement phase 2 tests
+
+        BEGIN_TEST_METHOD(WindowPlacementDoesNotRestoreFullScreen)
+            TEST_METHOD_PROPERTY(L"Description", L"Saving while FullScreen stores the Overlapped placement underneath (normal or maximized), not FullScreen. The next window opens Overlapped.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementTryLoadPlacementDetails)
+            TEST_METHOD_PROPERTY(L"Description", L"TryLoadPlacementDetails returns null without an id or record, returns saved details otherwise, and throws after Close.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementModes)
+            TEST_METHOD_PROPERTY(L"Description", L"PlacementMode defaults to RestoreAndSave and rejects invalid values. SaveOnClose skips automatic restore but keeps saving on close. Manual skips both, but SavePlacementDetails still saves. The app can apply the details itself. Applying full-screen details to a hidden window keeps it hidden and inactive until Activate.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementSavePlacementDetails)
+            TEST_METHOD_PROPERTY(L"Description", L"SavePlacementDetails saves the current placement immediately, does nothing without an id, and throws after Close.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementRestorationBehavior)
+            TEST_METHOD_PROPERTY(L"Description", L"Automatic placement uses AppWindow.PlacementRestorationBehavior: the default restores minimized records, All keeps them minimized and inactive, and AllowShowMaximized controls maximized.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         
         // Width/Height tests
 
