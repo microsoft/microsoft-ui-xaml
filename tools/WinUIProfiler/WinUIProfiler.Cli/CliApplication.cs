@@ -11,7 +11,7 @@ using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Cli;
 
-internal static class CliApplication
+internal static partial class CliApplication
 {
     private const int DefaultDumpLimit = 1000;
 
@@ -52,7 +52,21 @@ internal static class CliApplication
                      one, and the ticks, layout passes, operations, navigations and focus changes in them (the
                      InterestingRows view). --region keeps one region (an ID from 'frames --list') and its rows.
 
-          --json prints the rows of frames and interesting as JSON, with the views' values.
+          WinUIProfiler.Cli events <session.sqlite> (--frame <id> | --region <id> | --row <start-seq> --thread <id> |
+                                                   --thread <id> --first-seq <seq> --last-seq <seq>)
+                                                  [--bucket Xaml|Composition|Other] [--filter <text>]
+                                                  [--offset <count>] [--count <count>] [--json]
+          WinUIProfiler.Cli info <session.sqlite> [--json]
+          WinUIProfiler.Cli live --help
+          WinUIProfiler.Cli targets --help
+          WinUIProfiler.Cli snapshot --help
+
+          events     Prints a page of a tick's, region's or interesting row's events, with linked objects.
+                     --count defaults to 1000; 0 reads all. --row is StartSeq from 'interesting'.
+          info       Prints session identity, coverage, retention and recording health.
+
+          --json prints query results as JSON. Live sessions stream newline-delimited JSON.
+          dump, timeline and frames --frame accept --offset and --count (0 = all).
           The views are in the session file: any SQLite reader gets the same rows (see the README).
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
@@ -75,12 +89,41 @@ internal static class CliApplication
         MarkerConfig? Markers = null)
     {
         public bool IsSessionFile => InputPath.EndsWith(".sqlite", StringComparison.OrdinalIgnoreCase);
+        public int Offset { get; init; }
+        public int Count { get; init; } = -1;
     }
 
     private sealed record ReadResult(long EventsDelivered, int EventsLost, TimeSpan Duration);
 
     internal static int Run(string[] args, TextWriter output, TextWriter error, CancellationToken cancellationToken)
     {
+        if (args is ["--help"] or ["-h"] or ["help"])
+        {
+            output.WriteLine(Usage);
+            return 0;
+        }
+
+        if (args.Length > 0 && (args[0] is "live" or "targets" || args is ["snapshot", "capture", ..]))
+        {
+            return LiveCommands.RunAsync(args, Console.In, output, error, cancellationToken).GetAwaiter().GetResult();
+        }
+
+        if (args.Length > 0 && args[0] == "snapshot")
+        {
+            return SnapshotCommands.RunAsync(args, output, error, cancellationToken).GetAwaiter().GetResult();
+        }
+
+        if (args.Length > 0 && args[0] is "events" or "info")
+        {
+            return QueryCommands(args, output, error, cancellationToken);
+        }
+
+        if (args is ["processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or "frames" or "interesting", "--help"])
+        {
+            output.WriteLine(Usage);
+            return 0;
+        }
+
         Options options;
         try
         {
@@ -95,6 +138,7 @@ internal static class CliApplication
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             // A trace's marker providers are read from it; launch also needs the milestones. Read before any file is
             // written, so a configuration error leaves none behind.
             if (options.Command == "launch" || !options.IsSessionFile)
@@ -157,10 +201,18 @@ internal static class CliApplication
         string? markersPath = null;
         var limitBytes = SessionWriter.DefaultLimitBytes;
         var max = DefaultDumpLimit;
+        var offset = 0;
+        var count = -1;
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         for (var i = 2; i < args.Length; i++)
         {
+            if (!seen.Add(args[i]))
+            {
+                throw new ArgumentException($"Option {args[i]} was specified more than once.");
+            }
+
             // Flags, without a value.
-            if (args[i] == "--json" && args[0] is "frames" or "interesting")
+            if (args[i] == "--json")
             {
                 json = true;
                 continue;
@@ -172,7 +224,8 @@ internal static class CliApplication
                 continue;
             }
 
-            var value = i + 1 < args.Length ? args[i + 1] : throw new ArgumentException($"Missing value for {args[i]}.");
+            var value = i + 1 < args.Length && !args[i + 1].StartsWith("--", StringComparison.Ordinal)
+                ? args[i + 1] : throw new ArgumentException($"Missing value for {args[i]}.");
             switch (args[i])
             {
                 case "--pid":
@@ -185,6 +238,14 @@ internal static class CliApplication
                 case "--max" when args[0] == "dump":
                     max = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var limit)
                         ? limit : throw new ArgumentException("--max must be 0 or a positive count.");
+                    break;
+                case "--offset" when args[0] is "dump" or "timeline" or "frames":
+                    offset = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedOffset)
+                        ? parsedOffset : throw new ArgumentException("--offset must be 0 or a positive count.");
+                    break;
+                case "--count" when args[0] is "dump" or "timeline" or "frames":
+                    count = int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var parsedCount)
+                        ? parsedCount == 0 ? -1 : parsedCount : throw new ArgumentException("--count must be 0 or a positive count.");
                     break;
                 case "--out" when args[0] == "record":
                     outputPath = Path.GetFullPath(value);
@@ -236,8 +297,17 @@ internal static class CliApplication
             i++;
         }
 
+        if (args[0] == "dump" && seen.Contains("--count"))
+        {
+            max = count < 0 ? 0 : count;
+        }
+
         var options = new Options(args[0], Path.GetFullPath(args[1]), processId, nameFilter, max, outputPath, limitBytes,
-            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath);
+            typeFilter, objectId, address, frameId, bucket, eventFilter, kind, regionId, json, list, show, markersPath)
+        {
+            Offset = offset,
+            Count = count
+        };
         if (options.Command is "objects" or "timeline" or "frames" or "interesting" && !options.IsSessionFile)
         {
             throw new ArgumentException($"{args[0]} reads a session file (.sqlite); use 'record' to make one from a trace.");
@@ -263,9 +333,19 @@ internal static class CliApplication
             throw new ArgumentException("--show needs --list.");
         }
 
-        if (frameId is not null && (list || json))
+        if (frameId is not null && list)
         {
-            throw new ArgumentException("--list and --json can't be used with --frame.");
+            throw new ArgumentException("--list can't be used with --frame.");
+        }
+
+        if (options.Command == "frames" && frameId is null && (seen.Contains("--offset") || seen.Contains("--count")))
+        {
+            throw new ArgumentException("--offset and --count need --frame <id>.");
+        }
+
+        if (options.Command == "dump" && seen.Contains("--max") && seen.Contains("--count"))
+        {
+            throw new ArgumentException("Choose --max or --count, not both.");
         }
 
         if (options.Command is "summary" or "dump" or "record" or "launch" && !options.IsSessionFile && processId is null)
@@ -330,11 +410,30 @@ internal static class CliApplication
         // and any process can write a marker provider's events; only those with XAML events are listed. A session file
         // has its process's launcher's events too.
         var launcherProcessId = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath).LauncherProcessId : null;
-        output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
-        foreach (var (processId, perProvider) in counts
+        var selected = counts
             .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
                 entry.Value[(int)XamlProvider.Direct3D11] + entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
-            .OrderByDescending(entry => entry.Value.Sum()))
+            .OrderByDescending(entry => entry.Value.Sum()).ToList();
+        if (options.Json)
+        {
+            WriteJson(new
+            {
+                Processes = selected.Select(entry => new
+                {
+                    ProcessId = entry.Key,
+                    Events = entry.Value.Sum(),
+                    Providers = providers.ToDictionary(provider => provider.ToString(), provider => entry.Value[(int)provider]),
+                    Launcher = entry.Key == launcherProcessId
+                }),
+                DurationSeconds = result.Duration.TotalSeconds,
+                result.EventsLost,
+                Session = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath) : null
+            }, output);
+            return 0;
+        }
+
+        output.WriteLine($"{"PID",8} {"Events",10} {string.Join(" ", providers.Select(provider => $"{ShortName(provider),10}"))}");
+        foreach (var (processId, perProvider) in selected)
         {
             output.WriteLine($"{processId,8} {perProvider.Sum(),10} " +
                 string.Join(" ", providers.Select(provider => $"{perProvider[(int)provider],10}")) +
@@ -377,6 +476,29 @@ internal static class CliApplication
             counts[key] = (ShortName(profilerEvent), counts.GetValueOrDefault(key).Count + 1);
         }, cancellationToken);
 
+        if (options.Json)
+        {
+            WriteJson(new
+            {
+                ProcessId = processId,
+                Events = result.EventsDelivered - launcherEvents,
+                LauncherEvents = launcherEvents,
+                DurationMilliseconds = first == double.MaxValue ? 0 : last - first,
+                result.EventsLost,
+                Counts = counts.OrderByDescending(entry => entry.Value.Count).Select(entry => new
+                {
+                    entry.Key.ProviderId,
+                    Provider = entry.Value.Label,
+                    entry.Key.Name,
+                    entry.Key.Fields,
+                    entry.Key.Launcher,
+                    entry.Value.Count
+                }),
+                Session = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath) : null
+            }, output);
+            return 0;
+        }
+
         if (result.EventsDelivered == launcherEvents)
         {
             output.WriteLine($"No events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
@@ -401,7 +523,13 @@ internal static class CliApplication
     {
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         long printed = 0;
+        long skipped = 0;
         var processId = TargetProcessId(options);
+        if (options.Json)
+        {
+            output.WriteLine("[");
+        }
+
         try
         {
             Read(options, options.ProcessId, profilerEvent =>
@@ -412,9 +540,28 @@ internal static class CliApplication
                     return;
                 }
 
-                output.WriteLine(FormatEvent(profilerEvent,
-                    profilerEvent.ProcessId == processId ? null : $"launcher {profilerEvent.ProcessId}"));
-                if (options.Max > 0 && ++printed >= options.Max)
+                if (skipped++ < options.Offset)
+                {
+                    return;
+                }
+
+                if (options.Json)
+                {
+                    if (printed > 0)
+                    {
+                        output.WriteLine(",");
+                    }
+
+                    output.Write(JsonSerializer.Serialize(profilerEvent, JsonOptions));
+                }
+                else
+                {
+                    output.WriteLine(FormatEvent(profilerEvent,
+                        profilerEvent.ProcessId == processId ? null : $"launcher {profilerEvent.ProcessId}"));
+                }
+
+                printed++;
+                if (options.Max > 0 && printed >= options.Max)
                 {
                     limit.Cancel();
                 }
@@ -422,7 +569,18 @@ internal static class CliApplication
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            output.WriteLine($"... stopped after {options.Max} events (use --max 0 for all).");
+            if (!options.Json)
+            {
+                output.WriteLine($"... stopped after {options.Max} events (use --max 0 for all).");
+            }
+        }
+        finally
+        {
+            if (options.Json)
+            {
+                output.WriteLine();
+                output.WriteLine("]");
+            }
         }
 
         return 0;
@@ -444,6 +602,12 @@ internal static class CliApplication
         {
             error.WriteLine($"Writing '{writer.Path}' failed: {failure.Message}");
             return 3;
+        }
+
+        if (options.Json)
+        {
+            WriteJson(new { Path = writer.Path, Events = events, LauncherEvents = launcherEvents, Session = SessionFile.ReadInfo(writer.Path) }, output);
+            return 0;
         }
 
         output.WriteLine($"Read {events} events of process {options.ProcessId}" +
@@ -488,11 +652,27 @@ internal static class CliApplication
             var info = SessionFile.ReadInfo(options.InputPath);
             if (options.ProcessId is { } requested && requested != info.ProcessId)
             {
-                output.WriteLine($"The session file holds process {info.ProcessId}, not {requested}.");
+                if (options.Json)
+                {
+                    WriteJson(new { Session = info, RequestedProcessId = requested, Matches = false }, output);
+                }
+                else
+                {
+                    output.WriteLine($"The session file holds process {info.ProcessId}, not {requested}.");
+                }
+
                 return 0;
             }
 
-            WriteLaunch(new LaunchTimelineReader(options.InputPath, config).Read(cancellationToken), config, output);
+            var timeline = new LaunchTimelineReader(options.InputPath, config).Read(cancellationToken);
+            if (options.Json)
+            {
+                WriteJson(timeline, output);
+            }
+            else
+            {
+                WriteLaunch(timeline, config, output);
+            }
             return 0;
         }
 
@@ -513,11 +693,27 @@ internal static class CliApplication
 
             if (events == 0)
             {
-                output.WriteLine($"No events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
+                if (options.Json)
+                {
+                    WriteJson(new { options.ProcessId, Events = 0, Timeline = (LaunchTimeline?)null }, output);
+                }
+                else
+                {
+                    output.WriteLine($"No events from process {options.ProcessId}. Run 'processes' to list the PIDs.");
+                }
+
                 return 0;
             }
 
-            WriteLaunch(new LaunchTimelineReader(path, config).Read(cancellationToken), config, output);
+            var timeline = new LaunchTimelineReader(path, config).Read(cancellationToken);
+            if (options.Json)
+            {
+                WriteJson(timeline, output);
+            }
+            else
+            {
+                WriteLaunch(timeline, config, output);
+            }
             return 0;
         }
         finally
@@ -634,6 +830,12 @@ internal static class CliApplication
         var selected = all.Where(tracked =>
             (options.TypeFilter is not { } type || tracked.Type?.Contains(type, StringComparison.OrdinalIgnoreCase) == true) &&
             (options.NameFilter is not { } name || tracked.Name?.Contains(name, StringComparison.OrdinalIgnoreCase) == true)).ToList();
+        if (options.Json)
+        {
+            WriteJson(selected, output);
+            return 0;
+        }
+
         output.WriteLine($"{"ID",7}  {"Kind",-7} {"Type",-32} {"Name",-24} {"Address",-14} {"First (ms)",12} {"Last (ms)",12} {"Events",7}");
         foreach (var tracked in selected)
         {
@@ -648,6 +850,28 @@ internal static class CliApplication
     private static int Timeline(Options options, TextWriter output, CancellationToken cancellationToken)
     {
         var selected = SessionFile.ReadObjects(options.InputPath, objectId: options.ObjectId, address: options.Address);
+        if (options.Json)
+        {
+            var timelines = new List<object>();
+            foreach (var tracked in selected)
+            {
+                var events = new List<object>();
+                SessionFile.ReadTimeline(options.InputPath, tracked.ObjectId, options.Offset, options.Count,
+                    (profilerEvent, fields, frame) => events.Add(new { Event = profilerEvent, Fields = fields, FrameNumber = frame }),
+                    cancellationToken);
+                timelines.Add(new
+                {
+                    Object = tracked,
+                    options.Offset,
+                    Total = SessionFile.CountTimeline(options.InputPath, tracked.ObjectId),
+                    Events = events
+                });
+            }
+
+            WriteJson(timelines, output);
+            return 0;
+        }
+
         if (selected.Count == 0)
         {
             output.WriteLine(options.ObjectId is { } id ? $"No object with ID {id}." : $"No object at 0x{options.Address:X}.");
@@ -659,7 +883,7 @@ internal static class CliApplication
             output.WriteLine($"{(tracked.Kind == ObjectKind.Visual ? "Visual" : "UI element")} {tracked.ObjectId}: " +
                 $"{tracked.Type ?? "type not seen"}" + (tracked.Name is null ? "" : $" \"{tracked.Name}\"") +
                 $" at 0x{tracked.Address:X}, {tracked.Events} events");
-            SessionFile.ReadTimeline(options.InputPath, tracked.ObjectId, 0, -1,
+            SessionFile.ReadTimeline(options.InputPath, tracked.ObjectId, options.Offset, options.Count,
                 (profilerEvent, fields, frame) => output.WriteLine(FormatEvent(profilerEvent,
                     string.Join(", ", fields) + (frame is null ? "" : $", frame {frame}"))), cancellationToken);
             output.WriteLine();
@@ -676,7 +900,7 @@ internal static class CliApplication
         }
 
         var frames = SessionFile.ReadFrames(options.InputPath, options.FrameId);
-        if (options.Json)
+        if (options.Json && options.FrameId is null)
         {
             output.WriteLine(JsonSerializer.Serialize(frames, JsonOptions));
             return 0;
@@ -700,15 +924,35 @@ internal static class CliApplication
 
         if (frames.Count == 0)
         {
+            if (options.Json)
+            {
+                throw new InvalidDataException($"No tick with ID {frameId}.");
+            }
+
             output.WriteLine($"No tick with ID {frameId}.");
             return 0;
         }
 
         var selected = frames[0];
+        if (options.Json)
+        {
+            var events = new List<ScopedEvent>();
+            SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter, options.Offset, options.Count,
+                (profilerEvent, bucket, objects) => events.Add(new(profilerEvent, bucket, objects)), cancellationToken);
+            WriteJson(new
+            {
+                Frame = selected,
+                options.Offset,
+                Total = SessionFile.CountFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter),
+                Events = events
+            }, output);
+            return 0;
+        }
+
         output.WriteLine($"Frame {selected.FrameNumber} on thread {selected.ThreadId}, tick from {Milliseconds(selected.StartMilliseconds)} ms " +
             $"to {Milliseconds(selected.EndMilliseconds)} ms, drew: {Drew(selected.Drawn)}. {selected.Events} events " +
             $"({selected.Xaml} Xaml, {selected.Composition} Composition, {selected.Other} Other)");
-        SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter, 0, -1,
+        SessionFile.ReadFrameEvents(options.InputPath, frameId, options.Bucket, options.EventFilter, options.Offset, options.Count,
             (profilerEvent, bucket, _) => output.WriteLine(FormatEvent(profilerEvent, bucket)), cancellationToken);
         return 0;
     }

@@ -14,6 +14,15 @@ using WinUIProfiler.Contracts;
 using WinUIProfiler.Cli;
 using XamlTimeline;
 
+if (args is ["--cli-parity"])
+{
+    WinUIProfiler.Tests.CliQueryTests.Run();
+    await LiveCliTests.RunAsync();
+    WinUIProfiler.Tests.SnapshotDiffTests.Run();
+    await WinUIProfiler.Tests.SnapshotCliTests.RunAsync();
+    return;
+}
+
 if (args is ["--startup-integration", var nativeDirectory])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Startup integration requires Windows.");
@@ -1320,6 +1329,10 @@ finally
 Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
 
 GraphicsIndexTests.Run();
+WinUIProfiler.Tests.CliQueryTests.Run();
+WinUIProfiler.Tests.SnapshotDiffTests.Run();
+await WinUIProfiler.Tests.SnapshotCliTests.RunAsync();
+await LiveCliTests.RunAsync();
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 

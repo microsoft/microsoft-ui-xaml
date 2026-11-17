@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
+using WinUIProfiler.Engine.Snapshots;
 
 namespace WinUIProfiler.App.Views;
 
@@ -80,7 +81,7 @@ public sealed partial class SnapshotDiffWindow : Window
         try
         {
             var token = lifetime.Token;
-            data = await Task.Run(() => SnapshotDiffData.LoadAsync(before, after, token));
+            data = await Task.Run(() => SnapshotFiles.LoadAsync(before, after, token));
             if (closed) return;
             XamlSummary.Text = Summary(data.Xaml);
             CompositionSummary.Text = Summary(data.Composition);
@@ -214,7 +215,7 @@ public sealed partial class SnapshotDiffWindow : Window
 
     private TreeViewNode CreateNode(SnapshotNodeDiff model)
     {
-        var label = new SnapshotDiffTreeItem($"[{ChangeLabel(model)}] {(model.After ?? model.Before!).Label}", model);
+        var label = new SnapshotDiffTreeItem($"[{ChangeLabel(model)}] {(model.After ?? model.Before!).Label()}", model);
         label.SetMatch(correlated.Contains(model));
         var node = new TreeViewNode { Content = label, HasUnrealizedChildren = model.Children.Any(Include) };
         nodes.Add(model, node);
@@ -354,7 +355,7 @@ public sealed partial class SnapshotDiffWindow : Window
             Matches.ItemsSource = matches.Select(match => new SnapshotDiffMatchItem(
                 Format("SnapshotDiffMatchFormat", Text(match.Before && match.After ? "SnapshotDiffMatchBoth" :
                     match.After ? "SnapshotDiffMatchAfter" : "SnapshotDiffMatchBefore"),
-                    $"[{ChangeLabel(match.Node)}] {(match.Node.After ?? match.Node.Before!).Label}"), match)).ToArray();
+                    $"[{ChangeLabel(match.Node)}] {(match.Node.After ?? match.Node.Before!).Label()}"), match)).ToArray();
             Matches.SelectedIndex = matches.Count > 0 ? 0 : -1;
             SetSynchronizedSelection(Tree(matchTarget), matches.Count > 0 ? Reveal(matchTarget, matches[0].Node) : null);
             MappingStatus.Text = matches.Count > 0 ? Format("SnapshotDiffMappingsFormat", matches.Count) : Text("SnapshotNoMapping");
@@ -423,7 +424,7 @@ public sealed partial class SnapshotDiffWindow : Window
     private void UpdateDetails(SnapshotTreeKind kind, SnapshotNodeDiff node)
     {
         SelectionSummary.Text = Format("SnapshotDiffSelectedFormat", Text("SnapshotDiffKind" + kind),
-            ChangeLabel(node), (node.After ?? node.Before!).Label) +
+            ChangeLabel(node), (node.After ?? node.Before!).Label()) +
             (node.Properties.Count == 0 ? " " + Text("SnapshotDiffNoPropertyChanges") : "");
         BeforeLocation.Text = Format("SnapshotDiffBeforeLocationFormat",
             Location(node.Before, kind == SnapshotTreeKind.Xaml ? data!.Before.Xaml : data!.Before.Composition));
@@ -455,7 +456,7 @@ public sealed partial class SnapshotDiffWindow : Window
     private string Value(JsonElement? value) => value.HasValue ? JsonSerializer.Serialize(value.Value) : Text("SnapshotDiffAbsent");
 
     private string Location(SnapshotTreeNode? node, SnapshotTreeData tree) => node is null ? Text("SnapshotDiffAbsent") :
-        Format("SnapshotDiffLocationFormat", node.ParentId is { } id ? tree.Nodes[id].Label : Text("SnapshotDiffTreeRoot"), node.ChildIndex);
+        Format("SnapshotDiffLocationFormat", node.ParentId is { } id ? tree.Nodes[id].Label() : Text("SnapshotDiffTreeRoot"), node.ChildIndex);
 
     private void ReportError(Exception error)
     {

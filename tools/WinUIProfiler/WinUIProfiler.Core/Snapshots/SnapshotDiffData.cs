@@ -4,7 +4,7 @@ using System.Text.Json;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Processing;
 
-namespace WinUIProfiler.App.ViewModels;
+namespace WinUIProfiler.Engine.Snapshots;
 
 [Flags]
 public enum SnapshotChange { None = 0, Added = 1, Removed = 2, Properties = 4, Moved = 8, Reordered = 16 }
@@ -59,8 +59,9 @@ public sealed class SnapshotDiffData
     public SnapshotTreeDiff Composition { get; }
     public SnapshotResourceComparison Resources { get; }
 
-    private SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token)
+    public SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token = default)
     {
+        token.ThrowIfCancellationRequested();
         if (before.Document.ProcessId != after.Document.ProcessId ||
             before.Document.CreationTimeFileTime != after.Document.CreationTimeFileTime)
             throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
@@ -71,16 +72,14 @@ public sealed class SnapshotDiffData
         Composition = CompareTree(before.Composition, after.Composition, before.Document.Roots, after.Document.Roots, token);
     }
 
-    public static bool CanCompare(SnapshotHistoryEntry before, SnapshotHistoryEntry after) =>
-        before.Process.ProcessId == after.Process.ProcessId &&
-        before.Process.CreationTimeFileTime is > 0 &&
-        before.Process.CreationTimeFileTime == after.Process.CreationTimeFileTime;
+    public static bool CanCompare(ProcessInstanceKey before, ProcessInstanceKey after) =>
+        before.ProcessId == after.ProcessId &&
+        before.CreationTimeFileTime is > 0 &&
+        before.CreationTimeFileTime == after.CreationTimeFileTime;
 
-    public static async Task<SnapshotDiffData> LoadAsync(SnapshotHistoryEntry before, SnapshotHistoryEntry after,
+    public static async Task<SnapshotDiffData> LoadAsync(string before, string after,
         CancellationToken token = default)
     {
-        if (!CanCompare(before, after))
-            throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
         var baseline = await SnapshotViewerData.LoadAsync(before, token).ConfigureAwait(false);
         var comparison = await SnapshotViewerData.LoadAsync(after, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
