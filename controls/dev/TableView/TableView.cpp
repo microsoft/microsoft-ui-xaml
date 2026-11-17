@@ -11,8 +11,8 @@
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
-#include "TableViewShapingSource.h"
-#include "TableViewCollectionViewGroups.h"
+#include "TableViewRowProjection.h"
+#include "SortMemberPathResolver.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
@@ -49,6 +49,34 @@ static constexpr double c_sortIndicatorSizeFallback{ 16.0 };
 
 namespace
 {
+    // A key selector that reads `path` through a binding, built once per path.
+    ShapingHelpers::KeySelector MakePathKeySelector(winrt::hstring const& path)
+    {
+        auto resolver = std::make_shared<SortMemberPathResolver>(path);
+        return [resolver](winrt::IInspectable const& item) -> winrt::IInspectable
+        {
+            return resolver->Resolve(item);
+        };
+    }
+
+    // The collection a plain ItemsSource is viewed through: a vector as it is, so the view follows its
+    // changes; an enumerable-only source is read once, as CollectionViewSource reads one.
+    winrt::IInspectable ToViewSource(winrt::IInspectable const& itemsSource)
+    {
+        if (itemsSource.try_as<winrt::Windows::Foundation::Collections::IVector<winrt::IInspectable>>() ||
+            itemsSource.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>())
+        {
+            return itemsSource;
+        }
+        if (itemsSource.try_as<winrt::Windows::Foundation::Collections::IIterable<winrt::IInspectable>>() ||
+            itemsSource.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableIterable>())
+        {
+            return winrt::single_threaded_vector<winrt::IInspectable>(
+                ShapingHelpers::EnumerateInspectableItems(itemsSource, true, ShapingHelpers::CollectionOwner::Caller));
+        }
+        throw winrt::hresult_invalid_argument(L"TableView: ItemsSource must be a collection.");
+    }
+
     // cppwinrt's == compares raw ABI pointers, which can differ for the same object across a QI,
     // so fall back to canonical IUnknown identity.
     bool IsSameObject(winrt::IInspectable const& left, winrt::IInspectable const& right)
@@ -720,7 +748,12 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
 {
     TableViewTelemetry::BeginSession(m_telemetrySession);
     TableViewTelemetry::ReportFirstLoad();
-    ReclaimItemsSource();
+    if (m_rowProjection)
+    {
+        // The view may have been sorted while this table was not loaded.
+        QueueReconcileSortStateWithSource();
+        NoteTipInitializationSource();
+    }
     // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
     SampleInstanceTelemetry();
 
@@ -816,7 +849,7 @@ try
     m_templateApplied = true;
     m_templateIncomplete = false;
     // The template is expanded before this runs, so with a source attached Initialize's inputs are ready.
-    if (m_activeSource.get()) { StartTipInitialization(); }
+    if (m_rowProjection) { StartTipInitialization(); }
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -1262,35 +1295,24 @@ void TableView::OnParentKeyPathPropertyChanged(const winrt::DependencyPropertyCh
 
 void TableView::ApplyHierarchyPaths()
 {
-    if (auto const source = m_activeSource.get())
+    if (auto const projection = m_rowProjection)
     {
-        ApplyHierarchyPaths(source);
-        if (m_activeSourceReleased)
-        {
-            // A released source (not loaded yet, or unloaded) does not report projection changes,
-            // so the cached view would keep the previous projection's rows alive until Loaded.
-            RefreshCachedProjection();
-        }
+        ApplyHierarchyPaths(*projection);
     }
 }
 
 // ItemKeyPath and ParentKeyPath turn the rows into a tree: a row whose ParentKeyPath value equals
 // another row's ItemKeyPath value is its child. Both must be set; either empty means flat rows.
-void TableView::ApplyHierarchyPaths(winrt::com_ptr<::TableViewShapingSource> const& source)
+void TableView::ApplyHierarchyPaths(TableViewRowProjection& projection)
 {
     auto const itemKeyPath = ItemKeyPath();
     auto const parentKeyPath = ParentKeyPath();
     if (itemKeyPath.empty() || parentKeyPath.empty())
     {
-        if (source->HasParentBy())
-        {
-            source->ClearParentBy();
-        }
+        projection.ClearHierarchy();
         return;
     }
-    source->ParentBy(
-        ::TableViewShapingSource::MakePathKeySelector(itemKeyPath),
-        ::TableViewShapingSource::MakePathKeySelector(parentKeyPath));
+    projection.SetHierarchy(MakePathKeySelector(itemKeyPath), MakePathKeySelector(parentKeyPath));
 }
 
 void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1340,11 +1362,9 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
         ResetColumnDesiredWidths();
         ExpireLockedColumnHolds();
 
-        // A different collection invalidates any projection we synthesized over the old one, so the
-        // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
-        // (the active source is still available to it as the previous source to detach), and
-        // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
-        // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
+        // A different collection gets a fresh view and row projection: AdoptItemsSource builds them, and
+        // RefreshRowsPipeline then pushes the new rows into the repeater. This is the only path that
+        // replaces the projection - every other re-entry keeps it and only refreshes the pipeline.
 
         // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
         // projection, so the reported sort state and the chevron go with it - otherwise they describe
@@ -1850,41 +1870,43 @@ void TableView::RefreshRealizedRowsAfterGroupExpansion()
     InvalidateMeasure();
 }
 
-void TableView::AdoptItemsSource(bool reclaimActiveSource)
+void TableView::AdoptItemsSource()
 {
+    namespace data = winrt::Microsoft::UI::Xaml::Data;
     auto const itemsSource = ItemsSource();
-    // Reclaiming keeps the projection this table already minted, and with it the shaping state.
-    winrt::com_ptr<::TableViewShapingSource> tableViewSource = reclaimActiveSource ? m_activeSource.get() : nullptr;
-    if (!tableViewSource)
+
+    // Every source is shown through a view, as WPF's ItemsControl shows every ItemsSource through one:
+    // an ICollectionView is used as it is, and any other collection is wrapped in a CollectionViewSource
+    // of this table's own. Sorting, filtering and grouping are the view's; the row projection only
+    // presents its items as rows.
+    data::ICollectionView view{ nullptr };
+    data::CollectionViewSource internalViewSource{ nullptr };
+    uint32_t sourceKinds = 0u;
+    if (itemsSource)
     {
-        m_telemetrySourceKinds = 0u;
-        m_itemsSourceIsCollectionView = false;
-        m_collectionViewGroups = nullptr;
-        m_collectionViewShaping = nullptr;
-        m_collectionViewCustomSort = nullptr;
-        m_collectionViewSortByTable = false;
-        m_collectionViewSortChangedRevoker.revoke();
+        view = itemsSource.try_as<data::ICollectionView>();
+        if (view)
+        {
+            sourceKinds = TableViewTelemetry::SourceKind::AppSupplied;
+        }
+        else
+        {
+            // Deliberately unguarded: a source that is not a collection fails the assignment.
+            internalViewSource = data::CollectionViewSource{};
+            internalViewSource.Source(ToViewSource(itemsSource));
+            view = internalViewSource.View();
+            sourceKinds = TableViewTelemetry::SourceKind::Projected;
+        }
     }
 
-    // Normalize the source. Project whatever the app hands us through a
-    // TableViewShapingSource of our own so the control has exactly one row pipeline rather than a shaped
-    // path and a raw one. This mirrors ItemsControl, which always routes ItemsSource through a
-    // collection view, so the grid above it never has to ask what kind of source it was given.
-    //
-    // This runs only when ItemsSource actually changes, so there is never a prior projection to
-    // reuse here - a different collection invalidated it, and the re-entries that must keep the
-    // active projection (OnApplyTemplate, repeater Loaded, a shaping verb) go through
-    // RefreshRowsPipeline and never reach this method.
-    if (!tableViewSource && itemsSource)
+    std::shared_ptr<TableViewRowProjection> projection;
+    if (view)
     {
-        // Deliberately unguarded. The shaping engine accepts exactly the collection interfaces
-        // ItemsSourceView does, so a source it refuses is one XAML cannot project either, and
-        // ItemsRepeater raises that as an error rather than degrading. Let it surface.
-        tableViewSource = ::TableViewShapingSource::Create(itemsSource);
-        m_telemetrySourceKinds = TableViewTelemetry::SourceKind::Projected;
+        projection = std::make_shared<TableViewRowProjection>(view);
+        projection->Start();
         try
         {
-            ApplyHierarchyPaths(tableViewSource);
+            ApplyHierarchyPaths(*projection);
         }
         catch (...)
         {
@@ -1892,60 +1914,18 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             TVDiag::LogRetailF(L"[TableView] ItemKeyPath/ParentKeyPath could not build a tree over the new ItemsSource (HRESULT 0x%08X); showing the rows flat.",
                 static_cast<unsigned int>(winrt::to_hresult()));
         }
-
-        // An ICollectionView (e.g. CollectionViewSource.View) keeps its order and, when it has
-        // CollectionGroups, its grouping: groups become group header rows over their GroupItems.
-        if (auto const view = itemsSource.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionView>())
-        {
-            m_itemsSourceIsCollectionView = true;
-
-            // A view a CollectionViewSource shapes can be sorted through its SortDescriptions. The
-            // reconcile that adoption queues below lights the arrow for a sort the view already has.
-            if (auto const shaping = view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>())
-            {
-                m_collectionViewShaping = shaping;
-                auto weakThis = get_weak();
-                m_collectionViewSortChangedRevoker = shaping.SortDescriptions().VectorChanged(winrt::auto_revoke,
-                    [weakThis](auto const&, auto const&)
-                    {
-                        if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_updatingCollectionViewSort)
-                        {
-                            strongThis->m_collectionViewSortByTable = false;
-                            strongThis->QueueReconcileSortStateWithSource();
-                        }
-                    });
-            }
-
-            if (auto groups = TableViewCollectionViewGroups::TryCreate(view))
-            {
-                try
-                {
-                    groups->Attach(tableViewSource);
-                    m_collectionViewGroups = std::move(groups);
-                }
-                catch (...)
-                {
-                    // For example one item in two groups, which the grouped projection cannot show.
-                    TVDiag::LogRetailF(L"[TableView] The ICollectionView's groups could not be projected (HRESULT 0x%08X); showing its items ungrouped.",
-                        static_cast<unsigned int>(winrt::to_hresult()));
-                }
-            }
-        }
     }
 
-    if (tableViewSource)
+    if (auto const previous = std::exchange(m_rowProjection, projection))
     {
-        // A source this table minted is never owned by another table.
-        MUX_ASSERT(!tableViewSource->IsOwnedByOther(*this));
-        tableViewSource->SetOwningTableView(*this);
+        previous->SetProjectionChangedHandler(nullptr);
     }
-
-    // Publish the new source before releasing the previous one: the release synchronously runs
-    // other tables' waiters, and an app handler reached from there can assign this table's
-    // ItemsSource again. That nested adoption must see coherent state and must win.
-    auto const previouslyOwned = m_activeSource.get();
-    m_activeSource.set(tableViewSource);
-    m_activeSourceReleased = false;
+    m_internalViewSource.set(internalViewSource);
+    m_telemetrySourceKinds = sourceKinds;
+    m_collectionViewShaping = nullptr;
+    m_collectionViewCustomSort = nullptr;
+    m_collectionViewSortByTable = false;
+    m_collectionViewSortChangedRevoker.revoke();
 
     // A remembered body position names a row of the old source.
     ForgetBodyFocusPosition();
@@ -1953,75 +1933,43 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     m_reshapeFocusRow = -1;
     CancelReshapeFocusRestore();
 
-    if (tableViewSource)
+    if (!projection)
     {
-        auto* const sourceImpl = tableViewSource.get();
+        return;
+    }
 
-        // The source raises this rather than calling back into TableView by name, so the shaping
-        // stack stays below the control. Weak, because the control owns the source through
-        // m_activeSource and a strong capture would be a cycle.
-        auto weakThis = get_weak();
-        sourceImpl->SetProjectionChangedHandler([weakThis]()
+    // Weak, because the control owns the projection and a strong capture would be a cycle.
+    auto weakThis = get_weak();
+    projection->SetProjectionChangedHandler([weakThis]()
+    {
+        if (auto strongThis = weakThis.get())
         {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->OnTableViewShapingSourceProjectionChanged();
-            }
-        });
-        sourceImpl->SetShapingChangedHandler([weakThis](bool reorderOnly)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->OnTableViewShapingSourceShapingChanged(reorderOnly);
-            }
-        });
-        AttachSourceTip(tableViewSource);
-        // CustomSortComparer ranks are frozen at header sort; re-place the changed row.
-        sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
-        {
-            auto strongThis = weakThis.get();
-            return strongThis && strongThis->RepositionCustomSortItem(item, reshapePending);
-        });
-        sourceImpl->SetRowsReleasedHook([weakThis](winrt::IInspectable const& item, std::vector<winrt::IInspectable> const& liveRows)
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->ReleaseCustomSortRows(item, liveRows);
-            }
-        });
-        sourceImpl->SetLiveItemReshapeHandler([weakThis]()
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                TableViewTelemetry::MarkUsed(strongThis->m_telemetrySession, strongThis->m_telemetrySession.generation,
-                    TableViewTelemetry::Feature::LiveShaping);
-            }
-        });
+            strongThis->OnRowProjectionChanged();
+        }
+    });
 
+    // A view that can be sorted through its SortDescriptions: the internal view over a plain collection
+    // and a CollectionViewSource's View. The arrow follows a sort applied to the view directly.
+    if (auto const shaping = view.try_as<data::ICollectionViewShaping>())
+    {
+        m_collectionViewShaping = shaping;
+        m_collectionViewSortChangedRevoker = shaping.SortDescriptions().VectorChanged(winrt::auto_revoke,
+            [weakThis](auto const&, auto const&)
+            {
+                if (auto strongThis = weakThis.get(); strongThis && !strongThis->m_updatingCollectionViewSort)
+                {
+                    strongThis->m_collectionViewSortByTable = false;
+                    strongThis->QueueReconcileSortStateWithSource();
+                }
+            });
+
+        // Lights the arrow for a sort the view already has; Loaded does it for a table not loaded yet.
         if (IsLoaded())
         {
-            // The source may have been sorted while another table owned it.
-            m_rerankCustomSortOnReconcile = reclaimActiveSource;
             QueueReconcileSortStateWithSource();
         }
-        else
-        {
-            // No Unloaded will come to release it; OnTableViewLoaded reclaims it.
-            m_activeSourceReleased = true;
-            sourceImpl->ReleaseOwningTableView(*this);
-        }
-    }
-
-    // Detach the previous source last. Swapping ItemsSource between two TableViewShapingSources leaves
-    // the old one alive and still subscribed to the app's collection, so without this it keeps a
-    // back-pointer to this control and a later rebuild of that discarded source would drive a
-    // TableView it no longer belongs to. A nested adoption may have made it active again.
-    if (previouslyOwned && previouslyOwned != tableViewSource && previouslyOwned != m_activeSource.get())
-    {
-        previouslyOwned.get()->ReleaseOwningTableView(*this);
     }
 }
-
 void TableView::RefreshRowsPipeline()
 {
     // Recompute the cached row view from whatever the active source currently projects. A shaping
@@ -2062,11 +2010,10 @@ void TableView::RefreshCachedProjection()
     auto const previousRowMetadata = m_tableViewSourceRowMetadata;
     m_tableViewSourceRowMetadata = nullptr;
 
-    if (auto const activeSource = m_activeSource.get())
+    if (auto const projection = m_rowProjection)
     {
-        // Straight through: for a TableViewShapingSource the row view IS the projection's view.
-        m_rowsItemsSourceView = activeSource->GetItemsSourceView();
-        m_tableViewSourceRowMetadata = activeSource->GetRowMetadata();
+        m_rowsItemsSourceView = projection->ItemsSourceView();
+        m_tableViewSourceRowMetadata = projection->RowMetadata();
     }
     else
     {
@@ -2087,7 +2034,7 @@ void TableView::RefreshCachedProjection()
     }
 }
 
-void TableView::OnTableViewShapingSourceProjectionChanged()
+void TableView::OnRowProjectionChanged()
 {
     SupersedeTipOperation();
     CancelPendingBringItemIntoView();
@@ -2098,8 +2045,8 @@ void TableView::OnTableViewShapingSourceProjectionChanged()
     // Capture first: RefreshRowsPipeline tears down realized rows synchronously.
     CaptureBodyFocusForReshape();
 
-    // A shaping verb swapped the projected shape after we bound, so the cached view and row
-    // metadata describe the previous projection. Re-read them and re-drive the rows.
+    // The projection was rebuilt after we bound, so the cached view and row metadata may describe the
+    // previous projection. Re-read them and re-drive the rows.
     RefreshRowsPipeline();
     QueueGroupExpansionRowRefresh();
 
@@ -2166,28 +2113,13 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
     });
 }
 
-void TableView::OnTableViewShapingSourceShapingChanged(bool reorderOnly)
+void TableView::OnRowsReorderedBySort()
 {
-    SupersedeTipOperation();
-    if (!reorderOnly)
-    {
-        QueueGroupExpansionRowRefresh();
-    }
-
-    // The new shape is in place by now (re-order and rebuild have both run).
+    // The new order is in place by now.
     RestoreBodyFocusAfterReshape();
 
-    // The app may have declared or cleared a sort straight on the source, which the control has no
-    // other way to learn about. Reconcile before anything else so the chevrons never outlive the
-    // axis they describe.
-    if (!m_isApplyingControlInitiatedSort)
-    {
-        QueueReconcileSortStateWithSource();
-    }
-
-    // A programmatic shaping verb rewrites the projection with no input event behind it, so
-    // nothing else tells a UIA client that the rows it cached are stale. A pure re-order keeps the
-    // same children in a new order; anything else can add or remove them.
+    // A programmatic re-sort keeps the same children in a new order with no input event behind it, so
+    // nothing else tells a UIA client that the rows it cached are stale.
     if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
     {
         return;
@@ -2201,15 +2133,7 @@ void TableView::OnTableViewShapingSourceShapingChanged(bool reorderOnly)
 
     if (auto const tableViewPeer = peer.try_as<winrt::TableViewAutomationPeer>())
     {
-        auto* const impl = winrt::get_self<TableViewAutomationPeer>(tableViewPeer);
-        if (reorderOnly)
-        {
-            impl->RaiseStructureChangedForSortChange();
-        }
-        else
-        {
-            impl->RaiseStructureChangedForVirtualizationReset();
-        }
+        winrt::get_self<TableViewAutomationPeer>(tableViewPeer)->RaiseStructureChangedForSortChange();
     }
 }
 
@@ -2769,7 +2693,7 @@ void TableView::RefreshRowHierarchyState(winrt::TableViewRow const& row, int32_t
     // Use only data-row metadata: a recycled row can be re-prepared at an index that just became
     // a group header (same guard as PrepareGroupHeaderElement).
     const bool hasRowInfo =
-        TryGetTableViewShapingSourceRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
+        TryGetRowInfo(index, rowInfo) && rowInfo.Kind == TableViewRowKind::Data;
 
     auto const rowImpl = winrt::get_self<TableViewRow>(row);
     if (!hasRowInfo)
@@ -3737,22 +3661,6 @@ void TableView::QueueRaiseColumnsStructureChanged()
     }
 }
 
-void TableView::ReclaimItemsSource()
-{
-    if (!m_activeSource.get() || !m_activeSourceReleased)
-    {
-        return;
-    }
-
-    AdoptItemsSource(true /* reclaimActiveSource */);
-    // While drained, OnRowsRepeaterLoaded re-sources the repeater.
-    if (!m_rowsSourceDrained)
-    {
-        RefreshRowsPipeline();
-    }
-    NoteTipInitializationSource();
-}
-
 void TableView::OnTableViewUnloaded()
 {
     // A re-parent can raise Loaded before the stale Unloaded; tearing down now would leave a live
@@ -3826,15 +3734,6 @@ void TableView::OnTableViewUnloaded()
         try { repeater.ItemsSource(nullptr); }
         catch (...) {}
         m_rowsSourceDrained = true; // Remember that Loaded must restore the source.
-    }
-
-    // An unloaded table may stay alive until GC; let a newly loaded one bind the source meanwhile.
-    // OnTableViewLoaded reclaims it.
-    // Flag first: the release runs other tables' waiters synchronously.
-    if (auto const activeSource = m_activeSource.get(); activeSource && !m_activeSourceReleased)
-    {
-        m_activeSourceReleased = true;
-        activeSource->ReleaseOwningTableView(*this);
     }
 
     // Detach ViewChanged so deferred scroll callbacks do not run after unload.

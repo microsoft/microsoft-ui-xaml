@@ -33,7 +33,6 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />
-    <Import Project="$(MSBuildThisFileDirectory)dev\ShapedItemsSource\ShapedItemsSource.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\GroupedSourceAdapter\GroupedSourceAdapter.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\HierarchicalSourceAdapter\HierarchicalSourceAdapter.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />

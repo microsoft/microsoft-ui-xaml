@@ -144,8 +144,8 @@ void GroupedSourceAdapter::Rebuild()
                     }
                 }
 
-                // Materialize the group's items. Per-group sorting is applied upstream by
-                // ShapedItemsSource::RebuildGrouped; the adapter reads the group as-is.
+                // Materialize the group's items. The view the groups come from sorts them; the
+                // adapter reads the group as-is.
                 //
                 // An empty group is NOT dropped: group existence is source-owned (a bucket exists
                 // only if the app authored it — a Kanban column, an "Uncategorized" bucket, an empty
@@ -503,7 +503,7 @@ void GroupedSourceAdapter::SubscribeToGroup(winrt::IInspectable const& group)
 
 void GroupedSourceAdapter::UnsubscribeFromAllGroups()
 {
-    // Teardown is UI-thread-guaranteed by the owning ReferenceTrackers (TableViewShapingSource / TableView),
+    // Teardown is UI-thread-guaranteed by the owning ReferenceTrackers (TableView),
     // so revoking here never crosses threads. SafeRevokeWith + the weak_from_this callbacks remain
     // for re-entrancy / GC-safety.
     for (auto& sub : m_innerSubscriptions)

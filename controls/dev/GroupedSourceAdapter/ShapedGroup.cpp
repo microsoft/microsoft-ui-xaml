@@ -95,3 +95,8 @@ void ShapedGroup::SetItems(std::vector<winrt::IInspectable> const& items)
 {
     m_items.ReplaceAll(items);
 }
+
+void ShapedGroup::SetItemsSource(winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& items)
+{
+    m_items = items ? items : winrt::single_threaded_observable_vector<winrt::IInspectable>();
+}

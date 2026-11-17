@@ -4,7 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
-#include "TableViewShapingSource.h"
 
 namespace
 {
@@ -40,15 +39,13 @@ void TableView::SampleInstanceTelemetry() noexcept
             }
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
-        if (auto const source = m_activeSource.get())
+        if (auto const projection = m_rowProjection)
         {
-            auto const* const sourceImpl = source.get();
-            if (sourceImpl->HasFilter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
-            if (sourceImpl->HasGroupBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
-            if (sourceImpl->HasParentBy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
-            if (sourceImpl->IsLiveShaping()) { sample.enabledFeatures |= TableViewTelemetry::Feature::LiveShaping; }
-            sample.sourceRows = sourceImpl->SourceRowCount();
-            sample.dataRows = sourceImpl->DataRowCount();
+            if (m_collectionViewShaping && m_collectionViewShaping.Filter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
+            if (projection->IsGrouped()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
+            if (projection->HasHierarchy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
+            sample.sourceRows = projection->SourceRowCount();
+            sample.dataRows = projection->DataRowCount();
             if (sample.dataRows == 0)
             {
                 TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Empty);
