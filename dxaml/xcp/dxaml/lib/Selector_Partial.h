@@ -420,6 +420,8 @@ namespace DirectUI
         // Updates m_pSelectedRangesImpl
         _Check_return_ HRESULT UpdateSelectedRanges();
 
+        _Check_return_ HRESULT RebuildSelectedRanges();
+
         _Check_return_ HRESULT UpdateSelectedRangesForUnselectedItemChange(UINT index, bool inserted);
 
         // Updates all properties that are publicly visible after a selection change

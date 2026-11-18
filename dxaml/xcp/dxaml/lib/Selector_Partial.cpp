@@ -1907,6 +1907,22 @@ _Check_return_
     // other properties from being updated.
     PreventSelectionReentrancy();
 
+    IFC(RebuildSelectedRanges());
+
+Cleanup:
+    AllowSelectionReentrancy();
+    return hr;
+}
+
+_Check_return_ HRESULT Selector::RebuildSelectedRanges()
+{
+    HRESULT hr = S_OK;
+
+    ASSERT(!IsSelectionReentrancyAllowed(), L"Reentrancy lock must be active to rebuild selected ranges");
+
+    std::vector<unsigned int> selectedIndexes;
+    ctl::ComPtr<TrackerCollection<xaml_data::ItemIndexRange*>> spSelectedRanges;
+
     spSelectedRanges = m_tpSelectedRangesImpl.Cast<TrackerCollection<xaml_data::ItemIndexRange*>>();
 
     IFC(spSelectedRanges->Clear());
@@ -1919,12 +1935,16 @@ _Check_return_
     IFC(ItemIndexRange::AppendItemIndexRangesFromSortedVectorToItemIndexRangeCollection(selectedIndexes, spSelectedRanges.Get()));
 
 Cleanup:
-    AllowSelectionReentrancy();
     return hr;
 }
 
 _Check_return_ HRESULT Selector::UpdateSelectedRangesForUnselectedItemChange(UINT index, bool inserted)
 {
+    if (m_isSelectionReentrancyLocked)
+    {
+        return RebuildSelectedRanges();
+    }
+
     auto ranges = m_tpSelectedRangesImpl.Cast<TrackerCollection<xaml_data::ItemIndexRange*>>();
     UINT count;
     IFC_RETURN(ranges->get_Size(&count));
