@@ -30,6 +30,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add/remove a ScrollViewer from the live tree.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanBeScrollAnchorDoesNotRetainRemovedElement)
+            TEST_METHOD_PROPERTY(L"Description", L"Anchor property writes remain balanced when a candidate leaves a live ScrollViewer.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(HandledReleasePreservesAnotherPointerPress)
             TEST_METHOD_PROPERTY(L"Description", L"A handled second-contact release preserves an active ScrollViewer press.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
