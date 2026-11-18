@@ -25,12 +25,6 @@ CImageBase::~CImageBase()
     {
         ReleaseInterface(m_pImageSource);
     }
-    ReleaseInterface(m_pFallbackBrush);
-}
-
-void CImageBase::ReleaseFallbackBrush()
-{
-    ReleaseInterface(m_pFallbackBrush);
 }
 
 //------------------------------------------------------------------------
@@ -159,13 +153,11 @@ CImageBase::EnsureBrush()
             m_pBackgroundBrush->GetHardwareSurface() != nullptr)
         {
             CREATEPARAMETERS cp(GetContext());
-            ReleaseFallbackBrush();
-            IFC_RETURN(CImageBrush::Create(reinterpret_cast<CDependencyObject**>(&m_pFallbackBrush), &cp));
-            SetInterface(m_pFallbackBrush->m_pImageSource, m_pBackgroundBrush->m_pImageSource);
-            m_pFallbackBrush->m_isRenderOnly = true;
-            m_pFallbackBrush->m_Stretch = m_pBackgroundBrush->m_Stretch;
-            m_pFallbackBrush->m_AlignmentX = m_pBackgroundBrush->m_AlignmentX;
-            m_pFallbackBrush->m_AlignmentY = m_pBackgroundBrush->m_AlignmentY;
+            IFC_RETURN(CImageBrush::Create(reinterpret_cast<CDependencyObject**>(m_fallbackBrush.ReleaseAndGetAddressOf()), &cp));
+            SetInterface(m_fallbackBrush->m_pImageSource, m_pBackgroundBrush->m_pImageSource);
+            m_fallbackBrush->m_Stretch = m_pBackgroundBrush->m_Stretch;
+            m_fallbackBrush->m_AlignmentX = m_pBackgroundBrush->m_AlignmentX;
+            m_fallbackBrush->m_AlignmentY = m_pBackgroundBrush->m_AlignmentY;
         }
         else if (!m_pImageSource || m_pImageSource->m_strSource.IsNull() || !IsActive())
         {
@@ -239,7 +231,7 @@ _Check_return_ HRESULT CImageBase::FireImageFailed(_In_ XUINT32 iErrorCode)
     EventHandle hFailedEvent(KnownEventIndex::Image_ImageFailed);
 
     // A failed source draws nothing, so stop drawing the previous picture.
-    if (m_pFallbackBrush)
+    if (m_fallbackBrush)
     {
         ReleaseFallbackBrush();
         CUIElement::NWSetContentDirty(this, DirtyFlags::Render);
@@ -339,10 +331,10 @@ _Check_return_ HRESULT CImageBase::GetNaturalBounds(_Inout_ XRECTF& pNaturalBoun
 {
     // While the new source has no size yet, keep the size of the picture still being drawn
     // (as a UriSource change does), so a naturally sized Image doesn't collapse to 0x0.
-    if (m_pFallbackBrush && m_pBackgroundBrush && m_pImageSource &&
+    if (m_fallbackBrush && m_pBackgroundBrush && m_pImageSource &&
         !m_pBackgroundBrush->HasDimensions() && !m_pBackgroundBrush->HasRetainedSize())
     {
-        m_pFallbackBrush->GetNaturalBounds(&pNaturalBounds);
+        m_fallbackBrush->GetNaturalBounds(&pNaturalBounds);
         return S_OK;
     }
 
