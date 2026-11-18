@@ -1825,6 +1825,127 @@ void SwapChainPanelTests::HitTestingOnlySwapChainPanel()
     u->VerifyMockDCompOutput(SurfaceComparison::NoComparison, L"5");
 }
 
+void SwapChainPanelTests::CreateCoreIndependentInputSourceThreadingContract()
+{
+    const auto observation = ObserveIndependentInputSourceThreading();
+
+    // The API must be called off the UI thread; on the UI thread it fails before creating any input source.
+    VERIFY_ARE_EQUAL(RPC_E_WRONG_THREAD, observation.uiThreadCallResult);
+
+    // Off the UI thread, DeviceKinds::None asks for no input source: the call succeeds and returns null.
+    VERIFY_ARE_EQUAL(S_OK, observation.offThreadNoneCallResult);
+    VERIFY_IS_TRUE(observation.offThreadNoneResultIsNull);
+}
+
+SwapChainPanelTests::IndependentInputSourceThreadingObservation SwapChainPanelTests::ObserveIndependentInputSourceThreading()
+{
+    SwapChainPanel^ scp;
+    IndependentInputSourceThreadingObservation observation = { S_OK, E_PENDING, false };
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        scp = nullptr;
+    });
+
+    RunOnUIThread([&]()
+    {
+        scp = CreateSizedSwapChainPanel();
+        TestServices::WindowHelper->WindowContent = scp;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Calling CreateCoreIndependentInputSource on the UI thread.");
+        try
+        {
+            scp->CreateCoreIndependentInputSource(::Microsoft::UI::Input::InputPointerSourceDeviceKinds::Touch);
+        }
+        catch (Platform::Exception^ ex)
+        {
+            observation.uiThreadCallResult = ex->HResult;
+        }
+    });
+
+    LOG_OUTPUT(L"Calling CreateCoreIndependentInputSource(DeviceKinds::None) on a thread pool thread.");
+    auto workItemCompletedEvent = std::make_shared<Event>();
+    auto workItemHandler = ref new ::Windows::System::Threading::WorkItemHandler([&] (IAsyncAction ^)
+    {
+        try
+        {
+            ixp::InputPointerSource^ inputPointerSource = scp->CreateCoreIndependentInputSource(::Microsoft::UI::Input::InputPointerSourceDeviceKinds::None);
+            observation.offThreadNoneResultIsNull = (inputPointerSource == nullptr);
+            observation.offThreadNoneCallResult = S_OK;
+        }
+        catch (Platform::Exception^ ex)
+        {
+            observation.offThreadNoneCallResult = ex->HResult;
+        }
+        workItemCompletedEvent->Set();
+    });
+    ::Windows::System::Threading::ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
+    workItemCompletedEvent->WaitForDefault();
+    TestServices::WindowHelper->WaitForIdle();
+
+    LOG_OUTPUT(L"UI thread call result: 0x%08x; off-thread DeviceKinds::None call result: 0x%08x, returned null: %d.",
+        observation.uiThreadCallResult, observation.offThreadNoneCallResult, observation.offThreadNoneResultIsNull);
+    return observation;
+}
+
+void SwapChainPanelTests::CompositionScaleDependencyPropertiesMatchGetters()
+{
+    const auto observation = ObserveCompositionScaleProperties();
+
+    VERIFY_IS_FALSE(observation.scaleXPropertyIsNull);
+    VERIFY_IS_FALSE(observation.scaleYPropertyIsNull);
+    VERIFY_IS_FALSE(observation.scalePropertiesAreSameObject);
+
+    // The window is scaled by 1.5, and both dependency properties report the same values as the getters.
+    VERIFY_ARE_EQUAL(1.5f, observation.scaleXFromProperty);
+    VERIFY_ARE_EQUAL(1.5f, observation.scaleYFromProperty);
+    VERIFY_ARE_EQUAL(observation.scaleXFromGetter, observation.scaleXFromProperty);
+    VERIFY_ARE_EQUAL(observation.scaleYFromGetter, observation.scaleYFromProperty);
+}
+
+SwapChainPanelTests::CompositionScaleObservation SwapChainPanelTests::ObserveCompositionScaleProperties()
+{
+    SwapChainPanel^ scp;
+    CompositionScaleObservation observation = {};
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        scp = nullptr;
+    });
+
+    ::Windows::Foundation::Size size(400, 400);
+    TestServices::WindowHelper->SetWindowSizeOverrideWithScale(size, 1.5f);
+
+    RunOnUIThread([&]()
+    {
+        scp = CreateSizedSwapChainPanel();
+        TestServices::WindowHelper->WindowContent = scp;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        auto scaleXProperty = SwapChainPanel::CompositionScaleXProperty;
+        auto scaleYProperty = SwapChainPanel::CompositionScaleYProperty;
+        observation.scaleXPropertyIsNull = (scaleXProperty == nullptr);
+        observation.scaleYPropertyIsNull = (scaleYProperty == nullptr);
+        observation.scalePropertiesAreSameObject = Platform::Object::ReferenceEquals(scaleXProperty, scaleYProperty);
+
+        observation.scaleXFromGetter = scp->CompositionScaleX;
+        observation.scaleYFromGetter = scp->CompositionScaleY;
+        observation.scaleXFromProperty = static_cast<float>(safe_cast<double>(scp->GetValue(scaleXProperty)));
+        observation.scaleYFromProperty = static_cast<float>(safe_cast<double>(scp->GetValue(scaleYProperty)));
+    });
+
+    LOG_OUTPUT(L"CompositionScaleX: getter %f, property %f; CompositionScaleY: getter %f, property %f.",
+        observation.scaleXFromGetter, observation.scaleXFromProperty, observation.scaleYFromGetter, observation.scaleYFromProperty);
+    return observation;
+}
+
 // Helper class to implement IUnknown
 template<typename T>
 class ComObject : public T

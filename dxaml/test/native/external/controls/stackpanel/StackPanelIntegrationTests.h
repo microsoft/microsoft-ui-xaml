@@ -87,6 +87,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the bounds of a StackPanel")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyGetInsertionIndexesVertical)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInsertionPanel.GetInsertionIndexes on a vertical StackPanel, including the first slot, interior slots, past-the-end, an empty panel and the wrong-thread error.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyGetInsertionIndexesHorizontal)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates IInsertionPanel.GetInsertionIndexes on a horizontal StackPanel, including the first slot, interior slots, past-the-end, an empty panel and the wrong-thread error.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyPropertiesMatchDependencyProperties)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates StackPanel property accessors against their dependency property identifiers, for defaults and set values in both directions.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyLoadMoreItemsAsyncUsesItemsPerPageVertical)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that ListView.LoadMoreItemsAsync requests DataFetchSize pages of items computed from a vertical StackPanel items host.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyLoadMoreItemsAsyncUsesItemsPerPageHorizontal)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that ListView.LoadMoreItemsAsync requests DataFetchSize pages of items computed from a horizontal StackPanel items host.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyEdgeIncrementalLoadingNearEndVertical)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that edge-triggered incremental loading with a vertical StackPanel items host loads only when scrolled within the threshold of the end.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyEdgeIncrementalLoadingNearEndHorizontal)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that edge-triggered incremental loading with a horizontal StackPanel items host loads only when scrolled within the threshold of the end.")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //
@@ -103,6 +131,70 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         xaml_shapes::Rectangle^ CreateRectangle(int width, int height, bool visible = true);
         xaml_controls::StackPanel^ VerifyDesiredSize_Setup();
         void VerifySnapPointsOrientation(xaml_controls::Orientation orientation, int elementWidth, int elementHeight);
+
+        struct InsertionIndexes
+        {
+            int first;
+            int second;
+        };
+
+        // GetInsertionIndexes results for fixed probe points; the test methods own the assertions.
+        struct InsertionIndexProbes
+        {
+            InsertionIndexes leadingHalfOfItem0;
+            InsertionIndexes trailingHalfOfItem0;
+            InsertionIndexes leadingHalfOfItem1;
+            InsertionIndexes midpointOfItem1;
+            InsertionIndexes trailingHalfOfItem1;
+            InsertionIndexes leadingHalfOfItem2;
+            InsertionIndexes justPastTheEnd;
+            InsertionIndexes pastTheEnd;
+            InsertionIndexes moreThanHalfAnItemPastTheEnd;
+            InsertionIndexes emptyPanel;
+            bool offThreadCallFailedWithWrongThread;
+        };
+
+        // Values read back from a StackPanel through its property getters and its dependency property identifiers.
+        struct PropertySnapshot
+        {
+            xaml_controls::BackgroundSizing backgroundSizingFromGetter;
+            xaml_controls::BackgroundSizing backgroundSizingFromProperty;
+            double spacingFromGetter;
+            double spacingFromProperty;
+            xaml_controls::Orientation orientationFromProperty;
+            bool areScrollSnapPointsRegularFromProperty;
+            bool borderBrushFromPropertyIsNull;
+            bool borderBrushFromGetterIsSetBrush;
+            bool borderBrushFromPropertyIsSetBrush;
+            xaml::Thickness borderThicknessFromProperty;
+            xaml::Thickness paddingFromProperty;
+            xaml::CornerRadius cornerRadiusFromGetter;
+            xaml::CornerRadius cornerRadiusFromProperty;
+        };
+
+        struct PropertySnapshots
+        {
+            PropertySnapshot defaults;
+            PropertySnapshot afterPropertySetters;
+            PropertySnapshot afterDependencyPropertySetters;
+        };
+
+        // Load requests the incremental-loading items source received at each step of a scenario.
+        struct IncrementalLoadObservation
+        {
+            unsigned int requestsBeforeAction;
+            unsigned int requestsAfterNearStartScroll;
+            unsigned int requestsAfterHalfAnItemBeforeThresholdScroll;
+            unsigned int requestsAfterThresholdScroll;
+            unsigned int requestsAfterAction;
+            unsigned int lastRequestedCount;
+            unsigned int expectedRequestedCount;
+        };
+
+        InsertionIndexProbes ProbeInsertionIndexes(xaml_controls::Orientation orientation);
+        PropertySnapshots CapturePropertySnapshots();
+        IncrementalLoadObservation ObserveExplicitLoadMoreItems(xaml_controls::Orientation orientation, double itemExtent);
+        IncrementalLoadObservation ObserveEdgeIncrementalLoading(xaml_controls::Orientation orientation, unsigned int itemCount);
 
     };
 
