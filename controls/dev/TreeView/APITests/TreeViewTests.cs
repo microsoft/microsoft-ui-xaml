@@ -2701,6 +2701,38 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // App code can run while a removed child still has its old row: the parent's HasChildren changes before the flat
+        // list removes that row. If the app then moves the child to a later root and adds a sibling after it, the child has
+        // 2 rows for a moment, and the new sibling must still go under the later root.
+        [TestMethod]
+        public void TreeViewInsertAfterANodeMovedDuringItsRemovalKeepsRowsCorrect()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var c = MakeNode("C");
+                var d = MakeNode("D");
+                var p = MakeNode("P", true, c);
+                var r = MakeNode("R", true, MakeNode("Y"));
+                var treeView = ShowTreeView(p, r);
+                bool moved = false;
+                p.RegisterPropertyChangedCallback(TreeViewNode.HasChildrenProperty, (sender, property) =>
+                {
+                    if (!moved && !p.HasChildren)
+                    {
+                        moved = true;
+                        r.Children.Add(c);
+                        r.Children.Add(d);
+                    }
+                });
+                using (var recorder = new FlatListRecorder(treeView))
+                {
+                    Verify.AreEqual("P,C,R,Y", recorder.Rows);
+                    recorder.VerifyEdit("Move C from P to R, and add D after it", () => p.Children.Remove(c), "+4,+5,-1", "P,R,Y,C,D");
+                    recorder.VerifyEdit("Remove D", () => r.Children.Remove(d), "-4", "P,R,Y,C");
+                }
+            });
+        }
+
         // The same as TreeViewFlatListRaisesRowEventsInExpectedOrder, in content mode, with edits to the data items.
         [TestMethod]
         public void TreeViewContentModeFlatListRaisesRowEventsInExpectedOrder()
@@ -2851,7 +2883,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var root = MakeNode("Root", true);
-                ShowTreeView(root);
+                var treeView = ShowTreeView(root);
 
                 var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
                 for (int i = 0; i < children; i++)
@@ -2860,6 +2892,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 Content.UpdateLayout();
                 Log.Comment($"Add {children} children to an expanded root: {stopwatch.Elapsed.TotalMilliseconds:F0} ms");
+                var listControl = (TreeViewList)VisualTreeUtils.FindVisualChildByName(treeView, "ListControl");
+                Verify.AreEqual(children + 1, ((IObservableVector<object>)listControl.ItemsSource).Count, "rows after adding the children");
                 Content = null;
             });
             IdleSynchronizer.Wait();

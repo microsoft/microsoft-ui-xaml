@@ -709,22 +709,25 @@ winrt::TreeViewNode ViewModel::GetRemovedChildTreeViewNodeByIndex(winrt::TreeVie
 // earlier siblings for each new child.
 unsigned int ViewModel::GetInsertedChildIndexInFlatTree(winrt::TreeViewNode const& parentNode, unsigned int childIndex)
 {
+    const unsigned int firstChildIndex = GetNextIndexInFlatTree(parentNode);
     if (childIndex > 0)
     {
-        auto previousSibling = parentNode.Children().GetAt(childIndex - 1).as<winrt::TreeViewNode>();
+        auto previousSibling = parentNode.Children().GetAt(childIndex - 1);
         unsigned int previousSiblingIndex = 0;
-        if (IndexOfNode(previousSibling, previousSiblingIndex))
+        // App code can move a node while its old row is still in the view, for example from a HasChildren callback,
+        // and IndexOfNode returns the first of its rows. Its row under this parent comes after the parent's row.
+        if (IndexOfNode(previousSibling, previousSiblingIndex) && previousSiblingIndex >= firstChildIndex)
         {
             const unsigned int previousSiblingDescendantCount = previousSibling.IsExpanded() ? CountDescendants(previousSibling) : 0;
             return previousSiblingIndex + 1 + previousSiblingDescendantCount;
         }
     }
 
-    // There is no previous sibling, or it is not in the view yet. Count from the parent instead.
-    unsigned int flatIndex = GetNextIndexInFlatTree(parentNode) + childIndex;
+    // There is no previous sibling, or its row is not under this parent. Count from the parent instead.
+    unsigned int flatIndex = firstChildIndex + childIndex;
     for (unsigned int i = 0; i < childIndex; i++)
     {
-        auto childNode = parentNode.Children().GetAt(i).as<winrt::TreeViewNode>();
+        auto childNode = parentNode.Children().GetAt(i);
         if (childNode.IsExpanded())
         {
             flatIndex += CountDescendants(childNode);
@@ -1034,10 +1037,7 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         {
             const unsigned int targetIndex = GetInsertedChildIndexInFlatTree(parentNode, index);
             AddNodeToView(targetNode, targetIndex);
-            if (targetNode.IsExpanded())
-            {
-                AddNodeDescendantsToView(targetNode, targetIndex, 0);
-            }
+            AddNodeDescendantsToView(targetNode, targetIndex, 0);
         }
 
         break;
