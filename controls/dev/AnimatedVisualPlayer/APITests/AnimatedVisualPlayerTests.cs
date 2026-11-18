@@ -34,6 +34,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static readonly TimeSpan HiddenPlayDuration = TimeSpan.FromMilliseconds(1500);
         private const int HostVisibilityTimeoutMs = 5000;
 
+        [TestMethod]
+        public void CompositionSetupPreservesOpacityTransitionAndChildVisual()
+        {
+            AnimatedVisualPlayer player = null;
+            ScalarTransition transition = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                player = CreatePlayer();
+                transition = new ScalarTransition();
+                player.OpacityTransition = transition;
+                player.AutoPlay = false;
+                player.Source = new AvpTestSource();
+
+                Verify.AreEqual(CompositionTarget.GetCompositorForCurrentThread(), player.ProgressObject.Compositor);
+            });
+
+            LoadInHost(player);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var childVisual = ElementCompositionPreview.GetElementChildVisual(player);
+                Verify.IsNotNull(childVisual);
+                Verify.AreEqual(CompositionTarget.GetCompositorForCurrentThread(), childVisual.Compositor);
+                Verify.AreEqual(transition, player.OpacityTransition);
+                Verify.IsTrue(player.IsAnimatedVisualLoaded);
+                player.SetProgress(0.5);
+                Verify.AreEqual(0.5f, GetProgress(player));
+            });
+        }
+
         // Scenario: a player whose Source fails shows a 100x50 FallbackContent; then a valid 750 ms Source is set.
         // Expected: after the failure: one create call, not loaded, Diagnostics "load failed", and the fallback is the
         //           only child and sets a 100x50 desired/actual size. After the valid load: loaded, fallback removed

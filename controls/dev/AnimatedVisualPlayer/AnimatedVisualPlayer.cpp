@@ -311,7 +311,7 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 
     EnsureProperties();
 
-    auto compositor = winrt::ElementCompositionPreview::GetElementVisual(*this).Compositor();
+    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
     m_rootVisual = compositor.CreateSpriteVisual();
     m_progressPropertySet = m_rootVisual.Properties();
 

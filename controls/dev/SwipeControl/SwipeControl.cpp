@@ -828,7 +828,7 @@ void SwipeControl::InitializeInteractionTracker()
 
     if (!m_compositor)
     {
-        m_compositor.set(winrt::ElementCompositionPreview::GetElementVisual(m_rootGrid.get()).Compositor());
+        m_compositor.set(winrt::CompositionTarget::GetCompositorForCurrentThread());
     }
 
     const auto element = FindVisualInteractionSourceElement();

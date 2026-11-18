@@ -299,7 +299,8 @@ private:
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
-    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
+    static winrt::DependencyProperty GetAnimatedSelectionIndicatorProperty();
+    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation = false);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 

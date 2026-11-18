@@ -2122,8 +2122,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         if ((prevIndicator != nextIndicator) && paneContentGrid && prevIndicator && nextIndicator && SharedHelpers::IsAnimationsEnabled())
         {
             // Make sure both indicators are visible and in their original locations
-            ResetElementAnimationProperties(prevIndicator, 1.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 1.0f, true /* forAnimation */);
+            ResetElementAnimationProperties(nextIndicator, 1.0f, true /* forAnimation */);
 
             // get the item positions in the pane
             const winrt::Point point = winrt::Point(0, 0);
@@ -2325,13 +2325,33 @@ void NavigationView::OnAnimationComplete(const winrt::IInspectable& /*sender*/, 
     m_nextIndicator.set(nullptr);
 }
 
-void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity)
+winrt::DependencyProperty NavigationView::GetAnimatedSelectionIndicatorProperty()
+{
+    static GlobalDependencyProperty s_AnimatedSelectionIndicatorProperty =
+        InitializeDependencyProperty(
+            L"AnimatedSelectionIndicator",
+            winrt::name_of<bool>(),
+            winrt::name_of<winrt::NavigationView>(),
+            true /* isAttached */,
+            winrt::box_value(false));
+
+    return s_AnimatedSelectionIndicatorProperty;
+}
+
+void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation)
 {
     if (element)
     {
         element.Opacity(desiredOpacity);
-        if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
+        const auto animatedIndicatorProperty = GetAnimatedSelectionIndicatorProperty();
+        const bool wasAnimated = winrt::unbox_value<bool>(element.GetValue(animatedIndicatorProperty));
+        if (forAnimation || wasAnimated)
         {
+            const auto visual = winrt::ElementCompositionPreview::GetElementVisual(element);
+            if (!wasAnimated)
+            {
+                element.SetValue(animatedIndicatorProperty, winrt::box_value(true));
+            }
             visual.Offset(winrt::float3(0.0f, 0.0f, 0.0f));
             visual.Scale(winrt::float3(1.0f, 1.0f, 1.0f));
             visual.Opacity(desiredOpacity);

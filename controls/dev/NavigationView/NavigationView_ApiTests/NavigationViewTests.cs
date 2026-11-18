@@ -7,11 +7,14 @@ using Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Numerics;
 using Windows.Foundation.Metadata;
 using Windows.UI.ViewManagement;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Shapes;
@@ -1856,6 +1859,150 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() => parent.IsExpanded = false);
                 IdleSynchronizer.Wait();
+            }
+        }
+
+        [TestMethod]
+        public void VerifySelectionResetPreservesIndicatorOpacityTransition()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                var navView = SetupNavigationView(mode);
+                NavigationViewItem first = null;
+                NavigationViewItem second = null;
+                Rectangle firstIndicator = null;
+                Rectangle secondIndicator = null;
+                ScalarTransition transition = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(navView.SelectedItem);
+                    first = (NavigationViewItem)navView.MenuItems[0];
+                    second = (NavigationViewItem)navView.MenuItems[1];
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    firstIndicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(first, "SelectionIndicator");
+                    secondIndicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(second, "SelectionIndicator");
+                    Verify.IsNotNull(firstIndicator);
+                    Verify.IsNotNull(secondIndicator);
+                    transition = new ScalarTransition();
+                    firstIndicator.OpacityTransition = transition;
+                    secondIndicator.OpacityTransition = transition;
+                    navView.SelectedItem = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => navView.SelectedItem = second);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsFalse(first.IsSelected);
+                    Verify.IsTrue(second.IsSelected);
+                    Verify.AreEqual(0.0, firstIndicator.Opacity);
+                    Verify.AreEqual(1.0, secondIndicator.Opacity);
+                    navView.SelectedItem = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => navView.SelectedItem = first);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(first, navView.SelectedItem);
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsFalse(second.IsSelected);
+                    Verify.AreEqual(1.0, firstIndicator.Opacity);
+                    Verify.AreEqual(0.0, secondIndicator.Opacity);
+                    Verify.AreEqual(transition, firstIndicator.OpacityTransition);
+                    Verify.AreEqual(transition, secondIndicator.OpacityTransition);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifySelectionIndicatorVisualResetAfterAnimation()
+        {
+            if (!new UISettings().AnimationsEnabled)
+            {
+                Log.Result(TestResult.Skipped, "Selection indicator animations must be enabled to exercise cleanup.");
+                return;
+            }
+
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.Top })
+            {
+                var navView = SetupNavigationView(mode);
+                NavigationViewItem first = null;
+                NavigationViewItem second = null;
+                Rectangle firstIndicator = null;
+                Rectangle secondIndicator = null;
+                Visual firstVisual = null;
+                Visual secondVisual = null;
+                CompositionScopedBatch batch = null;
+                using var completed = new AutoResetEvent(false);
+                void OnCompleted(object sender, CompositionBatchCompletedEventArgs args) => completed.Set();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    first = (NavigationViewItem)navView.MenuItems[0];
+                    second = (NavigationViewItem)navView.MenuItems[1];
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    firstIndicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(first, "SelectionIndicator");
+                    secondIndicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(second, "SelectionIndicator");
+                    firstVisual = ElementCompositionPreview.GetElementVisual(firstIndicator);
+                    secondVisual = ElementCompositionPreview.GetElementVisual(secondIndicator);
+                    foreach (var visual in new[] { firstVisual, secondVisual })
+                    {
+                        visual.Offset = new Vector3(3, 4, 0);
+                        visual.Scale = new Vector3(0.5f, 0.5f, 1);
+                        visual.Opacity = 0.5f;
+                    }
+                    batch = Microsoft.UI.Xaml.Media.CompositionTarget.GetCompositorForCurrentThread().CreateScopedBatch(CompositionBatchTypes.Animation);
+                    batch.Completed += OnCompleted;
+                    navView.SelectedItem = second;
+                    batch.End();
+                });
+                bool animationsCompleted = completed.WaitOne(TimeSpan.FromSeconds(5));
+                RunOnUIThread.Execute(() => batch.Completed -= OnCompleted);
+                Verify.IsTrue(animationsCompleted, "Selection animations completed.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0.0, firstIndicator.Opacity);
+                    Verify.AreEqual(1.0, secondIndicator.Opacity);
+                    foreach (var visual in new[] { firstVisual, secondVisual })
+                    {
+                        Verify.AreEqual(Vector3.Zero, visual.Offset);
+                        Verify.AreEqual(Vector3.One, visual.Scale);
+                    }
+                    Verify.AreEqual(0.0f, firstVisual.Opacity);
+                    Verify.AreEqual(1.0f, secondVisual.Opacity);
+                    navView.SelectedItem = null;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0.0f, secondVisual.Opacity);
+                    navView.SelectedItem = first;
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(first.IsSelected);
+                    Verify.IsFalse(second.IsSelected);
+                    Verify.AreEqual(1.0f, firstVisual.Opacity);
+                    Verify.AreEqual(0.0f, secondVisual.Opacity);
+                });
             }
         }
 
