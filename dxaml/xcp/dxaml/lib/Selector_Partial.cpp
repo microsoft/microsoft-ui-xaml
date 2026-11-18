@@ -4504,6 +4504,7 @@ _Check_return_
 
     // The data source is free to return a live collection that shrinks as ranges are deselected,
     // so copy the ranges before calling DeselectRange instead of indexing into that collection.
+    rangesToDeselect.reserve(selectedRangesCount);
     for (unsigned int i = 0; i < selectedRangesCount; ++i)
     {
         ctl::ComPtr<xaml_data::IItemIndexRange> spItemIndexRange;
