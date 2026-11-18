@@ -64,6 +64,111 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         Generic::FrameworkElementTests<xaml_controls::ScrollViewer>::CanEnterAndLeaveLiveTree();
     }
 
+    void ScrollViewerIntegrationTests::CanBeScrollAnchorDoesNotRetainRemovedElement()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (int scenario = 0; scenario < 4; ++scenario)
+        {
+            LOG_OUTPUT(L"Anchor candidate lifetime scenario %d: repeated true, toggle, unparented, or parented off-tree.", scenario);
+            xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+            xaml_controls::StackPanel^ panel = nullptr;
+            xaml_controls::Border^ candidateDuringDetach = nullptr;
+            WeakReference candidateWeakRef;
+
+            RunOnUIThread([&]()
+            {
+                scrollViewer = ref new xaml_controls::ScrollViewer();
+                scrollViewer->Width = 100;
+                scrollViewer->Height = 100;
+                scrollViewer->VerticalAnchorRatio = 0.5;
+                panel = ref new xaml_controls::StackPanel();
+                panel->Height = 600;
+                scrollViewer->Content = panel;
+
+                auto candidate = ref new xaml_controls::Border();
+                candidate->Height = 20;
+                candidateWeakRef = WeakReference(candidate);
+
+                if (scenario == 2)
+                {
+                    candidate->CanBeScrollAnchor = true;
+                    candidate->CanBeScrollAnchor = true;
+                }
+
+                panel->Children->Append(candidate);
+
+                TestServices::WindowHelper->WindowContent = scrollViewer;
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+
+            if (scenario == 3)
+            {
+                RunOnUIThread([&]()
+                {
+                    xaml::DependencyObject^ ancestor = panel->Children->GetAt(0);
+                    while (ancestor != nullptr && ancestor != scrollViewer)
+                    {
+                        ancestor = VisualTreeHelper::GetParent(ancestor);
+                    }
+                    VERIFY_IS_TRUE(ancestor == scrollViewer);
+                    candidateDuringDetach = candidateWeakRef.Resolve<xaml_controls::Border>();
+                    VERIFY_IS_NOT_NULL(candidateDuringDetach);
+                    TestServices::WindowHelper->WindowContent = nullptr;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    auto candidate = candidateDuringDetach;
+                    VERIFY_IS_NOT_NULL(candidate);
+                    VERIFY_IS_TRUE(candidateWeakRef.Resolve<xaml_controls::Border>() == candidate);
+                    VERIFY_IS_TRUE(scrollViewer->Content == panel);
+                    VERIFY_ARE_EQUAL(1U, panel->Children->Size);
+                    VERIFY_IS_TRUE(panel->Children->GetAt(0) == candidate);
+                    VERIFY_IS_FALSE(scrollViewer->IsLoaded);
+                    VERIFY_IS_FALSE(candidate->IsLoaded);
+
+                    candidate->CanBeScrollAnchor = true;
+                    candidate->CanBeScrollAnchor = true;
+                    TestServices::WindowHelper->WindowContent = scrollViewer;
+                    candidateDuringDetach = nullptr;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+
+            RunOnUIThread([&]()
+            {
+                auto candidate = panel->Children->GetAt(0);
+                if (scenario < 2)
+                {
+                    candidate->CanBeScrollAnchor = true;
+                    if (scenario == 1)
+                    {
+                        candidate->CanBeScrollAnchor = false;
+                    }
+                    candidate->CanBeScrollAnchor = true;
+                }
+
+                panel->Children->RemoveAt(0);
+            });
+
+            TestServices::WindowHelper->WaitForIdle();
+            // The WPF host can retain managed references until collection.
+            TestServices::WindowHelper->GCCollect();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_NOT_NULL(scrollViewer->Content);
+                VERIFY_IS_NULL(candidateWeakRef.Resolve<Object>());
+                TestServices::WindowHelper->WindowContent = nullptr;
+                panel = nullptr;
+                scrollViewer = nullptr;
+            });
+        }
+    }
+
     void ScrollViewerIntegrationTests::HandledReleasePreservesAnotherPointerPress()
     {
         xaml_controls::ScrollViewer^ scrollViewer = nullptr;

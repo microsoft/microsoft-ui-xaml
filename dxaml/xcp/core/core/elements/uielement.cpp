@@ -810,6 +810,12 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
 
         DirectUI::Visibility oldVisibility = GetVisibility();
 
+        CValue oldCanBeScrollAnchorValue;
+        if (args.m_pDP->GetIndex() == KnownPropertyIndex::UIElement_CanBeScrollAnchor)
+        {
+            IFC_RETURN(GetValueByIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, &oldCanBeScrollAnchorValue));
+        }
+
         // The call to SetValue should come after the following switch. Reorder after SL3!
         hr = CDependencyObject::SetValue(args);
 
@@ -903,14 +909,14 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
             }
         case KnownPropertyIndex::UIElement_CanBeScrollAnchor:
             {
-                bool isAnchorCandidate = args.m_value.AsBool();
-                if (isAnchorCandidate)
+                if (SUCCEEDED(hr) && IsActive())
                 {
-                    IFC(UpdateAnchorCandidateOnParentScrollProvider(true /* add */));
-                }
-                else
-                {
-                    IFC(UpdateAnchorCandidateOnParentScrollProvider(false /* add */));
+                    CValue newCanBeScrollAnchorValue;
+                    IFC_RETURN(GetValueByIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, &newCanBeScrollAnchorValue));
+                    if (oldCanBeScrollAnchorValue.AsBool() != newCanBeScrollAnchorValue.AsBool())
+                    {
+                        IFC_RETURN(UpdateAnchorCandidateOnParentScrollProvider(newCanBeScrollAnchorValue.AsBool()));
+                    }
                 }
 
                 break;
