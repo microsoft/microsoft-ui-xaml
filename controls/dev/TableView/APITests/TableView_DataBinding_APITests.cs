@@ -1590,7 +1590,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsFalse(GetGroupInfo(tableView, 0).IsExpanded, "Precondition: Studio is collapsed.");
 
-                // Only the view is referenced: it must keep its CollectionViewSource, which shapes it, alive.
+                // Only the view is referenced: it owns its shaping, so it regroups even once its CollectionViewSource is collected.
                 GC.Collect();
                 items.Add(new ShapedPerson("Zoe", "Designer", "Studio"));
             });

@@ -142,10 +142,10 @@ TableViewTip::MetricsInputs TableView::TipMetricsInputs() noexcept
     try
     {
         metrics.rightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
-        if (auto const projection = m_rowProjection)
+        if (auto const flattener = m_rowFlattener)
         {
-            metrics.sourceRows = projection->SourceRowCount();
-            metrics.dataRows = projection->DataRowCount();
+            metrics.sourceRows = flattener->SourceRowCount();
+            metrics.dataRows = flattener->DataRowCount();
         }
     }
     catch (...)
@@ -172,7 +172,7 @@ void TableView::CompleteTipInitializationIfEmpty() noexcept
     if (!m_tip.initializationPending) { return; }
     try
     {
-        auto const view = m_rowProjection ? m_rowProjection->ItemsSourceView() : nullptr;
+        auto const view = m_rowFlattener ? m_rowFlattener->ItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { TableViewTip::CompleteInitialization(m_tip); }
     }
     catch (...)
@@ -183,7 +183,7 @@ void TableView::CompleteTipInitializationIfEmpty() noexcept
 
 void TableView::NoteTipInitializationSource() noexcept
 {
-    if (m_templateApplied && m_rowProjection) { StartTipInitialization(); }
+    if (m_templateApplied && m_rowFlattener) { StartTipInitialization(); }
     CompleteTipInitializationIfEmpty();
 }
 
@@ -241,7 +241,7 @@ void TableView::IgnoreTipInitializationUnloadedBeforeRender() noexcept
     if (!m_tip.initializationPending) { return; }
     try
     {
-        auto const view = m_rowProjection ? m_rowProjection->ItemsSourceView() : nullptr;
+        auto const view = m_rowFlattener ? m_rowFlattener->ItemsSourceView() : nullptr;
         if (!view || view.Count() == 0) { return; }
         if (HasRowsViewport()) { TableViewTip::IgnoreInitialization(m_tip, TableViewTip::IgnoreReason::UnloadedBeforeRender); }
     }

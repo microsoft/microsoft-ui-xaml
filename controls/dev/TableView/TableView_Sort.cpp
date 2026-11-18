@@ -130,7 +130,7 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
 bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
 {
     // On a view, only a sort this table wrote is re-applied; the app's sort stays the app's.
-    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_rowProjection && !m_collectionViewSortByTable))
+    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_rowFlattener && !m_collectionViewSortByTable))
     {
         return false;
     }
@@ -171,7 +171,7 @@ bool TableView::SortByColumnInternal(
 
     // A view that cannot take the sort through ICollectionViewShaping owns its order: the Sorting handler
     // is where the app sorts it.
-    if (m_rowProjection && !CanSortThroughCollectionView(column, direction))
+    if (m_rowFlattener && !CanSortThroughCollectionView(column, direction))
     {
         return false;
     }
@@ -235,7 +235,7 @@ bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
         return false;
     }
 
-    if (m_rowProjection && !CanSortThroughCollectionView(column, next))
+    if (m_rowFlattener && !CanSortThroughCollectionView(column, next))
     {
         return false;
     }
