@@ -154,6 +154,8 @@
     <ClInclude Include="input\DManip\Redirection.h" />
     <ClInclude Include="input\DManip\RichEditBox.h" />
     <ClInclude Include="input\DManip\ScrollContentPresenter.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterHeaderFocusTests.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterPublicApiTests.h" />
     <ClInclude Include="input\DManip\ScrollViewerHeaders.h" />
     <ClInclude Include="input\DManip\SetContact.h" />
     <ClInclude Include="input\DManip\StickyHeaders.h" />
@@ -294,6 +296,8 @@
     <ClCompile Include="input\DManip\AutoScrollBehaviorTests.cpp" />
     <ClCompile Include="input\DManip\BasicScrollViewerManipulationTests.cpp" />
     <ClCompile Include="input\DManip\ScrollContentPresenter.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterHeaderFocusTests.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterPublicApiTests.cpp" />
     <ClCompile Include="input\DManip\ScrollViewerHeaders.cpp" />
     <ClCompile Include="input\DManip\Redirection.cpp" />
     <ClCompile Include="input\DManip\StickyHeaders.cpp" />
