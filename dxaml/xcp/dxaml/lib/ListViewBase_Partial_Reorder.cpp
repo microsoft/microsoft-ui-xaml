@@ -1431,7 +1431,7 @@ static _Check_return_ HRESULT FindItemIndex(
 // Optionally, pTrackedIndex can be specified. It should hold the index of an item you're
 // interested in tracking. When the function returns successfully, pTrackedIndex will be updated
 // with the new index location of the item originally at *pTrackedIndex, or -1 if that item was
-// removed while the moved items were being re-selected.
+// removed, or ItemsSource was replaced, while the moved items were being re-selected.
 _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
     _In_ std::vector<UINT>* pReorderItemIndexes,
     _In_ INT insertIndex,
@@ -1589,13 +1589,22 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 hasTrackedItem2 = true;
             }
 
-            // Re-select in the items' original order. Each selection raises SelectionChanged, so the selection mode
-            // and each item's index are read again right before it is selected.
+            // Re-select in the items' original order. Each selection raises SelectionChanged, so the items source,
+            // the selection mode and each item's index are read again right before it is selected.
             for (auto movedSelectedItem = movedSelectedItems.rbegin(); movedSelectedItem != movedSelectedItems.rend(); ++movedSelectedItem)
             {
+                ctl::ComPtr<wfc::IIterable<IInspectable*>> spCurrentItemsSource;
                 xaml_controls::ListViewSelectionMode selectionMode = xaml_controls::ListViewSelectionMode_None;
                 BOOLEAN canSelectMultiple = FALSE;
                 INT currentIndex = -1;
+
+                // A SelectionChanged handler may replace ItemsSource. The remembered items and indexes then belong
+                // to the old collection, so they must not be applied to the new one.
+                IFC(get_ItemsSource(&spCurrentItemsSource));
+                if (!ctl::are_equal(spCurrentItemsSource.Get(), spItemsSource.Get()))
+                {
+                    break;
+                }
 
                 IFC(get_SelectionMode(&selectionMode));
                 IFC(get_CanSelectMultiple(&canSelectMultiple));
@@ -1619,13 +1628,32 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 ++reselectedCount;
             }
 
+            // The tracked items can't be resolved in a replaced ItemsSource either.
+            ctl::ComPtr<wfc::IIterable<IInspectable*>> spFinalItemsSource;
+            IFC(get_ItemsSource(&spFinalItemsSource));
+            const bool isItemsSourceUnchanged = ctl::are_equal(spFinalItemsSource.Get(), spItemsSource.Get());
+
             if (hasTrackedItem1)
             {
-                IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem1.Get(), *pTrackedIndex1, pTrackedIndex1));
+                if (isItemsSourceUnchanged)
+                {
+                    IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem1.Get(), *pTrackedIndex1, pTrackedIndex1));
+                }
+                else
+                {
+                    *pTrackedIndex1 = -1;
+                }
             }
             if (hasTrackedItem2)
             {
-                IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem2.Get(), *pTrackedIndex2, pTrackedIndex2));
+                if (isItemsSourceUnchanged)
+                {
+                    IFC(FindItemIndex(spItemSourceVector.Get(), spTrackedItem2.Get(), *pTrackedIndex2, pTrackedIndex2));
+                }
+                else
+                {
+                    *pTrackedIndex2 = -1;
+                }
             }
         }
     }

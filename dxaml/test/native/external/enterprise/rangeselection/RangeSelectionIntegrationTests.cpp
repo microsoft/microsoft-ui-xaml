@@ -324,6 +324,53 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
+    void RangeSelectionIntegrationTests::ValidateReorderReselectionAfterItemsSourceChangeInSelectionChanged()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::ListView^ listView = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ items = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ newItems = ref new Platform::Collections::Vector<Platform::Object^>();
+
+        for (int i = 0; i < 10; ++i)
+        {
+            newItems->Append(ref new Platform::String((L"New " + std::to_wstring(i)).c_str()));
+        }
+
+        ReorderSelectedItemsWithKeyboard(
+            [newItems](xaml_controls::ListView^ listView, Platform::Collections::Vector<Platform::Object^>^)
+            {
+                LOG_OUTPUT(L"SelectionChanged handler: replacing ItemsSource.");
+                listView->ItemsSource = newItems;
+            },
+            listView,
+            items);
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(listView->ItemsSource->Equals(newItems));
+
+            // The new source is left as it is: nothing from the old source is moved or selected in it.
+            for (int i = 0; i < 10; ++i)
+            {
+                VERIFY_ARE_EQUAL(i, IndexOfItem(newItems, ref new Platform::String((L"New " + std::to_wstring(i)).c_str())));
+
+                auto container = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(i));
+                VERIFY_IS_NOT_NULL(container);
+                VERIFY_IS_FALSE(container->IsSelected);
+            }
+            VERIFY_ARE_EQUAL(0u, listView->SelectedItems->Size);
+            VERIFY_ARE_EQUAL(-1, listView->SelectedIndex);
+        });
+
+        // this applies only to Desktop runs
+        if (TestServices::Utilities->IsDesktop)
+        {
+            // Workaround for a known issue
+            TestServices::WindowHelper->RestoreForegroundWindow();
+        }
+    }
+
     void RangeSelectionIntegrationTests::ValidateSelectAll()
     {
         TestCleanupWrapper cleanup;

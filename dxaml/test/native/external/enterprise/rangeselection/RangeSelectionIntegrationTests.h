@@ -47,6 +47,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateReorderReselectionAfterItemsSourceChangeInSelectionChanged)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a reorder stops re-selecting the moved items when a SelectionChanged handler replaces ItemsSource while they are re-selected")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateSelectAll)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that SelectAll functions properly")
         END_TEST_METHOD()
