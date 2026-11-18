@@ -89,7 +89,7 @@ window.Activate();
 | `tool-window-beside-main` | App-managed | Not tested |
 | `terminal-cell-sizing` | App-managed | Not tested |
 | `fit-offscreen-bounds` | Supported | `WindowPlacementFitOffscreenBounds` |
-| `fixed-size-window` | Supported | `WindowPlacementRespectsFixedSizing`, HL 10 |
+| `fixed-size-window` | Supported | `WindowPlacementRespectsFixedSizing` |
 | `display-changes` | Supported | `WindowPlacementPreferSameNameDisplay`, `WindowPlacementAdaptToReplacementDisplay`, `WindowPlacementPreserveLogicalSize`, `WindowPlacementMigratesChangedWorkArea` |
 | `launch-on-display-hint` | Open | Not tested |
 | `fallback-to-primary-display` | Open | Display-selection helpers are in the prototype. Sample app only, on one display with a faked `DeviceName`. No integration test. |
@@ -290,7 +290,7 @@ Scenario `fullscreen-not-restored`
 
 1. Open window, move and resize it
 2. Switch to the FullScreen presenter, then close the window
-3. Re-open window, in either mode and with any `PlacementRestorationBehavior`
+3. Re-open window, in any mode and with any `PlacementRestorationBehavior`
 4. Assert: Window uses the Overlapped presenter and is normal, with the bounds from (1)
 
 Scenario `maximized-then-fullscreen`
@@ -619,14 +619,13 @@ Scenario `fixed-size-window`
 2. Open a resizable window with the id
 3. Assert: Window fits inside the work area
 4. Open a window with `IsResizable` = false and the same id
-5. Assert: Window doesn't shrink to fit. Windows either keeps the size the window had before
-   `Activate`, or applies the saved size. The test accepts either, but not the width from one and
-   the height from the other.
+5. Assert: Window fits inside the work area. Windows either keeps the size the window had before
+   `Activate`, or applies the shrunk saved size. The test accepts either.
 6. Assert: The title bar is inside the work area, so the user can move the window
 
-> The window's current `IsResizable` decides shrink vs move, not the value saved in the record.
-> In the prototype, `SetCurrentPlacement` reads it from the live window.
-> The app must set `IsResizable` before the first `Activate`.
+> WinUI's saved record doesn't store resizability. WinUI sets `Resizable` on every placement it
+> loads, so AppWindow may shrink a fixed-size window to fit. Fixed-size windows rarely save
+> placement, so this is accepted.
 
 Scenario `display-changes`
 

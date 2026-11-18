@@ -265,7 +265,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(WindowPlacementRespectsFixedSizing)
-            TEST_METHOD_PROPERTY(L"Description", L"Checks native sizing policy for oversized resizable and fixed-size windows without changing IsResizable.")
+            TEST_METHOD_PROPERTY(L"Description", L"Checks that oversized saved bounds fit the work area for resizable and fixed-size windows, without changing IsResizable.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 

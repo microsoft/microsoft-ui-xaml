@@ -205,9 +205,10 @@ namespace WindowPlacementApp
             PlacementMode = WindowPlacementMode.SaveOnClose;
             Log.Write($"{Title}: Example 4. PlacementMode = SaveOnClose (Setup {m_options.Setup} is ignored on this path).");
 
-            // Not in spec example 4 yet. The default behavior (A7) doesn't include
-            // AllowShowFullScreen, and SetCurrentPlacement honors it (A4). Without this line,
-            // SetCurrentPlacement drops PlacementInfo.FullScreen and the window opens normal.
+            // The default behavior (A7) doesn't include AllowShowFullScreen, and SetCurrentPlacement
+            // honors it (A4). Without this line, SetCurrentPlacement drops PlacementInfo.FullScreen
+            // and the window opens normal. The spec example adds it only when the window was full
+            // screen; adding it every time has the same effect.
             AppWindow.PlacementRestorationBehavior |= PlacementRestorationBehavior.AllowShowFullScreen;
             Log.Write($"{Title}: PlacementRestorationBehavior |= AllowShowFullScreen -> {AppWindow.PlacementRestorationBehavior}");
 
@@ -425,7 +426,7 @@ namespace WindowPlacementApp
             "6. Full screen, then Copy to new window. The copy uses GetCurrentPlacement (keeps FullScreen) and behavior All. " +
             "The log shows it stayed hidden and inactive during SetCurrentPlacement. It opens full screen. Try it from maximized too.\n" +
             "7. Setup SaveOnCloseCentered / SaveOnCloseFixedRect: Open window. Centered saved size / (200,200) 800x600. WinUI still saves on close.\n" +
-            "8. Not resizable: Oversize, Save, then Open window with Not resizable. Kept size, moved on screen. Without Not resizable: shrunk to fit.\n" +
+            "8. Not resizable: Oversize, Save, then Open window with Not resizable. Fits the screen: WinUI lets AppWindow shrink it, or Windows keeps its pre-Activate size. Without Not resizable: shrunk to fit.\n" +
             "9. Open process min with Setup SaveOnClose: main window honors STARTUPINFO (minimized). With RestoreAndSave: not minimized.\n" +
             "9b. Setup Manual: Open window, move it, Close, Open window again. Old rect (no save on close). Save button saves.\n" +
             "10. Setup None: no PlacementId, nothing saved or restored.\n" +

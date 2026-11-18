@@ -2219,8 +2219,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"Fit oversized placement: %s", resizable ? L"resizable" : L"fixed-size");
             PlacementData data;
             WindowAutoCloser window;
-            RECT workArea{}, oversized{}, initial{};
-            SIZE maxTrack{};
+            RECT workArea{}, oversized{};
             RunOnUIThread([&]()
             {
                 SavePlacementFromNewWindow(data);
@@ -2235,11 +2234,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 record->fields.normalRect = oversized;
                 data.WriteRecord(record);
                 window.Attach(ref new xaml::Window());
-                initial = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
                 safe_cast<::Microsoft::UI::Windowing::OverlappedPresenter^>(
                     window->AppWindow->Presenter)->IsResizable = resizable;
-                const UINT dpi = GetDpiForWindow(GetHwnd(window.get()));
-                maxTrack = { GetSystemMetricsForDpi(SM_CXMAXTRACK, dpi), GetSystemMetricsForDpi(SM_CYMAXTRACK, dpi) };
                 window->PlacementId = data.id;
                 window->Activate();
             });
@@ -2253,26 +2250,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 const LONG height = actual.bottom - actual.top;
                 VERIFY_ARE_EQUAL(resizable, safe_cast<::Microsoft::UI::Windowing::OverlappedPresenter^>(
                     window->AppWindow->Presenter)->IsResizable);
-                if (resizable)
-                {
-                    VERIFY_IS_TRUE(width <= workArea.right - workArea.left);
-                    VERIFY_IS_TRUE(height <= workArea.bottom - workArea.top);
-                }
-                else
-                {
-                    // Windows can keep the fixed size or apply the saved size.
-                    // Require one complete outcome, not a mix of their dimensions.
-                    VERIFY_IS_TRUE(maxTrack.cx > 0);
-                    VERIFY_IS_TRUE(maxTrack.cy > 0);
-                    const LONG savedWidth = oversized.right - oversized.left;
-                    const LONG savedHeight = oversized.bottom - oversized.top;
-                    const bool preservedSize = width == initial.right - initial.left &&
-                        height == initial.bottom - initial.top;
-                    const bool restoredSavedSize = width == (savedWidth < maxTrack.cx ? savedWidth : maxTrack.cx) &&
-                        height == (savedHeight < maxTrack.cy ? savedHeight : maxTrack.cy);
-                    VERIFY_IS_TRUE(preservedSize || restoredSavedSize);
-                }
-                // Fixed-size windows may extend past the edges, but their title bar stays reachable.
+                // WinUI lets AppWindow shrink the saved rect even for a fixed-size window
+                // (Windows can also keep the smaller pre-Activate size). Either way it fits.
+                VERIFY_IS_TRUE(width <= workArea.right - workArea.left);
+                VERIFY_IS_TRUE(height <= workArea.bottom - workArea.top);
+                // The title bar stays reachable.
                 VERIFY_IS_TRUE(actual.left >= workArea.left);
                 VERIFY_IS_TRUE(actual.top >= workArea.top);
                 VERIFY_IS_TRUE(actual.top < workArea.bottom);
@@ -2596,6 +2578,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 VERIFY_ARE_EQUAL(static_cast<int>(SW_SHOWNORMAL), static_cast<int>(details->ShowCmd));
                 VERIFY_IS_FALSE(HasPlacementFlag(details, PlacementInfo::RestoreToMaximized));
                 VERIFY_IS_FALSE(HasPlacementFlag(details, PlacementInfo::FullScreen));
+
+                // The device name matches the record, without the record buffer's padding nulls.
+                const auto record = data.ReadRecord();
+                const auto deviceName = details->DeviceName;
+                VERIFY_IS_TRUE(record->fields.deviceName[0] != L'\0');
+                VERIFY_ARE_EQUAL(wcslen(record->fields.deviceName), static_cast<size_t>(deviceName->Length()));
+                VERIFY_ARE_EQUAL(0, wcscmp(record->fields.deviceName, deviceName->Data()));
 
                 // Calling it again after activation returns the same record.
                 window->Activate();

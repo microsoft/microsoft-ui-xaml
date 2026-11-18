@@ -59,8 +59,8 @@ namespace WindowPlacementApp
         // minimized. Only for this process. It isn't passed on to later relaunches.
         public bool Restart { get; set; }
 
-        // OverlappedPresenter.IsResizable = false before the first Activate. SetCurrentPlacement
-        // uses the live window's resizability, so a saved rect that doesn't fit is moved, not shrunk.
+        // OverlappedPresenter.IsResizable = false before the first Activate. WinUI still lets
+        // AppWindow shrink a saved rect that doesn't fit the screen.
         public bool FixedSize { get; set; }
 
         // Spec example 4. Uses SaveOnClose, whatever Setup says. Saves whether the window was full

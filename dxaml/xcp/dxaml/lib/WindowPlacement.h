@@ -28,7 +28,7 @@ namespace DirectUI
 
         // Reads the saved placement for the current id. Returns null when there is no id, no package
         // identity, or no saved placement. The FullScreen flag is removed (WinUI never restores full
-        // screen). Otherwise the details are returned as saved.
+        // screen), and AllowSizing is set so AppWindow can shrink a rect that doesn't fit the screen.
         _Check_return_ HRESULT TryLoad(
             _Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** details,
             _Out_ PlacementResult* result);

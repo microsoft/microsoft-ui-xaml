@@ -197,6 +197,10 @@ namespace
             }
         }
 
+        // Use the string length, not the buffer size, so the HSTRING has no padding nulls.
+        const size_t deviceNameLength = wcsnlen(placement.deviceName, ARRAYSIZE(placement.deviceName));
+        IFCEXPECTRC_RETURN(deviceNameLength < ARRAYSIZE(placement.deviceName), E_INVALIDARG);
+
         IFC_RETURN(statics->Create(
             ToRectInt32(placement.normalRect),
             ToRectInt32(placement.workArea),
@@ -204,7 +208,7 @@ namespace
             static_cast<INT32>(placement.showCmd),
             ToRectInt32(placement.arrangeRect),
             static_cast<windowing::PlacementInfo>(info),
-            wrl_wrappers::HStringReference(placement.deviceName).Get(),
+            wrl_wrappers::HStringReference(placement.deviceName, static_cast<unsigned int>(deviceNameLength)).Get(),
             details));
 
         return S_OK;
@@ -435,6 +439,10 @@ HRESULT WindowPlacement::TryLoad(_Outptr_result_maybenull_ PlacementDetails** de
     // WinUI never restores full screen, in either mode. Strip the flag so AppWindow doesn't switch
     // presenters. The app can enter full screen itself.
     placement.flags &= ~PlacementFlags::FullScreen;
+
+    // The record doesn't store resizability. Always allow AppWindow to shrink the window to fit
+    // a smaller screen, even if the app made the window fixed size.
+    placement.flags |= PlacementFlags::AllowSizing;
     IFC_RETURN(FromPlacementEx(placement, details));
 
     *result |= PlacementResult::Found;
