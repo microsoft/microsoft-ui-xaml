@@ -553,11 +553,13 @@ void InkCanvas::AttachToSystemCompositor()
     {
         // The bind finishes asynchronously (OnXamlDeviceBindCompleted); the canvas visual can go in now.
         winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+        m_hasChildVisual = true;
         return;
     }
 
     AttachInkThroughSplice(compositor, mucRootVisual);
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+    m_hasChildVisual = true;
 }
 
 // Creates the ink visual on the shared device and splices it under mucRootVisual.
@@ -621,12 +623,19 @@ bool InkCanvas::StartAttachInkOnXamlDevice(winrt::Microsoft::UI::Composition::Co
     auto uiQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
     auto weakCanvas = winrt::make_weak(static_cast<winrt::InkCanvas>(*this));
     const uint32_t generation = m_attachGeneration;
+    auto canceled = std::make_shared<std::atomic<bool>>(false);
+    m_xamlBindCanceled = canceled;
     m_isDetached.store(false, std::memory_order_release);
 
     auto* presenterSelf = winrt::get_self<::InkPresenter>(m_inkPresenterProxy);
     presenterSelf->QueueInkPresenterWorkItem(
-        [uiQueue, weakCanvas, generation, inkVisual, xamlDevice, systemParent, compositor, mucRootVisual](inking::InkPresenter const& presenter)
+        [uiQueue, weakCanvas, generation, canceled, inkVisual, xamlDevice, systemParent, compositor, mucRootVisual](inking::InkPresenter const& presenter)
         {
+            // The canvas detached before this ran: don't bind the OS presenter to a visual that will never be shown.
+            if (canceled->load(std::memory_order_acquire))
+            {
+                return;
+            }
             HRESULT bindResult = S_OK;
             try
             {
@@ -759,6 +768,7 @@ void InkCanvas::AttachToLiftedCompositor()
 
     winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
+    m_hasChildVisual = true;
     PositionInkVisual();
 }
 
@@ -770,13 +780,19 @@ void InkCanvas::DetachFromVisualLink()
     m_isDetached.store(true, std::memory_order_release);
     // Any XAML-device bind still in flight belongs to this attach; its result is now ignored.
     ++m_attachGeneration;
+    if (m_xamlBindCanceled)
+    {
+        m_xamlBindCanceled->store(true, std::memory_order_release);
+        m_xamlBindCanceled = nullptr;
+    }
 
     // Only a canvas that attached has a child visual to clear. A canvas that was never loaded (e.g. on an unselected
     // tab) is destroyed during app shutdown, where SetElementChildVisual can throw.
-    if (m_systemDCompTarget || m_systemVisualLink || m_inkRootVisual)
+    if (m_hasChildVisual || m_systemDCompTarget || m_systemVisualLink || m_inkRootVisual)
     {
         winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
     }
+    m_hasChildVisual = false;
 
     m_systemDCompTarget = nullptr;
     m_systemVisualLink = nullptr;

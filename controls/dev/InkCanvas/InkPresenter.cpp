@@ -763,10 +763,10 @@ winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> InkSynch
         },
         /* pumpMessages */ false);
     m_dryState = began ? DryState::InDry : DryState::Idle;
+    m_strokesAwaitingDry = false;
 
-    // Ink on XAML's device: hook XAML's frame now, before the app can call EndDry. A handler added during a
-    // Rendering pass only runs from the next frame, so hooking here (not in EndDry) also covers an app that calls
-    // EndDry from its own Rendering handler.
+    // Ink on XAML's device: make sure XAML's frame is hooked before the app can call EndDry. Usually the hooks are
+    // already in place from OnStrokesCollected; this covers an app that dries strokes it held from earlier.
     if (began && IsXamlFrameHandoffOnThisThread())
     {
         EnsureFrameHooks();
@@ -805,6 +805,17 @@ bool InkSynchronizer::IsXamlFrameHandoffOnThisThread()
     auto owner = m_owner.get();
     auto ownerImpl = owner ? winrt::get_self<::InkPresenter>(owner) : nullptr;
     return ownerImpl && ownerImpl->IsDryHandoffInXamlFrame() && ownerImpl->IsOnUIThread();
+}
+
+void InkSynchronizer::OnStrokesCollected()
+{
+    if (!IsXamlFrameHandoffOnThisThread())
+    {
+        return;
+    }
+    m_strokesAwaitingDry = true;
+    m_framesAwaitingDry = 0;
+    EnsureFrameHooks();
 }
 
 // Hooks CompositionTarget.Rendering and Rendered for the length of one dry handoff. UI thread only. Rendering forwards a
@@ -854,7 +865,12 @@ void InkSynchronizer::EnsureFrameHooks()
                 return;
             }
             self->m_inRenderingPass = false;
-            if (self->m_dryState == DryState::Idle)
+            if (self->m_strokesAwaitingDry && self->m_dryState == DryState::Idle && ++self->m_framesAwaitingDry > kMaxFramesAwaitingDry)
+            {
+                // The app has not dried these strokes; stop forcing frames.
+                self->m_strokesAwaitingDry = false;
+            }
+            if (self->m_dryState == DryState::Idle && !self->m_strokesAwaitingDry)
             {
                 unhook(hooks);
                 self->m_frameHooks = nullptr;
@@ -956,6 +972,11 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
 
             marshalToUi([snapshot = std::move(snapshot)](::InkPresenter* self) mutable
                 {
+                    // Hook XAML's frame before the app sees the strokes, so its BeginDry/EndDry land in a hooked frame.
+                    if (self->m_customDrySynchronizer)
+                    {
+                        winrt::get_self<::InkSynchronizer>(self->m_customDrySynchronizer)->OnStrokesCollected();
+                    }
                     self->RaiseStrokesCollected(
                         winrt::single_threaded_vector<inking::InkStroke>(std::move(snapshot)).GetView());
                 });

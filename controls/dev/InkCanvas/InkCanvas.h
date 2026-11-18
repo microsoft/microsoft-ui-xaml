@@ -116,6 +116,14 @@ private:
     // UI thread only. Bumped on every detach, so an asynchronous XAML-device bind result for an older attach is ignored.
     uint32_t m_attachGeneration{ 0 };
 
+    // Set by the current XAML-device attach and checked on the ink thread, so a bind still queued when the canvas
+    // detaches is skipped. Replaced on every attach.
+    std::shared_ptr<std::atomic<bool>> m_xamlBindCanceled;
+
+    // UI thread only. True once this canvas has set its child visual, so detach clears it even before the
+    // asynchronous XAML-device bind has produced m_inkRootVisual.
+    bool m_hasChildVisual{ false };
+
     InkTelemetry::CanvasState m_telemetryState;
 
     // Decided during the attach fork so the noexcept accessor never re-enters the compositor query.

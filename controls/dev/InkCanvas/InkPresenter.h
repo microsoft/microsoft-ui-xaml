@@ -300,6 +300,11 @@ public:
     // synchronizer is valid.
     void Initialize(inking::InkSynchronizer const& osSynchronizer) noexcept { m_osSynchronizer = osSynchronizer; }
 
+    // Internal. UI thread, called just before the app's StrokesCollected is raised. Hooks XAML's frame now, before the
+    // app can call BeginDry, so an app that calls BeginDry and EndDry from its own Rendering handler is covered: a
+    // handler added during a Rendering pass only runs from the next frame.
+    void OnStrokesCollected();
+
 private:
     // Custom-dry handoff state. BeginDry sets InDry; EndDry moves InDry to Idle (forwarded now) or to EndDryPending
     // (held for XAML's next frame, only when the ink is on XAML's device). Atomic because EndDry can be called from
@@ -323,6 +328,12 @@ private:
     };
     std::shared_ptr<FrameHooks> m_frameHooks;
     bool m_inRenderingPass{ false };
+
+    // UI thread only. Strokes were collected and the app has not called BeginDry yet, so the frame hooks stay in place.
+    // Cleared by BeginDry, or after kMaxFramesAwaitingDry frames if the app never dries them.
+    static constexpr int kMaxFramesAwaitingDry = 120;
+    bool m_strokesAwaitingDry{ false };
+    int m_framesAwaitingDry{ 0 };
 
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
 
