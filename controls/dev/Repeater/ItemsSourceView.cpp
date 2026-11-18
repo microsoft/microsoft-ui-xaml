@@ -62,6 +62,8 @@ void ItemsSourceView::CollectionChanged(winrt::event_token const& token)
 
 void ItemsSourceView::OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
 {
+    // A callback can release the last owner; keep tracker handles valid through event cleanup.
+    auto const strongThis = get_strong();
     m_cachedSize = GetSizeCore();
     m_collectionChangedEventSource(*this, args);
 }
