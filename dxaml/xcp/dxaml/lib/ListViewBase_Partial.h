@@ -128,6 +128,10 @@ namespace DirectUI
             // change handler.
             BOOLEAN m_isInItemReorderAfterDrop;
 
+            // Incremented on every change to the items. ReorderItemsTo uses it to detect changes made by
+            // SelectionChanged handlers while it re-selects the moved items.
+            UINT m_itemsChangedCount;
+
             // TRUE if there is a drag and drop started by this ListViewBase and
             // the user is dragging over this ListViewBase. NOT VALID outside of
             // a drag and drop (could be TRUE or FALSE).

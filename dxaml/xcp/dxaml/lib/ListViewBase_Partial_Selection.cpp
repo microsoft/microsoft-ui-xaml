@@ -183,6 +183,8 @@ _Check_return_ HRESULT ListViewBase::OnItemsChanged(
     BOOLEAN allowCancelDrag = !m_isInItemReorderAfterDrop;  // Default to always cancel drag, unless we're currently in the middle
                                                             // of reordering items after a drop.
 
+    ++m_itemsChangedCount;
+
     IFCPTR(pArgs);
     IFC(ListViewBaseGenerated::OnItemsChanged(pArgs));
 
