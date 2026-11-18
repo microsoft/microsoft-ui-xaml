@@ -973,11 +973,50 @@ void ViewModel::TrackItemUnselected(winrt::IInspectable item)
 
 winrt::TreeViewNode ViewModel::GetAssociatedNode(winrt::IInspectable item)
 {
+    // Look in the visible rows first. They are the tree's nodes in tree order without the collapsed parts, so an item
+    // on screen is found without walking the collapsed parts before it. An item that is not visible falls back to the
+    // search of the whole tree below.
+    if (auto node = GetVisibleNodeWithContent(item))
+    {
+        return node;
+    }
+
     if(auto treeView = m_TreeView.get())
     {
         if(auto treeViewImpl = winrt::get_self<TreeView>(treeView))
         {
             return treeViewImpl->GetAssociatedNode(item);
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::TreeViewNode ViewModel::GetVisibleNodeWithContent(winrt::IInspectable const& item)
+{
+    if (!item)
+    {
+        return nullptr;
+    }
+
+    const auto origin = m_originNode.safe_get();
+    const auto size = Size();
+    for (uint32_t i = 0; i < size; i++)
+    {
+        auto node = GetNodeAt(i);
+        if (node.Content() == item)
+        {
+            // A row can briefly outlive its node's removal while app code runs from a change notification. Like the
+            // tree search, count only a node that is still in this tree.
+            auto ancestor = node.Parent();
+            while (ancestor && ancestor != origin)
+            {
+                ancestor = ancestor.Parent();
+            }
+            if (ancestor)
+            {
+                return node;
+            }
         }
     }
 
