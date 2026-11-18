@@ -65,7 +65,8 @@
                         <NumberBox x:Name="Endpoint" x:Uid="Endpoint" Grid.Column="2" Value="1"
                                    Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
                     </Grid>
-                    <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="2" Grid.ColumnSpan="3" />
+                    <TextBlock x:Name="TrustNotice" x:Uid="TrustNotice" Grid.Row="2" Grid.ColumnSpan="3"
+                               TextWrapping="Wrap" />
                     <StackPanel x:Name="TraceOptions" Grid.Row="1" Grid.ColumnSpan="3" Spacing="4" Visibility="Collapsed">
                         <ComboBox x:Name="TraceProcessList" x:Uid="TraceProcess" HorizontalAlignment="Stretch"
                                   SelectionChanged="TraceProcess_SelectionChanged" />

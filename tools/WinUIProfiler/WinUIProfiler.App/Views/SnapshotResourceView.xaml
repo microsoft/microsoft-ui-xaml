@@ -76,6 +76,10 @@
                                           HorizontalContentAlignment="Stretch" />
                         <ItemsControl x:Name="UnknownValues" ItemTemplate="{StaticResource ResourceRowTemplate}" />
                     </StackPanel>
+                    <Expander x:Uid="SnapshotTextureHeading" HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch" AutomationProperties.AutomationId="TexturesGroup">
+                        <views:SnapshotTextureView x:Name="TextureSnapshot" MaxHeight="480" />
+                    </Expander>
                 </StackPanel>
             </ScrollViewer>
         </StackPanel>

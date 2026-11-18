@@ -69,7 +69,7 @@ public sealed record DrawnFrame(long TickId, int ThreadId, double EndMillisecond
 
 // Reads a session file written by SessionWriter, also while it is still being written. Each statement a read runs is
 // reported to SessionQueries once its rows are read.
-public static class SessionFile
+public static partial class SessionFile
 {
     public static SessionFileInfo ReadInfo(string path)
     {

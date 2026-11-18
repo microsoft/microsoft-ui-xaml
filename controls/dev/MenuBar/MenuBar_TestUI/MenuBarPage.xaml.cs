@@ -68,6 +68,12 @@ namespace MUXControlsTestApp
             FileItem.Items.RemoveAt(size - 1);
         }
 
+        private void ResetFlyoutItems_Click(object sender, RoutedEventArgs e)
+        {
+            FileItem.Items.Clear();
+            FileItem.Items.Add(new MenuFlyoutItem { Text = "Replacement Flyout Item" });
+        }
+
         private void NewItem_Click(object sender, RoutedEventArgs e)
         {
             TextOutput.Text = "New Clicked";

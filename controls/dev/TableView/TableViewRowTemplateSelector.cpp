@@ -86,7 +86,16 @@ winrt::DataTemplate TableViewRowTemplateSelector::SelectTemplateCore(winrt::IIns
     auto kind = TableViewRowKind::Data;
     if (auto const owner = m_owningTableView.get())
     {
-        kind = winrt::get_self<TableView>(owner)->GetRowKindForItem(item);
+        auto* const ownerImpl = winrt::get_self<TableView>(owner);
+        kind = ownerImpl->GetRowKindForItem(item);
+        if (kind == TableViewRowKind::GroupHeader)
+        {
+            // Read app setters before LoadContent applies and seals an unaccessed BasedOn Style.
+            auto const style = ownerImpl->GetGroupHeaderStyle(nullptr);
+            TableView::StyleSetsProperty(style, winrt::FrameworkElement::MinHeightProperty());
+            TableView::StyleSetsProperty(style, winrt::Control::PaddingProperty());
+            TableView::StyleSetsProperty(style, winrt::Control::FontSizeProperty());
+        }
     }
 
     return kind == TableViewRowKind::GroupHeader ? m_groupHeaderTemplate : m_rowTemplate;

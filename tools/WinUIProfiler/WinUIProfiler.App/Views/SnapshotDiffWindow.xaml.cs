@@ -78,14 +78,21 @@ public sealed partial class SnapshotDiffWindow : Window
             XamlNoAddedRemoved.Visibility = data.Xaml.AddedOrRemovedNodes.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             CompositionNoAddedRemoved.Visibility = data.Composition.AddedOrRemovedNodes.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             ResourceSnapshot.Show(data.Before.Document.ResourceSnapshot, data.After.Document.ResourceSnapshot, true);
-            NoDifferences.Visibility = data.Resources.HasChanges || data.Xaml.Nodes.Concat(data.Composition.Nodes)
-                .Any(node => node.Change != SnapshotChange.None) ? Visibility.Collapsed : Visibility.Visible;
+            ResourceSnapshot.Visibility = Visibility.Visible;
+            ResourceSnapshot.Textures.Changed += (_, _) => UpdateNoDifferences();
+            UpdateNoDifferences();
             Viewer.Visibility = Visibility.Visible;
+            await ResourceSnapshot.Textures.ShowAsync(before, data.Before, after, data.After, token);
         }
         catch (OperationCanceledException) when (closed) { }
         catch (Exception error) { ReportError(error); }
         finally { if (!closed) Loading.IsActive = false; }
     }
+
+    private void UpdateNoDifferences() =>
+        NoDifferences.Visibility = data!.Resources.HasChanges || ResourceSnapshot.Textures.Data?.HasChanges == true ||
+            data.Xaml.Nodes.Concat(data.Composition.Nodes).Any(node => node.Change != SnapshotChange.None)
+                ? Visibility.Collapsed : Visibility.Visible;
 
     private string Summary(SnapshotTreeDiff tree) => Format("SnapshotDiffSummaryFormat",
         tree.Count(SnapshotChange.Added), tree.Count(SnapshotChange.Removed), tree.Count(SnapshotChange.Properties),
