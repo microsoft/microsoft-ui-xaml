@@ -10,7 +10,7 @@ layout after each insertion. A protected caller performs one final layout and
 verifies every button's count, order, and content. ETW markers bound only that
 scenario, not app launch.
 
-`capture.ps1` builds the sample once per measurement and launches ten independent
+The shared `..\helpers\capture.ps1` builds the sample once per measurement and launches ten independent
 app processes. It owns a unique logman session and output directory for each
 iteration, stops its session, and calls the real WinUIProfiler CLI:
 
@@ -18,12 +18,12 @@ iteration, stops its session, and calls the real WinUIProfiler CLI:
 WinUIProfiler.Cli.exe record <trace.etl> --pid <owned-pid> --out <session.sqlite> --markers <markers.json>
 ```
 
-`metrics.py` opens each SQLite session read-only. It requires the expected process,
+The shared `..\helpers\metrics.py` opens each SQLite session read-only. It requires the expected process,
 both UI-thread markers, a complete untrimmed import, zero reported event loss,
 and balanced XAML Layout/Start (41) / Layout/Stop (42) pairs from the XAML provider
 inside those markers. Missing events are invalid data, never a measured zero.
 
-`verify.py` returns 0 only when all ten valid iterations have at most four layout
+The shared `..\helpers\verify.py` returns 0 only when all ten valid iterations have at most four layout
 passes and the app's correctness assertions pass. Exit 1 means measured work
 exceeds the budget; exit 2 means capture/import/environment failure. Per-run and
 mean values, ETLs, databases, source hashes, and runtime identity are retained.
@@ -32,6 +32,12 @@ Builds use unique folders under `%LOCALAPPDATA%\WinUIProfilerHarness\Builds`.
 Their executable paths are recorded in the capture manifest. Keeping this path
 short avoids the XAML compiler metadata loader's legacy MAX_PATH limit.
 New captures retain the build log and both executable and managed DLL hashes.
+
+Only app-specific inputs live here: the app/project, `build.ps1`, provider/marker
+files, and `scenario.json`. The scenario contract owns the 40-button expectation,
+marker payloads, layout budget, source snapshots, and allowed edit paths. Capture,
+SQLite extraction, profiler queries, and verification live in the parent
+`helpers` directory; their tests live in the parent `tests` directory.
 
 ## Running it through ADE
 
@@ -78,7 +84,8 @@ summary of the counts.
   not a statistical acceptance gate or evidence of a framework bug.
 - ADE runs commands as the engineer and is **not a security sandbox**.
 
-Extractor tests use explicitly synthetic SQLite fixtures, not claimed captures:
+Shared helper tests use explicitly synthetic SQLite fixtures, not claimed captures.
+Run from the POC directory:
 
 ```powershell
 python -B -m unittest discover -s tests -t .

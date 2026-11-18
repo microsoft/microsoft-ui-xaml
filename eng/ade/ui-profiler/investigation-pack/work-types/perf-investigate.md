@@ -11,7 +11,7 @@ During proposal planning, plan the queries without reading app source or
 presupposing a cause. The approved execution performs the investigation below.
 
 1. Read investigation.json and the selected knowledge. Do not inspect app source yet.
-2. Run the profiler_query.py overview and record the actual observations and
+2. Run python -B -m helpers.profiler_query overview --root . and record the actual observations and
    receipt path in ade-output/investigation.md before opening app source.
 3. Choose and run at least one drilldown in response to the observed event names,
    ticks, regions or objects. Check other iterations as needed. Cite receipt
@@ -28,5 +28,5 @@ presupposing a cause. The approved execution performs the investigation below.
    or {"status":"NeedsMeasurement","reason":"why inconclusive",
    "additionalMeasurements":["specific measurement to collect"]}.
    RecommendationReady means ready to test, not a confirmed root cause.
-   Run python -B profiler_query.py verify.
+   Run python -B -m helpers.profiler_query verify --root .
 8. Leave only ade-output deliverables. Do not change any source or apply a fix.

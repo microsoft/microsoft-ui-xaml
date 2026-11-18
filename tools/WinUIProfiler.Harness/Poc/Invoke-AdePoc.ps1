@@ -86,10 +86,10 @@ if ($Action -eq 'Prepare') {
             '.gitignore', 'README.md', 'App.xaml', 'App.xaml.cs', 'ScenarioWorkload.cs',
             'ControlDemo.csproj', 'Directory.Build.props', 'Directory.Build.targets',
             'app.manifest', 'global.json', 'NuGet.Config', 'packages.lock.json',
-            'markers.json', 'providers.txt', 'build.ps1', 'capture.ps1', 'metrics.py', 'verify.py',
-            'profiler_query.py',
-            'tests\__init__.py', 'tests\test_metrics.py'
+            'markers.json', 'providers.txt', 'build.ps1', 'scenario.json'
         )
+        $helperFiles = @('capture.ps1', 'metrics.py', 'verify.py', 'profiler_query.py', '__init__.py')
+        $testFiles = @('__init__.py', 'test_metrics.py')
         $workload = 'ScenarioWorkload.cs'
     } else {
         $sourceSample = Join-Path $PSScriptRoot 'sample'
@@ -104,6 +104,16 @@ if ($Action -eq 'Prepare') {
         New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $sourceSample $relativePath) -Destination $destination
     }
+    if ($Scenario -eq 'Control') {
+        foreach ($folder in @('helpers', 'tests')) {
+            $names = if ($folder -eq 'helpers') { $helperFiles } else { $testFiles }
+            New-Item -ItemType Directory -Path (Join-Path $sampleRoot $folder) | Out-Null
+            foreach ($name in $names) {
+                Copy-Item -LiteralPath (Join-Path $PSScriptRoot "$folder\$name") `
+                    -Destination (Join-Path $sampleRoot "$folder\$name")
+            }
+        }
+    }
 
     $baselinePath = Join-Path $sessionRoot 'baseline-measurement.json'
     if ($Scenario -eq 'Control') {
@@ -114,8 +124,6 @@ if ($Action -eq 'Prepare') {
             initRun = Join-Path $repoRoot 'initrun.ps1'
             dotnet = $DotNet
             artifactsRoot = Join-Path $sessionRoot 'measurements'
-            expectedControls = 40
-            maxLayoutPasses = 4
         }
         [IO.File]::WriteAllText(
             (Join-Path $sampleRoot 'measurement-contract.json'),
@@ -128,7 +136,7 @@ if ($Action -eq 'Prepare') {
             throw 'The seed correctness tests failed; this is not the expected POC baseline.'
         }
         if ($Scenario -eq 'Control') {
-            & python -B verify.py | Tee-Object -FilePath $baselinePath
+            & python -B -m helpers.verify --root . | Tee-Object -FilePath $baselinePath
         } else {
             & python -B verify.py --output $baselinePath
         }
@@ -175,14 +183,24 @@ $isControl = $state.PSObject.Properties['Scenario'] -and $state.Scenario -eq 'Co
 if ($Action -in 'Investigate', 'Show', 'Evidence' -and -not $isControl) {
     throw "$Action requires a Control state."
 }
+if ($isControl -and $Action -notin 'Status', 'Verify', 'Report' -and
+    -not (Test-Path -LiteralPath (Join-Path $state.SampleRoot 'helpers\verify.py') -PathType Leaf)) {
+    throw 'This Control state predates the shared-helper layout. Run Prepare again; retained ADE runs are unchanged.'
+}
 if ($Action -eq 'Evidence') {
     if (-not $CandidateManifest) {
         throw 'Evidence requires an explicit -CandidateManifest; it never selects the latest capture.'
     }
+    $CandidateManifest = (Resolve-Path -LiteralPath $CandidateManifest -ErrorAction Stop).Path
     $baseline = Get-Content -LiteralPath $state.BaselineMeasurement -Raw | ConvertFrom-Json
     $output = Join-Path (Split-Path $StatePath -Parent) ('comparison-' + [guid]::NewGuid().ToString('N') + '.md')
-    & python -B (Join-Path $PSScriptRoot 'ControlDemo\metrics.py') `
-        --baseline $baseline.captureManifest --candidate $CandidateManifest --output $output
+    Push-Location $PSScriptRoot
+    try {
+        & python -B -m helpers.metrics --scenario (Join-Path $state.SampleRoot 'scenario.json') `
+            --baseline $baseline.captureManifest --candidate $CandidateManifest --output $output
+    } finally {
+        Pop-Location
+    }
     if ($LASTEXITCODE -eq 0) {
         Write-Output "POC-EVIDENCE: $output"
     }
@@ -199,7 +217,8 @@ if ($Action -eq 'Show') {
     $contract = Get-Content -LiteralPath (Join-Path $sourceRoot 'measurement-contract.json') -Raw | ConvertFrom-Json
     $output = Join-Path (Split-Path $StatePath -Parent) ('observation-' + [guid]::NewGuid().ToString('N'))
     Write-Host "Showing $Variant for $DisplaySeconds seconds after the scenario. This is not a ten-run acceptance check."
-    & pwsh -NoProfile -File (Join-Path $sourceRoot 'capture.ps1') `
+    & pwsh -NoProfile -File (Join-Path $sourceRoot 'helpers\capture.ps1') `
+        -SourceRoot $sourceRoot -ScenarioFile (Join-Path $sourceRoot 'scenario.json') `
         -ProfilerCli $contract.profilerCli -InitRun $contract.initRun -DotNet $contract.dotnet `
         -RunDirectory $output -Iterations 1 -DisplaySeconds $DisplaySeconds
     exit $LASTEXITCODE
@@ -218,16 +237,22 @@ if ($Action -eq 'Investigate') {
     $baseline = Get-Content -LiteralPath $state.BaselineMeasurement -Raw | ConvertFrom-Json
     $manifestPath = $baseline.captureManifest
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $scenarioDefinition = Get-Content -LiteralPath (Join-Path $state.SampleRoot 'scenario.json') -Raw | ConvertFrom-Json
     $inputRoot = Join-Path (Split-Path $StatePath -Parent) ('investigation-' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $inputRoot | Out-Null
-    foreach ($name in @('App.xaml.cs', 'ScenarioWorkload.cs')) {
-        Copy-Item -LiteralPath (Join-Path $state.SampleRoot $name) -Destination (Join-Path $inputRoot $name)
+    foreach ($name in @('scenario.json') + @($scenarioDefinition.sourceSnapshots)) {
+        $destination = Join-Path $inputRoot $name
+        New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $state.SampleRoot $name) -Destination $destination
     }
-    foreach ($name in @('metrics.py', 'profiler_query.py')) {
-        Copy-Item -LiteralPath (Join-Path $PSScriptRoot "ControlDemo\$name") -Destination (Join-Path $inputRoot $name)
+    New-Item -ItemType Directory -Path (Join-Path $inputRoot 'helpers') | Out-Null
+    foreach ($name in @('metrics.py', 'profiler_query.py', '__init__.py')) {
+        Copy-Item -LiteralPath (Join-Path $state.SampleRoot "helpers\$name") `
+            -Destination (Join-Path $inputRoot "helpers\$name")
     }
     $paths = @($manifestPath, $manifest.profilerCli)
-    $paths += @('App.xaml.cs', 'ScenarioWorkload.cs') | ForEach-Object { Join-Path $state.SampleRoot $_ }
+    $paths += @('scenario.json') + @($scenarioDefinition.sourceSnapshots) |
+        ForEach-Object { Join-Path $state.SampleRoot $_ }
     foreach ($run in $manifest.iterations) {
         $paths += @($run.database, $run.appResult)
     }
@@ -235,7 +260,7 @@ if ($Action -eq 'Investigate') {
         [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath $_).Hash.ToLowerInvariant() }
     })
     $contract = [ordered]@{
-        schema = 'winui-profiler-control-poc/investigation-v1'
+        schema = 'winui-profiler-harness/investigation-v1'
         problem = $Problem
         captureManifest = $manifestPath
         profilerCli = $manifest.profilerCli
@@ -294,7 +319,12 @@ if ($Action -eq 'Propose') {
             throw 'The investigation deliverable changed after verification.'
         }
         $queryRoot = Split-Path (Split-Path $evidence.diagnosis -Parent) -Parent
-        $validation = & python -B (Join-Path $queryRoot 'profiler_query.py') verify
+        Push-Location $queryRoot
+        try {
+            $validation = & python -B -m helpers.profiler_query verify --root .
+        } finally {
+            Pop-Location
+        }
         if ($LASTEXITCODE -ne 0) {
             throw 'Investigation inputs or query evidence changed; do not propose a fix from stale evidence.'
         }
@@ -311,7 +341,7 @@ if ($Action -eq 'Propose') {
         '--type', 'perf-fix',
         '--repo', $state.SampleRoot,
         '--task', $task,
-        '--check', 'python -B verify.py'
+        '--check', $(if ($isControl) { 'python -B -m helpers.verify --root .' } else { 'python -B verify.py' })
     )
     if ($state.PSObject.Properties['PackRoot']) {
         $arguments += @('--pack', $state.PackRoot)
@@ -346,8 +376,12 @@ if ($response.ExitCode -eq 0 -and $Action -eq 'Run' -and $Phase -eq 'Fix' -and
     Save-State $state
 }
 if ($response.ExitCode -eq 0 -and $Action -eq 'Run' -and $Phase -eq 'Investigation') {
-    $queryScript = Join-Path $response.Result.runDir 'workcopy\profiler_query.py'
-    $validation = & python -B $queryScript verify
+    Push-Location (Join-Path $response.Result.runDir 'workcopy')
+    try {
+        $validation = & python -B -m helpers.profiler_query verify --root .
+    } finally {
+        Pop-Location
+    }
     if ($LASTEXITCODE -ne 0) {
         throw 'ADE completed, but profiler evidence verification failed. Do not use this diagnosis for a fix.'
     }

@@ -9,7 +9,7 @@ Start with profiler evidence, not an assumed code defect. The supplied scenario
 is a controlled POC, not a blind benchmark of diagnosis quality. A hypothesis
 is not a confirmed root cause until a controlled change and remeasurement.
 
-Use `python -B profiler_query.py overview --iteration 1` before reading app code.
+Use `python -B -m helpers.profiler_query overview --root . --iteration 1` before reading app code.
 It calls the existing WinUIProfiler CLI: summary, frames, and interesting.
 Choose a further query based on those results:
 
@@ -21,7 +21,7 @@ Choose a further query based on those results:
 - `objects [--name <type>]` lists elements; `timeline --id <object-id>` follows one.
 
 Each command also accepts `--iteration <1-10>`. Run these through
-`python -B profiler_query.py`; do not edit the tool or fabricate receipts.
+`python -B -m helpers.profiler_query <view> --root .`; do not edit the tool or fabricate receipts.
 Use the full receipt file when stdoutTruncated is true; do not JSON-parse a
 truncated stdout preview. Keep any scratch output under ade-output with unique
 names, never in the shared TEMP directory.

@@ -8,8 +8,8 @@
   "protectedPaths": [
     "App.xaml.cs",
     "ScenarioWorkload.cs",
-    "metrics.py",
-    "profiler_query.py",
+    "scenario.json",
+    "helpers",
     "investigation.json"
   ],
   "copyExclude": [],

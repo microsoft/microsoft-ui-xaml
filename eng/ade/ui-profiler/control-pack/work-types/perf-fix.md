@@ -9,7 +9,7 @@ done: fail-to-pass
 2. Check any supplied investigation against the measured evidence and source.
    Treat its proposed cause as a hypothesis to validate, not an established fact.
 3. Change only ScenarioWorkload.cs while preserving the complete button tree.
-4. Run the existing extractor tests and python -B verify.py.
+4. Run the existing extractor tests and python -B -m helpers.verify --root .
 5. Report the actual before/after layout counts, timing observations, and
    retained measurement paths. Distinguish workload reduction from a statistically
    supported latency claim.

@@ -9,10 +9,7 @@ import subprocess
 import sys
 import uuid
 
-from metrics import MeasurementError, summarize
-
-
-ROOT = Path(__file__).resolve().parent
+from .metrics import MeasurementError, summarize
 
 
 def sha256(path: Path) -> str:
@@ -21,7 +18,7 @@ def sha256(path: Path) -> str:
 
 def validate_inputs(root: Path) -> tuple[dict, dict]:
     contract = json.loads((root / "investigation.json").read_text(encoding="utf-8-sig"))
-    if contract["schema"] != "winui-profiler-control-poc/investigation-v1":
+    if contract["schema"] != "winui-profiler-harness/investigation-v1":
         raise MeasurementError("Unsupported investigation contract.")
     for item in contract["inputs"]:
         if sha256(Path(item["path"])) != item["sha256"].lower():
@@ -29,10 +26,11 @@ def validate_inputs(root: Path) -> tuple[dict, dict]:
     manifest = json.loads(Path(contract["captureManifest"]).read_text(encoding="utf-8-sig"))
     if sha256(Path(contract["profilerCli"])) != manifest["profilerSha256"].lower():
         raise MeasurementError("The profiler executable differs from the measured tool.")
-    for name in ("App.xaml.cs", "ScenarioWorkload.cs"):
+    scenario = json.loads((root / "scenario.json").read_text(encoding="utf-8-sig"))
+    for name in ("scenario.json", *scenario["sourceSnapshots"]):
         if sha256(root / name) != manifest["sourceHashes"][name].lower():
             raise MeasurementError(f"The source snapshot was not the measured {name}.")
-    result = summarize(manifest, 40, 4)
+    result = summarize(manifest, scenario)
     return contract, result
 
 
@@ -183,20 +181,22 @@ def verify_queries(root: Path) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only, scoped WinUIProfiler investigation queries.")
+    parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("view", choices=["validate-inputs", "verify", "overview", "events", "scenario",
                                         "tick", "region", "objects", "timeline"])
     parser.add_argument("--iteration", type=int, default=1)
     parser.add_argument("--id", type=int)
     parser.add_argument("--name")
     arguments = parser.parse_args()
+    root = arguments.root.resolve()
     try:
         if arguments.view == "validate-inputs":
-            _, result = validate_inputs(ROOT)
+            _, result = validate_inputs(root)
             result = {"status": "InputsVerified", "iterations": result["iterations"]}
         elif arguments.view == "verify":
-            result = verify_queries(ROOT)
+            result = verify_queries(root)
         else:
-            result = query(ROOT, arguments.view, arguments.iteration, arguments.id, arguments.name)
+            result = query(root, arguments.view, arguments.iteration, arguments.id, arguments.name)
     except (MeasurementError, OSError, ValueError, KeyError, TypeError, sqlite3.Error,
             subprocess.SubprocessError) as error:
         print(json.dumps({"status": "InvestigationFailure", "error": str(error)}), file=sys.stderr)

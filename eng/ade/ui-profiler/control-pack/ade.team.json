@@ -26,10 +26,8 @@
     "markers.json",
     "providers.txt",
     "build.ps1",
-    "capture.ps1",
-    "metrics.py",
-    "profiler_query.py",
-    "verify.py",
+    "scenario.json",
+    "helpers",
     "measurement-contract.json",
     "tests"
   ],

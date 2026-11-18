@@ -7,7 +7,6 @@ import sqlite3
 import statistics
 
 
-MARKER_PROVIDER = "ce339c72-348e-4e51-95ed-8db7f7d8fbc2"
 XAML_PROVIDER = "531a35ab-63ce-4bcf-aa98-f88c7a89e455"
 
 
@@ -15,9 +14,10 @@ class MeasurementError(Exception):
     pass
 
 
-def extract_iteration(database: Path, app: dict, expected_controls: int) -> dict:
-    if app.get("passed") is not True or app.get("controlCount") != expected_controls:
-        raise MeasurementError("The app did not confirm the expected control tree.")
+def extract_iteration(database: Path, app: dict, scenario: dict) -> dict:
+    if (app.get("passed") is not True
+            or any(app.get(name) != expected for name, expected in scenario["expectedResults"].items())):
+        raise MeasurementError("The app did not confirm the expected scenario results.")
     if not database.is_file():
         raise MeasurementError(f"The profiler session does not exist: {database}")
     with closing(sqlite3.connect(database.resolve().as_uri() + "?mode=ro", uri=True)) as db:
@@ -45,19 +45,20 @@ def extract_iteration(database: Path, app: dict, expected_controls: int) -> dict
         frequency = session["QpcFrequency"]
         if not isinstance(frequency, int) or frequency <= 0:
             raise MeasurementError("The trace has no valid clock frequency.")
+        marker = scenario["markers"]
         markers = db.execute(
             """SELECT e.Seq, e.Qpc, e.ThreadId, t.EventId, e.Payload
                FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId
-               WHERE lower(t.ProviderId) = ? AND t.TraceLogging = 0 AND t.EventId IN (1, 2)
+               WHERE lower(t.ProviderId) = ? AND t.TraceLogging = 0 AND t.EventId IN (?, ?)
                ORDER BY e.Seq""",
-            (MARKER_PROVIDER,),
+            (marker["provider"].lower(), marker["startEventId"], marker["stopEventId"]),
         ).fetchall()
         if (
             len(markers) != 2
-            or [row["EventId"] for row in markers] != [1, 2]
+            or [row["EventId"] for row in markers] != [marker["startEventId"], marker["stopEventId"]]
             or any(row["ThreadId"] != app["uiThreadId"] for row in markers)
-            or json.loads(markers[0]["Payload"]) != [expected_controls]
-            or json.loads(markers[1]["Payload"]) != [expected_controls, True]
+            or json.loads(markers[0]["Payload"]) != marker["startPayload"]
+            or json.loads(markers[1]["Payload"]) != marker["stopPayload"]
         ):
             raise MeasurementError("Missing, ambiguous, or incorrect scenario markers.")
         start, stop = markers
@@ -98,7 +99,7 @@ def extract_iteration(database: Path, app: dict, expected_controls: int) -> dict
     return {
         "processId": app["processId"],
         "uiThreadId": app["uiThreadId"],
-        "controlCount": expected_controls,
+        **{name: app[name] for name in scenario["expectedResults"]},
         "layoutPassCount": completed,
         "scenarioMs": round((stop["Qpc"] - start["Qpc"]) * 1000 / frequency, 4),
         "layoutBusyMs": round(busy_qpc * 1000 / frequency, 4),
@@ -110,7 +111,7 @@ def extract_iteration(database: Path, app: dict, expected_controls: int) -> dict
     }
 
 
-def summarize(manifest: dict, expected_controls: int, max_layout_passes: int) -> dict:
+def summarize(manifest: dict, scenario: dict) -> dict:
     runs = manifest["iterations"]
     if (len({Path(run["database"]).resolve() for run in runs}) != len(runs)
             or len({run["iteration"] for run in runs}) != len(runs)):
@@ -119,23 +120,24 @@ def summarize(manifest: dict, expected_controls: int, max_layout_passes: int) ->
     framework_hashes = set()
     for run in manifest["iterations"]:
         app = json.loads(Path(run["appResult"]).read_text(encoding="utf-8-sig"))
-        row = extract_iteration(Path(run["database"]), app, expected_controls)
+        row = extract_iteration(Path(run["database"]), app, scenario)
         row.update(
             iteration=run["iteration"],
             trace=run["trace"],
-            withinBudget=row["layoutPassCount"] <= max_layout_passes,
+            withinBudget=row["layoutPassCount"] <= scenario["maxLayoutPasses"],
         )
         framework_hashes.add(run["frameworkSha256"])
         rows.append(row)
-    if len(rows) < 10:
-        raise MeasurementError("Acceptance requires at least ten valid iterations.")
+    if len(rows) < scenario["minimumIterations"]:
+        raise MeasurementError(f"Acceptance requires at least {scenario['minimumIterations']} valid iterations.")
     if len(framework_hashes) != 1:
         raise MeasurementError("The iterations loaded different framework binaries.")
     return {
-        "schema": "winui-profiler-control-poc/measurement-v1",
+        "schema": "winui-profiler-harness/measurement-v1",
+        "scenario": scenario["name"],
         "status": "Passed" if all(row["withinBudget"] for row in rows) else "Failed",
         "measurementKind": "WinUIProfiler-process-scoped-XAML-layout-events",
-        "maxLayoutPasses": max_layout_passes,
+        "maxLayoutPasses": scenario["maxLayoutPasses"],
         "timingIsAcceptanceCriterion": False,
         "iterations": rows,
         "summary": {
@@ -144,17 +146,13 @@ def summarize(manifest: dict, expected_controls: int, max_layout_passes: int) ->
             "meanScenarioMs": round(statistics.mean(row["scenarioMs"] for row in rows), 4),
             "medianScenarioMs": round(statistics.median(row["scenarioMs"] for row in rows), 4),
         },
-        "limitations": [
-            "The app deliberately requests redundant framework layout work.",
-            "This is not evidence of a framework defect or presented-frame latency.",
-            "The count gate validates reduced layout work, not a statistical timing claim.",
-        ],
+        "limitations": scenario["limitations"],
     }
 
 
 def markdown_report(result: dict) -> str:
     lines = [
-        "# WinUIProfiler control POC measurement",
+        f"# WinUIProfiler {result['scenario']} measurement",
         "",
         f"Result: **{result['status']}**",
         "",
@@ -182,7 +180,7 @@ def markdown_report(result: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def compare_manifests(baseline_path: Path, candidate_path: Path) -> str:
+def compare_manifests(baseline_path: Path, candidate_path: Path, scenario: dict) -> str:
     manifests = [json.loads(path.read_text(encoding="utf-8-sig"))
                  for path in (baseline_path, candidate_path)]
     results = []
@@ -196,7 +194,7 @@ def compare_manifests(baseline_path: Path, candidate_path: Path) -> str:
             actual = hashlib.sha256(Path(manifest[path_key]).read_bytes()).hexdigest()
             if actual.lower() != manifest[hash_key].lower():
                 raise MeasurementError(f"The retained {path_key} changed.")
-        results.append(summarize(manifest, 40, 4))
+        results.append(summarize(manifest, scenario))
     frameworks = {run["frameworkSha256"].lower()
                   for manifest in manifests for run in manifest["iterations"]}
     if len(frameworks) != 1:
@@ -204,12 +202,13 @@ def compare_manifests(baseline_path: Path, candidate_path: Path) -> str:
     before, after = manifests
     changes = sorted(name for name in before["sourceHashes"].keys() | after["sourceHashes"].keys()
                      if before["sourceHashes"].get(name) != after["sourceHashes"].get(name))
-    if changes != ["ScenarioWorkload.cs"]:
+    if changes != sorted(scenario["editableFiles"]):
         raise MeasurementError(f"Expected only the workload to differ; found {changes}.")
     lines = [
         "# Recounted WinUIProfiler evidence", "",
         "Counts below were recomputed from the retained SQLite events, not copied from an ADE narrative.", "",
-        "| Run | Baseline layout passes | Candidate layout passes | Baseline / candidate controls |",
+        "| Run | Baseline layout passes | Candidate layout passes | "
+        f"Baseline / candidate {', '.join(scenario['expectedResults'])} |",
         "| --- | ---: | ---: | --- |",
     ]
     if len(results[0]["iterations"]) != len(results[1]["iterations"]):
@@ -218,20 +217,24 @@ def compare_manifests(baseline_path: Path, candidate_path: Path) -> str:
             != [row["iteration"] for row in results[1]["iterations"]]):
         raise MeasurementError("Baseline and candidate have different iteration ordering.")
     for left, right in zip(results[0]["iterations"], results[1]["iterations"]):
+        before_values = ", ".join(str(left[name]) for name in scenario["expectedResults"])
+        after_values = ", ".join(str(right[name]) for name in scenario["expectedResults"])
         lines.append(f"| {left['iteration']} | {left['layoutPassCount']} | "
-                     f"{right['layoutPassCount']} | {left['controlCount']} / {right['controlCount']} |")
+                     f"{right['layoutPassCount']} | {before_values} / {after_values} |")
+    expected_values = ", ".join(str(value) for value in scenario["expectedResults"].values())
+    changed_files = ", ".join(f"`{name}`" for name in changes)
     lines.extend([
         f"| Mean | {results[0]['summary']['meanLayoutPassCount']} | "
-        f"{results[1]['summary']['meanLayoutPassCount']} | 40 / 40 |", "",
+        f"{results[1]['summary']['meanLayoutPassCount']} | {expected_values} / {expected_values} |", "",
         f"Baseline manifest: `{baseline_path}`", "",
         f"Candidate manifest: `{candidate_path}`", "",
         f"Baseline executable: `{before['executable']}`", "",
         f"Candidate executable: `{after['executable']}`", "",
         "Retained executable hashes match their capture manifests. Source manifests differ only in "
-        "`ScenarioWorkload.cs`; the loaded framework hash is the same across all runs.", "",
-        "Older manifests did not record the managed DLL hash; the executable hash alone does not "
-        "authenticate that DLL. New captures retain both hashes and build.log.", "",
-        "Every session must have valid process/thread markers, the correct button tree, "
+        f"{changed_files}; the loaded framework hash is the same across all runs.", "",
+        "An executable hash alone does not authenticate a separate managed DLL. Managed-app captures "
+        "retain both hashes and build.log; older manifests may omit the DLL hash.", "",
+        "Every session must have valid process/thread markers, the expected scenario results, "
         "balanced layout events, and no reported capture loss. This is a work-count comparison, "
         "not a statistical latency or presented-frame claim.", "",
     ])
@@ -240,12 +243,14 @@ def compare_manifests(baseline_path: Path, candidate_path: Path) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Recount a controlled before/after capture pair.")
+    parser.add_argument("--scenario", type=Path, required=True)
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     try:
-        report = compare_manifests(arguments.baseline, arguments.candidate)
+        scenario = json.loads(arguments.scenario.read_text(encoding="utf-8-sig"))
+        report = compare_manifests(arguments.baseline, arguments.candidate, scenario)
         with arguments.output.open("x", encoding="utf-8") as output:
             output.write(report)
         print(report)

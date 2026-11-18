@@ -13,7 +13,10 @@ The app constructs 40 Buttons in a StackPanel. Its protected caller performs a
 final UpdateLayout, verifies button count/order/content, writes process and
 loaded-framework identity, and closes its own window.
 
-The target command is python -B verify.py. It builds the app once, runs ten
+The target command is python -B -m helpers.verify --root . The shared helpers
+consume the protected scenario.json; the app, its build script, marker payloads,
+correctness expectations, and layout budget remain scenario-specific.
+The verifier builds the app once, runs ten
 independent local processes under uniquely owned ETW sessions, imports every
 trace through the real WinUIProfiler CLI, and queries its SQLite event store.
 It returns 0 only when all runs preserve correctness and have at most four

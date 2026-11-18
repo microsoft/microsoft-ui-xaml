@@ -23,15 +23,26 @@ Neither mode implements the three profiler subagents.
 
 | Location | Ownership |
 | --- | --- |
-| `tools\WinUIProfiler.Harness\Poc` | Sample, protected checks, and thin ADE command adapter |
-| `eng\ade\ui-profiler` | Generated plugin and separate synthetic/control packs |
+| `Poc\Invoke-AdePoc.ps1` | Thin ADE command adapter and explicit staging |
+| `Poc\helpers` | Shared capture, extraction, profiler queries, verification, and evidence comparison |
+| `Poc\ControlDemo` | Test app, its build script, providers/markers, and protected `scenario.json` |
+| `Poc\sample` | Synthetic Python demonstration |
+| `Poc\tests` | Harness/helper tests |
+| `eng\ade\ui-profiler` | Generated plugin and separate synthetic, control, and investigation packs |
 | `%LOCALAPPDATA%\ade\runtime\0.1.0` | Shared ADE runtime, not checked in |
 | `%LOCALAPPDATA%\WinUIProfilerHarness\Poc` | Unique staged sample and state per preparation |
 | `%LOCALAPPDATA%\WinUIProfilerHarness\Builds` | Unique short-path control builds referenced by capture manifests |
 | `%LOCALAPPDATA%\ade\runs` | ADE working copies, proposals, patches, logs, and reports |
 
-Both packs target their small staged samples only. Do not point them at the full
+The packs target their small staged samples only. Do not point them at the full
 mux repository: their checks and protected paths are sample-relative.
+
+ControlDemo consumes the shared helpers; it does not own them. Its `scenario.json`
+defines the build output, launch arguments, measured source files, marker provider
+and payloads, correctness expectations, editable files, and layout budget. Shared
+helpers take an explicit scenario/source root instead of assuming 40 buttons or a
+particular app project. Another app still needs its own build/scenario integration;
+the entry point currently exposes only the two POC modes.
 
 ## Prerequisites
 
@@ -137,7 +148,8 @@ $state = '<new Control POC-STATE path>'
 & $poc -Action Report -StatePath $state
 ```
 
-Preparation stages only the demo and protected support files outside mux. It
+Preparation stages the demo at the working root, shared code under `helpers`,
+and its protected helper tests under `tests`, all outside mux. It
 builds the staged app and performs ten fresh capture/import iterations; all
 forty-button correctness checks must pass, while the initial layout budget must
 fail. Every run retains its ETL, SQLite session, app result, and runtime identity.
@@ -162,8 +174,8 @@ receives a task already narrowed to redundant layout work, the small scenario's
 source, and the selected control knowledge. It identifies the per-button
 `UpdateLayout()` call as avoidable work.
 
-The measurements are not model-generated: `metrics.py` uses fixed SQLite
-queries over WinUIProfiler output. The live demonstration measured 40 layout
+The measurements are not model-generated: `helpers\metrics.py` uses fixed SQLite
+queries over WinUIProfiler output with the app's scenario contract. The live demonstration measured 40 layout
 passes before the change and one afterward in each of ten runs, while preserving
 all 40 buttons and the loaded framework binary. That validates this guided
 app-level diagnosis. It is not autonomous root-cause discovery from an arbitrary
@@ -196,7 +208,7 @@ an earlier fix or another investigation does not authorize it:
 
 The model must query the real profiler before inspecting app source, record
 initial observations, select a drilldown, and correlate the evidence with code.
-`profiler_query.py` exposes CLI overview, tick, region, event, element, and object
+`helpers\profiler_query.py` exposes CLI overview, tick, region, event, element, and object
 history queries. Its scenario query reads the existing SQLite `EventDetails`
 view within the exact UI-thread/marker interval. This matters when an operation
 runs outside an instrumented tick; startup regions cannot stand in for it.
@@ -217,6 +229,17 @@ The model can propose a source-level cause from telemetry plus source, but
 causality still needs the later approved change and remeasurement. This does
 not implement a general MAF investigation graph or the profiler's live/MCP API.
 
+Inside a staged working copy, the shared entry points are:
+
+```powershell
+python -B -m helpers.verify --root .
+python -B -m helpers.profiler_query overview --root . --iteration 1
+```
+
+The app's `scenario.json` and the `helpers` directory are protected in both ADE
+workflows. Investigation staging includes only its configured measured source
+snapshots, scenario contract, and query/extraction helpers, not the demo README.
+
 ### See the app and audit the result
 
 The default app closes immediately after writing its result, so the benchmark
@@ -232,7 +255,9 @@ This builds the staged baseline or successful ADE candidate and performs one obs
 stays open for the requested duration **after** the scenario Stop marker, then
 closes. The title confirms the 40-button correctness check. This is separate
 from the ten-iteration acceptance check, and is not a replay of an old binary.
-States staged before this option was added need a fresh `Prepare`.
+States staged before the shared-helper layout need a fresh `Prepare` for
+measurement, investigation, or fix actions. Existing ADE runs/workspaces are not
+rewritten; `Status`, `Verify`, and `Report` remain available for those runs.
 
 To independently recount a retained baseline/candidate pair:
 
@@ -255,14 +280,13 @@ From the mux root:
 
 ```powershell
 python -B -m unittest discover -s tools\WinUIProfiler.Harness\Poc\sample\tests -t tools\WinUIProfiler.Harness\Poc\sample
-python -B -m unittest discover -s tools\WinUIProfiler.Harness\Poc\tests
-python -B -m unittest discover -s tools\WinUIProfiler.Harness\Poc\ControlDemo\tests -t tools\WinUIProfiler.Harness\Poc\ControlDemo
+python -B -m unittest discover -s tools\WinUIProfiler.Harness\Poc\tests -t tools\WinUIProfiler.Harness\Poc
 ```
 
 The sample tests protect API behavior. The harness tests prove that the checker
 rejects repeated scanning, accepts an indexed implementation, and refuses to
 report incorrect results as performance success. The test implementation of an
-index is not a pre-applied fix to the seed. Control extractor tests use synthetic
+index is not a pre-applied fix to the seed. Shared extractor tests use synthetic
 SQLite fixtures to test process/thread/marker scoping and reject incomplete data;
 the real acceptance command imports actual ETLs through WinUIProfiler.
 
