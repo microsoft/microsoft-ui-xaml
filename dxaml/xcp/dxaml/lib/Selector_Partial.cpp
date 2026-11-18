@@ -1399,19 +1399,6 @@ _Check_return_ HRESULT
         break;
     }
 
-    // Inserting or removing items shifts the indexes of the selected items. SelectedRanges is otherwise only rebuilt
-    // when the selection changes, so rebuild it here too. UpdateSelectedRanges always ends by allowing reentrancy, so
-    // keep a lock that an outer selection change holds.
-    if (!m_tpDataSourceAsSelectionInfo)
-    {
-        const bool wasSelectionReentrancyLocked = m_isSelectionReentrancyLocked;
-        IFC(UpdateSelectedRanges());
-        if (wasSelectionReentrancyLocked)
-        {
-            PreventSelectionReentrancy();
-        }
-    }
-
     if (m_selectedIndexValueSetBeforeItemsAvailable >= 0)
     {
         // There was a selected index set before Items was available. Now
