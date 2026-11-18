@@ -337,6 +337,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ReplaceMenuFlyoutItemTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var fileButton = FindElement.ById<Button>("FileItem");
+                var fileButtonEC = new ExpandCollapseImplementation(fileButton);
+
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("NewItem", FindBy.Name);
+                VerifyElement.Found("Open...", FindBy.Name);
+                VerifyElement.Found("Save", FindBy.Name);
+
+                fileButtonEC.Collapse();
+                Wait.ForIdle();
+                FindElement.ById<Button>("ReplaceFlyoutItemButton").Invoke();
+                Wait.ForIdle();
+
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("Replaced Open Item", FindBy.Name);
+                VerifyElement.NotFound("Open...", FindBy.Name);
+                VerifyElement.Found("NewItem", FindBy.Name);
+                VerifyElement.Found("Save", FindBy.Name);
+
+                fileButtonEC.Collapse();
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
         public void MenuBarHeightTest()
         {
             if (PlatformConfiguration.IsDevice(DeviceType.Phone))
