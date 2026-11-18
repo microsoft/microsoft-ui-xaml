@@ -81,11 +81,16 @@ public:
     _Ret_maybenull_ CImageBrush* GetFallbackBrush() { return m_fallbackBrush.get(); }
     void ReleaseFallbackBrush() { m_fallbackBrush.reset(); }
 
+    // The Image now shows another item (its DataContext changed, or x:Bind recycled it for x:Phase), so it must not
+    // keep the previous item's picture.
+    void OnItemChanged();
+
     CImageSource *m_pImageSource;
     XTHICKNESS m_ninegridPrivate;
 
 private:
     xref_ptr<CImageBrush> m_fallbackBrush;
+    bool m_itemChanged = false;
 };
 
 class CImageBrushReportCallback final : public IImageReportCallback

@@ -3,8 +3,32 @@
 
 #include "precomp.h"
 #include "MetadataAPI.h"
+#include "LayoutManager.h"
 
 using namespace DirectUI;
+
+// Lists fill a reused container with another item while they lay out (ListView and ItemsRepeater prepare items in
+// Measure) or run ListView's deferred build-tree work (content, x:Phase). That is the window in which layout
+// transitions are suppressed as "fill-ins of data" (see CCoreServices::NWDrawTree), so a source set then belongs to
+// another item.
+static bool IsListFillIn(_In_ CUIElement* element)
+{
+    CLayoutManager* layoutManager = VisualTree::GetLayoutManagerForElement(element);
+    if (layoutManager != nullptr && !layoutManager->GetAllowTransitionsToRunUnderCurrentSubtree())
+    {
+        return true;
+    }
+
+    for (CUIElement* ancestor = element->GetUIElementParentInternal(false); ancestor != nullptr;
+        ancestor = ancestor->GetUIElementParentInternal(false))
+    {
+        if (ancestor->GetIsOnMeasureStack() || ancestor->GetIsOnArrangeStack())
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 //------------------------------------------------------------------------
 //
@@ -149,8 +173,12 @@ CImageBase::EnsureBrush()
     {
         // Keep drawing the current picture while a new URI source loads; see BaseContentRenderer::ImageRenderContent.
         // The fallback is per Image, so the new source and anything else sharing it are not affected.
-        if (m_pImageSource && !m_pImageSource->m_strSource.IsNull() && IsActive() &&
-            m_pBackgroundBrush->GetHardwareSurface() != nullptr)
+        // Not when the Image now shows another item, e.g. a list fills a reused container, unless it's the same picture.
+        const bool samePicture = m_pImageSource && m_pImageSource->IsSourceSetAndEqualTo(m_pBackgroundBrush->m_pImageSource);
+        const bool keepPicture = m_pImageSource && !m_pImageSource->m_strSource.IsNull() && IsActive() &&
+            (samePicture || (!m_itemChanged && !IsListFillIn(this)));
+        m_itemChanged = false;
+        if (keepPicture && m_pBackgroundBrush->GetHardwareSurface() != nullptr)
         {
             CREATEPARAMETERS cp(GetContext());
             IFC_RETURN(CImageBrush::Create(reinterpret_cast<CDependencyObject**>(m_fallbackBrush.ReleaseAndGetAddressOf()), &cp));
@@ -159,7 +187,7 @@ CImageBase::EnsureBrush()
             m_fallbackBrush->m_AlignmentX = m_pBackgroundBrush->m_AlignmentX;
             m_fallbackBrush->m_AlignmentY = m_pBackgroundBrush->m_AlignmentY;
         }
-        else if (!m_pImageSource || m_pImageSource->m_strSource.IsNull() || !IsActive())
+        else if (!keepPicture)
         {
             ReleaseFallbackBrush();
         }
@@ -212,6 +240,25 @@ CImageBase::EnsureBrush()
     }
 
     return S_OK;
+}
+
+void CImageBase::OnItemChanged()
+{
+    if (m_fallbackBrush)
+    {
+        // The new item's source was set before this notification (x:Bind ran first): stop drawing the old picture,
+        // unless it's the same picture.
+        if (!m_pImageSource || !m_pImageSource->IsSourceSetAndEqualTo(m_fallbackBrush->m_pImageSource))
+        {
+            ReleaseFallbackBrush();
+            CUIElement::NWSetContentDirty(this, DirtyFlags::Render);
+        }
+    }
+    else if (m_pBackgroundBrush && m_pBackgroundBrush->GetHardwareSurface() != nullptr)
+    {
+        // The new item's source comes next, e.g. from a {Binding} or a later x:Phase.
+        m_itemChanged = true;
+    }
 }
 
 //------------------------------------------------------------------------
