@@ -18,7 +18,7 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
-#include "TableViewRowProjection.h"
+#include "TableViewRowFlattener.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -224,7 +224,7 @@ public:
     void OnItemKeyPathPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnParentKeyPathPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void ApplyHierarchyPaths();
-    void ApplyHierarchyPaths(TableViewRowProjection& projection);
+    void ApplyHierarchyPaths(TableViewRowFlattener& flattener);
     void OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnGridLinesVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -921,9 +921,9 @@ private:
     void RefreshRowsPipeline();
     // Re-reads the projection's rows and row metadata without touching the repeater.
     void RefreshCachedProjection();
-    // Raised by the row projection after it rebuilt (flat <-> grouped <-> tree, or a tree or group set
+    // Raised by the row flattener after it rebuilt (flat <-> grouped <-> tree, or a tree or group set
     // rebuilt in place), so the cached view / row metadata are re-read.
-    void OnRowProjectionChanged();
+    void OnFlattenedRowsChanged();
     // After a sort the view applied: restores body focus and tells a UIA client the rows were reordered
     // (a programmatic re-sort has no input event behind it).
     void OnRowsReorderedBySort();
@@ -953,8 +953,8 @@ private:
 
     // --- Rows ---
     //
-    // The rows the repeater is driven from: the view itself for flat rows, else the grouped or tree
-    // adapter's rows. Cached because the projection can be rebuilt underneath us.
+    // The rows the repeater is driven from: the view itself for flat rows, else the flattener's grouped
+    // or tree rows. Cached because the flattener can switch rows underneath us.
     winrt::ItemsSourceView m_rowsItemsSourceView{ nullptr };
 
     // The CollectionViewSource this table wraps a plain ItemsSource in; null when the app supplied an
@@ -962,7 +962,7 @@ private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::CollectionViewSource> m_internalViewSource{ this };
     // Presents the view's items as rows (flat, grouped or tree). Never sorts, filters or groups.
     // Reassigned only by AdoptItemsSource.
-    std::shared_ptr<TableViewRowProjection> m_rowProjection{};
+    std::shared_ptr<TableViewRowFlattener> m_rowFlattener{};
 
     // The view's shaping, when it has any. A header sort writes the column's sort to it (SortDescriptions,
     // or CustomSort for a CustomSortComparer column). Null for a view that cannot be sorted this way (an

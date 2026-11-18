@@ -20,28 +20,6 @@
 
 namespace ShapingHelpers
 {
-    // A group object that already knows its own stable identity.
-    //
-    // The key OBJECT is not a usable identity on its own. A key selector run twice can return
-    // equal-but-not-identical objects, and a reference-typed key has no value form at all, so
-    // re-deriving an identity from the key either flips it between shapes or yields nothing. A
-    // group that minted an identity when it was built publishes it here, and consumers read it
-    // instead of guessing.
-    //
-    // This lives in layer 1 because the layer that implements it and the layer that reads it are
-    // siblings: neither may include the other's headers, so the shared contract has to sit below
-    // both.
-    struct __declspec(uuid("E74C4DC8-3FAC-4A24-AD34-01547B4672DF")) IGroupIdentity : ::IUnknown
-    {
-        virtual winrt::hstring StableGroupIdentity() const = 0;
-    };
-
-    // A group's count of IMMEDIATE children. Over a hierarchy a group's rows include visible
-    // descendants, so only the projection that sliced the group knows the root count.
-    struct __declspec(uuid("9D3B0F7A-6B2E-4E67-93A2-1C8A9F5E4B10")) IGroupChildCount : ::IUnknown
-    {
-        virtual int32_t GroupChildCount() const = 0;
-    };
 
     // Value keys compare numerically equal floats as equal: -0 folds into +0 and every NaN into one
     // canonical NaN, so the key is not the raw bit pattern.

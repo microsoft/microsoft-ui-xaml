@@ -290,9 +290,9 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
 ((ICollectionViewShaping)cvs.View).Refresh();                    // after property edits
 ```
 
-- **Rows and groups.** TableView projects the view read-only. `CollectionGroups` become group rows
-  (`TableViewCollectionViewGroups`), in the view's order. TableView never reorders, filters or groups the rows
-  itself.
+- **Rows and groups.** TableView projects the view read-only. `CollectionGroups` become group rows, read directly
+  from each `ICollectionViewGroup` (`Group`, `GroupItems`) by `TableViewRowFlattener`, in the view's order. TableView
+  never reorders, filters or groups the rows itself.
 - **Header sort.** When `ItemsSource` implements `ICollectionViewShaping`, a header click, `SortByColumn`,
   `ToggleSortDirection` and `ClearSort` write the column's `SortMemberPath` to the view's `SortDescriptions` (the
   column's sort replaces the previous one), and `Sorting` / `Sorted` are raised. A `CustomSortComparer` column
@@ -362,18 +362,19 @@ TableView has one data-shaping engine: the framework `CollectionViewSource` view
 | `cvs.View` (answers `ICollectionViewShaping`) | That view, unwrapped. | The same, on the app's view: the sort is the view's, and the app sees it in `cvs.SortDescriptions`. |
 | `ICollectionView` without `ICollectionViewShaping` (an app's own view, an `IsSourceGrouped` view) | That view, unwrapped. | Raises `Sorting` only. The app sorts the view; TableView does not reorder the rows or light the arrow. |
 
-The rows come from the view as follows (`TableViewRowProjection`, TableView's row generator, like WPF's
-`ItemContainerGenerator`; it never sorts, filters or groups):
+The rows come from the view as follows (`TableViewRowFlattener`, TableView's one row flattener, in the role of WPF's
+`ItemContainerGenerator`: it turns the view into the flat row list of the single `ItemsRepeater` and never sorts,
+filters or groups; the view never flattens, because expansion state is per control and header rows are not items):
 
 - **Flat view:** the repeater is bound to the view itself, so a flat view's fine-grained `Add` / `Remove` / `Replace`
   reach the rows unchanged. After a header sort on a plain `ObservableCollection`, an `Add` arrives as one `Add` at
   its sorted position, not a `Reset`.
-- **Grouped view** (`CollectionGroups` is not null): `TableViewCollectionViewGroups` wraps each view group (its
-  `GroupItems` as they are) and `GroupedSourceAdapter` turns them into header and data rows. Expansion is keyed by the
-  group's key value.
+- **Grouped view** (`CollectionGroups` is not null): the flattener reads each view group's `GroupItems` as they are
+  and emits a header row (`GroupedEntry`) plus the group's data rows. It re-reads `CollectionGroups` one dispatcher
+  turn after they change, once the view has finished regrouping. Expansion is keyed by the group's key value.
 - **Tree** (`ItemKeyPath` / `ParentKeyPath`): the view's items, in the view's order, are indexed by key and parent key
-  (`ParentKeyIndex`, next to `HierarchicalSourceAdapter`) and nested by `HierarchicalSourceAdapter`; under a grouped
-  view each root is placed in the group that holds it. The tree is rebuilt when the view changes.
+  (`ParentKeyIndex`) and nested by the flattener; under a grouped view each root is placed in the group that holds
+  it. The tree is rebuilt when the view changes.
 
 Row identity is the item's COM identity. A header sort keeps the selection on its item (the selected item is found
 again after the view reorders) and restores body focus; `Sorting` / `Sorted`, the arrow reconcile and
@@ -387,16 +388,16 @@ None of these are in public IDL or the XAML metadata provider.
 | Component | Role |
 |---|---|
 | `CollectionViewSource` view / `ICollectionViewShaping` (framework) | The one engine, owned by the view (`VectorCollectionView`; the CVS is a proxy over it): sort, filter, group, `CustomSort`, `DeferRefresh`, incremental flat updates. |
-| `TableViewRowProjection` | Chooses flat, grouped or tree rows over the view and owns the adapters below. No shaping. |
-| `GroupedSourceAdapter` | Flattens groups into header and data rows; owns group expansion state. |
-| `HierarchicalSourceAdapter` + `ParentKeyIndex` | Builds the key / parent-key index of the view's items, flattens the tree and owns row expansion state. |
-| `TableViewCollectionViewGroups` | Wraps the view's `CollectionGroups` in the group contract `GroupedSourceAdapter` reads, keyed by key value. |
+| `TableViewRowFlattener` | The one row flattener (WPF `ItemContainerGenerator`'s role): turns the view's items, `CollectionGroups` and tree into flat, grouped or tree rows, and owns group and row expansion state. No shaping. |
+| `ParentKeyIndex` | The key / parent-key index of the view's items that the flattener nests. Stays on TableView until hierarchy moves into the view. |
+| `GroupedEntry` | A group header row: the group's identity, key, counts and expansion. |
 | `RowMetadataProvider` | Per-row kind, level, identity and expansion for grouped and tree rows. |
 
 Retired: `ShapedItemsSource` (TableView's own sort, filter, group and live-shaping engine, with `RowIdentity`,
 `LiveShapingTracker` and `ShapingPipeline`), the `TableViewShapingSource` facade over it, and the comparer rank
-adapter TableView used to sort a `CustomSortComparer` column. `ShapedGroup` moved next to `GroupedSourceAdapter` and
-`ParentKeyIndex` next to `HierarchicalSourceAdapter`.
+adapter TableView used to sort a `CustomSortComparer` column. Later, `GroupedSourceAdapter`,
+`HierarchicalSourceAdapter`, the `TableViewCollectionViewGroups` bridge and `ShapedGroup` were merged into
+`TableViewRowFlattener`, which reads the view's groups directly.
 
 #### Behavior changes from the retired engine
 
@@ -424,8 +425,8 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - Incremental updates for grouped views (they `Reset` today).
 - Group sort order (groups follow their first item).
 - Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
-  parent is filtered out is shown as a root; `ParentKeyIndex` and `HierarchicalSourceAdapter` keep their filter
-  overlay for this).
+  parent is filtered out is shown as a root; `ParentKeyIndex` and `TableViewRowFlattener` keep their filter overlay
+  for this).
 
 ## Out of scope for the POC
 

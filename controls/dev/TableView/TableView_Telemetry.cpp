@@ -39,13 +39,13 @@ void TableView::SampleInstanceTelemetry() noexcept
             }
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }
-        if (auto const projection = m_rowProjection)
+        if (auto const flattener = m_rowFlattener)
         {
             if (m_collectionViewShaping && m_collectionViewShaping.Filter()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Filtering; }
-            if (projection->IsGrouped()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
-            if (projection->HasHierarchy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
-            sample.sourceRows = projection->SourceRowCount();
-            sample.dataRows = projection->DataRowCount();
+            if (flattener->IsGrouped()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Grouping; }
+            if (flattener->HasHierarchy()) { sample.enabledFeatures |= TableViewTelemetry::Feature::Hierarchy; }
+            sample.sourceRows = flattener->SourceRowCount();
+            sample.dataRows = flattener->DataRowCount();
             if (sample.dataRows == 0)
             {
                 TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Empty);

@@ -11,7 +11,7 @@
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
-#include "TableViewRowProjection.h"
+#include "TableViewRowFlattener.h"
 #include "SortMemberPathResolver.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
@@ -748,7 +748,7 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
 {
     TableViewTelemetry::BeginSession(m_telemetrySession);
     TableViewTelemetry::ReportFirstLoad();
-    if (m_rowProjection)
+    if (m_rowFlattener)
     {
         // The view may have been sorted while this table was not loaded.
         QueueReconcileSortStateWithSource();
@@ -849,7 +849,7 @@ try
     m_templateApplied = true;
     m_templateIncomplete = false;
     // The template is expanded before this runs, so with a source attached Initialize's inputs are ready.
-    if (m_rowProjection) { StartTipInitialization(); }
+    if (m_rowFlattener) { StartTipInitialization(); }
     __super::OnApplyTemplate();
     InvalidateTableViewResourceCache(this);
     CancelHeaderFocusRestore();
@@ -1295,24 +1295,24 @@ void TableView::OnParentKeyPathPropertyChanged(const winrt::DependencyPropertyCh
 
 void TableView::ApplyHierarchyPaths()
 {
-    if (auto const projection = m_rowProjection)
+    if (auto const flattener = m_rowFlattener)
     {
-        ApplyHierarchyPaths(*projection);
+        ApplyHierarchyPaths(*flattener);
     }
 }
 
 // ItemKeyPath and ParentKeyPath turn the rows into a tree: a row whose ParentKeyPath value equals
 // another row's ItemKeyPath value is its child. Both must be set; either empty means flat rows.
-void TableView::ApplyHierarchyPaths(TableViewRowProjection& projection)
+void TableView::ApplyHierarchyPaths(TableViewRowFlattener& flattener)
 {
     auto const itemKeyPath = ItemKeyPath();
     auto const parentKeyPath = ParentKeyPath();
     if (itemKeyPath.empty() || parentKeyPath.empty())
     {
-        projection.ClearHierarchy();
+        flattener.ClearHierarchy();
         return;
     }
-    projection.SetHierarchy(MakePathKeySelector(itemKeyPath), MakePathKeySelector(parentKeyPath));
+    flattener.SetHierarchy(MakePathKeySelector(itemKeyPath), MakePathKeySelector(parentKeyPath));
 }
 
 void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1899,14 +1899,14 @@ void TableView::AdoptItemsSource()
         }
     }
 
-    std::shared_ptr<TableViewRowProjection> projection;
+    std::shared_ptr<TableViewRowFlattener> flattener;
     if (view)
     {
-        projection = std::make_shared<TableViewRowProjection>(view);
-        projection->Start();
+        flattener = std::make_shared<TableViewRowFlattener>(view);
+        flattener->Start();
         try
         {
-            ApplyHierarchyPaths(*projection);
+            ApplyHierarchyPaths(*flattener);
         }
         catch (...)
         {
@@ -1916,9 +1916,9 @@ void TableView::AdoptItemsSource()
         }
     }
 
-    if (auto const previous = std::exchange(m_rowProjection, projection))
+    if (auto const previous = std::exchange(m_rowFlattener, flattener))
     {
-        previous->SetProjectionChangedHandler(nullptr);
+        previous->SetRowsChangedHandler(nullptr);
     }
     m_internalViewSource.set(internalViewSource);
     m_telemetrySourceKinds = sourceKinds;
@@ -1933,18 +1933,18 @@ void TableView::AdoptItemsSource()
     m_reshapeFocusRow = -1;
     CancelReshapeFocusRestore();
 
-    if (!projection)
+    if (!flattener)
     {
         return;
     }
 
     // Weak, because the control owns the projection and a strong capture would be a cycle.
     auto weakThis = get_weak();
-    projection->SetProjectionChangedHandler([weakThis]()
+    flattener->SetRowsChangedHandler([weakThis]()
     {
         if (auto strongThis = weakThis.get())
         {
-            strongThis->OnRowProjectionChanged();
+            strongThis->OnFlattenedRowsChanged();
         }
     });
 
@@ -2010,10 +2010,10 @@ void TableView::RefreshCachedProjection()
     auto const previousRowMetadata = m_tableViewSourceRowMetadata;
     m_tableViewSourceRowMetadata = nullptr;
 
-    if (auto const projection = m_rowProjection)
+    if (auto const flattener = m_rowFlattener)
     {
-        m_rowsItemsSourceView = projection->ItemsSourceView();
-        m_tableViewSourceRowMetadata = projection->RowMetadata();
+        m_rowsItemsSourceView = flattener->ItemsSourceView();
+        m_tableViewSourceRowMetadata = flattener->RowMetadata();
     }
     else
     {
@@ -2034,7 +2034,7 @@ void TableView::RefreshCachedProjection()
     }
 }
 
-void TableView::OnRowProjectionChanged()
+void TableView::OnFlattenedRowsChanged()
 {
     SupersedeTipOperation();
     CancelPendingBringItemIntoView();

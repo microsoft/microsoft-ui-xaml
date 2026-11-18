@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
-    TabularShaping — helpers shared by TableView's row adapters.
+    TabularShaping — helpers shared by TableView's row flattener and TableView.
 
-    ShapingHelpers (collection reading, value keys, the group contract) and RowExpansionModel are
-    consumed by GroupedSourceAdapter, HierarchicalSourceAdapter and TableView, so they are
-    build-owned here rather than by any one of them.
+    ShapingHelpers (collection reading, value keys) and RowExpansionModel are build-owned here.
 
-    SortDirection.idl is here for the same reason: the enum is named by TableViewColumn and
+    SortDirection.idl is here because the enum is named by TableViewColumn and
     TableViewSortingEventArgs, so no single consumer should own it.
 
     Consumers include it as "ShapingHelpers.h"; this file's AdditionalIncludeDirectories makes

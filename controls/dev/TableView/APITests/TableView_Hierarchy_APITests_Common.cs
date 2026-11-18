@@ -200,7 +200,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // A CollectionViewSource over items, optionally grouped by groupPath and sorted by sortPath.
-        // Bind its View; the view keeps the CollectionViewSource alive.
+        // Bind its View: the view owns the shaping and holds the CollectionViewSource only weakly.
         internal static CollectionViewSource MakeShapingView(object items, string groupPath = null, string sortPath = null,
             Microsoft.UI.Xaml.Data.ListSortDirection direction = Microsoft.UI.Xaml.Data.ListSortDirection.Ascending)
         {

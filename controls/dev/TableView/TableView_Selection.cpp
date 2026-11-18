@@ -972,9 +972,9 @@ winrt::ItemsSourceView TableView::DisplayedRowsView() const
     {
         return m_rowsItemsSourceView;
     }
-    if (auto const projection = m_rowProjection)
+    if (auto const flattener = m_rowFlattener)
     {
-        return projection->ItemsSourceView();
+        return flattener->ItemsSourceView();
     }
     return nullptr;
 }

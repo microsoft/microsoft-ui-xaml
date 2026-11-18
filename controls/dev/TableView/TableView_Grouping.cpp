@@ -71,15 +71,6 @@ namespace
             eventName, static_cast<unsigned int>(winrt::to_hresult()));
     }
 
-    winrt::IInspectable GetGroupHeaderKey(GroupedEntry const& entry)
-    {
-        auto const groupObject = entry.Group();
-        if (auto const group = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
-        {
-            return group.Group();
-        }
-        return groupObject;
-    }
     // Every step can fail on a locale-starved or self-contained host, and this runs during
     // measure, so nothing is allowed to escape.
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
@@ -150,7 +141,7 @@ bool TableView::TryGetRowInfo(int32_t rowIndex, TableViewRowInfo& rowInfo) const
 
 bool TableView::IsGroupedRowSource() const
 {
-    return m_rowProjection && m_rowProjection->IsGrouped();
+    return m_rowFlattener && m_rowFlattener->IsGrouped();
 }
 
 bool TableView::IsGroupHeaderRow(int32_t index) const
@@ -1083,8 +1074,8 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
 void TableView::SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool expand)
 {
     auto const provider = m_tableViewSourceRowMetadata;
-    auto const projection = m_rowProjection;
-    if (!provider || !projection || !IsGroupedRowSource())
+    auto const flattener = m_rowFlattener;
+    if (!provider || !flattener || !IsGroupedRowSource())
     {
         return;
     }
@@ -1106,18 +1097,18 @@ void TableView::SetGroupExpansionByKey(winrt::IInspectable const& groupKey, bool
         }
     }
 
-    auto const groupIdentity = projection->TryGetGroupIdentityForKey(groupKey);
+    auto const groupIdentity = flattener->TryGetGroupIdentityForKey(groupKey);
     if (!groupIdentity)
     {
         return;
     }
 
     winrt::hstring expansionIdentity;
-    for (auto const& group : projection->CurrentGroups())
+    for (auto const& group : flattener->CurrentGroups())
     {
         if (group.Identity == *groupIdentity)
         {
-            expansionIdentity = provider->GetGroupExpansionIdentity(group.Group);
+            expansionIdentity = provider->GetGroupExpansionIdentity(group.Identity);
             break;
         }
     }
@@ -1332,7 +1323,7 @@ winrt::hstring TableView::StringifyGroupKey(winrt::IInspectable const& key)
 
 winrt::hstring TableView::GetGroupHeaderNameCandidate(GroupedEntry const& entry)
 {
-    auto const key = GetGroupHeaderKey(entry);
+    auto const key = entry.Key();
     return GroupInfoToName(winrt::make<::TableViewGroupInfo>(
         key, entry.GroupItemCount(), 0, false, false, StringifyGroupKey(key)));
 }
@@ -1389,11 +1380,9 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
 
     if (auto const entry = TryGetGroupedEntry(groupRow))
     {
-        // TableViewGroupInfo.Key is contracted (TableView.idl) as the GroupBy key, not the
-        // internal group object. entry->Group() is the ShapedGroup (an ICollectionViewGroup);
-        // unwrap it to the key it carries so an app template binding {Binding Key} sees the key
-        // value, not the projection wrapper. KeyText / display is unaffected either way.
-        groupKey = GetGroupHeaderKey(*entry);
+        // TableViewGroupInfo.Key is contracted (TableView.idl) as the group's key value, not the view's
+        // group object, so an app template binding {Binding Key} sees the key.
+        groupKey = entry->Key();
         // Prefer row metadata (root count) over the entry's span count under a hierarchy; the entry is
         // the fallback while metadata describes a different row.
         itemCount = hasRowInfo ? rowInfo.ChildCount : entry->GroupItemCount();
