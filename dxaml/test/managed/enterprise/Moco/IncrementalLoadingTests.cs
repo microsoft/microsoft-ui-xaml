@@ -557,6 +557,131 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         [TestMethod]
         [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousStartupFillsViewportWithinLayoutUpdate()
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { HoldCompletion = true };
+                inner = ShowStartupListView(data, wrapping: true);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                data.CompletePendingLoad();
+                inner.UpdateLayout();
+                // The frame rendered after this layout update must not show only the bootstrap item.
+                VerifyStartupRequests(data, seeded: false);
+                VerifyStartupViewportFilled(inner, data, vertical: false);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void EmptyBatchContinuesDuringSameSizeItemMeasure()
+        {
+            SynchronousStartupSource data = null;
+            StartupListView inner = null;
+            FrameworkElement item = null;
+            Size previousSize = default;
+            UIExecutor.Execute(() =>
+            {
+                data = new SynchronousStartupSource(false) { HoldCompletion = true, EmptyLoadsRemaining = 1 };
+                for (int index = 0; index < 40; index++)
+                {
+                    data.Add(index.ToString());
+                }
+                inner = ShowStartupListView(data, wrapping: true, manual: true,
+                    panelMarkup: "<ItemsWrapGrid Orientation='Vertical' MaximumRowsOrColumns='2' CacheLength='0'/>");
+                inner.Width = 500;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                inner.IncrementalLoadingTrigger = IncrementalLoadingTrigger.Edge;
+                var scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
+                Verify.IsTrue(scrollViewer.ScrollableWidth > 0);
+                Verify.IsTrue(scrollViewer.ChangeView(scrollViewer.ScrollableWidth, null, null, true));
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                var panel = (ItemsWrapGrid)inner.ItemsPanelRoot;
+                item = inner.ContainerFromIndex(panel.LastVisibleIndex) as FrameworkElement;
+                Verify.IsNotNull(item);
+                previousSize = item.DesiredSize;
+                item.InvalidateMeasure();
+                data.CompletePendingLoad();
+                inner.UpdateLayout();
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(previousSize, item.DesiredSize, "The item remeasure must not change its size.");
+                Verify.IsTrue(data.RequestedCounts.Count > 1,
+                    "Loading must continue while a laid-out item is remeasured at the same size.");
+                Verify.IsTrue(data.Count > 40, "Loading must continue without another scroll.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousPartialBatchesDoNotExhaustLayoutIterations()
+        {
+            var data = new SynchronousStartupSource(false)
+            {
+                MaximumItemCount = 400,
+                MaximumBatchSize = 1,
+                HoldCompletion = true
+            };
+            StartupListView inner = null;
+            UIExecutor.Execute(() =>
+            {
+                inner = ShowStartupListView(data, wrapping: true);
+                inner.Width = 300;
+                inner.Height = 100;
+                inner.DataFetchSize = 1;
+                inner.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                        <Grid Width='1' Height='100'/>
+                      </DataTemplate>");
+                var style = new Style { TargetType = typeof(ListViewItem) };
+                style.Setters.Add(new Setter(FrameworkElement.MinWidthProperty, 0.0));
+                style.Setters.Add(new Setter(FrameworkElement.MinHeightProperty, 0.0));
+                style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(0)));
+                inner.ItemContainerStyle = style;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                var panel = (ItemsWrapGrid)inner.ItemsPanelRoot;
+                panel.ItemWidth = 1;
+                panel.ItemHeight = 100;
+                panel.MaximumRowsOrColumns = 1;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.AreEqual(1, data.RequestedCounts.Count);
+                data.CompletePendingLoad();
+                // Throws a layout-cycle error if each partial batch costs another layout iteration.
+                inner.UpdateLayout();
+                Log.Comment("Requests after one layout update: " + data.RequestedCounts.Count);
+                Verify.IsTrue(data.Count > 1, "Loading must continue after the bootstrap batch is measured.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void DeferredStartupDoesNotRetryAfterRemoval()
         {
             SynchronousStartupSource data = null;
@@ -957,8 +1082,9 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
             public List<uint> RequestedCounts { get; } = new List<uint>();
             public int RequestsBeforeFirstItemMeasure { get; private set; } = -1;
-            public bool HasMoreItems => LoadingEnabled && Count < 64 && RequestedCounts.Count < 64;
+            public bool HasMoreItems => LoadingEnabled && Count < MaximumItemCount && RequestedCounts.Count < MaximumItemCount;
             public bool LoadingEnabled { get; set; } = true;
+            public int MaximumItemCount { get; set; } = 64;
             public uint MaximumBatchSize { get; set; } = 64;
             public bool HoldCompletion { get; set; }
             public bool HoldSubsequentLoads { get; set; }
@@ -1012,7 +1138,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                     EmptyLoadsRemaining--;
                     return new LoadMoreItemsResult();
                 }
-                uint returned = Math.Min(Math.Min(count, MaximumBatchSize), (uint)(64 - Count));
+                uint returned = Math.Min(Math.Min(count, MaximumBatchSize), (uint)(MaximumItemCount - Count));
                 for (uint index = 0; index < returned; index++)
                 {
                     Add(Count.ToString());
