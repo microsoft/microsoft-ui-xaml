@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <BaseIntermediateOutputPath Condition="'$(PocOutputRoot)' != ''">$(PocOutputRoot)\obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath Condition="'$(PocOutputRoot)' != ''">$(PocOutputRoot)\bin\</BaseOutputPath>
+  </PropertyGroup>
+</Project>

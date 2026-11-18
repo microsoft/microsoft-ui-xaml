@@ -1,0 +1,46 @@
+{
+  "schema": "ade.team/v1",
+  "team": "ui-profiler",
+  "displayName": "WinUI Profiler Control POC",
+  "packVersion": "0.1.0",
+  "runtimeVersion": "0.1.0",
+  "checks": [
+    {
+      "id": "extractor-correctness",
+      "command": "python -B -m unittest discover -s tests -t .",
+      "timeoutSeconds": 60
+    }
+  ],
+  "protectedPaths": [
+    ".gitignore",
+    "README.md",
+    "App.xaml",
+    "App.xaml.cs",
+    "ControlDemo.csproj",
+    "Directory.Build.props",
+    "Directory.Build.targets",
+    "app.manifest",
+    "global.json",
+    "NuGet.Config",
+    "packages.lock.json",
+    "markers.json",
+    "providers.txt",
+    "build.ps1",
+    "capture.ps1",
+    "metrics.py",
+    "verify.py",
+    "measurement-contract.json",
+    "tests"
+  ],
+  "copyExclude": [],
+  "limits": {
+    "maxRounds": 2,
+    "roundTimeoutSeconds": 900,
+    "checkTimeoutSeconds": 600,
+    "maxKnowledgeBytes": 40000
+  },
+  "permissions": {
+    "shell": true,
+    "urls": false
+  }
+}
