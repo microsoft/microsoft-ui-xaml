@@ -56,7 +56,7 @@ private static void ShowView(TableView table, CollectionViewSource source)
 }
 
 // From Controls\ShapingOptions.xaml.cs
-// Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+// Under grouping plus key paths, ExpandAllGroups affects only the group headers and ExpandAllRows only
 // the tree rows, so Grouped hierarchy calls both.
 private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
 {
