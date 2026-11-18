@@ -55,6 +55,7 @@
             <Button x:Name="PrepareFocusEntryBefore" Content="Select item 11, focus before list" Click="PrepareFocusEntry_Click" VerticalAlignment="Bottom" />
             <Button x:Name="PrepareFocusEntryAfter" Content="Select item 11, focus after list" Click="PrepareFocusEntry_Click" VerticalAlignment="Bottom" />
             <CheckBox x:Name="ScrollAwayOnSelectionChanged" Content="Scroll to the end in SelectionChanged" VerticalAlignment="Bottom" />
+            <CheckBox x:Name="CancelFocusEntryInScroller" Content="Cancel focus entry in the list's ScrollViewer" VerticalAlignment="Bottom" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">
             <ComboBox x:Name="SelectionScrollAction" Header="Selection callback" SelectedIndex="0">

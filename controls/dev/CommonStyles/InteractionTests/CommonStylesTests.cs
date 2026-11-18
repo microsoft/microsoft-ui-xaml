@@ -910,6 +910,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ListViewCanceledFocusEntryDoesNotScroll()
+        {
+            using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+            {
+                new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                Wait.ForIdle();
+                // Item 11 is flush with the leading edge, so only the focus padding would move it.
+                new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName("Leading");
+                new CheckBox(FindElement.ById("CancelFocusEntryInScroller")).Check();
+                new Button(FindElement.ById("PrepareFocusEntryBefore")).Invoke();
+                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                    IsKeyboardScrollOffsetNear(2000) &&
+                    new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText() == "0");
+                VerifyKeyboardScrollOffset(2000);
+
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+
+                string diagnostics =
+                    $"offset history={new TextBlock(FindElement.ById("KeyboardScrollOffsetHistory")).GetText()}, " +
+                    $"focus sequence={new TextBlock(FindElement.ById("KeyboardScrollFocusSequence")).GetText()}";
+                Verify.AreEqual("-1", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText(),
+                    $"The canceled focus change must leave focus outside the list; {diagnostics}.");
+                VerifyKeyboardScrollOffset(2000, message: diagnostics);
+                Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollChanges")).GetText(),
+                    $"The list must not pad an item that focus is not moving to; {diagnostics}.");
+            }
+        }
+
+        [TestMethod]
         public void ListViewLocalTabEntryRealizesItemWithPaddingOnce()
         {
             foreach (bool fromAfterList in new[] { false, true })
@@ -1484,6 +1514,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollSelectedIndex")).GetText());
                 Verify.AreEqual("0", new TextBlock(FindElement.ById("KeyboardScrollFocusedIndex")).GetText());
                 VerifyKeyboardScrollOffset(0);
+            }
+        }
+
+        [TestMethod]
+        public void ListViewKeyboardScrollingToUnrealizedItemWithRoomForPaddingScrollsOnce()
+        {
+            foreach (bool vertical in new[] { false, true })
+            {
+                using (var setup = new TestSetupHelper("ListView Keyboard Scrolling Tests"))
+                {
+                    Log.Comment($"Unrealized Home/End target with a list header and footer: vertical={vertical}.");
+                    if (vertical)
+                    {
+                        new CheckBox(FindElement.ById("VerticalScrolling")).Check();
+                    }
+                    // The 60-pixel list header and footer leave room for the padding, so no clamping hides a second scroll.
+                    new CheckBox(FindElement.ById("ListHeaderFooter")).Check();
+                    new Button(FindElement.ById("ResetKeyboardScrolling")).Invoke();
+                    Wait.ForIdle();
+                    Verify.AreEqual("False", new TextBlock(FindElement.ById("KeyboardScrollLastContainerRealized")).GetText(),
+                        "The last item must not be realized before navigating to it.");
+
+                    int itemSize = vertical ? 100 : 200;
+                    int viewportSize = vertical ? 300 : 600;
+                    double endOffset = 60 + 39 * itemSize + 20 - viewportSize;
+                    KeyboardHelper.PressKey(Key.End);
+                    VerifyKeyboardScroll(38, 0, endOffset);
+                    // Home brings the list's own header into view too.
+                    KeyboardHelper.PressKey(Key.Home);
+                    VerifyKeyboardScroll(0, endOffset, 0);
+                }
             }
         }
 

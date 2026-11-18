@@ -35,6 +35,7 @@ namespace MUXControlsTestApp
         private int _navigationKeyCount;
         private double? _resetDiagnosticsAtOffset;
         private bool _scrollAwayOnSelectionChanged;
+        private bool _cancelFocusEntryInScroller;
         private int _selectionScrollAction;
         private int _scrollLayoutAction;
 
@@ -178,6 +179,14 @@ namespace MUXControlsTestApp
         {
             _scrollViewer = KeyboardScrollingList.FindVisualChildByType<ScrollViewer>();
             _scrollViewer.ViewChanged += OnViewChanged;
+            // Runs before ListViewBase's own GettingFocus handling, which is registered on the list itself.
+            _scrollViewer.GettingFocus += (sender, args) =>
+            {
+                if (_cancelFocusEntryInScroller)
+                {
+                    args.Cancel = true;
+                }
+            };
             _scrollViewer.ViewChanging += (sender, args) =>
             {
                 _viewChangingEvents++;
@@ -309,6 +318,7 @@ namespace MUXControlsTestApp
             _disableFocusScrollingDuringFocus = false;
             _resetDiagnosticsAtOffset = null;
             _scrollAwayOnSelectionChanged = false;
+            _cancelFocusEntryInScroller = false;
             _selectionScrollAction = 0;
             _scrollLayoutAction = 0;
             bool vertical = VerticalScrolling.IsChecked == true;
@@ -466,6 +476,7 @@ namespace MUXControlsTestApp
                 _scrollViewer.ChangeView(vertical ? null : offset, vertical ? offset : null, null,
                     NestedFocusTarget.IsChecked == true);
             }
+            _cancelFocusEntryInScroller = CancelFocusEntryInScroller.IsChecked == true;
         }
 
         private void PrepareStickyHeader_Click(object sender, RoutedEventArgs args)

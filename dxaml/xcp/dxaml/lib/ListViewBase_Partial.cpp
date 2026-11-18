@@ -3013,20 +3013,30 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
                 ctl::ComPtr<IDependencyObject> focusIndexContainer;
 
                 IFC_RETURN(ContainerFromIndex(focusIndex, &focusIndexContainer));
+                if (!focusIndexContainer)
+                {
+                    // A ViewChanging or layout callback removed the target during ScrollIntoView.
+                    return S_OK;
+                }
                 IFC_RETURN(focusIndexContainer.Cast<DependencyObject>()->IsAncestorOf(newFocusedElement.Cast<DependencyObject>(), &isAncestor));
 
                 // When isAncestor is True, focus is about to move to a child of focusIndexContainer. No need to alter this imminent focus change.
                 // In particular, setting focus to the container instead of its child would break the tab order when Shift-Tabbing into the ListViewBase.
+                BOOLEAN focusMoved = isAncestor;
                 if (!isAncestor)
                 {
-                    BOOLEAN focusMoved = false;
-
                     IFC_RETURN(static_cast<GettingFocusEventArgs*>(args)->TrySetNewFocusedElement(focusIndexContainer.Get(), &focusMoved));
                     IFC_RETURN(args->put_Handled(focusMoved));
                 }
 
-                // Scroll once, directly to the padded position the focus change would otherwise correct to.
-                IFC_RETURN(ScrollIntoViewWithFocusPadding(focusIndexContainer.Cast<UIElement>(), focusIndex));
+                // Scroll once, directly to the padded position the focus change would otherwise correct to, unless focus is
+                // not moving to the container after all (a handler canceled the change or focus cannot be redirected).
+                BOOLEAN isCanceled = FALSE;
+                IFC_RETURN(args->get_Cancel(&isCanceled));
+                if (focusMoved && !isCanceled)
+                {
+                    IFC_RETURN(ScrollIntoViewWithFocusPadding(focusIndexContainer.Cast<UIElement>(), focusIndex));
+                }
             }
         }
     }

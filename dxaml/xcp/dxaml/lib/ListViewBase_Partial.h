@@ -1087,7 +1087,8 @@ namespace DirectUI
                 _In_ UIElement* element,
                 _In_ UIElement* target,
                 _Out_ XRECTF* elementBounds,
-                _Out_ XRECTF* focusBounds);
+                _Out_ XRECTF* focusBounds,
+                _Out_ bool* isAvailable);
 
             // Offset for the ScrollIntoView realizing an item ahead of a keyboard focus change, so it lands at its padded position.
             _Check_return_ HRESULT GetFocusPaddingScrollOffset(
