@@ -74,6 +74,9 @@ namespace RuntimeProfiler
         ProfId_ResizeGripper,
         ProfId_GroupedSourceAdapter,
         ProfId_HierarchicalSourceAdapter,
+        ProfId_NavigationViewItem,
+        ProfId_NavigationViewItemHeader,
+        ProfId_NavigationViewItemSeparator,
         ProfId_Size // ProfId_Size is the last always.
     } ProfilerClassId;
 

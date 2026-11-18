@@ -9,6 +9,7 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "StackLayout.h"
 #include "Utils.h"
+#include "RuntimeProfiler.h"
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
@@ -40,6 +41,7 @@ static constexpr auto c_pressedChevronVisibleClosed = L"PressedChevronVisibleClo
 
 NavigationViewItem::NavigationViewItem()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationViewItem);
     SetDefaultStyleKey(this);
     SetValue(s_MenuItemsProperty, winrt::make<Vector<winrt::IInspectable>>());
 

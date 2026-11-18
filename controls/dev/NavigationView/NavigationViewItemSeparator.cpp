@@ -5,6 +5,7 @@
 #include "common.h"
 #include "NavigationViewItemSeparator.h"
 #include "Utils.h"
+#include "RuntimeProfiler.h"
 
 #include "NavigationViewItemSeparator.properties.cpp"
 
@@ -12,6 +13,7 @@ static constexpr auto c_rootGrid = L"NavigationViewItemSeparatorRootGrid"sv;
 
 NavigationViewItemSeparator::NavigationViewItemSeparator()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationViewItemSeparator);
     SetDefaultStyleKey(this);
 }
 

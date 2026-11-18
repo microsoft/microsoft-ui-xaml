@@ -5,6 +5,7 @@
 #include "common.h"
 #include "NavigationViewItemHeader.h"
 #include "NavigationView.h"
+#include "RuntimeProfiler.h"
 
 #include "NavigationViewItemHeader.properties.cpp"
 
@@ -12,6 +13,7 @@ static constexpr auto c_rootGrid = L"NavigationViewItemHeaderRootGrid"sv;
 
 NavigationViewItemHeader::NavigationViewItemHeader()
 {
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationViewItemHeader);
     SetDefaultStyleKey(this);
 }
 
