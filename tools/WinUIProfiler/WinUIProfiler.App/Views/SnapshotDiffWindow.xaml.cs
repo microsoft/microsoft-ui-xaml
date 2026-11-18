@@ -6,12 +6,13 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
+using WinUIProfiler.Engine.Snapshots;
 
 namespace WinUIProfiler.App.Views;
 
 public sealed record SnapshotDiffTableRow(string Change, SnapshotNodeDiff Difference)
 {
-    public string Label => (Difference.After ?? Difference.Before!).Label;
+    public string Label => (Difference.After ?? Difference.Before!).Label();
     public override string ToString() => $"{Change}: {Label}";
 }
 
@@ -65,7 +66,7 @@ public sealed partial class SnapshotDiffWindow : Window
         try
         {
             var token = lifetime.Token;
-            data = await Task.Run(() => SnapshotDiffData.LoadAsync(before, after, token));
+            data = await Task.Run(() => SnapshotFiles.LoadAsync(before, after, token));
             if (closed) return;
             XamlSummary.Text = Summary(data.Xaml);
             CompositionSummary.Text = Summary(data.Composition);

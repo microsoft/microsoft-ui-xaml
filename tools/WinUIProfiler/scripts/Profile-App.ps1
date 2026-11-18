@@ -42,11 +42,26 @@ built by Build-App.ps1 when it is missing.
 .PARAMETER Build
 Rebuilds the profiler with Build-App.ps1 first.
 
+.PARAMETER Headless
+Uses Build-Cli.ps1 and runs a foreground CLI live session instead of opening the App. Requires an already
+elevated shell. The target is never stopped automatically; private runtime staging is retained for its lifetime.
+
+.PARAMETER Duration
+Stops a headless profiling session after this many seconds, without stopping the target.
+
+.PARAMETER Json
+Emits headless CLI NDJSON to stdout; preparation diagnostics go to stderr.
+
+.PARAMETER StagingDirectory
+Parent directory for a new private-runtime preparation. Defaults to LocalAppData\WinUIProfiler\PrivateRuntime.
+Headless runs retain this preparation without terminating the target.
+
 .PARAMETER SymbolPath
 Where the profiler resolves the recording's CPU sample stacks from, as WPA's symbol path: local or network folders and
 symbol servers, separated by semicolons, for example srv*C:\Symbols*https://msdl.microsoft.com/download/symbols. Only
 this path is searched; _NT_SYMBOL_PATH is not read. Relative folders are resolved from the current folder, and
 environment variables are expanded. Without it, the samples are recorded but not symbolized.
+This option requires desktop mode; use the CLI symbolize command for headless recordings.
 
 .EXAMPLE
 .\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe
@@ -67,6 +82,11 @@ param(
     [string] $MuxResourceDirectory,
     [string] $ProfilerPath,
     [switch] $Build,
+    [switch] $Headless,
+    [ValidateRange(0.001, 2147483)][double] $Duration,
+    [switch] $Json,
+    [string] $SessionDirectory,
+    [string] $StagingDirectory,
     [string] $SymbolPath,
     # Set when the script relaunches itself with administrator rights.
     [Parameter(DontShow)][string] $ElevatedLogPath
@@ -75,6 +95,13 @@ $ErrorActionPreference = 'Stop'
 $script:ExitCode = 1
 $Mux = 'Microsoft.UI.Xaml.dll'
 $Muxc = 'Microsoft.UI.Xaml.Controls.dll'
+if ($Headless) {
+    function Write-Host {
+        [CmdletBinding(PositionalBinding = $false)]
+        param([Parameter(Position = 0, ValueFromRemainingArguments)][object[]]$Object, [ConsoleColor]$ForegroundColor)
+        [Console]::Error.WriteLine(($Object -join ' '))
+    }
+}
 
 function Get-LocalPath([string] $Path) {
     $full = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
@@ -154,6 +181,14 @@ function Test-Administrator {
 }
 
 function Get-ProfilerExecutable([string] $Root, [string] $Platform, [bool] $Rebuild) {
+    if ($Headless) {
+        $executable = Join-Path $Root "artifacts\cli\win-$($Platform.ToLowerInvariant())\Release\WinUIProfiler.Cli.exe"
+        if ($Rebuild -or -not (Test-Path -LiteralPath $executable -PathType Leaf)) {
+            & (Join-Path $PSScriptRoot 'Build-Cli.ps1') -Configuration Release -Platform $Platform 2>&1 |
+                ForEach-Object { [Console]::Error.WriteLine([string]$_) }
+        }
+        return Get-LocalPath $executable
+    }
     $outputFile = Join-Path $Root "WinUIProfiler.App\obj\ProfilerAppOutput.$Platform.Release.txt"
     $executable = if (Test-Path -LiteralPath $outputFile -PathType Leaf) {
         Join-Path (Get-Content -LiteralPath $outputFile -Raw).Trim() 'WinUIProfiler.App.exe'
@@ -249,8 +284,9 @@ function Get-MuxCompanions([string] $Directory, [bool] $RequireResources) {
             }
         }
     }
-    # These companions also use LoadLibraryExWAbs, but do not have the XAML prefix.
-    $moduleRelativeCompanions = @('WinUIEdit.dll', 'Microsoft.UI.Input.dll', 'Microsoft.DirectManipulation.dll')
+    # Include module-relative loads and the core's app-local imports for DLL-directory-only loader probes.
+    $moduleRelativeCompanions = @('WinUIEdit.dll', 'Microsoft.UI.Input.dll', 'Microsoft.DirectManipulation.dll',
+        'Microsoft.Internal.FrameworkUdk.dll', 'Microsoft.UI.Windowing.Core.dll', 'CoreMessagingXP.dll')
     foreach ($file in (Get-ChildItem -LiteralPath $Directory -File | Where-Object {
         $_.Name -like 'Microsoft.UI.Xaml.*' -or $_.Name -in $moduleRelativeCompanions
     } |
@@ -700,8 +736,9 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
     }
     $companions = @($companions | Where-Object { $_.isDirectory -or $_.name -ne $Muxc })
 
-    $local = [Environment]::GetFolderPath('LocalApplicationData')
-    $run = Get-LocalPath (Join-Path $local "WinUIProfiler\PrivateRuntime\$(Get-Date -Format yyyyMMdd-HHmmss)-$([guid]::NewGuid().ToString('N').Substring(0, 8))")
+    $staging = if ($StagingDirectory) { Get-LocalPath $StagingDirectory }
+        else { Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'WinUIProfiler\PrivateRuntime' }
+    $run = Get-LocalPath (Join-Path $staging "$(Get-Date -Format yyyyMMdd-HHmmss)-$([guid]::NewGuid().ToString('N').Substring(0, 8))")
     $runtime = Join-Path $run 'runtime'
     $launches = Join-Path $run 'launch'
     $null = New-Item -ItemType Directory -Path $run
@@ -730,17 +767,27 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
         $start = [Diagnostics.ProcessStartInfo]::new($Profiler)
         $start.UseShellExecute = $false
         $start.WorkingDirectory = Split-Path -Parent $Profiler
-        $profilerArguments = if ($package) { @('--launch-aumid', $Aumid) } else { @('--launch-exe', $executable) }
+        $profilerArguments = if ($Headless) {
+            if ($package) { @('live', '--aumid', $Aumid) } else { @('live', '--exe', $executable) }
+        } elseif ($package) { @('--launch-aumid', $Aumid) } else { @('--launch-exe', $executable) }
         if ($Arguments) { $profilerArguments += '--arguments', $Arguments }
         $profilerArguments += '--private-runtime', $runtime, '--runtime-source', $original, '--redirect-controls',
-            '--launch-directory', $launches, '--trust-local-binaries', '--connect'
-        if ($SymbolPath) { $profilerArguments += '--symbol-path', $SymbolPath }
+            '--launch-directory', $launches, '--trust-local-binaries'
+        if ($Headless) {
+            if ($Duration) { $profilerArguments += '--duration', $Duration.ToString([Globalization.CultureInfo]::InvariantCulture) }
+            if ($Json) { $profilerArguments += '--json' }
+            if ($SessionDirectory) { $profilerArguments += '--session-directory', (Get-LocalPath $SessionDirectory) }
+        } else {
+            $profilerArguments += '--connect'
+            if ($SymbolPath) { $profilerArguments += '--symbol-path', $SymbolPath }
+        }
         foreach ($argument in $profilerArguments) { $start.ArgumentList.Add($argument) }
         $started = Get-Date
         $profilerProcess = [Diagnostics.Process]::Start($start)
         try {
             Write-Host "WinUI Profiler (PID $($profilerProcess.Id)) launches the app and profiles it. Close the profiler to finish."
             $profilerProcess.WaitForExit()
+            if ($Headless) { $script:ExitCode = $profilerProcess.ExitCode }
             Write-Host "WinUI Profiler exited with code $($profilerProcess.ExitCode)."
         }
         finally { $profilerProcess.Dispose() }
@@ -752,7 +799,7 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
     finally {
         $records = @(Get-LaunchRecords $launches)
         $closed = $true
-        foreach ($record in $records) {
+        foreach ($record in $(if ($Headless) { @() } else { $records })) {
             $owned = @($record.result.processes)
             if ($record.result -and $record.result.pid -gt 0 -and $record.result.pid -notin $owned.pid) {
                 $owned += $record.result
@@ -766,17 +813,20 @@ function Invoke-ProfileApp([string] $Profiler, [string] $HostPlatform) {
             }
         }
         $removed = $true
-        if ($created) {
+        if ($created -and -not $Headless) {
             $canRemove = $closed -and -not @(Get-Process -Name $images -ErrorAction SilentlyContinue).Count
             $removed = Remove-PrivateRuntime $runtime $prepared.sha256 $privateMuxc.sha256 $links $canRemove
         }
-        if ($prepared -and $prepared.reassociated) {
+        if ($prepared -and $prepared.reassociated -and -not $Headless) {
             $removed = (Remove-FileDirectory (Split-Path -Parent $prepared.path)) -and $removed
         }
-        foreach ($record in $records) {
+        foreach ($record in $(if ($Headless) { @() } else { $records })) {
             $removed = (Remove-FileDirectory (Join-Path $record.directory 'native')) -and $removed
         }
-        if ($null -eq $failure) {
+        if ($Headless) {
+            Write-Host "Private runtime retained (target was not terminated): $run"
+        }
+        elseif ($null -eq $failure) {
             $script:ExitCode = Write-ProfileSummary $records $runtime $package $started $removed
         }
     }
@@ -834,6 +884,9 @@ function Write-ProfileSummary($Records, [string] $Runtime, $Package, [datetime] 
 if ($ElevatedLogPath) { $null = Start-Transcript -LiteralPath $ElevatedLogPath -UseMinimalHeader }
 try {
     if (-not $IsWindows) { throw 'Profile-App.ps1 requires Windows.' }
+    if ($Headless -and $SymbolPath) { throw '-SymbolPath requires desktop mode; use the CLI symbolize command for headless recordings.' }
+    if ($Headless -and -not (Test-Administrator)) { throw 'Run -Headless from an elevated PowerShell shell; automatic UAC relaunch cannot preserve CLI stdin/stdout.' }
+    if (-not $Headless -and ($Json -or $Duration -or $SessionDirectory)) { throw '-Json, -Duration and -SessionDirectory require -Headless.' }
     if (-not [Environment]::Is64BitProcess) { throw 'Use 64-bit PowerShell 7 (x64 or ARM64).' }
     $hostPlatform = switch ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) {
         'X64' { 'x64' }

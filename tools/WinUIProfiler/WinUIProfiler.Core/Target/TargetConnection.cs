@@ -27,7 +27,8 @@ bool TrustLocalBinaries,
 long? ExpectedCreationTimeFileTime = null,
     string? SessionDirectory = null,
     IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null,
-    PrivateRuntimeLaunch? PrivateRuntime = null);
+    PrivateRuntimeLaunch? PrivateRuntime = null,
+    bool IsolateLaunchedStandardHandles = false);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -184,10 +185,15 @@ public sealed class TargetConnection : IAsyncDisposable
                 ? new TimeoutException("Connecting to the target exceeded the 45-second deadline.", error) : error;
             connection.Failure = failure;
             await connection.CleanupAsync().ConfigureAwait(false);
+            if (connection.Recording is { } recording) failure.Data["RecordingPath"] = recording.Path;
+            if (connection.EtwError is { } etwError) failure.Data["EtwError"] = etwError;
+            if (connection.RecordingError is { } recordingError) failure.Data["RecordingError"] = recordingError;
             connection.stop.Dispose();
             if (connection.Failure != failure)
             {
-                throw new AggregateException("Connection failed and cleanup reported an error.", failure, connection.Failure!);
+                var combined = new AggregateException("Connection failed and cleanup reported an error.", failure, connection.Failure!);
+                foreach (var key in failure.Data.Keys) combined.Data[key] = failure.Data[key];
+                throw combined;
             }
 
             if (failure != error)
@@ -221,7 +227,8 @@ public sealed class TargetConnection : IAsyncDisposable
 
         if (options.PrivateRuntime is { } privateRuntime)
         {
-            nativeLaunch = await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token)
+            nativeLaunch = await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token,
+                options.IsolateLaunchedStandardHandles)
                 .ConfigureAwait(false);
             target = nativeLaunch.Process;
         }
@@ -229,7 +236,8 @@ public sealed class TargetConnection : IAsyncDisposable
         {
             target = options.Kind switch
             {
-                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
+                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory,
+                    options.IsolateLaunchedStandardHandles),
                 TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
                 TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
                 _ => throw new ArgumentOutOfRangeException(nameof(options))
@@ -555,7 +563,18 @@ History);
     public static ProcessInstanceKey Identify(Process process) =>
         new(checked((uint)process.Id), process.StartTime.ToFileTimeUtc(), Guid.NewGuid());
 
-    public async Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default)
+    public Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default) =>
+        TakeSnapshotCoreAsync(directory, null, cancellationToken);
+
+    public Task<SavedTreeSnapshot> TakeSnapshotToFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (!Path.IsPathFullyQualified(path)) throw new ArgumentException("Snapshot output path must be absolute.", nameof(path));
+        if (File.Exists(path) || Directory.Exists(path)) throw new IOException($"Snapshot output already exists: {path}");
+        return TakeSnapshotCoreAsync(Path.GetDirectoryName(path)!, path, cancellationToken);
+    }
+
+    private async Task<SavedTreeSnapshot> TakeSnapshotCoreAsync(string directory, string? outputPath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
@@ -585,8 +604,8 @@ History);
 
         token.ThrowIfCancellationRequested();
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
-        var temporary = path + ".partial";
+        var path = outputPath ?? Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
+        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".partial";
         var created = false;
         var committed = false;
         try
