@@ -24,6 +24,8 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
+#include "SelectionNode.h"
+#include "SelectionModel.h"
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
@@ -2657,7 +2659,18 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
 
     // nextItem has no index path when it is null or an item outside the menus (#8266), so any path left in the
     // selection model is stale (unless the model already holds nextItem, e.g. while its container is detached).
-    if (m_selectionModel && (!nextItem || (m_appliedTemplate && !isNextItemInMenus && m_selectionModel.SelectedItem() != nextItem)))
+    bool hasStaleSelectionModelPath = m_selectionModel && (!nextItem || (m_appliedTemplate && !isNextItemInMenus));
+    if (hasStaleSelectionModelPath && nextItem)
+    {
+        // Reading the model's item calls into the items source (GetAt/IndexOf), which can start a new selection.
+        hasStaleSelectionModelPath = !winrt::get_self<SelectionModel>(m_selectionModel)->IsSelectedItem(nextItem);
+        if (selectionOwnershipLost())
+        {
+            return;
+        }
+    }
+
+    if (hasStaleSelectionModelPath)
     {
         // Nothing is left to move out of the Top overflow when its flyout closes.
         m_moveTopNavOverflowItemOnFlyoutClose = false;
