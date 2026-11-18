@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.Json;
@@ -81,7 +82,7 @@ internal static class LiveCommands
                 return 0;
             }
 
-            var parsed = Parse(args);
+            var parsed = Parse(args, error);
             if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Live profiling requires Windows.");
             return await RunSessionAsync(parsed, input, output, error, cancellationToken,
                 async (settings, progress, token) =>
@@ -114,7 +115,7 @@ internal static class LiveCommands
         }
     }
 
-    internal static Options Parse(string[] args)
+    internal static Options Parse(string[] args, TextWriter? error = null)
     {
         var capture = args.Length >= 2 && args[0] == "snapshot" && args[1] == "capture";
         if (!capture && (args.Length == 0 || args[0] != "live"))
@@ -163,6 +164,8 @@ internal static class LiveCommands
             throw new ArgumentException("--exe requires a full executable path.");
         if (kind == TargetLaunchKind.Attach && (hasArguments || options.Has("--working-directory")))
             throw new ArgumentException("--arguments and --working-directory require a launched target.");
+        if (kind == TargetLaunchKind.Packaged && options.Has("--working-directory"))
+            throw new ArgumentException("--working-directory requires an unpackaged target.");
         var duration = Seconds(options.Get("--duration"), "--duration");
         var interval = Seconds(options.Get("--snapshot-interval"), "--snapshot-interval");
         if (capture && (duration.HasValue || interval.HasValue || options.Has("--interactive") || options.Has("--snapshot-directory")))
@@ -194,7 +197,7 @@ internal static class LiveCommands
             checked((ushort)options.Integer("--endpoint", 1, 1, ushort.MaxValue)), creation,
             FullPath(options.Get("--session-directory")) ??
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUIProfiler", "Sessions"),
-            MarkerConfig.Load(options.Get("--markers")).Providers,
+            CliApplication.LoadMarkers(options.Get("--markers"), error ?? Console.Error).Providers,
             commandLine.GetPrivateRuntime(Path.GetFullPath(options.Get("--launcher-directory") ??
                 Path.Combine(AppContext.BaseDirectory, "NativeLauncher"))), IsolateLaunchedStandardHandles: true);
         if (OperatingSystem.IsWindows()) TargetConnection.ValidateOptions(connection);
@@ -218,8 +221,15 @@ internal static class LiveCommands
         CancellationToken cancellationToken,
         Func<TargetConnectionOptions, IProgress<ConnectionProgress>, CancellationToken, Task<ILiveConnection>> connect)
     {
+        output = new SessionOutput(output);
+        error = new SessionOutput(error);
         var progress = new ProgressQueue();
         ILiveConnection? connection = null;
+        Task<ILiveConnection>? connecting = null;
+        Task? startupProgress = null;
+        Task? shutdown = null;
+        var shutdownGate = new object();
+        CancellationTokenRegistration shutdownRegistration = default;
         Exception? failure = null;
         var canceled = false;
         var snapshots = 0;
@@ -227,15 +237,21 @@ internal static class LiveCommands
         using var sessionStop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         try
         {
-            var connecting = connect(options.Connection, progress, sessionStop.Token);
+            connecting = connect(options.Connection, progress, sessionStop.Token);
             while (!connecting.IsCompleted)
             {
-                await DrainProgressAsync(progress, options.Json, output, error).ConfigureAwait(false);
+                startupProgress = DrainProgressAsync(progress, options.Json, output, error, sessionStop.Token);
+                await Task.WhenAny(connecting, startupProgress).ConfigureAwait(false);
+                if (!startupProgress.IsCompleted) break;
+                await startupProgress.ConfigureAwait(false);
+                startupProgress = null;
                 await Task.WhenAny(connecting, Task.Delay(100, CancellationToken.None)).ConfigureAwait(false);
             }
             connection = await connecting.ConfigureAwait(false);
-            await DrainProgressAsync(progress, options.Json, output, error).ConfigureAwait(false);
+            shutdownRegistration = sessionStop.Token.Register(() => { _ = ShutdownAsync(); });
             if (options.Duration is { } seconds) sessionStop.CancelAfter(TimeSpan.FromSeconds(seconds));
+            if (startupProgress is not null) await startupProgress.ConfigureAwait(false);
+            await DrainProgressAsync(progress, options.Json, output, error, sessionStop.Token).ConfigureAwait(false);
             await CaptureAsync().ConfigureAwait(false);
             if (!options.Capture)
             {
@@ -245,7 +261,7 @@ internal static class LiveCommands
                 long lastQpc = -1;
                 while (!sessionStop.IsCancellationRequested && !connection.Completion.IsCompleted)
                 {
-                    await DrainProgressAsync(progress, options.Json, output, error).ConfigureAwait(false);
+                    await DrainProgressAsync(progress, options.Json, output, error, sessionStop.Token).ConfigureAwait(false);
                     // Copy history on the host loop, never write output from the native acquisition callback.
                     var series = connection.History!.Snapshot();
                     var latest = series[0].Points.LastOrDefault()?.TimestampQpc;
@@ -272,7 +288,7 @@ internal static class LiveCommands
                                 await CaptureAsync().ConfigureAwait(false);
                                 break;
                             default:
-                                await error.WriteLineAsync("Commands: status, snapshot, stop.").ConfigureAwait(false);
+                                await error.WriteLineAsync("Commands: status, snapshot, stop.".AsMemory(), sessionStop.Token).ConfigureAwait(false);
                                 break;
                         }
                         command = ReadCommandAsync(input, sessionStop.Token);
@@ -288,9 +304,11 @@ internal static class LiveCommands
             }
             async Task CaptureAsync()
             {
+                sessionStop.Token.ThrowIfCancellationRequested();
+                // Stop the connection first: canceling TAP alone can release a queued heartbeat onto a closed pipe.
                 var saved = options.Capture
-                    ? await connection.TakeSnapshotToFileAsync(options.OutputPath!, sessionStop.Token).ConfigureAwait(false)
-                    : await connection.TakeSnapshotAsync(options.SnapshotDirectory, sessionStop.Token).ConfigureAwait(false);
+                    ? await connection.TakeSnapshotToFileAsync(options.OutputPath!, CancellationToken.None).ConfigureAwait(false)
+                    : await connection.TakeSnapshotAsync(options.SnapshotDirectory, CancellationToken.None).ConfigureAwait(false);
                 snapshots++;
                 snapshotPaths.Add(saved.Path);
                 await WriteAsync(output, options.Json, "snapshot", saved, sessionStop.Token).ConfigureAwait(false);
@@ -316,16 +334,36 @@ internal static class LiveCommands
         finally
         {
             await sessionStop.CancelAsync().ConfigureAwait(false);
+            shutdownRegistration.Dispose();
+            if (connection is null && connecting is not null)
+            {
+                try { connection = await connecting.ConfigureAwait(false); }
+                catch (OperationCanceledException) when (sessionStop.IsCancellationRequested) { }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                {
+                    if (!ReferenceEquals(failure, exception))
+                        failure = failure is null ? exception : new AggregateException(failure, exception);
+                }
+            }
             if (connection is not null)
             {
-                try { await connection.DisposeAsync().ConfigureAwait(false); }
+                try { await ShutdownAsync().ConfigureAwait(false); }
                 catch (Exception exception) when (exception is not OutOfMemoryException)
                 {
                     failure = failure is null ? exception : new AggregateException(failure, exception);
                 }
             }
+            if (startupProgress is not null)
+            {
+                try { await startupProgress.ConfigureAwait(false); }
+                catch (OperationCanceledException) when (sessionStop.IsCancellationRequested) { }
+                catch (Exception exception) when (exception is not OutOfMemoryException)
+                {
+                    if (!ReferenceEquals(failure, exception))
+                        failure = failure is null ? exception : new AggregateException(failure, exception);
+                }
+            }
         }
-        await DrainProgressAsync(progress, options.Json, output, error).ConfigureAwait(false);
         var etwError = connection?.EtwError ?? failure?.Data["EtwError"] as string;
         var recordingError = connection?.RecordingError ?? failure?.Data["RecordingError"] as string;
         var incomplete = failure is not null || etwError is not null || recordingError is not null ||
@@ -333,29 +371,56 @@ internal static class LiveCommands
             connection?.Etw is { LostEvents: > 0 } or { DroppedEvents: > 0 };
         canceled |= cancellationToken.IsCancellationRequested;
         var exitCode = canceled ? 4 : incomplete ? 3 : 0;
-        if (failure is not null) await error.WriteLineAsync(failure.Message).ConfigureAwait(false);
-        if (etwError is not null) await error.WriteLineAsync(etwError).ConfigureAwait(false);
-        if (recordingError is not null) await error.WriteLineAsync(recordingError).ConfigureAwait(false);
-        await WriteAsync(output, options.Json, "summary", new
+        using var finalOutput = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
         {
-            state = canceled ? "canceled" : incomplete ? "incomplete" : "completed", exitCode, snapshots, snapshotPaths,
-            process = connection?.Scope?.Process, samples = connection?.History?.TotalSamples ?? 0,
-            recordingPath = connection?.Recording?.Path ?? failure?.Data["RecordingPath"] as string,
-            recording = connection?.Recording,
-            etwState = EtwState(connection),
-            etw = connection?.Etw, etwError,
-            recordingState = RecordingState(connection),
-            recordingError, error = failure?.Message, targetTerminated = false
-        }, CancellationToken.None).ConfigureAwait(false);
+            await DrainProgressAsync(progress, options.Json, output, error, finalOutput.Token).ConfigureAwait(false);
+            foreach (var message in new[] { failure?.Message, etwError, recordingError }.OfType<string>())
+                await error.WriteLineAsync(message.AsMemory(), finalOutput.Token).ConfigureAwait(false);
+            await WriteAsync(output, options.Json, "summary", new
+            {
+                state = canceled ? "canceled" : incomplete ? "incomplete" : "completed", exitCode, snapshots, snapshotPaths,
+                process = connection?.Scope?.Process, samples = connection?.History?.TotalSamples ?? 0,
+                recordingPath = connection?.Recording?.Path ?? failure?.Data["RecordingPath"] as string,
+                recording = connection?.Recording,
+                etwState = EtwState(connection),
+                etw = connection?.Etw, etwError,
+                recordingState = RecordingState(connection),
+                recordingError, error = failure?.Message, targetTerminated = false
+            }, finalOutput.Token).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            Trace.TraceError($"Final live CLI output failed: {exception}");
+            using var diagnostics = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            try
+            {
+                await error.WriteLineAsync("Could not write the final live summary; the connection has been stopped.".AsMemory(),
+                    diagnostics.Token).ConfigureAwait(false);
+            }
+            catch (Exception diagnosticError) when (diagnosticError is not OutOfMemoryException)
+            {
+                Trace.TraceError($"Live CLI diagnostic output failed: {diagnosticError}");
+            }
+            return canceled ? 4 : 3;
+        }
         return exitCode;
+
+        Task ShutdownAsync()
+        {
+            lock (shutdownGate) return shutdown ??= DisposeConnectionAsync();
+        }
+
+        async Task DisposeConnectionAsync() => await connection!.DisposeAsync().ConfigureAwait(false);
     }
 
-    private static async Task DrainProgressAsync(ProgressQueue progress, bool json, TextWriter output, TextWriter error)
+    private static async Task DrainProgressAsync(ProgressQueue progress, bool json, TextWriter output, TextWriter error,
+        CancellationToken token)
     {
         while (progress.Items.TryDequeue(out var item))
         {
-            await error.WriteLineAsync($"{item.State}: {item.Detail}").ConfigureAwait(false);
-            if (json) await WriteAsync(output, true, "status", item, CancellationToken.None).ConfigureAwait(false);
+            await error.WriteLineAsync($"{item.State}: {item.Detail}".AsMemory(), token).ConfigureAwait(false);
+            if (json) await WriteAsync(output, true, "status", item, token).ConfigureAwait(false);
         }
     }
 
@@ -363,6 +428,45 @@ internal static class LiveCommands
         output.WriteLineAsync((json
             ? JsonSerializer.Serialize(new { type, data }, JsonOptions)
             : $"{type}: {JsonSerializer.Serialize(data, JsonOptions)}").AsMemory(), token);
+
+    // Console writers can block synchronously before returning a Task. Serialize writes off the acquisition loop,
+    // and let cancellation stop the connection even when a pipe reader stops draining stdout or stderr.
+    private sealed class SessionOutput(TextWriter inner) : TextWriter
+    {
+        private readonly SemaphoreSlim writes = new(1, 1);
+        private ExceptionDispatchInfo? failure;
+        public override Encoding Encoding => inner.Encoding;
+
+        public override async Task WriteLineAsync(ReadOnlyMemory<char> buffer, CancellationToken cancellationToken = default)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+            try
+            {
+                await writes.WaitAsync(stop.Token).ConfigureAwait(false);
+                if (failure is { } previous)
+                {
+                    writes.Release();
+                    previous.Throw();
+                }
+                var write = Task.Run(async () =>
+                {
+                    try { await inner.WriteLineAsync(buffer, CancellationToken.None).ConfigureAwait(false); }
+                    catch (Exception exception) when (exception is not OutOfMemoryException)
+                    {
+                        failure = ExceptionDispatchInfo.Capture(exception);
+                    }
+                    finally { writes.Release(); }
+                }, CancellationToken.None);
+                await write.WaitAsync(stop.Token).ConfigureAwait(false);
+                failure?.Throw();
+            }
+            catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested && timeout.IsCancellationRequested)
+            {
+                throw new IOException("Timed out writing live CLI output; the reader may have stopped draining the pipe.", exception);
+            }
+        }
+    }
 
     private static string EtwState(ILiveConnection? connection) =>
         connection?.EtwError is not null || connection?.Etw is null ? "unavailable" :

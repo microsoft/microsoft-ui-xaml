@@ -18,7 +18,12 @@ internal static partial class CliApplication
 
     private const int DefaultCpuTop = 30;
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private const string Usage = """
         Usage:
@@ -863,7 +868,7 @@ internal static partial class CliApplication
 
     // The configuration a path names, which must be valid. Without one, the user's, unless it is not valid: then, as in the
     // app, a warning says why and the default is used, so a mistake in it never stops a command.
-    private static MarkerConfig LoadMarkers(string? path, TextWriter error)
+    internal static MarkerConfig LoadMarkers(string? path, TextWriter error)
     {
         if (path is not null)
         {

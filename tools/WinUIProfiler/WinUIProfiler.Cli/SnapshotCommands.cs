@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Snapshots;
@@ -12,6 +13,7 @@ internal static class SnapshotCommands
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals,
         WriteIndented = true
     };
 
@@ -113,9 +115,9 @@ internal static class SnapshotCommands
                     foreach (var match in diff.SelectMatches(kind, node)) matches.Add(match.Node);
                 }
                 AddContext(target, matches, cancellationToken);
-                var rows = DiffRows(compared, included, scope, changes, allProperties, diff, kind, cancellationToken);
+                var rows = DiffRows(compared, included, matches, scope, changes, allProperties, diff, kind, cancellationToken);
                 var otherKind = kind == SnapshotTreeKind.Xaml ? SnapshotTreeKind.Composition : SnapshotTreeKind.Xaml;
-                var correlated = DiffRows(target, matches, [], changes, allProperties, diff, otherKind, cancellationToken);
+                var correlated = DiffRows(target, matches, included, [], changes, allProperties, diff, otherKind, cancellationToken);
                 if (options.Json)
                     WriteJson(output, new
                     {
@@ -375,7 +377,7 @@ internal static class SnapshotCommands
 
     private static string DiffId(SnapshotNodeDiff node) => node.After is { } after ? $"after:{after.Id}" : $"before:{node.Before!.Id}";
 
-    private static DiffOutput[] DiffRows(SnapshotTreeDiff tree, HashSet<SnapshotNodeDiff> included,
+    private static DiffOutput[] DiffRows(SnapshotTreeDiff tree, HashSet<SnapshotNodeDiff> included, HashSet<SnapshotNodeDiff> correlated,
         HashSet<SnapshotNodeDiff> scope, SnapshotChange? changes, bool allProperties, SnapshotDiffData diff,
         SnapshotTreeKind kind, CancellationToken token)
     {
@@ -399,7 +401,7 @@ internal static class SnapshotCommands
                 node.ContainsChanges, context,
                 node.Properties.Select(property => new PropertyOutput(property.Name, property.Before.HasValue,
                     property.After.HasValue, property.Before, property.After)).ToArray(),
-                diff.SelectMatches(kind, node).Select(match => new DiffMatchOutput(DiffId(match.Node),
+                diff.SelectMatches(kind, node).Where(match => correlated.Contains(match.Node)).Select(match => new DiffMatchOutput(DiffId(match.Node),
                     match.Node.Before?.Id, match.Node.After?.Id, match.Before, match.After)).ToArray()));
         }
         return result.ToArray();

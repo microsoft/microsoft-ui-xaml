@@ -1,14 +1,17 @@
 using System.Text.Json;
 using WinUIProfiler.App.ViewModels;
 using WinUIProfiler.Contracts;
+using WinUIProfiler.Cli;
+using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Snapshots;
+using WinUIProfiler.Engine.Storage;
 
 internal static class SnapshotDiffTests
 {
     internal static async Task RunAsync()
     {
         var prefix = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-SnapshotDiff-{Guid.NewGuid():N}");
-        string[] paths = [prefix + "-before.json", prefix + "-after.json", prefix + "-properties.json"];
+        string[] paths = [prefix + "-before.json", prefix + "-after.json", prefix + "-properties.json", prefix + "-null.json"];
         try
         {
             var baseline = Capture(false);
@@ -85,11 +88,122 @@ internal static class SnapshotDiffTests
                 "Selecting an unchanged node must still display its captured name and properties.");
             Console.WriteLine("Passed: snapshot diff tables include only additions/removals and retain tree identity and cross-tree correlations.");
             Console.WriteLine("Passed: selected-node properties include unchanged values, changed values, and absent snapshot sides.");
+            await CheckCliAsync(baseline, before, after, paths[3], prefix);
         }
         finally
         {
             foreach (var path in paths) File.Delete(path);
         }
+    }
+
+    private static async Task CheckCliAsync(TreeSnapshotDocument baseline, SnapshotHistoryEntry before,
+        SnapshotHistoryEntry after, string nullPath, string prefix)
+    {
+        foreach (var filter in new[] { "moved", "added" })
+        {
+            using var json = Invoke("snapshot", "diff", before.Saved.Path, after.Saved.Path, "--changes", filter, "--json");
+            var root = json.RootElement;
+            Require(root.GetProperty("schemaVersion").GetInt32() == 1, "The snapshot CLI must retain its versioned JSON contract.");
+            var nodes = root.GetProperty("nodes").EnumerateArray().ToArray();
+            var correlated = root.GetProperty("correlatedNodes").EnumerateArray().ToArray();
+            var selected = nodes.Where(node => !node.GetProperty("context").GetBoolean()).ToArray();
+            Require(selected.Length == 1 && selected[0].GetProperty("id").GetString() == (filter == "moved" ? "after:27" : "after:24"),
+                "CLI change filters must select the changed node despite different capture-local IDs.");
+            Require(nodes.Any(node => node.GetProperty("id").GetString() == "after:21" && node.GetProperty("context").GetBoolean()),
+                "Filtered trees must retain their ancestor context.");
+            CheckReferences(nodes, correlated);
+            CheckReferences(correlated, nodes);
+        }
+        using (var json = Invoke("snapshot", "diff", before.Saved.Path, after.Saved.Path, "--node", "7",
+            "--side", "before", "--changes", "moved", "--json"))
+        {
+            Require(json.RootElement.GetProperty("nodes").EnumerateArray().Single(node =>
+                !node.GetProperty("context").GetBoolean()).GetProperty("after").GetProperty("id").GetInt32() == 27,
+                "A before-side selection must resolve to the matching after-side node.");
+        }
+        using (var json = Invoke("snapshot", "tree", after.Saved.Path, "--node", "22", "--depth", "0", "--json"))
+        {
+            var nodes = json.RootElement.GetProperty("nodes");
+            Require(nodes.GetArrayLength() == 1 && nodes[0].GetProperty("node").GetProperty("id").GetInt32() == 22,
+                "Depth zero must show only the selected node.");
+        }
+        var withNull = baseline with
+        {
+            CaptureId = Guid.NewGuid(),
+            XamlNodes = baseline.XamlNodes.Select(node => node.Id == 2 ? node with
+            {
+                Properties = JsonSerializer.SerializeToElement(new { opacity = 1, addedNull = (string?)null })
+            } : node).ToArray()
+        };
+        await SaveAsync(withNull, nullPath);
+        using (var json = Invoke("snapshot", "diff", before.Saved.Path, nullPath, "--properties", "changed", "--json"))
+        {
+            var node = json.RootElement.GetProperty("nodes").EnumerateArray().Single(node => node.GetProperty("id").GetString() == "after:2");
+            var property = node.GetProperty("properties").EnumerateArray().Single(property =>
+                property.GetProperty("name").GetString() == "properties.addedNull");
+            Require(!property.GetProperty("beforePresent").GetBoolean() && property.GetProperty("afterPresent").GetBoolean() &&
+                property.GetProperty("after").ValueKind == JsonValueKind.Null &&
+                node.GetProperty("after").GetProperty("properties").ValueKind == JsonValueKind.Null,
+                "Changed-only JSON must distinguish a missing property from an explicitly captured JSON null.");
+        }
+        var sessionPath = prefix + ".sqlite";
+        try
+        {
+            foreach (var (pid, created, code) in new (int, long?, int)[] { (43, 100, 3), (42, 200, 3), (42, null, 3), (42, 100, 0) })
+            {
+                using (var writer = SessionWriter.Create(sessionPath, new(pid, "SnapshotCli",
+                    created is { } time ? DateTime.FromFileTimeUtc(time) : null, 1000, 0, SessionCoverage.Trace))) { }
+                using var output = new StringWriter();
+                using var error = new StringWriter();
+                var result = CliApplication.Run(["snapshot", "history", before.Saved.Path, "--node", "2",
+                    "--session", sessionPath, "--json"], output, error, default);
+                Require(result == code, $"Snapshot history must enforce process-instance identity: {error}");
+                if (code == 0)
+                {
+                    using var json = JsonDocument.Parse(output.ToString());
+                    Require(json.RootElement.GetProperty("status").GetString() == "unavailable" &&
+                        json.RootElement.GetProperty("objectId").ValueKind == JsonValueKind.Null,
+                        "A session without a retained correlation must report unavailable, not invent an object.");
+                }
+                File.Delete(sessionPath);
+            }
+            using (var writer = SessionWriter.Create(sessionPath, new(42, "SnapshotCli", DateTime.FromFileTimeUtc(100),
+                1000, 0, SessionCoverage.Trace)))
+            {
+                writer.Process(1, new(5, 5, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
+                    [new("ElementId", 0x8002L), new("PeerHandle", 0x1002L), new("value", double.NaN)]));
+            }
+            using (var json = Invoke("snapshot", "history", before.Saved.Path, "--node", "2", "--session", sessionPath, "--json"))
+                Require(json.RootElement.GetProperty("status").GetString() == "matched" && json.RootElement.GetProperty("events")
+                    .GetArrayLength() == 1 && json.RootElement.GetRawText().Contains("\"NaN\""),
+                    $"Snapshot history must serialize nonfinite event fields from the actual recording: {json.RootElement}");
+        }
+        finally
+        {
+            foreach (var file in new[] { sessionPath, sessionPath + "-wal", sessionPath + "-shm" }) File.Delete(file);
+        }
+        Console.WriteLine("Passed: snapshot CLI filters, identity, correlation references, missing/null properties and history JSON.");
+    }
+
+    private static void CheckReferences(JsonElement[] nodes, JsonElement[] matches)
+    {
+        var ids = nodes.Select(node => node.GetProperty("id").GetString()).ToHashSet();
+        var matchIds = matches.Select(node => node.GetProperty("id").GetString()).ToHashSet();
+        foreach (var node in nodes)
+        {
+            Require(node.GetProperty("parentId").ValueKind == JsonValueKind.Null ||
+                ids.Contains(node.GetProperty("parentId").GetString()), "Every diff parent ID must resolve in its returned tree.");
+            Require(node.GetProperty("matches").EnumerateArray().All(match => matchIds.Contains(match.GetProperty("id").GetString())),
+                "Every cross-tree match ID must resolve in the returned correlated tree.");
+        }
+    }
+
+    private static JsonDocument Invoke(params string[] args)
+    {
+        using var output = new StringWriter();
+        using var error = new StringWriter();
+        Require(CliApplication.Run(args, output, error, default) == 0, $"CLI {string.Join(' ', args)} failed: {error}");
+        return JsonDocument.Parse(output.ToString());
     }
 
     private static TreeSnapshotDocument Capture(bool after)

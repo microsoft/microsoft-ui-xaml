@@ -42,7 +42,8 @@ if ($Operation -eq 'Build') {
     if ($LASTEXITCODE -ne 0) { throw 'Building native process metrics failed.' }
     return
 }
-if (!$OutputDirectory -or ![IO.Path]::IsPathFullyQualified($OutputDirectory)) { throw 'Staging needs an absolute output directory.' }
+if (!$OutputDirectory -or ![IO.Path]::IsPathRooted($OutputDirectory) -or
+    $OutputDirectory -ne [IO.Path]::GetFullPath($OutputDirectory)) { throw 'Staging needs an absolute output directory.' }
 function Copy-Verified([string]$Source, [string]$Destination) {
     Copy-Item -LiteralPath $Source -Destination $Destination
     if ((Get-FileHash -LiteralPath $Source).Hash -ne (Get-FileHash -LiteralPath $Destination).Hash) {

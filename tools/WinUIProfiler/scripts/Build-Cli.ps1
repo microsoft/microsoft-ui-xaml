@@ -13,10 +13,10 @@ $OutputDirectory = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPath
 $runtime = "win-$($Platform.ToLowerInvariant())"
 Push-Location -LiteralPath $root
 try {
+    & (Join-Path $PSScriptRoot 'Build-NativePayloads.ps1') -Configuration $Configuration -Platform $Platform
     & dotnet restore $project "-p:Configuration=$Configuration" "-p:SelfContained=$($Publish.IsPresent.ToString().ToLowerInvariant())" `
         -r $runtime -nologo -v:quiet
     if ($LASTEXITCODE -ne 0) { throw 'Restoring CLI dependencies failed.' }
-    & (Join-Path $PSScriptRoot 'Build-NativePayloads.ps1') -Configuration $Configuration -Platform $Platform
     if ($Publish) {
         & dotnet publish $project --no-restore "-p:Configuration=$Configuration" -r $runtime `
             --self-contained true -o $OutputDirectory -nologo -v:quiet
