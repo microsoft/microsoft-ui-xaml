@@ -534,5 +534,7 @@ private:
 
     bool m_isLeftPaneTitleEmpty{ false };
 
+    bool m_disableBackUITelemetryLogged{ false };
+
     double m_OpenPaneLength{ 320.0 };
 };

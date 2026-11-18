@@ -1000,7 +1000,8 @@ void NavigationViewItem::ShowHideChildren()
                             TraceLoggingBoolean(ShouldRepeaterShowInFlyout(), "ShouldRepeaterShowInFlyout"),
                             TraceLoggingBoolean(m_rootGrid.get() && winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()) != nullptr, "HasAttachedFlyout"),
                             TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+                            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+                            TraceLoggingKeyword(KEYWORD_NAVIGATIONVIEW));
                     }
                 });
             }

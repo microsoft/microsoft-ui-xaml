@@ -4411,13 +4411,18 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
             InvalidateTopNavPrimaryLayout();
         }
 
-        if (g_IsTelemetryProviderEnabled && IsBackButtonVisible() == winrt::NavigationViewBackButtonVisible::Collapsed)
+        if (g_IsTelemetryProviderEnabled && !m_disableBackUITelemetryLogged &&
+            IsBackButtonVisible() == winrt::NavigationViewBackButtonVisible::Collapsed)
         {
-            //  Explicitly disabling BackUI on NavigationView
+            // Once per instance: the property can be toggled many times.
+            m_disableBackUITelemetryLogged = true;
             [[gsl::suppress(con.4)]] TraceLoggingWrite(
                 g_hTelemetryProvider,
                 "NavigationView_DisableBackUI",
-                TraceLoggingDescription("Developer explicitly disables the BackUI on NavigationView"));
+                TraceLoggingDescription("Developer explicitly disables the BackUI on NavigationView"),
+                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+                TraceLoggingKeyword(KEYWORD_NAVIGATIONVIEW));
         }
         // Enabling back button shifts grid instead of resizing, so let's update the layout.
         if (const auto& backButton = m_backButton.get())
