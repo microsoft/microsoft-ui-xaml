@@ -17,6 +17,7 @@
 
     <PropertyGroup Condition="$(MSBuildProjectExtension)=='.vcxproj'">
         <PlatformToolset>v142</PlatformToolset>
+        <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '18.0'">v145</PlatformToolset>
     </PropertyGroup>
 
 </Project>

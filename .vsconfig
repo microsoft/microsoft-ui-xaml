@@ -19,7 +19,7 @@
     "Microsoft.VisualStudio.Component.TextTemplating",
     "Microsoft.VisualStudio.Component.UWP.VC.ARM64",
     "Microsoft.VisualStudio.Component.UWP.VC.ARM64EC",
-    "Microsoft.VisualStudio.ComponentGroup.UWP.VC.v143",
+    "Microsoft.VisualStudio.ComponentGroup.UWP.VC",
     "Microsoft.VisualStudio.Component.NuGet.BuildTools",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
     "Microsoft.VisualStudio.Component.VC.Runtimes.ARM64EC.Spectre",
@@ -27,12 +27,6 @@
     "Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre",
     "Microsoft.VisualStudio.Component.VC.ATL.Spectre",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64.Spectre",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM64",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM.Spectre",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM64.Spectre",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64.Spectre",
     "Microsoft.VisualStudio.Component.WindowsAppSdkSupport.Cpp",
     "Microsoft.VisualStudio.Component.WindowsAppSdkSupport.CSharp"
   ]

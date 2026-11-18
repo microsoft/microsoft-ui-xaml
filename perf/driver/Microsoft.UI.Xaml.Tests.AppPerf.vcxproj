@@ -33,6 +33,7 @@
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset Condition="$(VisualStudioVersion) &gt;= 15.0">v141</PlatformToolset>
     <PlatformToolset Condition="$(VisualStudioVersion) &gt;= 17.0">v143</PlatformToolset>
+    <PlatformToolset Condition="$(VisualStudioVersion) &gt;= 18.0">v145</PlatformToolset>
     <PlatformToolset Condition="$(VisualStudioVersion) &lt; 15.0">v140</PlatformToolset>
     <TestCode>true</TestCode>
   </PropertyGroup>

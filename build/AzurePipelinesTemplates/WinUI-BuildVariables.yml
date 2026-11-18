@@ -49,11 +49,11 @@ variables:
   WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
   Codeql.Enabled: true #  CodeQL once every 3 days on the default branch for all language
 
-  # Native compiler version override for win undock. The two values below are for Ge.
+  # Native compiler override compatible with the VS 2026 v145 matching WinAppSDK mono build.
   # Source of compiler override package metadata.
-  compilerOverridePackageName: "DevDiv.rel.LKG19.VCTools"
+  compilerOverridePackageName: "DevDiv.rel.LKG20.VCTools"
   # Use the following corresponding version string instead of the above when calling nuget install directly.
-  compilerOverrideNupkgVersion: "19.44.35215100"
+  compilerOverrideNupkgVersion: "19.50.35724100"
 
 # Pipeline variables that can be set at queue time:
 #   customTaefQuery: Optional: run a subset of the tests
