@@ -210,3 +210,89 @@ Describe "WttLogRecovery.RecoverIncompleteLog" {
         Test-Path -LiteralPath $script:incompleteLogPath | Should Be $true
     }
 }
+
+Describe "WttLogRecovery.CheckSelectedTestsRan" {
+    BeforeEach {
+        $script:wttPath = Join-Path $TestDrive "te.wtl"
+        $script:consoleLogPath = Join-Path $TestDrive "te_console.log"
+        $script:incompleteLogPath = Join-Path $TestDrive "te_original.incomplete.wtl"
+        Remove-Item -LiteralPath $script:wttPath, $script:consoleLogPath, $script:incompleteLogPath -ErrorAction SilentlyContinue
+    }
+
+    # Recovers a truncated log the way RunHelixWorkItem.ps1 does, then checks it against the tests te.exe /list selects.
+    function Invoke-Check
+    {
+        param([String]$Body, [String[]]$ConsoleLines, [String[]]$SelectedTests)
+
+        Write-WttLog -Path $script:wttPath -Truncated -Body $Body
+        Set-Content -LiteralPath $script:consoleLogPath -Value $ConsoleLines -Encoding Unicode
+        $recovery = [HelixTestHelpers.WttLogRecovery]::RecoverIncompleteLog($script:wttPath, $script:consoleLogPath, $script:incompleteLogPath)
+        "$($recovery.State)" | Should Be "Recovered"
+
+        [HelixTestHelpers.WttLogRecovery]::CheckSelectedTestsRan($script:wttPath, [string[]]$SelectedTests, [string[]]@($recovery.InFlightTests))
+    }
+
+    It "passes a run that te.exe exited after its last test" {
+        $check = Invoke-Check `
+            -Body ((New-WttTest -Test "Tests::A") + (New-WttTest -Test "Tests::B")) `
+            -ConsoleLines @("EndGroup: Tests::A [Passed]", "EndGroup: Tests::B [Passed]", "EndGroup: Tests::C [Passed]") `
+            -SelectedTests @("Tests::A", "Tests::B", "Tests::C")
+
+        $check.AllSelectedTestsRan | Should Be $true
+        $check.TestsWithoutResults.Count | Should Be 0
+        $check.DataDrivenTestsCutShort.Count | Should Be 0
+    }
+
+    It "finds the selected tests te.exe never started when it exited between tests" {
+        $check = Invoke-Check `
+            -Body (New-WttTest -Test "Tests::A") `
+            -ConsoleLines @("StartGroup: Tests::A", "EndGroup: Tests::A [Passed]") `
+            -SelectedTests @("Tests::A", "Tests::B", "Tests::C")
+
+        $check.AllSelectedTestsRan | Should Be $false
+        ($check.TestsWithoutResults -join ",") | Should Be "Tests::B,Tests::C"
+    }
+
+    It "counts the test te.exe was running as run, but not the tests after it" {
+        $check = Invoke-Check `
+            -Body ((New-WttTest -Test "Tests::A") + (New-WttStartTest -Test "Tests::B")) `
+            -ConsoleLines @("StartGroup: Tests::A", "EndGroup: Tests::A [Passed]", "StartGroup: Tests::B") `
+            -SelectedTests @("Tests::A", "Tests::B", "Tests::C")
+
+        $check.AllSelectedTestsRan | Should Be $false
+        ($check.TestsWithoutResults -join ",") | Should Be "Tests::C"
+    }
+
+    It "matches the variations of a data-driven test to the one name /list gives it" {
+        $check = Invoke-Check `
+            -Body ((New-WttTest -Test "Tests::A#metadataSet0") + (New-WttTest -Test "Tests::A#metadataSet1") + (New-WttTest -Test "Tests::B")) `
+            -ConsoleLines @("EndGroup: Tests::A#metadataSet0 [Passed]", "EndGroup: Tests::A#metadataSet1 [Passed]", "EndGroup: Tests::B [Passed]") `
+            -SelectedTests @("Tests::A", "Tests::B")
+
+        $check.AllSelectedTestsRan | Should Be $true
+    }
+
+    It "doesn't pass a data-driven test whose later variations te.exe may not have run" {
+        $check = Invoke-Check `
+            -Body ((New-WttTest -Test "Tests::A") + (New-WttTest -Test "Tests::B#0") + (New-WttTest -Test "Tests::B#1")) `
+            -ConsoleLines @("EndGroup: Tests::A [Passed]", "EndGroup: Tests::B#0 [Passed]", "EndGroup: Tests::B#1 [Passed]") `
+            -SelectedTests @("Tests::A", "Tests::B")
+
+        $check.AllSelectedTestsRan | Should Be $false
+        $check.TestsWithoutResults.Count | Should Be 0
+        ($check.DataDrivenTestsCutShort -join ",") | Should Be "Tests::B"
+    }
+
+    It "finds a data-driven test te.exe was running even when a group it started ends the log" {
+        # Neither start reached te.wtl, so recovery adds both as failed, ending the log with the group, whose name
+        # looks like a variation but isn't a selected test.
+        $check = Invoke-Check `
+            -Body (New-WttTest -Test "Tests::A") `
+            -ConsoleLines @("EndGroup: Tests::A [Passed]", "StartGroup: Tests::B#0", "StartGroup: Phase#2") `
+            -SelectedTests @("Tests::A", "Tests::B")
+
+        $check.AllSelectedTestsRan | Should Be $false
+        $check.TestsWithoutResults.Count | Should Be 0
+        ($check.DataDrivenTestsCutShort -join ",") | Should Be "Tests::B"
+    }
+}

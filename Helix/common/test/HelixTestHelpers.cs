@@ -463,6 +463,27 @@ namespace HelixTestHelpers
         public List<string> InFlightTests { get; private set; }
     }
 
+    public class SelectionCheckResult
+    {
+        public SelectionCheckResult()
+        {
+            TestsWithoutResults = new List<string>();
+            DataDrivenTestsCutShort = new List<string>();
+        }
+
+        // Selected tests that have no result in the log.
+        public List<string> TestsWithoutResults { get; private set; }
+
+        // Selected data-driven tests that te.exe was running, or had just run, when it exited. Their later variations
+        // may not have run.
+        public List<string> DataDrivenTestsCutShort { get; private set; }
+
+        public bool AllSelectedTestsRan
+        {
+            get { return TestsWithoutResults.Count == 0 && DataDrivenTestsCutShort.Count == 0; }
+        }
+    }
+
     // te.exe buffers te.wtl, so when te.exe exits abnormally the log ends mid-element and can be missing results that
     // te.exe already printed to the console. RecoverIncompleteLog moves such a log to incompleteLogCopyPath and, if
     // anything can be recovered, writes a readable log in its place. The new log holds the complete entries of the old
@@ -672,6 +693,68 @@ namespace HelixTestHelpers
             }
 
             return result;
+        }
+
+        // Checks a readable log against the tests "te.exe /list" selects, to tell whether a run that te.exe didn't
+        // finish still ran every selected test. inFlightTests are the tests RecoverIncompleteLog reported as failed
+        // because te.exe exited while they were running. /list names a data-driven test once, while the log has a
+        // result for each of its variations, named "<test>#<variation>". TAEF runs a test's variations back to back,
+        // so only a test te.exe was running, or had just run, when it exited can be missing variations.
+        public static SelectionCheckResult CheckSelectedTestsRan(string wttPath, string[] selectedTests, string[] inFlightTests)
+        {
+            var results = new List<string>();
+            using (FileStream stream = File.OpenRead(wttPath))
+            {
+                foreach (XElement endTest in XDocument.Load(stream).Descendants("EndTest"))
+                {
+                    results.Add(GetTitle(endTest));
+                }
+            }
+
+            var testsWithResults = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string result in results)
+            {
+                testsWithResults.Add(result);
+                string dataDrivenTest = GetDataDrivenTest(result);
+                if (dataDrivenTest != null)
+                {
+                    testsWithResults.Add(dataDrivenTest);
+                }
+            }
+
+            var check = new SelectionCheckResult();
+            var selected = new HashSet<string>(selectedTests, StringComparer.Ordinal);
+            foreach (string test in selectedTests.Distinct(StringComparer.Ordinal))
+            {
+                if (!testsWithResults.Contains(test))
+                {
+                    check.TestsWithoutResults.Add(test);
+                }
+            }
+
+            var lastTests = new List<string>(inFlightTests ?? new string[0]);
+            if (results.Count > 0)
+            {
+                lastTests.Add(results[results.Count - 1]);
+            }
+
+            foreach (string test in lastTests)
+            {
+                string dataDrivenTest = GetDataDrivenTest(test);
+                if (dataDrivenTest != null && selected.Contains(dataDrivenTest) && !check.DataDrivenTestsCutShort.Contains(dataDrivenTest))
+                {
+                    check.DataDrivenTestsCutShort.Add(dataDrivenTest);
+                }
+            }
+
+            return check;
+        }
+
+        // The data-driven test that a result named "<test>#<variation>" belongs to, or null for any other result.
+        private static string GetDataDrivenTest(string result)
+        {
+            int variation = result.IndexOf('#');
+            return variation > 0 ? result.Substring(0, variation) : null;
         }
 
         private static List<XElement> ReadCompleteElements(string wttPath, bool logFileExists, out XName rootName)

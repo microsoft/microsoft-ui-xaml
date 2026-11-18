@@ -233,11 +233,117 @@ function Move-TaefCrashDumps
     return $movedDumps
 }
 
+function Test-SelectedTestsRan
+{
+    # te.exe didn't finish te.wtl, so the recovered log only has the tests te.exe got to: if te.exe exited between two
+    # tests, nothing was in flight, and the tests after them never ran. Ask te.exe to list the work item's selection and
+    # check that each selected test has a result. Fills in the selection fields of the run's record.
+    param ([string] $wttPath, [System.Collections.IDictionary] $runRecord)
+
+    $listCommand = "te.exe $testBinaries /list /unicodeOutput:false $taefParameters $taefQuery"
+    Write-Host $listCommand
+    Out-File -FilePath "list.cmd" -Encoding ascii -InputObject "@$listCommand"
+    try
+    {
+        $listOutput = @(& ./list.cmd | ForEach-Object { "$_" })
+        $listExitCode = $LASTEXITCODE
+    }
+    finally
+    {
+        Remove-Item -LiteralPath ".\list.cmd" -Force
+    }
+
+    # te.exe /list prints each test indented by 16 spaces, under its module and class.
+    $selectedTests = @($listOutput | Where-Object { $_ -match '^ {16}\S' } | ForEach-Object { $_.Trim() })
+    $runRecord.selectedTests = $selectedTests.Count
+    if (($listExitCode -ne 0) -or ($selectedTests.Count -eq 0))
+    {
+        $listOutput | ForEach-Object { Write-Host $_ }
+        $runRecord.selectionCheck = "Unverified"
+        $runRecord.selectionCheckFailure = "te.exe exited before it finished te.wtl, and the selected tests couldn't be listed to check that they all ran (te.exe /list exited with code $listExitCode and listed $($selectedTests.Count) tests)."
+        return
+    }
+
+    $check = [HelixTestHelpers.WttLogRecovery]::CheckSelectedTestsRan($wttPath, [string[]]$selectedTests, [string[]]@($runRecord.inFlightTests))
+    $runRecord.testsWithoutResults = @($check.TestsWithoutResults)
+    $runRecord.dataDrivenTestsCutShort = @($check.DataDrivenTestsCutShort)
+    if ($check.AllSelectedTestsRan)
+    {
+        $runRecord.selectionCheck = "AllRan"
+        return
+    }
+
+    if ($check.TestsWithoutResults.Count -gt 0)
+    {
+        $shownTests = @($check.TestsWithoutResults | Select-Object -First 20) -join ', '
+        if ($check.TestsWithoutResults.Count -gt 20)
+        {
+            $shownTests += ", and $($check.TestsWithoutResults.Count - 20) more"
+        }
+
+        $failure = "te.exe exited before it ran every selected test: $($check.TestsWithoutResults.Count) of the $($selectedTests.Count) selected tests never ran: $shownTests."
+    }
+    else
+    {
+        $failure = "te.exe may have exited before it ran every selected test."
+    }
+
+    if ($check.DataDrivenTestsCutShort.Count -eq 1)
+    {
+        $failure += " It was running, or had just run, the data-driven test $($check.DataDrivenTestsCutShort[0]), so some of that test's variations may not have run."
+    }
+    elseif ($check.DataDrivenTestsCutShort.Count -gt 1)
+    {
+        $failure += " It was running, or had just run, the data-driven tests $($check.DataDrivenTestsCutShort -join ', '), so some of their variations may not have run."
+    }
+
+    $runRecord.selectionCheck = "NotAllRan"
+    $runRecord.selectionCheckFailure = $failure
+}
+
+function Add-TaefRunIncompleteResult
+{
+    # Fails a work item whose first te.exe run didn't run every selected test. The results it did get are still
+    # reported, alongside a failed <work item>.TaefRunIncomplete test that says what's missing.
+    param ([string] $resultsPath, [string] $testnameprefix, [string] $message)
+
+    $prefix = ""
+    if ($testnameprefix) { $prefix = "$testnameprefix." }
+    $workItemName = Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf
+    $resultsPath = (Resolve-Path -LiteralPath $resultsPath).Path
+
+    # XmlDocument.Load reads the converter's UTF-8 output correctly; Get-Content would use the ANSI code page.
+    $doc = New-Object System.Xml.XmlDocument
+    $doc.Load($resultsPath)
+    $test = $doc.CreateElement("test")
+    $test.SetAttribute("name", "$prefix$workItemName.TaefRunIncomplete")
+    $test.SetAttribute("type", $workItemName)
+    $test.SetAttribute("method", "TaefRunIncomplete")
+    $test.SetAttribute("time", "0")
+    $test.SetAttribute("result", "Fail")
+    $failure = $doc.CreateElement("failure")
+    $failureMessage = $doc.CreateElement("message")
+    [void]$failureMessage.AppendChild($doc.CreateCDataSection($message))
+    [void]$failure.AppendChild($failureMessage)
+    [void]$test.AppendChild($failure)
+
+    $collection = $doc.SelectSingleNode('//collection')
+    [void]$collection.AppendChild($test)
+    foreach ($scope in @($doc.SelectSingleNode('//assembly'), $collection))
+    {
+        $scope.SetAttribute("total", [string]([int]$scope.GetAttribute("total") + 1))
+        $scope.SetAttribute("failed", [string]([int]$scope.GetAttribute("failed") + 1))
+    }
+
+    $doc.Save($resultsPath)
+}
+
 function Repair-TaefLog
 {
     # If te.exe exits before it finishes writing te.wtl, the log can't be read. Rebuild it from the entries te.exe did
     # write plus the results it printed (see WttLogRecovery in HelixTestHelpers.cs), so the work item still reports
-    # results. Records the run in TaefRuns.json, which RunTestPassSliceOnBuildAgent.ps1 reads if there are no results.
+    # results. Records the run in TaefRuns.json, which RunTestPassSliceOnBuildAgent.ps1 reads to explain a work item
+    # that has no results or didn't run every selected test.
     param ([string] $runName, [int] $teExitCode, [string[]] $preRunDumps)
 
     $workItemName = Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf
@@ -252,6 +358,11 @@ function Repair-TaefLog
         resultsRecoveredFromConsole = 0
         inFlightTests               = @()
         dumps                       = @()
+        selectionCheck              = "NotNeeded"
+        selectedTests               = 0
+        testsWithoutResults         = @()
+        dataDrivenTestsCutShort     = @()
+        selectionCheckFailure       = $null
     }
 
     $recovery = $null
@@ -270,6 +381,21 @@ function Repair-TaefLog
     catch
     {
         Write-Host "Could not check te.wtl from te.exe run '$runName': $($_.Exception.Message)"
+    }
+
+    # A recovered first run is only complete if it ran every selected test. Reruns don't need the check: a test that's
+    # missing from a rerun stays failed.
+    if (($runName -eq "original") -and ($null -ne $recovery) -and ($recovery.State -eq [HelixTestHelpers.WttLogState]::Recovered))
+    {
+        try
+        {
+            Test-SelectedTestsRan -wttPath (Join-Path (Get-Location) "te.wtl") -runRecord $runRecord
+        }
+        catch
+        {
+            $runRecord.selectionCheck = "Unverified"
+            $runRecord.selectionCheckFailure = "te.exe exited before it finished te.wtl, and checking that it ran every selected test failed: $($_.Exception.Message)"
+        }
     }
 
     # te.exe's exit code is the number of failed tests, so only a negative code (an NTSTATUS or HRESULT) means it crashed.
@@ -318,12 +444,26 @@ function Repair-TaefLog
                         $recoveredText += ", and $inFlightTests is reported as failed"
                     }
                 }
-                else
+                elseif ($runRecord.selectionCheck -eq "AllRan")
                 {
                     $when = "after its last test finished"
                 }
+                else
+                {
+                    $when = "while no test was running"
+                }
 
-                Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) $when, $where. $logText, so the results were recovered: $recoveredText. $dumpText"
+                $selectionText = ""
+                if ($runRecord.selectionCheck -eq "AllRan")
+                {
+                    $selectionText = " All $($runRecord.selectedTests) selected tests have results."
+                }
+                elseif ($runRecord.selectionCheckFailure)
+                {
+                    $selectionText = " $($runRecord.selectionCheckFailure) The work item fails."
+                }
+
+                Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) $when, $where. $logText, so the results were recovered: $recoveredText.$selectionText $dumpText"
             }
             else
             {
@@ -660,6 +800,13 @@ if ($isLifetimeStress)
 elseif (Test-Path .\te_original.wtl)
 {
     .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl te_rerun_more.wtl testResults.xml $testnameprefix
+
+    # A first run that te.exe didn't finish can still be missing selected tests (see Test-SelectedTestsRan).
+    $originalRun = @($script:taefRuns | Where-Object { $_.run -eq "original" }) | Select-Object -First 1
+    if ($originalRun -and $originalRun.selectionCheckFailure -and (Test-Path .\testResults.xml))
+    {
+        Add-TaefRunIncompleteResult -resultsPath .\testResults.xml -testnameprefix $testnameprefix -message $originalRun.selectionCheckFailure
+    }
 }
 else
 {

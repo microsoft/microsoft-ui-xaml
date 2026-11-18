@@ -153,6 +153,37 @@ function Get-MissingResultsReason
     return "te.exe exited with code $($firstRun.teExitCodeHex) and te.wtl was $($firstRun.logState), but its results couldn't be converted to testResults.xml. See the work item's output above."
 }
 
+function Get-IncompleteRunReason
+{
+    # Returns why a work item's first te.exe run didn't run every selected test, as RunHelixWorkItem.ps1 records it in
+    # TaefRuns.json, or nothing if it did. Such a work item also has a failed <work item>.TaefRunIncomplete result.
+    param([String]$WorkItemUploadRoot)
+
+    $runsPath = Join-Path $WorkItemUploadRoot "TaefRuns.json"
+    if (-not (Test-Path -LiteralPath $runsPath))
+    {
+        return $null
+    }
+
+    try
+    {
+        # Windows PowerShell's ConvertFrom-Json outputs a JSON array as one object, so collect it before indexing.
+        $runs = Get-Content -LiteralPath $runsPath -Raw | ConvertFrom-Json
+        $firstRun = @($runs)[0]
+    }
+    catch
+    {
+        return $null
+    }
+
+    if (($firstRun.PSObject.Properties.Name -contains 'selectionCheckFailure') -and $firstRun.selectionCheckFailure)
+    {
+        return $firstRun.selectionCheckFailure
+    }
+
+    return $null
+}
+
 try
 {
     if (-not [string]::IsNullOrEmpty($env:COMPOSITION_ENGINE_LAF_TOKEN))
@@ -213,6 +244,7 @@ try
     }
 
     $workItemsWithoutResults = @()
+    $workItemsWithIncompleteRuns = @()
     foreach($workItem in $workItemsToRun)
     {
         $command = $workItem.Command
@@ -250,6 +282,14 @@ try
             if (Test-Path ".\testResults.xml")
             {
                 Move-Item .\testResults.xml $resultsFileName
+
+                # Its results are published, but a work item that didn't run every selected test can't pass.
+                $incompleteReason = Get-IncompleteRunReason -WorkItemUploadRoot $workItemUploadRoot
+                if ($incompleteReason)
+                {
+                    Write-Host "##vso[task.logissue type=error]Work item '$workItemName' didn't run every selected test: $incompleteReason"
+                    $workItemsWithIncompleteRuns += $workItemName
+                }
             }
             else
             {
@@ -263,9 +303,20 @@ try
         Get-ChildItem -Path $workItemUploadRoot -Filter *_subresults.json | Move-Item -Destination $uploadRoot
     }
 
+    $sliceFailures = @()
     if ($workItemsWithoutResults.Count -gt 0)
     {
-        Throw "$($workItemsWithoutResults.Count) work item(s) produced no test results: $($workItemsWithoutResults -join ', '). The errors above say why."
+        $sliceFailures += "$($workItemsWithoutResults.Count) work item(s) produced no test results: $($workItemsWithoutResults -join ', ')."
+    }
+
+    if ($workItemsWithIncompleteRuns.Count -gt 0)
+    {
+        $sliceFailures += "$($workItemsWithIncompleteRuns.Count) work item(s) didn't run every selected test: $($workItemsWithIncompleteRuns -join ', ')."
+    }
+
+    if ($sliceFailures.Count -gt 0)
+    {
+        Throw "$($sliceFailures -join ' ') The errors above say why."
     }
 }
 finally
