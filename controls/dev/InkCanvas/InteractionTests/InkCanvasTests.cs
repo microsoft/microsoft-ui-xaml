@@ -48,5 +48,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsGreaterThan(bounds.Height, 0, "InkCanvas should report a non-zero height.");
             }
         }
+
+        // CoreWetStrokeUpdateSource raises the wet-stroke events for a real stroke (on the ink thread).
+        [TestMethod]
+        public void CoreWetStrokeUpdateSourceRaisesWetStrokeEvents()
+        {
+            using (var setup = new TestSetupHelper("InkCanvas Tests"))
+            {
+                new Button(FindElement.ById("ListenForWetStrokesButton")).Invoke();
+                Wait.ForIdle();
+
+                InputHelper.MouseDragDistance(FindElement.ByName("TestInkCanvas"), 100, Direction.East);
+                Wait.ForIdle();
+
+                var counts = ReadWetStrokeCounts();
+                Verify.IsGreaterThan(counts[0], 0, "WetStrokeStarting should be raised.");
+                Verify.IsGreaterThan(counts[1], 0, "WetStrokeContinuing should be raised.");
+                Verify.IsGreaterThan(counts[3], 0, "WetStrokeCompleted should be raised.");
+                Verify.AreEqual(0, counts[4], "No stroke should be canceled.");
+            }
+        }
+
+        // Setting Disposition = Canceled in WetStrokeContinuing reaches the OS, which then reports WetStrokeCanceled.
+        [TestMethod]
+        public void CoreWetStrokeUpdateSourceHonorsCanceledDisposition()
+        {
+            using (var setup = new TestSetupHelper("InkCanvas Tests"))
+            {
+                new Button(FindElement.ById("CancelWetStrokesButton")).Invoke();
+                Wait.ForIdle();
+
+                InputHelper.MouseDragDistance(FindElement.ByName("TestInkCanvas"), 100, Direction.East);
+                Wait.ForIdle();
+
+                var counts = ReadWetStrokeCounts();
+                Verify.IsGreaterThan(counts[1], 0, "WetStrokeContinuing should be raised.");
+                Verify.IsGreaterThan(counts[4], 0, "WetStrokeCanceled should be raised after the app cancels the stroke.");
+            }
+        }
+
+        // starting, continuing, stopping, completed, canceled
+        private static int[] ReadWetStrokeCounts()
+        {
+            var text = new TextBlock(FindElement.ById("WetStrokeStatus")).DocumentText;
+            Log.Comment($"Wet stroke events (starting,continuing,stopping,completed,canceled) = {text}");
+            return System.Array.ConvertAll(text.Split(','), int.Parse);
+        }
     }
 }

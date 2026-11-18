@@ -338,7 +338,7 @@ cancel it). Mirrors `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateSource`: ge
 |---|---|---|
 | `Create(InkPresenter)` | static method | Returns the presenter's wet-stroke update source. Repeated calls return the same instance. Throws `E_ILLEGAL_METHOD_CALL` if the presenter is not ready yet; call it from or after `InkCanvas.Loaded`. |
 | `InkPresenter` | property | The presenter this source belongs to. |
-| `WetStrokeStarting`, `WetStrokeContinuing`, `WetStrokeStopping`, `WetStrokeCompleted`, `WetStrokeCanceled` | events | Raised on the ink thread, as in UWP. Args: `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs`; handlers change the stroke synchronously through `NewInkPoints` and `Disposition`. |
+| `WetStrokeStarting`, `WetStrokeContinuing`, `WetStrokeStopping`, `WetStrokeCompleted`, `WetStrokeCanceled` | events | Raised on the ink thread, as in UWP. Args: `Windows.UI.Input.Inking.Core.CoreWetStrokeUpdateEventArgs`; handlers change the stroke synchronously through `NewInkPoints` and `Disposition`. Handlers must be agile (C#, C++/WinRT and C++/CX delegates are by default), because they are called on the ink thread. |
 
 Why a mirror: the OS source only accepts handlers on the thread that owns the OS presenter, which WinUI 3
 hosts on the ink thread. The mirror subscribes there and re-raises each event synchronously on that
