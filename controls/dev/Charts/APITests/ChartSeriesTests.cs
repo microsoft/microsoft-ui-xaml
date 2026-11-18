@@ -265,9 +265,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var series in CreateAllSeries())
                 {
-                    foreach (double value in new[] { 0.0, 0.25, 2.5, (double)float.MaxValue, -1.0, double.PositiveInfinity, double.MaxValue, double.NaN })
+                    foreach (double value in new[] { 0.0, 0.25, 1.0, 2.5, (double)float.MaxValue, -1.0, double.PositiveInfinity, double.MaxValue, double.NaN })
                     {
-                        series.StrokeThickness = 2.0;
+                        series.StrokeThickness = 3.0;
                         series.StrokeThickness = value;
 
                         if (double.IsNaN(value))
