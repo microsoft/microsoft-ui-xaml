@@ -499,6 +499,13 @@ _Check_return_ HRESULT CAnimation::OnBegin()
     // GetTargetObjectWeakRef and GetTargetDependencyPropertyIndex, respectively.
     IFC(ResolveLocalTarget(core, GetTimingParent()));
 
+    if (IsTargetSkippedForDeferral())
+    {
+        // Target is an unrealized deferred template part. Tick untargeted (UpdateAnimation and
+        // FinalizeIteration no-op without a target) so the storyboard's timing/completion are unaffected.
+        ResetCompletedEventFired();
+        goto Cleanup;
+    }
     // Validate strictness of the property being animated.  Although we also validate all the
     // way down in UpdateEffectiveValue(), validating here will generate a failure for Storyboard.Start()
     // and will help developers understand the failure if they violate strictness rules.
@@ -874,6 +881,12 @@ _Check_return_ HRESULT CAnimation::ResolveLocalTarget(
     HRESULT hr = S_OK;
 
     IFC( CTimeline::ResolveLocalTarget( pCoreServices, pParentTimeline ) )
+
+    if (IsTargetSkippedForDeferral())
+    {
+        // Target is an unrealized deferred template part; run untargeted.
+        goto Cleanup;
+    }
 
     // If we haven't resolved these yet, then we should report an error here
     if (!GetTargetObjectWeakRef() || m_pTargetDependencyProperty == nullptr)

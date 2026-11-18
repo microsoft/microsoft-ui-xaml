@@ -269,7 +269,8 @@ _Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreatePropertySette
             IFC_RETURN(hr);
         }
 
-        if (SUCCEEDED(hr))
+        // A null owner means the target is an unrealized deferred template part; skip it.
+        if (SUCCEEDED(hr) && targetPropertyOwner)
         {
             if (shouldRefSetter)
             {

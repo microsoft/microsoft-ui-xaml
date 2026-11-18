@@ -43,6 +43,7 @@ CTimeline::CTimeline(_In_opt_ CCoreServices *pCore)
     , m_hasPendingResumeForDComp(false)
     , m_hasPendingSeekForDComp(false)
     , m_shouldSynchronizeDCompAnimationAfterResume(false)
+    , m_fTargetSkippedForDeferral(false)
     , m_pendingDCompSeekTime(0)
 {
     m_wucAnimationCompletedToken.value = 0;

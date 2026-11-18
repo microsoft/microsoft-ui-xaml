@@ -413,6 +413,7 @@ _Check_return_ HRESULT CTimeline::ResolveLocalTarget(
 
     // Always clean our resolved target
     ReleaseTarget();
+    m_fTargetSkippedForDeferral = false;
 
     // if we have a manual target object, it takes precedence
     if (!m_manualTargetObjectWeakRef.expired())
@@ -493,16 +494,25 @@ _Check_return_ HRESULT CTimeline::ResolveLocalTarget(
             }
         }
 
+        CDependencyObject* namescopeOwner = pResolveProxy->IsTemplateNamescopeMember() ? pResolveProxy->GetTemplatedParent() : pResolveProxy->GetStandardNameScopeOwner();
+        const auto namescopeType = pResolveProxy->IsTemplateNamescopeMember() ?
+                Jupiter::NameScoping::NameScopeType::TemplateNameScope :
+                Jupiter::NameScoping::NameScopeType::StandardNameScope;
+
+        if (GetContext()->ShouldSkipRealizingDeferredStateTarget(strTargetName, namescopeOwner, namescopeType))
+        {
+            // Target is an unrealized x:Load="False" template part of a control that defers it. Leave this
+            // timeline untargeted rather than realizing the part; the control reapplies states after realization.
+            m_fTargetSkippedForDeferral = true;
+            return S_OK;
+        }
+
         //
         // If the timeline was parsed as part of a ControlTemplate, then m_templatedParent will be set, as
         // will IsTemplateNamescopeMember.  If that's the case, then we use the TemplatedParent as the NamescopeOwner
         // that we pass to GetNamedObject()
         //
-        pTargetObject = GetContext()->GetNamedObject(strTargetName,
-            pResolveProxy->IsTemplateNamescopeMember() ? pResolveProxy->GetTemplatedParent() : pResolveProxy->GetStandardNameScopeOwner(),
-            pResolveProxy->IsTemplateNamescopeMember() ?
-                Jupiter::NameScoping::NameScopeType::TemplateNameScope :
-                Jupiter::NameScoping::NameScopeType::StandardNameScope);
+        pTargetObject = GetContext()->GetNamedObject(strTargetName, namescopeOwner, namescopeType);
 
 
         // if we have a name, but it can't be found, set error with details.

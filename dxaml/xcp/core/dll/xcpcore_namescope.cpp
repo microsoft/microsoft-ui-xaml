@@ -254,3 +254,43 @@ CDeferredElement* CCoreServices::GetDeferredElementIfExists(
         return nullptr;
     }
 }
+
+bool CCoreServices::ShouldSkipRealizingDeferredStateTarget(
+    _In_ const xstring_ptr_view& strName,
+    _In_opt_ const CDependencyObject *pNamescopeOwner,
+    _In_ Jupiter::NameScoping::NameScopeType nameScopeType)
+{
+    if (m_bIsDestroyingCoreServices ||
+        !pNamescopeOwner ||
+        nameScopeType != Jupiter::NameScoping::NameScopeType::TemplateNameScope ||
+        !pNamescopeOwner->OfTypeByIndex<KnownTypeIndex::Control>() ||
+        !static_cast<const CControl*>(pNamescopeOwner)->ShouldSkipRealizingDeferredStateTargets())
+    {
+        return false;
+    }
+
+    // Names inside an unrealized x:Load subtree aren't registered until realization (only the deferred root's
+    // proxy name is), so a missing name is also treated as deferred while the owner still has unrealized parts.
+    auto instance = m_nameScopeRoot.GetNamedObjectIfExists(strName, pNamescopeOwner, nameScopeType);
+    if (!instance)
+    {
+        return true;
+    }
+
+    if (instance->OfTypeByIndex<KnownTypeIndex::DeferredElement>())
+    {
+        xref_ptr<CDeferredElement> deferredElement;
+        IGNOREHR(DoPointerCast(deferredElement, instance));
+        return deferredElement && !deferredElement->IsRealized();
+    }
+
+    return false;
+}
+
+bool CCoreServices::ShouldSkipRealizingDeferredStateTarget(
+    _In_ const xstring_ptr_view& strName,
+    _In_ CDependencyObject *pReferenceObject)
+{
+    auto namescopeInfo = GetAdjustedReferenceObjectAndNamescopeType(pReferenceObject);
+    return ShouldSkipRealizingDeferredStateTarget(strName, std::get<0>(namescopeInfo), std::get<1>(namescopeInfo));
+}

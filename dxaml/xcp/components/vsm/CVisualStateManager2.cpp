@@ -551,6 +551,33 @@ _Check_return_ HRESULT CVisualStateManager2::ResetVisualStateGroupToNullState(_I
     return S_OK;
 }
 
+_Check_return_ HRESULT CVisualStateManager2::ReapplyCurrentStates(_In_ CControl *pControl)
+{
+    auto groupCollection = GetGroupCollectionFromControl(pControl);
+    if (!groupCollection)
+    {
+        return S_OK;
+    }
+
+    auto dataSource = CreateVisualStateManagerDataSource(groupCollection.get());
+    VisualStateManagerActuator actuator(
+        static_cast<CFrameworkElement*>(pControl->GetFirstChildNoAddRef()), dataSource.get());
+
+    for (int groupIndex = 0; groupIndex < dataSource->GetGroupCount(); groupIndex++)
+    {
+        const int currentStateIndex = dataSource->GetGroupContext(groupIndex).CurrentVisualStateIndex();
+        if (currentStateIndex == -1)
+        {
+            continue;
+        }
+
+        IFC_RETURN(actuator.SynchronouslyResetToNullState(groupIndex));
+        IFC_RETURN(actuator.ChangeVisualState(groupIndex, -1, currentStateIndex, false /* useTransitions */));
+    }
+
+    return S_OK;
+}
+
 // VisualStateGroup, VisualState, and members (StateTriggerCollection) are not created until they are programmatically accessed
 // StateTriggers need to be moved to their VisualState.StateTriggerCollections on 'fault in'
 HRESULT CVisualStateManager2::FaultInStateTriggers(_In_ CVisualStateGroupCollection* groupCollection, CustomWriterRuntimeObjectCreator& creator)

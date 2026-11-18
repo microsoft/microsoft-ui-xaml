@@ -759,6 +759,18 @@ public:
         _In_ const CDependencyObject *pNamescopeOwner,
         _In_ Jupiter::NameScoping::NameScopeType nameScopeType);
 
+    // Returns true when strName refers to a not-yet-realized x:Load="False" element in the template
+    // namescope of a control that opted into CControl::SetSkipRealizingDeferredStateTargets. Visual state
+    // machinery uses this to avoid realizing deferred parts just to apply setters/animations to them.
+    bool ShouldSkipRealizingDeferredStateTarget(
+        _In_ const xstring_ptr_view& strName,
+        _In_opt_ const CDependencyObject *pNamescopeOwner,
+        _In_ Jupiter::NameScoping::NameScopeType nameScopeType);
+
+    bool ShouldSkipRealizingDeferredStateTarget(
+        _In_ const xstring_ptr_view& strName,
+        _In_ CDependencyObject *pReferenceObject);
+
     // Returns namescope and its type for a given reference object. The idea here is that when publically calling
     // FindName you always are passing in an object as a reference, and that the FindName call needs to be evaluated
     // within the context of that reference object. The trick is that a reference object could be a template namescope

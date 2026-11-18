@@ -331,7 +331,7 @@
             <!-- This border exists only to draw the correct focus rect with rounded corners when element is focused.-->
             <Border x:Name="FocusBorder" Grid.Row="1" CornerRadius="{ThemeResource ControlCornerRadius}" Control.IsTemplateFocusTarget="True" />
             <Grid x:Name="SliderContainer" Grid.Row="1" Background="{ThemeResource SliderContainerBackground}">
-              <Grid x:Name="HorizontalTemplate" MinHeight="{ThemeResource SliderHorizontalHeight}">
+              <Grid x:Name="HorizontalTemplate" x:Load="False" MinHeight="{ThemeResource SliderHorizontalHeight}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
                   <ColumnDefinition Width="Auto" />
@@ -349,7 +349,7 @@
                 <TickBar x:Name="BottomTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Height="{ThemeResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
                 <Thumb x:Name="HorizontalThumb" Style="{StaticResource SliderThumbStyle}" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Width="{ThemeResource SliderHorizontalThumbWidth}" CornerRadius="{StaticResource ControlCornerRadius}" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" FocusVisualMargin="-14,-6,-14,-6" AutomationProperties.AccessibilityView="Raw" />
               </Grid>
-              <Grid x:Name="VerticalTemplate" MinWidth="{ThemeResource SliderVerticalWidth}" Visibility="Collapsed">
+              <Grid x:Name="VerticalTemplate" x:Load="False" MinWidth="{ThemeResource SliderVerticalWidth}" Visibility="Collapsed">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="*" />
                   <RowDefinition Height="Auto" />

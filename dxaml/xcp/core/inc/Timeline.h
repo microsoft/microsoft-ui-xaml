@@ -547,6 +547,12 @@ protected: bool                                               m_hasPendingSeekFo
 // the next frame.
 protected: bool                                               m_shouldSynchronizeDCompAnimationAfterResume       : 1;
 
+// Set by ResolveLocalTarget when the target is an unrealized deferred template part that the owning control asked us
+// not to realize (see CCoreServices::ShouldSkipRealizingDeferredStateTarget). The timeline runs without a target.
+protected: bool                                               m_fTargetSkippedForDeferral                        : 1;
+
+public:
+    bool IsTargetSkippedForDeferral() const { return m_fTargetSkippedForDeferral; }
 public:
     static bool s_allowDependentAnimations;
     static XFLOAT s_timeTolerance;  // The amount of tolerance (in seconds) allowed for floating point error when comparing times

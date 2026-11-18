@@ -88,6 +88,12 @@ namespace DirectUI
         EventRegistrationToken m_focusEngagedToken = {};
         EventRegistrationToken m_focusDisengagedToken = {};
 
+        // Whether each orientation's template parts have been fetched (and realized, if deferred) since the
+        // template was last applied.
+        bool m_horizontalPartsFetched = false;
+        bool m_verticalPartsFetched = false;
+        bool m_isApplyingTemplate = false;
+
         ctl::EventPtr<UIElementPointerPressedEventCallback> m_epSliderContainerPointerPressedHandler;
         ctl::EventPtr<UIElementPointerReleasedEventCallback> m_epSliderContainerPointerReleasedHandler;
         ctl::EventPtr<UIElementPointerMovedEventCallback> m_epSliderContainerPointerMovedHandler;
@@ -291,6 +297,10 @@ namespace DirectUI
 
         // Change the template being used to display this control when the orientation changes.
         _Check_return_ HRESULT OnOrientationChanged();
+
+        bool IsOrientationDeferred(_In_ bool horizontal);
+        _Check_return_ HRESULT EnsureOrientationParts(_Out_opt_ bool* pRealizedDeferredParts);
+        _Check_return_ HRESULT FetchOrientationParts(_In_ bool horizontal);
 
         // Updates the track layout using ActualWidth and ActualHeight of the control.
         _Check_return_ HRESULT UpdateTrackLayout();

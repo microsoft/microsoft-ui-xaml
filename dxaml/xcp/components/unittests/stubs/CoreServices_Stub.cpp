@@ -18,6 +18,21 @@ CDeferredElement* CCoreServices::GetDeferredElementIfExists(
     return nullptr;
 }
 
+bool CCoreServices::ShouldSkipRealizingDeferredStateTarget(
+    _In_ const xstring_ptr_view&,
+    _In_opt_ const CDependencyObject*,
+    _In_ Jupiter::NameScoping::NameScopeType)
+{
+    return false;
+}
+
+bool CCoreServices::ShouldSkipRealizingDeferredStateTarget(
+    _In_ const xstring_ptr_view&,
+    _In_ CDependencyObject*)
+{
+    return false;
+}
+
 void CCoreServices::SetRequestedThemeForSubTree(_In_ Theming::Theme requestedTheme)
 {
 }

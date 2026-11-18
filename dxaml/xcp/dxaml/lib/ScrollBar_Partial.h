@@ -12,6 +12,7 @@
 namespace DirectUI
 {
     class IsEnabledChangedEventArgs;
+    class RepeatButton;
 
     // Represents a control that provides a scroll bar that has a sliding Thumb
     // whose position corresponds to a value.
@@ -68,6 +69,12 @@ namespace DirectUI
             EventRegistrationToken m_ElementVerticalLargeIncreaseClickToken{};
             EventRegistrationToken m_ElementVerticalSmallDecreaseClickToken{};
             EventRegistrationToken m_ElementVerticalSmallIncreaseClickToken{};
+
+            // Tracks which orientation's template parts have been fetched. The inactive orientation's parts may be
+            // deferred (x:Load="False") and are only realized when Orientation switches to it.
+            bool m_horizontalPartsFetched = false;
+            bool m_verticalPartsFetched = false;
+            bool m_isApplyingTemplate = false;
             
             // value that indicates that we are currently blocking indicators from showing
             BOOLEAN m_blockIndicators;
@@ -291,6 +298,15 @@ namespace DirectUI
             // Returns True when rounding was performed, and False otherwise.
             bool RoundWithLayoutRound(
                 _Inout_ double* value);
+
+            bool IsTemplatePartUnrealized(_In_ const xstring_ptr_view& strName);
+            bool IsOrientationDeferred(_In_ bool horizontal);
+            _Check_return_ HRESULT EnsureOrientationParts(_Out_opt_ bool* pRealizedDeferredParts);
+            _Check_return_ HRESULT FetchOrientationParts(_In_ bool horizontal);
+            _Check_return_ HRESULT AttachRepeatButtonClick(
+                _In_opt_ RepeatButton* pButton,
+                _In_ HRESULT (ScrollBar::*pHandler)(IInspectable*, xaml::IRoutedEventArgs*),
+                _Out_ EventRegistrationToken* pToken);
 
             // Retrieves a reference to a child template object given its name
             template<class TInterface, class TRuntime>

@@ -20,6 +20,8 @@
 #include "Binding.g.h"
 #include "KeyRoutedEventArgs.g.h"
 #include "InputServices.h"
+#include "DeferredElement.h"
+#include "CVisualStateManager2.h"
 #include <microsoft.ui.text.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
@@ -834,31 +836,7 @@ IFACEMETHODIMP Slider::OnApplyTemplate()
 {
     HRESULT hr = S_OK;
 
-    ctl::ComPtr<xaml::IDependencyObject> spElementHorizontalTemplateAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementTopTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementHorizontalInlineTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementBottomTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementLeftTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementVerticalInlineTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementRightTickBarAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementHorizontalDecreaseRectAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementHorizontalThumbAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementVerticalTemplateAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementVerticalDecreaseRectAsDO;
-    ctl::ComPtr<xaml::IDependencyObject> spElementVerticalThumbAsDO;
     ctl::ComPtr<xaml::IDependencyObject> spSliderContainerAsDO;
-    ctl::ComPtr<xaml_primitives::IDragStartedEventHandler> spDragStartedHandler;
-    ctl::ComPtr<xaml_primitives::IDragDeltaEventHandler> spDragDeltaHandler;
-    ctl::ComPtr<xaml_primitives::IDragCompletedEventHandler> spDragCompletedHandler;
-    ctl::ComPtr<xaml::ISizeChangedEventHandler> spThumbSizeChangedHandler;
-    ctl::ComPtr<IToolTip> spHorizontalThumbToolTip;
-    ctl::ComPtr<IToolTip> spVerticalThumbToolTip;
-    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualWhiteHorizontalDO;
-    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualBlackHorizontalDO;
-    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualWhiteVerticalDO;
-    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualBlackVerticalDO;
-
-    BOOLEAN bIsThumbToolTipEnabled = FALSE;
 
     // Cleanup any existing template parts
     if (m_tpElementHorizontalThumb)
@@ -906,117 +884,18 @@ IFACEMETHODIMP Slider::OnApplyTemplate()
 
     IFC(SliderGenerated::OnApplyTemplate());
 
-    // Get the parts
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalTemplate")).Get(), &spElementHorizontalTemplateAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementHorizontalTemplate, spElementHorizontalTemplateAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"TopTickBar")).Get(), &spElementTopTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementTopTickBar, spElementTopTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalInlineTickBar")).Get(), &spElementHorizontalInlineTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementHorizontalInlineTickBar, spElementHorizontalInlineTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"BottomTickBar")).Get(), &spElementBottomTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementBottomTickBar, spElementBottomTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"LeftTickBar")).Get(), &spElementLeftTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementLeftTickBar, spElementLeftTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalInlineTickBar")).Get(), &spElementVerticalInlineTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementVerticalInlineTickBar, spElementVerticalInlineTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"RightTickBar")).Get(), &spElementRightTickBarAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementRightTickBar, spElementRightTickBarAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalDecreaseRect")).Get(), &spElementHorizontalDecreaseRectAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementHorizontalDecreaseRect, spElementHorizontalDecreaseRectAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalThumb")).Get(), &spElementHorizontalThumbAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementHorizontalThumb, spElementHorizontalThumbAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalTemplate")).Get(), &spElementVerticalTemplateAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementVerticalTemplate, spElementVerticalTemplateAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalDecreaseRect")).Get(), &spElementVerticalDecreaseRectAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementVerticalDecreaseRect, spElementVerticalDecreaseRectAsDO.Get());
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalThumb")).Get(), &spElementVerticalThumbAsDO));
-    SetPtrValueWithQIOrNull(m_tpElementVerticalThumb, spElementVerticalThumbAsDO.Get());
     IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SliderContainer")).Get(), &spSliderContainerAsDO));
     SetPtrValueWithQIOrNull(m_tpSliderContainer, spSliderContainerAsDO.Get());
 
-    // Attach the event handlers
-    if (m_tpElementHorizontalThumb || m_tpElementVerticalThumb)
-    {
-        spDragStartedHandler.Attach(
-            new ClassMemberEventHandler<
-            Slider,
-            ISlider,
-            xaml_primitives::IDragStartedEventHandler,
-            IInspectable,
-            xaml_primitives::IDragStartedEventArgs>(this, &Slider::OnThumbDragStarted));
+    m_horizontalPartsFetched = false;
+    m_verticalPartsFetched = false;
 
-        spDragDeltaHandler.Attach(
-            new ClassMemberEventHandler<
-            Slider,
-            ISlider,
-            xaml_primitives::IDragDeltaEventHandler,
-            IInspectable,
-            xaml_primitives::IDragDeltaEventArgs>(this, &Slider::OnThumbDragDelta));
-
-        spDragCompletedHandler.Attach(
-            new ClassMemberEventHandler<
-            Slider,
-            ISlider,
-            xaml_primitives::IDragCompletedEventHandler,
-            IInspectable,
-            xaml_primitives::IDragCompletedEventArgs>(this, &Slider::OnThumbDragCompleted));
-
-        spThumbSizeChangedHandler.Attach(
-            new ClassMemberEventHandler<
-            Slider,
-            ISlider,
-            ISizeChangedEventHandler,
-            IInspectable,
-            ISizeChangedEventArgs>(this, &Slider::OnThumbSizeChanged));
-
-        IFC(get_IsThumbToolTipEnabled(&bIsThumbToolTipEnabled));
-
-        if (m_tpElementHorizontalThumb)
-        {
-            IFC(m_tpElementHorizontalThumb->add_DragStarted(spDragStartedHandler.Get(), &m_ElementHorizontalThumbDragStartedToken));
-            IFC(m_tpElementHorizontalThumb->add_DragDelta(spDragDeltaHandler.Get(), &m_ElementHorizontalThumbDragDeltaToken));
-            IFC(m_tpElementHorizontalThumb->add_DragCompleted(spDragCompletedHandler.Get(), &m_ElementHorizontalThumbDragCompletedToken));
-            IFC(m_tpElementHorizontalThumb.Cast<Thumb>()->add_SizeChanged(spThumbSizeChangedHandler.Get(), &m_ElementHorizontalThumbSizeChangedToken));
-
-            IFC(ToolTipServiceFactory::GetToolTipObjectStatic(m_tpElementHorizontalThumb.Cast<Thumb>(), &spHorizontalThumbToolTip));
-            // If no disambiguation UI ToolTip exist for the Thumb, we create one.
-            // TODO: Jupiter 101372 - Cannot use RelativeSource={RelativeSource TemplatedParent} in generic.xaml
-            // When the bug is fixed, stop creating a ToolTip in code and move this to XAML.
-            if (!spHorizontalThumbToolTip)
-            {
-                IFC(SetDefaultThumbToolTip(xaml_controls::Orientation_Horizontal));
-                m_bUsingDefaultToolTipForHorizontalThumb = TRUE;
-            }
-            else
-            {
-                IFC(spHorizontalThumbToolTip.Cast<ToolTip>()->put_IsEnabled(bIsThumbToolTipEnabled));
-                spHorizontalThumbToolTip.Cast<ToolTip>()->m_isSliderThumbToolTip = TRUE;
-            }
-        }
-
-        if (m_tpElementVerticalThumb)
-        {
-            IFC(m_tpElementVerticalThumb->add_DragStarted(spDragStartedHandler.Get(), &m_ElementVerticalThumbDragStartedToken));
-            IFC(m_tpElementVerticalThumb->add_DragDelta(spDragDeltaHandler.Get(), &m_ElementVerticalThumbDragDeltaToken));
-            IFC(m_tpElementVerticalThumb->add_DragCompleted(spDragCompletedHandler.Get(), &m_ElementVerticalThumbDragCompletedToken));
-            IFC(m_tpElementVerticalThumb.Cast<Thumb>()->add_SizeChanged(spThumbSizeChangedHandler.Get(), &m_ElementVerticalThumbSizeChangedToken));
-
-            IFC(ToolTipServiceFactory::GetToolTipObjectStatic(m_tpElementVerticalThumb.Cast<Thumb>(), &spVerticalThumbToolTip));
-            // If no disambiguation UI ToolTip exist for the Thumb, we create one.
-            // TODO: Jupiter 101372 - Cannot use RelativeSource={RelativeSource TemplatedParent} in generic.xaml
-            // When the bug is fixed, stop creating a ToolTip in code and move this to XAML.
-            if (!spVerticalThumbToolTip)
-            {
-                IFC(SetDefaultThumbToolTip(xaml_controls::Orientation_Vertical));
-                m_bUsingDefaultToolTipForVerticalThumb = TRUE;
-            }
-            else
-            {
-                IFC(spVerticalThumbToolTip.Cast<ToolTip>()->put_IsEnabled(bIsThumbToolTipEnabled));
-                spVerticalThumbToolTip.Cast<ToolTip>()->m_isSliderThumbToolTip = TRUE;
-            }
-        }
-    }
+    // Get the orientation parts. When HorizontalTemplate/VerticalTemplate are x:Load="False", only the active
+    // orientation's parts are realized here; the other orientation is realized the first time Orientation
+    // switches to it.
+    m_isApplyingTemplate = true;
+    IFC(EnsureOrientationParts(nullptr));
+    m_isApplyingTemplate = false;
 
     // Attach to pointer events
     {
@@ -1050,35 +929,194 @@ IFACEMETHODIMP Slider::OnApplyTemplate()
     IFC(ChangeVisualState(FALSE));
     IFC(UpdateHeaderPresenterVisibility());
 
+Cleanup:
+    m_isApplyingTemplate = false;
+    RRETURN(hr);
+}
+
+bool Slider::IsOrientationDeferred(_In_ bool horizontal)
+{
+    CDeferredElement* deferredElement = DXamlCore::GetCurrent()->GetHandle()->GetDeferredElementIfExists(
+        horizontal ? XSTRING_PTR_EPHEMERAL(L"HorizontalTemplate") : XSTRING_PTR_EPHEMERAL(L"VerticalTemplate"),
+        GetHandle(),
+        Jupiter::NameScoping::NameScopeType::TemplateNameScope);
+    return deferredElement && !deferredElement->IsRealized();
+}
+
+// Fetches the template parts of the active orientation and, unless its root is still deferred (x:Load="False"),
+// of the inactive orientation. Fetching a deferred part realizes it. pRealizedDeferredParts is set to true when
+// parts were realized for an orientation that had been deferred.
+_Check_return_ HRESULT Slider::EnsureOrientationParts(_Out_opt_ bool* pRealizedDeferredParts)
+{
+    xaml_controls::Orientation orientation = xaml_controls::Orientation_Horizontal;
+
+    if (pRealizedDeferredParts)
+    {
+        *pRealizedDeferredParts = false;
+    }
+
+    IFC_RETURN(get_Orientation(&orientation));
+    const bool isHorizontal = (orientation == xaml_controls::Orientation_Horizontal);
+
+    for (const bool horizontal : { isHorizontal, !isHorizontal })
+    {
+        bool& fetched = horizontal ? m_horizontalPartsFetched : m_verticalPartsFetched;
+        if (fetched)
+        {
+            continue;
+        }
+
+        const bool isDeferred = IsOrientationDeferred(horizontal);
+        if (isDeferred && horizontal != isHorizontal)
+        {
+            // Leave the inactive orientation unrealized until Orientation switches to it.
+            continue;
+        }
+
+        IFC_RETURN(FetchOrientationParts(horizontal));
+        fetched = true;
+
+        if (isDeferred && pRealizedDeferredParts)
+        {
+            *pRealizedDeferredParts = true;
+        }
+    }
+
+    // While an orientation is still deferred, visual state setters and storyboards that target its parts are
+    // skipped instead of realizing them. Once everything is realized, unresolved targets are errors again.
+    static_cast<CControl*>(GetHandle())->SetSkipRealizingDeferredStateTargets(!m_horizontalPartsFetched || !m_verticalPartsFetched);
+
+    return S_OK;
+}
+
+// Fetches (realizing if deferred) the root, tick bars, decrease rect, thumb and focus visuals of one orientation
+// and attaches the thumb's event handlers.
+_Check_return_ HRESULT Slider::FetchOrientationParts(_In_ bool horizontal)
+{
+    ctl::ComPtr<xaml::IDependencyObject> spRootAsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spOutsideTickBar1AsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spInlineTickBarAsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spOutsideTickBar2AsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spDecreaseRectAsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spThumbAsDO;
+    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualWhiteDO;
+    ctl::ComPtr<xaml::IDependencyObject> spFocusVisualBlackDO;
+
+    if (horizontal)
+    {
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalTemplate")).Get(), &spRootAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementHorizontalTemplate, spRootAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"TopTickBar")).Get(), &spOutsideTickBar1AsDO));
+        SetPtrValueWithQIOrNull(m_tpElementTopTickBar, spOutsideTickBar1AsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalInlineTickBar")).Get(), &spInlineTickBarAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementHorizontalInlineTickBar, spInlineTickBarAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"BottomTickBar")).Get(), &spOutsideTickBar2AsDO));
+        SetPtrValueWithQIOrNull(m_tpElementBottomTickBar, spOutsideTickBar2AsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalDecreaseRect")).Get(), &spDecreaseRectAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementHorizontalDecreaseRect, spDecreaseRectAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"HorizontalThumb")).Get(), &spThumbAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementHorizontalThumb, spThumbAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualWhiteHorizontal")).Get(), &spFocusVisualWhiteDO));
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualBlackHorizontal")).Get(), &spFocusVisualBlackDO));
+    }
+    else
+    {
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalTemplate")).Get(), &spRootAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementVerticalTemplate, spRootAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"LeftTickBar")).Get(), &spOutsideTickBar1AsDO));
+        SetPtrValueWithQIOrNull(m_tpElementLeftTickBar, spOutsideTickBar1AsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalInlineTickBar")).Get(), &spInlineTickBarAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementVerticalInlineTickBar, spInlineTickBarAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"RightTickBar")).Get(), &spOutsideTickBar2AsDO));
+        SetPtrValueWithQIOrNull(m_tpElementRightTickBar, spOutsideTickBar2AsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalDecreaseRect")).Get(), &spDecreaseRectAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementVerticalDecreaseRect, spDecreaseRectAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"VerticalThumb")).Get(), &spThumbAsDO));
+        SetPtrValueWithQIOrNull(m_tpElementVerticalThumb, spThumbAsDO.Get());
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualWhiteVertical")).Get(), &spFocusVisualWhiteDO));
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualBlackVertical")).Get(), &spFocusVisualBlackDO));
+    }
+
+    auto& tpThumb = horizontal ? m_tpElementHorizontalThumb : m_tpElementVerticalThumb;
+    if (tpThumb)
+    {
+        ctl::ComPtr<xaml_primitives::IDragStartedEventHandler> spDragStartedHandler;
+        ctl::ComPtr<xaml_primitives::IDragDeltaEventHandler> spDragDeltaHandler;
+        ctl::ComPtr<xaml_primitives::IDragCompletedEventHandler> spDragCompletedHandler;
+        ctl::ComPtr<xaml::ISizeChangedEventHandler> spThumbSizeChangedHandler;
+        ctl::ComPtr<IToolTip> spThumbToolTip;
+        BOOLEAN bIsThumbToolTipEnabled = FALSE;
+
+        spDragStartedHandler.Attach(
+            new ClassMemberEventHandler<
+            Slider,
+            ISlider,
+            xaml_primitives::IDragStartedEventHandler,
+            IInspectable,
+            xaml_primitives::IDragStartedEventArgs>(this, &Slider::OnThumbDragStarted));
+
+        spDragDeltaHandler.Attach(
+            new ClassMemberEventHandler<
+            Slider,
+            ISlider,
+            xaml_primitives::IDragDeltaEventHandler,
+            IInspectable,
+            xaml_primitives::IDragDeltaEventArgs>(this, &Slider::OnThumbDragDelta));
+
+        spDragCompletedHandler.Attach(
+            new ClassMemberEventHandler<
+            Slider,
+            ISlider,
+            xaml_primitives::IDragCompletedEventHandler,
+            IInspectable,
+            xaml_primitives::IDragCompletedEventArgs>(this, &Slider::OnThumbDragCompleted));
+
+        spThumbSizeChangedHandler.Attach(
+            new ClassMemberEventHandler<
+            Slider,
+            ISlider,
+            ISizeChangedEventHandler,
+            IInspectable,
+            ISizeChangedEventArgs>(this, &Slider::OnThumbSizeChanged));
+
+        IFC_RETURN(get_IsThumbToolTipEnabled(&bIsThumbToolTipEnabled));
+
+        IFC_RETURN(tpThumb->add_DragStarted(spDragStartedHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragStartedToken : &m_ElementVerticalThumbDragStartedToken));
+        IFC_RETURN(tpThumb->add_DragDelta(spDragDeltaHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragDeltaToken : &m_ElementVerticalThumbDragDeltaToken));
+        IFC_RETURN(tpThumb->add_DragCompleted(spDragCompletedHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragCompletedToken : &m_ElementVerticalThumbDragCompletedToken));
+        IFC_RETURN(tpThumb.Cast<Thumb>()->add_SizeChanged(spThumbSizeChangedHandler.Get(), horizontal ? &m_ElementHorizontalThumbSizeChangedToken : &m_ElementVerticalThumbSizeChangedToken));
+
+        IFC_RETURN(ToolTipServiceFactory::GetToolTipObjectStatic(tpThumb.Cast<Thumb>(), &spThumbToolTip));
+        // If no disambiguation UI ToolTip exist for the Thumb, we create one.
+        // TODO: Jupiter 101372 - Cannot use RelativeSource={RelativeSource TemplatedParent} in generic.xaml
+        // When the bug is fixed, stop creating a ToolTip in code and move this to XAML.
+        if (!spThumbToolTip)
+        {
+            IFC_RETURN(SetDefaultThumbToolTip(horizontal ? xaml_controls::Orientation_Horizontal : xaml_controls::Orientation_Vertical));
+            (horizontal ? m_bUsingDefaultToolTipForHorizontalThumb : m_bUsingDefaultToolTipForVerticalThumb) = TRUE;
+        }
+        else
+        {
+            IFC_RETURN(spThumbToolTip.Cast<ToolTip>()->put_IsEnabled(bIsThumbToolTipEnabled));
+            spThumbToolTip.Cast<ToolTip>()->m_isSliderThumbToolTip = TRUE;
+        }
+    }
+
     // The base Control class has special handling for focus visuals that are renderered as alternate black and white
     // rectangles with stroke dash arrays, to produce the effect of alternating black and white stroke dashes.
     // However, this handling uses the default focus visual names for all controls. Slider has different names since
     // it requires unique elements for its horizontal and vertical templates. So it needs a separate version of the
     // code that rounds focus visual stroke thickness to plateau-scaled integer value.
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualWhiteHorizontal")).Get(), &spFocusVisualWhiteHorizontalDO));
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualBlackHorizontal")).Get(), &spFocusVisualBlackHorizontalDO));
-    if (spFocusVisualWhiteHorizontalDO &&
-        spFocusVisualBlackHorizontalDO &&
-        ctl::is<IRectangle>(spFocusVisualWhiteHorizontalDO) &&
-        ctl::is<IRectangle>(spFocusVisualBlackHorizontalDO))
+    if (spFocusVisualWhiteDO &&
+        spFocusVisualBlackDO &&
+        ctl::is<IRectangle>(spFocusVisualWhiteDO) &&
+        ctl::is<IRectangle>(spFocusVisualBlackDO))
     {
-        IFC(LayoutRoundRectangleStrokeThickness(spFocusVisualWhiteHorizontalDO.Cast<Rectangle>()));
-        IFC(LayoutRoundRectangleStrokeThickness(spFocusVisualBlackHorizontalDO.Cast<Rectangle>()));
+        IFC_RETURN(LayoutRoundRectangleStrokeThickness(spFocusVisualWhiteDO.Cast<Rectangle>()));
+        IFC_RETURN(LayoutRoundRectangleStrokeThickness(spFocusVisualBlackDO.Cast<Rectangle>()));
     }
 
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualWhiteVertical")).Get(), &spFocusVisualWhiteVerticalDO));
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"FocusVisualBlackVertical")).Get(), &spFocusVisualBlackVerticalDO));
-    if (spFocusVisualWhiteVerticalDO &&
-        spFocusVisualBlackVerticalDO &&
-        ctl::is<IRectangle>(spFocusVisualWhiteVerticalDO) &&
-        ctl::is<IRectangle>(spFocusVisualBlackVerticalDO))
-    {
-        IFC(LayoutRoundRectangleStrokeThickness(spFocusVisualWhiteVerticalDO.Cast<Rectangle>()));
-        IFC(LayoutRoundRectangleStrokeThickness(spFocusVisualBlackVerticalDO.Cast<Rectangle>()));
-    }
-
-Cleanup:
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Called when the Value value changed.
@@ -1285,6 +1323,13 @@ _Check_return_ HRESULT Slider::OnOrientationChanged()
 {
     HRESULT hr = S_OK;
     xaml_controls::Orientation orientation = xaml_controls::Orientation_Vertical;
+    bool realizedDeferredParts = false;
+
+    // If the template is applied and the newly active orientation is still deferred, realize its parts now.
+    if (!m_isApplyingTemplate && (m_horizontalPartsFetched || m_verticalPartsFetched))
+    {
+        IFC(EnsureOrientationParts(&realizedDeferredParts));
+    }
 
     IFC(get_Orientation(&orientation));
 
@@ -1304,7 +1349,21 @@ _Check_return_ HRESULT Slider::OnOrientationChanged()
             xaml::Visibility_Visible));
     }
 
+    if (realizedDeferredParts)
+    {
+        // Bring the newly realized tick bars in sync with TickPlacement before layout.
+        IFC(OnTickPlacementChanged());
+    }
+
     IFC(UpdateTrackLayout());
+
+    if (realizedDeferredParts)
+    {
+        // Setters and storyboards of the current visual states skipped the parts that were just realized.
+        // Re-apply the current states so those parts pick up their state values.
+        IFC(CVisualStateManager2::ReapplyCurrentStates(static_cast<CControl*>(GetHandle())));
+        IFC(ChangeVisualState(FALSE));
+    }
 
 Cleanup:
     RRETURN(hr);

@@ -148,6 +148,14 @@ public:
     void RequestTemplateBindingRefresh() { m_fRequestTemplateBindingRefresh = TRUE; }
     bool NeedsTemplateBindingRefresh() const { return m_fRequestTemplateBindingRefresh; }
     bool IsDefaultStyleApplying() const { return m_fIsDefaultStyleApplying; }
+
+    // When set, VisualState setters, storyboards and generated transitions targeting an unrealized
+    // x:Load="False" element in this control's template are skipped instead of realizing the element.
+    // The control is responsible for realizing the part and reapplying its visual states. Names that can't be
+    // found are also skipped (they may live inside an unrealized subtree), so clear this once all parts are realized.
+    void SetSkipRealizingDeferredStateTargets(bool value) { m_fSkipRealizingDeferredStateTargets = value; }
+    bool ShouldSkipRealizingDeferredStateTargets() const { return m_fSkipRealizingDeferredStateTargets; }
+
     _Check_return_ HRESULT OnApplyTemplate() override;
 
     _Check_return_ bool SupportsBuiltInStyles();
@@ -210,6 +218,7 @@ protected:
         , m_fRequestTemplateBindingRefresh(FALSE)
         , m_fIsDefaultStyleApplying(FALSE)
         , m_fCreationCompleteCalled(FALSE)
+        , m_fSkipRealizingDeferredStateTargets(FALSE)
     {
         m_isTabStop = true;
     }
@@ -293,6 +302,7 @@ private:
     bool   m_fRequestTemplateBindingRefresh : 1;   // Flag used by deferred element to signal that template bindings should be reevaluated after an element was realized in control template.
     bool   m_fIsDefaultStyleApplying        : 1;
     bool   m_fCreationCompleteCalled        : 1;
+    bool   m_fSkipRealizingDeferredStateTargets : 1;
 
 private:
     // Number of preallocated subscriptions in the vector.

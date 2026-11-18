@@ -10,6 +10,8 @@
 #include "AutomationProperties.h"
 #include "localizedResource.h"
 #include "LayoutCycleDebugSettings.h"
+#include "DeferredElement.h"
+#include "CVisualStateManager2.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -107,36 +109,7 @@ IFACEMETHODIMP ScrollBar::OnApplyTemplate()
 {
     HRESULT hr = S_OK;
 
-    wrl_wrappers::HString strAutomationName;
     m_suspendVisualStateUpdates = TRUE;
-
-    ctl::ComPtr<xaml_primitives::IDragStartedEventHandler> spDragStartedHandler;
-    ctl::ComPtr<xaml_primitives::IDragDeltaEventHandler> spDragDeltaHandler;
-    ctl::ComPtr<xaml_primitives::IDragCompletedEventHandler> spDragCompletedHandler;
-    ctl::ComPtr<xaml::IRoutedEventHandler> spLargeIncreaseClickHandler;
-    ctl::ComPtr<xaml::IRoutedEventHandler> spLargeDecreaseClickHandler;
-    ctl::ComPtr<xaml::IRoutedEventHandler> spSmallIncreaseClickHandler;
-    ctl::ComPtr<xaml::IRoutedEventHandler> spSmallDecreaseClickHandler;
-
-    ctl::ComPtr<IFrameworkElement> spElementHorizontalTemplate;
-    ctl::ComPtr<IFrameworkElement> spElementVerticalTemplate;
-    ctl::ComPtr<IFrameworkElement> spElementHorizontalPanningRoot;
-    ctl::ComPtr<IFrameworkElement> spElementHorizontalPanningThumb;
-    ctl::ComPtr<IFrameworkElement> spElementVerticalPanningRoot;
-    ctl::ComPtr<IFrameworkElement> spElementVerticalPanningThumb;
-
-    ctl::ComPtr<IRepeatButton> spElementHorizontalLargeIncrease;
-    ctl::ComPtr<IRepeatButton> spElementHorizontalLargeDecrease;
-    ctl::ComPtr<IRepeatButton> spElementHorizontalSmallIncrease;
-    ctl::ComPtr<IRepeatButton> spElementHorizontalSmallDecrease;
-
-    ctl::ComPtr<IRepeatButton> spElementVerticalLargeIncrease;
-    ctl::ComPtr<IRepeatButton> spElementVerticalLargeDecrease;
-    ctl::ComPtr<IRepeatButton> spElementVerticalSmallIncrease;
-    ctl::ComPtr<IRepeatButton> spElementVerticalSmallDecrease;
-
-    ctl::ComPtr<IThumb> spElementVerticalThumb;
-    ctl::ComPtr<IThumb> spElementHorizontalThumb;
 
     // Cleanup any existing template parts
     if (m_tpElementHorizontalThumb)
@@ -203,136 +176,182 @@ IFACEMETHODIMP ScrollBar::OnApplyTemplate()
     // Apply the template to the base class
     IFC(ScrollBarGenerated::OnApplyTemplate());
 
-    // Get the parts
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalRoot"), spElementHorizontalTemplate.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalTemplate, spElementHorizontalTemplate);
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalLargeIncrease"), spElementHorizontalLargeIncrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalLargeIncrease, spElementHorizontalLargeIncrease);
-    if (m_tpElementHorizontalLargeIncrease)
+    m_horizontalPartsFetched = false;
+    m_verticalPartsFetched = false;
+
+    // Get the parts. When the orientation roots are x:Load="False", only the active orientation's parts are
+    // realized here; the other orientation is realized the first time Orientation switches to it.
+    m_isApplyingTemplate = true;
+    IFC(EnsureOrientationParts(nullptr));
+    m_isApplyingTemplate = false;
+
+    // Updating states for parts where properties might have been updated
+    // through XAML before the template was loaded.
+    IFC(UpdateScrollBarVisibility());
+
+    m_suspendVisualStateUpdates = FALSE;
+    IFC(ChangeVisualState(false));
+
+Cleanup:
+    m_suspendVisualStateUpdates = FALSE;
+    m_isApplyingTemplate = false;
+    RRETURN(hr);
+}
+
+// Returns true if the named template part is an x:Load="False" element that hasn't been realized yet.
+bool ScrollBar::IsTemplatePartUnrealized(_In_ const xstring_ptr_view& strName)
+{
+    CDeferredElement* deferredElement = DXamlCore::GetCurrent()->GetHandle()->GetDeferredElementIfExists(
+        strName, GetHandle(), Jupiter::NameScoping::NameScopeType::TemplateNameScope);
+    return deferredElement && !deferredElement->IsRealized();
+}
+
+bool ScrollBar::IsOrientationDeferred(_In_ bool horizontal)
+{
+    return horizontal ?
+        (IsTemplatePartUnrealized(XSTRING_PTR_EPHEMERAL(L"HorizontalRoot")) || IsTemplatePartUnrealized(XSTRING_PTR_EPHEMERAL(L"HorizontalPanningRoot"))) :
+        (IsTemplatePartUnrealized(XSTRING_PTR_EPHEMERAL(L"VerticalRoot")) || IsTemplatePartUnrealized(XSTRING_PTR_EPHEMERAL(L"VerticalPanningRoot")));
+}
+
+// Fetches the template parts of the active orientation and, unless its roots are still deferred (x:Load="False"),
+// of the inactive orientation. Fetching a deferred part realizes it. pRealizedDeferredParts is set to true when
+// parts were realized for an orientation that had been deferred.
+_Check_return_ HRESULT ScrollBar::EnsureOrientationParts(_Out_opt_ bool* pRealizedDeferredParts)
+{
+    xaml_controls::Orientation orientation = xaml_controls::Orientation_Vertical;
+
+    if (pRealizedDeferredParts)
     {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementHorizontalLargeIncrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_HORIZONTALLARGEINCREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementHorizontalLargeIncrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
+        *pRealizedDeferredParts = false;
     }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalSmallIncrease"), spElementHorizontalSmallIncrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalSmallIncrease, spElementHorizontalSmallIncrease);
-    if (m_tpElementHorizontalSmallIncrease)
+
+    IFC_RETURN(get_Orientation(&orientation));
+    const bool isHorizontal = (orientation == xaml_controls::Orientation_Horizontal);
+
+    for (const bool horizontal : { isHorizontal, !isHorizontal })
     {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementHorizontalSmallIncrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
+        bool& fetched = horizontal ? m_horizontalPartsFetched : m_verticalPartsFetched;
+        if (fetched)
         {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_HORIZONTALSMALLINCREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementHorizontalSmallIncrease.Cast<RepeatButton>(), strAutomationName.Get()))
+            continue;
         }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalLargeDecrease"), spElementHorizontalLargeDecrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalLargeDecrease, spElementHorizontalLargeDecrease);
-    if (m_tpElementHorizontalLargeDecrease)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementHorizontalLargeDecrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
+
+        const bool isDeferred = IsOrientationDeferred(horizontal);
+        if (isDeferred && horizontal != isHorizontal)
         {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_HORIZONTALLARGEDECREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementHorizontalLargeDecrease.Cast<RepeatButton>(), strAutomationName.Get()))
+            // Leave the inactive orientation unrealized until Orientation switches to it.
+            continue;
         }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalSmallDecrease"), spElementHorizontalSmallDecrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalSmallDecrease, spElementHorizontalSmallDecrease);
-    if (m_tpElementHorizontalSmallDecrease)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementHorizontalSmallDecrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
+
+        IFC_RETURN(FetchOrientationParts(horizontal));
+        fetched = true;
+
+        if (isDeferred && pRealizedDeferredParts)
         {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_HORIZONTALSMALLDECREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementHorizontalSmallDecrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IThumb>(STR_LEN_PAIR(L"HorizontalThumb"), spElementHorizontalThumb.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalThumb, spElementHorizontalThumb);
-    if (m_tpElementHorizontalThumb)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementHorizontalThumb.Cast<Thumb>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_HORIZONTALTHUMB, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementHorizontalThumb.Cast<Thumb>(), strAutomationName.Get()))
+            *pRealizedDeferredParts = true;
         }
     }
 
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalRoot"), spElementVerticalTemplate.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalTemplate, spElementVerticalTemplate);
+    // While an orientation is still deferred, visual state setters and storyboards that target its parts are
+    // skipped instead of realizing them. Once everything is realized, unresolved targets are errors again.
+    static_cast<CControl*>(GetHandle())->SetSkipRealizingDeferredStateTargets(!m_horizontalPartsFetched || !m_verticalPartsFetched);
 
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalLargeIncrease"), spElementVerticalLargeIncrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalLargeIncrease, spElementVerticalLargeIncrease);
-    if (m_tpElementVerticalLargeIncrease)
+    return S_OK;
+}
+
+// Gives a template part a localized automation name if the template didn't provide one.
+static _Check_return_ HRESULT EnsureLocalizedAutomationName(
+    _In_opt_ xaml::IDependencyObject* pPart,
+    _In_ XUINT32 resourceStringId)
+{
+    wrl_wrappers::HString strAutomationName;
+
+    if (pPart)
     {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementVerticalLargeIncrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
+        IFC_RETURN(DirectUI::AutomationProperties::GetNameStatic(pPart, strAutomationName.ReleaseAndGetAddressOf()));
         if (strAutomationName.Get() == nullptr)
         {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_VERTICALALLARGEINCREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementVerticalLargeIncrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalSmallIncrease"), spElementVerticalSmallIncrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalSmallIncrease, spElementVerticalSmallIncrease);
-    if (m_tpElementVerticalSmallIncrease)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementVerticalSmallIncrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_VERTICALSMALLINCREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementVerticalSmallIncrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalLargeDecrease"), spElementVerticalLargeDecrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalLargeDecrease, spElementVerticalLargeDecrease);
-    if (m_tpElementVerticalLargeDecrease)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementVerticalLargeDecrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_VERTICALLARGEDECREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementVerticalLargeDecrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalSmallDecrease"), spElementVerticalSmallDecrease.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalSmallDecrease, spElementVerticalSmallDecrease);
-    if (m_tpElementVerticalSmallDecrease)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementVerticalSmallDecrease.Cast<RepeatButton>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_VERTICALSMALLDECREASE, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementVerticalSmallDecrease.Cast<RepeatButton>(), strAutomationName.Get()))
-        }
-    }
-    IFC(GetTemplateChildHelper<xaml_primitives::IThumb>(STR_LEN_PAIR(L"VerticalThumb"), spElementVerticalThumb.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalThumb, spElementVerticalThumb);
-    if (m_tpElementVerticalThumb)
-    {
-        IFC(DirectUI::AutomationProperties::GetNameStatic(m_tpElementVerticalThumb.Cast<Thumb>(), strAutomationName.ReleaseAndGetAddressOf()))
-        if (strAutomationName.Get() == nullptr)
-        {
-            IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_SCROLLBAR_VERTICALTHUMB, strAutomationName.ReleaseAndGetAddressOf()));
-            IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpElementVerticalThumb.Cast<Thumb>(), strAutomationName.Get()))
+            IFC_RETURN(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(resourceStringId, strAutomationName.ReleaseAndGetAddressOf()));
+            IFC_RETURN(DirectUI::AutomationProperties::SetNameStatic(pPart, strAutomationName.Get()));
         }
     }
 
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalPanningRoot"), spElementHorizontalPanningRoot.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalPanningRoot, spElementHorizontalPanningRoot);
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalPanningThumb"), spElementHorizontalPanningThumb.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementHorizontalPanningThumb, spElementHorizontalPanningThumb);
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalPanningRoot"), spElementVerticalPanningRoot.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalPanningRoot, spElementVerticalPanningRoot);
-    IFC(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalPanningThumb"), spElementVerticalPanningThumb.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpElementVerticalPanningThumb, spElementVerticalPanningThumb);
+    return S_OK;
+}
 
-    // Attach the event handlers
-    if (m_tpElementHorizontalThumb || m_tpElementVerticalThumb)
+// Fetches (realizing if deferred) the root, RepeatButtons, Thumb and panning parts of one orientation and
+// attaches their event handlers.
+_Check_return_ HRESULT ScrollBar::FetchOrientationParts(_In_ bool horizontal)
+{
+    ctl::ComPtr<xaml::IFrameworkElement> spRoot;
+    ctl::ComPtr<xaml::IFrameworkElement> spPanningRoot;
+    ctl::ComPtr<xaml::IFrameworkElement> spPanningThumb;
+    ctl::ComPtr<xaml_primitives::IRepeatButton> spLargeIncrease;
+    ctl::ComPtr<xaml_primitives::IRepeatButton> spLargeDecrease;
+    ctl::ComPtr<xaml_primitives::IRepeatButton> spSmallIncrease;
+    ctl::ComPtr<xaml_primitives::IRepeatButton> spSmallDecrease;
+    ctl::ComPtr<xaml_primitives::IThumb> spThumb;
+
+    if (horizontal)
     {
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalRoot"), spRoot.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalLargeIncrease"), spLargeIncrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalSmallIncrease"), spSmallIncrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalLargeDecrease"), spLargeDecrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"HorizontalSmallDecrease"), spSmallDecrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IThumb>(STR_LEN_PAIR(L"HorizontalThumb"), spThumb.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalPanningRoot"), spPanningRoot.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"HorizontalPanningThumb"), spPanningThumb.ReleaseAndGetAddressOf()));
+
+        IFC_RETURN(EnsureLocalizedAutomationName(spLargeIncrease.Cast<RepeatButton>(), UIA_SCROLLBAR_HORIZONTALLARGEINCREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spSmallIncrease.Cast<RepeatButton>(), UIA_SCROLLBAR_HORIZONTALSMALLINCREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spLargeDecrease.Cast<RepeatButton>(), UIA_SCROLLBAR_HORIZONTALLARGEDECREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spSmallDecrease.Cast<RepeatButton>(), UIA_SCROLLBAR_HORIZONTALSMALLDECREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spThumb.Cast<Thumb>(), UIA_SCROLLBAR_HORIZONTALTHUMB));
+
+        SetPtrValue(m_tpElementHorizontalTemplate, spRoot);
+        SetPtrValue(m_tpElementHorizontalLargeIncrease, spLargeIncrease);
+        SetPtrValue(m_tpElementHorizontalSmallIncrease, spSmallIncrease);
+        SetPtrValue(m_tpElementHorizontalLargeDecrease, spLargeDecrease);
+        SetPtrValue(m_tpElementHorizontalSmallDecrease, spSmallDecrease);
+        SetPtrValue(m_tpElementHorizontalThumb, spThumb);
+        SetPtrValue(m_tpElementHorizontalPanningRoot, spPanningRoot);
+        SetPtrValue(m_tpElementHorizontalPanningThumb, spPanningThumb);
+    }
+    else
+    {
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalRoot"), spRoot.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalLargeIncrease"), spLargeIncrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalSmallIncrease"), spSmallIncrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalLargeDecrease"), spLargeDecrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IRepeatButton>(STR_LEN_PAIR(L"VerticalSmallDecrease"), spSmallDecrease.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml_primitives::IThumb>(STR_LEN_PAIR(L"VerticalThumb"), spThumb.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalPanningRoot"), spPanningRoot.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GetTemplateChildHelper<xaml::IFrameworkElement>(STR_LEN_PAIR(L"VerticalPanningThumb"), spPanningThumb.ReleaseAndGetAddressOf()));
+
+        IFC_RETURN(EnsureLocalizedAutomationName(spLargeIncrease.Cast<RepeatButton>(), UIA_SCROLLBAR_VERTICALALLARGEINCREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spSmallIncrease.Cast<RepeatButton>(), UIA_SCROLLBAR_VERTICALSMALLINCREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spLargeDecrease.Cast<RepeatButton>(), UIA_SCROLLBAR_VERTICALLARGEDECREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spSmallDecrease.Cast<RepeatButton>(), UIA_SCROLLBAR_VERTICALSMALLDECREASE));
+        IFC_RETURN(EnsureLocalizedAutomationName(spThumb.Cast<Thumb>(), UIA_SCROLLBAR_VERTICALTHUMB));
+
+        SetPtrValue(m_tpElementVerticalTemplate, spRoot);
+        SetPtrValue(m_tpElementVerticalLargeIncrease, spLargeIncrease);
+        SetPtrValue(m_tpElementVerticalSmallIncrease, spSmallIncrease);
+        SetPtrValue(m_tpElementVerticalLargeDecrease, spLargeDecrease);
+        SetPtrValue(m_tpElementVerticalSmallDecrease, spSmallDecrease);
+        SetPtrValue(m_tpElementVerticalThumb, spThumb);
+        SetPtrValue(m_tpElementVerticalPanningRoot, spPanningRoot);
+        SetPtrValue(m_tpElementVerticalPanningThumb, spPanningThumb);
+    }
+
+    if (spThumb)
+    {
+        ctl::ComPtr<xaml_primitives::IDragStartedEventHandler> spDragStartedHandler;
+        ctl::ComPtr<xaml_primitives::IDragDeltaEventHandler> spDragDeltaHandler;
+        ctl::ComPtr<xaml_primitives::IDragCompletedEventHandler> spDragCompletedHandler;
+        Thumb* pThumb = spThumb.Cast<Thumb>();
+
         spDragStartedHandler.Attach(
             new ClassMemberEventHandler<
                 ScrollBar,
@@ -357,124 +376,46 @@ IFACEMETHODIMP ScrollBar::OnApplyTemplate()
                 IInspectable,
                 xaml_primitives::IDragCompletedEventArgs>(this, &ScrollBar::OnThumbDragCompleted));
 
-        if (m_tpElementHorizontalThumb)
-        {
-            IFC(m_tpElementHorizontalThumb.Cast<Thumb>()->add_DragStarted(spDragStartedHandler.Get(), &m_ElementHorizontalThumbDragStartedToken));
-            IFC(m_tpElementHorizontalThumb.Cast<Thumb>()->add_DragDelta(spDragDeltaHandler.Get(), &m_ElementHorizontalThumbDragDeltaToken));
-            IFC(m_tpElementHorizontalThumb.Cast<Thumb>()->add_DragCompleted(spDragCompletedHandler.Get(), &m_ElementHorizontalThumbDragCompletedToken));
-            IFC(m_tpElementHorizontalThumb.Cast<Thumb>()->put_IgnoreTouchInput(TRUE));
-        }
-
-        if (m_tpElementVerticalThumb)
-        {
-            IFC(m_tpElementVerticalThumb.Cast<Thumb>()->add_DragStarted(spDragStartedHandler.Get(), &m_ElementVerticalThumbDragStartedToken));
-            IFC(m_tpElementVerticalThumb.Cast<Thumb>()->add_DragDelta(spDragDeltaHandler.Get(), &m_ElementVerticalThumbDragDeltaToken));
-            IFC(m_tpElementVerticalThumb.Cast<Thumb>()->add_DragCompleted(spDragCompletedHandler.Get(), &m_ElementVerticalThumbDragCompletedToken));
-            IFC(m_tpElementVerticalThumb.Cast<Thumb>()->put_IgnoreTouchInput(TRUE));
-        }
+        IFC_RETURN(pThumb->add_DragStarted(spDragStartedHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragStartedToken : &m_ElementVerticalThumbDragStartedToken));
+        IFC_RETURN(pThumb->add_DragDelta(spDragDeltaHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragDeltaToken : &m_ElementVerticalThumbDragDeltaToken));
+        IFC_RETURN(pThumb->add_DragCompleted(spDragCompletedHandler.Get(), horizontal ? &m_ElementHorizontalThumbDragCompletedToken : &m_ElementVerticalThumbDragCompletedToken));
+        IFC_RETURN(pThumb->put_IgnoreTouchInput(TRUE));
     }
 
-    if (m_tpElementHorizontalLargeDecrease || m_tpElementVerticalLargeDecrease)
+    IFC_RETURN(AttachRepeatButtonClick(spLargeDecrease.Cast<RepeatButton>(), &ScrollBar::LargeDecrement,
+        horizontal ? &m_ElementHorizontalLargeDecreaseClickToken : &m_ElementVerticalLargeDecreaseClickToken));
+    IFC_RETURN(AttachRepeatButtonClick(spLargeIncrease.Cast<RepeatButton>(), &ScrollBar::LargeIncrement,
+        horizontal ? &m_ElementHorizontalLargeIncreaseClickToken : &m_ElementVerticalLargeIncreaseClickToken));
+    IFC_RETURN(AttachRepeatButtonClick(spSmallDecrease.Cast<RepeatButton>(), &ScrollBar::SmallDecrement,
+        horizontal ? &m_ElementHorizontalSmallDecreaseClickToken : &m_ElementVerticalSmallDecreaseClickToken));
+    IFC_RETURN(AttachRepeatButtonClick(spSmallIncrease.Cast<RepeatButton>(), &ScrollBar::SmallIncrement,
+        horizontal ? &m_ElementHorizontalSmallIncreaseClickToken : &m_ElementVerticalSmallIncreaseClickToken));
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ScrollBar::AttachRepeatButtonClick(
+    _In_opt_ RepeatButton* pButton,
+    _In_ HRESULT (ScrollBar::*pHandler)(IInspectable*, xaml::IRoutedEventArgs*),
+    _Out_ EventRegistrationToken* pToken)
+{
+    if (pButton)
     {
-        spLargeDecreaseClickHandler.Attach(
+        ctl::ComPtr<xaml::IRoutedEventHandler> spClickHandler;
+
+        spClickHandler.Attach(
             new ClassMemberEventHandler<
                 ScrollBar,
                 xaml_primitives::IScrollBar,
                 xaml::IRoutedEventHandler,
                 IInspectable,
-                xaml::IRoutedEventArgs>(this, &ScrollBar::LargeDecrement));
+                xaml::IRoutedEventArgs>(this, pHandler));
 
-        if (m_tpElementHorizontalLargeDecrease)
-        {
-            IFC(m_tpElementHorizontalLargeDecrease.Cast<RepeatButton>()->add_Click(spLargeDecreaseClickHandler.Get(), &m_ElementHorizontalLargeDecreaseClickToken));
-            IFC(m_tpElementHorizontalLargeDecrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-
-        if (m_tpElementVerticalLargeDecrease)
-        {
-            IFC(m_tpElementVerticalLargeDecrease.Cast<RepeatButton>()->add_Click(spLargeDecreaseClickHandler.Get(), &m_ElementVerticalLargeDecreaseClickToken));
-            IFC(m_tpElementVerticalLargeDecrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
+        IFC_RETURN(pButton->add_Click(spClickHandler.Get(), pToken));
+        IFC_RETURN(pButton->put_IgnoreTouchInput(TRUE));
     }
 
-    if (m_tpElementHorizontalLargeIncrease || m_tpElementVerticalLargeIncrease)
-    {
-        spLargeIncreaseClickHandler.Attach(
-            new ClassMemberEventHandler<
-                ScrollBar,
-                xaml_primitives::IScrollBar,
-                xaml::IRoutedEventHandler,
-                IInspectable,
-                xaml::IRoutedEventArgs>(this, &ScrollBar::LargeIncrement));
-
-        if (m_tpElementHorizontalLargeIncrease)
-        {
-            IFC(m_tpElementHorizontalLargeIncrease.Cast<RepeatButton>()->add_Click(spLargeIncreaseClickHandler.Get(), &m_ElementHorizontalLargeIncreaseClickToken));
-            IFC(m_tpElementHorizontalLargeIncrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-
-        if (m_tpElementVerticalLargeIncrease)
-        {
-            IFC(m_tpElementVerticalLargeIncrease.Cast<RepeatButton>()->add_Click(spLargeIncreaseClickHandler.Get(), &m_ElementVerticalLargeIncreaseClickToken));
-            IFC(m_tpElementVerticalLargeIncrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-    }
-
-    if (m_tpElementHorizontalSmallDecrease || m_tpElementVerticalSmallDecrease)
-    {
-        spSmallDecreaseClickHandler.Attach(
-            new ClassMemberEventHandler<
-                ScrollBar,
-                xaml_primitives::IScrollBar,
-                xaml::IRoutedEventHandler,
-                IInspectable,
-                xaml::IRoutedEventArgs>(this, &ScrollBar::SmallDecrement));
-
-        if (m_tpElementHorizontalSmallDecrease)
-        {
-            IFC(m_tpElementHorizontalSmallDecrease.Cast<RepeatButton>()->add_Click(spSmallDecreaseClickHandler.Get(), &m_ElementHorizontalSmallDecreaseClickToken));
-            IFC(m_tpElementHorizontalSmallDecrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-
-        if (m_tpElementVerticalSmallDecrease)
-        {
-            IFC(m_tpElementVerticalSmallDecrease.Cast<RepeatButton>()->add_Click(spSmallDecreaseClickHandler.Get(), &m_ElementVerticalSmallDecreaseClickToken));
-            IFC(m_tpElementVerticalSmallDecrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-    }
-    if (m_tpElementHorizontalSmallIncrease || m_tpElementVerticalSmallIncrease)
-    {
-        spSmallIncreaseClickHandler.Attach(
-            new ClassMemberEventHandler<
-                ScrollBar,
-                xaml_primitives::IScrollBar,
-                xaml::IRoutedEventHandler,
-                IInspectable,
-                xaml::IRoutedEventArgs>(this, &ScrollBar::SmallIncrement));
-
-        if (m_tpElementHorizontalSmallIncrease)
-        {
-            IFC(m_tpElementHorizontalSmallIncrease.Cast<RepeatButton>()->add_Click(spSmallIncreaseClickHandler.Get(), &m_ElementHorizontalSmallIncreaseClickToken));
-            IFC(m_tpElementHorizontalSmallIncrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-
-        if (m_tpElementVerticalSmallIncrease)
-        {
-            IFC(m_tpElementVerticalSmallIncrease.Cast<RepeatButton>()->add_Click(spSmallIncreaseClickHandler.Get(), &m_ElementVerticalSmallIncreaseClickToken));
-            IFC(m_tpElementVerticalSmallIncrease.Cast<RepeatButton>()->put_IgnoreTouchInput(TRUE));
-        }
-    }
-
-    // Updating states for parts where properties might have been updated
-    // through XAML before the template was loaded.
-    IFC(UpdateScrollBarVisibility());
-
-    m_suspendVisualStateUpdates = FALSE;
-    IFC(ChangeVisualState(false));
-
-Cleanup:
-    m_suspendVisualStateUpdates = FALSE;
-    RRETURN(hr);
+    return S_OK;
 }
 
 // Retrieves a reference to a child template object given its name
@@ -1252,6 +1193,13 @@ _Check_return_ HRESULT ScrollBar::OnOrientationChanged()
 {
     HRESULT hr = S_OK;
     xaml_controls::Orientation orientation = xaml_controls::Orientation_Vertical;
+    bool realizedDeferredParts = false;
+
+    // If the template is applied and the newly active orientation is still deferred, realize its parts now.
+    if (!m_isApplyingTemplate && (m_horizontalPartsFetched || m_verticalPartsFetched))
+    {
+        IFC(EnsureOrientationParts(&realizedDeferredParts));
+    }
 
     IFC(get_Orientation(&orientation));
 
@@ -1289,6 +1237,14 @@ _Check_return_ HRESULT ScrollBar::OnOrientationChanged()
     }
 
     IFC(UpdateTrackLayout());
+
+    if (realizedDeferredParts)
+    {
+        // Setters and storyboards of the current visual states skipped the parts that were just realized.
+        // Re-apply the current states so those parts pick up their state values.
+        IFC(CVisualStateManager2::ReapplyCurrentStates(static_cast<CControl*>(GetHandle())));
+        IFC(ChangeVisualState(false));
+    }
 
 Cleanup:
     RRETURN(hr);

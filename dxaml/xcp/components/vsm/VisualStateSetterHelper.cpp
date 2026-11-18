@@ -51,6 +51,15 @@ namespace VisualStateSetterHelper
             targetPropertyOwner,
             &targetProperty));
 
+        if (!targetPropertyOwner)
+        {
+            // The target is an unrealized deferred template part (see
+            // CCoreServices::ShouldSkipRealizingDeferredStateTarget). Nothing to apply.
+            modifiedObject = nullptr;
+            *modifiedProperty = nullptr;
+            return S_OK;
+        }
+
         ASSERT(targetPropertyOwner && targetProperty);
 
         // Verify that the setter actually has a value set
@@ -249,6 +258,11 @@ namespace VisualStateSetterHelper
                 &targetProperty)))
             {
                 // Expected failure case if Setter isn't valid.
+                return;
+            }
+            if (!targetPropertyOwner)
+            {
+                // Unrealized deferred template part; nothing to apply.
                 return;
             }
             CValue value;

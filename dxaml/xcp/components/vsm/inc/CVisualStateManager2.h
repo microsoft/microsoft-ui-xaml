@@ -85,6 +85,11 @@ public:
     // item exists to harden VSM against collection changes.
     static _Check_return_ HRESULT ResetVisualStateGroupToNullState(_In_ CControl *pControl, _In_ int groupIndex);
 
+    // Re-applies the current state of every group without transitions. Used after deferred template
+    // parts are realized so that storyboards/setters that skipped them (see
+    // CControl::ShouldSkipRealizingDeferredStateTargets) resolve against the now-realized elements.
+    static _Check_return_ HRESULT ReapplyCurrentStates(_In_ CControl *pControl);
+
     static xref_ptr<CDependencyObject> GetCustomVisualStateManager(_In_ CControl *pControl);
     static xref_ptr<CDependencyObject> GetVisualState(_In_ CControl* pControl, _In_ VisualStateToken token);
     static xstring_ptr GetVisualStateName(_In_ CControl* pControl, _In_ VisualStateToken token);

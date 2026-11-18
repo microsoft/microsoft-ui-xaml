@@ -44,7 +44,9 @@ public:
             IFC_RETURN(static_cast<CAnimation*>(timeline)->GetAnimationTargets(
                 &m_doWeakRef, &doProperty));
 
-            m_propertyIndex = doProperty->GetIndex();
+            // A null property means the target is an unrealized deferred template part
+            // (CTimeline::IsTargetSkippedForDeferral); leave m_propertyIndex unknown so the caller skips this node.
+            m_propertyIndex = doProperty ? doProperty->GetIndex() : KnownPropertyIndex::UnknownType_UnknownProperty;
             return S_OK;
         }
 
@@ -143,7 +145,10 @@ public:
             {
                 Node node;
                 IFC_RETURN(node.Initialize(timeline, usableDynamicTimline));
-                m_list.emplace_back(std::move(node));
+                if (node.m_propertyIndex != KnownPropertyIndex::UnknownType_UnknownProperty)
+                {
+                    m_list.emplace_back(std::move(node));
+                }
             }
         }
         return S_OK;

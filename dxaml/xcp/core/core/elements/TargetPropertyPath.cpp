@@ -388,8 +388,16 @@ _Check_return_ HRESULT CTargetPropertyPath::ResolveTargetObjectForVisualStateSet
     else if (!m_targetName.IsNullOrEmpty())
     {
         // Resolve the target object by name
-        targetObject = GetContext()->TryGetElementByName(
-            m_targetName, (namescopeReference) ? namescopeReference : this);
+        CDependencyObject* referenceObject = (namescopeReference) ? namescopeReference : this;
+        if (GetContext()->ShouldSkipRealizingDeferredStateTarget(m_targetName, referenceObject))
+        {
+            // Target is an unrealized x:Load="False" template part of a control that defers it. Leave the
+            // target unresolved; the control reapplies its visual states after realizing the part.
+            targetObject = nullptr;
+            return S_OK;
+        }
+
+        targetObject = GetContext()->TryGetElementByName(m_targetName, referenceObject);
         if (!targetObject)
         {
             // TODO: Debugger check is (hopefully) a temporary measure that will be removed at a later date
