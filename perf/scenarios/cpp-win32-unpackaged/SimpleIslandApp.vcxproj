@@ -52,6 +52,7 @@
     <!-- Island-support: We want the app to be unpackaged -->
     <WindowsPackageType>None</WindowsPackageType>
     <UseCppWinRT>true</UseCppWinRT>
+    <CppWinRTEnableLegacyCoroutines>false</CppWinRTEnableLegacyCoroutines>
     <UseUAP>false</UseUAP>
     <UseWinUI>true</UseWinUI>
 		<WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>  <!--fix for pipeline failure. need future investigation -->
@@ -170,7 +171,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
-      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj /await:strict</AdditionalOptions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ScenariosPackagesPath)\microsoft.projectreunion.interactiveexperiences.transportpackage\$(IxpTransportPackageVersion)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

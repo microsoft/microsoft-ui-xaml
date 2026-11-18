@@ -13,6 +13,7 @@
 		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
 		<UseUAP>false</UseUAP>
 		<UseWinUI>true</UseWinUI>
+		<CsWinRTWindowsMetadata>$(ProjectRoot)\packages\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppVersion)\c\UnionMetadata\$(WindowsSdkTargetPlatformVersion)\Windows.winmd</CsWinRTWindowsMetadata>
 		<VersionString>WinUI</VersionString>
 		<EnableMsixTooling>true</EnableMsixTooling>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
