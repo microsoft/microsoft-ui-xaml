@@ -25,9 +25,18 @@
 class TableViewTrackedItemIdentity
 {
 public:
+    void Reset() noexcept
+    {
+        m_hasItem = false;
+        m_isNull = false;
+        m_weakItem = nullptr;
+        m_strongItem = nullptr;
+    }
+
     void Track(winrt::IInspectable const& item)
     {
-        m_hasItem = static_cast<bool>(item);
+        m_hasItem = true;
+        m_isNull = !item;
         m_weakItem = winrt::weak_ref<winrt::IInspectable>{ nullptr };
         m_strongItem = nullptr;
 
@@ -61,12 +70,17 @@ public:
 
     bool SameIdentityAs(winrt::IInspectable const& candidate) const
     {
+        if (m_hasItem && m_isNull)
+        {
+            return !candidate;
+        }
         auto const item = Resolve();
         return candidate && item && TableView::SameInspectableIdentity(candidate, item);
     }
 
 private:
     bool m_hasItem{ false };
+    bool m_isNull{ false };
     winrt::weak_ref<winrt::IInspectable> m_weakItem{ nullptr };
     winrt::IInspectable m_strongItem{ nullptr };
 };
@@ -75,6 +89,16 @@ private:
 [[noreturn]] inline void ThrowElementNotAvailable()
 {
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
+}
+
+inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
+{
+    // The selection model is authoritative while selection observers are running.
+    if (!table.CanSelectMultipleRows() && table.SelectedIndexInternal() >= 0 &&
+        !table.IsSelected(index))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
 }
 
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host

@@ -255,25 +255,32 @@ void TableView::OnLosingFocusForEditing(
         return;
     }
 
+    QueueFocusLossCommit(args.Direction());
+}
+
+void TableView::QueueFocusLossCommit(winrt::FocusNavigationDirection direction)
+{
+    if (direction == winrt::FocusNavigationDirection::Next ||
+        direction == winrt::FocusNavigationDirection::Previous)
+    {
+        m_focusLossCommitDirection = direction;
+    }
+
     if (m_focusLossCommitQueued)
     {
         return;
     }
 
-    QueueFocusLossCommit();
-}
-
-void TableView::QueueFocusLossCommit()
-{
     m_focusLossCommitQueued = true;
 
     auto weakThis = get_weak();
+    const auto generation = m_editFocusGeneration;
     bool queued = false;
     if (auto const dispatcher = DispatcherQueue())
     {
-        queued = dispatcher.TryEnqueue([weakThis]()
+        queued = dispatcher.TryEnqueue([weakThis, generation]()
         {
-            if (auto strongThis = weakThis.get())
+            if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
             {
                 strongThis->CompleteFocusLossCommit();
             }
@@ -285,12 +292,26 @@ void TableView::QueueFocusLossCommit()
         // Nothing will clear the flag for us. Leaving it set would silently disable focus-loss
         // commit for the rest of the control's life.
         m_focusLossCommitQueued = false;
+        m_focusLossCommitDirection = winrt::FocusNavigationDirection::None;
     }
+}
+
+void TableView::ResetEditFocusTracking()
+{
+    ++m_editFocusGeneration;
+    m_focusLossCommitQueued = false;
+    m_focusLossCommitDirection = winrt::FocusNavigationDirection::None;
+    m_editorFlyoutClosedRevoker.revoke();
+    m_editorFlyoutClosingRevoker.revoke();
+    m_editorPopupClosedRevoker.revoke();
+    m_editorFlyoutClosing = false;
 }
 
 void TableView::CompleteFocusLossCommit()
 {
+    const auto direction = m_focusLossCommitDirection;
     m_focusLossCommitQueued = false;
+    m_focusLossCommitDirection = winrt::FocusNavigationDirection::None;
     m_editorFlyoutClosedRevoker.revoke();
     m_editorFlyoutClosingRevoker.revoke();
     m_editorPopupClosedRevoker.revoke();
@@ -325,11 +346,16 @@ void TableView::CompleteFocusLossCommit()
             return;
         }
 
-        // Refocus the editor only when focus lands on the row/cell host from the opening gesture;
-        // hosted controls in other cells remain valid focus targets.
+        // Opening can return focus to the row/cell host, but an explicit Tab departure is not
+        // opening recovery. In particular, Shift+Tab can target the editor's own cell wrapper.
+        // Leave that framework-selected target in place and let the normal commit run below.
+        const bool isTabNavigation =
+            direction == winrt::FocusNavigationDirection::Next ||
+            direction == winrt::FocusNavigationDirection::Previous;
         auto const editingCell = winrt::get_self<TableViewRow>(row)->GetEditingCellWrapper();
-        if (focused == row.try_as<winrt::DependencyObject>() ||
-            (editingCell && focused == editingCell.try_as<winrt::DependencyObject>()))
+        if (!isTabNavigation &&
+            (focused == row.try_as<winrt::DependencyObject>() ||
+                (editingCell && focused == editingCell.try_as<winrt::DependencyObject>())))
         {
             editingElement.Focus(winrt::FocusState::Programmatic);
             return;
@@ -340,27 +366,28 @@ void TableView::CompleteFocusLossCommit()
     // working in the editor. Decide again once the menu closes - it hands focus back.
     if (auto const flyout = FindOpenEditorFlyout(editingElement))
     {
+        const auto generation = m_editFocusGeneration;
         // Escape light-dismisses the menu before the key is routed, so the editor then receives
         // that same Escape. Mark the close so the key handler leaves the edit alone.
         m_editorFlyoutClosingRevoker = flyout.Closing(winrt::auto_revoke,
-            [weakThis = get_weak()](auto&&, auto&&)
+            [weakThis = get_weak(), generation](auto&&, auto&&)
             {
-                if (auto strongThis = weakThis.get())
+                if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
                     strongThis->MarkEditorFlyoutClosing();
                 }
             });
 
         m_editorFlyoutClosedRevoker = flyout.Closed(winrt::auto_revoke,
-            [weakThis = get_weak()](auto&&, auto&&)
+            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
             {
-                if (auto strongThis = weakThis.get())
+                if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
                     strongThis->m_editorFlyoutClosingRevoker.revoke();
                     strongThis->m_editorFlyoutClosedRevoker.revoke();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit();
+                        strongThis->QueueFocusLossCommit(direction);
                     }
                 }
             });
@@ -371,16 +398,17 @@ void TableView::CompleteFocusLossCommit()
     // once it closes. Focus in any other popup is a genuine move away and commits now.
     if (auto const popup = FindOpenPopupContaining(focused, root); popup && IsEditorOwnedPopup(popup, editingElement))
     {
+        const auto generation = m_editFocusGeneration;
         m_editorPopupClosedRevoker = popup.Closed(winrt::auto_revoke,
-            [weakThis = get_weak()](auto&&, auto&&)
+            [weakThis = get_weak(), generation, direction](auto&&, auto&&)
             {
-                if (auto strongThis = weakThis.get())
+                if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
                 {
                     strongThis->m_editorPopupClosedRevoker.revoke();
                     strongThis->MarkEditorFlyoutClosing();
                     if (!strongThis->m_focusLossCommitQueued)
                     {
-                        strongThis->QueueFocusLossCommit();
+                        strongThis->QueueFocusLossCommit(direction);
                     }
                 }
             });
@@ -394,10 +422,11 @@ void TableView::MarkEditorFlyoutClosing()
 {
     // Lives only until the current input has been dispatched.
     m_editorFlyoutClosing = true;
+    const auto generation = m_editFocusGeneration;
     auto const dispatcher = DispatcherQueue();
-    if (!dispatcher || !dispatcher.TryEnqueue([weakThis = get_weak()]()
+    if (!dispatcher || !dispatcher.TryEnqueue([weakThis = get_weak(), generation]()
         {
-            if (auto strongThis = weakThis.get())
+            if (auto strongThis = weakThis.get(); strongThis && strongThis->m_editFocusGeneration == generation)
             {
                 strongThis->m_editorFlyoutClosing = false;
             }

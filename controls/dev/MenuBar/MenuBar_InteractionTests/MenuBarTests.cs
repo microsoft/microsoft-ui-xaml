@@ -319,6 +319,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 VerifyElement.NotFound("New Flyout Item", FindBy.Name);
 
+                FindElement.ById<Button>("ResetFlyoutItemsButton").Invoke();
+                Wait.ForIdle();
+                var fileButtonEC = new ExpandCollapseImplementation(fileButton);
+                Log.Comment($"Flyout state after reset: {fileButtonEC.ExpandCollapseState}");
+                fileButtonEC.Collapse();
+                Wait.ForIdle();
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("Replacement Flyout Item", FindBy.Name);
+                VerifyElement.NotFound("New", FindBy.Name);
+
                 // close flyout
                 fileButton.Invoke(); 
                 Wait.ForIdle();

@@ -1,0 +1,57 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# Runs focused and broad WPF coverage excluding known failures.
+
+parameters:
+- name: pipelineKind
+  type: string
+  default: PR
+  values:
+  - PR
+  - Nightly
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+
+stages:
+- stage: RunSystemCompositionEngineTests
+  displayName: Run system composition engine tests
+  dependsOn:
+  - Build
+  # Fork PRs cannot access the publisher-attestation token required by this stage.
+  condition: and(in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues'), eq(${{ parameters.MUXFinalRelease }}, false), ne(variables['System.PullRequest.IsFork'], 'True'), or(and(eq('${{ parameters.pipelineKind }}', 'PR'), eq(variables['Build.Reason'], 'PullRequest')), and(eq('${{ parameters.pipelineKind }}', 'Nightly'), in(variables['Build.Reason'], 'Schedule', 'Manual'))))
+  variables:
+  - group: WinUI-InternalFeed
+  - name: runIgnoredTests
+    value: '1'
+  - name: customTaefQuery
+    value: >-
+      (@Name='*SystemCompositionEngineTests*')
+  jobs:
+  - template: WinUI-CreateTestPayload-Job.yml
+    parameters:
+      runTestJobName: CreateSystemCompositionEngineTestPayload_x86chk
+      testSuite: DevTestSuite
+      testPayloadArtifactName: SystemCompositionEngineTestPayload
+      includeWinUIGallery: false
+      compositionEngineType: System
+      wpfExcludedTestsManifestPath: 'build\PipelineScripts\SystemCompositionEngineFocusedExcludedTests-WPF.csv'
+
+  - template: WinUI-RunTestPassOnPipeline-Job.yml
+    parameters:
+      runTestStageName: RunSystemCompositionEngineTests
+      runTestJobName: RunSystemCompositionEngineTests_x86chk
+      dependsOn: CreateSystemCompositionEngineTestPayload_x86chk
+      buildPlatform: x86
+      buildConfiguration: chk
+      testOS: Win10-22H2
+      testSuite: DevTestSuite
+      rerunPassesRequiredToAvoidFailure: 1
+      testPayloadArtifactName: SystemCompositionEngineTestPayload
+      imageOverride: ge_current-vhdx_enterprise
+      parallelJobs: 1
+      workItemsProjNameFilter: RunTestsInHelix-MUXCoreTests-WPF.proj
+      compositionEngineLafToken: '$(CompositionSwitcherLafToken)'
+
+  - template: WinUI-RunSystemCompositionEngineBroadTests-Job.yml
