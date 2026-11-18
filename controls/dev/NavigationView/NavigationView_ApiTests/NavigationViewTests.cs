@@ -7722,6 +7722,166 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForNoSelectionIndicator(navView, "Parent", "No selection indicator should be lit on Parent after the indicator animation.");
         }
 
+        // Runs app code from the collection's indexer, which is what the SelectionModel calls to read its selected item.
+        private sealed class GetAtHookCollection : ObservableCollection<Category>, global::System.Collections.IList
+        {
+            public Action GetAtHook { get; set; }
+
+            object global::System.Collections.IList.this[int index]
+            {
+                get
+                {
+                    var hook = GetAtHook;
+                    GetAtHook = null;
+                    hook?.Invoke();
+                    return this[index];
+                }
+                set => this[index] = (Category)value;
+            }
+        }
+
+        [TestMethod]
+        public void VerifySelectingItemOutsideMenuKeepsSelectionMadeWhileReadingStaleSelection()
+        {
+            // Checking whether the SelectionModel still holds the new item reads it through the app's collection,
+            // which can select another child. That selection's ancestors must keep IsChildSelected.
+            var childA = NewCategory("Child A");
+            var childB = NewCategory("Child B");
+            var children = new GetAtHookCollection { childA, childB };
+            var parentItem = new Category("Parent", "Parent", "Icon", children, true);
+            var navView = SetupDataBoundNavigationView(new ObservableCollection<Category> { parentItem, NewCategory("Other") });
+            var outsideItem = NewCategory("Outside");
+            NavigationViewItem parentContainer = null;
+            NavigationViewItem childBContainer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                parentContainer = (NavigationViewItem)navView.ContainerFromMenuItem(parentItem);
+                // Selected before its container exists, so the SelectionModel keeps Child A's path when it is expanded.
+                navView.SelectedItem = childA;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(parentContainer.IsChildSelected, "Precondition: parent IsChildSelected");
+                parentContainer.IsExpanded = true;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                childBContainer = (NavigationViewItem)navView.ContainerFromMenuItem(childB);
+                Verify.IsNotNull(childBContainer, "Precondition: Child B is realized");
+
+                bool redirected = false;
+                children.GetAtHook = () =>
+                {
+                    redirected = true;
+                    navView.SelectedItem = childB;
+                };
+                navView.SelectedItem = outsideItem;
+                children.GetAtHook = null;
+                Verify.IsTrue(redirected, "The collection's indexer should have run while selecting the outside item.");
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(childB, navView.SelectedItem, "The selection made from the indexer should win.");
+                Verify.IsTrue(childBContainer.IsSelected, "Child B should be selected.");
+                Verify.IsTrue(parentContainer.IsChildSelected, "Parent IsChildSelected should be kept for the new selection.");
+                parentContainer.IsExpanded = false;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+            Verify.IsTrue(ItemHasSelectionIndicator(navView, "Parent"), "Selection indicator should be on the collapsed Parent.");
+        }
+
+        [TestMethod]
+        public void VerifySelectingBoxedValueItemFromTopOverflowKeepsSelection()
+        {
+            // A C# List<int> item is a new boxed object on every read. Selecting one from the Top overflow sets SelectedItem
+            // before its container is realized in the primary list, which must not discard its SelectionModel path.
+            var items = new List<int> { 1111111, 2222222, 3333333, 4444444, 5555555, 6666666 };
+            const int target = 6666666;
+            NavigationView navView = null;
+            Button overflowButton = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    Width = 300,
+                    Height = 600,
+                    Content = new Grid { Height = 600 },
+                    MenuItemsSource = items,
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                Verify.AreEqual(Visibility.Visible, overflowButton.Visibility, "Precondition: items overflow");
+                (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var overflowRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(
+                    ((Flyout)overflowButton.Flyout).Content, "TopNavMenuItemsOverflowHost");
+                NavigationViewItem targetContainer = null;
+                for (int i = 0; i < overflowRepeater.ItemsSourceView.Count; i++)
+                {
+                    if (Equals(overflowRepeater.ItemsSourceView.GetAt(i), target))
+                    {
+                        targetContainer = overflowRepeater.TryGetElement(i) as NavigationViewItem;
+                    }
+                }
+                Verify.IsNotNull(targetContainer, "Precondition: the target is in the open overflow");
+                targetContainer.IsSelected = true;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(target, navView.SelectedItem);
+                Verify.IsFalse(overflowButton.Flyout.IsOpen, "The overflow flyout should close.");
+            });
+
+            Rectangle indicator = null;
+            var timeout = DateTime.Now + TimeSpan.FromSeconds(5);
+            bool isIndicatorLit = false;
+            while (!isIndicatorLit && DateTime.Now < timeout)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var primaryRepeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+                    for (int i = 0; i < primaryRepeater.ItemsSourceView.Count; i++)
+                    {
+                        if (Equals(primaryRepeater.ItemsSourceView.GetAt(i), target) && primaryRepeater.TryGetElement(i) is NavigationViewItem container)
+                        {
+                            indicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(container, "SelectionIndicator");
+                        }
+                    }
+                    isIndicatorLit = indicator != null && indicator.Opacity > 0;
+                });
+                if (!isIndicatorLit)
+                {
+                    Thread.Sleep(100);
+                    IdleSynchronizer.Wait();
+                }
+            }
+            Verify.IsNotNull(indicator, "The target should be moved to the primary list.");
+            Verify.IsTrue(isIndicatorLit, "Selection indicator should be on the promoted target.");
+        }
+
         private void VerifyClearingSelectedItemClearsSelection(string scenario)
         {
             var (navView, parentItem, childItem, otherItem) = SetupDataBoundHierarchyNavigationView();
