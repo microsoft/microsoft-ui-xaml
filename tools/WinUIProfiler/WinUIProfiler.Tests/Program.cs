@@ -825,6 +825,17 @@ foreach (var arguments in invalidCommandLines)
 
 Console.WriteLine("Passed: the command line selects the app and its private WinUI DLLs, and rejects incomplete or conflicting options.");
 
+if (OperatingSystem.IsWindows())
+{
+    var connectionOptions = new TargetConnectionOptions(TargetLaunchKind.Packaged, packagedCommandLine.Target, "", null,
+        @"C:\Profiler\ConnectionPayloads", commandLine.TrustLocalBinaries);
+    TargetConnection.ValidateOptions(connectionOptions);
+    ExpectThrows<UnauthorizedAccessException>(() => TargetConnection.ValidateOptions(
+        connectionOptions with { TrustLocalBinaries = packagedCommandLine.TrustLocalBinaries }),
+        "Command-line auto-connect must still require --trust-local-binaries.");
+    Console.WriteLine("Passed: unattended connections still require explicit trust of the local injection binaries.");
+}
+
 var runtime = new PrivateRuntimeLaunch(@"C:\Private Runtime\runtime", @"C:\Apps", true, @"C:\L", @"C:\Profiler\NativeLauncher");
 const string log = @"C:\L\1\redirect.jsonl";
 const string result = @"C:\L\1\launch.json";
