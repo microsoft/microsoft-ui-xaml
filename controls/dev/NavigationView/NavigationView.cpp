@@ -1423,9 +1423,12 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     m_layoutUpdatedToken.revoke();
     m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
 
+    const double previousMeasureAvailableHeight = m_lastMeasureAvailableHeight;
     m_lastMeasureAvailableHeight = availableSize.Height;
     const bool isHeightUnconstrained = availableSize.Height == std::numeric_limits<float>::infinity();
-    if (m_isHeightUnconstrained != isHeightUnconstrained)
+    // Also update when only a finite height changes: a non-Stretch NavigationView can keep its size under the old menu
+    // limit, so neither SizeChanged handler would refresh it.
+    if (m_isHeightUnconstrained != isHeightUnconstrained || previousMeasureAvailableHeight != m_lastMeasureAvailableHeight)
     {
         m_isHeightUnconstrained = isHeightUnconstrained;
         // Runs before the pane is measured below, so the new limits apply to this pass.
