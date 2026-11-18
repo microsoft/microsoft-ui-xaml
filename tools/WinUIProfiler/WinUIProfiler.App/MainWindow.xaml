@@ -39,6 +39,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="230" />
@@ -65,7 +66,8 @@
                         <NumberBox x:Name="Endpoint" x:Uid="Endpoint" Grid.Column="2" Value="1"
                                    Minimum="1" Maximum="65535" SpinButtonPlacementMode="Compact" />
                     </Grid>
-                    <CheckBox x:Name="Trust" x:Uid="Trust" Grid.Row="2" Grid.ColumnSpan="3" />
+                    <TextBlock x:Name="TrustNotice" x:Uid="TrustNotice" Grid.Row="2" Grid.ColumnSpan="3"
+                               TextWrapping="Wrap" />
                     <StackPanel x:Name="TraceOptions" Grid.Row="1" Grid.ColumnSpan="3" Spacing="4" Visibility="Collapsed">
                         <ComboBox x:Name="TraceProcessList" x:Uid="TraceProcess" HorizontalAlignment="Stretch"
                                   SelectionChanged="TraceProcess_SelectionChanged" />
@@ -75,6 +77,7 @@
                             <TextBlock x:Name="TraceScanStatus" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
                         </StackPanel>
                     </StackPanel>
+                    <TextBox x:Name="SymbolPathText" x:Uid="SymbolPath" Grid.Row="3" Grid.ColumnSpan="3" />
                 </Grid>
             </Expander>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top" Margin="0,8,0,0">
@@ -94,6 +97,7 @@
                 <TextBlock x:Name="ConnectionIdentity" Visibility="Collapsed" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="EtwSummary" Visibility="Collapsed" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="RecordingSummary" Visibility="Collapsed" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
+                <TextBlock x:Name="CpuSummary" Visibility="Collapsed" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <TextBlock x:Name="SnapshotStatus" Visibility="Collapsed" TextWrapping="Wrap" Style="{ThemeResource CaptionTextBlockStyle}" />
                 <InfoBar x:Name="Error" x:Uid="Error" IsOpen="False" IsClosable="False" Severity="Error" />
             </StackPanel>
@@ -161,6 +165,9 @@
             </TabViewItem>
             <TabViewItem x:Name="ObjectsTab" x:Uid="ObjectsTab" IsClosable="False">
                 <views:ObjectsView x:Name="ObjectsPanel" />
+            </TabViewItem>
+            <TabViewItem x:Name="CpuTab" x:Uid="CpuTab" IsClosable="False">
+                <views:CpuView x:Name="CpuPanel" />
             </TabViewItem>
         </TabView>
     </Grid>

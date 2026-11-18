@@ -22,6 +22,9 @@ public sealed class SnapshotNodeDiff(SnapshotTreeNode? before, SnapshotTreeNode?
     public bool ContainsChanges { get; internal set; }
     public SnapshotNodeDiff? Parent { get; internal set; }
     public IReadOnlyList<SnapshotNodeDiff> Children { get; internal set; } = [];
+
+    public IReadOnlyList<SnapshotPropertyChange> GetProperties(bool changesOnly) => changesOnly ? Properties :
+        SnapshotDiffData.CompareProperties(Before, After, default, false);
 }
 
 public sealed record SnapshotDiffMatch(SnapshotNodeDiff Node, bool Before, bool After);
@@ -35,6 +38,7 @@ public sealed class SnapshotTreeDiff
 {
     public IReadOnlyList<SnapshotRootDiff> Roots { get; }
     public IReadOnlyList<SnapshotNodeDiff> Nodes { get; }
+    public IReadOnlyList<SnapshotNodeDiff> AddedOrRemovedNodes { get; }
     public IReadOnlyDictionary<ulong, SnapshotNodeDiff> BeforeNodes { get; }
     public IReadOnlyDictionary<ulong, SnapshotNodeDiff> AfterNodes { get; }
     public int Count(SnapshotChange change) => Nodes.Count(node => (node.Change & change) != 0);
@@ -44,6 +48,8 @@ public sealed class SnapshotTreeDiff
     {
         Roots = roots;
         Nodes = nodes;
+        AddedOrRemovedNodes = Array.AsReadOnly(nodes.Where(node =>
+            (node.Change & (SnapshotChange.Added | SnapshotChange.Removed)) != 0).ToArray());
         BeforeNodes = new ReadOnlyDictionary<ulong, SnapshotNodeDiff>(beforeNodes);
         AfterNodes = new ReadOnlyDictionary<ulong, SnapshotNodeDiff>(afterNodes);
     }
@@ -241,11 +247,11 @@ public sealed class SnapshotDiffData
             differences.AsReadOnly(), oldNodes, newNodes);
     }
 
-    private static IReadOnlyList<SnapshotPropertyChange> CompareProperties(SnapshotTreeNode? before,
-        SnapshotTreeNode? after, CancellationToken token)
+    internal static IReadOnlyList<SnapshotPropertyChange> CompareProperties(SnapshotTreeNode? before,
+        SnapshotTreeNode? after, CancellationToken token, bool changesOnly = true)
     {
         var changes = new List<SnapshotPropertyChange>();
-        if (before?.Name != after?.Name)
+        if (before?.Name != after?.Name || !changesOnly && (before?.Name is not null || after?.Name is not null))
             changes.Add(new("name", before is null ? null : JsonSerializer.SerializeToElement(before.Name),
                 after is null ? null : JsonSerializer.SerializeToElement(after.Name)));
         var oldValues = before?.Properties.EnumerateObject().ToDictionary(property => property.Name, property => property.Value) ?? [];
@@ -255,7 +261,7 @@ public sealed class SnapshotDiffData
             token.ThrowIfCancellationRequested();
             var hasOld = oldValues.TryGetValue(name, out var oldValue);
             var hasNew = newValues.TryGetValue(name, out var newValue);
-            if (hasOld && hasNew && JsonElement.DeepEquals(oldValue, newValue)) continue;
+            if (changesOnly && hasOld && hasNew && JsonElement.DeepEquals(oldValue, newValue)) continue;
             changes.Add(new("properties." + name, hasOld ? oldValue : null, hasNew ? newValue : null));
         }
         return changes.AsReadOnly();

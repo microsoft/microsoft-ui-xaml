@@ -82,6 +82,7 @@ public sealed partial class SnapshotViewerWindow : Window
             ResourceSnapshot.Show(null, Data.Document.ResourceSnapshot, false);
             ResourceSnapshot.Visibility = Visibility.Visible;
             Viewer.Visibility = Visibility.Visible;
+            await ResourceSnapshot.Textures.ShowAsync(null, null, Entry, Data, token);
         }
         catch (OperationCanceledException) when (closed) { }
         catch (Exception error)

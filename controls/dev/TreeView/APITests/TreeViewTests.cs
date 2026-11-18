@@ -2776,6 +2776,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // About 250 rows, so that the rows span several of the flat list's storage blocks. After each edit, the rows must
+        // match the visible nodes, IndexOf must return the row of each shown node, and -1 for nodes that are not shown.
+        [TestMethod]
+        public void TreeViewFlatListRowsAndIndexOfStayCorrectWithManyRows()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TreeViewNode Root(string name, bool isExpanded, int childCount) =>
+                    MakeNode(name, isExpanded, Enumerable.Range(0, childCount).Select(i => MakeNode(name + i)).ToArray());
+
+                var a = Root("A", true, 150);
+                var hidden = Root("H", false, 3);
+                var b = Root("B", true, 100);
+                var treeView = ShowTreeView(a, hidden, b);
+                var flatList = (IList<object>)((TreeViewList)VisualTreeUtils.FindVisualChildByName(treeView, "ListControl")).ItemsSource;
+                using (var recorder = new FlatListRecorder(treeView))
+                {
+                    void VerifyRowsAndIndexOf(string when, params TreeViewNode[] notShown)
+                    {
+                        recorder.VerifyRowsMatchTree(when);
+                        for (int i = 0; i < flatList.Count; i++)
+                        {
+                            int index = flatList.IndexOf(flatList[i]);
+                            if (index != i)
+                            {
+                                Verify.Fail($"{when}: IndexOf({DescribeItem(flatList[i])}) is {index}, expected {i}");
+                                break;
+                            }
+                        }
+                        foreach (var node in notShown.Append(hidden.Children[0]).Append(MakeNode("New")))
+                        {
+                            Verify.AreEqual(-1, flatList.IndexOf(node), $"{when}: IndexOf({DescribeItem(node)})");
+                        }
+                    }
+
+                    VerifyRowsAndIndexOf("Shown");
+                    a.IsExpanded = false;
+                    VerifyRowsAndIndexOf("Collapse A", a.Children[0], a.Children[149]);
+                    a.IsExpanded = true;
+                    VerifyRowsAndIndexOf("Expand A");
+                    var removed = a.Children[100];
+                    a.Children.Insert(0, MakeNode("A+"));
+                    a.Children.Remove(removed);
+                    VerifyRowsAndIndexOf("Insert a child at the start of A, and remove one in the middle", removed);
+                    var replaced = b.Children[50];
+                    b.Children[50] = MakeNode("B*");
+                    VerifyRowsAndIndexOf("Replace a child of B", replaced);
+                    treeView.RootNodes.Remove(a);
+                    VerifyRowsAndIndexOf("Remove A", a, a.Children[0], a.Children[149]);
+                    b.Children.Clear();
+                    VerifyRowsAndIndexOf("Clear the children of B", replaced);
+                }
+            });
+        }
+
         // Benchmark. It never fails on timing, and only logs the time in ms, including layout, to collapse and expand a
         // root with 2,000 children.
         [TestMethod]

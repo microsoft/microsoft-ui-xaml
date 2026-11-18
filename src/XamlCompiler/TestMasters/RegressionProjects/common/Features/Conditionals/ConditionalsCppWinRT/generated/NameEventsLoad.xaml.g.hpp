@@ -25,10 +25,10 @@ namespace winrt::ConditionalsCppWinRT::implementation
     using XamlBindingHelper = ::winrt::Microsoft::UI::Xaml::Markup::XamlBindingHelper;
 
     // Api Information for conditional namespace declarations
+    bool NameEventsLoad_IsTypePresentNot_ConditionalControls_V3Type;
     bool NameEventsLoad_IsTypePresent_ConditionalControls_V1Type;
     bool NameEventsLoad_IsTypePresent_ConditionalControls_V2Type;
     bool NameEventsLoad_IsTypePresent_ConditionalControls_V3Type;
-    bool NameEventsLoad_IsTypePresentNot_ConditionalControls_V3Type;
 
     template <typename D, typename ... I>
     void NameEventsLoadT<D, I...>::InitializeComponent()
@@ -36,10 +36,10 @@ namespace winrt::ConditionalsCppWinRT::implementation
         if (!_contentLoaded)
         {
             _contentLoaded = true;
+            NameEventsLoad_IsTypePresentNot_ConditionalControls_V3Type = !::winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"ConditionalControls.V3Type");
             NameEventsLoad_IsTypePresent_ConditionalControls_V1Type = ::winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"ConditionalControls.V1Type");
             NameEventsLoad_IsTypePresent_ConditionalControls_V2Type = ::winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"ConditionalControls.V2Type");
             NameEventsLoad_IsTypePresent_ConditionalControls_V3Type = ::winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"ConditionalControls.V3Type");
-            NameEventsLoad_IsTypePresentNot_ConditionalControls_V3Type = !::winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"ConditionalControls.V3Type");
  
             ::winrt::Windows::Foundation::Uri resourceLocator{ L"ms-appx:///NameEventsLoad.xaml" };
             ::winrt::Microsoft::UI::Xaml::Application::LoadComponent(*this, resourceLocator, ComponentResourceLocation::Application);

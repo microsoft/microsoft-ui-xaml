@@ -69,7 +69,7 @@ public sealed record DrawnFrame(long TickId, int ThreadId, double EndMillisecond
 
 // Reads a session file written by SessionWriter, also while it is still being written. Each statement a read runs is
 // reported to SessionQueries once its rows are read.
-public static class SessionFile
+public static partial class SessionFile
 {
     public static (uint ProcessId, long? CreationTimeFileTime) ReadProcessIdentity(string path)
     {
@@ -674,7 +674,9 @@ public static class SessionFile
 
         return command;
     }
-    private static SqliteConnection Open(string path)
+
+    // Opens a session file read-only, checking it is one this version reads.
+    internal static SqliteConnection Open(string path)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         if (!File.Exists(path))
