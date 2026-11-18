@@ -90,3 +90,11 @@ else
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x86InstallDir -Architecture x86
     Write-Host ".NET SDK (x86), channel $backupChannel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
 }
+
+if ($env:TF_BUILD -eq "True")
+{
+    # dotnet-install changes PATH only in this task and installs x86 last.
+    Write-Host "##vso[task.prependpath]$x64InstallDir"
+    Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]$x64InstallDir"
+    Write-Host "##vso[task.setvariable variable=DOTNET_ROOT_x86]$x86InstallDir"
+}
