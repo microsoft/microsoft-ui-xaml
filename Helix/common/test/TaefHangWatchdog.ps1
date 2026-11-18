@@ -5,14 +5,21 @@
 # since the watchdog was armed are dumped and then ended, so a TAEF host that never exits costs one work item instead
 # of holding the whole pipeline job until its timeout.
 #
+# A dump includes the process's memory only if Windows Error Reporting is set to write full crash dumps of that process
+# (its LocalDumps DumpType is 2). Otherwise, including when the setting can't be read, it's a mini dump: stacks plus
+# handle, module and thread information, but no other memory. This keeps secrets out of uploaded dumps: while the
+# System Composition tests run, the test host holds a token, and RunTestPassSliceOnBuildAgent.ps1 limits its crash
+# dumps to mini dumps.
+#
 # Dot-source this script for Start-TaefHangWatchdog and Stop-TaefHangWatchdog. The watchdog also runs it in a 32-bit
-# PowerShell, with -DumpProcessId and -DumpPath, to dump 32-bit processes: a 64-bit process can only write 64-bit
-# dumps of them, which lose their x86 context.
+# PowerShell, with -DumpProcessId, -DumpPath and -DumpFullMemory, to dump 32-bit processes: a 64-bit process can only
+# write 64-bit dumps of them, which lose their x86 context.
 
 [CmdletBinding()]
 param(
     [int]$DumpProcessId = 0,
-    [string]$DumpPath
+    [string]$DumpPath,
+    [switch]$DumpFullMemory
 )
 
 if (-not ('WinUITestInfra.TaefHangWatchdog' -as [type]))
@@ -25,13 +32,21 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 
 namespace WinUITestInfra
 {
     public static class TaefHangWatchdog
     {
-        // Full memory plus handle, unloaded-module, memory-info and thread-info data.
-        private const uint DumpType = 0x2 | 0x4 | 0x20 | 0x800 | 0x1000;
+        // Like any minidump, every thread's stack and the loaded modules, plus handle, unloaded-module, memory-region
+        // and thread information. No other memory.
+        private const uint MiniDumpType = 0x4 | 0x20 | 0x800 | 0x1000;
+
+        // A mini dump plus all of the process's memory.
+        private const uint FullDumpType = MiniDumpType | 0x2;
+
+        // Windows Error Reporting's LocalDumps DumpType for full dumps.
+        private const int FullDumpPolicy = 2;
 
         private static readonly object s_lock = new object();
         private static readonly List<string> s_report = new List<string>();
@@ -43,6 +58,8 @@ namespace WinUITestInfra
         private static string s_dumpFolder;
         private static string[] s_processNames;
         private static string s_scriptPath;
+        private static RegistryHive s_registryHive;
+        private static string s_localDumpsRegistryPath;
 
         private sealed class Target
         {
@@ -66,7 +83,8 @@ namespace WinUITestInfra
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsWow64Process(IntPtr process, [MarshalAs(UnmanagedType.Bool)] out bool wow64Process);
 
-        public static void Arm(double timeoutMinutes, string dumpFolder, string[] processNames, string scriptPath)
+        public static void Arm(double timeoutMinutes, string dumpFolder, string[] processNames, string scriptPath,
+            RegistryHive registryHive, string localDumpsRegistryPath)
         {
             lock (s_lock)
             {
@@ -78,6 +96,8 @@ namespace WinUITestInfra
                 s_dumpFolder = dumpFolder;
                 s_processNames = processNames;
                 s_scriptPath = scriptPath;
+                s_registryHive = registryHive;
+                s_localDumpsRegistryPath = localDumpsRegistryPath;
                 s_generation++;
                 s_timer = new Timer(OnTimeout, s_generation, TimeSpan.FromMinutes(timeoutMinutes), Timeout.InfiniteTimeSpan);
             }
@@ -94,7 +114,7 @@ namespace WinUITestInfra
         }
 
         // Returns null on success, otherwise why the dump couldn't be written.
-        public static string WriteDump(int processId, string path)
+        public static string WriteDump(int processId, string path, bool fullMemory)
         {
             string error = null;
             try
@@ -102,7 +122,8 @@ namespace WinUITestInfra
                 using (Process process = Process.GetProcessById(processId))
                 using (FileStream file = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
                 {
-                    if (!MiniDumpWriteDump(process.Handle, (uint)processId, file.SafeFileHandle, DumpType, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
+                    uint dumpType = fullMemory ? FullDumpType : MiniDumpType;
+                    if (!MiniDumpWriteDump(process.Handle, (uint)processId, file.SafeFileHandle, dumpType, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero))
                     {
                         // MiniDumpWriteDump reports an HRESULT through GetLastError.
                         error = string.Format("MiniDumpWriteDump failed with 0x{0:X8}.", Marshal.GetLastWin32Error());
@@ -240,6 +261,7 @@ namespace WinUITestInfra
 
         private static void Dump(Target target)
         {
+            bool fullMemory = AllowsFullDump(target.ProcessName);
             string path = Path.Combine(s_dumpFolder, string.Format("{0}.{1}.hang.dmp", target.ProcessName, target.Id));
             string error;
             try
@@ -247,11 +269,11 @@ namespace WinUITestInfra
                 bool wow64;
                 if (Environment.Is64BitProcess && IsWow64Process(target.Process.Handle, out wow64) && wow64)
                 {
-                    error = WriteDumpFrom32BitProcess(target.Id, path);
+                    error = WriteDumpFrom32BitProcess(target.Id, path, fullMemory);
                 }
                 else
                 {
-                    error = WriteDump(target.Id, path);
+                    error = WriteDump(target.Id, path, fullMemory);
                 }
             }
             catch (Exception e)
@@ -259,16 +281,65 @@ namespace WinUITestInfra
                 error = e.Message;
             }
 
-            Report(error == null ? "Wrote " + path : "Couldn't dump " + target.Name + ": " + error);
+            if (error != null)
+            {
+                Report("Couldn't dump " + target.Name + ": " + error);
+            }
+            else if (fullMemory)
+            {
+                Report("Wrote full dump " + path);
+            }
+            else
+            {
+                Report(string.Format("Wrote mini dump {0}, because crash dumps of {1}.exe aren't set to full dumps.", path, target.ProcessName));
+            }
         }
 
-        private static string WriteDumpFrom32BitProcess(int processId, string path)
+        // True only if Windows Error Reporting is set to write full crash dumps of the process. As in Windows Error
+        // Reporting, a DumpType on the process's own key overrides the one on LocalDumps. Anything else, including a
+        // setting that can't be read, means a mini dump.
+        private static bool AllowsFullDump(string processName)
+        {
+            try
+            {
+                using (RegistryKey baseKey = RegistryKey.OpenBaseKey(s_registryHive, RegistryView.Registry64))
+                using (RegistryKey localDumps = baseKey.OpenSubKey(s_localDumpsRegistryPath))
+                {
+                    if (localDumps == null)
+                    {
+                        return false;
+                    }
+
+                    object dumpType = null;
+                    using (RegistryKey processKey = localDumps.OpenSubKey(processName + ".exe"))
+                    {
+                        if (processKey != null)
+                        {
+                            dumpType = processKey.GetValue("DumpType");
+                        }
+                    }
+
+                    if (dumpType == null)
+                    {
+                        dumpType = localDumps.GetValue("DumpType");
+                    }
+
+                    return dumpType is int && (int)dumpType == FullDumpPolicy;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static string WriteDumpFrom32BitProcess(int processId, string path, bool fullMemory)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo(
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86), @"WindowsPowerShell\v1.0\powershell.exe"),
                 string.Format(
-                    "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{0}\" -DumpProcessId {1} -DumpPath \"{2}\"",
-                    s_scriptPath, processId, path));
+                    "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{0}\" -DumpProcessId {1} -DumpPath \"{2}\"{3}",
+                    s_scriptPath, processId, path, fullMemory ? " -DumpFullMemory" : string.Empty));
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
             startInfo.RedirectStandardOutput = true;
@@ -334,7 +405,7 @@ namespace WinUITestInfra
 
 if ($DumpProcessId -ne 0)
 {
-    $dumpError = [WinUITestInfra.TaefHangWatchdog]::WriteDump($DumpProcessId, $DumpPath)
+    $dumpError = [WinUITestInfra.TaefHangWatchdog]::WriteDump($DumpProcessId, $DumpPath, $DumpFullMemory.IsPresent)
     if ($dumpError)
     {
         Write-Output $dumpError
@@ -357,10 +428,16 @@ function Start-TaefHangWatchdog
         [Parameter(Mandatory = $true)]
         [string]$DumpFolder,
 
-        [string[]]$ProcessNames = $TaefHangWatchdogProcessNames
+        [string[]]$ProcessNames = $TaefHangWatchdogProcessNames,
+
+        # Where Windows Error Reporting's crash dump settings are read from. Only tests change these.
+        [Microsoft.Win32.RegistryHive]$RegistryHive = [Microsoft.Win32.RegistryHive]::LocalMachine,
+
+        [string]$LocalDumpsRegistryPath = 'Software\Microsoft\Windows\Windows Error Reporting\LocalDumps'
     )
 
-    [WinUITestInfra.TaefHangWatchdog]::Arm($TimeoutMinutes, $DumpFolder, $ProcessNames, $TaefHangWatchdogScriptPath)
+    [WinUITestInfra.TaefHangWatchdog]::Arm($TimeoutMinutes, $DumpFolder, $ProcessNames, $TaefHangWatchdogScriptPath,
+        $RegistryHive, $LocalDumpsRegistryPath)
 }
 
 # Stops the watchdog. Returns what it did if it fired; otherwise returns nothing.

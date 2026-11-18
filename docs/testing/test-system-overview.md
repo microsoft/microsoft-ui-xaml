@@ -155,6 +155,10 @@ On the pipeline agents, each te.exe run has a time limit, set by `-TeHangTimeout
 work item's upload folder, ends them, and records the hang as a failed `<work item>.TaefHang` test. The rest of the
 slice still runs, and then the job fails.
 
+A hang dump includes a process's memory only if Windows Error Reporting is set to write full crash dumps of that
+process; otherwise it's a mini dump. While the System Composition tests run, the test host holds a token, so its crash
+dumps, and therefore its hang dumps, are limited to mini dumps.
+
 ### Publish Test Results
 
 After RunTestPassSliceOnBuildAgent.ps1 has finished executing the tests it will produce a set of testResult xml files.
