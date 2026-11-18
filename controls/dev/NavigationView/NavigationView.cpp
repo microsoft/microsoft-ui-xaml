@@ -189,6 +189,20 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_shadowCasterEaseOutStoryboardRevoker.revoke();
 }
 
+// Each RuntimeProfiler member id must have exactly one call site: every call site registers its own table slot.
+static void RecordPaneDisplayModeUsage(winrt::NavigationViewPaneDisplayMode mode) noexcept
+{
+    switch (mode)
+    {
+    case winrt::NavigationViewPaneDisplayMode::Auto: __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneDisplayMode_Auto); break;
+    case winrt::NavigationViewPaneDisplayMode::Left: __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneDisplayMode_Left); break;
+    case winrt::NavigationViewPaneDisplayMode::Top: __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneDisplayMode_Top); break;
+    case winrt::NavigationViewPaneDisplayMode::LeftCompact: __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneDisplayMode_LeftCompact); break;
+    case winrt::NavigationViewPaneDisplayMode::LeftMinimal: __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneDisplayMode_LeftMinimal); break;
+    default: break;
+    }
+}
+
 NavigationView::NavigationView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationView);
@@ -731,6 +745,8 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
     UpdatePaneLayout();
     UpdatePaneOverlayGroup();
+
+    RecordPaneDisplayModeUsage(PaneDisplayMode());
 }
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
@@ -1042,6 +1058,14 @@ void NavigationView::OnNavigationViewItemExpandedPropertyChanged(const winrt::De
     {
         if (nvi.IsExpanded())
         {
+            if (winrt::get_self<NavigationViewItem>(nvi)->ShouldRepeaterShowInFlyout())
+            {
+                __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_Item_ExpandedInFlyout);
+            }
+            else
+            {
+                __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_Item_ExpandedInline);
+            }
             RaiseExpandingEvent(nvi);
         }
 
@@ -1773,6 +1797,7 @@ void NavigationView::UpdatePaneLayout()
 
 void NavigationView::OnPaneToggleButtonClick(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_PaneToggleButton_Clicked);
     if (IsPaneOpen())
     {
         m_wasForceClosed = true;
@@ -1952,6 +1977,7 @@ void NavigationView::UpdatePaneButtonsWidths()
 
 void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
+    __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_BackButton_Clicked);
     auto eventArgs = winrt::make_self<NavigationViewBackRequestedEventArgs>();
     m_backRequestedEventSource(*this, *eventArgs);
 }
@@ -2821,6 +2847,10 @@ void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
     eventArgs->InvokedItem(invokedItem);
     eventArgs->InvokedItemContainer(invokedContainer);
     eventArgs->IsSettingsInvoked(isSettings);
+    if (isSettings)
+    {
+        __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_SettingsItem_Invoked);
+    }
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
     m_itemInvokedEventSource(*this, *eventArgs);
 }
@@ -3990,6 +4020,7 @@ void NavigationView::SetOverflowButtonVisibility(winrt::Visibility const& visibi
 
 void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip)
 {
+    __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_TopOverflowItem_Selected);
 
     auto const itemBeingMoved = [item, ip, this]() -> winrt::IInspectable
     {
@@ -4428,6 +4459,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_MenuItemsSourceProperty)
     {
+        if (MenuItemsSource())
+        {
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_MenuItemsSource_Set);
+        }
         UpdateRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
     }
     else if (property == s_MenuItemsProperty)
@@ -4436,6 +4471,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_FooterMenuItemsSourceProperty)
     {
+        if (FooterMenuItemsSource())
+        {
+            __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_FooterMenuItemsSource_Set);
+        }
         UpdateFooterRepeaterItemsSource(true /*sourceCollectionReset*/, true /*sourceCollectionChanged*/);
     }
     else if (property == s_FooterMenuItemsProperty)
@@ -4451,6 +4490,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         if (m_templateAppliedOnce)
         {
             m_wasForceClosed = false;
+            // Before the first template apply, OnApplyTemplate records the mode.
+            RecordPaneDisplayModeUsage(auto_unbox(args.NewValue()));
         }
 
         UpdatePaneToggleButtonVisibility();
@@ -5225,6 +5266,7 @@ void NavigationView::UpdateTitleBarPadding()
 
 void NavigationView::OnAutoSuggestBoxQuerySubmitted(const winrt::AutoSuggestBox& sender, const winrt::Microsoft::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs& args)
 {
+    __RP_Marker_ClassMemberById(RuntimeProfiler::ProfId_NavigationView, RuntimeProfiler::ProfMemberId_NavigationView_AutoSuggestBox_QuerySubmitted);
     // When in compact or minimal, we want to close pane when an item gets chosen.
     if (DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && args.ChosenSuggestion() != nullptr)
     {

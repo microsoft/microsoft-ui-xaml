@@ -84,6 +84,20 @@ namespace RuntimeProfiler
         ProfMemberId_TeachingTip_F6AccessKey_FirstInvocation,
         ProfMemberId_TeachingTip_F6AccessKey_SubsequentInvocation,
         ProfMemberId_TeachingTip_TipDidNotOpenDueToSize,
+        ProfMemberId_NavigationView_PaneDisplayMode_Auto,
+        ProfMemberId_NavigationView_PaneDisplayMode_Left,
+        ProfMemberId_NavigationView_PaneDisplayMode_Top,
+        ProfMemberId_NavigationView_PaneDisplayMode_LeftCompact,
+        ProfMemberId_NavigationView_PaneDisplayMode_LeftMinimal,
+        ProfMemberId_NavigationView_MenuItemsSource_Set,
+        ProfMemberId_NavigationView_FooterMenuItemsSource_Set,
+        ProfMemberId_NavigationView_PaneToggleButton_Clicked,
+        ProfMemberId_NavigationView_BackButton_Clicked,
+        ProfMemberId_NavigationView_SettingsItem_Invoked,
+        ProfMemberId_NavigationView_TopOverflowItem_Selected,
+        ProfMemberId_NavigationView_Item_ExpandedInline,
+        ProfMemberId_NavigationView_Item_ExpandedInFlyout,
+        ProfMemberId_NavigationView_AutoSuggestBox_QuerySubmitted,
         ProfMemberId_Size
     } ProfilerMemberId;
 
