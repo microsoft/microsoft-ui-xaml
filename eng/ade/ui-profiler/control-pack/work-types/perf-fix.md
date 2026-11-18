@@ -6,7 +6,8 @@ done: fail-to-pass
 # WinUI control POC
 
 1. Read the selected knowledge, protected measurement contract, and baseline.
-2. Diagnose the avoidable layout work in ScenarioWorkload.cs.
+2. Check any supplied investigation against the measured evidence and source.
+   Treat its proposed cause as a hypothesis to validate, not an established fact.
 3. Change only ScenarioWorkload.cs while preserving the complete button tree.
 4. Run the existing extractor tests and python -B verify.py.
 5. Report the actual before/after layout counts, timing observations, and

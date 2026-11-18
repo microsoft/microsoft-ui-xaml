@@ -49,7 +49,8 @@ pwsh -NoProfile -File '<package>\setup.ps1' `
     -OutDir "$PWD\eng\ade\ui-profiler"
 ```
 
-The package owns generated plugin plumbing. This repository owns `pack` and `control-pack`.
+The package owns generated plugin plumbing. This repository owns `pack`,
+`control-pack`, and `investigation-pack`.
 An existing runtime with conflicting bytes at the same version must be
 resolved explicitly; do not force-replace a shared installation automatically.
 
@@ -156,7 +157,7 @@ owned demo PID is imported, and traces must remain local.
 
 ### Where model reasoning happens
 
-ADE uses a model for read-only planning and the approved code change. The model
+The original guided path uses a model for read-only planning and the approved code change. The model
 receives a task already narrowed to redundant layout work, the small scenario's
 source, and the selected control knowledge. It identifies the per-button
 `UpdateLayout()` call as avoidable work.
@@ -166,8 +167,87 @@ queries over WinUIProfiler output. The live demonstration measured 40 layout
 passes before the change and one afterward in each of ten runs, while preserving
 all 40 buttons and the loaded framework binary. That validates this guided
 app-level diagnosis. It is not autonomous root-cause discovery from an arbitrary
-trace, and the POC does not connect an analysis agent to the profiler's live/MCP
-query interface.
+trace.
+
+### Profiler-driven investigation
+
+The opt-in investigation path reuses ADE's document/research workflow rather
+than introducing another agent runtime. It supplies a problem statement, the
+baseline capture, and a source snapshot matching the measured hashes. It does
+not supply the original scenario README, an existing fix, or a proposed cause.
+
+After preparing a new Control state, propose the investigation:
+
+```powershell
+& $poc -Action Investigate -StatePath $state `
+    -Problem 'Investigate the cost of constructing the control tree.'
+& $poc -Action Report -Phase Investigation -StatePath $state
+```
+
+Read this proposal and obtain explicit approval of its exact hash. Approval of
+an earlier fix or another investigation does not authorize it:
+
+```powershell
+& $poc -Action Approve -Phase Investigation -StatePath $state -ProposalSha256 '<approved investigation hash>'
+& $poc -Action Run -Phase Investigation -StatePath $state
+& $poc -Action Report -Phase Investigation -StatePath $state
+& $poc -Action Verify -Phase Investigation -StatePath $state
+```
+
+The model must query the real profiler before inspecting app source, record
+initial observations, select a drilldown, and correlate the evidence with code.
+`profiler_query.py` exposes CLI overview, tick, region, event, element, and object
+history queries. Its scenario query reads the existing SQLite `EventDetails`
+view within the exact UI-thread/marker interval. This matters when an operation
+runs outside an instrumented tick; startup regions cannot stand in for it.
+
+ADE writes `ade-output\investigation.md` and `decision.json` without changing
+source. Input hashes and query receipts are checked after execution. They
+establish which evidence was queried, not that the diagnosis is correct or
+that these files are cryptographically authenticated.
+
+If the decision is `RecommendationReady`, the usual `Propose` action now uses
+that diagnosis instead of the original guided task. Review and approve the new
+fix proposal separately before running it. `NeedsMeasurement` blocks a fix
+proposal and lists the extra evidence required; automatic recapture/narrowing
+cycles remain future work.
+
+This is a controlled seeded scenario, not an unseen diagnosis benchmark.
+The model can propose a source-level cause from telemetry plus source, but
+causality still needs the later approved change and remeasurement. This does
+not implement a general MAF investigation graph or the profiler's live/MCP API.
+
+### See the app and audit the result
+
+The default app closes immediately after writing its result, so the benchmark
+window can disappear before it is noticed. With a newly prepared Control state:
+
+```powershell
+& $poc -Action Show -StatePath $state -DisplaySeconds 30
+# After a successful fix run:
+& $poc -Action Show -StatePath $state -Variant Candidate -DisplaySeconds 30
+```
+
+This builds the staged baseline or successful ADE candidate and performs one observation capture. The window
+stays open for the requested duration **after** the scenario Stop marker, then
+closes. The title confirms the 40-button correctness check. This is separate
+from the ten-iteration acceptance check, and is not a replay of an old binary.
+States staged before this option was added need a fresh `Prepare`.
+
+To independently recount a retained baseline/candidate pair:
+
+```powershell
+& $poc -Action Evidence -StatePath $state `
+    -CandidateManifest '<exact candidate capture-manifest.json path from the ADE target-check log>'
+```
+
+This reopens every session read-only, checks the process/thread/marker and
+capture-health requirements, and prints each run's counts and both manifest
+and executable paths. It refuses duplicate iterations, different framework
+hashes, or source changes outside the workload. Existing binaries are checked
+against the recorded hashes. No "latest" capture is selected automatically.
+New captures also retain `build.log` and the managed app DLL hash; older
+manifests recorded only the executable hash.
 
 ## Run focused checks
 

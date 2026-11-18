@@ -6,7 +6,8 @@ param(
     [Parameter(Mandatory)][string]$InitRun,
     [Parameter(Mandatory)][string]$DotNet,
     [Parameter(Mandatory)][string]$RunDirectory,
-    [ValidateRange(1, 100)][int]$Iterations = 10
+    [ValidateRange(1, 100)][int]$Iterations = 10,
+    [ValidateRange(0, 300)][int]$DisplaySeconds = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -49,7 +50,8 @@ try {
     Push-Location $sourceRoot
     try {
         & pwsh -NoProfile -File (Join-Path $sourceRoot 'build.ps1') `
-            -InitRun $InitRun -DotNet $DotNet -OutputRoot $buildRoot
+            -InitRun $InitRun -DotNet $DotNet -OutputRoot $buildRoot 2>&1 |
+            Tee-Object -FilePath (Join-Path $RunDirectory 'build.log') | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             throw 'The demo build failed.'
         }
@@ -81,10 +83,28 @@ try {
             $start.WorkingDirectory = Split-Path $executable -Parent
             $start.ArgumentList.Add('--result')
             $start.ArgumentList.Add($resultPath)
+            if ($DisplaySeconds -gt 0) {
+                $start.ArgumentList.Add('--display-seconds')
+                $start.ArgumentList.Add([string]$DisplaySeconds)
+            }
             $process = [Diagnostics.Process]::Start($start)
             $processId = $process.Id
             $createdUtc = $process.StartTime.ToUniversalTime()
-            if (-not $process.WaitForExit(30000)) {
+            if ($DisplaySeconds -gt 0) {
+                $deadline = [DateTime]::UtcNow.AddSeconds(30)
+                do {
+                    if ($process.WaitForExit(100)) {
+                        throw "The observation app exited before its window was ready (exit $($process.ExitCode))."
+                    }
+                    $process.Refresh()
+                    $ready = (Test-Path -LiteralPath $resultPath) -and $process.MainWindowHandle -ne [IntPtr]::Zero
+                } while (-not $ready -and [DateTime]::UtcNow -lt $deadline)
+                if (-not $ready) {
+                    throw 'The demo did not complete its scenario with an observable window.'
+                }
+                Write-Host "CONTROL-WINDOW: PID $processId, HWND $($process.MainWindowHandle)"
+            }
+            if (-not $process.WaitForExit((30 + $DisplaySeconds) * 1000)) {
                 throw "Iteration $iteration timed out."
             }
             if ($process.ExitCode -ne 0) {
@@ -138,6 +158,10 @@ try {
         profilerSha256 = (Get-FileHash -LiteralPath $ProfilerCli).Hash
         executable = $executable
         executableSha256 = (Get-FileHash -LiteralPath $executable).Hash
+        managedAssembly = [IO.Path]::ChangeExtension($executable, '.dll')
+        managedAssemblySha256 = (Get-FileHash -LiteralPath ([IO.Path]::ChangeExtension($executable, '.dll'))).Hash
+        buildLog = Join-Path $RunDirectory 'build.log'
+        displaySeconds = $DisplaySeconds
         operatingSystem = [Environment]::OSVersion.VersionString
         iterations = @($runs)
     }

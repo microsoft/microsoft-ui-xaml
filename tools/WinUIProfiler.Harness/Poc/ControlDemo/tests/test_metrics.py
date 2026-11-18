@@ -1,11 +1,15 @@
 from contextlib import closing
+import hashlib
 import json
 from pathlib import Path
 import sqlite3
+import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from metrics import MARKER_PROVIDER, XAML_PROVIDER, MeasurementError, extract_iteration
+from metrics import MARKER_PROVIDER, XAML_PROVIDER, MeasurementError, compare_manifests, extract_iteration
+from profiler_query import query, scenario_events, verify_queries
 
 
 class MetricsTests(unittest.TestCase):
@@ -116,6 +120,108 @@ class MetricsTests(unittest.TestCase):
         self.app["controlCount"] = 39
         with self.assertRaises(MeasurementError):
             extract_iteration(self.database, self.app, 40)
+
+    def test_scenario_drilldown_excludes_other_threads_and_outside_markers(self):
+        self.change(
+            "CREATE TABLE EventDetails(Seq INTEGER, ThreadId INTEGER, Ms REAL, Provider TEXT, "
+            "Name TEXT, Opcode TEXT, Fields TEXT, Mentions TEXT)"
+        )
+        self.change(
+            "INSERT INTO EventDetails VALUES"
+            "(5,456,0.1,'fixture','Work','Start','{}','[]'),"
+            "(20,456,0.2,'fixture','Work','Start','{}','[]'),"
+            "(21,999,0.3,'fixture','Work','Start','{}','[]'),"
+            "(30,456,0.5,'fixture','Work','Stop','{}','[]'),"
+            "(50,456,1.0,'fixture','Work','Stop','{}','[]')"
+        )
+        scope = extract_iteration(self.database, self.app, 40)
+        result = json.loads(scenario_events(scope, "work"))
+        self.assertEqual([20, 30], [row["Seq"] for row in result["events"]])
+        self.assertEqual(2, sum(row["Count"] for row in result["counts"]))
+
+    def test_query_failure_is_not_reported_as_empty_success(self):
+        scope = extract_iteration(self.database, self.app, 40)
+        scope["iteration"] = 1
+        root = Path(self.directory.name)
+        with patch("profiler_query.validate_inputs", return_value=(
+            {"profilerCli": "fixture-only.exe"}, {"iterations": [scope]}
+        )), patch("profiler_query.subprocess.run") as run:
+            run.return_value.returncode = 3
+            run.return_value.stderr = "fixture read failure"
+            with self.assertRaisesRegex(MeasurementError, "fixture read failure"):
+                query(root, "overview", 1, None, None)
+
+    def test_investigation_requires_drilldown_and_detects_changed_receipts(self):
+        scope = extract_iteration(self.database, self.app, 40)
+        scope["iteration"] = 1
+        root = Path(self.directory.name)
+        with patch("profiler_query.validate_inputs", return_value=(
+            {"profilerCli": "fixture-only.exe"}, {"iterations": [scope]}
+        )), patch("profiler_query.subprocess.run") as run:
+            run.return_value.returncode = 0
+            run.return_value.stderr = ""
+            run.return_value.stdout = "explicitly synthetic profiler response"
+            overview = query(root, "overview", 1, None, None)
+            (root / "ade-output" / "investigation.md").write_text("Fixture diagnosis", encoding="utf-8")
+            (root / "ade-output" / "decision.json").write_text(json.dumps({
+                "status": "RecommendationReady", "reason": "Fixture-only recommendation"
+            }), encoding="utf-8")
+            with self.assertRaisesRegex(MeasurementError, "drilldown"):
+                verify_queries(root)
+            query(root, "events", 1, None, "Work")
+            self.assertEqual("EvidenceVerified", verify_queries(root)["status"])
+            Path(overview["receipt"]).write_text("changed", encoding="utf-8")
+            with self.assertRaisesRegex(MeasurementError, "receipt changed"):
+                verify_queries(root)
+
+    def make_capture(self, name, passes):
+        root = Path(self.directory.name) / name
+        root.mkdir()
+        executable = root / "fixture-only.exe"
+        executable.write_bytes(b"synthetic fixture, not an executable")
+        runs = []
+        for iteration in range(1, 11):
+            database = root / f"{iteration}.sqlite"
+            shutil.copyfile(self.database, database)
+            with closing(sqlite3.connect(database)) as db, db:
+                db.execute("DELETE FROM Events WHERE Seq IN (20,30)")
+                db.execute("UPDATE Events SET Seq=1000,Qpc=9000 WHERE Seq=40")
+                db.executemany("INSERT INTO Events VALUES(?,?,?,?,?)", [
+                    (100 + 2 * index + offset, 1000 + 20 * index + offset, 456, 3 + offset, "[]")
+                    for index in range(passes) for offset in range(2)
+                ])
+            app_path = root / f"{iteration}.json"
+            app_path.write_text(json.dumps(self.app), encoding="utf-8")
+            runs.append({"iteration": iteration, "database": str(database), "appResult": str(app_path),
+                         "frameworkSha256": "fixture-framework", "trace": "fixture-only.etl"})
+        manifest = {
+            "executable": str(executable), "executableSha256": hashlib.sha256(executable.read_bytes()).hexdigest(),
+            "iterations": runs, "sourceHashes": {"App.xaml.cs": "same", "ScenarioWorkload.cs": name},
+        }
+        path = root / "capture-manifest.json"
+        path.write_text(json.dumps(manifest), encoding="utf-8")
+        return path, manifest
+
+    def test_comparison_recounts_each_database_and_rejects_different_framework(self):
+        baseline_path, _ = self.make_capture("baseline", 40)
+        candidate_path, candidate = self.make_capture("candidate", 1)
+        report = compare_manifests(baseline_path, candidate_path)
+        self.assertIn("| 1 | 40 | 1 | 40 / 40 |", report)
+        candidate["iterations"][0]["frameworkSha256"] = "different-framework"
+        candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+        with self.assertRaisesRegex(MeasurementError, "different framework"):
+            compare_manifests(baseline_path, candidate_path)
+
+    def test_comparison_rejects_repeated_database_or_changed_binary(self):
+        baseline_path, _ = self.make_capture("baseline", 40)
+        candidate_path, candidate = self.make_capture("candidate", 1)
+        candidate["iterations"][1]["database"] = candidate["iterations"][0]["database"]
+        candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+        with self.assertRaisesRegex(MeasurementError, "duplicate iterations"):
+            compare_manifests(baseline_path, candidate_path)
+        Path(candidate["executable"]).write_bytes(b"changed")
+        with self.assertRaisesRegex(MeasurementError, "executable changed"):
+            compare_manifests(baseline_path, candidate_path)
 
 
 if __name__ == "__main__":

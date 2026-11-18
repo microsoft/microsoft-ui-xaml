@@ -1,0 +1,26 @@
+{
+  "schema": "ade.team/v1",
+  "team": "ui-profiler",
+  "displayName": "WinUI Profiler Investigation POC",
+  "packVersion": "0.1.0",
+  "runtimeVersion": "0.1.0",
+  "checks": [],
+  "protectedPaths": [
+    "App.xaml.cs",
+    "ScenarioWorkload.cs",
+    "metrics.py",
+    "profiler_query.py",
+    "investigation.json"
+  ],
+  "copyExclude": [],
+  "limits": {
+    "maxRounds": 2,
+    "roundTimeoutSeconds": 900,
+    "checkTimeoutSeconds": 120,
+    "maxKnowledgeBytes": 40000
+  },
+  "permissions": {
+    "shell": true,
+    "urls": false
+  }
+}

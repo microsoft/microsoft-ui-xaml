@@ -12,16 +12,24 @@ public partial class App : Application
 {
     private const int ControlCount = 40;
     private readonly string _resultPath;
+    private readonly int _displaySeconds;
     private Window? _window;
+    private DispatcherQueueTimer? _closeTimer;
     private bool _started;
 
     public App()
     {
         string[] arguments = Environment.GetCommandLineArgs();
-        if (arguments.Length != 3 || arguments[1] != "--result" ||
+        if (arguments.Length is not (3 or 5) || arguments[1] != "--result" ||
             !Path.IsPathFullyQualified(arguments[2]) || File.Exists(arguments[2]))
         {
-            throw new ArgumentException("Expected --result <new absolute JSON path>.");
+            throw new ArgumentException("Expected --result <new absolute JSON path> [--display-seconds <1-300>].");
+        }
+        if (arguments.Length == 5 &&
+            (arguments[3] != "--display-seconds" || !int.TryParse(arguments[4], out _displaySeconds) ||
+             _displaySeconds < 1 || _displaySeconds > 300))
+        {
+            throw new ArgumentException("Display duration must be between 1 and 300 seconds.");
         }
 
         _resultPath = arguments[2];
@@ -55,6 +63,7 @@ public partial class App : Application
 
     private void RunScenario(StackPanel panel)
     {
+        bool succeeded = false;
         try
         {
             if (!ScenarioEvents.Log.IsEnabled())
@@ -88,6 +97,7 @@ public partial class App : Application
                 frameworkPath = framework.FileName,
                 frameworkVersion = framework.FileVersionInfo.FileVersion
             });
+            succeeded = true;
         }
         catch (Exception error)
         {
@@ -96,7 +106,19 @@ public partial class App : Application
         }
         finally
         {
-            _window?.Close();
+            if (succeeded && _displaySeconds > 0)
+            {
+                _window!.Title = $"ControlDemo - {ControlCount} buttons verified - closes in {_displaySeconds}s";
+                _closeTimer = panel.DispatcherQueue.CreateTimer();
+                _closeTimer.Interval = TimeSpan.FromSeconds(_displaySeconds);
+                _closeTimer.IsRepeating = false;
+                _closeTimer.Tick += (_, _) => _window.Close();
+                _closeTimer.Start();
+            }
+            else
+            {
+                _window?.Close();
+            }
         }
     }
 

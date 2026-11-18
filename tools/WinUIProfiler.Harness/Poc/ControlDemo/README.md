@@ -31,6 +31,7 @@ mean values, ETLs, databases, source hashes, and runtime identity are retained.
 Builds use unique folders under `%LOCALAPPDATA%\WinUIProfilerHarness\Builds`.
 Their executable paths are recorded in the capture manifest. Keeping this path
 short avoids the XAML compiler metadata loader's legacy MAX_PATH limit.
+New captures retain the build log and both executable and managed DLL hashes.
 
 ## Running it through ADE
 
@@ -43,6 +44,20 @@ returned explicit state path. See the parent README for the complete commands.
 Only `ScenarioWorkload.cs` is editable during the ADE run. Obtain human approval
 of the new proposal hash before approving or executing it. The original seed
 and framework source remain unchanged.
+
+The parent adapter also supports `Investigate`: a separately approved ADE
+research run queries the profiler, records observations before reading app
+source, selects a drilldown, and writes a diagnosis without changing source.
+It receives a measured source snapshot, not this README's description of the
+seeded issue. A subsequent fix proposal consumes the verified diagnosis.
+See the parent walkthrough for the separate approval gates and evidence checks.
+
+The app normally closes immediately. `Show -DisplaySeconds 30` on a newly
+prepared state keeps it visible after its scenario markers, records one
+observation capture, and closes it automatically. This is not a ten-run
+acceptance check. `Evidence -CandidateManifest <path>` independently recounts
+the saved baseline and candidate SQLite sessions; it does not trust a model's
+summary of the counts.
 
 ## Prerequisites and boundaries
 
