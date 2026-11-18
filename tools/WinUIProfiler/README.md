@@ -3,7 +3,8 @@
 A standalone, unpackaged, Windows App SDK and .NET self-contained WinUI 3
 application. Launch a packaged application by AUMID, launch an unpackaged
 executable, or attach to a running process. Browse buttons supplement manual
-entry. Connecting requires explicit trust of the local injection binaries.
+entry. Connecting from the UI automatically uses the bundled local injector
+and TAP binaries, which run native code in the selected app.
 
 The architecture-matched native injector loads a public `IXamlDiagnostics` TAP
 into the selected target. A local, same-user named pipe verifies the process
@@ -135,9 +136,11 @@ It owns and stops only its unique test ETW session
 and deletes its temporary recording.
 
 Select a mode and target, optionally arguments/working directory and diagnostics
-endpoint, check the trust box, then connect. Connection status shows the actual
-target PID, creation time, runtime path and latest hello. Errors and timeouts
-remain visible; connecting to a non-WinUI process cannot produce graph samples.
+endpoint, then connect. The target settings include a note that connecting
+trusts the bundled injector and TAP binaries to run native code in the target.
+Connection status shows the actual target PID, creation time, runtime path and
+latest hello. Errors and timeouts remain visible; connecting to a non-WinUI
+process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
 silently elevated. A target whose UI thread is too busy to take the TAP request
@@ -216,8 +219,8 @@ directly:
 | `--runtime-source <folder>` | The original runtime folder, whose MUX requests are redirected. |
 | `--redirect-controls` | Also load MUXC from the staged runtime. |
 | `--launch-directory <folder>` | Where each launch writes its results, in `<n>` subfolders. |
-| `--trust-local-binaries` | Checks the trust box. |
-| `--connect` | Connects once the window opens. |
+| `--trust-local-binaries` | Authorizes the bundled local injector and TAP for command-line auto-connect. |
+| `--connect` | Connects once the window opens; requires `--trust-local-binaries`. |
 
 `--private-runtime`, `--runtime-source` and `--launch-directory` go together,
 as full paths. Each launch runs the launcher from `<n>\native` in the launch
