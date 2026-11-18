@@ -67,6 +67,7 @@ public:
     bool HasChildren();
     // Needed for scenarios where the ItemsRepeater is not loaded (OnApplyTemplate) therefore we cannot guarantee a non-null MenuItemsSource actually contains items
     bool HasPotentialChildren();
+    bool IsInNavigationViewMenu();
 
 private:
     winrt::UIElement const GetPresenterOrItem() const;
@@ -116,7 +117,6 @@ private:
     void UpdateRepeaterItemsSource();
     winrt::IInspectable GetChildrenSource();
     winrt::ItemsSourceView GetChildrenItemsSourceView();
-    bool IsInNavigationViewMenu();
     void UpdateNavigationViewForChildren();
     void SelectPreselectedChildren();
     void OnChildrenChanged(bool isCollectionChange);
