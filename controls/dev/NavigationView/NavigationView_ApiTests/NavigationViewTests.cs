@@ -2144,6 +2144,199 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the menu items get the extra height when the finite host of a Top-aligned NavigationView with scrolling menu items gets taller. When the menu limit fills the old row exactly, NavigationView and ItemsContainerGrid keep their sizes, so only the new available height can update the limit (#8291).")]
+        public void VerifyMenuHeightLimitGrowsWithTopAlignedFiniteHost()
+        {
+            // The default template leaves a few pixels outside the menu limit (FooterContentBorder's bottom margin, and the
+            // separator when the menu overflows), so NavigationView outgrows its old size and SizeChanged updates the limit.
+            // A template without that margin (first case) leaves no slack: the limit holds NavigationView at its old size.
+            var setups = new (string Name, bool IsSettingsVisible, bool RemoveFooterContentMargin)[]
+            {
+                ("Settings hidden, no FooterContentBorder margin", false, true),
+                ("Settings hidden", false, false),
+                ("Settings visible", true, false),
+            };
+            foreach (var (setup, isSettingsVisible, removeFooterContentMargin) in setups)
+            {
+                NavigationView navView = null;
+                Grid host = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    navView = new NavigationView
+                    {
+                        IsSettingsVisible = isSettingsVisible,
+                        PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                        Width = 1100.0,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    for (int i = 0; i < 30; i++)
+                    {
+                        navView.MenuItems.Add(new NavigationViewItem { Content = "Item " + i, Icon = new SymbolIcon(Symbol.Setting) });
+                    }
+                    host = new Grid { Height = 400.0, Children = { navView } };
+                    Content = host;
+                    Content.UpdateLayout();
+                    if (removeFooterContentMargin)
+                    {
+                        ((FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "FooterContentBorder")).Margin = new Thickness(0);
+                        Content.UpdateLayout();
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                double menuHeightBefore = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    var menuItemsScrollViewer = (ScrollViewer)VisualTreeUtils.FindVisualChildByName(navView, "MenuItemsScrollViewer");
+                    Verify.AreEqual(400.0, navView.ActualHeight, $"{setup}: NavigationView should fill the host");
+                    Verify.IsGreaterThan(menuItemsScrollViewer.ScrollableHeight, 0.0, $"{setup}: menu items should scroll");
+                    menuHeightBefore = menuItemsScrollViewer.ActualHeight;
+
+                    host.Height = 700.0;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var menuItemsScrollViewer = (ScrollViewer)VisualTreeUtils.FindVisualChildByName(navView, "MenuItemsScrollViewer");
+                    Verify.AreEqual(700.0, navView.ActualHeight, $"{setup}: NavigationView should grow with the host");
+                    Verify.IsGreaterThanOrEqual(menuItemsScrollViewer.ActualHeight, menuHeightBefore + 299.0, $"{setup}: menu items should get the extra height");
+                    Verify.IsGreaterThan(menuItemsScrollViewer.ScrollableHeight, 0.0, $"{setup}: menu items should still scroll");
+                    if (isSettingsVisible)
+                    {
+                        var settingsItem = (FrameworkElement)navView.SettingsItem;
+                        Verify.IsLessThanOrEqual(GetTopRelativeTo(settingsItem, navView) + settingsItem.ActualHeight, navView.ActualHeight, $"{setup}: settings item should be inside NavigationView");
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the split between menu items and a populated footer (Settings and FooterMenuItems) when the host switches from a finite height to unconstrained height, an item is expanded and collapsed, and the host switches back to a finite height (#8291).")]
+        public void VerifyPaneLayoutWithFooterItemsWhenHostHeightBecomesUnconstrained()
+        {
+            NavigationView navView = null;
+            RowDefinition hostRow = null;
+            NavigationViewItem parent = null;
+            NavigationViewItem firstChild = null;
+            NavigationViewItem create = null;
+            NavigationViewItem footerItem = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView
+                {
+                    IsSettingsVisible = true,
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    Width = 1100.0
+                };
+                parent = new NavigationViewItem { Content = "Pancakes", Icon = new SymbolIcon(Symbol.Setting) };
+                firstChild = new NavigationViewItem { Content = "With Syrup", Icon = new SymbolIcon(Symbol.Setting) };
+                parent.MenuItems.Add(firstChild);
+                parent.MenuItems.Add(new NavigationViewItem { Content = "Without Syrup", Icon = new SymbolIcon(Symbol.Setting) });
+                create = new NavigationViewItem { Content = "Create", Icon = new SymbolIcon(Symbol.Stop) };
+                navView.MenuItems.Add(parent);
+                navView.MenuItems.Add(create);
+                for (int i = 0; i < 6; i++)
+                {
+                    navView.MenuItems.Add(new NavigationViewItem { Content = "Item " + i, Icon = new SymbolIcon(Symbol.Setting) });
+                }
+                footerItem = new NavigationViewItem { Content = "Account", Icon = new SymbolIcon(Symbol.Contact) };
+                navView.FooterMenuItems.Add(footerItem);
+                navView.FooterMenuItems.Add(new NavigationViewItem { Content = "Help", Icon = new SymbolIcon(Symbol.Help) });
+
+                // A pixel row measures NavigationView with a finite height, an Auto row with unlimited height.
+                hostRow = new RowDefinition { Height = new GridLength(400.0) };
+                var host = new Grid { VerticalAlignment = VerticalAlignment.Top };
+                host.RowDefinitions.Add(hostRow);
+                host.Children.Add(navView);
+                Content = host;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            ScrollViewer menuItemsScrollViewer = null;
+            ScrollViewer footerItemsScrollViewer = null;
+            UIElement separator = null;
+            RunOnUIThread.Execute(() =>
+            {
+                menuItemsScrollViewer = (ScrollViewer)VisualTreeUtils.FindVisualChildByName(navView, "MenuItemsScrollViewer");
+                footerItemsScrollViewer = (ScrollViewer)VisualTreeUtils.FindVisualChildByName(navView, "FooterItemsScrollViewer");
+                separator = (UIElement)VisualTreeUtils.FindVisualChildByName(navView, "VisualItemsSeparator");
+            });
+
+            void VerifyFiniteLayout(string step)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(400.0, navView.ActualHeight, $"{step}: NavigationView should fill the finite row");
+                    Verify.IsLessThan(menuItemsScrollViewer.MaxHeight, double.PositiveInfinity, $"{step}: menu items should be limited");
+                    Verify.IsLessThan(footerItemsScrollViewer.MaxHeight, double.PositiveInfinity, $"{step}: footer items should be limited");
+                    Verify.IsGreaterThan(menuItemsScrollViewer.ScrollableHeight, 0.0, $"{step}: menu items should scroll");
+                    Verify.AreEqual(Visibility.Visible, separator.Visibility, $"{step}: separator should show the menu overflows");
+                    VerifyFooterGroupIsVisible(step);
+                });
+            }
+
+            void VerifyUnconstrainedLayout(string step)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(double.PositiveInfinity, menuItemsScrollViewer.MaxHeight, $"{step}: menu items should not be limited");
+                    Verify.AreEqual(double.PositiveInfinity, footerItemsScrollViewer.MaxHeight, $"{step}: footer items should not be limited");
+                    Verify.AreEqual(0.0, menuItemsScrollViewer.ScrollableHeight, $"{step}: all menu items should fit");
+                    Verify.AreEqual(Visibility.Collapsed, separator.Visibility, $"{step}: nothing overflows, so no separator");
+                    VerifyFooterGroupIsVisible(step);
+                });
+            }
+
+            void VerifyFooterGroupIsVisible(string step)
+            {
+                var settingsItem = (FrameworkElement)navView.SettingsItem;
+                Verify.IsGreaterThan(footerItem.ActualHeight, 0.0, $"{step}: footer item should be laid out");
+                Verify.IsGreaterThan(settingsItem.ActualHeight, 0.0, $"{step}: settings item should be laid out");
+                Verify.AreEqual(0.0, footerItemsScrollViewer.ScrollableHeight, $"{step}: footer items should all fit");
+                Verify.IsGreaterThanOrEqual(GetTopRelativeTo(footerItem, navView), GetTopRelativeTo(menuItemsScrollViewer, navView) + menuItemsScrollViewer.ActualHeight, $"{step}: footer items should be below the menu items");
+                Verify.IsLessThanOrEqual(GetTopRelativeTo(settingsItem, navView) + settingsItem.ActualHeight, navView.ActualHeight, $"{step}: settings item should be inside NavigationView");
+            }
+
+            VerifyFiniteLayout("Finite host");
+
+            RunOnUIThread.Execute(() => hostRow.Height = GridLength.Auto);
+            IdleSynchronizer.Wait();
+            VerifyUnconstrainedLayout("Unconstrained host");
+
+            double collapsedNavViewHeight = 0;
+            double collapsedCreateTop = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                collapsedNavViewHeight = navView.ActualHeight;
+                // Layout slot, not TransformToVisual: the item's implicit offset animation would show an in-between position.
+                collapsedCreateTop = Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y;
+                parent.IsExpanded = true;
+            });
+            IdleSynchronizer.Wait();
+            VerifyUnconstrainedLayout("Expanded in unconstrained host");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(firstChild.ActualHeight, 0.0, "children should be laid out");
+                Verify.IsGreaterThan(navView.ActualHeight, collapsedNavViewHeight, "NavigationView should grow for the children");
+                parent.IsExpanded = false;
+            });
+            IdleSynchronizer.Wait();
+            VerifyUnconstrainedLayout("Collapsed in unconstrained host");
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(collapsedNavViewHeight, navView.ActualHeight, "NavigationView should give the children's space back");
+                Verify.AreEqual(collapsedCreateTop, Microsoft.UI.Xaml.Controls.Primitives.LayoutInformation.GetLayoutSlot(create).Y, "next item should move back up");
+
+                parent.IsExpanded = true;
+                hostRow.Height = new GridLength(400.0);
+            });
+            IdleSynchronizer.Wait();
+            VerifyFiniteLayout("Expanded in finite host again");
+        }
+
         // Repro from #8291: settings item hidden (with it the bug looks different) and no Height on NavigationView,
         // so a StackPanel host measures it with infinite height. Left maps to the same Expanded/CompactInline layout
         // as the issue's Auto mode in a wide window.
