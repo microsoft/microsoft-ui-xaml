@@ -22,6 +22,8 @@ InkToolbarStrokeWidthSliderAutomationPeer::InkToolbarStrokeWidthSliderAutomation
     // callback can escape as a fail-fast.
     try { m_rangeFormat = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStrokeWidthSliderRangeFormat); }
     catch (...) { m_rangeFormat = L"Minimum %1!s!, maximum %2!s!"; }
+    try { m_nameFormat = ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarStrokeWidthSliderNameFormat); }
+    catch (...) { m_nameFormat = L"%1!s!, %2!s!"; }
 }
 
 winrt::IInspectable InkToolbarStrokeWidthSliderAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
@@ -52,7 +54,7 @@ winrt::hstring InkToolbarStrokeWidthSliderAutomationPeer::GetNameCore()
             {
                 return range;
             }
-            return winrt::hstring{ std::wstring{ baseName.c_str() } + L", " + std::wstring{ range.c_str() } };
+            return StringUtil::FormatString(m_nameFormat, baseName.c_str(), range.c_str());
         }
     }
 

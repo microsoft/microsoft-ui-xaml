@@ -43,12 +43,20 @@ namespace Private.Infrastructure.Hosting.WPF
         private bool noExit;
         private readonly bool initializeXamlManager;
         private readonly DpiAwarenessContext _dpiAwarenessContext;
+        private readonly bool useSystemCompositionEngine;
+        private readonly string compositionEngineLafToken;
 
-        internal WPFHost(DpiAwarenessContext dpiAwarenessContext, bool initializeXamlManager)
+        internal WPFHost(
+            DpiAwarenessContext dpiAwarenessContext,
+            bool initializeXamlManager,
+            bool useSystemCompositionEngine,
+            string compositionEngineLafToken)
         {
             this.noExit = true;
             this.initializeXamlManager = initializeXamlManager;
             this._dpiAwarenessContext = dpiAwarenessContext;
+            this.useSystemCompositionEngine = useSystemCompositionEngine;
+            this.compositionEngineLafToken = compositionEngineLafToken;
             if (Application.Current == null)
             {
                 this.application = new WPFApp();
@@ -77,6 +85,10 @@ namespace Private.Infrastructure.Hosting.WPF
             try
             {
                 var dqc = MUD::DispatcherQueueController.CreateOnCurrentThread();
+                if (this.useSystemCompositionEngine)
+                {
+                    SystemCompositionEngineTestSupport.Configure(this.compositionEngineLafToken);
+                }
 
                 this.hostDispatcher.SetResult(Dispatcher.CurrentDispatcher);
                 while (noExit)
@@ -90,12 +102,14 @@ namespace Private.Infrastructure.Hosting.WPF
                         // using (new XamlApplication())
                         using (WUX.Hosting.WindowsXamlManager.InitializeForCurrentThread())
                         {
+                            VerifySystemCompositionEngine(true);
                             this.WindowMessageLoop();
                         }
                     }
                     else
                     {
                         // Dont call InitializeForCurrentThread() and let the test own the xaml core
+                        VerifySystemCompositionEngine(false);
                         this.WindowMessageLoop();
                     }
                     dispatcher.DoEvents();
@@ -128,6 +142,21 @@ namespace Private.Infrastructure.Hosting.WPF
                 dispatcher.UnhandledException -= this.OnDispatcherUnhandledException;
                 this.dispatcherQueue.TrySetResult(null);
                 this.currentWindow.TrySetResult(null);
+            }
+        }
+
+        private void VerifySystemCompositionEngine(bool xamlInitialized)
+        {
+            if (this.useSystemCompositionEngine)
+            {
+                if (xamlInitialized)
+                {
+                    SystemCompositionEngineTestSupport.VerifyXaml();
+                }
+                else
+                {
+                    SystemCompositionEngineTestSupport.Verify();
+                }
             }
         }
 

@@ -84,6 +84,46 @@ namespace TableViewDetails
         return std::nullopt;
     }
 
+    // A neutralized control-owned ToolTip (disabled, no content) stays attached, so its presence
+    // alone does not mean the element shows a tooltip.
+    inline bool HasEffectiveToolTip(const winrt::DependencyObject& element)
+    {
+        auto const value = element ? winrt::ToolTipService::GetToolTip(element) : nullptr;
+        if (!value)
+        {
+            return false;
+        }
+
+        if (auto const text = TryGetString(value))
+        {
+            return !text->empty();
+        }
+
+        if (auto const toolTip = value.try_as<winrt::ToolTip>())
+        {
+            if (!toolTip.IsEnabled())
+            {
+                return false;
+            }
+            auto const content = toolTip.Content();
+            if (auto const text = TryGetString(content))
+            {
+                return !text->empty();
+            }
+            if (content)
+            {
+                return true;
+            }
+            // An app ToolTip can render through its own template with no Content; ours never has one.
+            auto const record = GetRecord(element.try_as<winrt::FrameworkElement>());
+            return (!record || record->ToolTip != toolTip) &&
+                (toolTip.ReadLocalValue(winrt::Control::TemplateProperty()) != winrt::DependencyProperty::UnsetValue() ||
+                 toolTip.ReadLocalValue(winrt::FrameworkElement::StyleProperty()) != winrt::DependencyProperty::UnsetValue());
+        }
+
+        return true;
+    }
+
     inline void RetractPublishedHelpText(const winrt::FrameworkElement& element, CellToolTipRecord& record)
     {
         if (!record.PublishedHelpText.empty() &&
@@ -241,6 +281,9 @@ namespace TableViewDetails
         }
     }
 
+    // Defined by TableViewRow: a live value change can make the cell (in)actionable.
+    void OnCellToolTipValueAppliedInternal(const winrt::FrameworkElement& cell);
+
     // The whole per-cell update path: no event, no invalidation, no realization-time work.
     inline void OnCellToolTipValueChanged(
         const winrt::DependencyObject& sender,
@@ -263,6 +306,7 @@ namespace TableViewDetails
             {
                 ClearOwnedToolTip(element);
             }
+            OnCellToolTipValueAppliedInternal(element);
         }
         catch (...)
         {

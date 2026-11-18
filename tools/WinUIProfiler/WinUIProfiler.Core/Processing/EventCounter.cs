@@ -30,7 +30,7 @@ public sealed class EventCounter : IEventProcessor
             case XamlProvider.XamlProfiler:
                 Interlocked.Increment(ref profilerEvents);
                 break;
-            case XamlProvider.DxgKrnl:
+            case XamlProvider.DxgKrnl when profilerEvent.EventId is not (>= 33 and <= 38):
                 Interlocked.Increment(ref gpuMemoryEvents);
                 break;
         }

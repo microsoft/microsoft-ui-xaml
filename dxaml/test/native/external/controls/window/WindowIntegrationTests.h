@@ -471,6 +471,56 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size constraints re-apply when ExtendsContentIntoTitleBar toggles, so they track the changed chrome instead of drifting by the caption height.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeTitleBarTogglePreservesHeight)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that turning ExtendsContentIntoTitleBar off while MaxHeight equals Height keeps the client height at Height.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeTitleBarToggleKeepsHandlerSize)
+            TEST_METHOD_PROPERTY(L"Description", L"A title-bar update keeps a handler's new height during a size-constraint refresh and preserves height without overwriting a width-only change.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeResetReleasesOwnership)
+            TEST_METHOD_PROPERTY(L"Description", L"Reset clears a managed presenter size constraint once; defaults leave unmanaged size constraints alone, and a new value resumes management.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSettersOnlyUpdateMatchingConstraint)
+            TEST_METHOD_PROPERTY(L"Description", L"Each Window size constraint setter updates only its matching presenter size constraint; title-bar changes refresh all managed size constraints.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSameValueAssignmentsDoNothing)
+            TEST_METHOD_PROPERTY(L"Description", L"Repeating default or non-default Window size constraint values leaves presenter size constraints unchanged.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeTracksTitleBarToggleInNonRestoredState)
+            TEST_METHOD_PROPERTY(L"Description", L"Size constraints for height use the updated frame after title-bar changes while minimized or maximized.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSurvivesPresenterReplacement)
+            TEST_METHOD_PROPERTY(L"Description", L"A replacement OverlappedPresenter receives managed size constraints but leaves released size constraints alone.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeCloseDuringFullRefresh)
+            TEST_METHOD_PROPERTY(L"Description", L"A full refresh clears managed size constraints first and stops updating presenter properties if a handler closes the window.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeStorageOutsideOverlapped)
+            TEST_METHOD_PROPERTY(L"Description", L"Window size constraint setters store values without resizing or raising SizeChanged under other presenters.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSettersInNonRestoredStates)
+            TEST_METHOD_PROPERTY(L"Description", L"Window size constraint setters constrain maximized windows without restoring them, and do not resize minimized windows.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 #endif // MUX_PRERELEASE
 
         BEGIN_TEST_METHOD(ContentSetInMarkupIsReleasedWhenCleared)

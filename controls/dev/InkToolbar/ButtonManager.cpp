@@ -861,17 +861,22 @@ void ButtonManager::ButtonAction(winrt::IInspectable const& sender, bool isNorma
 
 // The checked event is delivered *before* the pointer event that caused it, which would make the pointer
 // event appear to land on an already-selected button (opening its L3). So we post to the dispatcher to
-// run *after* pending pointer events.
+// run *after* pending pointer events. The posted call reads the button's state when it runs, not the state at
+// post time: if the state changed again in between (e.g. IsStencilButtonChecked set to true then false), a stale
+// value would set the property back, change IsChecked again and post again, forever.
 void ButtonManager::DispatchButtonCheckStateChanged(winrt::IInspectable const& sender, bool check)
 {
+    UNREFERENCED_PARAMETER(check);
     auto child = sender.as<winrt::UIElement>();
     auto toolbar = ReferenceInkToolbar();
 
     if (auto dispatcherQueue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
     {
-        dispatcherQueue.TryEnqueue([toolbar, child, check]()
+        dispatcherQueue.TryEnqueue([toolbar, child]()
         {
-            winrt::get_self<InkToolbar>(toolbar)->OnCheckStateChanged(child, check);
+            auto isChecked = child.as<winrt::Microsoft::UI::Xaml::Controls::Primitives::ToggleButton>().IsChecked();
+            // Indeterminate is treated as unchecked, as in OnButtonIndeterminate.
+            winrt::get_self<InkToolbar>(toolbar)->OnCheckStateChanged(child, isChecked && isChecked.Value());
         });
     }
 }

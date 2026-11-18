@@ -118,10 +118,11 @@
     <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
   </PropertyGroup>
 
-  <!-- Projects sharing a source directory must isolate IntDir as well as generated XAML state.
-       Apply the suffix after Microsoft.Cpp.props defines IntDir. -->
+  <!-- PRI tasks use IntermediateOutputPath, while native compilation uses IntDir.
+       Keep both isolated after Microsoft.Cpp.props defines IntDir. -->
   <PropertyGroup Condition="'$(GeneratedFilesSubdirectory)' != ''">
     <IntDir>$(IntDir)$(GeneratedFilesSubdirectory)\</IntDir>
+    <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
   </PropertyGroup>
 
   <ImportGroup Label="ExtensionSettings">

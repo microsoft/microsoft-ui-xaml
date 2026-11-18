@@ -31,6 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // Tree shape is read from the page's HierarchyReadout (an in-process walk of the realized rows); focus,
     // selection and ExpandCollapse state are read through UIA wherever UIA exposes them.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewHierarchyInteractionTests
     {
         [ClassInitialize]

@@ -127,8 +127,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         { return S_OK; }
         _Check_return_ HRESULT TryGetFilePath(_Out_ xstring_ptr* pstrFilePath) override
         { return S_OK; }
-        _Check_return_ HRESULT TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream) override
-        { return S_OK; }
         UINT32 GetScalePercentage() override
         { return 0U; }
 

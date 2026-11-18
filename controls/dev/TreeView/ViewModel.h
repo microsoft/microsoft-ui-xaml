@@ -3,6 +3,7 @@
 
 #pragma once
 #include <Vector.h>
+#include <indexed_list.h>
 #include "TreeViewNode.h"
 
 using TreeNodeSelectionState = TreeViewNode::TreeNodeSelectionState;
@@ -16,6 +17,22 @@ class ViewModel :
             typename ViewModelVectorOptions::ObservableVectorType>,
     public ViewModelVectorOptions::IVectorOwner
 {
+    // The rows of the flat list. Each row keeps the COM identity of its item, so that IndexOf finds a row through the
+    // index of m_items instead of comparing the item with every row.
+    struct FlatListItem
+    {
+        tracker_ref<winrt::IInspectable> item;
+        const void* identity;
+    };
+
+    struct FlatListItemIdentity
+    {
+        const void* operator()(const FlatListItem& row) const noexcept { return row.identity; }
+    };
+
+    // Declared before Implement_Vector_External, so that the rows are destroyed after its VectorChanged event source.
+    containers::indexed_list<FlatListItem, FlatListItemIdentity> m_items;
+
     Implement_IObservable(ViewModelVectorOptions)
     Implement_Vector_External(ViewModelVectorOptions)
     Implement_IIterator(ViewModelVectorOptions)
@@ -65,7 +82,6 @@ public:
     // Helper functions
     void PrepareView(winrt::TreeViewNode const& originNode);
     void SetOwners(winrt::TreeViewList const& owningList, winrt::TreeView const& owningTreeView);
-    winrt::TreeViewList ListControl();
     bool IsInSingleSelectionMode();
     bool IsNodeSelected(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState NodeSelectionState(winrt::TreeViewNode const& targetNode);
@@ -77,25 +93,32 @@ public:
     void NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
 
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
+    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
 
 private:
     tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };
     event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeExpandingEventSource{ this };
     event_source<winrt::TypedEventHandler<winrt::TreeViewNode, winrt::IInspectable>> m_nodeCollapsedEventSource{ this };
-    std::vector<winrt::event_token> m_collectionChangedEventTokenVector;
+    containers::indexed_list<winrt::event_token> m_collectionChangedEventTokenVector;
     std::vector<winrt::event_token> m_selectedNodeChildrenChangedEventTokenVector;
-    std::vector<winrt::event_token> m_IsExpandedChangedEventTokenVector;
+    containers::indexed_list<winrt::event_token> m_IsExpandedChangedEventTokenVector;
     winrt::event_token m_rootNodeChildrenChangedEventToken;
     winrt::weak_ref<winrt::TreeViewList> m_TreeViewList{ nullptr };
     winrt::weak_ref<winrt::TreeView> m_TreeView{ nullptr };
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
+    bool m_isInSingleSelectionMode{ true };
     tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };
     std::vector<winrt::weak_ref<winrt::IInspectable>> m_addedSelectedItems;
     std::vector<winrt::IInspectable> m_removedSelectedItems;
     uint32_t m_selectionTrackingCounter{ 0 };
 
     // Methods
+    FlatListItem MakeFlatListItem(winrt::IInspectable const& value);
+    winrt::IInspectable ItemAt(uint32_t index, bool useSafeGet = false);
+    bool IndexOfItem(winrt::IInspectable const& value, uint32_t& index);
+    void RaiseVectorChanged(winrt::CollectionChange change, uint32_t index);
     winrt::TreeViewNode GetRemovedChildTreeViewNodeByIndex(winrt::TreeViewNode const& node, unsigned int childIndex);
     int CountDescendants(const winrt::TreeViewNode& value);
     void AddNodeToView(const winrt::TreeViewNode& value, unsigned int index);

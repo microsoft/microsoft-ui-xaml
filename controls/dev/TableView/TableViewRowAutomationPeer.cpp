@@ -361,7 +361,7 @@ int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
     winrt::IInspectable const& item,
     int32_t targetIndex)
 {
-    if (!tableView || !item || targetIndex < 0)
+    if (!tableView || targetIndex < 0)
     {
         return -1;
     }
@@ -378,7 +378,7 @@ int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
     for (int32_t index = 0; index <= targetIndex; ++index)
     {
         if (auto const candidate = tableImpl->UnwrapEditingDataItem(view.GetAt(index));
-            candidate && TableView::SameInspectableIdentity(candidate, item))
+            TableView::SameInspectableIdentity(candidate, item))
         {
             if (index == targetIndex)
             {
@@ -401,7 +401,14 @@ bool TableViewRowAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, wi
     auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
     if (!rowItem)
     {
-        return false;
+        auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal();
+        const auto index = repeater ? repeater.GetElementIndex(row) : -1;
+        auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+        if (!view || index < 0 || index >= view.Count() ||
+            winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(view.GetAt(index)))
+        {
+            return false;
+        }
     }
 
     if (!m_item.IsTracking())
@@ -436,17 +443,15 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
 {
     if (row && tableView)
     {
-        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext()))
+        auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+        m_item.Track(item);
+        m_trackedItemOccurrence = -1;
+        if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
         {
-            m_item.Track(item);
-            m_trackedItemOccurrence = -1;
-            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
             {
-                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
-                {
-                    m_lastKnownRowIndex = rowIndex;
-                    m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
-                }
+                m_lastKnownRowIndex = rowIndex;
+                m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
             }
         }
     }
@@ -467,6 +472,10 @@ bool TableViewRowAutomationPeer::CanReuseForRowItem(
     }
 
     auto const item = winrt::get_self<TableView>(tableView)->UnwrapEditingDataItem(row.DataContext());
+    if (!item)
+    {
+        return IsTrackedRow(row, tableView);
+    }
     return m_item.SameIdentityAs(item);
 }
 
@@ -725,56 +734,68 @@ winrt::IRawElementProviderSimple TableViewRowAutomationPeer::SelectionContainer(
 
 void TableViewRowAutomationPeer::AddToSelection()
 {
-    if (!IsEnabled())
-    {
-        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
-    }
-
-    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
-    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
-    if (auto const tableView = GetOwningTableView())
-    {
-        auto const impl = winrt::get_self<TableView>(tableView);
-        if (!impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(GetRowIndex()))
-        {
-            throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
-        }
-    }
-    Select();
+    ApplySelectionItemAction(SelectionItemAction::Add);
 }
 
 void TableViewRowAutomationPeer::RemoveFromSelection()
 {
-    if (!IsEnabled())
-    {
-        throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
-    }
-
-    if (auto const tableView = GetOwningTableView())
-    {
-        if (const int32_t index = GetRowIndex(); index >= 0)
-        {
-            // Deselect only clears when THIS row is the selection, so a stale UIA call
-            // cannot wipe out a selection the user has since moved elsewhere.
-            winrt::get_self<TableView>(tableView)->Deselect(index);
-        }
-    }
+    ApplySelectionItemAction(SelectionItemAction::Remove);
 }
 
 void TableViewRowAutomationPeer::Select()
 {
-    if (!IsEnabled())
+    ApplySelectionItemAction(SelectionItemAction::Select);
+}
+
+void TableViewRowAutomationPeer::ApplySelectionItemAction(SelectionItemAction action)
+{
+    // Enabled first: an app-derived IsEnabledCore can change the rows the index is resolved against.
+    ThrowIfSelectionItemNotEnabled(IsEnabled());
+    auto const tableView = GetOwningTableView();
+    const int32_t rowIndex = GetRowIndex();
+    ApplySelectionItemActionAt(action, tableView, rowIndex);
+}
+
+void TableViewRowAutomationPeer::ThrowIfSelectionItemNotEnabled(bool isEnabled)
+{
+    if (!isEnabled)
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
     }
+}
 
-    if (auto const tableView = GetOwningTableView())
+void TableViewRowAutomationPeer::ApplySelectionItemActionAt(
+    SelectionItemAction action,
+    winrt::TableView const& tableView,
+    int32_t rowIndex)
+{
+    if (!tableView)
     {
-        if (const int32_t index = GetRowIndex(); index >= 0)
-        {
-            // toggle=false: UIA Select() means "make this the selection", never "clear it".
-            winrt::get_self<TableView>(tableView)->SelectRowIndexFromInteraction(index, false);
-        }
+        return;
+    }
+
+    auto const impl = winrt::get_self<TableView>(tableView);
+    // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
+    // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
+    if (action == SelectionItemAction::Add)
+    {
+        EnsureCanAddRowToSelection(*impl, rowIndex);
+    }
+    if (rowIndex < 0)
+    {
+        return;
+    }
+
+    if (action == SelectionItemAction::Remove)
+    {
+        // Deselect only clears when THIS row is the selection, so a stale UIA call
+        // cannot wipe out a selection the user has since moved elsewhere.
+        impl->Deselect(rowIndex);
+    }
+    else
+    {
+        // toggle=false: UIA Select() means "make this the selection", never "clear it".
+        impl->SelectRowIndexFromInteraction(rowIndex, false);
     }
 }
 

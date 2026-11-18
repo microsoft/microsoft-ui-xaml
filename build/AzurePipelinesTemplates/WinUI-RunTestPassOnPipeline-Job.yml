@@ -10,6 +10,11 @@ parameters:
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
+  imageOverride: ''
+  parallelJobs: 0
+  workItemsProjNameFilter: 'RunTestsInHelix-*.proj'
+  preTestSteps: []
+  compositionEngineLafToken: ''
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -25,21 +30,27 @@ jobs:
     isCustom: true
     ${{ if or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' )) }}:
       name: WinDevPool-Arm64
-      ${{ if eq( parameters.testOS, 'Win11-23H2' ) }}:
-        demands: ImageOverride -equals Win11-23h2-pro-arm64
     ${{ else }}:
       name: WinDevPool-Test
-      ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
-        demands: ImageOverride -equals Win10-2019-LTSC
-      ${{ if eq( parameters.testOS, 'Win11-25H2' ) }}:
-        demands: ImageOverride -equals Win11-25H2
-      ${{ if eq( parameters.testOS, 'Win11-23H2') }}:
-        demands: ImageOverride -equals Win11-23H2
+    ${{ if ne(parameters.imageOverride, '') }}:
+      demands: ImageOverride -equals ${{ parameters.imageOverride }}
+    ${{ elseif and(or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' )), eq( parameters.testOS, 'Win11-23H2' )) }}:
+      demands: ImageOverride -equals Win11-23h2-pro-arm64
+    ${{ elseif and(not(or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' ))), eq( parameters.testOS, 'Win10-RS5' )) }}:
+      demands: ImageOverride -equals Win10-2019-LTSC
+    ${{ elseif and(not(or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' ))), eq( parameters.testOS, 'Win10-22H2' )) }}:
+      demands: ImageOverride -equals Win10-22H2-2
+    ${{ elseif and(not(or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' ))), eq( parameters.testOS, 'Win11-25H2' )) }}:
+      demands: ImageOverride -equals Win11-25H2
+    ${{ elseif and(not(or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' ))), eq( parameters.testOS, 'Win11-23H2' )) }}:
+      demands: ImageOverride -equals Win11-23H2
   timeoutInMinutes: 300
   strategy:
-    ${{ if eq( parameters.testSuite, 'DevTestSuite') }}:
+    ${{ if ne(parameters.parallelJobs, 0) }}:
+      parallel: ${{ parameters.parallelJobs }}
+    ${{ if and(eq(parameters.parallelJobs, 0), eq( parameters.testSuite, 'DevTestSuite')) }}:
       parallel: 20
-    ${{ if eq( parameters.testSuite, 'ScenarioTestSuite') }}:
+    ${{ if and(eq(parameters.parallelJobs, 0), eq( parameters.testSuite, 'ScenarioTestSuite')) }}:
       parallel: 5
 
   variables:
@@ -63,7 +74,7 @@ jobs:
     testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
     testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
     workItemsProjDir: $(Build.SourcesDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildFlavor)\$(testOS)
-    workItemsProjNameFilter: RunTestsInHelix-*.proj
+    workItemsProjNameFilter: '${{ parameters.workItemsProjNameFilter }}'
     artifactStatus: 'Succeeded'
     
     # This should reduce concurrent memory allocations and allow us to make better use of our buffer pool which will help with the failures on arm64 machines to download artifacts
@@ -100,15 +111,35 @@ jobs:
       script: |
         Copy-Item -Path "$(Build.ArtifactStagingDirectory)\${{ parameters.testPayloadArtifactName }}_*\*" -Destination "$(Build.SourcesDirectory)" -Recurse -Force
 
+  - ${{ each step in parameters.preTestSteps }}:
+    - ${{ step }}
+
+  - ${{ if ne(parameters.compositionEngineLafToken, '') }}:
+    - task: PowerShell@2
+      displayName: 'Prepare machine for protected test launch'
+      inputs:
+        targetType: filePath
+        pwsh: false
+        filePath: $(testPayloadDir)\RunSetupIfNeeded.ps1
+        workingDirectory: $(testPayloadDir)
+        errorActionPreference: stop
+      env:
+        HELIX_CORRELATION_PAYLOAD: $(testPayloadDir)
+        HELIX_DUMP_FOLDER: C:\dumps
+
   - task: powershell@2
     displayName: Run Tests
-    timeoutInMinutes: 300
     inputs:
       targetType: filePath
+      # The secured launch-request path uses Windows-only memory-mapping ACL APIs.
+      pwsh: false
       filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
-      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      arguments: -WorkItemProjFileNameFilter "$(workItemsProjNameFilter)" -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
+    env:
+      ${{ if ne(parameters.compositionEngineLafToken, '') }}:
+        COMPOSITION_ENGINE_LAF_TOKEN: ${{ parameters.compositionEngineLafToken }}
 
   # Total this shard's native lifetime crash/warning signals. Non-gating; reports 0 when no lifetime work
   # items ran. See Helix\common\pipeline\Report-LifetimeNativeCrashTotals.ps1.
@@ -123,7 +154,7 @@ jobs:
       workingDirectory: $(Build.SourcesDirectory)
 
   - task: PublishTestResults@2
-    condition: always()
+    condition: and(always(), eq(variables['TestSliceHasWork'], 'true'))
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: testResults-*.xml
@@ -136,7 +167,7 @@ jobs:
 
   - task: powershell@2
     displayName: 'UpdateUnreliableTests.ps1'
-    condition: always()
+    condition: and(always(), eq(variables['TestSliceHasWork'], 'true'))
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:

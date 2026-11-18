@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.App;
 
@@ -23,6 +24,15 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         window = new MainWindow();
+        try
+        {
+            window.ApplyCommandLine(ProfilerCommandLine.Parse(Environment.GetCommandLineArgs()[1..]));
+        }
+        catch (ArgumentException error)
+        {
+            window.ReportError(error);
+        }
+
         window.Activate();
     }
 }

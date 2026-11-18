@@ -550,13 +550,6 @@
                             </Mask>
                           </MaskBrush>
                         </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="120" SizeY="32" BorderMode="Soft">
-                          <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                            <Source>
-                              <ColorBrush Color="Argb {0, 1, 1, 1}" />
-                            </Source>
-                          </NineGridBrush>
-                        </wucSpriteVisual>
                       </Visual>
                     </Visual>
                   </Visual>
@@ -1070,13 +1063,6 @@
                               <SurfaceBrush Stretch="Fill" Transform="Identity" />
                             </Mask>
                           </MaskBrush>
-                        </wucSpriteVisual>
-                        <wucSpriteVisual SizeX="120" SizeY="32" BorderMode="Soft">
-                          <NineGridBrush LeftInset="4" TopInset="4" RightInset="4" BottomInset="4" isCenterHollow="True">
-                            <Source>
-                              <ColorBrush Color="Argb {0, 1, 1, 1}" />
-                            </Source>
-                          </NineGridBrush>
                         </wucSpriteVisual>
                       </Visual>
                     </Visual>

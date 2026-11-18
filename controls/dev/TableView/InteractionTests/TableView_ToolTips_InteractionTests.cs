@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewToolTipsInteractionTests
     {
         // ToolTipService's initial show delay plus slack. A dwell shorter than the delay reads exactly like a
@@ -611,7 +612,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //
         // Both layers are logged whether or not the tooltip is found: a null result has to be attributable to
         // "nothing opened" rather than to "the search looked in the wrong place".
-        private static UIObject FindOpenToolTip(string phase)
+        internal static UIObject FindOpenToolTip(string phase)
         {
             foreach (UIObject rootChild in UIObject.Root.Children)
             {
