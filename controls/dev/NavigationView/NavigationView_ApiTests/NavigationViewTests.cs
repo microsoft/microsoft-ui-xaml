@@ -5707,6 +5707,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: NavigationView in Left mode with CompactPaneLength 56 and one item.
+        // Expected: the presenter's template settings get the compact pane length (IconWidth 56, SmallerIconWidth 48) and
+        //   follow later changes, and the presenter ends up with its own template.
+        // Failure means: NavigationViewItem no longer passes the compact pane length to its presenter, or the presenter
+        //   lost its real template.
+        [TestMethod]
+        public void VerifyItemPresenterGetsCompactPaneLengthAndItsRealTemplate()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navigationView = new NavigationView
+                {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    CompactPaneLength = 56,
+                    IsPaneOpen = true
+                };
+                var item = new NavigationViewItem { Content = "Home", Icon = new SymbolIcon(Symbol.Home) };
+                navigationView.MenuItems.Add(item);
+                Content = navigationView;
+                Content.UpdateLayout();
+
+                var presenter = VisualTreeUtils.FindVisualChildByName(item, "NavigationViewItemPresenter") as Microsoft.UI.Xaml.Controls.Primitives.NavigationViewItemPresenter;
+                Verify.IsNotNull(presenter, "The item has its presenter");
+                Verify.AreEqual(56.0, presenter.TemplateSettings.IconWidth, "IconWidth is the compact pane length");
+                Verify.AreEqual(48.0, presenter.TemplateSettings.SmallerIconWidth, "SmallerIconWidth is the compact pane length - 8");
+                Verify.IsNotNull(VisualTreeUtils.FindVisualChildByName(presenter, "PresenterContentRootGrid"), "The presenter has its own template");
+
+                navigationView.CompactPaneLength = 64;
+                Content.UpdateLayout();
+                Verify.AreEqual(64.0, presenter.TemplateSettings.IconWidth, "IconWidth follows the compact pane length");
+            });
+        }
+
         [TestMethod]
         public void VerifyRemovedNavigationViewItemDoesNotReceiveCompactPaneLengthChanges()
         {
