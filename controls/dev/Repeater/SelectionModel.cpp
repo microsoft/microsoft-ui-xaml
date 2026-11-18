@@ -215,6 +215,36 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
     return m_selectedItemsCached;
 }
 
+// Whether item is the selected item. A boxed value (e.g. an int from a C# List<int>) is a new object on every read,
+// so the item is also matched by its index in the source that holds the selection.
+bool SelectionModel::IsSelectedItem(const winrt::IInspectable& item)
+{
+    std::shared_ptr<SelectionNode> selectedNode;
+    if (m_rootNode->Source())
+    {
+        SelectionTreeHelper::Traverse(
+            m_rootNode,
+            false, /* realizeChildren */
+            [&selectedNode](const SelectionTreeHelper::TreeWalkNodeInfo& currentInfo)
+        {
+            if (!selectedNode && currentInfo.Node->SelectedCount() > 0)
+            {
+                selectedNode = currentInfo.Node;
+            }
+        });
+    }
+
+    if (selectedNode)
+    {
+        if (auto const source = selectedNode->ItemsSourceView())
+        {
+            const int selectedIndex = selectedNode->SelectedIndices().at(0);
+            return source.GetAt(selectedIndex) == item || source.IndexOf(item) == selectedIndex;
+        }
+    }
+    return false;
+}
+
 winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
 {
     if (!m_selectedIndicesCached)
