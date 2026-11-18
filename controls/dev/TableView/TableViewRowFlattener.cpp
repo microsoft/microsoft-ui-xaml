@@ -577,6 +577,16 @@ void TableViewRowFlattener::ReleaseTree()
     }
     m_treeGroups.clear();
     m_rootBucket.clear();
+
+    // Fresh rows for the next tree: the released ones keep their items only while a repeater still holds them.
+    if (!m_nodeRows.empty() || m_treeRows.Size() > 0)
+    {
+        m_nodeRows.clear();
+        m_indexByItem.clear();
+        m_indexByItemValid = false;
+        m_treeRows = winrt::single_threaded_observable_vector<winrt::IInspectable>();
+        m_treeRowsView = winrt::ItemsSourceView{ m_treeRows };
+    }
 }
 
 void TableViewRowFlattener::OnViewChanged()
@@ -1421,9 +1431,11 @@ void TableViewRowFlattener::RebuildTreeRows()
         // Roll back only if ReplaceAll's assignment threw (old rows still published, detected by row
         // count). A throw from a Reset handler happens after the new rows are live; keep them.
         const auto publishedCount = static_cast<uint32_t>(built.size());
-        auto publishGuard = wil::scope_exit([this, publishedCount, &previousNodeRows, &previousIndex, previousIndexValid]() noexcept
+        // Captured: a handler of the Reset may release the tree, which replaces m_treeRows.
+        auto const rows = m_treeRows;
+        auto publishGuard = wil::scope_exit([this, rows, publishedCount, &previousNodeRows, &previousIndex, previousIndexValid]() noexcept
         {
-            if (m_treeRows.Size() == publishedCount)
+            if (rows.Size() == publishedCount || m_treeDetached)
             {
                 return;
             }
@@ -1434,7 +1446,7 @@ void TableViewRowFlattener::RebuildTreeRows()
             m_indexByItemValid = false;
         });
 
-        m_treeRows.ReplaceAll(built);
+        rows.ReplaceAll(built);
         publishGuard.release();
     } while (runPending && !m_treeDetached);
 
