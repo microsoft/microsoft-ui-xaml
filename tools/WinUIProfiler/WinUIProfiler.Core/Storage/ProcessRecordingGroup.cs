@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.Engine.Storage;
@@ -78,6 +79,12 @@ internal sealed class ProcessRecordingGroup : IDisposable
 
     internal ProcessRecordingStatus Primary => Status(recordings[primaryProcessId]);
     internal IReadOnlyList<ProcessRecordingStatus> Processes => recordings.Values.Select(Status).ToArray();
+    // Every session file of the group, the primary process's first.
+    internal IReadOnlyList<string> RecordingPaths => recordings.Values
+        .OrderBy(recording => recording.Source.ProcessId != primaryProcessId)
+        .Select(recording => recording.Writer?.Path)
+        .OfType<string>()
+        .ToArray();
     internal Exception? Failure => recordings.Values.Select(recording => recording.Pipeline.Failure).FirstOrDefault(error => error is not null);
     internal string? RecordingError => recordings.Values.FirstOrDefault(recording => recording.Error is not null) is { } failed
         ? $"PID {failed.Source.ProcessId}: {failed.Error}" : null;
@@ -96,6 +103,33 @@ internal sealed class ProcessRecordingGroup : IDisposable
         else if (profilerEvent.ProcessId == launcherProcessId && profilerEvent.Provider == XamlProvider.Marker)
         {
             recordings[primaryProcessId].Pipeline.Post(profilerEvent);
+        }
+    }
+
+    // Whether a process's samples are stored: it's one of the target processes, has a session file, and the event is from
+    // after the process's creation, so an earlier process that had its ID isn't. Safe on any thread: the group doesn't
+    // change.
+    internal bool IsRecorded(int processId, long eventFileTime) =>
+        recordings.TryGetValue(processId, out var recording) && recording.Writer is not null &&
+        (recording.Source.ProcessCreatedUtc is not { } created || eventFileTime >= created.ToFileTimeUtc());
+    internal bool IsWriting => recordings.Values.Any(recording => recording.Writer is not null);
+
+    // Stores a live CPU sample in its process's session file, on any thread. It doesn't wait for the writer, which
+    // counts the sample as dropped when its queue is full.
+    internal void PostSample(CompletedSample sample)
+    {
+        if (recordings.TryGetValue(sample.ProcessId, out var recording))
+        {
+            recording.Writer?.PostSample(sample, wait: false);
+        }
+    }
+
+    // What the CPU sampling recorded, or why there is none (summary null), for every session file. Call before Close.
+    internal void SetCpuSampling(CpuSamplingSummary? summary, string? note)
+    {
+        foreach (var recording in recordings.Values)
+        {
+            recording.Writer?.SetCpuSampling(summary, note);
         }
     }
 
