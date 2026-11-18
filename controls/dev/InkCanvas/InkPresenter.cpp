@@ -817,15 +817,18 @@ namespace
     }
 
     // Must run on the ink thread while 'point' is live. Null if the device can't be read; the point then falls back
-    // to a lookup by id.
-    winrt::Windows::Devices::Input::PointerDevice SnapshotPointerDevice(winrt::Windows::UI::Input::PointerPoint const& point)
+    // to a lookup by id. 'usages' receives the device's HID usage list, copied once with the device.
+    winrt::Windows::Devices::Input::PointerDevice SnapshotPointerDevice(winrt::Windows::UI::Input::PointerPoint const& point,
+        std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage>& usages)
     {
         try
         {
             if (auto device = point.PointerDevice())
             {
+                auto snapshot = winrt::make_self<InkPointerDeviceSnapshot>(device);
+                usages = snapshot->Usages();
                 return AsProjectedRuntimeClass<winrt::Windows::Devices::Input::PointerDevice>(
-                    winrt::make<InkPointerDeviceSnapshot>(device));
+                    snapshot.as<winrt::Windows::Devices::Input::IPointerDevice>());
             }
         }
         catch (winrt::hresult_error const&)
@@ -937,14 +940,8 @@ InkPointerEventArgsSnapshot::InkPointerEventArgsSnapshot(winrt::Windows::UI::Cor
 {
     // One pointer per event, so the current and intermediate points share one device snapshot and its usage list.
     auto currentPoint = args.CurrentPoint();
-    auto device = SnapshotPointerDevice(currentPoint);
     std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> deviceUsages;
-    if (device)
-    {
-        auto usages = device.SupportedUsages();
-        deviceUsages.resize(usages.Size());
-        usages.GetMany(0, deviceUsages);
-    }
+    auto device = SnapshotPointerDevice(currentPoint, deviceUsages);
     m_currentPoint = SnapshotPointerPoint(currentPoint, device, deviceUsages);
 
     if (auto intermediatePoints = args.GetIntermediatePoints())
@@ -1045,10 +1042,18 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
     // because delivery is marshaled to the UI thread, the args.Handled round-trip back to the OS is
     // best-effort (the OS has already proceeded).
     auto osStrokeInput = osPresenter.StrokeInput();
-    auto marshalStroke = [marshalToUi](void (::InkStrokeInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
+    auto strokeInput = m_strokeInput;
+    auto marshalStroke = [marshalToUi, strokeInput](
+        void (::InkStrokeInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&),
+        bool (::InkStrokeInput::* hasHandler)() const noexcept)
     {
-        return [marshalToUi, raise](inking::InkStrokeInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        return [marshalToUi, strokeInput, raise, hasHandler](inking::InkStrokeInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
+            // Nothing to copy or deliver when the app has no handler for this event.
+            if (!(winrt::get_self<::InkStrokeInput>(strokeInput)->*hasHandler)())
+            {
+                return;
+            }
             auto snapshot = SnapshotPointerEventArgs(args);
             marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
@@ -1059,16 +1064,23 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
                 });
         };
     };
-    osStrokeInput.StrokeStarted(marshalStroke(&::InkStrokeInput::RaiseStrokeStarted));
-    osStrokeInput.StrokeContinued(marshalStroke(&::InkStrokeInput::RaiseStrokeContinued));
-    osStrokeInput.StrokeEnded(marshalStroke(&::InkStrokeInput::RaiseStrokeEnded));
-    osStrokeInput.StrokeCanceled(marshalStroke(&::InkStrokeInput::RaiseStrokeCanceled));
+    osStrokeInput.StrokeStarted(marshalStroke(&::InkStrokeInput::RaiseStrokeStarted, &::InkStrokeInput::HasStrokeStarted));
+    osStrokeInput.StrokeContinued(marshalStroke(&::InkStrokeInput::RaiseStrokeContinued, &::InkStrokeInput::HasStrokeContinued));
+    osStrokeInput.StrokeEnded(marshalStroke(&::InkStrokeInput::RaiseStrokeEnded, &::InkStrokeInput::HasStrokeEnded));
+    osStrokeInput.StrokeCanceled(marshalStroke(&::InkStrokeInput::RaiseStrokeCanceled, &::InkStrokeInput::HasStrokeCanceled));
 
     auto osUnprocessed = osPresenter.UnprocessedInput();
-    auto marshalUnproc = [marshalToUi](void (::InkUnprocessedInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&))
+    auto unprocessedInput = m_unprocessedInput;
+    auto marshalUnproc = [marshalToUi, unprocessedInput](
+        void (::InkUnprocessedInput::* raise)(winrt::Windows::UI::Core::PointerEventArgs const&),
+        bool (::InkUnprocessedInput::* hasHandler)() const noexcept)
     {
-        return [marshalToUi, raise](inking::InkUnprocessedInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
+        return [marshalToUi, unprocessedInput, raise, hasHandler](inking::InkUnprocessedInput const&, winrt::Windows::UI::Core::PointerEventArgs const& args)
         {
+            if (!(winrt::get_self<::InkUnprocessedInput>(unprocessedInput)->*hasHandler)())
+            {
+                return;
+            }
             auto snapshot = SnapshotPointerEventArgs(args);
             marshalToUi([snapshot, raise](::InkPresenter* self)
                 {
@@ -1079,13 +1091,13 @@ void InkPresenter::InitializeOsPresenter(inking::InkPresenter const& osPresenter
                 });
         };
     };
-    osUnprocessed.PointerEntered(marshalUnproc(&::InkUnprocessedInput::RaisePointerEntered));
-    osUnprocessed.PointerHovered(marshalUnproc(&::InkUnprocessedInput::RaisePointerHovered));
-    osUnprocessed.PointerExited(marshalUnproc(&::InkUnprocessedInput::RaisePointerExited));
-    osUnprocessed.PointerPressed(marshalUnproc(&::InkUnprocessedInput::RaisePointerPressed));
-    osUnprocessed.PointerMoved(marshalUnproc(&::InkUnprocessedInput::RaisePointerMoved));
-    osUnprocessed.PointerReleased(marshalUnproc(&::InkUnprocessedInput::RaisePointerReleased));
-    osUnprocessed.PointerLost(marshalUnproc(&::InkUnprocessedInput::RaisePointerLost));
+    osUnprocessed.PointerEntered(marshalUnproc(&::InkUnprocessedInput::RaisePointerEntered, &::InkUnprocessedInput::HasPointerEntered));
+    osUnprocessed.PointerHovered(marshalUnproc(&::InkUnprocessedInput::RaisePointerHovered, &::InkUnprocessedInput::HasPointerHovered));
+    osUnprocessed.PointerExited(marshalUnproc(&::InkUnprocessedInput::RaisePointerExited, &::InkUnprocessedInput::HasPointerExited));
+    osUnprocessed.PointerPressed(marshalUnproc(&::InkUnprocessedInput::RaisePointerPressed, &::InkUnprocessedInput::HasPointerPressed));
+    osUnprocessed.PointerMoved(marshalUnproc(&::InkUnprocessedInput::RaisePointerMoved, &::InkUnprocessedInput::HasPointerMoved));
+    osUnprocessed.PointerReleased(marshalUnproc(&::InkUnprocessedInput::RaisePointerReleased, &::InkUnprocessedInput::HasPointerReleased));
+    osUnprocessed.PointerLost(marshalUnproc(&::InkUnprocessedInput::RaisePointerLost, &::InkUnprocessedInput::HasPointerLost));
 }
 
 void InkPresenter::RaiseStrokesCollected(winrt::Windows::Foundation::Collections::IVectorView<inking::InkStroke> const& strokes)

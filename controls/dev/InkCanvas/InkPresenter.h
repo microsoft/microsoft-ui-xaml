@@ -213,6 +213,7 @@ struct InkPointerPointPropertiesSnapshot :
         return usage ? usage->value : 0;
     }
     winrt::Windows::Foundation::IReference<float> ZDistance() const noexcept { return m_zDistance; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Input.PointerPointProperties"; }
 
 private:
     float m_pressure{};
@@ -274,6 +275,10 @@ struct InkPointerDeviceSnapshot :
     winrt::Windows::Foundation::Rect ScreenRect() const noexcept { return m_screenRect; }
     winrt::Windows::Foundation::Collections::IVectorView<winrt::Windows::Devices::Input::PointerDeviceUsage> SupportedUsages() const;
     uint32_t MaxPointersWithZDistance() const noexcept { return m_maxPointersWithZDistance; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.Devices.Input.PointerDevice"; }
+
+    // Internal: the copied usage list, shared with the points of the same event.
+    std::vector<winrt::Windows::Devices::Input::PointerDeviceUsage> const& Usages() const noexcept { return m_supportedUsages; }
 
 private:
     winrt::Windows::Devices::Input::PointerDeviceType m_pointerDeviceType{};
@@ -301,6 +306,7 @@ struct InkPointerPointSnapshot :
     uint64_t Timestamp() const noexcept { return m_timestamp; }
     bool IsInContact() const noexcept { return m_isInContact; }
     winrt::Windows::UI::Input::PointerPointProperties Properties() const noexcept { return m_properties; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Input.PointerPoint"; }
 
 private:
     winrt::Windows::Foundation::Point m_position{};
@@ -326,6 +332,7 @@ struct InkPointerEventArgsSnapshot :
     // Raised after the OS has already acted on the input, so Handled can't flow back to the OS presenter.
     bool Handled() const noexcept { return m_handled; }
     void Handled(bool value) noexcept { m_handled = value; }
+    winrt::hstring GetRuntimeClassName() const { return L"Windows.UI.Core.PointerEventArgs"; }
 
 private:
     winrt::Windows::UI::Input::PointerPoint m_currentPoint{ nullptr };
@@ -361,6 +368,14 @@ public:
     void RaiseStrokeContinued(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeContinued(*this, a); }
     void RaiseStrokeEnded(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeEnded(*this, a); }
     void RaiseStrokeCanceled(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeCanceled(*this, a); }
+
+    // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
+    // event nobody listens to costs nothing. It only tests the handler list for null; an add or remove racing with it
+    // decides that one event.
+    bool HasStrokeStarted() const noexcept { return static_cast<bool>(m_strokeStarted); }
+    bool HasStrokeContinued() const noexcept { return static_cast<bool>(m_strokeContinued); }
+    bool HasStrokeEnded() const noexcept { return static_cast<bool>(m_strokeEnded); }
+    bool HasStrokeCanceled() const noexcept { return static_cast<bool>(m_strokeCanceled); }
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
@@ -405,6 +420,17 @@ public:
     void RaisePointerMoved(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerMoved(*this, a); }
     void RaisePointerReleased(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerReleased(*this, a); }
     void RaisePointerLost(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerLost(*this, a); }
+
+    // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
+    // event nobody listens to costs nothing. It only tests the handler list for null; an add or remove racing with it
+    // decides that one event.
+    bool HasPointerEntered() const noexcept { return static_cast<bool>(m_pointerEntered); }
+    bool HasPointerHovered() const noexcept { return static_cast<bool>(m_pointerHovered); }
+    bool HasPointerExited() const noexcept { return static_cast<bool>(m_pointerExited); }
+    bool HasPointerPressed() const noexcept { return static_cast<bool>(m_pointerPressed); }
+    bool HasPointerMoved() const noexcept { return static_cast<bool>(m_pointerMoved); }
+    bool HasPointerReleased() const noexcept { return static_cast<bool>(m_pointerReleased); }
+    bool HasPointerLost() const noexcept { return static_cast<bool>(m_pointerLost); }
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
