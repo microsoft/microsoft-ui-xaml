@@ -58,7 +58,7 @@ namespace RenderingBackend
     // Reports whether an immediate mode can render on this machine: None when its painter (and device) can be
     // created, DeviceUnavailable when the device cannot be created, NotImplemented when the painter is missing.
     // Registered by the core (ProbeImmediateMode in ImmediatePainter.cpp) so this library does not link painters.
-    using ModeProbeFn = FallbackReason (*)(Mode mode) noexcept;
+    using ModeProbeFn = FallbackReason (*)(Mode mode); // must not throw
     void SetImmediateModeProbe(ModeProbeFn probe) noexcept;
 
     // Composition plus every immediate mode whose probe succeeds. Probes lazily (creates devices); results are cached.
