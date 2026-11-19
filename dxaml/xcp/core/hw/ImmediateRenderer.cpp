@@ -16,6 +16,10 @@
 #include "rectangle.h"
 #include "RectangleGeometry.h"
 #include "Transform.h"
+#include "RichTextBlock.h"
+#include "ListViewBaseItemChrome.h"
+#include <ImmediateTextSink.h>
+#include <dwrite.h>
 #include <algorithm>
 #include <cmath>
 
@@ -299,6 +303,98 @@ namespace
     }
 }
 
+
+
+namespace ImmediateRenderingDetail
+{
+    enum class CommandType : uint8_t
+    {
+        Nop, FillRect, FillRounded, StrokeRounded, Text, GlyphRun, Bitmap, FillPath, StrokePath,
+        PushLayer, PopLayer, PushRoundedClip, PopRoundedClip,
+    };
+
+    struct Command
+    {
+        CommandType type = CommandType::FillRect;
+        Matrix3x2F transform;  // DIPs, element -> island
+        RectF clip;            // DIPs, island space; always set (unclipped = island bounds)
+        RectF rect;            // DIPs, element space
+        RectF deviceBounds;    // physical pixels, island space (clipped); for pushes, the union of the group
+        ColorF color;
+        float radiusX = 0;
+        float radiusY = 0;
+        float thickness = 0;
+        float fontSize = 0;
+        float opacity = 1;
+        uint32_t fontWeight = 400;
+        uint32_t index = 0;    // Text: strings (text, family); GlyphRun: glyphRuns; Push*: index of the matching pop
+        uint64_t key = 0;      // Bitmap
+        RectF sourceRect;      // Bitmap, pixels; empty = whole bitmap
+        const CUIElement* owner = nullptr;
+    };
+
+    struct GlyphRunData
+    {
+        ComPtr<IDWriteFontFace> face;
+        float emSize = 0;
+        uint32_t bidiLevel = 0;
+        std::vector<uint16_t> indices;
+        std::vector<float> advances;
+        std::vector<GlyphOffset> offsets;
+    };
+
+    // Per-element drawing summary used for damage. Content and group (opacity layer / rounded clip around the children)
+    // are diffed separately so an unchanged group does not damage everything under it.
+    struct ElementRecord
+    {
+        bool hasContent = false;
+        RectF bounds;            // physical pixels, island space, clipped; union of the element's own commands
+        RectF relBounds;         // physical pixels relative to the innermost scroller's content origin; not clipped by viewports
+        uint64_t signature = 14695981039346656037ull;
+        const CUIElement* scroller = nullptr; // innermost ScrollContentPresenter
+        RectF cover;             // physical pixels: the element's drawing is uniform inside this rect (blit reuse)
+
+        bool hasGroup = false;
+        RectF groupBounds;       // physical pixels, union of the group's commands
+        uint64_t groupSignature = 0;
+        RectF roundedClip;       // physical pixels; non-empty when the group is a rounded clip
+        float roundedRadius = 0; // physical pixels
+    };
+
+    struct ScrollerInfo
+    {
+        const CUIElement* presenter = nullptr;
+        const CUIElement* parent = nullptr;
+        RectF viewport;          // physical pixels, island space
+        float offsetX = 0;       // physical pixels: content origin in island space
+        float offsetY = 0;
+        bool hasContent = false;
+    };
+
+    struct DisplayList
+    {
+        std::vector<Command> commands;
+        std::vector<std::wstring> strings;
+        std::vector<GlyphRunData> glyphRuns;
+        std::unordered_map<const CUIElement*, ElementRecord> records;
+        std::vector<ScrollerInfo> scrollers;
+    };
+
+    struct WalkContext
+    {
+        CMILMatrix world{ true };
+        RectF clip;              // DIPs, island space
+        RectF contentClip;       // DIPs, island space; clip accumulated inside the innermost scroller's content
+        float scale = 1;
+        int scroller = -1;       // index into DisplayList::scrollers
+        float offsetX = 0;       // DIPs: innermost scroller content origin
+        float offsetY = 0;
+        bool scrollerContent = false;
+    };
+}
+
+using namespace ImmediateRenderingDetail;
+
 struct ImmediateRenderer::IslandState
 {
     std::unique_ptr<IImmediatePainter> painter;
@@ -310,6 +406,7 @@ struct ImmediateRenderer::IslandState
     float scale = 0;
     bool fullDamage = true;
     std::unordered_map<const CUIElement*, ElementRecord> records;
+    std::unordered_map<const CUIElement*, ScrollerInfo> scrollers;
 };
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
@@ -442,6 +539,7 @@ _Check_return_ HRESULT ImmediateRenderer::EnsureIslandResources(
         state.scale = scale;
         state.fullDamage = true;
         state.records.clear();
+        state.scrollers.clear();
     }
     else if (state.width != width || state.height != height || state.scale != scale)
     {
@@ -499,6 +597,8 @@ _Check_return_ HRESULT ImmediateRenderer::EnsureIslandResources(
     return S_OK;
 }
 
+
+
 void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const wchar_t* detail)
 {
     const xstring_ptr className = element->GetClassName();
@@ -513,93 +613,344 @@ void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const
 
 namespace
 {
+    const RectF c_unbounded{ -1e7f, -1e7f, 1e7f, 1e7f };
+
+    // DIPs -> physical pixels, rounded outward with a 1px antialiasing margin.
+    RectF ToDevice(const RectF& r, float scale) noexcept
+    {
+        return { std::floor(r.left * scale) - 1, std::floor(r.top * scale) - 1, std::ceil(r.right * scale) + 1, std::ceil(r.bottom * scale) + 1 };
+    }
+
+    RectF ScaleRect(const RectF& r, float scale) noexcept
+    {
+        return { r.left * scale, r.top * scale, r.right * scale, r.bottom * scale };
+    }
+
+    RectF OffsetRect(const RectF& r, float dx, float dy) noexcept
+    {
+        return { r.left + dx, r.top + dy, r.right + dx, r.bottom + dy };
+    }
+
+    bool RectsNear(const RectF& a, const RectF& b) noexcept
+    {
+        constexpr float e = 0.01f;
+        return std::fabs(a.left - b.left) < e && std::fabs(a.top - b.top) < e && std::fabs(a.right - b.right) < e && std::fabs(a.bottom - b.bottom) < e;
+    }
+
+    bool Contains(const RectF& outer, const RectF& inner) noexcept
+    {
+        return outer.left <= inner.left && outer.top <= inner.top && outer.right >= inner.right && outer.bottom >= inner.bottom;
+    }
+
+    int64_t Quantize(float v) noexcept
+    {
+        return std::llround(static_cast<double>(v) * 256.0);
+    }
+
+    bool IsDrawing(CommandType type) noexcept
+    {
+        switch (type)
+        {
+            case CommandType::Nop:
+            case CommandType::PushLayer:
+            case CommandType::PopLayer:
+            case CommandType::PushRoundedClip:
+            case CommandType::PopRoundedClip:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    bool IsPush(CommandType type) noexcept
+    {
+        return type == CommandType::PushLayer || type == CommandType::PushRoundedClip;
+    }
+
+    bool IsPop(CommandType type) noexcept
+    {
+        return type == CommandType::PopLayer || type == CommandType::PopRoundedClip;
+    }
+
+    // Hashes a transform relative to the innermost scroller's content origin, so content that only scrolled keeps its
+    // signature (and can be reused by a ScrollPixels blit).
+    void HashRelative(Fnv& fnv, const CMILMatrix& m, const WalkContext& ctx) noexcept
+    {
+        const int64_t values[] = {
+            Quantize(m.GetM11()), Quantize(m.GetM12()), Quantize(m.GetM21()), Quantize(m.GetM22()),
+            Quantize(m.GetDx() - ctx.offsetX), Quantize(m.GetDy() - ctx.offsetY),
+            Quantize(ctx.contentClip.left - ctx.offsetX), Quantize(ctx.contentClip.top - ctx.offsetY),
+            Quantize(ctx.contentClip.right - ctx.offsetX), Quantize(ctx.contentClip.bottom - ctx.offsetY),
+        };
+        fnv.Add(values, sizeof(values));
+    }
+
     struct Emitter
     {
-        ImmediateRenderer::DisplayList& list;
+        DisplayList& list;
         const CUIElement* element;
-        Matrix3x2F transform;
-        const CMILMatrix& world;
-        RectF clip;
-        float scale;
-        RectF elementBounds{};
-        Fnv signature;
+        const WalkContext& ctx;
+        ElementRecord* record = nullptr;
         bool any = false;
 
-        void Push(ImmediateRenderer::Command command, const RectF& localInkBounds)
+        ElementRecord& Record()
         {
-            command.transform = transform;
+            if (record == nullptr)
+            {
+                record = &list.records[element];
+                if (!record->hasContent)
+                {
+                    record->hasContent = true;
+                    record->bounds = {};
+                    record->relBounds = {};
+                    record->cover = c_unbounded;
+                    record->scroller = ctx.scroller >= 0 ? list.scrollers[ctx.scroller].presenter : nullptr;
+                }
+            }
+            return *record;
+        }
+
+        // coverLocal: element-space rect inside which this command draws uniformly (nullptr: nowhere).
+        void Push(Command command, const RectF& localInk, const CMILMatrix& m, const RectF& clip, _In_opt_ const RectF* coverLocal)
+        {
+            ElementRecord& r = Record();
+            command.transform = ToMatrix(m);
             command.clip = clip;
-            RectF device = IntersectRect(TransformRectBounds(world, localInkBounds), clip);
+            command.owner = element;
+
+            Fnv fnv;
+            fnv.hash = r.signature;
+            fnv.AddValue(command.type);
+            HashRelative(fnv, m, ctx);
+            fnv.AddValue(command.rect);
+            fnv.AddValue(command.color);
+            fnv.AddValue(command.radiusX);
+            fnv.AddValue(command.radiusY);
+            fnv.AddValue(command.thickness);
+            fnv.AddValue(command.fontSize);
+            fnv.AddValue(command.fontWeight);
+            fnv.AddValue(command.opacity);
+            fnv.AddValue(command.key);
+            fnv.AddValue(command.sourceRect);
+            if (command.type == CommandType::Text)
+            {
+                const auto& text = list.strings[command.index];
+                const auto& family = list.strings[command.index + 1];
+                fnv.Add(text.data(), text.size() * sizeof(wchar_t));
+                fnv.Add(family.data(), family.size() * sizeof(wchar_t));
+            }
+            else if (command.type == CommandType::GlyphRun)
+            {
+                const GlyphRunData& run = list.glyphRuns[command.index];
+                fnv.AddValue(run.face.Get());
+                fnv.AddValue(run.emSize);
+                fnv.AddValue(run.bidiLevel);
+                fnv.Add(run.indices.data(), run.indices.size() * sizeof(uint16_t));
+                fnv.Add(run.advances.data(), run.advances.size() * sizeof(float));
+                fnv.Add(run.offsets.data(), run.offsets.size() * sizeof(GlyphOffset));
+                // Glyph-run clips (trimming) are in glyph space; hash them relative to the content origin.
+                const RectF relClip = OffsetRect(clip, -ctx.offsetX, -ctx.offsetY);
+                const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
+                fnv.Add(q, sizeof(q));
+            }
+            r.signature = fnv.hash;
+
+            const RectF ink = TransformRectBounds(m, localInk);
+            const RectF rel = IntersectRect(ink, ctx.contentClip);
+            if (!IsEmptyRect(rel))
+            {
+                r.relBounds = UnionRect(r.relBounds, ToDevice(OffsetRect(rel, -ctx.offsetX, -ctx.offsetY), ctx.scale));
+            }
+
+            const RectF device = IntersectRect(ink, clip);
             if (IsEmptyRect(device))
             {
                 return;
             }
-            device = { std::floor(device.left * scale) - 1, std::floor(device.top * scale) - 1,
-                       std::ceil(device.right * scale) + 1, std::ceil(device.bottom * scale) + 1 };
-            command.deviceBounds = device;
-            elementBounds = UnionRect(elementBounds, device);
+            command.deviceBounds = ToDevice(device, ctx.scale);
+            r.bounds = UnionRect(r.bounds, command.deviceBounds);
 
-            signature.AddValue(command.type);
-            signature.AddValue(command.transform);
-            signature.AddValue(command.clip);
-            signature.AddValue(command.rect);
-            signature.AddValue(command.color);
-            signature.AddValue(command.radiusX);
-            signature.AddValue(command.radiusY);
-            signature.AddValue(command.thickness);
-            signature.AddValue(command.fontSize);
-            signature.AddValue(command.fontWeight);
-            if (command.type == ImmediateRenderer::CommandType::Text)
+            if (coverLocal != nullptr && m.IsScaleOrTranslationOnly() && !IsEmptyRect(*coverLocal))
             {
-                const auto& text = list.strings[command.textIndex];
-                const auto& family = list.strings[command.textIndex + 1];
-                signature.Add(text.data(), text.size() * sizeof(wchar_t));
-                signature.Add(family.data(), family.size() * sizeof(wchar_t));
+                const RectF c = ScaleRect(IntersectRect(TransformRectBounds(m, *coverLocal), clip), ctx.scale);
+                r.cover = IntersectRect(r.cover, { std::ceil(c.left), std::ceil(c.top), std::floor(c.right), std::floor(c.bottom) });
             }
+            else
+            {
+                r.cover = {};
+            }
+
             list.commands.push_back(command);
             any = true;
         }
 
-        void Fill(const RectF& rect, float rx, float ry, const ColorF& color)
+        void Fill(const RectF& rect, float rx, float ry, const ColorF& color, const CMILMatrix& m)
         {
             if (IsEmptyRect(rect)) return;
-            ImmediateRenderer::Command c;
-            c.type = (rx > 0 || ry > 0) ? ImmediateRenderer::CommandType::FillRounded : ImmediateRenderer::CommandType::FillRect;
+            Command c;
+            c.type = (rx > 0 || ry > 0) ? CommandType::FillRounded : CommandType::FillRect;
             c.rect = rect;
             c.radiusX = rx;
             c.radiusY = ry;
             c.color = color;
-            Push(c, rect);
+            const RectF interior{ rect.left + rx, rect.top + ry, rect.right - rx, rect.bottom - ry };
+            Push(c, rect, m, ctx.clip, &interior);
         }
 
-        void Stroke(const RectF& rect, float rx, float ry, float thickness, const ColorF& color)
+        void Stroke(const RectF& rect, float rx, float ry, float thickness, const ColorF& color, const CMILMatrix& m)
         {
             if (thickness <= 0 || rect.right < rect.left || rect.bottom < rect.top) return;
-            ImmediateRenderer::Command c;
-            c.type = ImmediateRenderer::CommandType::StrokeRounded;
+            Command c;
+            c.type = CommandType::StrokeRounded;
             c.rect = rect;
             c.radiusX = rx;
             c.radiusY = ry;
             c.thickness = thickness;
             c.color = color;
             const float h = thickness / 2;
-            Push(c, { rect.left - h, rect.top - h, rect.right + h, rect.bottom + h });
+            const float r = std::max(rx, ry);
+            const RectF hole{ rect.left + h + r, rect.top + h + r, rect.right - h - r, rect.bottom - h - r };
+            Push(c, { rect.left - h, rect.top - h, rect.right + h, rect.bottom + h }, m, ctx.clip, &hole);
         }
 
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
         {
             if (text.empty() || fontSize <= 0) return;
-            ImmediateRenderer::Command c;
-            c.type = ImmediateRenderer::CommandType::Text;
+            Command c;
+            c.type = CommandType::Text;
             c.rect = layout;
             c.fontSize = fontSize;
             c.fontWeight = weight;
             c.color = color;
-            c.textIndex = static_cast<uint32_t>(list.strings.size());
+            c.index = static_cast<uint32_t>(list.strings.size());
             list.strings.push_back(std::move(text));
             list.strings.push_back(std::move(family));
-            Push(c, ink);
+            Push(c, ink, ctx.world, ctx.clip, nullptr);
         }
+
+        void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight)
+        {
+            if (run.glyphCount == 0 || run.fontFace == nullptr || run.glyphIndices == nullptr || !(run.fontEmSize > 0))
+            {
+                return;
+            }
+            GlyphRunData data;
+            data.face = run.fontFace;
+            data.emSize = run.fontEmSize;
+            data.bidiLevel = run.bidiLevel;
+            data.indices.assign(run.glyphIndices, run.glyphIndices + run.glyphCount);
+            float width = 0;
+            if (run.glyphAdvances != nullptr)
+            {
+                data.advances.assign(run.glyphAdvances, run.glyphAdvances + run.glyphCount);
+            }
+            else
+            {
+                // Painters require advances; take the design advances.
+                data.advances.resize(run.glyphCount);
+                std::vector<DWRITE_GLYPH_METRICS> metrics(run.glyphCount);
+                DWRITE_FONT_METRICS fontMetrics{};
+                run.fontFace->GetMetrics(&fontMetrics);
+                if (SUCCEEDED(run.fontFace->GetDesignGlyphMetrics(run.glyphIndices, run.glyphCount, metrics.data(), run.isSideways)))
+                {
+                    for (uint32_t i = 0; i < run.glyphCount; ++i)
+                    {
+                        data.advances[i] = metrics[i].advanceWidth * run.fontEmSize / fontMetrics.designUnitsPerEm;
+                    }
+                }
+            }
+            for (float a : data.advances)
+            {
+                width += a;
+            }
+            if (run.glyphOffsets != nullptr)
+            {
+                data.offsets.resize(run.glyphCount);
+                for (uint32_t i = 0; i < run.glyphCount; ++i)
+                {
+                    data.offsets[i] = { run.glyphOffsets[i].advanceOffset, run.glyphOffsets[i].ascenderOffset };
+                }
+            }
+
+            const float em = run.fontEmSize;
+            RectF ink = (run.bidiLevel & 1) ? RectF{ -width - em / 2, -em * 1.3f, em / 2, em * 0.6f }
+                                            : RectF{ -em / 2, -em * 1.3f, width + em / 2, em * 0.6f };
+            RectF clip = ctx.clip;
+            if (clipLeft > -1e30f || clipRight < 1e30f)
+            {
+                const RectF glyphClip{ std::max(clipLeft, ink.left), ink.top - em, std::min(clipRight, ink.right), ink.bottom + em };
+                if (IsEmptyRect(glyphClip))
+                {
+                    return;
+                }
+                clip = IntersectRect(clip, TransformRectBounds(m, glyphClip));
+                ink = IntersectRect(ink, glyphClip);
+            }
+
+            Command c;
+            c.type = CommandType::GlyphRun;
+            c.color = color;
+            c.fontSize = em;
+            c.index = static_cast<uint32_t>(list.glyphRuns.size());
+            list.glyphRuns.push_back(std::move(data));
+            Push(c, ink, m, clip, nullptr);
+        }
+    };
+
+    // Receives the glyph runs, decorations and highlight rects XAML's text stack produced for a text element.
+    class TextEmitter final : public ImmediateTextSink
+    {
+    public:
+        TextEmitter(Emitter& emitter, const CMILMatrix& world) : m_emitter(emitter), m_world(world) {}
+
+        void HighlightRect(const XRECTF& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) override
+        {
+            ColorF color;
+            if (Resolve(brush, &color))
+            {
+                CMILMatrix m = transform;
+                m.Append(m_world);
+                m_emitter.Fill(FromXRect(rect), 0, 0, color, m);
+            }
+        }
+
+        void GlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_opt_ CBrush* brush, float clipLeft, float clipRight) override
+        {
+            ColorF color;
+            if (Resolve(brush, &color))
+            {
+                CMILMatrix m = transform;
+                m.Append(m_world);
+                m_emitter.Glyphs(run, m, color, clipLeft, clipRight);
+            }
+        }
+
+        void Line(const XRECTF_RB& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) override
+        {
+            ColorF color;
+            if (Resolve(brush, &color))
+            {
+                CMILMatrix m = transform;
+                m.Append(m_world);
+                m_emitter.Fill({ rect.left, rect.top, rect.right, rect.bottom }, 0, 0, color, m);
+            }
+        }
+
+        bool unsupportedBrush = false;
+
+    private:
+        bool Resolve(_In_opt_ CBrush* brush, _Out_ ColorF* color)
+        {
+            const BrushResult result = ResolveBrush(brush, 1.0f, color);
+            if (result == BrushResult::Unsupported)
+            {
+                unsupportedBrush = true;
+            }
+            return result == BrushResult::Color;
+        }
+
+        Emitter& m_emitter;
+        const CMILMatrix& m_world;
     };
 
     float MaxOf(const XTHICKNESS& t) noexcept
@@ -616,27 +967,109 @@ namespace
     {
         return t.left == t.right && t.left == t.top && t.left == t.bottom;
     }
+
+    bool IsBorderLike(_In_ CUIElement* element) noexcept
+    {
+        return element->OfTypeByIndex<KnownTypeIndex::Panel>()
+            || element->OfTypeByIndex<KnownTypeIndex::Border>()
+            || (element->OfTypeByIndex<KnownTypeIndex::ContentPresenter>()
+                && !element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>());
+    }
+
+    // Closes a group opened at pushIndex: drops empty groups, folds a single-primitive opacity group into the
+    // primitive (exact), otherwise emits the pop. Records the group for damage.
+    void CloseGroup(
+        _Inout_ DisplayList& list,
+        size_t pushIndex,
+        _In_ const CUIElement* element,
+        const WalkContext& ctx,
+        const CMILMatrix& world)
+    {
+        Command& push = list.commands[pushIndex];
+        RectF bounds{};
+        uint32_t draws = 0;
+        size_t single = SIZE_MAX;
+        bool nested = false;
+        for (size_t i = pushIndex + 1; i < list.commands.size(); ++i)
+        {
+            const Command& c = list.commands[i];
+            if (c.type == CommandType::Nop)
+            {
+                continue;
+            }
+            if (IsPush(c.type) || IsPop(c.type))
+            {
+                nested = true;
+                bounds = UnionRect(bounds, c.deviceBounds);
+                continue;
+            }
+            ++draws;
+            single = i;
+            bounds = UnionRect(bounds, c.deviceBounds);
+        }
+
+        const bool isLayer = push.type == CommandType::PushLayer;
+        Fnv fnv;
+        ElementRecord& record = list.records[element];
+        if (!record.hasGroup)
+        {
+            record.hasGroup = true;
+            record.groupBounds = {};
+            record.groupSignature = fnv.hash;
+        }
+        fnv.hash = record.groupSignature;
+        fnv.AddValue(push.type);
+        fnv.AddValue(push.opacity);
+        fnv.AddValue(push.rect);
+        fnv.AddValue(push.radiusX);
+        HashRelative(fnv, world, ctx);
+        record.groupSignature = fnv.hash;
+        record.groupBounds = UnionRect(record.groupBounds, bounds);
+
+        if (draws == 0 && !nested)
+        {
+            push.type = CommandType::Nop;
+            return;
+        }
+        if (isLayer && draws == 1 && !nested)
+        {
+            Command& c = list.commands[single];
+            c.color.a *= push.opacity;
+            c.opacity *= push.opacity;
+            push.type = CommandType::Nop;
+            return;
+        }
+
+        if (!isLayer)
+        {
+            const RectF clipRect = ScaleRect(TransformRectBounds(world, push.rect), ctx.scale);
+            record.roundedClip = clipRect;
+            record.roundedRadius = push.radiusX * ctx.scale * std::max(std::fabs(world.GetM11()), std::fabs(world.GetM22()));
+        }
+
+        push.index = static_cast<uint32_t>(list.commands.size());
+        push.deviceBounds = bounds;
+        Command pop;
+        pop.type = isLayer ? CommandType::PopLayer : CommandType::PopRoundedClip;
+        pop.deviceBounds = bounds;
+        pop.owner = element;
+        list.commands.push_back(pop);
+    }
 }
 
 void ImmediateRenderer::EmitContent(
     _In_ CUIElement* element,
-    const CMILMatrix& world,
-    const RectF& clip,
-    float opacity,
-    float scale,
+    const WalkContext& ctx,
+    bool deferBorder,
     _Inout_ DisplayList& list)
 {
-    Emitter emitter{ list, element, ToMatrix(world), world, clip, scale };
+    Emitter emitter{ list, element, ctx };
+    const CMILMatrix& world = ctx.world;
     const float width = element->GetActualWidth();
     const float height = element->GetActualHeight();
-    const RectF bounds{ 0, 0, width, height };
-
     const KnownTypeIndex type = element->GetTypeIndex();
 
-    if (element->OfTypeByIndex<KnownTypeIndex::Panel>()
-        || element->OfTypeByIndex<KnownTypeIndex::Border>()
-        || (element->OfTypeByIndex<KnownTypeIndex::ContentPresenter>()
-            && !element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>()))
+    if (IsBorderLike(element))
     {
         auto fe = static_cast<CFrameworkElement*>(element);
         const xref_ptr<CBrush> background = fe->GetBackgroundBrush();
@@ -646,9 +1079,9 @@ void ImmediateRenderer::EmitContent(
         const float t = MaxOf(thickness);
 
         ColorF backgroundColor;
-        const BrushResult backgroundResult = ResolveBrush(background.get(), opacity, &backgroundColor);
+        const BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
         ColorF borderColor;
-        const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), opacity, &borderColor) : BrushResult::None;
+        const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
         if (backgroundResult == BrushResult::Unsupported || borderResult == BrushResult::Unsupported)
         {
             ReportUnsupported(element, L"Brush");
@@ -656,31 +1089,19 @@ void ImmediateRenderer::EmitContent(
 
         if (backgroundResult == BrushResult::Color)
         {
-            RectF fill = bounds;
+            RectF fill{ 0, 0, width, height };
             float fillRadius = radius;
             if (fe->GetBackgroundSizing() == DirectUI::BackgroundSizing::InnerBorderEdge && borderResult == BrushResult::Color)
             {
                 fill = { thickness.left, thickness.top, width - thickness.right, height - thickness.bottom };
                 fillRadius = std::max(0.0f, radius - t / 2);
             }
-            emitter.Fill(fill, fillRadius, fillRadius, backgroundColor);
+            emitter.Fill(fill, fillRadius, fillRadius, backgroundColor, world);
         }
 
-        if (borderResult == BrushResult::Color)
+        if (!deferBorder)
         {
-            if (!IsUniform(thickness) && radius == 0)
-            {
-                emitter.Fill({ 0, 0, width, thickness.top }, 0, 0, borderColor);
-                emitter.Fill({ 0, height - thickness.bottom, width, height }, 0, 0, borderColor);
-                emitter.Fill({ 0, thickness.top, thickness.left, height - thickness.bottom }, 0, 0, borderColor);
-                emitter.Fill({ width - thickness.right, thickness.top, width, height - thickness.bottom }, 0, 0, borderColor);
-            }
-            else
-            {
-                const float h = t / 2;
-                const float r = std::max(0.0f, radius - h);
-                emitter.Stroke({ h, h, width - h, height - h }, r, r, t, borderColor);
-            }
+            EmitBorder(element, ctx, list);
         }
     }
     else if (type == KnownTypeIndex::Rectangle || type == KnownTypeIndex::Ellipse)
@@ -689,9 +1110,9 @@ void ImmediateRenderer::EmitContent(
         const xref_ptr<CBrush> stroke = shape->GetStroke();
         const float t = stroke ? shape->GetStrokeThickness() : 0.0f;
         ColorF fillColor;
-        const BrushResult fillResult = ResolveBrush(shape->m_pFill, opacity, &fillColor);
+        const BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
         ColorF strokeColor;
-        const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), opacity, &strokeColor) : BrushResult::None;
+        const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), 1.0f, &strokeColor) : BrushResult::None;
         if (fillResult == BrushResult::Unsupported || strokeResult == BrushResult::Unsupported)
         {
             ReportUnsupported(element, L"Brush");
@@ -713,80 +1134,62 @@ void ImmediateRenderer::EmitContent(
         }
         if (fillResult == BrushResult::Color)
         {
-            emitter.Fill(geometry, rx, ry, fillColor);
+            emitter.Fill(geometry, rx, ry, fillColor, world);
         }
         if (strokeResult == BrushResult::Color)
         {
-            emitter.Stroke(geometry, rx, ry, t, strokeColor);
+            emitter.Stroke(geometry, rx, ry, t, strokeColor, world);
         }
     }
-    else if (type == KnownTypeIndex::TextBlock || type == KnownTypeIndex::TextBoxView)
+    else if (type == KnownTypeIndex::TextBlock || type == KnownTypeIndex::RichTextBlock)
     {
-        std::wstring text;
-        bool wrap = false;
-        XTHICKNESS padding{};
-        if (type == KnownTypeIndex::TextBlock)
+        // Replay XAML's own DirectWrite layout (glyph runs, underlines, selection/highlight rects).
+        TextEmitter sink(emitter, world);
+        HRESULT hr = type == KnownTypeIndex::TextBlock
+            ? static_cast<CTextBlock*>(element)->VisitImmediate(sink)
+            : static_cast<CRichTextBlock*>(element)->VisitImmediate(sink);
+        if (FAILED(hr))
         {
-            auto textBlock = static_cast<CTextBlock*>(element);
-            const xstring_ptr value = textBlock->GetText();
-            if (!value.IsNullOrEmpty())
-            {
-                text.assign(value.GetBuffer(), value.GetCount());
-            }
-            else if (CInlineCollection* inlines = textBlock->GetInlineCollection())
-            {
-                XUINT32 count = 0;
-                const WCHAR* chars = nullptr;
-                bool takeOwnership = false;
-                if (SUCCEEDED(inlines->GetText(true, &count, &chars, &takeOwnership)) && chars != nullptr)
-                {
-                    text.assign(chars, count);
-                    if (takeOwnership)
-                    {
-                        delete[] chars;
-                    }
-                }
-            }
-            padding = textBlock->GetPadding();
-            CValue wrapping;
-            if (SUCCEEDED(element->GetValueByIndex(KnownPropertyIndex::TextBlock_TextWrapping, &wrapping)))
-            {
-                wrap = wrapping.AsEnum() != static_cast<uint32_t>(DirectUI::TextWrapping::NoWrap);
-            }
+            ReportUnsupported(element, L"Text layout unavailable");
         }
-        else
+        if (sink.unsupportedBrush)
         {
-            // TextBoxView draws its owner's text; find the TextBox in the template's ancestor chain.
-            CDependencyObject* ancestor = element->GetParentInternal(false);
-            for (int depth = 0; ancestor != nullptr && depth < 16; ++depth)
+            ReportUnsupported(element, L"Foreground brush");
+        }
+    }
+    else if (type == KnownTypeIndex::TextBoxView)
+    {
+        // TextBoxView draws its owner's text (RichEdit layout, not exposed as glyph runs); re-lay it out with DrawText.
+        std::wstring text;
+        CDependencyObject* ancestor = element->GetParentInternal(false);
+        for (int depth = 0; ancestor != nullptr && depth < 16; ++depth)
+        {
+            if (ancestor->OfTypeByIndex<KnownTypeIndex::TextBox>())
             {
-                if (ancestor->OfTypeByIndex<KnownTypeIndex::TextBox>())
+                CValue value;
+                if (SUCCEEDED(ancestor->GetValueByIndex(KnownPropertyIndex::TextBox_Text, &value)))
                 {
-                    CValue value;
-                    if (SUCCEEDED(ancestor->GetValueByIndex(KnownPropertyIndex::TextBox_Text, &value)))
+                    const xstring_ptr str = value.AsString();
+                    if (!str.IsNullOrEmpty())
                     {
-                        const xstring_ptr str = value.AsString();
-                        if (!str.IsNullOrEmpty())
-                        {
-                            text.assign(str.GetBuffer(), str.GetCount());
-                        }
+                        text.assign(str.GetBuffer(), str.GetCount());
                     }
-                    break;
                 }
-                if (ancestor->OfTypeByIndex<KnownTypeIndex::PasswordBox>() || ancestor->OfTypeByIndex<KnownTypeIndex::RichEditBox>())
-                {
-                    ReportUnsupported(element, L"PasswordBox/RichEditBox text");
-                    break;
-                }
-                ancestor = ancestor->GetParentInternal(false);
+                break;
             }
+            if (ancestor->OfTypeByIndex<KnownTypeIndex::PasswordBox>() || ancestor->OfTypeByIndex<KnownTypeIndex::RichEditBox>())
+            {
+                ReportUnsupported(element, L"PasswordBox/RichEditBox text");
+                break;
+            }
+            ancestor = ancestor->GetParentInternal(false);
         }
 
         const TextFormatting* formatting = nullptr;
         if (!text.empty() && SUCCEEDED(element->GetTextFormatting(&formatting)) && formatting != nullptr)
         {
             ColorF color;
-            const BrushResult result = ResolveBrush(formatting->m_pForeground, opacity, &color);
+            const BrushResult result = ResolveBrush(formatting->m_pForeground, 1.0f, &color);
             if (result == BrushResult::Unsupported)
             {
                 ReportUnsupported(element, L"Foreground brush");
@@ -794,19 +1197,8 @@ void ImmediateRenderer::EmitContent(
             else if (result == BrushResult::Color)
             {
                 const float fontSize = formatting->m_eFontSize;
-                RectF layout{ padding.left, padding.top, width - padding.right, height - padding.bottom };
-                // Layout came from XAML's text stack; a different shaper may measure a few pixels wider. Widen
-                // single-line layouts so they never wrap, and damage a slightly inflated ink rect.
-                if (!wrap)
-                {
-                    layout.right += fontSize * 2;
-                }
-                else
-                {
-                    // Headers are often arranged at exactly their measured width; a little slack keeps one-line
-                    // wrapping text from breaking its last word.
-                    layout.right += fontSize / 2;
-                }
+                // A different shaper may measure a few pixels wider than RichEdit; widen so single lines never wrap.
+                RectF layout{ 0, 0, width + fontSize * 2, height };
                 const float overhang = std::max(2.0f, fontSize / 4);
                 const RectF ink{ layout.left - overhang, layout.top - overhang, layout.right + overhang, layout.bottom + overhang };
                 emitter.Text(std::move(text), ResolveFontFamily(formatting->m_pFontFamily), fontSize,
@@ -814,35 +1206,74 @@ void ImmediateRenderer::EmitContent(
             }
         }
     }
+    else if (element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>())
+    {
+        // Rounded chrome draws its backplate, borders and selection indicator as child Borders (walked normally);
+        // the legacy chrome draws them itself.
+        if (!CListViewBaseItemChrome::IsRoundedListViewBaseItemChromeEnabled(element->GetContext()))
+        {
+            ReportUnsupported(element, L"Legacy ListViewItem chrome");
+        }
+    }
     else if (element->OfTypeByIndex<KnownTypeIndex::Shape>())
     {
         ReportUnsupported(element, L"Shape geometry");
     }
     else if (type == KnownTypeIndex::Image
-        || type == KnownTypeIndex::RichTextBlock
         || type == KnownTypeIndex::RichTextBlockOverflow
         || type == KnownTypeIndex::Glyphs
         || type == KnownTypeIndex::SwapChainPanel
         || type == KnownTypeIndex::MediaPlayerPresenter
-        || element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>()
         || element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
     {
         ReportUnsupported(element, L"Element content");
     }
+}
 
-    if (emitter.any)
+void ImmediateRenderer::EmitBorder(
+    _In_ CUIElement* element,
+    const WalkContext& ctx,
+    _Inout_ DisplayList& list)
+{
+    if (!IsBorderLike(element))
     {
-        ++m_elementsRendered;
-        list.records[element] = { emitter.elementBounds, emitter.signature.hash };
+        return;
+    }
+    Emitter emitter{ list, element, ctx };
+    auto fe = static_cast<CFrameworkElement*>(element);
+    const float width = element->GetActualWidth();
+    const float height = element->GetActualHeight();
+    const XTHICKNESS thickness = fe->GetBorderThickness();
+    const float t = MaxOf(thickness);
+    if (!(t > 0))
+    {
+        return;
+    }
+    const xref_ptr<CBrush> border = fe->GetBorderBrush();
+    ColorF borderColor;
+    if (ResolveBrush(border.get(), 1.0f, &borderColor) != BrushResult::Color)
+    {
+        return;
+    }
+    const float radius = MaxOf(fe->GetCornerRadius());
+    if (!IsUniform(thickness) && radius == 0)
+    {
+        emitter.Fill({ 0, 0, width, thickness.top }, 0, 0, borderColor, ctx.world);
+        emitter.Fill({ 0, height - thickness.bottom, width, height }, 0, 0, borderColor, ctx.world);
+        emitter.Fill({ 0, thickness.top, thickness.left, height - thickness.bottom }, 0, 0, borderColor, ctx.world);
+        emitter.Fill({ width - thickness.right, thickness.top, width, height - thickness.bottom }, 0, 0, borderColor, ctx.world);
+    }
+    else
+    {
+        const float h = t / 2;
+        const float r = std::max(0.0f, radius - h);
+        emitter.Stroke({ h, h, width - h, height - h }, r, r, t, borderColor, ctx.world);
     }
 }
 
 void ImmediateRenderer::Walk(
     _In_ CUIElement* element,
-    const CMILMatrix& parentWorld,
-    const RectF& parentClip,
-    float parentOpacity,
-    float scale,
+    const WalkContext& parent,
     _Inout_ DisplayList& list)
 {
     ++m_elementsVisited;
@@ -875,28 +1306,56 @@ void ImmediateRenderer::Walk(
             break;
     }
 
-    const float opacity = parentOpacity * element->GetOpacityLocal();
-    if (!(opacity > 0))
+    const float localOpacity = element->GetOpacityLocal();
+    if (!(localOpacity > 0))
     {
         return;
     }
 
-    RectF clip = parentClip;
+    WalkContext ctx = parent;
+    ctx.scrollerContent = false;
+    auto clipTo = [&](const RectF& r)
+    {
+        ctx.clip = IntersectRect(ctx.clip, r);
+        ctx.contentClip = IntersectRect(ctx.contentClip, r);
+    };
+
     const bool hasLayoutClip = element->HasLayoutClip();
     const bool layoutClipIsAncestor = element->ShouldApplyLayoutClipAsAncestorClip();
     if (hasLayoutClip && layoutClipIsAncestor)
     {
-        clip = IntersectRect(clip, TransformRectBounds(parentWorld, FromXRect(element->LayoutClipGeometry->m_rc)));
+        clipTo(TransformRectBounds(parent.world, FromXRect(element->LayoutClipGeometry->m_rc)));
     }
 
-    CMILMatrix world = parentWorld;
     {
         CMILMatrix local;
         if (!element->GetLocalTransform(TransformRetrievalOptions::None, &local))
         {
-            world = local;
-            world.Append(parentWorld);
+            ctx.world = local;
+            ctx.world.Append(parent.world);
         }
+    }
+
+    if (parent.scrollerContent && parent.scroller >= 0)
+    {
+        // Scrolled content: snap its origin to device pixels (like Composition's DManip snapping) so scroll deltas are
+        // whole pixels and can be blitted; clips inside the content are tracked relative to its origin.
+        if (ctx.world.IsScaleOrTranslationOnly())
+        {
+            ctx.world.SetDx(std::round(ctx.world.GetDx() * ctx.scale) / ctx.scale);
+            ctx.world.SetDy(std::round(ctx.world.GetDy() * ctx.scale) / ctx.scale);
+        }
+        ScrollerInfo& scroller = list.scrollers[parent.scroller];
+        if (!scroller.hasContent)
+        {
+            scroller.hasContent = true;
+            scroller.viewport = ScaleRect(ctx.clip, ctx.scale);
+            scroller.offsetX = ctx.world.GetDx() * ctx.scale;
+            scroller.offsetY = ctx.world.GetDy() * ctx.scale;
+        }
+        ctx.offsetX = ctx.world.GetDx();
+        ctx.offsetY = ctx.world.GetDy();
+        ctx.contentClip = c_unbounded;
     }
 
     if (element->HasActiveProjection())
@@ -916,15 +1375,15 @@ void ImmediateRenderer::Walk(
     {
         if (auto rectangleClip = do_pointer_cast<CRectangleGeometry>(elementClip.get()))
         {
-            CMILMatrix clipWorld = world;
+            CMILMatrix clipWorld = ctx.world;
             if (rectangleClip->m_pTransform != nullptr)
             {
                 CMILMatrix clipTransform(true);
                 rectangleClip->m_pTransform->GetTransform(&clipTransform);
                 clipWorld = clipTransform;
-                clipWorld.Append(world);
+                clipWorld.Append(ctx.world);
             }
-            clip = IntersectRect(clip, TransformRectBounds(clipWorld, FromXRect(rectangleClip->m_rc)));
+            clipTo(TransformRectBounds(clipWorld, FromXRect(rectangleClip->m_rc)));
         }
         else
         {
@@ -934,25 +1393,101 @@ void ImmediateRenderer::Walk(
 
     if (hasLayoutClip && !layoutClipIsAncestor)
     {
-        clip = IntersectRect(clip, TransformRectBounds(world, FromXRect(element->LayoutClipGeometry->m_rc)));
+        clipTo(TransformRectBounds(ctx.world, FromXRect(element->LayoutClipGeometry->m_rc)));
     }
 
-    if (IsEmptyRect(clip))
+    if (IsEmptyRect(ctx.clip))
     {
         return;
     }
 
-    EmitContent(element, world, clip, opacity, scale, list);
-
-    CUIElement** children = nullptr;
-    XUINT32 childCount = 0;
-    element->GetChildrenInRenderOrder(&children, &childCount);
-    for (XUINT32 i = 0; i < childCount; ++i)
+    // Culling: skip subtrees entirely outside the clip (scrolled-out realized items, cache buffers). Inner bounds are
+    // element-space bounds of the element and its subtree; inflate for antialiasing and glyph overhang.
     {
-        if (children[i] != nullptr)
+        XRECTF_RB inner{};
+        if (SUCCEEDED(element->GetInnerBounds(&inner)) && inner.right >= inner.left && inner.bottom >= inner.top)
         {
-            Walk(children[i], world, clip, opacity, scale, list);
+            constexpr float c_cullMargin = 8.0f;
+            const RectF local{ inner.left - c_cullMargin, inner.top - c_cullMargin, inner.right + c_cullMargin, inner.bottom + c_cullMargin };
+            if (!RectsIntersect(TransformRectBounds(ctx.world, local), ctx.clip))
+            {
+                ++m_elementsCulled;
+                return;
+            }
         }
+    }
+
+    // Group opacity: the element and its subtree are composited together, then blended once.
+    size_t layerIndex = SIZE_MAX;
+    if (localOpacity < 1.0f)
+    {
+        layerIndex = list.commands.size();
+        Command push;
+        push.type = CommandType::PushLayer;
+        push.opacity = localOpacity;
+        push.owner = element;
+        list.commands.push_back(push);
+    }
+
+    // CornerRadius on a Border/Panel/ContentPresenter with children clips the children to the rounded outer edge and
+    // draws the border over them (CFrameworkElement::RequiresCompNodeForRoundedCorners in Composition mode).
+    const bool roundedClip = element->RequiresCompNodeForRoundedCorners() && IsBorderLike(element);
+
+    EmitContent(element, ctx, roundedClip, list);
+
+    WalkContext childCtx = ctx;
+    size_t clipIndex = SIZE_MAX;
+    if (roundedClip)
+    {
+        const float width = element->GetActualWidth();
+        const float height = element->GetActualHeight();
+        const float radius = std::min(MaxOf(static_cast<CFrameworkElement*>(element)->GetCornerRadius()), std::min(width, height) / 2);
+        Command push;
+        push.type = CommandType::PushRoundedClip;
+        push.transform = ToMatrix(ctx.world);
+        push.rect = { 0, 0, width, height };
+        push.radiusX = radius;
+        push.radiusY = radius;
+        push.owner = element;
+        clipIndex = list.commands.size();
+        list.commands.push_back(push);
+        const RectF bounds = TransformRectBounds(ctx.world, push.rect);
+        childCtx.clip = IntersectRect(childCtx.clip, bounds);
+        childCtx.contentClip = IntersectRect(childCtx.contentClip, bounds);
+    }
+
+    if (type == KnownTypeIndex::ScrollContentPresenter)
+    {
+        ScrollerInfo scroller;
+        scroller.presenter = element;
+        scroller.parent = ctx.scroller >= 0 ? list.scrollers[ctx.scroller].presenter : nullptr;
+        childCtx.scroller = static_cast<int>(list.scrollers.size());
+        childCtx.scrollerContent = true;
+        list.scrollers.push_back(scroller);
+    }
+
+    if (!IsEmptyRect(childCtx.clip))
+    {
+        CUIElement** children = nullptr;
+        XUINT32 childCount = 0;
+        element->GetChildrenInRenderOrder(&children, &childCount);
+        for (XUINT32 i = 0; i < childCount; ++i)
+        {
+            if (children[i] != nullptr)
+            {
+                Walk(children[i], childCtx, list);
+            }
+        }
+    }
+
+    if (clipIndex != SIZE_MAX)
+    {
+        CloseGroup(list, clipIndex, element, ctx, ctx.world);
+        EmitBorder(element, ctx, list);
+    }
+    if (layerIndex != SIZE_MAX)
+    {
+        CloseGroup(list, layerIndex, element, ctx, ctx.world);
     }
 }
 
@@ -996,15 +1531,111 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     DisplayList list;
     list.records.reserve(state.records.size());
     const RectF islandClip{ 0, 0, width / scale, height / scale };
-    Walk(island, CMILMatrix(true), islandClip, 1.0f, scale, list);
+    WalkContext root;
+    root.clip = islandClip;
+    root.contentClip = islandClip;
+    root.scale = scale;
+    Walk(island, root, list);
+
+    const RectF surface{ 0, 0, static_cast<float>(width), static_cast<float>(height) };
+    bool fullDamage = state.fullDamage;
+
+    // Scroll blits: a scroller whose viewport is unchanged and whose content moved by whole pixels moves the
+    // viewport's pixels with ScrollPixels; only the exposed strip and changed content are repainted.
+    struct Blit
+    {
+        const CUIElement* presenter;
+        RectF rect;       // integer physical pixels
+        RectF viewport;   // exact physical pixels
+        int32_t dx, dy;
+    };
+    std::vector<Blit> blits;
+    std::unordered_map<const CUIElement*, const ScrollerInfo*> scrollers;
+    std::unordered_map<const CUIElement*, std::pair<float, float>> deltas;
+    for (const ScrollerInfo& s : list.scrollers)
+    {
+        scrollers[s.presenter] = &s;
+    }
+    if (!fullDamage)
+    {
+        for (const ScrollerInfo& s : list.scrollers)
+        {
+            auto prev = state.scrollers.find(s.presenter);
+            if (!s.hasContent || prev == state.scrollers.end() || !prev->second.hasContent)
+            {
+                continue;
+            }
+            const float dx = s.offsetX - prev->second.offsetX;
+            const float dy = s.offsetY - prev->second.offsetY;
+            deltas[s.presenter] = { dx, dy };
+            if (!RectsNear(s.viewport, prev->second.viewport))
+            {
+                continue;
+            }
+            const float rdx = std::round(dx);
+            const float rdy = std::round(dy);
+            if ((rdx == 0 && rdy == 0) || std::fabs(dx - rdx) > 0.01f || std::fabs(dy - rdy) > 0.01f)
+            {
+                continue;
+            }
+            const RectF v = IntersectRect({ std::ceil(s.viewport.left), std::ceil(s.viewport.top),
+                std::floor(s.viewport.right), std::floor(s.viewport.bottom) }, surface);
+            if (IsEmptyRect(v) || std::fabs(rdx) >= v.right - v.left || std::fabs(rdy) >= v.bottom - v.top)
+            {
+                continue;
+            }
+            if (std::any_of(blits.begin(), blits.end(), [&](const Blit& b) { return RectsIntersect(b.rect, v); }))
+            {
+                continue;
+            }
+            blits.push_back({ s.presenter, v, s.viewport, static_cast<int32_t>(rdx), static_cast<int32_t>(rdy) });
+        }
+    }
+
+    auto findBlit = [&](const CUIElement* presenter) -> const Blit*
+    {
+        for (const Blit& b : blits)
+        {
+            if (b.presenter == presenter) return &b;
+        }
+        return nullptr;
+    };
+
+    // A record moved with a blit if its innermost scroller moved by exactly the delta of the nearest blitted scroller
+    // in its scroller chain.
+    auto movedWithBlit = [&](const ElementRecord& r) -> bool
+    {
+        if (blits.empty() || r.scroller == nullptr)
+        {
+            return false;
+        }
+        auto delta = deltas.find(r.scroller);
+        if (delta == deltas.end())
+        {
+            return false;
+        }
+        for (const CUIElement* p = r.scroller; p != nullptr;)
+        {
+            if (const Blit* b = findBlit(p))
+            {
+                return std::fabs(delta->second.first - b->dx) < 0.01f && std::fabs(delta->second.second - b->dy) < 0.01f;
+            }
+            auto found = scrollers.find(p);
+            p = found != scrollers.end() ? found->second->parent : nullptr;
+        }
+        return false;
+    };
 
     // Damage: elements whose drawing changed contribute their old and new bounds.
     std::vector<RectF> damage;
-    bool fullDamage = state.fullDamage;
     if (!fullDamage)
     {
         auto add = [&](const RectF& r)
         {
+            if (IsEmptyRect(r))
+            {
+                return;
+            }
             if (damage.size() < c_maxRawDamageRects)
             {
                 damage.push_back(r);
@@ -1014,29 +1645,128 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                 fullDamage = true;
             }
         };
+        // Old pixels also moved with every blit they overlapped.
+        auto addOld = [&](const RectF& r)
+        {
+            add(r);
+            for (const Blit& b : blits)
+            {
+                if (RectsIntersect(r, b.rect))
+                {
+                    add(IntersectRect(OffsetRect(r, static_cast<float>(b.dx), static_cast<float>(b.dy)), b.rect));
+                }
+            }
+        };
+        // Unchanged, unmoved drawing inside a blitted viewport was moved by the blit unless it is uniform there.
+        auto addIfBlitted = [&](const ElementRecord& r)
+        {
+            for (const Blit& b : blits)
+            {
+                if (RectsIntersect(r.bounds, b.rect) && !Contains(r.cover, b.rect))
+                {
+                    add(IntersectRect(r.bounds, b.rect));
+                    add(IntersectRect(OffsetRect(r.bounds, static_cast<float>(b.dx), static_cast<float>(b.dy)), b.rect));
+                }
+            }
+        };
+
+        for (const Blit& b : blits)
+        {
+            const RectF& v = b.rect;
+            if (b.dx > 0) add({ v.left, v.top, v.left + b.dx, v.bottom });
+            if (b.dx < 0) add({ v.right + b.dx, v.top, v.right, v.bottom });
+            if (b.dy > 0) add({ v.left, v.top, v.right, v.top + b.dy });
+            if (b.dy < 0) add({ v.left, v.bottom + b.dy, v.right, v.bottom });
+            // Partial pixels between the exact viewport and the blitted (inner-rounded) rect.
+            const RectF outer = IntersectRect({ std::floor(b.viewport.left), std::floor(b.viewport.top),
+                std::ceil(b.viewport.right), std::ceil(b.viewport.bottom) }, surface);
+            add({ outer.left, outer.top, outer.right, v.top });
+            add({ outer.left, v.bottom, outer.right, outer.bottom });
+            add({ outer.left, v.top, v.left, v.bottom });
+            add({ v.right, v.top, outer.right, v.bottom });
+        }
+
         for (const auto& entry : list.records)
         {
-            auto old = state.records.find(entry.first);
-            if (old == state.records.end())
+            const ElementRecord& now = entry.second;
+            auto found = state.records.find(entry.first);
+            const ElementRecord* old = found != state.records.end() ? &found->second : nullptr;
+
+            if (now.hasContent || (old && old->hasContent))
             {
-                add(entry.second.bounds);
+                if (!old || !old->hasContent)
+                {
+                    add(now.bounds);
+                }
+                else if (!now.hasContent)
+                {
+                    addOld(old->bounds);
+                }
+                else if (old->signature == now.signature && old->scroller == now.scroller && RectsEqual(old->relBounds, now.relBounds))
+                {
+                    if (movedWithBlit(now))
+                    {
+                        // Pixels already moved; newly exposed parts are in the exposed strips.
+                    }
+                    else if (!RectsEqual(old->bounds, now.bounds))
+                    {
+                        addOld(old->bounds);
+                        add(now.bounds);
+                    }
+                    else
+                    {
+                        addIfBlitted(now);
+                    }
+                }
+                else
+                {
+                    addOld(old->bounds);
+                    add(now.bounds);
+                }
             }
-            else if (old->second.signature != entry.second.signature || !RectsEqual(old->second.bounds, entry.second.bounds))
+
+            if (now.hasGroup || (old && old->hasGroup))
             {
-                add(old->second.bounds);
-                add(entry.second.bounds);
+                const bool same = old && old->hasGroup && now.hasGroup && old->groupSignature == now.groupSignature;
+                if (!same)
+                {
+                    if (old && old->hasGroup) addOld(old->groupBounds);
+                    if (now.hasGroup) add(now.groupBounds);
+                }
+                else if (!IsEmptyRect(now.roundedClip))
+                {
+                    // Blitted pixels ignore the rounded corners' mask: repaint the corners inside blitted viewports.
+                    for (const Blit& b : blits)
+                    {
+                        if (!RectsIntersect(now.roundedClip, b.rect))
+                        {
+                            continue;
+                        }
+                        const RectF& c = now.roundedClip;
+                        const float r = std::ceil(now.roundedRadius) + 1;
+                        const RectF corners[] = {
+                            { c.left - 1, c.top - 1, c.left + r, c.top + r }, { c.right - r, c.top - 1, c.right + 1, c.top + r },
+                            { c.left - 1, c.bottom - r, c.left + r, c.bottom + 1 }, { c.right - r, c.bottom - r, c.right + 1, c.bottom + 1 },
+                        };
+                        for (const RectF& corner : corners)
+                        {
+                            add(IntersectRect(corner, b.rect));
+                            add(IntersectRect(OffsetRect(corner, static_cast<float>(b.dx), static_cast<float>(b.dy)), b.rect));
+                        }
+                    }
+                }
             }
         }
         for (const auto& entry : state.records)
         {
             if (list.records.find(entry.first) == list.records.end())
             {
-                add(entry.second.bounds);
+                if (entry.second.hasContent) addOld(entry.second.bounds);
+                if (entry.second.hasGroup) addOld(entry.second.groupBounds);
             }
         }
     }
 
-    const RectF surface{ 0, 0, static_cast<float>(width), static_cast<float>(height) };
     if (!fullDamage)
     {
         for (auto& r : damage)
@@ -1044,15 +1774,32 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
             r = IntersectRect(r, surface);
         }
         damage.erase(std::remove_if(damage.begin(), damage.end(), [](const RectF& r) { return IsEmptyRect(r); }), damage.end());
-        if (damage.empty())
+        if (damage.empty() && blits.empty())
         {
             state.records = std::move(list.records);
+            SaveScrollers(state, list);
             return S_OK;
         }
         CoalesceDamage(damage, c_maxDamageRects);
     }
 
+    if (!fullDamage)
+    {
+        for (const Blit& b : blits)
+        {
+            if (FAILED(state.painter->ScrollPixels(b.rect, b.dx, b.dy)))
+            {
+                fullDamage = true;
+                break;
+            }
+        }
+    }
+
     // Pass 2: replay commands that intersect the damage.
+    auto intersectsDamage = [&](const RectF& bounds)
+    {
+        return fullDamage || std::any_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, bounds); });
+    };
     auto paint = [&](IImmediatePainter& painter)
     {
         painter.Clear({ 0, 0, 0, 0 });
@@ -1060,36 +1807,86 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         Matrix3x2F current = identity;
         bool clipPushed = false;
         RectF currentClip{};
-        for (const Command& c : list.commands)
+        const CUIElement* lastOwner = nullptr;
+        auto setTransform = [&](const Matrix3x2F& m)
         {
-            if (!fullDamage && std::none_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, c.deviceBounds); }))
+            if (memcmp(&current, &m, sizeof(m)) != 0)
+            {
+                painter.SetTransform(m);
+                current = m;
+            }
+        };
+        auto popClip = [&]
+        {
+            if (clipPushed)
+            {
+                painter.PopAxisAlignedClip();
+                clipPushed = false;
+            }
+        };
+        for (size_t i = 0; i < list.commands.size(); ++i)
+        {
+            const Command& c = list.commands[i];
+            if (c.type == CommandType::Nop)
             {
                 continue;
+            }
+            if (IsPush(c.type))
+            {
+                if (!intersectsDamage(c.deviceBounds))
+                {
+                    i = c.index; // skip the whole group, including its pop
+                    continue;
+                }
+                popClip();
+                if (c.type == CommandType::PushLayer)
+                {
+                    painter.PushOpacityLayer(c.opacity);
+                }
+                else
+                {
+                    setTransform(c.transform);
+                    painter.PushRoundedRectangleClip(c.rect, c.radiusX, c.radiusY);
+                }
+                continue;
+            }
+            if (IsPop(c.type))
+            {
+                popClip();
+                if (c.type == CommandType::PopLayer)
+                {
+                    painter.PopOpacityLayer();
+                }
+                else
+                {
+                    painter.PopRoundedRectangleClip();
+                }
+                continue;
+            }
+            if (!intersectsDamage(c.deviceBounds))
+            {
+                continue;
+            }
+            if (c.owner != lastOwner)
+            {
+                lastOwner = c.owner;
+                ++m_elementsRendered;
             }
             const bool needsClip = !(c.clip.left <= islandClip.left && c.clip.top <= islandClip.top
                 && c.clip.right >= islandClip.right && c.clip.bottom >= islandClip.bottom);
             if (clipPushed && (!needsClip || !RectsEqual(currentClip, c.clip)))
             {
-                painter.PopAxisAlignedClip();
-                clipPushed = false;
+                popClip();
             }
             if (needsClip && !clipPushed)
             {
                 // Clip rects are in island space; push them untransformed.
-                if (memcmp(&current, &identity, sizeof(identity)) != 0)
-                {
-                    painter.SetTransform(identity);
-                    current = identity;
-                }
+                setTransform(identity);
                 painter.PushAxisAlignedClip(c.clip);
                 clipPushed = true;
                 currentClip = c.clip;
             }
-            if (memcmp(&current, &c.transform, sizeof(c.transform)) != 0)
-            {
-                painter.SetTransform(c.transform);
-                current = c.transform;
-            }
+            setTransform(c.transform);
             switch (c.type)
             {
                 case CommandType::FillRect:
@@ -1103,20 +1900,36 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                     break;
                 case CommandType::Text:
                 {
-                    const std::wstring& text = list.strings[c.textIndex];
+                    const std::wstring& text = list.strings[c.index];
                     TextStyle style;
-                    style.fontFamily = list.strings[c.textIndex + 1].c_str();
+                    style.fontFamily = list.strings[c.index + 1].c_str();
                     style.fontSize = c.fontSize;
                     style.fontWeight = c.fontWeight;
                     painter.DrawText(text.c_str(), static_cast<uint32_t>(text.size()), style, c.rect, c.color);
                     break;
                 }
+                case CommandType::GlyphRun:
+                {
+                    const GlyphRunData& data = list.glyphRuns[c.index];
+                    GlyphRunDesc run;
+                    run.fontFace = data.face.Get();
+                    run.fontEmSize = data.emSize;
+                    run.glyphIndices = data.indices.data();
+                    run.glyphAdvances = data.advances.data();
+                    run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
+                    run.glyphCount = static_cast<uint32_t>(data.indices.size());
+                    run.bidiLevel = data.bidiLevel;
+                    painter.DrawGlyphRun(run, c.color);
+                    break;
+                }
+                case CommandType::Bitmap:
+                    painter.DrawBitmap(c.key, c.rect, IsEmptyRect(c.sourceRect) ? nullptr : &c.sourceRect, c.opacity);
+                    break;
+                default:
+                    break;
             }
         }
-        if (clipPushed)
-        {
-            painter.PopAxisAlignedClip();
-        }
+        popClip();
     };
 
     hr = PaintTracedFrame(*state.painter, frameNumber, reinterpret_cast<uint64_t>(island),
@@ -1141,16 +1954,27 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         {
             state.fullDamage = true;
             state.records.clear();
+            state.scrollers.clear();
         }
         return hr;
     }
 
     state.fullDamage = false;
     state.records = std::move(list.records);
+    SaveScrollers(state, list);
 
     if (!GetCapturePath().empty())
     {
         LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), GetCapturePath().c_str()));
     }
     return S_OK;
+}
+
+void ImmediateRenderer::SaveScrollers(_Inout_ IslandState& state, const DisplayList& list)
+{
+    state.scrollers.clear();
+    for (const ScrollerInfo& s : list.scrollers)
+    {
+        state.scrollers[s.presenter] = s;
+    }
 }

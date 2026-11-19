@@ -54,6 +54,8 @@ public:
 
     void InvalidateRenderCache() override;
 
+    void VisitImmediate(const CMILMatrix& parentTransform, ImmediateTextSink& sink) override;
+
     void ClearForegroundHighlightInfo() override;
 
     void AppendForegroundHighlightInfo(

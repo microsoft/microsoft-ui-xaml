@@ -276,3 +276,20 @@ void ContainerDrawingContext::SetControlEnabled(bool enabled)
         pChild = pChild->GetNext();
     }
 }
+
+void ContainerDrawingContext::VisitImmediate(const CMILMatrix& parentTransform, ImmediateTextSink& sink)
+{
+    XFLOAT childYOffset = 0.0f;
+    for (BlockNode* child = m_pNode->GetFirstChild(); child != nullptr; child = child->GetNext())
+    {
+        CMILMatrix childTransform(TRUE);
+        childTransform.SetDy(childYOffset);
+        childTransform.Append(m_transform);
+        childTransform.Append(parentTransform);
+        if (child->GetDrawingContext() != nullptr)
+        {
+            child->GetDrawingContext()->VisitImmediate(childTransform, sink);
+        }
+        childYOffset += child->GetRenderSize().height;
+    }
+}

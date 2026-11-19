@@ -7,6 +7,7 @@
 #include "FontFamily.h"
 
 class CRichTextBlockOverflow;
+class ImmediateTextSink;
 class PageNode;
 class RichTextBlockBreak;
 class IContentRenderer;
@@ -447,6 +448,9 @@ public:
     _Check_return_ HRESULT HWRenderContent(
         _In_ IContentRenderer* pContentRenderer
         );
+
+    // Immediate rendering: reports highlight rects, glyph runs and lines in element space (see HWRenderContent).
+    _Check_return_ HRESULT VisitImmediate(_In_ ImmediateTextSink& sink);
 
     _Check_return_ HRESULT HWPostChildrenRender(
         _In_ IContentRenderer* pContentRenderer

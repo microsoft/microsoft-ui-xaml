@@ -233,3 +233,13 @@ void ParagraphDrawingContext::SetControlEnabled(bool enabled)
     }
 }
 
+
+void ParagraphDrawingContext::VisitImmediate(const CMILMatrix& parentTransform, ImmediateTextSink& sink)
+{
+    if (m_pTextDrawingContext != nullptr)
+    {
+        CMILMatrix localTransform = m_transform;
+        localTransform.Append(parentTransform);
+        m_pTextDrawingContext->VisitImmediate(localTransform, sink);
+    }
+}

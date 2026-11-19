@@ -6,6 +6,8 @@
 
 #pragma once
 
+class ImmediateTextSink;
+
 //---------------------------------------------------------------------------
 //
 //  DrawingContext
@@ -37,6 +39,9 @@ public:
         ) = 0;
 
     virtual void InvalidateRenderCache() = 0;
+
+    // Immediate rendering: reports glyph runs and lines with transforms into the owning element's space.
+    virtual void VisitImmediate(const CMILMatrix& parentTransform, ImmediateTextSink& sink) = 0;
 
     // Sets/Gets transform applied to the content of the drawing context.
     const CMILMatrix & GetTransform() const;

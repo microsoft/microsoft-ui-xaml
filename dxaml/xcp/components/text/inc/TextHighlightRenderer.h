@@ -38,6 +38,24 @@ namespace TextHighlightRenderer
         ForegroundRenderingCallback foregroundRenderingCallback
         );
 
+    using HighlightCallback =
+        std::function<
+            _Check_return_ HRESULT(
+                CSolidColorBrush* /* foregroundBrush */,
+                CSolidColorBrush* /* backgroundBrush */,
+                uint32_t /* highlightRectCount */,
+                XRECTF* /* highlightRects */
+            )>;
+
+    // Immediate rendering: same merge as HWRenderCollection, reporting each region's brushes and rects.
+    _Check_return_ HRESULT ForEachHighlight(
+        _In_ CCoreServices* coreServices,
+        _In_opt_ CTextHighlighterCollection* textHighlighterCollection,
+        _In_ std::vector<HighlightRegion>& textSelections,
+        _In_opt_ ITextView* textView,
+        HighlightCallback callback
+        );
+
     // TODO: Change TextSelectionManager to use HWHighlightRect
     _Check_return_ HRESULT HWHighlightRect(
         _In_ IContentRenderer* contentRenderer,

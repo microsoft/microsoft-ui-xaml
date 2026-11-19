@@ -28,6 +28,7 @@
 #include <WindowRenderTarget.h>
 #include <PixelFormat.h>
 #include <platformsdk-uplevel/dwrite_colr_paint_tree.h>
+#include <ImmediateTextSink.h>
 
 #define DBG_TEXT_REALIZATIONS 0
 
@@ -1798,6 +1799,37 @@ D2DTextDrawingContext::D2DRender(
     IFC_RETURN(pD2DRenderTargetNoRef->SetTransform(sharedRP.pCurrentTransform));
 
     return S_OK;
+}
+
+void D2DTextDrawingContext::VisitImmediate(
+    const CMILMatrix& renderTransform,
+    ImmediateTextSink& sink
+    )
+{
+    for (XUINT32 i = 0, count = m_glyphRuns.GetCount(); i < count; i++)
+    {
+        const GlyphRunData& data = m_glyphRuns[i];
+        CBrush* brush = GetForegroundBrush(data.BrushSource, data.Brush, m_controlEnabled);
+        if (brush == nullptr || data.GlyphRun == nullptr)
+        {
+            continue;
+        }
+        CMILMatrix transform;
+        GetLocalTransform(data.BaselineOffset.x, data.BaselineOffset.y, data.InvertHorizontalAxis, data.LineBounds.Width, &transform);
+        transform.Append(renderTransform);
+        sink.GlyphRun(GetDWriteGlyphRun(*data.GlyphRun), transform, brush, data.GlyphRunClipLeft, data.GlyphRunClipRight);
+    }
+
+    for (XUINT32 i = 0, count = m_lines.GetCount(); i < count; i++)
+    {
+        CBrush* brush = GetForegroundBrush(m_lines[i].BrushSource, m_lines[i].Brush, m_controlEnabled);
+        if (brush != nullptr)
+        {
+            XRECTF_RB rect = { 0, 0, m_lines[i].Width, m_lines[i].Thickness };
+            m_lines[i].Transform.TransformBounds(&rect, &rect);
+            sink.Line(rect, renderTransform, brush);
+        }
+    }
 }
 
 //---------------------------------------------------------------------------

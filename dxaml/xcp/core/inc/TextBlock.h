@@ -10,6 +10,7 @@
 #include "GraphicsUtility.h"
 
 class BlockNode;
+class ImmediateTextSink;
 class IContentRenderer;
 class BlockLayoutEngine;
 class TextSelectionManager;
@@ -237,6 +238,8 @@ public:
     _Check_return_ HRESULT GetFlowDirection(_Out_ DirectUI::FlowDirection* flowDirection);
     _Check_return_ HRESULT GetContentRenderTransform(_Out_ CMILMatrix* pContentRenderTransform);
 
+    // Immediate rendering: reports highlight rects, glyph runs and lines in element space (see HWRenderContent).
+    _Check_return_ HRESULT VisitImmediate(_In_ ImmediateTextSink& sink);
     _Check_return_ HRESULT NotifyRenderContent(
         HWRenderVisibility visibility);
 

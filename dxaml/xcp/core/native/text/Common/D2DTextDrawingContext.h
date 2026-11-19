@@ -13,6 +13,7 @@ class SharedWicBitmap;
 struct ID2D1DeviceContext;
 struct ID2D1SolidColorBrush;
 class IContentRenderer;
+class ImmediateTextSink;
 enum DWRITE_GLYPH_IMAGE_FORMATS;
 
 //---------------------------------------------------------------------------
@@ -46,6 +47,12 @@ public:
         _In_ const SharedRenderParams &sharedRP,
         _In_ const D2DRenderParams &d2dRP,
         _In_ XFLOAT opacity
+        );
+
+    // Immediate rendering: reports the populated glyph runs and lines, mirroring D2DRender.
+    void VisitImmediate(
+        const CMILMatrix& renderTransform,
+        ImmediateTextSink& sink
         );
 
     _Check_return_ HRESULT DrawGlyphRun(

@@ -38,6 +38,7 @@
 #include "RootScale.h"
 
 #include <TextAnalysis.h>
+#include <ImmediateTextSink.h>
 
 #undef max
 
@@ -4127,5 +4128,71 @@ _Check_return_ HRESULT CTextBlock::FireContextMenuOpeningEventSynchronously(_Out
 _Check_return_ HRESULT CTextBlock::UpdateSelectionFlyoutVisibility()
 {
     IFC_RETURN(m_pSelectionManager->UpdateSelectionFlyoutVisibility());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CTextBlock::VisitImmediate(_In_ ImmediateTextSink& sink)
+{
+    const bool dwriteLayout = m_textMode == TextMode::DWriteLayout;
+    if (dwriteLayout)
+    {
+        if (m_pTextLayout == nullptr || GetIsMeasureDirty() || GetIsArrangeDirty())
+        {
+            return S_OK;
+        }
+        IFC_RETURN(EnsureTextDrawingContext());
+    }
+    else if (m_pPageNode == nullptr || m_pPageNode->IsMeasureDirty() || m_pPageNode->IsArrangeDirty()
+        || m_pPageNode->GetDrawingContext() == nullptr)
+    {
+        return S_OK;
+    }
+
+    auto clearHighlightInfo = wil::scope_exit([&]
+    {
+        if (m_pTextDrawingContext)
+        {
+            m_pTextDrawingContext->ClearForegroundHighlightInfo();
+        }
+        if (m_pPageNode != nullptr && m_pPageNode->GetDrawingContext() != nullptr)
+        {
+            m_pPageNode->GetDrawingContext()->ClearForegroundHighlightInfo();
+        }
+    });
+
+    bool redrawForHighlightRegions = false;
+    IFC_RETURN(UpdateSelectionAndHighlightRegions(&redrawForHighlightRegions));
+
+    const CMILMatrix identity(TRUE);
+    IFC_RETURN(TextHighlightRenderer::ForEachHighlight(
+        GetContext(),
+        m_textHighlighters,
+        m_highlightRegions,
+        m_pTextView,
+        [&](CSolidColorBrush* foregroundBrush, CSolidColorBrush* backgroundBrush, uint32_t count, XRECTF* rects) -> HRESULT
+        {
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                sink.HighlightRect(rects[i], identity, backgroundBrush);
+            }
+            return RenderHighlighterForegroundCallback(foregroundBrush, count, rects);
+        }));
+
+    if (redrawForHighlightRegions || m_redrawForArrange || (m_textHighlighters != nullptr))
+    {
+        IFC_RETURN(RedrawText());
+        m_redrawForArrange = false;
+    }
+
+    if (dwriteLayout)
+    {
+        CMILMatrix contentRenderTransform;
+        IFC_RETURN(GetContentRenderTransform(&contentRenderTransform));
+        m_pTextDrawingContext->VisitImmediate(contentRenderTransform, sink);
+    }
+    else
+    {
+        m_pPageNode->GetDrawingContext()->VisitImmediate(identity, sink);
+    }
     return S_OK;
 }

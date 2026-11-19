@@ -256,3 +256,20 @@ TextHighlightRenderer::HWHighlightRect(
 
     return S_OK;
 }
+
+_Check_return_ HRESULT
+TextHighlightRenderer::ForEachHighlight(
+    _In_ CCoreServices* coreServices,
+    _In_opt_ CTextHighlighterCollection* textHighlighters,
+    _In_ std::vector<HighlightRegion>& textSelections,
+    _In_opt_ ITextView* textView,
+    TextHighlightRenderer::HighlightCallback callback
+    )
+{
+    if (((textHighlighters != nullptr && textHighlighters->GetCount() > 0) || !textSelections.empty()) &&
+        (textView != nullptr))
+    {
+        IFC_RETURN(IterateMergedHighlighters(coreServices, textHighlighters, textSelections, textView, std::move(callback)));
+    }
+    return S_OK;
+}

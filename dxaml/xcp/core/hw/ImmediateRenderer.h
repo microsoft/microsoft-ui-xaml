@@ -16,6 +16,12 @@ class CXamlIslandRoot;
 class DCompTreeHost;
 class CMILMatrix;
 
+namespace ImmediateRenderingDetail
+{
+    struct DisplayList;
+    struct WalkContext;
+}
+
 // "Retained XAML, immediate rendering" prototype (docs/design-notes/immediate-rendering-backends-proposal.md).
 // When an immediate mode is selected, CCoreServices::RenderWalk calls RenderIsland instead of HWWalk::RenderRoot for
 // each XamlIslandRoot. The element tree is walked into a display list, diffed against the previous frame to compute
@@ -41,41 +47,9 @@ public:
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
 
-    void ResetStats() noexcept { m_elementsVisited = 0; m_elementsRendered = 0; }
+    void ResetStats() noexcept { m_elementsVisited = 0; m_elementsRendered = 0; m_elementsCulled = 0; }
     uint32_t GetElementsVisited() const noexcept { return m_elementsVisited; }
     uint32_t GetElementsRendered() const noexcept { return m_elementsRendered; }
-
-    // Display-list command; public so the walk helpers in the .cpp can build them.
-    enum class CommandType : uint8_t { FillRect, FillRounded, StrokeRounded, Text };
-
-    struct Command
-    {
-        CommandType type = CommandType::FillRect;
-        RenderingBackend::Matrix3x2F transform;  // DIPs, element -> island
-        RenderingBackend::RectF clip;            // DIPs, island space; always set (unclipped = island bounds)
-        RenderingBackend::RectF rect;            // DIPs, element space
-        RenderingBackend::RectF deviceBounds;    // physical pixels, island space (clipped)
-        RenderingBackend::ColorF color;
-        float radiusX = 0;
-        float radiusY = 0;
-        float thickness = 0;
-        float fontSize = 0;
-        uint32_t fontWeight = 400;
-        uint32_t textIndex = 0;                  // into DisplayList::strings (text, then family)
-    };
-
-    struct ElementRecord
-    {
-        RenderingBackend::RectF bounds;          // physical pixels; union of the element's commands
-        uint64_t signature = 0;
-    };
-
-    struct DisplayList
-    {
-        std::vector<Command> commands;
-        std::vector<std::wstring> strings;
-        std::unordered_map<const CUIElement*, ElementRecord> records;
-    };
 
 private:
     struct IslandState;
@@ -91,20 +65,23 @@ private:
 
     void Walk(
         _In_ CUIElement* element,
-        const CMILMatrix& parentWorld,
-        const RenderingBackend::RectF& parentClip,
-        float parentOpacity,
-        float scale,
-        _Inout_ DisplayList& list);
+        const ImmediateRenderingDetail::WalkContext& parent,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
+    // Emits the element's own drawing. deferBorder: the border stroke is emitted by EmitBorder after the children
+    // (CornerRadius-clipped elements draw their border over their clipped children, like Composition mode).
     void EmitContent(
         _In_ CUIElement* element,
-        const CMILMatrix& world,
-        const RenderingBackend::RectF& clip,
-        float opacity,
-        float scale,
-        _Inout_ DisplayList& list);
+        const ImmediateRenderingDetail::WalkContext& context,
+        bool deferBorder,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
+    void EmitBorder(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& context,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+
+    static void SaveScrollers(_Inout_ IslandState& state, const ImmediateRenderingDetail::DisplayList& list);
     void ReportUnsupported(_In_ CUIElement* element, _In_z_ const wchar_t* detail);
 
     RenderingBackend::Mode m_mode;
@@ -113,5 +90,6 @@ private:
     std::unordered_map<CXamlIslandRoot*, std::unique_ptr<IslandState>> m_islands;
     std::unordered_set<std::wstring> m_reportedUnsupported;
     uint32_t m_elementsVisited = 0;
-    uint32_t m_elementsRendered = 0;
+    uint32_t m_elementsRendered = 0;   // elements with at least one command replayed (painted) this frame
+    uint32_t m_elementsCulled = 0;
 };
