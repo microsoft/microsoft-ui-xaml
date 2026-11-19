@@ -4,7 +4,7 @@ using System.Text.Json;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Processing;
 
-namespace WinUIProfiler.App.ViewModels;
+namespace WinUIProfiler.Engine.Snapshots;
 
 [Flags]
 public enum SnapshotChange { None = 0, Added = 1, Removed = 2, Properties = 4, Moved = 8, Reordered = 16 }
@@ -22,6 +22,9 @@ public sealed class SnapshotNodeDiff(SnapshotTreeNode? before, SnapshotTreeNode?
     public bool ContainsChanges { get; internal set; }
     public SnapshotNodeDiff? Parent { get; internal set; }
     public IReadOnlyList<SnapshotNodeDiff> Children { get; internal set; } = [];
+
+    public IReadOnlyList<SnapshotPropertyChange> GetProperties(bool changesOnly) => changesOnly ? Properties :
+        SnapshotDiffData.CompareProperties(Before, After, default, false);
 }
 
 public sealed record SnapshotDiffMatch(SnapshotNodeDiff Node, bool Before, bool After);
@@ -35,6 +38,7 @@ public sealed class SnapshotTreeDiff
 {
     public IReadOnlyList<SnapshotRootDiff> Roots { get; }
     public IReadOnlyList<SnapshotNodeDiff> Nodes { get; }
+    public IReadOnlyList<SnapshotNodeDiff> AddedOrRemovedNodes { get; }
     public IReadOnlyDictionary<ulong, SnapshotNodeDiff> BeforeNodes { get; }
     public IReadOnlyDictionary<ulong, SnapshotNodeDiff> AfterNodes { get; }
     public int Count(SnapshotChange change) => Nodes.Count(node => (node.Change & change) != 0);
@@ -44,6 +48,8 @@ public sealed class SnapshotTreeDiff
     {
         Roots = roots;
         Nodes = nodes;
+        AddedOrRemovedNodes = Array.AsReadOnly(nodes.Where(node =>
+            (node.Change & (SnapshotChange.Added | SnapshotChange.Removed)) != 0).ToArray());
         BeforeNodes = new ReadOnlyDictionary<ulong, SnapshotNodeDiff>(beforeNodes);
         AfterNodes = new ReadOnlyDictionary<ulong, SnapshotNodeDiff>(afterNodes);
     }
@@ -59,8 +65,9 @@ public sealed class SnapshotDiffData
     public SnapshotTreeDiff Composition { get; }
     public SnapshotResourceComparison Resources { get; }
 
-    private SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token)
+    public SnapshotDiffData(SnapshotViewerData before, SnapshotViewerData after, CancellationToken token = default)
     {
+        token.ThrowIfCancellationRequested();
         if (before.Document.ProcessId != after.Document.ProcessId ||
             before.Document.CreationTimeFileTime != after.Document.CreationTimeFileTime)
             throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
@@ -71,16 +78,14 @@ public sealed class SnapshotDiffData
         Composition = CompareTree(before.Composition, after.Composition, before.Document.Roots, after.Document.Roots, token);
     }
 
-    public static bool CanCompare(SnapshotHistoryEntry before, SnapshotHistoryEntry after) =>
-        before.Process.ProcessId == after.Process.ProcessId &&
-        before.Process.CreationTimeFileTime is > 0 &&
-        before.Process.CreationTimeFileTime == after.Process.CreationTimeFileTime;
+    public static bool CanCompare(ProcessInstanceKey before, ProcessInstanceKey after) =>
+        before.ProcessId == after.ProcessId &&
+        before.CreationTimeFileTime is > 0 &&
+        before.CreationTimeFileTime == after.CreationTimeFileTime;
 
-    public static async Task<SnapshotDiffData> LoadAsync(SnapshotHistoryEntry before, SnapshotHistoryEntry after,
+    public static async Task<SnapshotDiffData> LoadAsync(string before, string after,
         CancellationToken token = default)
     {
-        if (!CanCompare(before, after))
-            throw new InvalidDataException("Snapshots must belong to the same process ID and creation time.");
         var baseline = await SnapshotViewerData.LoadAsync(before, token).ConfigureAwait(false);
         var comparison = await SnapshotViewerData.LoadAsync(after, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
@@ -242,11 +247,11 @@ public sealed class SnapshotDiffData
             differences.AsReadOnly(), oldNodes, newNodes);
     }
 
-    private static IReadOnlyList<SnapshotPropertyChange> CompareProperties(SnapshotTreeNode? before,
-        SnapshotTreeNode? after, CancellationToken token)
+    internal static IReadOnlyList<SnapshotPropertyChange> CompareProperties(SnapshotTreeNode? before,
+        SnapshotTreeNode? after, CancellationToken token, bool changesOnly = true)
     {
         var changes = new List<SnapshotPropertyChange>();
-        if (before?.Name != after?.Name)
+        if (before?.Name != after?.Name || !changesOnly && (before?.Name is not null || after?.Name is not null))
             changes.Add(new("name", before is null ? null : JsonSerializer.SerializeToElement(before.Name),
                 after is null ? null : JsonSerializer.SerializeToElement(after.Name)));
         var oldValues = before?.Properties.EnumerateObject().ToDictionary(property => property.Name, property => property.Value) ?? [];
@@ -256,7 +261,7 @@ public sealed class SnapshotDiffData
             token.ThrowIfCancellationRequested();
             var hasOld = oldValues.TryGetValue(name, out var oldValue);
             var hasNew = newValues.TryGetValue(name, out var newValue);
-            if (hasOld && hasNew && JsonElement.DeepEquals(oldValue, newValue)) continue;
+            if (changesOnly && hasOld && hasNew && JsonElement.DeepEquals(oldValue, newValue)) continue;
             changes.Add(new("properties." + name, hasOld ? oldValue : null, hasNew ? newValue : null));
         }
         return changes.AsReadOnly();

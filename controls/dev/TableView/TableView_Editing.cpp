@@ -612,9 +612,7 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         }
     }
     m_currentEditRow.set(nullptr);
-    m_editorFlyoutClosedRevoker.revoke();
-    m_editorFlyoutClosingRevoker.revoke();
-    m_editorPopupClosedRevoker.revoke();
+    ResetEditFocusTracking();
 }
 
 bool TableView::TerminateEditWithoutVisualRestore(bool insideLayoutPass, bool sourceReplaced)
@@ -1319,6 +1317,7 @@ void TableView::DrainCoalescedEditReshape()
 
 void TableView::ResetPendingBeginEdit()
 {
+    ResetEditFocusTracking();
     m_currentEditItem.set(nullptr);
     m_currentEditColumn.set(nullptr);
     m_editUneditedValue.set(nullptr);

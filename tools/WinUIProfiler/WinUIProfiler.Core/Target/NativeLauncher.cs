@@ -25,7 +25,7 @@ public static class NativeLauncher
     private static readonly TimeSpan OwnerTimeout = TimeSpan.FromSeconds(15);
 
     public static async Task<NativeLaunchSession> LaunchAsync(TargetLaunchKind kind, string target, string arguments,
-        PrivateRuntimeLaunch runtime, CancellationToken token)
+        PrivateRuntimeLaunch runtime, CancellationToken token, bool isolateStandardHandles = false)
     {
         string executable;
         string? package = null;
@@ -62,7 +62,8 @@ public static class NativeLauncher
         var result = Path.Combine(directory, NativeLaunchProtocol.ResultFile);
         var log = Path.Combine(directory, NativeLaunchProtocol.LogFile);
         var commandLine = NativeLaunchProtocol.BuildArguments(executable, runtime, arguments, log, result, applicationId, package);
-        using var owner = await StartAsync(launcher, commandLine, native, result + NativeLaunchProtocol.OwnerSuffix, token)
+        using var owner = await StartAsync(launcher, commandLine, native, result + NativeLaunchProtocol.OwnerSuffix, token,
+            isolateStandardHandles)
             .ConfigureAwait(false);
         var launch = await WaitForResultAsync(result, owner, token).ConfigureAwait(false);
         if (launch.Error != 0)
@@ -216,10 +217,11 @@ public static class NativeLauncher
 
     // Returns the launcher process, or null when it already exited before it could be opened.
     private static async Task<Process?> StartAsync(string launcher, string commandLine, string directory, string owner,
-        CancellationToken token)
+        CancellationToken token, bool isolateStandardHandles)
     {
         if (!Environment.IsPrivilegedProcess)
         {
+            if (isolateStandardHandles) return IsolatedProcess.Start(launcher, commandLine, directory);
             return Process.Start(new ProcessStartInfo(launcher, commandLine) { UseShellExecute = false, WorkingDirectory = directory }) ??
                 throw new InvalidOperationException("The private WinUI launcher did not start.");
         }
