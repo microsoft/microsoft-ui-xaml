@@ -154,6 +154,11 @@ sealed class BenchRunner(BenchOptions options)
         var s = _sampler.Take();
         BenchEventSource.Log.MemorySample(_phase, s.PrivateBytes, s.WorkingSetBytes, s.PeakWorkingSetBytes, s.GpuLocalBytes,
             s.GpuNonLocalBytes, s.GdiObjects, s.UserObjects, s.CpuUserMs, s.CpuKernelMs);
+        // D2D-HW branch: per-adapter GPU memory, so M3 can be read for the adapter WinUI renders with.
+        foreach (var adapter in s.Adapters)
+        {
+            BenchEventSource.Log.GpuAdapterMemorySample(_phase, adapter.Luid, adapter.LocalBytes, adapter.NonLocalBytes);
+        }
     }
 
     static int CountElements(DependencyObject root)

@@ -18,6 +18,10 @@ if (Arg("--acceptance") is { } resultsDir)
     var tests = files.Select(path => new TestCase($"Acceptance.{Path.GetRelativePath(resultsDir, Path.GetDirectoryName(path)!)}", () =>
     {
         var metrics = MetricsJson.Deserialize(File.ReadAllText(path));
+        if (metrics.IsSkipped)
+        {
+            Check.Skip(metrics.SkipReason!); // D2D-HW branch: e.g. no hardware adapter; not a failure
+        }
         var failed = metrics.Gate.Where(g => !g.Passed).Select(g => $"{g.Name} ({g.Detail})").ToList();
         Check.Expect(failed.Count == 0, string.Join("; ", failed));
     })).ToList();
@@ -30,5 +34,5 @@ if (Arg("--acceptance") is { } resultsDir)
 }
 
 return TestRunner.Run(
-    [.. AnalysisTests.All(), .. OptionsTests.All(), .. ProfileTests.All(), .. EtlTests.All()],
+    [.. AnalysisTests.All(), .. OptionsTests.All(), .. ProfileTests.All(), .. EtlTests.All(), .. D2DHardwareTests.All()],
     Arg("--filter"));

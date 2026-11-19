@@ -182,6 +182,10 @@ sealed class FakeRenderingBackendSource : EventSource
     public void PaintEnd(uint FrameNumber, ulong RootId, ulong DamagedPixels, ulong PaintedPixels, uint PrimitiveCount,
         uint DamageRectCount)
         => WriteEvent(5, FrameNumber, RootId, DamagedPixels, PaintedPixels, PrimitiveCount, DamageRectCount);
+
+    // D2D-HW branch: W3.
+    [Event(6)]
+    public void GpuPaintTime(uint FrameNumber, ulong GpuMicroseconds) => WriteEvent(6, FrameNumber, GpuMicroseconds);
 }
 
 static class EtlTests
@@ -207,6 +211,9 @@ static class EtlTests
                     FakeRenderingBackendSource.Log.PaintEnd(42, 7, 1000, 1200, 33, 2);
                     FakeRenderingBackendSource.Log.FrameEnd(42, true);
                     BenchEventSource.Log.MemorySample((int)BenchPhase.Interaction, 100, 200, 300, 400, 500, 6, 7, 8.5, 9.5);
+                    // D2D-HW branch: W3 and per-adapter M3.
+                    FakeRenderingBackendSource.Log.GpuPaintTime(42, 1234);
+                    BenchEventSource.Log.GpuAdapterMemorySample((int)BenchPhase.Interaction, 0xABCDEF, 4096, 512);
                     BenchEventSource.Log.PhaseEnd((int)BenchPhase.Interaction, "Interaction");
                     BenchEventSource.Log.RunCompleted(0, "ok");
                     Thread.Sleep(500);
@@ -233,6 +240,14 @@ static class EtlTests
                 Near(9.5, sample.CpuKernelMs, 1e-9, "cpu kernel");
                 Expect(records.OfType<PhaseRecord>().Count() == 2, "phase begin/end");
                 Equal(0, NotNull(records.OfType<RunCompletedRecord>().FirstOrDefault(), "RunCompleted").Status, "status");
+                var gpuPaint = NotNull(records.OfType<GpuPaintTimeRecord>().FirstOrDefault(), "GpuPaintTime");
+                Equal(42u, gpuPaint.Frame, "gpu paint frame");
+                Equal(1234ul, gpuPaint.GpuMicroseconds, "gpu paint us");
+                var adapterMemory = NotNull(records.OfType<GpuAdapterMemoryRecord>().FirstOrDefault(), "GpuAdapterMemorySample");
+                Equal(0xABCDEFul, adapterMemory.AdapterLuid, "adapter luid");
+                Equal(4096L, adapterMemory.LocalBytes, "adapter local");
+                Equal(512L, adapterMemory.NonLocalBytes, "adapter non-local");
+                Equal(BenchPhase.Interaction, adapterMemory.Phase, "adapter phase");
 
                 var metrics = MetricsCalculator.Compute(records);
                 Expect(!metrics.GatePassed, "fallback run fails the gate");

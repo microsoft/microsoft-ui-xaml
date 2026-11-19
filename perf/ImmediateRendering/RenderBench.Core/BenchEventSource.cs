@@ -60,4 +60,11 @@ public sealed class BenchEventSource : EventSource
 
     [Event(9, Level = EventLevel.Informational)]
     public void ScreenshotSaved(string Path, int Width, int Height) => WriteEvent(9, Path, Width, Height);
+
+    // ---- Added by the D2D-HW branch ----
+    // Per-adapter GPU memory for this process (IDXGIAdapter3::QueryVideoMemoryInfo), one event per adapter per sample,
+    // emitted next to MemorySample. AdapterLuid uses the DeviceInfo packing so the analyzer can pick the render adapter.
+    [Event(10, Level = EventLevel.Informational)]
+    public void GpuAdapterMemorySample(int Phase, ulong AdapterLuid, long LocalBytes, long NonLocalBytes)
+        => WriteEvent(10, Phase, AdapterLuid, LocalBytes, NonLocalBytes);
 }

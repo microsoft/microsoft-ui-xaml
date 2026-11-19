@@ -194,6 +194,14 @@ rendering code, emitted in all four modes so results are directly comparable:
 Counter overhead must be measured (run with counters off versus on in `COMP`) and kept negligible, or sampled
 counters must be used.
 
+Prototype status for `D2D-HW` (see `perf\ImmediateRendering\README.md`):
+
+- W3 uses `GpuPaintTime` (frame number, GPU microseconds) from `GpuTimestampProfiler`, which wraps each paint in
+  non-blocking D3D11 timestamp queries.
+- M3 is also reported for the render adapter, matched by the `DeviceInfo` LUID.
+- Without a qualifying hardware GPU, `D2D-HW` runs are recorded as skipped, not failed.
+- D2D-HW numbers must come from a real GPU machine.
+
 ## Comparative report format
 
 For each test case, produce one table with the four modes as columns and the selected metrics as rows. Show

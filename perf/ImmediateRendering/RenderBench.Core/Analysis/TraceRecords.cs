@@ -35,3 +35,11 @@ public sealed record RunCompletedRecord(double TimeMs, int ProcessId, int Status
 
 // ---- Kernel ----
 public sealed record ProcessStartRecord(double TimeMs, int ProcessId, string ImageName) : TraceRecord(TimeMs, ProcessId);
+
+// ---- Added by the D2D-HW branch ----
+// Microsoft-WinUI-RenderingBackend GpuPaintTime: GPU time of one immediate paint (timestamp queries), read back a frame
+// or two after the paint, so attribute it by Frame rather than by event time.
+public sealed record GpuPaintTimeRecord(double TimeMs, int ProcessId, uint Frame, ulong GpuMicroseconds) : TraceRecord(TimeMs, ProcessId);
+// Microsoft-WinUI-RenderBench GpuAdapterMemorySample: one adapter's QueryVideoMemoryInfo for the harness process.
+public sealed record GpuAdapterMemoryRecord(double TimeMs, int ProcessId, BenchPhase Phase, ulong AdapterLuid, long LocalBytes,
+    long NonLocalBytes) : TraceRecord(TimeMs, ProcessId);

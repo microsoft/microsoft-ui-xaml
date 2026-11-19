@@ -51,7 +51,7 @@ public static class MetricsCalculator
 
         var frames = PairFrames(records);
         var phases = BuildPhaseWindows(records);
-        var phaseMetrics = phases.Select(w => ComputePhase(w, records, frames)).ToList();
+        var phaseMetrics = phases.Select(w => ComputePhase(w, records, frames, device?.AdapterLuid)).ToList();
 
         var samples = records.OfType<MemorySampleRecord>().ToList();
         double? peakPrivate = samples.Count == 0 ? null : samples.Max(s => s.PrivateBytes) / MB;
@@ -110,7 +110,7 @@ public static class MetricsCalculator
         return windows;
     }
 
-    static PhaseMetrics ComputePhase(PhaseWindow window, List<TraceRecord> records, List<FrameSpan> frames)
+    static PhaseMetrics ComputePhase(PhaseWindow window, List<TraceRecord> records, List<FrameSpan> frames, ulong? renderAdapterLuid)
     {
         var inPhase = records.Where(r => window.Contains(r.TimeMs)).ToList();
         var phaseFrames = frames.Where(f => window.Contains(f.EndMs)).ToList();
@@ -136,6 +136,10 @@ public static class MetricsCalculator
             cpuRate = cpu / ((samples[^1].TimeMs - samples[0].TimeMs) / 1000.0);
         }
 
+        var adapterSamples = renderAdapterLuid is { } luid
+            ? records.OfType<GpuAdapterMemoryRecord>().Where(s => s.Phase == window.Phase && s.AdapterLuid == luid).ToList()
+            : [];
+
         return new PhaseMetrics(
             window.Phase,
             window.EndMs - window.BeginMs,
@@ -159,7 +163,10 @@ public static class MetricsCalculator
             Slope(samples.Select(s => (s.TimeMs / 60000.0, s.PrivateBytes / MB)).ToList()),
             lastInventory is null ? null : lastInventory.SurfaceBytes / MB,
             lastInventory is null ? null : lastInventory.CacheBytes / MB,
-            inPhase.OfType<UpdateAppliedRecord>().Count());
+            inPhase.OfType<UpdateAppliedRecord>().Count(),
+            GpuPaintMs: Distribution.From(GpuPaintMsInPhase(window, records, frames)),
+            RenderAdapterGpuLocalMBMedian: Median(adapterSamples.Select(s => s.LocalBytes / MB)),
+            RenderAdapterGpuNonLocalMBMedian: Median(adapterSamples.Select(s => s.NonLocalBytes / MB)));
     }
 
     static Distribution? ComputeInputLatency(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options)
@@ -277,5 +284,31 @@ public static class MetricsCalculator
         double meanY = points.Average(p => p.Y);
         double denominator = points.Sum(p => (p.X - meanX) * (p.X - meanX));
         return denominator == 0 ? null : points.Sum(p => (p.X - meanX) * (p.Y - meanY)) / denominator;
+    }
+
+    // ---- Added by the D2D-HW branch ----
+
+    // GpuPaintTime arrives a frame or two after its paint; attribute it to the phase containing its frame's FrameEnd,
+    // falling back to the event time when that frame was not traced.
+    static IEnumerable<double> GpuPaintMsInPhase(PhaseWindow window, List<TraceRecord> records, List<FrameSpan> frames)
+    {
+        var frameEnds = new Dictionary<uint, double>();
+        foreach (var frame in frames)
+        {
+            frameEnds[frame.Frame] = frame.EndMs;
+        }
+        return records.OfType<GpuPaintTimeRecord>()
+            .Where(g => window.Contains(frameEnds.TryGetValue(g.Frame, out var endMs) ? endMs : g.TimeMs))
+            .Select(g => g.GpuMicroseconds / 1000.0);
+    }
+
+    // Metrics for a run that was not executed, e.g. D2D-HW on a machine without a qualifying hardware adapter. Reports
+    // show it as n/a; the gate treats it as skipped rather than failed.
+    public static RunMetrics Skipped(string scene, string harnessRequested, string reason)
+    {
+        BackendMode? requested = BackendModes.TryParse(harnessRequested, out var mode) ? mode : null;
+        return new RunMetrics(SchemaVersion, scene, null,
+            new IdentityMetrics(harnessRequested, requested, null, null, null, null, []),
+            new StartupMetrics(null, null), [], null, null, null, [], reason);
     }
 }

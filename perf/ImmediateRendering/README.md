@@ -54,6 +54,35 @@ frames/min), `MemorySampled`, `NoUnsupportedContent`. Reports compute medians fr
 ## Notes
 
 - R1* is input-injected → next drawn UI-thread frame end. It's a proxy; visible latency needs DWM present correlation (Gpu profile).
-- GPU memory is `IDXGIAdapter3::QueryVideoMemoryInfo` for this process, summed over adapters. On a machine without a
-  hardware GPU (for example a Hyper-V VM), it reads 0, and D2D-HW correctly fails `DeviceMatchesMode`.
+- GPU memory is `IDXGIAdapter3::QueryVideoMemoryInfo` for this process. `GpuLocalBytes`/`GpuNonLocalBytes` are
+  summed over all adapters, as before. Each sample also records per-adapter usage (`GpuAdapterMemorySample`, keyed by
+  LUID), and the report's "M3 ... render adapter" row uses the adapter whose LUID is in `DeviceInfo`. On a machine
+  without a hardware GPU (for example a Hyper-V VM), GPU memory reads 0.
 - Measure fre builds. chk builds capture an allocation stack per allocation.
+
+## D2D-HW readiness
+
+D2D-HW numbers are meaningful only on a machine with a real GPU.
+
+- **Adapter policy** (native `D2DDeviceFactory.cpp`, mirrored in `RenderBench.Core\Adapters.cs`):
+  - Adapters come from `EnumAdapterByGpuPreference(HIGH_PERFORMANCE)`, falling back to `EnumAdapters1`.
+  - Software adapters and all Microsoft (`0x1414`) adapters are rejected: Basic Render, and Hyper-V Video / Remote
+    Display, which DXGI exposes as Basic Render.
+  - `WINUI_RENDERING_ADAPTER_LUID=<hex>` pins one adapter. The pin is strict: if that adapter doesn't qualify, nothing
+    is chosen.
+  - With no qualifying adapter, device creation returns `DXGI_ERROR_NOT_FOUND`; it never falls back to WARP.
+- **`RenderBench.Analyzer adapters`** lists the adapters and their verdicts. Exit codes: 0 means a qualifying adapter
+  exists, 1 means none, 2 means a bad override.
+- **Runs without a qualifying adapter:**
+  - `Run-RenderBench.ps1` runs the `adapters` check. When there's no qualifying adapter, it writes each d2d-hw run
+    with `RenderBench.Analyzer skip <scene> d2d-hw "no hardware adapter" --out <metrics.json>` instead of launching it.
+  - Skipped runs are not gate failures. The report shows `skipped: <reason>` in the gate row and `n/a (no GPU)` in the
+    value cells.
+- **W3 GPU time:**
+  - `GpuTimestampProfiler` wraps a paint in D3D11 timestamp/disjoint queries and reads them back a frame or two later.
+    It emits `GpuPaintTime` (FrameNumber, GpuMicroseconds) on the RenderingBackend provider (Paint keyword).
+  - The report row is "W3 GPU paint p50/p95, interaction". Readings are attributed to a phase by their frame's end time.
+- **Gpu WPR profile:**
+  - DxgKrnl with keywords `0x2F7`: base, profiler, references, CDD, resource, memory, and power. Rundown runs at start
+    and save, for the WPA GPU Utilization and GPU memory tables.
+  - Microsoft-Windows-DXGI, Microsoft-Windows-Direct3D11, and the RenderingBackend provider.
