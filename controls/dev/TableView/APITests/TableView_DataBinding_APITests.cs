@@ -1714,12 +1714,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreSame(view, cvs.View, "A regroup keeps the View.");
                 Verify.AreSame(groups, view.CollectionGroups, "A regroup keeps the CollectionGroups object.");
 
-                // A shaping view's regroup is read at once, not one dispatcher turn later.
-                VerifyProjection(tableView,
-                    new List<string> { "#Platform(3)", "#Research(1)", "Mei", "#Studio(2)", "Ines", "Asha" },
-                    "regrouped and sorted by Name, descending, before the dispatcher runs");
+                // A shaping view's regroup is read at once, not one dispatcher turn later: Platform (collapsed),
+                // Research, Mei, Studio, Ines, Asha.
+                Verify.AreEqual(6, GetProjectedCount(tableView), "Rows after the regroup, before the dispatcher runs.");
+                Verify.AreEqual("Mei", Person(GetProjectedItem(tableView, 2)).Name, "Row 2 after the regroup, before the dispatcher runs.");
+                Verify.AreEqual("Asha", Person(GetProjectedItem(tableView, 5)).Name, "Row 5 after the regroup, before the dispatcher runs.");
             });
             SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Platform(3)", "#Research(1)", "Mei", "#Studio(2)", "Ines", "Asha" },
+                    "regrouped and sorted by Name, descending");
+            });
 
             RunOnUIThread.Execute(() =>
             {
