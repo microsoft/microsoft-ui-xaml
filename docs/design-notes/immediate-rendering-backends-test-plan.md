@@ -363,12 +363,12 @@ frames/min vs ~87 for COMP because every animation tick is a UI-thread paint), `
 
 Observations to drive the next iteration:
 
-- Immediate modes win where element/visual count dominates (datagrid -20 to -29% steady, -25 to -29% peak; tabs peak
-  -20 to -24%) and lose where the fixed per-root swap chain + painter target dominates small scenes (animated, layered,
+- Immediate modes win where element/visual count dominates (datagrid -15 to -20% steady, -25 to -29% peak; tabs peak
+  -19 to -24%) and lose where the fixed per-root swap chain + painter target dominates small scenes (animated, layered,
   form: +4 to +11 MB). Next: drop the painter's own full-size target where possible (render straight into the back
   buffer with a damage-preserving swap chain) and measure DWM/GPU memory so COMP is charged for its out-of-process cost.
-- Gallery is worse in immediate modes (+18 to +32 MB steady, 2.2-2.5x CPU, GDI+ p95 126 ms): decoded images are held twice (XAML
-  software surface + painter bitmap cache) and GDI+ scales with `DrawImage` on the CPU. Next: share the decoded surface
+- Gallery is worse in immediate modes (+18 to +32 MB steady, 2.2-2.5x CPU, GDI+ p95 126 ms): decoded images are
+  held twice (XAML software surface + painter bitmap cache) and GDI+ scales with `DrawImage` on the CPU. Next: share the decoded surface
   memory with the painter instead of copying, and cache scaled bitmaps for GDI+.
 - GDI+ text and scrolling are slower (inbox p95 13.7 ms vs 4.7); D2D-SW is at parity or better.
 - Animations cost a full UI-thread paint per tick in immediate modes; independent-animation offload is the open
