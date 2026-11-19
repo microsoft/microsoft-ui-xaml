@@ -1,0 +1,85 @@
+parameters:
+  runTestJobName: 'MergeCodeCoverage'
+  dependsOn: []
+  buildPlatform: x86
+  buildConfiguration: chk
+  # Module stems (DLL name without extension) whose per-slice .coverage files are downloaded and
+  # merged. Must match the stems Instrument-CoveragePayload.ps1/RunTestPassSliceOnBuildAgent.ps1
+  # actually produced (every entry in coverageModules on WinUI-CreateTestPayload-Job.yml, with the
+  # .dll extension stripped).
+  coverageModuleStems:
+  - 'Microsoft.ui.xaml'
+  # Shape of the Code Coverage tab (see Repair-CodeCoverage.ps1):
+  #   PerModuleFolders - one top-level folder per DLL (MUX / MUXC), overview = all DLLs.
+  #   Combined         - real source paths, all DLLs merged into one tree.
+  coverageTabLayout: 'PerModuleFolders'
+
+# Merges the per-slice .coverage files from the coverage RunTests job into one report covering
+# every instrumented DLL, then:
+#   - publishes it to the build's Code Coverage tab, by default with each DLL under its own
+#     top-level folder in the Files view (the tab has no other way to separate DLLs: the publish
+#     task always uses an empty build configuration/platform, and OneBranch does not let it
+#     attach its HTML report or a build-summary section),
+#   - writes coverage-report.html (Combined / per-DLL drop-down) into this job's artifact.
+# Numbers are deduplicated by (file, line) to correct a duplicate-line defect in the native merge
+# engine - see Repair-CodeCoverage.ps1.
+#
+# EXPERIMENTAL QUALITY.
+
+jobs:
+- job: ${{ parameters.runTestJobName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  # Best-effort: run even if the test job failed, so we still get whatever coverage was
+  # produced. Skipped only if the run was canceled.
+  condition: succeededOrFailed()
+  timeoutInMinutes: 90
+  pool:
+    type: windows
+
+  variables:
+    coverageInputDir: '$(Build.SourcesDirectory)\coverageInput'
+    coverageOutRoot: '$(Build.SourcesDirectory)\out\CodeCoverage'
+    ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    # Suffixed with the job attempt: re-running this job (e.g. after re-running failed test
+    # slices) otherwise fails with "Artifact <name> already exists".
+    ob_artifactBaseName: '${{ parameters.runTestJobName }}_$(System.JobAttempt)'
+
+  steps:
+  - task: powershell@2
+    displayName: 'Install dotnet-coverage'
+    # Best-effort - Merge-CodeCoverage.ps1 resolves a tool itself (dotnet-coverage or the VS
+    # console tool) and self-installs as a last resort, so a failure here is not fatal.
+    continueOnError: true
+    inputs:
+      targetType: 'inline'
+      script: |
+        dotnet tool install --global dotnet-coverage --add-source https://api.nuget.org/v3/index.json --ignore-failed-sources
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "##vso[task.logissue type=warning]dotnet-coverage install failed; Merge-CodeCoverage.ps1 will resolve the VS console tool on its own."
+        }
+        Write-Host "##vso[task.prependpath]$env:USERPROFILE\.dotnet\tools"
+        # Never fail the step - the merge agent has the VS console tool, so this install is only a
+        # convenience. Reset the exit code so a missing feed does not mark the job succeededWithIssues.
+        exit 0
+
+  - ${{ each stem in parameters.coverageModuleStems }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download per-slice coverage files (${{ stem }})'
+      inputs:
+        buildType: current
+        itemPattern: '**/coverage-*-${{ stem }}.coverage'
+        targetPath: '$(coverageInputDir)\${{ stem }}'
+
+  - task: powershell@2
+    displayName: 'Merge and correct code coverage (combined + per DLL)'
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1
+      arguments: -InputDir "$(coverageInputDir)" -OutputDir "$(coverageOutRoot)" -PublishLayout ${{ parameters.coverageTabLayout }}
+
+  - task: PublishCodeCoverageResults@2
+    displayName: 'Publish to Code Coverage tab (${{ parameters.coverageTabLayout }})'
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      summaryFileLocation: '$(coverageOutRoot)\published.cobertura.xml'

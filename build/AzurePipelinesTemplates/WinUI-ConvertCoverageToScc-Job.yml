@@ -1,0 +1,140 @@
+parameters:
+  runTestJobName: 'ConvertCoverageToScc'
+  dependsOn: []
+  buildPlatform: x86
+  buildConfiguration: chk
+  # OS the coverage RunTests job ran on; selects the TestPayload artifact that carries
+  # CoverageBinaries\coverage-binaries.zip and names the .scc.
+  testOS: 'Win10-RS5'
+  testPayloadArtifactName: 'TestPayload'
+  # Instrumented DLLs to convert (same list as coverageModules on the CreateTestPayload job).
+  coverageModules:
+  - 'Microsoft.ui.xaml.dll'
+  # The .coverage -> .scc converter is not part of this repository. The root pipeline declares a
+  # repository resource for it and passes its alias here, plus the folder inside that repository
+  # that contains the converter's common_coverage\ package.
+  sccConverterRepository: 'sccConverter'
+  sccConverterSubdirectory: ''
+  # Package feeds Convert-CoverageToScc.ps1 may use to fetch Python/dotnet-coverage/comtypes when
+  # the agent lacks them. Empty uses the script's defaults (the public NuGet/PyPI feeds).
+  sccNuGetSources: []
+  sccPipIndexUrls: []
+
+# Converts the coverage RunTests job's per-slice .coverage files into StackSampler sampled-coverage
+# (.scc) files with the converter supplied by the root pipeline. Publishes, in
+# ${{ parameters.runTestJobName }}_<attempt>:
+#   Scc\*.scc                              - upload with StackSampler.exe (see Scc\UPLOAD.md): one
+#                                            combined file plus one per DLL (-MUX / -MUXC); upload
+#                                            the combined file OR the per-DLL files, not both
+#   Scc\scc-summary.json, Scc\logs\        - hits per module, host OS metadata, tool versions
+#   Scc\CoverageBinaries\coverage-binaries.zip (+ .json manifest)
+#                                          - original DLL/PDB the RVAs refer to, and the
+#                                            instrumented DLL/PDB the tests actually ran
+# Uploading to StackSampler needs an authorized account, so it stays a manual step.
+#
+# EXPERIMENTAL QUALITY.
+
+jobs:
+- job: ${{ parameters.runTestJobName }}
+  dependsOn: ${{ parameters.dependsOn }}
+  # Best-effort, like the merge job: convert whatever coverage the slices produced even when some
+  # slices failed tests.
+  condition: succeededOrFailed()
+  timeoutInMinutes: 90
+  pool:
+    type: windows
+
+  variables:
+    buildFlavor: '${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}'
+    ${{ if eq(parameters.buildPlatform, 'x64') }}:
+      testPayloadArtifactFullName: '${{ parameters.testPayloadArtifactName }}_${{ parameters.testOS }}_amd64'
+    ${{ else }}:
+      testPayloadArtifactFullName: '${{ parameters.testPayloadArtifactName }}_${{ parameters.testOS }}_${{ parameters.buildPlatform }}'
+    # Two repositories are checked out, so each gets an explicit path under $(Pipeline.Workspace)
+    # (the same layout as WinUI-MirrorSourceToExternalRepo-Stage.yml).
+    selfRepoRelativePath: 's\self'
+    converterRepoRelativePath: 's\scc-converter'
+    sccInputDir: '$(Build.SourcesDirectory)\sccInput'
+    ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    # Suffixed with the job attempt so a re-run does not fail with "Artifact already exists".
+    ob_artifactBaseName: '${{ parameters.runTestJobName }}_$(System.JobAttempt)'
+    # Optional feed overrides for Convert-CoverageToScc.ps1; empty keeps the script's defaults.
+    ${{ if gt(length(parameters.sccNuGetSources), 0) }}:
+      sccNuGetSourcesArg: "-NuGetSources '${{ join(''',''', parameters.sccNuGetSources) }}'"
+    ${{ else }}:
+      sccNuGetSourcesArg: ''
+    ${{ if gt(length(parameters.sccPipIndexUrls), 0) }}:
+      sccPipIndexUrlsArg: "-PipIndexUrls '${{ join(''',''', parameters.sccPipIndexUrls) }}'"
+    ${{ else }}:
+      sccPipIndexUrlsArg: ''
+
+  steps:
+  - checkout: self
+    submodules: false
+    fetchDepth: 1
+    fetchTags: false
+    path: '$(selfRepoRelativePath)'
+    displayName: Checkout self repository '$(selfRepoRelativePath)'
+  - checkout: ${{ parameters.sccConverterRepository }}
+    submodules: false
+    fetchDepth: 1
+    fetchTags: false
+    path: '$(converterRepoRelativePath)'
+    displayName: Checkout coverage-to-scc converter '$(converterRepoRelativePath)'
+
+  # Guardian looks for its TSA/PoliCheck config under $(Build.SourcesDirectory)\.config.
+  - task: CopyFiles@2
+    displayName: Copy `.config\` to `$(Build.SourcesDirectory)`
+    inputs:
+      SourceFolder: '$(Pipeline.Workspace)\$(selfRepoRelativePath)'
+      TargetFolder: '$(Build.SourcesDirectory)'
+      Contents: |
+        .config\**
+
+  - task: powershell@2
+    displayName: 'Install dotnet-coverage'
+    # Best-effort - Convert-CoverageToScc.ps1 resolves a tool itself (dotnet-coverage or the VS
+    # console tool), so a failure here is not fatal.
+    continueOnError: true
+    inputs:
+      targetType: 'inline'
+      script: |
+        dotnet tool install --global dotnet-coverage --add-source https://api.nuget.org/v3/index.json --ignore-failed-sources
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "##vso[task.logissue type=warning]dotnet-coverage install failed; Convert-CoverageToScc.ps1 will resolve the VS console tool on its own."
+        }
+        Write-Host "##vso[task.prependpath]$env:USERPROFILE\.dotnet\tools"
+        exit 0
+
+  # Every slice's .coverage files plus the _coverage-host-os.json written next to them (one folder
+  # per slice artifact, so each file stays paired with the host that produced it).
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download per-slice coverage files and test-host OS metadata'
+    inputs:
+      buildType: current
+      itemPattern: '**/CodeCoverage/@(coverage-*.coverage|_coverage-host-os.json)'
+      targetPath: '$(sccInputDir)\slices'
+
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download original + instrumented coverage binaries'
+    inputs:
+      buildType: current
+      artifactName: '$(testPayloadArtifactFullName)'
+      itemPattern: '**/CoverageBinaries/**'
+      targetPath: '$(sccInputDir)\binaries'
+
+  - task: powershell@2
+    displayName: 'Convert coverage to StackSampler .scc'
+    inputs:
+      targetType: filePath
+      filePath: '$(Pipeline.Workspace)\$(selfRepoRelativePath)\Helix\common\pipeline\coverage\Convert-CoverageToScc.ps1'
+      arguments: >-
+        -InputDir "$(sccInputDir)\slices"
+        -CoverageBinaries "$(sccInputDir)\binaries\CoverageBinaries"
+        -ConverterRoot "$(Pipeline.Workspace)\$(converterRepoRelativePath)\${{ parameters.sccConverterSubdirectory }}"
+        -OutputDir "$(ob_outputDirectory)\Scc"
+        -Modules ${{ join(',', parameters.coverageModules) }}
+        -SccName "winui-$(Build.BuildId)-${{ parameters.testOS }}-$(buildFlavor)"
+        -UploadName "WinUI $(Build.BuildNumber) ($(Build.BuildId)) - ${{ parameters.testOS }} $(buildFlavor)"
+        $(sccNuGetSourcesArg)
+        $(sccPipIndexUrlsArg)
