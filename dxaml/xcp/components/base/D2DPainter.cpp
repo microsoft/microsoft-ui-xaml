@@ -678,15 +678,8 @@ namespace RenderingBackend
                     }
                     else
                     {
-                        try
-                        {
-                            m_bitmaps.emplace(source.key, BitmapEntry{ source.generation, source.width, source.height, bitmap });
-                        }
-                        catch (...)
-                        {
-                            ++m_churnDestroyed;
-                            return E_OUTOFMEMORY;
-                        }
+                        // Built without exceptions: allocation failure fails fast, like the other std containers here.
+                        m_bitmaps.emplace(source.key, BitmapEntry{ source.generation, source.width, source.height, bitmap });
                     }
                     m_bitmapBytes += bytes;
                 }
