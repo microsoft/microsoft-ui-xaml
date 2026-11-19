@@ -124,3 +124,18 @@ test('privileged workflow uses trusted code, serialized publication and checkpoi
   assert.ok(steps[release].if.includes("steps.checkpoint.outcome == 'success'"));
   assert.ok(steps[release].if.includes("safe_release == 'true'"));
 });
+
+test('validation workflows pin every external action to an immutable commit', () => {
+  const check = value => {
+    if (!value || typeof value !== 'object') return;
+    if (value.uses) assert.match(value.uses, /^[\w.-]+\/[\w./-]+@[a-f0-9]{40}$/);
+    for (const child of Object.values(value)) check(child);
+  };
+  check(read('.github/workflows/winui-validation.yml'));
+  check(read('.github/workflows/winui-validation-tests.yml'));
+});
+
+test('security hold prevents activation through repository variables alone', () => {
+  const workflow = read('.github/workflows/winui-validation.yml');
+  assert.match(workflow.jobs.reconcile.if.trim(), /^false\s*&&/);
+});

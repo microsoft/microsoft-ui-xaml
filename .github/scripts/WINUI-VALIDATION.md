@@ -1,5 +1,38 @@
 # WinUI Quick validation
 
+## Security hold: do not activate the merge gate
+
+The command workflow is explicitly disabled in code, even when
+`WINUI_VALIDATION_ENABLED=true`. Normal Azure PR validation is unchanged.
+
+Security review identified a publisher-isolation gap: requiring the **GitHub
+Actions** App does not identify this particular workflow. Another repository
+workflow with status-write permission can impersonate the same gate. Serialized
+execution and selected-run tracking do not prevent that impersonation.
+
+Do not remove the existing Azure validation requirement or enable the production
+validation-ref CI triggers based on this prototype. Removing this hold requires
+an isolated, trusted publisher (or another independently enforced trust boundary)
+and an adversarial end-to-end proof. A dedicated publisher can run in GitHub
+Actions without a hosted service, but its authentication integration needs
+explicit review; it is not established by the current WinUI precedents.
+
+### Authentication precedent
+
+| Mechanism | Evidence in WinUI |
+| --- | --- |
+| Immutable action SHAs | Merged `.github/workflows/docs.yml`, `pr-build.yml` and issue-triage automation |
+| Job-scoped `GITHUB_TOKEN`, trusted automation, no persisted checkout credentials | Merged `.github/workflows/area-reviewers.yml` and `area-owners-sync.yml` |
+| Comment-command permission checks and reviewed validation refs | Unmerged [PR #11852](https://github.com/microsoft/microsoft-ui-xaml/pull/11852) |
+| Azure bearer token via `az account get-access-token` | The same unmerged proposal, using an existing manual Azure login |
+| GitHub OIDC through `azure/login` | No merged WinUI workflow precedent established by this review |
+| Isolated status-publisher identity | No merged implementation precedent established by this review |
+
+Action pinning is fixed, but it does not resolve publisher isolation. Environment
+restrictions, federation claims, Azure permissions and protected validation-ref
+namespaces also require configuration verification. The remaining setup sections
+are design/reference material, not approval to activate production.
+
 ## Basis and scope
 
 This uses the Actions command/validation-ref pattern in
@@ -8,8 +41,9 @@ and the reduced matrix in
 [Jesse's PR #11909](https://github.com/microsoft/microsoft-ui-xaml/pull/11909).
 It does not require either PR to be merged first.
 
-There is no hosted controller, database, custom GitHub App, webhook endpoint or
-PAT. GitHub Actions handles commands and short reconciliation jobs. The existing
+The current prototype has no hosted controller, database, custom GitHub App,
+webhook endpoint or PAT. This does not provide an isolated publisher. Its design
+uses GitHub Actions for commands and short reconciliation jobs. The existing
 GitHub-to-ADO connection starts builds from validation-branch pushes. A federated
 Entra identity is used only to **read** ADO build metadata and timelines.
 
@@ -51,8 +85,10 @@ Full preserves the upstream system-composition stage condition: it runs for
 non-fork PR builds, but is skipped for CI/manual builds. The gate requires that
 stage and its WPF shards when the upstream condition applies.
 
-Only the selected run can satisfy **WinUI Validation Gate**. A late Full result
-cannot overwrite a selected Quick result, and vice versa. Quick is never
+Within the helper's reconciliation logic, only the selected run can satisfy
+**WinUI Validation Gate**. A late Full result cannot overwrite a selected Quick
+result, and vice versa. This is not a security boundary against other workflows
+using the same App identity. Quick is never
 selected merely because it passed. A changed head/base/merge revision resets
 selection to Full. Other required checks and reviews still apply.
 
@@ -101,15 +137,17 @@ once Quick runs are available.
 
 ### 1. Land the code, with the old gate still required
 
-Review and land these changes under the existing full-validation policy. The new
-workflow is disabled until `WINUI_VALIDATION_ENABLED` is explicitly set to `true`.
-It must exist on the default branch for command/status/schedule events to work.
+Keep the existing full-validation policy. The new workflow is disabled by the
+security hold; setting `WINUI_VALIDATION_ENABLED` cannot activate it. Publisher
+isolation must be resolved and reviewed before removing that hold. The workflow
+must then exist on the default branch for command/status/schedule events to work.
 
 Do not restore or deploy the earlier standalone-controller prototype.
 
 ### 2. Configure CI on the existing Azure pipeline
 
-In the GitHub PR pipeline's **Edit > Triggers > Continuous integration** settings,
+For an approved isolated proof only, in the test pipeline's
+**Edit > Triggers > Continuous integration** settings,
 enable **Override the YAML continuous integration trigger from here**, adding:
 
 ```text
@@ -169,11 +207,14 @@ first-party checkout, Node setup, Azure login and artifact actions used here.
 
 ### 4. Exercise an approved test PR
 
-Scope `WINUI_VALIDATION_TARGETS` to a non-production `feature/*` branch covered by
+Only after resolving the security hold, scope `WINUI_VALIDATION_TARGETS` to a
+non-production `feature/*` branch covered by
 the existing PR trigger. Set `WINUI_VALIDATION_ENABLED=true` and let native Full
 validation publish the new gate once. On that test branch, require **both** the
-existing Azure context and the new gate, pinned to GitHub Actions, before issuing
-Quick commands. Confirm:
+existing Azure context and the new gate, pinned to its approved isolated
+publisher identity, before issuing Quick commands. This requires the publisher
+implementation changes; the current shared-token prototype is not sufficient.
+Confirm:
 
 - `/winui quick <sha>` creates the intended ref, the UI CI trigger actually
   starts a run, and the run builds x86 Debug plus all 25H2 runtime shards.
@@ -196,17 +237,14 @@ PRs changing workflow files may encounter GitHub token restrictions during ref
 publication. Treat that as a refusal, not permission to introduce a broader
 credential. Prove such changes separately under the existing Full gate.
 
-### 5. Change the required validation context
+### 5. Production gate migration is blocked
 
-After the proof, first add **WinUI Validation Gate**, selecting **GitHub Actions**
-as its expected source, to the production target's required checks. Then expand
-`WINUI_VALIDATION_TARGETS` to that target and verify native Full reporting there.
-Finally remove only **WinUI-GitHub-PR (OneBranch)** from the required set.
-Preserve CLA, approvals and all other requirements.
-
-The new gate must be required before production Quick commands can be accepted.
-Adding it can temporarily block existing PRs until their next reconciliation;
-use a controlled rollout window. Never leave neither validation requirement.
+Do not replace the existing Azure validation requirement with the shared-App
+status. First establish a trusted publisher unavailable to PR-authored workflows,
+require its exact identity, and prove that an ordinary workflow token cannot
+satisfy the gate even for the same context and SHA. Preserve CLA, approvals and
+other requirements. A safe migration plan must be reviewed with that design;
+the previous recommendation to pin the gate to GitHub Actions is withdrawn.
 
 ## Operations and rollback
 
