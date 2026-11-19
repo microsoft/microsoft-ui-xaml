@@ -300,21 +300,21 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | v1 knob | Effect |
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
-| `BandedTableViewStyle` | Named style from `TabularControlsResources`: sets only `AlternatingRowBackground` to `TabularSurfaceRowBackgroundAlternatingBrush` (Subtle/Tertiary in Light/Dark, window background in High Contrast). Gridlines and header styling remain independent. |
-| Outer border / `BorderlessTableViewStyle` | The default 1px frame uses `TabularSurfaceOuterBorderBrush` (DividerStrokeColorDefault in Light/Dark, GrayText in High Contrast). The named borderless style sets only `BorderBrush` to `TabularSurfaceBorderlessOuterBorderBrush`, transparent in Light/Dark but still GrayText in High Contrast. Both retain the 1px layout inset; the opt-out composes with banding through a derived style. |
+| `BandedTableViewStyle` | Named style from `TabularControlsResources`: sets only `AlternatingRowBackground` to `TableViewRowBackgroundAlternatingBrush` (Subtle/Tertiary in Light/Dark, window background in High Contrast). Gridlines and header styling remain independent. |
+| Outer border / `BorderlessTableViewStyle` | The default 1px frame uses `TableViewOuterBorderBrush` (DividerStrokeColorDefault in Light/Dark, GrayText in High Contrast). The named borderless style sets only `BorderBrush` to `TableViewBorderlessOuterBorderBrush`, transparent in Light/Dark but still GrayText in High Contrast. Both retain the 1px layout inset; the opt-out composes with banding through a derived style. |
 | `GridLinesVisibility` | Body gridlines, independent of header lines. |
-| Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TabularSurfaceHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
+| Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TableViewHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
 | `BorderBrush`, `BorderThickness` | Outer frame. DividerStrokeColorDefault in Light/Dark; system-color in High Contrast. The default 1px inset is retained by the borderless style for stable layout. |
 | `Density` | `Compact` / `Standard` / `Comfortable`: 24/32/40px minimum row/header heights and 14px text; Standard is the default. Cell/header control padding is 12,2,12,2 / 12,6,12,6 / 12,10,12,10; section-host padding is 4,2,12,2 / 4,6,12,6 / 4,10,12,10. Metric keys use Small / Medium / Large suffixes respectively. App metric overrides win. Auto widths persist unless font resources change. Original enum values remain Compact=0, Standard=1, Comfortable=2. |
 | Density styles | `DefaultTableViewStyle` selects Standard, `CompactTableViewStyle` selects Compact, and `ComfortableTableViewStyle` selects Comfortable. Each sets only `Density`; the density variants derive from the named default preset and retain the shared template. Local values and bindings take precedence; clearing a local value restores the style selection. Density composes with banded/borderless appearance through the property or a derived style. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
 | `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
 | `StrongTableViewGroupHeaderStyle` | Named style from `TabularControlsResources`: semibold section title/count text only. Apply through an implicit `TableViewGroupHeader` style scoped to the table. Omit it for regular text; foreground and count opacity are unchanged. Independent of column-header styling. |
-| Theme keys | Cell/header font resources default to 14; `TableViewHeaderFontWeight` defaults to Normal. Cell/header text-padding resources are literal `12,9,12,11` / `12,5,12,7` / `12,1,12,3`; section text uses the same vertical padding with zero horizontal edges. Only arranged-divider compensation is calculated, preserving total padding. Brushes use `TabularSurface*` keys. |
+| Theme keys | Cell/header font resources default to 14; `TableViewHeaderFontWeight` defaults to Normal. Cell/header text-padding resources are literal `12,9,12,11` / `12,5,12,7` / `12,1,12,3`; section text uses the same vertical padding with zero horizontal edges. Only arranged-divider compensation is calculated, preserving total padding. Brushes use `TableView*` keys. |
 
-Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Light/Dark surface keys redirect to shared `TextFillColor*Brush`, `SubtleFillColor*Brush`, and `DividerStrokeColorDefaultBrush` resources rather than duplicating their palette values. Selection indicators reuse `AccentFillColorDefaultBrush` and `AccentFillColorDisabledBrush`; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `ResizeGripperSeparatorBrush` redirects to `ControlStrongStrokeColorDefaultBrush` in Light/Dark and `SystemColorHighlightColorBrush` in High Contrast. `TableView.xaml` does not redeclare these resources, which would shadow their High Contrast values.
+TableView brushes and metrics live together in `controls/dev/TableView/TableView_themeresources.xaml` and re-resolve on theme changes. Light/Dark surface keys redirect to shared `TextFillColor*Brush`, `SubtleFillColor*Brush`, and `DividerStrokeColorDefaultBrush` resources rather than duplicating their palette values. Selection indicators reuse `AccentFillColorDefaultBrush` and `AccentFillColorDisabledBrush`; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `ResizeGripperSeparatorBrush` remains in its own component dictionary and redirects to `ControlStrongStrokeColorDefaultBrush` in Light/Dark and `SystemColorHighlightColorBrush` in High Contrast. `TableView.xaml` does not redeclare these resources, which would shadow their High Contrast values.
 
-Existing `TabularSurface*` and `ResizeGripperSeparatorBrush` overrides remain supported; no resource-key migration is required. Merge `XamlControlsResources` before the compiled `TabularControlsResources` bundle so shared brush dependencies are available. The individual authoring dictionaries are build inputs, not standalone resource entry points. Theme lookup must be verified on loaded elements in Light, Dark and High Contrast, including live theme switches; explicitly reading an inactive theme dictionary is not equivalent to resolving a `{ThemeResource}` from a control.
+Apps using the former `TabularSurface*` keys must rename those overrides to `TableView*`, preserving the suffix (for example, `TabularSurfaceGridLineBrush` becomes `TableViewGridLineBrush`). No compatibility aliases are provided. Existing TableView metric keys and `ResizeGripperSeparatorBrush` are unchanged. Merge `XamlControlsResources` before the compiled `TabularControlsResources` bundle so shared brush dependencies are available. The individual authoring dictionaries are build inputs, not standalone resource entry points. Theme lookup must be verified on loaded elements in Light, Dark and High Contrast, including live theme switches; explicitly reading an inactive theme dictionary is not equivalent to resolving a `{ThemeResource}` from a control.
 
 XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A text column without an owning table uses Standard density's Medium fallback metrics for generated display text and editors. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
 
@@ -322,7 +322,7 @@ Density padding resources must have finite, non-negative edges; invalid values a
 
 Unsuffixed sizing keys are intentionally unsupported; Standard density reads the explicit Medium keys, not unsuffixed aliases. Apps must migrate existing overrides using the [API spec's density metric migration table](../../api-specs/TableView/TableView-spec.md#migrating-density-metric-overrides). The unsuffixed cell/header font-size keys remain supported for Standard and Comfortable.
 
-The built-in section count uses `TabularSurfaceGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
+The built-in section count uses `TableViewGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
 
 Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the
 ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
@@ -354,7 +354,7 @@ editing display from density restamps. Editor metrics apply only to the active e
 display TextBoxes. Reentrant density changes replay after the current restamp; changed font metrics
 invalidate both column and cell-panel width caches.
 
-Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
+Section-header bottom dividers use `TableViewGroupHeaderBorderBrush`, matching the body's
 gridline colors by default, and are visible for every body
 `GridLinesVisibility` value except `None`, including `Vertical`. `RefreshGridLines` updates the
 overlay on preparation and live body-gridline changes; terminal-edge suppression still avoids
@@ -364,11 +364,11 @@ without an extra top rule.
 
 | Key | Used for | Fluent | High Contrast |
 |---|---|---|---|
-| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
-| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
-| `TabularSurfaceGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
-| `TabularSurfaceOuterBorderBrush` | Control border | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
-| `TabularSurfaceBorderlessOuterBorderBrush` | Borderless-style control border | Transparent | `SystemColorGrayTextColorBrush` |
+| `TableViewGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TableViewHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TableViewGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TableViewOuterBorderBrush` | Control border | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TableViewBorderlessOuterBorderBrush` | Borderless-style control border | Transparent | `SystemColorGrayTextColorBrush` |
 
 A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.
 

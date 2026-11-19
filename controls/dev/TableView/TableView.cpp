@@ -484,7 +484,7 @@ namespace
         return false;
     }
 
-    // The stock style always supplies TabularSurfaceGridLineBrush; on a miss draw only in High Contrast.
+    // The stock style always supplies TableViewGridLineBrush; on a miss draw only in High Contrast.
     winrt::Brush CreateGridLineFallbackBrush(winrt::FrameworkElement const& start, bool highContrast)
     {
         if (!highContrast)
@@ -512,7 +512,7 @@ winrt::Brush TableView::GetGridLineBrush()
         return cache.gridLine.brush;
     }
 
-    auto brush = LookupElementResource(*this, L"TabularSurfaceGridLineBrush", highContrast).try_as<winrt::Brush>();
+    auto brush = LookupElementResource(*this, L"TableViewGridLineBrush", highContrast).try_as<winrt::Brush>();
     if (!brush)
     {
         brush = CreateGridLineFallbackBrush(*this, highContrast);

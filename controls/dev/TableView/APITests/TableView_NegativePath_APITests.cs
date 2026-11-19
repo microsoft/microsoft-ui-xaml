@@ -60,10 +60,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var originalResources = Application.Current.Resources;
                 var resources = new ResourceDictionary();
                 resources.MergedDictionaries.Add(new XamlControlsResources());
-                resources["TabularSurfaceRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
-                resources["TabularSurfaceRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
-                resources["TabularSurfaceGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
-                resources["TabularSurfaceOuterBorderBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+                resources["TableViewRowBackgroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.White);
+                resources["TableViewRowForegroundBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Black);
+                resources["TableViewGridLineBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
+                resources["TableViewOuterBorderBrush"] = new SolidColorBrush(Microsoft.UI.Colors.Gray);
 
                 try
                 {
@@ -85,7 +85,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.IsNotNull(error, "The missing header brush must fail during stock template realization.");
                     Verify.AreEqual(unchecked((int)0x802B000A), error.HResult, "Stock template resource misses retain the parse HRESULT.");
-                    Verify.IsTrue(error.Message.Contains("TabularSurfaceHeaderBackgroundBrush"), "The missing header brush confirms the stock deferred-template path was exercised.");
+                    Verify.IsTrue(error.Message.Contains("TableViewHeaderBackgroundBrush"), "The missing header brush confirms the stock deferred-template path was exercised.");
                     Verify.IsTrue(error.Message.Contains("Cannot find a Resource with the Name/Key "), "The exception retains the generic resource-error prefix.");
                     Verify.IsTrue(error.Message.Contains("[Line: "), "The parse diagnostic retains its location.");
                     Verify.IsFalse(error.Message.Contains("TabularControlsResources"), "Setup guidance is separate debug output, not part of the exception.");

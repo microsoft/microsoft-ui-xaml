@@ -145,7 +145,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `GridLinesVisibility` controls only the body gridlines and defaults to `All`. Column-header dividers and the bottom rule are always present, independently of body gridlines. The trailing column divider is suppressed where it meets the viewport edge, even when the outer frame is hidden.
 
-Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines use `SystemColorGrayTextColor` (the system disabled color), while the outer border retains `SystemColorWindowTextColor`. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
+Both header strokes paint `TableViewHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines use `SystemColorGrayTextColor` (the system disabled color), while the outer border retains `SystemColorWindowTextColor`. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
 `Compact`, `Standard`, and `Comfortable` have 24/32/40px minimum row, column-header, and
 section-header heights. Larger text or custom content can grow them. Built-in text is 14px
@@ -237,7 +237,7 @@ PeopleTable.Density = TableViewDensity.Standard;
 <tabular:TableView Style="{StaticResource BandedTableViewStyle}" />
 ```
 
-It sets only `AlternatingRowBackground` to `TabularSurfaceRowBackgroundAlternatingBrush`:
+It sets only `AlternatingRowBackground` to `TableViewRowBackgroundAlternatingBrush`:
 Subtle/Tertiary in Light/Dark, Window in High Contrast. Banding and interaction fills share
 `TableViewSelectionIndicatorMargin` and the row's corner radius, so hover changes color, not geometry.
 
@@ -248,12 +248,18 @@ The variant can be combined with `StrongTableViewColumnHeaderStyle`.
 ### Theme customization
 
 In all themes, an application-set table or row `Foreground` supplies the normal-state value;
-pointer-over, pressed, selected, and disabled states use the corresponding `TabularSurface*`
+pointer-over, pressed, selected, and disabled states use the corresponding `TableView*`
 foreground brush. Cell content inherits that foreground unless its template supplies an explicit brush.
 
-Override the named `TabularSurface*` brush keys to customize colors. To restyle column headers
+Override the named `TableView*` brush keys to customize colors. To restyle column headers
 beyond their brushes (typography, padding, the template), set `ColumnHeaderStyle`. Low-level Fluent color-token
 overrides no longer flow through the removed default-style brush fallbacks.
+
+The brush palette and metrics are authored in `controls/dev/TableView/TableView_themeresources.xaml`
+and supplied through `TabularControlsResources`. Apps using the former `TabularSurface*` resource
+keys must rename their overrides to `TableView*`, keeping the suffix: for example,
+`TabularSurfaceGridLineBrush` becomes `TableViewGridLineBrush`. The old names have no compatibility
+aliases. Existing TableView metric keys and `ResizeGripperSeparatorBrush` are unchanged.
 
 The outer border uses `DividerStrokeColorDefault` in Light/Dark and `SystemColorWindowTextColor` in
 High Contrast. To hide it in Light/Dark while preserving the High Contrast frame, use:
@@ -262,7 +268,7 @@ High Contrast. To hide it in Light/Dark while preserving the High Contrast frame
 <tabular:TableView Style="{StaticResource BorderlessTableViewStyle}" />
 ```
 
-`BorderlessTableViewStyle` sets only `BorderBrush` to `TabularSurfaceBorderlessOuterBorderBrush`:
+`BorderlessTableViewStyle` sets only `BorderBrush` to `TableViewBorderlessOuterBorderBrush`:
 transparent in Light/Dark, WindowText in High Contrast. The 1px layout inset is retained.
 To combine it with banding, derive from `BandedTableViewStyle` and set that brush.
 A literal `BorderBrush="Transparent"` hides the frame in every theme.
@@ -270,11 +276,11 @@ A literal `BorderBrush="Transparent"` hides the frame in every theme.
 Row and section separators are suppressed where they meet the visible outer frame.
 Rows ending above empty space, or with a hidden frame, retain their separator.
 
-Override `TabularSurfaceSelectionIndicatorDisabledBrush` and `TabularSurfaceRowForegroundDisabledBrush`
+Override `TableViewSelectionIndicatorDisabledBrush` and `TableViewRowForegroundDisabledBrush`
 independently to customize the disabled-selected indicator and disabled row text.
 By default, the disabled-selected indicator uses the theme's `AccentFillColorDisabled`
 value rather than the accent or disabled-text color. Selected-disabled rows retain a
-`SubtleFillColorSecondary` backplate through `TabularSurfaceRowBackgroundSelectedDisabledBrush`;
+`SubtleFillColorSecondary` backplate through `TableViewRowBackgroundSelectedDisabledBrush`;
 unselected-disabled rows remain transparent. High Contrast retains a system window background
 and gray-text outline and foreground for both disabled states.
 The selection indicator is a 1px rounded row outline, separate from native keyboard focus.
@@ -301,7 +307,7 @@ The strong section style changes only weight and is independent of column-header
 Titles, counts, and chevrons retain the section foreground and High Contrast state pairing.
 
 The default group header's item count inherits the header `Foreground` and is dimmed by
-`TabularSurfaceGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
+`TableViewGroupHeaderCountOpacity` (1.0 in High Contrast). A disabled header shows the count
 at full opacity, since the disabled brush already dims it.
 
 ### Frozen (pinned) leading columns
@@ -577,7 +583,7 @@ Template parts:
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
 
 The default table template's `PART_HeaderGridLine` paints an always-present bottom rule with
-`TabularSurfaceHeaderSeparatorBrush`. The overlay does not consume header layout space.
+`TableViewHeaderSeparatorBrush`. The overlay does not consume header layout space.
 
 Scrolling is structural rather than a named part. The header scroller and the body scroller are the nearest `ScrollViewer` ancestors of `PART_HeaderHost` / `PART_RowsRepeater` **inside the template**; their names are not looked up. The search stops at the `TableView`, so a template that omits them never latches onto a `ScrollViewer` in the app's own tree. The header scroller is horizontal-only and kept in sync with the body. The body scroller supplies the viewport for `*` column widths, the offset for frozen-column pinning, and the target of keyboard paging and scroll-into-view; without it, `*` columns keep their provisional width, frozen columns are not pinned, and the header is not scroll-synced. The default template supplies both, named `PART_HeaderScroller` and `PART_BodyScroller` for readability only.
 
@@ -782,14 +788,14 @@ Override them in the appropriate theme dictionary without replacing the control 
 
 | Surface/state | Background resource | Interaction border resource | Default HC color |
 |---|---|---|---|
-| Column, normal/disabled | `TabularSurfaceHeaderBackgroundBrush` | `TabularSurfaceHeaderBorderBrush` | Window |
-| Column, sortable rest | `TabularSurfaceHeaderBackgroundSortableBrush` | `TabularSurfaceHeaderBorderSortableBrush` | ButtonFace |
+| Column, normal/disabled | `TableViewHeaderBackgroundBrush` | `TableViewHeaderBorderBrush` | Window |
+| Column, sortable rest | `TableViewHeaderBackgroundSortableBrush` | `TableViewHeaderBorderSortableBrush` | ButtonFace |
 | Column, keyboard focus | Same as sortable rest | Same as sortable rest | ButtonFace |
-| Column, hover | `TabularSurfaceHeaderBackgroundPointerOverBrush` | `TabularSurfaceHeaderBorderPointerOverBrush` | Highlight |
-| Column, pressed | `TabularSurfaceHeaderBackgroundPressedBrush` | `TabularSurfaceHeaderBorderPressedBrush` | Highlight |
-| Section, normal/disabled | `TabularSurfaceGroupHeaderBackgroundBrush` | `TabularSurfaceGroupHeaderInteractionBorderBrush` | ButtonFace |
-| Section, hover | `TabularSurfaceGroupHeaderBackgroundPointerOverBrush` | `TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush` | Highlight |
-| Section, pressed | `TabularSurfaceGroupHeaderBackgroundPressedBrush` | `TabularSurfaceGroupHeaderInteractionBorderPressedBrush` | Highlight |
+| Column, hover | `TableViewHeaderBackgroundPointerOverBrush` | `TableViewHeaderBorderPointerOverBrush` | Highlight |
+| Column, pressed | `TableViewHeaderBackgroundPressedBrush` | `TableViewHeaderBorderPressedBrush` | Highlight |
+| Section, normal/disabled | `TableViewGroupHeaderBackgroundBrush` | `TableViewGroupHeaderInteractionBorderBrush` | ButtonFace |
+| Section, hover | `TableViewGroupHeaderBackgroundPointerOverBrush` | `TableViewGroupHeaderInteractionBorderPointerOverBrush` | Highlight |
+| Section, pressed | `TableViewGroupHeaderBackgroundPressedBrush` | `TableViewGroupHeaderInteractionBorderPressedBrush` | Highlight |
 
 `TableViewHeaderInteractionBorderThickness` is `1` in High Contrast and `0` in Light/Dark.
 HC fill and interaction border default to the same color; either can be overridden independently.
@@ -800,14 +806,14 @@ For example, setting only these HC backgrounds to Transparent leaves their Highl
 
 ```xml
 <ResourceDictionary x:Key="HighContrast">
-    <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TableViewHeaderBackgroundPressedBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TableViewGroupHeaderBackgroundPointerOverBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="TableViewGroupHeaderBackgroundPressedBrush" Color="Transparent" />
 </ResourceDictionary>
 ```
 
 Apps choosing an unfilled plate must also provide contrasting text/icons.
-`TabularSurfaceGroupHeaderBorderBrush`/`BorderThickness` control the separate section divider,
+`TableViewGroupHeaderBorderBrush`/`BorderThickness` control the separate section divider,
 not the interaction outline: GrayText and `0,0,0,1` in High Contrast.
 Dropdowns have independent button chrome. Headers have no selection state.
 
@@ -825,7 +831,7 @@ The realized column header: a templated `ContentControl`, one per column in `PAR
 ```
 
 Default headers use `TableViewHeaderFontSize` / `TableViewHeaderFontWeight` (14, Normal) and
-`TabularSurfaceHeaderForegroundBrush` (secondary in Light/Dark, WindowText in HC).
+`TableViewHeaderForegroundBrush` (secondary in Light/Dark, WindowText in HC).
 The Light/Dark band is transparent. `MinHeight` and `Padding` follow density unless styled;
 native keyboard focus uses the table's `CornerRadius` unless the header style overrides it.
 
@@ -873,7 +879,7 @@ Template parts. All are optional; a missing part disables only its feature:
 |---|---|---|
 | `PART_Background` | `Border` | Decorative fill and independently overridable interaction outline, separate from content and resize hit targets. Rounded only at exposed top corners; all corners adjoining header gridlines remain square. |
 | `PART_ContentPresenter` | `ContentPresenter` | Content region. On a sortable column the control adds the sort indicator's width and its host's horizontal padding to the presenter's right `Margin`, reserving space even while unsorted so text trims before the icon without jumping when sorting changes. |
-| `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it meets the viewport edge, regardless of frame visibility; the default template paints it with `TabularSurfaceHeaderSeparatorBrush`. |
+| `PART_GridLine` | `Border` | Always-present vertical separator, except the last column's where it meets the viewport edge, regardless of frame visibility; the default template paints it with `TableViewHeaderSeparatorBrush`. |
 | `PART_SortIndicatorHost` | `Border` | Hosts the sort icon on a sortable column. Its margin follows header padding, with another 4px on each horizontal side: a 4px text gap and a 16px trailing inset with the default 12px header padding. The icon always follows `PART_ContentPresenter`'s `Foreground`: secondary text for regular headers, primary text for strong headers, and matching custom, disabled, or High Contrast foregrounds. |
 | `PART_ResizeGripperHost` | `Border` | Hosts the resize gripper on a resizable column. Without it the column cannot be resized from the header, by pointer, keyboard or UI Automation. |
 
@@ -881,7 +887,7 @@ Visual states:
 
 | Group | States | Notes |
 |---|---|---|
-| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort. In Light/Dark, hover leaves the resting plate unchanged; pressed retains `TabularSurfaceHeaderBackgroundPressedBrush` and `TabularSurfaceHeaderBorderPressedBrush`. `Disabled` dims the text and sort glyph with `TabularSurfaceRowForegroundDisabledBrush`, as on rows. |
+| `CommonStates` | `Normal`, `PointerOver`, `Pressed`, `Disabled` | `PointerOver`/`Pressed` are entered only on a column the user can sort. In Light/Dark, hover leaves the resting plate unchanged; pressed retains `TableViewHeaderBackgroundPressedBrush` and `TableViewHeaderBorderPressedBrush`. `Disabled` dims the text and sort glyph with `TableViewRowForegroundDisabledBrush`, as on rows. |
 | `HighContrastStates` | `HighContrastNormal`, `HighContrastSortable`, `HighContrastPointerOver`, `HighContrastPressed` | Enabled, user-sortable headers retain the ButtonText/ButtonFace pairing at rest and with keyboard focus. Hover and pressed use HighlightText on a Highlight backplate, with a matching Highlight border. Non-sortable headers retain their resting appearance; disabled headers retain their disabled appearance. |
 | `SortStates` | `Unsorted`, `UnsortedSortAvailable`, `SortAscending`, `SortDescending` | An unsorted, enabled, user-sortable header shows the ascending sort affordance on hover, keyboard focus, or press. Leaving those states hides it. Actual ascending/descending indicators remain visible independently of hover/focus. The preview does not change sorting or automation help. |
 | `HeaderEdgeStates` | `InteriorHeader`, `LeftEdgeHeader`, `RightEdgeHeader`, `SingleHeader` | Follow visible columns and trailing separator suppression in local coordinates; XAML mirrors the header corners once for RTL. Set the fill's corner radius using the `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens. |
@@ -1177,7 +1183,7 @@ Visual states:
 
 Selected states share the one group rather than living in a second, overlapping one: they animate the same `PART_RootBorder.Background`, so two groups would make the result depend on `GoToState` call order. Encoding both dimensions in the state name is the pattern `TreeViewItem` and `ItemContainer` use.
 
-In Light/Dark, hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TabularSurfaceSelectionIndicatorBrush`; `SelectedDisabled` uses `TabularSurfaceSelectionIndicatorDisabledBrush`.
+In Light/Dark, hover and press change the selected row's backplate, not its selection outline. `Selected`, `SelectedPointerOver`, and `SelectedPressed` all use `TableViewSelectionIndicatorBrush`; `SelectedDisabled` uses `TableViewSelectionIndicatorDisabledBrush`.
 
 Row backplates share the `TableViewSelectionIndicatorMargin` inset and rounded outer corners.
 Selected fills reserve the outline's 1px stroke; unselected fills reach its outer edge.
