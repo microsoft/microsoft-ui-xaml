@@ -79,6 +79,71 @@ namespace
         return { m.GetM11(), m.GetM12(), m.GetM21(), m.GetM22(), m.GetDx(), m.GetDy() };
     }
 
+    // Prototype diagnostics: WINUI_IMMEDIATE_CAPTURE=<path.bmp> writes the most recently presented swap-chain buffer
+    // after every paint. Screen capture (BitBlt/Graphics.Capture) cannot see app content in a disconnected session.
+    const std::wstring& GetCapturePath()
+    {
+        static const std::wstring s_path = []
+        {
+            wchar_t buffer[MAX_PATH] = {};
+            const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_CAPTURE", buffer, ARRAYSIZE(buffer));
+            return (length > 0 && length < ARRAYSIZE(buffer)) ? std::wstring(buffer, length) : std::wstring();
+        }();
+        return s_path;
+    }
+
+    HRESULT CapturePresentedBuffer(_In_ IDXGISwapChain1* swapChain, _In_z_ const wchar_t* path)
+    {
+        DXGI_SWAP_CHAIN_DESC1 desc{};
+        IFC_RETURN(swapChain->GetDesc1(&desc));
+        // Flip model: buffer 0 is the next back buffer; the last buffer is the one just presented.
+        ComPtr<ID3D11Texture2D> presented;
+        IFC_RETURN(swapChain->GetBuffer(desc.BufferCount - 1, IID_PPV_ARGS(&presented)));
+        ComPtr<ID3D11Device> device;
+        presented->GetDevice(&device);
+        D3D11_TEXTURE2D_DESC textureDesc{};
+        presented->GetDesc(&textureDesc);
+        textureDesc.Usage = D3D11_USAGE_STAGING;
+        textureDesc.BindFlags = 0;
+        textureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+        textureDesc.MiscFlags = 0;
+        ComPtr<ID3D11Texture2D> staging;
+        IFC_RETURN(device->CreateTexture2D(&textureDesc, nullptr, &staging));
+        ComPtr<ID3D11DeviceContext> context;
+        device->GetImmediateContext(&context);
+        context->CopyResource(staging.Get(), presented.Get());
+        D3D11_MAPPED_SUBRESOURCE mapped{};
+        IFC_RETURN(context->Map(staging.Get(), 0, D3D11_MAP_READ, 0, &mapped));
+        auto unmap = wil::scope_exit([&] { context->Unmap(staging.Get(), 0); });
+
+        const uint32_t rowBytes = textureDesc.Width * 4;
+        BITMAPFILEHEADER fileHeader{};
+        BITMAPINFOHEADER infoHeader{};
+        infoHeader.biSize = sizeof(infoHeader);
+        infoHeader.biWidth = static_cast<LONG>(textureDesc.Width);
+        infoHeader.biHeight = -static_cast<LONG>(textureDesc.Height);
+        infoHeader.biPlanes = 1;
+        infoHeader.biBitCount = 32;
+        infoHeader.biCompression = BI_RGB;
+        fileHeader.bfType = 0x4D42;
+        fileHeader.bfOffBits = sizeof(fileHeader) + sizeof(infoHeader);
+        fileHeader.bfSize = fileHeader.bfOffBits + rowBytes * textureDesc.Height;
+
+        wil::unique_hfile file(CreateFileW(path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr));
+        if (!file)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        DWORD written = 0;
+        WriteFile(file.get(), &fileHeader, sizeof(fileHeader), &written, nullptr);
+        WriteFile(file.get(), &infoHeader, sizeof(infoHeader), &written, nullptr);
+        for (uint32_t y = 0; y < textureDesc.Height; ++y)
+        {
+            WriteFile(file.get(), static_cast<const uint8_t*>(mapped.pData) + y * mapped.RowPitch, rowBytes, &written, nullptr);
+        }
+        return S_OK;
+    }
+
     ColorF ToColor(uint32_t argb, float opacity) noexcept
     {
         ColorF c;
@@ -1069,5 +1134,10 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
 
     state.fullDamage = false;
     state.records = std::move(list.records);
+
+    if (!GetCapturePath().empty())
+    {
+        LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), GetCapturePath().c_str()));
+    }
     return S_OK;
 }
