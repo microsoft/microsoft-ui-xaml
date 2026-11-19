@@ -124,6 +124,10 @@ namespace RenderingBackend
     // Driver when no hardware adapter exists.
     HRESULT CreateD3DDeviceForMode(Mode mode, _Outptr_ ID3D11Device** device, _Out_ DeviceIdentity* identity) noexcept;
 
+    // Availability probe registered with SetImmediateModeProbe by the core: creates a small painter (and, for D2D, its
+    // device) and maps failures to DeviceUnavailable (no device) or NotImplemented (no painter).
+    FallbackReason ProbeImmediateMode(Mode mode) noexcept;
+
     // Brackets one root's paint with PaintBegin/PaintEnd and emits ResourceInventory, so every backend reports the same
     // events. paint is invoked between BeginFrame and EndFrame; returns the first failure.
     template <typename PaintFn>

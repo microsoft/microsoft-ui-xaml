@@ -25,9 +25,6 @@ namespace RenderingBackend
             L"None", L"NotImplemented", L"InvalidRequest", L"DeviceUnavailable", L"UnsupportedContent"
         };
 
-        // Immediate backends flip their bit when they can render the target scenes (S1/S2).
-        constexpr uint32_t c_availableModes = ModeBit(Mode::Composition);
-
         constexpr GUID c_providerId = { 0xd18ce99c, 0xdd66, 0x5390, { 0x18, 0xda, 0x06, 0x85, 0x46, 0x73, 0x98, 0x01 } };
 
         std::atomic<bool> s_wasEnabled{ false };
@@ -42,6 +39,52 @@ namespace RenderingBackend
         {
             static ProviderRegistration s_registration;
         }
+
+        std::atomic<ModeProbeFn> s_probe{ nullptr };
+
+        // Per mode: 0 = not probed yet, otherwise FallbackReason + 1.
+        std::atomic<uint32_t> s_probeResults[ModeCount]{};
+
+        FallbackReason ProbeMode(Mode mode) noexcept
+        {
+            if (mode == Mode::Composition)
+            {
+                return FallbackReason::None;
+            }
+            const auto index = static_cast<uint32_t>(mode);
+            const uint32_t cached = s_probeResults[index].load(std::memory_order_acquire);
+            if (cached != 0)
+            {
+                return static_cast<FallbackReason>(cached - 1);
+            }
+            const ModeProbeFn probe = s_probe.load(std::memory_order_acquire);
+            if (probe == nullptr)
+            {
+                return FallbackReason::NotImplemented;
+            }
+            const FallbackReason result = probe(mode);
+            s_probeResults[index].store(static_cast<uint32_t>(result) + 1, std::memory_order_release);
+            return result;
+        }
+
+        // Available modes known so far without probing (never creates devices).
+        uint32_t GetKnownAvailableModes() noexcept
+        {
+            uint32_t modes = ModeBit(Mode::Composition);
+            for (uint32_t index = 1; index < ModeCount; ++index)
+            {
+                if (s_probeResults[index].load(std::memory_order_acquire) == static_cast<uint32_t>(FallbackReason::None) + 1)
+                {
+                    modes |= 1u << index;
+                }
+            }
+            return modes;
+        }
+    }
+
+    void SetImmediateModeProbe(ModeProbeFn probe) noexcept
+    {
+        s_probe.store(probe, std::memory_order_release);
     }
 
     bool TryParseMode(_In_opt_z_ const wchar_t* text, _Inout_ Mode& mode) noexcept
@@ -75,6 +118,11 @@ namespace RenderingBackend
 
     Selection Resolve(_In_opt_z_ const wchar_t* requestText, uint32_t availableModes) noexcept
     {
+        return Resolve(requestText, availableModes, 0);
+    }
+
+    Selection Resolve(_In_opt_z_ const wchar_t* requestText, uint32_t availableModes, uint32_t deviceUnavailableModes) noexcept
+    {
         Selection selection;
         if (requestText == nullptr || *requestText == L'\0')
         {
@@ -95,18 +143,25 @@ namespace RenderingBackend
         }
         else
         {
-            selection.reason = FallbackReason::NotImplemented;
+            selection.reason = (deviceUnavailableModes & ModeBit(requested)) != 0
+                ? FallbackReason::DeviceUnavailable
+                : FallbackReason::NotImplemented;
         }
         return selection;
     }
 
     Selection ReadSelectionFromEnvironment(uint32_t availableModes) noexcept
     {
+        return ReadSelectionFromEnvironment(availableModes, 0);
+    }
+
+    Selection ReadSelectionFromEnvironment(uint32_t availableModes, uint32_t deviceUnavailableModes) noexcept
+    {
         wchar_t buffer[32]{};
         const auto length = GetEnvironmentVariableW(EnvironmentVariableName, buffer, ARRAYSIZE(buffer));
         if (length == 0)
         {
-            return Resolve(nullptr, availableModes);
+            return Resolve(nullptr, availableModes, deviceUnavailableModes);
         }
         if (length >= ARRAYSIZE(buffer))
         {
@@ -114,17 +169,47 @@ namespace RenderingBackend
             invalid.reason = FallbackReason::InvalidRequest;
             return invalid;
         }
-        return Resolve(buffer, availableModes);
+        return Resolve(buffer, availableModes, deviceUnavailableModes);
     }
 
     uint32_t GetAvailableModes() noexcept
     {
-        return c_availableModes;
+        uint32_t modes = ModeBit(Mode::Composition);
+        for (uint32_t index = 1; index < ModeCount; ++index)
+        {
+            if (ProbeMode(static_cast<Mode>(index)) == FallbackReason::None)
+            {
+                modes |= 1u << index;
+            }
+        }
+        return modes;
+    }
+
+    namespace
+    {
+        Selection ComputeProcessSelection() noexcept
+        {
+            // Only the requested immediate mode is probed so Composition (and an unset variable) never creates devices.
+            const Selection request = ReadSelectionFromEnvironment(AllModesMask);
+            if (request.reason != FallbackReason::None || request.requested == Mode::Composition)
+            {
+                return request;
+            }
+            const FallbackReason probe = ProbeMode(request.requested);
+            if (probe == FallbackReason::None)
+            {
+                return request;
+            }
+            Selection fallback;
+            fallback.requested = request.requested;
+            fallback.reason = probe;
+            return fallback;
+        }
     }
 
     const Selection& GetProcessSelection() noexcept
     {
-        static const Selection s_selection = ReadSelectionFromEnvironment(GetAvailableModes());
+        static const Selection s_selection = ComputeProcessSelection();
         return s_selection;
     }
 
@@ -162,7 +247,7 @@ namespace RenderingBackend
             TraceLoggingWideString(ModeName(selection.requested), "RequestedName"),
             TraceLoggingWideString(ModeName(selection.effective), "EffectiveName"),
             TraceLoggingWideString(FallbackReasonName(selection.reason), "FallbackReasonName"),
-            TraceLoggingUInt32(GetAvailableModes(), "AvailableModes"));
+            TraceLoggingUInt32(GetKnownAvailableModes(), "AvailableModes"));
     }
 
     void TraceBackendFrameBegin(uint32_t frameNumber) noexcept

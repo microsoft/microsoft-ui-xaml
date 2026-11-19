@@ -40,5 +40,6 @@ namespace RenderingBackendTests
         TEST_METHOD(CompositionIsNotAnImmediatePainter);
         TEST_METHOD(RejectsEmptyTarget);
         TEST_METHOD(WarpDeviceReportsWarpIdentity);
+        TEST_METHOD(ProbeMatchesPainterCreation);
     };
 }

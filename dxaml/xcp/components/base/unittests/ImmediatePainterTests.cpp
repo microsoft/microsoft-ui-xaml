@@ -411,4 +411,18 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(identity.featureLevel >= D3D_FEATURE_LEVEL_10_0);
         VERIFY_IS_TRUE(identity.adapterLuid != 0);
     }
+
+    void PainterFactoryTests::ProbeMatchesPainterCreation()
+    {
+        VERIFY_IS_TRUE(ProbeImmediateMode(Mode::Composition) == FallbackReason::None);
+        VERIFY_IS_TRUE(ProbeImmediateMode(Mode::ImmediateGdiPlus) == FallbackReason::None);
+        VERIFY_IS_TRUE(ProbeImmediateMode(Mode::ImmediateD2DSoftware) == FallbackReason::None);
+
+        // D2D-HW is available exactly when a hardware device can be created; otherwise it reports DeviceUnavailable.
+        Microsoft::WRL::ComPtr<ID3D11Device> device;
+        DeviceIdentity identity{};
+        const bool hasHardware = SUCCEEDED(CreateD3DDeviceForMode(Mode::ImmediateD2DHardware, &device, &identity));
+        VERIFY_IS_TRUE(ProbeImmediateMode(Mode::ImmediateD2DHardware) ==
+            (hasHardware ? FallbackReason::None : FallbackReason::DeviceUnavailable));
+    }
 }

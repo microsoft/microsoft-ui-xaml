@@ -48,11 +48,20 @@ namespace RenderingBackend
     const wchar_t* ModeName(Mode mode) noexcept;
     const wchar_t* FallbackReasonName(FallbackReason reason) noexcept;
 
-    // Composition is always available regardless of availableModes.
+    // Composition is always available regardless of availableModes. An unavailable immediate mode falls back with
+    // DeviceUnavailable when its bit is set in deviceUnavailableModes and NotImplemented otherwise.
     Selection Resolve(_In_opt_z_ const wchar_t* requestText, uint32_t availableModes) noexcept;
+    Selection Resolve(_In_opt_z_ const wchar_t* requestText, uint32_t availableModes, uint32_t deviceUnavailableModes) noexcept;
     Selection ReadSelectionFromEnvironment(uint32_t availableModes) noexcept;
+    Selection ReadSelectionFromEnvironment(uint32_t availableModes, uint32_t deviceUnavailableModes) noexcept;
 
-    // Backends that can render the target scenes add their bit here.
+    // Reports whether an immediate mode can render on this machine: None when its painter (and device) can be
+    // created, DeviceUnavailable when the device cannot be created, NotImplemented when the painter is missing.
+    // Registered by the core (ProbeImmediateMode in ImmediatePainter.cpp) so this library does not link painters.
+    using ModeProbeFn = FallbackReason (*)(Mode mode) noexcept;
+    void SetImmediateModeProbe(ModeProbeFn probe) noexcept;
+
+    // Composition plus every immediate mode whose probe succeeds. Probes lazily (creates devices); results are cached.
     uint32_t GetAvailableModes() noexcept;
 
     // Read once, then cached for the process lifetime.

@@ -81,6 +81,8 @@
 #include "GraphicsTelemetry.h"
 #include "XamlTelemetry.h"
 #include <RenderingBackend.h>
+#include <ImmediatePainter.h>
+#include "ImmediateRenderer.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -921,6 +923,9 @@ CCoreServices::~CCoreServices() noexcept
 
     m_bIsDestroyingCoreServices = TRUE;
 
+    delete m_immediateRenderer;
+    m_immediateRenderer = nullptr;
+
     // TODO: Do this now or in ResetVisualTree?
     // Shutdown the work items early in the process of shutting down the core
     if (m_pWorkItemFactory != NULL)
@@ -1221,6 +1226,9 @@ CCoreServices::Create(_Out_ CCoreServices **ppCore)
     ENTERSECTION(Main);
 
     pCore = new CCoreServices;
+
+    // Lets GetProcessSelection() report immediate modes only when their painter/device can be created.
+    RenderingBackend::SetImmediateModeProbe(&RenderingBackend::ProbeImmediateMode);
 
     pCore->m_nThreadID = GetCurrentThreadId();
     pCore->m_objIdentity = gps->GenerateSecurityToken();
@@ -6423,6 +6431,14 @@ CCoreServices::NWDrawTree(
 
     XUINT32 frameNumber = m_uFrameNumber;
     RenderingBackend::TraceSelectionIfNewSession();
+    if (m_immediateRenderer == nullptr)
+    {
+        const RenderingBackend::Mode effectiveMode = RenderingBackend::GetProcessSelection().effective;
+        if (effectiveMode != RenderingBackend::Mode::Composition)
+        {
+            m_immediateRenderer = new ImmediateRenderer(effectiveMode);
+        }
+    }
     RenderingBackend::TraceBackendFrameBegin(frameNumber);
     TraceLoggingProviderWrite(
         XamlTelemetry, "CoreServices_Frame",
@@ -7162,6 +7178,11 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
 
         bool cleanIslandsRenderFlags = true;
 
+        if (m_immediateRenderer != nullptr)
+        {
+            m_immediateRenderer->ResetStats();
+        }
+
         for (auto& islandData : dcompTreeHost->GetXamlIslandRenderData())
         {
             CXamlIslandRoot* xamlIslandRoot = islandData.first;
@@ -7171,6 +7192,24 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
             if (newWindowsPresentTarget && xamlIslandRoot->GetVisualTreeNoRef() != nullptr)
             {
                 pRenderTarget->Retarget(newWindowsPresentTarget); // returns void
+
+                // Immediate-rendering prototype: paint the island through the painter into its own swap chain instead
+                // of producing comp nodes. HWWalk never visits the island, so no comp peer or visual content exists
+                // for its subtree. Paint failures are traced and retried on the next dirty frame; they never fail the
+                // render walk (which would fail fast).
+                if (m_immediateRenderer != nullptr)
+                {
+                    if (xamlIslandRoot->IsActive())
+                    {
+                        const HRESULT paintHr = m_immediateRenderer->RenderIsland(dcompTreeHost, xamlIslandRoot, m_uFrameNumber);
+                        if (FAILED(paintHr))
+                        {
+                            LOG_HR(paintHr);
+                        }
+                        xamlIslandRoot->PropagateNWClean();
+                    }
+                    continue;
+                }
 
                 // During test cleanup we can have XamlIslandRoot that are still alive but have no content.
                 // Don't try to render them.
@@ -7225,6 +7264,11 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
             // and none of other children of root visual are used.
             pVisualRoot->PropagateNWClean();
         }
+
+        if (m_immediateRenderer != nullptr)
+        {
+            m_immediateRenderer->PruneIslands(dcompTreeHost);
+        }
     }
 
     if (GetInitializationType() != InitializationType::IslandsOnly)
@@ -7264,7 +7308,14 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
     }
 
     TraceRenderWalkEnd1(pHWWalk->GetElementsVisited(), pHWWalk->GetElementsRenderedCount());
-    RenderingBackend::TraceRenderWalkStats(m_uFrameNumber, pHWWalk->GetElementsVisited(), pHWWalk->GetElementsRenderedCount());
+    if (m_immediateRenderer != nullptr)
+    {
+        RenderingBackend::TraceRenderWalkStats(m_uFrameNumber, m_immediateRenderer->GetElementsVisited(), m_immediateRenderer->GetElementsRendered());
+    }
+    else
+    {
+        RenderingBackend::TraceRenderWalkStats(m_uFrameNumber, pHWWalk->GetElementsVisited(), pHWWalk->GetElementsRenderedCount());
+    }
 
     return S_OK;
 }
@@ -8898,6 +8949,12 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
         IFC_RETURN(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->CreateFinalReleaseAsserter(asserter.ReleaseAndGetAddressOf()));
     }
 #endif
+
+    // The immediate renderer's visuals live on the compositor; its devices are its own and survive WinUI device loss.
+    if (cleanupDComp && m_immediateRenderer != nullptr)
+    {
+        m_immediateRenderer->ReleaseResources();
+    }
 
     // Cleanup all the dictionaries on core.
     if (m_pDeploymentTree != nullptr)

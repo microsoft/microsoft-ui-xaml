@@ -80,6 +80,55 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(selection.reason == FallbackReason::NotImplemented);
     }
 
+    void SelectionTests::DeviceUnavailableModeFallsBackWithReason()
+    {
+        const uint32_t available = ModeBit(Mode::Composition) | ModeBit(Mode::ImmediateD2DSoftware);
+        auto selection = Resolve(L"d2d-hw", available, ModeBit(Mode::ImmediateD2DHardware));
+        VERIFY_IS_TRUE(selection.requested == Mode::ImmediateD2DHardware);
+        VERIFY_IS_TRUE(selection.effective == Mode::Composition);
+        VERIFY_IS_TRUE(selection.reason == FallbackReason::DeviceUnavailable);
+
+        // The device-unavailable mask only affects modes that are not available.
+        selection = Resolve(L"d2d-sw", available, ModeBit(Mode::ImmediateD2DSoftware));
+        VERIFY_IS_TRUE(selection.effective == Mode::ImmediateD2DSoftware);
+        VERIFY_IS_TRUE(selection.reason == FallbackReason::None);
+
+        selection = Resolve(L"gdiplus", available, ModeBit(Mode::ImmediateD2DHardware));
+        VERIFY_IS_TRUE(selection.effective == Mode::Composition);
+        VERIFY_IS_TRUE(selection.reason == FallbackReason::NotImplemented);
+    }
+
+    namespace
+    {
+        uint32_t s_probeCalls = 0;
+
+        FallbackReason FakeProbe(Mode mode) noexcept
+        {
+            ++s_probeCalls;
+            switch (mode)
+            {
+                case Mode::ImmediateGdiPlus: return FallbackReason::None;
+                case Mode::ImmediateD2DHardware: return FallbackReason::DeviceUnavailable;
+                default: return FallbackReason::NotImplemented;
+            }
+        }
+    }
+
+    void SelectionTests::ProbeDeterminesAvailableModes()
+    {
+        SetImmediateModeProbe(&FakeProbe);
+        auto restore = wil::scope_exit([] { SetImmediateModeProbe(nullptr); });
+
+        s_probeCalls = 0;
+        const uint32_t modes = GetAvailableModes();
+        VERIFY_ARE_EQUAL(ModeBit(Mode::Composition) | ModeBit(Mode::ImmediateGdiPlus), modes);
+        VERIFY_ARE_EQUAL(3u, s_probeCalls);
+
+        // Results are cached: probing creates devices, so it runs at most once per mode.
+        VERIFY_ARE_EQUAL(modes, GetAvailableModes());
+        VERIFY_ARE_EQUAL(3u, s_probeCalls);
+    }
+
     void SelectionTests::AvailableModeIsHonored()
     {
         const auto selection = Resolve(L"gdiplus", ModeBit(Mode::Composition) | ModeBit(Mode::ImmediateGdiPlus));

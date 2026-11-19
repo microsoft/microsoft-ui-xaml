@@ -38,4 +38,26 @@ namespace RenderingBackend
                 return E_INVALIDARG;
         }
     }
+
+    FallbackReason ProbeImmediateMode(Mode mode) noexcept
+    {
+        if (mode == Mode::Composition)
+        {
+            return FallbackReason::None;
+        }
+        PainterOptions options;
+        options.width = 16;
+        options.height = 16;
+        std::unique_ptr<IImmediatePainter> painter;
+        const HRESULT hr = CreateImmediatePainter(mode, options, painter);
+        if (SUCCEEDED(hr) && painter)
+        {
+            return FallbackReason::None;
+        }
+        if (hr == E_NOTIMPL || hr == E_INVALIDARG)
+        {
+            return FallbackReason::NotImplemented;
+        }
+        return FallbackReason::DeviceUnavailable;
+    }
 }

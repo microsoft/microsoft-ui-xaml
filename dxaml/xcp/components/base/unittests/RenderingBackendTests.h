@@ -19,6 +19,8 @@ namespace RenderingBackendTests
         TEST_METHOD(UnsetRequestSelectsComposition);
         TEST_METHOD(InvalidRequestFallsBackToComposition);
         TEST_METHOD(UnavailableModeFallsBackWithReason);
+        TEST_METHOD(DeviceUnavailableModeFallsBackWithReason);
+        TEST_METHOD(ProbeDeterminesAvailableModes);
         TEST_METHOD(AvailableModeIsHonored);
         TEST_METHOD(CompositionIsAlwaysAvailable);
         TEST_METHOD(ReadsEnvironmentVariable);
