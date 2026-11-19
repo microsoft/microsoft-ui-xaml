@@ -16966,7 +16966,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     // Microsoft.UI.Xaml.Controls.Image
     {
         KnownPropertyIndex::Image_NineGrid, // First property
-        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        KnownPropertyIndex::Image_Source, // Content property
         78, // First enter property = Microsoft.UI.Xaml.Controls.Image.Source
         67, // First render property = Microsoft.UI.Xaml.Controls.Image.Source
         74, // First object property = Microsoft.UI.Xaml.Controls.Image.Source

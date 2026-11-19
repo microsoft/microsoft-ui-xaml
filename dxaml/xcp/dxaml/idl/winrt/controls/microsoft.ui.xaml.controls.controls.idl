@@ -1509,6 +1509,7 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
+    [contentproperty("Source")]
     runtimeclass Image
         : Microsoft.UI.Xaml.FrameworkElement
     {
