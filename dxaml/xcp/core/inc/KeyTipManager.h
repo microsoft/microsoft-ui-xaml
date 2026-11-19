@@ -53,6 +53,11 @@ private:
 
     void GoToState(_In_opt_ CCoreServices* core, State newState);
 
+    bool IsUpdatingKeyTips() const
+    {
+        return m_state == State::UpdatingKeyTips || m_state == State::ForciblyUpdatingKeyTips;
+    }
+
     void StartStateTimer(_In_ CCoreServices* core, int milliseconds);
     void StopStateTimer();
 
@@ -77,4 +82,11 @@ private:
 
     bool m_areKeyTipsEnabled = true;
     bool m_finiteAnimationIsRunning = false;
+
+    // Set when KeyTips are added or hidden while Execute is updating them, so another update is scheduled.
+    bool m_keyTipsChangedDuringUpdate = false;
+
+    // Set when a forced update (one that stopped waiting for animations) schedules another update, so that
+    // update doesn't wait for animations again.  Cleared when going to Idle.
+    bool m_forceNextUpdate = false;
 };
