@@ -1414,6 +1414,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             // Closes the host window early; Dispose then only restores the main window.
             public void CloseWindow()
             {
+                ReleaseInputObjectWrappers();
                 RunOnUIThread.Execute(() =>
                 {
                     Window.Close();
@@ -1422,10 +1423,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 IdleSynchronizer.Wait();
             }
 
+            // GetRegionRects leaves InputNonClientPointerSource wrappers for the GC. Finalizing them after the window is
+            // gone destroys the source during window teardown, which fail-fasts in Microsoft.UI.Input on RS5. Collect
+            // them while the window is still alive. Runs on the test thread: the finalizer may need the UI thread.
+            private static void ReleaseInputObjectWrappers()
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
+
             private bool windowClosed;
 
             public void Dispose()
             {
+                if (!windowClosed)
+                {
+                    ReleaseInputObjectWrappers();
+                }
+
                 RunOnUIThread.Execute(() =>
                 {
                     if (!windowClosed)
