@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "IconElement.g.h"
 #include "IconSource.g.h"
+#include "PropertyChangedParamsHelper.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -66,14 +67,26 @@ _Check_return_ HRESULT IconSource::OnPropertyChanged2(_In_ const PropertyChanged
     
     if (iconElementProperty)
     {
+        ctl::ComPtr<IInspectable> oldValue;
+        ctl::ComPtr<IInspectable> newValue;
+        IFC_RETURN(PropertyChangedParamsHelper::GetObjects(args, &oldValue, &newValue));
+
         m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
-            [iconElementProperty, newValue = args.m_pNewValueOuterNoRef](ctl::WeakRefPtr weakElement)
+            [iconElementProperty, newValue](ctl::WeakRefPtr weakElement)
         {
             auto iconElement = weakElement.AsOrNull<IconElement>();
             
             if (iconElement)
             {
-                iconElement->SetValue(iconElementProperty.Get(), newValue);
+                // CreateIconElement never copies a null value, so clear it to leave the element as if it had never been copied.
+                if (newValue)
+                {
+                    iconElement->SetValue(iconElementProperty.Get(), newValue.Get());
+                }
+                else
+                {
+                    iconElement->ClearValue(iconElementProperty.Get());
+                }
             }
             
             return !iconElement;

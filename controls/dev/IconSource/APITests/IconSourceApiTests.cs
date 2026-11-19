@@ -261,16 +261,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(fallback, GetAnimatedIconFallback(animatedIcon));
         }
 
-        // Scenario: Repro for a product bug. Creates an icon from an AnimatedIconSource, sets the source's
-        // MirroredWhenRightToLeft to true, then calls ClearValue(MirroredWhenRightToLeftProperty) on the source. The
-        // icon's getter is read inside a try/catch so an exception fails the test instead of crashing the process.
+        // Scenario: Creates an icon from an AnimatedIconSource, sets the source's MirroredWhenRightToLeft to true, then
+        // calls ClearValue(MirroredWhenRightToLeftProperty) on the source. The icon's getter is read inside a try/catch
+        // so an exception fails the test instead of crashing the process.
         // Expected: the icon reads true after the set and the registered default false after the clear, exactly as when
         // the value is cleared on the icon itself.
-        // Failure means: the product bug is still present: the already-created icon's MirroredWhenRightToLeft getter
-        // throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean) instead of returning false. The test
-        // is ignored until the bug is fixed; if it passes, the bug is fixed and the test should be re-enabled.
+        // Failure means: IconSource pushed a null instead of the cleared value, so the already-created icon's
+        // MirroredWhenRightToLeft getter throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean).
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Repro for the AnimatedIconSource ClearValue(MirroredWhenRightToLeftProperty) product bug. Re-enable when fixed.
         public void AnimatedIconSourceClearedMirroredWhenRightToLeftPropagatesDefaultToCreatedIcon()
         {
             var ids = ReadAnimatedIconSourcePropertyIds();
