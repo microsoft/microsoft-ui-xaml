@@ -68,6 +68,12 @@ private:
         const ImmediateRenderingDetail::WalkContext& parent,
         _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
+    // Copies a clean subtree's output from the previous frame's display list; false when it cannot be reused.
+    bool ReuseSubtree(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& parent,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+
     // Emits the element's own drawing. deferBorder: the border stroke is emitted by EmitBorder after the children
     // (CornerRadius-clipped elements draw their border over their clipped children, like Composition mode).
     void EmitContent(
@@ -92,4 +98,7 @@ private:
     uint32_t m_elementsVisited = 0;
     uint32_t m_elementsRendered = 0;   // elements with at least one command replayed (painted) this frame
     uint32_t m_elementsCulled = 0;
+    uint32_t m_subtreesReused = 0;
+    // Previous frame's display list of the island being walked: clean subtrees reuse their commands from it.
+    ImmediateRenderingDetail::DisplayList* m_previousWalk = nullptr;
 };

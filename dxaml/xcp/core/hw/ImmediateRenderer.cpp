@@ -21,6 +21,7 @@
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
 #include <XamlCompositionBrush.h>
+#include <FxCallbacks.h>
 #include <dwrite.h>
 #include <algorithm>
 #include <cmath>
@@ -107,6 +108,13 @@ namespace
         return s_union;
     }
 
+    // Diagnostic: WINUI_IMMEDIATE_FULL_WALK=1 walks the whole tree every frame (no subtree reuse).
+    bool DisableIncrementalWalk()
+    {
+        static const bool s_fullWalk = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_FULL_WALK", nullptr, 0) != 0;
+        return s_fullWalk;
+    }
+
     // Prototype diagnostics: WINUI_IMMEDIATE_STATS=<path.txt> appends one line per painted island frame.
     FILE* GetStatsFile()
     {
@@ -117,7 +125,7 @@ namespace
             FILE* file = nullptr;
             if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
             {
-                fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus\n");
+                fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus reused\n");
                 return file;
             }
             return nullptr;
@@ -269,6 +277,13 @@ namespace
                 return L"AcrylicBrush:fallback";
             }
         }
+        // MUXC's AcrylicBrush is a custom type: the core class info only knows its XamlCompositionBrushBase base.
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_acrylicBrush, L"Microsoft.UI.Xaml.Media.AcrylicBrush");
+        if (brush->HasManagedPeer()
+            && SUCCEEDED(FxCallbacks::FrameworkCallbacks_CheckPeerType(brush, c_acrylicBrush, FALSE)))
+        {
+            return L"AcrylicBrush:fallback";
+        }
         return L"XamlCompositionBrush:fallback";
     }
 
@@ -399,6 +414,7 @@ namespace ImmediateRenderingDetail
         uint64_t key = 0;      // Bitmap
         RectF sourceRect;      // Bitmap, pixels; empty = whole bitmap
         const CUIElement* owner = nullptr;
+        uint32_t foldedFrom = UINT32_MAX; // index of the opacity group folded into this command (subtree reuse)
     };
 
     struct GlyphRunData
@@ -446,6 +462,27 @@ namespace ImmediateRenderingDetail
         bool nonZero = false;
     };
 
+    // Output range of one walked subtree (children included), recorded post-order so a subtree's descendant spans are
+    // [spanBegin, own index). The parent context it was walked in is the reuse key.
+    struct SubtreeSpan
+    {
+        const CUIElement* element = nullptr;
+        Matrix3x2F world;
+        RectF clip;
+        RectF contentClip;
+        float scale = 1;
+        float offsetX = 0;
+        float offsetY = 0;
+        const CUIElement* scroller = nullptr;
+        uint32_t cmdBegin = 0, cmdEnd = 0;
+        uint32_t strBegin = 0, strEnd = 0;
+        uint32_t glyphBegin = 0, glyphEnd = 0;
+        uint32_t pathBegin = 0, pathEnd = 0;
+        uint32_t bitmapBegin = 0, bitmapEnd = 0;
+        uint32_t recordBegin = 0, recordEnd = 0;
+        uint32_t spanBegin = 0;
+    };
+
     struct DisplayList
     {
         std::vector<Command> commands;
@@ -454,7 +491,21 @@ namespace ImmediateRenderingDetail
         std::vector<PathGeometryData> paths; // FillPath/StrokePath: index
         std::vector<xref_ptr<IPALSurface>> bitmaps; // Bitmap commands: decoded software surfaces (key = pointer)
         std::unordered_map<const CUIElement*, ElementRecord> records;
+        std::vector<const CUIElement*> recordOrder; // records in creation order (subtree spans index this)
         std::vector<ScrollerInfo> scrollers;
+        std::vector<SubtreeSpan> spans;
+        std::unordered_map<const CUIElement*, uint32_t> spanIndex;
+        uint32_t uncacheable = 0; // bumped by content that depends on more than the parent context (popups, scrollers)
+
+        ElementRecord& Record(_In_ const CUIElement* element)
+        {
+            auto result = records.try_emplace(element);
+            if (result.second)
+            {
+                recordOrder.push_back(element);
+            }
+            return result.first->second;
+        }
     };
 
     struct WalkContext
@@ -497,6 +548,7 @@ struct ImmediateRenderer::IslandState
     };
     std::unordered_map<uint64_t, BitmapEntry> bitmaps;
     uint64_t frames = 0;
+    DisplayList previousWalk;
 };
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
@@ -951,7 +1003,7 @@ namespace
         {
             if (record == nullptr)
             {
-                record = &list.records[element];
+                record = &list.Record(element);
                 if (!record->hasContent)
                 {
                     record->hasContent = true;
@@ -1412,7 +1464,7 @@ namespace
 
         const bool isLayer = push.type == CommandType::PushLayer;
         Fnv fnv;
-        ElementRecord& record = list.records[element];
+        ElementRecord& record = list.Record(element);
         if (!record.hasGroup)
         {
             record.hasGroup = true;
@@ -1438,6 +1490,7 @@ namespace
             Command& c = list.commands[single];
             c.color.a *= push.opacity;
             c.opacity *= push.opacity;
+            c.foldedFrom = static_cast<uint32_t>(pushIndex);
             push.type = CommandType::Nop;
             return;
         }
@@ -1817,6 +1870,7 @@ void ImmediateRenderer::Walk(
             // Open popups paint on top of the island content, oldest first (HWWalk::PopupRootRenderChildren). A popup's
             // child is parented to the PopupRoot but positioned by the popup's own ancestor chain.
             auto popupRoot = static_cast<CPopupRoot*>(element);
+            ++list.uncacheable;
             const std::vector<CPopup*> popups = popupRoot->GetOpenPopupList(true /* includeUnloadingPopups */);
             WalkContext popupCtx = parent;
             popupCtx.scroller = -1;
@@ -1869,6 +1923,22 @@ void ImmediateRenderer::Walk(
         default:
             break;
     }
+
+    // Incremental walk: a subtree with no render-dirty flags (cleaned after every immediate frame) walked in the same
+    // parent context produces the same output as last frame. Direct scroller content is always walked (it records the
+    // scroller's offset).
+    if (m_previousWalk != nullptr && !parent.scrollerContent && !element->NWNeedsRendering() && ReuseSubtree(element, parent, list))
+    {
+        return;
+    }
+    const uint32_t cmdBegin = static_cast<uint32_t>(list.commands.size());
+    const uint32_t strBegin = static_cast<uint32_t>(list.strings.size());
+    const uint32_t glyphBegin = static_cast<uint32_t>(list.glyphRuns.size());
+    const uint32_t pathBegin = static_cast<uint32_t>(list.paths.size());
+    const uint32_t bitmapBegin = static_cast<uint32_t>(list.bitmaps.size());
+    const uint32_t recordBegin = static_cast<uint32_t>(list.recordOrder.size());
+    const uint32_t spanBegin = static_cast<uint32_t>(list.spans.size());
+    const uint32_t uncacheableBefore = list.uncacheable;
 
     const float localOpacity = element->GetOpacityLocal();
     if (!(localOpacity > 0))
@@ -2034,12 +2104,13 @@ void ImmediateRenderer::Walk(
         childCtx.scroller = static_cast<int>(list.scrollers.size());
         childCtx.scrollerContent = true;
         list.scrollers.push_back(scroller);
+        ++list.uncacheable;
     }
 
+    XUINT32 childCount = 0;
     if (!IsEmptyRect(childCtx.clip))
     {
         CUIElement** children = nullptr;
-        XUINT32 childCount = 0;
         element->GetChildrenInRenderOrder(&children, &childCount);
         for (XUINT32 i = 0; i < childCount; ++i)
         {
@@ -2059,6 +2130,139 @@ void ImmediateRenderer::Walk(
     {
         CloseGroup(list, layerIndex, element, ctx, ctx.world);
     }
+
+    // Leaves are cheap to re-emit; record spans for subtrees only.
+    if (childCount > 0 && !parent.scrollerContent && list.uncacheable == uncacheableBefore)
+    {
+        SubtreeSpan span;
+        span.element = element;
+        span.world = ToMatrix(parent.world);
+        span.clip = parent.clip;
+        span.contentClip = parent.contentClip;
+        span.scale = parent.scale;
+        span.offsetX = parent.offsetX;
+        span.offsetY = parent.offsetY;
+        span.scroller = parent.scroller >= 0 ? list.scrollers[parent.scroller].presenter : nullptr;
+        span.cmdBegin = cmdBegin;
+        span.cmdEnd = static_cast<uint32_t>(list.commands.size());
+        span.strBegin = strBegin;
+        span.strEnd = static_cast<uint32_t>(list.strings.size());
+        span.glyphBegin = glyphBegin;
+        span.glyphEnd = static_cast<uint32_t>(list.glyphRuns.size());
+        span.pathBegin = pathBegin;
+        span.pathEnd = static_cast<uint32_t>(list.paths.size());
+        span.bitmapBegin = bitmapBegin;
+        span.bitmapEnd = static_cast<uint32_t>(list.bitmaps.size());
+        span.recordBegin = recordBegin;
+        span.recordEnd = static_cast<uint32_t>(list.recordOrder.size());
+        span.spanBegin = spanBegin;
+        list.spanIndex[element] = static_cast<uint32_t>(list.spans.size());
+        list.spans.push_back(span);
+    }
+}
+
+bool ImmediateRenderer::ReuseSubtree(
+    _In_ CUIElement* element,
+    const WalkContext& parent,
+    _Inout_ DisplayList& list)
+{
+    DisplayList& previous = *m_previousWalk;
+    const auto found = previous.spanIndex.find(element);
+    if (found == previous.spanIndex.end())
+    {
+        return false;
+    }
+    const uint32_t spanIndex = found->second;
+    const SubtreeSpan& span = previous.spans[spanIndex];
+    const CUIElement* scroller = parent.scroller >= 0 ? list.scrollers[parent.scroller].presenter : nullptr;
+    const Matrix3x2F world = ToMatrix(parent.world);
+    if (span.scroller != scroller || span.scale != parent.scale || span.offsetX != parent.offsetX || span.offsetY != parent.offsetY
+        || memcmp(&span.world, &world, sizeof(world)) != 0 || memcmp(&span.clip, &parent.clip, sizeof(RectF)) != 0
+        || memcmp(&span.contentClip, &parent.contentClip, sizeof(RectF)) != 0)
+    {
+        return false;
+    }
+    // A single-primitive opacity group of an ancestor folded its opacity into one of these commands.
+    for (uint32_t i = span.cmdBegin; i < span.cmdEnd; ++i)
+    {
+        const uint32_t folded = previous.commands[i].foldedFrom;
+        if (folded != UINT32_MAX && folded < span.cmdBegin)
+        {
+            return false;
+        }
+    }
+
+    const int64_t cmdDelta = static_cast<int64_t>(list.commands.size()) - span.cmdBegin;
+    const int64_t strDelta = static_cast<int64_t>(list.strings.size()) - span.strBegin;
+    const int64_t glyphDelta = static_cast<int64_t>(list.glyphRuns.size()) - span.glyphBegin;
+    const int64_t pathDelta = static_cast<int64_t>(list.paths.size()) - span.pathBegin;
+    const int64_t bitmapDelta = static_cast<int64_t>(list.bitmaps.size()) - span.bitmapBegin;
+    const int64_t recordDelta = static_cast<int64_t>(list.recordOrder.size()) - span.recordBegin;
+    const int64_t spanDelta = static_cast<int64_t>(list.spans.size()) - span.spanBegin;
+    auto shift = [](uint32_t& value, int64_t delta) { value = static_cast<uint32_t>(value + delta); };
+
+    // Each element is walked once per frame, so the previous frame's data can be moved rather than copied.
+    for (uint32_t i = span.strBegin; i < span.strEnd; ++i)
+    {
+        list.strings.push_back(std::move(previous.strings[i]));
+    }
+    for (uint32_t i = span.glyphBegin; i < span.glyphEnd; ++i)
+    {
+        list.glyphRuns.push_back(std::move(previous.glyphRuns[i]));
+    }
+    for (uint32_t i = span.pathBegin; i < span.pathEnd; ++i)
+    {
+        list.paths.push_back(std::move(previous.paths[i]));
+    }
+    for (uint32_t i = span.bitmapBegin; i < span.bitmapEnd; ++i)
+    {
+        list.bitmaps.push_back(std::move(previous.bitmaps[i]));
+    }
+    for (uint32_t i = span.cmdBegin; i < span.cmdEnd; ++i)
+    {
+        Command c = previous.commands[i];
+        switch (c.type)
+        {
+            case CommandType::Text: shift(c.index, strDelta); break;
+            case CommandType::GlyphRun: shift(c.index, glyphDelta); break;
+            case CommandType::FillPath:
+            case CommandType::StrokePath: shift(c.index, pathDelta); break;
+            case CommandType::Bitmap: shift(c.index, bitmapDelta); break;
+            case CommandType::PushLayer:
+            case CommandType::PushRoundedClip: shift(c.index, cmdDelta); break;
+            default: break;
+        }
+        if (c.foldedFrom != UINT32_MAX)
+        {
+            shift(c.foldedFrom, cmdDelta);
+        }
+        list.commands.push_back(c);
+    }
+    for (uint32_t i = span.recordBegin; i < span.recordEnd; ++i)
+    {
+        const CUIElement* owner = previous.recordOrder[i];
+        auto record = previous.records.find(owner);
+        if (record != previous.records.end())
+        {
+            list.records.emplace(owner, std::move(record->second));
+            list.recordOrder.push_back(owner);
+        }
+    }
+    for (uint32_t i = span.spanBegin; i <= spanIndex; ++i)
+    {
+        SubtreeSpan s = previous.spans[i];
+        shift(s.cmdBegin, cmdDelta); shift(s.cmdEnd, cmdDelta);
+        shift(s.strBegin, strDelta); shift(s.strEnd, strDelta);
+        shift(s.glyphBegin, glyphDelta); shift(s.glyphEnd, glyphDelta);
+        shift(s.pathBegin, pathDelta); shift(s.pathEnd, pathDelta);
+        shift(s.bitmapBegin, bitmapDelta); shift(s.bitmapEnd, bitmapDelta);
+        shift(s.recordBegin, recordDelta); shift(s.recordEnd, recordDelta);
+        shift(s.spanBegin, spanDelta);
+        list.spanIndex[s.element] = static_cast<uint32_t>(list.spans.size());
+        list.spans.push_back(s);
+    }
+    ++m_subtreesReused;
+    return true;
 }
 
 _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
@@ -2103,6 +2307,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     const uint32_t visitedBefore = m_elementsVisited;
     const uint32_t culledBefore = m_elementsCulled;
     const uint32_t renderedBefore = m_elementsRendered;
+    const uint32_t reusedBefore = m_subtreesReused;
     DisplayList list;
     list.records.reserve(state.records.size());
     const RectF islandClip{ 0, 0, width / scale, height / scale };
@@ -2110,7 +2315,14 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     root.clip = islandClip;
     root.contentClip = islandClip;
     root.scale = scale;
-    Walk(island, root, list);
+    {
+        // The previous list is consumed (moved from) by subtree reuse; this frame's list replaces it afterwards.
+        DisplayList previous = std::move(state.previousWalk);
+        state.previousWalk = DisplayList();
+        m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
+        auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
+        Walk(island, root, list);
+    }
 
     const RectF surface{ 0, 0, static_cast<float>(width), static_cast<float>(height) };
     bool fullDamage = state.fullDamage;
@@ -2353,8 +2565,9 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         damage.erase(std::remove_if(damage.begin(), damage.end(), [](const RectF& r) { return IsEmptyRect(r); }), damage.end());
         if (damage.empty() && blits.empty())
         {
-            state.records = std::move(list.records);
+            state.records = list.records;
             SaveScrollers(state, list);
+            state.previousWalk = std::move(list);
             return S_OK;
         }
         ownDamage = damage;
@@ -2612,11 +2825,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                 damagePixels += static_cast<double>(d.right - d.left) * (d.bottom - d.top);
             }
         }
-        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld\n", frameNumber, static_cast<void*>(island),
+        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld %u\n", frameNumber, static_cast<void*>(island),
             list.records.size(), m_elementsVisited - visitedBefore, m_elementsRendered - renderedBefore,
             m_elementsCulled - culledBefore, list.commands.size(), blits.size(), blits.empty() ? 0 : blits[0].dx,
             blits.empty() ? 0 : blits[0].dy, fullDamage ? 0 : damage.size(), damagePixels, fullDamage ? 1 : 0,
-            static_cast<long long>(paintStart - walkStart), static_cast<long long>(paintEnd - paintStart));
+            static_cast<long long>(paintStart - walkStart), static_cast<long long>(paintEnd - paintStart),
+            m_subtreesReused - reusedBefore);
         fflush(statsFile);
     }
 
@@ -2651,8 +2865,9 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
     state.presentedFull = ownFull;
     state.presentedDamage = ownFull ? std::vector<RectF>() : std::move(ownDamage);
-    state.records = std::move(list.records);
+    state.records = list.records;
     SaveScrollers(state, list);
+    state.previousWalk = std::move(list);
 
     if (!GetCapturePath().empty())
     {
