@@ -33,6 +33,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ChangeDecodeSizeAnimatedStopped)
                 TEST_METHOD_PROPERTY(L"Description", L"Update decode params for animated image that is stopped.")
             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CleanupDeviceRelatedResourcesBeforeDecodeStarts)
+                TEST_METHOD_PROPERTY(L"Description", L"A decode queued before device-loss cleanup is still presented.")
+            END_TEST_METHOD()
         };
     }}
 } } } }

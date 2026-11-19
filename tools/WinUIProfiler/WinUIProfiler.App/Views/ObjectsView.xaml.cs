@@ -129,8 +129,7 @@ public sealed partial class ObjectsView : UserControl
             {
                 var info = SessionFile.ReadInfo(file);
                 return (info, info.ProcessId != node.ProcessId ? null
-                    : node.Kind == ObjectKind.Visual ? SessionFile.FindSnapshotVisual(file, node.Addresses[0], node.Qpc)
-                    : SessionFile.FindSnapshotElement(file, node.Addresses, node.Qpc));
+                    : node.Identity.FindObject(file));
             });
             if (file != path)
             {

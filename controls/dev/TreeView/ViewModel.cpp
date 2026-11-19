@@ -383,8 +383,7 @@ void ViewModel::EndSelectionChanges()
 
 uint32_t ViewModel::Size()
 {
-    auto inner = GetVectorInnerImpl();
-    return inner->Size();
+    return m_items.size();
 }
 
 winrt::IInspectable ViewModel::GetAt(uint32_t index)
@@ -401,14 +400,12 @@ bool ViewModel::IndexOf(winrt::IInspectable const& value, uint32_t& index)
     }
     else
     {
-        auto inner = GetVectorInnerImpl();
-        return inner->IndexOf(value, index);
+        return IndexOfItem(value, index);
     }
 }
 
 uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::IInspectable> values)
 {
-    auto inner = GetVectorInnerImpl();
     if (IsContentMode())
     {
         auto vector = winrt::make<Vector<winrt::IInspectable>>();
@@ -419,7 +416,10 @@ uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::
         }
         return vector.GetMany(startIndex, values);
     }
-    return inner->GetMany(startIndex, values);
+
+    uint32_t count = 0;
+    m_items.for_each(startIndex, values.size(), [&](const FlatListItem& row) { values[count++] = row.item.safe_get(false); });
+    return count;
 }
 
 winrt::IVectorView<winrt::IInspectable> ViewModel::GetView()
@@ -429,15 +429,14 @@ winrt::IVectorView<winrt::IInspectable> ViewModel::GetView()
 
 winrt::TreeViewNode ViewModel::GetNodeAt(uint32_t index)
 {
-    auto inner = GetVectorInnerImpl();
-    return inner->GetAt(index).as<winrt::TreeViewNode>();
+    return ItemAt(index).as<winrt::TreeViewNode>();
 }
 
 void ViewModel::SetAt(uint32_t index, winrt::IInspectable const& value)
 {
-    auto inner = GetVectorInnerImpl();
-    auto current = inner->GetAt(index).as<winrt::TreeViewNode>();
-    inner->SetAt(index, value);
+    auto current = GetNodeAt(index);
+    m_items.replace(index, MakeFlatListItem(value));
+    RaiseVectorChanged(winrt::CollectionChange::ItemChanged, index);
 
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
 
@@ -453,20 +452,25 @@ void ViewModel::SetAt(uint32_t index, winrt::IInspectable const& value)
 
 void ViewModel::InsertAt(uint32_t index, winrt::IInspectable const& value)
 {
-    GetVectorInnerImpl()->InsertAt(index, value);
+    if (index > m_items.size())
+    {
+        throw winrt::hresult_out_of_bounds();
+    }
+    m_items.insert(index, MakeFlatListItem(value));
+    RaiseVectorChanged(winrt::CollectionChange::ItemInserted, index);
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
 
     // Hook up events and save tokens
     auto tvnNewNode = winrt::get_self<TreeViewNode>(newNode);
-    m_collectionChangedEventTokenVector.insert(m_collectionChangedEventTokenVector.begin() + index, tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
-    m_IsExpandedChangedEventTokenVector.insert(m_IsExpandedChangedEventTokenVector.begin() + index, tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged }));
+    m_collectionChangedEventTokenVector.insert(index, tvnNewNode->ChildrenChanged({ this, &ViewModel::TreeViewNodeVectorChanged }));
+    m_IsExpandedChangedEventTokenVector.insert(index, tvnNewNode->AddExpandedChanged({ this, &ViewModel::TreeViewNodePropertyChanged }));
 }
 
 void ViewModel::RemoveAt(uint32_t index)
 {
-    auto inner = GetVectorInnerImpl();
-    auto current = inner->GetAt(index).as<winrt::TreeViewNode>();
-    inner->RemoveAt(index);
+    auto current = GetNodeAt(index);
+    m_items.erase(index);
+    RaiseVectorChanged(winrt::CollectionChange::ItemRemoved, index);
 
     // Unhook event handlers
     auto tvnCurrent = winrt::get_self<TreeViewNode>(current);
@@ -474,13 +478,14 @@ void ViewModel::RemoveAt(uint32_t index)
     tvnCurrent->RemoveExpandedChanged(m_IsExpandedChangedEventTokenVector[index]);
 
     // Remove tokens from vectors
-    m_collectionChangedEventTokenVector.erase(m_collectionChangedEventTokenVector.begin() + index);
-    m_IsExpandedChangedEventTokenVector.erase(m_IsExpandedChangedEventTokenVector.begin() + index);
+    m_collectionChangedEventTokenVector.erase(index);
+    m_IsExpandedChangedEventTokenVector.erase(index);
 }
 
 void ViewModel::Append(winrt::IInspectable const& value)
 {
-    GetVectorInnerImpl()->Append(value);
+    m_items.push_back(MakeFlatListItem(value));
+    RaiseVectorChanged(winrt::CollectionChange::ItemInserted, m_items.size() - 1);
     winrt::TreeViewNode newNode = value.as<winrt::TreeViewNode>();
 
     // Hook up events and save tokens
@@ -491,9 +496,9 @@ void ViewModel::Append(winrt::IInspectable const& value)
 
 void ViewModel::RemoveAtEnd()
 {
-    auto inner = GetVectorInnerImpl();
-    auto current = inner->GetAt(Size() - 1).as<winrt::TreeViewNode>();
-    inner->RemoveAtEnd();
+    auto current = GetNodeAt(Size() - 1);
+    m_items.pop_back();
+    RaiseVectorChanged(winrt::CollectionChange::ItemRemoved, m_items.size());
 
     // Unhook events
     auto tvnCurrent = winrt::get_self<TreeViewNode>(current);
@@ -518,8 +523,44 @@ void ViewModel::Clear()
 
 void ViewModel::ReplaceAll(winrt::array_view<winrt::IInspectable const> items)
 {
-    auto inner = GetVectorInnerImpl();
-    return inner->ReplaceAll(items);
+    m_items.clear();
+    RaiseVectorChanged(winrt::CollectionChange::Reset, 0u);
+    for (auto value : items)
+    {
+        m_items.push_back(MakeFlatListItem(value));
+        RaiseVectorChanged(winrt::CollectionChange::ItemInserted, m_items.size() - 1);
+    }
+}
+
+// The rows are in m_items. Implement_Vector_External's inner vector stays empty and only raises the flat list's
+// VectorChanged event.
+void ViewModel::RaiseVectorChanged(winrt::CollectionChange change, uint32_t index)
+{
+    GetVectorInnerImpl()->RaiseChildrenChanged(change, index);
+}
+
+ViewModel::FlatListItem ViewModel::MakeFlatListItem(winrt::IInspectable const& value)
+{
+    // The same identity that operator== compares for winrt objects.
+    const auto identity = value ? winrt::get_abi(value.try_as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    return FlatListItem{ tracker_ref<winrt::IInspectable>{ this, value }, identity };
+}
+
+winrt::IInspectable ViewModel::ItemAt(uint32_t index, bool useSafeGet)
+{
+    if (index >= m_items.size())
+    {
+        throw winrt::hresult_out_of_bounds();
+    }
+    return m_items[index].item.safe_get(useSafeGet);
+}
+
+bool ViewModel::IndexOfItem(winrt::IInspectable const& value, uint32_t& index)
+{
+    const auto identity = value ? winrt::get_abi(value.try_as<winrt::Windows::Foundation::IUnknown>()) : nullptr;
+    const auto found = m_items.find_first(identity);
+    index = found.value_or(0);
+    return found.has_value();
 }
 
 // Helper function
@@ -660,6 +701,40 @@ winrt::TreeViewNode ViewModel::GetRemovedChildTreeViewNodeByIndex(winrt::TreeVie
 
     const unsigned int childIndexInFlatTree = GetNextIndexInFlatTree(node) + childIndex + allOpenedDescendantsCount;
     return GetNodeAt(childIndexInFlatTree);
+}
+
+// Returns the flat tree index for the child that was just inserted at childIndex of an expanded parent.
+// The child goes right after its previous sibling and that sibling's visible descendants. Children are
+// often added one at a time, for example when an ItemsSource is filled, so this avoids walking all the
+// earlier siblings for each new child.
+unsigned int ViewModel::GetInsertedChildIndexInFlatTree(winrt::TreeViewNode const& parentNode, unsigned int childIndex)
+{
+    const unsigned int firstChildIndex = GetNextIndexInFlatTree(parentNode);
+    if (childIndex > 0)
+    {
+        auto previousSibling = parentNode.Children().GetAt(childIndex - 1);
+        unsigned int previousSiblingIndex = 0;
+        // App code can move a node while its old row is still in the view, for example from a HasChildren callback,
+        // and IndexOfNode returns the first of its rows. Its row under this parent comes after the parent's row.
+        if (IndexOfNode(previousSibling, previousSiblingIndex) && previousSiblingIndex >= firstChildIndex)
+        {
+            const unsigned int previousSiblingDescendantCount = previousSibling.IsExpanded() ? CountDescendants(previousSibling) : 0;
+            return previousSiblingIndex + 1 + previousSiblingDescendantCount;
+        }
+    }
+
+    // There is no previous sibling, or its row is not under this parent. Count from the parent instead.
+    unsigned int flatIndex = firstChildIndex + childIndex;
+    for (unsigned int i = 0; i < childIndex; i++)
+    {
+        auto childNode = parentNode.Children().GetAt(i);
+        if (childNode.IsExpanded())
+        {
+            flatIndex += CountDescendants(childNode);
+        }
+    }
+
+    return flatIndex;
 }
 
 int ViewModel::CountDescendants(const winrt::TreeViewNode& value)
@@ -921,7 +996,7 @@ winrt::TreeViewNode ViewModel::NodeFromItem(winrt::IInspectable const& item)
 
 bool ViewModel::IndexOfNode(winrt::TreeViewNode const& targetNode, uint32_t& index)
 {
-    return GetVectorInnerImpl()->IndexOf(targetNode, index);
+    return IndexOfItem(targetNode, index);
 }
 
 void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, winrt::IInspectable const& args)
@@ -952,38 +1027,17 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         break;
     }
 
-    // We will find the correct index of insertion by first checking if the
-    // node we are inserting into is expanded. If it is we will start walking
-    // down the tree and counting the open items. This is to ensure we place
-    // the inserted item in the correct index. If along the way we bump into
-    // the item being inserted, we insert there then return, because we don't
-    // need to do anything further.
+    // If the parent is expanded, add the new child and its visible descendants to the view.
     case (winrt::CollectionChange::ItemInserted):
     {
         auto targetNode = sender.as<winrt::TreeViewNode>().Children().GetAt(index).as<winrt::TreeViewNode>();
 
         auto parentNode = targetNode.Parent();
-        const unsigned int nextNodeIndex = GetNextIndexInFlatTree(parentNode);
-        int allOpenedDescendantsCount = 0;
-
         if (parentNode.IsExpanded())
         {
-            for (unsigned int i = 0; i < parentNode.Children().Size(); i++)
-            {
-                auto childNode = parentNode.Children().GetAt(i).as<winrt::TreeViewNode>();
-                if (childNode == targetNode)
-                {
-                    AddNodeToView(targetNode, nextNodeIndex + i + allOpenedDescendantsCount);
-                    if (targetNode.IsExpanded())
-                    {
-                        AddNodeDescendantsToView(targetNode, nextNodeIndex + i, allOpenedDescendantsCount);
-                    }
-                }
-                else if (childNode.IsExpanded())
-                {
-                    allOpenedDescendantsCount += CountDescendants(childNode);
-                }
-            }
+            const unsigned int targetIndex = GetInsertedChildIndexInFlatTree(parentNode, index);
+            AddNodeToView(targetNode, targetIndex);
+            AddNodeDescendantsToView(targetNode, targetIndex, 0);
         }
 
         break;
@@ -1187,14 +1241,13 @@ bool ViewModel::IsContentMode()
 void ViewModel::ClearEventTokenVectors()
 {
     // Remove ChildrenChanged and ExpandedChanged events
-    auto inner = GetVectorInnerImpl();
     for (uint32_t i =0 ; i < Size(); i++)
     {
-        if (auto current = inner->SafeGetAt(i))
+        if (auto current = ItemAt(i, true /* useSafeGet */))
         {
             auto tvnCurrent = winrt::get_self<TreeViewNode>(current.as<winrt::TreeViewNode>());
-            tvnCurrent->ChildrenChanged(m_collectionChangedEventTokenVector.at(i));
-            tvnCurrent->RemoveExpandedChanged(m_IsExpandedChangedEventTokenVector.at(i));
+            tvnCurrent->ChildrenChanged(m_collectionChangedEventTokenVector[i]);
+            tvnCurrent->RemoveExpandedChanged(m_IsExpandedChangedEventTokenVector[i]);
         }
     }
 

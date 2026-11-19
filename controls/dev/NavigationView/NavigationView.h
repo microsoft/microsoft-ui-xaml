@@ -102,6 +102,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItemPresenter when a new template replaces its SelectionIndicator
+    void OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator);
+
     // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
     bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
 
@@ -148,6 +151,8 @@ private:
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi);
+    bool IsContainerInMenuItemsTree(const winrt::NavigationViewItemBase& nvib);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
@@ -297,6 +302,7 @@ private:
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
+    void AnimateSelectionChangedToSelectedItem();
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
