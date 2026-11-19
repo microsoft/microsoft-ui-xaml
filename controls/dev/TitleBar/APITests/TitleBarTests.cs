@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Microsoft.UI.Input;
+using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
@@ -1178,6 +1179,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     host.TitleBar.RecomputeDragRegions();
                     VerifyRegionRects(host.GetRegionRects(NonClientRegionKind.Passthrough), first, second, third);
                 });
+            }
+        }
+
+        // Scenario: a TitleBar with an icon is hosted in a window that is then closed while the TitleBar stays alive.
+        // Expected: TitleBar handles its AppWindow's Destroying exactly once, which is where it releases the window's
+        //           InputNonClientPointerSource and InputActivationListener. The handling is observed through the
+        //           TitleBar trace, because the release has no other observable effect.
+        // A failure means: TitleBar keeps those Input objects past window destruction, and their last release happens
+        //                  during or after window teardown. That fail-fasts in Microsoft.UI.Input on RS5 (0xC0000602 in
+        //                  WindowsMessageDeliveryAdapter::ProcessWindowMessage_NoLock).
+        [TestMethod]
+        public void VerifyInputObjectsReleasedWhenWindowIsDestroyed()
+        {
+            int destroyingHandledCount = 0;
+            TypedEventHandler<object, MUXControlsTestHooksLoggingMessageEventArgs> loggingMessageHandler = (sender, args) =>
+            {
+                if (args.Message.Contains("OnAppWindowDestroying"))
+                {
+                    destroyingHandledCount++;
+                }
+            };
+
+            using (var host = new TitleBarWindowHost(() => new TitleBar()
+            {
+                Title = "Applied title",
+                IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
+            }))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    MUXControlsTestHooks.SetLoggingLevelForType("TitleBar", isLoggingInfoLevel: true, isLoggingVerboseLevel: false);
+                    MUXControlsTestHooks.LoggingMessage += loggingMessageHandler;
+                });
+
+                try
+                {
+                    host.CloseWindow();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(1, destroyingHandledCount, "TitleBar should release its Input objects when its window is destroying");
+
+                        // The window is gone: property changes must not acquire new Input objects for it.
+                        host.TitleBar.IconSource = new SymbolIconSource() { Symbol = Symbol.Mail };
+                        host.TitleBar.IconSource = null;
+                        Verify.AreEqual(1, destroyingHandledCount);
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        MUXControlsTestHooks.LoggingMessage -= loggingMessageHandler;
+                        MUXControlsTestHooks.SetLoggingLevelForType("TitleBar", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                    });
+                }
             }
         }
 
