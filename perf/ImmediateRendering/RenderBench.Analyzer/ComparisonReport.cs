@@ -51,7 +51,24 @@ public static class ComparisonReport
         new("W3 GPU paint p95, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.GpuPaintMs?.P95, "F3"),
         new("M3 GPU local, render adapter, steady (MB)", m => m.Phase(BenchPhase.Steady)?.RenderAdapterGpuLocalMBMedian),
         new("M3 GPU non-local, render adapter, steady (MB)", m => m.Phase(BenchPhase.Steady)?.RenderAdapterGpuNonLocalMBMedian),
+        // ---- Extended scenes S3-S10 ----
+        new("R2 frame interval p50, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.FrameIntervalMs?.P50, "F2"),
+        new("R2 frame interval p95, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.FrameIntervalMs?.P95, "F2"),
+        new("R2 dropped frames (>1.5x vsync), interaction", m => m.Phase(BenchPhase.Interaction)?.DroppedFrames, "F0"),
+        new("R2 long UI frames (>1.5x vsync), interaction", m => m.Phase(BenchPhase.Interaction)?.LongFrames, "F0"),
+        new("R3 longest frame gap, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.LongestFrameGapMs, "F1"),
+        new("R1* key to frame end p95 (ms)", m => ByKind(m, "key")?.P95, "F1"),
+        new("R1* click to frame end p95 (ms)", m => ByKind(m, "click")?.P95, "F1"),
+        new("R1* wheel to frame end p95 (ms)", m => ByKind(m, "wheel")?.P95, "F1"),
+        new("Popup open to frame end p95 (ms)", m => m.PopupOpenMs?.P95, "F1"),
+        new("Programmatic change to frame end p95 (ms)", m => m.ProgrammaticToFrameMs?.P95, "F1"),
+        new("E1 animation tax CPU, steady (ms/s)", m => m.AnimationCpuMsPerSecond, "F2"),
+        new("M1 marginal private per window (MB)", m => m.MarginalPrivateMBPerWindow, "F1"),
+        new("M1 private reclaimed after close (%)", m => m.PrivateMBReclaimedFraction * 100, "F0"),
     ];
+
+    static Distribution? ByKind(RunMetrics m, string kind)
+        => m.InputToFrameMsByKind is { } byKind && byKind.TryGetValue(kind, out var d) ? d : null;
 
     static double? Ratio(PhaseMetrics? phase)
         => phase is null || phase.DamagedPixels == 0 ? null : (double)phase.PaintedPixels / phase.DamagedPixels;
@@ -102,7 +119,13 @@ public static class ComparisonReport
             builder.AppendLine();
 
             var baseline = byMode.First(m => m.Mode == BackendMode.Composition).Runs.Where(r => r.GatePassed).ToList();
-            foreach (var row in s_rows)
+            var sceneValueRows = scene
+                .SelectMany(r => r.Metrics.Phase(BenchPhase.Interaction)?.SceneValues?.Keys ?? Enumerable.Empty<string>())
+                .Distinct()
+                .Order(StringComparer.Ordinal)
+                .Select(name => new Row($"Scene {name} p50, interaction",
+                    m => m.Phase(BenchPhase.Interaction)?.SceneValues is { } v && v.TryGetValue(name, out var d) ? d.P50 : null));
+            foreach (var row in s_rows.Concat(sceneValueRows))
             {
                 double? baselineMedian = Median(baseline.Select(row.Select));
                 builder.Append(CultureInfo.InvariantCulture, $"| {row.Name} |");
@@ -128,8 +151,77 @@ public static class ComparisonReport
                 }
                 builder.AppendLine();
             }
+            AppendUnsupportedRow(builder, byMode);
+            AppendStepTable(builder, scene.Key, byMode);
         }
         return builder.ToString();
+    }
+
+    // Counts include gate-failing runs, since unexpected unsupported content is itself a gate failure.
+    static void AppendUnsupportedRow(StringBuilder builder, List<(BackendMode Mode, List<RunMetrics> Runs)> byMode)
+    {
+        builder.Append("| Unsupported content events, expected/unexpected |");
+        foreach (var (_, modeRuns) in byMode)
+        {
+            var executed = modeRuns.Where(r => !r.IsSkipped).ToList();
+            if (executed.Count == 0)
+            {
+                builder.Append(CultureInfo.InvariantCulture, $" {SkipCell(modeRuns) ?? "-"} |");
+                continue;
+            }
+            int expected = 0, unexpected = 0;
+            foreach (var run in executed)
+            {
+                foreach (var (key, count) in run.UnsupportedByType ?? new Dictionary<string, int>())
+                {
+                    if (run.ExpectedUnsupported?.Contains(key) == true)
+                    {
+                        expected += count;
+                    }
+                    else
+                    {
+                        unexpected += count;
+                    }
+                }
+            }
+            builder.Append(CultureInfo.InvariantCulture, $" {expected}/{unexpected} |");
+        }
+        builder.AppendLine();
+    }
+
+    // S9: settled private MB after each lifecycle step, median over gate-passing runs.
+    static void AppendStepTable(StringBuilder builder, string scene, List<(BackendMode Mode, List<RunMetrics> Runs)> byMode)
+    {
+        var steps = byMode.SelectMany(m => m.Runs).SelectMany(r => r.Steps ?? []).ToList();
+        if (steps.Count == 0)
+        {
+            return;
+        }
+        builder.AppendLine();
+        builder.AppendLine($"### Steps: {scene}");
+        builder.AppendLine();
+        builder.AppendLine("Private commit (MB) at the end of each step.");
+        builder.AppendLine();
+        builder.Append("| Step |");
+        foreach (var (mode, _) in byMode)
+        {
+            builder.Append(CultureInfo.InvariantCulture, $" {BackendModes.Label(mode)} |");
+        }
+        builder.AppendLine();
+        builder.Append("|---|");
+        builder.AppendLine(string.Concat(byMode.Select(_ => "---|")));
+        foreach (var step in steps.GroupBy(s => s.Step).OrderBy(g => g.Key).Select(g => g.First()))
+        {
+            builder.Append(CultureInfo.InvariantCulture, $"| {step.Name} ({step.Windows} windows) |");
+            foreach (var (_, modeRuns) in byMode)
+            {
+                double? median = Median(modeRuns.Where(r => r.GatePassed)
+                    .Select(r => r.Steps?.FirstOrDefault(s => s.Step == step.Step)?.PrivateMB)
+                    .Where(v => v is not null && !double.IsNaN(v.Value)));
+                builder.Append(CultureInfo.InvariantCulture, $" {median?.ToString("F1", CultureInfo.InvariantCulture) ?? "-"} |");
+            }
+            builder.AppendLine();
+        }
     }
 
     // The harness request is the experiment label; the gate decides whether the run counts.
