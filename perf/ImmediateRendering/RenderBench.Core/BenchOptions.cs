@@ -46,7 +46,7 @@ public sealed record BenchOptions
         "[--seed n] [--width px] [--height px] [--sample-ms n] [--tiles n] [--update-fraction f] [--update-hz f] " +
         "[--input-hz f] [--input-mode auto|sendinput|programmatic] [--scroll-speed dips/s] [--items n] " +
         "[--decode-to-size] [--no-progressring] [--windows n] [--tabs] [--step-seconds s] " +
-        "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow] [--no-exit]";
+        "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow|xaml] [--no-exit]";
 
     static readonly Dictionary<string, SceneId> s_variantScenes = new()
     {
