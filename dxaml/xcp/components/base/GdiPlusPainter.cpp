@@ -1232,6 +1232,10 @@ namespace RenderingBackend
                             Fail(hr);
                             return false;
                         }
+                        // The default 4x4-ish antialiasing badly underestimates coverage on shallow arcs. GDI+ 1.1's
+                        // SmoothingModeAntiAlias8x8 (6; not declared unless GDIPVER >= 0x0110) is closer; keep the
+                        // default if the runtime rejects it.
+                        m_mask.graphics->SetSmoothingMode(static_cast<Gdiplus::SmoothingMode>(6));
                     }
                     Gdiplus::SolidBrush* brush = GetBrush({ 1, 1, 1, 1 });
                     if (!brush)
