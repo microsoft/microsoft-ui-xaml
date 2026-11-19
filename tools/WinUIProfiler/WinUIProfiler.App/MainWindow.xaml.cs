@@ -154,9 +154,11 @@ public sealed partial class MainWindow : Window
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
         foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
         await model.DisconnectAsync();
-        EndRecordingUsage(force: true);
-        EndFileUsage();
-        await UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2));
+        // A SessionEnded event waits for its SessionStarted, which may still be naming the target. Queuing and sending
+        // the last events takes at most 2 seconds.
+        var sent = Task.WhenAll(EndRecordingUsage(force: true), EndFileUsage())
+            .ContinueWith(_ => UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2)), TaskScheduler.Default).Unwrap();
+        await Task.WhenAny(sent, Task.Delay(TimeSpan.FromSeconds(2)));
         closeAllowed = true;
         Close();
     }
@@ -279,7 +281,7 @@ public sealed partial class MainWindow : Window
         refreshing = true;
         try
         {
-            EndRecordingUsage(force: false);
+            _ = EndRecordingUsage(force: false);
             var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
             if (settingsFoldedFor != model.CanConnect)
             {
@@ -597,7 +599,8 @@ public sealed partial class MainWindow : Window
 
     private async void Connect_Click(object sender, RoutedEventArgs args)
     {
-        if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
+        // While the window closes it can still be clicked, and nothing would disconnect a connection started then.
+        if (closing || !model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
         if (TraceMode)
         {
             await OpenTraceAsync();
@@ -634,8 +637,8 @@ PrivateRuntime);
 
                 model.ReportProgress(value);
             }));
-            EndFileUsage();
-            recordingUsage = UsageSession.Start("online", () => TelemetryTarget.ForTarget(Kind, TargetText.Text.Trim()));
+            _ = EndFileUsage();
+            recordingUsage = UsageSession.Start("online", () => TelemetryTarget.ForTarget(options.Kind, options.Target));
             session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
@@ -662,7 +665,7 @@ PrivateRuntime);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
-        EndFileUsage();
+        _ = EndFileUsage();
         recordingUsage = UsageSession.Start("offline", () => TelemetryTarget.ForProcessName(process.Name));
         session.BeginRecording();
         try
@@ -706,43 +709,39 @@ PrivateRuntime);
 
     private void Session_Opened(object? sender, string path)
     {
-        EndFileUsage();
+        if (closing)
+        {
+            return;
+        }
+
+        _ = EndFileUsage();
         fileUsage = UsageSession.Start("offline", () => TelemetryTarget.ForSessionFile(path));
     }
 
     // Ends the usage session of the connection or trace reading once the model is idle again, or when the window closes.
-    private void EndRecordingUsage(bool force)
+    private Task EndRecordingUsage(bool force)
     {
-        if (recordingUsage is not { } usage)
+        if (recordingUsage is not { } usage || !force && !model.CanConnect)
         {
-            return;
-        }
-
-        if (model.State == "Connected")
-        {
-            usage.Connected = true;
-        }
-
-        if (!force && !model.CanConnect)
-        {
-            return;
+            return Task.CompletedTask;
         }
 
         recordingUsage = null;
-        usage.End(model.State switch
+        return usage.End(model.State switch
         {
             "Failed" or "TraceFailed" => "failed",
             "TraceFinished" => "completed",
             "TraceStopped" => "cancelled",
-            _ => usage.Connected ? "completed" : "cancelled",
+            _ => model.WasConnected ? "completed" : "cancelled",
         });
     }
 
     // An opened session file stays shown until the next file, connection or trace reading replaces it.
-    private void EndFileUsage()
+    private Task EndFileUsage()
     {
-        fileUsage?.End("completed");
+        var usage = fileUsage;
         fileUsage = null;
+        return usage?.End("completed") ?? Task.CompletedTask;
     }
 
     private async void Snapshot_Click(object sender, RoutedEventArgs args) => await TakeSnapshotAsync();
@@ -894,29 +893,28 @@ PrivateRuntime);
     private sealed class UsageSession
     {
         private readonly long started = Stopwatch.GetTimestamp();
+        private readonly string mode;
+        // Naming the target reads files and package manifests, so SessionStarted is sent from the thread pool.
+        private readonly Task startSent;
 
-        private UsageSession(string mode) => Mode = mode;
-
-        public string Mode { get; }
-
-        // Whether the target was connected, which tells a disconnection from a cancelled connection.
-        public bool Connected { get; set; }
-
-        // Null while telemetry is off; targetApp is only computed while it is on.
-        public static UsageSession? Start(string mode, Func<string> targetApp)
+        private UsageSession(string mode, Func<string> targetApp)
         {
-            if (!UsageTelemetry.IsEnabled)
-            {
-                return null;
-            }
-
-            UsageTelemetry.Track("Profiler.SessionStarted",
-                new Dictionary<string, string> { ["mode"] = mode, ["targetApp"] = targetApp() });
-            return new UsageSession(mode);
+            this.mode = mode;
+            startSent = Task.Run(() => UsageTelemetry.Track("Profiler.SessionStarted",
+                new Dictionary<string, string> { ["mode"] = mode, ["targetApp"] = targetApp() }));
         }
 
-        public void End(string outcome) => UsageTelemetry.Track("Profiler.SessionEnded",
-            new Dictionary<string, string> { ["mode"] = Mode, ["outcome"] = outcome },
-            new Dictionary<string, double> { ["durationSec"] = Stopwatch.GetElapsedTime(started).TotalSeconds });
+        // Null while telemetry is off; targetApp is only computed while it is on.
+        public static UsageSession? Start(string mode, Func<string> targetApp) =>
+            UsageTelemetry.IsEnabled ? new UsageSession(mode, targetApp) : null;
+
+        // Sends SessionEnded once SessionStarted is sent; completes when both are queued.
+        public Task End(string outcome)
+        {
+            var duration = Stopwatch.GetElapsedTime(started).TotalSeconds;
+            return startSent.ContinueWith(_ => UsageTelemetry.Track("Profiler.SessionEnded",
+                new Dictionary<string, string> { ["mode"] = mode, ["outcome"] = outcome },
+                new Dictionary<string, double> { ["durationSec"] = duration }), TaskScheduler.Default);
+        }
     }
 }

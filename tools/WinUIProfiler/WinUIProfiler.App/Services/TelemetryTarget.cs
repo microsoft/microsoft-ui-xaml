@@ -23,10 +23,13 @@ internal static class TelemetryTarget
             switch (kind)
             {
                 case TargetLaunchKind.Packaged:
-                    var family = target.Split('!')[0];
+                    // The family name comes from the package Windows finds for the AUMID, never from the text entered,
+                    // which could be a path ending like a Microsoft family name.
+                    var (_, applicationId, executable) = TargetLauncher.GetPackagedApplication(target);
+                    var family = applicationId[..applicationId.IndexOf('!')];
                     return family.EndsWith(MicrosoftPublisherId, StringComparison.OrdinalIgnoreCase)
                         ? family[..^MicrosoftPublisherId.Length]
-                        : ForExecutable(TargetLauncher.GetPackagedApplication(target).Executable);
+                        : ForExecutable(executable);
                 case TargetLaunchKind.Attach:
                     using (var process = Process.GetProcessById(int.Parse(target, CultureInfo.InvariantCulture)))
                     {
@@ -49,7 +52,7 @@ internal static class TelemetryTarget
     {
         try
         {
-            return ForProcessName(SessionFile.ReadInfo(path).ProcessName);
+            return ForProcessName(SessionFile.ReadProcessName(path));
         }
         catch (Exception)
         {
