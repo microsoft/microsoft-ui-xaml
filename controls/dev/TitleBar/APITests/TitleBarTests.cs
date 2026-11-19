@@ -1209,6 +1209,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
+                    // TITLEBAR_TRACE_INFO only formats a message when debug output is on; the logging level then routes
+                    // it to LoggingMessage.
+                    MUXControlsTestHooks.SetOutputDebugStringLevelForType("TitleBar", isLoggingInfoLevel: true, isLoggingVerboseLevel: false);
                     MUXControlsTestHooks.SetLoggingLevelForType("TitleBar", isLoggingInfoLevel: true, isLoggingVerboseLevel: false);
                     MUXControlsTestHooks.LoggingMessage += loggingMessageHandler;
                 });
@@ -1233,6 +1236,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         MUXControlsTestHooks.LoggingMessage -= loggingMessageHandler;
                         MUXControlsTestHooks.SetLoggingLevelForType("TitleBar", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                        MUXControlsTestHooks.SetOutputDebugStringLevelForType("TitleBar", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
                     });
                 }
             }
