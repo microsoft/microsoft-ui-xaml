@@ -27,6 +27,14 @@ public static class ComparisonReport
         new("W1 paint p95, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.PaintMs?.P95, "F2"),
         new("W2 CPU, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.CpuMsPerSecond),
         new("W2 CPU, steady (ms/s)", m => m.Phase(BenchPhase.Steady)?.CpuMsPerSecond, "F2"),
+        // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----
+        new("W2 CPU UI thread, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.ThreadCpu?.MsPerSecond(ThreadCategory.Ui)),
+        new("W2 CPU WARP rasterizer, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.ThreadCpu?.MsPerSecond(ThreadCategory.WarpRasterizer)),
+        new("W2 CPU D2D/DWrite, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.ThreadCpu?.MsPerSecond(ThreadCategory.D2DDWrite)),
+        new("W2 CPU composition, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.ThreadCpu?.MsPerSecond(ThreadCategory.Composition)),
+        new("W2 CPU other threads, interaction (ms/s)", m => m.Phase(BenchPhase.Interaction)?.ThreadCpu?.MsPerSecond(ThreadCategory.Other)),
+        new("Device lost events", m => m.DeviceLostCount, "F0"),
+        // ---- End immediate-rendering-d2d-sw ----
         new("W4 painted/damaged px, interaction", m => Ratio(m.Phase(BenchPhase.Interaction)), "F2"),
         new("W5 upload, interaction (MB)", m => m.Phase(BenchPhase.Interaction)?.UploadBytes / (1024.0 * 1024.0), "F2"),
         new("R1* input to frame end p95 (ms)", m => m.InputToFrameMs?.P95, "F1"),

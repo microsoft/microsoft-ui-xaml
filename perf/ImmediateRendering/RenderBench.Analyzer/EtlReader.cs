@@ -59,6 +59,9 @@ public static class EtlReader
                     U64(e, "CacheBytes"), U32(e, "CachedObjectCount"), U64(e, "UploadBytes")),
                 "UnsupportedContent" => new UnsupportedContentRecord(t, pid, (BackendMode)U32(e, "Mode"), Str(e, "TypeName"),
                     Str(e, "Detail")),
+                // Added by immediate-rendering-d2d-sw
+                "DeviceLost" => new DeviceLostRecord(t, pid, (BackendMode)U32(e, "Mode"), I32(e, "Reason"), I32(e, "RemovedReason"),
+                    U32(e, "FrameNumber")),
                 _ => null,
             };
         }
@@ -78,6 +81,13 @@ public static class EtlReader
                     I32(e, "GdiObjects"), I32(e, "UserObjects"), F64(e, "CpuUserMs"), F64(e, "CpuKernelMs")),
                 "UpdateApplied" => new UpdateAppliedRecord(t, pid, I64(e, "Tick"), I32(e, "ChangedCount")),
                 "RunCompleted" => new RunCompletedRecord(t, pid, I32(e, "Status"), Str(e, "Detail")),
+                // Added by immediate-rendering-d2d-sw
+                "ThreadCpuSample" => new ThreadCpuSampleRecord(t, pid, (BenchPhase)I32(e, "Phase"), F64(e, "UiMs"),
+                    F64(e, "WarpRasterizerMs"), F64(e, "D2DDWriteMs"), F64(e, "CompositionMs"), F64(e, "OtherMs"),
+                    I32(e, "ThreadCount")),
+                "ThreadModuleSummary" => new ThreadModuleSummaryRecord(t, pid, Str(e, "Module"), Str(e, "Category"),
+                    I32(e, "Threads"), F64(e, "CpuMs")),
+                "RasterModuleVersion" => new RasterModuleVersionRecord(t, pid, Str(e, "Module"), Str(e, "Version")),
                 _ => null,
             };
         }

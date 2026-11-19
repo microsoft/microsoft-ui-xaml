@@ -60,4 +60,22 @@ public sealed class BenchEventSource : EventSource
 
     [Event(9, Level = EventLevel.Informational)]
     public void ScreenshotSaved(string Path, int Width, int Height) => WriteEvent(9, Path, Width, Height);
+
+    // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split (W1/W2), ids 20+ ----
+
+    // Cumulative CPU (user + kernel) per ThreadCategory since the sampler started, including threads that have exited.
+    [Event(20, Level = EventLevel.Informational)]
+    public void ThreadCpuSample(int Phase, double UiMs, double WarpRasterizerMs, double D2DDWriteMs, double CompositionMs,
+        double OtherMs, int ThreadCount)
+        => WriteEvent(20, Phase, UiMs, WarpRasterizerMs, D2DDWriteMs, CompositionMs, OtherMs, ThreadCount);
+
+    // Emitted once per start-address module at run end, so the classification can be checked against reality.
+    [Event(21, Level = EventLevel.Informational)]
+    public void ThreadModuleSummary(string Module, string Category, int Threads, double CpuMs)
+        => WriteEvent(21, Module, Category, Threads, CpuMs);
+
+    // File versions of the raster stack (d3d10warp, d2d1, dwrite, ...); WARP golden images are valid per version.
+    [Event(22, Level = EventLevel.Informational)]
+    public void RasterModuleVersion(string Module, string Version) => WriteEvent(22, Module, Version);
+    // ---- End immediate-rendering-d2d-sw ----
 }

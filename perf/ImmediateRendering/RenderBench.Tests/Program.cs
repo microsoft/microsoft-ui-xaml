@@ -30,5 +30,6 @@ if (Arg("--acceptance") is { } resultsDir)
 }
 
 return TestRunner.Run(
-    [.. AnalysisTests.All(), .. OptionsTests.All(), .. ProfileTests.All(), .. EtlTests.All()],
+    [.. AnalysisTests.All(), .. OptionsTests.All(), .. ProfileTests.All(), .. EtlTests.All(),
+        .. ThreadCpuTests.All()], // immediate-rendering-d2d-sw
     Arg("--filter"));

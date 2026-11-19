@@ -12,6 +12,7 @@ sealed class BenchRunner(BenchOptions options)
     readonly Window _window = new() { Title = "RenderBench" };
     readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
     readonly MemorySampler _sampler = new();
+    readonly ThreadCpuSampler _threadSampler = new(); // immediate-rendering-d2d-sw: W1/W2 CPU split
     IScene? _scene;
     nint _hwnd;
     volatile int _phase;
@@ -41,6 +42,7 @@ sealed class BenchRunner(BenchOptions options)
             BenchEventSource.Log.RunStarted(_scene.Name, Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable) ?? "",
                 options.Seed, options.Width, options.Height, _scene.Root.XamlRoot.RasterizationScale);
             BenchEventSource.Log.SceneReady(_scene.Name, CountElements(_scene.Root));
+            _threadSampler.CaptureUiThread(); // immediate-rendering-d2d-sw
             _sampleTimer = new Timer(_ => SampleMemory(), null, 0, options.SampleIntervalMs);
 
             // Warmup touches every input target once and applies a few updates so lazy caches (glyphs, brushes,
@@ -105,6 +107,7 @@ sealed class BenchRunner(BenchOptions options)
                 _sampleTimer.Dispose(stopped);
                 stopped.WaitOne(1000);
             }
+            EmitThreadSummary(); // immediate-rendering-d2d-sw
             BenchEventSource.Log.RunCompleted(status, detail);
             _sampler.Dispose();
             if (options.Exit)
@@ -154,6 +157,32 @@ sealed class BenchRunner(BenchOptions options)
         var s = _sampler.Take();
         BenchEventSource.Log.MemorySample(_phase, s.PrivateBytes, s.WorkingSetBytes, s.PeakWorkingSetBytes, s.GpuLocalBytes,
             s.GpuNonLocalBytes, s.GdiObjects, s.UserObjects, s.CpuUserMs, s.CpuKernelMs);
+        // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----
+        var (ms, threads) = _threadSampler.Take();
+        BenchEventSource.Log.ThreadCpuSample(_phase, ms[(int)ThreadCategory.Ui], ms[(int)ThreadCategory.WarpRasterizer],
+            ms[(int)ThreadCategory.D2DDWrite], ms[(int)ThreadCategory.Composition], ms[(int)ThreadCategory.Other], threads);
+        // ---- End immediate-rendering-d2d-sw ----
+    }
+
+    // Added by immediate-rendering-d2d-sw: what actually ran, for checking ThreadCategories against reality.
+    void EmitThreadSummary()
+    {
+        try
+        {
+            _threadSampler.Take();
+            foreach (var m in _threadSampler.Modules())
+            {
+                BenchEventSource.Log.ThreadModuleSummary(m.Module, m.Category.ToString(), m.Threads, m.CpuMs);
+            }
+            foreach (var (module, version) in ThreadCpuSampler.RasterModuleVersions())
+            {
+                BenchEventSource.Log.RasterModuleVersion(module, version);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+        }
     }
 
     static int CountElements(DependencyObject root)

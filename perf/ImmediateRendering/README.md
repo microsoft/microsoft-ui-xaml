@@ -57,3 +57,30 @@ frames/min), `MemorySampled`, `NoUnsupportedContent`. Reports compute medians fr
 - GPU memory is `IDXGIAdapter3::QueryVideoMemoryInfo` for this process, summed over adapters. On a machine without a
   hardware GPU (for example a Hyper-V VM), it reads 0, and D2D-HW correctly fails `DeviceMatchesMode`.
 - Measure fre builds. chk builds capture an allocation stack per allocation.
+
+## D2D-SW readiness: CPU split and WARP golden reference
+
+- **Per-thread CPU split (W1/W2).** With D2D-SW and GDI+, raster work moves onto CPU threads, so the harness's
+  `ThreadCpuSampler` enumerates the process's threads (Toolhelp32 + `GetThreadTimes`) at each memory sample. It
+  classifies each thread once, by the module containing its Win32 start address (`ThreadCategories.Classify`):
+  - `Ui`: the dispatcher thread.
+  - `WarpRasterizer`: `d3d10warp.dll`.
+  - `D2DDWrite`: `d2d1`, `dwrite`, or `DWriteCore`.
+  - `Composition`: `dcomp*`, `Microsoft.UI.Composition*`, `CoreMessaging*`, or `dwmcorei.dll` (the in-process
+    compositor).
+  - `Other`.
+
+  `ThreadCpuSample` (event 20) carries cumulative milliseconds. `metrics.json` has per-phase `ThreadCpu`, and the
+  report has `W2 CPU <category>` rows. At run end, `ThreadModuleSummary` (event 21) lists what actually ran, so the
+  rules can be checked.
+- **Caveat.** In smoke runs, WARP and thread-pool work start in `ntdll.dll`, and .NET runtime threads start in
+  `coreclr.dll`. Both land in `Other`, so `WarpRasterizer` can read 0 even when WARP is busy. Use the Timing profile
+  (CPU samples, CSwitch and ReadyThread, all with stacks) in WPA to attribute `Other` by stack.
+- **WARP golden reference (C1).** WARP is deterministic for a given binary.
+  `D2DSoftwarePainterTests::TwoWarpDevicesProduceIdenticalPixels` checks this across devices, so D2D-SW output can
+  serve as the C1 reference image. Goldens are only valid for the same `d3d10warp`/`d2d1`/`dwrite` versions. Each run
+  records them in `metrics.json` `RasterModuleVersions` (event 22).
+- **W5 copies for D2D-SW.** `uploadBytes` is `damagedPixels × 4` for frames presented through a swap chain: it is the
+  system-memory WARP target copied into the back buffer. It is 0 for offscreen frames. See the contract in
+  `dxaml\xcp\components\base\D2DPainter.cpp`.
+- **Device loss.** Native `DeviceLost` events are counted in `metrics.json` `DeviceLostCount` and in the report.
