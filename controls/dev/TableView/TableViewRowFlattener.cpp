@@ -980,7 +980,6 @@ void TableViewRowFlattener::AppendSubgroupSlices(
     auto const identity = slice.Identity;
     auto const level = slice.Level;
     auto const childCount = children.Size();
-    slice.ChildCount = static_cast<int32_t>(childCount);
     slice.IsBottomLevel = false;
     slices.push_back(std::move(slice));
 
