@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 
 namespace WinUITools.Telemetry;
@@ -134,7 +135,11 @@ public static class UsageTelemetry
                 return;
             }
 
-            var installId = LoadInstallId(folder);
+            if (LoadInstallId(folder) is not { } installId)
+            {
+                return;
+            }
+
             var version = string.IsNullOrWhiteSpace(toolVersion) ? "unknown" : toolVersion.Split('+')[0];
             var channel = Environment.GetEnvironmentVariable(ChannelVariable);
             var client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
@@ -219,19 +224,41 @@ public static class UsageTelemetry
         return true;
     }
 
-    // A random ID shared by the tools of one user; never the alias, machine name or a hardware ID.
-    private static string LoadInstallId(string folder)
+    // A random ID shared by the tools of one user; never the alias, machine name or a hardware ID. It is read, and written
+    // when the file holds none, under one exclusive lock, so tools that start together on first use share one ID. Null
+    // when the file stays locked: telemetry then stays off rather than count a second install.
+    internal static string? LoadInstallId(string folder)
     {
         var path = Path.Combine(folder, "install-id");
-        if (File.Exists(path) && Guid.TryParse(File.ReadAllText(path).Trim(), out var saved))
+        Directory.CreateDirectory(folder);
+        for (var attempt = 0; attempt < 20; attempt++)
         {
-            return saved.ToString();
+            try
+            {
+                using var file = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                using (var reader = new StreamReader(file, Encoding.UTF8, detectEncodingFromByteOrderMarks: true,
+                    bufferSize: 256, leaveOpen: true))
+                {
+                    if (Guid.TryParse(reader.ReadToEnd().Trim(), out var saved))
+                    {
+                        return saved.ToString();
+                    }
+                }
+
+                var created = Guid.NewGuid().ToString();
+                file.SetLength(0);
+                file.Position = 0;
+                file.Write(Encoding.ASCII.GetBytes(created));
+                return created;
+            }
+            catch (IOException)
+            {
+                // Another tool holds the file for a moment.
+                Thread.Sleep(25);
+            }
         }
 
-        Directory.CreateDirectory(folder);
-        var created = Guid.NewGuid().ToString();
-        File.WriteAllText(path, created);
-        return created;
+        return null;
     }
 
     private static async Task SendAsync(Session session, byte[] body)
