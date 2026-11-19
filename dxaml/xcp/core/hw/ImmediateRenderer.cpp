@@ -439,11 +439,19 @@ namespace ImmediateRenderingDetail
         bool hasContent = false;
     };
 
+    struct PathGeometryData
+    {
+        std::vector<PathVerb> verbs;
+        std::vector<PointF> points;
+        bool nonZero = false;
+    };
+
     struct DisplayList
     {
         std::vector<Command> commands;
         std::vector<std::wstring> strings;
         std::vector<GlyphRunData> glyphRuns;
+        std::vector<PathGeometryData> paths; // FillPath/StrokePath: index
         std::vector<xref_ptr<IPALSurface>> bitmaps; // Bitmap commands: decoded software surfaces (key = pointer)
         std::unordered_map<const CUIElement*, ElementRecord> records;
         std::vector<ScrollerInfo> scrollers;
@@ -767,6 +775,166 @@ namespace
         fnv.Add(values, sizeof(values));
     }
 
+    // Flattens a XAML geometry into painter path verbs: quadratics are elevated to cubics and arcs are split into
+    // cubic segments of at most 90 degrees. Hollow figures are stroked but not filled.
+    constexpr double c_pi = 3.14159265358979323846;
+
+    class PathFlattener final : public CXcpObjectBase<IPALGeometrySink>
+    {
+    public:
+        PathGeometryData fill;
+        PathGeometryData stroke;
+
+        void BeginFigure(const XPOINTF& startPoint, bool fIsHollow) override
+        {
+            m_hollow = fIsHollow;
+            m_current = startPoint;
+            AddVerb(PathVerb::MoveTo, &startPoint, 1);
+        }
+
+        void EndFigure(bool fIsClosed) override
+        {
+            if (fIsClosed)
+            {
+                AddVerb(PathVerb::Close, nullptr, 0);
+            }
+            else if (!m_hollow)
+            {
+                // Fills close open figures implicitly; strokes must not.
+                fill.verbs.push_back(PathVerb::Close);
+            }
+        }
+
+        void AddArc(const XPOINTF& point, const XSIZEF& size, XFLOAT rotationAngle, bool fIsClockwise, bool fIsLargeArc) override
+        {
+            AppendArc(m_current, point, std::fabs(size.width), std::fabs(size.height), rotationAngle, fIsLargeArc, fIsClockwise);
+        }
+
+        void AddBezier(const XPOINTF& c1, const XPOINTF& c2, const XPOINTF& end) override
+        {
+            const XPOINTF pts[] = { c1, c2, end };
+            AddVerb(PathVerb::CubicTo, pts, 3);
+        }
+
+        void AddLine(const XPOINTF& point) override
+        {
+            AddVerb(PathVerb::LineTo, &point, 1);
+        }
+
+        void AddQuadraticBezier(const XPOINTF& control, const XPOINTF& end) override
+        {
+            const XPOINTF p0 = m_current;
+            const XPOINTF pts[] = {
+                { p0.x + 2.0f / 3.0f * (control.x - p0.x), p0.y + 2.0f / 3.0f * (control.y - p0.y) },
+                { end.x + 2.0f / 3.0f * (control.x - end.x), end.y + 2.0f / 3.0f * (control.y - end.y) },
+                end,
+            };
+            AddVerb(PathVerb::CubicTo, pts, 3);
+        }
+
+        void AddLines(_In_reads_(uiCount) const XPOINTF* pPoints, XUINT32 uiCount) override
+        {
+            for (XUINT32 i = 0; i < uiCount; ++i) AddLine(pPoints[i]);
+        }
+
+        void AddBeziers(_In_reads_(uiCount) const XPOINTF* pPoints, XUINT32 uiCount) override
+        {
+            for (XUINT32 i = 0; i + 2 < uiCount; i += 3) AddBezier(pPoints[i], pPoints[i + 1], pPoints[i + 2]);
+        }
+
+        void AddQuadraticBeziers(_In_reads_(uiCount) const XPOINTF* pPoints, XUINT32 uiCount) override
+        {
+            for (XUINT32 i = 0; i + 1 < uiCount; i += 2) AddQuadraticBezier(pPoints[i], pPoints[i + 1]);
+        }
+
+        void SetFillMode(GeometryFillMode fillMode) override
+        {
+            fill.nonZero = stroke.nonZero = fillMode == GeometryFillMode::Winding;
+        }
+
+        _Check_return_ HRESULT Close() override { return S_OK; }
+
+    private:
+        void AddVerb(PathVerb verb, _In_reads_opt_(count) const XPOINTF* pts, uint32_t count)
+        {
+            stroke.verbs.push_back(verb);
+            if (!m_hollow) fill.verbs.push_back(verb);
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                const PointF p{ pts[i].x, pts[i].y };
+                stroke.points.push_back(p);
+                if (!m_hollow) fill.points.push_back(p);
+            }
+            if (count > 0) m_current = pts[count - 1];
+        }
+
+        // SVG endpoint-to-center arc conversion (SVG 1.1 F.6.5), then cubic approximation per <= 90 degree segment.
+        void AppendArc(const XPOINTF& p0, const XPOINTF& p1, float rx, float ry, float angleDegrees, bool largeArc, bool clockwise)
+        {
+            if ((p0.x == p1.x && p0.y == p1.y))
+            {
+                return;
+            }
+            if (rx < 1e-6f || ry < 1e-6f)
+            {
+                AddLine(p1);
+                return;
+            }
+            const double phi = angleDegrees * c_pi / 180.0;
+            const double cosPhi = std::cos(phi), sinPhi = std::sin(phi);
+            const double dx = (p0.x - p1.x) / 2.0, dy = (p0.y - p1.y) / 2.0;
+            const double x1 = cosPhi * dx + sinPhi * dy;
+            const double y1 = -sinPhi * dx + cosPhi * dy;
+            double rxd = rx, ryd = ry;
+            const double lambda = (x1 * x1) / (rxd * rxd) + (y1 * y1) / (ryd * ryd);
+            if (lambda > 1)
+            {
+                rxd *= std::sqrt(lambda);
+                ryd *= std::sqrt(lambda);
+            }
+            const double num = rxd * rxd * ryd * ryd - rxd * rxd * y1 * y1 - ryd * ryd * x1 * x1;
+            const double den = rxd * rxd * y1 * y1 + ryd * ryd * x1 * x1;
+            double coef = den > 0 ? std::sqrt(std::max(0.0, num / den)) : 0;
+            if (largeArc == clockwise) coef = -coef;
+            const double cx1 = coef * rxd * y1 / ryd;
+            const double cy1 = -coef * ryd * x1 / rxd;
+            const double cx = cosPhi * cx1 - sinPhi * cy1 + (p0.x + p1.x) / 2.0;
+            const double cy = sinPhi * cx1 + cosPhi * cy1 + (p0.y + p1.y) / 2.0;
+            auto angle = [](double ux, double uy, double vx, double vy) {
+                return std::atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+            };
+            const double theta1 = angle(1, 0, (x1 - cx1) / rxd, (y1 - cy1) / ryd);
+            double delta = angle((x1 - cx1) / rxd, (y1 - cy1) / ryd, (-x1 - cx1) / rxd, (-y1 - cy1) / ryd);
+            if (clockwise && delta < 0) delta += 2 * c_pi;
+            else if (!clockwise && delta > 0) delta -= 2 * c_pi;
+
+            const int segments = std::max(1, static_cast<int>(std::ceil(std::fabs(delta) / (c_pi / 2) - 1e-6)));
+            const double step = delta / segments;
+            const double k = 4.0 / 3.0 * std::tan(step / 4);
+            auto at = [&](double t, double ddx, double ddy) {
+                // Point on the unit circle (plus derivative offset), mapped to the ellipse.
+                const double ux = std::cos(t) + ddx, uy = std::sin(t) + ddy;
+                return XPOINTF{ static_cast<float>(cx + rxd * cosPhi * ux - ryd * sinPhi * uy),
+                                static_cast<float>(cy + rxd * sinPhi * ux + ryd * cosPhi * uy) };
+            };
+            double t = theta1;
+            for (int i = 0; i < segments; ++i)
+            {
+                const double t2 = t + step;
+                XPOINTF pts[] = {
+                    at(t, -k * std::sin(t), k * std::cos(t)),
+                    at(t2, k * std::sin(t2), -k * std::cos(t2)),
+                    i == segments - 1 ? p1 : at(t2, 0, 0),
+                };
+                AddVerb(PathVerb::CubicTo, pts, 3);
+                t = t2;
+            }
+        }
+
+        XPOINTF m_current{};
+        bool m_hollow = false;
+    };
+
     struct Emitter
     {
         DisplayList& list;
@@ -835,6 +1003,13 @@ namespace
                 const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
                 fnv.Add(q, sizeof(q));
             }
+            else if (command.type == CommandType::FillPath || command.type == CommandType::StrokePath)
+            {
+                const PathGeometryData& path = list.paths[command.index];
+                fnv.Add(path.verbs.data(), path.verbs.size() * sizeof(PathVerb));
+                fnv.Add(path.points.data(), path.points.size() * sizeof(PointF));
+                fnv.AddValue(path.nonZero);
+            }
             r.signature = fnv.hash;
 
             const RectF ink = TransformRectBounds(m, localInk);
@@ -893,6 +1068,19 @@ namespace
             const float r = std::max(rx, ry);
             const RectF hole{ rect.left + h + r, rect.top + h + r, rect.right - h - r, rect.bottom - h - r };
             Push(c, { rect.left - h, rect.top - h, rect.right + h, rect.bottom + h }, m, ctx.clip, &hole);
+        }
+
+        // thickness == 0: fill; otherwise stroke. localInk: element-space bounds of the drawing.
+        void Path(PathGeometryData data, float thickness, const ColorF& color, const CMILMatrix& m, const RectF& localInk)
+        {
+            if (data.verbs.empty() || IsEmptyRect(localInk)) return;
+            Command c;
+            c.type = thickness > 0 ? CommandType::StrokePath : CommandType::FillPath;
+            c.thickness = thickness;
+            c.color = color;
+            c.index = static_cast<uint32_t>(list.paths.size());
+            list.paths.push_back(std::move(data));
+            Push(c, localInk, m, ctx.clip, nullptr);
         }
 
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
@@ -1123,7 +1311,7 @@ namespace
         float scale,
         bool nineGrid)
     {
-        if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->m_pImageSource == nullptr)
+        if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->c_pimageSource == nullptr)
         {
             return nullptr;
         }
@@ -1148,7 +1336,7 @@ namespace
         if (surface == nullptr)
         {
             // Still loading/decoding, or decoded to a hardware surface (SVG, SurfaceImageSource, ...).
-            return brush->m_pImageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
+            return brush->c_pimageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
         }
         if (surface->GetPixelFormat() != pixelColor32bpp_A8R8G8B8 || surface->GetWidth() == 0 || surface->GetHeight() == 0)
         {
@@ -1455,7 +1643,73 @@ void ImmediateRenderer::EmitContent(
     }
     else if (element->OfTypeByIndex<KnownTypeIndex::Shape>())
     {
-        ReportUnsupported(element, L"Shape geometry");
+        // Path, Line, Polyline, Polygon: flatten the render geometry and draw it under the shape's stretch transform.
+        auto shape = static_cast<CShape*>(element);
+        if (shape->m_pRender == nullptr)
+        {
+            IGNOREHR(shape->UpdateRenderGeometry());
+        }
+        if (shape->m_pRender == nullptr)
+        {
+            return;
+        }
+        xref_ptr<PathFlattener> flattener;
+        flattener.attach(new PathFlattener());
+        if (FAILED(shape->m_pRender->VisitSink(flattener.get())) || flattener->stroke.verbs.empty())
+        {
+            return;
+        }
+        CMILMatrix stretch(true);
+        if (shape->m_Stretch != DirectUI::Stretch::None)
+        {
+            CValue result;
+            if (SUCCEEDED(CShape::GetShapeGeometryTransform(shape, 0, nullptr, nullptr, &result)))
+            {
+                CDependencyObject* matrixObject = result.AsObject();
+                if (auto transform = do_pointer_cast<CTransform>(matrixObject))
+                {
+                    transform->GetTransform(&stretch);
+                }
+                ReleaseInterface(matrixObject);
+            }
+        }
+        // The stretch applies to the geometry, not to the pen: transform the points, keep the stroke thickness.
+        RectF b{ FLT_MAX, FLT_MAX, -FLT_MAX, -FLT_MAX };
+        for (PathGeometryData* data : { &flattener->fill, &flattener->stroke })
+        {
+            for (PointF& p : data->points)
+            {
+                XPOINTF xp;
+                stretch.Transform(XPOINTF{ p.x, p.y }, xp);
+                p = { xp.x, xp.y };
+                b = { std::min(b.left, p.x), std::min(b.top, p.y), std::max(b.right, p.x), std::max(b.bottom, p.y) };
+            }
+        }
+
+        ColorF fillColor;
+        const BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
+        const float t = shape->GetStrokeThickness();
+        auto stroke = shape->GetStroke();
+        ColorF strokeColor;
+        const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), 1.0f, &strokeColor) : BrushResult::None;
+        if (fillResult == BrushResult::Unsupported || strokeResult == BrushResult::Unsupported)
+        {
+            ReportUnsupported(element, L"Brush");
+        }
+        if (strokeResult == BrushResult::Color && shape->HasStrokeDashArray())
+        {
+            ReportUnsupported(element, L"Shape stroke dashes");
+        }
+        if (fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
+        {
+            emitter.Path(std::move(flattener->fill), 0, fillColor, world, b);
+        }
+        if (strokeResult == BrushResult::Color)
+        {
+            // Conservative ink for miter joins (the painter strokes with miter joins).
+            const float pad = 2 * t;
+            emitter.Path(std::move(flattener->stroke), t, strokeColor, world, { b.left - pad, b.top - pad, b.right + pad, b.bottom + pad });
+        }
     }
     else if (type == KnownTypeIndex::Image)
     {
@@ -2204,6 +2458,26 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                 case CommandType::Bitmap:
                     painter.DrawBitmap(c.key, c.rect, IsEmptyRect(c.sourceRect) ? nullptr : &c.sourceRect, c.opacity);
                     break;
+                case CommandType::FillPath:
+                case CommandType::StrokePath:
+                {
+                    const PathGeometryData& data = list.paths[c.index];
+                    PathData path;
+                    path.verbs = data.verbs.data();
+                    path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                    path.points = data.points.data();
+                    path.pointCount = static_cast<uint32_t>(data.points.size());
+                    path.nonZeroFill = data.nonZero;
+                    if (c.type == CommandType::FillPath)
+                    {
+                        painter.FillPath(path, c.color);
+                    }
+                    else
+                    {
+                        painter.StrokePath(path, c.thickness, c.color);
+                    }
+                    break;
+                }
                 default:
                     break;
             }
