@@ -282,6 +282,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(yellowRectangle.Handle, verifiedYellowRectangle);
         }
 
+        void XamlDiagnosticsTests::TestGetExistingElementVisual()
+        {
+            wrl::ComPtr<VisualTreeServiceCallback> callback;
+            auto cleanup = m_connectionHelper->Advise(
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Rectangle x:Name='Plain' Width='20' Height='20' Fill='Red'/>"
+                L"<Rectangle x:Name='Composed' Width='20' Height='20' Fill='Blue'>"
+                L"<Rectangle.Projection><PlaneProjection RotationY='30'/></Rectangle.Projection>"
+                L"</Rectangle></Grid>", callback);
+            test_infra::TestServices::WindowHelper->WaitForIdle();
+            const auto plain = callback->GetElementByName(L"Plain").Handle;
+            const auto composed = callback->GetElementByName(L"Composed").Handle;
+
+            RunOnUIThread([&]
+            {
+                VERIFY_ARE_EQUAL(E_POINTER, m_tap->TryGetExistingElementVisual(composed, nullptr));
+                wrl::ComPtr<IInspectable> visual;
+                VERIFY_ARE_EQUAL(E_NOTFOUND, m_tap->TryGetExistingElementVisual(0, &visual));
+                VERIFY_IS_NULL(visual.Get());
+            });
+            for (int attempt = 0; attempt < 2; ++attempt)
+            {
+                RunOnUIThread([&]
+                {
+                    wrl::ComPtr<IInspectable> visual;
+                    VERIFY_SUCCEEDED(m_tap->TryGetExistingElementVisual(plain, &visual));
+                    VERIFY_IS_NULL(visual.Get());
+                    VERIFY_SUCCEEDED(m_tap->TryGetExistingElementVisual(composed, &visual));
+                    VERIFY_IS_NOT_NULL(visual.Get());
+                    wrl::ComPtr<IInspectable> repeated;
+                    VERIFY_SUCCEEDED(m_tap->TryGetExistingElementVisual(composed, &repeated));
+                    wrl::ComPtr<IUnknown> identity;
+                    wrl::ComPtr<IUnknown> repeatedIdentity;
+                    VERIFY_SUCCEEDED(visual.As(&identity));
+                    VERIFY_SUCCEEDED(repeated.As(&repeatedIdentity));
+                    VERIFY_ARE_EQUAL(identity.Get(), repeatedIdentity.Get());
+                });
+                test_infra::TestServices::WindowHelper->WaitForIdle();
+            }
+            wrl::ComPtr<IInspectable> visual;
+            VERIFY_ARE_EQUAL(RPC_E_WRONG_THREAD, m_tap->TryGetExistingElementVisual(composed, &visual));
+            VERIFY_IS_NULL(visual.Get());
+        }
+
         void XamlDiagnosticsTests::TestHitTest()
         {
             // We need to reset the window content here so this test is reliable. The tree is in a weird state where there

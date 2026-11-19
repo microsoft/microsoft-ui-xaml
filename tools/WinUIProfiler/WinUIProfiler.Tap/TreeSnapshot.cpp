@@ -276,6 +276,7 @@ namespace WinUIProfiler::Tap
         struct Job
         {
             ComPtr<IXamlDiagnostics> Diagnostics;
+            ComPtr<ResourceSnapshotAbi::DiagnosticsPrivate> PrivateDiagnostics;
             Handle Stop;
             Handle Done{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
             const ULONGLONG Deadline = GetTickCount64() + DeadlineMs;
@@ -351,6 +352,7 @@ namespace WinUIProfiler::Tap
             std::unordered_map<uintptr_t, uint64_t> xamlIds;
             std::vector<Identity> xamlIdentities;
             std::vector<std::pair<uint64_t, C::Visual>> handouts;
+            std::vector<std::pair<uint64_t, C::Visual>> mappings;
             std::vector<X::DependencyObject> xamlKeepAlive;
             while (!pending.empty())
             {
@@ -410,15 +412,6 @@ namespace WinUIProfiler::Tap
                         });
                         properties.Read("foreground", [&] { return text.Foreground(); });
                     }
-                    // Descendant handouts force composition peers and include disconnected hidden visuals.
-                    if (!item.ParentId)
-                        properties.Read("elementVisualAvailable", [&]
-                        {
-                            auto visual = X::Hosting::ElementCompositionPreview::GetElementVisual(element);
-                            if (!visual) Fail(E_NOINTERFACE);
-                            handouts.emplace_back(item.Id, std::move(visual));
-                            return true;
-                        });
                 }
                 InstanceHandle handle{};
                 const auto handleHr = job.Diagnostics->GetHandleFromIInspectable(
@@ -426,6 +419,30 @@ namespace WinUIProfiler::Tap
                 std::string diagnostic = SUCCEEDED(handleHr) && handle ? Quote(Hex(handle)) : "null";
                 if (FAILED(handleHr))
                     properties.Read("diagnosticsHandle", [&]() -> bool { Fail(handleHr); });
+                if (element && (job.PrivateDiagnostics || !item.ParentId))
+                    properties.Read("elementVisualAvailable", [&]
+                    {
+                        C::Visual visual{ nullptr };
+                        if (job.PrivateDiagnostics)
+                        {
+                            if (FAILED(handleHr)) Fail(handleHr);
+                            if (!handle) Fail(E_UNEXPECTED);
+                            Inspectable existing{ nullptr };
+                            winrt::check_hresult(job.PrivateDiagnostics->TryGetExistingElementVisual(
+                                handle, reinterpret_cast<IInspectable**>(winrt::put_abi(existing))));
+                            if (existing) visual = existing.as<C::Visual>();
+                        }
+                        // Only roots may acquire a handout; descendant lookups must remain read-only.
+                        if (!visual && !item.ParentId)
+                            visual = X::Hosting::ElementCompositionPreview::GetElementVisual(element);
+                        if (visual)
+                        {
+                            mappings.emplace_back(item.Id, visual);
+                            if (!item.ParentId) handouts.emplace_back(item.Id, std::move(visual));
+                            return true;
+                        }
+                        return false;
+                    });
                 job.Add(job.Xaml, "{\"id\":" + std::to_string(item.Id) + ",\"rootId\":" +
                     std::to_string(rootId) + ",\"parentId\":" + Parent(item.ParentId) +
                     ",\"childIndex\":" + std::to_string(item.Index) + ",\"type\":" +
@@ -518,11 +535,12 @@ namespace WinUIProfiler::Tap
                 }
             }
             if (visualIds.empty()) Fail(HRESULT_FROM_WIN32(ERROR_NOT_FOUND));
-            for (const auto& pair : handouts)
+            for (const auto& pair : mappings)
             {
                 job.Entry();
                 const auto found = visualIds.find(Identity(pair.second).Address());
-                if (found == visualIds.end()) Fail(E_UNEXPECTED);
+                // Existing peers outside the captured root hierarchy are not snapshot nodes.
+                if (found == visualIds.end()) continue;
                 job.Add(job.Correlations, "{\"xamlNodeId\":" + std::to_string(pair.first) +
                     ",\"visualNodeId\":" + std::to_string(found->second) + "}");
             }
@@ -680,6 +698,8 @@ namespace WinUIProfiler::Tap
             auto job = std::make_shared<Job>();
             if (!job->Done.Get()) Fail(HRESULT_FROM_WIN32(GetLastError()));
             job->Diagnostics = diagnostics;
+            const auto mappingStatus = diagnostics->QueryInterface(IID_PPV_ARGS(&job->PrivateDiagnostics));
+            if (FAILED(mappingStatus) && mappingStatus != E_NOINTERFACE) Fail(mappingStatus);
             if (stop)
             {
                 HANDLE duplicate{};
@@ -732,8 +752,11 @@ namespace WinUIProfiler::Tap
                 "\"Each root is sampled on its owning UI thread over its recorded interval; roots are not globally atomic.\","
                 "\"XAML resources are sampled before tree enumeration, not atomically with the trees. Allocator counters are tracked in DBG builds or while profiling is enabled; -1 means unavailable. Transition-spanning allocations/frees can be unbalanced. AllocatedMemory is the independent GC heuristic, not process heap size. All-zero graphics resource slots are not measurements.\","
                 "\"Open popup children are separate visual subtrees, without fabricated logical parent links.\","
-                "\"Root-only composition capture: GetElementVisual is requested only for XamlRoot content and open popup roots, never descendants. It may materialize root handout visuals; no adorners are requested.\","
-                "\"Composition includes descendants exposed by ContainerVisual.Children and public ancestors of root handouts, not disconnected descendant handouts or private compositor trees. Object-to-visual correlations are root-only.\","
+                "\"GetElementVisual is requested only for XamlRoot content and open popup roots without an existing peer visual, never descendants. It may materialize root handout visuals; no adorners are requested.\","
+                "\"Composition includes descendants exposed by ContainerVisual.Children and public ancestors of root handouts, not disconnected descendant handouts or private compositor trees.\","
+                + Quote(job->PrivateDiagnostics ?
+                    "Existing XAML composition peers are correlated to their primary visuals when reachable in the captured composition hierarchy. Elements without peers and additional visuals without a direct primary-visual mapping remain unlinked." :
+                    "Read-only descendant correlation is unavailable: the target runtime does not support the matching IXamlDiagnosticsPrivate contract. Correlations are root-only; no descendant handouts are created.") + ","
                 "\"No core/HWCompNode or lifetime-ID mapping is exposed; addresses are debugger metadata only.\","
                 "\"Property errors and unsupported values are recorded explicitly inside properties.\","
                 "\"XAML properties are allow-listed SDK getters, not every dependency or app-defined property; TextBlock text over 4096 UTF-16 code units is recorded as an error.\","

@@ -41,12 +41,14 @@ typedef struct XamlResourceSnapshot
 
 [
     object,
-    uuid(e79e0da1-cf7f-4fa6-b557-fa0de39add1d),
+    uuid(4c8cedb4-d1f4-4ac9-955c-b11afa8bcbb0),
     pointer_default(unique)
 ]
 interface IXamlDiagnosticsPrivate : IUnknown
 {
     HRESULT GetResourceSnapShot([out] XamlResourceSnapshot* snapshot);
+    // Must run on the element's UI thread. Returns null when no existing peer visual is available.
+    HRESULT TryGetExistingElementVisual([in] InstanceHandle element, [out] IInspectable** visual);
 };
 
 cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")
