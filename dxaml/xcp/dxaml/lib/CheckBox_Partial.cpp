@@ -5,6 +5,7 @@
 #include "CheckBox.g.h"
 #include "CheckBoxAutomationPeer.g.h"
 #include "KeyboardNavigation.h"
+#include "DeferredElement.h"
 
 using namespace DirectUI;
 
@@ -76,6 +77,17 @@ IFACEMETHODIMP CheckBox::OnApplyTemplate()
     ctl::ComPtr<xaml::IDependencyObject> checkGlyph;
 
     IFC_RETURN(__super::OnApplyTemplate());
+
+    // Don't realize a deferred (x:Load="False") CheckGlyph just to adjust it; templates that defer it set
+    // HighContrastAdjustment="None" on it themselves.
+    CDeferredElement* deferredCheckGlyph = DXamlCore::GetCurrent()->GetHandle()->GetDeferredElementIfExists(
+        XSTRING_PTR_EPHEMERAL(L"CheckGlyph"),
+        GetHandle(),
+        Jupiter::NameScoping::NameScopeType::TemplateNameScope);
+    if (deferredCheckGlyph && !deferredCheckGlyph->IsRealized())
+    {
+        return S_OK;
+    }
 
     // If HighContrastAdjustment property hasn't been set for CheckGlyph set the initial value to None to avoid BackPlate drawing over CheckBox rectangle.
     // VSO: 10073971

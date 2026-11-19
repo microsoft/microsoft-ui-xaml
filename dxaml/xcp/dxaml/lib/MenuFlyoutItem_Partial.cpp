@@ -13,6 +13,7 @@
 #include "TextBlock.g.h"
 #include "CommandingHelpers.h"
 #include "ElementSoundPlayerService_Partial.h"
+#include "DeferredElement.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -51,9 +52,8 @@ MenuFlyoutItem::OnApplyTemplate()
 {
     IFC_RETURN(MenuFlyoutItemGenerated::OnApplyTemplate());
 
-    ctl::ComPtr<xaml_controls::ITextBlock> keyboardAcceleratorTextBlock;
-    IFC_RETURN(GetTemplatePart<xaml_controls::ITextBlock>(STR_LEN_PAIR(L"KeyboardAcceleratorTextBlock"), keyboardAcceleratorTextBlock.ReleaseAndGetAddressOf()));
-    SetPtrValue(m_tpKeyboardAcceleratorTextBlock, keyboardAcceleratorTextBlock.Get());
+    m_tpKeyboardAcceleratorTextBlock.Clear();
+    IFC_RETURN(EnsureKeyboardAcceleratorTextBlock());
 
     static_cast<CControl*>(GetHandle())->SuppressIsEnabled(FALSE);
     IFC_RETURN(UpdateCanExecute());
@@ -863,6 +863,8 @@ _Check_return_ HRESULT MenuFlyoutItem::GetKeyboardAcceleratorTextDesiredSize(_Ou
         m_isTemplateApplied = !!templateApplied;
     }
 
+    IFC_RETURN(EnsureKeyboardAcceleratorTextBlock());
+
     if (m_tpKeyboardAcceleratorTextBlock)
     {
         xaml::Thickness margin;
@@ -874,6 +876,32 @@ _Check_return_ HRESULT MenuFlyoutItem::GetKeyboardAcceleratorTextDesiredSize(_Ou
         desiredSize->Width -= static_cast<float>(margin.Left + margin.Right);
         desiredSize->Height -= static_cast<float>(margin.Top + margin.Bottom);
     }
+
+    return S_OK;
+}
+
+// Fetches KeyboardAcceleratorTextBlock unless it is a still-unrealized x:Load="False" part. While deferred it has
+// never been made visible (the KeyboardAcceleratorTextVisible state realizes it), so it is Collapsed and would
+// measure to zero anyway.
+_Check_return_ HRESULT MenuFlyoutItem::EnsureKeyboardAcceleratorTextBlock()
+{
+    if (m_tpKeyboardAcceleratorTextBlock)
+    {
+        return S_OK;
+    }
+
+    CDeferredElement* deferredElement = DXamlCore::GetCurrent()->GetHandle()->GetDeferredElementIfExists(
+        XSTRING_PTR_EPHEMERAL(L"KeyboardAcceleratorTextBlock"),
+        GetHandle(),
+        Jupiter::NameScoping::NameScopeType::TemplateNameScope);
+    if (deferredElement && !deferredElement->IsRealized())
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<xaml_controls::ITextBlock> keyboardAcceleratorTextBlock;
+    IFC_RETURN(GetTemplatePart<xaml_controls::ITextBlock>(STR_LEN_PAIR(L"KeyboardAcceleratorTextBlock"), keyboardAcceleratorTextBlock.ReleaseAndGetAddressOf()));
+    SetPtrValue(m_tpKeyboardAcceleratorTextBlock, keyboardAcceleratorTextBlock.Get());
 
     return S_OK;
 }

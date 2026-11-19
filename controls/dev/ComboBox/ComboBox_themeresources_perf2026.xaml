@@ -521,9 +521,9 @@
               <ColumnDefinition Width="38" />
             </Grid.ColumnDefinitions>
             <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" FlowDirection="{TemplateBinding FlowDirection}" Foreground="{ThemeResource ComboBoxHeaderForeground}" FontWeight="{ThemeResource ComboBoxHeaderThemeFontWeight}" LineHeight="20" Margin="{ThemeResource ComboBoxTopHeaderMargin}" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" x:DeferLoadStrategy="Lazy" />
-            <Border x:Name="HighlightBackground" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="-4" Background="{ThemeResource ComboBoxBackgroundFocused}" BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushFocused}" BorderThickness="{StaticResource ComboBoxBackgroundBorderThicknessFocused}" CornerRadius="{StaticResource ComboBoxHiglightBorderCornerRadius}" Opacity="0" />
+            <Border x:Name="HighlightBackground" x:Load="False" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="-4" Background="{ThemeResource ComboBoxBackgroundFocused}" BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushFocused}" BorderThickness="{StaticResource ComboBoxBackgroundBorderThicknessFocused}" CornerRadius="{StaticResource ComboBoxHiglightBorderCornerRadius}" Opacity="0" />
             <Border x:Name="Background" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Translation="0,0,1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True" MinWidth="{ThemeResource ComboBoxThemeMinWidth}" />
-            <Rectangle x:Name="Pill" Style="{StaticResource ComboBoxItemPill}" Margin="1,0,0,0" Grid.Row="1" Grid.Column="0" Opacity="0">
+            <Rectangle x:Name="Pill" x:Load="False" Style="{StaticResource ComboBoxItemPill}" Margin="1,0,0,0" Grid.Row="1" Grid.Column="0" Opacity="0">
               <Rectangle.RenderTransform>
                 <CompositeTransform x:Name="PillTransform" ScaleY="1" />
               </Rectangle.RenderTransform>

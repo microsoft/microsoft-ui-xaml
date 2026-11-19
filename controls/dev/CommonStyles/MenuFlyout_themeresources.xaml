@@ -318,7 +318,7 @@
                   <VisualState.Setters>
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutItemBackgroundPointerOver}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -326,7 +326,7 @@
                   <VisualState.Setters>
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutItemBackgroundPressed}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutItemForegroundPressed}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -334,7 +334,7 @@
                   <VisualState.Setters>
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutItemBackgroundDisabled}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundDisabled}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundDisabled}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutItemForegroundDisabled}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -385,11 +385,11 @@
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Viewbox x:Name="IconRoot" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
+            <Viewbox x:Name="IconRoot" x:Load="False" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
               <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}"/>
             </Viewbox>
             <TextBlock x:Name="TextBlock" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
+            <TextBlock x:Name="KeyboardAcceleratorTextBlock" x:Load="False" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -418,7 +418,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPointerOver}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                     <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutItemForegroundPointerOver}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPointerOver}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -427,7 +427,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPressed}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
                     <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundPressed}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -435,7 +435,7 @@
                   <VisualState.Setters>
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                     <Setter Target="CheckGlyph.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                     <Setter Target="KeyboardAcceleratorTextBlock.Foreground" Value="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForegroundDisabled}" />
                   </VisualState.Setters>
                 </VisualState>
@@ -486,11 +486,11 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <FontIcon x:Name="CheckGlyph" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource MenuFlyoutSubItemChevron}" Opacity="0" Margin="0,0,16,0" />
-            <Viewbox x:Name="IconRoot" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
+            <Viewbox x:Name="IconRoot" x:Load="False" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
               <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
             </Viewbox>
             <TextBlock x:Name="TextBlock" Grid.Column="1" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-            <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="2" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,0,0" Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
+            <TextBlock x:Name="KeyboardAcceleratorTextBlock" x:Load="False" Grid.Column="2" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,0,0" Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
           </Grid>
         </ControlTemplate>
       </Setter.Value>
@@ -648,7 +648,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPointerOver}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}" />
                     <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPointerOver}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundPointerOver}" />
                   </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Pressed">
@@ -656,7 +656,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundPressed}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
                     <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronPressed}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundPressed}" />
                   </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="SubMenuOpened">
@@ -664,7 +664,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundSubMenuOpened}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}" />
                     <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronSubMenuOpened}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundSubMenuOpened}" />
                   </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Disabled">
@@ -672,7 +672,7 @@
                     <Setter Target="LayoutRoot.Background" Value="{ThemeResource MenuFlyoutSubItemBackgroundDisabled}" />
                     <Setter Target="TextBlock.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                     <Setter Target="SubItemChevron.Foreground" Value="{ThemeResource MenuFlyoutSubItemChevronDisabled}" />
-                    <Setter Target="IconContent.Foreground" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
+                    <Setter Target="IconRoot.(Viewbox.Child).(ContentPresenter.Foreground)" Value="{ThemeResource MenuFlyoutSubItemForegroundDisabled}" />
                   </VisualState.Setters>
                 </VisualState>
               </VisualStateGroup>
@@ -713,7 +713,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
-              <Viewbox x:Name="IconRoot" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
+              <Viewbox x:Name="IconRoot" x:Load="False" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
                 <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}"/>
               </Viewbox>
               <TextBlock x:Name="TextBlock" Grid.Column="0" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />

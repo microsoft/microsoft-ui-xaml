@@ -41,7 +41,7 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     winrt::IControlProtected controlProtected = *this;
 
     // Retrieve pointers to stable controls 
-    m_helper.Init(*this);
+    m_helper.Reset();
 
     UnhookEventsAndClearFields();
 
@@ -225,7 +225,7 @@ void NavigationViewItemPresenter::RotateExpandCollapseChevron(bool isExpanded)
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
 {
-    return m_helper.GetSelectionIndicator();  
+    return m_helper.EnsureSelectionIndicator(*this);  
 }
 
 bool NavigationViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool useTransitions)

@@ -81,6 +81,7 @@ private:
 
     // Helper functions
     void UpdateVisualState(bool useTransitions);
+    void EnsureHsvParts();
 
     static void AddGradientStop(const winrt::LinearGradientBrush& brush, double offset, Hsv hsvColor, double alpha);
 

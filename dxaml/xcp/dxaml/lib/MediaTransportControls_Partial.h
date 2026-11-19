@@ -168,6 +168,7 @@ namespace DirectUI
         _Check_return_ HRESULT HookupPartsAndHandlers();
         _Check_return_ HRESULT HookupVolumeAndProgressPartsAndHandlers();
         _Check_return_ HRESULT MoreControls();
+        _Check_return_ HRESULT EnsureOptionalButton(_In_ KnownPropertyIndex visibilityPropertyIndex);
 
         _Check_return_ HRESULT InitializeAudio();
         _Check_return_ HRESULT InitializeVideo();

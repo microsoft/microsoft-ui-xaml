@@ -54,7 +54,7 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
         else if (key == winrt::VirtualKey::Space &&
                  treeView->ListControl()->IsMultiselect())
         {
-            const auto selectionBox = m_selectionBox.get();
+            const auto selectionBox = EnsureSelectionBox();
             const bool isSelected = CheckBoxSelectionState(selectionBox) == TreeNodeSelectionState::Selected;
             selectionBox.IsChecked(!isSelected);
             e.Handled(true);
@@ -260,13 +260,23 @@ void TreeViewItem::OnApplyTemplate()
     RecycleEvents();
 
     winrt::IControlProtected controlProtected = *this;
-    m_selectionBox.set(GetTemplateChildT<winrt::CheckBox>(c_multiSelectCheckBoxName, controlProtected));
+
+    // MultiSelectCheckBox may be deferred (x:Load="False") in the template; it is only fetched (and
+    // thereby realized) when multiple selection is in use.
+    m_checkedEventRevoker.revoke();
+    m_uncheckedEventRevoker.revoke();
+    m_selectionBox.set(nullptr);
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TreeViewItem::OnIsSelectedChanged });
 
-    if (m_selectionBox)
+    if (const auto treeView = AncestorTreeView())
     {
-        m_checkedEventRevoker = m_selectionBox.get().Checked(winrt::auto_revoke, { this, &TreeViewItem::OnCheckToggle });
-        m_uncheckedEventRevoker = m_selectionBox.get().Unchecked(winrt::auto_revoke, { this, &TreeViewItem::OnCheckToggle });
+        if (const auto listControl = treeView->ListControl())
+        {
+            if (listControl->IsMultiselect())
+            {
+                EnsureSelectionBox();
+            }
+        }
     }
 
     const auto chevron = GetTemplateChildT<winrt::UIElement>(c_expandCollapseChevronName, controlProtected);
@@ -283,6 +293,21 @@ void TreeViewItem::OnApplyTemplate()
     }
 
     __super::OnApplyTemplate();
+}
+
+winrt::CheckBox TreeViewItem::EnsureSelectionBox()
+{
+    if (!m_selectionBox)
+    {
+        winrt::IControlProtected controlProtected = *this;
+        if (const auto selectionBox = GetTemplateChildT<winrt::CheckBox>(c_multiSelectCheckBoxName, controlProtected))
+        {
+            m_selectionBox.set(selectionBox);
+            m_checkedEventRevoker = selectionBox.Checked(winrt::auto_revoke, { this, &TreeViewItem::OnCheckToggle });
+            m_uncheckedEventRevoker = selectionBox.Unchecked(winrt::auto_revoke, { this, &TreeViewItem::OnCheckToggle });
+        }
+    }
+    return m_selectionBox.get();
 }
 
 template<typename T>
@@ -398,6 +423,7 @@ bool TreeViewItem::IsInReorderMode(winrt::VirtualKey key)
 
 void TreeViewItem::UpdateTreeViewItemVisualState(TreeNodeSelectionState const& state)
 {
+    EnsureSelectionBox();
     if (state == TreeNodeSelectionState::Selected)
     {
         winrt::VisualStateManager::GoToState(*this, L"TreeViewMultiSelectEnabledSelected", false);
@@ -482,13 +508,13 @@ void TreeViewItem::UpdateMultipleSelection(TreeNodeSelectionState const& state)
     switch(state)
     {
     case TreeNodeSelectionState::Selected:
-        m_selectionBox.get().IsChecked(true);
+        EnsureSelectionBox().IsChecked(true);
         break;
     case TreeNodeSelectionState::PartialSelected:
-        m_selectionBox.get().IsChecked(nullptr);
+        EnsureSelectionBox().IsChecked(nullptr);
         break;
     case TreeNodeSelectionState::UnSelected:
-        m_selectionBox.get().IsChecked(false);
+        EnsureSelectionBox().IsChecked(false);
         break;
     }
     UpdateTreeViewItemVisualState(state);
@@ -504,7 +530,7 @@ bool TreeViewItem::IsSelectedInternal()
         const auto listControl = treeView->ListControl();
         if (listControl && listControl->IsMultiselect())
         {
-            const TreeNodeSelectionState state = CheckBoxSelectionState(m_selectionBox.get());
+            const TreeNodeSelectionState state = CheckBoxSelectionState(EnsureSelectionBox());
             isSelected = state == TreeNodeSelectionState::Selected;
         }
     }
@@ -589,7 +615,7 @@ void TreeViewItem::HandleGamepadAInMultiselectMode(const winrt::TreeViewNode& no
 
 bool TreeViewItem::ToggleSelection()
 {
-    const auto currentState = CheckBoxSelectionState(m_selectionBox.get());
+    const auto currentState = CheckBoxSelectionState(EnsureSelectionBox());
     const auto newState = currentState == TreeNodeSelectionState::Selected ? TreeNodeSelectionState::UnSelected : TreeNodeSelectionState::Selected;
     UpdateMultipleSelection(newState);
     return newState == TreeNodeSelectionState::Selected;

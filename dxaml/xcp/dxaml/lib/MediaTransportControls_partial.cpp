@@ -1243,14 +1243,7 @@ MediaTransportControls::HookupVolumeAndProgressPartsAndHandlers()
         IFC(AddTooltip(m_tpCCSelectionButton.Cast<Button>(), strAutomationName));
     }
 
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"PlaybackRateButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpPlaybackRateButton, spComponentAsDO.Get());
-    if (m_tpPlaybackRateButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_PLAYBACKRATE, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpPlaybackRateButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpPlaybackRateButton.Cast<Button>(), strAutomationName));
-    }
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsPlaybackRateButtonVisible));
 
     IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"VolumeButton").Get(), &spComponentAsDO));
     SetPtrValueWithQIOrNull(m_tpVideoVolumeButton, spComponentAsDO.Get());
@@ -1287,32 +1280,9 @@ MediaTransportControls::HookupVolumeAndProgressPartsAndHandlers()
         IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpBufferingProgressBar.Cast<Slider>(), strAutomationName));
     }
 
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"FastForwardButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpFastForwardButton, spComponentAsDO.Get());
-    if (m_tpFastForwardButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_FASTFORWARD, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpFastForwardButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpFastForwardButton.Cast<Button>(), strAutomationName));
-    }
-
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"RewindButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpFastRewindButton, spComponentAsDO.Get());
-    if (m_tpFastRewindButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_REWIND, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpFastRewindButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpFastRewindButton.Cast<Button>(), strAutomationName));
-    }
-
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"StopButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpStopButton, spComponentAsDO.Get());
-    if (m_tpStopButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_STOP, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpStopButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpStopButton.Cast<Button>(), strAutomationName));
-    }
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsFastForwardButtonVisible));
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsFastRewindButtonVisible));
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsStopButtonVisible));
 
     IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"CastButton").Get(), &spComponentAsDO));
     SetPtrValueWithQIOrNull(m_tpCastButton, spComponentAsDO.Get());
@@ -1347,15 +1317,6 @@ MediaTransportControls::HookupVolumeAndProgressPartsAndHandlers()
             [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
         {
             RRETURN(OnCCSelectionButtonClick());
-        }));
-    }
-
-    if (m_tpPlaybackRateButton)
-    {
-        IFC(m_epPlaybackRateButtonClickHandler.AttachEventHandler(m_tpPlaybackRateButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(OnPlaybackRateButtonClick());
         }));
     }
 
@@ -1419,33 +1380,6 @@ MediaTransportControls::HookupVolumeAndProgressPartsAndHandlers()
         }));
     }
 
-    if (m_tpFastForwardButton)
-    {
-        IFC(m_epFastForwardButtonClickHandler.AttachEventHandler(m_tpFastForwardButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(OnFastForwardButtonClicked());
-        }));
-    }
-
-    if (m_tpFastRewindButton)
-    {
-        IFC(m_epFastRewindButtonClickHandler.AttachEventHandler(m_tpFastRewindButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(OnFastRewindButtonClicked());
-        }));
-    }
-
-    if (m_tpStopButton)
-    {
-        IFC(m_epStopButtonClickHandler.AttachEventHandler(m_tpStopButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(OnStopButtonClicked());
-        }));
-    }
-
     if (m_tpCastButton)
     {
         IFC(m_epCastButtonClickHandler.AttachEventHandler(m_tpCastButton.Cast<Button>(),
@@ -1474,65 +1408,10 @@ MediaTransportControls::MoreControls()
     wrl_wrappers::HString strAutomationName;
     ctl::ComPtr<IVisualStateGroup> spVisibilityStatesGroup;
 
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"SkipForwardButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpSkipForwardButton, spComponentAsDO.Get());
-    if (m_tpSkipForwardButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_SKIPFORWARD, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpSkipForwardButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpSkipForwardButton.Cast<Button>(), strAutomationName));
-
-        IFC(m_epSkipForwardButtonClickHandler.AttachEventHandler(m_tpSkipForwardButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(SkipForward());
-        }));
-    }
-
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"SkipBackwardButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpSkipBackwardButton, spComponentAsDO.Get());
-    if (m_tpSkipBackwardButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_SKIPBACKWARD, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpSkipBackwardButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpSkipBackwardButton.Cast<Button>(), strAutomationName));
-
-        IFC(m_epSkipBackwardButtonClickHandler.AttachEventHandler(m_tpSkipBackwardButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(SkipBackward());
-        }));
-    }
-
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"NextTrackButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpNextTrackButton, spComponentAsDO.Get());
-    if (m_tpNextTrackButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_NEXTRACK, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpNextTrackButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpNextTrackButton.Cast<Button>(), strAutomationName));
-
-        IFC(m_epNextTrackButtonClickHandler.AttachEventHandler(m_tpNextTrackButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(NextTrack());
-        }));
-    }
-
-    IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"PreviousTrackButton").Get(), &spComponentAsDO));
-    SetPtrValueWithQIOrNull(m_tpPreviousTrackButton, spComponentAsDO.Get());
-    if (m_tpPreviousTrackButton)
-    {
-        IFC(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_MEDIA_PREVIOUSTRACK, strAutomationName.ReleaseAndGetAddressOf()));
-        IFC(DirectUI::AutomationProperties::SetNameStatic(m_tpPreviousTrackButton.Cast<Button>(), strAutomationName));
-        IFC(AddTooltip(m_tpPreviousTrackButton.Cast<Button>(), strAutomationName));
-
-        IFC(m_epPreviousTrackButtonClickHandler.AttachEventHandler(m_tpPreviousTrackButton.Cast<Button>(),
-            [this](IInspectable* pSender, IRoutedEventArgs* pArgs)
-        {
-            RRETURN(PreviousTrack());
-        }));
-    }
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsSkipForwardButtonVisible));
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsSkipBackwardButtonVisible));
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsNextTrackButtonVisible));
+    IFC(EnsureOptionalButton(KnownPropertyIndex::MediaTransportControls_IsPreviousTrackButtonVisible));
 
     IFC(GetTemplateChild(wrl_wrappers::HStringReference(L"RepeatButton").Get(), &spComponentAsDO));
     SetPtrValueWithQIOrNull(m_tpRepeatButton, spComponentAsDO.Get());
@@ -1588,6 +1467,131 @@ MediaTransportControls::MoreControls()
 
 Cleanup:
     RRETURN(hr);
+}
+
+//------------------------------------------------------------------------
+//
+//  Synopsis:
+//       The optional command bar buttons are x:Load="False" in the default template. Fetch (and thereby
+//       realize) and hook up such a button only once its Is*ButtonVisible property is true.
+//
+//------------------------------------------------------------------------
+_Check_return_ HRESULT
+MediaTransportControls::EnsureOptionalButton(_In_ KnownPropertyIndex visibilityPropertyIndex)
+{
+    BOOLEAN isVisible = FALSE;
+    TrackerPtr<xaml_controls::IButton>* button = nullptr;
+    ctl::EventPtr<ButtonBaseClickEventCallback>* clickHandler = nullptr;
+    HRESULT (MediaTransportControls::*onClick)() = nullptr;
+    const WCHAR* partName = nullptr;
+    XUINT32 automationNameId = 0;
+    KnownPropertyIndex enabledPropertyIndex = KnownPropertyIndex::UnknownType_UnknownProperty;
+
+    switch (visibilityPropertyIndex)
+    {
+        case KnownPropertyIndex::MediaTransportControls_IsPlaybackRateButtonVisible:
+            IFC_RETURN(get_IsPlaybackRateButtonVisible(&isVisible));
+            button = &m_tpPlaybackRateButton;
+            clickHandler = &m_epPlaybackRateButtonClickHandler;
+            onClick = &MediaTransportControls::OnPlaybackRateButtonClick;
+            partName = L"PlaybackRateButton";
+            automationNameId = UIA_MEDIA_PLAYBACKRATE;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsPlaybackRateEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsFastForwardButtonVisible:
+            IFC_RETURN(get_IsFastForwardButtonVisible(&isVisible));
+            button = &m_tpFastForwardButton;
+            clickHandler = &m_epFastForwardButtonClickHandler;
+            onClick = &MediaTransportControls::OnFastForwardButtonClicked;
+            partName = L"FastForwardButton";
+            automationNameId = UIA_MEDIA_FASTFORWARD;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsFastForwardEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsFastRewindButtonVisible:
+            IFC_RETURN(get_IsFastRewindButtonVisible(&isVisible));
+            button = &m_tpFastRewindButton;
+            clickHandler = &m_epFastRewindButtonClickHandler;
+            onClick = &MediaTransportControls::OnFastRewindButtonClicked;
+            partName = L"RewindButton";
+            automationNameId = UIA_MEDIA_REWIND;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsFastRewindEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsStopButtonVisible:
+            IFC_RETURN(get_IsStopButtonVisible(&isVisible));
+            button = &m_tpStopButton;
+            clickHandler = &m_epStopButtonClickHandler;
+            onClick = &MediaTransportControls::OnStopButtonClicked;
+            partName = L"StopButton";
+            automationNameId = UIA_MEDIA_STOP;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsStopEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsSkipForwardButtonVisible:
+            IFC_RETURN(get_IsSkipForwardButtonVisible(&isVisible));
+            button = &m_tpSkipForwardButton;
+            clickHandler = &m_epSkipForwardButtonClickHandler;
+            onClick = &MediaTransportControls::SkipForward;
+            partName = L"SkipForwardButton";
+            automationNameId = UIA_MEDIA_SKIPFORWARD;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsSkipForwardEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsSkipBackwardButtonVisible:
+            IFC_RETURN(get_IsSkipBackwardButtonVisible(&isVisible));
+            button = &m_tpSkipBackwardButton;
+            clickHandler = &m_epSkipBackwardButtonClickHandler;
+            onClick = &MediaTransportControls::SkipBackward;
+            partName = L"SkipBackwardButton";
+            automationNameId = UIA_MEDIA_SKIPBACKWARD;
+            enabledPropertyIndex = KnownPropertyIndex::MediaTransportControls_IsSkipBackwardEnabled;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsNextTrackButtonVisible:
+            IFC_RETURN(get_IsNextTrackButtonVisible(&isVisible));
+            button = &m_tpNextTrackButton;
+            clickHandler = &m_epNextTrackButtonClickHandler;
+            onClick = &MediaTransportControls::NextTrack;
+            partName = L"NextTrackButton";
+            automationNameId = UIA_MEDIA_NEXTRACK;
+            break;
+        case KnownPropertyIndex::MediaTransportControls_IsPreviousTrackButtonVisible:
+            IFC_RETURN(get_IsPreviousTrackButtonVisible(&isVisible));
+            button = &m_tpPreviousTrackButton;
+            clickHandler = &m_epPreviousTrackButtonClickHandler;
+            onClick = &MediaTransportControls::PreviousTrack;
+            partName = L"PreviousTrackButton";
+            automationNameId = UIA_MEDIA_PREVIOUSTRACK;
+            break;
+        default:
+            return S_OK;
+    }
+
+    if (!isVisible || *button || !m_isTemplateApplied)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<xaml::IDependencyObject> spComponentAsDO;
+    IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(partName).Get(), &spComponentAsDO));
+    SetPtrValueWithQIOrNull(*button, spComponentAsDO.Get());
+
+    if (*button)
+    {
+        wrl_wrappers::HString strAutomationName;
+        IFC_RETURN(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(automationNameId, strAutomationName.ReleaseAndGetAddressOf()));
+        IFC_RETURN(DirectUI::AutomationProperties::SetNameStatic(button->Cast<Button>(), strAutomationName));
+        IFC_RETURN(AddTooltip(button->Cast<Button>(), strAutomationName));
+
+        IFC_RETURN(clickHandler->AttachEventHandler(button->Cast<Button>(),
+            [this, onClick](IInspectable* pSender, IRoutedEventArgs* pArgs)
+        {
+            return (this->*onClick)();
+        }));
+
+        if (enabledPropertyIndex != KnownPropertyIndex::UnknownType_UnknownProperty)
+        {
+            IFC_RETURN(UpdateMediaControlState(enabledPropertyIndex));
+        }
+    }
+
+    return S_OK;
 }
 
 
@@ -4881,7 +4885,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsPlaybackRateButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpPlaybackRateButton)
             {
                 IFC(get_IsPlaybackRateButtonVisible(&value));
@@ -4892,7 +4896,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsFastForwardButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpFastForwardButton)
             {
                 IFC(get_IsFastForwardButtonVisible(&value));
@@ -4903,7 +4907,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsFastRewindButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpFastRewindButton)
             {
                 IFC(get_IsFastRewindButtonVisible(&value));
@@ -4914,7 +4918,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsStopButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpStopButton)
             {
                 IFC(get_IsStopButtonVisible(&value));
@@ -4925,7 +4929,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsSkipForwardButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpSkipForwardButton)
             {
                 IFC(get_IsSkipForwardButtonVisible(&value));
@@ -4936,7 +4940,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsSkipBackwardButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpSkipBackwardButton)
             {
                 IFC(get_IsSkipBackwardButtonVisible(&value));
@@ -4947,7 +4951,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsNextTrackButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpNextTrackButton)
             {
                 IFC(get_IsNextTrackButtonVisible(&value));
@@ -4958,7 +4962,7 @@ MediaTransportControls::UpdateMediaControlState(_In_ KnownPropertyIndex property
         }
         case KnownPropertyIndex::MediaTransportControls_IsPreviousTrackButtonVisible:
         {
-
+            IFC(EnsureOptionalButton(propertyIndex));
             if (m_tpPreviousTrackButton)
             {
                 IFC(get_IsPreviousTrackButtonVisible(&value));

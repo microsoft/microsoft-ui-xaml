@@ -127,7 +127,7 @@
                 </VisualState>
               </VisualStateGroup>
             </VisualStateManager.VisualStateGroups>
-            <Rectangle x:Name="SelectionIndicator" Width="3" Height="16" Fill="{ThemeResource TreeViewItemSelectionIndicatorForeground}" Opacity="0" HorizontalAlignment="Left" VerticalAlignment="Center" RadiusX="2" RadiusY="2" />
+            <Rectangle x:Name="SelectionIndicator" x:Load="False" Width="3" Height="16" Fill="{ThemeResource TreeViewItemSelectionIndicatorForeground}" Opacity="0" HorizontalAlignment="Left" VerticalAlignment="Center" RadiusX="2" RadiusY="2" />
             <Grid x:Name="MultiSelectGrid" Margin="{ThemeResource TreeViewItemMultiSelectSelectedItemBorderMargin}" Padding="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.Indentation}" BorderBrush="Transparent" BorderThickness="{ThemeResource TreeViewItemBorderThemeThickness}" CornerRadius="{ThemeResource ControlCornerRadius}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -135,8 +135,8 @@
                 <ColumnDefinition />
               </Grid.ColumnDefinitions>
               <Grid Grid.Column="0">
-                <CheckBox x:Name="MultiSelectCheckBox" Width="32" MinWidth="32" MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}" Margin="10,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" IsTabStop="False" AutomationProperties.AccessibilityView="Raw" />
-                <Border x:Name="MultiArrangeOverlayTextBorder" Visibility="Collapsed" IsHitTestVisible="False" MinWidth="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center" Background="{ThemeResource SystemControlBackgroundAccentBrush}" BorderThickness="1" BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" CornerRadius="{ThemeResource ControlCornerRadius}">
+                <CheckBox x:Name="MultiSelectCheckBox" x:Load="False" Width="32" MinWidth="32" MinHeight="{ThemeResource TreeViewItemMultiSelectCheckBoxMinHeight}" Margin="10,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" IsTabStop="False" AutomationProperties.AccessibilityView="Raw" />
+                <Border x:Name="MultiArrangeOverlayTextBorder" x:Load="False" Visibility="Collapsed" IsHitTestVisible="False" MinWidth="20" Height="20" VerticalAlignment="Center" HorizontalAlignment="Center" Background="{ThemeResource SystemControlBackgroundAccentBrush}" BorderThickness="1" BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}" CornerRadius="{ThemeResource ControlCornerRadius}">
                   <TextBlock x:Name="MultiArrangeOverlayText" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}" Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource SystemControlForegroundChromeWhiteBrush}" IsHitTestVisible="False" VerticalAlignment="Center" HorizontalAlignment="Center" AutomationProperties.AccessibilityView="Raw" />
                 </Border>
               </Grid>

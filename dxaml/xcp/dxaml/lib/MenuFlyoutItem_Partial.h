@@ -70,6 +70,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT GetKeyboardAcceleratorTextDesiredSize(_Out_ wf::Size* desiredSize);
         _Check_return_ HRESULT UpdateTemplateSettings(_In_ double maxKeyboardAcceleratorTextWidth);
+        _Check_return_ HRESULT EnsureKeyboardAcceleratorTextBlock();
 
         static _Check_return_ HRESULT AddProofingItemHandlerStatic(_In_ CDependencyObject* pMenuFlyoutItem, _In_ INTERNAL_EVENT_HANDLER eventHandler);
 

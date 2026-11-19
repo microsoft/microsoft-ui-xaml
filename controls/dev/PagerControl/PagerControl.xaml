@@ -149,18 +149,18 @@
             <StackPanel x:Name="BoxPanels" Visibility="Collapsed" Orientation="Horizontal" Grid.Column="1">
               <TextBlock Text="{TemplateBinding PrefixText}" VerticalAlignment="Center" Margin="5,0,5,0" />
               <!--NumberBox Display-->
-              <controls:NumberBox x:Name="NumberBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center" Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" Minimum="1" SmallChange="1" LargeChange="5" Visibility="Collapsed" />
+              <controls:NumberBox x:Name="NumberBoxDisplay" x:Load="False" HorizontalAlignment="Center" VerticalAlignment="Center" Maximum="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" Minimum="1" SmallChange="1" LargeChange="5" Visibility="Collapsed" />
               <!--ComboBox Display-->
               <ComboBox x:Name="ComboBoxDisplay" HorizontalAlignment="Center" VerticalAlignment="Center" ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Pages}" Visibility="Collapsed" />
               <TextBlock x:Name="SuffixTextLabel" Text="{TemplateBinding SuffixText}" VerticalAlignment="Center" Margin="5,0,0,0" />
               <TextBlock x:Name="TotalNumberOfPagesLabel" VerticalAlignment="Center" Margin="5,0,5,0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=NumberOfPages, Mode=OneWay}" />
             </StackPanel>
-            <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater" ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NumberPanelItems}" Grid.Column="1" Visibility="Collapsed">
+            <controls:ItemsRepeater x:Name="NumberPanelItemsRepeater" x:Load="False" ItemsSource="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.NumberPanelItems}" Grid.Column="1" Visibility="Collapsed">
               <controls:ItemsRepeater.Layout>
                 <controls:StackLayout Orientation="Horizontal" Spacing="5" />
               </controls:ItemsRepeater.Layout>
             </controls:ItemsRepeater>
-            <Rectangle x:Name="NumberPanelCurrentPageIndicator" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Visibility="Collapsed" Fill="{ThemeResource PagerControlSelectionIndicatorForeground}" RadiusX="1" RadiusY="1" Height="2">
+            <Rectangle x:Name="NumberPanelCurrentPageIndicator" x:Load="False" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.Column="1" Visibility="Collapsed" Fill="{ThemeResource PagerControlSelectionIndicatorForeground}" RadiusX="1" RadiusY="1" Height="2">
               <Rectangle.Transitions>
                 <TransitionCollection>
                   <RepositionThemeTransition />

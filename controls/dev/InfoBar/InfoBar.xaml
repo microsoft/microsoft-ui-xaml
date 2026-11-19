@@ -44,7 +44,6 @@
               <VisualStateGroup x:Name="IconStates">
                 <VisualState x:Name="StandardIconVisible">
                   <VisualState.Setters>
-                    <Setter Target="UserIconBox.Visibility" Value="Collapsed" />
                     <Setter Target="StandardIconArea.Visibility" Value="Visible" />
                   </VisualState.Setters>
                 </VisualState>
@@ -108,7 +107,7 @@
                 <TextBlock x:Name="IconBackground" Grid.Column="0" VerticalAlignment="Top" Margin="{StaticResource InfoBarIconMargin}" FontSize="{StaticResource InfoBarIconFontSize}" Text="{StaticResource InfoBarIconBackgroundGlyph}" Foreground="{ThemeResource InfoBarInformationalSeverityIconBackground}" FontFamily="{ThemeResource SymbolThemeFontFamily}" AutomationProperties.AccessibilityView="Raw" />
                 <TextBlock x:Name="StandardIcon" Grid.Column="0" VerticalAlignment="Top" Margin="{StaticResource InfoBarIconMargin}" FontSize="{StaticResource InfoBarIconFontSize}" Text="{StaticResource InfoBarInformationalIconGlyph}" Foreground="{ThemeResource InfoBarInformationalSeverityIconForeground}" FontFamily="{ThemeResource SymbolThemeFontFamily}" />
               </Grid>
-              <Viewbox x:Name="UserIconBox" Grid.Column="0" Visibility="Collapsed" VerticalAlignment="Top" MaxWidth="{ThemeResource InfoBarIconFontSize}" MaxHeight="{ThemeResource InfoBarIconFontSize}" Margin="{ThemeResource InfoBarIconMargin}" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
+              <Viewbox x:Name="UserIconBox" x:Load="False" Grid.Column="0" Visibility="Collapsed" VerticalAlignment="Top" MaxWidth="{ThemeResource InfoBarIconFontSize}" MaxHeight="{ThemeResource InfoBarIconFontSize}" Margin="{ThemeResource InfoBarIconMargin}" Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
               <primitives:InfoBarPanel Grid.Column="1" Margin="{StaticResource InfoBarPanelMargin}" HorizontalOrientationPadding="{StaticResource InfoBarPanelHorizontalOrientationPadding}" VerticalOrientationPadding="{StaticResource InfoBarPanelVerticalOrientationPadding}">
                 <TextBlock x:Name="Title" Text="{TemplateBinding Title}" Foreground="{ThemeResource InfoBarTitleForeground}" primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarTitleHorizontalOrientationMargin}" primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarTitleVerticalOrientationMargin}" TextWrapping="WrapWholeWords" FontWeight="{StaticResource InfoBarTitleFontWeight}" FontSize="{StaticResource InfoBarTitleFontSize}" />
                 <TextBlock x:Name="Message" Text="{TemplateBinding Message}" Foreground="{ThemeResource InfoBarMessageForeground}" primitives:InfoBarPanel.HorizontalOrientationMargin="{StaticResource InfoBarMessageHorizontalOrientationMargin}" primitives:InfoBarPanel.VerticalOrientationMargin="{StaticResource InfoBarMessageVerticalOrientationMargin}" TextWrapping="WrapWholeWords" FontWeight="{StaticResource InfoBarMessageFontWeight}" FontSize="{StaticResource InfoBarMessageFontSize}" />

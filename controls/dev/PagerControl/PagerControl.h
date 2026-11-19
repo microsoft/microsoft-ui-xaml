@@ -38,6 +38,8 @@ public:
 private:
 
     /* UI updating */
+    void EnsureNumberBox();
+    void EnsureNumberPanel();
     void UpdateTemplateSettingElementLists();
     void FillComboBoxCollectionToSize(const int numberOfPages);
     void UpdateOnEdgeButtonVisualStates();

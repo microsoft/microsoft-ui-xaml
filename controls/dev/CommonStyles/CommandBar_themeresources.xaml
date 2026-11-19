@@ -839,7 +839,7 @@
                 <FontIcon x:Name="EllipsisIcon" VerticalAlignment="Center" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="20" Glyph="&#xE712;" Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
               </Button>
               <Rectangle x:Name="HighContrastBorder" x:DeferLoadStrategy="Lazy" Grid.ColumnSpan="2" Visibility="Collapsed" VerticalAlignment="Stretch" Stroke="{ThemeResource CommandBarHighContrastBorder}" StrokeThickness="1" />
-              <Border x:Name="OpenBorder" Grid.ColumnSpan="2" Visibility="Collapsed" VerticalAlignment="Stretch" BorderThickness="{ThemeResource CommandBarBorderThicknessOpen}" BorderBrush="{ThemeResource CommandBarBorderBrushOpen}" CornerRadius="{TemplateBinding CornerRadius}" />
+              <Border x:Name="OpenBorder" x:Load="False" Grid.ColumnSpan="2" Visibility="Collapsed" VerticalAlignment="Stretch" BorderThickness="{ThemeResource CommandBarBorderThicknessOpen}" BorderBrush="{ThemeResource CommandBarBorderBrushOpen}" CornerRadius="{TemplateBinding CornerRadius}" />
             </Grid>
             <Popup x:Name="OverflowPopup" ShouldConstrainToRootBounds="False">
               <Popup.Resources>

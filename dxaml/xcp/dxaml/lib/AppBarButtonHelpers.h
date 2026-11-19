@@ -17,6 +17,7 @@
 #include "TextBlock.g.h"
 #include "localizedResource.h"
 #include "CommandingHelpers.h"
+#include "DeferredElement.h"
 
 namespace DirectUI
 {
@@ -80,15 +81,41 @@ namespace DirectUI
         template<class AppBarButtonType>
         static _Check_return_ HRESULT OnApplyTemplate(_In_ AppBarButtonType* const button)
         {
-            ctl::ComPtr<xaml_controls::ITextBlock> keyboardAcceleratorTextLabel;
-            IFC_RETURN(button->template GetTemplatePart<xaml_controls::ITextBlock>(STR_LEN_PAIR(L"KeyboardAcceleratorTextLabel"), keyboardAcceleratorTextLabel.ReleaseAndGetAddressOf()));
-            button->SetPtrValue(button->m_tpKeyboardAcceleratorTextLabel, keyboardAcceleratorTextLabel.Get());
+            button->m_tpKeyboardAcceleratorTextLabel.Clear();
+            IFC_RETURN(EnsureKeyboardAcceleratorTextLabel(button));
 
             button->m_isTemplateApplied = true;
 
             // Set the initial view state
             IFC_RETURN(button->UpdateInternalStyles());
             IFC_RETURN(button->UpdateVisualState());
+
+            return S_OK;
+        }
+
+        // Fetches KeyboardAcceleratorTextLabel unless it is a still-unrealized x:Load="False" part. While deferred it
+        // has never been made visible (the KeyboardAcceleratorTextVisible state realizes it), so it is Collapsed and
+        // would measure to zero anyway.
+        template<class AppBarButtonType>
+        static _Check_return_ HRESULT EnsureKeyboardAcceleratorTextLabel(_In_ AppBarButtonType* const button)
+        {
+            if (button->m_tpKeyboardAcceleratorTextLabel)
+            {
+                return S_OK;
+            }
+
+            CDeferredElement* deferredElement = DXamlCore::GetCurrent()->GetHandle()->GetDeferredElementIfExists(
+                XSTRING_PTR_EPHEMERAL(L"KeyboardAcceleratorTextLabel"),
+                button->GetHandle(),
+                Jupiter::NameScoping::NameScopeType::TemplateNameScope);
+            if (deferredElement && !deferredElement->IsRealized())
+            {
+                return S_OK;
+            }
+
+            ctl::ComPtr<xaml_controls::ITextBlock> keyboardAcceleratorTextLabel;
+            IFC_RETURN(button->template GetTemplatePart<xaml_controls::ITextBlock>(STR_LEN_PAIR(L"KeyboardAcceleratorTextLabel"), keyboardAcceleratorTextLabel.ReleaseAndGetAddressOf()));
+            button->SetPtrValue(button->m_tpKeyboardAcceleratorTextLabel, keyboardAcceleratorTextLabel.Get());
 
             return S_OK;
         }
@@ -337,6 +364,8 @@ namespace DirectUI
         static _Check_return_ HRESULT GetKeyboardAcceleratorTextDesiredSize(_In_ AppBarButtonType* const button, _Out_ wf::Size* desiredSize)
         {
             *desiredSize = { 0, 0 };
+
+            IFC_RETURN(EnsureKeyboardAcceleratorTextLabel(button));
 
             if (button->m_tpKeyboardAcceleratorTextLabel)
             {

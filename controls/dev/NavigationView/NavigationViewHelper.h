@@ -45,6 +45,21 @@ public:
         m_selectionIndicator.set(GetTemplateChildT<winrt::UIElement>(c_selectionIndicatorName, controlProtected));
     }
 
+    void Reset()
+    {
+        m_selectionIndicator.set(nullptr);
+    }
+
+    // Fetches SelectionIndicator on first use, since it may be deferred (x:Load="False") in the template.
+    winrt::UIElement EnsureSelectionIndicator(const winrt::IControlProtected & controlProtected)
+    {
+        if (!m_selectionIndicator)
+        {
+            Init(controlProtected);
+        }
+        return m_selectionIndicator.get();
+    }
+
 private:
     const ITrackerHandleManager* m_owner;
     tracker_ref<winrt::UIElement> m_selectionIndicator{ m_owner };

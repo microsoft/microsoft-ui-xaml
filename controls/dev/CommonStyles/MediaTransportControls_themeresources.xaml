@@ -347,18 +347,18 @@
                         </AppBarButton.Icon>
                       </AppBarButton>
                       <AppBarSeparator x:Name="LeftSeparator" Height="0" Width="0" Margin="0,0" />
-                      <AppBarButton x:Name="StopButton" Icon="Stop" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="7" Visibility="Collapsed" />
-                      <AppBarButton x:Name="SkipBackwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
+                      <AppBarButton x:Name="StopButton" x:Load="False" Icon="Stop" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="7" Visibility="Collapsed" />
+                      <AppBarButton x:Name="SkipBackwardButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xED3C;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="PreviousTrackButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
+                      <AppBarButton x:Name="PreviousTrackButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xF8AC;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="RewindButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
+                      <AppBarButton x:Name="RewindButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xE627;" />
                         </AppBarButton.Icon>
@@ -368,22 +368,22 @@
                           <FontIcon x:Name="PlayPauseSymbol" Glyph="&#xF5B0;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="FastForwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
+                      <AppBarButton x:Name="FastForwardButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="1" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xE628;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="NextTrackButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
+                      <AppBarButton x:Name="NextTrackButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="3" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xF8AD;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="SkipForwardButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
+                      <AppBarButton x:Name="SkipForwardButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="5" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xED3D;" />
                         </AppBarButton.Icon>
                       </AppBarButton>
-                      <AppBarButton x:Name="PlaybackRateButton" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="10" Visibility="Collapsed">
+                      <AppBarButton x:Name="PlaybackRateButton" x:Load="False" Style="{StaticResource AppBarButtonStyle}" MediaTransportControlsHelper.DropoutOrder="10" Visibility="Collapsed">
                         <AppBarButton.Icon>
                           <FontIcon Glyph="&#xEC57;" />
                         </AppBarButton.Icon>

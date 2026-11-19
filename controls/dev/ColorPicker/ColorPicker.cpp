@@ -47,9 +47,10 @@ void ColorPicker::OnApplyTemplate()
     m_redTextBox.set(GetTemplateChildT<winrt::TextBox>(L"RedTextBox", thisAsControlProtected));
     m_greenTextBox.set(GetTemplateChildT<winrt::TextBox>(L"GreenTextBox", thisAsControlProtected));
     m_blueTextBox.set(GetTemplateChildT<winrt::TextBox>(L"BlueTextBox", thisAsControlProtected));
-    m_hueTextBox.set(GetTemplateChildT<winrt::TextBox>(L"HueTextBox", thisAsControlProtected));
-    m_saturationTextBox.set(GetTemplateChildT<winrt::TextBox>(L"SaturationTextBox", thisAsControlProtected));
-    m_valueTextBox.set(GetTemplateChildT<winrt::TextBox>(L"ValueTextBox", thisAsControlProtected));
+    // The HSV text boxes and labels live in HsvPanel, which is deferred (x:Load="False"); see EnsureHsvParts.
+    m_hueTextBox.set(nullptr);
+    m_saturationTextBox.set(nullptr);
+    m_valueTextBox.set(nullptr);
     m_alphaTextBox.set(GetTemplateChildT<winrt::TextBox>(L"AlphaTextBox", thisAsControlProtected));
     m_hexTextBox.set(GetTemplateChildT<winrt::TextBox>(L"HexTextBox", thisAsControlProtected));
 
@@ -58,9 +59,9 @@ void ColorPicker::OnApplyTemplate()
     m_redLabel.set(GetTemplateChildT<winrt::TextBlock>(L"RedLabel", thisAsControlProtected));
     m_greenLabel.set(GetTemplateChildT<winrt::TextBlock>(L"GreenLabel", thisAsControlProtected));
     m_blueLabel.set(GetTemplateChildT<winrt::TextBlock>(L"BlueLabel", thisAsControlProtected));
-    m_hueLabel.set(GetTemplateChildT<winrt::TextBlock>(L"HueLabel", thisAsControlProtected));
-    m_saturationLabel.set(GetTemplateChildT<winrt::TextBlock>(L"SaturationLabel", thisAsControlProtected));
-    m_valueLabel.set(GetTemplateChildT<winrt::TextBlock>(L"ValueLabel", thisAsControlProtected));
+    m_hueLabel.set(nullptr);
+    m_saturationLabel.set(nullptr);
+    m_valueLabel.set(nullptr);
     m_alphaLabel.set(GetTemplateChildT<winrt::TextBlock>(L"AlphaLabel", thisAsControlProtected));
 
     m_checkerColorBrush.set(GetTemplateChildT<winrt::SolidColorBrush>(L"CheckerColorBrush", thisAsControlProtected));
@@ -153,33 +154,6 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(blueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameBlueTextBox));
     }
 
-    if (auto&& hueTextBox = m_hueTextBox.get())
-    {
-        hueTextBox.TextChanging({ this, &ColorPicker::OnHueTextChanging });
-        hueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
-        hueTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
-
-        winrt::AutomationProperties::SetName(hueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameHueTextBox));
-    }
-
-    if (auto&& saturationTextBox = m_saturationTextBox.get())
-    {
-        saturationTextBox.TextChanging({ this, &ColorPicker::OnSaturationTextChanging });
-        saturationTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
-        saturationTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
-
-        winrt::AutomationProperties::SetName(saturationTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameSaturationTextBox));
-    }
-
-    if (auto&& valueTextBox = m_valueTextBox.get())
-    {
-        valueTextBox.TextChanging({ this, &ColorPicker::OnValueTextChanging });
-        valueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
-        valueTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
-
-        winrt::AutomationProperties::SetName(valueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameValueTextBox));
-    }
-
     if (auto&& alphaTextBox = m_alphaTextBox.get())
     {
         alphaTextBox.TextChanging({ this, &ColorPicker::OnAlphaTextChanging });
@@ -221,21 +195,6 @@ void ColorPicker::OnApplyTemplate()
     if (auto&& blueLabel = m_blueLabel.get())
     {
         blueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextBlueLabel));
-    }
-
-    if (auto&& hueLabel = m_hueLabel.get())
-    {
-        hueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextHueLabel));
-    }
-
-    if (auto&& saturationLabel = m_saturationLabel.get())
-    {
-        saturationLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextSaturationLabel));
-    }
-
-    if (auto&& valueLabel = m_valueLabel.get())
-    {
-        valueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextValueLabel));
     }
 
     if (auto&& alphaLabel = m_alphaLabel.get())
@@ -437,12 +396,103 @@ void ColorPicker::OnOrientationChanged(winrt::DependencyPropertyChangedEventArgs
     UpdateVisualState(true);
 }
 
+void ColorPicker::EnsureHsvParts()
+{
+    if (m_hueTextBox)
+    {
+        return;
+    }
+
+    winrt::IControlProtected thisAsControlProtected = *this;
+
+    // Realize the deferred HsvPanel first; its named children aren't in the namescope until it loads.
+    GetTemplateChildT<winrt::UIElement>(L"HsvPanel", thisAsControlProtected);
+    m_hueTextBox.set(GetTemplateChildT<winrt::TextBox>(L"HueTextBox", thisAsControlProtected));
+    m_saturationTextBox.set(GetTemplateChildT<winrt::TextBox>(L"SaturationTextBox", thisAsControlProtected));
+    m_valueTextBox.set(GetTemplateChildT<winrt::TextBox>(L"ValueTextBox", thisAsControlProtected));
+    m_hueLabel.set(GetTemplateChildT<winrt::TextBlock>(L"HueLabel", thisAsControlProtected));
+    m_saturationLabel.set(GetTemplateChildT<winrt::TextBlock>(L"SaturationLabel", thisAsControlProtected));
+    m_valueLabel.set(GetTemplateChildT<winrt::TextBlock>(L"ValueLabel", thisAsControlProtected));
+
+    if (auto&& hueTextBox = m_hueTextBox.get())
+    {
+        hueTextBox.TextChanging({ this, &ColorPicker::OnHueTextChanging });
+        hueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
+        hueTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
+
+        winrt::AutomationProperties::SetName(hueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameHueTextBox));
+    }
+
+    if (auto&& saturationTextBox = m_saturationTextBox.get())
+    {
+        saturationTextBox.TextChanging({ this, &ColorPicker::OnSaturationTextChanging });
+        saturationTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
+        saturationTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
+
+        winrt::AutomationProperties::SetName(saturationTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameSaturationTextBox));
+    }
+
+    if (auto&& valueTextBox = m_valueTextBox.get())
+    {
+        valueTextBox.TextChanging({ this, &ColorPicker::OnValueTextChanging });
+        valueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
+        valueTextBox.LostFocus({ this, &ColorPicker::OnTextBoxLostFocus });
+
+        winrt::AutomationProperties::SetName(valueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameValueTextBox));
+    }
+
+    if (auto&& hueLabel = m_hueLabel.get())
+    {
+        hueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextHueLabel));
+    }
+
+    if (auto&& saturationLabel = m_saturationLabel.get())
+    {
+        saturationLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextSaturationLabel));
+    }
+
+    if (auto&& valueLabel = m_valueLabel.get())
+    {
+        valueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextValueLabel));
+    }
+
+    // Same as UpdateColorControls: guard so the TextChanging handlers don't treat this as user input.
+    const bool wasUpdatingControls = m_updatingControls;
+    m_updatingControls = true;
+    if (auto&& hueTextBox = m_hueTextBox.get())
+    {
+        hueTextBox.Text(to_wstring(static_cast<int>(round(m_currentHsv.h))));
+    }
+    if (auto&& saturationTextBox = m_saturationTextBox.get())
+    {
+        saturationTextBox.Text(to_wstring(static_cast<int>(round(m_currentHsv.s * 100))));
+    }
+    if (auto&& valueTextBox = m_valueTextBox.get())
+    {
+        valueTextBox.Text(to_wstring(static_cast<int>(round(m_currentHsv.v * 100))));
+    }
+    m_updatingControls = wasUpdatingControls;
+}
+
 void ColorPicker::UpdateVisualState(bool useTransitions)
 {
     winrt::IReference<winrt::Color> previousColor = PreviousColor();
     bool isAlphaEnabled = IsAlphaEnabled();
     bool isColorSpectrumVisible = IsColorSpectrumVisible();
     const bool isVerticalOrientation = Orientation() == winrt::Orientation::Vertical;
+
+    // HsvPanel is only needed when HSV is selected, and the Horizontal state targets HsvTextLabelColumn inside it.
+    if (!isVerticalOrientation)
+    {
+        EnsureHsvParts();
+    }
+    else if (auto&& colorRepresentationComboBox = m_colorRepresentationComboBox.get())
+    {
+        if (colorRepresentationComboBox.SelectedIndex() != 0)
+        {
+            EnsureHsvParts();
+        }
+    }
 
     const wchar_t *previousColorStateName;
 

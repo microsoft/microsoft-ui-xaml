@@ -384,7 +384,7 @@
                         <TextBox x:Name="BlueTextBox" Grid.Row="2" Grid.Column="0" Width="120" MaxLength="3" Text="255" Margin="0,12,0,0" />
                         <TextBlock x:Name="BlueLabel" Grid.Row="2" Grid.Column="2" Text="Blue" VerticalAlignment="Center" Margin="0,12,0,0" />
                       </Grid>
-                      <Grid x:Name="HsvPanel" Visibility="Collapsed">
+                      <Grid x:Name="HsvPanel" x:Load="False" Visibility="Collapsed">
                         <Grid.ColumnDefinitions>
                           <ColumnDefinition Width="Auto" />
                           <ColumnDefinition Width="8" />

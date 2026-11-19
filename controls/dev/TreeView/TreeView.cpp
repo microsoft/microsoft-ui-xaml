@@ -355,6 +355,7 @@ void TreeView::UpdateItemsSelectionMode(bool isMultiSelect)
         {
             if (isMultiSelect)
             {
+                winrt::get_self<TreeViewItem>(updateContainer)->EnsureSelectionBox();
                 if (const auto targetNode = viewModel->GetNodeAt(i))
                 {
                     if (viewModel->IsNodeSelected(targetNode))

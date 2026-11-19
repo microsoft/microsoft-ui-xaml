@@ -45,6 +45,7 @@ public:
     void OnApplyTemplate();
     void UpdateSelection(bool isSelected);
     void UpdateSelectionVisual(TreeNodeSelectionState const& state);
+    winrt::CheckBox EnsureSelectionBox();
 
 private:
     template <typename T> T GetAncestorView();

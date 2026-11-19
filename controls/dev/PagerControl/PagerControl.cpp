@@ -131,19 +131,12 @@ void PagerControl::OnApplyTemplate()
         }
     }(GetTemplateChildT<winrt::ComboBox>(c_comboBoxName, *this));
 
+    // NumberBoxDisplay, NumberPanelItemsRepeater and NumberPanelCurrentPageIndicator are deferred (x:Load="False")
+    // and only fetched when their display mode is entered; see EnsureNumberBox/EnsureNumberPanel.
     m_numberBoxValueChangedRevoker.revoke();
-    [this](const winrt::NumberBox numberBox) {
-        m_numberBox.set(numberBox);
-        if (numberBox)
-        {
-            numberBox.Value(static_cast<double>(SelectedPageIndex()) + 1);
-            winrt::AutomationProperties::SetName(numberBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
-            m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
-        }
-    }(GetTemplateChildT<winrt::NumberBox>(c_numberBoxName, *this));
-
-    m_numberPanelRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(c_numberPanelRepeaterName, *this));
-    m_selectedPageIndicator.set(GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName, *this));
+    m_numberBox.set(nullptr);
+    m_numberPanelRepeater.set(nullptr);
+    m_selectedPageIndicator.set(nullptr);
 
     // This is for the initial loading of the control
     OnDisplayModeChanged();
@@ -240,6 +233,36 @@ winrt::AutomationPeer PagerControl::OnCreateAutomationPeer()
     return winrt::make<PagerControlAutomationPeer>(*this);
 }
 
+void PagerControl::EnsureNumberBox()
+{
+    if (m_numberBox)
+    {
+        return;
+    }
+
+    if (const auto numberBox = GetTemplateChildT<winrt::NumberBox>(c_numberBoxName, *this))
+    {
+        m_numberBox.set(numberBox);
+        const int numberOfPages = NumberOfPages();
+        numberBox.Maximum(numberOfPages > -1 ? static_cast<double>(numberOfPages) : INFINITY);
+        numberBox.Value(static_cast<double>(SelectedPageIndex()) + 1);
+        winrt::AutomationProperties::SetName(numberBox, ResourceAccessor::GetLocalizedStringResource(SR_PagerControlPageTextName));
+        m_numberBoxValueChangedRevoker = numberBox.ValueChanged(winrt::auto_revoke, { this,&PagerControl::NumberBoxValueChanged });
+    }
+}
+
+void PagerControl::EnsureNumberPanel()
+{
+    if (!m_numberPanelRepeater)
+    {
+        m_numberPanelRepeater.set(GetTemplateChildT<winrt::ItemsRepeater>(c_numberPanelRepeaterName, *this));
+    }
+    if (!m_selectedPageIndicator)
+    {
+        m_selectedPageIndicator.set(GetTemplateChildT<winrt::FrameworkElement>(c_numberPanelIndicatorName, *this));
+    }
+}
+
 /* Property changed handlers */
 void PagerControl::OnDisplayModeChanged()
 {
@@ -248,6 +271,7 @@ void PagerControl::OnDisplayModeChanged()
 
     if (displayMode == winrt::PagerControlDisplayMode::ButtonPanel)
     {
+        EnsureNumberPanel();
         winrt::VisualStateManager::GoToState(*this, c_numberPanelVisibleVisualState, false);
     }
     else if (displayMode == winrt::PagerControlDisplayMode::ComboBox)
@@ -256,6 +280,7 @@ void PagerControl::OnDisplayModeChanged()
     }
     else if (displayMode == winrt::PagerControlDisplayMode::NumberBox)
     {
+        EnsureNumberBox();
         winrt::VisualStateManager::GoToState(*this, c_numberBoxVisibleVisualState, false);
     }
     else
@@ -267,13 +292,13 @@ void PagerControl::OnDisplayModeChanged()
 void PagerControl::UpdateDisplayModeAutoState()
 {
     const int numberOfPages = NumberOfPages();
-    if (numberOfPages > -1)
+    if (numberOfPages > -1 && numberOfPages < c_AutoDisplayModeNumberOfPagesThreshold)
     {
-        winrt::VisualStateManager::GoToState(*this, numberOfPages < c_AutoDisplayModeNumberOfPagesThreshold ?
-            c_comboBoxVisibleVisualState : c_numberBoxVisibleVisualState, false);
+        winrt::VisualStateManager::GoToState(*this, c_comboBoxVisibleVisualState, false);
     }
     else
     {
+        EnsureNumberBox();
         winrt::VisualStateManager::GoToState(*this, c_numberBoxVisibleVisualState, false);
     }
 }
