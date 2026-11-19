@@ -1616,6 +1616,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies two GroupDescriptions render a header per group level, that collapsing a group hides its subgroups, and that a source add reaches a new subgroup.")]
+        public void VerifyNestedCollectionViewGroupsRenderSubgroupHeaders()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "#Designer(2)", "Asha", "Ines", "#Platform(3)", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Research(1)", "#Architect(1)", "Mei" },
+                    "grouped by DepartmentName, then Role");
+                Verify.AreEqual("Designer", GetGroupInfo(tableView, 1).Key, "A subgroup header's key is the subgroup's value.");
+
+                tableView.CollapseGroup("Studio");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "#Platform(3)", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Research(1)", "#Architect(1)", "Mei" },
+                    "a collapsed group hides its subgroups");
+
+                items.Add(new ShapedPerson("Zoe", "Architect", "Platform"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "#Platform(4)", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Architect(1)", "Zoe", "#Research(1)", "#Architect(1)", "Mei" },
+                    "a source add starts a subgroup");
+            });
+        }
+
         #endregion
     }
 

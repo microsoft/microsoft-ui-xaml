@@ -113,6 +113,7 @@ private:
 
     winrt::IInspectable GetRow(int32_t index) const;
     winrt::com_ptr<GroupedEntry> TryGetGroupHeaderEntry(int32_t index) const;
+    int32_t DataRowGroupLevel(int32_t index);
 
     winrt::hstring GetItemKey(winrt::IInspectable const& item) const;
     // The identity of the live group a "group:" key names; empty when none.

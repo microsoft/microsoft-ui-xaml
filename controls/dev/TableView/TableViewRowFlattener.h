@@ -153,6 +153,9 @@ private:
         // The group's GroupItems; null for a group that is only enumerable, read once into Snapshot.
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Items{ nullptr };
         std::vector<winrt::IInspectable> Snapshot;
+        // The group object when it is itself an ICollectionViewGroup: a multi-level view's group, whose
+        // GroupItems are its subgroups above the bottom level.
+        winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup Inner{ nullptr };
     };
     void OnViewGroupsChanged();
     void ReadViewGroupsNow() noexcept;
@@ -172,7 +175,14 @@ private:
         // Roots under a tree; -1 means "count the rows".
         int32_t ChildCount{ -1 };
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Observed{ nullptr };
+        // Depth in a multi-level view; a group above the bottom level shows its subgroups, not its items.
+        int32_t Level{ 0 };
+        bool IsBottomLevel{ true };
     };
+    static void AppendSubgroupSlices(
+        winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup const& group,
+        GroupSlice&& slice,
+        std::vector<GroupSlice>& slices);
     void AttachGroupRows(GroupSource source);
     void DetachGroupRows();
     std::vector<GroupSlice> ReadGroupSlices() const;
@@ -259,6 +269,8 @@ private:
     // Keyed by group identity, so it survives a view that recreates its groups.
     ShapingHelpers::RowExpansionModel m_groupExpansion;
     std::vector<GroupInfo> m_liveGroups;
+    // The grouped rows hold subgroup headers, so one group's rows are not a single span.
+    bool m_hasSubgroupRows{ false };
     struct GroupItemsSubscription
     {
         winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Items{ nullptr };
