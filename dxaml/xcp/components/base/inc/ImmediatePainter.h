@@ -9,6 +9,7 @@
 
 struct ID3D11Device;
 struct IDXGISwapChain1;
+struct IDWriteFontFace;
 
 // Shared painter contract for the immediate-rendering prototype backends (GDI+, D2D hardware, D2D WARP).
 // See docs/design-notes/immediate-rendering-backends-proposal.md. The primitive set is deliberately limited to what the
@@ -44,6 +45,57 @@ namespace RenderingBackend
         uint32_t width = 0;   // physical pixels
         uint32_t height = 0;  // physical pixels
         float dpiScale = 1.0f;
+    };
+
+    struct PointF
+    {
+        float x = 0, y = 0;
+    };
+
+    enum class PathVerb : uint8_t
+    {
+        MoveTo,  // 1 point
+        LineTo,  // 1 point
+        CubicTo, // 3 points: control1, control2, end
+        Close,   // 0 points
+    };
+
+    struct PathData
+    {
+        const PathVerb* verbs = nullptr;
+        uint32_t verbCount = 0;
+        const PointF* points = nullptr; // DIPs, in verb order
+        uint32_t pointCount = 0;
+        bool nonZeroFill = false;       // false: even-odd (alternate)
+        // Nonzero: the caller promises identical verbs/points for the same key, so painters may cache the realized
+        // geometry. 0: no caching.
+        uint64_t cacheKey = 0;
+    };
+
+    // Same layout as DWRITE_GLYPH_OFFSET.
+    struct GlyphOffset
+    {
+        float advanceOffset = 0, ascenderOffset = 0;
+    };
+
+    struct GlyphRunDesc
+    {
+        IDWriteFontFace* fontFace = nullptr;
+        float fontEmSize = 0;                  // DIPs
+        const uint16_t* glyphIndices = nullptr;
+        const float* glyphAdvances = nullptr;  // DIPs; required
+        const GlyphOffset* glyphOffsets = nullptr; // optional
+        uint32_t glyphCount = 0;
+        PointF baselineOrigin;                 // DIPs
+        uint32_t bidiLevel = 0;                // odd = right-to-left
+    };
+
+    struct BitmapSource
+    {
+        uint64_t key = 0;        // caller-chosen identity (for example the decoded image surface)
+        uint64_t generation = 0; // bump when the pixels change
+        uint32_t width = 0, height = 0, stride = 0;
+        const uint8_t* pixels = nullptr; // premultiplied BGRA8
     };
 
     struct DeviceIdentity
@@ -95,6 +147,38 @@ namespace RenderingBackend
         // Group opacity: children are composited together, then blended once.
         virtual void PushOpacityLayer(float opacity) noexcept = 0;
         virtual void PopOpacityLayer() noexcept = 0;
+
+        // ---- Extended primitives for scenes S3-S10 (see test plan "Extended scenes") ----
+
+        // Antialiased geometric clip (avatars, CornerRadius clipping). Shares one stack with axis-aligned clips and
+        // opacity layers; pushes and pops must nest.
+        virtual void PushRoundedRectangleClip(const RectF& clip, float radiusX, float radiusY) noexcept = 0;
+        virtual void PopRoundedRectangleClip() noexcept = 0;
+
+        // Arbitrary paths (Path elements, glyph-like icons, ProgressRing arcs). The render loop flattens arcs and
+        // quadratic segments to cubics, so painters only see these verbs.
+        virtual void FillPath(const PathData& path, const ColorF& color) noexcept = 0;
+        // Stroke centered on the path, flat caps, miter joins.
+        virtual void StrokePath(const PathData& path, float thickness, const ColorF& color) noexcept = 0;
+
+        // Text drawn from XAML's own DirectWrite layout (exact glyph positions), instead of re-laying out a string.
+        // GDI+ draws the same glyph indices with GDI+ (DrawDriverString), keeping the "GDI+ text" decision.
+        virtual void DrawGlyphRun(const GlyphRunDesc& run, const ColorF& color) noexcept = 0;
+
+        // Images (S5). EnsureBitmap creates or refreshes the painter-owned copy of an image the first time a
+        // (key, generation) pair is seen, outside or inside a frame; later calls are no-ops. Pixels are premultiplied
+        // BGRA8. Bytes copied into painter-owned storage count in ResourceInventory::uploadBytesThisFrame of the frame
+        // they happen in (or the next frame when called outside one); bitmap storage counts in cacheBytes.
+        virtual HRESULT EnsureBitmap(const BitmapSource& source) noexcept = 0;
+        // sourceRect is in bitmap pixels (nullptr = whole bitmap); linear filtering; no-op for unknown keys.
+        virtual void DrawBitmap(uint64_t key, const RectF& destination, _In_opt_ const RectF* sourceRect, float opacity) noexcept = 0;
+        virtual void ReleaseBitmap(uint64_t key) noexcept = 0;
+
+        // Scrolling (S3, S8). Call before BeginFrame: moves the pixels of rect (physical pixels, integer-aligned) by
+        // (dx, dy) inside the painter's target, clipped to rect. The caller must include the exposed strip in the
+        // frame's damage. The moved area is presented with the next frame (it counts as presented area and in
+        // uploadBytesThisFrame) even though it is not repainted. Returns E_ILLEGAL_METHOD_CALL inside a frame.
+        virtual HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept = 0;
         virtual HRESULT EndFrame(_Out_ FrameStats* stats) noexcept = 0;
 
         // Copies the current target as premultiplied BGRA8. For tests and fidelity capture, not the present path.

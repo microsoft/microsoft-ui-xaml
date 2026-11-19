@@ -479,6 +479,17 @@ namespace RenderingBackend
                 PopEntry(StackEntry::Layer);
             }
 
+            // Extended primitives: not implemented yet (immediate-rendering extended scenes).
+            void PushRoundedRectangleClip(const RectF&, float, float) noexcept override {}
+            void PopRoundedRectangleClip() noexcept override {}
+            void FillPath(const PathData&, const ColorF&) noexcept override {}
+            void StrokePath(const PathData&, float, const ColorF&) noexcept override {}
+            void DrawGlyphRun(const GlyphRunDesc&, const ColorF&) noexcept override {}
+            HRESULT EnsureBitmap(const BitmapSource&) noexcept override { return E_NOTIMPL; }
+            void DrawBitmap(uint64_t, const RectF&, const RectF*, float) noexcept override {}
+            void ReleaseBitmap(uint64_t) noexcept override {}
+            HRESULT ScrollPixels(const RectF&, int32_t, int32_t) noexcept override { return E_NOTIMPL; }
+
             HRESULT EndFrame(_Out_ FrameStats* stats) noexcept override
             {
                 if (stats != nullptr)
