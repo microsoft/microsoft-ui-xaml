@@ -1,53 +1,23 @@
+private const string JoinDateHeader = "Join date";
+
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// Index = the Tag of the matching visibility checkbox.
-_canonical = new TableViewColumn[] { ColAvatar, ColName, ColDepartment, ColRole, ColSalary, ColActive, ColShift };
+public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-// …
+public TableViewSource Source { get; }
 
-// ---- Column visibility: TableViewColumn.Visibility --------------------------------------
-
-private void OnColumnToggle(object sender, RoutedEventArgs e)
-{
-    // IsChecked="True" raises Checked during InitializeComponent, before _canonical is
-    // assigned; the XAML already matches. Reset also writes IsChecked and reports itself.
-    if (_canonical is null || IsBulkUpdating || sender is not CheckBox { Tag: string tag } box || !int.TryParse(tag, out var index))
-    {
-        return;
-    }
-
-    var column = _canonical[index];
-    var visible = box.IsChecked == true;
+// A collapsed column stays in Columns, in its place, and comes back there when made visible.
+private static void SetColumnVisible(TableViewColumn column, bool visible) =>
     column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-}
 
-// ---- Column order: move, add, remove in TableView.Columns ------------------------------
-
-private void OnMoveLeftClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(-1);
-
-private void OnMoveRightClick(object sender, RoutedEventArgs e) => MoveSelectedColumn(+1);
-
-private void MoveSelectedColumn(int direction)
+// Moving the entry in the observable Columns vector IS the reorder; the header band and
+// the realized rows follow. The instance is reused, so its width travels with it.
+private void MoveColumn(int from, int to)
 {
-    if (SelectedColumn() is not { } column)
-    {
-        return;
-    }
-
-    var from = PeopleTable.Columns.IndexOf(column);
-    var to = from + direction;
-    if (to < 0 || to >= PeopleTable.Columns.Count)
-    {
-        return;
-    }
-
-    // Moving the entry in the observable Columns vector IS the reorder; the header band and
-    // the realized rows follow. The instance is reused, so its width travels with it.
+    var column = PeopleTable.Columns[from];
     PeopleTable.Columns.RemoveAt(from);
     PeopleTable.Columns.Insert(to, column);
-
-    PopulateColumnPicker();
 }
 
 private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
@@ -68,8 +38,6 @@ private void OnAddJoinDateColumnClick(object sender, RoutedEventArgs e)
         SortMemberPath = nameof(Person.JoinDate),
         HeaderToolTip = "Date the person joined. Editable; sorts by the JoinDate value.",
     });
-
-    PopulateColumnPicker();
 }
 
 private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
@@ -80,31 +48,7 @@ private void OnRemoveJoinDateColumnClick(object sender, RoutedEventArgs e)
     }
 
     PeopleTable.Columns.Remove(joinDate);
-    PopulateColumnPicker();
 }
 
-private void OnResetClick(object sender, RoutedEventArgs e)
-{
-    for (var target = 0; target < _canonical.Length; target++)
-    {
-        var current = PeopleTable.Columns.IndexOf(_canonical[target]);
-        if (current >= 0 && current != target)
-        {
-            PeopleTable.Columns.RemoveAt(current);
-            PeopleTable.Columns.Insert(target, _canonical[target]);
-        }
-    }
-
-    using (BeginBulkUpdate())
-    {
-        foreach (var box in new[] { VisAvatarCheckBox, VisNameCheckBox, VisDepartmentCheckBox, VisRoleCheckBox, VisSalaryCheckBox, VisActiveCheckBox, VisShiftCheckBox })
-        {
-            var column = _canonical[int.Parse((string)box.Tag, CultureInfo.InvariantCulture)];
-            var visible = column != ColShift;
-            column.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-            box.IsChecked = visible;
-        }
-    }
-
-    PopulateColumnPicker();
-}
+private TableViewColumn? FindColumn(string header) =>
+    PeopleTable.Columns.FirstOrDefault(c => string.Equals(c.Header?.ToString(), header, StringComparison.Ordinal));

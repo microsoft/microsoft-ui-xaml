@@ -14,6 +14,7 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 using WEX.TestExecution;
 
@@ -73,6 +74,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal static class TableViewTestHelpers
     {
+        internal static void SetIsEnabledAndWait(Control control, bool enabled, params Control[] descendants)
+        {
+            var subscriptions = new List<(Control Target, AutoResetEvent Changed, DependencyPropertyChangedEventHandler Handler)>();
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var target in new[] { control }.Concat(descendants).Distinct())
+                    {
+                        if (target.IsEnabled == enabled)
+                        {
+                            continue;
+                        }
+
+                        var changed = new AutoResetEvent(false);
+                        DependencyPropertyChangedEventHandler handler = (sender, args) =>
+                        {
+                            if (target.IsEnabled == enabled)
+                            {
+                                changed.Set();
+                            }
+                        };
+                        subscriptions.Add((target, changed, handler));
+                        target.IsEnabledChanged += handler;
+                    }
+                    control.IsEnabled = enabled;
+                });
+
+                // Native visual-state handlers run on IsEnabledChanged, not when the property is set.
+                foreach (var subscription in subscriptions)
+                {
+                    TestUtilities.WaitForEvent(subscription.Changed);
+                }
+                IdleSynchronizer.Wait();
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var subscription in subscriptions)
+                    {
+                        subscription.Target.IsEnabledChanged -= subscription.Handler;
+                    }
+                });
+                foreach (var subscription in subscriptions)
+                {
+                    subscription.Changed.Dispose();
+                }
+            }
+        }
+
         // Resource init + the column-less TableView shell shared by every Create* variation. Each
         // builder decides how to attach its columns (bound/unbound, widths, template) afterward.
         internal static TableView CreateTableViewShell(
@@ -512,10 +564,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Indexed in projection order, not visual-child order.
+        // Indexed in projection order, not visual-child order, over the realized headers only, so a
+        // fixture large enough to virtualize can still reach its realized headers.
         internal static TableViewGroupHeader GetGroupHeader(TableView tableView, int index)
         {
-            var headers = GetProjectedElements(tableView).OfType<TableViewGroupHeader>().ToList();
+            var headers = GetProjectedElements(tableView, requireAllRealized: false).OfType<TableViewGroupHeader>().ToList();
             if (headers.Count <= index)
             {
                 Verify.Fail($"The test needs a projected group header at index {index}; saw {headers.Count}.");

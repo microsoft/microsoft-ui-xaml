@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "RevealFocusSource.h"
 #include "corep.h"
 #include "WindowRenderTarget.h"
@@ -102,6 +104,10 @@ Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> RevealFocusSource::BuildRevealFocu
     else
     {
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        }
 
         // Remove existing targets from the lights
         for (const auto& light : m_lights.m_vector)
@@ -398,6 +404,10 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> RevealFocusSource::Creat
 
     wrl::ComPtr<WUComp::ICompositionEffectBrush> compEffectBrush;
     IFCFAILFAST(effectFactory->CreateBrush(&compEffectBrush));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
+    }
 
     return compEffectBrush;
 }
@@ -426,6 +436,10 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> RevealFocusSource::Crea
     wrl::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
 
     IFCFAILFAST(compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+    }
     // TODO 15394150: is this necessary to stretch?
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch_Fill));
     return surfaceBrush;
@@ -450,6 +464,10 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> RevealFocusSource::CreateEffec
     else
     {
         IFCFAILFAST(compositor2->CreateNineGridBrush(&nineGrid));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+        }
         IFCFAILFAST(nineGrid->put_IsCenterHollow(true));
     }
 

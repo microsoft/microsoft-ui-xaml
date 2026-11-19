@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Helpers;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -26,7 +25,7 @@ public sealed partial class RightToLeftPage
     // Raised for header clicks and for SortByColumn alike.
     private void OnTableSorted(TableView sender, TableViewSortedEventArgs e)
     {
-        SortText.Text = e.Column is null || e.Direction == TableViewSortDirection.None
+        SortText.Text = e.Column is null || e.Direction == SortDirection.None
             ? "None"
             : string.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Column.Header, e.Direction);
     }

@@ -95,10 +95,11 @@ visible on purpose.
 - Selection, sorting, filtering, keyboard navigation, and accessibility behavior
 - Column layout &amp; sizing (Pixel / Star widths, Min/Max clamps, drag-to-resize) and column
   lifecycle (add, remove, reorder at runtime), plus header visibility
-- Tooltips, context menus, grid lines, cell templating, text wrapping, row height, cell editing,
-  empty state, density, and grouped rows
-- Hierarchical rows (`TableViewSource.ParentBy`): one flat list, two relations, composed with
-  filter, sort and grouping, and `IsLiveShaping` reshaping both trees when a row's property changes.
+- Tooltips, context menus, grid lines (including hiding the header lines), cell templating,
+  text wrapping, row height, cell editing (with `INotifyDataErrorInfo` validation that keeps a rejected
+  edit open), empty state, density, and grouped rows
+- Hierarchical rows (`TableViewSource.ParentBy`): one flat list of people, by manager or by mentor,
+  composed with filter, sort and grouping, and `IsLiveShaping` reshaping the tree when a row's property changes.
   The table pages' Shaping section also offers Hierarchy and Grouped hierarchy (ParentBy, plus
   GroupBy on the roots) over their own data: people by manager, files by folder, processes by app;
   pages whose rows have no parent relation show those modes disabled with the reason

@@ -19,8 +19,10 @@ namespace TableViewSampleApp.Helpers;
 
 public static class SampleShaping
 {
-    /// <summary>Bucket label used for a null or blank group key.</summary>
+    // <snippet Groups>
+    // Bucket label for a null or blank group key.
     public const string NoneKey = "(none)";
+    // </snippet>
 
     /// <summary>The <c>Tag</c> of the selected <see cref="ComboBoxItem"/>, or <paramref name="fallback"/>.</summary>
     public static string SelectedTag(ComboBox? comboBox, string fallback) =>
@@ -30,13 +32,12 @@ public static class SampleShaping
     public static string Label(ComboBox? comboBox) =>
         comboBox?.SelectedItem is ComboBoxItem item ? item.Content?.ToString() ?? string.Empty : string.Empty;
 
-    /// <summary>
-    /// GroupBy identity selector. It receives the GROUP KEY produced by the key selector (never
-    /// the row) and must not return an empty string: TableViewSource fails fast on an empty
-    /// identity. Pass it as the second GroupBy argument.
-    /// </summary>
+    // <snippet Groups>
+    // GroupBy identity selector: it receives the group key (never the row) and must not return an
+    // empty string, because TableViewSource fails fast on an empty identity.
     public static string GroupIdentity(object? groupKey) =>
         groupKey?.ToString() is { Length: > 0 } s ? s : NoneKey;
+    // </snippet>
 
     /// <summary>
     /// GroupBy key selector body for <see cref="Person"/>. <paramref name="key"/> is the

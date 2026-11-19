@@ -410,6 +410,12 @@ void AsyncImageDecoder::CleanupDeviceRelatedResources()
             m_spSharedState->m_spDecodeParams ? m_spSharedState->m_spDecodeParams->GetImageId() : 0);
         VERIFYHR(PresentAndProceedToNextFrame(m_spSharedState));
     }
+
+    // Present the in-flight decode on completion; CancelPresent disarmed it and DecodeToRenderSize won't re-request it.
+    if (m_spSharedState->m_decodeInProgress)
+    {
+        m_spSharedState->m_needsPresentAfterDecode = true;
+    }
 }
 
 bool AsyncImageDecoder::IsDecodeInProgress()

@@ -130,7 +130,8 @@ extends:
     # itself is NOT rebuilt here for the configs the mono-build publishes: consumeProductFromBuildId
     # makes the Release x86/x64/arm64 jobs download the parent mono-build's Build-WinUI-<plat>-Release
     # output into BuildOutput\bin and build the test surface against it (eng\consumebinaries.targets).
-    # Debug / arm64ec jobs still build the product (the mono-build is Release x86/x64/arm64 only).
+    # Debug / arm64ec jobs still build the product (the mono-build is Release x86/x64/arm64 only),
+    # against the parent's component packages like every other job.
     # pipelineKind: PR reuses the same build matrix the standalone WinUI-PR pipeline runs.
     - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
       parameters:

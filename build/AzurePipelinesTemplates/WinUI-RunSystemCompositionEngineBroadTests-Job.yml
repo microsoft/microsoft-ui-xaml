@@ -1,0 +1,40 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+jobs:
+- template: WinUI-RunTestPassOnPipeline-Job.yml
+  parameters:
+    runTestStageName: RunSystemCompositionEngineTests
+    runTestJobName: RunSystemCompositionEngineBroadWPF_x86chk
+    dependsOn: RunSystemCompositionEngineTests_x86chk
+    buildPlatform: x86
+    buildConfiguration: chk
+    testOS: Win10-22H2
+    testSuite: DevTestSuite
+    rerunPassesRequiredToAvoidFailure: 1
+    testPayloadArtifactName: SystemCompositionEngineTestPayload
+    imageOverride: ge_current-vhdx_enterprise
+    workItemsProjNameFilter: 'RunTestsInHelix-SystemCompositionEngineBroad-WPF-*.proj'
+    compositionEngineLafToken: '$(CompositionSwitcherLafToken)'
+    # The image override resolves only when this job starts. Discover the broad eligible set
+    # and apply known-failure exclusions here so OS bounds use this execution worker.
+    preTestSteps:
+    - task: PowerShell@2
+      displayName: 'Install test dependencies for WPF discovery'
+      inputs:
+        targetType: filePath
+        filePath: $(testPayloadDir)\Install-TestAppDependencies.ps1
+        arguments: -Platform "$(buildPlatform)" -PayloadRoot "$(testPayloadDir)"
+        workingDirectory: $(testPayloadDir)
+        errorActionPreference: stop
+
+    - task: PowerShell@2
+      displayName: 'Generate WPF work items for execution worker OS'
+      inputs:
+        targetType: filePath
+        filePath: build\PipelineScripts\New-SystemCompositionEngineBroadWorkItemsForExecutionOS.ps1
+        arguments: >-
+          -TestBinaryPath "$(testPayloadDir)"
+          -OutputProjDirectory "$(workItemsProjDir)"
+          -TaefExePath "$(testPayloadDir)\te.exe"
+        errorActionPreference: stop

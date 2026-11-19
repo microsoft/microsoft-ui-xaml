@@ -129,6 +129,7 @@ public:
     TEST_METHOD(ReinitializeXamlIslandOnUIThread_CustomApplication_KeepApplicationAlive)
 
     TEST_METHOD(IslandSystemBackdrop)
+    TEST_METHOD(IslandSystemBackdropBeforeContent)
 
     TEST_METHOD(IslandWithMuxcDoesntPoisonThread)
 
@@ -156,6 +157,11 @@ public:
     BEGIN_TEST_METHOD(FailFastWhenMessagesNotPumpedAfterClosing)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // Deliberately disabled because we don't have a test hook for failfasts.
                                                     // Run it manually by using the -RunIgnoredTests flag
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(GetDispatcherQueueFromThreadpoolAfterCoreShutdown)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")  // Shuts XAML down on a UI thread; isolate from other tests.
+        TEST_METHOD_PROPERTY(L"Description", L"Reading Window.DispatcherQueue from a thread-pool worker after the window's XAML core has shut down returns the window's DispatcherQueue.")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(PointerInput)
@@ -196,6 +202,11 @@ public:
 
     TEST_METHOD(CloseIslandWhileAsbPopupOpening)
     TEST_METHOD(ValidateUiaAfterVisualTreeReset)
+    BEGIN_TEST_METHOD(ValidateIslandCloseDuringUiaInitialization)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"Description", L"Inject synchronous island closure before UiaLookupId returns to CUIAWindow::InitIds; initialization must not access released UIA state.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateUiaConcurrentWithIslandClose)
         TEST_METHOD_PROPERTY(L"Description", L"Regression test: a UIA query racing with XamlIsland::Close must not AV inside CXamlIslandRoot::GetScreenOffset / CUIAWindow::get_BoundingRectangle.")
     END_TEST_METHOD()

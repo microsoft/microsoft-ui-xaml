@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Models;
-using TableViewSortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 
 namespace TableViewSampleApp.Pages;
 
@@ -38,25 +37,30 @@ public sealed partial class RightToLeftPage : SamplePageBase
         TrackLifetime(() => PeopleTable.Sorted += OnTableSorted, () => PeopleTable.Sorted -= OnTableSorted);
     }
 
+    // <snippet>
     // PersonData.Take(40) with the first five Arabic / Hebrew people mixed into the top rows.
     public ObservableCollection<Person> People { get; } = RtlPersonData.Mixed();
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Flow direction and filter ------------------------------------------------------
 
+    // <snippet>
     private void OnRtlToggled(object sender, RoutedEventArgs e)
     {
-        // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft.
-        if (!IsLoaded)
-        {
-            return;
-        }
+        // Toggled fires during InitializeComponent (IsOn="True"); the XAML already sets RightToLeft. // snippet:skip
+        if (!IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
         PeopleTable.FlowDirection = RtlToggle.IsOn ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "FlowDirection -> {0}", PeopleTable.FlowDirection));
     }
+    // </snippet>
 
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
     {
@@ -93,7 +97,6 @@ public sealed partial class RightToLeftPage : SamplePageBase
         || person.Department.Contains(term, StringComparison.CurrentCultureIgnoreCase)
         || person.Office.Contains(term, StringComparison.CurrentCultureIgnoreCase)
         || person.Bio.Contains(term, StringComparison.CurrentCultureIgnoreCase);
-    // </snippet>
 
     // ---- In-cell edits ------------------------------------------------------------------
 
@@ -138,16 +141,14 @@ public sealed partial class RightToLeftPage : SamplePageBase
 
     // ---- Actions ------------------------------------------------------------------------
 
-    // <snippet>
     private void OnSortFirstNameClick(object sender, RoutedEventArgs e)
     {
-        var direction = FirstNameColumn.SortDirection == TableViewSortDirection.Ascending
-            ? TableViewSortDirection.Descending
-            : TableViewSortDirection.Ascending;
+        var direction = FirstNameColumn.SortDirection == SortDirection.Ascending
+            ? SortDirection.Descending
+            : SortDirection.Ascending;
         PeopleTable.SortByColumn(FirstNameColumn, direction);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "SortByColumn(First name, {0})", direction));
     }
-    // </snippet>
 
     private void OnRenameClick(object sender, RoutedEventArgs e)
     {
@@ -173,7 +174,6 @@ public sealed partial class RightToLeftPage : SamplePageBase
 
     private void OnMoveColumnLaterClick(object sender, RoutedEventArgs e) => MoveColumn(DepartmentColumn, +1);
 
-    // <snippet>
     // TableView.Columns is the live column collection: moving an entry moves the column.
     private void MoveColumn(TableViewColumn column, int offset)
     {
@@ -190,7 +190,6 @@ public sealed partial class RightToLeftPage : SamplePageBase
         columns.Insert(to, column);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1} of {2}", column.Header, to + 1, columns.Count));
     }
-    // </snippet>
 
     private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
     {

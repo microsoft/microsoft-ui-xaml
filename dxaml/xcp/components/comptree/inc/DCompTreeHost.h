@@ -119,6 +119,8 @@ public:
     void CloseAndReleaseInteropCompositor();
 
     void ReleaseGraphicsResources();
+    
+    _Check_return_ HRESULT RebuildXamlIslandResources();
 
     bool CheckMainDeviceState();
 

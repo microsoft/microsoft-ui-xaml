@@ -939,6 +939,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateLineSizeEstimationIsStableWithCollapsedLine()
+        {
+            const double itemSize = 90;
+            const double lineSpacing = 10;
+            const int itemsPerLine = 4;
+            const int numItems = 1000;
+            // Items forming an entire line, so the line's size is 0. Non-zero LineSpacing keeps that line at its own
+            // offset, otherwise it would share one with the next line and never be reported with a size of 0.
+            const int firstCollapsedItem = itemsPerLine * 2;
+
+            var om = new OrientationBasedMeasures(ScrollOrientation.Vertical);
+            ItemsRepeater repeater = null;
+            ScrollViewer scrollViewer = null;
+            var extents = new List<double>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var layout = new FlowLayoutDerived()
+                {
+                    MinItemSpacing = 0,
+                    LineSpacing = lineSpacing,
+                    ShouldBreakLineFunc = (int index, double remainingSpace, bool shouldBreak) => index % itemsPerLine == 0,
+                };
+                layout.SetOrientation(ScrollOrientation.Vertical);
+
+                var elementFactory = new RecyclingElementFactoryDerived()
+                {
+                    Templates = { { "key", GetDataTemplate(@"<Button Content='{Binding}' Width='90' Height='90'/>") } },
+                    RecyclePool = new RecyclePool(),
+                };
+
+                Content = CreateAndInitializeRepeater(
+                    om,
+                    itemsSource: Enumerable.Range(0, numItems),
+                    elementFactory: elementFactory,
+                    layout: layout,
+                    repeater: ref repeater,
+                    scrollViewer: ref scrollViewer);
+
+                repeater.ElementPrepared += (sender, args) =>
+                {
+                    var isCollapsed = args.Index >= firstCollapsedItem && args.Index < firstCollapsedItem + itemsPerLine;
+                    args.Element.Visibility = isCollapsed ? Visibility.Collapsed : Visibility.Visible;
+                };
+
+                Content.UpdateLayout();
+
+                for (int pass = 0; pass < 5; pass++)
+                {
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+                    extents.Add(om.Major(repeater.DesiredSize));
+                    Log.Comment(string.Format("Pass {0}: estimated extent {1}", pass, extents[pass]));
+                }
+            });
+
+            // Re-measuring without changing anything must not change the estimated extent. A line measuring 0 used to
+            // be indistinguishable from an unmeasured one, so every pass counted it as a newly measured line while
+            // adding nothing to the total line size, shrinking the average line size and the extent along with it.
+            foreach (var extent in extents)
+            {
+                Verify.AreEqual(extents[0], extent, "Estimated extent should not change across repeated layout passes.");
+            }
+        }
+
+        [TestMethod]
         public void VerifyFlowLayoutOnLineArranged()
         {
             RunOnUIThread.Execute(() =>

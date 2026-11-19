@@ -26,6 +26,10 @@ struct ImageMetadata
     
     bool isSvg = false;
 
+    // SVG only. width/height are the document's own width/height rather than a size derived from the content root.
+    // The SVG stays sharp when rendered larger, so this size isn't a limit on the decode size.
+    bool hasIntrinsicSize = false;
+
     bool isHdr = false;
 
     bool AreDimensionsSwapped() const

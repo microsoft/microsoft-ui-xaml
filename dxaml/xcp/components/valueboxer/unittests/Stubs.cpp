@@ -12,6 +12,7 @@
 #include "CornerRadius.h"
 #include "StaticStore.h"
 #include "Value.h"
+#include "DXamlTypes.h"
 
 class CThemeResourceExtension;
 class CCoreServices;
@@ -128,15 +129,6 @@ _Check_return_ HRESULT DependencyObject_GetTypeIndex(
 using namespace DirectUI;
 
 // Reference
-
-#define REFERENCE_ELEMENT_NAME_IMPL(TYPE, NAME) \
-    template<> _Check_return_ HRESULT DirectUI::ReferenceBase<TYPE>::GetRuntimeClassNameImpl(_Out_ HSTRING* pClassName)\
-    {\
-        HRESULT hr = S_OK;\
-        IFC(wrl_wrappers::HStringReference(L"Windows.Foundation.IReference`1<" NAME L">", SZ_COUNT(NAME) + 33).CopyTo(pClassName));\
-    Cleanup:\
-        RRETURN(hr);\
-    }\
 
 REFERENCE_ELEMENT_NAME_IMPL(xaml::CornerRadius, L"Microsoft.UI.Xaml.CornerRadius");
 REFERENCE_ELEMENT_NAME_IMPL(xaml::Duration, L"Microsoft.UI.Xaml.Duration");

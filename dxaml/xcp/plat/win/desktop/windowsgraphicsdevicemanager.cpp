@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "d3d11device.h"
 #include "D2DAccelerated.h"
@@ -134,7 +136,7 @@ void WindowsGraphicsDeviceManager::CleanupCachedDeviceResources(_In_ bool cleanu
     m_cachedD3DDevice.reset();
     if (cleanupDComp)
     {
-        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompostior */));
+        IFCFAILFAST(m_pDCompTreeHost->ReleaseResources(true /* shouldDeferClosingInteropCompositor */));
     }
     else
     {
@@ -310,6 +312,10 @@ WindowsGraphicsDeviceManager::DrawDummyText()
                     D2D1::ColorF(D2D1::ColorF::White),
                     &whiteBrush
                     ));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+    }
 
     deviceContext->BeginDraw();
 

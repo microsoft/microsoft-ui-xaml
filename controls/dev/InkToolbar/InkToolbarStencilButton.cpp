@@ -4,7 +4,8 @@
 // Faithful C++/WinRT port of onecoreuap\...\inkcontrols\lib\InkToolbarStencilButton_Partial.cpp.
 // Structure/logic preserved 1:1. Lift adaptations (documented): Ruler/Protractor/SelectedStencil/
 // IsRulerItemVisible/IsProtractorItemVisible are DPs on the button (inherited); there is no
-// InkPresenterStencil base in the lift so Ruler/Protractor IsVisible is handled per-kind; the stencil
+// InkPresenterStencil base in the lift so Ruler/Protractor IsVisible is handled per-kind (InkToolbar fills the
+// Ruler/Protractor DPs when it shows a stencil, like UWP); the stencil
 // flyout content template must be ported for the flyout to populate; localized names are resource gaps.
 
 #include "pch.h"

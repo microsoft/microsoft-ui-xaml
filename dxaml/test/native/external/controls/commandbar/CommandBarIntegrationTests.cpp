@@ -4932,7 +4932,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             }
 
             VERIFY_IS_TRUE(pointerEntered);
-            TestServices::WindowHelper->SynchronouslyTickUIThread(60);
         };
 
         FlyoutHelper::OpenFlyout(commandBarFlyout, flyoutButton, FlyoutOpenMethod::Programmatic_ShowAt);

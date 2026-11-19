@@ -702,9 +702,12 @@ _Check_return_ HRESULT OptimizedStyle::ResolveValue(
     if (pPropertyType != nullptr)
     {
         // Convert the value if its type doesn't match the property storage type.
+        // Like ValueBuffer::RepackageValue, a null value needs no conversion for an object-typed property
+        // (e.g. <Setter Target="navView.AutoSuggestBox" Value="{x:Null}" />), even when the type has no type converter.
         if (val.GetType() != depProp->GetStorageType()
             && val.GetType() != valueThemeResource
-            && pPropertyType->GetIndex() != KnownTypeIndex::Object)
+            && pPropertyType->GetIndex() != KnownTypeIndex::Object
+            && !(val.GetType() == valueNull && depProp->GetStorageType() == valueObject))
         {
             if (pPropertyType->HasTypeConverter())
             {

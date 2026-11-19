@@ -57,6 +57,11 @@ Breadcrumb1.ItemsSource = new string[]{ "Home", "Documents", "Design", "Northwin
 If the last item in a Breadcrumb is text and is too long to fit it will be clipped
 (if the item type is a string it will be trimmed, meaning shortened and replaced with an ellipsis).
 
+The last item is measured against the larger of the remaining inline and overflow
+widths. Visible items are selected from their final measured sizes; narrow ancestors
+stay inline when replacing them with an overflow button would not save space.
+Custom item templates can use `TextBlock.TextTrimming` to trim within the bar.
+
 ![Breadcrumb_crumbled with last node truncated](images/Breadcrumb_truncation.PNG)
 
 #### Responding to clicks

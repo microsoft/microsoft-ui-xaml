@@ -2456,6 +2456,17 @@ _Check_return_ HRESULT CListViewBaseItemChrome::MeasureNewStyle(
         IFC_RETURN(m_multiSelectCheckBoxRectangle->Measure(totalSize));
     }
 
+    const bool selected =
+        m_visualStates.HasState(CommonStates2_Selected) ||
+        m_visualStates.HasState(CommonStates2_PressedSelected) ||
+        m_visualStates.HasState(CommonStates2_PointerOverSelected);
+
+    // Selection can survive a popup disconnect even when its indicator does not.
+    if (!m_selectionIndicatorRectangle && selected && IsInSelectionIndicatorMode())
+    {
+        IFC_RETURN(EnsureSelectionIndicator());
+    }
+
     if (IsSelectionIndicatorVisualEnabled() && m_selectionIndicatorRectangle)
     {
         IFC_RETURN(m_selectionIndicatorRectangle->Measure(totalSize));
@@ -2887,7 +2898,14 @@ _Check_return_ HRESULT CListViewBaseItemChrome::GoToChromedStateNewStyle(
 
                 if (updateSelectionIndicatorBackground)
                 {
-                    IFC_RETURN(SetSelectionIndicatorBackground());
+                    if (!m_selectionIndicatorRectangle)
+                    {
+                        IFC_RETURN(EnsureSelectionIndicator());
+                    }
+                    else
+                    {
+                        IFC_RETURN(SetSelectionIndicatorBackground());
+                    }
                 }
             }
 

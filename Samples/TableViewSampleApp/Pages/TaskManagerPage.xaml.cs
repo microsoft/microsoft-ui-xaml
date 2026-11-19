@@ -31,10 +31,12 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     public TaskManagerPage()
     {
-        // <snippet>
         RandomizeAll();
+        // <snippet>
         Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
         InitializeComponent();
+        ProcessTable.Sorted += OnProcessTableSorted; // snippet:skip
+        ProcessTable.SelectionChanged += OnSelectionChanged; // snippet:skip
 
         ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
         ProcessTable.GridLinesVisibility = TableViewGridLinesVisibility.Horizontal;
@@ -44,18 +46,22 @@ public sealed partial class TaskManagerPage : SamplePageBase
         {
             column.SortCycle = TableViewSortCycle.DescendingAscending;
         }
+        // </snippet>
 
         _timer.Tick += OnTimerTick;
-        // </snippet>
 
         UpdateTotals();
         InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
     }
 
+    // <snippet>
     public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
+    // </snippet>
 
+    // <snippet>
     public TableViewSource Source { get; }
+    // </snippet>
 
     // ---- Live data ----------------------------------------------------------------------
 
@@ -91,17 +97,15 @@ public sealed partial class TaskManagerPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Update interval -> {0}", SampleShaping.Label(UpdateIntervalSelector)));
     }
 
-    // <snippet>
     private void OnTimerTick(object? sender, object e)
     {
         RandomizeAll();
-        UpdateTotals(); // snippet:skip
+        UpdateTotals();
         ResortIfMetricSorted();
     }
 
-    // A value change raised through INotifyPropertyChanged updates the cell but does not move the
-    // row: the projection re-sorts on collection changes only. Re-declaring the active sort with
-    // the column's own path re-sorts the same source and keeps that column's sort indicator.
+    // PropertyChanged updates a cell but does not move its row; re-declaring the active sort with the
+    // column's own path re-sorts the source and keeps the column's sort indicator.
     private void ResortIfMetricSorted()
     {
         var column = SampleShaping.ActiveSortColumn(ProcessTable);
@@ -113,7 +117,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         Source.Sort(column.SortMemberPath, column.SortDirection);
     }
-    // </snippet>
 
     private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
@@ -130,9 +133,9 @@ public sealed partial class TaskManagerPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    // <snippet>
     // ---- Search (TableViewSource.Filter) ------------------------------------------------
 
+    // <snippet>
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
         if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
@@ -147,7 +150,9 @@ public sealed partial class TaskManagerPage : SamplePageBase
             ? string.Format(CultureInfo.CurrentCulture, "Search \"{0}\" -> {1:N0} of {2:N0} processes", text, VisibleCount(), Processes.Count)
             : "Search cleared");
     }
+    // </snippet>
 
+    // <snippet>
     // Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
     // again after a write to a searched property.
     private void ApplySearch()
@@ -160,7 +165,9 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
     }
+    // </snippet>
 
+    // <snippet>
     private static bool MatchesSearch(ProcessItem process, string query) =>
         process.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
         || process.Category.Contains(query, StringComparison.CurrentCultureIgnoreCase)
@@ -170,7 +177,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private int VisibleCount() =>
         _searchText is { } text ? CountShown(Processes, process => MatchesSearch(process, text)) : Processes.Count;
 
-    // <snippet>
     // Child processes are rows only while the source is nested: ParentBy then shows each under its app.
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
@@ -200,7 +206,6 @@ public sealed partial class TaskManagerPage : SamplePageBase
             }
         }
     }
-    // </snippet>
 
     private IEnumerable<ProcessItem> RowsOf(ProcessItem app) =>
         _childRowsShown ? app.Children.Prepend(app) : new[] { app };

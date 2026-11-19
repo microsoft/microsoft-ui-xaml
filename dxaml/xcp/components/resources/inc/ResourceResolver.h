@@ -5,6 +5,7 @@
 #include "base\inc\xref_ptr.h"
 #include <Resources.h>
 #include "ParserTypeDefs.h"
+#include <stack_vector.h>
 
 class CCoreServices;
 class XamlServiceProviderContext;
@@ -54,6 +55,12 @@ namespace Resources {
     public:
         ResourceResolver() = delete;
 
+        using ResourceParentLookupContext = Jupiter::stack_vector<CDependencyObject*, 4>;
+
+        static CDependencyObject* GetParentForResourceLookup(
+            _In_ CDependencyObject* element,
+            _Inout_ ResourceParentLookupContext& context);
+
         // Resolves the resource at parse time. Used by StaticResourceExtension and ThemeResourceExtension
 
         static const _Check_return_ HRESULT ResolveStaticResource(
@@ -94,7 +101,7 @@ namespace Resources {
             _Out_ ResolvedResource& resolvedResource);
 
         // Resolves a theme resource for a live-tree element WITHOUT any XamlDiagnostics coupling. Walks the
-        // element and its ancestors via GetParentInternal (not Diagnostics::GetParentForElementStateChanged,
+        // element and its ancestors via GetParentForResourceLookup (not Diagnostics::GetParentForElementStateChanged,
         // which manufactures and leaks RuntimeObjects for parentless elements), collecting each element's
         // resource dictionaries, then shares the actual key lookup and global/application fallback with
         // ResolveResourceRuntime via ResolveFromAmbientDictionaries. Used by the code-behind

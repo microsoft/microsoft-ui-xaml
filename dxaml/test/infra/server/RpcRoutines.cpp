@@ -308,6 +308,15 @@ HRESULT RpcETWWaiterStartWithTaskName(GUID providerGuid, __RPC__in_string const 
     COM_END
 }
 
+HRESULT RpcETWWaiterStartWithTaskNameAndPayload(GUID providerGuid, __RPC__in_string const wchar_t* taskName, __RPC__in_string const wchar_t* payloadCriteria)
+{
+    COM_START_GROUP(L"RpcETWWaiterStartWithTaskNameAndPayload")
+    {
+        ETWWaiterServerHelper::StartWithTaskNameAndPayload(providerGuid, taskName, payloadCriteria);
+    }
+    COM_END
+}
+
 HRESULT RpcETWWaiterStartWithPayLoad(GUID providerGuid, unsigned long eventId, __RPC__in_string const wchar_t* payloadCriteria)
 {
     COM_START_GROUP(L"RpcETWWaiterStartWithPayLoad")

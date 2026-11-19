@@ -83,7 +83,8 @@ namespace ShapingHelpers
         winrt::hstring CompositeGroupIdentity(
             std::vector<GroupDescription> const& groups,
             winrt::IInspectable const& item,
-            winrt::IInspectable& firstAxisKey)
+            winrt::IInspectable& firstAxisKey,
+            SwallowedFaults* contained)
         {
             firstAxisKey = nullptr;
 
@@ -100,6 +101,7 @@ namespace ShapingHelpers
                     }
                     catch (...)
                     {
+                        if (contained) { contained->Note(); }
                         key = nullptr;
                     }
                 }
@@ -132,7 +134,8 @@ namespace ShapingHelpers
             return winrt::hstring{ composite };
         }
 
-        void SortWithinRange(std::vector<winrt::IInspectable>& items, std::vector<SortDescription> const& sorts)
+        void SortWithinRange(std::vector<winrt::IInspectable>& items, std::vector<SortDescription> const& sorts,
+            SwallowedFaults* contained)
         {
             if (sorts.empty() || items.size() < 2)
             {
@@ -157,6 +160,7 @@ namespace ShapingHelpers
                     {
                         // A throwing key selector sorts as the null class rather than aborting the
                         // whole reshape, matching ApplyPredicateFilter's fail-safe posture.
+                        if (contained) { contained->Note(); }
                         return nullptr;
                     }
                 },
@@ -179,7 +183,8 @@ namespace ShapingHelpers
             }
         }
 
-        void ApplyFilters(std::vector<winrt::IInspectable>& items, std::vector<FilterDescription> const& filters)
+        void ApplyFilters(std::vector<winrt::IInspectable>& items, std::vector<FilterDescription> const& filters,
+            SwallowedFaults* contained)
         {
             for (auto const& filter : filters)
             {
@@ -187,11 +192,11 @@ namespace ShapingHelpers
                 {
                     continue;
                 }
-                ApplyPredicateFilter(items, filter.Predicate);
+                ApplyPredicateFilter(items, filter.Predicate, contained);
             }
         }
 
-        void Bucketize(ShapingState& state, ShapingSpec const& spec)
+        void Bucketize(ShapingState& state, ShapingSpec const& spec, SwallowedFaults* contained)
         {
             state.Buckets.clear();
             state.IsGrouped = false;
@@ -216,7 +221,7 @@ namespace ShapingHelpers
             for (auto const& item : state.Items)
             {
                 winrt::IInspectable representativeKey{ nullptr };
-                auto const identity = CompositeGroupIdentity(spec.Groups, item, representativeKey);
+                auto const identity = CompositeGroupIdentity(spec.Groups, item, representativeKey, contained);
 
                 auto const it = indexByIdentity.find(identity);
                 if (it == indexByIdentity.end())
@@ -295,7 +300,7 @@ namespace ShapingHelpers
         return delta;
     }
 
-    void Reshape(ShapingState& state, ShapingSpec const& spec, ShapingDelta const& delta)
+    void Reshape(ShapingState& state, ShapingSpec const& spec, ShapingDelta const& delta, SwallowedFaults* contained)
     {
         // The incremental paths read FilteredSource and Buckets as authoritative. Against a state
         // that has never been fully shaped they would produce an empty, apparently-valid
@@ -309,9 +314,9 @@ namespace ShapingHelpers
 
         case ShapingWork::FullReshape:
             state.FilteredSource = state.Source;
-            ApplyFilters(state.FilteredSource, spec.Filters);
+            ApplyFilters(state.FilteredSource, spec.Filters, contained);
             state.Items = state.FilteredSource;
-            Bucketize(state, spec);
+            Bucketize(state, spec, contained);
             break;
 
         case ShapingWork::ReBucket:
@@ -319,7 +324,7 @@ namespace ShapingHelpers
             // flattened Items: those are still clustered by the PREVIOUS grouping, which would
             // make both the new bucket order and the stable sort's tie order depend on it.
             state.Items = state.FilteredSource;
-            Bucketize(state, spec);
+            Bucketize(state, spec, contained);
             break;
 
         case ShapingWork::ReSortWithinBuckets:
@@ -337,13 +342,13 @@ namespace ShapingHelpers
         {
             for (auto& bucket : state.Buckets)
             {
-                SortWithinRange(bucket.Items, spec.Sorts);
+                SortWithinRange(bucket.Items, spec.Sorts, contained);
             }
             FlattenBucketsInto(state.Buckets, state.Items);
         }
         else
         {
-            SortWithinRange(state.Items, spec.Sorts);
+            SortWithinRange(state.Items, spec.Sorts, contained);
         }
 
         state.HasProjection = true;

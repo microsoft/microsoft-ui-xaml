@@ -1,0 +1,31 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Generate public SDK projections without importing or linking the WinUI product. -->
+  <PropertyGroup>
+    <SnapshotPackageRoot>$(MSBuildThisFileDirectory)..\.packages\</SnapshotPackageRoot>
+    <SnapshotWinUI>$(SnapshotPackageRoot)microsoft.windowsappsdk.winui\2.3.9\metadata</SnapshotWinUI>
+    <SnapshotIXP>$(SnapshotPackageRoot)microsoft.windowsappsdk.interactiveexperiences\2.1.9\metadata\10.0.18362.0</SnapshotIXP>
+    <SnapshotFoundation>$(SnapshotPackageRoot)microsoft.windowsappsdk.foundation\2.3.12\metadata</SnapshotFoundation>
+    <SnapshotWebView>$(SnapshotPackageRoot)microsoft.web.webview2\1.0.3719.77\lib\Microsoft.Web.WebView2.Core.winmd</SnapshotWebView>
+    <SnapshotProjectionDir>$(MSBuildThisFileDirectory)obj\SnapshotProjections\</SnapshotProjectionDir>
+    <SnapshotCppWinRT>$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\x64\cppwinrt.exe</SnapshotCppWinRT>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SnapshotProjectionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>windowsapp.lib;runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Target Name="GenerateTreeSnapshotProjections" BeforeTargets="ClCompile"
+          Inputs="$(SnapshotWinUI)\Microsoft.UI.Xaml.winmd;$(SnapshotIXP)\Microsoft.UI.winmd;$(SnapshotFoundation)\Microsoft.Windows.Foundation.winmd;$(SnapshotWebView);$(MSBuildThisFileFullPath);$(MSBuildProjectFullPath)"
+          Outputs="$(SnapshotProjectionDir)TreeSnapshot.projections.stamp">
+    <Error Condition="!Exists('$(SnapshotWinUI)\Microsoft.UI.Xaml.winmd') Or !Exists('$(SnapshotIXP)\Microsoft.UI.winmd') Or !Exists('$(SnapshotFoundation)\Microsoft.Windows.Foundation.winmd') Or !Exists('$(SnapshotWebView)')"
+           Text="Snapshot SDK metadata is missing. Restore the WinUIProfiler.App package graph before building the native TAP." />
+    <Error Condition="!Exists('$(SnapshotCppWinRT)')" Text="Install the Windows SDK C++/WinRT tools (cppwinrt.exe)." />
+    <MakeDir Directories="$(SnapshotProjectionDir)" />
+    <Exec Command="&quot;$(SnapshotCppWinRT)&quot; -input $(WindowsTargetPlatformVersion) -input &quot;$(SnapshotWinUI)&quot; -input &quot;$(SnapshotIXP)&quot; -input &quot;$(SnapshotFoundation)&quot; -input &quot;$(SnapshotWebView)&quot; -output &quot;$(SnapshotProjectionDir.TrimEnd('\'))&quot;" />
+    <Touch Files="$(SnapshotProjectionDir)TreeSnapshot.projections.stamp" AlwaysCreate="true" />
+  </Target>
+</Project>

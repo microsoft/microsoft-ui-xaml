@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
@@ -16,11 +17,9 @@ using Windows.System;
 namespace TableViewSampleApp.Controls;
 
 /// <summary>
-/// Reusable code-preview block. Authoritative snippet text is loaded from
-/// embedded .txt resources under Snippets/, keyed by the SnippetName
-/// dependency property. This avoids drift between hardcoded strings in
-/// the gallery XAML and the live page implementation, while keeping the
-/// snippet pipeline trivial (no file I/O, no source-reflection plumbing).
+/// Reusable code-preview block with a Copy button, highlighted by <see cref="CodeHighlighter"/>
+/// according to <see cref="CodeLanguage"/>. Snippet text can be loaded from the embedded
+/// Snippets/*.txt resources through <see cref="SnippetName"/>.
 /// </summary>
 public sealed partial class CodeBlock : UserControl
 {
@@ -38,6 +37,11 @@ public sealed partial class CodeBlock : UserControl
         _copyFeedbackTimer.Tick += OnCopyFeedbackTimerTick;
         Unloaded += OnUnloaded;
         CodeText.PointerWheelChanged += OnCodeWheelChanged;
+        ActualThemeChanged += (_, _) => QueueRender();
+        foreach (var swatch in Palette.Children)
+        {
+            swatch.RegisterPropertyChangedCallback(TextBlock.ForegroundProperty, (_, _) => QueueRender());
+        }
     }
 
     // Without this, a ScrollViewer that cannot scroll vertically turns a vertical wheel into horizontal
@@ -78,7 +82,7 @@ public sealed partial class CodeBlock : UserControl
 
     public static readonly DependencyProperty CaptionProperty =
         DependencyProperty.Register(nameof(Caption), typeof(string), typeof(CodeBlock),
-            new PropertyMetadata("Source", OnContentChanged));
+            new PropertyMetadata(string.Empty, OnContentChanged));
 
     public string Code
     {
@@ -89,6 +93,28 @@ public sealed partial class CodeBlock : UserControl
     public static readonly DependencyProperty CodeProperty =
         DependencyProperty.Register(nameof(Code), typeof(string), typeof(CodeBlock),
             new PropertyMetadata(string.Empty, OnContentChanged));
+
+    /// <summary><see cref="CodeHighlighter.Xaml"/>, <see cref="CodeHighlighter.CSharp"/>, or empty for plain text.</summary>
+    public string CodeLanguage
+    {
+        get => (string)GetValue(CodeLanguageProperty);
+        set => SetValue(CodeLanguageProperty, value);
+    }
+
+    public static readonly DependencyProperty CodeLanguageProperty =
+        DependencyProperty.Register(nameof(CodeLanguage), typeof(string), typeof(CodeBlock),
+            new PropertyMetadata(string.Empty, OnContentChanged));
+
+    /// <summary>Shown in place of <see cref="Caption"/> in the header bar, beside the Copy button.</summary>
+    public object? HeaderContent
+    {
+        get => GetValue(HeaderContentProperty);
+        set => SetValue(HeaderContentProperty, value);
+    }
+
+    public static readonly DependencyProperty HeaderContentProperty =
+        DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(CodeBlock),
+            new PropertyMetadata(null, OnContentChanged));
 
     public double CodeMaxHeight
     {
@@ -164,11 +190,15 @@ public sealed partial class CodeBlock : UserControl
         if (CaptionText is not null)
         {
             CaptionText.Text = Caption ?? string.Empty;
+            CaptionText.Visibility = HeaderContent is null && !string.IsNullOrEmpty(Caption) ? Visibility.Visible : Visibility.Collapsed;
+            HeaderPresenter.Content = HeaderContent;
+            HeaderPresenter.Visibility = HeaderContent is null ? Visibility.Collapsed : Visibility.Visible;
         }
 
         if (CodeText is not null)
         {
-            CodeText.Text = Code ?? string.Empty;
+            AutomationProperties.SetName(CodeScroller, string.IsNullOrEmpty(CodeLanguage) ? "Code" : $"{CodeLanguage} code");
+            Render();
         }
 
         ApplyCodeMaxHeight();
@@ -179,11 +209,71 @@ public sealed partial class CodeBlock : UserControl
         }
     }
 
-    // A page can host more than one CodeBlock (XAML plus code-behind), so the copy
-    // buttons are qualified by caption — otherwise they are indistinguishable to a
-    // screen reader and read as the same button twice.
+    private string? _renderedCode;
+    private string? _renderedLanguage;
+    private bool _renderQueued;
+
+    // Theme changes re-resolve the palette brushes; the runs hold the old ones until re-rendered.
+    private void QueueRender()
+    {
+        if (_renderQueued)
+        {
+            return;
+        }
+
+        _renderQueued = true;
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _renderQueued = false;
+            _renderedCode = null;
+            Render();
+        });
+    }
+
+    private void Render()
+    {
+        var code = (Code ?? string.Empty).Replace("\r\n", "\n");
+        if (code == _renderedCode && CodeLanguage == _renderedLanguage)
+        {
+            return;
+        }
+
+        _renderedCode = code;
+        _renderedLanguage = CodeLanguage;
+        var paragraph = new Paragraph();
+        foreach (var (text, kind) in CodeHighlighter.Tokenize(code, CodeLanguage))
+        {
+            var brush = kind == CodeTokenKind.Plain ? null : ((TextBlock)Palette.Children[(int)kind - 1]).Foreground;
+            var lines = text.Split('\n');
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (i > 0)
+                {
+                    paragraph.Inlines.Add(new LineBreak());
+                }
+
+                if (lines[i].Length > 0)
+                {
+                    var run = new Run { Text = lines[i] };
+                    if (brush is not null)
+                    {
+                        run.Foreground = brush;
+                    }
+
+                    paragraph.Inlines.Add(run);
+                }
+            }
+        }
+
+        CodeText.Blocks.Clear();
+        CodeText.Blocks.Add(paragraph);
+    }
+
+    // Qualified by the caption or language, so the button says what it copies.
     private string ResolvedCopyAutomationName =>
-        string.IsNullOrWhiteSpace(Caption) ? CopyButtonAutomationName : $"Copy {Caption}";
+        HeaderContent is null && !string.IsNullOrWhiteSpace(Caption) ? $"Copy {Caption}"
+        : !string.IsNullOrWhiteSpace(CodeLanguage) ? $"Copy {CodeLanguage}"
+        : CopyButtonAutomationName;
 
     private static string LoadSnippet(string snippetName)
     {

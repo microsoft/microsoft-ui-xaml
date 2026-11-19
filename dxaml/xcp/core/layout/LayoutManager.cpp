@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "InputServices.h"
 
 #include <EffectiveViewportChangedEventArgs.h>
@@ -248,11 +249,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
 
     m_isInUpdateLayout = TRUE;
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::LayoutBegin(pRoot);
-#else
-    TraceLayoutBegin();
-#endif
+    XamlTelemetry::LayoutBegin(pRoot);
 
     XUINT32 count = MaxLayoutIterations;
     std::wstring extraInfoEntries[WarningLayoutIterations];
@@ -293,18 +290,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 m_arrangeRect.Height = (XFLOAT) controlHeight;
             }
 
-#ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::MeasureBegin(pRoot);
-#else
-            TraceMeasureBegin();
-#endif
+            XamlTelemetry::MeasureBegin(pRoot);
             auto scopeGuard = wil::scope_exit([&]
             {
-#ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::MeasureEnd(pRoot);
-#else
-                TraceMeasureEnd();
-#endif
+                XamlTelemetry::MeasureEnd(pRoot);
             });
 
             if (StoreLayoutCycleWarningContexts())
@@ -333,18 +322,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         }
         else if (pRoot->GetRequiresArrange())
         {
-#ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::ArrangeBegin(pRoot);
-#else
-            TraceArrangeBegin();
-#endif
+            XamlTelemetry::ArrangeBegin(pRoot);
             auto scopeGuard = wil::scope_exit([&]
             {
-#ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::ArrangeEnd(pRoot);
-#else
-                TraceArrangeEnd();
-#endif
+                XamlTelemetry::ArrangeEnd(pRoot);
             });
 
             if (StoreLayoutCycleWarningContexts())
@@ -411,18 +392,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire any size changed events
             if (!m_sizeChangedQueue.empty())
             {
-#ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::FireSizeChangedBegin(pRoot);
-#else
-                TraceFireSizeChangedBegin();
-#endif
+                XamlTelemetry::FireSizeChangedBegin(pRoot);
                 auto scopeGuard = wil::scope_exit([&]
                 {
-#ifdef XAMLPROFILER_ENABLED
-                    XamlElementTracing::FireSizeChangedEnd(pRoot);
-#else
-                    TraceFireSizeChangedEnd();
-#endif
+                    XamlTelemetry::FireSizeChangedEnd(pRoot);
                 });
 
                 if (StoreLayoutCycleWarningContexts())
@@ -448,18 +421,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire layout updated events
             if (m_nLayoutUpdatedSubscriberCounter != 0)
             {
-#ifdef XAMLPROFILER_ENABLED
-                XamlElementTracing::FireLayoutUpdatedBegin(pRoot);
-#else
-                TraceFireLayoutUpdatedBegin();
-#endif
+                XamlTelemetry::FireLayoutUpdatedBegin(pRoot);
                 auto scopeGuard = wil::scope_exit([&]
                 {
-#ifdef XAMLPROFILER_ENABLED
-                    XamlElementTracing::FireLayoutUpdatedEnd(pRoot);
-#else
-                    TraceFireLayoutUpdatedEnd();
-#endif
+                    XamlTelemetry::FireLayoutUpdatedEnd(pRoot);
                 });
 
                 if (StoreLayoutCycleWarningContexts())
@@ -521,11 +486,7 @@ Cleanup:
 
     m_isInUpdateLayout = FALSE;
 
-#ifdef XAMLPROFILER_ENABLED
-    XamlElementTracing::LayoutEnd(pRoot);
-#else
-    TraceLayoutEnd();
-#endif
+    XamlTelemetry::LayoutEnd(pRoot);
 
     // Firing a UIAutomation automation properties change check
     if (m_bUIAClientsListeningToProperty)
@@ -656,11 +617,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
 
         for (auto& item : tmp.m_vector)
         {
-#ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::IndividualSizeChangedBegin(item.m_pElement);
-#else
-            TraceIndividualSizeChangedBegin();
-#endif
+            XamlTelemetry::IndividualSizeChangedBegin(item.m_pElement);
 
             if (auto layoutStorage = item.m_pElement->GetLayoutStorage())
             {
@@ -673,11 +630,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
                     args));
             }
 
-#ifdef XAMLPROFILER_ENABLED
-            XamlElementTracing::IndividualSizeChangedEnd(item.m_pElement);
-#else
-            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
-#endif
+            XamlTelemetry::IndividualSizeChangedEnd(item.m_pElement);
         }
 
         tmp.m_vector.clear();
@@ -938,10 +891,10 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
     // fill the groups dictionary with layoutslots
     for(const auto& element: m_elementsWithDeferredTransitions)
     {
-#ifdef XAMLPROFILER_ENABLED
-        if (XamlElementTracing::IsEnabled())
-            XamlElementTracing::RealizeTransition(element.get());
-#endif
+        if (XamlProfilerTracing::IsEnabled() && XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO))
+        {
+            XamlTelemetry::RealizeTransition(element.get());
+        }
         LayoutTransitionStorage* pStorage = element->GetLayoutTransitionStorage();
         IFCEXPECT(pStorage);
         ASSERT(!pStorage->m_registeredTransitions.empty()); // should have unregistered with deferredtransitions though.

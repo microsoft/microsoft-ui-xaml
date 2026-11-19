@@ -37,10 +37,9 @@ namespace ShapingHelpers
         KeySelector Key{ nullptr };
         // Stable identity of the evaluator, used to match axes when AxisToken is empty.
         // std::function is not equality-comparable, so a caller that wants un-tokenized replace
-        // semantics supplies the underlying delegate here as an IUnknown. Comparing the
-        // interface (rather than a raw address) keeps the original delegate-equality semantics,
-        // which match two different interface pointers on the same COM object.
-        winrt::Windows::Foundation::IUnknown KeyIdentity{ nullptr };
+        // semantics supplies the underlying delegate's canonical IUnknown address here. It is not
+        // a reference, so the axis cannot keep the delegate alive; the caller's Key must.
+        void const* KeyIdentity{ nullptr };
         // The property path this axis sorts on, when the caller named one. Empty means the key is
         // a delegate that no path expresses (computed, multi-field, identity, or a ranked custom
         // comparer). Purely descriptive - the pipeline never evaluates it - but it is what lets a
@@ -93,8 +92,8 @@ namespace ShapingHelpers
         void ClearFilter() noexcept;
         void ClearFilter(winrt::hstring const& axisToken);
         bool HasFilter() const noexcept { return !m_filters.empty(); }
-        // A predicate that throws excludes the item (fail-safe). Returns true when no filter is
-        // set, so callers can gate unconditionally.
+        // A predicate that throws excludes the item (fail-safe) and is counted (SwallowedFaultsTally). Returns true
+        // when no filter is set, so callers can gate unconditionally.
         bool PassesFilter(winrt::IInspectable const& item) const;
         void ApplyFilter(std::vector<winrt::IInspectable>& rows) const;
 
@@ -107,7 +106,7 @@ namespace ShapingHelpers
             winrt::hstring const& previousAxisToken,
             winrt::hstring const& axisToken,
             KeySelector const& key,
-            winrt::Windows::Foundation::IUnknown const& keyIdentity,
+            void const* keyIdentity,
             winrt::hstring const& sortMemberPath,
             winrt::SortDirection direction);
         void ClearSorts() noexcept { m_sorts.clear(); }
@@ -117,6 +116,13 @@ namespace ShapingHelpers
         // holding one token cannot address the axes it does not own by token alone.
         void ClearSortsExcept(winrt::hstring const& axisToken) noexcept;
         bool HasActiveSort() const noexcept;
+        // True when ClearSort(axisToken) would remove an axis; as there, the empty token addresses every axis.
+        bool HasSortAxis(winrt::hstring const& axisToken) const noexcept;
+        // True when ClearSortsExcept(axisToken) would remove an axis; as there, the empty token preserves none.
+        bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept;
+        // True when SetSort(..., axisToken, ..., keyIdentity, ..., None) would remove an axis: the same axis
+        // match SetSort uses, by token, or by key identity for an untokenized axis.
+        bool HasMatchingSort(winrt::hstring const& axisToken, void const* keyIdentity) const noexcept;
 
         // Axes with a live key and direction whose Order falls strictly between the bounds. A
         // negative bound is unbounded, so ActiveSortAxes(-1, -1) is every active axis. Returned in
@@ -144,6 +150,10 @@ namespace ShapingHelpers
         // 0 means the two are indistinguishable to the sort, i.e. their relative order is decided
         // by the stable sort's source-order tiebreak rather than by any key.
         int CompareItemToRow(winrt::IInspectable const& item, winrt::IInspectable const& row) const;
+
+        // The tally of the predicates and key selectors that threw (a throwing key sorts as null): the pipeline counts
+        // here, and so does the engine for what it contains outside the pipeline (a group key, an in-place re-sort).
+        SwallowedFaults& SwallowedFaultsTally() noexcept { return m_swallowedFaults; }
 
         // -- verb ordering --------------------------------------------------------------------
         int32_t NextVerbOrder() noexcept { return m_nextVerbOrder++; }
@@ -181,10 +191,10 @@ namespace ShapingHelpers
 
         // Compares an item's precomputed axis keys against a row whose keys are evaluated on the
         // fly. Lets the binary search hoist axis filtering and item-key evaluation out of the loop.
-        static int CompareKeysToRow(
+        int CompareKeysToRow(
             std::vector<SortAxis> const& axes,
             std::vector<winrt::IInspectable> const& itemKeys,
-            winrt::IInspectable const& row);
+            winrt::IInspectable const& row) const;
 
         // Declaration-ordered filter axes, all conjunctive.
         std::vector<FilterAxis> m_filters;
@@ -200,5 +210,6 @@ namespace ShapingHelpers
         // caller has no projection yet and must do the full reshape regardless).
         bool m_hasCommittedSpec{ false };
         uint32_t m_nextDescriptionId{ 0 };
+        mutable SwallowedFaults m_swallowedFaults;
     };
 }

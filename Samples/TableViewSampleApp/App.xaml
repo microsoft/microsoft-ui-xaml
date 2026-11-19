@@ -47,10 +47,12 @@
             <x:Double x:Key="SectionSpacing">22</x:Double>
             <x:Double x:Key="SectionInnerSpacing">6</x:Double>
             <!--
-                Column width tokens. Columns use these, never literals and never Auto (ColumnLayout is the
-                one exception, because Auto is its lesson). Each table has exactly one Width="*"
-                column with MinWidth="{StaticResource ColMinWidthStar}". Budget: the fixed widths
-                plus the star MinWidth fit 690 px, the usable table width at 1440x753 with the
+                Column width tokens, for columns built in code. Page XAML writes the same values as literals,
+                so the Source code snippets show real widths; never Auto (ColumnLayout is the one exception,
+                because Auto is its lesson). Each table has exactly one Width="*" column with
+                MinWidth="140" (ColMinWidthStar); ColumnLifecycle also star-sizes Name (2*, MinWidth 120)
+                so hiding either star column leaves no gap. Budget: the fixed widths
+                plus the star MinWidths fit 690 px, the usable table width at 1440x753 with the
                 nav pane expanded (exempt: CellTemplating, Sort, ColumnLayout, ColumnLifecycle after "Add").
             -->
             <x:Double x:Key="ColMinWidthStar">140</x:Double>

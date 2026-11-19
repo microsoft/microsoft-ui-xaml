@@ -11,5 +11,5 @@ MaxTextureSizeProvider::MaxTextureSizeProvider(_In_ CCoreServices* core)
 
 uint32_t MaxTextureSizeProvider::GetMaxTextureSize() const
 {
-    return m_pCoreNoRef->GetMaxTextureSize();
+    return m_maxTextureSizeOverride > 0 ? m_maxTextureSizeOverride : m_pCoreNoRef->GetMaxTextureSize();
 }

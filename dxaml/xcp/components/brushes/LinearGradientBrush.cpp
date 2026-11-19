@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include "LinearGradientBrush.h"
 #include "ColorUtil.h"
 #include <DependencyObjectDCompRegistry.h>
@@ -79,6 +81,10 @@ _Check_return_ HRESULT CLinearGradientBrush::EnsurePrimaryWUCBrush(_In_ WUComp::
 
     wrl::ComPtr<WUComp::ICompositionLinearGradientBrush> linearGradientBrush;
     IFC_RETURN(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+    }
     IFC_RETURN(linearGradientBrush.As(&m_wucBrush));
 
     if (GetDCompObjectRegistry() != nullptr)
@@ -149,6 +155,10 @@ wrl::ComPtr<WUComp::ICompositionBrush> CLinearGradientBrush::GetWUCBrush(
         wrl::ComPtr<WUComp::ICompositionLinearGradientBrush> linearGradientBrush;
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
         IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+        }
         IFCFAILFAST(linearGradientBrush.As(&brush));
         ApplyWUCBrushProperties(compositor, brush.Get(), brushBounds, brushTransform);
         return brush;

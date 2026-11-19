@@ -24,6 +24,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // TableView Axe scans in states other than the page's default. Axe scans the whole app window, so each test
     // puts the page into one well-defined state and proves that state took effect before scanning.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewAxeInteractionTests
     {
         [ClassInitialize]

@@ -92,21 +92,30 @@ function UninstallTestApps {
         {
             $packageFullName = "$($pkgName)_1.0.0.0_$($redistPlatform)__$publisherHashes" 
             Write-Host "Removing $packageFullName if installed"
-            Remove-AppxPackage $packageFullName -ErrorVariable appxerror -ErrorAction SilentlyContinue 
-            if($appxerror)
+            $removeErrors = @()
+            Remove-AppxPackage $packageFullName -ErrorVariable removeErrors -ErrorAction SilentlyContinue
+            if($removeErrors)
             {
-                foreach($error in $appxerror)
+                foreach($errorRecord in @($removeErrors))
                 {
-                    # In most cases, Remove-AppPackage will fail due to the package not being found. Don't treat this as an error.
-                    if(!($error.Exception.Message -match "0x80073CF1"))
+                    $message = $errorRecord.Exception.Message
+                    $packageIsAbsent =
+                        ($message -match "0x80073CF1") -or
+                        (($message -match "0x80073D19") -and
+                         ($message -match "current user.*does not have.*installed"))
+                    if($packageIsAbsent)
                     {
-                        Write-Error $error
+                        Write-Host "$packageFullName is not installed for the current user."
+                    }
+                    else
+                    {
+                        Write-Error -ErrorRecord $errorRecord
                     }
                 }
             }
             else
             {
-                Write-Host "Sucessfully removed $packageFullName"
+                Write-Host "Successfully removed $packageFullName"
             }
         }
     }
@@ -158,6 +167,17 @@ function Enable-CrashDumpsForProcesses {
     }
 }
 
+function Disable-CrashDumpsForProcesses {
+    Param([string[]]$namesOfProcessesForDumpCollection)
+
+    foreach($procName in $namesOfProcessesForDumpCollection )
+    {
+        Write-Host "Disabling local crash dumps for $procName"
+        $deleteCommand = "reg delete `"HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\$procName`" /f >nul 2>&1 & exit /b 0"
+        & $nativeCmdPath /d /c $deleteCommand
+    }
+}
+
 # enable dump collection for our test apps:
 $namesOfProcessesForDumpCollection = @(
     "MUXControlsTestApp.exe",
@@ -180,4 +200,11 @@ $namesOfProcessesForDumpCollection = @(
     "DisableXamlGeneratedMainCpp.exe",
     "DisableXamlGeneratedMainNoCtorCpp.exe")
 
-Enable-CrashDumpsForProcesses $namesOfProcessesForDumpCollection
+if($env:HELIX_DISABLE_CRASH_DUMPS -eq "True")
+{
+    Disable-CrashDumpsForProcesses $namesOfProcessesForDumpCollection
+}
+else
+{
+    Enable-CrashDumpsForProcesses $namesOfProcessesForDumpCollection
+}

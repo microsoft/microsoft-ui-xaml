@@ -1372,6 +1372,12 @@ namespace FxCallbacks
     void XamlIslandRoot_OnSizeChanged(_In_ CXamlIslandRoot* xamlIslandRoot)
         { DirectUI::XamlIslandRoot::OnSizeChangedStatic(xamlIslandRoot); }
 
+    _Check_return_ HRESULT XamlIslandRoot_ReleaseContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot)
+        { return DirectUI::XamlIslandRoot::ReleaseContentIslandStatic(xamlIslandRoot); }
+
+    _Check_return_ HRESULT XamlIslandRoot_RebuildContentIsland(_In_ CXamlIslandRoot* xamlIslandRoot)
+        { return DirectUI::XamlIslandRoot::RebuildContentIslandStatic(xamlIslandRoot); }
+
     _Check_return_ HRESULT FrameworkApplication_RemoveIsland(_In_ xaml_hosting::IXamlIslandRoot* island)
     {
         return FrameworkApplication::GetCurrentNoRef()->RemoveIsland(island);

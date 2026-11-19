@@ -1,108 +1,127 @@
+foreach (var person in People)
+{
+    person.ValidatesNames = true;          // a first and last name are required on this page
+}
+
 Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
 InitializeComponent();
 
-// …
+public ObservableCollection<Person> People { get; } = PersonData.Take(40);
 
-// ---- Editing ------------------------------------------------------------------------
+public TableViewSource Source { get; }
 
 private void OnReadOnlyToggled(object sender, RoutedEventArgs e)
 {
-    if (PeopleTable is null || ReadOnlyToggle is null)
-    {
-        return;
-    }
-
-    PeopleTable.IsReadOnly = ReadOnlyToggle.IsOn;
+    PeopleTable.IsReadOnly = ((ToggleSwitch)sender).IsOn;
 }
 
-private void OnBeginningEdit(TableView sender, TableViewBeginningEditEventArgs args)
-{
-    SetEditButtonsEnabled(true);
-}
-
-// Raised for every close, with EditAction saying whether it committed or cancelled.
+// Raised before the control writes and validates, for a commit and a cancel alike.
 private void OnCellEditEnding(TableView sender, TableViewCellEditEndingEventArgs args)
 {
-    SetEditButtonsEnabled(false);
-}
-
-private void SetEditButtonsEnabled(bool enabled)
-{
-    CommitEditButton.IsEnabled = enabled;
-    CancelEditButton.IsEnabled = enabled;
-}
-
-// The buttons set AllowFocusOnInteraction="False", so clicking one leaves focus, and the
-// open editor, where they are.
-private void OnCommitEditClick(object sender, RoutedEventArgs e)
-{
-    if (!PeopleTable.CommitEdit())
+    DispatcherQueue.TryEnqueue(() =>
     {
-        // …
-    }
-}
-
-private void OnCancelEditClick(object sender, RoutedEventArgs e)
-{
-    if (!PeopleTable.CancelEdit())
-    {
-        // …
-    }
-}
-
-private void OnPersonChanged(object? sender, PropertyChangedEventArgs e)
-{
-    if (sender is not Person person || Array.IndexOf(s_editableProperties, e.PropertyName) < 0)
-    {
-        return;
-    }
-
-    LogEdit(person, e.PropertyName!);
-
-    // The write arrives from inside the control's commit. Re-group after it returns, so the
-    // reshape never runs while the edit is still closing.
-    var property = e.PropertyName;
-    EnqueueIfLoaded(() =>
-    {
-        var hadFocus = IsFocusWithinTable();
-        var regrouped = IsGrouped && property == AppliedGroupKey;
-        ReapplyIfGroupedOn(property);
-        if (regrouped && hadFocus)
+        if (!PeopleTable.IsEditing)
         {
-            // The reshape recycles the containers; put focus back on the edited row.
-            RestoreRowFocusAfterLayout(person);
+            ValidationInfoBar.IsOpen = false;
         }
     });
 }
 
-// …
-
-// From Controls\ShapingOptions.xaml.cs
-// Reshape the ONE TableViewSource in place. GroupBy/ClearGroupBy is the group axis and
-// ParentBy/ClearParentBy the hierarchy axis; together, GroupBy buckets the roots and each root
-// keeps its subtree.
-private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
+// Queued after a commit. _rejectedError is the GetErrors text of a write the control rejected;
+// the editor then stays open.
+private void OnCommitSettled()
 {
-    if (relation is not null && IsHierarchicalMode(mode))
+    var error = _rejectedError;
+    if (error is null || !PeopleTable.IsEditing)
     {
-        // A second ParentBy replaces the relation and resets expansion, so declare it once.
-        if (!hadParentBy)
-        {
-            source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
-        }
-    }
-    else if (hadParentBy)
-    {
-        source.ClearParentBy();
+        return;
     }
 
-    if (mode is "grouped" or "groupedHierarchy")
+    var message = error + " The editor stays open with the previous value: type a new value and press Enter, or press Esc to cancel.";
+    if (ValidationInfoBar.IsOpen)
     {
-        // The key selector receives the ROW; the identity selector receives the KEY.
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+        // InfoBar announces only when it opens, so announce a repeat.
+        FrameworkElementAutomationPeer.FromElement(ValidationInfoBar)?.RaiseNotificationEvent(
+            AutomationNotificationKind.ActionAborted, AutomationNotificationProcessing.ImportantAll,
+            message, "CellEditingValidationRejected");
     }
-    else
+
+    ValidationInfoBar.Message = message;
+    ValidationInfoBar.IsOpen = true;
+}
+
+// Buttons that call these need AllowFocusOnInteraction="False", or the click takes focus from the editor first.
+private void OnCommitEditClick(object sender, RoutedEventArgs e)
+{
+    var committed = PeopleTable.CommitEdit();
+}
+
+private void OnCancelEditClick(object sender, RoutedEventArgs e)
+{
+    var cancelled = PeopleTable.CancelEdit();
+}
+
+// From Models\Person.cs
+// TableView checks INotifyDataErrorInfo when committing a cell: an error keeps the editor open
+// and writes the previous value back. Set calls ValidateName before raising PropertyChanged.
+private string? _firstNameError;
+private string? _lastNameError;
+
+public bool ValidatesNames { get; set; }
+
+public bool HasErrors => _firstNameError is not null || _lastNameError is not null;
+
+public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
+public IEnumerable GetErrors(string? propertyName)
+{
+    var all = string.IsNullOrEmpty(propertyName);
+    // An edit through FullName writes both parts, so it reports the errors of both.
+    var full = propertyName == nameof(FullName);
+    if ((all || full || propertyName == nameof(FirstName)) && _firstNameError is not null)
     {
-        source.ClearGroupBy();
+        yield return _firstNameError;
     }
+
+    if ((all || full || propertyName == nameof(LastName)) && _lastNameError is not null)
+    {
+        yield return _lastNameError;
+    }
+}
+
+// Returns true when the property's errors changed.
+private bool ValidateName(string? propertyName)
+{
+    string? Required(string value, string label) =>
+        ValidatesNames && string.IsNullOrWhiteSpace(value) ? label + " is required." : null;
+
+    switch (propertyName)
+    {
+        case nameof(FirstName):
+            var firstError = Required(_firstName, "First name");
+            if (firstError == _firstNameError)
+            {
+                return false;
+            }
+
+            _firstNameError = firstError;
+            return true;
+        case nameof(LastName):
+            var lastError = Required(_lastName, "Last name");
+            if (lastError == _lastNameError)
+            {
+                return false;
+            }
+
+            _lastNameError = lastError;
+            return true;
+        default:
+            return false;
+    }
+}
+
+private void RaiseErrorsChanged(string propertyName)
+{
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasErrors)));
+    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
 }

@@ -15,6 +15,15 @@
                 <TextBlock Text="I am Portrait"/>
                 <TextBlock x:Name="DisplayText"/>
                 <CheckBox x:Name="MyControl" Content="MyControl" Checked="MyControl_Checked" Unchecked="MyControl_Checked"/>
+                <Grid x:Name="DeferredContent" x:Load="False">
+                    <Grid.Resources>
+                        <x:String x:Name="ViewText">Portrait string</x:String>
+                    </Grid.Resources>
+                    <StackPanel>
+                        <Button x:Name="SharedText" Click="MyControl_Click"/>
+                        <Button x:Name="EmptySharedText"/>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Viewbox>
     </Grid>

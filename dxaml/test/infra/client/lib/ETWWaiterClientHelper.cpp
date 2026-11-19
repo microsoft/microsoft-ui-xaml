@@ -32,6 +32,19 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 
+    HRESULT ETWWaiterHelperStatics::StartWithTaskNameAndPayload(GUID providerGuid, HSTRING taskName, HSTRING payloadCriteria)
+    {
+        COM_START
+        {
+            RpcClientEnsureConnected();
+            LogThrow_IfFailed(RpcETWWaiterStartWithTaskNameAndPayload(
+                providerGuid,
+                WindowsGetStringRawBuffer(taskName, nullptr),
+                WindowsGetStringRawBuffer(payloadCriteria, nullptr)));
+        }
+        COM_END
+    }
+
     HRESULT ETWWaiterHelperStatics::StartWithPayload(GUID providerGuid, unsigned long eventId, HSTRING payloadCriteria)
     {
         COM_START

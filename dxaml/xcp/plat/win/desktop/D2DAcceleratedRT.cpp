@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"
@@ -31,11 +33,19 @@ private:
         )
     {
         SetInterface(m_pD2DBitmap, pBitmap);
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapWrapper);
+        }
     }
 
     ~CD2DBitmap() override
     {
         ReleaseInterface(m_pD2DBitmap);
+        if (m_graphicsResourceTracked)
+        {
+            RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::D2DBitmapWrapper);
+        }
     }
 
 public:
@@ -65,6 +75,7 @@ public:
 
 private:
     _Notnull_ ID2D1Bitmap *m_pD2DBitmap;
+    bool m_graphicsResourceTracked = false;
 };
 
 //------------------------------------------------------------------------
@@ -262,6 +273,10 @@ CD2DRenderTarget<T>::CreateSolidColorBrush(
         D2D1::BrushProperties(rOpacity),
         &pD2DBrush
         ));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DSolidColorBrush);
+    }
 
     IFC(CD2DSolidColorBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -423,6 +438,10 @@ CD2DRenderTarget<T>::CreateSharedBitmapBrush(
         D2D1::BrushProperties(rOpacity),
         &pD2DBrush
         ));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DBitmapBrush);
+    }
 
     IFC(CD2DBitmapBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -480,6 +499,10 @@ CD2DRenderTarget<T>::CreateLinearGradientBrush(
         pGradientStopCollection,
         &pD2DBrush
         ));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DLinearGradientBrush);
+    }
 
     IFC(CD2DLinearGradientBrush::Create(pD2DBrush, &pPALBrush));
 
@@ -541,6 +564,10 @@ CD2DRenderTarget<T>::CreateRadialGradientBrush(
         pGradientStopCollection,
         &pD2DBrush
         ));
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::D2DRadialGradientBrush);
+    }
 
     IFC(CD2DRadialGradientBrush::Create(pD2DBrush, &pPALBrush));
 

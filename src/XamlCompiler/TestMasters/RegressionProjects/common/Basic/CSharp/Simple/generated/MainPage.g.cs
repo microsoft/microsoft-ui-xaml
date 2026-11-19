@@ -24,36 +24,66 @@ namespace Simple
         {
             switch(connectionId)
             {
-            case 2: // MainPage.xaml line 15
+            case 2: // MainPage.xaml line 13
+                {
+                    this.NamedResourceString = target == null ? null : global::WinRT.CastExtensions.As<global::System.String>(target);
+                }
+                break;
+            case 3: // MainPage.xaml line 14
+                {
+                    this.NamedEmptyString = target == null ? null : global::WinRT.CastExtensions.As<global::System.String>(target);
+                }
+                break;
+            case 4: // MainPage.xaml line 17
                 {
                     this.propertyBagObject = global::WinRT.CastExtensions.As<global::Simple.PropertyBag>(target);
                 }
                 break;
-            case 3: // MainPage.xaml line 17
+            case 5: // MainPage.xaml line 19
                 {
                     this.propertyBagObjectSecond = global::WinRT.CastExtensions.As<global::Simple.PropertyBag>(target);
                 }
                 break;
-            case 4: // MainPage.xaml line 32
+            case 6: // MainPage.xaml line 34
                 {
                     this.MainGrid = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target);
                 }
                 break;
-            case 5: // MainPage.xaml line 34
+            case 7: // MainPage.xaml line 35
+                {
+                    this.NamedStringTextBlock = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                }
+                break;
+            case 8: // MainPage.xaml line 38
+                {
+                    this.EmptyStringTextBlock = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                }
+                break;
+            case 9: // MainPage.xaml line 42
                 {
                     this.Button1 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 6: // MainPage.xaml line 35
+            case 10: // MainPage.xaml line 43
                 {
                     this.Button2 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 7: // MainPage.xaml line 38
+            case 11: // MainPage.xaml line 46
                 {
-                    global::Microsoft.UI.Xaml.Controls.Button element7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
-                    ((global::Microsoft.UI.Xaml.Controls.Button)element7).Click += this.ClickHandler;
-                    ((global::Microsoft.UI.Xaml.Controls.Button)element7).Tapped += this.TappedHandler;
+                    global::Microsoft.UI.Xaml.Controls.Button element11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element11).Click += this.ClickHandler;
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element11).Tapped += this.TappedHandler;
+                }
+                break;
+            case 14: // MainPage.xaml line 39
+                {
+                    this.NamedEmptyInlineString = target == null ? null : global::WinRT.CastExtensions.As<global::System.String>(target);
+                }
+                break;
+            case 15: // MainPage.xaml line 36
+                {
+                    this.NamedInlineString = target == null ? null : global::WinRT.CastExtensions.As<global::System.String>(target);
                 }
                 break;
             default:

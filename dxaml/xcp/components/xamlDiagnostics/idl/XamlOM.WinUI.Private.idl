@@ -20,5 +20,34 @@ interface IXamlDiagnosticsTestHooks : IUnknown
     HRESULT TryGetDispatcherQueueForObject(InstanceHandle obj, IInspectable** queue); 
 };
 
+typedef struct XamlGraphicsResourceCounterSnapshot
+{
+    UINT64 TotalCreated;
+    UINT64 TotalDestroyed;
+    UINT64 LiveCount;
+} XamlGraphicsResourceCounterSnapshot;
+
+const UINT32 XamlResourceSnapshotGraphicsCapacity = 32;
+
+typedef struct XamlResourceSnapshot
+{
+    INT64 AllocCount;
+    INT64 AllocSize;
+    INT64 AllocatedMemory;
+    INT64 OutstandingAllocCount;
+    INT64 OutstandingAllocSize;
+    XamlGraphicsResourceCounterSnapshot Resources[XamlResourceSnapshotGraphicsCapacity];
+} XamlResourceSnapshot;
+
+[
+    object,
+    uuid(e79e0da1-cf7f-4fa6-b557-fa0de39add1d),
+    pointer_default(unique)
+]
+interface IXamlDiagnosticsPrivate : IUnknown
+{
+    HRESULT GetResourceSnapShot([out] XamlResourceSnapshot* snapshot);
+};
+
 cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */ ")
 cpp_quote("#pragma endregion")

@@ -3,14 +3,55 @@
 
 #include "pch.h"
 #include "TableViewTip.h"
+#include "ShapingHelpers.h"
 
 #include <limits>
 
 namespace TableViewTip
 {
+    static_assert(static_cast<uint32_t>(AppFaultKind::Data) == ShapingHelpers::c_callerDataFault,
+        "Shaping tags the app's collection and contract failures as AppFaultKind::Data.");
+
+    Fault CurrentFault() noexcept
+    {
+        auto const appFault = static_cast<AppFaultKind>(ShapingHelpers::CurrentCallerErrorKind());
+        return { winrt::to_hresult(), appFault };
+    }
+
+    void RethrowAppFault(AppFaultKind kind)
+    {
+        ShapingHelpers::RethrowAsCallerError(static_cast<uint32_t>(kind));
+    }
+
     namespace
     {
-        const char* GetIgnoreName(IgnoreReason reason) noexcept
+        // In a catch: the error object WinRT carries with the exception across ABI calls, or null.
+        winrt::com_ptr<::IUnknown> CurrentErrorObject() noexcept
+        {
+            try { throw; }
+            catch (winrt::hresult_error const& error) { return error.try_as<::IUnknown>(); }
+            catch (...) { return nullptr; }
+        }
+    }
+
+    AppFaultHop CurrentAppFaultHop() noexcept
+    {
+        auto const kind = static_cast<AppFaultKind>(ShapingHelpers::CurrentCallerErrorKind());
+        if (kind == AppFaultKind::None) { return {}; }
+        return { CurrentErrorObject(), kind };
+    }
+
+    void RestoreAppFault(AppFaultHop const& hop)
+    {
+        if (hop.kind != AppFaultKind::None && hop.error && CurrentErrorObject() == hop.error)
+        {
+            RethrowAppFault(hop.kind);
+        }
+    }
+
+    namespace
+    {
+        constexpr const char* GetIgnoreName(IgnoreReason reason) noexcept
         {
             switch (reason)
             {
@@ -23,11 +64,25 @@ namespace TableViewTip
             case IgnoreReason::Stale: return "stale";
             case IgnoreReason::DeferredOrUnproven: return "deferred_or_unproven";
             case IgnoreReason::ApplicationFault: return "application_fault";
+            case IgnoreReason::AppTemplateIncomplete: return "app_template_incomplete";
+            case IgnoreReason::UnloadedBeforeRender: return "unloaded_before_render";
             default:
                 OutputDebugStringW(L"TableView TiP: invalid ignore reason.\n");
                 return nullptr;
             }
         }
+
+        // A reason without a name is never closed, so its test would fail as not_completed.
+        constexpr bool IgnoreNamesComplete() noexcept
+        {
+            for (auto value = static_cast<unsigned short>(IgnoreReason::Cancelled);
+                value < static_cast<unsigned short>(IgnoreReason::Max); ++value)
+            {
+                if (!GetIgnoreName(static_cast<IgnoreReason>(value))) { return false; }
+            }
+            return true;
+        }
+        static_assert(IgnoreNamesComplete(), "Every ignore reason needs a name.");
 
         template<class Test>
         void CloseCompleted(Test& test) noexcept
@@ -37,15 +92,31 @@ namespace TableViewTip
             test.reset();
         }
 
-        template<class Test>
-        void CloseFailed(Test& test, std::optional<HRESULT> error) noexcept
+        void CloseOperationFailed(TableViewOperationTest& test, Operation operation, std::optional<HRESULT> error) noexcept
         {
             {
                 auto data = test.data();
                 data->failureHResultAvailable = error.has_value();
                 data->failureHResult = error.value_or(S_OK);
             }
-            test.set_flag(TIP_reason(TableViewTipReason::internal_failure));
+            if (auto const identity = OperationTestIdentity(operation))
+            {
+                test.set_flag(identity->failReason, identity->failReasonName);
+            }
+            test.complete();
+            test.reset();
+        }
+
+        // TiP names a flag after its spelling, so each initialization failure reason is written out.
+        void CloseInitializationFailed(TableViewInitializationTest& test, Stage stage, HRESULT error) noexcept
+        {
+            {
+                auto data = test.data();
+                data->failureHResultAvailable = true;
+                data->failureHResult = error;
+            }
+            if (stage == Stage::Source) { test.set_flag(TIP_reason(TableViewTipReason::source_attach_failed)); }
+            else { test.set_flag(TIP_reason(TableViewTipReason::template_setup_failed)); }
             test.complete();
             test.reset();
         }
@@ -68,6 +139,27 @@ namespace TableViewTip
             return state.session.active && state.operationSessionGeneration == state.session.generation;
         }
 
+        template<class Test>
+        void WriteMetricsInputs(Test& test, MetricsInputs metrics) noexcept
+        {
+            auto data = test.data();
+            data->rightToLeft = metrics.rightToLeft;
+            data->largeData = metrics.sourceRows >= c_largeDataRows;
+            data->sourceRowsBucket = Log2Bucket(metrics.sourceRows);
+            data->dataRowsBucket = Log2Bucket(metrics.dataRows);
+        }
+
+        // Reports under the operation's own measure and name, set on a fresh handle before it starts.
+        bool StartOperationTest(TableViewOperationTest& test, Operation operation, MetricsInputs metrics) noexcept
+        {
+            auto const identity = OperationTestIdentity(operation);
+            if (!identity) { return false; }
+            test.reset();
+            test.config_set_identity(identity->measure, identity->name);
+            WriteMetricsInputs(test, metrics);
+            return test.start() != GUID{};
+        }
+
         void StopOperation(OperationState& state) noexcept
         {
             if (state.operationPending) { state.operationHandled = true; }
@@ -75,12 +167,13 @@ namespace TableViewTip
             state.operationTipPending = false;
         }
 
-        // Ends the setup run; returns whether its TiP test was running and still needs closing.
-        bool StopSetup(State& state) noexcept
+        // Ends the initialization run with its verdict; returns whether its TiP test was running and still needs closing.
+        bool StopInitialization(State& state) noexcept
         {
-            auto const tipPending = state.setupTipPending;
-            state.setupPending = false;
-            state.setupTipPending = false;
+            auto const tipPending = state.initializationTipPending;
+            state.initializationPending = false;
+            state.initializationTipPending = false;
+            state.initializationDone = true;
             return tipPending;
         }
     }
@@ -91,55 +184,63 @@ namespace TableViewTip
             operation == state.operation && state.operationHandled;
     }
 
-    // Every template application is one setup run; OnApplyTemplate ignores an unfinished one first.
-    // The run is tracked even when TiP is unavailable, so a setup failure still gets its diagnostic.
-    void StartSetup(State& state) noexcept
+    // The run is tracked even when TiP is unavailable, so a failure still gets its diagnostic.
+    void StartInitialization(State& state, MetricsInputs metrics) noexcept
     {
-        state.setupPending = true;
-        state.setupTipPending = state.setupTest.start() != GUID{};
+        if (state.initializationPending || state.initializationDone) { return; }
+        state.initializationPending = true;
+        WriteMetricsInputs(state.initializationTest, metrics);
+        state.initializationTipPending = state.initializationTest.start() != GUID{};
     }
 
-    void CompleteSetup(State& state) noexcept
+    // A new template application; OnApplyTemplate ignores an unfinished run first.
+    void ResetInitialization(State& state) noexcept
     {
-        if (!state.setupPending) { return; }
-        if (StopSetup(state)) { CloseCompleted(state.setupTest); }
+        state.initializationDone = false;
     }
 
-    void FailSetup(State& state, HRESULT error) noexcept
+    void CompleteInitialization(State& state) noexcept
     {
-        if (!state.setupPending) { return; }
-        if (StopSetup(state)) { CloseFailed(state.setupTest, error); }
-        TableViewTelemetry::ReportError(state.session, 0, Operation::Setup, Stage::Template, false, Attribution::Product, error);
+        if (!state.initializationPending) { return; }
+        if (StopInitialization(state)) { CloseCompleted(state.initializationTest); }
     }
 
-    void IgnoreSetup(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    // Stage::Source fails with source_attach_failed, any other stage with template_setup_failed. The diagnostic is
+    // written even when Initialize already has its verdict.
+    void FailInitialization(State& state, Stage stage, HRESULT error) noexcept
     {
-        if (!state.setupPending) { return; }
+        if (state.initializationPending && StopInitialization(state))
+        {
+            CloseInitializationFailed(state.initializationTest, stage, error);
+        }
+        TableViewTelemetry::ReportError(state.session, 0, Operation::Setup, stage, false, Attribution::Product, error);
+    }
+
+    void IgnoreInitialization(State& state, IgnoreReason reason, std::optional<HRESULT> error, AppFaultKind kind) noexcept
+    {
+        if (!state.initializationPending) { return; }
         auto const name = GetIgnoreName(reason);
         if (!name) { return; }
-        if (StopSetup(state)) { CloseIgnored(state.setupTest, reason, name, error, kind); }
+        if (StopInitialization(state)) { CloseIgnored(state.initializationTest, reason, name, error, kind); }
     }
 
-    uint64_t BeginOperation(OperationState& state, Operation operation) noexcept
+    uint64_t BeginOperation(OperationState& state, Operation operation, MetricsInputs metrics, bool withTest) noexcept
     {
-        if (static_cast<uint32_t>(operation) > static_cast<uint32_t>(Operation::CancelEdit))
+        if (static_cast<uint32_t>(operation) >= static_cast<uint32_t>(Operation::Max))
         {
             OutputDebugStringW(L"TableView TiP: invalid operation.\n");
             return 0;
         }
-        if (!IsMeasuredOperation(operation)) { return 0; }
+        if (!IsTrackedOperation(operation)) { return 0; }
         IgnoreOperation(state, state.operationGeneration, IgnoreReason::Superseded);
         if (state.operationGeneration == (std::numeric_limits<uint64_t>::max)()) { return 0; }
         auto const generation = ++state.operationGeneration;
         state.operationHandled = false;
         state.operation = operation;
         state.operationSessionGeneration = state.session.active ? state.session.generation : 0;
-        {
-            auto data = state.operationTest.data();
-            data->operation = operation;
-        }
-        state.operationTipPending = state.operationTest.start() != GUID{};
-        state.operationPending = state.operationTipPending || state.session.active;
+        state.operationTipPending = withTest && StartOperationTest(state.operationTest, operation, metrics);
+        // Tracked with or without a TiP test, so a failure still gets its diagnostic.
+        state.operationPending = true;
         return generation;
     }
 
@@ -152,7 +253,7 @@ namespace TableViewTip
             return;
         }
         if (state.operationTipPending) { CloseCompleted(state.operationTest); }
-        TableViewTelemetry::CountOperation(state.session, state.operationSessionGeneration, state.operation);
+        TableViewTelemetry::MarkUsed(state.session, state.operationSessionGeneration, TableViewTelemetry::FeatureOf(state.operation));
         StopOperation(state);
     }
 
@@ -165,7 +266,11 @@ namespace TableViewTip
         {
             CloseIgnored(state.operationTest, reason, name, error, kind);
         }
-        TableViewTelemetry::CountOperation(state.session, state.operationSessionGeneration, state.operation, reason);
+        // The operation ran; TiP only could not prove it published.
+        if (reason == IgnoreReason::DeferredOrUnproven)
+        {
+            TableViewTelemetry::MarkUsed(state.session, state.operationSessionGeneration, TableViewTelemetry::FeatureOf(state.operation));
+        }
         StopOperation(state);
     }
 
@@ -177,7 +282,7 @@ namespace TableViewTip
             IgnoreOperation(state, generation, IgnoreReason::Stale);
             return;
         }
-        if (state.operationTipPending) { CloseFailed(state.operationTest, error); }
+        if (state.operationTipPending) { CloseOperationFailed(state.operationTest, state.operation, error); }
         StopOperation(state);
         TableViewTelemetry::ReportError(state.session, state.operationSessionGeneration, state.operation, stage, false,
             Attribution::Product, error);

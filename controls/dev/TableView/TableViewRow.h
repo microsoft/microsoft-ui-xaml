@@ -42,8 +42,10 @@ public:
 
     // Updates the weak owner ref, column subscription, and realized cells. Both return true when the
     // cell rebuild also refreshed the row chrome (grid lines and row background).
-    bool SetOwningTableViewInternal(winrt::TableView const& owner);
-    bool EnsureOwningTableViewInternal(winrt::TableView const& owner);
+    // rebuildCells=false skips the rebuild (recycle-out keeps the realized cells for the restamp).
+    bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
+    // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
+    bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -58,6 +60,7 @@ public:
     void RefreshGridLines();
     void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh = true);
     void RefreshRowBackground();
+    void RefreshVisualState();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
     // this is the main entry point that both publishes the DP and re-enters the CommonStates VSM
@@ -99,6 +102,11 @@ public:
     // Focuses a visible cell after drilling to cell level; falls back to the row if needed.
     bool FocusVisibleCellInternal(int32_t visibleColumnIndex, winrt::FocusState state);
 
+    // Editable, hosting focusable content, or carrying a tooltip. Only these take keyboard focus.
+    bool IsCellActionableInternal(const winrt::UIElement& cell) const;
+    // First actionable cell from startVisibleIndex (inclusive) in step's direction; -1 when none.
+    int32_t FindActionableCellInternal(int32_t startVisibleIndex, int32_t step) const;
+
     // Switches the ARIA treegrid body between row level and cell level; see the definition for why
     // this has to move IsTabStop.
     void SetCellLevelInternal(bool isCellLevel);
@@ -110,12 +118,15 @@ public:
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
     // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
     void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
+    double GetContentVerticalOffset() const { return m_contentVerticalOffset; }
     void RefreshDensity();
     void RefreshCells();
 
     // Releases control-owned cell tooltips (recycle-out).
     void ReleaseCellToolTips();
     void RefreshCellToolTips();
+    // A live tooltip value change restamps the cell level when the cell's actionability flipped.
+    void OnCellToolTipChangedInternal(const winrt::UIElement& cell);
     // Raises NameProperty changed on cell peers that already exist; creates none.
     void RaiseCellAutomationNamesChangedInternal(winrt::UIElement const& skipCell = nullptr);
 
@@ -149,11 +160,12 @@ public:
 
 private:
     void ResetCellAutomationNames();
+    void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
     bool HasCellAutomationPeers() const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
-    void SetCellsTabStopInternal(bool isTabStop);
+    bool SetCellsTabStopInternal(bool isTabStop);
 
     bool IsGridLevelFocusInternal();
 
@@ -161,12 +173,7 @@ private:
     void SuppressCellContentTabStopsForTabWalkInternal();
     void RestoreCellContentTabStopsInternal();
 
-    // Resolves body Tab entry to the remembered row, or its remembered-column cell at cell level.
-    void OnRowGettingFocus(
-        const winrt::UIElement& sender,
-        const winrt::Microsoft::UI::Xaml::Input::GettingFocusEventArgs& args);
-
-    void OnRowGotFocus();
+    void OnRowGotFocus(winrt::DependencyObject const& focusedElement);
     // Routes an expansion-state transition to this row's automation peer, if a client is listening.
     void RaiseExpandCollapseStateChanged(winrt::ExpandCollapseState oldState, winrt::ExpandCollapseState newState);
 
@@ -187,12 +194,15 @@ private:
         const winrt::Point& hostPoint);
     void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);
     void OnTemplateRootContextRequested(winrt::ContextRequestedEventArgs const& args);
+    void OnRowContextRequested(winrt::ContextRequestedEventArgs const& args);
     void ProcessContextRequest(
         TableViewDetails::ContextMenuTarget const& target,
         winrt::ContextRequestedEventArgs const& args);
     std::optional<TableViewDetails::ContextMenuTarget> MakeRowContextMenuTarget();
     std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
         winrt::ContextRequestedEventArgs const& args);
+    std::optional<TableViewDetails::ContextMenuTarget> ResolveContextMenuTarget(
+        winrt::DependencyObject const& source);
 
     void OnDataContextChanged(
         const winrt::FrameworkElement& sender,
@@ -228,16 +238,28 @@ private:
 
     // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
     bool RebuildCells(bool updateExistingCellPeerItems = true);
+    bool RebuildCellsCore(bool updateExistingCellPeerItems);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
     // dispatcher tick (each realized row observes Columns, so N bulk edits would otherwise cost N
     // full RebuildCells per row). Recycle / owner / DataContext paths still rebuild synchronously.
     void QueueRebuildCells();
+    void InvalidateCellsCurrent();
     void UpdateVisualState(bool useTransitions);
+    void RefreshCellVisualGeometry();
+    double m_contentVerticalOffset{ 0.0 };
+    struct CellVisualGeometry
+    {
+        winrt::Thickness focusMargin;
+        winrt::Thickness padding;
+        winrt::Thickness displayPadding;
+    };
+    std::optional<CellVisualGeometry> m_cellVisualGeometry;
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
@@ -258,8 +280,9 @@ private:
     winrt::FrameworkElement::DataContextChanged_revoker m_dataContextChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_cellsHostContextRequestedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_contextRequestedRevoker{};
+    winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
     winrt::UIElement::GotFocus_revoker m_gotFocusRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
@@ -278,6 +301,7 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
     struct SuppressedContentTabStop
@@ -290,8 +314,17 @@ private:
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };
+    bool m_densityRefreshPending{ false };
 
     bool m_rebuildCellsQueued{ false };
+    double m_cellFontSize{ 0.0 };
+
+    // One-shot: set by the DataContext rebuild, consumed by the next ElementPrepared, cleared by any other rebuild.
+    bool m_cellsRebuiltForDataContext{ false };
+    // Cells were cleared or a rebuild was dropped/queued while the DataContext rebuild ran.
+    bool m_cellsInvalidated{ false };
+    // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
+    bool m_inRecyclePool{ false };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };
