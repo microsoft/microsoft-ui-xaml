@@ -95,6 +95,7 @@ static class ExtendedScenesTests
         Equal(10, d.Windows, "windows default");
         Equal(ScreenshotMethod.Auto, d.ScreenshotMethod, "screenshot default");
         Equal(InputMode.Programmatic, Parse("--input-mode", "programmatic").InputMode, "programmatic");
+        Equal(ScreenshotMethod.Xaml, Parse("--screenshot-method", "xaml").ScreenshotMethod, "xaml screenshot");
     }
 
     static void RejectsBadVariants()

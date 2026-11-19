@@ -5,6 +5,7 @@ using RenderBench.Analyzer;
 const string Usage = """
     RenderBench.Analyzer analyze <trace.etl> [--out metrics.json]   Parse one run's ETL into metrics JSON.
     RenderBench.Analyzer gate <metrics.json>...                     Print gate checks; exit 1 if any run fails.
+    RenderBench.Analyzer records <trace.etl>                        Print the parsed records in time order (debugging).
     RenderBench.Analyzer report <resultsDir> [--out report.md]      Aggregate **/metrics.json into a comparison table.
     RenderBench.Analyzer adapters                                   List DXGI adapters with the D2D-HW verdict; exit 0 if
                                                                     one qualifies, 1 if none, 2 if the LUID override is bad.
@@ -58,6 +59,15 @@ switch (args[0])
         string output = Option("--out") ?? Path.Combine(args[1], "report.md");
         File.WriteAllText(output, markdown);
         Console.WriteLine($"{runs.Count} runs -> {output}");
+        return 0;
+    }
+    case "records":
+    {
+        // Debugging aid: every converted record in time order, e.g. to see what drew a frame during Steady.
+        foreach (var record in EtlReader.Read(args[1]).OrderBy(r => r.TimeMs))
+        {
+            Console.WriteLine(record);
+        }
         return 0;
     }
     // ---- Added by the D2D-HW branch ----

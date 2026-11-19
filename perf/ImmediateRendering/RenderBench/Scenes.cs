@@ -9,8 +9,9 @@ using Windows.UI;
 namespace RenderBench;
 
 // Scenes are built in code from a seed so every backend renders the identical tree (test plan, "Target scenes").
-// Constraints shared by both: no animations that run while idle (no indeterminate progress, no caret focus), no popups,
-// no acrylic/mica, so Steady can be idle and every backend can draw the content with plain fills, strokes and text.
+// S1/S2 constraints: no animations that run while idle (no indeterminate progress, no caret focus), no popups, no
+// acrylic/mica, so Steady can be idle and every backend can draw the content with plain fills, strokes and text. The
+// extended scenes (S3-S10) relax this on purpose and declare it (AnimatesWhileIdle, expected unsupported content).
 interface IScene
 {
     string Name { get; }
@@ -19,6 +20,28 @@ interface IScene
     bool IsDynamic { get; }
     // Returns how many elements changed; 0 for static scenes.
     int ApplyUpdate();
+
+    // ---- Extended scenes ----
+    // Draws during Steady by design (S6); the Steady gate is waived and Steady CPU is reported as the animation tax.
+    bool AnimatesWhileIdle => false;
+    // Interaction animates every frame (scrolling), so every frame gap counts toward dropped frames.
+    bool ContinuousInteraction => false;
+    // Before the content is shown (e.g. generate S5's images).
+    Task PrepareAsync() => Task.CompletedTask;
+    // After the content is loaded, before RunStarted (backdrops, always-on timers).
+    void Attach(ISceneHost host) { }
+    // Programmatic equivalent of clicking target.
+    void Activate(FrameworkElement target) => ProgrammaticInput.Activate(target);
+    // Custom Warmup/Interaction activity; null runs the default (touch every input target / clicks at InputHz).
+    Task? WarmupAsync(ISceneHost host) => null;
+    Task? RunInteractionAsync(ISceneHost host, CancellationToken token) => null;
+    // Called on the UI thread before each phase begins. Return true after changing visible state (e.g. clearing a
+    // selection before Steady): the runner then lets it render before the phase's PhaseBegin marker.
+    bool OnPhase(BenchPhase phase) => false;
+    // Scene counters, sampled on the UI thread every SampleIntervalMs (SceneValue events).
+    IEnumerable<(string Name, double Value)> Counters() => [];
+    // Close secondary windows, stop timers.
+    void Detach() { }
 }
 
 static class SceneFactory
@@ -193,11 +216,11 @@ sealed class DashboardScene : IScene
         return _updateCount;
     }
 
-    static void OnTileTapped(object sender, TappedRoutedEventArgs e)
-    {
-        var border = (Border)sender;
-        border.BorderBrush = border.BorderBrush == s_highlight ? s_border : s_highlight;
-    }
+    static void OnTileTapped(object sender, TappedRoutedEventArgs e) => ToggleHighlight((Border)sender);
+
+    public void Activate(FrameworkElement target) => ToggleHighlight((Border)target);
+
+    static void ToggleHighlight(Border border) => border.BorderBrush = border.BorderBrush == s_highlight ? s_border : s_highlight;
 
     static string Format(double value) => (value * 1000).ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
 }

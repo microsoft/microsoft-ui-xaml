@@ -24,9 +24,13 @@ public enum InputMode
 
 public enum ScreenshotMethod
 {
-    Auto,        // screen BitBlt, falling back to PrintWindow when the screen copy is blank (disconnected/remote session)
+    // Screen BitBlt; when that is one uniform color, PrintWindow; when that is uniform too (no DWM composition, e.g. a
+    // disconnected remote session), XAML RenderTargetBitmap of the scene root.
+    Auto,
     Screen,
     PrintWindow,
+    // RenderTargetBitmap: the framework's own render of the tree, not what DWM shows (no backdrop, no other windows).
+    Xaml,
 }
 
 // Per-scene defaults; applied for every option the command line doesn't set.
