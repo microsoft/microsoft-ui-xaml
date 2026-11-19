@@ -459,7 +459,6 @@ FloatFromString(
     const WCHAR  *pStringSave = pString;
     XDOUBLE eValue;
     UINT32 cPostSpaceSave = cString;
-    HRESULT hr;
 
 // Consume any leading whitespace
 
@@ -495,9 +494,12 @@ FloatFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+            const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-           *peValue = FLOAT(eValue);
+            if (SUCCEEDED(hr))
+            {
+                *peValue = FLOAT(eValue);
+            }
             return hr;
         }
 
@@ -542,9 +544,12 @@ FloatFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-               *peValue = FLOAT(eValue);
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
                 return hr;
             }
 
@@ -588,8 +593,11 @@ FloatFromString(
 
             if (nExponent > 2)
             {
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
-               *peValue = FLOAT(eValue);
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
                 return hr;
             }
 
@@ -711,7 +719,6 @@ NonSignedFromString(
     UINT32 cStringSave = cString;
     const WCHAR  *pStringSave = pString;
     XDOUBLE eValue;
-    HRESULT hr;
 
 // Consume any leading whitespace
 
@@ -732,9 +739,12 @@ NonSignedFromString(
         {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-            hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+            const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-           *peValue = FLOAT(eValue);
+            if (SUCCEEDED(hr))
+            {
+                *peValue = FLOAT(eValue);
+            }
             return hr;
         }
 
@@ -761,10 +771,13 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
 
-               *peValue = FLOAT(eValue);
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
                 return hr;
             }
 
@@ -808,9 +821,12 @@ NonSignedFromString(
             {
 #pragma warning (push)
 #pragma warning (disable : 26014)
-                hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
+                const HRESULT hr = ConvertString(cStringSave, pStringSave, pcSuffix, ppSuffix, &eValue);
 #pragma warning (pop)
-               *peValue = FLOAT(eValue);
+                if (SUCCEEDED(hr))
+                {
+                    *peValue = FLOAT(eValue);
+                }
                 return hr;
             }
 

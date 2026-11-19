@@ -31,7 +31,7 @@ class XamlProfilerLogging : public wil::TraceLoggingProvider
         (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
 
 public:
-    ~XamlProfilerLogging();
+    ~XamlProfilerLogging() override;
 };
 
 // Instrumentation is compiled in all configurations.

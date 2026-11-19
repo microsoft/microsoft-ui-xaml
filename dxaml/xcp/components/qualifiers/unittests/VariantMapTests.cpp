@@ -56,6 +56,54 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
             VERIFY_ARE_EQUAL(*selection, 1);
         };
 
+        void VariantMapUnitTests::ClearItems()
+        {
+            VariantMap<int*> variantMap;
+            int removed = 1;
+            int remaining = 2;
+
+            auto first = std::make_shared<TestQualifier>();
+            first->m_qualified = true;
+            first->m_width = 30;
+            auto second = std::make_shared<TestQualifier>();
+            second->m_qualified = true;
+            second->m_width = 10;
+            auto third = std::make_shared<TestQualifier>();
+            third->m_qualified = true;
+            third->m_width = 20;
+
+            VERIFY_SUCCEEDED(variantMap.Add(&removed, first));
+            VERIFY_SUCCEEDED(variantMap.Add(&remaining, second));
+            VERIFY_SUCCEEDED(variantMap.Add(&removed, third));
+            VERIFY_IS_TRUE(*variantMap.SelectedItem() == &removed);
+
+            VERIFY_SUCCEEDED(variantMap.Clear(&removed));
+            VERIFY_ARE_EQUAL(variantMap.GetVariantMapItems().size(), size_t{1});
+            VERIFY_IS_TRUE(*variantMap.SelectedItem() == &remaining);
+
+            VERIFY_SUCCEEDED(variantMap.Clear(&remaining));
+            VERIFY_IS_TRUE(variantMap.GetVariantMapItems().empty());
+            VERIFY_IS_NULL(variantMap.SelectedItem());
+        }
+
+        void VariantMapUnitTests::ClearMissingItems()
+        {
+            VariantMap<int*> variantMap;
+            int missing = 1;
+            int remaining = 2;
+
+            VERIFY_SUCCEEDED(variantMap.Clear(&missing));
+            VERIFY_IS_TRUE(variantMap.GetVariantMapItems().empty());
+            VERIFY_IS_NULL(variantMap.SelectedItem());
+
+            auto qualifier = std::make_shared<TestQualifier>();
+            qualifier->m_qualified = true;
+            VERIFY_SUCCEEDED(variantMap.Add(&remaining, qualifier));
+            VERIFY_SUCCEEDED(variantMap.Clear(&missing));
+            VERIFY_ARE_EQUAL(variantMap.GetVariantMapItems().size(), size_t{1});
+            VERIFY_IS_TRUE(*variantMap.SelectedItem() == &remaining);
+        }
+
         void VariantMapUnitTests::Evaluation()
         {
             LOG_OUTPUT(L"Create VariantMap. Add qualifiers.");
