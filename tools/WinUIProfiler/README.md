@@ -942,6 +942,49 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli cpu session.sqlite [--thread <tid>] [--top 30] [--json]   # the hottest functions, per thread and in all
 ```
 
+All these commands accept `--json`, including full event fields for `dump`,
+`timeline` and `frames --frame`. JSON is written only to standard output;
+diagnostics go to standard error. Enum values are strings. Null still means
+unknown or unavailable, not zero. Integer tokens retain their full signed or
+unsigned 64-bit values; consumers must not round them through floating-point
+numbers. Existing human-readable output remains the default. `launch` still
+analyzes a recorded launch, and `record` still imports an ETL; use `live` to
+launch or attach to a running application.
+
+The `events` command exposes the same event drill-down and linked object IDs as
+the app's tick, region and interesting-row selections:
+
+```powershell
+& $cli info session.sqlite --json
+& $cli frames session.sqlite --frame 1 --offset 0 --count 100 --json
+& $cli events session.sqlite --frame 1 --bucket Xaml --filter Measure --count 100 --json
+& $cli events session.sqlite --region 2 --count 100 --json
+& $cli interesting session.sqlite --json
+& $cli events session.sqlite --row 3 --thread 100 --json
+& $cli events session.sqlite --thread 100 --first-seq 3 --last-seq 9 --json
+& $cli timeline session.sqlite --object 1 --offset 100 --count 100 --json
+& $cli dump session.sqlite --offset 100 --count 100 --json
+```
+
+Replace the example IDs with values returned by the corresponding query.
+`--row` is an interesting row's `StartSeq`, scoped by its `ThreadId`; use an
+explicit sequence range if multiple spans start there. A region automatically
+selects its UI thread and sequence range. `events` returns bucket labels,
+complete fields, object mentions, and pagination metadata; use each mention's
+`ObjectId` with `timeline`. Its default page size is 1000. `--count 0` reads
+all matches. `dump`, `timeline`, and `frames --frame` also accept `--offset`
+and `--count`; without them their original limits are unchanged. `dump` accepts
+either the existing `--max` or `--count`, not both.
+
+`info` reports coverage, recording state, retained event bounds, and ETW loss
+and profiler drops separately. Queries can read a SQLite session while the
+live profiler is still writing it. A page and its separately read total can
+change between queries while recording; use the returned IDs to navigate
+rather than assuming an immutable list.
+
+Exit codes are 0 for success, 2 for invalid usage, 3 for input/connection/storage
+errors, and 4 for cancellation. Use `--help` for the command families.
+
 A `logman` trace of these providers has no CPU samples; see
 [CPU sampling and symbols](#cpu-sampling-and-symbols) for a trace that has them.
 
@@ -989,6 +1032,115 @@ from the trace, and the Launch, Frames and Objects tabs follow it as it grows.
   about a second, and reading the app's 101,281 events less than two.
 - A trace has no running process, so there are no live metrics or tree
   snapshots for it.
+
+## Headless live profiling and snapshot analysis
+
+The CLI uses the same connection, sampling, recording, snapshot and comparison
+engines as the desktop app. It does not load WinUI or open a profiler window.
+Live commands require Windows, compatible x64/ARM64 payloads, a target exposing
+WinUI diagnostics, appropriate process/ETW permissions, and explicit trust in
+the local binaries. Offline queries do not require native connection payloads.
+
+Build and stage the complete console frontend from this directory:
+
+```powershell
+.\scripts\Build-Cli.ps1 -Configuration Release -Platform x64
+$cli = '.\artifacts\cli\win-x64\Release\WinUIProfiler.Cli.exe'
+# Add -Publish for a self-contained deployment, or -OutputDirectory for another destination.
+& $cli targets processes --json
+& $cli targets apps --json
+& $cli live --exe 'C:\Apps\MyApp\MyApp.exe' --trust-local-binaries --duration 30 --json
+& $cli live --aumid 'Contoso.App_abcdefghijklm!App' --trust-local-binaries --interactive
+& $cli live --pid 1234 --trust-local-binaries --session-directory C:\Captures\Run1 `
+    --snapshot-directory C:\Captures\Run1\Snapshots --snapshot-interval 10 --duration 60 --json
+```
+
+Distribute the whole build/publish output, including `ConnectionPayloads`,
+`NativeLauncher` and `WinUIProfiler.Native.dll`. `Build-App.ps1` and
+`Build-Cli.ps1` share native payload building/staging and hash verification.
+Use `-Platform ARM64` for an ARM64 host; both target TAP/injector and launcher
+architectures are staged. Packaged-app discovery uses Windows' inbox
+`Get-StartApps`, filtered to packaged AUMIDs.
+
+Specify exactly one target. `--arguments` passes an unpackaged app's command
+line; `--working-directory` selects its initial directory. Attach can also take
+`--creation-time` with the FILETIME returned by process discovery, preventing a
+reused PID from selecting another process. `--endpoint` chooses the TAP endpoint
+(default 1). `--payload-directory` overrides the executable-relative payload
+directory, and `--markers` selects the same marker configuration as the app.
+
+`live` keeps one foreground connection, automatically captures the initial
+snapshot, and emits metrics until the target exits, the duration expires, or
+Ctrl+C is pressed. `--interactive` also accepts `status`, `snapshot` and `stop`
+lines on stdin. These commands reuse the same authenticated connection rather
+than repeatedly attaching. Stopping disconnects and finalizes recording; it
+does not terminate the target. Read the reported recording path with the
+analysis commands, including while recording continues in another terminal.
+
+With `--json`, live output is NDJSON: one `{"type":"...","data":...}` record per
+line. Types include `status`, `metrics`, `snapshot` and final `summary`.
+Target discovery uses a `targets` envelope. Status and summary expose recording
+and snapshot paths, connection health and unavailable telemetry. Diagnostics
+remain on stderr; ETW/recording failure is not reported as a successful complete
+capture. Samples include their timestamps, units and unavailable reasons.
+
+For private WinUI DLLs, prepare and launch headlessly using the existing script:
+
+```powershell
+.\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll `
+    -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe `
+    -Headless -Duration 30 -Json -SessionDirectory C:\Captures\PrivateRun
+```
+
+Headless preparation requires an already elevated shell instead of a UAC
+relaunch that loses console I/O. It retains the staged runtime and never
+terminates the target on exit; remove that staging only after the target exits.
+For an already prepared runtime, `live` accepts `--private-runtime`,
+`--runtime-source`, `--launch-directory`, optional `--redirect-controls` and
+`--launcher-directory`. See the private-runtime section for compatibility limits.
+
+Capture, inspect and compare snapshots without the desktop app:
+
+```powershell
+& $cli snapshot capture --pid 1234 --trust-local-binaries --out C:\Captures\Before.json --json
+# Change the target's UI, then capture again.
+& $cli snapshot capture --pid 1234 --trust-local-binaries --out C:\Captures\After.json --json
+& $cli snapshot list C:\Captures --json
+& $cli snapshot tree C:\Captures\Before.json --tree xaml --depth 3 --json
+& $cli snapshot node C:\Captures\Before.json --tree xaml --node 1 --json
+& $cli snapshot matches C:\Captures\Before.json --tree xaml --node 1 --json
+& $cli snapshot diff C:\Captures\Before.json C:\Captures\After.json --changes added,removed --json
+& $cli snapshot diff C:\Captures\Before.json C:\Captures\After.json --tree composition --properties changed --json
+& $cli snapshot resources C:\Captures\Before.json C:\Captures\After.json --json
+& $cli snapshot history C:\Captures\After.json --tree xaml --node 1 --session C:\Captures\session.sqlite --json
+```
+
+Capture requires a new output file and saves atomically without overwriting an
+existing capture. Node IDs are positive decimal IDs local to a capture and
+tree, not object addresses. Tree depth defaults to unlimited; depth zero shows
+only starting nodes. `node` includes all captured properties, including values
+the UI hides as defaults. `matches` provides cross-tree IDs instead of requiring
+a click. Tree/diff JSON is flat and acyclic, retaining parent, child, root and
+matching IDs for reconstructing or navigating arbitrarily deep hierarchies.
+
+Diffs require the same process instance. They expose added, removed, property,
+moved and reordered changes; `--changes` accepts comma-separated categories,
+`all`, or `unchanged`. Ancestor context and correlated nodes are preserved, with
+explicit context flags, so added/removed results can still navigate both trees.
+`--node ID --side before|after` selects a merged comparison subtree (default
+side `after`). `--properties all|changed` controls property details; presence
+flags distinguish a missing property from a captured JSON null.
+
+`resources` accepts one snapshot or a before/after pair. Counter values and
+deltas retain full precision; unsupported lifetimes and unavailable captures
+remain explicit rather than becoming zero. `history` resolves a node using
+its root's capture-end QPC, validated process identity, and the proper XAML or
+composition address domain. A matching session with no retained correlation
+returns `status: "unavailable"` and a null object ID, not an invented match.
+
+`snapshot list` validates top-level JSON files, retaining malformed entries
+with their errors and returning exit code 3 when any cannot be read. Its file
+timestamp is the last-write UTC time, not an inferred capture UTC time.
 
 ## Launch timeline
 

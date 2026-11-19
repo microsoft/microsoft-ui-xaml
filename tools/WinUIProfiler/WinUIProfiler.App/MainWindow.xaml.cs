@@ -819,7 +819,7 @@ PrivateRuntime);
         if (CompareSelectedSnapshots is null) return;
         CompareSelectedSnapshots.IsEnabled = SnapshotDiffBefore.SelectedItem is SnapshotHistoryEntry before &&
             SnapshotDiffAfter.SelectedItem is SnapshotHistoryEntry after && before.CaptureId != after.CaptureId &&
-            SnapshotDiffData.CanCompare(before, after);
+            WinUIProfiler.Engine.Snapshots.SnapshotDiffData.CanCompare(before.Process, after.Process);
     }
 
     private void CompareSnapshots_Click(object sender, RoutedEventArgs args)
