@@ -10,11 +10,11 @@
 
     <controls:SamplePresenter
         Header="Hierarchy"
-        Description="The rows are one flat list of people with no children collection, level or expanded flag. TableViewSource.ParentBy(key, parentKey) tells the source how they relate: here EmployeeId under ManagerId (the org chart) or under MentorId (a second tree over the same rows). Rows start collapsed; a null parent key makes a root and an unknown parent key an orphan root. Sort applies within each sibling set, Filter keeps every match and its ancestors, and Grouped hierarchy buckets the roots while each root keeps its subtree. ParentBy is a code-behind call: a hierarchy cannot be declared in XAML in this release."
+        Description="The rows are one flat list of people with no children collection, level or expanded flag. TableView.ItemKeyPath and ParentKeyPath tell the table how they relate: here EmployeeId under ManagerId (the org chart) or under MentorId (a second tree over the same rows). Rows start collapsed; a null parent key makes a root and an unknown parent key an orphan root. A CollectionViewSource sorts, filters and groups the rows first: the sort orders each sibling set, a filtered-out parent leaves its matching children as roots, and Grouped hierarchy buckets the roots while each root keeps its subtree."
         Snippet="Hierarchy"
         StretchExample="True"
-        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department; with Live shaping on, the tree reshapes in place. Sort by Name and choose Rename: with Live shaping on the renamed row moves among its siblings; off, it stays put."
-        WhatToLookFor="The same person sits at a different depth under each relation. A filter keeps every match and its ancestors; the ancestors are ordinary rows (selectable, counted and announced like any row) and nothing marks them as context. Code can expand or collapse only every row at once (ExpandAllRows and CollapseAllRows, the Expand all and Collapse all buttons): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open one row. With Live shaping off, an edit leaves the row where it is until the next reshape, so Reparent replaces the item instead. Known control issue: under a filter, a match whose descendants also match stays collapsed, so those descendants stay hidden until you expand it.">
+        TryIt="Expand a row with its chevron or the Right arrow; Left collapses it or moves to its parent, and * expands its whole subtree. Switch Parent relation to Mentor: the same people form a different tree. Select a row and choose Reparent, Rename or Next department: the page calls Refresh() after each edit, so the tree reshapes. Sort by Name and choose Rename: the renamed row moves among its siblings."
+        WhatToLookFor="The same person sits at a different depth under each relation. A filter shows only the matches; a match whose parent is filtered out is shown as a root. Code can expand or collapse only every row at once (ExpandAllRows and CollapseAllRows, the Expand all and Collapse all buttons): there is no per-row expand API in this release, so the chevron, the keyboard and UI Automation are the only ways to open one row. An edit is not a collection change, so the table reshapes on the next Refresh().">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -23,7 +23,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="HierarchyTable"
                 AutomationProperties.Name="People by parent relation"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -47,7 +47,7 @@
                     </tv:TableViewTemplateColumn.CellTemplate>
                 </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <!-- EmployeeId is the ParentBy key: read-only, so an edit cannot cut a subtree loose. -->
+                <!-- EmployeeId is the ItemKeyPath key: read-only, so an edit cannot cut a subtree loose. -->
                 <tv:TableViewTemplateColumn Header="#" Width="80" SortMemberPath="EmployeeId">
                     <tv:TableViewTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -64,7 +64,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Relation"
-                    Description="ParentBy is declared again with the chosen parent key, over the same rows. With live shaping, an edit to a key or a sorted, filtered or grouped value reshapes the tree in place.">
+                    Description="ParentKeyPath is set again with the chosen parent key, over the same rows. Rows collapse when the relation changes.">
                     <ComboBox
                         x:Name="RelationSelector"
                         AutomationProperties.AutomationId="HierarchyRelationSelector"
@@ -75,12 +75,6 @@
                         <ComboBoxItem Content="Manager" Tag="Manager"/>
                         <ComboBoxItem Content="Mentor" Tag="Mentor"/>
                     </ComboBox>
-                    <ToggleSwitch
-                        x:Name="LiveToggle"
-                        AutomationProperties.AutomationId="HierarchyLiveShapingToggle"
-                        Header="Live shaping"
-                        IsOn="True"
-                        Toggled="OnLiveToggled"/>
                 </controls:RailSection>
 
                 <controls:RailSection
@@ -103,7 +97,7 @@
                     AutomationIdPrefix="Hierarchy"
                     InitialMode="hierarchy"
                     ArrangesHierarchyColumn="False"
-                    Description="This page starts in Hierarchy. Grouped hierarchy adds GroupBy on the same source: it buckets the roots, and every root keeps its subtree. Expand all and Collapse all call ExpandAllRows and CollapseAllRows (and the group versions when grouped).">
+                    Description="This page starts in Hierarchy. Grouped hierarchy adds a GroupDescription on the same CollectionViewSource: it buckets the roots, and every root keeps its subtree. Expand all and Collapse all call ExpandAllRows and CollapseAllRows (and the group versions when grouped).">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
@@ -111,7 +105,7 @@
 
                 <controls:RailSection
                     Header="Filter and sort"
-                    Description="Filter matches names and keeps each match's ancestors. Sort uses a key selector and orders each sibling set; header clicks sort the same way.">
+                    Description="Filter matches names. Sort writes the CollectionViewSource SortDescriptions and orders each sibling set; header clicks sort the same way.">
                     <TextBox
                         x:Name="FilterBox"
                         AutomationProperties.AutomationId="HierarchyFilterBox"
@@ -194,7 +188,7 @@
                             AutomationProperties.AutomationId="HierarchyPerfButton"
                             Content="Run the 100,000-row probe"
                             Click="OnPerfClick"
-                            ToolTipService.ToolTip="Times ParentBy, Sort and ExpandAllRows against a GroupBy baseline over 100,000 rows; the result appears in Perf probe."
+                            ToolTipService.ToolTip="Times the key paths, a sort and ExpandAllRows against a grouping baseline over 100,000 rows; the result appears in Perf probe."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>
                     </StackPanel>
@@ -204,7 +198,6 @@
                     <TextBlock x:Name="SelectedText" controls:StatusPanel.Label="Selected" Text="(none)" TextWrapping="Wrap"/>
                     <TextBlock x:Name="FilterText" controls:StatusPanel.Label="Filter" Text="(none)" TextWrapping="Wrap"/>
                     <TextBlock x:Name="SortText" controls:StatusPanel.Label="Sort" Text="Source order"/>
-                    <TextBlock x:Name="LiveText" controls:StatusPanel.Label="Live shaping" Text="On"/>
                     <TextBlock x:Name="StatusText" controls:StatusPanel.Label="Perf probe" Text="(not run)" TextWrapping="Wrap" IsTextSelectionEnabled="True"/>
                 </controls:StatusPanel>
             </StackPanel>

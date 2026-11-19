@@ -25,11 +25,11 @@
 
     <controls:SamplePresenter
         Header="File properties"
-        Description="A Properties dialog for this sample's own binaries: pick a file and the table lists 22 properties read from its version resource and from the file system, grouped into Description, Origin and File sections the way the Details tab is. The table is bound to one TableViewSource over one ObservableCollection; picking another file refills the collection, and filtering, grouping, moving and removing rows all reshape that same source in place."
+        Description="A Properties dialog for this sample's own binaries: pick a file and the table lists 22 properties read from its version resource and from the file system, grouped into Description, Origin and File sections the way the Details tab is. The table is bound to the View of one CollectionViewSource over one ObservableCollection; picking another file refills the collection, and filtering, grouping, moving and removing rows all reshape that same source in place."
         Snippet="FileProperties"
         StretchExample="True"
         TryIt="The table starts grouped by section. Pick another file in the Files list and the same table refills with its properties. Select a property and choose Move selected to next section: it changes section and stays selected. Then set Filter to Dates only and watch two sections disappear."
-        WhatToLookFor="Picking another file keeps the filter and the grouping, because the same source re-projects the refilled collection. A moved property stays selected in its new section, since the page restores the selection after re-applying GroupBy. Removing the last row of a section removes its header, and Match nothing leaves zero groups.">
+        WhatToLookFor="Picking another file keeps the filter and the grouping, because the same source re-projects the refilled collection. A moved property stays selected in its new section, since the page restores the selection after refreshing the view. Removing the last row of a section removes its header, and Match nothing leaves zero groups.">
 
         <controls:SamplePresenter.Example>
             <Grid ColumnSpacing="12" RowSpacing="4">
@@ -67,7 +67,7 @@
                     Grid.Column="1"
                     AutomationProperties.AutomationId="FilePropertiesTable"
                     AutomationProperties.Name="File properties"
-                    ItemsSource="{x:Bind Source}"
+                    ItemsSource="{x:Bind Source.View}"
                     SelectionMode="Single"
                     VerticalAlignment="Stretch"
                     MinHeight="320">
@@ -84,7 +84,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Filter"
-                    Description="TableViewSource.Filter keeps only the properties a predicate accepts, on the same source that groups them. A section whose rows are all filtered out disappears; Match nothing shows the empty result.">
+                    Description="CollectionViewSource.Filter keeps only the properties a predicate accepts, on the same source that groups them. A section whose rows are all filtered out disappears; Match nothing shows the empty result.">
                     <ComboBox
                         x:Name="FilterSelector"
                         AutomationProperties.AutomationId="FilePropertiesFilterSelector"
@@ -104,7 +104,7 @@
                     HierarchyColumnHeader="Property"
                     AutomationIdPrefix="FileProperties"
                     InitialMode="grouped"
-                    Description="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped by Section is this page's natural shape, so it opens that way; Source splits the version resource from the file system. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Section" Tag="Section"/>
                     <ComboBoxItem Content="Source" Tag="Source"/>
                 </controls:ShapingOptions>
@@ -118,7 +118,7 @@
                             AutomationProperties.AutomationId="FilePropertiesMoveSectionButton"
                             Content="Move selected to next section"
                             Click="OnMoveSectionClick"
-                            ToolTipService.ToolTip="Rewrites the selected row's Section and re-applies GroupBy; the row moves to the next section and stays selected."
+                            ToolTipService.ToolTip="Rewrites the selected row's Section and refreshes the view; the row moves to the next section and stays selected."
                             AutomationProperties.HelpText="Select a row first."
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"/>

@@ -9,13 +9,13 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 using TableViewSortedEventArgs = Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs;
-using TableViewSource = Microsoft.UI.Xaml.Controls.Tabular.TableViewSource;
 
 namespace TableViewSampleApp.Controls;
 
@@ -28,9 +28,9 @@ public sealed partial class ShapingOptions : UserControl
     private static readonly string[] Modes = { "flat", "grouped", "hierarchy", "groupedHierarchy" };
 
     private TableView? _table;
-    private TableViewSource? _source;
+    private CollectionViewSource? _source;
 
-    private Func<object?, string, object> _groupKeyOf = (row, key) => SampleShaping.KeyOf(row as Person, key);
+    private Func<string, string> _groupPathOf = SampleShaping.GroupPathOf;
     private ParentRelation? _relation;
     private bool _parentDeclared;
     private bool _revertingMode;
@@ -132,7 +132,7 @@ public sealed partial class ShapingOptions : UserControl
 
     public TableView? Table => _table;
 
-    public TableViewSource? Source => _source;
+    public CollectionViewSource? Source => _source;
 
     public string AppliedMode { get; private set; } = "flat";
 
@@ -166,9 +166,10 @@ public sealed partial class ShapingOptions : UserControl
     private string DefaultKey => GroupKeys.Count > 0 && GroupKeys[0] is ComboBoxItem { Tag: string tag } ? tag : string.Empty;
 
     // Call once after InitializeComponent; until then SelectionChanged from InitializeComponent and
-    // GroupKeys insertion is ignored. Person rows get the manager relation unless the page passes its
+    // GroupKeys insertion is ignored. groupPathOf maps a group-key Tag to the property path the
+    // CollectionViewSource groups by. Person rows get the manager relation unless the page passes its
     // own or sets HierarchyUnavailableReason.
-    public ShapingOptions Attach(TableView table, TableViewSource source, Func<object?, string, object>? groupKeyOf = null, ParentRelation? parentRelation = null)
+    public ShapingOptions Attach(TableView table, CollectionViewSource source, Func<string, string>? groupPathOf = null, ParentRelation? parentRelation = null)
     {
         if (!ReferenceEquals(table, _table))
         {
@@ -180,20 +181,15 @@ public sealed partial class ShapingOptions : UserControl
             table.Sorted += OnTableSorted;
         }
 
-        if (!ReferenceEquals(source, _source))
-        {
-            _parentDeclared = false;
-        }
-
         _table = table;
         _source = source;
-        if (groupKeyOf is not null)
+        if (groupPathOf is not null)
         {
-            _groupKeyOf = groupKeyOf;
+            _groupPathOf = groupPathOf;
         }
 
         _relation = string.IsNullOrEmpty(HierarchyUnavailableReason)
-            ? parentRelation ?? _relation ?? (groupKeyOf is null ? ParentRelation.Manager : null)
+            ? parentRelation ?? _relation ?? (groupPathOf is null ? ParentRelation.Manager : null)
             : null;
         UpdateHierarchyItems();
 
@@ -201,7 +197,7 @@ public sealed partial class ShapingOptions : UserControl
         return this;
     }
 
-    // Switches the parent relation. Under a Hierarchy mode ParentBy is declared again, which replaces
+    // Switches the parent relation. Under a Hierarchy mode the key paths are set again, which replaces
     // the relation and resets row expansion.
     public void SetRelation(ParentRelation relation)
     {
@@ -217,7 +213,7 @@ public sealed partial class ShapingOptions : UserControl
     // Pages that reattach a new source re-apply the current mode with this.
     public bool IsShaped => AppliedMode != "flat";
 
-    // Flat pages only set the gating: no ClearGroupBy on a fresh source.
+    // Flat pages only set the gating: nothing to clear on a fresh source.
     internal void ApplyInitialState()
     {
         if (_source is not null && InitialMode != "flat")
@@ -241,8 +237,9 @@ public sealed partial class ShapingOptions : UserControl
         var key = SelectedKey;
         ShapingApplying?.Invoke(this, new ShapingApplyingEventArgs(mode, key));
 
+        var table = _table;
         var source = _source;
-        var groupKeyOf = _groupKeyOf;
+        var groupPath = _groupPathOf(key);
         var relation = _relation;
         if (Array.IndexOf(Modes, mode) < 0 || (relation is null && IsHierarchicalMode(mode)))
         {
@@ -253,11 +250,16 @@ public sealed partial class ShapingOptions : UserControl
         long elapsedMilliseconds;
         try
         {
-            elapsedMilliseconds = Time(() => ApplyShaping(source, mode, row => groupKeyOf(row, key), relation, hadParentBy));
+            elapsedMilliseconds = Time(() => ApplyShaping(table, source, mode, groupPath, relation, hadParentBy));
         }
         catch (ArgumentException ex)
         {
-            // ParentBy rejects duplicate keys and cycles and keeps the previous projection.
+            // The key paths reject duplicate keys and cycles and keep the previous projection.
+            if (!hadParentBy)
+            {
+                table.ParentKeyPath = string.Empty;
+            }
+
             RevertModeSelection();
             ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(AppliedMode, AppliedKey, SelectedKeyLabel, announce: true, 0, AppliedText,
                 string.Format(CultureInfo.CurrentCulture, "Shaping -> {0} failed: {1}", ShapingText(mode, SelectedKeyLabel, relation?.Label), ex.Message)));
@@ -277,44 +279,69 @@ public sealed partial class ShapingOptions : UserControl
         ShapingApplied?.Invoke(this, new ShapingAppliedEventArgs(mode, key, SelectedKeyLabel, announce, elapsedMilliseconds, AppliedText, message));
     }
 
-    // Reshapes the one TableViewSource in place: GroupBy buckets the roots and ParentBy nests the rows,
-    // so under both each root keeps its subtree.
-    private static void ApplyShaping(TableViewSource source, string mode, Func<object?, object> groupKeyOf, ParentRelation? relation, bool hadParentBy)
+    // ItemKeyPath and ParentKeyPath on the table nest the rows; GroupDescriptions on the
+    // CollectionViewSource bucket them. Under both, each root keeps its subtree in its root's group.
+    private static void ApplyShaping(TableView table, CollectionViewSource source, string mode, string groupPath, ParentRelation? relation, bool hadParentBy)
     {
         if (relation is not null && IsHierarchicalMode(mode))
         {
             if (!hadParentBy)
             {
-                NestRows(source, relation);
+                NestRows(table, relation);
             }
         }
         else if (hadParentBy)
         {
-            source.ClearParentBy();
+            table.ParentKeyPath = string.Empty;
         }
 
         if (mode is "grouped" or "groupedHierarchy")
         {
-            GroupRows(source, groupKeyOf);
+            GroupRows(source, groupPath);
         }
         else
         {
-            source.ClearGroupBy();
+            source.GroupDescriptions.Clear();
         }
+
+        ShowView(table, source);
     }
 
     // <snippet Hierarchy>
-    // ParentBy takes each row's key and its parent's key. A second ParentBy replaces the relation and
-    // resets expansion, so declare it once.
-    private static void NestRows(TableViewSource source, ParentRelation relation) =>
-        source.ParentBy(row => relation.KeyOf(row), row => relation.ParentKeyOf(row));
+    // ItemKeyPath names each row's key and ParentKeyPath its parent's key. Changing either replaces
+    // the relation and resets expansion, so set them once.
+    private static void NestRows(TableView table, ParentRelation relation)
+    {
+        table.ItemKeyPath = relation.KeyPath;
+        table.ParentKeyPath = relation.ParentKeyPath;
+    }
     // </snippet>
 
     // <snippet Groups>
-    // The key selector receives the ROW and the identity selector the KEY. GroupBy takes a delegate,
-    // so call it again after a row's grouped-on value changes.
-    private static void GroupRows(TableViewSource source, Func<object?, object> groupKeyOf) =>
-        source.GroupBy(row => groupKeyOf(row), SampleShaping.GroupIdentity);
+    // A PropertyGroupDescription names the property to group by. Grouping reads the value when the
+    // view refreshes, so call Refresh() after a row's grouped-on value changes.
+    private static void GroupRows(CollectionViewSource source, string groupPath)
+    {
+        var description = new PropertyGroupDescription(groupPath);
+        if (source.GroupDescriptions.Count == 1)
+        {
+            source.GroupDescriptions[0] = description;
+        }
+        else
+        {
+            source.GroupDescriptions.Clear();
+            source.GroupDescriptions.Add(description);
+        }
+    }
+
+    // Turning grouping on or off gives the CollectionViewSource a new View, so show the current one.
+    private static void ShowView(TableView table, CollectionViewSource source)
+    {
+        if (!ReferenceEquals(table.ItemsSource, source.View))
+        {
+            table.ItemsSource = source.View;
+        }
+    }
     // </snippet>
 
     private static bool IsHierarchicalMode(string mode) => mode is "hierarchy" or "groupedHierarchy";
@@ -417,26 +444,27 @@ public sealed partial class ShapingOptions : UserControl
     // or hierarchical projection); Apply restores the selected mode afterwards.
     public void Detach()
     {
-        if (_source is null)
+        if (_source is null || _table is null)
         {
             return;
         }
 
         if (_parentDeclared)
         {
-            _source.ClearParentBy();
+            _table.ParentKeyPath = string.Empty;
             _parentDeclared = false;
         }
 
-        _source.ClearGroupBy();
+        _source.GroupDescriptions.Clear();
+        ShowView(_table, _source);
     }
 
-    // GroupBy does not move a row whose key changed: call after any write to the grouped-on property.
+    // Grouping does not move a row whose key changed: call after any write to the grouped-on property.
     public bool ReapplyIfGroupedOn(string? propertyName)
     {
-        if (IsGrouped && propertyName == AppliedKey)
+        if (IsGrouped && _source is not null && (propertyName == AppliedKey || propertyName == _groupPathOf(AppliedKey)))
         {
-            Apply(announce: false);
+            _source.Refresh();
             return true;
         }
 
@@ -444,7 +472,7 @@ public sealed partial class ShapingOptions : UserControl
     }
 
     // <snippet Groups Hierarchy>
-    // Under GroupBy + ParentBy, ExpandAllGroups affects only the group headers and ExpandAllRows only
+    // Under grouping plus key paths, ExpandAllGroups affects only the group headers and ExpandAllRows only
     // the tree rows, so Grouped hierarchy calls both.
     private static void ExpandEvery(TableView table, bool grouped, bool hierarchical)
     {
@@ -563,7 +591,7 @@ public sealed partial class ShapingOptions : UserControl
         GroupedHierarchyItem.IsEnabled = reason is null && IsGroupingAvailable;
         var groupedReason = reason ?? (IsGroupingAvailable ? null : "Grouping is not available on this page.");
         var unavailable = reason is null ? null : "Hierarchy and Grouped hierarchy need a parent relation. " + reason;
-        AutomationProperties.SetHelpText(HierarchyItem, unavailable ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableViewSource.ParentBy).", _relation!.Label));
+        AutomationProperties.SetHelpText(HierarchyItem, unavailable ?? string.Format(CultureInfo.CurrentCulture, "Nests the rows by {0} (TableView.ItemKeyPath and ParentKeyPath).", _relation!.Label));
         AutomationProperties.SetHelpText(GroupedHierarchyItem, unavailable ?? groupedReason ?? string.Format(CultureInfo.CurrentCulture, "Groups the root rows by the group key; each root keeps its {0} subtree.", _relation!.Label));
         ToolTipService.SetToolTip(HierarchyItem, unavailable);
         ToolTipService.SetToolTip(GroupedHierarchyItem, unavailable ?? groupedReason);

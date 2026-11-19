@@ -22,7 +22,7 @@
 <tv:TableView
     x:Name="TicketsTable"
     AutomationProperties.Name="Support tickets"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     HeadersVisibility="Column"
     SelectionMode="Single">
     <tv:TableViewTemplateColumn Header="Ticket" Width="80" SortMemberPath="TicketId">

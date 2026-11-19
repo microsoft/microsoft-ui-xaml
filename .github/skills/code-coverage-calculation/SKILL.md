@@ -67,7 +67,7 @@ username or password from memory, an earlier session, or an earlier run without 
    search `controls\dev\*\*.idl` for `runtimeclass <Name>` and use that folder (for example
    `ItemsRepeater` resolves to `Repeater`). If there are zero or several candidates, ask the user and offer the candidates.
    **Module:** if `controls\Tabular.ProjectImports.targets` imports `dev\<F>\<F>.vcxitems` (today: TableView,
-   TabularShaping, ShapedItemsSource, GroupedSourceAdapter, HierarchicalSourceAdapter, SortIndicator,
+   TabularShaping, SortIndicator,
    ResizeGripper), the code is in `Microsoft.UI.Xaml.Controls.Tabular.dll`: pass
    `-Module Microsoft.UI.Xaml.Controls.Tabular.dll`. Otherwise it's `Microsoft.UI.Xaml.Controls.dll` (the default).
 2. Tests: list the `[TestClass]` classes (with their namespaces) in `controls\dev\<F>\APITests\**\*.cs`

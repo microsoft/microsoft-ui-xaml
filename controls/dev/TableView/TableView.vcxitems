@@ -41,7 +41,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowTemplateSelector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RowMetadataProvider.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TableViewRowFlattener.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GroupedEntry.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ParentKeyIndex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SortMemberPathResolver.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupHeaderAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TableViewGroupExpandingEventArgs.h" />
@@ -60,7 +62,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRow.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewCellsPanel.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewGroupHeader.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewRowTemplateSelector.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewTelemetry.cpp" />
@@ -85,7 +86,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewGroupInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RowMetadataProvider.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TableViewRowFlattener.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)GroupedEntry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ParentKeyIndex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_CurrentCell.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Grouping.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableView_Sort.cpp" />
@@ -107,7 +110,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)TableViewSource.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TableView.idl" />
   </ItemGroup>
 </Project>

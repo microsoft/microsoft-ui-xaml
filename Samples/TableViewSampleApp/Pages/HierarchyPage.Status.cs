@@ -32,6 +32,5 @@ public sealed partial class HierarchyPage
             : "(none)";
         FilterText.Text = filter.Length == 0 ? "(none)" : string.Format(CultureInfo.CurrentCulture, "\u201C{0}\u201D", filter);
         SortText.Text = SortLabel;
-        LiveText.Text = Source.IsLiveShaping ? "On" : "Off";
     }
 }

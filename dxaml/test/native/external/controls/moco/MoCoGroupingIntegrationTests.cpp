@@ -1665,4 +1665,146 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
 
     }
 
+    ref class FirstLetterGroupConverter sealed : public xaml_data::IValueConverter
+    {
+    public:
+        virtual Platform::Object^ Convert(Platform::Object^ value, ::Windows::UI::Xaml::Interop::TypeName, Platform::Object^, Platform::String^)
+        {
+            auto text = safe_cast<Platform::String^>(value);
+            return ref new Platform::String(text->Data(), 1);
+        }
+
+        virtual Platform::Object^ ConvertBack(Platform::Object^, ::Windows::UI::Xaml::Interop::TypeName, Platform::Object^, Platform::String^)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+    };
+
+    void MoCoGroupingIntegrationTests::ListViewFollowsCollectionViewSourceGrouping()
+    {
+        TestCleanupWrapper cleanup;
+        PerformGroupingToggleTest(MocoHelper::ListControlType::ListView);
+    }
+
+    void MoCoGroupingIntegrationTests::GridViewFollowsCollectionViewSourceGrouping()
+    {
+        TestCleanupWrapper cleanup;
+        PerformGroupingToggleTest(MocoHelper::ListControlType::GridView);
+    }
+
+    // A CollectionViewSource view keeps its identity when grouping starts or stops (WPF); the control
+    // regroups its items without a new ItemsSource.
+    void MoCoGroupingIntegrationTests::PerformGroupingToggleTest(MocoHelper::ListControlType listControlType)
+    {
+        xaml_controls::ListViewBase^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        xaml_data::ICollectionView^ view = nullptr;
+
+        auto headerCount = [&list]()
+        {
+            auto headers = ref new Platform::Collections::Vector<xaml_controls::ListViewBaseHeaderItem^>();
+            TreeHelper::GetVisualChildrenByType<xaml_controls::ListViewBaseHeaderItem>(list, headers);
+            return headers->Size;
+        };
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = ref new xaml_controls::Grid();
+            if (listControlType == MocoHelper::ListControlType::ListView)
+            {
+                list = ref new xaml_controls::ListView();
+            }
+            else
+            {
+                list = ref new xaml_controls::GridView();
+            }
+            list->Width = 400;
+            list->Height = 600;
+
+            auto groupStyle = ref new xaml_controls::GroupStyle();
+            groupStyle->HeaderTemplate = safe_cast<Microsoft::UI::Xaml::DataTemplate^>(xaml_markup::XamlReader::Load(
+                L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding Key}'/></DataTemplate>"));
+            list->GroupStyle->Append(groupStyle);
+
+            auto source = ref new Platform::Collections::Vector<Platform::Object^>();
+            for (auto name : { L"apple", L"banana", L"avocado", L"cherry", L"blueberry" })
+            {
+                source->Append(ref new Platform::String(name));
+            }
+
+            cvs = ref new xaml_data::CollectionViewSource();
+            cvs->Source = source;
+            view = cvs->View;
+            list->ItemsSource = view;
+
+            rootPanel->Children->Append(list);
+            test_infra::TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Flat view: no groups.");
+            VERIFY_IS_FALSE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(0u, headerCount());
+            VERIFY_IS_NOT_NULL(list->ContainerFromIndex(4));
+
+            LOG_OUTPUT(L"Grouping starts on the same view.");
+            cvs->GroupDescriptions->Append(ref new xaml_data::PropertyGroupDescription(L"", ref new FirstLetterGroupConverter()));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(list->ItemsSource == view);
+            VERIFY_IS_NOT_NULL(view->CollectionGroups);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(3u, headerCount());
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+            auto container = list->ContainerFromIndex(1);
+            VERIFY_IS_NOT_NULL(container);
+            VERIFY_IS_NOT_NULL(list->GroupHeaderContainerFromItemContainer(container));
+
+            LOG_OUTPUT(L"A regroup keeps the view and the control follows the new group order.");
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::ListSortDirection::Descending));
+            VERIFY_IS_TRUE(cvs->View == view);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(3u, headerCount());
+            VERIFY_ARE_EQUAL(0, wcscmp(L"cherry", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()));
+            VERIFY_IS_NOT_NULL(list->GroupHeaderContainerFromItemContainer(list->ContainerFromIndex(0)));
+
+            LOG_OUTPUT(L"Grouping stops on the same view.");
+            cvs->GroupDescriptions->Clear();
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NULL(view->CollectionGroups);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(0u, headerCount());
+            VERIFY_ARE_EQUAL(5u, list->Items->Size);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"cherry", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()));
+            VERIFY_IS_NOT_NULL(list->ContainerFromIndex(4));
+
+            LOG_OUTPUT(L"Grouping starts again on the same view.");
+            cvs->GroupDescriptions->Append(ref new xaml_data::PropertyGroupDescription(L"", ref new FirstLetterGroupConverter()));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(3u, headerCount());
+        });
+    }
+
 }}}}}}

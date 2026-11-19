@@ -1,7 +1,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with templated cells"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
     <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>

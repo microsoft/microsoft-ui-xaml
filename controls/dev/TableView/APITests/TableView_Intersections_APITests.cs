@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewShapingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewGroupingTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewSortingTestHelpers;
@@ -35,7 +37,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectionSurvivesSortThenFilterThenClear()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             ShapedPerson diego = null;
             var selectionChangedCount = 0;
 
@@ -43,8 +45,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var items = MakeShapedPeople();
                 diego = items.First(p => p.Name == "Diego");
-                source = TableViewSource.From(items);
-                tableView = CreateShapedTable(source);
+                source = MakeShapingView(items);
+                tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -56,7 +58,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySelectionOn(tableView, diego, "baseline");
                 tableView.SelectionChanged += (s, e) => selectionChangedCount++;
 
-                source.Sort("Name", SortDirection.Descending);
+                source.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
             });
 
             SettleLayout(tableView);
@@ -66,7 +68,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new[] { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "sorted by name descending");
                 VerifySelectionOn(tableView, diego, "after the sort");
 
-                source.Filter(o => Person(o).Role == "Engineer");
+                source.Filter = o => Person(o).Role == "Engineer";
             });
 
             SettleLayout(tableView);
@@ -76,7 +78,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new[] { "Rafa", "Owen", "Diego" }, "sorted and filtered to engineers");
                 VerifySelectionOn(tableView, diego, "after the filter");
 
-                source.ClearFilter();
+                source.Filter = null;
             });
 
             SettleLayout(tableView);
@@ -86,7 +88,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new[] { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "filter cleared, sort kept");
                 VerifySelectionOn(tableView, diego, "after clearing the filter");
 
-                source.ClearSort();
+                source.SortDescriptions.Clear();
             });
 
             SettleLayout(tableView);
@@ -106,7 +108,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySelectedItemWhenFilteredOutThenRestored()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             ShapedPerson diego = null;
             var events = new List<(IList<object> Added, IList<object> Removed)>();
 
@@ -114,8 +116,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var items = MakeShapedPeople();
                 diego = items.First(p => p.Name == "Diego");
-                source = TableViewSource.From(items);
-                tableView = CreateShapedTable(source);
+                source = MakeShapingView(items);
+                tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -127,7 +129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySelectionOn(tableView, diego, "baseline");
                 tableView.SelectionChanged += (s, e) => events.Add((e.AddedItems.ToList(), e.RemovedItems.ToList()));
 
-                source.Filter(o => Person(o).Role == "Designer");
+                source.Filter = o => Person(o).Role == "Designer";
             });
 
             SettleLayout(tableView);
@@ -143,7 +145,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, events[0].Removed.Count, "The clearing event must remove exactly one item.");
                 Verify.AreSame(diego, events[0].Removed[0], "The clearing event must report the filtered-out item as removed.");
 
-                source.ClearFilter();
+                source.Filter = null;
             });
 
             SettleLayout(tableView);
@@ -157,78 +159,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies applying GroupBy while a row is selected keeps that item selected and moves SelectedIndex to its projected index, counting header rows.")]
-        public void VerifyGroupingAppliedWhileRowSelectedKeepsSelection()
-        {
-            TableView tableView = null;
-            TableViewSource source = null;
-            ShapedPerson owen = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                var items = MakeShapedPeople();
-                owen = items.First(p => p.Name == "Owen");
-                source = TableViewSource.From(items);
-                tableView = CreateShapedTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView.Select(5);
-                VerifySelectionOn(tableView, owen, "baseline");
-                Verify.AreEqual(5, tableView.SelectedIndex, "Baseline: Owen is the last of six flat rows.");
-
-                source.GroupBy(o => Person(o).Role);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView,
-                    new[] { "#Designer(2)", "Asha", "Ines", "#Engineer(3)", "Diego", "Rafa", "Owen", "#Architect(1)", "Mei" },
-                    "grouped by role");
-
-                VerifySelectionOn(tableView, owen, "after grouping");
-                Verify.AreEqual(6, tableView.SelectedIndex,
-                    "SelectedIndex addresses the displayed projection, so the two header rows above Owen count.");
-
-                source.ClearGroupBy();
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, new[] { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "grouping cleared");
-                VerifySelectionOn(tableView, owen, "after clearing the grouping");
-                Verify.AreEqual(5, tableView.SelectedIndex, "Without headers Owen is back at flat index 5.");
-            });
-        }
-
         #endregion
 
         #region Sort-key edits under an active filter
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a visible row whose sort key changed is moved to its sorted slot by the next collection change while a filter is active.")]
+        [TestProperty("Description", "Verifies a visible row whose sort key changed stays put through an incremental collection change and is moved to its sorted slot by Refresh while a filter is active.")]
         public void VerifySortKeyChangeRepositionsRowWhileFilterActive()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             ObservableCollection<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                source = TableViewSource.From(items)
-                    .Sort("Name", SortDirection.Ascending)
-                    .Filter(o => Person(o).Role == "Engineer");
-                tableView = CreateShapedTable(source);
+                source = MakeShapingView(items, sortPath: "Name");
+                source.Filter = o => Person(o).Role == "Engineer";
+                tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -236,7 +184,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsFalse(source.IsLiveShaping, "Precondition: this test covers the live-shaping-off repair path.");
                 VerifyProjection(tableView, new[] { "Diego", "Owen", "Rafa" }, "sorted and filtered");
 
                 items.First(p => p.Name == "Diego").Name = "Zane";
@@ -246,7 +193,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                // Live shaping is off, so the edit alone must not reorder; the Add below is what repairs it.
+                // A property edit is not a collection change, so it alone must not reorder; the Add below re-sorts.
                 VerifyProjection(tableView, new[] { "Zane", "Owen", "Rafa" }, "precondition: the sort-key edit left the row stale");
 
                 items.Add(new ShapedPerson("Tomas", "Designer", "Studio"));
@@ -256,60 +203,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
+                // The view applies source changes incrementally (no live shaping, as in WPF), so an add the filter
+                // rejects leaves the stale row; Refresh re-sorts.
+                VerifyProjection(tableView, new[] { "Zane", "Owen", "Rafa" }, "after an add the filter rejects");
+                source.Refresh();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
                 VerifyProjection(tableView, new[] { "Owen", "Rafa", "Zane" },
-                    "the next collection change must move the renamed row to its sorted slot");
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies a live sort-key edit on a filtered-out item does not bring it back into the projection.")]
-        public void VerifySortKeyChangeOnFilteredOutItemDoesNotResurfaceIt()
-        {
-            TableView tableView = null;
-            ObservableCollection<ShapedPerson> items = null;
-            ShapedPerson asha = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                asha = items.First(p => p.Name == "Asha");
-
-                var source = TableViewSource.From(items)
-                    .Sort("Name", SortDirection.Ascending)
-                    .Filter(o => Person(o).Role == "Engineer");
-                source.IsLiveShaping = true;
-
-                tableView = CreateShapedTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, new[] { "Diego", "Owen", "Rafa" }, "sorted and filtered");
-
-                // The visible edit proves a live reshape ran; the hidden one would sort first if it leaked in.
-                items.First(p => p.Name == "Rafa").Name = "Ben";
-                asha.Name = "Aaron";
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, new[] { "Ben", "Diego", "Owen" },
-                    "a live reshape must re-sort the visible edit and keep the filtered-out item out");
-
-                asha.Role = "Engineer";
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifyProjection(tableView, new[] { "Aaron", "Ben", "Diego", "Owen" },
-                    "once it passes the filter the item must join at the slot its edited key sorts to");
+                    "Refresh moves the renamed row to its sorted slot");
             });
         }
 
@@ -327,9 +232,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(MakeShapingView(items, "Role").View);
                 LoadContent(tableView);
             });
 
@@ -384,9 +287,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ResettableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items);
-                source.GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                tableView = CreateGroupedTable(MakeShapingView(items, "Role").View);
                 LoadContent(tableView);
             });
 
@@ -458,10 +359,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                var source = TableViewSource.From(items)
-                    .Sort("Name", SortDirection.Ascending)
-                    .Filter(o => Person(o).Role == "Engineer");
-                tableView = CreateShapedTable(source);
+                var source = MakeShapingView(items, sortPath: "Name");
+                source.Filter = o => Person(o).Role == "Engineer";
+                tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -507,10 +407,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
-                tableView = CreateShapedTable(TableViewSource.From(items).Sort("Role", SortDirection.Ascending));
+                tableView = CreateShapedTable(items);
                 LoadContent(tableView);
             });
 
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "Precondition: the Role column sorts."));
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
@@ -680,14 +583,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupedRowPositionInSetIsGroupRelativeInEveryGroup()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeShapedPeople())
-                    .GroupBy(o => Person(o).Role)
-                    .Sort("Name", SortDirection.Descending);
-                tableView = CreateGroupedTable(source);
+                source = MakeShapingView(MakeShapedPeople(), "Role", "Name", ListSortDirection.Descending);
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -698,7 +599,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(3, GroupHeaderCount(tableView), "Precondition: three groups.");
                 VerifyGroupRelativeRowPositions(tableView, "1,2,3", "grouped and sorted");
 
-                source.Filter(o => Person(o).Name != "Rafa" && Person(o).Name != "Ines");
+                source.Filter = o => Person(o).Name != "Rafa" && Person(o).Name != "Ines";
             });
 
             SettleLayout(tableView);

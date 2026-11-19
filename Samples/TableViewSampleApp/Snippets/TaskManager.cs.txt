@@ -1,4 +1,15 @@
-Source = TableViewSource.From(Processes);  // created once; filtered, sorted and grouped in place
+// Live shaping: a row moves, leaves or changes group as soon as a CPU value, a status or a
+// category changes, with no Refresh(). Sorting and grouping follow whatever the header click
+// or the Shaping options choose; the search observes the properties it reads that can change.
+Source = new CollectionViewSource
+{
+    Source = Processes,  // created once; TableView shows its View
+    IsLiveSortingRequested = true,
+    IsLiveGroupingRequested = true,
+    IsLiveFilteringRequested = true,
+};
+Source.LiveFilteringProperties.Add(nameof(ProcessItem.Category));
+Source.LiveFilteringProperties.Add(nameof(ProcessItem.StatusText));
 InitializeComponent();
 
 ProcessTable.HeadersVisibility = TableViewHeadersVisibility.Column;
@@ -12,7 +23,7 @@ foreach (var column in new[] { CpuColumn, MemoryColumn, DiskColumn, NetworkColum
 
 public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 {
@@ -26,17 +37,17 @@ private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextCha
     ApplySearch();
 }
 
-// Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
-// again after a write to a searched property.
+// Filter is evaluated when the view reshapes and, with live filtering, when Category or StatusText
+// changes on a row (LiveFilteringProperties).
 private void ApplySearch()
 {
     if (_searchText is not { } text)
     {
-        Source.ClearFilter();
+        Source.Filter = null;
         return;
     }
 
-    Source.Filter(item => item is ProcessItem process && MatchesSearch(process, text));
+    Source.Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
 }
 
 private static bool MatchesSearch(ProcessItem process, string query) =>

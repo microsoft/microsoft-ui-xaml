@@ -6,26 +6,17 @@
 #include "GroupedEntry.h"
 
 GroupedEntry::GroupedEntry(
-    winrt::IInspectable const& group,
+    winrt::hstring const& identity,
+    winrt::IInspectable const& key,
     int32_t groupItemCount,
-    bool isExpanded)
-    : m_group(group)
+    int32_t childCount,
+    bool isExpanded,
+    int32_t level)
+    : m_identity(identity)
+    , m_key(key)
     , m_groupItemCount(groupItemCount)
+    , m_childCount(childCount)
     , m_isExpanded(isExpanded)
+    , m_level(level)
 {
-}
-
-winrt::IInspectable GroupedEntry::Group() const
-{
-    return m_group;
-}
-
-int32_t GroupedEntry::GroupItemCount() const
-{
-    return m_groupItemCount;
-}
-
-bool GroupedEntry::IsExpanded() const
-{
-    return m_isExpanded;
 }

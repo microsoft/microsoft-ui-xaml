@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -26,10 +27,10 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
     public HeadersVisibilityPage()
     {
         // <snippet>
-        Source = TableViewSource.From(Tickets);    // created once; reshaped in place, never rebuilt
+        Source = new CollectionViewSource { Source = Tickets };    // created once; TableView shows its View
         InitializeComponent();
         // </snippet>
-        InitializeSample(Status, Shaping.Attach(TicketsTable, Source, (row, key) => TicketData.GroupKeyOf(row as SupportTicket, key), TicketData.ParentTicket));
+        InitializeSample(Status, Shaping.Attach(TicketsTable, Source, TicketData.GroupPathOf, TicketData.ParentTicket));
         TrackItems(Tickets, OnTicketChanged);
         TrackLifetime(() => TicketsTable.Sorted += OnTableSorted, () => TicketsTable.Sorted -= OnTableSorted);
     }
@@ -39,7 +40,7 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public TableViewSource Source { get; }
+    public CollectionViewSource Source { get; }
     // </snippet>
 
     // ---- Headers visibility -------------------------------------------------------------
@@ -126,8 +127,8 @@ public sealed partial class HeadersVisibilityPage : SamplePageBase
 
         ticket.Priority = to;
 
-        // GroupBy takes a delegate, not a property path, so the control cannot re-bucket the row
-        // on PropertyChanged; re-apply the grouping when the grouped-on value changed.
+        // Grouping reads the value when the view refreshes, so the control cannot re-bucket the row
+        // on PropertyChanged; refresh the view when the grouped-on value changed.
         ReapplyIfGroupedOn(nameof(SupportTicket.Priority));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Escalated {0} from {1} to {2}", ticket.TicketId, from, to));
     }

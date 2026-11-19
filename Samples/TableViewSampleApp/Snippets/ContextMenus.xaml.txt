@@ -42,7 +42,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with context menus"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     SelectionMode="Single">
     <!-- Rows and group headers get their menus from implicit styles. -->
     <tv:TableView.Resources>

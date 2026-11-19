@@ -21,6 +21,13 @@ VectorCollectionView::~VectorCollectionView()
             VERIFYHR(m_epVectorChangedHandler.DetachEventHandler(spSource.Get()));
         }
     }
+
+    DetachSourceList();
+
+    if (m_isDefaultView)
+    {
+        UnregisterDefaultView(this);
+    }
 }
 
 
@@ -232,6 +239,41 @@ HRESULT VectorCollectionView::SetSource(_In_ wfc::IVector<IInspectable *> *pSour
 Cleanup:
 
     RRETURN(hr);
+}
+
+_Check_return_
+HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource, bool isGroupingChanged)
+{
+    ctl::ComPtr<wfc::IVectorChangedEventArgs> spArgs;
+    VectorChangedEventArgs *pArgs = nullptr;
+
+    if (m_epVectorChangedHandler)
+    {
+        auto spOldSource = m_tpSource.AsOrNull<wfc::IObservableVector<IInspectable *>>();
+        if (spOldSource)
+        {
+            IFC_RETURN(m_epVectorChangedHandler.DetachEventHandler(spOldSource.Get()));
+        }
+        else
+        {
+            m_epVectorChangedHandler = ctl::EventPtr<VectorChangedEventCallback>();
+        }
+    }
+
+    IFC_RETURN(SetSource(pSource));
+
+    // Consumers react to CollectionGroups before the Reset, so they read the new items with the new groups.
+    if (isGroupingChanged)
+    {
+        IFC_RETURN(RaisePropertyChanged(STR_LEN_PAIR(L"CollectionGroups")));
+    }
+
+    IFC_RETURN(ctl::ComObject<VectorChangedEventArgs>::CreateInstance(spArgs.ReleaseAndGetAddressOf()));
+    spArgs.CastTo(&pArgs);
+    IFC_RETURN(pArgs->put_CollectionChange(wfc::CollectionChange_Reset));
+    IFC_RETURN(pArgs->put_Index(0));
+    IFC_RETURN(ProcessCollectionChange(spArgs.Get()));
+    return S_OK;
 }
 
 // Factory static method

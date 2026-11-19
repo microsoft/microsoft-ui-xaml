@@ -4609,15 +4609,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "A flat row must not expose ExpandCollapse, or AT announces it as collapsed.");
             });
 
-            TableViewSource source = null;
-            var tableView = PlaceTreeTable(() => source = TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
-                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsNotNull(TableViewTreeTestHelpers.GetRowExpandCollapse(TableViewTreeTestHelpers.FindTreeRow(tableView, "Ada")),
                     "Precondition: a tree row exposes ExpandCollapse.");
-                source.ClearParentBy();
+                tableView.ParentKeyPath = "";
             });
 
             SettleLayout(tableView);
@@ -4633,8 +4631,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a tree row's ExpandCollapse state matches its node, and Expand() grows the projection.")]
         public void VerifyExpandCollapseStates()
         {
-            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
-                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
             var countBefore = 0;
 
             RunOnUIThread.Execute(() =>
@@ -4663,8 +4660,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies tree row peers report Level, PositionInSet and SizeOfSet relative to their sibling set.")]
         public void VerifyLevelPositionSizeUngrouped()
         {
-            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
-                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
 
             RunOnUIThread.Execute(() => TableViewTreeTestHelpers.ToggleTreeRow(tableView, "Ada", expand: true));
             SettleLayout(tableView);
@@ -4683,9 +4679,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies grouped tree root peers report PositionInSet and SizeOfSet scoped to their group.")]
         public void VerifyPositionInSetGrouped()
         {
-            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
-                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager)
-                .GroupBy(TableViewTreeTestHelpers.EmpKey(e => e.Dept)));
+            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeShapingView(TableViewTreeTestHelpers.MakeTree(), "Dept").View);
 
             RunOnUIThread.Execute(() =>
             {
@@ -4694,14 +4688,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private TableView PlaceTreeTable(Func<TableViewSource> makeSource)
+        private TableView PlaceTreeTable(Func<object> makeSource)
         {
             TableView tableView = null;
 
             RunOnUIThread.Execute(() =>
             {
                 EnsureTabularControlsResources();
-                tableView = TableViewTreeTestHelpers.CreateTreeTable(makeSource());
+                tableView = TableViewTreeTestHelpers.CreateTreeTable(makeSource(),
+                    TableViewTreeTestHelpers.IdPath, TableViewTreeTestHelpers.ManagerPath);
                 LoadContent(tableView);
             });
 
@@ -4789,10 +4784,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // The same three columns over a source grouped by Role, so group headers realize.
         internal static TableView CreateGroupedAutomationTable()
         {
-            var source = TableViewSource.From(MakeItems());
-            source.GroupBy(item => (object)((Person)item).Role);
+            var source = TableViewTreeTestHelpers.MakeShapingView(MakeItems(), "Role");
 
-            return AddAutomationColumns(CreateTableViewShell(source, 600, 400));
+            return AddAutomationColumns(CreateTableViewShell(source.View, 600, 400));
         }
 
         private static TableView AddAutomationColumns(TableView tableView)
@@ -4808,17 +4802,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // from flat metadata.
         internal static TableView CreateTwoGroupAutomationTable()
         {
-            var source = TableViewSource.From(new List<Person>
+            var source = TableViewTreeTestHelpers.MakeShapingView(new List<Person>
             {
                 new Person { Name = "Asha", Role = "Designer" },
                 new Person { Name = "Bo", Role = "Designer" },
                 new Person { Name = "Diego", Role = "Engineer" },
                 new Person { Name = "Eli", Role = "Engineer" },
                 new Person { Name = "Fay", Role = "Engineer" },
-            });
-            source.GroupBy(item => (object)((Person)item).Role);
+            }, "Role");
 
-            return AddAutomationColumns(CreateTableViewShell(source, 600, 500));
+            return AddAutomationColumns(CreateTableViewShell(source.View, 600, 500));
         }
 
         // Every row peer reachable from root, without descending into a row (its children are cells).

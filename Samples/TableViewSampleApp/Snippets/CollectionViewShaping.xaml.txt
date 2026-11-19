@@ -1,0 +1,32 @@
+<DataTemplate x:Key="CvsProcessNameTemplate" x:DataType="models:ProcessItem">
+    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
+        <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
+        <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+    </StackPanel>
+</DataTemplate>
+<DataTemplate x:Key="CvsCpuTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind CpuPercent, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Cpu}" Padding="8,4">
+        <TextBlock Text="{x:Bind CpuDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
+<DataTemplate x:Key="CvsMemoryTemplate" x:DataType="models:ProcessItem">
+    <Border Background="{x:Bind MemoryMB, Mode=OneWay, Converter={StaticResource ProcessHeatBrushConverter}, ConverterParameter=Memory}" Padding="8,4">
+        <TextBlock Text="{x:Bind MemoryDisplay, Mode=OneWay}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+    </Border>
+</DataTemplate>
+
+<tv:TableView
+    x:Name="ProcessTable"
+    AutomationProperties.Name="Processes"
+    SelectionMode="Single">
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource CvsProcessNameTemplate}" SortMemberPath="Name"/>
+    <tv:TableViewTemplateColumn Header="Status" Width="130" SortMemberPath="StatusText">
+        <tv:TableViewTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="models:ProcessItem">
+                <TextBlock Text="{x:Bind StatusText, Mode=OneWay}" Style="{StaticResource CellTextStyle}"/>
+            </DataTemplate>
+        </tv:TableViewTemplateColumn.CellTemplate>
+    </tv:TableViewTemplateColumn>
+    <tv:TableViewTemplateColumn Header="CPU" Width="100" CellTemplate="{StaticResource CvsCpuTemplate}" SortMemberPath="CpuPercent"/>
+    <tv:TableViewTemplateColumn Header="Memory" Width="100" CellTemplate="{StaticResource CvsMemoryTemplate}" SortMemberPath="MemoryMB"/>
+</tv:TableView>

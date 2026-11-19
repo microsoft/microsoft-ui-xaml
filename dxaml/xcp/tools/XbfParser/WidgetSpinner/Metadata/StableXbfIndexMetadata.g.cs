@@ -3828,6 +3828,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
+        CollectionViewSource_FilterRequested = 340,
     }
 
     [Flags]

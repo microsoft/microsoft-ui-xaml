@@ -474,14 +474,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyIndexOfInGroupedProjection()
         {
             TableView tableView = null;
-            TableViewSource source = null;
+            Microsoft.UI.Xaml.Data.CollectionViewSource source = null;
             List<ShapedPerson> items = null;
 
             RunOnUIThread.Execute(() =>
             {
                 items = MakeShapedPeople();
-                source = TableViewSource.From(items).GroupBy(o => Person(o).Role);
-                tableView = CreateGroupedTable(source);
+                source = TableViewTreeTestHelpers.MakeShapingView(items, "Role");
+                tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -508,7 +508,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(-1, tableView.IndexOf(items.First(p => p.Name == "Diego")), "An item under a collapsed group is not displayed.");
                 Verify.AreEqual(5, tableView.IndexOf(items.First(p => p.Name == "Mei")), "Collapsed members no longer take slots.");
-                source.Filter(o => Person(o).Role != "Architect");
+                source.Filter = o => Person(o).Role != "Architect";
             });
 
             SettleLayout(tableView);

@@ -1101,9 +1101,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             object source = f.Items;
             if (grouped)
             {
-                var grouping = TableViewSource.From(f.Items);
-                grouping.GroupBy(item => (object)((Person)item).Role);
-                source = grouping;
+                source = TableViewTreeTestHelpers.MakeShapingView(f.Items, "Role").View;
             }
 
             var cellWidth = new GridLength(150.0, GridUnitType.Pixel);

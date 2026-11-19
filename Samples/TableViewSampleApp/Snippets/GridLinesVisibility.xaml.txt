@@ -93,7 +93,7 @@
 <tv:TableView
     x:Name="PeopleTable"
     AutomationProperties.Name="People with grid lines"
-    ItemsSource="{x:Bind Source}"
+    ItemsSource="{x:Bind Source.View}"
     GridLinesVisibility="All"
     SelectionMode="Single">
     <!-- To hide every header line (column separators and bottom rule), override the brush

@@ -5,6 +5,7 @@
 #include "CollectionViewSource.g.h"
 #include "PropertyPath.g.h"
 #include "CollectionViewManager.h"
+#include "VectorCollectionView.g.h"
 
 using namespace DirectUI;
 using namespace xaml_data;
@@ -154,16 +155,28 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
     HRESULT hr = S_OK;
     ICollectionView *pView = NULL;
     BOOLEAN valid = false;
+    bool isShapingRequested = false;
+    bool isShapeable = false;
+
+    IFC(DetachShapingView());
 
     // Only try to create a collection view if we have a source
     // otherwise we will just set the value to NULL
     if (pNewSource != NULL)
     {
-        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, &pView));
+        IFC(IsShapingRequested(pNewSource, &isShapingRequested));
+        IFC(CollectionViewManager::GetViewRecord(pNewSource, this, isShapingRequested, &pView, &isShapeable));
 
         // A view should have been created by now, or we would have failed
         // if the source is not supported
         IFCEXPECT(pView);
+
+        if (isShapeable)
+        {
+            auto pShapingView = static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView));
+            pShapingView->SetSourceCollection(pNewSource);
+            IFC(ApplyPropertiesToView(pShapingView));
+        }
 
         // Move the item to the first position on the newly created collection
         // if we have one
@@ -227,6 +240,11 @@ DirectUI::CollectionViewSource::OnReferenceTrackerWalk(INT walkType )
 {
     if( m_pCVSViewChangedEventSource )
         m_pCVSViewChangedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+
+    if (m_spFilterRequestedEventSource)
+    {
+        m_spFilterRequestedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+    }
 
     CollectionViewSourceGenerated::OnReferenceTrackerWalk( walkType );
 

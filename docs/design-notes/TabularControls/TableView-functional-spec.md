@@ -38,7 +38,8 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
 - Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
-- Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
+- Grouped/banded sections, declared on the data as `CollectionViewSource.GroupDescriptions` rather than as a separate `GroupedItemsSource` property. (The table-specific `TableViewSource` of earlier previews is removed.) — **PR3, shipped**
+- `ICollectionView` / `CollectionViewSource.View` as `ItemsSource`, shown read-only as the view shapes it, including `CollectionGroups` (see [Grouping](#grouping)). — **implemented**
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
@@ -55,36 +56,26 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - Per-row/cell context menus, column-header menus, and table fallback. See [Context menus](#context-menus). — **implemented**
 - Checkbox selection (File-Explorer-specific). — **PR3** / surface
 - Single-level grouping with expand/collapse group headers. — **PR3, shipped** (see [Grouping](#grouping))
-- Hierarchical rows from a flat source via `TableViewSource.ParentBy(keySelector, parentKeySelector)` / `ClearParentBy()`, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
-- Opt-in live shaping (`TableViewSource.IsLiveShaping`): reshapes when an item's `PropertyChanged` moves a sort, filter, group or parent value. — **PR3**
+- Hierarchical rows from a flat source via `TableView.ItemKeyPath` / `ParentKeyPath` (property paths; an empty path shows the rows flat), over a plain collection or a `CollectionViewSource` view, no depth limit; row expand/collapse, `TableView.ExpandAllRows()` / `CollapseAllRows()`; per-row programmatic expand/collapse is out of scope for v1. See [Hierarchical data rows design](Hierarchical-Data-Rows-Parent-Key-Design.md). — **PR3**
+- Live shaping (reshaping when an item's `PropertyChanged` moves a sort, filter, group or parent value). — *deferred: needs CVS live shaping; call `Refresh()`*
 - Row drag-drop, marquee selection. — *out of scope*
 
 ### Grouping
 
-Grouping is declared on the data source, not on the control: the control renders whatever shape
-the source publishes, so the same engine serves an app that never touches `TableView`.
+Grouping is declared on the data, not on the control: the control renders the groups a
+`CollectionViewSource` view publishes.
 
-- Single-level grouping via `TableViewSource.GroupBy(keySelector)`; `ClearGroupBy()` removes it.
-  A second `GroupBy` replaces the first — grouping axes never stack. — **shipped**
-- The group key is any object. Its **identity** is what buckets rows, and it must be a stable,
-  non-empty string. Value-typed keys (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enums) get a
-  built-in identity; a reference-typed key needs the
-  `GroupBy(keySelector, groupIdentitySelector)` overload. — **shipped**
-- An unresolvable or colliding group identity **fails fast** (`hresult_invalid_argument` on the
-  call that builds the projection). It does not silently fall back to an ungrouped table: a
-  grouping request that quietly did nothing is the harder bug to find. A `null` key and an
-  empty-string key are both unresolvable — `String` is a supported key type, but `""` is not a
-  usable identity — so an app grouping on a nullable or blank-able property supplies its own
-  fallback label. — **shipped**
-- Composition with the other shaping verbs is order-sensitive and deliberate: a sort declared
-  **before** `GroupBy` orders the groups themselves; a sort declared **after** `GroupBy` orders
-  rows **within** each group. A filter always runs first, and a group whose last row is filtered
-  out disappears. — **shipped**
+- Single-level grouping via `CollectionViewSource.GroupDescriptions` (a `PropertyGroupDescription`
+  path; only the first description is used). Clearing the descriptions removes it. — **shipped**
+- Groups are keyed by the **value** at the group path. — **shipped**
+- Composition: the view's `Filter` runs first, and a group whose last row is filtered out
+  disappears; `SortDescriptions` order rows within each group. The view regroups on `Refresh()`,
+  not on `PropertyChanged`. — **shipped**
 - Every group header is expand/collapse-capable: click or tap the band, or use the
   `ExpandCollapse` UIA pattern. `TableView.ExpandAllGroups()` / `CollapseAllGroups()` are the
   bulk programmatic counterparts and are no-ops when the source is not grouped. — **shipped**
-- Expansion is **intent keyed by group identity**, not state on a group object, so a collapse
-  survives a re-sort, a re-filter and a regroup that re-mints every group. Newly arriving groups
+- Expansion is **intent keyed by group key**, not state on a group object, so a collapse
+  survives a re-sort, a re-filter and a refresh that re-mints every group. Newly arriving groups
   inherit the current default rather than an intent nobody expressed. — **shipped**
 - Header presentation: `TableView.GroupHeaderTemplate` fills the content region of the
   control-owned `TableViewGroupHeader`, which keeps the chevron and the themed band. The template
@@ -94,6 +85,27 @@ the source publishes, so the same engine serves an app that never touches `Table
   non-expandable group reports `LeafNode` rather than dropping the pattern. — **shipped**
 - Per-group programmatic expand/collapse (by key, from app code), multi-level grouping, and
   group-level aggregates/summaries. — *deferred*
+- Pre-grouped data from an `ICollectionView`: when `ItemsSource` is a view with non-null
+  `CollectionGroups` (for example a `CollectionViewSource` with `IsSourceGrouped="True"`), each
+  `ICollectionViewGroup` becomes a group header over its `GroupItems`, in the view's order, and
+  item and group changes are followed. The view owns its shaping: TableView does not filter or
+  regroup it. A column sort writes the view's `SortDescriptions` when the view implements
+  `ICollectionViewShaping` (any `CollectionViewSource` view); for other views it raises `Sorting`
+  only so the app can sort the view.
+  Current-item synchronization is out of scope. — **implemented**
+
+  ```xml
+  <CollectionViewSource x:Name="PeopleByTeam" Source="{x:Bind ViewModel.Teams}" IsSourceGrouped="True"/>
+  <tabular:TableView ItemsSource="{x:Bind PeopleByTeam.View}">
+      <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
+          <tabular:TableViewTemplateColumn.CellTemplate>
+              <DataTemplate>
+                  <TextBlock Text="{Binding Name}" Style="{StaticResource TableCellTextStyle}" />
+              </DataTemplate>
+          </tabular:TableViewTemplateColumn.CellTemplate>
+      </tabular:TableViewTemplateColumn>
+  </tabular:TableView>
+  ```
 - Incremental (non-rebuild) maintenance of a grouped projection: a source change under grouping
   currently rebuilds rather than splicing. Correct, but O(N) per change. — *deferred*
 

@@ -76,8 +76,8 @@ struct ITableViewRowMetadataProvider
 
     // Every group in the projection, in display order: O(groups). Empty when the source is not grouped.
     virtual std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() { return {}; }
-    // The expansion identity of a live group object. Empty when it has none.
-    virtual winrt::hstring GetGroupExpansionIdentity(winrt::Windows::Foundation::IInspectable const& /*group*/) { return {}; }
+    // The expansion identity of the group with this stable identity. Empty when it has none.
+    virtual winrt::hstring GetGroupExpansionIdentity(winrt::hstring const& /*groupIdentity*/) { return {}; }
     // The group a group expansion identity names. False for node keys and unknown groups.
     virtual bool TryGetGroupExpansionInfo(winrt::hstring const& /*identity*/, TableViewGroupExpansionInfo& /*info*/) { return false; }
 

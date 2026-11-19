@@ -11,7 +11,7 @@
 
     <controls:SamplePresenter
         Header="Virtualization"
-        Description="TableView virtualizes its rows by default: bind 50,000 people and only the rows in or near the viewport are realized, each in a TableViewRow; as you scroll, rows that leave that range are recycled and their containers reused. Pick a row count in the rail, scroll, and watch Visible rows stay near the number of rows that fit in the viewport while Rows grows. The Template columns switch adds a photo, a chip and a checkbox to every realized row, so you can compare the per-row cost with plain text. Grouping with TableViewSource.GroupBy keeps the same behaviour, because group headers are realized the same way."
+        Description="TableView virtualizes its rows by default: bind 50,000 people and only the rows in or near the viewport are realized, each in a TableViewRow; as you scroll, rows that leave that range are recycled and their containers reused. Pick a row count in the rail, scroll, and watch Visible rows stay near the number of rows that fit in the viewport while Rows grows. The Template columns switch adds a photo, a chip and a checkbox to every realized row, so you can compare the per-row cost with plain text. Grouping with a CollectionViewSource GroupDescription keeps the same behaviour, because group headers are realized the same way."
         Snippet="Virtualization"
         StretchExample="True"
         TryIt="Pick 50,000 rows and drag the scroll thumb quickly; Visible rows stays near the number of rows that fit in the viewport. Click Scroll to row 25,000, then switch Shaping to Grouped and click Collapse all: Visible rows drops to zero while only group headers show."
@@ -60,7 +60,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Dataset"
-                    Description="Changing the row count builds a new list off the bind path and assigns it once through TableViewSource.From. Template columns adds the shared Photo, Department chip and Active checkbox templates; off, every cell is plain text.">
+                    Description="Changing the row count builds a new list off the bind path and assigns it once through a CollectionViewSource View. Template columns adds the shared Photo, Department chip and Active checkbox templates; off, every cell is plain text.">
                     <ComboBox
                         x:Name="RowCountSelector"
                         AutomationProperties.AutomationId="VirtualizationRowCountSelector"
@@ -84,7 +84,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Virtualization"
-                    Description="Grouping the large set adds header rows, and Visible rows should still follow the viewport rather than the group count. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouping the large set adds header rows, and Visible rows should still follow the viewport rather than the group count. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>

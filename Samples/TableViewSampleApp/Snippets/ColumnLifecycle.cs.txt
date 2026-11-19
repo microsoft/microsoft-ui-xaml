@@ -1,11 +1,11 @@
 private const string JoinDateHeader = "Join date";
 
-Source = TableViewSource.From(People);     // created once; reshaped in place, never rebuilt
+Source = new CollectionViewSource { Source = People };     // created once; TableView shows its View
 InitializeComponent();
 
 public ObservableCollection<Person> People { get; } = PersonData.Take(RowCount);
 
-public TableViewSource Source { get; }
+public CollectionViewSource Source { get; }
 
 // A collapsed column stays in Columns, in its place, and comes back there when made visible.
 private static void SetColumnVisible(TableViewColumn column, bool visible) =>

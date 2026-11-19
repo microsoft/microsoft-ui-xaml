@@ -29,7 +29,7 @@
 
             <controls:SamplePageHeader
                 Title="TableView"
-                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences: model-first data shaping with TableViewSource, text and template columns, sorting, filtering, grouped rows, selection, headers, grid lines, density, column layout and sizing, column lifecycle, virtualization, keyboard navigation, accessibility and right-to-left support."/>
+                Description="Microsoft.UI.Xaml.Controls.Tabular.TableView is a native WinUI 3 tabular control for data-heavy desktop experiences: data shaping with CollectionViewSource, text and template columns, sorting, filtering, grouped rows, selection, headers, grid lines, density, column layout and sizing, column lifecycle, virtualization, keyboard navigation, accessibility and right-to-left support."/>
 
             <muxc:InfoBar
                 IsOpen="True"
@@ -54,11 +54,11 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <x:String>Control type — Microsoft.UI.Xaml.Controls.Tabular.TableView</x:String>
-                    <x:String>Model-first source — TableViewSource.From(items) with Filter, GroupBy, ParentBy and Sort, reshaped in place</x:String>
+                    <x:String>CollectionViewSource shaping — Filter, GroupDescriptions and SortDescriptions on the View TableView shows</x:String>
                     <x:String>Columns — TableViewTemplateColumn for bound text and other DataTemplate cells</x:String>
                     <x:String>Template cells with editors — CheckBox, date and time pickers, ComboBox and Button with a Flyout, two-way bound and reachable from the keyboard</x:String>
                     <x:String>Header-click sort via SortMemberPath, with a direction indicator</x:String>
-                    <x:String>Filtering — TableViewSource.Filter(predicate)</x:String>
+                    <x:String>Filtering — CollectionViewSource.Filter</x:String>
                     <x:String>Grouped rows with collapsible group headers</x:String>
                     <x:String>None / Single row selection</x:String>
                     <x:String>Column layout and sizing — Pixel, Auto and Star widths, MinWidth / MaxWidth clamps, and drag-to-resize grippers</x:String>
@@ -72,7 +72,7 @@
                     <x:String>Row virtualization — realizes only the rows in or near the viewport, so large datasets scroll smoothly</x:String>
                     <x:String>Keyboard navigation and UI Automation peers for tables, rows, cells and headers</x:String>
                     <x:String>RTL flow — mirrored layout and resize gripper placement</x:String>
-                    <x:String>Hierarchical rows from a parent key (ParentBy), composed with filter, sort, grouping and live shaping, on the Hierarchy page and in the Hierarchy and Grouped hierarchy shaping modes of the table pages</x:String>
+                    <x:String>Hierarchical rows from a parent key (TableView.ItemKeyPath and ParentKeyPath), composed with filter, sort and grouping, on the Hierarchy page and in the Hierarchy and Grouped hierarchy shaping modes of the table pages</x:String>
                 </ItemsControl>
             </StackPanel>
 

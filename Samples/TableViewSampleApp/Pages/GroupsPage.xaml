@@ -60,11 +60,11 @@
 
     <controls:SamplePresenter
         Header="Grouped rows"
-        Description="TableViewSource.GroupBy(keySelector, groupIdentitySelector) groups one source in place: the key selector receives each row and the identity selector each group key. GroupHeaderTemplate replaces the header content, and ExpandAllGroups and CollapseAllGroups drive every group at once. The page starts grouped by Department: change a row's Department or Active value and it moves to its new group, because the page applies GroupBy again."
+        Description="A PropertyGroupDescription on one CollectionViewSource groups its View by a property path, and TableView shows the groups. GroupHeaderTemplate replaces the header content, and ExpandAllGroups and CollapseAllGroups drive every group at once. The page starts grouped by Department: change a row's Department or Active value and it moves to its new group, because the page refreshes the view."
         Snippet="Groups"
         StretchExample="True"
         TryIt="The table starts grouped by Department. Pick another department in a row's Department box and watch the row move to that group, then switch Group key to Active and clear a row's checkbox. Choose Collapse all, then expand one group from its header."
-        WhatToLookFor="A row moves to its new group only because the page applies GroupBy again after the edit: the key selector is a delegate, so the control cannot watch the property. Group order follows the first row of each group, not the alphabet, so sorting a column reorders the groups; the Groups readout lists them in table order. Removing the last row of a group removes its header, and an empty source shows the EmptyTemplate.">
+        WhatToLookFor="A row moves to its new group only because the page refreshes the view after the edit: grouping does not follow PropertyChanged. Group order follows the first row of each group, not the alphabet, so sorting a column reorders the groups; the Groups readout lists them in table order. Removing the last row of a group removes its header, and an empty source shows the EmptyTemplate.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -72,7 +72,7 @@
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="GroupsTable"
                 AutomationProperties.Name="Grouped people"
-                ItemsSource="{x:Bind Source}"
+                ItemsSource="{x:Bind Source.View}"
                 SelectionMode="Single"
                 EmptyTemplate="{StaticResource GroupsEmptyTemplate}"
                 VerticalAlignment="Stretch"
@@ -139,7 +139,7 @@
                     AutomationIdPrefix="Groups"
                     ArrangesHierarchyColumn="False"
                     InitialMode="grouped"
-                    Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="This page starts Grouped. Each group key buckets the people a different way, and the headers count them. A PropertyGroupDescription on the page's CollectionViewSource groups the same rows and keeps its sort; turning grouping on or off gives the CollectionViewSource a new View, which the page shows.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Office" Tag="Office"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>

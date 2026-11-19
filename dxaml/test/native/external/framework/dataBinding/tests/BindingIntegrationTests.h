@@ -293,6 +293,82 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify binding to CollectionView")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceShaping)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify experimental CollectionViewSource Filter, SortDescriptions and GroupDescriptions")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewShapingInterface)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a shaped CollectionViewSource view implements ICollectionViewShaping, shares the source's descriptors and reshapes in place")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceDeferRefresh)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.DeferRefresh batches descriptor and source changes into one recompute when the outermost deferral closes")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceCustomSort)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.CustomSort orders the view, replaces and is replaced by SortDescriptions as in WPF, and a throwing comparer leaves the rows")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupConverter)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.Converter maps property values to group keys")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceIncrementalUpdates)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a flat shaped view applies source Add, Remove and Replace as matching vector changes at sorted positions instead of a Reset")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupedIncrementalUpdates)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a grouped view applies source Add, Remove and Replace to its groups as WPF ListCollectionView does: items join their group at their sorted position, new groups are inserted, emptied groups are removed, with no Reset")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceMultiLevelGroups)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify several GroupDescriptions nest groups as WPF CollectionViewGroups do, and source changes update every level incrementally")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupSort)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.SortDescriptions and CustomSort order the groups at their level, as WPF GroupDescription does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceCultureAndStringComparison)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.Culture orders strings by that culture and PropertyGroupDescription.StringComparison matches group names")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewShapingSourceCollection)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify ICollectionViewShaping.SourceCollection is the collection the view was created over")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceFilterEvent)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource FilterRequested event filters the view and replaces the Filter delegate while it has handlers, as WPF's Filter event does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGetDefaultView)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupingKeepsView)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify grouping on, regroup and grouping off keep the CollectionViewSource's View and its CollectionGroups object, raising PropertyChanged(CollectionGroups) before the Reset, as WPF keeps its view")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveSorting)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify ICollectionViewLiveShaping live sorting moves an item whose observed property changed, with default and explicit LiveSortingProperties, as WPF ListCollectionView does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveFiltering)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live filtering removes and inserts an item whose LiveFilteringProperties changed, and observes nothing without them")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveGrouping)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live grouping moves an item to its new group, removes emptied groups and inserts new ones")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveShapingObservedItems)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live shaping subscribes to each source item's PropertyChanged once per live property and unsubscribes on remove, replace, reset, turning it off and releasing the view")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveShapingDeferRefresh)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live changes made under DeferRefresh are restored incrementally when it closes, or by the one recompute a pending rule change causes")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()
