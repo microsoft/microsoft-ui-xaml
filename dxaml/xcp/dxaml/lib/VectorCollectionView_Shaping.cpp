@@ -60,21 +60,31 @@ namespace
         InternalList() = default;
     };
 
-    // A computed group (WPF: MS.Internal.Data.CollectionViewGroupInternal). It is its own item list
-    // (as with IsSourceGrouped and no ItemsPath) and exposes Key (IGrouping<K,T> idiom) and Name
-    // (WPF CollectionViewGroup) to bindings.
+    // A computed group (WPF: MS.Internal.Data.CollectionViewGroupInternal). As a vector it holds the group's
+    // leaves (the items of all its subgroups, in order), so a top-level group is the GroupItems of its
+    // ICollectionViewGroup. As an ICollectionViewGroup itself, Group is the group and GroupItems is WPF's
+    // CollectionViewGroup.Items: the subgroups, or the items at the bottom level. Bindings see Key (the
+    // IGrouping<K,T> idiom), Name, Items, ItemCount and IsBottomLevel.
     class __declspec(novtable) CollectionViewGroupInternal :
         public InternalList,
-        public xaml_data::ICustomPropertyProvider
+        public xaml_data::ICustomPropertyProvider,
+        public xaml_data::ICollectionViewGroup
     {
         BEGIN_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
             INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICustomPropertyProvider)
+            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICollectionViewGroup)
         END_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
 
     public:
-        void SetKey(_In_opt_ IInspectable* pKey)
+        _Check_return_ HRESULT InitializeGroup(_In_opt_ IInspectable* pKey, _In_opt_ CollectionViewGroupInternal* pParent, bool isBottomLevel)
         {
             m_spKey = pKey;
+            m_pParent = pParent;
+            if (!isBottomLevel)
+            {
+                IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(m_spSubgroupList.ReleaseAndGetAddressOf()));
+            }
+            return S_OK;
         }
 
         IInspectable* GetKeyNoRef() const
@@ -82,6 +92,145 @@ namespace
             return m_spKey.Get();
         }
 
+        CollectionViewGroupInternal* GetParentNoRef() const
+        {
+            return m_pParent;
+        }
+
+        void ClearParent()
+        {
+            m_pParent = nullptr;
+        }
+
+        bool IsBottomLevel() const
+        {
+            return !m_spSubgroupList;
+        }
+
+        virtual bool IsRoot() const
+        {
+            return false;
+        }
+
+        UINT LeafCount() const
+        {
+            return Size();
+        }
+
+        const std::vector<ctl::ComPtr<CollectionViewGroupInternal>>& Subgroups() const
+        {
+            return m_subgroups;
+        }
+
+        // Bottom level: the source index of each item.
+        std::vector<UINT>& SourceIndices()
+        {
+            return m_sourceIndices;
+        }
+
+        UINT FirstSourceIndex() const
+        {
+            const CollectionViewGroupInternal* pGroup = this;
+            while (!pGroup->IsBottomLevel() && !pGroup->m_subgroups.empty())
+            {
+                pGroup = pGroup->m_subgroups.front().Get();
+            }
+            return pGroup->m_sourceIndices.empty() ? 0 : pGroup->m_sourceIndices.front();
+        }
+
+        UINT IndexOfSubgroup(_In_ const CollectionViewGroupInternal* pSubgroup) const
+        {
+            for (size_t i = 0; i < m_subgroups.size(); ++i)
+            {
+                if (m_subgroups[i].Get() == pSubgroup)
+                {
+                    return static_cast<UINT>(i);
+                }
+            }
+            return static_cast<UINT>(m_subgroups.size());
+        }
+
+        // The number of leaves in the subgroups before pSubgroup (WPF: LeafIndexFromItem, one level).
+        UINT LeafCountBefore(_In_ const CollectionViewGroupInternal* pSubgroup) const
+        {
+            UINT count = 0;
+            for (const auto& spSubgroup : m_subgroups)
+            {
+                if (spSubgroup.Get() == pSubgroup)
+                {
+                    break;
+                }
+                count += spSubgroup->LeafCount();
+            }
+            return count;
+        }
+
+        _Check_return_ HRESULT InsertSubgroup(UINT index, _In_ CollectionViewGroupInternal* pSubgroup, bool isRaised)
+        {
+            m_subgroups.insert(m_subgroups.begin() + index, ctl::ComPtr<CollectionViewGroupInternal>(pSubgroup));
+            auto pSubgroupItem = ctl::as_iinspectable(pSubgroup);
+            if (isRaised)
+            {
+                IFC_RETURN(m_spSubgroupList->InternalInsertAt(index, pSubgroupItem));
+            }
+            else
+            {
+                IFC_RETURN(m_spSubgroupList->TrackerCollection<IInspectable*>::InsertAt(index, pSubgroupItem));
+            }
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT RemoveSubgroup(UINT index)
+        {
+            m_subgroups[index]->ClearParent();
+            m_subgroups.erase(m_subgroups.begin() + index);
+            IFC_RETURN(m_spSubgroupList->InternalRemoveAt(index));
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT InsertLeaf(UINT index, _In_opt_ IInspectable* pItem, bool isRaised)
+        {
+            if (isRaised)
+            {
+                IFC_RETURN(InternalInsertAt(index, pItem));
+            }
+            else
+            {
+                IFC_RETURN(TrackerCollection<IInspectable*>::InsertAt(index, pItem));
+            }
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT RemoveLeaf(UINT index)
+        {
+            IFC_RETURN(InternalRemoveAt(index));
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT SetLeaf(UINT index, _In_opt_ IInspectable* pItem)
+        {
+            IFC_RETURN(InternalSetAt(index, pItem));
+            return S_OK;
+        }
+
+        // ICollectionViewGroup
+        IFACEMETHODIMP get_Group(_Outptr_ IInspectable** ppValue) override
+        {
+            *ppValue = ctl::as_iinspectable(this);
+            (*ppValue)->AddRef();
+            return S_OK;
+        }
+
+        IFACEMETHODIMP get_GroupItems(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override
+        {
+            ctl::ComPtr<IInspectable> spItems = m_spSubgroupList ? ctl::as_iinspectable(m_spSubgroupList.Get()) : ctl::as_iinspectable(this);
+            ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spVector;
+            IFC_RETURN(spItems.As(&spVector));
+            *ppValue = spVector.Detach();
+            return S_OK;
+        }
+
+        // ICustomPropertyProvider
         IFACEMETHODIMP get_Type(_Out_ wxaml_interop::TypeName* pValue) override
         {
             wxaml_interop::TypeName typeName = {};
@@ -96,7 +245,31 @@ namespace
             *ppValue = nullptr;
             if (wrl_wrappers::HStringReference(L"Key") == name || wrl_wrappers::HStringReference(L"Name") == name)
             {
-                IFC_RETURN(CustomProperty::CreateObjectProperty(name, &CollectionViewGroupInternal::GetKeyPropertyValue, ppValue));
+                IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+                {
+                    return FromTarget(pTarget)->m_spKey.CopyTo(ppResult);
+                }, ppValue));
+            }
+            else if (wrl_wrappers::HStringReference(L"Items") == name)
+            {
+                IFC_RETURN(CustomProperty::CreateObjectProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+                {
+                    return FromTarget(pTarget)->get_GroupItems(reinterpret_cast<wfc::IObservableVector<IInspectable*>**>(ppResult));
+                }, ppValue));
+            }
+            else if (wrl_wrappers::HStringReference(L"ItemCount") == name)
+            {
+                IFC_RETURN(CustomProperty::CreateInt32Property(name, [](IInspectable* pTarget, IInspectable** ppResult)
+                {
+                    return DirectUI::PropertyValue::CreateFromInt32(static_cast<INT32>(FromTarget(pTarget)->LeafCount()), ppResult);
+                }, ppValue));
+            }
+            else if (wrl_wrappers::HStringReference(L"IsBottomLevel") == name)
+            {
+                IFC_RETURN(CustomProperty::CreateBooleanProperty(name, [](IInspectable* pTarget, IInspectable** ppResult)
+                {
+                    return DirectUI::PropertyValue::CreateFromBoolean(FromTarget(pTarget)->IsBottomLevel(), ppResult);
+                }, ppValue));
             }
             return S_OK;
         }
@@ -126,6 +299,10 @@ namespace
             {
                 *ppObject = static_cast<xaml_data::ICustomPropertyProvider*>(this);
             }
+            else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup)))
+            {
+                *ppObject = static_cast<xaml_data::ICollectionViewGroup*>(this);
+            }
             else
             {
                 return InternalList::QueryInterfaceImpl(iid, ppObject);
@@ -135,18 +312,23 @@ namespace
             return S_OK;
         }
 
+        // The subgroups, typed, and as the observable list GroupItems presents (the root's is the InternalList).
+        std::vector<ctl::ComPtr<CollectionViewGroupInternal>> m_subgroups;
+        ctl::ComPtr<InternalList> m_spSubgroupList;
+
     private:
-        static _Check_return_ HRESULT GetKeyPropertyValue(_In_ IInspectable* pTarget, _Outptr_ IInspectable** ppValue)
+        static CollectionViewGroupInternal* FromTarget(_In_ IInspectable* pTarget)
         {
             ctl::ComPtr<IInspectable> spTarget(pTarget);
             ctl::ComPtr<xaml_data::ICustomPropertyProvider> spProvider;
-            IFC_RETURN(spTarget.As(&spProvider));
-            IFC_RETURN(spProvider.Cast<CollectionViewGroupInternal>()->m_spKey.CopyTo(ppValue));
-            return S_OK;
+            VERIFYHR(spTarget.As(&spProvider));
+            return spProvider.Cast<CollectionViewGroupInternal>();
         }
 
         // Not a TrackerPtr: ObservableTrackerCollection::OnReferenceTrackerWalk is final.
         ctl::ComPtr<IInspectable> m_spKey;
+        CollectionViewGroupInternal* m_pParent = nullptr;
+        std::vector<UINT> m_sourceIndices;
     };
 
     struct ShapingKeySelector
@@ -419,56 +601,433 @@ namespace
         ctl::ComPtr<xaml_data::ICollectionViewComparer> m_spCustomSort;
     };
 
-    // Builds the top-level groups in order of first appearance of their key (WPF: MS.Internal.Data.CollectionViewGroupRoot).
-    class CollectionViewGroupRoot
+    // One level of grouping: the group name of an item (WPF: PropertyGroupDescription.GroupNameFromItem / NamesMatch).
+    struct GroupLevel
+    {
+        bool hasDescription = false;
+        ShapingKeySelector selector;
+        ctl::ComPtr<xaml_data::IValueConverter> spConverter;
+    };
+
+    // The top of the group tree (WPF: MS.Internal.Data.CollectionViewGroupRoot). Its subgroups are the view's
+    // InternalList; its own leaves are not kept.
+    class __declspec(novtable) CollectionViewGroupRoot : public CollectionViewGroupInternal
     {
     public:
-        _Check_return_ HRESULT AddToSubgroups(_In_opt_ IInspectable* pItem, _In_opt_ IInspectable* pKey)
+        _Check_return_ HRESULT InitializeRoot(_In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pDescriptions)
         {
-            size_t groupIndex = m_groups.size();
-            for (size_t g = 0; g < m_groups.size(); ++g)
+            UINT count = 0;
+
+            IFC_RETURN(InitializeGroup(nullptr, nullptr, false /* isBottomLevel */));
+            IFC_RETURN(pDescriptions->get_Size(&count));
+            m_levels.clear();
+            m_levels.resize(count);
+            for (UINT i = 0; i < count; ++i)
             {
-                bool areEqual = false;
-                IFC_RETURN(DirectUI::PropertyValue::AreEqual(m_groups[g]->GetKeyNoRef(), pKey, &areEqual));
-                if (areEqual)
+                ctl::ComPtr<xaml_data::IPropertyGroupDescription> spDescription;
+                IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+                if (spDescription)
                 {
-                    groupIndex = g;
+                    wrl_wrappers::HString path;
+                    IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                    IFC_RETURN(CreateKeySelector(path.Get(), &m_levels[i].selector));
+                    IFC_RETURN(spDescription->get_Converter(m_levels[i].spConverter.ReleaseAndGetAddressOf()));
+                    m_levels[i].hasDescription = true;
+                }
+            }
+
+            return S_OK;
+        }
+
+        bool IsRoot() const override
+        {
+            return true;
+        }
+
+        UINT LevelCount() const
+        {
+            return static_cast<UINT>(m_levels.size());
+        }
+
+        // After a recompute: the subgroups are presented through pList, which already holds them.
+        void PresentSubgroups(_In_ InternalList* pList)
+        {
+            m_spSubgroupList = pList;
+        }
+
+        _Check_return_ HRESULT GetGroupNames(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pNames)
+        {
+            wrl_wrappers::HStringReference objectTypeName(L"Object");
+            wxaml_interop::TypeName objectType = { objectTypeName.Get(), wxaml_interop::TypeKind_Primitive };
+
+            pNames->clear();
+            pNames->resize(m_levels.size());
+            for (size_t level = 0; level < m_levels.size(); ++level)
+            {
+                const auto& groupLevel = m_levels[level];
+                if (!groupLevel.hasDescription)
+                {
+                    continue;
+                }
+
+                IFC_RETURN(EvaluateKey(groupLevel.selector, pItem, (*pNames)[level].ReleaseAndGetAddressOf()));
+                if (groupLevel.spConverter)
+                {
+                    ctl::ComPtr<IInspectable> spConverted;
+                    IFC_RETURN(groupLevel.spConverter->Convert((*pNames)[level].Get(), objectType, nullptr /* parameter */, nullptr /* language */, spConverted.ReleaseAndGetAddressOf()));
+                    (*pNames)[level] = std::move(spConverted);
+                }
+            }
+
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT NamesMatch(UINT level, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch) const
+        {
+            UNREFERENCED_PARAMETER(level);
+            IFC_RETURN(DirectUI::PropertyValue::AreEqual(pGroupName, pItemName, pMatch));
+            return S_OK;
+        }
+
+        // The subgroup of pGroup named pName, or null.
+        _Check_return_ HRESULT FindSubgroup(_In_ CollectionViewGroupInternal* pGroup, UINT level, _In_opt_ IInspectable* pName, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppSubgroup) const
+        {
+            *ppSubgroup = nullptr;
+            for (const auto& spSubgroup : pGroup->Subgroups())
+            {
+                bool isMatch = false;
+                IFC_RETURN(NamesMatch(level, spSubgroup->GetKeyNoRef(), pName, &isMatch));
+                if (isMatch)
+                {
+                    *ppSubgroup = spSubgroup.Get();
                     break;
                 }
             }
 
-            if (groupIndex == m_groups.size())
-            {
-                ctl::ComPtr<CollectionViewGroupInternal> spGroup;
-                IFC_RETURN(ctl::ComObject<CollectionViewGroupInternal>::CreateInstance(spGroup.ReleaseAndGetAddressOf()));
-                spGroup->SetKey(pKey);
-                m_groups.push_back(std::move(spGroup));
-                m_groupItems.emplace_back();
-            }
-
-            m_groupItems[groupIndex].emplace_back(pItem);
             return S_OK;
         }
 
-        // Fills each group with its items and returns the groups, in order.
-        _Check_return_ HRESULT GetGroups(_Out_ std::vector<ctl::ComPtr<IInspectable>>* pGroups)
+        // A recompute adds the items in sorted order; a new group goes after the existing ones (WPF: loading).
+        _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex)
         {
-            pGroups->clear();
-            pGroups->reserve(m_groups.size());
-            for (size_t g = 0; g < m_groups.size(); ++g)
+            CollectionViewGroupInternal* pGroup = this;
+            for (UINT level = 0; level < LevelCount(); ++level)
             {
-                IFC_RETURN(m_groups[g]->ReplaceAll(m_groupItems[g]));
-                pGroups->push_back(ctl::as_iinspectable(m_groups[g].Get()));
+                CollectionViewGroupInternal* pSubgroup = nullptr;
+                IFC_RETURN(FindSubgroup(pGroup, level, names[level].Get(), &pSubgroup));
+                if (!pSubgroup)
+                {
+                    ctl::ComPtr<CollectionViewGroupInternal> spSubgroup;
+                    IFC_RETURN(CreateGroup(names[level].Get(), pGroup, level, spSubgroup.ReleaseAndGetAddressOf()));
+                    IFC_RETURN(pGroup->InsertSubgroup(static_cast<UINT>(pGroup->Subgroups().size()), spSubgroup.Get(), false /* isRaised */));
+                    pSubgroup = spSubgroup.Get();
+                }
+                pGroup = pSubgroup;
+            }
+
+            pGroup->SourceIndices().push_back(sourceIndex);
+            for (auto pAncestor = pGroup; pAncestor && !pAncestor->IsRoot(); pAncestor = pAncestor->GetParentNoRef())
+            {
+                IFC_RETURN(pAncestor->InsertLeaf(pAncestor->LeafCount(), pItem, false /* isRaised */));
             }
 
             return S_OK;
         }
+
+        _Check_return_ HRESULT CreateGroup(_In_opt_ IInspectable* pName, _In_ CollectionViewGroupInternal* pParent, UINT level, _Outptr_ CollectionViewGroupInternal** ppGroup) const
+        {
+            ctl::ComPtr<CollectionViewGroupInternal> spGroup;
+            IFC_RETURN(ctl::ComObject<CollectionViewGroupInternal>::CreateInstance(spGroup.ReleaseAndGetAddressOf()));
+            IFC_RETURN(spGroup->InitializeGroup(pName, pParent, level + 1 == LevelCount()));
+            *ppGroup = spGroup.Detach();
+            return S_OK;
+        }
+
+        // The bottom-level group and position that hold the item at sourceIndex.
+        bool FindLeaf(UINT sourceIndex, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppGroup, _Out_ UINT* pPosition)
+        {
+            return FindLeafIn(this, sourceIndex, ppGroup, pPosition);
+        }
+
+        // A source insert (delta 1) or remove (delta -1) at sourceIndex shifts the later source indices.
+        void ShiftSourceIndices(UINT sourceIndex, int delta)
+        {
+            ShiftSourceIndicesIn(this, sourceIndex, delta);
+        }
+
+    protected:
+        CollectionViewGroupRoot() = default;
 
     private:
-        std::vector<ctl::ComPtr<CollectionViewGroupInternal>> m_groups;
-        std::vector<std::vector<ctl::ComPtr<IInspectable>>> m_groupItems;
+        static bool FindLeafIn(_In_ CollectionViewGroupInternal* pGroup, UINT sourceIndex, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppGroup, _Out_ UINT* pPosition)
+        {
+            *ppGroup = nullptr;
+            *pPosition = 0;
+            if (pGroup->IsBottomLevel())
+            {
+                auto& sourceIndices = pGroup->SourceIndices();
+                auto found = std::find(sourceIndices.begin(), sourceIndices.end(), sourceIndex);
+                if (found != sourceIndices.end())
+                {
+                    *ppGroup = pGroup;
+                    *pPosition = static_cast<UINT>(found - sourceIndices.begin());
+                    return true;
+                }
+                return false;
+            }
+
+            for (const auto& spSubgroup : pGroup->Subgroups())
+            {
+                if (FindLeafIn(spSubgroup.Get(), sourceIndex, ppGroup, pPosition))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static void ShiftSourceIndicesIn(_In_ CollectionViewGroupInternal* pGroup, UINT sourceIndex, int delta)
+        {
+            if (pGroup->IsBottomLevel())
+            {
+                for (auto& index : pGroup->SourceIndices())
+                {
+                    if (delta > 0 && index >= sourceIndex)
+                    {
+                        ++index;
+                    }
+                    else if (delta < 0 && index > sourceIndex)
+                    {
+                        --index;
+                    }
+                }
+                return;
+            }
+
+            for (const auto& spSubgroup : pGroup->Subgroups())
+            {
+                ShiftSourceIndicesIn(spSubgroup.Get(), sourceIndex, delta);
+            }
+        }
+
+        std::vector<GroupLevel> m_levels;
     };
 
+    // Where an item joins the group tree (WPF: CollectionViewGroupRoot.AddToSubgroups).
+    struct GroupedInsertion
+    {
+        bool isAccepted = false;
+        // The deepest existing group on the item's path.
+        CollectionViewGroupInternal* pGroup = nullptr;
+        // The first group the item creates on its path, already holding the item; null if its group exists.
+        ctl::ComPtr<CollectionViewGroupInternal> spNewGroup;
+        // spNewGroup's index among pGroup's subgroups, else the item's index among pGroup's items.
+        UINT position = 0;
+    };
+
+    // The item's index in a bottom-level group: after the items that sort before or with it. excludedPosition is
+    // a replaced item still in the group, or UINT_MAX.
+    _Check_return_ HRESULT FindLeafPosition(
+        _In_ CollectionViewGroupInternal* pGroup,
+        const SortFieldComparer& comparer,
+        _In_opt_ IInspectable* pItem,
+        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        UINT sourceIndex,
+        UINT excludedPosition,
+        _Out_ UINT* pPosition)
+    {
+        const auto& sourceIndices = pGroup->SourceIndices();
+        const UINT count = pGroup->LeafCount() - ((excludedPosition < pGroup->LeafCount()) ? 1 : 0);
+        UINT low = 0;
+        UINT high = count;
+
+        while (low < high)
+        {
+            const UINT middle = low + (high - low) / 2;
+            const UINT position = (middle >= excludedPosition) ? middle + 1 : middle;
+            ctl::ComPtr<IInspectable> spOther;
+            int result = 0;
+            IFC_RETURN(pGroup->GetAt(position, spOther.ReleaseAndGetAddressOf()));
+            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spOther.Get(), nullptr /* pRightKeys */, sourceIndices[position], &result));
+            if (result < 0)
+            {
+                high = middle;
+            }
+            else
+            {
+                low = middle + 1;
+            }
+        }
+
+        *pPosition = low;
+        return S_OK;
+    }
+
+    // A new subgroup's index (WPF: CollectionViewGroupInternal.FindIndex): before the first subgroup whose first
+    // item sorts after the new group's item.
+    _Check_return_ HRESULT FindSubgroupPosition(
+        _In_ CollectionViewGroupInternal* pParent,
+        const SortFieldComparer& comparer,
+        _In_opt_ IInspectable* pItem,
+        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        UINT sourceIndex,
+        _Out_ UINT* pPosition)
+    {
+        const auto& subgroups = pParent->Subgroups();
+        UINT position = 0;
+
+        for (; position < subgroups.size(); ++position)
+        {
+            ctl::ComPtr<IInspectable> spSeed;
+            int result = 0;
+            if (subgroups[position]->LeafCount() == 0)
+            {
+                continue;
+            }
+            IFC_RETURN(subgroups[position]->GetAt(0, spSeed.ReleaseAndGetAddressOf()));
+            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spSeed.Get(), nullptr /* pRightKeys */, subgroups[position]->FirstSourceIndex(), &result));
+            if (result < 0)
+            {
+                break;
+            }
+        }
+
+        *pPosition = position;
+        return S_OK;
+    }
+
+    // Runs app code (property getters, converters, comparers) and changes nothing that is presented.
+    _Check_return_ HRESULT PlanGroupedInsertion(
+        _In_ CollectionViewGroupRoot* pRoot,
+        const SortFieldComparer& comparer,
+        _In_opt_ IInspectable* pItem,
+        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        UINT sourceIndex,
+        _In_opt_ CollectionViewGroupInternal* pExcludedGroup,
+        UINT excludedPosition,
+        _Out_ GroupedInsertion* pInsertion)
+    {
+        std::vector<ctl::ComPtr<IInspectable>> names;
+        CollectionViewGroupInternal* pGroup = pRoot;
+
+        IFC_RETURN(pRoot->GetGroupNames(pItem, &names));
+        pInsertion->isAccepted = true;
+
+        for (UINT level = 0; level < pRoot->LevelCount(); ++level)
+        {
+            CollectionViewGroupInternal* pSubgroup = nullptr;
+            IFC_RETURN(pRoot->FindSubgroup(pGroup, level, names[level].Get(), &pSubgroup));
+            if (pSubgroup)
+            {
+                pGroup = pSubgroup;
+                continue;
+            }
+
+            // The item starts a branch: build it, holding the item, before it is presented.
+            CollectionViewGroupInternal* pParent = pGroup;
+            for (UINT newLevel = level; newLevel < pRoot->LevelCount(); ++newLevel)
+            {
+                ctl::ComPtr<CollectionViewGroupInternal> spNewGroup;
+                IFC_RETURN(pRoot->CreateGroup(names[newLevel].Get(), pParent, newLevel, spNewGroup.ReleaseAndGetAddressOf()));
+                IFC_RETURN(spNewGroup->InsertLeaf(0, pItem, false /* isRaised */));
+                if (newLevel == level)
+                {
+                    pInsertion->spNewGroup = spNewGroup;
+                }
+                else
+                {
+                    IFC_RETURN(pParent->InsertSubgroup(0, spNewGroup.Get(), false /* isRaised */));
+                }
+                if (newLevel + 1 == pRoot->LevelCount())
+                {
+                    spNewGroup->SourceIndices().push_back(sourceIndex);
+                }
+                pParent = spNewGroup.Get();
+            }
+
+            pInsertion->pGroup = pGroup;
+            IFC_RETURN(FindSubgroupPosition(pGroup, comparer, pItem, keys, sourceIndex, &pInsertion->position));
+            return S_OK;
+        }
+
+        pInsertion->pGroup = pGroup;
+        IFC_RETURN(FindLeafPosition(pGroup, comparer, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, &pInsertion->position));
+        return S_OK;
+    }
+
+    // Each group above pChild, up to the root, gets the change at the item's index among its leaves.
+    template <typename TChange>
+    _Check_return_ HRESULT ChangeAncestorLeaves(_In_ CollectionViewGroupInternal* pChild, UINT offset, const TChange& changeLeaf)
+    {
+        for (auto pGroup = pChild->GetParentNoRef(); pGroup && !pGroup->IsRoot(); pChild = pGroup, pGroup = pGroup->GetParentNoRef())
+        {
+            offset += pGroup->LeafCountBefore(pChild);
+            IFC_RETURN(changeLeaf(pGroup, offset));
+        }
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT ApplyGroupedInsertion(const GroupedInsertion& insertion, _In_opt_ IInspectable* pItem, UINT sourceIndex)
+    {
+        auto insertLeaf = [pItem](CollectionViewGroupInternal* pGroup, UINT index) { return pGroup->InsertLeaf(index, pItem, true /* isRaised */); };
+
+        if (insertion.spNewGroup)
+        {
+            IFC_RETURN(insertion.pGroup->InsertSubgroup(insertion.position, insertion.spNewGroup.Get(), true /* isRaised */));
+            IFC_RETURN(ChangeAncestorLeaves(insertion.spNewGroup.Get(), 0, insertLeaf));
+            return S_OK;
+        }
+
+        auto& sourceIndices = insertion.pGroup->SourceIndices();
+        sourceIndices.insert(sourceIndices.begin() + insertion.position, sourceIndex);
+        IFC_RETURN(insertLeaf(insertion.pGroup, insertion.position));
+        IFC_RETURN(ChangeAncestorLeaves(insertion.pGroup, insertion.position, insertLeaf));
+        return S_OK;
+    }
+
+    // An item leaves its group (WPF: RemoveFromSubgroups); the groups it was the last item of go with it.
+    _Check_return_ HRESULT ApplyGroupedRemoval(_In_ CollectionViewGroupInternal* pGroup, UINT position)
+    {
+        auto removeLeaf = [](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->RemoveLeaf(index); };
+        CollectionViewGroupInternal* pEmptied = nullptr;
+
+        if (pGroup->LeafCount() == 1)
+        {
+            pEmptied = pGroup;
+            while (pEmptied->GetParentNoRef() && !pEmptied->GetParentNoRef()->IsRoot() && pEmptied->GetParentNoRef()->LeafCount() == 1)
+            {
+                pEmptied = pEmptied->GetParentNoRef();
+            }
+        }
+
+        if (pEmptied)
+        {
+            auto pParent = pEmptied->GetParentNoRef();
+            const UINT offset = pParent->IsRoot() ? 0 : pParent->LeafCountBefore(pEmptied);
+            const UINT index = pParent->IndexOfSubgroup(pEmptied);
+            IFC_RETURN(pParent->RemoveSubgroup(index));
+            if (!pParent->IsRoot())
+            {
+                IFC_RETURN(pParent->RemoveLeaf(offset));
+                IFC_RETURN(ChangeAncestorLeaves(pParent, offset, removeLeaf));
+            }
+            return S_OK;
+        }
+
+        auto& sourceIndices = pGroup->SourceIndices();
+        sourceIndices.erase(sourceIndices.begin() + position);
+        IFC_RETURN(pGroup->RemoveLeaf(position));
+        IFC_RETURN(ChangeAncestorLeaves(pGroup, position, removeLeaf));
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT ApplyGroupedReplace(_In_ CollectionViewGroupInternal* pGroup, UINT position, _In_opt_ IInspectable* pItem)
+    {
+        auto setLeaf = [pItem](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->SetLeaf(index, pItem); };
+        IFC_RETURN(setLeaf(pGroup, position));
+        IFC_RETURN(ChangeAncestorLeaves(pGroup, position, setLeaf));
+        return S_OK;
+    }
 }
 
 HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
@@ -868,17 +1427,12 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
     {
         ctl::ComPtr<IInspectable> item;
         std::vector<ctl::ComPtr<IInspectable>> sortKeys;
-        ctl::ComPtr<IInspectable> groupKey;
+        std::vector<ctl::ComPtr<IInspectable>> groupNames;
         UINT sourceIndex = 0;
     };
 
     SortFieldComparer sortComparer;
-    ShapingKeySelector groupSelector;
-    bool hasGroupSelector = false;
-    ctl::ComPtr<xaml_data::IValueConverter> spGroupConverter;
-    wrl_wrappers::HStringReference groupKeyTypeName(L"Object");
-    wxaml_interop::TypeName groupKeyType = { groupKeyTypeName.Get(), wxaml_interop::TypeKind_Primitive };
-    ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
+    ctl::ComPtr<CollectionViewGroupRoot> spRoot;
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
     std::vector<UINT> outputSourceIndices;
@@ -887,24 +1441,10 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
 
     IFC_RETURN(sortComparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
 
-    // ICollectionViewGroup is single level, so only the first group description is used.
     if (m_isGrouping)
     {
-        UINT count = 0;
-        IFC_RETURN(m_tpGroupDescriptions->get_Size(&count));
-        for (UINT i = 0; i < count && !hasGroupSelector; ++i)
-        {
-            ctl::ComPtr<xaml_data::IPropertyGroupDescription> spDescription;
-            IFC_RETURN(m_tpGroupDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
-            if (spDescription)
-            {
-                wrl_wrappers::HString path;
-                IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
-                IFC_RETURN(CreateKeySelector(path.Get(), &groupSelector));
-                IFC_RETURN(spDescription->get_Converter(spGroupConverter.ReleaseAndGetAddressOf()));
-                hasGroupSelector = true;
-            }
-        }
+        IFC_RETURN(ctl::ComObject<CollectionViewGroupRoot>::CreateInstance(spRoot.ReleaseAndGetAddressOf()));
+        IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get()));
     }
 
     IFC_RETURN(m_tpSourceList->get_Size(&size));
@@ -913,30 +1453,21 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
     for (UINT i = 0; i < size; ++i)
     {
         Entry entry;
+        bool isAccepted = true;
         entry.sourceIndex = i;
         IFC_RETURN(m_tpSourceList->GetAt(i, entry.item.ReleaseAndGetAddressOf()));
 
-        if (spFilter)
+        IFC_RETURN(PassesFilter(entry.item.Get(), &isAccepted));
+        if (!isAccepted)
         {
-            boolean accepted = true;
-            IFC_RETURN(spFilter->Invoke(entry.item.Get(), &accepted));
-            if (!accepted)
-            {
-                continue;
-            }
+            continue;
         }
 
         IFC_RETURN(sortComparer.EvaluateKeys(entry.item.Get(), &entry.sortKeys));
 
-        if (hasGroupSelector)
+        if (spRoot)
         {
-            IFC_RETURN(EvaluateKey(groupSelector, entry.item.Get(), entry.groupKey.ReleaseAndGetAddressOf()));
-            if (spGroupConverter)
-            {
-                ctl::ComPtr<IInspectable> spConverted;
-                IFC_RETURN(spGroupConverter->Convert(entry.groupKey.Get(), groupKeyType, nullptr /* parameter */, nullptr /* language */, spConverted.ReleaseAndGetAddressOf()));
-                entry.groupKey = std::move(spConverted);
-            }
+            IFC_RETURN(spRoot->GetGroupNames(entry.item.Get(), &entry.groupNames));
         }
 
         entries.push_back(std::move(entry));
@@ -958,7 +1489,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
         IFC_RETURN(hrCompare);
     }
 
-    if (!m_isGrouping)
+    if (!spRoot)
     {
         outputItems.reserve(entries.size());
         outputSourceIndices.reserve(entries.size());
@@ -970,20 +1501,38 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
     }
     else
     {
-        CollectionViewGroupRoot root;
         for (const auto& entry : entries)
         {
-            IFC_RETURN(root.AddToSubgroups(entry.item.Get(), entry.groupKey.Get()));
+            IFC_RETURN(spRoot->AddLoading(entry.item.Get(), entry.groupNames, entry.sourceIndex));
         }
 
-        IFC_RETURN(root.GetGroups(&outputItems));
+        outputItems.reserve(spRoot->Subgroups().size());
+        for (const auto& spGroup : spRoot->Subgroups())
+        {
+            outputItems.push_back(ctl::as_iinspectable(spGroup.Get()));
+        }
+        spRoot->PresentSubgroups(static_cast<InternalList*>(m_tpInternalList.Get()));
     }
 
     // Recorded before ReplaceAll raises, so a handler that changes the source sees consistent state.
     m_sourceIndices = std::move(outputSourceIndices);
+    m_spGroupRoot = spRoot ? static_cast<xaml_data::ICollectionViewGroup*>(spRoot.Get()) : nullptr;
     m_sourceListSize = size;
-    m_areSourceIndicesValid = !m_isGrouping && (sourceChangeCount == m_sourceListChangeCount);
+    m_areSourceIndicesValid = (sourceChangeCount == m_sourceListChangeCount);
     IFC_RETURN(static_cast<InternalList*>(m_tpInternalList.Get())->ReplaceAll(outputItems));
+    return S_OK;
+}
+
+// Whether the view shows the item (WPF: CollectionView.PassesFilter).
+_Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted)
+{
+    *pIsAccepted = true;
+    if (m_tpFilter)
+    {
+        boolean accepted = true;
+        IFC_RETURN(m_tpFilter->Invoke(pItem, &accepted));
+        *pIsAccepted = !!accepted;
+    }
     return S_OK;
 }
 
@@ -1076,7 +1625,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         IFC_RETURN(pArgs->get_Index(&index));
     }
 
-    if (m_areSourceIndicesValid && !m_isGrouping && change != wfc::CollectionChange_Reset)
+    if (m_areSourceIndicesValid && change != wfc::CollectionChange_Reset)
     {
         IFC_RETURN(ProcessCollectionChangedWithAdjustedIndex(change, index, &isApplied));
     }
@@ -1121,6 +1670,12 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
     }
     m_sourceListSize = sourceSize;
 
+    if (m_isGrouping)
+    {
+        IFC_RETURN(ProcessGroupedCollectionChanged(change, index, pIsApplied));
+        return S_OK;
+    }
+
     auto found = std::find(m_sourceIndices.begin(), m_sourceIndices.end(), index);
     if (change != wfc::CollectionChange_ItemInserted && found != m_sourceIndices.end())
     {
@@ -1146,18 +1701,14 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         m_isComputingShape = true;
         hr = [&]() -> HRESULT
         {
-            ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
             SortFieldComparer comparer;
             std::vector<ctl::ComPtr<IInspectable>> keys;
+            bool isAccepted = true;
 
-            if (spFilter)
+            IFC_RETURN(PassesFilter(spItem.Get(), &isAccepted));
+            if (!isAccepted)
             {
-                boolean accepted = true;
-                IFC_RETURN(spFilter->Invoke(spItem.Get(), &accepted));
-                if (!accepted)
-                {
-                    return S_OK;
-                }
+                return S_OK;
             }
 
             IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
@@ -1232,6 +1783,102 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         {
             m_sourceIndices.insert(m_sourceIndices.begin() + newPosition, index);
             IFC_RETURN(pOutput->InternalInsertAt(newPosition, spItem.Get()));
+        }
+
+        return S_OK;
+    }();
+    m_isComputingShape = false;
+    IFC_RETURN(hr);
+
+    // A handler changed the source while the change was raised: recompute fully.
+    *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
+    return S_OK;
+}
+
+// A source change on a grouped view (WPF: ListCollectionView.AddItemToGroups / RemoveItemFromGroups): the item
+// joins or leaves its bottom-level group at its sorted position, a group it starts is inserted among its siblings,
+// and a group it empties is removed. Each vector of the group tree raises its own change.
+_Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
+{
+    auto pRoot = static_cast<CollectionViewGroupRoot*>(static_cast<CollectionViewGroupInternal*>(m_spGroupRoot.Get()));
+    const UINT sourceChangeCount = m_sourceListChangeCount;
+    CollectionViewGroupInternal* pOldGroup = nullptr;
+    UINT oldPosition = 0;
+    GroupedInsertion insertion;
+    ctl::ComPtr<IInspectable> spItem;
+    SortFieldComparer comparer;
+    std::vector<ctl::ComPtr<IInspectable>> keys;
+    HRESULT hr = S_OK;
+
+    *pIsApplied = false;
+    if (!pRoot)
+    {
+        return S_OK;
+    }
+
+    const bool hasOld = (change != wfc::CollectionChange_ItemInserted) && pRoot->FindLeaf(index, &pOldGroup, &oldPosition);
+    if (change == wfc::CollectionChange_ItemInserted)
+    {
+        pRoot->ShiftSourceIndices(index, 1);
+    }
+
+    // App code (Filter, property getters, converters, CustomSort) runs only here and in a re-plan below.
+    if (change != wfc::CollectionChange_ItemRemoved)
+    {
+        IFC_RETURN(m_tpSourceList->GetAt(index, spItem.ReleaseAndGetAddressOf()));
+
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            bool isAccepted = true;
+            IFC_RETURN(PassesFilter(spItem.Get(), &isAccepted));
+            if (!isAccepted)
+            {
+                return S_OK;
+            }
+
+            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
+            IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
+            IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, spItem.Get(), keys, index, hasOld ? pOldGroup : nullptr, oldPosition, &insertion));
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+
+        if (sourceChangeCount != m_sourceListChangeCount)
+        {
+            return S_OK;
+        }
+    }
+
+    m_isComputingShape = true;
+    hr = [&]() -> HRESULT
+    {
+        if (hasOld && insertion.isAccepted && !insertion.spNewGroup && insertion.pGroup == pOldGroup && insertion.position == oldPosition)
+        {
+            IFC_RETURN(ApplyGroupedReplace(pOldGroup, oldPosition, spItem.Get()));
+            return S_OK;
+        }
+
+        if (hasOld)
+        {
+            IFC_RETURN(ApplyGroupedRemoval(pOldGroup, oldPosition));
+        }
+
+        if (change == wfc::CollectionChange_ItemRemoved)
+        {
+            pRoot->ShiftSourceIndices(index, -1);
+        }
+
+        if (insertion.isAccepted)
+        {
+            // The removal may have changed the groups the plan used.
+            if (hasOld)
+            {
+                insertion = GroupedInsertion();
+                IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, spItem.Get(), keys, index, nullptr /* pExcludedGroup */, UINT_MAX, &insertion));
+            }
+            IFC_RETURN(ApplyGroupedInsertion(insertion, spItem.Get(), index));
         }
 
         return S_OK;

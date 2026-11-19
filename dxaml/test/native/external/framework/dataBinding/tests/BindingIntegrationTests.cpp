@@ -4017,7 +4017,7 @@ namespace Framework { namespace DataBinding {
 
             view->VectorChanged -= token;
 
-            LOG_OUTPUT(L"A grouped view still recomputes fully on a source change.");
+            LOG_OUTPUT(L"A grouped view applies a source change incrementally too.");
             auto grouped = ref new CollectionViewSource();
             auto groupedSource = MakeShapingSource();
             grouped->Source = groupedSource;
@@ -4026,8 +4026,201 @@ namespace Framework { namespace DataBinding {
             auto groupedCounts = std::make_shared<VectorChangeCounts>();
             auto groupedToken = CountVectorChanges(groupedView, groupedCounts);
             groupedSource->Append(MakeShapingItem(L"e", 2));
-            VERIFY_IS_TRUE(groupedCounts->resets > 0);
+            VERIFY_ARE_STRINGS_EQUAL(L"badec", ShapingNamesOf(groupedView)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"+3", groupedCounts->log.c_str());
             groupedView->VectorChanged -= groupedToken;
+        });
+    }
+
+    namespace
+    {
+        // "key:items" per group, space separated; a group above the bottom level lists its subgroups in braces.
+        std::wstring DescribeGroups(::Windows::Foundation::Collections::IObservableVector<Object^>^ groups)
+        {
+            std::wstring result;
+            for (unsigned int i = 0; i < groups->Size; i++)
+            {
+                auto entry = groups->GetAt(i);
+                auto viewGroup = dynamic_cast<ICollectionViewGroup^>(entry);
+                auto group = viewGroup ? viewGroup->Group : entry;
+                auto provider = safe_cast<ICustomPropertyProvider^>(group);
+                auto key = provider->GetCustomProperty(L"Key")->GetValue(group);
+                auto items = safe_cast<ICollectionViewGroup^>(group)->GroupItems;
+
+                result += (i > 0) ? L" " : L"";
+                result += key ? key->ToString()->Data() : L"null";
+                result += L":";
+                if (items->Size > 0 && dynamic_cast<ICollectionViewGroup^>(items->GetAt(0)))
+                {
+                    result += L"{" + DescribeGroups(items) + L"}";
+                }
+                else
+                {
+                    result += ShapingNamesOf(items)->Data();
+                }
+            }
+            return result;
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupedIncrementalUpdates()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"b", 1));
+            source->Append(MakeShapingItem(L"f", 2));
+            source->Append(MakeShapingItem(L"a", 1));
+            source->Append(MakeShapingItem(L"d", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+            VERIFY_ARE_STRINGS_EQUAL(L"abdf", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:d 2:f", DescribeGroups(groups).c_str());
+
+            auto firstGroupItems = safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems;
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto itemCounts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            auto itemsToken = CountVectorChanges(firstGroupItems, itemCounts);
+            auto step = [&](const wchar_t* expectedNames, const wchar_t* expectedGroups, const wchar_t* expectedLog, const wchar_t* expectedGroupLog, const wchar_t* expectedItemLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames, ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroups, DescribeGroups(groups).c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroupLog, groupCounts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedItemLog, itemCounts->log.c_str());
+                counts->log.clear();
+                groupCounts->log.clear();
+                itemCounts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item joins its group at its sorted position.");
+            source->Append(MakeShapingItem(L"c", 1));
+            step(L"abcdf", L"1:abc 0:d 2:f", L"+2", L"", L"+2");
+
+            LOG_OUTPUT(L"An item with a new group name starts a group, placed before the first group whose first item sorts after it.");
+            source->InsertAt(0, MakeShapingItem(L"e", 3));
+            step(L"abcdef", L"1:abc 0:d 3:e 2:f", L"+4", L"+2", L"");
+
+            LOG_OUTPUT(L"Removing the last item of a group removes the group.");
+            source->RemoveAt(4); // d
+            step(L"abcef", L"1:abc 3:e 2:f", L"-3", L"-1", L"");
+
+            LOG_OUTPUT(L"A replaced item that changes group leaves one and joins the other.");
+            source->SetAt(1, MakeShapingItem(L"g", 2)); // b1 -> g2
+            step(L"acefg", L"1:ac 3:e 2:fg", L"-1+4", L"", L"-1");
+
+            LOG_OUTPUT(L"A replaced item that stays in place is an ItemChanged.");
+            source->SetAt(4, MakeShapingItem(L"c", 1));
+            step(L"acefg", L"1:ac 3:e 2:fg", L"~1", L"", L"~1");
+
+            LOG_OUTPUT(L"The view, its groups and the incremental result survive a full recompute unchanged.");
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"acefg", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ac 3:e 2:fg", DescribeGroups(groups).c_str());
+
+            view->VectorChanged -= token;
+            groups->VectorChanged -= groupsToken;
+            firstGroupItems->VectorChanged -= itemsToken;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceMultiLevelGroups()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto makeItem = [](Platform::String^ name, int32 group, int16 subgroup)
+            {
+                auto item = MakeShapingItem(name, group);
+                item->Int16Property = subgroup;
+                return item;
+            };
+
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(makeItem(L"a", 1, 0));
+            source->Append(makeItem(L"b", 1, 1));
+            source->Append(makeItem(L"c", 2, 0));
+            source->Append(makeItem(L"d", 1, 0));
+            source->Append(makeItem(L"e", 2, 1));
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int16Property"));
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+
+            LOG_OUTPUT(L"The view's items are the leaves in group order; each top-level group's GroupItems are its leaves.");
+            VERIFY_ARE_STRINGS_EQUAL(L"adbce", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:{0:ad 1:b} 2:{0:c 1:e}", DescribeGroups(groups).c_str());
+            auto first = safe_cast<ICollectionViewGroup^>(groups->GetAt(0));
+            VERIFY_ARE_STRINGS_EQUAL(L"adb", ShapingNamesOf(first->GroupItems)->Data());
+
+            LOG_OUTPUT(L"The group object is a CollectionViewGroup: Items are its subgroups, ItemCount its leaves.");
+            auto group = first->Group;
+            auto provider = safe_cast<ICustomPropertyProvider^>(group);
+            VERIFY_ARE_EQUAL(3, safe_cast<int32>(provider->GetCustomProperty(L"ItemCount")->GetValue(group)));
+            VERIFY_IS_FALSE(safe_cast<bool>(provider->GetCustomProperty(L"IsBottomLevel")->GetValue(group)));
+            auto subgroups = safe_cast<ICollectionViewGroup^>(group)->GroupItems;
+            VERIFY_ARE_EQUAL(2u, subgroups->Size);
+            auto subgroup = subgroups->GetAt(0);
+            VERIFY_IS_TRUE(safe_cast<bool>(safe_cast<ICustomPropertyProvider^>(subgroup)->GetCustomProperty(L"IsBottomLevel")->GetValue(subgroup)));
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewGroup^>(subgroup)->Group == subgroup);
+
+            auto counts = std::make_shared<VectorChangeCounts>();
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto subgroupCounts = std::make_shared<VectorChangeCounts>();
+            auto token = CountVectorChanges(view, counts);
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            auto secondSubgroups = safe_cast<ICollectionViewGroup^>(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->Group)->GroupItems;
+            auto subgroupsToken = CountVectorChanges(secondSubgroups, subgroupCounts);
+            auto step = [&](const wchar_t* expectedNames, const wchar_t* expectedGroups, const wchar_t* expectedLog, const wchar_t* expectedGroupLog, const wchar_t* expectedSubgroupLog)
+            {
+                VERIFY_ARE_STRINGS_EQUAL(expectedNames, ShapingNamesOf(view)->Data());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroups, DescribeGroups(groups).c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedLog, counts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedGroupLog, groupCounts->log.c_str());
+                VERIFY_ARE_STRINGS_EQUAL(expectedSubgroupLog, subgroupCounts->log.c_str());
+                counts->log.clear();
+                groupCounts->log.clear();
+                subgroupCounts->log.clear();
+            };
+
+            LOG_OUTPUT(L"An added item joins its bottom-level group.");
+            source->Append(makeItem(L"f", 1, 1));
+            step(L"adbfce", L"1:{0:ad 1:bf} 2:{0:c 1:e}", L"+3", L"", L"");
+
+            LOG_OUTPUT(L"A new subgroup is inserted under its existing parent.");
+            source->Append(makeItem(L"g", 2, 2));
+            step(L"adbfceg", L"1:{0:ad 1:bf} 2:{0:c 1:e 2:g}", L"+6", L"", L"+2");
+
+            LOG_OUTPUT(L"Removing the last item of a subgroup removes only that subgroup.");
+            source->RemoveAt(2); // c
+            step(L"adbfeg", L"1:{0:ad 1:bf} 2:{1:e 2:g}", L"-4", L"", L"-0");
+
+            LOG_OUTPUT(L"An item with a new top-level name starts a branch of new groups.");
+            source->Append(makeItem(L"h", 3, 0));
+            step(L"adbfegh", L"1:{0:ad 1:bf} 2:{1:e 2:g} 3:{0:h}", L"+6", L"+2", L"");
+
+            LOG_OUTPUT(L"The incremental result matches a full recompute.");
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"adbfegh", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:{0:ad 1:bf} 2:{1:e 2:g} 3:{0:h}", DescribeGroups(view->CollectionGroups).c_str());
+
+            view->VectorChanged -= token;
+            groups->VectorChanged -= groupsToken;
+            secondSubgroups->VectorChanged -= subgroupsToken;
         });
     }
 

@@ -317,6 +317,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify a flat shaped view applies source Add, Remove and Replace as matching vector changes at sorted positions instead of a Reset")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupedIncrementalUpdates)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a grouped view applies source Add, Remove and Replace to its groups as WPF ListCollectionView does: items join their group at their sorted position, new groups are inserted, emptied groups are removed, with no Reset")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceMultiLevelGroups)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify several GroupDescriptions nest groups as WPF CollectionViewGroups do, and source changes update every level incrementally")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()
