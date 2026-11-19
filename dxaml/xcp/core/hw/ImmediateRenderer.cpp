@@ -904,6 +904,13 @@ void ImmediateRenderer::Walk(
         ReportUnsupported(element, L"Projection");
     }
 
+    // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual, e.g. the
+    // AnimatedIcon used by CheckBox/RadioButton glyphs) has no XAML primitives to paint.
+    if (element->IsUsingHandInVisual())
+    {
+        ReportUnsupported(element, L"Hand-in Composition visual");
+    }
+
     // Clip rects are tracked as world-space bounding boxes; exact for scale/translate transforms (the target scenes).
     if (const xref_ptr<CGeometry> elementClip = element->GetClip())
     {
