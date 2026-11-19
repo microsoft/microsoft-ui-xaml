@@ -1595,6 +1595,8 @@ void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
     RunOnUIThread([&]
     {
         auto bitmapImage = ref new BitmapImage();
+        // Not from an earlier test's decode: the Image must still be loading B on the next frame.
+        bitmapImage->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
         eventWaitingContextA.Attach(bitmapImage);
         bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png"); // A
 
@@ -1608,7 +1610,7 @@ void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "A");
 
     // Capture the first frame rendered after the change. B's decode is only requested from that frame's render walk,
-    // so B can't be shown yet: the Image must still draw A rather than an empty surface.
+    // so B can't be shown yet: the Image must still draw A (same tree and surface as "A") rather than an empty surface.
     bool sourceChanged = false;
     bool verified = false;
     TestServices::WindowHelper->SetPostTickCallback(ref new PostTickCallback([&]()
@@ -1616,7 +1618,7 @@ void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
         if (sourceChanged && !verified)
         {
             verified = true;
-            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "A-While-B-Loads");
+            TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly, "A");
         }
     }));
 
@@ -1624,6 +1626,7 @@ void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
     {
         // A new BitmapImage, as a string binding to Image.Source creates on every update.
         auto bitmapImage = ref new BitmapImage();
+        bitmapImage->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
         eventWaitingContextB.Attach(bitmapImage);
         bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png"); // B
         image->Source = bitmapImage;
