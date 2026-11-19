@@ -29,7 +29,7 @@ signal that matters when comparing backends.
 | Mode ID | Backend |
 |---|---|
 | `COMP` | Existing Composition path (baseline) |
-| `GDIP` | Immediate rendering, GDI+ painter (CPU) with DirectWrite text |
+| `GDIP` | Immediate rendering, GDI+ painter (CPU), including GDI+ text |
 | `D2D-HW` | Immediate rendering, Direct2D on a hardware device |
 | `D2D-SW` | Immediate rendering, Direct2D on WARP |
 
@@ -196,8 +196,18 @@ counters must be used.
 
 Status (GDI+ branch): resources created and destroyed per frame are emitted as `ResourceChurn` (Resources keyword) and
 reported as W6 per second. GDI+ uploads are defined as the bytes copied from the CPU bitmap to the presentable surface:
-damaged pixels times 4, with no full-frame copy. The `Memory` WPR profile adds heap tracing so GDI+ heap growth (M2, M8)
+damaged pixels times 4, with no full-frame copy except the first frame after a swap chain is attached or resized.
+Offscreen frames report 0. The `Memory` WPR profile adds heap tracing so GDI+ heap growth (M2, M8)
 can be attributed.
+
+**GDI+ readiness (prototype).** The GDI+ painter is implemented:
+
+- It draws into a 32bpp PARGB `Gdiplus::Bitmap` over a painter-owned buffer, clipped to damage.
+- Text is drawn with GDI+ `DrawString` (grayscale antialiasing). Fonts, brushes, pens and opacity layers are cached,
+  so steady-state frames have no resource churn.
+- Presentation uses one composition swap chain per root on any D3D11 device. Each damage rect is copied with
+  `UpdateSubresource`, then `Present1` is called with those rects as dirty rects.
+- `gdiplus.dll` is delay-loaded by `Microsoft.ui.xaml.dll`, so Composition and Direct2D processes do not load it.
 
 Prototype status for `D2D-HW` (see `perf\ImmediateRendering\README.md`):
 
