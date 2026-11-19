@@ -33,11 +33,7 @@ namespace RenderingBackend
 
         virtual D2DResourceCounters GetResourceCounters() const noexcept = 0;
 
-        // Attaches (or, with nullptr, detaches) the presentation surface. With a swap chain attached, EndFrame copies the
-        // frame's damage rects from the painter's target into the back buffer and presents them as dirty rects; that
-        // copy is what ResourceInventory::uploadBytesThisFrame reports. The swap chain must be created on the
-        // painter's device with DXGI_FORMAT_B8G8R8A8_UNORM; it is resized by Resize.
-        virtual HRESULT SetPresentationSwapChain(_In_opt_ IDXGISwapChain1* swapChain) noexcept = 0;
+        // SetPresentationSwapChain is on IImmediatePainter; for D2D the swap chain must be on GetD3DDevice's device.
     };
 
     // Same as CreateD2DPainter in ImmediatePainter.h, but returns the D2D-specific interface. mode must be

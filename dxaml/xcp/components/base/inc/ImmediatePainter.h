@@ -8,6 +8,7 @@
 #include <RenderingBackend.h>
 
 struct ID3D11Device;
+struct IDXGISwapChain1;
 
 // Shared painter contract for the immediate-rendering prototype backends (GDI+, D2D hardware, D2D WARP).
 // See docs/design-notes/immediate-rendering-backends-proposal.md. The primitive set is deliberately limited to what the
@@ -99,6 +100,16 @@ namespace RenderingBackend
         // Copies the current target as premultiplied BGRA8. For tests and fidelity capture, not the present path.
         virtual HRESULT ReadPixels(_Out_writes_bytes_(bufferSize) uint8_t* buffer, uint32_t stride, uint32_t bufferSize) noexcept = 0;
         virtual ResourceInventory GetResourceInventory() const noexcept = 0;
+
+        // Presentation (decision: one composition swap chain per root for every immediate mode). Attaches, or with
+        // nullptr detaches, the root's swap chain (DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_ALPHA_MODE_PREMULTIPLIED, created
+        // with CreateSwapChainForComposition by the render loop). With a swap chain attached, EndFrame copies only the
+        // frame's damage rects from the painter's target into the back buffer and calls Present1 with those dirty
+        // rects; ResourceInventory::uploadBytesThisFrame reports that copy. Without one, frames are offscreen only and
+        // report 0. D2D painters require the swap chain to be on their own device (E_INVALIDARG otherwise); the GDI+
+        //         painter accepts a swap chain on any D3D11 device and copies with UpdateSubresource. Resize also resizes the attached
+                // swap chain's buffers (ResizeBuffers); the next frame after attach or Resize is treated as fully damaged.
+        virtual HRESULT SetPresentationSwapChain(_In_opt_ IDXGISwapChain1* swapChain) noexcept = 0;
     };
 
     // Dispatches to the per-backend factories below. Composition is not an immediate painter (E_INVALIDARG).
