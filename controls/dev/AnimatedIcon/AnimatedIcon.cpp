@@ -17,6 +17,20 @@ static constexpr wstring_view s_foregroundPropertyName{ L"Foreground"sv };
 static constexpr wstring_view s_transitionInfix{ L"To"sv };
 static constexpr wstring_view s_transitionStartSuffix{ L"_Start"sv };
 static constexpr wstring_view s_transitionEndSuffix{ L"_End"sv };
+
+// Immediate rendering prototype (WINUI_RENDERING_BACKEND=gdiplus|d2d-hw|d2d-sw): those backends paint XAML
+// primitives and cannot draw the Composition (Lottie) visual, so AnimatedIcon shows its FallbackIconSource instead.
+static bool IsImmediateRenderingRequested()
+{
+    static const bool requested = []()
+    {
+        wchar_t value[32]{};
+        const DWORD length = GetEnvironmentVariableW(L"WINUI_RENDERING_BACKEND", value, ARRAYSIZE(value));
+        return length > 0 && length < ARRAYSIZE(value) && _wcsicmp(value, L"composition") != 0;
+    }();
+    return requested;
+}
+
 AnimatedIcon::AnimatedIcon()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_AnimatedIcon);
@@ -513,7 +527,7 @@ void AnimatedIcon::OnMirroredWhenRightToLeftPropertyChanged(const winrt::Depende
 
 winrt::Visual AnimatedIcon::ConstructVisual()
 {
-    if (auto const source = Source())
+    if (auto const source = Source(); source && !IsImmediateRenderingRequested())
     {
         TrySetForegroundProperty(source);
 
