@@ -238,6 +238,12 @@ CommonBrowserHost::CleanupCommon()
 {
     (void) StopDownloads();
 
+    // Display status callbacks post to m_pUIThreadExecuterQueue, so stop them before it is closed.
+    if (m_pcs)
+    {
+        m_pcs->UnregisterDisplayStatusNotification();
+    }
+
     if (m_pUIThreadExecuterQueue)
     {
         PurgeThreadMessages();

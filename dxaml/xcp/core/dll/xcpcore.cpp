@@ -44,6 +44,7 @@
 #include <DeferredMapping.h>
 #include <ImageDecodeBoundsFinder.h>
 #include <algorithm>
+#include <powrprof.h>
 #include <wrlhelper.h>
 #include <DeferredAnimationOperation.h>
 #include <D3D11Device.h>
@@ -4992,6 +4993,25 @@ CCoreServices::UnregisterHostSite()
     m_pHostSite = NULL;
 }
 
+class DisplayStatusDispatcher : public CXcpObjectBase<IPALExecuteOnUIThread>
+{
+public:
+    DisplayStatusDispatcher(_In_ CCoreServices* core, bool isDisplayOn)
+        : m_core(core)
+        , m_isDisplayOn(isDisplayOn)
+    {
+    }
+
+    _Check_return_ HRESULT Execute() override
+    {
+        return m_core->OnDisplayStatusChanged(m_isDisplayOn);
+    }
+
+private:
+    CCoreServices* m_core;
+    bool m_isDisplayOn;
+};
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -5003,6 +5023,29 @@ _Check_return_ HRESULT
 CCoreServices::RegisterBrowserHost(_In_ IXcpBrowserHost *pBrowserHost)
 {
     m_pBrowserHost = pBrowserHost;
+
+    if (m_displayStatusNotification == nullptr)
+    {
+        DEVICE_NOTIFY_SUBSCRIBE_PARAMETERS notification = {};
+        notification.Context = this;
+        notification.Callback = [](PVOID context, ULONG, PVOID setting) -> ULONG
+        {
+            const auto powerSetting = static_cast<POWERBROADCAST_SETTING*>(setting);
+            if (powerSetting->DataLength == sizeof(DWORD))
+            {
+                // A dimmed display still shows content, so only PowerMonitorOff counts as off.
+                const bool isDisplayOn = *reinterpret_cast<DWORD*>(powerSetting->Data) != PowerMonitorOff;
+                auto core = static_cast<CCoreServices*>(context);
+                xref_ptr<DisplayStatusDispatcher> displayStatusDispatcher;
+                displayStatusDispatcher.init(new DisplayStatusDispatcher(core, isDisplayOn));
+                IGNOREHR(core->ExecuteOnUIThread(displayStatusDispatcher, ReentrancyBehavior::CrashOnReentrancy));
+            }
+            return ERROR_SUCCESS;
+        };
+        IGNOREHR(HRESULT_FROM_WIN32(PowerSettingRegisterNotification(
+            &GUID_SESSION_DISPLAY_STATUS, DEVICE_NOTIFY_CALLBACK,
+            &notification, &m_displayStatusNotification)));
+    }
 
     return S_OK;
 }
@@ -5017,9 +5060,21 @@ CCoreServices::RegisterBrowserHost(_In_ IXcpBrowserHost *pBrowserHost)
 _Check_return_ HRESULT
 CCoreServices::UnregisterBrowserHost()
 {
+    UnregisterDisplayStatusNotification();
+
     m_pBrowserHost = NULL;
 
     return S_OK;
+}
+
+// Unregistering waits for a callback that is already running, so none can post to the browser host after this.
+void CCoreServices::UnregisterDisplayStatusNotification()
+{
+    if (m_displayStatusNotification != nullptr)
+    {
+        PowerSettingUnregisterNotification(m_displayStatusNotification);
+        m_displayStatusNotification = nullptr;
+    }
 }
 
 //------------------------------------------------------------------------
@@ -9618,6 +9673,23 @@ _Check_return_ HRESULT CCoreServices::EnableRender(bool enable)
     return S_OK;
 }
 
+// Called on the UI thread when the session's display is turned on or off.
+_Check_return_ HRESULT CCoreServices::OnDisplayStatusChanged(bool isDisplayOn)
+{
+    // In background tasks, behave as though the display is always on, like SetWindowVisibility does.
+    if (!IsInBackgroundTask() && m_isDisplayOn != isDisplayOn)
+    {
+        m_isDisplayOn = isDisplayOn;
+
+        if (m_pNWWindowRenderTarget)
+        {
+            IFC_RETURN(EnableRender(IsXamlVisible() && m_isDisplayOn));
+        }
+    }
+
+    return S_OK;
+}
+
 void CCoreServices::LogCoreServicesEvent(CoreServicesEvent coreServicesEvent)
 {
     m_coreServicesEventLog.Log( { m_uFrameNumber, coreServicesEvent } );
@@ -9798,7 +9870,7 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
         // proactively to get the first first frame ready as early as possible.
         if (isXamlVisible || !isStartingUp)
         {
-            IFC_RETURN(EnableRender(isXamlVisible));
+            IFC_RETURN(EnableRender(isXamlVisible && m_isDisplayOn));
         }
 
         // Start timer to offer resources while the app is running in the background.
