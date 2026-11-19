@@ -35,3 +35,9 @@ public sealed record RunCompletedRecord(double TimeMs, int ProcessId, int Status
 
 // ---- Kernel ----
 public sealed record ProcessStartRecord(double TimeMs, int ProcessId, string ImageName) : TraceRecord(TimeMs, ProcessId);
+
+// ---- Begin: W6 resource churn (appended by immediate-rendering-gdiplus) ----
+// Microsoft-WinUI-RenderingBackend "ResourceChurn": backend resources created/destroyed while painting one frame.
+public sealed record ResourceChurnRecord(double TimeMs, int ProcessId, BackendMode Mode, uint Frame, uint Created, uint Destroyed)
+    : TraceRecord(TimeMs, ProcessId);
+// ---- End: W6 resource churn ----

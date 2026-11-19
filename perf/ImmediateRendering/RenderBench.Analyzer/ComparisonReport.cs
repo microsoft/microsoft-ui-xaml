@@ -31,6 +31,13 @@ public static class ComparisonReport
         new("W5 upload, interaction (MB)", m => m.Phase(BenchPhase.Interaction)?.UploadBytes / (1024.0 * 1024.0), "F2"),
         new("R1* input to frame end p95 (ms)", m => m.InputToFrameMs?.P95, "F1"),
         new("E1 drawn frames/min, steady", m => m.Phase(BenchPhase.Steady)?.FramesDrawnPerMinute),
+        // ---- Appended by immediate-rendering-gdiplus: W6 churn, M7 GDI/USER objects beyond steady ----
+        new("W6 resources created, interaction (/s)", m => m.Phase(BenchPhase.Interaction)?.ResourcesCreatedPerSecond),
+        new("W6 resources destroyed, interaction (/s)", m => m.Phase(BenchPhase.Interaction)?.ResourcesDestroyedPerSecond),
+        new("W6 resources created, steady (/s)", m => m.Phase(BenchPhase.Steady)?.ResourcesCreatedPerSecond, "F2"),
+        new("M7 GDI objects, interaction (max)", m => m.Phase(BenchPhase.Interaction)?.GdiObjectsMax, "F0"),
+        new("M7 GDI objects growth, interaction", m => m.Phase(BenchPhase.Interaction)?.GdiObjectsGrowth, "F0"),
+        new("M7 USER objects, steady", m => m.Phase(BenchPhase.Steady)?.UserObjectsMax, "F0"),
     ];
 
     static double? Ratio(PhaseMetrics? phase)

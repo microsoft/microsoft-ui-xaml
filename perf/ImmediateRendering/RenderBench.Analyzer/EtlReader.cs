@@ -59,6 +59,9 @@ public static class EtlReader
                     U64(e, "CacheBytes"), U32(e, "CachedObjectCount"), U64(e, "UploadBytes")),
                 "UnsupportedContent" => new UnsupportedContentRecord(t, pid, (BackendMode)U32(e, "Mode"), Str(e, "TypeName"),
                     Str(e, "Detail")),
+                // W6 (appended by immediate-rendering-gdiplus)
+                "ResourceChurn" => new ResourceChurnRecord(t, pid, (BackendMode)U32(e, "Mode"), U32(e, "FrameNumber"),
+                    U32(e, "Created"), U32(e, "Destroyed")),
                 _ => null,
             };
         }

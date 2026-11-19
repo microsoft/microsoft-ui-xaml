@@ -56,6 +56,12 @@ $Results = (Resolve-Path $Results).Path
 
 $random = [Random]::new($Seed)
 $previous = $env:WINUI_RENDERING_BACKEND
+# Memory profile: opt RenderBench.exe into heap tracing (HeapProcessId 0 in the wprp) so GDI+ heap use is attributable.
+$heapTracing = $Profile -eq 'Memory'
+if ($heapTracing) {
+    & wpr -heaptracingconfig (Split-Path -Leaf $BenchExe) enable | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "wpr -heaptracingconfig enable failed ($LASTEXITCODE)" }
+}
 try {
     for ($rep = 1; $rep -le $Repetitions; $rep++) {
         foreach ($scene in $Scenes) {
@@ -89,6 +95,9 @@ try {
 }
 finally {
     $env:WINUI_RENDERING_BACKEND = $previous
+    if ($heapTracing) {
+        & wpr -heaptracingconfig (Split-Path -Leaf $BenchExe) disable | Out-Null
+    }
 }
 
 & $analyzer report $Results

@@ -194,6 +194,10 @@ rendering code, emitted in all four modes so results are directly comparable:
 Counter overhead must be measured (run with counters off versus on in `COMP`) and kept negligible, or sampled
 counters must be used.
 
+Status (GDI+ branch): resources created and destroyed per frame are emitted as `ResourceChurn` (Resources keyword) and
+reported as W6 per second. GDI+ uploads are defined as the bytes copied from the CPU bitmap to the presentable surface:
+damaged pixels times 4, with no full-frame copy. The `Memory` WPR profile adds heap tracing so GDI+ heap growth (M2, M8)
+can be attributed.
 ## Comparative report format
 
 For each test case, produce one table with the four modes as columns and the selected metrics as rows. Show

@@ -61,7 +61,13 @@ public sealed record PhaseMetrics(
     double? PrivateMBPerMinuteSlope,
     double? BackendSurfaceMB,
     double? BackendCacheMB,
-    int UpdatesApplied);
+    int UpdatesApplied,
+    // ---- Appended by immediate-rendering-gdiplus ----
+    // W6: backend resources created/destroyed per second of the phase (ResourceChurn events); null when none were emitted.
+    double? ResourcesCreatedPerSecond = null,
+    double? ResourcesDestroyedPerSecond = null,
+    // M7: last minus first GetGuiResources(GR_GDIOBJECTS) sample in the phase; a GDI handle leak shows as growth.
+    int? GdiObjectsGrowth = null);
 
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
