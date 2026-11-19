@@ -68,11 +68,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     {
         TestCleanupWrapper cleanup;
 
-        for (int scenario = 0; scenario < 4; ++scenario)
+        const wchar_t* scenarioNames[] = {
+            L"repeated true", L"toggle", L"unparented", L"parented off-tree",
+            L"ClearValue", L"Style and local true", L"Style restored by ClearValue",
+            L"callback restores true"
+        };
+        for (int scenario = 0; scenario < 8; ++scenario)
         {
-            LOG_OUTPUT(L"Anchor candidate lifetime scenario %d: repeated true, toggle, unparented, or parented off-tree.", scenario);
+            LOG_OUTPUT(L"Anchor candidate lifetime scenario %d: %s.", scenario, scenarioNames[scenario]);
             xaml_controls::ScrollViewer^ scrollViewer = nullptr;
             xaml_controls::StackPanel^ panel = nullptr;
+            xaml_controls::Border^ candidateDuringSetup = nullptr;
             xaml_controls::Border^ candidateDuringDetach = nullptr;
             WeakReference candidateWeakRef;
 
@@ -89,6 +95,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 auto candidate = ref new xaml_controls::Border();
                 candidate->Height = 20;
                 candidateWeakRef = WeakReference(candidate);
+                candidateDuringSetup = candidate;
 
                 if (scenario == 2)
                 {
@@ -140,7 +147,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             RunOnUIThread([&]()
             {
-                auto candidate = panel->Children->GetAt(0);
+                auto candidate = safe_cast<xaml_controls::Border^>(panel->Children->GetAt(0));
+                VERIFY_IS_TRUE(candidateWeakRef.Resolve<xaml_controls::Border>() == candidate);
                 if (scenario < 2)
                 {
                     candidate->CanBeScrollAnchor = true;
@@ -150,7 +158,55 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     }
                     candidate->CanBeScrollAnchor = true;
                 }
+                else if (scenario == 4)
+                {
+                    candidate->CanBeScrollAnchor = true;
+                    candidate->ClearValue(xaml::UIElement::CanBeScrollAnchorProperty);
+                    VERIFY_IS_FALSE(candidate->CanBeScrollAnchor);
+                }
+                else if (scenario == 5 || scenario == 6)
+                {
+                    wxaml_interop::TypeName type;
+                    type.Name = L"Microsoft.UI.Xaml.Controls.Border";
+                    type.Kind = wxaml_interop::TypeKind::Metadata;
+                    auto style = ref new xaml::Style(type);
+                    style->Setters->Append(ref new xaml::Setter(xaml::UIElement::CanBeScrollAnchorProperty, true));
+                    candidate->Style = style;
+                    VERIFY_IS_TRUE(candidate->CanBeScrollAnchor);
 
+                    candidate->CanBeScrollAnchor = scenario == 5;
+                    if (scenario == 6)
+                    {
+                        VERIFY_IS_FALSE(candidate->CanBeScrollAnchor);
+                        candidate->ClearValue(xaml::UIElement::CanBeScrollAnchorProperty);
+                        VERIFY_IS_TRUE(candidate->CanBeScrollAnchor);
+                    }
+                }
+                else if (scenario == 7)
+                {
+                    candidate->CanBeScrollAnchor = true;
+                    auto restored = std::make_shared<bool>(false);
+                    auto token = candidate->RegisterPropertyChangedCallback(
+                        xaml::UIElement::CanBeScrollAnchorProperty,
+                        ref new xaml::DependencyPropertyChangedCallback([restored](xaml::DependencyObject^ sender, xaml::DependencyProperty^)
+                    {
+                        auto element = safe_cast<xaml::UIElement^>(sender);
+                        if (!*restored && !element->CanBeScrollAnchor)
+                        {
+                            *restored = true;
+                            element->CanBeScrollAnchor = true;
+                        }
+                    }));
+                    auto unregister = wil::scope_exit([candidate, token]()
+                    {
+                        candidate->UnregisterPropertyChangedCallback(xaml::UIElement::CanBeScrollAnchorProperty, token);
+                    });
+                    candidate->CanBeScrollAnchor = false;
+                    VERIFY_IS_TRUE(*restored);
+                    VERIFY_IS_TRUE(candidate->CanBeScrollAnchor);
+                }
+
+                candidateDuringSetup = nullptr;
                 panel->Children->RemoveAt(0);
             });
 
@@ -167,6 +223,83 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 scrollViewer = nullptr;
             });
         }
+    }
+
+    void ScrollViewerIntegrationTests::CanBeScrollAnchorClearedDuringCaptureLossDoesNotRetainElement()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+        xaml_controls::StackPanel^ panel = nullptr;
+        xaml_controls::Border^ candidate = nullptr;
+        WeakReference candidateWeakRef;
+        bool captured = false;
+        bool removing = false;
+        bool captureLostDuringRemoval = false;
+        auto pointerPressedRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerPressed);
+        auto pointerCaptureLostRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerCaptureLost);
+
+        RunOnUIThread([&]()
+        {
+            scrollViewer = ref new xaml_controls::ScrollViewer();
+            scrollViewer->Width = 100;
+            scrollViewer->Height = 100;
+            scrollViewer->VerticalAnchorRatio = 0.5;
+            scrollViewer->HorizontalScrollMode = xaml_controls::ScrollMode::Disabled;
+            scrollViewer->VerticalScrollMode = xaml_controls::ScrollMode::Disabled;
+            panel = ref new xaml_controls::StackPanel();
+            panel->Height = 600;
+            candidate = ref new xaml_controls::Border();
+            candidate->Height = 80;
+            candidate->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Blue);
+            candidateWeakRef = WeakReference(candidate);
+            panel->Children->Append(candidate);
+            scrollViewer->Content = panel;
+            TestServices::WindowHelper->WindowContent = scrollViewer;
+            candidate->CanBeScrollAnchor = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        pointerPressedRegistration.Attach(candidate, ref new xaml_input::PointerEventHandler(
+            [&captured](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^ args)
+        {
+            captured = safe_cast<xaml::UIElement^>(sender)->CapturePointer(args->Pointer);
+            args->Handled = true;
+        }));
+        pointerCaptureLostRegistration.Attach(candidate, ref new xaml_input::PointerEventHandler(
+            [&removing, &captureLostDuringRemoval](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^)
+        {
+            captureLostDuringRemoval = captureLostDuringRemoval || removing;
+            safe_cast<xaml::UIElement^>(sender)->CanBeScrollAnchor = false;
+        }));
+
+        TestServices::InputHelper->DynamicPressCenter(candidate, 0, 0, PointerFinger::Finger1);
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            removing = true;
+            panel->Children->RemoveAt(0);
+            removing = false;
+        });
+        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
+        TestServices::WindowHelper->WaitForIdle();
+
+        pointerPressedRegistration.Detach();
+        pointerCaptureLostRegistration.Detach();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(captured);
+            VERIFY_IS_TRUE(captureLostDuringRemoval);
+            VERIFY_IS_FALSE(candidate->CanBeScrollAnchor);
+            candidate = nullptr;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        TestServices::WindowHelper->GCCollect();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(scrollViewer->Content);
+            VERIFY_IS_NULL(candidateWeakRef.Resolve<Object>());
+            TestServices::WindowHelper->WindowContent = nullptr;
+        });
     }
 
     void ScrollViewerIntegrationTests::HandledReleasePreservesAnotherPointerPress()
