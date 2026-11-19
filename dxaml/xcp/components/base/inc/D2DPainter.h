@@ -19,9 +19,13 @@ namespace RenderingBackend
     {
         uint32_t solidBrushesCreated = 0;
         uint32_t textFormatsCreated = 0;
-        uint32_t geometriesCreated = 0;   // rounded-rectangle and other path geometries
+        uint32_t geometriesCreated = 0;   // damage masks, rounded-clip masks, and path geometries (all ID2D1Geometry)
         uint32_t layersCreated = 0;       // opacity / clip layers (ID2D1Layer or compatible targets)
         uint32_t targetBitmapsCreated = 0; // render target bitmaps (initial + Resize + device recovery)
+        uint32_t pathGeometriesCreated = 0; // FillPath / StrokePath geometries (subset of geometriesCreated)
+        uint32_t bitmapsCreated = 0;      // image bitmaps created by EnsureBitmap (not refreshed in place)
+        uint32_t bitmapUploads = 0;       // EnsureBitmap pixel copies: creations plus in-place refreshes
+        uint32_t scratchSurfacesCreated = 0; // ScrollPixels intermediate textures
     };
 
     class ID2DImmediatePainter : public IImmediatePainter
@@ -34,8 +38,9 @@ namespace RenderingBackend
         virtual D2DResourceCounters GetResourceCounters() const noexcept = 0;
 
         // Bytes the last EndFrame copied from the painter's target into the attached swap chain's back buffer (damage
-        // rects clipped to the target, times 4), in both modes; 0 for offscreen frames. On WARP this equals
-        // ResourceInventory::uploadBytesThisFrame; on a hardware device it is a GPU-local copy and is not an upload.
+        // rects clipped to the target, plus areas moved by ScrollPixels since the previous frame, times 4), in both
+        // modes; 0 for offscreen frames. On WARP uploadBytesThisFrame is this plus EnsureBitmap copies; on a hardware
+        // device it is a GPU-local copy and is not an upload.
         virtual uint64_t GetPresentCopyBytesThisFrame() const noexcept = 0;
 
         // SetPresentationSwapChain is on IImmediatePainter; for D2D the swap chain must be on GetD3DDevice's device.

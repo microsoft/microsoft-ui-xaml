@@ -37,5 +37,15 @@ namespace RenderingBackendTests
         TEST_METHOD(RejectsSwapChainOnAnotherDevice);
         // Resize resizes the attached swap chain's buffers and fully damages the next frame.
         TEST_METHOD(ResizeResizesAttachedSwapChain);
+
+        // Extended primitives (S3-S10).
+        // Rounded clips are layerless layers with a cached rounded-rectangle mask; they nest with the other entries.
+        TEST_METHOD(RoundedClipUsesCachedLayerMask);
+        // Steady-state frames with paths, glyph runs, rounded clips, and bitmaps create nothing.
+        TEST_METHOD(ExtendedFrameReusesResources);
+        // EnsureBitmap copies count once, in the right frame; refreshes reuse the bitmap when the size is unchanged.
+        TEST_METHOD(BitmapUploadAccounting);
+        // ScrollPixels moves pixels in the target and presents the moved area with the next frame.
+        TEST_METHOD(ScrollPixelsPresentsMovedArea);
     };
 }

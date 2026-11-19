@@ -15,6 +15,8 @@
 #include <cmath>
 #include <cstring>
 #include <cwchar>
+#include <new>
+#include <unordered_map>
 
 // Direct2D immediate painter shared by D2D-HW and D2D-SW; the device decides hardware versus WARP.
 // Owned by the immediate-rendering-d2d-sw branch.
@@ -43,12 +45,19 @@
 //     chain attached (offscreen-only: tests, fidelity capture) reports 0. ReadPixels is a diagnostic readback and is
 //     never counted. Copies DWM makes on its own side are outside the process and are measured with the WPR Gpu
 //     profile instead.
-//   D2D-HW: uploadBytesThisFrame counts CPU-to-GPU uploads the painter issues itself. The prototype's primitives
-//     (solid fills, rounded rects, strokes, text) issue none: geometry is tessellated into D2D's internal vertex
-//     buffers and glyphs into D2D's glyph atlas, neither of which is attributable from outside D2D, so it reports 0;
-//     use the WPR Gpu profile (DMA packets) for those. The target-to-back-buffer copy is a same-adapter, GPU-local copy;
+//   D2D-HW: uploadBytesThisFrame counts CPU-to-GPU uploads the painter issues itself: EnsureBitmap pixel copies
+//     (width * height * 4 per creation or refresh). Other primitives (fills, rounded rects, strokes, paths, text,
+//     glyph runs) issue none the painter can see: geometry is tessellated into D2D's internal vertex buffers and glyphs
+//     into D2D's glyph atlas, neither of which is attributable from outside D2D; use the WPR Gpu profile (DMA packets)
+//     for those. The target-to-back-buffer copy is a same-adapter, GPU-local copy;
 //     it is not an upload, and is exposed separately as ID2DImmediatePainter::GetPresentCopyBytesThisFrame (which on
-//     WARP equals uploadBytesThisFrame).
+//     WARP is included in uploadBytesThisFrame).
+//   Both: EnsureBitmap copies count in the frame they happen in, or the next frame when made between frames (on WARP the
+//     copy is CPU to system memory, on hardware CPU to GPU). ScrollPixels moves pixels inside the target with two
+//     device copies through a scratch texture (GPU-local on hardware, a memcpy inside WARP; neither is counted as an
+//     upload itself); the moved destination rect is then copied to the back buffer and added to Present1's dirty rects
+//     on the next presented frame, so it counts in GetPresentCopyBytesThisFrame (and on WARP in uploadBytesThisFrame)
+//     although FrameStats::damagedPixels does not include it.
 //
 // GPU time (test plan W3)
 //   On a hardware device (identity.isWarp == false) every frame, including the back-buffer copy and Present, is
@@ -63,9 +72,13 @@
 //
 // Resources (W6)
 //   One solid-color brush (SetColor per primitive); text formats cached by family/size/weight; rounded rects drawn with
-//   direct calls (no geometry objects); opacity layers are layerless (D2D owns and pools the layer surfaces, so
-//   layersCreated stays 0). Creations and destructions are emitted per frame as ResourceChurn; a steady-state frame
-//   creates nothing.
+//   direct calls (no geometry objects); opacity layers and rounded clips are layerless (D2D owns and pools the layer
+//   surfaces, so layersCreated stays 0). Rounded clips use an ID2D1RoundedRectangleGeometry mask cached by rect and
+//   radii (LRU, MaxClipGeometries); paths are ID2D1PathGeometry objects cached by PathData::cacheKey (LRU,
+//   MaxPathGeometries; cacheKey 0 builds one per call); strokes use D2D's default stroke style (flat caps, miter joins).
+//   Glyph runs create nothing. Images are ID2D1Bitmap1 objects (96 DPI, premultiplied BGRA) keyed by BitmapSource::key,
+//   refreshed in place with CopyFromMemory when only the generation changes; their bytes count in cacheBytes.
+//   Creations and destructions are emitted per frame as ResourceChurn; a steady-state frame creates nothing.
 namespace RenderingBackend
 {
     namespace
@@ -74,7 +87,10 @@ namespace RenderingBackend
 
         constexpr uint32_t MaxStackDepth = 64;
         constexpr uint32_t MaxDamageRects = 32;
+        constexpr uint32_t MaxScrollRects = 8;
         constexpr uint32_t MaxTextFormats = 32;
+        constexpr uint32_t MaxClipGeometries = 32;
+        constexpr uint32_t MaxPathGeometries = 128;
         constexpr size_t MaxFamilyLength = 64;
 
         // Best-effort sizes for objects whose memory D2D/DWrite do not report.
@@ -145,6 +161,31 @@ namespace RenderingBackend
         {
             Clip,
             Layer,
+            RoundedClip, // a layer with a geometric mask
+        };
+
+        struct ClipGeometryEntry
+        {
+            RectF rect;
+            float radiusX = 0, radiusY = 0;
+            uint64_t lastUse = 0;
+            ComPtr<ID2D1RoundedRectangleGeometry> geometry;
+        };
+
+        struct PathGeometryEntry
+        {
+            uint64_t key = 0;
+            bool nonZeroFill = false;
+            uint64_t lastUse = 0;
+            RectF bounds;
+            ComPtr<ID2D1PathGeometry> geometry;
+        };
+
+        struct BitmapEntry
+        {
+            uint64_t generation = 0;
+            uint32_t width = 0, height = 0;
+            ComPtr<ID2D1Bitmap1> bitmap;
         };
 
         struct TextFormatEntry
@@ -256,6 +297,7 @@ namespace RenderingBackend
 
                 ReleaseTarget();
                 ResetDamageGeometry(); // in DIPs, so it depends on the DPI
+                m_pendingScrollCount = 0; // the next frame is fully damaged
                 m_width = width;
                 m_height = height;
                 m_dpiScale = dpiScale;
@@ -318,6 +360,15 @@ namespace RenderingBackend
                 PushDamageClip();
                 m_depth = 0;
                 m_overflowDepth = 0;
+                // Bitmap copies made between frames, and areas moved by ScrollPixels, belong to this frame.
+                m_uploadBytes = m_pendingUploadBytes;
+                m_pendingUploadBytes = 0;
+                m_frameScrollCount = m_pendingScrollCount;
+                for (uint32_t i = 0; i < m_frameScrollCount; ++i)
+                {
+                    m_frameScrollRects[i] = m_pendingScrollRects[i];
+                }
+                m_pendingScrollCount = 0;
                 m_frameActive = true;
                 return S_OK;
             }
@@ -479,16 +530,270 @@ namespace RenderingBackend
                 PopEntry(StackEntry::Layer);
             }
 
-            // Extended primitives: not implemented yet (immediate-rendering extended scenes).
-            void PushRoundedRectangleClip(const RectF&, float, float) noexcept override {}
-            void PopRoundedRectangleClip() noexcept override {}
-            void FillPath(const PathData&, const ColorF&) noexcept override {}
-            void StrokePath(const PathData&, float, const ColorF&) noexcept override {}
-            void DrawGlyphRun(const GlyphRunDesc&, const ColorF&) noexcept override {}
-            HRESULT EnsureBitmap(const BitmapSource&) noexcept override { return E_NOTIMPL; }
-            void DrawBitmap(uint64_t, const RectF&, const RectF*, float) noexcept override {}
-            void ReleaseBitmap(uint64_t) noexcept override {}
-            HRESULT ScrollPixels(const RectF&, int32_t, int32_t) noexcept override { return E_NOTIMPL; }
+            void PushRoundedRectangleClip(const RectF& clip, float radiusX, float radiusY) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                if (m_depth >= MaxStackDepth)
+                {
+                    ++m_overflowDepth;
+                    return;
+                }
+                // Layerless, like opacity layers. The mask and content bounds are in the current world space. Without a
+                // mask (out of memory) the content bounds still clip to the rect.
+                ID2D1Geometry* mask = GetClipGeometry(clip, radiusX, radiusY);
+                const D2D1_LAYER_PARAMETERS1 parameters = D2D1::LayerParameters1(ToD2D(clip), mask,
+                    D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1::IdentityMatrix(), 1.0f, nullptr, D2D1_LAYER_OPTIONS1_NONE);
+                m_context->PushLayer(&parameters, nullptr);
+                m_stack[m_depth++] = StackEntry::RoundedClip;
+            }
+
+            void PopRoundedRectangleClip() noexcept override
+            {
+                PopEntry(StackEntry::RoundedClip);
+            }
+
+            void FillPath(const PathData& path, const ColorF& color) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                RectF bounds;
+                ComPtr<ID2D1PathGeometry> geometry = GetPathGeometry(path, &bounds);
+                if (!geometry)
+                {
+                    return;
+                }
+                m_brush->SetColor(ToD2D(color));
+                m_context->FillGeometry(geometry.Get(), m_brush.Get());
+                CountPrimitive(bounds);
+            }
+
+            void StrokePath(const PathData& path, float thickness, const ColorF& color) noexcept override
+            {
+                if (!m_frameActive || !(thickness > 0))
+                {
+                    return;
+                }
+                RectF bounds;
+                ComPtr<ID2D1PathGeometry> geometry = GetPathGeometry(path, &bounds);
+                if (!geometry)
+                {
+                    return;
+                }
+                m_brush->SetColor(ToD2D(color));
+                // A null stroke style is D2D's default: solid, flat caps, miter joins (miter limit 10).
+                m_context->DrawGeometry(geometry.Get(), m_brush.Get(), thickness, nullptr);
+                const float half = thickness / 2;
+                CountPrimitive({ bounds.left - half, bounds.top - half, bounds.right + half, bounds.bottom + half });
+            }
+
+            void DrawGlyphRun(const GlyphRunDesc& run, const ColorF& color) noexcept override
+            {
+                static_assert(sizeof(GlyphOffset) == sizeof(DWRITE_GLYPH_OFFSET), "GlyphOffset must match DWRITE_GLYPH_OFFSET");
+                if (!m_frameActive || run.fontFace == nullptr || !(run.fontEmSize > 0) || run.glyphCount == 0 ||
+                    run.glyphIndices == nullptr || run.glyphAdvances == nullptr)
+                {
+                    return;
+                }
+                DWRITE_GLYPH_RUN glyphRun{};
+                glyphRun.fontFace = run.fontFace;
+                glyphRun.fontEmSize = run.fontEmSize;
+                glyphRun.glyphCount = run.glyphCount;
+                glyphRun.glyphIndices = run.glyphIndices;
+                glyphRun.glyphAdvances = run.glyphAdvances;
+                glyphRun.glyphOffsets = reinterpret_cast<const DWRITE_GLYPH_OFFSET*>(run.glyphOffsets);
+                glyphRun.isSideways = FALSE;
+                glyphRun.bidiLevel = run.bidiLevel;
+                m_brush->SetColor(ToD2D(color));
+                // Grayscale text antialiasing is set at BeginFrame (ClearType does not suit premultiplied targets).
+                m_context->DrawGlyphRun(D2D1::Point2F(run.baselineOrigin.x, run.baselineOrigin.y), &glyphRun, m_brush.Get(),
+                    DWRITE_MEASURING_MODE_NATURAL);
+
+                float advance = 0;
+                for (uint32_t i = 0; i < run.glyphCount; ++i)
+                {
+                    advance += run.glyphAdvances[i];
+                }
+                DWRITE_FONT_METRICS metrics{};
+                run.fontFace->GetMetrics(&metrics);
+                const float unitsPerEm = metrics.designUnitsPerEm != 0 ? metrics.designUnitsPerEm : 1.0f;
+                const float ascent = run.fontEmSize * metrics.ascent / unitsPerEm;
+                const float descent = run.fontEmSize * metrics.descent / unitsPerEm;
+                const float x = run.baselineOrigin.x;
+                const bool rightToLeft = (run.bidiLevel & 1) != 0;
+                CountPrimitive({ rightToLeft ? x - advance : x, run.baselineOrigin.y - ascent,
+                    rightToLeft ? x : x + advance, run.baselineOrigin.y + descent });
+            }
+
+            HRESULT EnsureBitmap(const BitmapSource& source) noexcept override
+            {
+                if (source.pixels == nullptr || source.width == 0 || source.height == 0 ||
+                    source.stride < static_cast<uint64_t>(source.width) * 4)
+                {
+                    return E_INVALIDARG;
+                }
+                IFC_RETURN(CheckDevice());
+
+                const auto found = m_bitmaps.find(source.key);
+                if (found != m_bitmaps.end() && found->second.generation == source.generation)
+                {
+                    return S_OK;
+                }
+
+                HRESULT hr = S_OK;
+                const uint64_t bytes = static_cast<uint64_t>(source.width) * source.height * 4;
+                if (found != m_bitmaps.end() && found->second.width == source.width && found->second.height == source.height)
+                {
+                    hr = found->second.bitmap->CopyFromMemory(nullptr, source.pixels, source.stride);
+                    if (FAILED(hr))
+                    {
+                        IFC_RETURN(HandleFailure(hr));
+                    }
+                    found->second.generation = source.generation;
+                }
+                else
+                {
+                    ComPtr<ID2D1Bitmap1> bitmap;
+                    // 96 DPI: DrawBitmap source rects are in bitmap DIPs, which then equal bitmap pixels.
+                    const D2D1_BITMAP_PROPERTIES1 properties = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_NONE,
+                        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 96.0f, 96.0f);
+                    hr = m_context->CreateBitmap(D2D1::SizeU(source.width, source.height), source.pixels, source.stride,
+                        &properties, &bitmap);
+                    if (FAILED(hr))
+                    {
+                        IFC_RETURN(HandleFailure(hr));
+                    }
+                    ++m_counters.bitmapsCreated;
+                    ++m_churnCreated;
+
+                    if (found != m_bitmaps.end())
+                    {
+                        m_bitmapBytes -= static_cast<uint64_t>(found->second.width) * found->second.height * 4;
+                        ++m_churnDestroyed;
+                        found->second = BitmapEntry{ source.generation, source.width, source.height, bitmap };
+                    }
+                    else
+                    {
+                        try
+                        {
+                            m_bitmaps.emplace(source.key, BitmapEntry{ source.generation, source.width, source.height, bitmap });
+                        }
+                        catch (...)
+                        {
+                            ++m_churnDestroyed;
+                            return E_OUTOFMEMORY;
+                        }
+                    }
+                    m_bitmapBytes += bytes;
+                }
+
+                ++m_counters.bitmapUploads;
+                if (m_frameActive)
+                {
+                    m_uploadBytes += bytes;
+                }
+                else
+                {
+                    m_pendingUploadBytes += bytes;
+                }
+                return S_OK;
+            }
+
+            void DrawBitmap(uint64_t key, const RectF& destination, _In_opt_ const RectF* sourceRect, float opacity) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                const auto found = m_bitmaps.find(key);
+                if (found == m_bitmaps.end())
+                {
+                    return;
+                }
+                const float clamped = opacity >= 0 ? (opacity <= 1 ? opacity : 1.0f) : 0.0f;
+                D2D1_RECT_F source{};
+                if (sourceRect != nullptr)
+                {
+                    source = ToD2D(*sourceRect);
+                }
+                const D2D1_RECT_F destinationRect = ToD2D(destination);
+                m_context->DrawBitmap(found->second.bitmap.Get(), &destinationRect, clamped, D2D1_INTERPOLATION_MODE_LINEAR,
+                    sourceRect != nullptr ? &source : nullptr, nullptr);
+                CountPrimitive(destination);
+            }
+
+            void ReleaseBitmap(uint64_t key) noexcept override
+            {
+                const auto found = m_bitmaps.find(key);
+                if (found == m_bitmaps.end())
+                {
+                    return;
+                }
+                m_bitmapBytes -= static_cast<uint64_t>(found->second.width) * found->second.height * 4;
+                ++m_churnDestroyed;
+                m_bitmaps.erase(found);
+            }
+
+            HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept override
+            {
+                if (m_frameActive)
+                {
+                    return E_ILLEGAL_METHOD_CALL;
+                }
+                IFC_RETURN(CheckDevice());
+                if (!m_targetTexture)
+                {
+                    return E_UNEXPECTED;
+                }
+                const PixelRect area = ToPixelRect(rect, m_width, m_height);
+                if (area.IsEmpty() || (dx == 0 && dy == 0))
+                {
+                    return S_OK;
+                }
+
+                // Destination: area intersected with area moved by (dx, dy); everything else scrolls out of rect.
+                const int64_t left = (std::max)(static_cast<int64_t>(area.left), static_cast<int64_t>(area.left) + dx);
+                const int64_t top = (std::max)(static_cast<int64_t>(area.top), static_cast<int64_t>(area.top) + dy);
+                const int64_t right = (std::min)(static_cast<int64_t>(area.right), static_cast<int64_t>(area.right) + dx);
+                const int64_t bottom = (std::min)(static_cast<int64_t>(area.bottom), static_cast<int64_t>(area.bottom) + dy);
+                if (right <= left || bottom <= top)
+                {
+                    return S_OK;
+                }
+                const PixelRect destination{ static_cast<uint32_t>(left), static_cast<uint32_t>(top),
+                    static_cast<uint32_t>(right), static_cast<uint32_t>(bottom) };
+                const D3D11_BOX sourceBox{ static_cast<UINT>(left - dx), static_cast<UINT>(top - dy), 0,
+                    static_cast<UINT>(right - dx), static_cast<UINT>(bottom - dy), 1 };
+
+                if (!m_scrollScratch)
+                {
+                    D3D11_TEXTURE2D_DESC desc{};
+                    m_targetTexture->GetDesc(&desc);
+                    desc.BindFlags = 0;
+                    desc.MiscFlags = 0;
+                    const HRESULT hr = m_device->CreateTexture2D(&desc, nullptr, &m_scrollScratch);
+                    if (FAILED(hr))
+                    {
+                        IFC_RETURN(HandleFailure(hr));
+                    }
+                    ++m_counters.scratchSurfacesCreated;
+                    ++m_churnCreated;
+                }
+
+                // One copy cannot overlap its source, so go through the scratch texture at the same coordinates.
+                // Both copies stay on the device: GPU-local on hardware, a memcpy inside WARP.
+                m_d3dContext->CopySubresourceRegion(m_scrollScratch.Get(), 0, sourceBox.left, sourceBox.top, 0,
+                    m_targetTexture.Get(), 0, &sourceBox);
+                m_d3dContext->CopySubresourceRegion(m_targetTexture.Get(), 0, destination.left, destination.top, 0,
+                    m_scrollScratch.Get(), 0, &sourceBox);
+
+                AddPendingScrollRect(destination);
+                return S_OK;
+            }
 
             HRESULT EndFrame(_Out_ FrameStats* stats) noexcept override
             {
@@ -583,11 +888,15 @@ namespace RenderingBackend
             {
                 ResourceInventory inventory;
                 const uint64_t targetBytes = static_cast<uint64_t>(m_width) * m_height * 4;
-                inventory.surfaceBytes = (m_targetTexture ? targetBytes : 0) + (m_staging ? targetBytes : 0);
+                inventory.surfaceBytes = (m_targetTexture ? targetBytes : 0) + (m_staging ? targetBytes : 0) +
+                    (m_scrollScratch ? targetBytes : 0);
                 const uint32_t brushes = m_brush ? 1 : 0;
-                inventory.cachedObjectCount = brushes + m_textFormatCount + m_damageGeometryObjects;
+                const uint32_t bitmaps = static_cast<uint32_t>(m_bitmaps.size());
+                inventory.cachedObjectCount = brushes + m_textFormatCount + m_damageGeometryObjects + m_clipGeometryCount +
+                    m_pathGeometryCount + bitmaps;
                 inventory.cacheBytes = brushes * BrushBytesEstimate + m_textFormatCount * TextFormatBytesEstimate +
-                    m_damageGeometryObjects * GeometryBytesEstimate;
+                    (static_cast<uint64_t>(m_damageGeometryObjects) + m_clipGeometryCount + m_pathGeometryCount) * GeometryBytesEstimate +
+                    m_bitmapBytes;
                 inventory.uploadBytesThisFrame = m_uploadBytes;
                 return inventory;
             }
@@ -666,10 +975,11 @@ namespace RenderingBackend
             void ReleaseTarget() noexcept
             {
                 m_context->SetTarget(nullptr);
-                m_churnDestroyed += (m_targetBitmap ? 1 : 0) + (m_targetTexture ? 1 : 0) + (m_staging ? 1 : 0);
+                m_churnDestroyed += (m_targetBitmap ? 1 : 0) + (m_targetTexture ? 1 : 0) + (m_staging ? 1 : 0) + (m_scrollScratch ? 1 : 0);
                 m_targetBitmap.Reset();
                 m_targetTexture.Reset();
                 m_staging.Reset();
+                m_scrollScratch.Reset();
             }
 
             HRESULT ResizeSwapChain() noexcept
@@ -684,7 +994,7 @@ namespace RenderingBackend
             // Copies the damage from the target into the back buffer and presents it with matching dirty rects.
             HRESULT PresentDamage() noexcept
             {
-                if (m_damageCount == 0)
+                if (m_damageCount == 0 && m_frameScrollCount == 0)
                 {
                     return S_OK;
                 }
@@ -695,28 +1005,40 @@ namespace RenderingBackend
                     IFC_RETURN(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_backBuffer)));
                 }
 
-                RECT dirty[MaxDamageRects];
+                RECT dirty[MaxDamageRects + MaxScrollRects];
+                uint32_t dirtyCount = 0;
                 uint64_t copyBytes = 0;
-                for (uint32_t i = 0; i < m_damageCount; ++i)
+                const auto copyRect = [&](const PixelRect& rect)
                 {
-                    const PixelRect& rect = m_damage[i];
                     const D3D11_BOX box{ rect.left, rect.top, 0, rect.right, rect.bottom, 1 };
                     m_d3dContext->CopySubresourceRegion(m_backBuffer.Get(), 0, rect.left, rect.top, 0, m_targetTexture.Get(), 0, &box);
-                    dirty[i] = RECT{ static_cast<LONG>(rect.left), static_cast<LONG>(rect.top), static_cast<LONG>(rect.right), static_cast<LONG>(rect.bottom) };
+                    dirty[dirtyCount++] = RECT{ static_cast<LONG>(rect.left), static_cast<LONG>(rect.top), static_cast<LONG>(rect.right), static_cast<LONG>(rect.bottom) };
                     copyBytes += rect.Area() * 4;
+                };
+                for (uint32_t i = 0; i < m_damageCount; ++i)
+                {
+                    copyRect(m_damage[i]);
+                }
+                // Areas moved by ScrollPixels are presented without being repainted (a full-damage frame covers them).
+                if (!m_frameFullDamage)
+                {
+                    for (uint32_t i = 0; i < m_frameScrollCount; ++i)
+                    {
+                        copyRect(m_frameScrollRects[i]);
+                    }
                 }
 
                 // Outside the dirty rects, flip-model Present1 carries the previous frame forward into the new buffer.
                 DXGI_PRESENT_PARAMETERS parameters{};
                 if (!m_frameFullDamage)
                 {
-                    parameters.DirtyRectsCount = m_damageCount;
+                    parameters.DirtyRectsCount = dirtyCount;
                     parameters.pDirtyRects = dirty;
                 }
                 IFC_RETURN(m_swapChain->Present1(0, 0, &parameters));
 
                 m_presentCopyBytes = copyBytes;
-                m_uploadBytes = m_identity.isWarp ? copyBytes : 0;
+                m_uploadBytes += m_identity.isWarp ? copyBytes : 0;
                 return S_OK;
             }
 
@@ -976,6 +1298,230 @@ namespace RenderingBackend
                 return format;
             }
 
+            // Rounded-clip masks, cached by rect and radii (LRU). Returns nullptr only if creation fails.
+            ID2D1Geometry* GetClipGeometry(const RectF& rect, float radiusX, float radiusY) noexcept
+            {
+                const float rx = radiusX > 0 ? radiusX : 0.0f;
+                const float ry = radiusY > 0 ? radiusY : 0.0f;
+                ++m_cacheTick;
+                for (uint32_t i = 0; i < m_clipGeometryCount; ++i)
+                {
+                    ClipGeometryEntry& entry = m_clipGeometries[i];
+                    if (entry.rect.left == rect.left && entry.rect.top == rect.top && entry.rect.right == rect.right &&
+                        entry.rect.bottom == rect.bottom && entry.radiusX == rx && entry.radiusY == ry)
+                    {
+                        entry.lastUse = m_cacheTick;
+                        return entry.geometry.Get();
+                    }
+                }
+
+                ComPtr<ID2D1RoundedRectangleGeometry> geometry;
+                if (FAILED(m_factory->CreateRoundedRectangleGeometry(D2D1::RoundedRect(ToD2D(rect), rx, ry), &geometry)))
+                {
+                    return nullptr;
+                }
+                ++m_counters.geometriesCreated;
+                ++m_churnCreated;
+
+                uint32_t slot = m_clipGeometryCount;
+                if (slot == MaxClipGeometries)
+                {
+                    slot = 0;
+                    for (uint32_t i = 1; i < MaxClipGeometries; ++i)
+                    {
+                        slot = m_clipGeometries[i].lastUse < m_clipGeometries[slot].lastUse ? i : slot;
+                    }
+                    ++m_churnDestroyed; // D2D keeps it alive while a pushed layer still references it
+                }
+                else
+                {
+                    ++m_clipGeometryCount;
+                }
+                ClipGeometryEntry& entry = m_clipGeometries[slot];
+                entry.rect = rect;
+                entry.radiusX = rx;
+                entry.radiusY = ry;
+                entry.lastUse = m_cacheTick;
+                entry.geometry = geometry;
+                return entry.geometry.Get();
+            }
+
+            // Path geometries: cached by (cacheKey, fill mode) when cacheKey != 0 (LRU), built per call otherwise.
+            ComPtr<ID2D1PathGeometry> GetPathGeometry(const PathData& path, _Out_ RectF* bounds) noexcept
+            {
+                *bounds = {};
+                ++m_cacheTick;
+                if (path.cacheKey != 0)
+                {
+                    for (uint32_t i = 0; i < m_pathGeometryCount; ++i)
+                    {
+                        PathGeometryEntry& entry = m_pathGeometries[i];
+                        if (entry.key == path.cacheKey && entry.nonZeroFill == path.nonZeroFill)
+                        {
+                            entry.lastUse = m_cacheTick;
+                            *bounds = entry.bounds;
+                            return entry.geometry;
+                        }
+                    }
+                }
+
+                ComPtr<ID2D1PathGeometry> geometry;
+                if (FAILED(BuildPathGeometry(path, &geometry, bounds)))
+                {
+                    return nullptr;
+                }
+                ++m_counters.geometriesCreated;
+                ++m_counters.pathGeometriesCreated;
+                ++m_churnCreated;
+                if (path.cacheKey == 0)
+                {
+                    ++m_churnDestroyed; // used for this call only
+                    return geometry;
+                }
+
+                uint32_t slot = m_pathGeometryCount;
+                if (slot == MaxPathGeometries)
+                {
+                    slot = 0;
+                    for (uint32_t i = 1; i < MaxPathGeometries; ++i)
+                    {
+                        slot = m_pathGeometries[i].lastUse < m_pathGeometries[slot].lastUse ? i : slot;
+                    }
+                    ++m_churnDestroyed;
+                }
+                else
+                {
+                    ++m_pathGeometryCount;
+                }
+                PathGeometryEntry& entry = m_pathGeometries[slot];
+                entry.key = path.cacheKey;
+                entry.nonZeroFill = path.nonZeroFill;
+                entry.lastUse = m_cacheTick;
+                entry.bounds = *bounds;
+                entry.geometry = geometry;
+                return geometry;
+            }
+
+            // MoveTo starts a figure (ending an open one); LineTo/CubicTo without a figure start one at the current
+            // point; Close ends the figure closed and returns to its start. Fills treat open figures as closed.
+            // bounds is the control-point bounding box (an overestimate for curves), used for overdraw accounting.
+            HRESULT BuildPathGeometry(const PathData& path, _Outptr_ ID2D1PathGeometry** result, _Out_ RectF* bounds) noexcept
+            {
+                *result = nullptr;
+                if (path.verbCount == 0 || path.verbs == nullptr || (path.pointCount > 0 && path.points == nullptr))
+                {
+                    return E_INVALIDARG;
+                }
+                uint32_t needed = 0;
+                for (uint32_t i = 0; i < path.verbCount; ++i)
+                {
+                    switch (path.verbs[i])
+                    {
+                    case PathVerb::MoveTo:
+                    case PathVerb::LineTo: needed += 1; break;
+                    case PathVerb::CubicTo: needed += 3; break;
+                    case PathVerb::Close: break;
+                    default: return E_INVALIDARG;
+                    }
+                }
+                if (needed == 0 || needed > path.pointCount)
+                {
+                    return E_INVALIDARG;
+                }
+
+                ComPtr<ID2D1PathGeometry> geometry;
+                ComPtr<ID2D1GeometrySink> sink;
+                IFC_RETURN(m_factory->CreatePathGeometry(&geometry));
+                IFC_RETURN(geometry->Open(&sink));
+                sink->SetFillMode(path.nonZeroFill ? D2D1_FILL_MODE_WINDING : D2D1_FILL_MODE_ALTERNATE);
+
+                float minX = INFINITY, minY = INFINITY, maxX = -INFINITY, maxY = -INFINITY;
+                uint32_t next = 0;
+                const auto take = [&]()
+                {
+                    const PointF& p = path.points[next++];
+                    minX = std::fmin(minX, p.x);
+                    maxX = std::fmax(maxX, p.x);
+                    minY = std::fmin(minY, p.y);
+                    maxY = std::fmax(maxY, p.y);
+                    return D2D1::Point2F(p.x, p.y);
+                };
+                bool open = false;
+                D2D1_POINT_2F start{}, current{};
+                const auto ensureFigure = [&]()
+                {
+                    if (!open)
+                    {
+                        sink->BeginFigure(current, D2D1_FIGURE_BEGIN_FILLED);
+                        start = current;
+                        open = true;
+                    }
+                };
+                for (uint32_t i = 0; i < path.verbCount; ++i)
+                {
+                    switch (path.verbs[i])
+                    {
+                    case PathVerb::MoveTo:
+                        if (open)
+                        {
+                            sink->EndFigure(D2D1_FIGURE_END_OPEN);
+                            open = false;
+                        }
+                        current = take();
+                        ensureFigure();
+                        break;
+                    case PathVerb::LineTo:
+                    {
+                        ensureFigure();
+                        current = take();
+                        sink->AddLine(current);
+                        break;
+                    }
+                    case PathVerb::CubicTo:
+                    {
+                        ensureFigure();
+                        const D2D1_POINT_2F c1 = take();
+                        const D2D1_POINT_2F c2 = take();
+                        current = take();
+                        sink->AddBezier(D2D1::BezierSegment(c1, c2, current));
+                        break;
+                    }
+                    case PathVerb::Close:
+                        if (open)
+                        {
+                            sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+                            open = false;
+                            current = start;
+                        }
+                        break;
+                    }
+                }
+                if (open)
+                {
+                    sink->EndFigure(D2D1_FIGURE_END_OPEN);
+                }
+                IFC_RETURN(sink->Close());
+                *bounds = RectF{ minX, minY, maxX, maxY };
+                *result = geometry.Detach();
+                return S_OK;
+            }
+
+            void AddPendingScrollRect(const PixelRect& rect) noexcept
+            {
+                if (m_pendingScrollCount == MaxScrollRects)
+                {
+                    PixelRect bounds = rect;
+                    for (uint32_t i = 0; i < m_pendingScrollCount; ++i)
+                    {
+                        bounds = Union(bounds, m_pendingScrollRects[i]);
+                    }
+                    m_pendingScrollRects[0] = bounds;
+                    m_pendingScrollCount = 1;
+                    return;
+                }
+                m_pendingScrollRects[m_pendingScrollCount++] = rect;
+            }
+
             HRESULT CheckDevice() noexcept
             {
                 if (!m_lost)
@@ -1027,6 +1573,7 @@ namespace RenderingBackend
             ComPtr<ID3D11Texture2D> m_targetTexture;
             ComPtr<ID2D1Bitmap1> m_targetBitmap;
             ComPtr<ID3D11Texture2D> m_staging;
+            ComPtr<ID3D11Texture2D> m_scrollScratch;
             ComPtr<IDXGISwapChain1> m_swapChain;
             ComPtr<ID3D11Texture2D> m_backBuffer;
 
@@ -1048,7 +1595,21 @@ namespace RenderingBackend
             FrameStats m_stats;
             Matrix3x2F m_transform;
             uint64_t m_uploadBytes = 0;
+            uint64_t m_pendingUploadBytes = 0; // EnsureBitmap copies made outside a frame
             uint64_t m_presentCopyBytes = 0;
+
+            PixelRect m_pendingScrollRects[MaxScrollRects];
+            uint32_t m_pendingScrollCount = 0;
+            PixelRect m_frameScrollRects[MaxScrollRects];
+            uint32_t m_frameScrollCount = 0;
+
+            uint64_t m_cacheTick = 0;
+            ClipGeometryEntry m_clipGeometries[MaxClipGeometries];
+            uint32_t m_clipGeometryCount = 0;
+            PathGeometryEntry m_pathGeometries[MaxPathGeometries];
+            uint32_t m_pathGeometryCount = 0;
+            std::unordered_map<uint64_t, BitmapEntry> m_bitmaps;
+            uint64_t m_bitmapBytes = 0;
 
             PixelRect m_damage[MaxDamageRects];
             uint32_t m_damageCount = 0;
