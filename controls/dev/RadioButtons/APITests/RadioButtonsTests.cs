@@ -951,6 +951,407 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons whose ItemTemplate is a custom element factory that creates RadioButtons; its ItemsSource
+        //           is replaced with a new list.
+        // Expected: every old container is returned to the custom factory once, with the inner ItemsRepeater as
+        //           args.Parent, and the new items get new containers.
+        // A failure means: custom element factories used by RadioButtons get a null Parent when ItemsSource changes
+        //           (task.ms/62261645).
+        [TestMethod]
+        [TestProperty("Description", "Verifies a custom RadioButtons item factory gets the inner ItemsRepeater as Parent when ItemsSource is replaced.")]
+        public void VerifyCustomElementFactoryGetsParentWhenItemsSourceIsReplaced()
+        {
+            RadioButtons radioButtons = null;
+            ItemsRepeater repeater = null;
+            RecordingRadioButtonFactory factory = null;
+            List<UIElement> oldContainers = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                factory = new RecordingRadioButtonFactory();
+                radioButtons = new RadioButtons() { ItemsSource = new List<string>() { "a", "b", "c" }, ItemTemplate = factory };
+                Content = radioButtons;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                Verify.IsNotNull(repeater);
+                Verify.AreEqual(3, factory.Created.Count);
+                oldContainers = Enumerable.Range(0, 3).Select(i => radioButtons.ContainerFromIndex(i)).ToList();
+                radioButtons.SelectedIndex = 1;
+
+                radioButtons.ItemsSource = new List<string>() { "d", "e" };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, factory.Recycled.Count, "Every old container should be returned to the custom factory.");
+                for (int i = 0; i < oldContainers.Count; i++)
+                {
+                    Verify.AreEqual(1, factory.Recycled.Count(recycled => ReferenceEquals(recycled.Element, oldContainers[i])),
+                        "Container " + i + " should be recycled once.");
+                }
+
+                foreach (var recycled in factory.Recycled)
+                {
+                    Verify.IsTrue(ReferenceEquals(repeater, recycled.Parent), "RecycleElement should get the inner ItemsRepeater as Parent.");
+                }
+
+                Verify.AreEqual(5, factory.Created.Count);
+                Verify.AreEqual("d", ((RadioButton)radioButtons.ContainerFromIndex(0)).Tag);
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+            });
+        }
+
+        // Scenario: RadioButtons with the first item selected and a SelectionChanged handler that replaces ItemsSource again
+        //           the first time the selection is removed; ItemsSource is then replaced.
+        // Expected: no exception; RadioButtons shows the source set by the handler and nothing is selected.
+        // A failure means: a selection change raised while RadioButtons replaces its items re-enters the inner
+        //           ItemsRepeater's ItemsSource change and crashes or shows the wrong items.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RadioButtons handles an ItemsSource replacement made from SelectionChanged while ItemsSource is being replaced.")]
+        public void VerifyItemsSourceReplacementFromSelectionChangedDuringItemsSourceReplacement()
+        {
+            RadioButtons radioButtons = null;
+            var nestedSource = new List<string>() { "x", "y" };
+            bool nestedReplacementDone = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons() { ItemsSource = new List<string>() { "a", "b", "c" } };
+                Content = radioButtons;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+                radioButtons.SelectionChanged += (sender, args) =>
+                {
+                    if (!nestedReplacementDone && args.RemovedItems.Count > 0)
+                    {
+                        nestedReplacementDone = true;
+                        Log.Comment("Replacing ItemsSource from SelectionChanged");
+                        radioButtons.ItemsSource = nestedSource;
+                    }
+                };
+
+                radioButtons.ItemsSource = new List<string>() { "d", "e", "f" };
+                Verify.IsTrue(nestedReplacementDone);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                Verify.IsNotNull(repeater);
+                Verify.AreSame(nestedSource, radioButtons.ItemsSource);
+                Verify.AreEqual(nestedSource.Count, repeater.ItemsSourceView.Count);
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                Verify.AreEqual("x", ((RadioButton)radioButtons.ContainerFromIndex(0)).Content);
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+            });
+        }
+
+        // Scenario: RadioButtons bound to an ObservableCollection with a custom item factory and the middle item selected; a
+        //           SelectionChanged handler replaces ItemsSource the first time the selection is removed; the selected item
+        //           is then removed from the collection. RadioButtons clears the selection from the inner ItemsRepeater's
+        //           ElementClearing, so the replacement runs while the repeater is still clearing the removed container.
+        // Expected: no exception or assert; every old container is returned to the factory exactly once, with the inner
+        //           ItemsRepeater as Parent; RadioButtons shows the source set by the handler and nothing is selected.
+        // A failure means: the inner ItemsRepeater recycles the removed container a second time after the nested
+        //           ItemsSource replacement already recycled it, or it crashes.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RadioButtons handles an ItemsSource replacement made from SelectionChanged when the selected item is removed from the collection.")]
+        public void VerifyItemsSourceReplacementFromSelectionChangedWhenSelectedItemIsRemoved()
+        {
+            RadioButtons radioButtons = null;
+            ItemsRepeater repeater = null;
+            RecordingRadioButtonFactory factory = null;
+            List<UIElement> oldContainers = null;
+            global::System.Collections.ObjectModel.ObservableCollection<string> data = null;
+            var nestedSource = new List<string>() { "x", "y" };
+            bool nestedReplacementDone = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                factory = new RecordingRadioButtonFactory();
+                data = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "a", "b", "c" };
+                radioButtons = new RadioButtons() { ItemsSource = data, ItemTemplate = factory };
+                Content = radioButtons;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                Verify.IsNotNull(repeater);
+                Verify.AreEqual(3, factory.Created.Count);
+                oldContainers = Enumerable.Range(0, 3).Select(i => radioButtons.ContainerFromIndex(i)).ToList();
+                radioButtons.SelectedIndex = 1;
+                Verify.IsTrue(((RadioButton)oldContainers[1]).IsChecked == true);
+
+                radioButtons.SelectionChanged += (sender, args) =>
+                {
+                    if (!nestedReplacementDone && args.RemovedItems.Count > 0)
+                    {
+                        nestedReplacementDone = true;
+                        Log.Comment("Replacing ItemsSource from SelectionChanged");
+                        radioButtons.ItemsSource = nestedSource;
+                    }
+                };
+
+                Log.Comment("Removing the selected item");
+                data.RemoveAt(1);
+                Verify.IsTrue(nestedReplacementDone);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(oldContainers.Count, factory.Recycled.Count, "Every old container should be recycled once.");
+                for (int i = 0; i < oldContainers.Count; i++)
+                {
+                    Verify.AreEqual(1, factory.Recycled.Count(recycled => ReferenceEquals(recycled.Element, oldContainers[i])),
+                        "Container " + i + " should be recycled once.");
+                }
+
+                foreach (var recycled in factory.Recycled)
+                {
+                    Verify.IsTrue(ReferenceEquals(repeater, recycled.Parent), "RecycleElement should get the inner ItemsRepeater as Parent.");
+                }
+
+                Verify.AreSame(nestedSource, radioButtons.ItemsSource);
+                Verify.AreEqual(nestedSource.Count, repeater.ItemsSourceView.Count);
+                Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                Verify.AreEqual(oldContainers.Count + nestedSource.Count, factory.Created.Count);
+                for (int i = 0; i < nestedSource.Count; i++)
+                {
+                    var container = radioButtons.ContainerFromIndex(i);
+                    Verify.AreEqual(nestedSource[i], ((RadioButton)container).Tag);
+                    Verify.AreEqual(i, repeater.GetElementIndex(container));
+                }
+                Verify.AreEqual(-1, radioButtons.SelectedIndex);
+            });
+        }
+
+        // Scenario: RadioButtons bound to an ObservableCollection with a custom item factory and the first or middle item
+        //           selected, a SelectionChanged handler that replaces ItemsSource the first time the selection is
+        //           removed, and an app ElementClearing handler on the inner ItemsRepeater (registered after the RadioButtons
+        //           handler). The selected item is removed: the RadioButtons ElementClearing handler clears the selection for
+        //           the removed container, so the nested replacement runs, and clears that container again, before the app
+        //           handler has been called for it.
+        // Expected: the app handler gets ElementClearing once for each old container, and gets the removed container while
+        //           it is still realized: its visual parent is the inner repeater, GetElementIndex is not -1, its DataContext
+        //           is the removed item, and it was not yet returned to the factory. Each old container is recycled once.
+        // A failure means: the app handler got ElementClearing for the removed container only after the nested replacement
+        //           had recycled it (no parent, index -1, DataContext null), or twice.
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app ElementClearing handler on the RadioButtons repeater sees the removed selected container realized when SelectionChanged replaces ItemsSource.")]
+        public void VerifyAppElementClearingHandlerSeesRealizedContainerWhenSelectionChangedReplacesItemsSource()
+        {
+            // Removing the selected last item did not start the nested replacement from ElementClearing in this setup, so only
+            // the first and middle items are used.
+            foreach (int selectedIndex in new[] { 0, 1 })
+            {
+                RadioButtons radioButtons = null;
+                RecordingRadioButtonFactory factory = null;
+                var oldItems = new List<string>() { "a", "b", "c" };
+                global::System.Collections.ObjectModel.ObservableCollection<string> data = null;
+                var nestedSource = new List<string>() { "x", "y" };
+                bool nestedReplacementDone = false;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Selected (and removed) index: " + selectedIndex);
+                    factory = new RecordingRadioButtonFactory();
+                    data = new global::System.Collections.ObjectModel.ObservableCollection<string>(oldItems);
+                    radioButtons = new RadioButtons() { ItemsSource = data, ItemTemplate = factory };
+                    Content = radioButtons;
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                    Verify.IsNotNull(repeater);
+                    var oldContainers = Enumerable.Range(0, 3).Select(i => radioButtons.ContainerFromIndex(i)).ToList();
+                    Verify.IsTrue(oldContainers.All(c => c != null), "3 containers realized.");
+                    radioButtons.SelectedIndex = selectedIndex;
+
+                    radioButtons.SelectionChanged += (sender, args) =>
+                    {
+                        if (!nestedReplacementDone && args.RemovedItems.Count > 0)
+                        {
+                            nestedReplacementDone = true;
+                            Log.Comment("Replacing ItemsSource from SelectionChanged");
+                            radioButtons.ItemsSource = nestedSource;
+                        }
+                    };
+
+                    var appCalls = new List<(UIElement Element, int Index, DependencyObject Parent, object DataContext, bool Recycled)>();
+                    repeater.ElementClearing += (sender, args) =>
+                    {
+                        var element = args.Element;
+                        appCalls.Add((element, repeater.GetElementIndex(element), VisualTreeHelper.GetParent(element), (element as FrameworkElement)?.DataContext,
+                            factory.Recycled.Any(recycled => ReferenceEquals(recycled.Element, element))));
+                    };
+
+                    Log.Comment("Removing the selected item");
+                    data.RemoveAt(selectedIndex);
+                    Verify.IsTrue(nestedReplacementDone);
+
+                    foreach (var call in appCalls)
+                    {
+                        Log.Comment(string.Format("App handler: container #{0}, GetElementIndex {1}, parent is repeater {2}, DataContext '{3}', already recycled {4}",
+                            oldContainers.IndexOf(call.Element), call.Index, call.Parent == repeater, call.DataContext, call.Recycled));
+                    }
+                    for (int i = 0; i < oldContainers.Count; i++)
+                    {
+                        var calls = appCalls.Where(call => call.Element == oldContainers[i]).ToList();
+                        Verify.AreEqual(1, calls.Count, "The app handler gets ElementClearing once for container " + i + ".");
+                        Verify.AreEqual(repeater, calls[0].Parent, "Container " + i + " is still a child of the repeater when the app handler runs.");
+                        Verify.AreNotEqual(-1, calls[0].Index, "GetElementIndex of container " + i + " when the app handler runs.");
+                        Verify.AreEqual(oldItems[i], calls[0].DataContext, "Container " + i + " still has its DataContext when the app handler runs.");
+                        Verify.IsFalse(calls[0].Recycled, "Container " + i + " was not yet recycled when the app handler runs.");
+                        Verify.AreEqual(1, factory.Recycled.Count(recycled => ReferenceEquals(recycled.Element, oldContainers[i])), "Container " + i + " should be recycled once.");
+                    }
+                    Verify.AreEqual(oldContainers.Count, appCalls.Count);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                    Verify.AreSame(nestedSource, radioButtons.ItemsSource);
+                    Verify.AreEqual(nestedSource.Count, VisualTreeHelper.GetChildrenCount(repeater));
+                    Verify.AreEqual(-1, radioButtons.SelectedIndex);
+                    Content = null;
+                });
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        // Scenario: RadioButtons bound to an ObservableCollection with a custom item factory that can hand a recycled container
+        //           back, the first or middle item selected, a SelectionChanged handler that sets a new Layout on the inner
+        //           ItemsRepeater the first time the selection is removed, and an app ElementClearing handler on the inner
+        //           repeater (registered after the RadioButtons handler). The selected container X is removed: the RadioButtons
+        //           ElementClearing handler clears the selection, so SelectionChanged sets a Layout (a nested clear of X, which
+        //           calls the app handler for X). The app handler sets a Layout again (a second, deeper nested clear that
+        //           recycles X) and then realizes X again with GetOrCreateElement(0).
+        // Expected: when the handlers return, neither the first nested clear nor the clear that raised the event continues on
+        //           X's new lifetime: X stays realized at index 0 with the DataContext of its new item, is a child of the
+        //           repeater, is recycled once, and stays realized after layout.
+        // A failure means: a clear that was itself the outer clear of a deeper nested clear recycled X again although the app
+        //           handler realized it again (X loses its index and DataContext, and is recycled twice).
+        [TestMethod]
+        [TestProperty("Description", "Verifies a container realized again after two nested Layout changes from the RadioButtons and app ElementClearing handlers is not recycled by an outer clear.")]
+        public void VerifyContainerRealizedAgainAfterTwoNestedClearsFromElementClearingIsNotRecycledAgain()
+        {
+            foreach (int selectedIndex in new[] { 0, 1 })
+            {
+                    RadioButtons radioButtons = null;
+                    ReusingRadioButtonFactory factory = null;
+                    var oldItems = new List<string>() { "a", "b", "c" };
+                    global::System.Collections.ObjectModel.ObservableCollection<string> data = null;
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Log.Comment("Selected (and removed) index: " + selectedIndex);
+                        factory = new ReusingRadioButtonFactory();
+                        data = new global::System.Collections.ObjectModel.ObservableCollection<string>(oldItems);
+                        radioButtons = new RadioButtons() { ItemsSource = data, ItemTemplate = factory };
+                        Content = radioButtons;
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        var repeater = (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(radioButtons, "InnerRepeater");
+                        Verify.IsNotNull(repeater);
+                        var removedContainer = radioButtons.ContainerFromIndex(selectedIndex);
+                        Verify.IsNotNull(removedContainer);
+                        radioButtons.SelectedIndex = selectedIndex;
+
+                        bool firstLayoutChangeDone = false;
+                        radioButtons.SelectionChanged += (sender, args) =>
+                        {
+                            if (!firstLayoutChangeDone && args.RemovedItems.Count > 0)
+                            {
+                                firstLayoutChangeDone = true;
+                                Log.Comment("Setting a Layout from SelectionChanged");
+                                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                            }
+                        };
+
+                        int appCallsForRemovedContainer = 0;
+                        bool secondLayoutChangeDone = false;
+                        UIElement realizedAgain = null;
+                        int indexInHandler = int.MinValue;
+                        repeater.ElementClearing += (sender, args) =>
+                        {
+                            if (args.Element != removedContainer)
+                            {
+                                return;
+                            }
+                            appCallsForRemovedContainer++;
+                            if (firstLayoutChangeDone && !secondLayoutChangeDone)
+                            {
+                                secondLayoutChangeDone = true;
+                                Log.Comment("Setting a Layout again from the app ElementClearing handler");
+                                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                                Log.Comment("Realizing item 0 again from the app ElementClearing handler");
+                                factory.ReuseElement = removedContainer;
+                                try
+                                {
+                                    realizedAgain = repeater.GetOrCreateElement(0);
+                                }
+                                finally
+                                {
+                                    factory.ReuseElement = null;
+                                }
+                                indexInHandler = repeater.GetElementIndex(removedContainer);
+                            }
+                        };
+
+                        Log.Comment("Removing the selected item");
+                        data.RemoveAt(selectedIndex);
+
+                        var dataContext = ((FrameworkElement)removedContainer).DataContext;
+                        Log.Comment(string.Format("After the clear: index in handler {0}, GetElementIndex {1}, parent is repeater {2}, DataContext '{3}', app ElementClearing {4}, RecycleElement {5}",
+                            indexInHandler, repeater.GetElementIndex(removedContainer), VisualTreeHelper.GetParent(removedContainer) == repeater,
+                            dataContext ?? "<null>", appCallsForRemovedContainer, factory.Recycled.Count(e => e == removedContainer)));
+                        Verify.IsTrue(firstLayoutChangeDone, "SelectionChanged set a Layout.");
+                        Verify.IsTrue(secondLayoutChangeDone, "The app ElementClearing handler set a Layout again.");
+                        Verify.AreSame(removedContainer, realizedAgain, "GetOrCreateElement(0) realized the removed container again.");
+                        Verify.AreEqual(0, indexInHandler, "The container is realized at index 0 in the handler.");
+                        Verify.AreEqual(1, appCallsForRemovedContainer, "The app handler gets ElementClearing once for the container.");
+                        Verify.AreEqual(1, factory.Recycled.Count(e => e == removedContainer), "The container is recycled once.");
+                        Verify.AreEqual(0, repeater.GetElementIndex(removedContainer), "The container is still realized at index 0 after the clears return.");
+                        Verify.AreEqual(data[0], dataContext, "The container keeps the DataContext of its new item.");
+                        Verify.AreEqual(repeater, VisualTreeHelper.GetParent(removedContainer), "The container is a child of the repeater.");
+
+                        Content.UpdateLayout();
+                        Log.Comment(string.Format("After layout: GetElementIndex {0}, RecycleElement {1}, item 0 is the container {2}",
+                            repeater.GetElementIndex(removedContainer), factory.Recycled.Count(e => e == removedContainer),
+                            ReferenceEquals(repeater.TryGetElement(0), removedContainer)));
+                        Verify.AreSame(removedContainer, repeater.TryGetElement(0), "Layout keeps the container realized again at index 0.");
+                        Verify.AreEqual(1, factory.Recycled.Count(e => e == removedContainer), "Layout does not recycle the container.");
+                        Verify.AreEqual(data[0], ((FrameworkElement)removedContainer).DataContext);
+                    });
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Content = null;
+                    });
+                    IdleSynchronizer.Wait();
+            }
+        }
+
         private static void VerifyDependencyPropertyIdentifiers(params DependencyProperty[] properties)
         {
             for (int i = 0; i < properties.Length; i++)
@@ -995,6 +1396,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return NotARadioButton;
                 }
                 return value % 2 == 0 ? Even : Odd;
+            }
+        }
+
+        // Creates RadioButtons and records the recycled ones. While ReuseElement is set and has been recycled since it was
+        // last handed out, GetElement hands it back instead of creating a new RadioButton.
+        private partial class ReusingRadioButtonFactory : ElementFactory
+        {
+            private readonly List<UIElement> m_available = new List<UIElement>();
+
+            public UIElement ReuseElement { get; set; }
+            public List<UIElement> Recycled { get; } = new List<UIElement>();
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                if (ReuseElement != null && m_available.Remove(ReuseElement))
+                {
+                    ((RadioButton)ReuseElement).Content = "Custom " + args.Data;
+                    return ReuseElement;
+                }
+                return new RadioButton() { Content = "Custom " + args.Data };
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
+            {
+                Recycled.Add(args.Element);
+                m_available.Add(args.Element);
             }
         }
 
