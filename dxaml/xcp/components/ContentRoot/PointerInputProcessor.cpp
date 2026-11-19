@@ -484,7 +484,18 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
                     curr = curr->GetParent();
                 }
 
-                if (auto popupRoot = do_pointer_cast<CPopupRoot>(spDOContact))
+                auto popupRoot = do_pointer_cast<CPopupRoot>(spDOContact);
+                if (!popupRoot && FxCallbacks::DXamlCore_IsWinRTDndOperationInProgress())
+                {
+                    // WinRT drag hit testing skips the light-dismiss layer; use this pointer's previous contact.
+                    auto previousPopupRoot = do_pointer_cast<CPopupRoot>(pPointerEnterDO);
+                    if (previousPopupRoot && previousPopupRoot->GetTopmostPopup(CPopupRoot::PopupFilter::LightDismissOnly))
+                    {
+                        popupRoot = previousPopupRoot;
+                    }
+                }
+
+                if (popupRoot)
                 {
                     // For touch input, if the contact element is a PopupRoot & context flyout was shown, the user performed a drag/pan after we showed a flyout
                     // Dismiss the flyout in this case, and do a hit test to the element under the pointer

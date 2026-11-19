@@ -44,44 +44,44 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return ref new Platform::String(deploymentDir + L"resources\\native\\external\\foundation\\input\\dmanip\\");
         }
 
-        // Tears down the first item in a horizontal GridView and drops
+        // Holds and drags the first item in a horizontal GridView and drops
         // it at the end of the grid via auto-scroll. Simulates a touch-based reordering.
         void AutoScrollBehaviorTests::AutoScrollHorizontallyInGridView()
         {
-            AutoScrollHorizontallyInGridView(false /*alsoScrollWithMouseWheel*/, -151 /*firstItemCenterX*/);
+            AutoScrollHorizontallyInGridView(false /*alsoScrollWithMouseWheel*/);
         }
 
-        // Tears down the first item in a horizontal GridView and while auto-scrolling, triggers
+        // Holds and drags the first item in a horizontal GridView and while auto-scrolling, triggers
         // a mouse-wheel-based scroll. Then drops item at the end of the grid via auto-scroll.
         void AutoScrollBehaviorTests::MouseWheelScrollDuringTouchAutoScroll()
         {
-            AutoScrollHorizontallyInGridView(true /*alsoScrollWithMouseWheel*/, -151 /*firstItemCenterX*/);
+            AutoScrollHorizontallyInGridView(true /*alsoScrollWithMouseWheel*/);
         }
 
-        void AutoScrollBehaviorTests::AutoScrollHorizontallyInGridView(bool alsoScrollWithMouseWheel, INT firstItemCenterX)
+        void AutoScrollBehaviorTests::AutoScrollHorizontallyInGridView(bool alsoScrollWithMouseWheel)
         {
             TestCleanupWrapper cleanup;
 
             ::Windows::Foundation::Size size(400, 300);
             TestServices::WindowHelper->SetWindowSizeOverride(size);
 
-            int pointerCaptureLostCount = 0;
             bool hasScrolledWithMouseWheel = false;
-            bool isPointerReleased = false;
+            bool hasAutoScrolled = false;
+            int dragStartingCount = 0;
+            int dragOverCount = 0;
+            bool hasHeldItem = false;
+            auto dropResult = ::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None;
+            auto dropCompletedEvent = std::make_shared<Event>();
 
-            auto tappedEvent = std::make_shared<Event>();
+            auto dragStartingRegistration = CreateSafeEventRegistration(xaml::UIElement, DragStarting);
+            auto dragOverRegistration = CreateSafeEventRegistration(xaml::UIElement, DragOver);
+            auto dropCompletedRegistration = CreateSafeEventRegistration(xaml::UIElement, DropCompleted);
+            auto holdingRegistration = CreateSafeEventRegistration(xaml::UIElement, Holding);
 
             auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
 
             auto rootLoadedEvent = std::make_shared<Event>();
             auto rootLoadedRegistration = CreateSafeEventRegistration(xaml::FrameworkElement, Loaded);
-
-            auto gvTappedRegistration = CreateSafeEventRegistration(xaml::UIElement, Tapped);
-            auto gvPointerMovedRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerMoved);
-            auto gvPointerPressedRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerPressed);
-            auto gvPointerCaptureLostRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerCaptureLost);
-
-            xaml_input::PointerEventHandler^ pointerReleasedHandler = nullptr;
 
             xaml_controls::GridViewItem^ item = nullptr;
             xaml_controls::ScrollViewer^ scrollViewer = nullptr;
@@ -106,59 +106,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 gridView = safe_cast<xaml_controls::GridView^>(rootGrid->FindName(L"gridView"));
                 VERIFY_IS_NOT_NULL(gridView);
 
-                LOG_OUTPUT(L"Listening to GridView's UIElement.Tapped.");
-                gvTappedRegistration.Attach(
-                    gridView,
-                    ref new xaml_input::TappedEventHandler(
-                    [tappedEvent](Platform::Object^, xaml_input::TappedRoutedEventArgs^)
-                {
-                    LOG_OUTPUT(L"Tapped event raised.");
-                    tappedEvent->Set();
-                }));
-
-                LOG_OUTPUT(L"Listening to GridView's UIElement.PointerPressed.");
-                gvPointerPressedRegistration.Attach(
-                    gridView,
-                    ref new xaml_input::PointerEventHandler(
-                    [rootGrid](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
-                {
-                    Microsoft::UI::Input::PointerPoint^ ptrPt = args->GetCurrentPoint(rootGrid);
-                    LOG_OUTPUT(L"PointerPressed event raised with Position = (%f, %f), PointerId = %d, OriginalSource = %s.",
-                        ptrPt->Position.X, ptrPt->Position.Y, args->Pointer->PointerId, safe_cast<xaml::FrameworkElement^>(args->OriginalSource)->Name->Data());
-                }));
-
-                LOG_OUTPUT(L"Listening to GridView's UIElement.PointerMoved.");
-                gvPointerMovedRegistration.Attach(
-                    gridView,
-                    ref new xaml_input::PointerEventHandler(
-                    [rootGrid](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
-                {
-                    Microsoft::UI::Input::PointerPoint^ ptrPt = args->GetCurrentPoint(rootGrid);
-                    LOG_OUTPUT(L"PointerMoved event raised with Position = (%f, %f).", ptrPt->Position.X, ptrPt->Position.Y);
-                }));
-
-                LOG_OUTPUT(L"Listening to GridView's UIElement.PointerCaptureLost.");
-                gvPointerCaptureLostRegistration.Attach(
-                    gridView,
-                    ref new xaml_input::PointerEventHandler(
-                    [&pointerCaptureLostCount, rootGrid](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^ args)
-                {
-                    Microsoft::UI::Input::PointerPoint^ ptrPt = args->GetCurrentPoint(rootGrid);
-                    LOG_OUTPUT(L"PointerCaptureLost event raised with Position = (%f, %f), PointerId = %d, OriginalSource = %s.",
-                        ptrPt->Position.X, ptrPt->Position.Y, args->Pointer->PointerId, safe_cast<xaml::FrameworkElement^>(args->OriginalSource)->Name->Data());
-                    pointerCaptureLostCount++;
-                }));
-
-                LOG_OUTPUT(L"Listening to GridView's UIElement.PointerReleased.");
-                pointerReleasedHandler = ref new xaml_input::PointerEventHandler(
-                    [&isPointerReleased, rootGrid](Platform::Object^, xaml_input::PointerRoutedEventArgs^ args)
-                {
-                    Microsoft::UI::Input::PointerPoint^ ptrPt = args->GetCurrentPoint(rootGrid);
-                    LOG_OUTPUT(L"PointerReleased event raised with Position = (%f, %f), PointerId = %d, OriginalSource = %s.",
-                        ptrPt->Position.X, ptrPt->Position.Y, args->Pointer->PointerId, safe_cast<xaml::FrameworkElement^>(args->OriginalSource)->Name->Data());
-                    isPointerReleased = true;
-                });
-                gridView->AddHandler(xaml::UIElement::PointerReleasedEvent, pointerReleasedHandler, true);
             });
 
             LOG_OUTPUT(L"Waiting for root FE Loaded event.");
@@ -169,27 +116,50 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             {
                 item = safe_cast<xaml_controls::GridViewItem^>(gridView->ContainerFromIndex(0));
                 VERIFY_IS_NOT_NULL(item);
+                // A setup tap can interfere with recognizing the following touch-and-hold.
+                gridView->SelectedIndex = 0;
+                holdingRegistration.Attach(item, ref new xaml_input::HoldingEventHandler(
+                    [&hasHeldItem](Platform::Object^, xaml_input::HoldingRoutedEventArgs^ args)
+                {
+                    LOG_OUTPUT(L"Item Holding: state=%d.", args->HoldingState);
+                    if (args->HoldingState == Microsoft::UI::Input::HoldingState::Started)
+                    {
+                        hasHeldItem = true;
+                    }
+                }));
+                dragStartingRegistration.Attach(item, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::DragStartingEventArgs^>(
+                    [&dragStartingCount](xaml::UIElement^, xaml::DragStartingEventArgs^ args)
+                {
+                    ++dragStartingCount;
+                    LOG_OUTPUT(L"Item DragStarting: cancel=%d.", args->Cancel);
+                }));
+                dropCompletedRegistration.Attach(item, ref new wf::TypedEventHandler<xaml::UIElement^, xaml::DropCompletedEventArgs^>(
+                    [&dropResult, dropCompletedEvent](xaml::UIElement^, xaml::DropCompletedEventArgs^ args)
+                {
+                    dropResult = args->DropResult;
+                    LOG_OUTPUT(L"Item DropCompleted: result=%d.", args->DropResult);
+                    dropCompletedEvent->Set();
+                }));
+                dragOverRegistration.Attach(gridView, ref new xaml::DragEventHandler(
+                    [&dragOverCount](Platform::Object^, xaml::DragEventArgs^)
+                {
+                    ++dragOverCount;
+                }));
             });
 
-            LOG_OUTPUT(L"Tapping GridView item.");
-            TestServices::InputHelper->Tap(item);
-            tappedEvent->WaitForDefault();
             TestServices::WindowHelper->WaitForIdle();
 
             TestServices::WindowHelper->SynchronouslyTickUIThread(2);
-            VERIFY_IS_TRUE(isPointerReleased);
 
             RunOnUIThread([&]()
             {
-                isPointerReleased = false;
-
                 scrollViewer = safe_cast<xaml_controls::ScrollViewer^>(TreeHelper::GetVisualChildByName(gridView, L"ScrollViewer"));
                 VERIFY_IS_NOT_NULL(scrollViewer);
 
                 viewChangedRegistration.Attach(
                     scrollViewer,
                     ref new wf::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
-                    [&hasScrolledWithMouseWheel, alsoScrollWithMouseWheel, scrollViewer](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ args)
+                    [&hasScrolledWithMouseWheel, &hasAutoScrolled, &dragStartingCount, alsoScrollWithMouseWheel, scrollViewer](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ args)
                 {
                     LOG_OUTPUT(L"ViewChanged event raised with ScrollViewer.HorizontalOffset = %f.", scrollViewer->HorizontalOffset);
                     if (args->IsIntermediate == false)
@@ -199,67 +169,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                             LOG_OUTPUT(L"Final ViewChanged event raised.");
                         }
                     }
-                    else if (!hasScrolledWithMouseWheel && alsoScrollWithMouseWheel && scrollViewer->HorizontalOffset >= 4.0)
+                    else if (dragStartingCount > 0 && scrollViewer->HorizontalOffset >= 4.0)
                     {
-                        hasScrolledWithMouseWheel = true;
-                        LOG_OUTPUT(L"Launching horizontal scroll operation with the mouse wheel during the auto-scroll.");
-                        TestServices::InputHelper->ScrollMouseWheel(scrollViewer, -1 /* numberOfWheelClicks */);
+                        hasAutoScrolled = true;
+                        if (!hasScrolledWithMouseWheel && alsoScrollWithMouseWheel)
+                        {
+                            hasScrolledWithMouseWheel = true;
+                            LOG_OUTPUT(L"Launching horizontal scroll operation with the mouse wheel during the auto-scroll.");
+                            TestServices::InputHelper->ScrollMouseWheel(scrollViewer, -1 /* numberOfWheelClicks */);
+                        }
                     }
                 }));
             });
 
-            LOG_OUTPUT(L"Finger down on first GridView item.");
-            TestServices::InputHelper->DynamicPressCenter(item, 0, 0, PointerFinger::Finger1);
-            TestServices::WindowHelper->WaitForIdle();
+            LOG_OUTPUT(L"Hold and drag first GridView item to opposite edge.");
+            // Swipe selection is disabled in the .xaml so press-and-hold initiates reordering.
+            TestServices::InputHelper->PressHoldAndPanFromCenter(item,
+                280, 150, 0.02, 2000);
 
-            LOG_OUTPUT(L"Tear down first GridView item by pulling it downward.");
-            for (INT dy = -78; dy <= -64 && !isPointerReleased; dy++)
-            {
-                TestServices::WindowHelper->SynchronouslyTickUIThread(4);
-                TestServices::InputHelper->DynamicPressCenter(rootGrid, firstItemCenterX, dy, PointerFinger::Finger1);
-                TestServices::WindowHelper->WaitForIdle();
-            }
-
-            LOG_OUTPUT(L"Drag first GridView item to bottom edge.");
-            for (INT dy = -62; dy <= 70 && !isPointerReleased; dy += 8)
-            {
-                TestServices::WindowHelper->WaitForIdle();
-                TestServices::InputHelper->DynamicPressCenter(rootGrid, firstItemCenterX, dy, PointerFinger::Finger1);
-            }
-
-            LOG_OUTPUT(L"Drag first GridView item to opposite edge.");
-            for (INT dx = firstItemCenterX + 8; dx <= 132 && !isPointerReleased; dx += 8)
-            {
-                TestServices::WindowHelper->WaitForIdle();
-                TestServices::InputHelper->DynamicPressCenter(rootGrid, dx, 70, PointerFinger::Finger1);
-            }
-
-            VERIFY_IS_TRUE(!isPointerReleased);
-            TestServices::WindowHelper->SynchronouslyTickUIThread(2);
+            dropCompletedEvent->WaitForDefault();
 
             LOG_OUTPUT(L"Waiting for the end of the auto-scroll.");
             TestServices::WindowHelper->WaitForIdle();
 
-            LOG_OUTPUT(L"Finger up from first GridView item.");
-            TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
-            TestServices::WindowHelper->WaitForIdle();
-
-            if (pointerCaptureLostCount != 1)
-            {
-                RunOnUIThread([&]()
-                {
-                    LOG_OUTPUT(L"Final view of ScrollViewer is (x, y, z) = (%f, %f, %f).", scrollViewer->HorizontalOffset, scrollViewer->VerticalOffset, scrollViewer->ZoomFactor);
-                    VERIFY_IS_TRUE(scrollViewer->HorizontalOffset >= 14.0);
-                    VERIFY_ARE_EQUAL(scrollViewer->VerticalOffset, 0.0);
-                    VERIFY_ARE_EQUAL(scrollViewer->ZoomFactor, 1.0f);
-                });
-            }
-
             RunOnUIThread([&]()
             {
-                LOG_OUTPUT(L"Unhooking GridView's UIElement.PointerReleased.");
-                gridView->RemoveHandler(xaml::UIElement::PointerReleasedEvent, pointerReleasedHandler);
-                pointerReleasedHandler = nullptr;
+                VERIFY_ARE_EQUAL(dragStartingCount, 1);
+                VERIFY_IS_TRUE(hasHeldItem);
+                VERIFY_IS_GREATER_THAN(dragOverCount, 0);
+                VERIFY_IS_TRUE(hasAutoScrolled);
+                VERIFY_ARE_EQUAL(alsoScrollWithMouseWheel, hasScrolledWithMouseWheel);
+                VERIFY_ARE_EQUAL(dropResult, ::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move);
+                LOG_OUTPUT(L"Final view of ScrollViewer is (x, y, z) = (%f, %f, %f).", scrollViewer->HorizontalOffset, scrollViewer->VerticalOffset, scrollViewer->ZoomFactor);
+                VERIFY_IS_TRUE(scrollViewer->HorizontalOffset >= 14.0);
+                VERIFY_ARE_EQUAL(scrollViewer->VerticalOffset, 0.0);
+                VERIFY_ARE_EQUAL(scrollViewer->ZoomFactor, 1.0f);
             });
         }
 

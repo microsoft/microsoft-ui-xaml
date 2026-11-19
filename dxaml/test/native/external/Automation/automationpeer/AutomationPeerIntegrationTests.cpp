@@ -128,6 +128,35 @@ void AutomationPeerIntegrationTests::VerifyCommonUiaPropertyChangesBeingRaised()
     });
 }
 
+void AutomationPeerIntegrationTests::VerifyMockUiaClientsListening()
+{
+    TestCleanupWrapper cleanup([]()
+    {
+        RunOnUIThread([&]()
+        {
+            TestServices::Utilities->ClearMockUIAClientsListening();
+        });
+
+        TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+    });
+
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = ref new xaml_controls::Button();
+        Platform::Object^ providerAsObject;
+        TestServices::WindowHelper->GetUIAWindow(&providerAsObject);
+
+        const auto automationEvent = xaml_automation_peers::AutomationEvents::PropertyChanged;
+        const auto wasListening = xaml_automation_peers::AutomationPeer::ListenerExists(automationEvent);
+
+        TestServices::Utilities->SetMockUIAClientsListening();
+        VERIFY_IS_TRUE(xaml_automation_peers::AutomationPeer::ListenerExists(automationEvent));
+
+        TestServices::Utilities->ClearMockUIAClientsListening();
+        VERIFY_ARE_EQUAL(wasListening, xaml_automation_peers::AutomationPeer::ListenerExists(automationEvent));
+    });
+}
+
 void AutomationPeerIntegrationTests::VerifyControllerForPropertyChanged()
 {
     TestCleanupWrapper cleanup;

@@ -5,6 +5,7 @@
     Margin="25,0,25,0"
     AllowDrop="True"
     CanReorderItems="True"
+    IsSwipeEnabled="False"
     Background="DarkGreen"    
     Width="350"
     ScrollViewer.HorizontalScrollBarVisibility="Auto"

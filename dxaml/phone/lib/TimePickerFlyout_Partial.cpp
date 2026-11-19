@@ -171,6 +171,8 @@ TimePickerFlyout::OnOpening(
     _In_ IInspectable* /* pArgs */)
 {
     wrl::ComPtr<xaml_input::IInputManagerStatics> inputManagerStatics;
+    wrl::ComPtr<xaml_primitives::IFlyoutBase> flyoutBase;
+    wrl::ComPtr<xaml::IXamlRoot> xamlRoot;
     xaml_input::LastInputDeviceType lastInputDeviceType;
 
     ASSERT(_tpPresenter, "Expected non-null presenter");
@@ -179,7 +181,9 @@ TimePickerFlyout::OnOpening(
         wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Input_InputManager).Get(),
         &inputManagerStatics));
 
-    IFC_RETURN(inputManagerStatics->GetLastInputDeviceType(&lastInputDeviceType));
+    IFC_RETURN(QueryInterface(IID_PPV_ARGS(&flyoutBase)));
+    IFC_RETURN(flyoutBase->get_XamlRoot(&xamlRoot));
+    IFC_RETURN(inputManagerStatics->GetLastInputDeviceTypeForXamlRoot(xamlRoot.Get(), &lastInputDeviceType));
 
     IFC_RETURN(static_cast<TimePickerFlyoutPresenter*>(_tpPresenter.Get())->PullPropertiesFromOwner(this));
     IFC_RETURN(static_cast<TimePickerFlyoutPresenter*>(_tpPresenter.Get())->SetAcceptDismissButtonsVisibility(lastInputDeviceType != xaml_input::LastInputDeviceType_GamepadOrRemote));

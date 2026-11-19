@@ -715,6 +715,11 @@ HRESULT CJupiterControl::UpdateFontScale(_In_ XFLOAT newFontScale)
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT CJupiterControl::UIAClientsAreListening(_In_ UIAXcp::APAutomationEvents eAutomationEvent)
 {
+    if (m_isEnabledMockUIAClientsListening)
+    {
+        return S_OK;
+    }
+
     HRESULT hr = S_FALSE;
 
     if (m_pUIAWindow)

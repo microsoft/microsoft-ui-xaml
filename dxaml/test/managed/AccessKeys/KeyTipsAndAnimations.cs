@@ -171,7 +171,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
 
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void CancelDuringAnimation()
         {
             XamlRoot xamlRoot = null;
@@ -186,27 +186,26 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
                 Scene scene = SetupKeyTipAnimationScene();
 
                 using (var animationCompletedTester = new EventTester<XamlMedia.Animation.Storyboard, object>(scene.Storyboard, "Completed"))
+                using (var eventHelper = EventTester<object, object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
                 {
                     KeyTipHelper.VerifyKeyTipCount(0);
 
-                    using (var eventHelper = EventTester<object,object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
-                    {
-                        Log.Comment("Pressing ALT key to show KeyTips");
-                        TestServices.KeyboardHelper.Alt();
-                        eventHelper.Wait();
-                    }
+                    Log.Comment("Pressing ALT key to show KeyTips");
+                    TestServices.KeyboardHelper.Alt();
+                    eventHelper.Wait();
 
                     TestServices.WindowHelper.SynchronouslyTickUIThread(2);
+                    UIExecutor.Execute(() => Verify.AreEqual(
+                        XamlMedia.Animation.ClockState.Active, scene.Storyboard.GetCurrentState()));
                     KeyTipHelper.VerifyKeyTipCount(0);
 
-                    using (var eventHelper = EventTester<object,object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
-                    {
-                        Log.Comment("Pressing ALT key to exit AccessKey mode");
-                        TestServices.KeyboardHelper.Alt();
-                        eventHelper.Wait();
-                    }
+                    Log.Comment("Pressing ALT key to exit AccessKey mode");
+                    TestServices.KeyboardHelper.Alt();
+                    eventHelper.Wait();
 
                     TestServices.WindowHelper.SynchronouslyTickUIThread(2);
+                    UIExecutor.Execute(() => Verify.AreEqual(
+                        XamlMedia.Animation.ClockState.Active, scene.Storyboard.GetCurrentState()));
                     KeyTipHelper.VerifyKeyTipCount(0);
 
                     Log.Comment("Wait for animation to complete");
@@ -221,7 +220,7 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         [TestMethod]
         [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
         [TestProperty("HasAssociatedMasterFile", "True")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void KeysPressedDuringAnimation()
         {
             XamlRoot xamlRoot = null;
@@ -236,17 +235,17 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
                 Scene scene = SetupKeyTipAnimationScene();
 
                 using (var animationCompletedTester = new EventTester<XamlMedia.Animation.Storyboard, object>(scene.Storyboard, "Completed"))
+                using (var eventHelper = EventTester<object, object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
                 {
                     KeyTipHelper.VerifyKeyTipCount(0);
 
-                    using (var eventHelper = EventTester<object,object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
-                    {
-                        Log.Comment("Pressing ALT key to show KeyTips");
-                        TestServices.KeyboardHelper.Alt();
-                        eventHelper.Wait();
-                    }
+                    Log.Comment("Pressing ALT key to show KeyTips");
+                    TestServices.KeyboardHelper.Alt();
+                    eventHelper.Wait();
 
                     TestServices.WindowHelper.SynchronouslyTickUIThread(2);
+                    UIExecutor.Execute(() => Verify.AreEqual(
+                        XamlMedia.Animation.ClockState.Active, scene.Storyboard.GetCurrentState()));
                     KeyTipHelper.VerifyKeyTipCount(0);
 
                     using (var eventTester = new EventTester<Button, AccessKeyDisplayRequestedEventArgs>(scene.button2, "AccessKeyDisplayRequested"))
@@ -255,12 +254,16 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
                         eventTester.Wait();
 
                         TestServices.WindowHelper.SynchronouslyTickUIThread(2);
+                        UIExecutor.Execute(() => Verify.AreEqual(
+                            XamlMedia.Animation.ClockState.Active, scene.Storyboard.GetCurrentState()));
                         KeyTipHelper.VerifyKeyTipCount(0);
 
                         TestServices.KeyboardHelper.PressKeySequence("4");
                         eventTester.Wait();
 
                         TestServices.WindowHelper.SynchronouslyTickUIThread(2);
+                        UIExecutor.Execute(() => Verify.AreEqual(
+                            XamlMedia.Animation.ClockState.Active, scene.Storyboard.GetCurrentState()));
                         KeyTipHelper.VerifyKeyTipCount(0);
                     }
 

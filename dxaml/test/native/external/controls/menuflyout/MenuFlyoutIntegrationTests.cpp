@@ -1165,15 +1165,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        wf::Rect windowBounds = {};
+        wf::Rect availableMonitorBounds = {};
         RunOnUIThread([&]()
         {
-            windowBounds = TestServices::WindowHelper->WindowBounds;
-            menuFlyoutItem->Width = windowBounds.Width * 0.75;
+            wf::Point screenOffset = {};
+            wf::Point targetPointScreenPhysical = {};
+            wf::Rect inputPaneOccludeRectScreenLogical = {};
+            TestServices::WindowHelper->GetAvailableMonitorBounds(
+                TestServices::WindowHelper->WindowContent,
+                wf::Point(0, 0),
+                &availableMonitorBounds,
+                &screenOffset,
+                &targetPointScreenPhysical,
+                &inputPaneOccludeRectScreenLogical);
+            menuFlyoutItem->Width = availableMonitorBounds.Width * 0.75;
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        ShowMenuFlyout(menuFlyout, nullptr, windowBounds.Width / 2, windowBounds.Height / 2);
+        ShowMenuFlyout(menuFlyout, nullptr,
+            availableMonitorBounds.X + availableMonitorBounds.Width / 2,
+            availableMonitorBounds.Y + availableMonitorBounds.Height / 2);
 
         RunOnUIThread([&]()
         {
@@ -1181,7 +1192,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto menuFlyoutBounds = ControlHelper::GetBounds(flyoutPresenter);
 
             // Verify that the left of the menuflyout is at the left of the screen.
-            VERIFY_ARE_EQUAL(menuFlyoutBounds.Left, -windowBounds.X);
+            VERIFY_ARE_EQUAL(menuFlyoutBounds.Left, availableMonitorBounds.Left);
         });
 
         FlyoutHelper::HideFlyout(menuFlyout);
@@ -1976,9 +1987,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 L"    <MenuFlyoutItem x:Name='item3'>item3</MenuFlyoutItem>"
                 L"</MenuFlyout>"));
 
-            windowBounds = TestServices::WindowHelper->WindowBounds;
+            windowBounds = ControlHelper::GetBounds(rootPanel);
 
-            LOG_OUTPUT(L"Windows bounds left=%f top=%f width=%f height=%f", windowBounds.Left, windowBounds.Top, windowBounds.Width, windowBounds.Height);
+            LOG_OUTPUT(L"Root bounds left=%f top=%f width=%f height=%f", windowBounds.Left, windowBounds.Top, windowBounds.Width, windowBounds.Height);
             VERIFY_IS_TRUE(windowBounds.Width == 1024);
             VERIFY_IS_TRUE(windowBounds.Height == 768);
         });
@@ -2078,9 +2089,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 L"    <MenuFlyoutItem x:Name='item3'>item3</MenuFlyoutItem>"
                 L"</MenuFlyout>"));
 
-            windowBounds = TestServices::WindowHelper->WindowBounds;
+            windowBounds = ControlHelper::GetBounds(rootPanel);
 
-            LOG_OUTPUT(L"Windows bounds left=%f top=%f width=%f height=%f", windowBounds.Left, windowBounds.Top, windowBounds.Width, windowBounds.Height);
+            LOG_OUTPUT(L"Root bounds left=%f top=%f width=%f height=%f", windowBounds.Left, windowBounds.Top, windowBounds.Width, windowBounds.Height);
             VERIFY_IS_TRUE(windowBounds.Width == 1024);
             VERIFY_IS_TRUE(windowBounds.Height == 768);
         });

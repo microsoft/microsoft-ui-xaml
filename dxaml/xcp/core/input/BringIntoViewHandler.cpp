@@ -222,6 +222,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     bool isContentDialog = false;
     XTHICKNESS focusVisualMarginInPhysicalPixels = { 0.0f, 0.0f, 0.0f, 0.0f };
     XTHICKNESS focusVisualMargin;
+    xref_ptr<CGeneralTransform> focusedElementTransform;
 
     IFCPTR(focusedElement);
     IFCPTR(innerScroller);
@@ -235,17 +236,41 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     // to GetFocusedElementBoundingRectForPadding. In all cases, it needs to be expressed in physical pixels instead of DIPs.
     DipsToPhysicalPixels(innerScroller, rectInnerScrollerGlobal, &rectInnerScrollerGlobal);
 
-    IFC(focusedElement->GetGlobalBounds(&rectFocusedElementGlobal, true /* ignoreClipping */));
-    if (XamlOneCoreTransforms::IsEnabled())
+    if (animateIfBringIntoView && !focusedElement->Has3DDepthInSubtree())
     {
-        auto contentRoot = VisualTree::GetContentRootForElement(focusedElement);
-        if (contentRoot->GetType() != CContentRoot::Type::XamlIslandRoot)
+        XRECTF_RB innerBounds;
+        IFC(focusedElement->GetInnerBounds(&innerBounds));
+        IFC(focusedElement->TransformToVisual(nullptr, &focusedElementTransform));
+        if (focusedElementTransform->OfTypeByIndex<KnownTypeIndex::MatrixTransform>())
         {
-            // In OneCoreTransforms CoreWindow mode, GetGlobalBounds returns logical pixels so we must convert to RasterizedClient
-            // Exception for island on WCOS: GetGlobalBounds calls CUIElement::TransformToWorldSpace, which only accounts for the rasterization scale
-            // when it walks up to a CXamlIslandRoot for an AppWindow, and not the CRootVisual for a CoreWindow."
+            // Reuse this snapshot when converting the padded bounds back to local coordinates.
+            // An animated manipulation can advance between two independent transform queries.
+            XRECTF localBounds = ToXRectF(innerBounds);
+            XRECTF globalBounds;
+            IFC(focusedElementTransform->TransformRect(localBounds, &globalBounds));
+            DipsToPhysicalPixels(focusedElement, globalBounds, &globalBounds);
+            rectFocusedElementGlobal = ToXRectFRB(globalBounds);
+        }
+        else
+        {
+            focusedElementTransform.reset();
+        }
+    }
 
-            DipsToPhysicalPixels(rootElement, rectFocusedElementGlobal, &rectFocusedElementGlobal);
+    if (!focusedElementTransform)
+    {
+        IFC(focusedElement->GetGlobalBounds(&rectFocusedElementGlobal, true /* ignoreClipping */));
+        if (XamlOneCoreTransforms::IsEnabled())
+        {
+            auto contentRoot = VisualTree::GetContentRootForElement(focusedElement);
+            if (contentRoot->GetType() != CContentRoot::Type::XamlIslandRoot)
+            {
+                // In OneCoreTransforms CoreWindow mode, GetGlobalBounds returns logical pixels so we must convert to RasterizedClient
+                // Exception for island on WCOS: GetGlobalBounds calls CUIElement::TransformToWorldSpace, which only accounts for the rasterization scale
+                // when it walks up to a CXamlIslandRoot for an AppWindow, and not the CRootVisual for a CoreWindow."
+
+                DipsToPhysicalPixels(rootElement, rectFocusedElementGlobal, &rectFocusedElementGlobal);
+            }
         }
     }
 
@@ -342,7 +367,19 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     // Bring the current element into the specified inner scroller.
     {
         // Transform focused element's rect from global to local, because BringIntoView takes local coordinates
-        IFC(TransformGlobalToLocal(focusedElement, rectFocusedElement, &rectFocusedElementLocal));
+        if (focusedElementTransform)
+        {
+            XRECTF boundsInDips;
+            PhysicalPixelsToDips(focusedElement, rectFocusedElement, &boundsInDips);
+            if (FAILED(focusedElementTransform->TransformRectInverse(boundsInDips, &rectFocusedElementLocal)))
+            {
+                EmptyRectF(&rectFocusedElementLocal);
+            }
+        }
+        else
+        {
+            IFC(TransformGlobalToLocal(focusedElement, rectFocusedElement, &rectFocusedElementLocal));
+        }
 
         //
         // Special case if we're animating Xaml content scrolling out of the way. In this case we're not resizing the
@@ -918,4 +955,3 @@ CBringIntoViewHandler::GetScrollerGlobalBounds(_In_ CUIElement* scroller, _Out_ 
 
     return S_OK;
 }
-

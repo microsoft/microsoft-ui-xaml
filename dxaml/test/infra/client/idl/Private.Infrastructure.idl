@@ -253,7 +253,7 @@ namespace Private.Infrastructure
 
         HRESULT ResetAtlasSizeHint();
 
-        HRESULT ShrinkApplicationViewVisibleBounds([in] BOOLEAN enabled);
+        HRESULT ShrinkXamlIslandVisibleBounds([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [in] BOOLEAN enabled);
 
         HRESULT ClearDefaultLanguageString();
 

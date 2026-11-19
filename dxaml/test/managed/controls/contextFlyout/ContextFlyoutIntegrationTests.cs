@@ -12,6 +12,7 @@ using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -28,7 +29,6 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
     public class ContextFlyoutIntegrationTests : XamlTestsBase
     {
         private const uint HOLD_DURATION = 2000;
-        private const uint SHORT_HOLD_DURATION = 600;
         private const double DRAG_VELOCITY_FACTOR = 0.1;
 
         [ClassInitialize]
@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // Disabled on OneCore pending fix
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void VerifyFlyoutOnListViewWithDrag()
         {
             RunListViewTest(
@@ -641,6 +641,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                 Grid root = null;
 
                 ListView list = null;
+                int dragItemsStartingCount = 0;
                 Flyout listFlyout = null;
                 bool listFlyoutOpened = false;
                 bool listFlyoutClosed = false;
@@ -666,6 +667,8 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
 
                 UIExecutor.Execute(() =>
                 {
+                    list.DragItemsStarting += (s, e) => dragItemsStartingCount++;
+
                     listFlyout.Opened += (s, e) =>
                     {
                         Verify.AreEqual(item2, listFlyout.Target, "List flyout Target was not Item2!");
@@ -700,6 +703,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                     TestServices.InputHelper.PressHoldAndPanFromCenter(item1, 0, 100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 }
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(1, dragItemsStartingCount, "The first hold/pan must start one drag.");
+                }
                 Verify.IsTrue(itemFlyoutOpened, "Item flyout did not open!");
                 Verify.IsTrue(itemFlyoutClosed, "Item flyout did not close!");
 
@@ -713,6 +720,10 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                     TestServices.InputHelper.PressHoldAndPanFromCenter(item2, 0, 100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 }
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(2, dragItemsStartingCount, "The second hold/pan must start another drag.");
+                }
                 Verify.IsTrue(listFlyoutOpened, "List flyout did not open!");
                 Verify.IsTrue(listFlyoutClosed, "List flyout did not close!");
 
@@ -721,13 +732,17 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                 itemFlyoutClosed = false;
                 TestServices.InputHelper.PressHoldAndPanFromCenter(item1, 100, -100, DRAG_VELOCITY_FACTOR, HOLD_DURATION);
                 TestServices.WindowHelper.WaitForIdle();
+                if (canDrag)
+                {
+                    Verify.AreEqual(3, dragItemsStartingCount, "Dragging into the flyout layer must start another drag.");
+                }
                 Verify.IsTrue(itemFlyoutOpened, "Item flyout did not open!");
                 Verify.IsTrue(itemFlyoutClosed, "Item flyout did not close!");
 
                 // Scenario 4: Press-hold-drag by holding long enough for holding visual, but not enough for ContextMenu will not open flyout
                 itemFlyoutOpened = false;
                 itemFlyoutClosed = false;
-                TestServices.InputHelper.PressHoldAndPanFromCenter(item1, 0, 100, 0.5, SHORT_HOLD_DURATION); // Drag velocity is faster (0.5) in order to beat the context menu timer clock
+                PerformShortHold(item1, pan: true);
                 TestServices.WindowHelper.WaitForIdle();
                 Verify.IsFalse(itemFlyoutOpened, "Item flyout opened anyway!");
                 Verify.IsFalse(itemFlyoutClosed, "Item flyout closed anyway!");
@@ -735,10 +750,47 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ContextFlyout
                 // Scenario 5: Press-hold and lifting up finger by holding long enough for holding visual, but not enough for ContextMenu will not open flyout
                 itemFlyoutOpened = false;
                 itemFlyoutClosed = false;
-                TestServices.InputHelper.Hold(item1, SHORT_HOLD_DURATION);
+                PerformShortHold(item1, pan: false);
                 TestServices.WindowHelper.WaitForIdle();
                 Verify.IsFalse(itemFlyoutOpened, "Item flyout opened anyway!");
                 Verify.IsFalse(itemFlyoutClosed, "Item flyout closed anyway!");
+            }
+        }
+
+        private static void PerformShortHold(FrameworkElement element, bool pan)
+        {
+            using (var holdingStarted = new AutoResetEvent(false))
+            {
+                HoldingEventHandler onHolding = (s, e) =>
+                {
+                    if (e.HoldingState == HoldingState.Started)
+                    {
+                        holdingStarted.Set();
+                    }
+                };
+                UIExecutor.Execute(() => element.AddHandler(UIElement.HoldingEvent, onHolding, true));
+                try
+                {
+                    TestServices.InputHelper.DynamicPressCenter(element, 0, 0, PointerFinger.Finger1);
+                    try
+                    {
+                        // React to the holding visual instead of racing a fixed-duration injected gesture
+                        // against the additional context-menu delay.
+                        Verify.IsTrue(holdingStarted.WaitOne(TimeSpan.FromSeconds(5)), "The short hold must reach Holding.Started.");
+                        if (pan)
+                        {
+                            TestServices.InputHelper.DynamicPressCenter(element, 0, 100, PointerFinger.Finger1);
+                        }
+                    }
+                    finally
+                    {
+                        TestServices.InputHelper.DynamicRelease(PointerFinger.Finger1);
+                    }
+                }
+                finally
+                {
+                    UIExecutor.Execute(() => element.RemoveHandler(UIElement.HoldingEvent, onHolding));
+                }
             }
         }
 

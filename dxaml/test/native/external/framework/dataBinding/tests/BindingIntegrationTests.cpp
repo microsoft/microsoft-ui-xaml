@@ -1687,16 +1687,14 @@ namespace Framework { namespace DataBinding {
 
         RunOnUIThread([&]()
         {
-            TestServices::WindowHelper->WindowContent = userControl;
-
             auto vsgs = VisualStateManager::GetVisualStateGroups(static_cast<FrameworkElement^>(userControl->Content));
             auto sb = vsgs->GetAt(0)->States->GetAt(0)->Storyboard;
             animation = static_cast<DoubleAnimation^>(sb->Children->GetAt(0));
 
-            // WPF_HOSTING_MODE_FAILURE : To->Value is 42 here.
-            // AreEqual(0.0, animation->To->Value) - Values (0.000000l, 42.000000l)
             VERIFY_ARE_EQUAL(0.0, animation->To->Value);
 
+            // Attaching island content can resolve bindings synchronously.
+            TestServices::WindowHelper->WindowContent = userControl;
             userControl->UpdateLayout();
         });
 
