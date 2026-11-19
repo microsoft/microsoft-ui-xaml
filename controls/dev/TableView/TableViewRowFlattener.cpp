@@ -847,6 +847,10 @@ void TableViewRowFlattener::ReadViewGroups()
             if (auto const viewGroup = groupObject.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
             {
                 group.Items = viewGroup.GroupItems();
+                if (auto const inner = viewGroup.Group())
+                {
+                    group.Inner = inner.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
+                }
             }
             if (!group.Items)
             {
@@ -937,7 +941,14 @@ std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupS
             {
                 slice.Items = group.Snapshot;
             }
-            slices.push_back(std::move(slice));
+            if (group.Inner)
+            {
+                AppendSubgroupSlices(group.Inner, std::move(slice), slices);
+            }
+            else
+            {
+                slices.push_back(std::move(slice));
+            }
         }
     }
     else if (m_groupSource == GroupSource::TreeGroups)
@@ -949,6 +960,56 @@ std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupS
         }
     }
     return slices;
+}
+
+// A multi-level view (WPF: nested CollectionViewGroups): a group whose GroupItems are groups is followed by its
+// subgroups' slices, one level deeper, depth first.
+void TableViewRowFlattener::AppendSubgroupSlices(
+    winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup const& group,
+    GroupSlice&& slice,
+    std::vector<GroupSlice>& slices)
+{
+    auto const children = group.GroupItems();
+    auto const firstChild = (children && children.Size() > 0) ? children.GetAt(0) : nullptr;
+    if (!firstChild || !firstChild.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
+    {
+        slices.push_back(std::move(slice));
+        return;
+    }
+
+    auto const identity = slice.Identity;
+    auto const level = slice.Level;
+    auto const childCount = children.Size();
+    slice.ChildCount = static_cast<int32_t>(childCount);
+    slice.IsBottomLevel = false;
+    slices.push_back(std::move(slice));
+
+    std::unordered_set<winrt::hstring> identities;
+    for (uint32_t i = 0; i < childCount; ++i)
+    {
+        auto const subgroup = children.GetAt(i).try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
+        if (!subgroup)
+        {
+            continue;
+        }
+
+        GroupSlice child;
+        child.Key = GroupKey(subgroup);
+        auto const childIdentity = identity + L"/" + IdentityForKey(child.Key);
+        child.Identity = childIdentity;
+        for (uint32_t suffix = 2; identities.contains(child.Identity); ++suffix)
+        {
+            child.Identity = childIdentity + L"#" + winrt::to_hstring(suffix);
+        }
+        identities.insert(child.Identity);
+        child.Level = level + 1;
+        // Not observed: every change below a top-level group reaches its leaves last, and those are observed.
+        if (auto const leaves = subgroup.Group().try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
+        {
+            child.Items = ShapingHelpers::EnumerateInspectableItems(leaves);
+        }
+        AppendSubgroupSlices(subgroup, std::move(child), slices);
+    }
 }
 
 std::vector<winrt::IInspectable> TableViewRowFlattener::ReadGroupItems(winrt::hstring const& groupIdentity) const
@@ -1005,21 +1066,30 @@ void TableViewRowFlattener::RebuildGroupRows()
         std::vector<winrt::IInspectable> built;
         std::unordered_set<winrt::hstring> liveKeys;
         std::vector<GroupInfo> liveGroups;
+        // Slices deeper than a collapsed group's level are hidden under it.
+        int32_t collapsedLevel = (std::numeric_limits<int32_t>::max)();
+        bool hasSubgroupRows = false;
 
         for (auto& slice : ReadGroupSlices())
         {
             auto const intentKey = GroupIntentKey(slice.Identity);
             liveKeys.insert(intentKey);
             liveGroups.push_back({ slice.Identity, slice.Key });
+            hasSubgroupRows = hasSubgroupRows || slice.Level > 0;
 
-            // An empty group keeps its header: it stays targetable.
-            const int32_t groupItemCount = static_cast<int32_t>(slice.Items.size());
             const bool isExpanded = m_groupExpansion.IsExpanded(intentKey);
-            built.push_back(winrt::make<GroupedEntry>(slice.Identity, slice.Key, groupItemCount,
-                slice.ChildCount >= 0 ? slice.ChildCount : groupItemCount, isExpanded));
-            if (isExpanded)
+            if (slice.Level <= collapsedLevel)
             {
-                built.insert(built.end(), slice.Items.begin(), slice.Items.end());
+                collapsedLevel = isExpanded ? (std::numeric_limits<int32_t>::max)() : slice.Level;
+
+                // An empty group keeps its header: it stays targetable.
+                const int32_t groupItemCount = static_cast<int32_t>(slice.Items.size());
+                built.push_back(winrt::make<GroupedEntry>(slice.Identity, slice.Key, groupItemCount,
+                    slice.ChildCount >= 0 ? slice.ChildCount : groupItemCount, isExpanded, slice.Level));
+                if (isExpanded && slice.IsBottomLevel)
+                {
+                    built.insert(built.end(), slice.Items.begin(), slice.Items.end());
+                }
             }
 
             // Any change inside a view group rebuilds the rows.
@@ -1039,6 +1109,7 @@ void TableViewRowFlattener::RebuildGroupRows()
         }
 
         m_liveGroups = std::move(liveGroups);
+        m_hasSubgroupRows = hasSubgroupRows;
         // Silent: pruning a dead key changes no live key's state.
         m_groupExpansion.RetainOnly(liveKeys);
 
@@ -1140,6 +1211,11 @@ void TableViewRowFlattener::OnGroupExpansionChanged(ShapingHelpers::RowExpansion
 
 bool TableViewRowFlattener::TryApplyGroupExpansionSplice(winrt::hstring const& intentKey, bool expand)
 {
+    if (m_hasSubgroupRows)
+    {
+        return false;
+    }
+
     const uint32_t count = m_groupRows.Size();
     for (uint32_t i = 0; i < count; ++i)
     {

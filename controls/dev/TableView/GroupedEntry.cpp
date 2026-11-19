@@ -10,11 +10,13 @@ GroupedEntry::GroupedEntry(
     winrt::IInspectable const& key,
     int32_t groupItemCount,
     int32_t childCount,
-    bool isExpanded)
+    bool isExpanded,
+    int32_t level)
     : m_identity(identity)
     , m_key(key)
     , m_groupItemCount(groupItemCount)
     , m_childCount(childCount)
     , m_isExpanded(isExpanded)
+    , m_level(level)
 {
 }

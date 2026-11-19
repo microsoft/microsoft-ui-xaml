@@ -246,6 +246,7 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
         {
             // Under a tree the count is roots, not rows, so it does not change as nodes expand.
             kind = TableViewRowKind::GroupHeader;
+            groupLevel = entry->Level();
             childCount = entry->ChildCount();
             // An empty group has nothing to expand into, so it presents as a leaf.
             isExpandable = entry->GroupItemCount() > 0;
@@ -253,7 +254,7 @@ TableViewRowInfo RowMetadataProvider::GetRowInfo(int32_t index)
             break;
         }
 
-        groupLevel = 1;
+        groupLevel = DataRowGroupLevel(index);
         if (m_sourceKind == SourceKind::GroupedHierarchical && m_flattener)
         {
             // The item is the only handle shared by the grouped rows and the node rows.
@@ -428,6 +429,26 @@ winrt::IInspectable RowMetadataProvider::GetRow(int32_t index) const
     }
 
     return m_rows.GetAt(index);
+}
+
+// One deeper than the header the row is under: 1, or more under a multi-level view's subgroup headers.
+int32_t RowMetadataProvider::DataRowGroupLevel(int32_t index)
+{
+    if (!m_rows)
+    {
+        return 1;
+    }
+
+    const auto rowCount = m_rows.Count();
+    EnsureGroupHeaderIndices(rowCount);
+    const auto next = std::upper_bound(m_groupHeaderIndices.begin(), m_groupHeaderIndices.end(), index);
+    if (next == m_groupHeaderIndices.begin())
+    {
+        return 1;
+    }
+
+    const auto header = TryGetGroupHeaderEntry(*(next - 1));
+    return header ? header->Level() + 1 : 1;
 }
 
 winrt::com_ptr<GroupedEntry> RowMetadataProvider::TryGetGroupHeaderEntry(int32_t index) const
