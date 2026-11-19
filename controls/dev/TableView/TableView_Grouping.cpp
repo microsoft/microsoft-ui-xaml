@@ -294,7 +294,6 @@ winrt::hstring TableView::TryGetContainerIdentity(winrt::UIElement const& contai
     }
     catch (...)
     {
-        // Best-effort: the grouping source or its state can change during cleanup.
         return {};
     }
 }
@@ -519,7 +518,6 @@ void TableView::ApplyGroupExpansionByIdentity(
     // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
     // queued edit reshapes.
     auto const provider = m_tableViewSourceRowMetadata;
-    // Captured before the toggle, in case the reshape moves the group to another container.
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
     if (axis == BulkExpansionAxis::Groups && !subtree &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
@@ -609,7 +607,6 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 }
 
-// Built as TableViewGroupHeaderAutomationPeer::ExpandCollapseState reports it.
 static winrt::ExpandCollapseState GroupExpandCollapseState(bool isExpandable, bool isExpanded)
 {
     return !isExpandable ? winrt::ExpandCollapseState::LeafNode
@@ -632,7 +629,6 @@ std::optional<winrt::ExpandCollapseState> TableView::TryGetGroupExpandCollapseSt
     }
     catch (...)
     {
-        // Best-effort: the grouping source or its state can change during cleanup.
     }
     return std::nullopt;
 }
@@ -966,7 +962,6 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     }
     catch (...)
     {
-        // Best-effort: the grouping source or its state can change during cleanup.
     }
 
     DrainCoalescedEditReshape();
@@ -1229,8 +1224,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     auto const keyText = StringifyGroupKey(groupKey);
     auto const existing = header.Content().try_as<winrt::TableViewGroupInfo>();
 
-    // A UIA client may hold elements of the content the previous group rendered. Drop that content
-    // so they go stale instead of reading this group, as a row replaces cells that have peers.
+    // Drop the previous group's content so held content peers go stale.
     if (existing && !SameGroupKey(existing.Key(), groupKey) && headerImpl->HasContentAutomationPeersInternal())
     {
         header.ContentTemplate(nullptr);
@@ -1275,7 +1269,6 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
         }
         catch (...)
         {
-            // Best-effort: the grouping source or its state can change during cleanup.
         }
     }
     if (auto const pending = identity.empty() ? m_pendingGroupExpansionStates.end() : m_pendingGroupExpansionStates.find(identity);
@@ -1314,7 +1307,6 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     }
     else if (!identity.empty() && GetGroupAutomationElementInternal(identity))
     {
-        // A client still holds this group's element: retarget it to this container now.
         winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
     }
 
@@ -1362,7 +1354,6 @@ void TableView::RefreshRealizedGroupHeadersAfterExpansion()
         PrepareGroupHeaderElement(header, index);
     });
 
-    // A toggled group that is not realized has no header to announce on.
     m_pendingGroupExpansionStates.clear();
 }
 
@@ -1400,7 +1391,6 @@ void TableView::ClearGroupHeaderElement(winrt::TableViewGroupHeader const& heade
     winrt::get_self<TableViewGroupHeader>(header)->SetGroupEntryInternal(nullptr);
     if (auto const headerPeer = winrt::FrameworkElementAutomationPeer::FromElement(header))
     {
-        // With no entry this clears only the element the header installed, not an app's EventsSource.
         winrt::get_self<TableViewGroupHeader>(header)->SyncGroupAutomationPeerInternal(headerPeer, false, {});
     }
 }

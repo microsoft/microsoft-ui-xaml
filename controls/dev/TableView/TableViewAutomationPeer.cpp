@@ -72,7 +72,6 @@ namespace
 
     // A container-free data-item peer for a selected, unrealized row. Reads never realize it; once
     // realized it forwards to the row's peer but keeps its own RuntimeId.
-    // A bound peer is one row-to-item binding (the row peer's EventsSource); it goes stale on clear or rebind.
     class TableViewRowItemAutomationPeer :
         public TableViewBindingAutomationPeerT<
             TableViewRowItemAutomationPeer,
@@ -124,7 +123,6 @@ namespace
                 live = index >= 0;
                 rowPeer = RealizedRowPeer(index);
             }
-            // Served here so a cached pattern cannot act on the row's next item.
             if (patternInterface == winrt::PatternInterface::ExpandCollapse)
             {
                 if (rowPeer && rowPeer.GetPattern(patternInterface))
@@ -160,7 +158,6 @@ namespace
         winrt::IInspectable NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction)
         {
             using Direction = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection;
-            // The framework's tree holds the row's own peer, not this one; children are the cells.
             if (m_bound && direction != Direction::FirstChild && direction != Direction::LastChild)
             {
                 return BoundRow().second.Navigate(direction);
@@ -209,7 +206,6 @@ namespace
 
         hstring GetClassNameCore() { return winrt::hstring_name_of<winrt::TableViewRow>(); }
 
-        // Forwarded, like LocalizedControlType, so the row's AutomationProperties.AutomationControlType applies.
         winrt::AutomationControlType GetAutomationControlTypeCore()
         {
             if (auto const p = ContainerPeer())
@@ -219,7 +215,6 @@ namespace
             return winrt::AutomationControlType::DataItem;
         }
 
-        // Forwarded so the row's AutomationProperties.LocalizedControlType still applies.
         hstring GetLocalizedControlTypeCore()
         {
             if (auto const p = ContainerPeer())
@@ -357,10 +352,8 @@ namespace
             row.StartBringIntoView(options);
         }
 
-        // TableViewBindingAutomationPeerT's hook: the row while this bound peer is current.
         winrt::UIElement TryBoundContainer() { return TryBoundRow().first; }
 
-        // The item's source index, or -1 once this peer no longer describes a row.
         int32_t SourceIndex() { return ItemIndex(); }
 
     private:
@@ -446,7 +439,6 @@ namespace
             return *winrt::get_self<TableViewRowAutomationPeer>(peer);
         }
 
-        // A bound peer's row and the row's peer, checked once per call; throws once the row is cleared or rebound.
         std::pair<winrt::TableViewRow, winrt::AutomationPeer> BoundRow()
         {
             auto bound = TryBoundRow();
@@ -457,7 +449,6 @@ namespace
             return bound;
         }
 
-        // BoundRow without the throw: nulls when this is not a bound peer or its row was cleared or rebound.
         std::pair<winrt::TableViewRow, winrt::AutomationPeer> TryBoundRow()
         {
             auto const table = m_bound ? m_table.get() : nullptr;
@@ -471,7 +462,6 @@ namespace
             return { row, peer };
         }
 
-        // The row's own peer: a stale bound peer throws; a selected-item peer yields null while its row is unrealized.
         winrt::AutomationPeer ContainerPeer()
         {
             return m_bound ? BoundRow().second : RealizedRowPeer(ItemIndex());
@@ -512,7 +502,6 @@ namespace
         int32_t m_lastIndex{ -1 };
 
     public:
-        // TableViewBindingAutomationPeerT's hook; falls back to the base value while the row is unrealized.
         template <typename Forward, typename T>
         T ForwardToContainerPeer(Forward&& forward, T fallback)
         {
@@ -521,7 +510,6 @@ namespace
         }
     };
 
-    // What UIA sees for a repeater element: a row's current item peer, else the element's own peer.
     winrt::AutomationPeer ElementItemPeer(winrt::UIElement const& element)
     {
         auto const peer = element ? winrt::FrameworkElementAutomationPeer::CreatePeerForElement(element) : nullptr;
@@ -1333,13 +1321,11 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         }
         else if (auto const container = TryGetBoundContainer(startPeer))
         {
-            // A row's or header's binding peer: resolved through its container, so a stale one is refused.
             startIndex = repeater.GetElementIndex(container);
             resolved = startIndex >= 0;
         }
         else
         {
-            // GetSelection's peer for an unrealized selected row: resolved by its item, not a container.
             for (auto const& cached : m_selectedItemPeerCache)
             {
                 if (cached.get() == startPeer)

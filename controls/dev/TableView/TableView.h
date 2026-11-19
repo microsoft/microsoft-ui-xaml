@@ -436,7 +436,6 @@ public:
         return TryGetContainerIdentity(container);
     }
 
-    // A group's UIA element by group identity, so it follows the group across pooled headers.
     winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
     {
         auto const it = m_groupAutomationElements.find(identity);

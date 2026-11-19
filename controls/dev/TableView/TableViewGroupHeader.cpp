@@ -54,7 +54,6 @@ TableViewGroupHeader::TableViewGroupHeader()
 
 namespace
 {
-    // UIA element of a header bound to a group (the header peer's EventsSource); stale once the header leaves the group.
     class TableViewGroupBindingAutomationPeer :
         public TableViewBindingAutomationPeerT<TableViewGroupBindingAutomationPeer, winrt::IExpandCollapseProvider, winrt::IGridItemProvider, winrt::IScrollItemProvider>
     {
@@ -105,21 +104,17 @@ namespace
             m_header.get().StartBringIntoView(options);
         }
 
-        // The group moved to another container: this element now speaks for that one.
         void Retarget(winrt::TableViewGroupHeader const& header) { m_header = winrt::make_weak(header); }
 
-        // TableViewBindingAutomationPeerT's hook. A stale binding throws rather than degrading.
         template <typename Forward, typename T>
         T ForwardToContainerPeer(Forward&& forward, T const&)
         {
             return static_cast<T>(forward(HeaderPeer()));
         }
 
-        // TableViewBindingAutomationPeerT's hook: the header while it still routes UIA to this binding.
         winrt::UIElement TryBoundContainer() { return TryBoundHeader().first; }
 
     private:
-        // The header's own peer while it still routes UIA to this binding.
         winrt::AutomationPeer HeaderPeer()
         {
             auto const bound = TryBoundHeader();
@@ -130,7 +125,6 @@ namespace
             return bound.second;
         }
 
-        // The header and its peer while the header is in the repeater and still routes UIA to this binding.
         std::pair<winrt::TableViewGroupHeader, winrt::AutomationPeer> TryBoundHeader()
         {
             auto const header = m_header.get();
@@ -171,7 +165,6 @@ void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
     }
     else if (!groupIdentity.empty() && owner)
     {
-        // Keyed by group, so a held element follows its group to whichever container shows it.
         auto* const tableView = winrt::get_self<TableView>(owner);
         auto binding = tableView->GetGroupAutomationElementInternal(groupIdentity);
         if (binding)
@@ -197,7 +190,6 @@ void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
     }
     else if (!headerPeer.EventsSource())
     {
-        // Re-prepared for the same group: restore its element so a held one stays live.
         auto binding = m_groupBinding.get();
         if (!binding)
         {
@@ -574,7 +566,6 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
             return;
         }
 
-        // FromElement only: no live peer means no listener to notify.
         auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*strongThis);
         auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr;
         if (!headerPeer || headerPeer.EventsSource() != binding)
@@ -582,7 +573,6 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
             return;
         }
 
-        // Skip if the state moved on while queued.
         auto const self = winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer);
         if (self->ExpandCollapseState() == newState)
         {

@@ -71,7 +71,6 @@ public:
         winrt::TableView const& tableView,
         winrt::TableViewColumn const& column);
 
-    // A fresh UIA element for one binding of a row to an item; it goes stale when the row is cleared or rebound.
     static winrt::AutomationPeer CreateRowItemPeerInternal(winrt::TableView const& table, winrt::TableViewRow const& row);
 
 private:

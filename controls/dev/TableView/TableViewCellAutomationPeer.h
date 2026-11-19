@@ -75,7 +75,6 @@ public:
     void EndEditName();
     void ResetEditName();
     void UpdateNameItem(winrt::IInspectable const& item);
-    // True when this peer already speaks for an item other than item.
     bool IsTrackingOtherItem(winrt::IInspectable const& item) const
     {
         return m_item.IsTracking() && !m_item.SameIdentityAs(item);

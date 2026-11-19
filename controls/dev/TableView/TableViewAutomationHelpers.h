@@ -105,15 +105,12 @@ inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
 template <typename D, typename... I>
 using TableViewComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
 
-// Lets code given an arbitrary peer (e.g. a FindItemByProperty startAfter) find its container.
 struct __declspec(uuid("6B1E52C4-3D7A-4F0B-9E21-8C5A0D47F3B6")) __declspec(novtable)
     ITableViewBindingAutomationPeerAccess : ::IUnknown
 {
-    // The container (row, group header) still routing UIA to this binding; null once it is stale.
     virtual HRESULT __stdcall GetBoundContainer(_Outptr_result_maybenull_ ::IInspectable** container) noexcept = 0;
 };
 
-// The container a binding peer currently speaks for, or null for any other peer or a stale binding.
 inline winrt::UIElement TryGetBoundContainer(winrt::AutomationPeer const& peer)
 {
     winrt::com_ptr<::IInspectable> container;
@@ -124,7 +121,6 @@ inline winrt::UIElement TryGetBoundContainer(winrt::AutomationPeer const& peer)
     return container ? container.as<winrt::UIElement>() : nullptr;
 }
 
-// UIA element for one binding of a container (row, group header) to its data; forwards to the container's peer.
 template <typename D, typename... I>
 struct TableViewBindingAutomationPeerT :
     ReferenceTracker<D, TableViewComposableAutomationPeerT, I..., ITableViewBindingAutomationPeerAccess>
@@ -137,7 +133,6 @@ struct TableViewBindingAutomationPeerT :
 
     winrt::hstring GetAutomationIdCore() { return Forward([](auto const& p) { return p.GetAutomationId(); }, winrt::hstring{}); }
     winrt::hstring GetHelpTextCore() { return Forward([](auto const& p) { return p.GetHelpText(); }, winrt::hstring{}); }
-    // Forwarded so the container's AutomationProperties.AccessibilityView still applies.
     bool IsContentElementCore() { return Forward([](auto const& p) { return p.IsContentElement(); }, true); }
     bool IsControlElementCore() { return Forward([](auto const& p) { return p.IsControlElement(); }, true); }
     bool IsOffscreenCore() { return Forward([](auto const& p) { return p.IsOffscreen(); }, true); }

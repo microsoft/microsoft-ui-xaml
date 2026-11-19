@@ -355,7 +355,6 @@ winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
 
 void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding)
 {
-    // An EventsSource the app installed wins; only replace or clear the binding this row installed.
     if (auto const current = rowPeer.EventsSource(); current && current != m_itemAutomationPeer.get())
     {
         return;
@@ -1091,7 +1090,6 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
-    // Without a row peer, cell peers still tracking the previous item mean this row changed items.
     auto const rowItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext());
     if (peerImpl
         ? !peerImpl->CanReuseForRowItem(*this, owner)

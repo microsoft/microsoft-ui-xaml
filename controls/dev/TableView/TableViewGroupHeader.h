@@ -99,11 +99,8 @@ public:
     // falls back to this instead.
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
-    // Each group binding is its own UIA element (the header peer's EventsSource); a cleared header exposes none.
     void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
-    // Whether any element of the rendered content has an automation peer a client could hold.
     bool HasContentAutomationPeersInternal();
-    // Whether the element is part of the chevron, a pure visual the header's peer does not expose.
     bool IsExpanderPartInternal(winrt::DependencyObject element);
 
 private:
@@ -131,7 +128,6 @@ private:
     winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
     tracker_ref<winrt::DataTemplate> m_inspectedContentTemplate{ this };
     tracker_ref<winrt::IInspectable> m_groupEntry{ this };
-    // The current group's UIA element, kept across a clear so a same-group re-prepare restores it.
     winrt::weak_ref<winrt::AutomationPeer> m_groupBinding{ nullptr };
 
     bool m_isPointerOver{ false };
