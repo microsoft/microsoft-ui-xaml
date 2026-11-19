@@ -421,6 +421,32 @@ Run element-count scaling, pixel-area scaling, sparse updates, scrolling, and id
 required slices exist. Label full-redraw-only and unsupported-interaction results explicitly; do not treat them as
 completed backend comparisons. No delivery dates are assumed before a scoped implementation investigation.
 
+**Prototype readiness.** M1 and the M2/M3 slices needed by the RenderBench S1 (settings) and S2 (dashboard) scenes are
+in place:
+
+- `WINUI_RENDERING_BACKEND` selects a mode. It is reported as available only after a lazy probe creates its painter;
+  without a hardware adapter, D2D-HW falls back with `DeviceUnavailable`.
+- `ImmediateRenderer` (`dxaml\xcp\core\hw`) replaces `HWWalk::RenderRoot` for each island root in
+  `CCoreServices::RenderWalk`.
+- Each frame, the walk records a per-root display list and diffs element signatures and bounds against the previous
+  frame. That produces up to 32 coalesced damage rects, and only commands that intersect the damage are replayed.
+- Typical sparse damage per paint: S2 tile updates are about 5% of the window; S1 hover and toggle states are under
+  0.1%.
+- Composition behavior is unchanged when the variable is unset. The renderer is never created, and the probe is a
+  single pointer store.
+
+The following remain outside the prototype:
+
+- Retained boundaries (M4).
+- Popups and additional roots.
+- Group opacity.
+- Non-rectangular clips.
+- Images.
+- Hand-in Composition content (the `AnimatedIcon` check glyph).
+- Independent animations.
+
+These are traced as `UnsupportedContent` or noted below.
+
 ## Risks and open decisions
 
 | Decision or risk | Current direction / evidence still needed |
@@ -450,6 +476,12 @@ text, animation, and interop contracts. Then establish the M0 baseline before co
 | Presentation | All immediate modes present through one composition swap chain per root, hosted in a single Composition visual. Every mode paints into its own persistent target and copies only damaged pixels into the back buffer, then calls `Present1` with those dirty rects. For GDI+ and D2D-SW that copy is the W5 upload; for D2D-HW it is a GPU-local copy on the same adapter (reported separately, not as an upload) | Same presentation path for every mode isolates painter cost, keeps islands, popups, and backdrops working, and makes copy bytes (W5) comparable. A persistent target keeps partial damage correct without tracking flip-model buffer history; drawing D2D-HW straight into the back buffer is a later optimization to measure, not a prototype requirement |
 | CPU attribution | The analyzer attributes ETW CPU samples by the modules on each sample's stack (for example d3d10warp → WARP raster, gdiplus → GDI+ raster, dwrite → text, Microsoft.ui.xaml → XAML), instead of relying on thread start modules alone | WARP uses thread-pool threads and GDI+ runs on the UI thread, so a thread-based split cannot separate raster cost |
 | Fidelity references | No checked-in golden images. C1 compares each immediate mode against Composition rendered on the same machine and OS build, with per-region tolerances; exact equality is required only between two runs of the same mode (determinism) | Rasterizer DLL updates change antialiasing slightly; same-machine references need no maintenance |
+| Render-loop dispatch | In `CCoreServices::RenderWalk`, each active island root goes to `ImmediateRenderer::RenderIsland` instead of `HWWalk::RenderRoot`, and its dirty flags are then cleared with `PropagateNWClean`. Paint failures are logged and retried on the next dirty frame; device-lost releases the renderer's resources. The root visual (outside islands) still uses HWWalk | Keeps frame scheduling, layout, and dirty propagation unchanged. A failure in the immediate path must not reach the render walk's fail-fast |
+| Composition content suppression | HWWalk never visits an immediate island, so no comp nodes, comp peers, or visual content are created for its subtree. The island's root visual is replaced with one `SpriteVisual` whose brush wraps the swap chain through `DCompTreeHost::CreateCompositionSurfaceForSwapChain` (the compositor interop used by `SwapChainPanel`). That swap chain is `CreateSwapChainForComposition`, BGRA, premultiplied, flip-sequential, 2 buffers, physical size | The memory under test is what Composition would have retained per element. Hit testing and input use the XAML tree, so they keep working |
+| Devices | D2D modes use `CreateD3DDeviceForMode`, and the painter's swap chain is created on that device. GDI+ creates its own BGRA-capable D3D11 device (hardware, else WARP) only for presentation | Each painter's presentation device stays independent of WinUI's device lifetime |
+| Damage | Each element gets a signature (an FNV hash of its emitted commands) plus its clipped device bounds. When an element is added, removed, or changes, both its old and new bounds are damaged. More than 256 raw rects means full damage. Otherwise rects are clipped to the surface and merged into at most 32 disjoint rects by smallest-area growth. Full damage also applies on first frame, resize, DPI change, and after a failure | Sparse dashboard updates stay sparse without tracking per-property invalidation |
+| Walk approximations | Opacity is folded into primitive alpha rather than group layers. Clips are world-space axis-aligned bounding boxes. Gradients are painted as their average stop color. Text uses the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em. `TextBox` text is read from the `TextBox` | These are enough for S1/S2. Each approximation is a known fidelity gap rather than a crash or a silent omission |
+| Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
 
 ## Source references
 
