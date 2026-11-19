@@ -45,6 +45,35 @@ CDependencyObject::~CDependencyObject()
 
     if (core)
     {
+        // Pillar C - thread-affine release funnel (failure mode P3).
+        //
+        // Native XAML objects are UI-thread (STA) affinitized, but a managed peer's final release can originate on
+        // the GC/finalizer thread. The framework marshals that release back to the owning thread through the
+        // UIAffinityReleaseQueue funnel (see WeakReferenceSourceNoThreadId::OnFinalReleaseOffThread). If we still
+        // reach the native destructor on the wrong thread, a marshaling contract was violated and we are about to
+        // tear down UI-thread-affine state off-thread - historically a silent-corruption / stowed-exception crash
+        // class (e.g. CCoreServices::ExecuteOnUIThread). Turn that silent corruption into a clean, buckettable
+        // signal. Telemetry is emitted unconditionally for observability; the hard fail-fast is gated behind a
+        // runtime feature (default off) so it can be promoted from telemetry-only to fail-fast once field data
+        // confirms the path is clean, matching the incremental rollout used by the other lifetime pillars.
+        if (core->GetThreadID() != ::GetCurrentThreadId())
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "DependencyObject_OffThreadDestruction",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                TraceLoggingUInt16(static_cast<uint16_t>(GetTypeIndex()), "TypeIndex"),
+                TraceLoggingUInt32(core->GetThreadID(), "OwningThreadId"),
+                TraceLoggingUInt32(::GetCurrentThreadId(), "CurrentThreadId"),
+                TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+
+            static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
+            if (runtimeEnabledFeatureDetector->IsFeatureEnabled(
+                    RuntimeFeatureBehavior::RuntimeEnabledFeature::FailFastOnOffThreadPeerDestruction))
+            {
+                XAML_FAIL_FAST();
+            }
+        }
+
         // If this core object was marked as a GC root, unmark it,
         core->UnpegNoRefCoreObjectWithoutPeer(this);
 
