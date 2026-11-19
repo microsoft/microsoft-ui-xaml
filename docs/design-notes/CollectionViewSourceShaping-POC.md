@@ -41,12 +41,30 @@ runtimeclass SortDescription
 };
 
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+enum CollectionViewStringComparison   // System.StringComparison's names and values
+{ CurrentCulture, CurrentCultureIgnoreCase, InvariantCulture, InvariantCultureIgnoreCase, Ordinal, OrdinalIgnoreCase };
+
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
 runtimeclass PropertyGroupDescription
 {
     PropertyGroupDescription(String propertyName);
     PropertyGroupDescription(String propertyName, IValueConverter converter);
+    PropertyGroupDescription(String propertyName, IValueConverter converter, CollectionViewStringComparison stringComparison);
     String PropertyName { get; };
     IValueConverter Converter { get; };
+    CollectionViewStringComparison StringComparison { get; };            // Ordinal unless set
+    IObservableVector<SortDescription> SortDescriptions { get; };        // group order (WPF GroupDescription)
+    CollectionViewComparer CustomSort;                                   // compares two group names
+};
+
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+delegate void FilterEventHandler(Object sender, FilterEventArgs e);
+
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+runtimeclass FilterEventArgs
+{
+    Object Item { get; };
+    Boolean Accepted;        // true when raised
 };
 
 runtimeclass CollectionViewSource : DependencyObject
@@ -60,8 +78,11 @@ runtimeclass CollectionViewSource : DependencyObject
         IObservableVector<PropertyGroupDescription> GroupDescriptions { get; };
         CollectionViewFilter Filter;
         CollectionViewComparer CustomSort;
+        String Culture;                                    // BCP-47 tag; empty = user locale
+        event FilterEventHandler FilterRequested;          // WPF's CollectionViewSource.Filter event
         void Refresh();
         Windows.Foundation.IClosable DeferRefresh();
+        static ICollectionView GetDefaultView(Object source);
     }
 };
 
@@ -76,6 +97,8 @@ interface ICollectionViewShaping
     void Refresh();
     Windows.Foundation.IClosable DeferRefresh();
     CollectionViewComparer CustomSort;
+    Object SourceCollection { get; };                      // WPF ICollectionView.SourceCollection
+    String Culture;                                        // WPF CollectionView.Culture, as a language tag
 };
 ```
 
@@ -83,15 +106,23 @@ interface ICollectionViewShaping
 |---|---|---|
 | `CollectionViewSource.SortDescriptions` (`SortDescriptionCollection` of `SortDescription` structs) | `IObservableVector<SortDescription>`, immutable runtime class | WinRT has no struct-with-string collections that XAML can fill; an immutable class keeps WPF's value semantics. |
 | `ListSortDirection` | `ListSortDirection` | Same names and values. |
-| `CollectionViewSource.GroupDescriptions` (`GroupDescription` base) | `IObservableVector<PropertyGroupDescription>` | Only property grouping. See risks for the base-class decision. |
-| `CollectionViewSource.Filter` **event** + `ICollectionView.Filter` (`Predicate<object>`) | `Filter` property of type `CollectionViewFilter` | See decision 3. |
+| `CollectionViewSource.GroupDescriptions` (`GroupDescription` base) | `IObservableVector<PropertyGroupDescription>` | Only property grouping. See risks for the base-class decision. Several descriptions nest groups (below). |
+| `ICollectionView.Filter` (`Predicate<object>`) | `Filter` property of type `CollectionViewFilter` on CVS and `ICollectionViewShaping` | See decision 3. |
+| `CollectionViewSource.Filter` **event** (`FilterEventHandler`, `FilterEventArgs.Item` / `Accepted`) | `CollectionViewSource.FilterRequested` event (`FilterEventHandler`, `FilterEventArgs`) | Implemented. Named `FilterRequested` because `Filter` is already the delegate property and WinRT (C# projection) cannot have a property and an event of one name. As in WPF, `Accepted` starts `true`, each handler may change it, and adding or removing a handler refilters. **While it has handlers the event wins** and the `Filter` delegate is ignored (WPF replaces `view.Filter` with the event's wrapper); removing the last handler hands filtering back to the delegate. A CVS whose only rule is a handler shapes its view. |
 | `ICollectionView.Refresh()` | `CollectionViewSource.Refresh()` and `ICollectionViewShaping.Refresh()` | `ICollectionView` is frozen, so the verb lives on CVS and on the opt-in view interface. |
 | `ICollectionView.SortDescriptions` / `GroupDescriptions` / `Filter` | `ICollectionViewShaping` on the shaped `View` | Same objects as the CVS's: one set of descriptors, reachable from `ItemsSource` alone. |
 | `CollectionViewGroup.Name` | `Key` and `Name` on the group object | `Key` matches the `IGrouping<K,T>` idiom WinUI samples already use. |
 | `ICollectionView.DeferRefresh()` → `IDisposable` | `DeferRefresh()` → `IClosable` on CVS and `ICollectionViewShaping` | Implemented. Nested deferrals count; changes made while one is open (descriptors, `Filter`, `CustomSort`, `Refresh`, source changes) recompute once, when the last closes. C# `using` and C++/CX `delete` close it. An unclosed deferral defers forever, as in WPF. |
 | `ListCollectionView.CustomSort` (`IComparer`) | `CustomSort` property of type `CollectionViewComparer` on CVS and `ICollectionViewShaping` | Implemented. A delegate, not an interface, so a C++/WinRT lambda or a C# method group works and nothing needs reflection (AOT-safe). As in WPF, setting it clears `SortDescriptions`, and adding a `SortDescription` clears it. Ties keep source order. A comparer that fails fails the change and leaves the view's rows. |
-| `PropertyGroupDescription.Converter` (`IValueConverter`) | `PropertyGroupDescription(propertyName, converter)` and read-only `Converter` | Implemented. `Convert(value, Object, null, null)` maps the property value to the group key, so a computed bucket (for example a date range) needs no model property. Read-only, like the rest of the descriptor, so no change notification is needed. WPF's `StringComparison` and custom `GroupDescription.GroupNameFromItem` are not added. |
-| `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on a **flat** shaped view | Implemented for sort + filter + `CustomSort`. Grouped views still `Reset`. See "Source changes". |
+| `PropertyGroupDescription.Converter` (`IValueConverter`) | `PropertyGroupDescription(propertyName, converter)` and read-only `Converter` | Implemented. `Convert(value, Object, null, culture)` maps the property value to the group key (the language argument is the view's `Culture`), so a computed bucket (for example a date range) needs no model property. Read-only, like the rest of the descriptor. Custom `GroupDescription.GroupNameFromItem` is not added. |
+| `PropertyGroupDescription.StringComparison` (`System.StringComparison`, default `Ordinal`) | `PropertyGroupDescription(propertyName, converter, stringComparison)` and read-only `StringComparison` of type `CollectionViewStringComparison` | Implemented. How string group names match (`String.Equals(name, name, comparison)`); other names use value equality. The group keeps the name of its first item. The enum mirrors `System.StringComparison` (names and values) under another name, because a `Microsoft.UI.Xaml.Data.StringComparison` would make `StringComparison` ambiguous in every C# file that also uses `System`. Set through the constructor, like `Converter` (WPF also has that constructor). |
+| `GroupDescription.SortDescriptions` / `CustomSort` (WPF 4.5 group sorting) | `PropertyGroupDescription.SortDescriptions` and `CustomSort` | Implemented. Orders the groups at that level: `SortDescriptions` by a group property (`Name`/`Key`, `ItemCount`), `CustomSort` by comparing **two group names** (WPF passes `CollectionViewGroup`s; WinUI has no public group class, so the names are what an app can use). As in WPF they replace each other, a change regroups the views that use the description, groups are placed when created (a group whose `ItemCount` later changes does not move until `Refresh()`), and without a group order groups follow their first item. On `PropertyGroupDescription`, not a `GroupDescription` base (see risks). |
+| `CollectionView.Culture` / `CollectionViewSource.Culture` (`CultureInfo`) | `Culture` (`String`, a BCP-47 language tag) on CVS and `ICollectionViewShaping` | Implemented. Strings sort with `CompareStringEx` in that locale; empty means the user's locale (WPF falls back to the element's `xml:lang`). A `String` because `CultureInfo` is not a WinRT type; an invalid tag throws `ArgumentException`. Changing it re-sorts. Group-name matching with `CurrentCulture*` uses the user's locale, as WPF uses `CultureInfo.CurrentCulture`. |
+| `ICollectionView.SourceCollection` (`IEnumerable`) | `ICollectionViewShaping.SourceCollection` (`Object`) | Implemented: the collection the view was created over (the CVS's `Source`, not a wrapper). `ICollectionView` is frozen, so it is on the shaping interface. |
+| `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | static `CollectionViewSource.GetDefaultView(Object)` | Implemented. One shared, shapeable view per list source (`IVector` / `IBindableVector`), created by `CollectionViewManager` and owned by no CVS, so it starts and stops grouping in place. The table holds it **weakly**: while anything holds the view, every call returns it; once nothing does, the next call creates a new one (its rules are gone). An `ICollectionView` source returns itself (WPF wraps it in a proxy), `null` returns `null`, and a non-list source (`IIterable`, `IVectorView`, `ICollectionViewFactory`) gets a new, unshared view on each call. Views are per UI thread. |
+| `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
+| `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
+| Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group. |
 
 ## Usage
 
@@ -138,9 +169,10 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   `new CollectionViewSource { Source = items }.View` (for example a control's `ItemsSource`) can start shaping it.
 - **Precedence.** `IsSourceGrouped = true` and sources that implement `ICollectionViewFactory` keep their existing
   behavior. Descriptors are ignored for them in the POC.
-- **Pipeline.** Filter, then stable multi-key sort, then group. Groups appear in first-appearance order of the sorted
-  items (WPF behavior). Sort by the group property first if you want ordered groups.
-- **Comparison.** Strings use `CompareStringEx` with the user locale. Numeric types compare as numbers, and
+- **Pipeline.** Filter, then stable multi-key sort, then group, level by level. Without a group order
+  (`PropertyGroupDescription.SortDescriptions` / `CustomSort`), groups appear in first-appearance order of the sorted
+  items (WPF behavior).
+- **Comparison.** Strings use `CompareStringEx` with the view's `Culture`, else the user locale. Numeric types compare as numbers, and
   `DateTime`, `TimeSpan` and `Boolean` are also ordered. `null` sorts first. Anything else compares equal, so source
   order is kept.
 - **Output.** The view is read-only and never writes to the source. Both flat and grouped output are presented by
@@ -154,8 +186,13 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   position a full recompute gives it. The view raises the matching `ItemInserted`, `ItemRemoved` or `ItemChanged`
   (a replacement that moves is `ItemRemoved` + `ItemInserted`; one rejected by the filter raises nothing), so
   currency, realized containers, selection and the UIA tree survive. The view keeps one source index per output
-  item, so `Remove` is O(n) and `Add` is O(n) plus O(log n) key reads. A source `Reset`, any change to a **grouped**
-  view, a change under `DeferRefresh`, a change raised while the view is computing, or a size/index mismatch still
+  item, so `Remove` is O(n) and `Add` is O(n) plus O(log n) key reads. On a **grouped** view the same changes are
+  applied to the group tree (see "`ListCollectionView.AddItemToGroups`" above): the item's bottom-level group raises
+  the change at the item's position, every group above it raises it at the item's leaf index, a new or emptied group
+  is inserted into or removed from its parent's `GroupItems` (`CollectionGroups` at the top level), and the view's
+  items raise one change. A `Replace` that keeps the item's place is one `ItemChanged`, otherwise a remove and an
+  insert. As in WPF, groups that exist do not move when their first item changes; `Refresh()` reorders them. A source
+  `Reset`, a change under `DeferRefresh`, a change raised while the view is computing, or a size/index mismatch still
   triggers a **full recompute** and one `Reset`. `Refresh()` always recomputes fully. Plain `IVector` sources need
   `Refresh()`. `IIterable`-only sources are snapshotted, so re-set `Source`.
 - **Descriptor changes.** A change to `SortDescriptions`, `GroupDescriptions` or `Filter` reshapes an already
@@ -260,9 +297,13 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 | `VectorCollectionView::ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | `ListCollectionView.ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | A source change: applied incrementally on a flat view, else a full recompute. |
 | `CollectionViewSource::ApplyPropertiesToView` | `CollectionViewSource.ApplyPropertiesToView` | Gives a new view the CVS's rules. |
 | `CollectionViewManager::GetViewRecord` | `ViewManager.GetViewRecord` | Picks the view class for a source. |
-| `CollectionViewGroupInternal` | `MS.Internal.Data.CollectionViewGroupInternal` | A computed group; exposes `Key` / `Name`. |
-| `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | Builds the top-level groups (`AddToSubgroups`). |
-| `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison, used by the full sort and the incremental placement. |
+| `CollectionViewGroupInternal` | `MS.Internal.Data.CollectionViewGroupInternal` | A computed group: its subgroups (`Items`) or items, its leaves, `Key` / `Name` / `ItemCount` / `IsBottomLevel`; `LeafCountBefore` and `FindSubgroupPosition` play `LeafIndexFromItem` and `FindIndex`. |
+| `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | The top of the group tree: the group descriptions per level (`GetGroupNames` = `GroupNameFromItem`, `NamesMatch`, the group order), `AddLoading` (`AddToSubgroups` while loading), `FindLeaf`. |
+| `PlanGroupedInsertion` / `ApplyGroupedInsertion` / `ApplyGroupedRemoval` | `CollectionViewGroupRoot.AddToSubgroups` / `RemoveFromSubgroups` | An item joins or leaves the group tree incrementally. |
+| `VectorCollectionView::ProcessGroupedCollectionChanged` | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | A source change on a grouped view. |
+| `VectorCollectionView::PassesFilter` | `CollectionView.PassesFilter` | The `FilterRequested` handlers, else the `Filter` delegate. |
+| `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison in the view's `Culture`, used by the full sort, the incremental placement and the group order. |
+| `GetDefaultViewImpl` (default-view table) | `CollectionViewSource.GetDefaultView` / `ViewManager` | The shared per-source view. |
 
 `VectorCollectionView`, `GroupedDataCollectionView`, `CollectionView` and `CollectionViewManager` are pre-existing
 WinUI classes and keep their names.
@@ -422,8 +463,6 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 #### Follow-ups (not in this change)
 
 - Live shaping in CVS (re-sort, re-filter, re-group on an item's property change).
-- Incremental updates for grouped views (they `Reset` today).
-- Group sort order (groups follow their first item).
 - Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
   parent is filtered out is shown as a root; `ParentKeyIndex` and `TableViewRowFlattener` keep their filter overlay
   for this).
@@ -432,18 +471,16 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 
 - Live shaping: re-sorting, re-filtering or re-grouping when an item's *property* changes (WPF `IsLiveSorting` etc.).
   Use `Refresh()`.
-- Key-selector delegates, `StringComparison` / culture selection (WPF `CollectionViewSource.Culture`). The
-  `CustomSort` comparer covers C++ and AOT callers.
-- Multi-level grouping (only the first `GroupDescription` is used; `ICollectionViewGroup` is single level),
-  `GroupDescription` subclasses, and group sorting.
+- Key-selector delegates. The `CustomSort` comparer covers C++ and AOT callers.
+- `GroupDescription` subclasses and `GroupNames` (explicit groups), an item in several groups (a name that is a
+  collection), and nested groups in ListView / GridView (they show the first level).
 - XAML-declared descriptors (needs DP-backed collection properties and type-table entries).
 - `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`.
 - Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
-- Incremental updates for **grouped** views (a change re-buckets and raises `Reset`), `Move` as a single change,
-  and coalescing a burst of changes. Grouped incremental updates need per-group bookkeeping and group insert/remove
-  notifications through `GroupedDataCollectionView`; they are deferred to keep this change reviewable.
-- Performance work: virtualization, hashed group lookup. A full recompute is O(n log n), plus O(n × groups) for
-  grouping.
+- `Move` as a single change, and coalescing a burst of changes.
+- Performance work: virtualization, hashed group lookup (WPF's name-to-group map). A full recompute is O(n log n),
+  plus O(n × groups × levels) for grouping; an incremental grouped change is O(n) to find the item plus O(groups) per
+  level.
 
 ## Known risks
 
@@ -456,8 +493,14 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   today, so set `CanReorderItems="False"`. WPF also blocks reorder on sorted views.
 - **Incremental loading.** `ISupportIncrementalLoading` sources lose `HasMoreItems` because the full source is
   materialized. WPF and ACV have the same limitation.
-- **Full refresh cost.** On a grouped view, every source change is a full recompute plus a `Reset`; selection and
-  scroll position follow `Reset` semantics. Flat views apply `Add` / `Remove` / `Replace` incrementally.
+- **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
+  selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat
+  and grouped views.
+- **Group objects.** A group is an internal `CollectionViewGroupInternal` that is also an `ICollectionViewGroup`;
+  apps reach its `Key`, `ItemCount` and subgroups through bindings or `ICustomPropertyProvider`, which is why a group
+  `CustomSort` gets the names. A public `CollectionViewGroup` class would be an API-review decision.
+- **Default-view table.** `GetDefaultView` keeps a per-thread table of weak references; a view removes its own entry
+  when it is destroyed.
 - **Reentrancy.** Changes raised while computing (for example from inside `Filter`, `CustomSort` or a property
   getter) are not applied; the view's incremental bookkeeping is invalidated, so the next source change or
   `Refresh()` recomputes fully.
@@ -466,7 +509,9 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - **Lifetime.** The group key is held with a `ComPtr`, not a `TrackerPtr`: `ObservableTrackerCollection`'s reference
   tracker walk is `final`. A managed key object is kept alive by its group until the next refresh.
 - **API shape.** Decide `GroupDescription` (abstract base) vs. `PropertyGroupDescription` before leaving experimental.
-  Adding a base class later is breaking in WinRT. `SortDescription` and `ListSortDirection` share simple names with
+  Adding a base class later is breaking in WinRT; group `SortDescriptions` / `CustomSort` would move to it.
+  `FilterRequested` vs. renaming the `Filter` delegate property so the event can take WPF's name is the other naming
+  decision. `SortDescription` and `ListSortDirection` share simple names with
   WPF and the Toolkit, so apps that use both namespaces need aliases.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
@@ -482,6 +527,8 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/CollectionViewSource.g.h/.g.cpp` | Forwarder, QI, accessors, `Refresh` | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/SortDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/PropertyGroupDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
+| `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/FilterEventArgs.g.h/.g.cpp` (new) | Event args class | Yes |
+| `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_FilterRequested` event index, `GetDefaultView` method index, the enum | Yes (appended entries only) |
 | `dxaml/xcp/dxaml/lib/Factories.g.cpp` | 2 forward declarations + 2 activation entries | Yes (ordering) |
 | `dxaml/xcp/dxaml/lib/synonyms.g.h` | 4 typedefs (with `ICollectionViewShaping`) | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Aggregate.g.cpp` | 2 includes | Yes |
@@ -492,6 +539,7 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 Hand-written files: `CollectionViewSource_Partial.h/.cpp` (`EnsureView`), `CollectionViewSource_Shaping.cpp`
 (the CVS proxy: rule properties, `ApplyPropertiesToView`, `DeferRefresh`, descriptor factories),
 `VectorCollectionView_Partial.h` and `VectorCollectionView_Shaping.cpp` (the engine and `ICollectionViewShaping`),
+`PropertyGroupDescription_Partial.h` (group order),
 `CollectionViewManager.h/.cpp` (`GetViewRecord`), `CollectionViewRefreshDeferral.h`, and `wrtdxamlfoundation.vcxproj`.
 
 ## Test
@@ -524,6 +572,21 @@ The capabilities added after the first POC each have a test in the same class:
   (`Remove` + `Insert`), an in-place `Replace` (`ItemChanged`) and a filter-accepted `Replace` (`Insert`) raise exactly
   those changes, the result matches `Refresh()`, a source `Reset` and a grouped view recompute fully.
 
+WPF-parity additions, one test each in the same class:
+
+- `CollectionViewSourceGroupedIncrementalUpdates`: on a sorted, grouped view an add joins its group, a new name
+  inserts a group by its first item, removing a group's last item removes the group, a replace that changes group
+  moves it, an in-place replace is one `ItemChanged`, each on the view, `CollectionGroups` and the group, with no
+  `Reset`; the result matches `Refresh()`.
+- `CollectionViewSourceMultiLevelGroups`: two descriptions nest groups (leaves in group order, `Items`, `ItemCount`,
+  `IsBottomLevel`); adds and removes update the right level; the result matches `Refresh()`.
+- `CollectionViewSourceGroupSort`: group `SortDescriptions` (`Name`, `Key`) and `CustomSort` order the groups, a new
+  group is inserted in order, and they replace each other.
+- `CollectionViewSourceCultureAndStringComparison`: `Culture` re-sorts (`sv-SE` vs `en-US`), an invalid tag throws;
+  `Ordinal` vs `OrdinalIgnoreCase` group names.
+- `CollectionViewShapingSourceCollection`, `CollectionViewSourceFilterEvent` (event alone, event over delegate,
+  back to the delegate), `CollectionViewSourceGetDefaultView` (shared per source, shapes in place, not the CVS's view).
+
 `TableView_DataBinding_APITests` (`controls\dev\TableView\APITests`) covers the end-to-end story:
 
 - `VerifyHeaderSortOnShapingCollectionViewSortsTheView`: header click, `ToggleSortDirection`, `SortByColumn` and
@@ -532,6 +595,8 @@ The capabilities added after the first POC each have a test in the same class:
 - `VerifyGroupDescriptionsOnShapingCollectionViewRenderGroups`: group rows keyed by value, sort within groups.
 - `VerifyCollapsedCollectionViewGroupSurvivesRecompute`: a collapsed group stays collapsed after a source change and
   after `Refresh()`.
+- `VerifyNestedCollectionViewGroupsRenderSubgroupHeaders`: two descriptions render a header per level (`Level` 0 and
+  1); collapsing a group hides its subgroups; an add starts a subgroup.
 - `VerifyCustomSortComparerColumnSortsShapingCollectionView`: a `CustomSortComparer` column sorts the view through
   `CustomSort` in both directions; a path column's sort replaces it; a throwing comparer leaves the previous sort,
   rows and arrow; `ClearSort` clears both.
@@ -555,13 +620,12 @@ These are rough estimates for one engineer who knows dxaml.
 | Item | Estimate |
 |---|---|
 | Build, fix, run codegen, test matrix (ListView, GridView, SemanticZoom, `IsSourceGrouped`, CLR sources) | 1 week |
-| Incremental updates for grouped views (flat views and `DeferRefresh` are in the POC) | 1 week |
 | Live shaping (property-change tracking) | 1–2 weeks |
-| Culture / `StringComparison`, `GroupDescription` base decision (`CustomSort` and `Converter` are in the POC) | 0.5 week |
+| `GroupDescription` base decision (grouped incremental updates, multi-level groups, group order, `Culture`, `StringComparison`, `CustomSort` and `Converter` are in the POC) | 0.5 week |
 | XAML-declarable descriptors (DP collections, type tables) | 1 week |
 | View-level shaping interface: `CanSort` / `CanFilter` / `CanGroup`, API review (the POC interface exists) | 0.5–1 week |
 | API review, docs, perf and back-compat tests | 1–2 weeks |
-| **Total** | **≈ 5–8.5 engineer-weeks** |
+| **Total** | **≈ 4–7 engineer-weeks** |
 
 TableView's own shaping engine is retired (see "One engine"); live shaping and grouped incremental updates are now
 needed in the CVS view itself.
