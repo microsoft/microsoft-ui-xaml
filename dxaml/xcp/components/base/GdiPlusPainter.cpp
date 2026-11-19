@@ -822,35 +822,21 @@ namespace RenderingBackend
                         {
                             return E_OUTOFMEMORY;
                         }
-                        try
-                        {
-                            created->pixels.resize(static_cast<size_t>(source.width) * source.height * 4);
-                        }
-                        catch (...)
-                        {
-                            return E_OUTOFMEMORY;
-                        }
+                        created->pixels.resize(static_cast<size_t>(source.width) * source.height * 4);
                         created->width = source.width;
                         created->height = source.height;
                         created->bitmap.reset(new Gdiplus::Bitmap(static_cast<INT>(source.width), static_cast<INT>(source.height),
                             static_cast<INT>(source.width * 4), PixelFormat32bppPARGB, created->pixels.data()));
                         IFC_RETURN(CheckCreated(created->bitmap));
-                        try
+                        if (found != m_bitmaps.end())
                         {
-                            if (found != m_bitmaps.end())
-                            {
-                                found->second = std::move(created);
-                                entry = found->second.get();
-                                ++m_frameDestroyed;
-                            }
-                            else
-                            {
-                                entry = m_bitmaps.emplace(source.key, std::move(created)).first->second.get();
-                            }
+                            found->second = std::move(created);
+                            entry = found->second.get();
+                            ++m_frameDestroyed;
                         }
-                        catch (...)
+                        else
                         {
-                            return E_OUTOFMEMORY;
+                            entry = m_bitmaps.emplace(source.key, std::move(created)).first->second.get();
                         }
                         ++m_frameCreated;
                     }
@@ -958,15 +944,7 @@ namespace RenderingBackend
                             moveRow(y);
                         }
                     }
-                    try
-                    {
-                        AddDisjoint(m_scrolledAreas, destination);
-                    }
-                    catch (...)
-                    {
-                        // Losing track of the moved area: present the whole target next frame instead.
-                        m_forceFullFrame = true;
-                    }
+                    AddDisjoint(m_scrolledAreas, destination);
                     return S_OK;
                 }
 
@@ -1113,17 +1091,10 @@ namespace RenderingBackend
                     if (!m_presentFull)
                     {
                         // Damage rects are disjoint by contract; scrolled areas are added minus their overlap with them.
-                        try
+                        m_presentRects.assign(m_damage.begin(), m_damage.end());
+                        for (const PixelRect& scrolled : m_scrolledAreas)
                         {
-                            m_presentRects.assign(m_damage.begin(), m_damage.end());
-                            for (const PixelRect& scrolled : m_scrolledAreas)
-                            {
-                                AddDisjoint(m_presentRects, scrolled);
-                            }
-                        }
-                        catch (...)
-                        {
-                            return E_OUTOFMEMORY;
+                            AddDisjoint(m_presentRects, scrolled);
                         }
                         if (m_presentRects.empty())
                         {
@@ -1449,22 +1420,14 @@ namespace RenderingBackend
                         m_pathLru.pop_back();
                         ++m_frameDestroyed;
                     }
-                    try
-                    {
-                        m_pathLru.push_front(data.cacheKey);
-                        CachedPath& entry = m_paths[data.cacheKey];
-                        entry.path = std::move(path);
-                        entry.bounds = bounds;
-                        entry.bytes = c_pathBytes + static_cast<uint64_t>(entry.path->GetPointCount()) * c_pathPointBytes;
-                        entry.lru = m_pathLru.begin();
-                        m_pathCacheBytes += entry.bytes;
-                        return entry.path.get();
-                    }
-                    catch (...)
-                    {
-                        Fail(E_OUTOFMEMORY);
-                        return nullptr;
-                    }
+                    m_pathLru.push_front(data.cacheKey);
+                    CachedPath& entry = m_paths[data.cacheKey];
+                    entry.path = std::move(path);
+                    entry.bounds = bounds;
+                    entry.bytes = c_pathBytes + static_cast<uint64_t>(entry.path->GetPointCount()) * c_pathPointBytes;
+                    entry.lru = m_pathLru.begin();
+                    m_pathCacheBytes += entry.bytes;
+                    return entry.path.get();
                 }
 
                 // Maps a DirectWrite font face to its GDI family and style once (negative results are cached too).
@@ -1509,17 +1472,9 @@ namespace RenderingBackend
                         entry.family = GetFontFamily(logFont.lfFaceName);
                         entry.style = (logFont.lfWeight >= FW_BOLD ? Gdiplus::FontStyleBold : 0) | (logFont.lfItalic ? Gdiplus::FontStyleItalic : 0);
                     }
-                    try
-                    {
-                        const FontFaceEntry* result = &m_fontFaces.emplace(face, std::move(entry)).first->second;
-                        ++m_frameCreated;
-                        return result;
-                    }
-                    catch (...)
-                    {
-                        Fail(E_OUTOFMEMORY);
-                        return nullptr;
-                    }
+                    const FontFaceEntry* result = &m_fontFaces.emplace(face, std::move(entry)).first->second;
+                    ++m_frameCreated;
+                    return result;
                 }
 
                 Gdiplus::Font* GetGlyphFont(IDWriteFontFace* face, float emSize) noexcept
@@ -1553,20 +1508,12 @@ namespace RenderingBackend
                         m_glyphFontLru.pop_back();
                         ++m_frameDestroyed;
                     }
-                    try
-                    {
-                        m_glyphFontLru.push_front(key);
-                        GlyphFontEntry& glyphFont = m_glyphFonts[key];
-                        glyphFont.font = std::move(font);
-                        glyphFont.lru = m_glyphFontLru.begin();
-                        ++m_frameCreated;
-                        return glyphFont.font.get();
-                    }
-                    catch (...)
-                    {
-                        Fail(E_OUTOFMEMORY);
-                        return nullptr;
-                    }
+                    m_glyphFontLru.push_front(key);
+                    GlyphFontEntry& glyphFont = m_glyphFonts[key];
+                    glyphFont.font = std::move(font);
+                    glyphFont.lru = m_glyphFontLru.begin();
+                    ++m_frameCreated;
+                    return glyphFont.font.get();
                 }
 
                 // Bilinear sampling clamps at the source rect's edges instead of fading to transparent.
