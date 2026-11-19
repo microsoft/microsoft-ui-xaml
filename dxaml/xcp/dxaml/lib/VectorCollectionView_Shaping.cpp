@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include "CollectionViewSource.g.h"
+#include "PropertyGroupDescription.g.h"
 #include "VectorCollectionView.g.h"
 #include "GroupedDataCollectionView.g.h"
 #include "FrameworkElement.g.h"
@@ -395,8 +396,9 @@ namespace
         return S_OK;
     }
 
-    // Values that cannot be ordered compare equal, so the stable sort keeps their source order.
-    int CompareKeys(_In_opt_ IInspectable* pLeft, _In_opt_ IInspectable* pRight)
+    // Values that cannot be ordered compare equal, so the stable sort keeps their source order. Strings compare
+    // in the view's culture (WPF: CollectionView.Culture), else the user's.
+    int CompareKeys(_In_opt_ IInspectable* pLeft, _In_opt_ IInspectable* pRight, _In_z_ LPCWSTR localeName)
     {
         if (!pLeft || !pRight)
         {
@@ -427,7 +429,7 @@ namespace
 
             LPCWSTR szLeft = left.GetRawBuffer(&leftLength);
             LPCWSTR szRight = right.GetRawBuffer(&rightLength);
-            const int result = CompareStringEx(LOCALE_NAME_USER_DEFAULT, 0, szLeft, static_cast<int>(leftLength), szRight, static_cast<int>(rightLength), nullptr, nullptr, 0);
+            const int result = CompareStringEx(localeName, 0, szLeft, static_cast<int>(leftLength), szRight, static_cast<int>(rightLength), nullptr, nullptr, 0);
             return (result == 0) ? 0 : result - CSTR_EQUAL;
         }
 
@@ -497,12 +499,16 @@ namespace
     public:
         _Check_return_ HRESULT Initialize(
             _In_opt_ wfc::IVector<xaml_data::SortDescription*>* pDescriptions,
-            _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort)
+            _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort,
+            _In_opt_ HSTRING culture)
         {
             UINT count = 0;
+            UINT32 cultureLength = 0;
+            LPCWSTR szCulture = WindowsGetStringRawBuffer(culture, &cultureLength);
 
             m_fields.clear();
             m_spCustomSort = pCustomSort;
+            m_localeName = (cultureLength > 0) ? std::wstring(szCulture, cultureLength) : std::wstring();
             if (m_spCustomSort || !pDescriptions)
             {
                 return S_OK;
@@ -583,7 +589,7 @@ namespace
                         IFC_RETURN(EvaluateKey(m_fields[i], pRight, spRightKey.ReleaseAndGetAddressOf()));
                     }
 
-                    const int result = CompareKeys(leftKeys[i].Get(), spRightKey.Get());
+                    const int result = CompareKeys(leftKeys[i].Get(), spRightKey.Get(), m_localeName.empty() ? LOCALE_NAME_USER_DEFAULT : m_localeName.c_str());
                     *pResult = m_fields[i].isDescending ? -result : result;
                 }
             }
@@ -599,7 +605,65 @@ namespace
     private:
         std::vector<ShapingKeySelector> m_fields;
         ctl::ComPtr<xaml_data::ICollectionViewComparer> m_spCustomSort;
+        std::wstring m_localeName;
     };
+
+    _Check_return_ HRESULT TryGetString(_In_opt_ IInspectable* pValue, _Out_ wrl_wrappers::HString* pString, _Out_ bool* pIsString)
+    {
+        auto spValue = ctl::query_interface_cast<wf::IPropertyValue>(pValue);
+        wf::PropertyType type = wf::PropertyType_Empty;
+
+        *pIsString = false;
+        if (spValue && SUCCEEDED(spValue->get_Type(&type)) && type == wf::PropertyType_String)
+        {
+            pString->Release();
+            IFC_RETURN(spValue->GetString(pString->GetAddressOf()));
+            *pIsString = true;
+        }
+        return S_OK;
+    }
+
+    // WPF: PropertyGroupDescription.NamesMatch, String.Equals(groupName, itemName, StringComparison).
+    _Check_return_ HRESULT GroupNamesMatch(xaml_data::CollectionViewStringComparison comparison, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch)
+    {
+        wrl_wrappers::HString groupName;
+        wrl_wrappers::HString itemName;
+        bool isGroupNameString = false;
+        bool isItemNameString = false;
+
+        IFC_RETURN(TryGetString(pGroupName, &groupName, &isGroupNameString));
+        IFC_RETURN(TryGetString(pItemName, &itemName, &isItemNameString));
+        if (!isGroupNameString || !isItemNameString)
+        {
+            IFC_RETURN(DirectUI::PropertyValue::AreEqual(pGroupName, pItemName, pMatch));
+            return S_OK;
+        }
+
+        UINT32 groupLength = 0;
+        UINT32 itemLength = 0;
+        LPCWSTR szGroup = groupName.GetRawBuffer(&groupLength);
+        LPCWSTR szItem = itemName.GetRawBuffer(&itemLength);
+        int result = 0;
+
+        switch (comparison)
+        {
+        case xaml_data::CollectionViewStringComparison_Ordinal:
+        case xaml_data::CollectionViewStringComparison_OrdinalIgnoreCase:
+            result = CompareStringOrdinal(szGroup, static_cast<int>(groupLength), szItem, static_cast<int>(itemLength), comparison == xaml_data::CollectionViewStringComparison_OrdinalIgnoreCase);
+            break;
+
+        default:
+        {
+            const bool isInvariant = comparison == xaml_data::CollectionViewStringComparison_InvariantCulture || comparison == xaml_data::CollectionViewStringComparison_InvariantCultureIgnoreCase;
+            const bool isIgnoreCase = comparison == xaml_data::CollectionViewStringComparison_CurrentCultureIgnoreCase || comparison == xaml_data::CollectionViewStringComparison_InvariantCultureIgnoreCase;
+            result = CompareStringEx(isInvariant ? LOCALE_NAME_INVARIANT : LOCALE_NAME_USER_DEFAULT, isIgnoreCase ? NORM_IGNORECASE : 0, szGroup, static_cast<int>(groupLength), szItem, static_cast<int>(itemLength), nullptr, nullptr, 0);
+            break;
+        }
+        }
+
+        *pMatch = (result == CSTR_EQUAL);
+        return S_OK;
+    }
 
     // One level of grouping: the group name of an item (WPF: PropertyGroupDescription.GroupNameFromItem / NamesMatch).
     struct GroupLevel
@@ -607,6 +671,11 @@ namespace
         bool hasDescription = false;
         ShapingKeySelector selector;
         ctl::ComPtr<xaml_data::IValueConverter> spConverter;
+        xaml_data::CollectionViewStringComparison stringComparison = xaml_data::CollectionViewStringComparison_Ordinal;
+        // Group order (WPF: GroupDescription.SortDescriptions / CustomSort); else first appearance.
+        bool hasGroupOrder = false;
+        SortFieldComparer groupSort;
+        ctl::ComPtr<xaml_data::ICollectionViewComparer> spGroupCustomSort;
     };
 
     // The top of the group tree (WPF: MS.Internal.Data.CollectionViewGroupRoot). Its subgroups are the view's
@@ -614,26 +683,38 @@ namespace
     class __declspec(novtable) CollectionViewGroupRoot : public CollectionViewGroupInternal
     {
     public:
-        _Check_return_ HRESULT InitializeRoot(_In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pDescriptions)
+        _Check_return_ HRESULT InitializeRoot(_In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pDescriptions, _In_ VectorCollectionView* pOwner, _In_opt_ HSTRING culture)
         {
             UINT count = 0;
 
             IFC_RETURN(InitializeGroup(nullptr, nullptr, false /* isBottomLevel */));
+            IFC_RETURN(m_culture.Set(culture));
             IFC_RETURN(pDescriptions->get_Size(&count));
             m_levels.clear();
             m_levels.resize(count);
             for (UINT i = 0; i < count; ++i)
             {
                 ctl::ComPtr<xaml_data::IPropertyGroupDescription> spDescription;
+                ctl::ComPtr<PropertyGroupDescription> spImpl;
+                auto& level = m_levels[i];
                 IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
-                if (spDescription)
+                if (!spDescription)
                 {
-                    wrl_wrappers::HString path;
-                    IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
-                    IFC_RETURN(CreateKeySelector(path.Get(), &m_levels[i].selector));
-                    IFC_RETURN(spDescription->get_Converter(m_levels[i].spConverter.ReleaseAndGetAddressOf()));
-                    m_levels[i].hasDescription = true;
+                    continue;
                 }
+
+                wrl_wrappers::HString path;
+                IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                IFC_RETURN(CreateKeySelector(path.Get(), &level.selector));
+                IFC_RETURN(spDescription->get_Converter(level.spConverter.ReleaseAndGetAddressOf()));
+                level.hasDescription = true;
+
+                IFC_RETURN(spDescription.As(&spImpl));
+                IFC_RETURN(spImpl->get_StringComparison(&level.stringComparison));
+                IFC_RETURN(spImpl->get_CustomSortImpl(level.spGroupCustomSort.ReleaseAndGetAddressOf()));
+                IFC_RETURN(level.groupSort.Initialize(spImpl->GetSortDescriptionsNoRef(), nullptr /* pCustomSort */, culture));
+                level.hasGroupOrder = level.spGroupCustomSort || !level.groupSort.IsEmpty();
+                IFC_RETURN(spImpl->AddOwner(pOwner));
             }
 
             return S_OK;
@@ -674,7 +755,7 @@ namespace
                 if (groupLevel.spConverter)
                 {
                     ctl::ComPtr<IInspectable> spConverted;
-                    IFC_RETURN(groupLevel.spConverter->Convert((*pNames)[level].Get(), objectType, nullptr /* parameter */, nullptr /* language */, spConverted.ReleaseAndGetAddressOf()));
+                    IFC_RETURN(groupLevel.spConverter->Convert((*pNames)[level].Get(), objectType, nullptr /* parameter */, m_culture.Get(), spConverted.ReleaseAndGetAddressOf()));
                     (*pNames)[level] = std::move(spConverted);
                 }
             }
@@ -684,8 +765,51 @@ namespace
 
         _Check_return_ HRESULT NamesMatch(UINT level, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch) const
         {
-            UNREFERENCED_PARAMETER(level);
-            IFC_RETURN(DirectUI::PropertyValue::AreEqual(pGroupName, pItemName, pMatch));
+            IFC_RETURN(GroupNamesMatch(m_levels[level].stringComparison, pGroupName, pItemName, pMatch));
+            return S_OK;
+        }
+
+        bool HasGroupOrder(UINT level) const
+        {
+            return m_levels[level].hasGroupOrder;
+        }
+
+        // Negative, zero or positive as group x sorts before, with or after group y (WPF: the group comparer
+        // CollectionViewGroupInternal.FindIndex uses). CustomSort compares the group names.
+        _Check_return_ HRESULT CompareGroups(UINT level, _In_ CollectionViewGroupInternal* pLeft, _In_ CollectionViewGroupInternal* pRight, _Out_ int* pResult) const
+        {
+            const auto& groupLevel = m_levels[level];
+            *pResult = 0;
+
+            if (groupLevel.spGroupCustomSort)
+            {
+                INT32 result = 0;
+                IFC_RETURN(groupLevel.spGroupCustomSort->Invoke(pLeft->GetKeyNoRef(), pRight->GetKeyNoRef(), &result));
+                *pResult = (result > 0) - (result < 0);
+                return S_OK;
+            }
+
+            std::vector<ctl::ComPtr<IInspectable>> leftKeys;
+            IFC_RETURN(groupLevel.groupSort.EvaluateKeys(ctl::as_iinspectable(pLeft), &leftKeys));
+            IFC_RETURN(groupLevel.groupSort.Compare(ctl::as_iinspectable(pLeft), leftKeys, 0, ctl::as_iinspectable(pRight), nullptr /* pRightKeys */, 0, pResult));
+            return S_OK;
+        }
+
+        // With a group order, the index of the first sibling that sorts after the new group; ties go after.
+        _Check_return_ HRESULT FindOrderedSubgroupPosition(_In_ CollectionViewGroupInternal* pParent, UINT level, _In_ CollectionViewGroupInternal* pSubgroup, _Out_ UINT* pPosition) const
+        {
+            const auto& subgroups = pParent->Subgroups();
+            UINT position = 0;
+            for (; position < subgroups.size(); ++position)
+            {
+                int result = 0;
+                IFC_RETURN(CompareGroups(level, pSubgroup, subgroups[position].Get(), &result));
+                if (result < 0)
+                {
+                    break;
+                }
+            }
+            *pPosition = position;
             return S_OK;
         }
 
@@ -718,8 +842,13 @@ namespace
                 if (!pSubgroup)
                 {
                     ctl::ComPtr<CollectionViewGroupInternal> spSubgroup;
+                    UINT position = static_cast<UINT>(pGroup->Subgroups().size());
                     IFC_RETURN(CreateGroup(names[level].Get(), pGroup, level, spSubgroup.ReleaseAndGetAddressOf()));
-                    IFC_RETURN(pGroup->InsertSubgroup(static_cast<UINT>(pGroup->Subgroups().size()), spSubgroup.Get(), false /* isRaised */));
+                    if (HasGroupOrder(level))
+                    {
+                        IFC_RETURN(FindOrderedSubgroupPosition(pGroup, level, spSubgroup.Get(), &position));
+                    }
+                    IFC_RETURN(pGroup->InsertSubgroup(position, spSubgroup.Get(), false /* isRaised */));
                     pSubgroup = spSubgroup.Get();
                 }
                 pGroup = pSubgroup;
@@ -811,6 +940,7 @@ namespace
         }
 
         std::vector<GroupLevel> m_levels;
+        wrl_wrappers::HString m_culture;
     };
 
     // Where an item joins the group tree (WPF: CollectionViewGroupRoot.AddToSubgroups).
@@ -866,7 +996,10 @@ namespace
     // A new subgroup's index (WPF: CollectionViewGroupInternal.FindIndex): before the first subgroup whose first
     // item sorts after the new group's item.
     _Check_return_ HRESULT FindSubgroupPosition(
+        _In_ CollectionViewGroupRoot* pRoot,
         _In_ CollectionViewGroupInternal* pParent,
+        UINT level,
+        _In_ CollectionViewGroupInternal* pSubgroup,
         const SortFieldComparer& comparer,
         _In_opt_ IInspectable* pItem,
         const std::vector<ctl::ComPtr<IInspectable>>& keys,
@@ -875,6 +1008,12 @@ namespace
     {
         const auto& subgroups = pParent->Subgroups();
         UINT position = 0;
+
+        if (pRoot->HasGroupOrder(level))
+        {
+            IFC_RETURN(pRoot->FindOrderedSubgroupPosition(pParent, level, pSubgroup, pPosition));
+            return S_OK;
+        }
 
         for (; position < subgroups.size(); ++position)
         {
@@ -946,7 +1085,7 @@ namespace
             }
 
             pInsertion->pGroup = pGroup;
-            IFC_RETURN(FindSubgroupPosition(pGroup, comparer, pItem, keys, sourceIndex, &pInsertion->position));
+            IFC_RETURN(FindSubgroupPosition(pRoot, pGroup, level, pInsertion->spNewGroup.Get(), comparer, pItem, keys, sourceIndex, &pInsertion->position));
             return S_OK;
         }
 
@@ -1054,13 +1193,60 @@ _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules(
     _In_ wfc::IVector<xaml_data::SortDescription*>* pSortDescriptions,
     _In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pGroupDescriptions,
     _In_opt_ xaml_data::ICollectionViewFilter* pFilter,
-    _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort)
+    _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort,
+    _In_opt_ HSTRING culture)
 {
     SetPtrValue(m_tpSortDescriptions, pSortDescriptions);
     SetPtrValue(m_tpGroupDescriptions, pGroupDescriptions);
     SetPtrValue(m_tpFilter, pFilter);
     SetPtrValue(m_tpCustomSort, pCustomSort);
+    IFC_RETURN(m_culture.Set(culture));
     IFC_RETURN(OnShapingRulesChanged());
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::EnableDefaultViewShaping()
+{
+    ctl::ComPtr<wfc::IVector<xaml_data::SortDescription*>> spSortDescriptions;
+    ctl::ComPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> spGroupDescriptions;
+
+    m_isShapingEnabled = true;
+    m_isDefaultView = true;
+    SetPtrValue(m_tpSourceList, m_tpSource.Get());
+    IFC_RETURN(CreateShapingDescriptions(spSortDescriptions.ReleaseAndGetAddressOf(), spGroupDescriptions.ReleaseAndGetAddressOf()));
+    IFC_RETURN(ApplyShapingRules(spSortDescriptions.Get(), spGroupDescriptions.Get(), nullptr /* pFilter */, nullptr /* pCustomSort */, nullptr /* culture */));
+    return S_OK;
+}
+
+void VectorCollectionView::SetSourceCollection(_In_opt_ IInspectable* pSource)
+{
+    SetPtrValue(m_tpSourceCollection, pSource);
+}
+
+_Check_return_ HRESULT VectorCollectionView::ValidateCulture(_In_opt_ HSTRING value)
+{
+    UINT32 length = 0;
+    LPCWSTR szValue = WindowsGetStringRawBuffer(value, &length);
+    IFCEXPECTRC_RETURN(length == 0 || (length < LOCALE_NAME_MAX_LENGTH && IsValidLocaleName(szValue)), E_INVALIDARG);
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::OnGroupDescriptionChanged(_In_ PropertyGroupDescription* pDescription)
+{
+    UINT index = 0;
+    BOOLEAN isFound = FALSE;
+
+    if (!m_tpGroupDescriptions || !m_isGrouping)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(m_tpGroupDescriptions->IndexOf(static_cast<xaml_data::IPropertyGroupDescription*>(ctl::interface_cast<xaml_data::IPropertyGroupDescription>(pDescription)), &index, &isFound));
+    if (isFound)
+    {
+        IFC_RETURN(OnShapingRulesChanged());
+    }
+
     return S_OK;
 }
 
@@ -1199,6 +1385,45 @@ IFACEMETHODIMP VectorCollectionView::put_CustomSort(_In_opt_ xaml_data::ICollect
     return S_OK;
 }
 
+IFACEMETHODIMP VectorCollectionView::get_SourceCollection(_Outptr_result_maybenull_ IInspectable** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(m_tpSourceCollection.CopyTo(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_Culture(_Out_ HSTRING* pValue)
+{
+    ctl::ComPtr<CollectionViewSource> spHost;
+    ARG_VALIDRETURNPOINTER(pValue);
+    IFC_RETURN(GetDetachedHost(spHost.ReleaseAndGetAddressOf()));
+    if (spHost)
+    {
+        IFC_RETURN(spHost->get_CultureImpl(pValue));
+        return S_OK;
+    }
+
+    IFC_RETURN(m_culture.CopyTo(pValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::put_Culture(_In_opt_ HSTRING value)
+{
+    ctl::ComPtr<CollectionViewSource> spHost;
+    IFC_RETURN(GetDetachedHost(spHost.ReleaseAndGetAddressOf()));
+    if (spHost)
+    {
+        IFC_RETURN(spHost->put_CultureImpl(value));
+        return S_OK;
+    }
+
+    IFC_RETURN(ValidateCulture(value));
+    IFC_RETURN(m_culture.Set(value));
+    IFC_RETURN(OnShapingRulesChanged());
+    return S_OK;
+}
+
 IFACEMETHODIMP VectorCollectionView::Refresh()
 {
     ctl::ComPtr<CollectionViewSource> spHost;
@@ -1283,6 +1508,12 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
     }
 
     *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort;
+    if (!*pHasRules && m_hostRef)
+    {
+        ctl::ComPtr<CollectionViewSource> spFilterHost;
+        IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+        *pHasRules = !!spFilterHost;
+    }
     return S_OK;
 }
 
@@ -1433,20 +1664,22 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
 
     SortFieldComparer sortComparer;
     ctl::ComPtr<CollectionViewGroupRoot> spRoot;
+    ctl::ComPtr<CollectionViewSource> spFilterHost;
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
     std::vector<UINT> outputSourceIndices;
     const UINT sourceChangeCount = m_sourceListChangeCount;
     UINT size = 0;
 
-    IFC_RETURN(sortComparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
+    IFC_RETURN(sortComparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
 
     if (m_isGrouping)
     {
         IFC_RETURN(ctl::ComObject<CollectionViewGroupRoot>::CreateInstance(spRoot.ReleaseAndGetAddressOf()));
-        IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get()));
+        IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get(), this, m_culture.Get()));
     }
 
+    IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
     IFC_RETURN(m_tpSourceList->get_Size(&size));
     entries.reserve(size);
 
@@ -1457,7 +1690,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
         entry.sourceIndex = i;
         IFC_RETURN(m_tpSourceList->GetAt(i, entry.item.ReleaseAndGetAddressOf()));
 
-        IFC_RETURN(PassesFilter(entry.item.Get(), &isAccepted));
+        IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
         if (!isAccepted)
         {
             continue;
@@ -1523,11 +1756,35 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
     return S_OK;
 }
 
+// The CollectionViewSource whose FilterRequested handlers filter the view, if any. As in WPF, its event replaces
+// the Filter delegate while it has handlers.
+_Check_return_ HRESULT VectorCollectionView::GetFilterHost(_Outptr_result_maybenull_ CollectionViewSource** ppHost)
+{
+    ctl::ComPtr<xaml_data::ICollectionViewSource> spHost;
+
+    *ppHost = nullptr;
+    if (m_hostRef)
+    {
+        IFC_RETURN(m_hostRef.As(&spHost));
+    }
+
+    if (spHost && static_cast<CollectionViewSource*>(spHost.Get())->HasFilterRequestedHandlers())
+    {
+        *ppHost = static_cast<CollectionViewSource*>(spHost.Detach());
+    }
+
+    return S_OK;
+}
+
 // Whether the view shows the item (WPF: CollectionView.PassesFilter).
-_Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted)
+_Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable* pItem, _In_opt_ CollectionViewSource* pFilterHost, _Out_ bool* pIsAccepted)
 {
     *pIsAccepted = true;
-    if (m_tpFilter)
+    if (pFilterHost)
+    {
+        IFC_RETURN(pFilterHost->RaiseFilterRequested(pItem, pIsAccepted));
+    }
+    else if (m_tpFilter)
     {
         boolean accepted = true;
         IFC_RETURN(m_tpFilter->Invoke(pItem, &accepted));
@@ -1705,13 +1962,15 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
             std::vector<ctl::ComPtr<IInspectable>> keys;
             bool isAccepted = true;
 
-            IFC_RETURN(PassesFilter(spItem.Get(), &isAccepted));
+            ctl::ComPtr<CollectionViewSource> spFilterHost;
+            IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+            IFC_RETURN(PassesFilter(spItem.Get(), spFilterHost.Get(), &isAccepted));
             if (!isAccepted)
             {
                 return S_OK;
             }
 
-            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
+            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
             IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
 
             // Upper bound over the output without the replaced item.
@@ -1831,13 +2090,15 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
         hr = [&]() -> HRESULT
         {
             bool isAccepted = true;
-            IFC_RETURN(PassesFilter(spItem.Get(), &isAccepted));
+            ctl::ComPtr<CollectionViewSource> spFilterHost;
+            IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+            IFC_RETURN(PassesFilter(spItem.Get(), spFilterHost.Get(), &isAccepted));
             if (!isAccepted)
             {
                 return S_OK;
             }
 
-            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get()));
+            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
             IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
             IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, spItem.Get(), keys, index, hasOld ? pOldGroup : nullptr, oldPosition, &insertion));
             return S_OK;

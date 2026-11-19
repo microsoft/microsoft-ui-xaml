@@ -535,6 +535,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi ICollectionViewSourceFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs ICurrentChangingEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Data::IDataErrorsChangedEventArgs IDataErrorsChangedEventArgs;
+    typedef ABI::Microsoft::UI::Xaml::Data::IFilterEventArgs IFilterEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionView ICollectionView;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewFactory ICollectionViewFactory;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup ICollectionViewGroup;

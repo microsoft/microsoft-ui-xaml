@@ -15,6 +15,17 @@ namespace DirectUI
         IInspectable,
         IInspectable> CVSViewChangedEventSource;
 
+    MIDL_INTERFACE("6f1a3e52-9c0b-4d7e-8a41-2b5f0c9d7e13")
+    IFilterRequestedEventSource : public IUnknown
+    {
+    };
+
+    typedef CFrameworkEventSource<
+        IFilterRequestedEventSource,
+        xaml_data::IFilterEventHandler,
+        IInspectable,
+        xaml_data::IFilterEventArgs> FilterRequestedEventSource;
+
     PARTIAL_CLASS(CollectionViewSource)
     {
 
@@ -40,6 +51,15 @@ namespace DirectUI
         _Check_return_ HRESULT DeferRefreshImpl(_Outptr_ wf::IClosable** ppReturnValue);
         _Check_return_ HRESULT get_CustomSortImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue);
         _Check_return_ HRESULT put_CustomSortImpl(_In_opt_ xaml_data::ICollectionViewComparer* pValue);
+        _Check_return_ HRESULT get_CultureImpl(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT put_CultureImpl(_In_opt_ HSTRING value);
+
+        // FilterRequested (WPF: the CollectionViewSource.Filter event). While it has handlers, the view filters
+        // through them instead of the Filter delegate.
+        _Check_return_ HRESULT AddFilterRequestedHandler(_In_ xaml_data::IFilterEventHandler* pHandler, _Out_ EventRegistrationToken* pToken);
+        _Check_return_ HRESULT RemoveFilterRequestedHandler(EventRegistrationToken token);
+        bool HasFilterRequestedHandlers() const;
+        _Check_return_ HRESULT RaiseFilterRequested(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted);
 
         _Check_return_ HRESULT OnShapingDescriptionsChanged();
         _Check_return_ HRESULT OnSortDescriptionsChanged();
@@ -78,7 +98,10 @@ namespace DirectUI
         TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
         TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
+        wrl_wrappers::HString m_culture;
         bool m_isApplyingCustomSort = false;
+
+        ctl::ComPtr<FilterRequestedEventSource> m_spFilterRequestedEventSource;
 
         // View, when it is a VectorCollectionView that shapes (WPF: the view of the ViewRecord).
         TrackerPtr<xaml_data::ICollectionView> m_tpShapingView;

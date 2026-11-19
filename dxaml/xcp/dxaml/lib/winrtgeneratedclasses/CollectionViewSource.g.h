@@ -27,6 +27,8 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceFeature_ExperimentalApi, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Culture)(_Out_ HSTRING* pValue) override { return This()->get_Culture(pValue); }
+        IFACEMETHOD(put_Culture)(_In_opt_ HSTRING value) override { return This()->put_Culture(value); }
         IFACEMETHOD(get_CustomSort)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue) override { return This()->get_CustomSort(ppValue); }
         IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
         IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue) override { return This()->get_Filter(ppValue); }
@@ -35,6 +37,8 @@ namespace ctl
         IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
         IFACEMETHOD(DeferRefresh)(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue) override { return This()->DeferRefresh(ppReturnValue); }
         IFACEMETHOD(Refresh)() override { return This()->Refresh(); }
+        IFACEMETHOD(add_FilterRequested)(_In_ ABI::Microsoft::UI::Xaml::Data::IFilterEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_FilterRequested(pValue, pToken); }
+        IFACEMETHOD(remove_FilterRequested)(EventRegistrationToken token) override { return This()->remove_FilterRequested(token); }
     };
 }
 #pragma endregion
@@ -79,6 +83,8 @@ namespace DirectUI
         }
 
         // Properties.
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Culture(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Culture(_In_opt_ HSTRING value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue);
@@ -94,6 +100,10 @@ namespace DirectUI
         IFACEMETHOD(get_View)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppValue) override;
 
         // Events.
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        _Check_return_ HRESULT STDMETHODCALLTYPE add_FilterRequested(_In_ ABI::Microsoft::UI::Xaml::Data::IFilterEventHandler* pValue, _Out_ EventRegistrationToken* pToken);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_FilterRequested(EventRegistrationToken token);
+#endif
 
         // Methods.
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
@@ -126,9 +136,15 @@ namespace DirectUI
     class __declspec(novtable) CollectionViewSourceFactory:
        public ctl::BetterCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(CollectionViewSourceFactory, ctl::BetterCoreObjectActivationFactory)
             INTERFACE_ENTRY(CollectionViewSourceFactory, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(CollectionViewSourceFactory, ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(CollectionViewSourceFactory, ctl::BetterCoreObjectActivationFactory)
 
     public:
@@ -145,6 +161,7 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
+        IFACEMETHOD(GetDefaultView)(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
         // Static events.
 
@@ -162,5 +179,6 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
+         _Check_return_ HRESULT GetDefaultViewImpl(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue); 
     };
 }

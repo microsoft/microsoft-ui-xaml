@@ -23,6 +23,11 @@ VectorCollectionView::~VectorCollectionView()
     }
 
     DetachSourceList();
+
+    if (m_isDefaultView)
+    {
+        UnregisterDefaultView(this);
+    }
 }
 
 

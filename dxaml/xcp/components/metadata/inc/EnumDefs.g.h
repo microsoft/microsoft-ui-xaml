@@ -610,6 +610,17 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(CollectionChangeType);
 
+    enum class CollectionViewStringComparison : uint8_t
+    {
+        CurrentCulture = 0,
+        CurrentCultureIgnoreCase = 1,
+        InvariantCulture = 2,
+        InvariantCultureIgnoreCase = 3,
+        Ordinal = 4,
+        OrdinalIgnoreCase = 5,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(CollectionViewStringComparison);
+
     enum class ColorInterpolationMode : uint8_t
     {
         ScRgbLinearInterpolation = 0,

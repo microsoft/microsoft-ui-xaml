@@ -13,15 +13,15 @@
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
-DirectUI::PropertyGroupDescription::PropertyGroupDescription()
+DirectUI::PropertyGroupDescriptionGenerated::PropertyGroupDescriptionGenerated(): m_stringComparison()
 {
 }
 
-DirectUI::PropertyGroupDescription::~PropertyGroupDescription()
+DirectUI::PropertyGroupDescriptionGenerated::~PropertyGroupDescriptionGenerated()
 {
 }
 
-HRESULT DirectUI::PropertyGroupDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+HRESULT DirectUI::PropertyGroupDescriptionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(iid, __uuidof(DirectUI::PropertyGroupDescription)))
     {
@@ -43,7 +43,7 @@ HRESULT DirectUI::PropertyGroupDescription::QueryInterfaceImpl(_In_ REFIID iid, 
 }
 
 // Properties.
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(ppValue);
@@ -52,14 +52,33 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::PropertyGroupDescription::put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue)
+_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue)
 {
     HRESULT hr = S_OK;
     
     m_pConverter = pValue;
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get_PropertyName(_Out_ HSTRING* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    
+    IFC(static_cast<PropertyGroupDescription*>(this)->get_CustomSortImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue)
+{
+    HRESULT hr = S_OK;
+    
+    
+    IFC(static_cast<PropertyGroupDescription*>(this)->put_CustomSortImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_PropertyName(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
@@ -68,11 +87,38 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescription::get
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::PropertyGroupDescription::put_PropertyName(_In_opt_ HSTRING value)
+_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_PropertyName(_In_opt_ HSTRING value)
 {
     HRESULT hr = S_OK;
     
     IFC(m_propertyName.Set(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    
+    IFC(static_cast<PropertyGroupDescription*>(this)->get_SortDescriptionsImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_StringComparison(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    
+    IFC(CValueBoxer::CopyValue(m_stringComparison, pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_StringComparison(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CValueBoxer::CopyValue(value, &m_stringComparison));
 Cleanup:
     RRETURN(hr);
 }
@@ -121,6 +167,15 @@ IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstanceWithConv
     
     ARG_VALIDRETURNPOINTER(ppInstance);
     IFC(CreateInstanceWithConverterImpl(propertyName, pConverter, ppInstance));
+Cleanup:
+    return hr;
+}
+IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstanceWithConverterAndStringComparison(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison stringComparison, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance)
+{
+    HRESULT hr = S_OK;
+    
+    ARG_VALIDRETURNPOINTER(ppInstance);
+    IFC(CreateInstanceWithConverterAndStringComparisonImpl(propertyName, pConverter, stringComparison, ppInstance));
 Cleanup:
     return hr;
 }

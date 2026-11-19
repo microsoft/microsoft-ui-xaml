@@ -325,6 +325,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify several GroupDescriptions nest groups as WPF CollectionViewGroups do, and source changes update every level incrementally")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupSort)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.SortDescriptions and CustomSort order the groups at their level, as WPF GroupDescription does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceCultureAndStringComparison)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.Culture orders strings by that culture and PropertyGroupDescription.StringComparison matches group names")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewShapingSourceCollection)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify ICollectionViewShaping.SourceCollection is the collection the view was created over")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceFilterEvent)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource FilterRequested event filters the view and replaces the Filter delegate while it has handlers, as WPF's Filter event does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGetDefaultView)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()

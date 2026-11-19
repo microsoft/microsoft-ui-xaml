@@ -23,13 +23,13 @@ namespace DirectUI
             _In_ IInspectable *pSource,
             _Outptr_ wfc::IVector<IInspectable *> **ppVector);
 
-    private:
-
         static _Check_return_ HRESULT CreateNewView(
             _In_ IInspectable *pSource,
             bool isShapingRequested,
             _Outptr_ xaml_data::ICollectionView **ppResult,
             _Out_ bool *pIsShapeable);
+
+    private:
 
         static _Check_return_ HRESULT CreateGroupedView(
             _In_ IInspectable *pSource,
