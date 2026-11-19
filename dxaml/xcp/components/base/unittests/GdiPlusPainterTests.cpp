@@ -860,7 +860,24 @@ namespace RenderingBackendTests
             p.PopRoundedRectangleClip();
         });
         Log::Comment(String().Format(L"surface bytes with a rounded clip: %llu", painter->GetResourceInventory().surfaceBytes));
+        VERIFY_ARE_EQUAL(2 * targetBytes, painter->GetResourceInventory().surfaceBytes, L"target + one pooled layer; axis-aligned coverage is analytic");
+
+        // Rotated: the clip shape is rasterized by GDI+ into a mask surface.
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.SetTransform({ 0.70710678f, 0.70710678f, -0.70710678f, 0.70710678f, 32, 4 });
+            p.PushRoundedRectangleClip({ 8, 8, 32, 32 }, 6, 6);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
         VERIFY_ARE_EQUAL(3 * targetBytes, painter->GetResourceInventory().surfaceBytes, L"target + one pooled layer + the mask");
+        const auto rotated = Read(*painter);
+        // (20, 20) maps to (32, 32.28); the rect's corner (8, 8) maps to (32, 15.3) and the arc pulls it in to ~(32, 17.8).
+        VERIFY_IS_TRUE(IsPremultiplied(rotated.At(32, 32), 0, 0, 0, 255, 1), L"rotated clip center is drawn");
+        LogPixel(L"rotated corner", 32, 16, rotated.At(32, 16));
+        VERIFY_IS_TRUE(IsPremultiplied(rotated.At(32, 16), 255, 255, 255, 255, 8), L"rotated rounded corner is clipped");
+        VERIFY_IS_TRUE(IsPremultiplied(rotated.At(4, 4), 255, 255, 255, 255, 1));
     }
 
     void GdiPlusPainterTests::PathCacheIsSteadyAndBounded()
@@ -1118,6 +1135,11 @@ namespace RenderingBackendTests
         VERIFY_ARE_EQUAL(32ull * 64 * 4, painter->GetResourceInventory().uploadBytesThisFrame,
             L"presented = exposed strip + moved area, without double counting");
 
+        // The scroll is consumed by that frame. Frame 4 (into B) is tiny, so buffer 0 is A again and holds frame 3.
+        const RectF corner{ 0, 0, 4, 4 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
+        VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+
         const auto target = Read(*painter);
         const auto presented = ReadBackBuffer(device.Get(), swapChain.Get());
         for (uint32_t y = 0; y < c_size; y += 7)
@@ -1125,11 +1147,6 @@ namespace RenderingBackendTests
             VERIFY_ARE_EQUAL(target.At(4, y).r, presented.At(4, y).r, L"moved and repainted pixels reach the back buffer");
         }
         VERIFY_IS_TRUE(IsPremultiplied(presented.At(4, 60), 0, 0, 0, 255, 1));
-
-        // The scroll is consumed by that frame.
-        const RectF corner{ 0, 0, 4, 4 };
-        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
-        VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
     }
 
     // ---- ResourceChurn event ----
