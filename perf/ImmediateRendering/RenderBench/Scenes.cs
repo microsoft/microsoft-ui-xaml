@@ -49,6 +49,8 @@ static class SceneFactory
     public static IScene Create(BenchOptions options) => options.Scene switch
     {
         SceneId.Dashboard => new DashboardScene(options),
+        SceneId.Inbox => new InboxScene(options),
+        SceneId.Gallery => new GalleryScene(options),
         _ => new SettingsScene(options),
     };
 }
