@@ -435,17 +435,57 @@ in place:
 - Composition behavior is unchanged when the variable is unset. The renderer is never created, and the probe is a
   single pointer store.
 
-The following remain outside the prototype:
+**Render-loop readiness for S3–S10.** All eight scenes render in GDI+ and D2D-SW (D2D-HW falls back on the GPU-less
+lab VM). Captures were checked against Composition on the same machine. Anything skipped or approximated is reported
+once per element type and detail as `UnsupportedContent`, and is also written as `# unsupported` lines to the
+`WINUI_IMMEDIATE_STATS` file.
 
-- Retained boundaries (M4).
-- Popups and additional roots.
-- Group opacity.
+| Scene | Status | Render-loop work and remaining gaps |
+|---|---|---|
+| S3 Inbox | Works | Covers ListView, ItemsPresenter and ScrollViewer content, ellipses and trimmed text. When a scroller's content moved by whole device pixels and its viewport is unchanged, the scroll becomes `ScrollPixels` and only the exposed strip and changed items are damaged. Scrolled content origins are snapped to device pixels, as DManip does. Subtrees whose inner bounds miss the clip are culled. |
+| S5 Gallery | Works | Images are drawn from the decoded software surface: premultiplied BGRA goes through `EnsureBitmap` (key is the surface identity) and `DrawBitmap`. Bitmaps that go unused for a few frames are released. Image elements and `ImageBrush` are supported, and so are full matrix transforms such as the hover `ScaleTransform`. |
+| S6 Animated | Works | Animations that would be independent are forced to run as dependent animations on the UI thread, so each tick changes property values and damages only the animated bounds. `AnimatedIcon` (the CheckBox and Expander chevron glyphs) uses its `FallbackIconSource` in immediate modes. Expander's collapse clip is a Composition `InsetClip` on a hand-off visual (`GetElementVisual`); the walk applies its insets to the element's render size, because no comp node keeps the visual's Size in sync. Partial: ProgressRing's Lottie `AnimatedVisualPlayer` is hand-in Composition content, so it is skipped and reported as `Hand-in Composition visual`; use `--no-progressring`. |
+| S4 Reader | Works | `TextBlock` and `RichTextBlock` text, including the S1 and S2 text, is drawn with `DrawGlyphRun` from XAML's own DirectWrite layout, which fixes the earlier measurement mismatch. Selection highlights and Hyperlink colors are included. `DrawText` remains the fallback. GDI+ glyph-run painting is slow: a full Reader frame takes about 420 ms. D2D-SW glyphs sit about 1 px lower than Composition. |
+| S7 Layered | Works, with the effects policy below | Group opacity uses `PushOpacityLayer`; opacity is folded into a primitive only when the group draws exactly one primitive. CornerRadius-clipped content uses `PushRoundedRectangleClip`. Path, Line, Polyline and Polygon geometries are flattened to cubic Béziers; dash arrays are not drawn. |
+| S8 Grid | Works; performance is partial | Covers ItemsRepeater rows, the frozen header, multiple scrollers and two-axis `ScrollPixels`. The incremental walk reuses the previous frame's commands for clean subtrees (described below). Animated `ChangeView` scrolls arrive as one jump, because DManip/InteractionTracker drives the intermediate offsets in Composition and the UI thread only sees the final offset. |
+| S9 Multiwindow | Works | Each island root gets its own painter and swap chain, created on its first paint. D2D modes share one device per process; GDI+ shares the GDI+ runtime and its presentation device. Closing a window prunes its island state (swap chain, painter, bitmaps, previous display list). Minimized windows keep their resources until they close. With `--windows 4`, peak private bytes were 82 MB in GDI+ and 87 MB in D2D-SW, falling to about 30 MB after closing all windows; Composition stayed at 81 MB. The TabView variant works. |
+| S10 Form | Works, with approximations | The TextBox caret is painted as a filled rectangle; it blinks because its visibility changes. The caret uses `CompositeMode=DestInvert`, which is approximated with the TextBox foreground and reported as `CompositeMode DestInvert:approximated`. Focus visuals and hover states render. Open popups (ComboBox dropdown, Flyout, ToolTip) are painted from `PopupRoot`'s open-popup list on top of the island content, oldest first. Windowed popups are painted into the island's swap chain, so any part outside the window is clipped (reported as `Windowed popup:painted in island`). |
+
+**Effects policy (immediate modes).**
+
+- The swap chain is premultiplied and transparent wherever nothing is painted, so a system backdrop such as Mica still
+  shows through behind the content.
+- `AcrylicBrush` and other `XamlCompositionBrushBase` brushes paint their fallback color and are reported as
+  `AcrylicBrush:fallback` or `XamlCompositionBrush:fallback`.
+- `ThemeShadow` is skipped and reported as `ThemeShadow`.
+- Projections, non-rectangular clips and hand-in Composition visuals are skipped and reported.
+
+**Incremental walk.** The renderer clears dirty flags (`PropagateNWClean`) after every immediate frame, so a subtree
+without render-dirty flags produces the same output as the previous frame if it is walked in the same parent context.
+That context is the world transform, the clips, the scale, the scroller and the scroller content origin.
+
+- For each subtree with children, the walk records the ranges it produced in the display list: commands, strings,
+  glyph runs, paths, bitmaps, element records and nested spans.
+- On the next frame, a clean subtree in the same context moves those ranges across instead of walking.
+- Three cases are always walked again: content directly inside a scroller (it records the scroller offset), subtrees
+  that contain popups, scrollers or hand-off visuals (their Composition clip changes don't set render-dirty flags), and
+  commands where an ancestor's single-primitive opacity group was folded in.
+- `WINUI_IMMEDIATE_FULL_WALK=1` turns reuse off for comparison. The `reused` stats column counts reused subtrees.
+- Scrolling changes the world transform of everything inside the scroller, so scrolled content is still walked again.
+  Reuse helps sparse updates, hover and animation the most.
+
+**Building.** `AnimatedIcon`'s immediate-mode fallback lives in Microsoft.UI.Xaml.Controls.dll, which must be built
+separately from Microsoft.ui.xaml.dll.
+
+These are traced as `UnsupportedContent`:
+
+- Hand-in Composition content (the ProgressRing Lottie).
+- ThemeShadow.
+- Composition-brush effects (only the fallback color is painted).
+- Projections.
 - Non-rectangular clips.
-- Images.
-- Hand-in Composition content (the `AnimatedIcon` check glyph).
-- Independent animations.
 
-These are traced as `UnsupportedContent` or noted below.
+Retained boundaries (M4) remain outside the prototype.
 
 ## Risks and open decisions
 
@@ -480,8 +520,8 @@ text, animation, and interop contracts. Then establish the M0 baseline before co
 | Composition content suppression | HWWalk never visits an immediate island, so no comp nodes, comp peers, or visual content are created for its subtree. The island's root visual is replaced with one `SpriteVisual` whose brush wraps the swap chain through `DCompTreeHost::CreateCompositionSurfaceForSwapChain` (the compositor interop used by `SwapChainPanel`). That swap chain is `CreateSwapChainForComposition`, BGRA, premultiplied, flip-sequential, 2 buffers, physical size | The memory under test is what Composition would have retained per element. Hit testing and input use the XAML tree, so they keep working |
 | Devices | D2D modes use `CreateD3DDeviceForMode`, and the painter's swap chain is created on that device. GDI+ creates its own BGRA-capable D3D11 device (hardware, else WARP) only for presentation | Each painter's presentation device stays independent of WinUI's device lifetime |
 | Damage | Each element gets a signature (an FNV hash of its emitted commands) plus its clipped device bounds. When an element is added, removed, or changes, both its old and new bounds are damaged. More than 256 raw rects means full damage. Otherwise rects are clipped to the surface and merged into at most 32 disjoint rects by smallest-area growth. Full damage also applies on first frame, resize, DPI change, and after a failure | Sparse dashboard updates stay sparse without tracking per-property invalidation |
-| Walk approximations | Opacity is folded into primitive alpha rather than group layers. Clips are world-space axis-aligned bounding boxes. Gradients are painted as their average stop color. Text uses the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em. `TextBox` text is read from the `TextBox` | These are enough for S1/S2. Each approximation is a known fidelity gap rather than a crash or a silent omission |
-| Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
+| Walk approximations | Opacity is folded into primitive alpha only when an opacity group draws exactly one primitive; otherwise it uses `PushOpacityLayer`. Clips are world-space axis-aligned bounding boxes, plus rounded clips for CornerRadius. Gradients are painted as their average stop color. Text is drawn from XAML's glyph runs. `DrawText` is the fallback, using the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em | Each approximation is a known fidelity gap rather than a crash or a silent omission |
+| Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint. `WINUI_IMMEDIATE_STATS=<path.txt>` writes one line per painted island frame, with element counts (visited, painted, culled), commands, blits, damage, walk and paint time in µs, and reused subtrees, followed by `# unsupported` lines. `WINUI_IMMEDIATE_PRESENT_UNION=1` also repaints the previous frame's damage. Mid-scroll captures showed it is not needed: flip-model `Present1` dirty rects carry the rest of the frame forward | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
 
 ## Source references
 

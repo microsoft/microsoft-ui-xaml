@@ -1926,8 +1926,14 @@ void ImmediateRenderer::Walk(
 
     // Incremental walk: a subtree with no render-dirty flags (cleaned after every immediate frame) walked in the same
     // parent context produces the same output as last frame. Direct scroller content is always walked (it records the
-    // scroller's offset).
-    if (m_previousWalk != nullptr && !parent.scrollerContent && !element->NWNeedsRendering() && ReuseSubtree(element, parent, list))
+    // scroller's offset). Hand-off visual clip changes (Composition InsetClip, mirrored by DCompPropertyChangedListener)
+    // only dirty bounds, so subtrees with hand-off visuals are always walked.
+    const bool usesHandOffVisual = element->IsUsingHandOffVisual();
+    if (usesHandOffVisual)
+    {
+        ++list.uncacheable;
+    }
+    else if (m_previousWalk != nullptr && !parent.scrollerContent && !element->NWNeedsRendering() && ReuseSubtree(element, parent, list))
     {
         return;
     }
@@ -2028,6 +2034,32 @@ void ImmediateRenderer::Walk(
         else
         {
             ReportUnsupported(element, L"Non-rectangular clip");
+        }
+    }
+
+    // A Composition clip on the element's hand-off visual (ElementCompositionPreview.GetElementVisual; Expander sets an
+    // InsetClip on its content clip border). Insets apply to the element's render size: in immediate modes no comp
+    // node keeps the hand-off visual's Size in sync.
+    if (usesHandOffVisual)
+    {
+        ComPtr<WUComp::IVisual> handOffVisual;
+        element->GetStoredHandOffVisual(handOffVisual.ReleaseAndGetAddressOf());
+        ComPtr<WUComp::ICompositionClip> handOffClip;
+        if (handOffVisual != nullptr && SUCCEEDED(handOffVisual->get_Clip(&handOffClip)) && handOffClip != nullptr)
+        {
+            ComPtr<WUComp::IInsetClip> insetClip;
+            float left = 0, top = 0, right = 0, bottom = 0;
+            if (SUCCEEDED(handOffClip.As(&insetClip)) && SUCCEEDED(insetClip->get_LeftInset(&left))
+                && SUCCEEDED(insetClip->get_TopInset(&top)) && SUCCEEDED(insetClip->get_RightInset(&right))
+                && SUCCEEDED(insetClip->get_BottomInset(&bottom)))
+            {
+                const RectF local{ left, top, element->GetActualWidth() - right, element->GetActualHeight() - bottom };
+                clipTo(TransformRectBounds(ctx.world, local));
+            }
+            else
+            {
+                ReportUnsupported(element, L"Hand-off visual clip");
+            }
         }
     }
 
