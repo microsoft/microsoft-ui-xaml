@@ -1283,6 +1283,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies that with IsLiveSortingRequested a header sort on a CollectionViewSource view is live: a row whose sort value changes moves with an ItemRemoved and ItemInserted, no Reset, and stays selected without a SelectionChanged.")]
+        public void VerifyLiveSortingCollectionViewMovesRow()
+        {
+            TableView tableView = null;
+            ObservableCollection<ShapedPerson> items = null;
+            var changes = new List<global::Windows.Foundation.Collections.CollectionChange>();
+            int selectionChanged = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = MakeShapingSource(out items);
+                cvs.IsLiveSortingRequested = true;
+                Verify.IsTrue(((ICollectionViewLiveShaping)cvs.View).IsLiveSorting == true, "The CollectionViewSource turns live sorting on in its view.");
+                cvs.View.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
+                tableView = CreateBindingTable(cvs.View);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "sorted by name");
+                tableView.Select(0);
+                Verify.AreEqual("Asha", Person(tableView.SelectedItem).Name, "Precondition: Asha is selected.");
+                tableView.SelectionChanged += (sender, args) => selectionChanged++;
+                changes.Clear();
+
+                items.First(person => person.Name == "Asha").Name = "Paz";
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, new List<string> { "Diego", "Ines", "Mei", "Owen", "Paz", "Rafa" }, "after the live move");
+                Verify.AreEqual(2, changes.Count, "The row moved with one remove and one insert.");
+                Verify.IsFalse(changes.Contains(global::Windows.Foundation.Collections.CollectionChange.Reset), "A live move is not a Reset.");
+                Verify.AreEqual("Paz", Person(tableView.SelectedItem).Name, "The moved row stays selected.");
+                Verify.AreEqual(4, tableView.SelectedIndex, "The selection follows the row to its new index.");
+                Verify.AreEqual(0, selectionChanged, "The selected item did not change, so SelectionChanged is not raised.");
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The arrow stays.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a CollectionViewSource View with no descriptors offers ICollectionViewShaping, so a header click sorts it through SortDescriptions and the TableView keeps the same View.")]
         public void VerifyHeaderSortOnDescriptorlessCollectionViewSourceView()
         {

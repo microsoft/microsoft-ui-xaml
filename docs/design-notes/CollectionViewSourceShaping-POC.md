@@ -100,6 +100,35 @@ interface ICollectionViewShaping
     Object SourceCollection { get; };                      // WPF ICollectionView.SourceCollection
     String Culture;                                        // WPF CollectionView.Culture, as a language tag
 };
+
+// WPF's ICollectionViewLiveShaping. A view a CollectionViewSource creates over a vector implements it.
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+interface ICollectionViewLiveShaping
+{
+    Boolean CanChangeLiveSorting { get; };                 // true
+    Boolean CanChangeLiveFiltering { get; };               // true
+    Boolean CanChangeLiveGrouping { get; };                // true
+    Windows.Foundation.IReference<Boolean> IsLiveSorting;  // WPF bool?; never null here, setting null throws
+    Windows.Foundation.IReference<Boolean> IsLiveFiltering;
+    Windows.Foundation.IReference<Boolean> IsLiveGrouping;
+    Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties { get; };   // empty: SortDescriptions'
+    Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties { get; }; // empty: none
+    Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties { get; };  // empty: GroupDescriptions'
+};
+
+runtimeclass CollectionViewSource
+{
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+    {
+    // ...the members above, and, applied to View as WPF's ApplyPropertiesToView does:
+    Boolean IsLiveSortingRequested;
+    Boolean IsLiveFilteringRequested;
+    Boolean IsLiveGroupingRequested;
+    Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties { get; };
+    Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties { get; };
+    Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties { get; };
+    }
+};
 ```
 
 | WPF | This POC | Note |
@@ -123,6 +152,14 @@ interface ICollectionViewShaping
 | `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
 | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
 | Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group. |
+| `ICollectionViewLiveShaping` (implemented by `ListCollectionView`) | `ICollectionViewLiveShaping`, implemented by the view a CVS creates over a vector (and by a default view) | Implemented; see "Live shaping". A separate interface, as in WPF, rather than members on `ICollectionViewShaping`. |
+| `CanChangeLiveSorting` / `CanChangeLiveFiltering` / `CanChangeLiveGrouping` | Same names | Always `true`, as on `ListCollectionView`. |
+| `IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` (`bool?`) | Same names, `IReference<Boolean>` | WPF's `bool?` is WinRT's `IReference<Boolean>` (C# sees `bool?`). As on `ListCollectionView` the value is never null and setting null throws (`ArgumentNullException` in WPF, `E_INVALIDARG` here); the nullable type is kept so a view that cannot tell (WPF's `null`) can implement the interface. Default `false`. |
+| `LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` (`ObservableCollection<string>`) | Same names, `IObservableVector<String>` | Property paths. Empty sorting or grouping lists mean the `SortDescriptions`' or the `PropertyGroupDescription`s' properties (none with a `CustomSort`); filtering observes only the listed paths, as in WPF. A change rebuilds what is observed. |
+| `CollectionViewSource.IsLiveSortingRequested` / `IsLiveFilteringRequested` / `IsLiveGroupingRequested` | Same names | Plain properties (WPF: DPs). Applied to `View` when it is created and whenever they change, as WPF's `ApplyPropertiesToView` copies them; the CVS's own `Live*Properties` are copied into the view only while their feature is requested. |
+| `CollectionViewSource.LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` | Same names | A change is applied to `View` (WPF `OnForwardedCollectionChanged`). |
+| `CollectionViewSource.CanChangeLive*` / `IsLive*` (read-only DPs mirroring the view) | Not added | Read them from `View` through `ICollectionViewLiveShaping`. |
+| `LiveShapingList` / `LiveShapingItem` (a binding per item and live property) | `VectorCollectionView::LiveShapingState` / `LiveShapingItem` / `LivePropertyObserver` | Each observer is a property path listener of the binding engine (a `{Binding}`'s), so `INotifyPropertyChanged` items (C# and C++), `ICustomPropertyProvider` items, `DependencyObject` properties and nested paths all work. |
 
 ## Usage
 
@@ -153,7 +190,10 @@ PeopleSource.SortDescriptions.Add(new SortDescription("FirstName", ListSortDirec
 PeopleSource.GroupDescriptions.Add(new PropertyGroupDescription("Department"));
 
 people.Add(new Person { /* ... */ });   // View refreshes automatically
-person.LastName = "Smith";              // no live shaping: call PeopleSource.Refresh()
+person.LastName = "Smith";              // without live shaping: call PeopleSource.Refresh()
+
+PeopleSource.IsLiveSortingRequested = true;   // now the edit moves the row (LastName is a sort property)
+person.LastName = "Adams";
 ```
 
 Property names use the same path syntax and resolution as `{Binding Path=...}`, including nested paths
@@ -206,6 +246,24 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   Wrap several changes in `DeferRefresh()` to recompute (and raise `Reset`) once.
 - **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
   Otherwise the view moves to the first item. A rebuilt `View` starts at the first item, as today.
+- **Live shaping** (WPF `ICollectionViewLiveShaping`, `ListCollectionView.RestoreLiveShaping`). With `IsLiveSorting`,
+  `IsLiveFiltering` or `IsLiveGrouping` on, the view observes each source item's live properties (see the table
+  above for which). A change marks the item, and at the next dispatcher turn the view restores every marked item, as
+  WPF does with `Dispatcher.BeginInvoke(DataBind)`:
+  - **Sorting:** the item is placed by binary search among the items that are not marked (WPF's `FindPosition` skips
+    `IsSortDirty` items). An item still in order raises nothing; one that moved raises `ItemRemoved` then
+    `ItemInserted` (WinRT vectors have no `Move`; WPF raises `Move`). On a grouped view it moves within its group.
+  - **Filtering:** an item the filter now rejects is removed; one it now accepts is inserted at its sorted position.
+    Without live filtering an item stays even if it no longer passes, as in WPF.
+  - **Grouping:** an item whose group names changed leaves its group (an emptied group is removed) and joins the new
+    one (a new group is inserted as a source add inserts it). Without live grouping it stays in its group but still
+    moves within it when sorting is live.
+  - Under `DeferRefresh` the marks wait; closing the last deferral restores them at once, incrementally, unless a
+    rule change is pending, whose recompute observes the items afresh. A source change the view cannot follow
+    incrementally makes the next restore a full recompute.
+  - The observation follows the source: an added item is observed, a removed or replaced one is no longer, a recompute
+    rebuilds it, and turning the features off, a view the CVS replaces, or the view's destruction ends it. A property
+    change raised from inside a restore is restored at the next turn.
 
 ## Design decisions and precedents
 
@@ -304,6 +362,10 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 | `VectorCollectionView::PassesFilter` | `CollectionView.PassesFilter` | The `FilterRequested` handlers, else the `Filter` delegate. |
 | `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison in the view's `Culture`, used by the full sort, the incremental placement and the group order. |
 | `GetDefaultViewImpl` (default-view table) | `CollectionViewSource.GetDefaultView` / `ViewManager` | The shared per-source view. |
+| `VectorCollectionView::LiveShapingState` | `MS.Internal.Data.LiveShapingList` | The live paths (`SetLiveShapingProperties`) and one `LiveShapingItem` per source item, in source order. The view keeps its `InternalList`; WPF swaps in a `LiveShapingList`. |
+| `VectorCollectionView::LiveShapingItem` / `LivePropertyObserver` | `MS.Internal.Data.LiveShapingItem` | The dirty flags of one item and a property path listener per live property (WPF binds a DP per property). |
+| `VectorCollectionView::OnLivePropertyChanged` / `RestoreLiveShaping` | `LiveShapingList.OnItemPropertyChanged` / `ListCollectionView.RestoreLiveShaping` | Marks the item, then restores the marked items at the next dispatcher turn. |
+| `FindSortedRange` | `LiveShapingBlock.FindPosition` | Binary search that skips marked items and reports the range an item is in order in. |
 
 `VectorCollectionView`, `GroupedDataCollectionView`, `CollectionView` and `CollectionViewManager` are pre-existing
 WinUI classes and keep their names.
@@ -349,6 +411,13 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
 - **Row updates.** A source add, remove or replace on a flat shaped view reaches TableView as a fine-grained vector
   change, so selection and realized rows follow the item (Task Manager's periodic edits no longer tear the table
   down). Grouped views still `Reset`; TableView keeps expansion and selection across it by key and identity.
+- **Live shaping.** TableView never turns live shaping on; the app does, on its CVS (`IsLiveSortingRequested`, ...)
+  or on the view (`ICollectionViewLiveShaping`). With empty `LiveSortingProperties` the view observes whatever the
+  header sort wrote, so a header-sorted column stays sorted as its values change. A `CustomSortComparer` column sorts
+  through `CustomSort`, which names no property: list the column's properties in `LiveSortingProperties` to keep it
+  live. A live move arrives as a remove and an insert of the row; when the selected row moves, TableView re-selects it
+  at its new index without raising `SelectionChanged` (the item is still in the view's `SourceCollection`, so it was
+  moved, not deleted). Keyboard focus on a moved row is not carried along.
 - **Plain collection.** TableView wraps it in an internal `CollectionViewSource` and shows that `View` (see "One
   engine" below), so a header click on a plain collection takes exactly the path above.
 - **`ICollectionView` without `ICollectionViewShaping`.** An app's own view (for example the Toolkit's
@@ -363,7 +432,9 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
   stays collapsed after a source change or `Refresh()`.
 - **Sample.** `Samples\TableViewSampleApp`, page "CollectionViewSource shaping" (`CollectionViewShapingPage`):
   Task Manager-style flat data, grouped by `GroupDescriptions`, a filter box using `Filter`, `Refresh()` after a
-  value update, and header sort through the view.
+  value update, and header sort through the view. The "Task Manager" page (`TaskManagerPage`) sets
+  `IsLiveSortingRequested`, `IsLiveGroupingRequested` and `IsLiveFilteringRequested` (with `LiveFilteringProperties`
+  for the searched properties) instead, so its timer only writes values and the sorted rows move by themselves.
 
 ### TableViewSource removed
 
@@ -386,7 +457,7 @@ collection, or the app's CVS `View`. The view's filter, sort and grouping run fi
 - The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
   `TableViewSource` kept the ancestors of a match).
 - With a grouped view, each root is placed in its group and keeps its subtree.
-- No live shaping: a key edit takes effect on `Refresh()` or a collection change.
+- Live shaping moves an item in the view; the tree is rebuilt from the view's new order.
 
 Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
 moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
@@ -446,8 +517,9 @@ adapter TableView used to sort a `CustomSortComparer` column. Later, `GroupedSou
   The engine refused such a sort.
 - Values compare as the view compares them (`CompareStringEx` with the user locale; numbers, `DateTime`, `TimeSpan`
   and `Boolean` by value; anything else equal). The engine's comparer also ordered enums and fell back to `ToString`.
-- An edit to a sorted row's sort key is not tracked: the row moves on `Refresh()` (or a source `Reset`), as with any
-  CVS view. The engine marked such a row and re-placed it on the next collection change.
+- An edit to a sorted row's sort key moves the row only when the app turns live sorting on
+  (`IsLiveSortingRequested`); otherwise the row moves on `Refresh()` (or a source `Reset`), as with any CVS view. The
+  engine always marked such a row and re-placed it on the next collection change.
 - An item of an app's grouped view that no group holds is not shown (the engine showed it in an unnamed group).
 
 #### Dependency on the experimental CVS shaping API
@@ -462,22 +534,23 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 
 #### Follow-ups (not in this change)
 
-- Live shaping in CVS (re-sort, re-filter, re-group on an item's property change).
 - Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
   parent is filtered out is shown as a root; `ParentKeyIndex` and `TableViewRowFlattener` keep their filter overlay
   for this).
+- Keep keyboard focus on a row a live view moves.
 
 ## Out of scope for the POC
 
-- Live shaping: re-sorting, re-filtering or re-grouping when an item's *property* changes (WPF `IsLiveSorting` etc.).
-  Use `Refresh()`.
 - Key-selector delegates. The `CustomSort` comparer covers C++ and AOT callers.
 - `GroupDescription` subclasses and `GroupNames` (explicit groups), an item in several groups (a name that is a
   collection), and nested groups in ListView / GridView (they show the first level).
 - XAML-declared descriptors (needs DP-backed collection properties and type-table entries).
 - `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`.
 - Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
-- `Move` as a single change, and coalescing a burst of changes.
+- `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
+  property changes are coalesced per dispatcher turn, as in WPF).
+- WPF's insertion-sort path for a restore where most items are marked (`LiveSortingDensityThreshold`): every marked
+  item is placed one by one, which is O(marked × log n) comparisons.
 - Performance work: virtualization, hashed group lookup (WPF's name-to-group map). A full recompute is O(n log n),
   plus O(n × groups × levels) for grouping; an incremental grouped change is O(n) to find the item plus O(groups) per
   level.
@@ -515,6 +588,15 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   WPF and the Toolkit, so apps that use both namespaces need aliases.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
+- **Live shaping cost and lifetime.** One property path listener per source item and live property, rebuilt on each
+  full recompute (a header sort, `Refresh()`, a source `Reset`). The listeners are held by the view with `ComPtr`s
+  (the view's tracker walk is `final` in `CollectionView`), so they root the observed items while the view lives,
+  like WPF's bindings; they unsubscribe when an item leaves the source, when the features are turned off, when the
+  CVS replaces the view and when the view is destroyed. A restore after a turn in which most items changed costs one
+  remove and one insert per moved item; TableView's tree mode rebuilds its tree on each of them.
+- **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
+  container, so selection and focus on it follow their remove semantics; TableView keeps the selection (see "Live
+  shaping" in the TableView section) but not keyboard focus.
 
 ## Regeneration
 
@@ -530,7 +612,7 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/FilterEventArgs.g.h/.g.cpp` (new) | Event args class | Yes |
 | `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_FilterRequested` event index, `GetDefaultView` method index, the enum | Yes (appended entries only) |
 | `dxaml/xcp/dxaml/lib/Factories.g.cpp` | 2 forward declarations + 2 activation entries | Yes (ordering) |
-| `dxaml/xcp/dxaml/lib/synonyms.g.h` | 4 typedefs (with `ICollectionViewShaping`) | Yes |
+| `dxaml/xcp/dxaml/lib/synonyms.g.h` | 5 typedefs (with `ICollectionViewShaping` and `ICollectionViewLiveShaping`) | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Aggregate.g.cpp` | 2 includes | Yes |
 | `dxaml/xcp/components/metadata/*`, `dxaml/xcp/core/metadata/*`, XBF indexes | None expected (PropertyOnly members, `IsCreateableFromXAML = false` classes, enum excluded from type tables) | Verify no diff |
 | `dxaml/xcp/dxaml/idl/winrt/main/microsoft.ui.xaml.idl` | None | Add `declare` entries only if MIDL does not emit `IVector`/`IIterable` of the descriptor types |
@@ -539,7 +621,8 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 Hand-written files: `CollectionViewSource_Partial.h/.cpp` (`EnsureView`), `CollectionViewSource_Shaping.cpp`
 (the CVS proxy: rule properties, `ApplyPropertiesToView`, `DeferRefresh`, descriptor factories),
 `VectorCollectionView_Partial.h` and `VectorCollectionView_Shaping.cpp` (the engine and `ICollectionViewShaping`),
-`PropertyGroupDescription_Partial.h` (group order),
+`PropertyGroupDescription_Partial.h` (group order), `CollectionViewLiveShapingProperties.h` (the `Live*Properties`
+collections),
 `CollectionViewManager.h/.cpp` (`GetViewRecord`), `CollectionViewRefreshDeferral.h`, and `wrtdxamlfoundation.vcxproj`.
 
 ## Test
@@ -587,6 +670,22 @@ WPF-parity additions, one test each in the same class:
 - `CollectionViewShapingSourceCollection`, `CollectionViewSourceFilterEvent` (event alone, event over delegate,
   back to the delegate), `CollectionViewSourceGetDefaultView` (shared per source, shapes in place, not the CVS's view).
 
+Live shaping (phase B), one test each in the same class. Each change is made, the dispatcher runs, and the view is
+checked:
+
+- `CollectionViewLiveSorting`: the `ICollectionViewLiveShaping` defaults, null rejected; no move without live sorting;
+  `IsLiveSortingRequested` with empty `LiveSortingProperties` observes the sort property and an item that moved is
+  one remove + insert while one still in order raises nothing; explicit `LiveSortingProperties` replace the default;
+  three changes in one turn end in sorted order with no `Reset`; turning it off on the view stops it.
+- `CollectionViewLiveFiltering`: no live filtering without `LiveFilteringProperties`; an item the filter rejects is
+  removed and one it accepts is inserted at its sorted position; a change that keeps the result raises nothing.
+- `CollectionViewLiveGrouping`: with the group descriptions' property observed an item moves to another group, an
+  emptied group is removed, a new group is inserted; explicit `LiveGroupingProperties` replace the default.
+- `CollectionViewLiveShapingObservedItems`: `PropertyChanged` handler counts per item: one per live property, none
+  after remove, replace, source `Reset`, turning live shaping off or the CVS letting go of the view.
+- `CollectionViewLiveShapingDeferRefresh`: live changes wait for the deferral, then are restored incrementally; with a
+  rule change pending, closing recomputes once.
+
 `TableView_DataBinding_APITests` (`controls\dev\TableView\APITests`) covers the end-to-end story:
 
 - `VerifyHeaderSortOnShapingCollectionViewSortsTheView`: header click, `ToggleSortDirection`, `SortByColumn` and
@@ -604,6 +703,9 @@ WPF-parity additions, one test each in the same class:
   `SortDescriptions` and the `View` stays the same object.
 - `VerifyIncrementalShapingCollectionViewChangesUpdateRows`: add, remove and replace on a sorted, filtered view reach
   the rows with no `Reset`, and the selection stays on its item.
+- `VerifyLiveSortingCollectionViewMovesRow`: with `IsLiveSortingRequested`, a header-sorted row whose sort value
+  changes moves with one remove and one insert, no `Reset`, keeps its selection without `SelectionChanged`, and the
+  arrow stays.
 - `VerifyHeaderSortOnPlainCollectionSortsThroughInternalView`: a header click on a plain `ObservableCollection`
   sorts the rows, leaves the collection's order alone, and a later add and remove arrive as one `Add` and one
   `Remove` at their sorted positions.
@@ -620,12 +722,12 @@ These are rough estimates for one engineer who knows dxaml.
 | Item | Estimate |
 |---|---|
 | Build, fix, run codegen, test matrix (ListView, GridView, SemanticZoom, `IsSourceGrouped`, CLR sources) | 1 week |
-| Live shaping (property-change tracking) | 1–2 weeks |
+| Live shaping: perf on large lists, insertion-sort path, focus on moved rows (the POC has live sorting, filtering and grouping) | 0.5–1 week |
 | `GroupDescription` base decision (grouped incremental updates, multi-level groups, group order, `Culture`, `StringComparison`, `CustomSort` and `Converter` are in the POC) | 0.5 week |
 | XAML-declarable descriptors (DP collections, type tables) | 1 week |
 | View-level shaping interface: `CanSort` / `CanFilter` / `CanGroup`, API review (the POC interface exists) | 0.5–1 week |
 | API review, docs, perf and back-compat tests | 1–2 weeks |
-| **Total** | **≈ 4–7 engineer-weeks** |
+| **Total** | **≈ 3.5–6 engineer-weeks** |
 
-TableView's own shaping engine is retired (see "One engine"); live shaping and grouped incremental updates are now
-needed in the CVS view itself.
+TableView's own shaping engine is retired (see "One engine"); live shaping and grouped incremental updates now live
+in the CVS view itself.

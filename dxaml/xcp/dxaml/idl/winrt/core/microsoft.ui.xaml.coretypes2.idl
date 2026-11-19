@@ -2032,6 +2032,22 @@ namespace Microsoft.UI.Xaml.Data
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
+    interface ICollectionViewLiveShaping 
+    {
+        Boolean CanChangeLiveSorting{ get; };
+        Boolean CanChangeLiveFiltering{ get; };
+        Boolean CanChangeLiveGrouping{ get; };
+        Windows.Foundation.IReference<Boolean> IsLiveSorting;
+        Windows.Foundation.IReference<Boolean> IsLiveFiltering;
+        Windows.Foundation.IReference<Boolean> IsLiveGrouping;
+        Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties{ get; };
+        Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties{ get; };
+        Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
     interface ICollectionViewShaping 
     {
         Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
@@ -2130,6 +2146,12 @@ namespace Microsoft.UI.Xaml.Data
             Microsoft.UI.Xaml.Data.CollectionViewFilter Filter;
             Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
             String Culture;
+            Boolean IsLiveSortingRequested;
+            Boolean IsLiveFilteringRequested;
+            Boolean IsLiveGroupingRequested;
+            Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties{ get; };
+            Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties{ get; };
+            Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties{ get; };
             event Microsoft.UI.Xaml.Data.FilterEventHandler FilterRequested;
             void Refresh();
             Windows.Foundation.IClosable DeferRefresh();

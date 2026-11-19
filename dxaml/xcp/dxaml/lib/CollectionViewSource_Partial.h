@@ -54,6 +54,17 @@ namespace DirectUI
         _Check_return_ HRESULT get_CultureImpl(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_CultureImpl(_In_opt_ HSTRING value);
 
+        // WPF: CollectionViewSource.IsLive*Requested and Live*Properties, applied to View's ICollectionViewLiveShaping.
+        _Check_return_ HRESULT get_IsLiveSortingRequestedImpl(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT put_IsLiveSortingRequestedImpl(BOOLEAN value);
+        _Check_return_ HRESULT get_IsLiveFilteringRequestedImpl(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT put_IsLiveFilteringRequestedImpl(BOOLEAN value);
+        _Check_return_ HRESULT get_IsLiveGroupingRequestedImpl(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT put_IsLiveGroupingRequestedImpl(BOOLEAN value);
+        _Check_return_ HRESULT get_LiveSortingPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT get_LiveFilteringPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT get_LiveGroupingPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue);
+
         // FilterRequested (WPF: the CollectionViewSource.Filter event). While it has handlers, the view filters
         // through them instead of the Filter delegate.
         _Check_return_ HRESULT AddFilterRequestedHandler(_In_ xaml_data::IFilterEventHandler* pHandler, _Out_ EventRegistrationToken* pToken);
@@ -83,6 +94,8 @@ namespace DirectUI
         _Check_return_ HRESULT EnsureShapingDescriptions();
         _Check_return_ HRESULT ApplyPropertiesToView(_In_ VectorCollectionView* pView);
         _Check_return_ HRESULT DetachShapingView();
+        _Check_return_ HRESULT EnsureLiveShapingProperties();
+        _Check_return_ HRESULT ApplyLiveShapingToView();
 
     protected:
 
@@ -111,5 +124,13 @@ namespace DirectUI
         UINT m_deferRefreshLevel = 0;
         bool m_isRefreshPending = false;
         Microsoft::WRL::ComPtr<wf::IClosable> m_spViewDeferral;
+
+        // Unlike the other rules these stay here and are copied to each view, as WPF's are.
+        bool m_isLiveSortingRequested = false;
+        bool m_isLiveFilteringRequested = false;
+        bool m_isLiveGroupingRequested = false;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveSortingProperties;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveFilteringProperties;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveGroupingProperties;
     };
 }

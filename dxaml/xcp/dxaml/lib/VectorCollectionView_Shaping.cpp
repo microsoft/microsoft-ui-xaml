@@ -17,6 +17,8 @@
 #include "CollectionViewRefreshDeferral.h"
 #include "PropertyPathParser.h"
 #include "PropertyPath.h"
+#include "Callback.h"
+#include "CollectionViewLiveShapingProperties.h"
 
 using namespace DirectUI;
 
@@ -843,6 +845,25 @@ namespace
             return S_OK;
         }
 
+        // Whether names (one per level) lead to the bottom-level group pGroup.
+        _Check_return_ HRESULT IsGroupPath(_In_ CollectionViewGroupInternal* pGroup, const std::vector<ctl::ComPtr<IInspectable>>& names, _Out_ bool* pIsMatch) const
+        {
+            UINT level = LevelCount();
+            *pIsMatch = true;
+            for (auto pCurrent = pGroup; pCurrent && !pCurrent->IsRoot() && level > 0; pCurrent = pCurrent->GetParentNoRef())
+            {
+                bool isMatch = false;
+                --level;
+                IFC_RETURN(NamesMatch(level, pCurrent->GetKeyNoRef(), names[level].Get(), &isMatch));
+                if (!isMatch)
+                {
+                    *pIsMatch = false;
+                    break;
+                }
+            }
+            return S_OK;
+        }
+
         // A recompute adds the items in sorted order; a new group goes after the existing ones (WPF: loading).
         _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex)
         {
@@ -967,8 +988,84 @@ namespace
         UINT position = 0;
     };
 
+    // Where an item belongs in a sorted list of size items, without the item's own slot (excludedPosition, or
+    // UINT_MAX). Items isSkipped marks are not compared (WPF: LiveShapingBlock.FindPosition ignores IsSortDirty
+    // items, whose place is stale). The item is in order anywhere in [*pFirst, *pLast]; *pPosition is the upper
+    // bound, the place a full recompute gives it when nothing is skipped.
+    template <typename TItemAt, typename TSourceIndexAt, typename TIsSkipped>
+    _Check_return_ HRESULT FindSortedRange(
+        UINT size,
+        UINT excludedPosition,
+        const TItemAt& itemAt,
+        const TSourceIndexAt& sourceIndexAt,
+        const TIsSkipped& isSkipped,
+        const SortFieldComparer& comparer,
+        _In_opt_ IInspectable* pItem,
+        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        UINT sourceIndex,
+        _Out_ UINT* pPosition,
+        _Out_opt_ UINT* pFirst = nullptr,
+        _Out_opt_ UINT* pLast = nullptr)
+    {
+        const UINT count = size - ((excludedPosition < size) ? 1 : 0);
+        auto actual = [excludedPosition](UINT position) { return (position >= excludedPosition) ? position + 1 : position; };
+        auto skipped = [&](UINT position) { return isSkipped(sourceIndexAt(actual(position))); };
+        UINT low = 0;
+        UINT high = count;
+
+        while (low < high)
+        {
+            const UINT middle = low + (high - low) / 2;
+            UINT probe = middle;
+            while (probe < high && skipped(probe))
+            {
+                ++probe;
+            }
+
+            if (probe == high)
+            {
+                high = middle;
+                continue;
+            }
+
+            ctl::ComPtr<IInspectable> spOther;
+            int result = 0;
+            IFC_RETURN(itemAt(actual(probe), spOther.ReleaseAndGetAddressOf()));
+            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spOther.Get(), nullptr /* pRightKeys */, sourceIndexAt(actual(probe)), &result));
+            if (result < 0)
+            {
+                high = middle;
+            }
+            else
+            {
+                low = probe + 1;
+            }
+        }
+
+        *pPosition = low;
+        if (pFirst)
+        {
+            UINT first = low;
+            while (first > 0 && skipped(first - 1))
+            {
+                --first;
+            }
+            *pFirst = first;
+        }
+        if (pLast)
+        {
+            UINT last = low;
+            while (last < count && skipped(last))
+            {
+                ++last;
+            }
+            *pLast = last;
+        }
+        return S_OK;
+    }
+
     // The item's index in a bottom-level group: after the items that sort before or with it. excludedPosition is
-    // a replaced item still in the group, or UINT_MAX.
+    // a replaced item still in the group, or UINT_MAX. pIsSkipped marks (by source index) items not to compare.
     _Check_return_ HRESULT FindLeafPosition(
         _In_ CollectionViewGroupInternal* pGroup,
         const SortFieldComparer& comparer,
@@ -976,32 +1073,19 @@ namespace
         const std::vector<ctl::ComPtr<IInspectable>>& keys,
         UINT sourceIndex,
         UINT excludedPosition,
-        _Out_ UINT* pPosition)
+        _Out_ UINT* pPosition,
+        _In_opt_ const std::vector<bool>* pIsSkipped = nullptr,
+        _Out_opt_ UINT* pFirst = nullptr,
+        _Out_opt_ UINT* pLast = nullptr)
     {
         const auto& sourceIndices = pGroup->SourceIndices();
-        const UINT count = pGroup->LeafCount() - ((excludedPosition < pGroup->LeafCount()) ? 1 : 0);
-        UINT low = 0;
-        UINT high = count;
-
-        while (low < high)
-        {
-            const UINT middle = low + (high - low) / 2;
-            const UINT position = (middle >= excludedPosition) ? middle + 1 : middle;
-            ctl::ComPtr<IInspectable> spOther;
-            int result = 0;
-            IFC_RETURN(pGroup->GetAt(position, spOther.ReleaseAndGetAddressOf()));
-            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spOther.Get(), nullptr /* pRightKeys */, sourceIndices[position], &result));
-            if (result < 0)
-            {
-                high = middle;
-            }
-            else
-            {
-                low = middle + 1;
-            }
-        }
-
-        *pPosition = low;
+        IFC_RETURN(FindSortedRange(
+            pGroup->LeafCount(),
+            excludedPosition,
+            [pGroup](UINT position, IInspectable** ppItem) { return pGroup->GetAt(position, ppItem); },
+            [&sourceIndices](UINT position) { return sourceIndices[position]; },
+            [pIsSkipped](UINT index) { return pIsSkipped && index < pIsSkipped->size() && (*pIsSkipped)[index]; },
+            comparer, pItem, keys, sourceIndex, pPosition, pFirst, pLast));
         return S_OK;
     }
 
@@ -1056,7 +1140,8 @@ namespace
         UINT sourceIndex,
         _In_opt_ CollectionViewGroupInternal* pExcludedGroup,
         UINT excludedPosition,
-        _Out_ GroupedInsertion* pInsertion)
+        _Out_ GroupedInsertion* pInsertion,
+        _In_opt_ const std::vector<bool>* pIsSkipped = nullptr)
     {
         std::vector<ctl::ComPtr<IInspectable>> names;
         CollectionViewGroupInternal* pGroup = pRoot;
@@ -1102,7 +1187,7 @@ namespace
         }
 
         pInsertion->pGroup = pGroup;
-        IFC_RETURN(FindLeafPosition(pGroup, comparer, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, &pInsertion->position));
+        IFC_RETURN(FindLeafPosition(pGroup, comparer, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, &pInsertion->position, pIsSkipped));
         return S_OK;
     }
 
@@ -1174,6 +1259,13 @@ HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void*
     if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewShaping)) && m_isShapingEnabled)
     {
         *ppObject = static_cast<xaml_data::ICollectionViewShaping*>(this);
+        AddRefOuter();
+        return S_OK;
+    }
+
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewLiveShaping)) && m_isShapingEnabled)
+    {
+        *ppObject = static_cast<xaml_data::ICollectionViewLiveShaping*>(this);
         AddRefOuter();
         return S_OK;
     }
@@ -1461,8 +1553,15 @@ IFACEMETHODIMP VectorCollectionView::DeferRefresh(_Outptr_ wf::IClosable** ppRet
 _Check_return_ HRESULT VectorCollectionView::EndDeferRefresh()
 {
     ASSERT(m_deferRefreshLevel > 0);
-    if (m_deferRefreshLevel == 0 || --m_deferRefreshLevel > 0 || !m_isRefreshPending)
+    if (m_deferRefreshLevel == 0 || --m_deferRefreshLevel > 0)
     {
+        return S_OK;
+    }
+
+    if (!m_isRefreshPending)
+    {
+        // Live changes made while deferred are restored now, incrementally.
+        IFC_RETURN(RestoreLiveShaping());
         return S_OK;
     }
 
@@ -1747,6 +1846,8 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride()
         spRoot->PresentSubgroups(static_cast<InternalList*>(m_tpInternalList.Get()));
     }
 
+    IFC_RETURN(RebuildLiveShapingItems());
+
     // Recorded before ReplaceAll raises, so a handler that changes the source sees consistent state.
     m_sourceIndices = std::move(outputSourceIndices);
     m_spGroupRoot = spRoot ? static_cast<xaml_data::ICollectionViewGroup*>(spRoot.Get()) : nullptr;
@@ -1848,6 +1949,7 @@ void VectorCollectionView::DetachSourceList()
 
     m_tpSourceListObservable.Clear();
     m_areSourceIndicesValid = false;
+    ClearLiveShapingItems();
 }
 
 // A source change (WPF: ListCollectionView.ProcessCollectionChanged).
@@ -1887,7 +1989,11 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         IFC_RETURN(ProcessCollectionChangedWithAdjustedIndex(change, index, &isApplied));
     }
 
-    if (!isApplied)
+    if (isApplied)
+    {
+        IFC_RETURN(UpdateLiveShapingItems(change, index));
+    }
+    else
     {
         IFC_RETURN(RefreshOrDefer());
     }
@@ -2149,5 +2255,848 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
 
     // A handler changed the source while the change was raised: recompute fully.
     *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
+    return S_OK;
+}
+
+// ---- Live shaping (WPF: ICollectionViewLiveShaping on ListCollectionView, MS.Internal.Data.LiveShapingList) ----
+
+namespace
+{
+    enum LiveShapingFlag : UINT
+    {
+        LiveShapingFlag_Sorting = 0x1,
+        LiveShapingFlag_Filtering = 0x2,
+        LiveShapingFlag_Grouping = 0x4,
+    };
+
+    struct LivePath
+    {
+        wrl_wrappers::HString path;
+        UINT flags = 0;
+    };
+
+    _Check_return_ HRESULT AddLivePath(std::vector<LivePath>& paths, _In_opt_ HSTRING path, UINT flag)
+    {
+        if (WindowsGetStringLen(path) == 0)
+        {
+            return S_OK;
+        }
+
+        for (auto& existing : paths)
+        {
+            INT32 result = 1;
+            IFC_RETURN(WindowsCompareStringOrdinal(existing.path.Get(), path, &result));
+            if (result == 0)
+            {
+                existing.flags |= flag;
+                return S_OK;
+            }
+        }
+
+        LivePath added;
+        IFC_RETURN(added.path.Set(path));
+        added.flags = flag;
+        paths.push_back(std::move(added));
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT AddLivePaths(std::vector<LivePath>& paths, _In_opt_ wfc::IObservableVector<HSTRING>* pProperties, UINT flag, _Out_ bool* pHasAny)
+    {
+        *pHasAny = false;
+        if (!pProperties)
+        {
+            return S_OK;
+        }
+
+        const auto& properties = static_cast<LiveShapingPropertyCollection*>(pProperties)->Paths();
+        for (const auto& path : properties)
+        {
+            IFC_RETURN(AddLivePath(paths, path.Get(), flag));
+        }
+
+        *pHasAny = !properties.empty();
+        return S_OK;
+    }
+
+    // Both collections are LiveShapingPropertyCollections (the CVS's and the view's).
+    _Check_return_ HRESULT CopyLivePaths(_In_opt_ wfc::IObservableVector<HSTRING>* pFrom, bool isCopied, _In_ wfc::IObservableVector<HSTRING>* pTo)
+    {
+        LiveShapingPropertyCollection::Strings empty;
+        const auto& paths = (isCopied && pFrom) ? static_cast<LiveShapingPropertyCollection*>(pFrom)->Paths() : empty;
+        IFC_RETURN(static_cast<LiveShapingPropertyCollection*>(pTo)->SetPaths(paths));
+        return S_OK;
+    }
+}
+
+// Follows one live property of one source item, through the binding engine's property path listener, so a
+// Microsoft.UI.Xaml.Data.INotifyPropertyChanged item, an ICustomPropertyProvider item and a DependencyObject
+// all work, as for {Binding} (WPF: a LiveShapingItem binds to each live property).
+class VectorCollectionView::LivePropertyObserver final : public IPropertyPathListenerHost
+{
+public:
+    LivePropertyObserver(_In_ VectorCollectionView* pView, _In_ LiveShapingItem* pItem, UINT flags)
+        : m_pView(pView), m_pItem(pItem), m_flags(flags)
+    {
+    }
+
+    ~LivePropertyObserver()
+    {
+        Disconnect();
+    }
+
+    _Check_return_ HRESULT Connect(_In_ HSTRING path, _In_opt_ IInspectable* pSource)
+    {
+        UINT32 length = 0;
+        LPCWSTR szPath = WindowsGetStringRawBuffer(path, &length);
+        PropertyPathParser parser{};
+        IFC_RETURN(parser.SetSource(szPath, nullptr));
+        IFC_RETURN(ctl::make<PropertyPathListener>(this, &parser, true /* fListenToChanges */, false /* fUseWeakReferenceForSource */, &m_spListener));
+        IFC_RETURN(m_spListener->SetSource(pSource));
+        return S_OK;
+    }
+
+    // The listener's steps detach their PropertyChanged handlers when they are released.
+    void Disconnect()
+    {
+        if (m_spListener)
+        {
+            m_spListener->ClearOwner();
+            m_spListener.Reset();
+        }
+        m_pView = nullptr;
+    }
+
+    LiveShapingItem* Item() const
+    {
+        return m_pItem;
+    }
+
+    UINT Flags() const
+    {
+        return m_flags;
+    }
+
+    _Check_return_ HRESULT GetTraceString(_Outptr_result_z_ const WCHAR** pszTraceString) override
+    {
+        *pszTraceString = L"";
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT SourceChanged() override
+    {
+        if (m_pView)
+        {
+            IFC_RETURN(m_pView->OnLivePropertyChanged(this));
+        }
+        return S_OK;
+    }
+
+private:
+    VectorCollectionView* m_pView;
+    LiveShapingItem* m_pItem;
+    UINT m_flags;
+    ctl::ComPtr<PropertyPathListener> m_spListener;
+};
+
+// One per source item, in source order (WPF: LiveShapingItem). Dirty flags mark a live property that changed.
+struct VectorCollectionView::LiveShapingItem
+{
+    std::vector<std::unique_ptr<LivePropertyObserver>> observers;
+    UINT dirtyFlags = 0;
+};
+
+struct VectorCollectionView::LiveShapingState
+{
+    std::vector<LivePath> paths;
+    std::vector<std::unique_ptr<LiveShapingItem>> items;
+    bool isRestoreQueued = false;
+};
+
+bool VectorCollectionView::IsLiveShaping() const
+{
+    return m_isLiveSorting || m_isLiveFiltering || m_isLiveGrouping;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_CanChangeLiveSorting(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_CanChangeLiveFiltering(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_CanChangeLiveGrouping(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
+namespace
+{
+    _Check_return_ HRESULT BoxIsLive(bool value, _Outptr_ wf::IReference<bool>** ppValue)
+    {
+        ctl::ComPtr<IInspectable> spValue;
+        ctl::ComPtr<wf::IReference<bool>> spReference;
+        IFC_RETURN(DirectUI::PropertyValue::CreateFromBoolean(value, &spValue));
+        IFC_RETURN(spValue.As(&spReference));
+        *ppValue = spReference.Detach();
+        return S_OK;
+    }
+}
+
+IFACEMETHODIMP VectorCollectionView::get_IsLiveSorting(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(BoxIsLive(m_isLiveSorting, ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::put_IsLiveSorting(_In_opt_ wf::IReference<bool>* pValue)
+{
+    IFC_RETURN(SetIsLive(&m_isLiveSorting, pValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_IsLiveFiltering(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(BoxIsLive(m_isLiveFiltering, ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::put_IsLiveFiltering(_In_opt_ wf::IReference<bool>* pValue)
+{
+    IFC_RETURN(SetIsLive(&m_isLiveFiltering, pValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_IsLiveGrouping(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(BoxIsLive(m_isLiveGrouping, ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::put_IsLiveGrouping(_In_opt_ wf::IReference<bool>* pValue)
+{
+    IFC_RETURN(SetIsLive(&m_isLiveGrouping, pValue));
+    return S_OK;
+}
+
+// As in WPF's ListCollectionView, null is rejected: this view always knows whether it is live.
+_Check_return_ HRESULT VectorCollectionView::SetIsLive(_In_ bool* pIsLive, _In_opt_ wf::IReference<bool>* pValue)
+{
+    boolean value = false;
+
+    IFC_RETURN(CheckThread());
+    ARG_NOTNULL_RETURN(pValue, "value");
+    IFC_RETURN(pValue->get_Value(&value));
+    if (*pIsLive != !!value)
+    {
+        *pIsLive = !!value;
+        IFC_RETURN(OnLiveShapingChanged());
+    }
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_LiveSortingProperties(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveSortingProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_LiveFilteringProperties(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveFilteringProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_LiveGroupingProperties(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveGroupingProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+// WPF: OnLivePropertyListChanged. The collections can outlive the view, so they reach it weakly.
+_Check_return_ HRESULT VectorCollectionView::EnsureLiveShapingProperties()
+{
+    if (m_spLiveSortingProperties)
+    {
+        return S_OK;
+    }
+
+    ctl::WeakRefPtr weakThis;
+    IFC_RETURN(ctl::AsWeak(static_cast<CollectionView*>(this), &weakThis));
+    auto onChanged = [weakThis]() mutable -> HRESULT
+    {
+        ctl::ComPtr<xaml_data::ICollectionView> spView;
+        IFC_RETURN(weakThis.As(&spView));
+        if (spView)
+        {
+            auto pView = static_cast<VectorCollectionView*>(static_cast<CollectionView*>(spView.Get()));
+            if (!pView->m_isApplyingLiveShaping && pView->IsLiveShaping())
+            {
+                IFC_RETURN(pView->OnLiveShapingChanged());
+            }
+        }
+        return S_OK;
+    };
+
+    for (auto* pspProperties : { std::addressof(m_spLiveSortingProperties), std::addressof(m_spLiveFilteringProperties), std::addressof(m_spLiveGroupingProperties) })
+    {
+        wrl::ComPtr<LiveShapingPropertyCollection> spCollection;
+        IFC_RETURN(wrl::MakeAndInitialize<LiveShapingPropertyCollection>(&spCollection));
+        spCollection->SetChangedCallback(onChanged);
+        IFC_RETURN(spCollection.CopyTo(pspProperties->ReleaseAndGetAddressOf()));
+    }
+
+    return S_OK;
+}
+
+// WPF: the live shaping part of CollectionViewSource.ApplyPropertiesToView.
+_Check_return_ HRESULT VectorCollectionView::ApplyLiveShaping(
+    bool isLiveSorting,
+    bool isLiveFiltering,
+    bool isLiveGrouping,
+    _In_opt_ wfc::IObservableVector<HSTRING>* pSortingProperties,
+    _In_opt_ wfc::IObservableVector<HSTRING>* pFilteringProperties,
+    _In_opt_ wfc::IObservableVector<HSTRING>* pGroupingProperties)
+{
+    HRESULT hr = S_OK;
+
+    IFC_RETURN(EnsureLiveShapingProperties());
+
+    m_isApplyingLiveShaping = true;
+    m_isLiveSorting = isLiveSorting;
+    m_isLiveFiltering = isLiveFiltering;
+    m_isLiveGrouping = isLiveGrouping;
+    hr = [&]() -> HRESULT
+    {
+        IFC_RETURN(CopyLivePaths(pSortingProperties, isLiveSorting, m_spLiveSortingProperties.Get()));
+        IFC_RETURN(CopyLivePaths(pFilteringProperties, isLiveFiltering, m_spLiveFilteringProperties.Get()));
+        IFC_RETURN(CopyLivePaths(pGroupingProperties, isLiveGrouping, m_spLiveGroupingProperties.Get()));
+        return S_OK;
+    }();
+    m_isApplyingLiveShaping = false;
+    IFC_RETURN(hr);
+
+    IFC_RETURN(OnLiveShapingChanged());
+    return S_OK;
+}
+
+// A live feature or a property list changed (WPF: RebuildLocalArray). Only what is observed changes; the
+// rows stay where they are until a property changes or the view refreshes.
+_Check_return_ HRESULT VectorCollectionView::OnLiveShapingChanged()
+{
+    if (m_isComputingShape)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(RebuildLiveShapingItems());
+    return S_OK;
+}
+
+// The properties to observe (WPF: LiveShapingList.SetLiveShapingProperties). Sorting and grouping default to
+// the SortDescriptions' and GroupDescriptions' properties; filtering observes only what it is told to.
+_Check_return_ HRESULT VectorCollectionView::RebuildLiveShapingItems()
+{
+    std::vector<LivePath> paths;
+    UINT size = 0;
+    bool hasAny = false;
+
+    ClearLiveShapingItems();
+
+    if (!IsLiveShaping() || !m_tpInternalList || !m_tpSourceList || m_isShapingDetached)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(EnsureLiveShapingProperties());
+
+    if (m_isLiveSorting)
+    {
+        IFC_RETURN(AddLivePaths(paths, m_spLiveSortingProperties.Get(), LiveShapingFlag_Sorting, &hasAny));
+        if (!hasAny && m_tpSortDescriptions && !m_tpCustomSort)
+        {
+            UINT count = 0;
+            IFC_RETURN(m_tpSortDescriptions->get_Size(&count));
+            for (UINT i = 0; i < count; ++i)
+            {
+                ctl::ComPtr<xaml_data::ISortDescription> spDescription;
+                wrl_wrappers::HString path;
+                IFC_RETURN(m_tpSortDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+                if (spDescription)
+                {
+                    IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                    IFC_RETURN(AddLivePath(paths, path.Get(), LiveShapingFlag_Sorting));
+                }
+            }
+        }
+    }
+
+    if (m_isLiveFiltering)
+    {
+        IFC_RETURN(AddLivePaths(paths, m_spLiveFilteringProperties.Get(), LiveShapingFlag_Filtering, &hasAny));
+    }
+
+    if (m_isLiveGrouping)
+    {
+        IFC_RETURN(AddLivePaths(paths, m_spLiveGroupingProperties.Get(), LiveShapingFlag_Grouping, &hasAny));
+        if (!hasAny && m_tpGroupDescriptions)
+        {
+            UINT count = 0;
+            IFC_RETURN(m_tpGroupDescriptions->get_Size(&count));
+            for (UINT i = 0; i < count; ++i)
+            {
+                ctl::ComPtr<xaml_data::IPropertyGroupDescription> spDescription;
+                wrl_wrappers::HString path;
+                IFC_RETURN(m_tpGroupDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+                if (spDescription)
+                {
+                    IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                    IFC_RETURN(AddLivePath(paths, path.Get(), LiveShapingFlag_Grouping));
+                }
+            }
+        }
+    }
+
+    if (paths.empty())
+    {
+        return S_OK;
+    }
+
+    auto spState = std::make_shared<LiveShapingState>();
+    spState->paths = std::move(paths);
+    m_spLiveShaping = spState;
+
+    IFC_RETURN(m_tpSourceList->get_Size(&size));
+    spState->items.reserve(size);
+    for (UINT i = 0; i < size && m_spLiveShaping == spState; ++i)
+    {
+        std::unique_ptr<LiveShapingItem> spItem;
+        IFC_RETURN(CreateLiveShapingItem(i, &spItem));
+        spState->items.push_back(std::move(spItem));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::CreateLiveShapingItem(UINT sourceIndex, _Out_ std::unique_ptr<LiveShapingItem>* pItem)
+{
+    ctl::ComPtr<IInspectable> spSourceItem;
+    auto spItem = std::make_unique<LiveShapingItem>();
+
+    IFC_RETURN(m_tpSourceList->GetAt(sourceIndex, spSourceItem.ReleaseAndGetAddressOf()));
+    for (const auto& livePath : m_spLiveShaping->paths)
+    {
+        auto spObserver = std::make_unique<LivePropertyObserver>(this, spItem.get(), livePath.flags);
+        // A path the item does not have is observed as a binding to it would be: it never changes.
+        if (SUCCEEDED(spObserver->Connect(livePath.path.Get(), spSourceItem.Get())))
+        {
+            spItem->observers.push_back(std::move(spObserver));
+        }
+    }
+
+    *pItem = std::move(spItem);
+    return S_OK;
+}
+
+void VectorCollectionView::ClearLiveShapingItems()
+{
+    if (auto spState = std::move(m_spLiveShaping))
+    {
+        for (auto& spItem : spState->items)
+        {
+            for (auto& spObserver : spItem->observers)
+            {
+                spObserver->Disconnect();
+            }
+        }
+    }
+}
+
+// The source changed and the change was applied incrementally: observe the new item, stop observing the old.
+_Check_return_ HRESULT VectorCollectionView::UpdateLiveShapingItems(wfc::CollectionChange change, UINT index)
+{
+    if (!m_spLiveShaping)
+    {
+        return S_OK;
+    }
+
+    auto spState = m_spLiveShaping;
+    auto& items = spState->items;
+    const UINT expectedSize = static_cast<UINT>(items.size())
+        + ((change == wfc::CollectionChange_ItemInserted) ? 1 : 0)
+        - ((change == wfc::CollectionChange_ItemRemoved) ? 1 : 0);
+
+    if (expectedSize != m_sourceListSize || index > items.size() || (change != wfc::CollectionChange_ItemInserted && index >= items.size()))
+    {
+        IFC_RETURN(RebuildLiveShapingItems());
+        return S_OK;
+    }
+
+    if (change != wfc::CollectionChange_ItemInserted)
+    {
+        for (auto& spObserver : items[index]->observers)
+        {
+            spObserver->Disconnect();
+        }
+        items.erase(items.begin() + index);
+    }
+
+    if (change != wfc::CollectionChange_ItemRemoved)
+    {
+        std::unique_ptr<LiveShapingItem> spItem;
+        IFC_RETURN(CreateLiveShapingItem(index, &spItem));
+        if (m_spLiveShaping == spState)
+        {
+            items.insert(items.begin() + index, std::move(spItem));
+        }
+    }
+
+    return S_OK;
+}
+
+// A live property of an item changed (WPF: LiveShapingList.OnItemPropertyChanged). As in WPF, the item is
+// marked and the view is restored once, at the next dispatcher turn, for every item that changed meanwhile.
+_Check_return_ HRESULT VectorCollectionView::OnLivePropertyChanged(_In_ LivePropertyObserver* pObserver)
+{
+    auto spState = m_spLiveShaping;
+    if (!spState)
+    {
+        return S_OK;
+    }
+
+    pObserver->Item()->dirtyFlags |= pObserver->Flags();
+
+    if (!spState->isRestoreQueued && m_deferRefreshLevel == 0)
+    {
+        auto pCore = DXamlCore::GetCurrent();
+        if (pCore && pCore->GetXamlDispatcherNoRef())
+        {
+            ctl::ComPtr<VectorCollectionView> spThis(this);
+            spState->isRestoreQueued = true;
+            IFC_RETURN(pCore->GetXamlDispatcherNoRef()->RunAsync(MakeCallback(spThis, &VectorCollectionView::OnLiveShapingRestoreCallback)));
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
+{
+    if (m_spLiveShaping)
+    {
+        m_spLiveShaping->isRestoreQueued = false;
+    }
+
+    IFC_RETURN(RestoreLiveShaping());
+    return S_OK;
+}
+
+// WPF: ListCollectionView.RestoreLiveShaping. Each changed item is moved to where it now belongs, filtered in
+// or out, or moved to its new group, with an ItemRemoved and an ItemInserted (WinRT vectors have no Move); an
+// item still in order raises nothing. Like WPF's FindPosition, placing one item ignores the changed items not
+// yet placed, whose positions are stale.
+_Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
+{
+    auto spState = m_spLiveShaping;
+    ctl::ComPtr<IInspectable> spCurrentItem;
+    ctl::ComPtr<CollectionViewSource> spFilterHost;
+    SortFieldComparer comparer;
+    std::vector<bool> isSortDirty;
+    const UINT sourceChangeCount = m_sourceListChangeCount;
+    bool hasDirty = false;
+    bool isApplied = true;
+
+    if (!spState || !m_tpInternalList || m_isComputingShape || m_deferRefreshLevel > 0)
+    {
+        return S_OK;
+    }
+
+    for (const auto& spItem : spState->items)
+    {
+        hasDirty = hasDirty || spItem->dirtyFlags != 0;
+    }
+
+    if (!hasDirty)
+    {
+        return S_OK;
+    }
+
+    // A source change that could not be followed is pending: recompute, which observes the items afresh.
+    if (!m_areSourceIndicesValid || spState->items.size() != m_sourceListSize)
+    {
+        IFC_RETURN(RefreshOrDefer());
+        return S_OK;
+    }
+
+    IFC_RETURN(get_CurrentItemImpl(spCurrentItem.ReleaseAndGetAddressOf()));
+    IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
+    IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+
+    const bool hasFilter = !!spFilterHost || !!m_tpFilter;
+    const bool isSorting = m_isLiveSorting && !comparer.IsEmpty();
+    isSortDirty.resize(spState->items.size());
+    for (size_t i = 0; i < spState->items.size(); ++i)
+    {
+        isSortDirty[i] = isSorting && (spState->items[i]->dirtyFlags & LiveShapingFlag_Sorting) != 0;
+    }
+
+    auto isSkipped = [&isSortDirty](UINT sourceIndex) { return sourceIndex < isSortDirty.size() && isSortDirty[sourceIndex]; };
+
+    // A flat view: the item's place in the InternalList.
+    auto restoreFlat = [&](UINT sourceIndex, UINT flags, _In_opt_ IInspectable* pItem, _Out_ bool* pIsItemApplied) -> HRESULT
+    {
+        auto pOutput = static_cast<InternalList*>(m_tpInternalList.Get());
+        auto found = std::find(m_sourceIndices.begin(), m_sourceIndices.end(), sourceIndex);
+        const bool isInView = found != m_sourceIndices.end();
+        const UINT oldPosition = isInView ? static_cast<UINT>(found - m_sourceIndices.begin()) : UINT_MAX;
+        const bool isFiltering = (flags & LiveShapingFlag_Filtering) && m_isLiveFiltering && hasFilter;
+        const bool isResorting = (flags & LiveShapingFlag_Sorting) && isSorting;
+        bool isAccepted = isInView;
+        bool isMoving = false;
+        UINT newPosition = 0;
+        HRESULT hr = S_OK;
+
+        *pIsItemApplied = true;
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            if (isFiltering)
+            {
+                IFC_RETURN(PassesFilter(pItem, spFilterHost.Get(), &isAccepted));
+            }
+
+            if (!isAccepted || (isInView && !isResorting))
+            {
+                return S_OK;
+            }
+
+            std::vector<ctl::ComPtr<IInspectable>> keys;
+            UINT first = 0;
+            UINT last = 0;
+            IFC_RETURN(comparer.EvaluateKeys(pItem, &keys));
+            IFC_RETURN(FindSortedRange(
+                static_cast<UINT>(m_sourceIndices.size()),
+                oldPosition,
+                [pOutput](UINT position, IInspectable** ppOther) { return pOutput->GetAt(position, ppOther); },
+                [this](UINT position) { return m_sourceIndices[position]; },
+                isSkipped,
+                comparer, pItem, keys, sourceIndex, &newPosition, &first, &last));
+            isMoving = isInView && (oldPosition < first || oldPosition > last);
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+
+        if (sourceChangeCount != m_sourceListChangeCount)
+        {
+            *pIsItemApplied = false;
+            return S_OK;
+        }
+
+        const bool isRemoved = isInView && (!isAccepted || isMoving);
+        const bool isInserted = isAccepted && (!isInView || isMoving);
+        if (!isRemoved && !isInserted)
+        {
+            return S_OK;
+        }
+
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            if (isRemoved)
+            {
+                m_sourceIndices.erase(m_sourceIndices.begin() + oldPosition);
+                IFC_RETURN(pOutput->InternalRemoveAt(oldPosition));
+            }
+
+            if (isInserted)
+            {
+                m_sourceIndices.insert(m_sourceIndices.begin() + newPosition, sourceIndex);
+                IFC_RETURN(pOutput->InternalInsertAt(newPosition, pItem));
+            }
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+        return S_OK;
+    };
+
+    // A grouped view (WPF: CollectionViewGroupRoot.RestoreGrouping and MoveItemWithinGroups).
+    auto restoreGrouped = [&](UINT sourceIndex, UINT flags, _In_opt_ IInspectable* pItem, _Out_ bool* pIsItemApplied) -> HRESULT
+    {
+        auto pRoot = static_cast<CollectionViewGroupRoot*>(static_cast<CollectionViewGroupInternal*>(m_spGroupRoot.Get()));
+        CollectionViewGroupInternal* pOldGroup = nullptr;
+        UINT oldPosition = 0;
+        const bool isInView = pRoot && pRoot->FindLeaf(sourceIndex, &pOldGroup, &oldPosition);
+        const bool isFiltering = (flags & LiveShapingFlag_Filtering) && m_isLiveFiltering && hasFilter;
+        const bool isResorting = (flags & LiveShapingFlag_Sorting) && isSorting;
+        const bool isRegrouping = (flags & LiveShapingFlag_Grouping) && m_isLiveGrouping;
+        std::vector<ctl::ComPtr<IInspectable>> keys;
+        GroupedInsertion insertion;
+        bool isAccepted = isInView;
+        bool isMoving = false;
+        HRESULT hr = S_OK;
+
+        *pIsItemApplied = true;
+        if (!pRoot)
+        {
+            return S_OK;
+        }
+
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            if (isFiltering)
+            {
+                IFC_RETURN(PassesFilter(pItem, spFilterHost.Get(), &isAccepted));
+            }
+
+            if (!isAccepted || (isInView && !isResorting && !isRegrouping))
+            {
+                return S_OK;
+            }
+
+            IFC_RETURN(comparer.EvaluateKeys(pItem, &keys));
+            if (!isInView)
+            {
+                IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, &insertion, &isSortDirty));
+                return S_OK;
+            }
+
+            bool isInGroup = true;
+            if (isRegrouping)
+            {
+                std::vector<ctl::ComPtr<IInspectable>> names;
+                IFC_RETURN(pRoot->GetGroupNames(pItem, &names));
+                IFC_RETURN(pRoot->IsGroupPath(pOldGroup, names, &isInGroup));
+            }
+
+            if (!isInGroup)
+            {
+                // Planned once it has left its group, which may go with it.
+                isMoving = true;
+                return S_OK;
+            }
+
+            if (isResorting)
+            {
+                UINT position = 0;
+                UINT first = 0;
+                UINT last = 0;
+                IFC_RETURN(FindLeafPosition(pOldGroup, comparer, pItem, keys, sourceIndex, oldPosition, &position, &isSortDirty, &first, &last));
+                if (oldPosition < first || oldPosition > last)
+                {
+                    isMoving = true;
+                    insertion.isAccepted = true;
+                    insertion.pGroup = pOldGroup;
+                    insertion.position = position;
+                }
+            }
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+
+        if (sourceChangeCount != m_sourceListChangeCount)
+        {
+            *pIsItemApplied = false;
+            return S_OK;
+        }
+
+        const bool isRemoved = isInView && (!isAccepted || isMoving);
+        const bool isInserted = isAccepted && (!isInView || isMoving);
+        if (!isRemoved && !isInserted)
+        {
+            return S_OK;
+        }
+
+        m_isComputingShape = true;
+        hr = [&]() -> HRESULT
+        {
+            if (isRemoved)
+            {
+                IFC_RETURN(ApplyGroupedRemoval(pOldGroup, oldPosition));
+            }
+
+            if (isInserted)
+            {
+                if (!insertion.pGroup)
+                {
+                    IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, &insertion, &isSortDirty));
+                }
+                IFC_RETURN(ApplyGroupedInsertion(insertion, pItem, sourceIndex));
+            }
+            return S_OK;
+        }();
+        m_isComputingShape = false;
+        IFC_RETURN(hr);
+        return S_OK;
+    };
+
+    for (UINT i = 0; i < isSortDirty.size() && isApplied; ++i)
+    {
+        // A handler of a change raised here may have refreshed the view, which observes the items afresh.
+        if (m_spLiveShaping != spState || spState->items.size() != isSortDirty.size())
+        {
+            break;
+        }
+
+        const UINT flags = std::exchange(spState->items[i]->dirtyFlags, 0u);
+        if (flags != 0)
+        {
+            ctl::ComPtr<IInspectable> spItem;
+            IFC_RETURN(m_tpSourceList->GetAt(i, spItem.ReleaseAndGetAddressOf()));
+            IFC_RETURN(m_isGrouping ? restoreGrouped(i, flags, spItem.Get(), &isApplied) : restoreFlat(i, flags, spItem.Get(), &isApplied));
+        }
+        isSortDirty[i] = false;
+        isApplied = isApplied && (sourceChangeCount == m_sourceListChangeCount);
+    }
+
+    if (!isApplied)
+    {
+        m_areSourceIndicesValid = false;
+        IFC_RETURN(RefreshOrDefer());
+        return S_OK;
+    }
+
+    // Currency follows the item, as after a recompute.
+    if (spCurrentItem)
+    {
+        ctl::ComPtr<IInspectable> spNowCurrent;
+        IFC_RETURN(get_CurrentItemImpl(spNowCurrent.ReleaseAndGetAddressOf()));
+        if (spNowCurrent.Get() != spCurrentItem.Get())
+        {
+            BOOLEAN isCurrentValid = FALSE;
+            IFC_RETURN(MoveCurrentToImpl(spCurrentItem.Get(), &isCurrentValid));
+            if (!isCurrentValid)
+            {
+                IFC_RETURN(MoveCurrentToFirstImpl(&isCurrentValid));
+            }
+        }
+    }
+
     return S_OK;
 }

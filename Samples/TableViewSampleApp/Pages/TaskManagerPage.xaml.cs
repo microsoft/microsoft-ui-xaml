@@ -34,7 +34,18 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         RandomizeAll();
         // <snippet>
-        Source = new CollectionViewSource { Source = Processes };  // created once; TableView shows its View
+        // Live shaping: a row moves, leaves or changes group as soon as a CPU value, a status or a
+        // category changes, with no Refresh(). Sorting and grouping follow whatever the header click
+        // or the Shaping options choose; the search observes the properties it reads that can change.
+        Source = new CollectionViewSource
+        {
+            Source = Processes,  // created once; TableView shows its View
+            IsLiveSortingRequested = true,
+            IsLiveGroupingRequested = true,
+            IsLiveFilteringRequested = true,
+        };
+        Source.LiveFilteringProperties.Add(nameof(ProcessItem.Category));
+        Source.LiveFilteringProperties.Add(nameof(ProcessItem.StatusText));
         InitializeComponent();
         ProcessTable.Sorted += OnProcessTableSorted; // snippet:skip
         ProcessTable.SelectionChanged += OnSelectionChanged; // snippet:skip
@@ -100,29 +111,14 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
     private void OnTimerTick(object? sender, object e)
     {
+        // The view re-sorts and regroups the changed rows itself (IsLiveSortingRequested).
         RandomizeAll();
         UpdateTotals();
-        ResortIfMetricSorted();
-    }
-
-    // PropertyChanged updates a cell but does not move its row; Refresh() re-sorts the view and keeps
-    // the column's sort indicator.
-    private void ResortIfMetricSorted()
-    {
-        var column = SampleShaping.ActiveSortColumn(ProcessTable);
-        if (column is null || column.SortMemberPath is not
-            (nameof(ProcessItem.CpuPercent) or nameof(ProcessItem.MemoryMB) or nameof(ProcessItem.DiskMBps) or nameof(ProcessItem.NetworkMbps)))
-        {
-            return;
-        }
-
-        Source.Refresh();
     }
 
     private void OnProcessTableSorted(TableView sender, TableViewSortedEventArgs args)
     {
-        // The live re-sort raises Sorted with the same column and direction on every tick; report
-        // only real changes.
+        // Report only real changes.
         if (_reportedSort == (args.Column, args.Direction))
         {
             return;
@@ -154,8 +150,8 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    // Filter evaluates the predicate when it reshapes, not when a row's value changes, so call this
-    // again after a write to a searched property.
+    // Filter is evaluated when the view reshapes and, with live filtering, when Category or StatusText
+    // changes on a row (LiveFilteringProperties).
     private void ApplySearch()
     {
         if (_searchText is not { } text)
@@ -262,15 +258,10 @@ public sealed partial class TaskManagerPage : SamplePageBase
         }
 
         var from = process.Category;
-        process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
-        // Grouping reads the value when the view refreshes, so refresh it to re-bucket the row. The
-        // search matches on Category too, so re-apply it as well (it would keep showing the row).
-        ReapplyIfGroupedOn(nameof(ProcessItem.Category));
-        if (_searchText is not null)
-        {
-            ApplySearch();
-        }
+        // Live grouping moves the row to its new group, and live filtering drops it if the search no
+        // longer matches.
+        process.Category = SampleShaping.Next(ProcessData.Categories, from);
 
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", process.Name, from, process.Category));
     }
