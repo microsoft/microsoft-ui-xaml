@@ -1118,6 +1118,11 @@ namespace RenderingBackendTests
         VERIFY_ARE_EQUAL(32ull * 64 * 4, painter->GetResourceInventory().uploadBytesThisFrame,
             L"presented = exposed strip + moved area, without double counting");
 
+        // The scroll is consumed by that frame. Frame 4 (into B) is tiny, so buffer 0 is A again and holds frame 3.
+        const RectF corner{ 0, 0, 4, 4 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
+        VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+
         const auto target = Read(*painter);
         const auto presented = ReadBackBuffer(device.Get(), swapChain.Get());
         for (uint32_t y = 0; y < c_size; y += 7)
@@ -1125,11 +1130,6 @@ namespace RenderingBackendTests
             VERIFY_ARE_EQUAL(target.At(4, y).r, presented.At(4, y).r, L"moved and repainted pixels reach the back buffer");
         }
         VERIFY_IS_TRUE(IsPremultiplied(presented.At(4, 60), 0, 0, 0, 255, 1));
-
-        // The scroll is consumed by that frame.
-        const RectF corner{ 0, 0, 4, 4 };
-        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
-        VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
     }
 
     // ---- ResourceChurn event ----

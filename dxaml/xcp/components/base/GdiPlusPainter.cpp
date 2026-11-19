@@ -362,6 +362,10 @@ namespace RenderingBackend
                 uint32_t width = 0, height = 0;
                 std::vector<uint8_t> pixels;
                 std::unique_ptr<Gdiplus::Bitmap> bitmap;
+                // A Bitmap over the pixel-aligned sub-region last drawn with a source rect, so bilinear sampling clamps
+                // at the source rect's edges instead of bleeding in neighboring pixels.
+                std::unique_ptr<Gdiplus::Bitmap> view;
+                PixelRect viewRect{};
             };
 
             uint32_t FloatBits(float value) noexcept
@@ -858,8 +862,42 @@ namespace RenderingBackend
                     {
                         return;
                     }
-                    const BitmapEntry& entry = *found->second;
-                    const RectF source = sourceRect ? *sourceRect : RectF{ 0, 0, static_cast<float>(entry.width), static_cast<float>(entry.height) };
+                    BitmapEntry& entry = *found->second;
+                    RectF source = sourceRect ? *sourceRect : RectF{ 0, 0, static_cast<float>(entry.width), static_cast<float>(entry.height) };
+                    if (!(source.right > source.left) || !(source.bottom > source.top))
+                    {
+                        return;
+                    }
+                    Gdiplus::Bitmap* image = entry.bitmap.get();
+                    const PixelRect whole{ 0, 0, static_cast<int32_t>(entry.width), static_cast<int32_t>(entry.height) };
+                    const PixelRect region = Intersect(whole, { ToPixel(std::floor(source.left)), ToPixel(std::floor(source.top)),
+                        ToPixel(std::ceil(source.right)), ToPixel(std::ceil(source.bottom)) });
+                    if (region.IsEmpty())
+                    {
+                        return;
+                    }
+                    if (region.left != 0 || region.top != 0 || region.right != whole.right || region.bottom != whole.bottom)
+                    {
+                        if (!entry.view || memcmp(&entry.viewRect, &region, sizeof(region)) != 0)
+                        {
+                            if (entry.view)
+                            {
+                                entry.view.reset();
+                                ++m_frameDestroyed;
+                            }
+                            entry.view.reset(new Gdiplus::Bitmap(region.right - region.left, region.bottom - region.top,
+                                static_cast<INT>(entry.width * 4), PixelFormat32bppPARGB,
+                                entry.pixels.data() + (static_cast<size_t>(region.top) * entry.width + region.left) * 4));
+                            if (FAILED(CheckCreated(entry.view)))
+                            {
+                                return;
+                            }
+                            entry.viewRect = region;
+                            ++m_frameCreated;
+                        }
+                        image = entry.view.get();
+                        source = { source.left - region.left, source.top - region.top, source.right - region.left, source.bottom - region.top };
+                    }
                     Gdiplus::ImageAttributes* attributes = GetBitmapAttributes();
                     if (!attributes)
                     {
@@ -883,7 +921,7 @@ namespace RenderingBackend
                     }
                     Gdiplus::Graphics& graphics = Current();
                     Record(graphics.SetInterpolationMode(Gdiplus::InterpolationModeBilinear));
-                    Record(graphics.DrawImage(entry.bitmap.get(), ToGdiRect(destination), source.left, source.top, source.right - source.left,
+                    Record(graphics.DrawImage(image, ToGdiRect(destination), source.left, source.top, source.right - source.left,
                         source.bottom - source.top, Gdiplus::UnitPixel, attributes));
                     Record(graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor));
                     m_stats.paintedPixels += VisibleArea(DeviceBounds(destination, 0));
@@ -1020,6 +1058,7 @@ namespace RenderingBackend
                     for (const auto& bitmap : m_bitmaps)
                     {
                         bitmapBytes += static_cast<uint64_t>(bitmap.second->width) * bitmap.second->height * 4;
+                        inventory.cachedObjectCount += bitmap.second->view ? 1 : 0;
                     }
                     inventory.cacheBytes = m_brushes.size() * c_brushBytes + m_pens.size() * c_penBytes + m_fonts.size() * c_fontBytes +
                         families * c_fontFamilyBytes + (m_stringFormat ? c_stringFormatBytes : 0) + (m_imageAttributes ? c_imageAttributesBytes : 0) +
@@ -1219,10 +1258,49 @@ namespace RenderingBackend
                     m_stats.paintedPixels += VisibleArea(b);
                 }
 
-                // Antialiased rounded clip: fills the clip shape (under the transform current at push) into the mask
-                // surface and scales every premultiplied layer pixel in the bounds by the mask's coverage.
+                // Antialiased rounded clip: scales every premultiplied layer pixel in the bounds by the clip shape's
+                // coverage. Under an axis-aligned transform (the common case) coverage is computed exactly; otherwise the
+                // shape is filled (under the transform current at push) into the mask surface with GDI+ antialiasing,
+                // which underestimates coverage on shallow arcs.
                 bool ApplyRoundedMask(Surface& layer, const LayerRecord& record) noexcept
                 {
+                    const PixelRect& b = record.bounds;
+                    const size_t stride = static_cast<size_t>(m_width) * 4;
+                    auto scaleRows = [&](auto&& coverageAt)
+                    {
+                        for (int32_t y = b.top; y < b.bottom; ++y)
+                        {
+                            uint8_t* destination = layer.pixels.data() + y * stride + static_cast<size_t>(b.left) * 4;
+                            for (int32_t x = b.left; x < b.right; ++x, destination += 4)
+                            {
+                                const uint32_t alpha = coverageAt(x, y);
+                                if (alpha == 255)
+                                {
+                                    continue;
+                                }
+                                for (int channel = 0; channel < 4; ++channel)
+                                {
+                                    destination[channel] = static_cast<uint8_t>((destination[channel] * alpha + 127) / 255);
+                                }
+                            }
+                        }
+                    };
+
+                    const Matrix3x2F& t = record.maskTransform;
+                    const float s = m_dpiScale;
+                    if (t.m12 == 0 && t.m21 == 0)
+                    {
+                        const float x0 = (t.m11 * record.maskRect.left + t.dx) * s;
+                        const float x1 = (t.m11 * record.maskRect.right + t.dx) * s;
+                        const float y0 = (t.m22 * record.maskRect.top + t.dy) * s;
+                        const float y1 = (t.m22 * record.maskRect.bottom + t.dy) * s;
+                        const RectF device{ std::min(x0, x1), std::min(y0, y1), std::max(x0, x1), std::max(y0, y1) };
+                        const float rx = std::min(std::max(record.radiusX, 0.0f) * std::abs(t.m11 * s), (device.right - device.left) / 2);
+                        const float ry = std::min(std::max(record.radiusY, 0.0f) * std::abs(t.m22 * s), (device.bottom - device.top) / 2);
+                        scaleRows([&](int32_t x, int32_t y) { return RoundedRectCoverage(device, rx, ry, x, y); });
+                        return true;
+                    }
+
                     if (!m_mask.bitmap)
                     {
                         const HRESULT hr = CreateSurface(m_width, m_height, m_mask);
@@ -1232,25 +1310,18 @@ namespace RenderingBackend
                             Fail(hr);
                             return false;
                         }
-                        // The default 4x4-ish antialiasing badly underestimates coverage on shallow arcs. GDI+ 1.1's
-                        // SmoothingModeAntiAlias8x8 (6; not declared unless GDIPVER >= 0x0110) is closer; keep the
-                        // default if the runtime rejects it.
-                        m_mask.graphics->SetSmoothingMode(static_cast<Gdiplus::SmoothingMode>(6));
                     }
                     Gdiplus::SolidBrush* brush = GetBrush({ 1, 1, 1, 1 });
                     if (!brush)
                     {
                         return false;
                     }
-                    const PixelRect& b = record.bounds;
                     Gdiplus::Graphics& mask = *m_mask.graphics;
                     Record(mask.ResetTransform());
                     Record(mask.SetClip(Gdiplus::Rect(b.left, b.top, b.right - b.left, b.bottom - b.top), Gdiplus::CombineModeReplace));
                     Record(mask.Clear(Gdiplus::Color(0, 0, 0, 0)));
 
                     // Borrow m_transform for the push-time transform, then restore the current one.
-                    const Matrix3x2F& t = record.maskTransform;
-                    const float s = m_dpiScale;
                     m_transform->SetElements(t.m11 * s, t.m12 * s, t.m21 * s, t.m22 * s, t.dx * s, t.dy * s);
                     Record(mask.SetTransform(m_transform.get()));
                     UpdateDeviceTransform();
@@ -1267,26 +1338,51 @@ namespace RenderingBackend
                     {
                         return false;
                     }
+                    scaleRows([&](int32_t x, int32_t y) { return static_cast<uint32_t>(m_mask.pixels[y * stride + static_cast<size_t>(x) * 4 + 3]); });
+                    return true;
+                }
 
-                    const size_t stride = static_cast<size_t>(m_width) * 4;
-                    for (int32_t y = b.top; y < b.bottom; ++y)
+                // Coverage (0-255) of pixel (x, y) by a device-space rounded rect with elliptical corners: exact along
+                // the straight edges, 16x16 supersampled where the pixel touches a corner box.
+                static uint32_t RoundedRectCoverage(const RectF& rect, float rx, float ry, int32_t x, int32_t y) noexcept
+                {
+                    const float px = static_cast<float>(x), py = static_cast<float>(y);
+                    const float cx = std::min(px + 1, rect.right) - std::max(px, rect.left);
+                    const float cy = std::min(py + 1, rect.bottom) - std::max(py, rect.top);
+                    if (!(cx > 0) || !(cy > 0))
                     {
-                        uint8_t* destination = layer.pixels.data() + y * stride + static_cast<size_t>(b.left) * 4;
-                        const uint8_t* coverage = m_mask.pixels.data() + y * stride + static_cast<size_t>(b.left) * 4;
-                        for (int32_t x = b.left; x < b.right; ++x, destination += 4, coverage += 4)
+                        return 0;
+                    }
+                    const bool nearCornerX = px < rect.left + rx || px + 1 > rect.right - rx;
+                    const bool nearCornerY = py < rect.top + ry || py + 1 > rect.bottom - ry;
+                    if (!(rx > 0) || !(ry > 0) || !nearCornerX || !nearCornerY)
+                    {
+                        return static_cast<uint32_t>(std::min(cx, 1.0f) * std::min(cy, 1.0f) * 255 + 0.5f);
+                    }
+                    constexpr int c_samples = 16;
+                    uint32_t inside = 0;
+                    for (int j = 0; j < c_samples; ++j)
+                    {
+                        const float sy = py + (j + 0.5f) / c_samples;
+                        if (sy < rect.top || sy >= rect.bottom)
                         {
-                            const uint32_t alpha = coverage[3];
-                            if (alpha == 255)
+                            continue;
+                        }
+                        const float qy = std::clamp(sy, rect.top + ry, rect.bottom - ry);
+                        const float ny = (sy - qy) / ry;
+                        for (int i = 0; i < c_samples; ++i)
+                        {
+                            const float sx = px + (i + 0.5f) / c_samples;
+                            if (sx < rect.left || sx >= rect.right)
                             {
                                 continue;
                             }
-                            for (int channel = 0; channel < 4; ++channel)
-                            {
-                                destination[channel] = static_cast<uint8_t>((destination[channel] * alpha + 127) / 255);
-                            }
+                            const float qx = std::clamp(sx, rect.left + rx, rect.right - rx);
+                            const float nx = (sx - qx) / rx;
+                            inside += nx * nx + ny * ny <= 1 ? 1 : 0;
                         }
                     }
-                    return true;
+                    return (inside * 255 + c_samples * c_samples / 2) / (c_samples * c_samples);
                 }
 
                 // True when the transform is axis-aligned and rect's device edges are on pixel boundaries, so an
