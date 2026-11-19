@@ -79,6 +79,13 @@ Every run reports three views: **Combined** (all instrumented DLLs together), **
   self-contained page with a **Module drop-down** (Combined / MUX / MUXC), a comparison table,
   and a collapsible, searchable folder tree for the selected view. Append `#view=<ModuleStem>`
   (e.g. `#view=Microsoft.UI.Xaml.Controls`) to open a specific view.
+- **One standalone tree report per view**, in the same artifact folder:
+  `Microsoft.ui.xaml.dll (build <BuildId>).html`,
+  `Microsoft.UI.Xaml.Controls.dll (build <BuildId>).html` and
+  `Combined - Microsoft.ui.xaml.dll + Microsoft.UI.Xaml.Controls.dll (build <BuildId>).html`
+  (the date replaces `build <BuildId>` when `Merge-CodeCoverage.ps1` runs outside a pipeline).
+  Each is a single offline page with KPI cards and a collapsible, searchable folder tree, so it
+  can be shared or opened without downloading and re-merging the slice artifacts.
 - The merge job's log (`Merge and correct code coverage`) prints all three numbers.
 
 The same artifact (`out\CodeCoverage\`) also contains, per view, `corrected-per-file.csv` and
@@ -227,6 +234,7 @@ behavior additively - every other pipeline that doesn't pass it sees no change a
 | `build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml` + `Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1` | Downloads every module's slice `.coverage` files, merges them in one pass, and publishes to the Code Coverage tab (one folder per DLL by default) |
 | `Helix\common\pipeline\coverage\Repair-CodeCoverage.ps1` | Dedups the raw merge by `(file, line)` per DLL and combined; writes `published.cobertura.xml` (layout per `-PublishLayout`), per-view CSVs/summaries, and per-DLL Cobertura files |
 | `Helix\common\pipeline\coverage\New-CoverageHtmlReport.ps1` | Renders `coverage-report.html` (Combined / per-DLL drop-down, folder tree) from `Repair-CodeCoverage.ps1`'s output |
+| `Helix\common\pipeline\coverage\Build-CoverageTreeReport.ps1` | Renders one standalone folder-tree page per view (`<DLL> (build <BuildId>).html`) from that view's `corrected-per-file.csv` |
 | `build\AzurePipelinesTemplates\WinUI-ConvertCoverageToScc-Job.yml` + `Helix\common\pipeline\coverage\Convert-CoverageToScc.ps1` | Converts the slices' `.coverage` to StackSampler `.scc` with the converter supplied by the entry point and publishes it with the original/instrumented DLL/PDB (see [StackSampler (.scc) output](#stacksampler-scc-output)) |
 
 ## Known limitations / follow-ups

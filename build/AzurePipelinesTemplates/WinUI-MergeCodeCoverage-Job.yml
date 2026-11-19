@@ -20,7 +20,8 @@ parameters:
 #     top-level folder in the Files view (the tab has no other way to separate DLLs: the publish
 #     task always uses an empty build configuration/platform, and OneBranch does not let it
 #     attach its HTML report or a build-summary section),
-#   - writes coverage-report.html (Combined / per-DLL drop-down) into this job's artifact.
+#   - writes coverage-report.html (Combined / per-DLL drop-down) and one standalone
+#     "<DLL> (build <BuildId>).html" tree report per view into this job's artifact.
 # Numbers are deduplicated by (file, line) to correct a duplicate-line defect in the native merge
 # engine - see Repair-CodeCoverage.ps1.
 #

@@ -12,6 +12,8 @@
 #      Cobertura's own totals are inflated by a duplicate-line defect in the merge engine and are
 #      never reported.
 #   3. New-CoverageHtmlReport.ps1 -> coverage-report.html with a Combined/MUX/MUXC drop-down.
+#   4. Build-CoverageTreeReport.ps1 -> one standalone tree report per view, named
+#      "<DLL> (build <BuildId>).html" (the date instead of the build id outside a pipeline).
 #
 # EXPERIMENTAL QUALITY.
 
@@ -105,11 +107,38 @@ $subtitle = if ($env:BUILD_BUILDNUMBER) { "Build $($env:BUILD_BUILDNUMBER) ($($e
 Write-Host ""
 & (Join-Path $PSScriptRoot "New-CoverageHtmlReport.ps1") -ReportDir $OutputDir -Subtitle $subtitle
 
+# One standalone tree report per view, named after what it measures plus the build id (or the
+# date when run outside a pipeline), e.g. "Microsoft.ui.xaml.dll (build <BuildId>).html".
+# Best-effort: a rendering problem must not cost us the merged data or the Code Coverage tab.
+$reportStamp = if ($env:BUILD_BUILDID) { "build $($env:BUILD_BUILDID)" } else { Get-Date -Format 'yyyy-MM-dd' }
+$treeReports = @()
+foreach ($v in $views) {
+    $dlls = @($v.InstrumentedModules)
+    $what = if ($v.View -eq 'Combined') { "Combined - $($dlls -join ' + ')" } else { $dlls -join ', ' }
+    $reportName = "$what ($reportStamp)"
+    $fileName = ($reportName -replace '[\\/:*?"<>|]', '_') + '.html'
+    try {
+        Write-Host ""
+        & (Join-Path $PSScriptRoot "Build-CoverageTreeReport.ps1") `
+            -InputCsv (Join-Path $OutputDir $v.PerFileCsv) `
+            -InputSummaryJson (Join-Path $OutputDir (Join-Path (Split-Path $v.PerFileCsv -Parent) 'corrected-summary.json')) `
+            -OutputDir $OutputDir `
+            -OutputFileName $fileName `
+            -Title $reportName `
+            -ModuleNames $dlls
+        $treeReports += $fileName
+    }
+    catch {
+        Write-Host "##vso[task.logissue type=warning]Could not render the coverage tree report for '$($v.Label)': $($_.Exception.Message)"
+    }
+}
+
 # (No ##vso[task.uploadsummary] build-summary table: OneBranch blocks that logging command in
 # this job - "not allowed in this step due to policy restrictions".)
 Write-Host "`nReports in $($OutputDir):"
 Write-Host "  published.cobertura.xml  (Code Coverage tab: one top-level folder per DLL)"
 Write-Host "  coverage-report.html     (drop-down: Combined / each DLL)"
+foreach ($t in $treeReports) { Write-Host "  $t  (tree report for one view)" }
 Write-Host "  coverage-summary.csv     (one row per view)"
 Write-Host "  <Module>\, Combined\     (per-file CSVs, summaries, per-DLL Cobertura with real paths)"
 Write-Host "  merged.coverage          (binary, for Visual Studio)"
