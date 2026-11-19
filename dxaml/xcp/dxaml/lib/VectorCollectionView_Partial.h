@@ -114,6 +114,8 @@ namespace DirectUI
         _Check_return_ HRESULT RefreshOrDefer();
         _Check_return_ HRESULT ProcessCollectionChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);
         _Check_return_ HRESULT ProcessCollectionChangedWithAdjustedIndex(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
+        _Check_return_ HRESULT ProcessGroupedCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
+        _Check_return_ HRESULT PassesFilter(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted);
         void DetachSourceList();
 
     private:
@@ -140,11 +142,13 @@ namespace DirectUI
         ctl::EventPtr<VectorChangedEventCallback> m_epSourceListChangedHandler;
         TrackerPtr<wfc::IVector<IInspectable *>> m_tpInternalList;
         TrackerPtr<xaml_data::ICollectionView> m_tpGroupedPresentation;
+        // Grouped output: the group tree (WPF: CollectionViewGroupRoot); its top-level groups are the InternalList.
+        ctl::ComPtr<xaml_data::ICollectionViewGroup> m_spGroupRoot;
         bool m_isGrouping = false;
         bool m_isComputingShape = false;
 
-        // Flat output only: the source index of each output item, so a source Add, Remove or
-        // Replace updates the view incrementally. Invalid after a change that was not applied.
+        // The source index of each output item (flat output; grouped output keeps them per group), so a
+        // source Add, Remove or Replace updates the view incrementally. Invalid after a change that was not applied.
         std::vector<UINT> m_sourceIndices;
         bool m_areSourceIndicesValid = false;
         UINT m_sourceListSize = 0;
