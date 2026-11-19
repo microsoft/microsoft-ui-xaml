@@ -50,7 +50,10 @@ static class SceneFactory
     {
         SceneId.Dashboard => new DashboardScene(options),
         SceneId.Inbox => new InboxScene(options),
+        SceneId.Reader => new ReaderScene(options),
         SceneId.Gallery => new GalleryScene(options),
+        SceneId.Animated => new AnimatedScene(options),
+        SceneId.Layered => new LayeredScene(options),
         _ => new SettingsScene(options),
     };
 }
