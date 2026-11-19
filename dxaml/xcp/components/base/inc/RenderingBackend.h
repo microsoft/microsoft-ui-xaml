@@ -67,6 +67,9 @@ namespace RenderingBackend
     // Read once, then cached for the process lifetime.
     const Selection& GetProcessSelection() noexcept;
 
+    // True when the process renders with an immediate-mode painter (effective mode is not Composition). Cached.
+    bool IsImmediateModeActive() noexcept;
+
     // ---- ETW: provider "Microsoft-WinUI-RenderingBackend" {d18ce99c-dd66-5390-18da-068546739801} ----
     namespace Keywords
     {

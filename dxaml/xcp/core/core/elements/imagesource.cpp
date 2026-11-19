@@ -29,6 +29,7 @@
 #include <SvgImageSourceFailedEventArgs.h>
 #include <DXamlServices.h>
 #include <RootScale.h>
+#include <RenderingBackend.h>
 #include <shlwapi.h>
 #include "ImagingTelemetry.h"
 
@@ -3618,6 +3619,7 @@ HRESULT CBitmapImage::GetAutoPlay(
 
     if (runtimeEnabledFeatureDetector->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::BackgroundThreadImageLoading) &&
         !forceUiThreadCopy &&
+        !RenderingBackend::IsImmediateModeActive() && // immediate painters read the decoded software surface
         !m_pImageSurfaceWrapper->MustKeepSystemMemory() &&
         !m_pImageSurfaceWrapper->HasHardwareSurfaces() &&
         !isExplicitDecodeSizeSet &&

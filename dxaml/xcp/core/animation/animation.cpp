@@ -22,6 +22,7 @@
 #include "theming\inc\Theme.h"
 #include <FeatureFlags.h>
 #include "DCompAnimationConversionContext.h"
+#include <RenderingBackend.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -1338,6 +1339,16 @@ _Check_return_ HRESULT CAnimation::ShouldTickOnUIThread(
         && GetTargetObjectWeakRef().lock()  // the target still exists...
         && m_pTargetDependencyProperty != nullptr)  // we have a target property...
     {
+        // Immediate rendering backends have no Composition tree to run independent animations: tick every
+        // animation on the UI thread as a dependent animation so property values change and generate damage.
+        if (RenderingBackend::IsImmediateModeActive())
+        {
+            *pTickOnUIThread = true;
+            *pIsIndependentAnimation = false;
+            m_fFiredDependentAnimationWarning = false;
+            return S_OK;
+        }
+
         // If the animation is not continuous, it's okay to treat it as independent since there's no 'smoothness'
         // sacrificed by running it on the UI thread.  These animations will not run on the render thread, so
         // skip the walk up looking for IA targets.

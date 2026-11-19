@@ -19,6 +19,7 @@
 #include "RichTextBlock.h"
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
+#include <PixelFormat.h>
 #include <dwrite.h>
 #include <algorithm>
 #include <cmath>
@@ -94,6 +95,46 @@ namespace
             return (length > 0 && length < ARRAYSIZE(buffer)) ? std::wstring(buffer, length) : std::wstring();
         }();
         return s_path;
+    }
+
+    // Painters copy only the frame's damage (plus scrolled areas) into the flip swap chain's back buffer and present
+    // with dirty rects; DXGI carries the previous frame forward outside them (verified with mid-scroll captures of both
+    // painters). WINUI_IMMEDIATE_PRESENT_UNION=1 also repaints the previous frame's damage, for presenters that don't.
+    bool UnionPresentedDamage()
+    {
+        static const bool s_union = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_PRESENT_UNION", nullptr, 0) != 0;
+        return s_union;
+    }
+
+    // Prototype diagnostics: WINUI_IMMEDIATE_STATS=<path.txt> appends one line per painted island frame.
+    FILE* GetStatsFile()
+    {
+        static FILE* s_file = []() -> FILE*
+        {
+            wchar_t buffer[MAX_PATH] = {};
+            const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS", buffer, ARRAYSIZE(buffer));
+            FILE* file = nullptr;
+            if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
+            {
+                fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus\n");
+                return file;
+            }
+            return nullptr;
+        }();
+        return s_file;
+    }
+
+    int64_t QpcMicroseconds() noexcept
+    {
+        static const int64_t s_frequency = []
+        {
+            LARGE_INTEGER f{};
+            QueryPerformanceFrequency(&f);
+            return f.QuadPart;
+        }();
+        LARGE_INTEGER now{};
+        QueryPerformanceCounter(&now);
+        return now.QuadPart * 1000000 / s_frequency;
     }
 
     HRESULT CapturePresentedBuffer(_In_ IDXGISwapChain1* swapChain, _In_z_ const wchar_t* path)
@@ -376,6 +417,7 @@ namespace ImmediateRenderingDetail
         std::vector<Command> commands;
         std::vector<std::wstring> strings;
         std::vector<GlyphRunData> glyphRuns;
+        std::vector<xref_ptr<IPALSurface>> bitmaps; // Bitmap commands: decoded software surfaces (key = pointer)
         std::unordered_map<const CUIElement*, ElementRecord> records;
         std::vector<ScrollerInfo> scrollers;
     };
@@ -407,6 +449,19 @@ struct ImmediateRenderer::IslandState
     bool fullDamage = true;
     std::unordered_map<const CUIElement*, ElementRecord> records;
     std::unordered_map<const CUIElement*, ScrollerInfo> scrollers;
+    // Damage of the last presented frame, repainted again when WINUI_IMMEDIATE_PRESENT_UNION=1 (diagnostic: flip-model
+    // Present1 dirty rects already carry the rest of the previous buffer forward, so this is off by default).
+    std::vector<RectF> presentedDamage;
+    bool presentedFull = true;
+    // Decoded image surfaces uploaded to the painter (EnsureBitmap). The reference keeps the key (surface pointer) from
+    // being reused while the painter holds the bitmap; entries unused for c_bitmapIdleFrames are released.
+    struct BitmapEntry
+    {
+        xref_ptr<IPALSurface> surface;
+        uint64_t lastUsed = 0;
+    };
+    std::unordered_map<uint64_t, BitmapEntry> bitmaps;
+    uint64_t frames = 0;
 };
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
@@ -895,6 +950,58 @@ namespace
             list.glyphRuns.push_back(std::move(data));
             Push(c, ink, m, clip, nullptr);
         }
+
+        // Draws the source rect (bitmap pixels) of a decoded surface into dest (element space). rx/ry > 0 clips the
+        // image to a rounded rect (ImageBrush on an Ellipse or rounded Border).
+        void Bitmap(_In_ IPALSurface* surface, const RectF& dest, const RectF& source, float opacity, const CMILMatrix& m,
+            const RectF& clipRect, float rx, float ry)
+        {
+            if (IsEmptyRect(dest) || !(opacity > 0))
+            {
+                return;
+            }
+            size_t pushIndex = SIZE_MAX;
+            if (rx > 0 || ry > 0)
+            {
+                pushIndex = list.commands.size();
+                Command push;
+                push.type = CommandType::PushRoundedClip;
+                push.transform = ToMatrix(m);
+                push.rect = clipRect;
+                push.radiusX = rx;
+                push.radiusY = ry;
+                push.owner = element;
+                list.commands.push_back(push);
+            }
+            Command c;
+            c.type = CommandType::Bitmap;
+            c.rect = dest;
+            c.sourceRect = source;
+            c.opacity = opacity;
+            c.radiusX = rx;
+            c.radiusY = ry;
+            c.key = reinterpret_cast<uint64_t>(surface);
+            c.index = static_cast<uint32_t>(list.bitmaps.size());
+            list.bitmaps.emplace_back(surface);
+            const size_t before = list.commands.size();
+            Push(c, dest, m, ctx.clip, nullptr);
+            if (pushIndex != SIZE_MAX)
+            {
+                if (list.commands.size() == before)
+                {
+                    list.commands.pop_back();
+                    return;
+                }
+                Command& push = list.commands[pushIndex];
+                push.deviceBounds = list.commands.back().deviceBounds;
+                push.index = static_cast<uint32_t>(list.commands.size());
+                Command pop;
+                pop.type = CommandType::PopRoundedClip;
+                pop.deviceBounds = push.deviceBounds;
+                pop.owner = element;
+                list.commands.push_back(pop);
+            }
+        }
     };
 
     // Receives the glyph runs, decorations and highlight rects XAML's text stack produced for a text element.
@@ -974,6 +1081,82 @@ namespace
             || element->OfTypeByIndex<KnownTypeIndex::Border>()
             || (element->OfTypeByIndex<KnownTypeIndex::ContentPresenter>()
                 && !element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>());
+    }
+
+    // Paints an ImageBrush (Image element content or a Fill/Background) over bounds (element space) from its decoded
+    // software surface; immediate modes force software decodes (CImageSource::PrepareDecodeParams). Requests a
+    // decode at the rendered size like HWWalk::RequestImageDecode. Returns an unsupported-content detail or nullptr.
+    const wchar_t* EmitImageBrush(
+        Emitter& emitter,
+        _In_ CImageBrush* brush,
+        const RectF& bounds,
+        float rx,
+        float ry,
+        const CMILMatrix& world,
+        float scale,
+        bool nineGrid)
+    {
+        if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->m_pImageSource == nullptr)
+        {
+            return nullptr;
+        }
+
+        XRECTF xbounds{ bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top };
+        if (nineGrid || brush->ShouldRequestDecode())
+        {
+            XRECTF decodeBounds = xbounds;
+            if (nineGrid)
+            {
+                brush->GetNaturalBounds(&decodeBounds);
+            }
+            else if (SUCCEEDED(brush->AdjustDecodeRectForStretch(&decodeBounds)))
+            {
+                const RectF device = ScaleRect(TransformRectBounds(world, FromXRect(decodeBounds)), scale);
+                decodeBounds = { 0, 0, device.right - device.left, device.bottom - device.top };
+            }
+            IGNOREHR(brush->QueueRequestDecode(XcpRound(decodeBounds.Width), XcpRound(decodeBounds.Height), true));
+        }
+
+        IPALSurface* surface = brush->GetSoftwareSurface();
+        if (surface == nullptr)
+        {
+            // Still loading/decoding, or decoded to a hardware surface (SVG, SurfaceImageSource, ...).
+            return brush->m_pImageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
+        }
+        if (surface->GetPixelFormat() != pixelColor32bpp_A8R8G8B8 || surface->GetWidth() == 0 || surface->GetHeight() == 0)
+        {
+            return L"Image pixel format";
+        }
+
+        XRECTF natural{};
+        brush->GetNaturalBounds(&natural);
+        if (!(natural.Width > 0 && natural.Height > 0))
+        {
+            return nullptr;
+        }
+        CMILMatrix identity(true);
+        CMILMatrix brushToElement(true);
+        if (FAILED(brush->ComputeDeviceToSource(&identity, &xbounds, &brushToElement)))
+        {
+            return L"ImageBrush transform";
+        }
+        if (!brushToElement.IsScaleOrTranslationOnly())
+        {
+            return L"ImageBrush transform";
+        }
+
+        const RectF dest = TransformRectBounds(brushToElement, { 0, 0, natural.Width, natural.Height });
+        const RectF visible = IntersectRect(dest, bounds);
+        if (IsEmptyRect(visible) || IsEmptyRect(dest))
+        {
+            return nullptr;
+        }
+        const float sx = surface->GetWidth() / (dest.right - dest.left);
+        const float sy = surface->GetHeight() / (dest.bottom - dest.top);
+        const RectF source{ (visible.left - dest.left) * sx, (visible.top - dest.top) * sy,
+            (visible.right - dest.left) * sx, (visible.bottom - dest.top) * sy };
+        emitter.Bitmap(surface, visible, source, std::min(1.0f, brush->m_eOpacity), world, bounds, rx, ry);
+        return nineGrid ? L"Image NineGrid" : nullptr;
     }
 
     // Closes a group opened at pushIndex: drops empty groups, folds a single-primitive opacity group into the
@@ -1079,9 +1262,17 @@ void ImmediateRenderer::EmitContent(
         const float t = MaxOf(thickness);
 
         ColorF backgroundColor;
-        const BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
+        BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
+        if (auto imageBrush = do_pointer_cast<CImageBrush>(background.get()))
+        {
+            if (const wchar_t* detail = EmitImageBrush(emitter, imageBrush, { 0, 0, width, height }, radius, radius, world, ctx.scale, false))
+            {
+                ReportUnsupported(element, detail);
+            }
+            backgroundResult = BrushResult::None;
+        }
         if (backgroundResult == BrushResult::Unsupported || borderResult == BrushResult::Unsupported)
         {
             ReportUnsupported(element, L"Brush");
@@ -1110,9 +1301,14 @@ void ImmediateRenderer::EmitContent(
         const xref_ptr<CBrush> stroke = shape->GetStroke();
         const float t = stroke ? shape->GetStrokeThickness() : 0.0f;
         ColorF fillColor;
-        const BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
+        BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
         ColorF strokeColor;
         const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), 1.0f, &strokeColor) : BrushResult::None;
+        CImageBrush* fillImage = do_pointer_cast<CImageBrush>(shape->m_pFill);
+        if (fillImage != nullptr)
+        {
+            fillResult = BrushResult::None;
+        }
         if (fillResult == BrushResult::Unsupported || strokeResult == BrushResult::Unsupported)
         {
             ReportUnsupported(element, L"Brush");
@@ -1135,6 +1331,13 @@ void ImmediateRenderer::EmitContent(
         if (fillResult == BrushResult::Color)
         {
             emitter.Fill(geometry, rx, ry, fillColor, world);
+        }
+        else if (fillImage != nullptr)
+        {
+            if (const wchar_t* detail = EmitImageBrush(emitter, fillImage, geometry, rx, ry, world, ctx.scale, false))
+            {
+                ReportUnsupported(element, detail);
+            }
         }
         if (strokeResult == BrushResult::Color)
         {
@@ -1219,8 +1422,18 @@ void ImmediateRenderer::EmitContent(
     {
         ReportUnsupported(element, L"Shape geometry");
     }
-    else if (type == KnownTypeIndex::Image
-        || type == KnownTypeIndex::RichTextBlockOverflow
+    else if (type == KnownTypeIndex::Image)
+    {
+        auto image = static_cast<CImageBase*>(element);
+        if (CImageBrush* brush = image->GetBackgroundBrush())
+        {
+            if (const wchar_t* detail = EmitImageBrush(emitter, brush, { 0, 0, width, height }, 0, 0, world, ctx.scale, image->HasNinegrid()))
+            {
+                ReportUnsupported(element, detail);
+            }
+        }
+    }
+    else if (type == KnownTypeIndex::RichTextBlockOverflow
         || type == KnownTypeIndex::Glyphs
         || type == KnownTypeIndex::SwapChainPanel
         || type == KnownTypeIndex::MediaPlayerPresenter
@@ -1528,6 +1741,11 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
 
     // Pass 1: walk the element tree into a display list (DIPs, island space).
+    FILE* const statsFile = GetStatsFile();
+    const int64_t walkStart = statsFile ? QpcMicroseconds() : 0;
+    const uint32_t visitedBefore = m_elementsVisited;
+    const uint32_t culledBefore = m_elementsCulled;
+    const uint32_t renderedBefore = m_elementsRendered;
     DisplayList list;
     list.records.reserve(state.records.size());
     const RectF islandClip{ 0, 0, width / scale, height / scale };
@@ -1767,6 +1985,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         }
     }
 
+    bool ownFull = fullDamage;
+    std::vector<RectF> ownDamage;
     if (!fullDamage)
     {
         for (auto& r : damage)
@@ -1780,7 +2000,24 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
             SaveScrollers(state, list);
             return S_OK;
         }
-        CoalesceDamage(damage, c_maxDamageRects);
+        ownDamage = damage;
+        for (const Blit& b : blits)
+        {
+            ownDamage.push_back(b.rect);
+        }
+        if (!UnionPresentedDamage())
+        {
+            CoalesceDamage(damage, c_maxDamageRects);
+        }
+        else if (state.presentedFull)
+        {
+            fullDamage = true;
+        }
+        else
+        {
+            damage.insert(damage.end(), state.presentedDamage.begin(), state.presentedDamage.end());
+            CoalesceDamage(damage, c_maxDamageRects);
+        }
     }
 
     if (!fullDamage)
@@ -1790,6 +2027,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
             if (FAILED(state.painter->ScrollPixels(b.rect, b.dx, b.dy)))
             {
                 fullDamage = true;
+                ownFull = true;
                 break;
             }
         }
@@ -1932,8 +2170,78 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         popClip();
     };
 
+    // Upload decoded images the painter has not seen, and release ones no longer drawn.
+    constexpr uint64_t c_bitmapIdleFrames = 120;
+    ++state.frames;
+    for (const auto& surface : list.bitmaps)
+    {
+        const uint64_t key = reinterpret_cast<uint64_t>(surface.get());
+        auto found = state.bitmaps.find(key);
+        if (found == state.bitmaps.end())
+        {
+            void* pixels = nullptr;
+            XINT32 stride = 0;
+            XUINT32 w = 0;
+            XUINT32 h = 0;
+            if (FAILED(surface->Lock(&pixels, &stride, &w, &h)))
+            {
+                continue;
+            }
+            BitmapSource source;
+            source.key = key;
+            source.generation = 1;
+            source.width = w;
+            source.height = h;
+            source.stride = static_cast<uint32_t>(stride);
+            source.pixels = static_cast<const uint8_t*>(pixels);
+            const HRESULT ensureHr = state.painter->EnsureBitmap(source);
+            IGNOREHR(surface->Unlock());
+            if (FAILED(ensureHr))
+            {
+                continue;
+            }
+            found = state.bitmaps.emplace(key, IslandState::BitmapEntry{ surface, 0 }).first;
+        }
+        found->second.lastUsed = state.frames;
+    }
+    for (auto it = state.bitmaps.begin(); it != state.bitmaps.end();)
+    {
+        if (state.frames - it->second.lastUsed > c_bitmapIdleFrames)
+        {
+            state.painter->ReleaseBitmap(it->first);
+            it = state.bitmaps.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    const int64_t paintStart = statsFile ? QpcMicroseconds() : 0;
     hr = PaintTracedFrame(*state.painter, frameNumber, reinterpret_cast<uint64_t>(island),
         fullDamage ? nullptr : damage.data(), fullDamage ? 0 : static_cast<uint32_t>(damage.size()), paint);
+    if (statsFile)
+    {
+        const int64_t paintEnd = QpcMicroseconds();
+        double damagePixels = 0;
+        if (fullDamage)
+        {
+            damagePixels = static_cast<double>(width) * height;
+        }
+        else
+        {
+            for (const RectF& d : damage)
+            {
+                damagePixels += static_cast<double>(d.right - d.left) * (d.bottom - d.top);
+            }
+        }
+        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld\n", frameNumber, static_cast<void*>(island),
+            list.records.size(), m_elementsVisited - visitedBefore, m_elementsRendered - renderedBefore,
+            m_elementsCulled - culledBefore, list.commands.size(), blits.size(), blits.empty() ? 0 : blits[0].dx,
+            blits.empty() ? 0 : blits[0].dy, fullDamage ? 0 : damage.size(), damagePixels, fullDamage ? 1 : 0,
+            static_cast<long long>(paintStart - walkStart), static_cast<long long>(paintEnd - paintStart));
+        fflush(statsFile);
+    }
 
     if (m_mode == Mode::ImmediateGdiPlus)
     {
@@ -1960,6 +2268,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
 
     state.fullDamage = false;
+    if (!ownFull)
+    {
+        CoalesceDamage(ownDamage, c_maxDamageRects);
+    }
+    state.presentedFull = ownFull;
+    state.presentedDamage = ownFull ? std::vector<RectF>() : std::move(ownDamage);
     state.records = std::move(list.records);
     SaveScrollers(state, list);
 

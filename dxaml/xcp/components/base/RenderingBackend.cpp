@@ -213,6 +213,12 @@ namespace RenderingBackend
         return s_selection;
     }
 
+    bool IsImmediateModeActive() noexcept
+    {
+        static const bool s_active = GetProcessSelection().effective != Mode::Composition;
+        return s_active;
+    }
+
     const GUID& GetProviderId() noexcept
     {
         return c_providerId;
