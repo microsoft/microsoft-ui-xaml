@@ -39,6 +39,11 @@
         <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
 
+    <!-- immediate-rendering-d2d-sw -->
+    <ItemGroup>
+        <ClInclude Include="..\inc\D2DPainter.h"/>
+    </ItemGroup>
+
     <PropertyGroup>
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);

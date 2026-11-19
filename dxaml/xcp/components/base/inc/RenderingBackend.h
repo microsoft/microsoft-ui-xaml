@@ -101,4 +101,10 @@ namespace RenderingBackend
 
     // An element subtree that the immediate backend cannot draw; the root falls back to Composition.
     void TraceUnsupportedContent(Mode mode, _In_opt_z_ const wchar_t* typeName, _In_opt_z_ const wchar_t* detail) noexcept;
+
+    // ---- Added by immediate-rendering-d2d-sw ----
+    // The painter's device was removed or reset (test plan C4/T21). reason is the HRESULT the painter observed
+    // (for example DXGI_ERROR_DEVICE_REMOVED) and removedReason is ID3D11Device::GetDeviceRemovedReason().
+    void TraceDeviceLost(Mode mode, HRESULT reason, HRESULT removedReason, uint32_t frameNumber) noexcept;
+    // ---- End immediate-rendering-d2d-sw ----
 }

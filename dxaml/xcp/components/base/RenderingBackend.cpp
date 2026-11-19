@@ -282,4 +282,20 @@ namespace RenderingBackend
             TraceLoggingWideString(typeName ? typeName : L"", "TypeName"),
             TraceLoggingWideString(detail ? detail : L"", "Detail"));
     }
+
+    // ---- Added by immediate-rendering-d2d-sw ----
+    void TraceDeviceLost(Mode mode, HRESULT reason, HRESULT removedReason, uint32_t frameNumber) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "DeviceLost",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingKeyword(Keywords::Selection),
+            TraceLoggingUInt32(static_cast<uint32_t>(mode), "Mode"),
+            TraceLoggingHResult(reason, "Reason"),
+            TraceLoggingHResult(removedReason, "RemovedReason"),
+            TraceLoggingUInt32(frameNumber, "FrameNumber"));
+    }
+    // ---- End immediate-rendering-d2d-sw ----
 }
