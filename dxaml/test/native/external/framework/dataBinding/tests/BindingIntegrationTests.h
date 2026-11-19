@@ -345,6 +345,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupingKeepsView)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify grouping on, regroup and grouping off keep the CollectionViewSource's View and its CollectionGroups object, raising PropertyChanged(CollectionGroups) before the Reset, as WPF keeps its view")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CollectionViewLiveSorting)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify ICollectionViewLiveShaping live sorting moves an item whose observed property changed, with default and explicit LiveSortingProperties, as WPF ListCollectionView does")
             END_TEST_METHOD()

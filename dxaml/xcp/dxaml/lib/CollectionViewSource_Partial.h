@@ -76,10 +76,6 @@ namespace DirectUI
         _Check_return_ HRESULT OnSortDescriptionsChanged();
         _Check_return_ HRESULT EndDeferRefresh();
 
-        // The shaping view's output switches between flat and grouped. Consumers read CollectionGroups once
-        // per ItemsSource, so View is replaced. *pIsHandled is false if pView is not this source's View.
-        _Check_return_ HRESULT OnShapingViewGroupingChanged(_In_ VectorCollectionView* pView, _Out_ bool* pIsHandled);
-
     private:
 
         _Check_return_ HRESULT OnSourceChanged(_In_ IInspectable *pOldSource, _In_ IInspectable *pNewSource);

@@ -242,7 +242,7 @@ Cleanup:
 }
 
 _Check_return_
-HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource)
+HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource, bool isGroupingChanged)
 {
     ctl::ComPtr<wfc::IVectorChangedEventArgs> spArgs;
     VectorChangedEventArgs *pArgs = nullptr;
@@ -261,6 +261,12 @@ HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *
     }
 
     IFC_RETURN(SetSource(pSource));
+
+    // Consumers react to CollectionGroups before the Reset, so they read the new items with the new groups.
+    if (isGroupingChanged)
+    {
+        IFC_RETURN(RaisePropertyChanged(STR_LEN_PAIR(L"CollectionGroups")));
+    }
 
     IFC_RETURN(ctl::ComObject<VectorChangedEventArgs>::CreateInstance(spArgs.ReleaseAndGetAddressOf()));
     spArgs.CastTo(&pArgs);

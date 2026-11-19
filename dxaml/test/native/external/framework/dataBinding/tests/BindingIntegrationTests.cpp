@@ -3776,10 +3776,10 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_NOT_NULL(dynamic_cast<ICollectionViewShaping^>(cvs->View));
             VERIFY_ARE_STRINGS_EQUAL(L"bdzc", namesOf(view)->Data());
 
-            LOG_OUTPUT(L"Grouping through the view switches View to a grouped view that is also shapeable.");
+            LOG_OUTPUT(L"Grouping through the view groups that same view in place, and it stays shapeable.");
             shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             auto groupedView = cvs->View;
-            VERIFY_IS_FALSE(groupedView == view);
+            VERIFY_IS_TRUE(groupedView == view);
             VERIFY_IS_NOT_NULL(groupedView->CollectionGroups);
             VERIFY_ARE_EQUAL(3u, groupedView->CollectionGroups->Size);
             auto groupedShaping = dynamic_cast<ICollectionViewShaping^>(groupedView);
@@ -4431,6 +4431,102 @@ namespace Framework { namespace DataBinding {
             cvs->Source = source;
             VERIFY_IS_FALSE(cvs->View == view);
             VERIFY_ARE_EQUAL(0u, safe_cast<ICollectionViewShaping^>(cvs->View)->SortDescriptions->Size);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupingKeepsView()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto view = cvs->View;
+
+            // "P" PropertyChanged(CollectionGroups), "R" / "c" a Reset / other change of the view,
+            // "g" / "x" a Reset / other change of its CollectionGroups.
+            auto log = std::make_shared<std::wstring>();
+            auto propertyToken = safe_cast<INotifyPropertyChanged^>(view)->PropertyChanged += ref new PropertyChangedEventHandler(
+                [log](Object^, PropertyChangedEventArgs^ args)
+                {
+                    if (args->PropertyName == L"CollectionGroups")
+                    {
+                        *log += L"P";
+                    }
+                });
+            auto viewToken = view->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [log](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    *log += (args->CollectionChange == ::Windows::Foundation::Collections::CollectionChange::Reset) ? L"R" : L"c";
+                });
+
+            LOG_OUTPUT(L"Grouping starts on the same view: CollectionGroups turns non-null, announced before the Reset.");
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"PR", log->c_str());
+            auto groups = view->CollectionGroups;
+            VERIFY_IS_NOT_NULL(groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"badc", ShapingNamesOf(view)->Data());
+
+            auto groupsToken = groups->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Object^>(
+                [log](::Windows::Foundation::Collections::IObservableVector<Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+                {
+                    *log += (args->CollectionChange == ::Windows::Foundation::Collections::CollectionChange::Reset) ? L"g" : L"x";
+                });
+
+            LOG_OUTPUT(L"A regroup keeps the view and its CollectionGroups: one Reset of complete groups, then one of the view.");
+            log->clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:c 2:d", DescribeGroups(groups).c_str());
+            VERIFY_ARE_EQUAL(4u, view->Size);
+
+            log->clear();
+            auto deferral = cvs->DeferRefresh();
+            cvs->GroupDescriptions->Clear();
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            delete deferral;
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a b:b c:c d:d", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Source changes on the grouped view stay incremental.");
+            log->clear();
+            source->Append(MakeShapingItem(L"e", 0));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a b:b c:c d:d e:e", DescribeGroups(groups).c_str());
+            VERIFY_IS_TRUE(log->find(L'R') == std::wstring::npos);
+            VERIFY_IS_TRUE(log->find(L'g') == std::wstring::npos);
+
+            LOG_OUTPUT(L"Grouping stops on the same view: CollectionGroups turns null, announced before the Reset; the groups let go of their items.");
+            log->clear();
+            cvs->GroupDescriptions->Clear();
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_NULL(view->CollectionGroups);
+            VERIFY_ARE_STRINGS_EQUAL(L"PRg", log->c_str());
+            VERIFY_ARE_EQUAL(0u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcde", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Grouping again brings back the same CollectionGroups object.");
+            log->clear();
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_IS_TRUE(view->CollectionGroups == groups);
+            VERIFY_ARE_STRINGS_EQUAL(L"gPR", log->c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:ce 2:d", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"A view created grouped answers CollectionGroups from the start.");
+            auto groupedCvs = ref new CollectionViewSource();
+            groupedCvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            groupedCvs->Source = MakeShapingSource();
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groupedCvs->View->CollectionGroups).c_str());
+
+            groups->VectorChanged -= groupsToken;
+            view->VectorChanged -= viewToken;
+            safe_cast<INotifyPropertyChanged^>(view)->PropertyChanged -= propertyToken;
         });
     }
 

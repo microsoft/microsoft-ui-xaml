@@ -473,6 +473,13 @@ namespace DirectUI
         virtual _Check_return_ HRESULT OnItemsSourceChanged(
             _In_ IInspectable* pNewValue);
 
+        // A shaping view (ICollectionViewShaping) that starts or stops grouping keeps its identity and raises
+        // PropertyChanged("CollectionGroups"); the items are then re-generated with or without groups, as for
+        // a new ItemsSource (WPF: ItemsControl.IsGrouping follows the view's groups).
+        _Check_return_ HRESULT AttachCollectionViewGroupingHandler(_In_opt_ IInspectable* pSource);
+        void DetachCollectionViewGroupingHandler();
+        _Check_return_ HRESULT OnCollectionViewPropertyChanged(_In_ xaml_data::IPropertyChangedEventArgs* pArgs);
+
         // Helper to find out GroupItemIndex from GroupItem
         _Check_return_ HRESULT GetGroupItemIndex(
             _In_ IInspectable* groupItem,
@@ -555,6 +562,8 @@ namespace DirectUI
         DataTemplateSelectorRecyclingContext m_dataSelectorRecyclingContext;
 
         ctl::EventPtr<VectorChangedEventCallback> m_epItemCollectionVectorChangedHandler;
+        ctl::EventPtr<PropertyChangedEventCallback> m_epCollectionViewPropertyChangedHandler;
+        TrackerPtr<xaml_data::INotifyPropertyChanged> m_tpCollectionViewForGrouping;
         EventRegistrationToken m_ItemsChangedToken{};
         EventRegistrationToken m_GroupStyleChangedToken{};
 

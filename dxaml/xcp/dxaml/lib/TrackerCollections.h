@@ -853,6 +853,19 @@ namespace DirectUI
             RRETURN(ObservableTrackerCollection<T>::Clear());
         }
 
+        // Replaces the contents and raises a single Reset.
+        template <typename TItem>
+        _Check_return_ HRESULT InternalReplaceAll(_In_ const std::vector<TItem>& items)
+        {
+            IFC_RETURN(TrackerCollection<T>::Clear());
+            this->Reserve(static_cast<uint32_t>(items.size()));
+            for (const auto& item : items)
+            {
+                IFC_RETURN(TrackerCollection<T>::Append(item.Get()));
+            }
+            RRETURN(this->RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
+        }
+
     protected:
         // This class is marked novtable, so must not be instantiated directly.
         ReadOnlyObservableTrackerCollection() = default;

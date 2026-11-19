@@ -140,8 +140,9 @@ namespace DirectUI
             _In_ wfc::IVector<IInspectable *> *pSource,
             _Outptr_ xaml_data::ICollectionView  **instance);
 
-        // Points the view at another vector and announces the swap as a Reset.
-        _Check_return_ HRESULT RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource);
+        // Points the view at another vector and announces the swap as a Reset, after PropertyChanged for
+        // CollectionGroups when the swap starts or stops grouping.
+        _Check_return_ HRESULT RetargetSource(_In_ wfc::IVector<IInspectable *> *pSource, bool isGroupingChanged = false);
 
     protected:
 
@@ -210,6 +211,10 @@ namespace DirectUI
         TrackerPtr<wfc::IObservableVector<IInspectable *>> m_tpSourceListObservable;
         ctl::EventPtr<VectorChangedEventCallback> m_epSourceListChangedHandler;
         TrackerPtr<wfc::IVector<IInspectable *>> m_tpInternalList;
+        // The output lists the view presents (m_tpInternalList is one of them) and the grouped presentation over
+        // the group list. Created once each, so the view's CollectionGroups is one object for its lifetime.
+        TrackerPtr<wfc::IVector<IInspectable *>> m_tpFlatList;
+        TrackerPtr<wfc::IVector<IInspectable *>> m_tpGroupList;
         TrackerPtr<xaml_data::ICollectionView> m_tpGroupedPresentation;
         // Grouped output: the group tree (WPF: CollectionViewGroupRoot); its top-level groups are the InternalList.
         ctl::ComPtr<xaml_data::ICollectionViewGroup> m_spGroupRoot;

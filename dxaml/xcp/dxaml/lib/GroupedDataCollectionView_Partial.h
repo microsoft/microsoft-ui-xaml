@@ -49,6 +49,10 @@ namespace DirectUI
             _In_ xaml::IPropertyPath *pItemsPath,
             _Outptr_ ICollectionView **instance);
 
+        // A source Reset rebuilds CollectionGroups as one Reset, raised once the groups are complete
+        // (the grouped output of a shaping VectorCollectionView).
+        void SetRaisesSingleGroupsReset() { m_raisesSingleGroupsReset = true; }
+
     public:
 
         // IPropertyPathListenerHost
@@ -74,6 +78,7 @@ namespace DirectUI
         _Check_return_ HRESULT CreatePropertyPathListener(_In_ xaml::IPropertyPath *pItemsPath);
 
         _Check_return_ HRESULT CalculateGroups();
+        _Check_return_ HRESULT CalculateGroupsAsOneReset();
         _Check_return_ HRESULT CalculateCollectionViewGroup(_In_ IInspectable *pGroup, _Outptr_ xaml_data::ICollectionViewGroup **ppCVG);
 
         _Check_return_ HRESULT OnGroupsChange(_In_ wfc::IVectorChangedEventArgs *pArgs);
@@ -115,6 +120,7 @@ namespace DirectUI
 
         static const UINT cNumberOfItemsNotCached = static_cast<UINT>(-1);
         UINT m_nNumberOfItemsInAllGroups;
+        bool m_raisesSingleGroupsReset = false;
 
         TrackerPtr<wfc::IVector<IInspectable *>> m_tpSource;
         TrackerPtr<wfc::IObservableVector<IInspectable *>> m_tpObservable;

@@ -375,25 +375,6 @@ _Check_return_ HRESULT CollectionViewSource::DetachShapingView()
     return S_OK;
 }
 
-_Check_return_ HRESULT CollectionViewSource::OnShapingViewGroupingChanged(_In_ VectorCollectionView* pView, _Out_ bool* pIsHandled)
-{
-    ctl::ComPtr<xaml_data::ICollectionView> spView;
-    ctl::ComPtr<IInspectable> spSource;
-
-    *pIsHandled = false;
-
-    IFC_RETURN(get_View(spView.ReleaseAndGetAddressOf()));
-    if (!m_tpShapingView || spView.Get() != m_tpShapingView.Get() || AsShapingView(spView.Get()) != pView)
-    {
-        return S_OK;
-    }
-
-    IFC_RETURN(get_Source(spSource.ReleaseAndGetAddressOf()));
-    IFC_RETURN(EnsureView(spSource.Get()));
-    *pIsHandled = true;
-    return S_OK;
-}
-
 _Check_return_ HRESULT CollectionViewSource::get_SortDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue)
 {
     IFC_RETURN(EnsureShapingDescriptions());

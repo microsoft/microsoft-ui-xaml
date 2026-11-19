@@ -120,6 +120,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that cvs.source can be set and collection changes can happen when listview is collapsed")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ListViewFollowsCollectionViewSourceGrouping)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView shows groups when its CollectionViewSource view starts grouping, regroups, and shows flat items when it stops, with the same ItemsSource")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GridViewFollowsCollectionViewSourceGrouping)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a GridView shows groups when its CollectionViewSource view starts grouping, regroups, and shows flat items when it stops, with the same ItemsSource")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //
@@ -136,6 +144,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             int expectedGroupHeaders);
         void PerformGenerateGroupItemTest(xaml_controls::ListViewBase^ list, int expectedGroups, int expectedItems);
         void PerformBasicGroupingTests(xaml_controls::ListViewBase^ list);
+        void PerformGroupingToggleTest(MocoHelper::ListControlType listControlType);
     };
 
 } } } } } }

@@ -1711,6 +1711,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CollectionViewSource view that starts grouping, regroups and stops grouping stays the TableView's ItemsSource, as WPF keeps its view: the rows follow it, a regroup keeps a collapsed group collapsed, and grouping again restores the headers.")]
+        public void VerifyCollectionViewGroupingToggleKeepsView()
+        {
+            TableView tableView = null;
+            CollectionViewSource cvs = null;
+            ICollectionView view = null;
+            ObservableCollection<ShapedPerson> items = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                cvs = MakeShapingSource(out items);
+                view = cvs.View;
+                tableView = CreateBindingTable(view);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyRowItems(tableView, items.ToList(), "before grouping");
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+                Verify.AreSame(view, cvs.View, "Grouping keeps the CollectionViewSource's View.");
+                Verify.IsNotNull(view.CollectionGroups);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(view, tableView.ItemsSource);
+                VerifyProjection(tableView,
+                    new List<string> { "#Studio(2)", "Asha", "Ines", "#Platform(3)", "Diego", "Rafa", "Owen", "#Research(1)", "Mei" },
+                    "grouped in place");
+                tableView.CollapseGroup("Platform");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(GetGroupInfo(tableView, 1).IsExpanded, "Precondition: Platform is collapsed.");
+                var groups = view.CollectionGroups;
+                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                Verify.AreSame(view, cvs.View, "A regroup keeps the View.");
+                Verify.AreSame(groups, view.CollectionGroups, "A regroup keeps the CollectionGroups object.");
+
+                // A shaping view's regroup is read at once, not one dispatcher turn later.
+                VerifyProjection(tableView,
+                    new List<string> { "#Platform(3)", "#Research(1)", "Mei", "#Studio(2)", "Ines", "Asha" },
+                    "regrouped and sorted by Name, descending, before the dispatcher runs");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(GetGroupInfo(tableView, 0).IsExpanded, "The collapsed group stays collapsed across the regroup.");
+                cvs.GroupDescriptions.Clear();
+                Verify.AreSame(view, cvs.View, "Ungrouping keeps the View.");
+                Verify.IsNull(view.CollectionGroups);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(view, tableView.ItemsSource);
+                VerifyRowItems(tableView, items.OrderByDescending(p => p.Name, StringComparer.Ordinal).ToList(), "flat again, sorted by Name, descending");
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription("DepartmentName"));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView,
+                    new List<string> { "#Platform(3)", "#Research(1)", "Mei", "#Studio(2)", "Ines", "Asha" },
+                    "grouped again; group expansion is the control's and is kept");
+            });
+        }
+
         #endregion
     }
 
