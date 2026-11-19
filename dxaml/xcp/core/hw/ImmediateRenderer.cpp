@@ -1311,7 +1311,7 @@ namespace
         float scale,
         bool nineGrid)
     {
-        if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->c_pimageSource == nullptr)
+        if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->m_pImageSource == nullptr)
         {
             return nullptr;
         }
@@ -1336,7 +1336,7 @@ namespace
         if (surface == nullptr)
         {
             // Still loading/decoding, or decoded to a hardware surface (SVG, SurfaceImageSource, ...).
-            return brush->c_pimageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
+            return brush->m_pImageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
         }
         if (surface->GetPixelFormat() != pixelColor32bpp_A8R8G8B8 || surface->GetWidth() == 0 || surface->GetHeight() == 0)
         {
@@ -1790,10 +1790,48 @@ void ImmediateRenderer::Walk(
     {
         case KnownTypeIndex::PopupRoot:
         {
-            CUIElementCollection* children = element->GetChildren();
-            if (children != nullptr && children->GetCount() > 0)
+            // Open popups paint on top of the island content, oldest first (HWWalk::PopupRootRenderChildren). A popup's
+            // child is parented to the PopupRoot but positioned by the popup's own ancestor chain.
+            auto popupRoot = static_cast<CPopupRoot*>(element);
+            const std::vector<CPopup*> popups = popupRoot->GetOpenPopupList(true /* includeUnloadingPopups */);
+            WalkContext popupCtx = parent;
+            popupCtx.scroller = -1;
+            popupCtx.scrollerContent = false;
+            popupCtx.offsetX = popupCtx.offsetY = 0;
+            popupCtx.contentClip = parent.clip;
+            for (auto it = popups.rbegin(); it != popups.rend(); ++it)
             {
-                ReportUnsupported(element, L"Open popups");
+                CPopup* popup = *it;
+                if (popup->IsWindowed())
+                {
+                    // Windowed popups own an HWND/ContentIsland; immediate modes paint them into the island's swap
+                    // chain instead, so content outside the window bounds is clipped.
+                    ReportUnsupported(popup, L"Windowed popup:painted in island");
+                }
+                if (popup->m_overlayElement != nullptr)
+                {
+                    Walk(popup->m_overlayElement, popupCtx, list);
+                }
+                CMILMatrix popupWorld(true);
+                for (CUIElement* e = popup; e != nullptr && e->GetTypeIndex() != KnownTypeIndex::XamlIslandRoot
+                    && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
+                {
+                    CMILMatrix local;
+                    (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+                    popupWorld.Append(local);
+                }
+                popupWorld.Append(parent.world);
+                WalkContext childCtx = popupCtx;
+                // Walk() appends the child's own local transform (its arrange offset under the PopupRoot) to this.
+                childCtx.world = popupWorld;
+                if (popup->m_unloadingChild)
+                {
+                    Walk(popup->m_unloadingChild.get(), childCtx, list);
+                }
+                if (popup->m_pChild != nullptr)
+                {
+                    Walk(popup->m_pChild, childCtx, list);
+                }
             }
             return;
         }
