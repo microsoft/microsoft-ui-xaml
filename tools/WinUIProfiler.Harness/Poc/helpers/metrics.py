@@ -14,6 +14,13 @@ class MeasurementError(Exception):
     pass
 
 
+def validation_rule(rule: dict) -> None:
+    if (not isinstance(rule, dict) or set(rule) != {"metric", "minimumReduction"}
+            or rule["metric"] != "layoutPassCount"
+            or type(rule["minimumReduction"]) is not int or not 1 <= rule["minimumReduction"] <= 10000):
+        raise MeasurementError("Validation requires layoutPassCount and an integer minimumReduction from 1 to 10000.")
+
+
 def extract_iteration(database: Path, app: dict, scenario: dict) -> dict:
     if (app.get("passed") is not True
             or any(app.get(name) != expected for name, expected in scenario["expectedResults"].items())):
@@ -189,21 +196,24 @@ def markdown_report(result: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def read_capture(path: Path, scenario: dict) -> tuple[dict, dict]:
+    manifest = json.loads(path.read_text(encoding="utf-8-sig"))
+    for path_key, hash_key in (
+        ("executable", "executableSha256"),
+        ("managedAssembly", "managedAssemblySha256"),
+    ):
+        if path_key == "managedAssembly" and path_key not in manifest:
+            continue
+        actual = hashlib.sha256(Path(manifest[path_key]).read_bytes()).hexdigest()
+        if actual.lower() != manifest[hash_key].lower():
+            raise MeasurementError(f"The retained {path_key} changed.")
+    return manifest, summarize(manifest, scenario)
+
+
 def compare_manifests(baseline_path: Path, candidate_path: Path, scenario: dict) -> str:
-    manifests = [json.loads(path.read_text(encoding="utf-8-sig"))
-                 for path in (baseline_path, candidate_path)]
-    results = []
-    for manifest in manifests:
-        for path_key, hash_key in (
-            ("executable", "executableSha256"),
-            ("managedAssembly", "managedAssemblySha256"),
-        ):
-            if path_key == "managedAssembly" and path_key not in manifest:
-                continue
-            actual = hashlib.sha256(Path(manifest[path_key]).read_bytes()).hexdigest()
-            if actual.lower() != manifest[hash_key].lower():
-                raise MeasurementError(f"The retained {path_key} changed.")
-        results.append(summarize(manifest, scenario))
+    captures = [read_capture(path, scenario) for path in (baseline_path, candidate_path)]
+    manifests = [capture[0] for capture in captures]
+    results = [capture[1] for capture in captures]
     frameworks = {run["frameworkSha256"].lower()
                   for manifest in manifests for run in manifest["iterations"]}
     if len(frameworks) != 1:

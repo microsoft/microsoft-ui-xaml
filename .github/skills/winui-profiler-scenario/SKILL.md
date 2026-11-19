@@ -108,10 +108,63 @@ If the user asks to see the app, use that measurement state's `Show` action with
 an agreed display duration. This replays the flow and then holds the final
 window open; it is not a recording or another ten-run acceptance check.
 
-Report the actual measurement and evidence paths. Per-run `app-result.json`
-contains `executedSteps`, actual dimensions/offsets/counts, and the plan hash.
-Custom flows are measurement/investigation-only: do not claim a performance
-pass or reuse the seeded fix gate. Investigation or code changes require their
-own separately approved ADE workflow; scenario confirmation does not approve
-them. Automatic hypothesis loops, other apps, VM execution, and the full
-three-agent MAF orchestrator remain separate work.
+Per-run `app-result.json` contains `executedSteps`, actual dimensions/offsets/counts,
+and the plan hash. Do not stop at these measurements unless the user explicitly
+requested measurement only.
+
+## Drive the complete available loop
+
+After Prepare succeeds, use its exact state:
+
+```powershell
+& .\tools\WinUIProfiler.Harness\Poc\Invoke-AdePoc.ps1 `
+    -Action StartFlow -StatePath '<POC-STATE>' -Problem '<the actual hypothesis>'
+```
+
+If the user supplied no performance hypothesis, use a neutral question about
+avoidable layout work in their confirmed actions. Do not substitute construction
+for resizing or invent a slowdown. NotDemonstrated is a valid result.
+Retain the returned POC-FLOW path across turns; never select a latest run.
+The driver progresses until an exact ADE proposal needs approval or it stops.
+Read its pending report and explain the proposed phase, scope and evidence.
+Ask the user to approve that specific proposal using ask_user; do not make
+them type its hash. Scenario confirmation is NOT approval of ADE execution.
+
+Only after explicit approval of the currently pending proposal:
+
+```powershell
+& .\tools\WinUIProfiler.Harness\Poc\Invoke-AdePoc.ps1 `
+    -Action ContinueFlow -FlowPath '<POC-FLOW>' `
+    -ProposalSha256 '<exact approved pending hash>'
+```
+
+The driver consumes this approval once, executes through ADE and progresses
+automatically to the next gate. It never approves the next proposal itself.
+Expect distinct approvals for diagnosis, a code fix, and causal validation.
+An inconclusive analysis can request another ten identical runs with a refined
+question; unsupported instrumentation/scenarios stop as NeedsInput, not a
+substituted measurement. The default total analysis-cycle limit is three.
+The default one-hour deadline includes approval waits and is checked at safe
+phase boundaries; in-flight steps finish their bounded work and cleanup first.
+
+An evidence-backed recommendation creates a protected, baseline-relative
+layout-count gate. It does not reuse the four-layout seed budget. ADE changes
+only the allowed app file in its own copy and owns build/check/repair execution.
+After ADE passes, the harness independently rebuilds and captures ten fresh runs
+of the exact scenario, recounts both SQLite sets, checks source/runtime/tool
+identity and correctness, and requires the recommended reduction in every run.
+Another approved analysis must support the causal explanation before Accepted.
+A failed capture is an environment failure, never a rejected hypothesis or success.
+
+Use FlowStatus and FlowReport with the exact FlowPath to inspect progress and
+the chronological unified report. An interrupted operation stops as
+RecoveryRequired; inspect its ADE run/log rather than blindly executing again.
+Report the actual final status and evidence, not just a successful tool exit.
+No demonstrated problem, rejected hypothesis, inconclusive, unsupported input,
+failed validation and timeout are all explicit non-success outcomes.
+
+Keep all source changes in ADE's working copy for review. Do not commit, push,
+edit a PR, or apply the patch to mux without explicit permission. This local loop
+uses the existing ADE MAF runtime, not three standalone production agent services.
+Other apps, arbitrary automation, framework rebuilding/deployment, additional
+metrics, VM execution and production LogMaster remain separate work.

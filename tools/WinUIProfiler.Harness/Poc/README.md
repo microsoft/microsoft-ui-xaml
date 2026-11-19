@@ -17,14 +17,16 @@ produces a patch and evidence. The seed remains intentionally inefficient.
 
 For the synthetic mode, no VM, WinUI product build, ETW capture, or extra Python package is required.
 Reduced normalization counts do not prove a wall-clock or WinUI improvement.
-Neither mode implements the three profiler subagents.
+The Control mode now composes measurement, ADE research and ADE code execution
+into an approval-gated investigation loop. These are not three standalone
+production profiler-agent services.
 
 ## What belongs where
 
 | Location | Ownership |
 | --- | --- |
 | `Poc\Invoke-AdePoc.ps1` | Thin ADE command adapter and explicit staging |
-| `Poc\helpers` | Shared capture, extraction, profiler queries, verification, and evidence comparison |
+| `Poc\helpers` | Shared capture, extraction, queries, flow orchestration, validation and reporting |
 | `Poc\ControlDemo` | Test app, bounded action runner/validator/catalog, build script, providers/markers, and protected `scenario.json` |
 | `Poc\sample` | Synthetic Python demonstration |
 | `Poc\tests` | Harness/helper tests |
@@ -298,15 +300,82 @@ navigation, arbitrary waits/loops, other controls/apps and launch measurements
 are not supported in this milestone.
 
 `-Problem` still only asks an investigation question; it does not change actions.
-Custom flows report **Measured**, not a performance pass: no layout budget or
-fix-acceptance contract is invented. They can use `Investigate` with its separate
-approval, but fix `Propose` is blocked. A legitimate zero-layout interval needs
+Custom flows report **Measured**, not a performance pass: no layout budget is
+invented. Use the integrated flow below for diagnosis and an evidence-backed
+fix-acceptance contract. Direct seeded fix `Propose` remains blocked for custom
+plans without that contract. A legitimate zero-layout interval needs
 explicit scenario opt-in and positive XAML layout-provider evidence from the
 same process/UI thread elsewhere in the complete trace. Lost, missing-provider
 or unbalanced telemetry is still invalid.
 
 Omitting `-ScenarioPlan` preserves the original 40-button fail-to-pass demo.
 Other apps and arbitrary scenario/test-code generation remain future work.
+
+### Integrated investigation and validation loop
+
+After a confirmed scenario has been prepared/measured, Copilot normally starts
+this flow instead of stopping at a measurement table. It also accepts an explicit
+previous Control state without changing its retained evidence:
+
+```powershell
+& $poc -Action StartFlow -StatePath $state `
+    -Problem 'Does this measured scenario contain avoidable layout work?'
+# Retain the exact POC-FLOW printed above.
+$flow = '<flow.json printed by StartFlow>'
+& $poc -Action FlowStatus -FlowPath $flow
+& $poc -Action FlowReport -FlowPath $flow
+```
+
+StartFlow stages an isolated source snapshot and proposes the first research
+run. **It does not approve or execute it.** Read the pending ADE report and obtain
+human approval of that exact proposal. Copilot supplies the hash on the user's
+behalf only after that confirmation:
+
+```powershell
+& $poc -Action ContinueFlow -FlowPath $flow -ProposalSha256 '<approved pending hash>'
+```
+
+Each approval permits only its pending phase. The driver resumes automatically
+until the next approval or terminal outcome:
+
+1. Query profiler evidence, correlate source, and return a structured diagnosis.
+2. If inconclusive, repeat ten unchanged runs with a narrower question, then
+   propose another approved analysis. New instrumentation/scenarios stop as NeedsInput.
+3. If a fix is justified, propose a separately approved ADE `perf-optimize` run.
+   The recommendation specifies a meaningful per-run layout-count reduction.
+   Its protected contract seals baseline evidence and preserves the exact plan,
+   setup, correctness, markers, runtime and profiler. The unchanged baseline
+   fails without being recaptured. Only configured app source is editable.
+4. ADE builds, captures, checks and repairs in its working copy. A passing ADE
+   run triggers a separate harness-owned build and ten fresh captures. The
+   harness independently recounts both SQLite sets and checks every paired run.
+5. A separately approved post-fix analysis evaluates whether that controlled
+   change supports the proposed cause. Only then can the flow report Accepted.
+
+No evidence of a problem is **NotDemonstrated**, not an invitation to manufacture
+a fix. Other explicit outcomes are Rejected, Inconclusive, NeedsInput,
+FixNotValidated, EnvironmentFailure, RecoveryRequired and TimedOut. Capture or
+build failures never establish that a hypothesis was false.
+Passing a count gate supports an app-level work reduction, not a statistical
+latency improvement or a general framework root cause.
+
+`-MaxAnalysisCycles` defaults to 3 (including post-fix analysis);
+`-FlowTimeoutSeconds` defaults to 3600 and includes approval waits. The deadline
+is checked at safe phase boundaries, not by killing active builds/captures.
+ADE retains its bounded execution/repair/check timeouts. If interrupted during
+an operation, the driver refuses to replay it automatically: inspect the named
+ADE run/log before starting a new flow. A per-flow file lock prevents concurrent
+advancement. Wrong or stale approval hashes cannot start execution.
+
+`flow.json` and `report.md` retain the hypothesis/refinement history, inputs,
+decisions, invocation logs, native ADE results and per-run validation comparison.
+Evidence and controller files are hash-sealed across gates. Each ADE run retains
+its own detailed report, diff and hash-chained tool log. This is the POC's unified
+report, not the production LogMaster service.
+
+The orchestrator never applies a patch to mux, commits, pushes or edits a PR.
+Code/binaries remain in the explicitly reported ADE working copy/build outputs.
+Legacy Synthetic and manually staged Control operations remain available.
 
 ### See the app and audit the result
 

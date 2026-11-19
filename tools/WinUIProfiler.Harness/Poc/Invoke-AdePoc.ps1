@@ -3,9 +3,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('Explore', 'Prepare', 'Investigate', 'Show', 'Evidence', 'Propose', 'Approve', 'Run', 'Status', 'Verify', 'Report')]
+    [ValidateSet('Explore', 'Prepare', 'StartFlow', 'ContinueFlow', 'FlowStatus', 'FlowReport', 'Investigate', 'Show', 'Evidence', 'Propose', 'Approve', 'Run', 'Status', 'Verify', 'Report')]
     [string]$Action,
     [string]$StatePath,
+    [string]$FlowPath,
+    [ValidateRange(1, 10)][int]$MaxAnalysisCycles = 3,
+    [ValidateRange(60, 86400)][int]$FlowTimeoutSeconds = 3600,
     [string]$ProposalSha256,
     [ValidateSet('Synthetic', 'Control')]
     [string]$Scenario = 'Synthetic',
@@ -52,6 +55,29 @@ function Save-State {
     $temporaryPath = "$StatePath.tmp"
     [IO.File]::WriteAllText($temporaryPath, ($State | ConvertTo-Json -Depth 20))
     Move-Item -LiteralPath $temporaryPath -Destination $StatePath -Force
+}
+
+if ($Action -in 'StartFlow', 'ContinueFlow', 'FlowStatus', 'FlowReport') {
+    $flowArguments = @('-B', '-m', 'helpers.flow', $Action, '--adapter', $PSCommandPath)
+    if ($Action -eq 'StartFlow') {
+        if (-not $StatePath -or $FlowPath) {
+            throw 'StartFlow requires the exact Prepare StatePath and no FlowPath.'
+        }
+        $flowArguments += @('--state', $StatePath, '--problem', $Problem,
+            '--max-cycles', "$MaxAnalysisCycles", '--timeout-seconds', "$FlowTimeoutSeconds")
+    } else {
+        if (-not $FlowPath -or $StatePath) {
+            throw "$Action requires FlowPath, not StatePath."
+        }
+        $flowArguments += @('--flow', $FlowPath)
+    }
+    if ($ProposalSha256) {
+        if ($Action -ne 'ContinueFlow') { throw 'Only ContinueFlow accepts a proposal approval.' }
+        $flowArguments += @('--approved-hash', $ProposalSha256)
+    }
+    Push-Location $PSScriptRoot
+    try { & python @flowArguments } finally { Pop-Location }
+    exit $LASTEXITCODE
 }
 
 if ($ScenarioPlan -and ($Action -ne 'Prepare' -or $Scenario -ne 'Control')) {
@@ -148,7 +174,7 @@ if ($Action -eq 'Prepare') {
             'markers.json', 'providers.txt', 'build.ps1', 'scenario.json',
             'ScenarioPlan.cs', 'scenario-capabilities.json', 'scenario_plan.py'
         )
-        $helperFiles = @('capture.ps1', 'metrics.py', 'verify.py', 'profiler_query.py', '__init__.py')
+        $helperFiles = @('capture.ps1', 'metrics.py', 'verify.py', 'profiler_query.py', 'validate_fix.py', '__init__.py')
         $testFiles = @('__init__.py', 'test_metrics.py')
         $workload = 'ScenarioWorkload.cs'
     } else {
@@ -342,6 +368,10 @@ if ($Action -eq 'Investigate') {
         profilerCli = $manifest.profilerCli
         inputs = $inputs
     }
+    if ($state.PSObject.Properties['FlowContext'] -and $state.FlowContext) {
+        $contract.flow = $state.FlowContext
+        $contract.inputs += @($state.FlowContext.inputs)
+    }
     [IO.File]::WriteAllText(
         (Join-Path $inputRoot 'investigation.json'), ($contract | ConvertTo-Json -Depth 10))
     $active = [pscustomobject]@{
@@ -381,7 +411,8 @@ if ($Action -eq 'Propose') {
     if ($active.RunId) {
         throw 'This state already has an ADE run. Prepare a new POC for another proposal.'
     }
-    if ($state.PSObject.Properties['ScenarioPlanSha256'] -and $state.ScenarioPlanSha256) {
+    $relativeValidation = $state.PSObject.Properties['FlowValidation'] -and $state.FlowValidation
+    if ($state.PSObject.Properties['ScenarioPlanSha256'] -and $state.ScenarioPlanSha256 -and -not $relativeValidation) {
         throw 'Custom action plans are measurement/investigation-only. No fix acceptance contract is configured.'
     }
     $task = if ($isControl) {
@@ -409,18 +440,31 @@ if ($Action -eq 'Propose') {
         }
         $currentEvidence = ($validation -join [Environment]::NewLine) | ConvertFrom-Json
         if ($currentEvidence.decision.status -ne 'RecommendationReady' -or
-            $currentEvidence.diagnosisSha256 -ne $evidence.diagnosisSha256) {
+            $currentEvidence.diagnosisSha256 -ne $evidence.diagnosisSha256 -or
+            ($evidence.PSObject.Properties['decisionSha256'] -and
+             $currentEvidence.decisionSha256 -ne $evidence.decisionSha256)) {
             throw 'The verified investigation no longer matches the recommendation.'
         }
         $task = 'Implement the evidence-backed recommendation below. Edit only ScenarioWorkload.cs. Preserve correctness and the protected measurement contract. Validate the hypothesis with the ten-run verifier; do not claim a confirmed root cause unless the controlled change supports it.' +
             [Environment]::NewLine + (Get-Content -LiteralPath $evidence.diagnosis -Raw)
     }
+    if ($relativeValidation) {
+        if (-not $state.Investigation -or -not $state.Investigation.Evidence -or
+            -not (Test-Path -LiteralPath (Join-Path $state.SampleRoot 'fix-validation.json') -PathType Leaf)) {
+            throw 'Baseline-relative fixing requires a verified investigation and a protected validation contract.'
+        }
+        $task += [Environment]::NewLine +
+            'Use fix-validation.json and python -B -m helpers.validate_fix --root . for the unchanged scenario. ' +
+            'The configured per-run reduction is required; the seed budget is not the acceptance rule. ' +
+            ($currentEvidence.decision.recommendation | ConvertTo-Json -Depth 10)
+    }
     $arguments = @(
         'propose',
-        '--type', 'perf-fix',
+        '--type', $(if ($relativeValidation) { 'perf-optimize' } else { 'perf-fix' }),
         '--repo', $state.SampleRoot,
         '--task', $task,
-        '--check', $(if ($isControl) { 'python -B -m helpers.verify --root .' } else { 'python -B verify.py' })
+        '--check', $(if ($relativeValidation) { 'python -B -m helpers.validate_fix --root .' }
+                    elseif ($isControl) { 'python -B -m helpers.verify --root .' } else { 'python -B verify.py' })
     )
     if ($state.PSObject.Properties['PackRoot']) {
         $arguments += @('--pack', $state.PackRoot)

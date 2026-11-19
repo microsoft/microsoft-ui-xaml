@@ -25,7 +25,7 @@ class AdapterTests(unittest.TestCase):
             for name in files + [".gitignore", "README.md"]:
                 shutil.copyfile(poc / "ControlDemo" / name, app / name)
             for folder, files in (
-                ("helpers", ["__init__.py", "capture.ps1", "metrics.py", "verify.py", "profiler_query.py"]),
+                ("helpers", ["__init__.py", "capture.ps1", "metrics.py", "verify.py", "profiler_query.py", "validate_fix.py"]),
                 ("tests", ["__init__.py", "test_metrics.py"]),
             ):
                 (staged_poc / folder).mkdir()

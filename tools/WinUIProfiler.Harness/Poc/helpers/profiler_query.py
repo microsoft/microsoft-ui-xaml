@@ -9,7 +9,7 @@ import subprocess
 import sys
 import uuid
 
-from .metrics import MeasurementError, summarize
+from .metrics import MeasurementError, summarize, validation_rule
 
 
 def sha256(path: Path) -> str:
@@ -130,8 +130,40 @@ def query(root: Path, view: str, iteration: int, identifier: int | None,
     }
 
 
+def validate_decision(decision: dict, flow: dict | None = None) -> None:
+    statuses = {"RecommendationReady", "NeedsMeasurement", "NotDemonstrated", "Rejected"}
+    if flow and flow["phase"] == "validation":
+        statuses = {"Accepted", "Rejected", "NeedsMeasurement"}
+    if decision.get("status") not in statuses:
+        raise MeasurementError("The investigation decision is invalid for this phase.")
+    if not isinstance(decision.get("reason"), str) or not decision["reason"].strip():
+        raise MeasurementError("The investigation decision requires a reason.")
+    if decision["status"] == "NeedsMeasurement":
+        requests = decision.get("additionalMeasurements")
+        if not isinstance(requests, list) or not requests:
+            raise MeasurementError("An inconclusive investigation must specify additional measurements.")
+        if flow:
+            for request in requests:
+                if (not isinstance(request, dict) or set(request) != {"kind", "question"}
+                        or not isinstance(request["question"], str) or not request["question"].strip()
+                        or request["kind"] not in {"repeat", "unsupported"}):
+                    raise MeasurementError("Flow measurements require a repeat/unsupported kind and a refined question.")
+    if flow and decision["status"] == "RecommendationReady":
+        recommendation = decision.get("recommendation")
+        if not isinstance(recommendation, dict):
+            raise MeasurementError("A flow recommendation requires a structured change and validation rule.")
+        for key in ("change", "expectedImpact", "validationScenario", "markers"):
+            if not isinstance(recommendation.get(key), str) or not recommendation[key].strip():
+                raise MeasurementError(f"A recommendation requires {key}.")
+        if recommendation.get("editableFiles") != flow["editableFiles"]:
+            raise MeasurementError("The recommendation must use the configured editable app source scope.")
+        validation_rule(recommendation.get("validation"))
+    if flow and decision["status"] == "Accepted" and not flow.get("comparisonPassed"):
+        raise MeasurementError("Analysis cannot accept a fix without an independently passing comparison.")
+
+
 def verify_queries(root: Path) -> dict:
-    _, measurement = validate_inputs(root)
+    contract, measurement = validate_inputs(root)
     output = root / "ade-output"
     receipts = []
     for line in (output / "queries.jsonl").read_text(encoding="utf-8").splitlines():
@@ -162,18 +194,12 @@ def verify_queries(root: Path) -> dict:
         raise MeasurementError("Expected an investigation.md deliverable of at most 32 KiB.")
     decision_path = output / "decision.json"
     decision = json.loads(decision_path.read_text(encoding="utf-8"))
-    if decision.get("status") not in ("RecommendationReady", "NeedsMeasurement"):
-        raise MeasurementError("The investigation must recommend a change or request measurements.")
-    if not isinstance(decision.get("reason"), str) or not decision["reason"].strip():
-        raise MeasurementError("The investigation decision requires a reason.")
-    if (decision["status"] == "NeedsMeasurement"
-            and (not isinstance(decision.get("additionalMeasurements"), list)
-                 or not decision["additionalMeasurements"])):
-        raise MeasurementError("An inconclusive investigation must specify additional measurements.")
+    validate_decision(decision, contract.get("flow"))
     return {
         "status": "EvidenceVerified", "queryCount": len(receipts),
         "views": sorted(views), "diagnosis": str(diagnosis),
         "diagnosisSha256": sha256(diagnosis),
+        "decisionPath": str(decision_path), "decisionSha256": sha256(decision_path),
         "decision": decision,
         "limitation": "Receipts establish queried evidence, not the correctness of the diagnosis.",
     }

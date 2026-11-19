@@ -64,8 +64,11 @@ step count, final tree and per-step counts/dimensions/scroll offsets in
 incorrect result. The exact plan is retained with source hashes.
 
 Ten valid custom runs return **Measured** and exit 0, not a passed performance
-budget. Custom flows may use the separately approved investigation workflow;
-the existing seeded fix gate is blocked for them. A zero-layout interval is
+budget. The parent's integrated StartFlow/ContinueFlow path proceeds through
+approved diagnosis, refined repeat measurements, approved app fixes, independent
+same-scenario validation and approved causal analysis. It configures an
+evidence-backed relative gate instead of the seed's four-layout budget.
+The direct seeded fix gate remains blocked for custom flows. A zero-layout interval is
 valid only with explicit opt-in and positive layout-provider evidence from the
 same process/UI thread elsewhere in the complete trace. Unbalanced events,
 missing providers and reported event loss still fail.

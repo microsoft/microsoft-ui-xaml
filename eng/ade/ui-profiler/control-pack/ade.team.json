@@ -33,6 +33,7 @@
     "scenario.json",
     "helpers",
     "measurement-contract.json",
+    "fix-validation.json",
     "tests"
   ],
   "copyExclude": [],
