@@ -175,7 +175,7 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
                 }
                 catch (Exception ex)
                 {
-                    Console.Error.WriteLine($"RenderTargetBitmap fallback failed: {ex.Message}");
+                    Console.Error.WriteLine($"RenderTargetBitmap fallback failed: {ex.GetType().Name} 0x{ex.HResult:X8} {ex.Message}");
                 }
             }
         }

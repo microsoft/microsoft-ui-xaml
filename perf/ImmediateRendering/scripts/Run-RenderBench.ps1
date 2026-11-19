@@ -12,15 +12,27 @@ for each scene. Each run:
   5. runs RenderBench.Analyzer analyze -> metrics.json next to the trace.
 Afterwards it writes <Results>\report.md. Requires an elevated shell (WPR).
 
+-Scenes picks entries from the scene matrix below (default: all, S1/S2 first). Variant entries (gallery-decoded,
+animated-noring, multiwindow-tabs) add their RenderBench flags; results go to <Results>\<entry>\<mode>\run<N>.
+Full runs use each scene's default phase lengths (README, "Scenes"); -Quick shortens every phase, per scene.
+
 .EXAMPLE
 .\Run-RenderBench.ps1 -Modes composition,d2d-sw -Scenes settings -Repetitions 1 -Quick
+
+.EXAMPLE
+.\Run-RenderBench.ps1 -Scenes inbox,gallery,gallery-decoded -InputMode programmatic -Repetitions 3
 #>
 [CmdletBinding()]
 param(
     [ValidateSet('composition', 'gdiplus', 'd2d-hw', 'd2d-sw')]
     [string[]]$Modes = @('composition', 'gdiplus', 'd2d-hw', 'd2d-sw'),
-    [ValidateSet('settings', 'dashboard')]
-    [string[]]$Scenes = @('settings', 'dashboard'),
+    [ValidateSet('settings', 'dashboard', 'inbox', 'gallery', 'gallery-decoded', 'animated', 'animated-noring', 'reader',
+        'layered', 'datagrid', 'multiwindow', 'multiwindow-tabs', 'form')]
+    [string[]]$Scenes = @('settings', 'dashboard', 'inbox', 'gallery', 'gallery-decoded', 'animated', 'animated-noring',
+        'reader', 'layered', 'datagrid', 'multiwindow', 'multiwindow-tabs', 'form'),
+    # auto picks programmatic input in remote/disconnected sessions (README, "Input modes").
+    [ValidateSet('auto', 'sendinput', 'programmatic')]
+    [string]$InputMode = 'auto',
     [int]$Repetitions = 5,
     [ValidateSet('Timing', 'Memory', 'Gpu')]
     [string]$Profile = 'Timing',
@@ -49,7 +61,33 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
     throw 'WPR needs an elevated shell.'
 }
 
-$phaseArgs = if ($Quick) { @('--warmup', '2', '--settle', '4', '--interaction', '6', '--recovery', '2') } else { @() }
+# Scene matrix: RenderBench flags per entry, plus the -Quick interaction length and extra flags. Full runs use the
+# per-scene defaults built into RenderBench (SceneCatalog); S9's interaction is its lifecycle (steps x --step-seconds).
+$sceneMatrix = [ordered]@{
+    'settings'         = @{ Args = @('--scene', 'settings');                      Quick = 6 }
+    'dashboard'        = @{ Args = @('--scene', 'dashboard');                     Quick = 6 }
+    'inbox'            = @{ Args = @('--scene', 'inbox');                         Quick = 6 }
+    'gallery'          = @{ Args = @('--scene', 'gallery');                       Quick = 6 }
+    'gallery-decoded'  = @{ Args = @('--scene', 'gallery', '--decode-to-size');   Quick = 6 }
+    'animated'         = @{ Args = @('--scene', 'animated');                      Quick = 6 }
+    'animated-noring'  = @{ Args = @('--scene', 'animated', '--no-progressring'); Quick = 6 }
+    'reader'           = @{ Args = @('--scene', 'reader');                        Quick = 6 }
+    'layered'          = @{ Args = @('--scene', 'layered');                       Quick = 6 }
+    'datagrid'         = @{ Args = @('--scene', 'datagrid');                      Quick = 6 }
+    'multiwindow'      = @{ Args = @('--scene', 'multiwindow');                   Quick = 6; QuickArgs = @('--windows', '5', '--step-seconds', '1') }
+    'multiwindow-tabs' = @{ Args = @('--scene', 'multiwindow', '--tabs');         Quick = 6; QuickArgs = @('--step-seconds', '0.5') }
+    'form'             = @{ Args = @('--scene', 'form');                          Quick = 8 }
+}
+function Get-SceneArgs([string]$entry) {
+    $spec = $sceneMatrix[$entry]
+    $sceneArgs = @($spec.Args)
+    if ($Quick) {
+        $sceneArgs += @('--warmup', '2', '--settle', '4', '--interaction', "$($spec.Quick)", '--recovery', '2')
+        if ($spec.QuickArgs) { $sceneArgs += $spec.QuickArgs }
+    }
+    if ($InputMode -ne 'auto') { $sceneArgs += @('--input-mode', $InputMode) }
+    return $sceneArgs
+}
 New-Item -ItemType Directory -Force $Results | Out-Null
 $Results = (Resolve-Path $Results).Path
 & wpr -cancel 2>$null | Out-Null
@@ -85,8 +123,11 @@ try {
             foreach ($mode in $order) {
                 $runDir = Join-Path $Results "$scene\$mode\run$rep"
                 New-Item -ItemType Directory -Force $runDir | Out-Null
+                $sceneArgs = Get-SceneArgs $scene
                 if ($mode -eq 'd2d-hw' -and $skipD2DHardware) {
-                    & $analyzer skip $scene $mode 'no hardware adapter' --out (Join-Path $runDir 'metrics.json')
+                    $variantArgs = (@($sceneMatrix[$scene].Args) | Select-Object -Skip 2) -join ' '
+                    & $analyzer skip $sceneMatrix[$scene].Args[1] $mode 'no hardware adapter' --out (Join-Path $runDir 'metrics.json') `
+                        --scene-args "$variantArgs"
                     continue
                 }
                 $etl = Join-Path $runDir 'trace.etl'
@@ -96,7 +137,7 @@ try {
                 & wpr -start "$profilePath!$Profile" -filemode
                 if ($LASTEXITCODE -ne 0) { throw "wpr -start failed ($LASTEXITCODE)" }
                 try {
-                    $benchArgs = @('--scene', $scene, '--seed', $Seed, '--screenshot', (Join-Path $runDir 'screenshot.bmp')) + $phaseArgs + $ExtraArgs
+                    $benchArgs = $sceneArgs + @('--seed', $Seed, '--screenshot', (Join-Path $runDir 'screenshot.bmp')) + $ExtraArgs
                     $process = Start-Process -FilePath $BenchExe -ArgumentList $benchArgs -PassThru -Wait `
                         -RedirectStandardError (Join-Path $runDir 'stderr.txt')
                     "exit $($process.ExitCode)" | Set-Content (Join-Path $runDir 'exitcode.txt')
