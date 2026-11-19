@@ -4434,6 +4434,516 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    // An item whose PropertyChanged handlers are counted, so a test can see what live shaping observes.
+    ref class LiveShapingTestItem sealed : public ICustomPropertyProvider, public INotifyPropertyChanged
+    {
+    public:
+        LiveShapingTestItem(Platform::String^ name, int32 value, Platform::String^ group)
+            : m_name(name), m_value(value), m_group(group), m_handlerCount(0)
+        {
+        }
+
+        property Platform::String^ Name
+        {
+            Platform::String^ get() { return m_name; }
+            void set(Platform::String^ value) { m_name = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Name")); }
+        }
+
+        property int32 Value
+        {
+            int32 get() { return m_value; }
+            void set(int32 value) { m_value = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Value")); }
+        }
+
+        property Platform::String^ Group
+        {
+            Platform::String^ get() { return m_group; }
+            void set(Platform::String^ value) { m_group = value; PropertyChanged(this, ref new PropertyChangedEventArgs(L"Group")); }
+        }
+
+        property int32 HandlerCount
+        {
+            int32 get() { return m_handlerCount; }
+        }
+
+        virtual event PropertyChangedEventHandler^ PropertyChanged
+        {
+            virtual ::Windows::Foundation::EventRegistrationToken add(PropertyChangedEventHandler^ handler)
+            {
+                ++m_handlerCount;
+                return m_propertyChanged += handler;
+            }
+            virtual void remove(::Windows::Foundation::EventRegistrationToken token)
+            {
+                --m_handlerCount;
+                m_propertyChanged -= token;
+            }
+
+        protected:
+            virtual void raise(Platform::Object^ sender, PropertyChangedEventArgs^ args)
+            {
+                m_propertyChanged(sender, args);
+            }
+        }
+
+        virtual ICustomProperty^ GetCustomProperty(Platform::String^ name)
+        {
+            if (name == L"Name")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, Platform::String::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Name; }), nullptr));
+            }
+            if (name == L"Value")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, int::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Value; }), nullptr));
+            }
+            if (name == L"Group")
+            {
+                return ref new CustomProperty(ref new PropertyInfo(name, Platform::String::typeid,
+                    ref new PropertyGetValue([](Platform::Object^ target) -> Platform::Object^ { return safe_cast<LiveShapingTestItem^>(target)->Group; }), nullptr));
+            }
+            return nullptr;
+        }
+
+        virtual ICustomProperty^ GetIndexedProperty(Platform::String^ name, ::Windows::UI::Xaml::Interop::TypeName typeName)
+        {
+            return nullptr;
+        }
+
+        virtual Platform::String^ GetStringRepresentation()
+        {
+            return m_name;
+        }
+
+        virtual property ::Windows::UI::Xaml::Interop::TypeName Type
+        {
+            ::Windows::UI::Xaml::Interop::TypeName get()
+            {
+                ::Windows::UI::Xaml::Interop::TypeName typeName;
+                typeName.Name = L"Object";
+                typeName.Kind = ::Windows::UI::Xaml::Interop::TypeKind::Primitive;
+                return typeName;
+            }
+        }
+
+    private:
+        Platform::String^ m_name;
+        int32 m_value;
+        Platform::String^ m_group;
+        int32 m_handlerCount;
+        event PropertyChangedEventHandler^ m_propertyChanged;
+    };
+
+    namespace
+    {
+        // b1 d2 a1 c0, groups x y x z
+        Platform::Collections::Vector<Object^>^ MakeLiveShapingSource()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(ref new LiveShapingTestItem(L"b", 1, L"x"));
+            source->Append(ref new LiveShapingTestItem(L"d", 2, L"y"));
+            source->Append(ref new LiveShapingTestItem(L"a", 1, L"x"));
+            source->Append(ref new LiveShapingTestItem(L"c", 0, L"z"));
+            return source;
+        }
+
+        LiveShapingTestItem^ LiveItem(::Windows::Foundation::Collections::IVector<Object^>^ source, const wchar_t* name)
+        {
+            for (unsigned int i = 0; i < source->Size; i++)
+            {
+                auto item = safe_cast<LiveShapingTestItem^>(source->GetAt(i));
+                if (item->Name == ref new Platform::String(name))
+                {
+                    return item;
+                }
+            }
+            return nullptr;
+        }
+
+        Platform::String^ LiveNamesOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += safe_cast<LiveShapingTestItem^>(items->GetAt(i))->Name;
+            }
+            return result;
+        }
+
+        Platform::String^ LiveGroupsOf(::Windows::Foundation::Collections::IObservableVector<Object^>^ groups)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < groups->Size; i++)
+            {
+                auto group = safe_cast<ICollectionViewGroup^>(groups->GetAt(i));
+                auto key = safe_cast<ICustomPropertyProvider^>(group->Group)->GetCustomProperty(L"Key")->GetValue(group->Group);
+                if (i > 0)
+                {
+                    result += L" ";
+                }
+                result += safe_cast<Platform::String^>(key);
+                result += L":";
+                result += LiveNamesOf(group->GroupItems);
+            }
+            return result;
+        }
+
+        Platform::String^ HandlerCountsOf(::Windows::Foundation::Collections::IVector<Object^>^ items)
+        {
+            Platform::String^ result = L"";
+            for (unsigned int i = 0; i < items->Size; i++)
+            {
+                result += ref new Platform::String(std::to_wstring(safe_cast<LiveShapingTestItem^>(items->GetAt(i))->HandlerCount).c_str());
+            }
+            return result;
+        }
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveSorting()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"The view can change live shaping, which is off by default.");
+            auto live = safe_cast<ICollectionViewLiveShaping^>(view);
+            VERIFY_IS_TRUE(live->CanChangeLiveSorting);
+            VERIFY_IS_TRUE(live->CanChangeLiveFiltering);
+            VERIFY_IS_TRUE(live->CanChangeLiveGrouping);
+            VERIFY_IS_FALSE(live->IsLiveSorting->Value);
+            VERIFY_IS_FALSE(cvs->IsLiveSortingRequested);
+            VERIFY_ARE_EQUAL(0u, live->LiveSortingProperties->Size);
+            VERIFY_THROWS_WINRT(live->IsLiveSorting = nullptr, Platform::Exception^, L"As in WPF, IsLiveSorting cannot be set to null.");
+
+            LOG_OUTPUT(L"Without live sorting a property change does not move the item.");
+            LiveItem(source, L"b")->Value = 5;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"cadb", LiveNamesOf(view)->Data());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"IsLiveSortingRequested turns it on; with no LiveSortingProperties the SortDescriptions' properties are observed.");
+            cvs->IsLiveSortingRequested = true;
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting->Value);
+            LiveItem(source, L"a")->Value = 9;
+            LiveItem(source, L"c")->Value = 1; // still first: in order, so nothing is raised for it
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cdba", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1+3", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"Explicit LiveSortingProperties replace the SortDescriptions' properties.");
+            cvs->LiveSortingProperties->Append(L"Name");
+            LiveItem(source, L"d")->Value = 10; // Value is no longer observed
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cdba", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+            LiveItem(source, L"d")->Name = L"e"; // observed: the item is placed by its Value, 10
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbae", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1+3", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"Several changes in one turn are restored together, ignoring the items not yet placed.");
+            cvs->LiveSortingProperties->Clear();
+            LiveItem(source, L"b")->Value = 20;
+            LiveItem(source, L"c")->Value = 15;
+            LiveItem(source, L"e")->Value = 3;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+            VERIFY_IS_TRUE(counts->log.find(L'R') == std::wstring::npos);
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Turning live sorting off on the view stops it.");
+            safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting = false;
+            counts->log.clear();
+            LiveItem(source, L"e")->Value = 100;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"eacb", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveFiltering()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item) { return safe_cast<LiveShapingTestItem^>(item)->Value != 0; });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            cvs->IsLiveFilteringRequested = true;
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"As in WPF, live filtering observes only LiveFilteringProperties, so with none nothing is filtered live.");
+            LiveItem(source, L"b")->Value = 0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"abd", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+
+            LOG_OUTPUT(L"With Value observed, an item the filter now rejects leaves the view.");
+            cvs->LiveFilteringProperties->Append(L"Value");
+            LiveItem(source, L"d")->Value = 0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"ab", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-2", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"An item the filter now accepts joins the view at its sorted position.");
+            LiveItem(source, L"c")->Value = 4;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"abc", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"+2", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"A change that does not affect the filter raises nothing.");
+            LiveItem(source, L"a")->Value = 7;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"abc", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+
+            LOG_OUTPUT(L"b changed before Value was observed, so only a recompute filters it out.");
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveGrouping()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Group"));
+            cvs->IsLiveGroupingRequested = true;
+            view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"x:ab z:c y:d", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"With no LiveGroupingProperties the GroupDescriptions' properties are observed: the item moves to its new group.");
+            LiveItem(source, L"b")->Group = L"y";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"x:a z:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"acbd", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"A group the item empties is removed.");
+            LiveItem(source, L"c")->Group = L"x";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"x:ac y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"A group the item starts is inserted before the first group whose first item sorts after it.");
+            LiveItem(source, L"a")->Group = L"w";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a x:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+
+            LOG_OUTPUT(L"Explicit LiveGroupingProperties replace the GroupDescriptions' properties.");
+            cvs->LiveGroupingProperties->Append(L"Name");
+            LiveItem(source, L"d")->Group = L"x";
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a x:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+            cvs->Refresh();
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:b x:cd", LiveGroupsOf(view->CollectionGroups)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveShapingObservedItems()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeLiveShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"Live sorting observes each source item once per live property.");
+            cvs->IsLiveSortingRequested = true;
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
+            cvs->LiveSortingProperties->Append(L"Value");
+            cvs->LiveSortingProperties->Append(L"Name");
+            VERIFY_ARE_STRINGS_EQUAL(L"2222", HandlerCountsOf(source)->Data());
+            cvs->LiveSortingProperties->Clear();
+
+            LOG_OUTPUT(L"A removed item is no longer observed; an added one is.");
+            auto removed = safe_cast<LiveShapingTestItem^>(source->GetAt(1));
+            source->RemoveAt(1);
+            VERIFY_ARE_EQUAL(0, removed->HandlerCount);
+            auto added = ref new LiveShapingTestItem(L"e", 3, L"x");
+            source->Append(added);
+            VERIFY_ARE_EQUAL(1, added->HandlerCount);
+
+            LOG_OUTPUT(L"A replaced item is no longer observed; its replacement is.");
+            auto replaced = safe_cast<LiveShapingTestItem^>(source->GetAt(0));
+            auto replacement = ref new LiveShapingTestItem(L"f", 4, L"y");
+            source->SetAt(0, replacement);
+            VERIFY_ARE_EQUAL(0, replaced->HandlerCount);
+            VERIFY_ARE_EQUAL(1, replacement->HandlerCount);
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"Turning live shaping off stops observing.");
+            cvs->IsLiveSortingRequested = false;
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
+
+            LOG_OUTPUT(L"A source Reset observes the new items only.");
+            cvs->IsLiveSortingRequested = true;
+            auto items = ref new Platform::Collections::Vector<Object^>();
+            for (unsigned int i = 0; i < source->Size; i++)
+            {
+                items->Append(source->GetAt(i));
+            }
+            source->Clear();
+            VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(items)->Data());
+
+            LOG_OUTPUT(L"A view the CollectionViewSource lets go of stops observing.");
+            source->Append(items->GetAt(0));
+            VERIFY_ARE_EQUAL(1, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+            cvs->Source = nullptr;
+            VERIFY_ARE_EQUAL(0, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewLiveShapingDeferRefresh()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::Collections::Vector<Object^>^ source;
+        CollectionViewSource^ cvs;
+        ICollectionView^ view;
+        std::function<void()> closeDeferral;
+        auto counts = std::make_shared<VectorChangeCounts>();
+
+        RunOnUIThread([&]()
+        {
+            source = MakeLiveShapingSource();
+            cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            cvs->IsLiveSortingRequested = true;
+            view = cvs->View;
+            CountVectorChanges(view, counts);
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Live changes made under DeferRefresh wait for the deferral.");
+            auto deferral = cvs->DeferRefresh();
+            closeDeferral = [deferral]() mutable { delete deferral; };
+            LiveItem(source, L"a")->Value = 9;
+            LiveItem(source, L"b")->Value = 7;
+            LiveItem(source, L"c")->Value = 8;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
+
+            LOG_OUTPUT(L"Closing it restores them at once, incrementally.");
+            closeDeferral();
+            closeDeferral = nullptr;
+            VERIFY_ARE_STRINGS_EQUAL(L"dbca", LiveNamesOf(view)->Data());
+            VERIFY_IS_FALSE(counts->log.empty());
+            VERIFY_IS_TRUE(counts->log.find(L'R') == std::wstring::npos);
+            counts->log.clear();
+
+            LOG_OUTPUT(L"With a rule change pending as well, closing recomputes once.");
+            auto deferral = cvs->DeferRefresh();
+            LiveItem(source, L"d")->Value = 50;
+            cvs->SortDescriptions->Clear();
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Descending));
+            delete deferral;
+            VERIFY_ARE_STRINGS_EQUAL(L"dacb", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"R", counts->log.c_str());
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;

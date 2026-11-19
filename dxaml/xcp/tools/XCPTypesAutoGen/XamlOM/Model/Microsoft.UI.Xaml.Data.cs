@@ -602,6 +602,61 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        // WPF's CollectionViewSource.IsLive*Requested and Live*Properties, applied to View's ICollectionViewLiveShaping.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean IsLiveSortingRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean IsLiveFilteringRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean IsLiveGroupingRequested
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveSortingProperties
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveFilteringProperties
+        {
+            get;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveGroupingProperties
+        {
+            get;
+        }
+
         // WPF's CollectionViewSource.Filter event; Filter is the delegate property here.
         [VelocityFeature("Feature_ExperimentalApi")]
         [CodeGen(CodeGenLevel.Idl)]
@@ -737,6 +792,50 @@ namespace Microsoft.UI.Xaml.Data
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(7)]
         Windows.Foundation.String Culture { get; set; }
+    }
+
+    // WPF's ICollectionViewLiveShaping: re-sort, re-filter and re-group an item when one of its properties changes.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewLiveShaping
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Boolean CanChangeLiveSorting { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Boolean CanChangeLiveFiltering { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Windows.Foundation.Boolean CanChangeLiveGrouping { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(3)]
+        Windows.Foundation.Boolean? IsLiveSorting { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(4)]
+        Windows.Foundation.Boolean? IsLiveFiltering { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(5)]
+        Windows.Foundation.Boolean? IsLiveGrouping { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(6)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveSortingProperties { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(7)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveFilteringProperties { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(8)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.String> LiveGroupingProperties { get; }
     }
 
     [DXamlIdlGroup("coretypes2")]

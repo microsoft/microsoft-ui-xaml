@@ -763,6 +763,13 @@ private:
     // model has reconciled.
     bool m_resetSelectionRestorePending{ false };
 
+    // Armed by OnSelectionSourceReset when the selected row leaves a view but its item stays in the
+    // source (a live sort, filter or group move: ItemRemoved, then ItemInserted elsewhere). The row is
+    // re-selected when it comes back, or the clear is published at the end of the turn.
+    bool m_moveSelectionRestorePending{ false };
+    bool IsItemInViewSource(winrt::IInspectable const& item) const;
+    void FinishMoveSelectionRestore();
+
     // Bumped on every publish so a re-entrant one can tell that a newer selection overtook it and
     // it must not finish its own (now stale) notification.
     uint32_t m_selectionVersion{ 0 };

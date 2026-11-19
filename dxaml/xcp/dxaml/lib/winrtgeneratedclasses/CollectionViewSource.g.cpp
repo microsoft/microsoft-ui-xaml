@@ -118,6 +118,66 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_IsLiveFilteringRequested(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_IsLiveFilteringRequestedImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_IsLiveFilteringRequested(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_IsLiveFilteringRequestedImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_IsLiveGroupingRequested(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_IsLiveGroupingRequestedImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_IsLiveGroupingRequested(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_IsLiveGroupingRequestedImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_IsLiveSortingRequested(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_IsLiveSortingRequestedImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_IsLiveSortingRequested(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_IsLiveSortingRequestedImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_IsSourceGrouped(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, pValue));
@@ -135,6 +195,36 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::put_ItemsPath(_In_opt_ A
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_ItemsPath, pValue));
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_LiveFilteringProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_LiveFilteringPropertiesImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_LiveGroupingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_LiveGroupingPropertiesImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_LiveSortingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_LiveSortingPropertiesImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue)
 {

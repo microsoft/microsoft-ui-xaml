@@ -34,6 +34,15 @@ namespace ctl
         IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue) override { return This()->get_Filter(ppValue); }
         IFACEMETHOD(put_Filter)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue) override { return This()->put_Filter(pValue); }
         IFACEMETHOD(get_GroupDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue) override { return This()->get_GroupDescriptions(ppValue); }
+        IFACEMETHOD(get_IsLiveFilteringRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveFilteringRequested(pValue); }
+        IFACEMETHOD(put_IsLiveFilteringRequested)(BOOLEAN value) override { return This()->put_IsLiveFilteringRequested(value); }
+        IFACEMETHOD(get_IsLiveGroupingRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveGroupingRequested(pValue); }
+        IFACEMETHOD(put_IsLiveGroupingRequested)(BOOLEAN value) override { return This()->put_IsLiveGroupingRequested(value); }
+        IFACEMETHOD(get_IsLiveSortingRequested)(_Out_ BOOLEAN* pValue) override { return This()->get_IsLiveSortingRequested(pValue); }
+        IFACEMETHOD(put_IsLiveSortingRequested)(BOOLEAN value) override { return This()->put_IsLiveSortingRequested(value); }
+        IFACEMETHOD(get_LiveFilteringProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveFilteringProperties(ppValue); }
+        IFACEMETHOD(get_LiveGroupingProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveGroupingProperties(ppValue); }
+        IFACEMETHOD(get_LiveSortingProperties)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue) override { return This()->get_LiveSortingProperties(ppValue); }
         IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
         IFACEMETHOD(DeferRefresh)(_Outptr_ ABI::Windows::Foundation::IClosable** ppReturnValue) override { return This()->DeferRefresh(ppReturnValue); }
         IFACEMETHOD(Refresh)() override { return This()->Refresh(); }
@@ -90,10 +99,19 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Filter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Filter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewFilter* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_GroupDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::PropertyGroupDescription*>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveFilteringRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveFilteringRequested(BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveGroupingRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveGroupingRequested(BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_IsLiveSortingRequested(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsLiveSortingRequested(BOOLEAN value);
         IFACEMETHOD(get_IsSourceGrouped)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_IsSourceGrouped)(BOOLEAN value) override;
         IFACEMETHOD(get_ItemsPath)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IPropertyPath** ppValue) override;
         IFACEMETHOD(put_ItemsPath)(_In_opt_ ABI::Microsoft::UI::Xaml::IPropertyPath* pValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveFilteringProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveGroupingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_LiveSortingProperties(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<HSTRING>** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue);
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Source)(_In_opt_ IInspectable* pValue) override;

@@ -666,6 +666,37 @@ void TableView::OnSelectionSourceReset(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove)
+    {
+        // Runs before the model drops the selected index, which it would publish as a clear.
+        if (m_isRestoringSelection || m_resetSelectionRestorePending || m_moveSelectionRestorePending)
+        {
+            return;
+        }
+
+        auto const sticky = m_stickySelectedItem.get();
+        auto const queue = winrt::DispatcherQueue::GetForCurrentThread();
+        if (!queue || !sticky || args.OldStartingIndex() < 0 || args.OldStartingIndex() != SelectedIndexInternal() || !IsItemInViewSource(sticky))
+        {
+            return;
+        }
+
+        m_pendingSelectedItem.set(sticky);
+        m_pendingSelectedIdentity = m_stickySelectedIdentity;
+        m_isRestoringSelection = true;
+        m_moveSelectionRestorePending = true;
+
+        auto weakThis = get_weak();
+        queue.TryEnqueue([weakThis]()
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->FinishMoveSelectionRestore();
+            }
+        });
+        return;
+    }
+
     // Only a Reset drops the model's indices wholesale (an Add/Remove shifts the selected index and
     // SelectionModel reconciles it in place, so selection survives without help). This must run
     // FIRST, before the model reconciles the same Reset - else the app sees a spurious
@@ -698,8 +729,39 @@ void TableView::OnSelectionSourceReset(
 
 void TableView::OnSelectionItemsSourceCollectionChanged(
     const winrt::IInspectable& /*sender*/,
-    const winrt::IInspectable& /*args*/)
+    const winrt::IInspectable& args)
 {
+    if (m_moveSelectionRestorePending)
+    {
+        // The row's own removal: wait for it to come back. Any other change but its return also waits,
+        // except a Reset, after which the identity lookup below is as good as it gets.
+        auto const changeArgs = args.try_as<winrt::NotifyCollectionChangedEventArgs>();
+        auto const action = changeArgs ? changeArgs.Action() : winrt::NotifyCollectionChangedAction::Reset;
+        if (action == winrt::NotifyCollectionChangedAction::Remove)
+        {
+            return;
+        }
+
+        if (action == winrt::NotifyCollectionChangedAction::Add)
+        {
+            auto const pending = UnwrapDataItem(m_pendingSelectedItem.get());
+            auto const repeater = m_rowsRepeater.get();
+            auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+            const int32_t index = changeArgs.NewStartingIndex();
+            const bool isPendingRow = pending && view && index >= 0 && index < view.Count() &&
+                IsDisplayedItemMatch(view.GetAt(index), pending, static_cast<bool>(pending.try_as<winrt::IPropertyValue>()));
+            if (!isPendingRow)
+            {
+                m_lastPublishedIndex = SelectedIndexInternal();
+                RestampAllRealizedRowSelection(m_lastPublishedIndex);
+                return;
+            }
+        }
+
+        FinishMoveSelectionRestore();
+        return;
+    }
+
     if (m_resetSelectionRestorePending)
     {
         // The model has now reconciled the Reset (this handler is subscribed after it), so the view
@@ -725,6 +787,52 @@ void TableView::OnSelectionItemsSourceCollectionChanged(
     m_lastPublishedIndex = SelectedIndexInternal();
     RestampAllRealizedRowSelection(m_lastPublishedIndex);
     PushSelectionProperties();
+}
+
+void TableView::FinishMoveSelectionRestore()
+{
+    if (!std::exchange(m_moveSelectionRestorePending, false))
+    {
+        return;
+    }
+
+    // Re-selects the row where it is now, or clears when it left the view, and publishes once: a row a
+    // live view moved stays selected without a SelectionChanged.
+    DrainPendingSelection();
+    m_isRestoringSelection = false;
+
+    m_lastPublishedIndex = SelectedIndexInternal();
+    RestampAllRealizedRowSelection(m_lastPublishedIndex);
+    PushSelectionProperties();
+    RaiseSelectionChanged(SelectedItemInternal());
+}
+
+// A deleted item has left the view's source collection; an item the view only moved or filtered out has not.
+bool TableView::IsItemInViewSource(winrt::IInspectable const& item) const
+{
+    if (!m_collectionViewShaping || !item)
+    {
+        return false;
+    }
+
+    try
+    {
+        uint32_t index = 0;
+        auto const source = m_collectionViewShaping.SourceCollection();
+        if (auto const vector = source.try_as<winrt::Windows::Foundation::Collections::IVector<winrt::IInspectable>>())
+        {
+            return vector.IndexOf(item, index);
+        }
+        if (auto const bindable = source.try_as<winrt::Microsoft::UI::Xaml::Interop::IBindableVector>())
+        {
+            return bindable.IndexOf(item, index);
+        }
+    }
+    catch (...)
+    {
+        // An app collection that fails a lookup: treat the row as deleted, the default behavior.
+    }
+    return false;
 }
 
 void TableView::RestampAllRealizedRowSelection()

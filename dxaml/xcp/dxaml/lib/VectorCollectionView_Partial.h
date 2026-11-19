@@ -21,7 +21,8 @@ namespace DirectUI
     // engine (VectorCollectionView_Shaping.cpp) and answers ICollectionViewShaping. A dedicated class would be a
     // new DependencyObject type (KnownTypeIndex, metadata tables), so the existing view class carries it.
     PARTIAL_CLASS(VectorCollectionView),
-        public xaml_data::ICollectionViewShaping
+        public xaml_data::ICollectionViewShaping,
+        public xaml_data::ICollectionViewLiveShaping
     {
     protected:
 
@@ -44,6 +45,30 @@ namespace DirectUI
         IFACEMETHOD(get_SourceCollection)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(get_Culture)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Culture)(_In_opt_ HSTRING value) override;
+
+        // ICollectionViewLiveShaping (WPF: ListCollectionView live shaping)
+        IFACEMETHOD(get_CanChangeLiveSorting)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_CanChangeLiveFiltering)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_CanChangeLiveGrouping)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_IsLiveSorting)(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue) override;
+        IFACEMETHOD(put_IsLiveSorting)(_In_opt_ wf::IReference<bool>* pValue) override;
+        IFACEMETHOD(get_IsLiveFiltering)(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue) override;
+        IFACEMETHOD(put_IsLiveFiltering)(_In_opt_ wf::IReference<bool>* pValue) override;
+        IFACEMETHOD(get_IsLiveGrouping)(_Outptr_result_maybenull_ wf::IReference<bool>** ppValue) override;
+        IFACEMETHOD(put_IsLiveGrouping)(_In_opt_ wf::IReference<bool>* pValue) override;
+        IFACEMETHOD(get_LiveSortingProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
+        IFACEMETHOD(get_LiveFilteringProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
+        IFACEMETHOD(get_LiveGroupingProperties)(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue) override;
+
+        // WPF: the live shaping part of CollectionViewSource.ApplyPropertiesToView. A property list is copied
+        // only when its feature is requested.
+        _Check_return_ HRESULT ApplyLiveShaping(
+            bool isLiveSorting,
+            bool isLiveFiltering,
+            bool isLiveGrouping,
+            _In_opt_ wfc::IObservableVector<HSTRING>* pSortingProperties,
+            _In_opt_ wfc::IObservableVector<HSTRING>* pFilteringProperties,
+            _In_opt_ wfc::IObservableVector<HSTRING>* pGroupingProperties);
 
         _Check_return_ HRESULT get_CollectionGroupsImpl(_Out_ wfc::IObservableVector<IInspectable *> **value) override;
 
@@ -143,6 +168,22 @@ namespace DirectUI
             _Outptr_ wfc::IVector<xaml_data::PropertyGroupDescription*>** ppGroupDescriptions);
         void DetachSourceList();
 
+        // Live shaping (VectorCollectionView_Shaping.cpp; WPF: LiveShapingList / LiveShapingItem).
+        struct LiveShapingState;
+        struct LiveShapingItem;
+        class LivePropertyObserver;
+        _Check_return_ HRESULT SetIsLive(bool* pIsLive, _In_opt_ wf::IReference<bool>* pValue);
+        _Check_return_ HRESULT EnsureLiveShapingProperties();
+        _Check_return_ HRESULT OnLiveShapingChanged();
+        _Check_return_ HRESULT RebuildLiveShapingItems();
+        _Check_return_ HRESULT CreateLiveShapingItem(UINT sourceIndex, _Out_ std::unique_ptr<LiveShapingItem>* pItem);
+        _Check_return_ HRESULT UpdateLiveShapingItems(wfc::CollectionChange change, UINT index);
+        void ClearLiveShapingItems();
+        _Check_return_ HRESULT OnLivePropertyChanged(_In_ LivePropertyObserver* pObserver);
+        _Check_return_ HRESULT OnLiveShapingRestoreCallback();
+        _Check_return_ HRESULT RestoreLiveShaping();
+        bool IsLiveShaping() const;
+
     private:
 
         // What the view presents: the source itself, or once shaping starts the InternalList (flat) or
@@ -185,5 +226,16 @@ namespace DirectUI
         // Open DeferRefresh deferrals; a change made while any is open recomputes once, when the last closes.
         UINT m_deferRefreshLevel = 0;
         bool m_isRefreshPending = false;
+
+        // ICollectionViewLiveShaping. The state (observers per source item, dirty items) is created while any
+        // live feature is on.
+        bool m_isLiveSorting = false;
+        bool m_isLiveFiltering = false;
+        bool m_isLiveGrouping = false;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveSortingProperties;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveFilteringProperties;
+        ctl::ComPtr<wfc::IObservableVector<HSTRING>> m_spLiveGroupingProperties;
+        std::shared_ptr<LiveShapingState> m_spLiveShaping;
+        bool m_isApplyingLiveShaping = false;
     };
 }

@@ -345,6 +345,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewLiveSorting)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify ICollectionViewLiveShaping live sorting moves an item whose observed property changed, with default and explicit LiveSortingProperties, as WPF ListCollectionView does")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveFiltering)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live filtering removes and inserts an item whose LiveFilteringProperties changed, and observes nothing without them")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveGrouping)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live grouping moves an item to its new group, removes emptied groups and inserts new ones")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveShapingObservedItems)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live shaping subscribes to each source item's PropertyChanged once per live property and unsubscribes on remove, replace, reset, turning it off and releasing the view")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewLiveShapingDeferRefresh)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify live changes made under DeferRefresh are restored incrementally when it closes, or by the one recompute a pending rule change causes")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(VerifyBoolToVisibilityConverter)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify built-in bool to visibility (and vice versa) converter")
             END_TEST_METHOD()

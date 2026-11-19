@@ -14,6 +14,7 @@
 #include "FilterEventArgs.g.h"
 #include "CollectionViewManager.h"
 #include "CollectionViewRefreshDeferral.h"
+#include "CollectionViewLiveShapingProperties.h"
 
 using namespace DirectUI;
 
@@ -327,6 +328,8 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     m_tpCustomSort.Clear();
 
     IFC_RETURN(pView->EnableShaping(this));
+    IFC_RETURN(pView->ApplyLiveShaping(m_isLiveSortingRequested, m_isLiveFilteringRequested, m_isLiveGroupingRequested,
+        m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
     IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), spFilter.Get(), spCustomSort.Get(), m_culture.Get()));
     m_culture.Release();
 
@@ -494,6 +497,109 @@ _Check_return_ HRESULT CollectionViewSource::put_CultureImpl(_In_opt_ HSTRING va
 
     IFC_RETURN(VectorCollectionView::ValidateCulture(value));
     IFC_RETURN(m_culture.Set(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_IsLiveSortingRequestedImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = m_isLiveSortingRequested;
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::put_IsLiveSortingRequestedImpl(BOOLEAN value)
+{
+    m_isLiveSortingRequested = !!value;
+    IFC_RETURN(ApplyLiveShapingToView());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_IsLiveFilteringRequestedImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = m_isLiveFilteringRequested;
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::put_IsLiveFilteringRequestedImpl(BOOLEAN value)
+{
+    m_isLiveFilteringRequested = !!value;
+    IFC_RETURN(ApplyLiveShapingToView());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_IsLiveGroupingRequestedImpl(_Out_ BOOLEAN* pValue)
+{
+    *pValue = m_isLiveGroupingRequested;
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::put_IsLiveGroupingRequestedImpl(BOOLEAN value)
+{
+    m_isLiveGroupingRequested = !!value;
+    IFC_RETURN(ApplyLiveShapingToView());
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_LiveSortingPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveSortingProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_LiveFilteringPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveFilteringProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::get_LiveGroupingPropertiesImpl(_Outptr_ wfc::IObservableVector<HSTRING>** ppValue)
+{
+    IFC_RETURN(EnsureLiveShapingProperties());
+    IFC_RETURN(m_spLiveGroupingProperties.CopyTo(ppValue));
+    return S_OK;
+}
+
+// WPF: OnForwardedCollectionChanged; a change to a property list is applied to View.
+_Check_return_ HRESULT CollectionViewSource::EnsureLiveShapingProperties()
+{
+    if (m_spLiveSortingProperties)
+    {
+        return S_OK;
+    }
+
+    ctl::WeakRefPtr weakThis;
+    IFC_RETURN(ctl::AsWeak(this, &weakThis));
+    auto onChanged = [weakThis]() mutable -> HRESULT
+    {
+        ctl::ComPtr<xaml_data::ICollectionViewSource> spThis;
+        IFC_RETURN(weakThis.As(&spThis));
+        if (spThis)
+        {
+            IFC_RETURN(spThis.Cast<CollectionViewSource>()->ApplyLiveShapingToView());
+        }
+        return S_OK;
+    };
+
+    for (auto* pspProperties : { std::addressof(m_spLiveSortingProperties), std::addressof(m_spLiveFilteringProperties), std::addressof(m_spLiveGroupingProperties) })
+    {
+        wrl::ComPtr<LiveShapingPropertyCollection> spCollection;
+        IFC_RETURN(wrl::MakeAndInitialize<LiveShapingPropertyCollection>(&spCollection));
+        spCollection->SetChangedCallback(onChanged);
+        IFC_RETURN(spCollection.CopyTo(pspProperties->ReleaseAndGetAddressOf()));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::ApplyLiveShapingToView()
+{
+    if (m_tpShapingView)
+    {
+        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->ApplyLiveShaping(m_isLiveSortingRequested, m_isLiveFilteringRequested, m_isLiveGroupingRequested,
+            m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
+    }
+
     return S_OK;
 }
 
