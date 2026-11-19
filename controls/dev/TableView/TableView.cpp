@@ -1193,7 +1193,6 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         UpdateHeaderVisibility();
         if (scroller)
         {
-            // Covers the header scroller moving by itself, which the body's ViewChanged would not report.
             m_headerScrollerViewChangedRevoker = scroller.ViewChanged(winrt::auto_revoke,
                 [weakThis = get_weak()](winrt::IInspectable const&, winrt::ScrollViewerViewChangedEventArgs const&)
                 {
@@ -1322,27 +1321,29 @@ void TableView::OnBodyScrollerViewChanged(
         QueueTerminalGridLineRefresh();
     }
 
-    auto headerScroller = m_headerScroller.get();
-    if (!headerScroller)
-    {
-        return;
-    }
-
-    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5)
-    {
-        // Skip near-equal offsets to avoid ViewChanged ping-pong.
-        return;
-    }
-
-    // Instant tracking keeps header and body visually glued.
-    headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
-    UpdateHeaderScrollOffset();
+    SyncHeaderScroller();
 }
 
-// PART_HeaderScroller's offset is set on the UI thread, which is what hit-testing, UIA and TransformToVisual
-// read. Touch and precision-touchpad pans move the body on the compositor first, so PART_HeaderHost.Translation
-// shifts the band there by however far the body has moved past the header's last applied offset, which is
-// 0 at rest. The header scroller has no DirectManipulation, so its offset is fed in through m_headerScrollOffset.
+void TableView::SyncHeaderScroller()
+{
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (!headerScroller || !bodyScroller || headerScroller == bodyScroller)
+    {
+        return;
+    }
+
+    // ChangeView applies on the next layout pass, so HorizontalOffset can still read an older position.
+    const double bodyHOffset = bodyScroller.HorizontalOffset();
+    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5 && std::abs(m_headerRequestedOffset - bodyHOffset) < 0.5)
+    {
+        return;
+    }
+    m_headerRequestedOffset = bodyHOffset;
+    headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
+}
+
+// Translation carries the band the rest of the way while the body pans on the compositor; it is 0 at rest.
 void TableView::StartHeaderScrollAnimation()
 {
     auto const headerHost = m_headerHost.get();
@@ -1353,17 +1354,12 @@ void TableView::StartHeaderScrollAnimation()
         return;
     }
 
-    // After a reload the body can sit at a different offset without having raised ViewChanged.
-    if (std::abs(headerScroller.HorizontalOffset() - bodyScroller.HorizontalOffset()) >= 0.5)
+    SyncHeaderScroller();
+    // ChangeView raises ViewChanging synchronously, and a handler can re-template or unload the TableView.
+    if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
+        m_bodyScroller.get() != bodyScroller)
     {
-        headerScroller.ChangeView(bodyScroller.HorizontalOffset(), nullptr, nullptr, true);
-        // ViewChanging is raised synchronously, and a handler can re-template or unload the TableView;
-        // the new parts start their own animation once they load.
-        if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
-            m_bodyScroller.get() != bodyScroller)
-        {
-            return;
-        }
+        return;
     }
 
     try
@@ -1397,18 +1393,17 @@ void TableView::UpdateHeaderScrollOffset()
         }
         catch (...)
         {
-            // The compositor can already be closed while the window shuts down.
             StopHeaderScrollAnimation();
         }
     }
 }
 
-// Reverts PART_HeaderHost.Translation to its static 0 so a stale offset cannot leave the band shifted.
 void TableView::StopHeaderScrollAnimation()
 {
     if (auto const headerHost = m_headerHost.get(); headerHost && m_headerScrollAnimation)
     {
-        try { headerHost.StopAnimation(m_headerScrollAnimation); } catch (...) {}
+        // Unlike StopAnimation, setting Translation cancels without writing the last animated value back.
+        try { headerHost.Translation({ 0.0f, 0.0f, 0.0f }); } catch (...) {}
     }
     m_headerScrollAnimation = nullptr;
     m_headerScrollOffset = nullptr;
@@ -1518,6 +1513,7 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     {
         // Hidden headers are inactive; restore the tab stops stamped while they were hidden.
         RefreshHeaderTabStopsInternal();
+        SyncHeaderScroller();
     }
     InvalidateMeasure();
     QueueTerminalGridLineRefresh();

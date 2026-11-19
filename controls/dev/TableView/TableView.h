@@ -1037,6 +1037,7 @@ private:
     void OnBodyScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::ScrollViewerViewChangedEventArgs& args);
+    void SyncHeaderScroller();
     void StartHeaderScrollAnimation();
     void UpdateHeaderScrollOffset();
     void StopHeaderScrollAnimation();
@@ -1308,7 +1309,8 @@ private:
     // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
     std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
-    // PART_HeaderHost's Translation expression and the property sets it reads; the expression doesn't keep them alive.
+    double m_headerRequestedOffset{ std::numeric_limits<double>::quiet_NaN() };
+    // The expression doesn't keep the property sets it reads alive.
     winrt::ExpressionAnimation m_headerScrollAnimation{ nullptr };
     winrt::CompositionPropertySet m_headerScrollOffset{ nullptr };
     winrt::CompositionPropertySet m_bodyManipulationProperties{ nullptr };

@@ -248,7 +248,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 string worstSample = "<none>";
                 var previousBodyLines = bodyLinesBefore;
                 var lastMove = System.Diagnostics.Stopwatch.StartNew();
-                while (!pan.IsCompleted || lastMove.ElapsedMilliseconds < 500)
+                var sampling = System.Diagnostics.Stopwatch.StartNew();
+                while ((!pan.IsCompleted || lastMove.ElapsedMilliseconds < 500) && sampling.Elapsed < TimeSpan.FromSeconds(20))
                 {
                     var (headerLines, bodyLines) = CaptureGridLines(left, width, headerY, bodyY);
                     if (!bodyLines.SequenceEqual(previousBodyLines))

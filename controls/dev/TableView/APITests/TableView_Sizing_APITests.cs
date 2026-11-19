@@ -3215,6 +3215,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() => LoadContent(tableView));
             SettleLayout(tableView);
             VerifyHeaderOverBody(tableView, tableView, "after reload");
+            VerifyHeaderScrollerAtBodyOffset(tableView, "after reload");
             ScrollBodyTo(tableView, ScrollAxis.Horizontal, 2 * c_scrollOffset);
             VerifyHeaderOverBody(tableView, tableView, "scrolled after reload");
 
@@ -3227,8 +3228,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             SettleLayout(tableView);
             VerifyHeaderOverBody(tableView, tableView, "after re-applying the template");
+            VerifyHeaderScrollerAtBodyOffset(tableView, "after re-applying the template");
             ScrollBodyTo(tableView, ScrollAxis.Horizontal, c_scrollOffset);
             VerifyHeaderOverBody(tableView, tableView, "scrolled after re-applying the template");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the header catches up with a horizontal scroll made while the column headers were hidden.")]
+        public void VerifyHeaderCatchesUpWithScrollWhileHeadersHidden()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 6);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => tableView.HeadersVisibility = TableViewHeadersVisibility.None);
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, 2 * c_scrollOffset);
+
+            RunOnUIThread.Execute(() => tableView.HeadersVisibility = TableViewHeadersVisibility.Column);
+            SettleLayout(tableView);
+            VerifyHeaderScrollerAtBodyOffset(tableView, "after showing the headers");
+            VerifyHeaderOverBody(tableView, tableView, "after showing the headers");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies unloading the TableView while PART_HeaderHost.Translation is non-zero leaves it at 0.")]
+        public void VerifyUnloadLeavesHeaderTranslationAtZero()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateScrollableTable(columnCount: 6);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+
+            // Moving only the header makes the Translation expression non-zero, as mid-pan.
+            RunOnUIThread.Execute(() => GetHeaderScroller(tableView).ChangeView(c_scrollOffset, null, null, true));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.AreEqual(c_scrollOffset, GetHeaderScroller(tableView).HorizontalOffset,
+                "Precondition: the header should have scrolled on its own."));
+
+            RunOnUIThread.Execute(() => Content = null);
+            IdleSynchronizer.Wait();
+            global::System.Threading.Tasks.Task.Delay(250).Wait();
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(global::System.Numerics.Vector3.Zero, GetHeaderHost(tableView).Translation,
+                "PART_HeaderHost.Translation must return to 0 when the TableView unloads."));
+        }
+
+        private static ScrollViewer GetHeaderScroller(TableView tableView)
+        {
+            var scroller = tableView.FindVisualChildByName("PART_HeaderScroller") as ScrollViewer;
+            Verify.IsNotNull(scroller, "PART_HeaderScroller should exist once the template has applied.");
+            return scroller;
+        }
+
+        // PART_HeaderScroller's offset is what hit-testing and UIA read.
+        private static void VerifyHeaderScrollerAtBodyOffset(TableView tableView, string context)
+        {
+            RunOnUIThread.Execute(() => Verify.IsLessThanOrEqual(
+                Math.Abs(GetHeaderScroller(tableView).HorizontalOffset - GetBodyHorizontalOffset(tableView)), c_alignmentTolerance,
+                $"PART_HeaderScroller must sit at the body's offset ({context}): header {GetHeaderScroller(tableView).HorizontalOffset}, body {GetBodyHorizontalOffset(tableView)}."));
         }
 
         // Every header cell against the same column's cell in each realized row. XAML reads PART_HeaderHost's
