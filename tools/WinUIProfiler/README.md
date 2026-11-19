@@ -289,7 +289,8 @@ The validated JSON is saved atomically under `%LOCALAPPDATA%\WinUIProfiler\Snaps
 the UI shows the node counts and saved path. Repeated captures are independent.
 Each successful capture appears in **Snapshot history**, newest first. Select an
 entry to open its viewer: expandable XAML and Composition trees, selected-node
-properties, and direct object-to-visual mapping/highlighting. The same snapshot
+properties, and direct root object-to-visual mapping/highlighting. Descendant XAML
+elements are not forced to have dedicated Composition visuals merely to create links. The same snapshot
 reuses its open viewer; different snapshots can be compared in separate windows.
 Tree labels include the XAML object's COM identity address or the Composition
 visual's IVisual interface address. Each tree has Expand all and Collapse all
@@ -376,8 +377,18 @@ threads; traversal uses `VisualTreeHelper`, `ElementCompositionPreview` and
 Composition APIs. Captures are bounded to 20 seconds, 64 MiB and 131,072 records.
 Roots have individual capture intervals, not a globally atomic timestamp.
 Unrealized/logical objects, internal HWCompNodes and private compositor trees
-are not exposed. `GetElementVisual` may materialize handout visuals. Property
-errors and scope limitations are included in the JSON rather than fabricated values.
+are not exposed. `GetElementVisual` is requested only for each XamlRoot's content
+and open popup roots, never their descendants. It may materialize a root handout;
+for non-perturbing visual-count comparisons, expose the same measurement root in
+both variants before waiting for steady state. Composition enumeration then uses
+the public ancestors and `ContainerVisual.Children`, without manufacturing
+descendant peers or counting disconnected descendant handouts. Direct
+object-to-visual correlations are root-only; missing descendant links are not
+fabricated. Older snapshots that acquired every element's handout can contain
+capture-induced visuals and are not comparable to root-only counts. Restart such
+targets before measuring: disconnecting the profiler does not remove their
+cached handouts. Property errors and scope limitations are included in the JSON
+rather than fabricated values.
 
 ## XAML events
 

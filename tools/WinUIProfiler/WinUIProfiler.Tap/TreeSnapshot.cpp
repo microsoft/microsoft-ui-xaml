@@ -410,13 +410,15 @@ namespace WinUIProfiler::Tap
                         });
                         properties.Read("foreground", [&] { return text.Foreground(); });
                     }
-                    properties.Read("elementVisualAvailable", [&]
-                    {
-                        auto visual = X::Hosting::ElementCompositionPreview::GetElementVisual(element);
-                        if (!visual) Fail(E_NOINTERFACE);
-                        handouts.emplace_back(item.Id, std::move(visual));
-                        return true;
-                    });
+                    // Descendant handouts force composition peers and include disconnected hidden visuals.
+                    if (!item.ParentId)
+                        properties.Read("elementVisualAvailable", [&]
+                        {
+                            auto visual = X::Hosting::ElementCompositionPreview::GetElementVisual(element);
+                            if (!visual) Fail(E_NOINTERFACE);
+                            handouts.emplace_back(item.Id, std::move(visual));
+                            return true;
+                        });
                 }
                 InstanceHandle handle{};
                 const auto handleHr = job.Diagnostics->GetHandleFromIInspectable(
@@ -730,8 +732,8 @@ namespace WinUIProfiler::Tap
                 "\"Each root is sampled on its owning UI thread over its recorded interval; roots are not globally atomic.\","
                 "\"XAML resources are sampled before tree enumeration, not atomically with the trees. Allocator counters are tracked in DBG builds or while profiling is enabled; -1 means unavailable. Transition-spanning allocations/frees can be unbalanced. AllocatedMemory is the independent GC heuristic, not process heap size. All-zero graphics resource slots are not measurements.\","
                 "\"Open popup children are separate visual subtrees, without fabricated logical parent links.\","
-                "\"GetElementVisual can materialize public handout visuals; no adorners or visual mutations are requested.\","
-                "\"Composition includes all descendants exposed by ContainerVisual.Children and public ancestors of handout visuals, not private compositor trees.\","
+                "\"Root-only composition capture: GetElementVisual is requested only for XamlRoot content and open popup roots, never descendants. It may materialize root handout visuals; no adorners are requested.\","
+                "\"Composition includes descendants exposed by ContainerVisual.Children and public ancestors of root handouts, not disconnected descendant handouts or private compositor trees. Object-to-visual correlations are root-only.\","
                 "\"No core/HWCompNode or lifetime-ID mapping is exposed; addresses are debugger metadata only.\","
                 "\"Property errors and unsupported values are recorded explicitly inside properties.\","
                 "\"XAML properties are allow-listed SDK getters, not every dependency or app-defined property; TextBlock text over 4096 UTF-16 code units is recorded as an error.\","

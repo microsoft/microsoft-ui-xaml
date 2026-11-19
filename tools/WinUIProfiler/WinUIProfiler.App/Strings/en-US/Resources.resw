@@ -45,7 +45,7 @@
   <data name="SnapshotSavedFormat" xml:space="preserve"><value>Saved {0} XAML nodes and {1} Composition nodes: {2}</value></data>
   <data name="SnapshotRequiresConnection" xml:space="preserve"><value>Connect to a target before taking a tree snapshot.</value></data>
   <data name="SnapshotHistoryHeading.Text" xml:space="preserve"><value>Snapshot history</value></data>
-  <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Select a snapshot to inspect its trees. This list lasts for the profiler session; saved JSON files are retained.</value></data>
+  <data name="SnapshotHistoryNotice.Text" xml:space="preserve"><value>Root-only Composition capture avoids creating descendant visuals. Select a snapshot to inspect its trees. This list lasts for the profiler session; saved JSON files are retained.</value></data>
   <data name="SnapshotHistory.AutomationProperties.Name" xml:space="preserve"><value>Captured tree snapshots</value></data>
   <data name="SnapshotHistoryTitleFormat" xml:space="preserve"><value>{0} | PID {1}</value></data>
   <data name="InitialSnapshotHistoryTitleFormat" xml:space="preserve"><value>Initial snapshot | {0} | PID {1}</value></data>
