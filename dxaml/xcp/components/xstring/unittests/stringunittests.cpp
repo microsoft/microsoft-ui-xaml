@@ -41,6 +41,57 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     DECLARE_CONST_STRING_IN_TEST_CODE(c_str_bc, L"bc");
     DECLARE_CONST_STRING_IN_TEST_CODE(c_str_Bc, L"Bc");
 
+    void StringUnitTests::FloatFallbackConversion()
+    {
+        const WCHAR* invalidInputs[] =
+        {
+            L"123456789012345e999",
+            L"0.123456789012345e999",
+            L"1e999"
+        };
+
+        for (const auto input : invalidInputs)
+        {
+            const auto length = static_cast<UINT32>(wcslen(input));
+            UINT32 suffixLength = 0;
+            const WCHAR* suffix = nullptr;
+            FLOAT value = 42.0f;
+            VERIFY_FAILED(FloatFromString(length, input, &suffixLength, &suffix, &value));
+            VERIFY_ARE_EQUAL(value, 42.0f);
+
+            VERIFY_FAILED(NonSignedFromString(length, input, &suffixLength, &suffix, &value));
+            VERIFY_ARE_EQUAL(value, 42.0f);
+        }
+
+        const struct
+        {
+            const WCHAR* input;
+            FLOAT expected;
+        } validInputs[] =
+        {
+            {L"123456789012345x", 123456789012345.0f},
+            {L"0.123456789012345x", 0.123456789012345f},
+            {L"1e30x", 1e30f}
+        };
+
+        for (const auto& test : validInputs)
+        {
+            const auto length = static_cast<UINT32>(wcslen(test.input));
+            UINT32 suffixLength = 0;
+            const WCHAR* suffix = nullptr;
+            FLOAT value = 0.0f;
+            VERIFY_SUCCEEDED(FloatFromString(length, test.input, &suffixLength, &suffix, &value));
+            VERIFY_ARE_EQUAL(value, test.expected);
+            VERIFY_ARE_EQUAL(suffixLength, UINT32{1});
+            VERIFY_IS_TRUE(*suffix == L'x');
+
+            VERIFY_SUCCEEDED(NonSignedFromString(length, test.input, &suffixLength, &suffix, &value));
+            VERIFY_ARE_EQUAL(value, test.expected);
+            VERIFY_ARE_EQUAL(suffixLength, UINT32{1});
+            VERIFY_IS_TRUE(*suffix == L'x');
+        }
+    }
+
     void StringUnitTests::ConstXStringPtrDeclaration()
     {
         DECLARE_CONST_STRING_IN_TEST_CODE(c_strTest, L"Testing constant string");
