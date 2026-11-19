@@ -306,10 +306,8 @@ _Check_return_ HRESULT CSoftwareBitmapSource::PrepareCopyParams(
     // a successful upload. That discard happens in ImageSurfaceWrapper::UpdateSurfaceFromSoftware via a call to
     // ImageSurfaceWrapper::ReleaseSoftwareSurfaceIfAllowed.
     //
-    // Todo: I don't think software rendering scenarios exist anymore. BitmapCache is gone. The only place that still calls
-    // CImageBrush::ReloadSoftwareSurfaceIfReleased is in alpha mask rendering in BaseContentRenderer, but even there we've
-    // switched away from the Silverlight software rasterizer and moved to D2D. I think this whole flag/mechanism can be
-    // deleted.
+    // Todo: I don't think software rendering scenarios exist anymore. BitmapCache is gone, and alpha mask rendering in
+    // BaseContentRenderer no longer asks for a software surface either. I think this whole flag/mechanism can be deleted.
     //
     if (!forceCopyToSoftwareSurface &&
         !m_pImageSurfaceWrapper->MustKeepSystemMemory() &&
