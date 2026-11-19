@@ -1543,19 +1543,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Group help", element.GetHelpText(), "HelpText must come from the header.");
                 Verify.AreEqual(1036, element.GetCulture(), "Culture must come from the header.");
                 Verify.IsNotNull(element.GetPattern(PatternInterface.ScrollItem), "The group's element must offer ScrollItem.");
-
-                GetBodyScroller(tableView).ChangeView(null, 60.0, null, true);
             });
-            IdleSynchronizer.Wait();
+
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 60.0);
 
             RunOnUIThread.Execute(() =>
             {
                 var scroller = GetBodyScroller(tableView);
                 Verify.IsTrue(scroller.VerticalOffset > 30.0, $"Precondition: the table must have scrolled, offset {scroller.VerticalOffset}.");
                 Verify.IsTrue(element.GetName().StartsWith("G0 "), "Precondition: G0's header must still be realized.");
-                ((IScrollItemProvider)element.GetPattern(PatternInterface.ScrollItem)).ScrollIntoView();
             });
-            IdleSynchronizer.Wait();
+            RunAndWaitForBodyViewChange(tableView,
+                () => ((IScrollItemProvider)element.GetPattern(PatternInterface.ScrollItem)).ScrollIntoView());
 
             RunOnUIThread.Execute(() =>
             {
@@ -2021,6 +2020,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static void SetScrollPercentAndWaitForViewChange(TableView tableView, double verticalPercent)
         {
+            RunAndWaitForBodyViewChange(tableView, () =>
+            {
+                var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
+                scroll.SetScrollPercent(ScrollPatternIdentifiers.NoScroll, verticalPercent);
+            });
+        }
+
+        // Runs action on the UI thread and waits for the body scroller's final ViewChanged.
+        private static void RunAndWaitForBodyViewChange(TableView tableView, Action action)
+        {
             using (var viewChanged = new AutoResetEvent(false))
             {
                 ScrollViewer scroller = null;
@@ -2037,8 +2046,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         scroller = GetBodyScroller(tableView);
                         scroller.ViewChanged += handler;
-                        var scroll = (IScrollProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.Scroll);
-                        scroll.SetScrollPercent(ScrollPatternIdentifiers.NoScroll, verticalPercent);
+                        action();
                     });
                     Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS), "The requested scroll must complete.");
                     IdleSynchronizer.Wait();
