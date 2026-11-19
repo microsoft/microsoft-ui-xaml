@@ -21,10 +21,13 @@ function records(mode) {
   const jobs = { 'Build.BuildMUX': mode === 'Quick' ? 1 : 5,
     'RunTests.CreateTestPayload': mode === 'Quick' ? 1 : 3, 'RunTests.RunTests25H2': 20 };
   if (mode === 'Full') {
-    stages.push('Build_MUXFinalRelease', 'RunStaticTests', 'RunScenarioTests');
+    stages.push('Build_MUXFinalRelease', 'RunStaticTests', 'RunScenarioTests', 'RunSystemCompositionEngineTests');
     Object.assign(jobs, { 'Build_MUXFinalRelease.BuildMUX': 1, 'RunTests.RunTests23H2': 20,
       'RunTests.RunTestsRS5': 20, 'RunScenarioTests.RunAppTestsRS5': 5,
-      'RunScenarioTests.RunAppTests25H2': 5, 'RunScenarioTests.RunAppTests23H2': 5 });
+      'RunScenarioTests.RunAppTests25H2': 5, 'RunScenarioTests.RunAppTests23H2': 5,
+      'RunSystemCompositionEngineTests.CreateSystemCompositionEngineTestPayload_x86chk': 1,
+      'RunSystemCompositionEngineTests.RunSystemCompositionEngineTests_x86chk': 1,
+      'RunSystemCompositionEngineTests.RunSystemCompositionEngineBroadWPF_x86chk': 20 });
   }
   const row = (type, identifier) => ({ type, identifier, state: 'completed', result: 'succeeded', attempt: 1 });
   return [...stages.map(s => row('Stage', s)),
@@ -225,6 +228,40 @@ test('failed, canceled, context-only and incomplete-runtime runs cannot make the
   build.templateParameters.runFullValidation = false;
   await h.gate.reconcile();
   assert.equal(h.last().state, 'failure');
+});
+
+test('native Full requires the system-composition stage and every WPF shard', async () => {
+  const h = harness();
+  await h.gate.reconcile();
+  h.addBuild();
+  h.timeline = records('Full').filter(r => !r.identifier.startsWith('RunSystemCompositionEngineTests'));
+  await h.gate.reconcile();
+  assert.equal(h.last().state, 'failure');
+  h.timeline = records('Full').filter(r =>
+    r.identifier !== 'RunSystemCompositionEngineTests.RunSystemCompositionEngineBroadWPF_x86chk.19');
+  await h.gate.reconcile();
+  assert.equal(h.last().state, 'failure');
+  h.timeline = records('Full');
+  await h.gate.reconcile();
+  assert.equal(h.last().state, 'success');
+});
+
+test('Full CI and fork builds preserve the upstream system-composition skip condition', async () => {
+  for (const kind of ['ci', 'fork']) {
+    const h = harness();
+    if (kind === 'ci') {
+      await h.gate.reconcile(h.command('/winui full'));
+    } else {
+      h.pulls[0].head.repo.full_name = 'contributor/widgets';
+      await h.gate.reconcile();
+    }
+    h.addBuild();
+    h.timeline = records('Full').filter(r => !r.identifier.startsWith('RunSystemCompositionEngineTests'));
+    h.timeline.push({ type: 'Stage', identifier: 'RunSystemCompositionEngineTests',
+      state: 'completed', result: 'skipped' });
+    await h.gate.reconcile();
+    assert.equal(h.last().state, 'success', kind);
+  }
 });
 
 test('persisted state retains the exact selected run across workflow invocations', async () => {

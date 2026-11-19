@@ -76,10 +76,39 @@ HRESULT TestServicesStatics::RuntimeClassInitialize()
     {
         WaitForDebugger();
 
-        LogThrow_IfFailed(InitializeHost());
-
         Hosting::HostingMode hostingMode = Hosting::HostingMode::UAP;
         LogThrow_IfFailed(GetHostingMode(&hostingMode));
+
+        WEX::Common::String compositionEngineTypeParam;
+        m_useSystemCompositionEngine =
+            SUCCEEDED(RuntimeParameters::TryGetValue(
+                L"CompositionEngineType",
+                compositionEngineTypeParam)) &&
+            compositionEngineTypeParam.CompareNoCase(L"System") == 0;
+
+        LogThrow_If(
+            m_useSystemCompositionEngine && hostingMode != Hosting::HostingMode::WPF,
+            E_NOTIMPL);
+
+        if (m_useSystemCompositionEngine && hostingMode == Hosting::HostingMode::WPF)
+        {
+            WEX::Common::String compositionEngineLaunchRequestPathParam;
+            LogThrow_IfFailed(RuntimeParameters::TryGetValue(
+                L"CompositionEngineLaunchRequestPath",
+                compositionEngineLaunchRequestPathParam));
+            const wchar_t* compositionEngineLaunchRequestPath =
+                reinterpret_cast<const wchar_t*>(
+                    compositionEngineLaunchRequestPathParam.GetBuffer());
+            LogThrow_IfFailed(::WindowsCreateString(
+                compositionEngineLaunchRequestPath,
+                static_cast<UINT32>(wcslen(compositionEngineLaunchRequestPath)),
+                m_compositionEngineLaunchRequestPath.ReleaseAndGetAddressOf()));
+            LogThrow_If(
+                ::WindowsIsStringEmpty(m_compositionEngineLaunchRequestPath.Get()),
+                E_ACCESSDENIED);
+        }
+
+        LogThrow_IfFailed(InitializeHost());
 
         if (hostingMode == Hosting::HostingMode::UAP)
         {
@@ -304,7 +333,12 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
 
         try
         {
-            m_spWin32Host = Win32Hosting::StartWin32Host(L"Private.Infrastructure.Hosting.WPF.HostFactory", dpiAwarenessContext, initCore);
+            m_spWin32Host = Win32Hosting::StartWin32Host(
+                L"Private.Infrastructure.Hosting.WPF.HostFactory",
+                dpiAwarenessContext,
+                initCore,
+                m_useSystemCompositionEngine,
+                m_compositionEngineLaunchRequestPath.Get());
         }
         catch (const WEX::Common::Exception&)
         {
@@ -356,7 +390,12 @@ HRESULT TestServicesStatics::InitializeHostAndDpiAwarenessContextAndCore(boolean
     {
         LOG_OUTPUT(L"Hosting mode is WinForms");
 
-        m_spWin32Host = Win32Hosting::StartWin32Host(L"Private.Infrastructure.Hosting.WinForms.HostFactory", test_infra::Hosting::DpiAwarenessContext::DpiAwarenessContext_PerMonitorAwareV2, initCore);
+        m_spWin32Host = Win32Hosting::StartWin32Host(
+            L"Private.Infrastructure.Hosting.WinForms.HostFactory",
+            test_infra::Hosting::DpiAwarenessContext::DpiAwarenessContext_PerMonitorAwareV2,
+            initCore,
+            false,
+            nullptr);
         dispatcher = Win32Hosting::GetDispatcherQueueFromWin32XamlContentRoot(m_spWin32Host);
         uint64_t handle = 0;
         FAIL_FAST_IF_FAILED(m_spWin32Host->get_MainWindowHandle(&handle));

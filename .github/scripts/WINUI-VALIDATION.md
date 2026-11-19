@@ -44,7 +44,12 @@ Prefer a pinned SHA when the PR is actively changing.
 
 Quick compiles **x86 Debug**, retains the full developer test suite in **20
 Windows 11 25H2 shards**, and omits scenario apps/tests, other build architectures,
-older test OS jobs, the static-test stage and the extra final-release build.
+older test OS jobs, the system-composition WPF stage, the static-test stage and
+the extra final-release build.
+
+Full preserves the upstream system-composition stage condition: it runs for
+non-fork PR builds, but is skipped for CI/manual builds. The gate requires that
+stage and its WPF shards when the upstream condition applies.
 
 Only the selected run can satisfy **WinUI Validation Gate**. A late Full result
 cannot overwrite a selected Quick result, and vice versa. Quick is never

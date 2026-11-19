@@ -19,6 +19,7 @@ function evaluate(text, parameters, variables) {
   if (variable) return variables[variable[1]];
   if (text === 'true') return true;
   if (text === 'false') return false;
+  if (/^-?\d+$/.test(text)) return Number(text);
   if (/^'.*'$/.test(text)) return text.slice(1, -1);
   const call = /^(eq|ne|in|and|or|startsWith)\((.*)\)$/.exec(text);
   assert.ok(call, `Unsupported condition ${text}`);
@@ -77,10 +78,11 @@ function stages(branch, override = {}) {
 test('ordinary PR and Full CI refs preserve full coverage; Quick refs select reduced runtime coverage', () => {
   for (const branch of ['refs/pull/42/merge', 'refs/heads/main', 'refs/heads/validation/full-pr/42/c100']) {
     const full = stages(branch);
-    assert.equal(full.length, 6);
+    assert.equal(full.length, 7);
     assert.equal(full[1].parameters.pipelineKind, 'GitHubPR');
     assert.equal(full[1].parameters.buildScenarioApps, true);
     assert.equal(full[2].parameters.stageName, 'Build_MUXFinalRelease');
+    assert.ok(full.some(stage => stage.template?.endsWith('WinUI-RunSystemCompositionEngineTests-Stage.yml')));
   }
   for (const quick of [stages('refs/heads/validation/quick-pr/42/c100'),
     stages('refs/pull/42/merge', { validationMode: 'Quick' })]) {
@@ -89,7 +91,10 @@ test('ordinary PR and Full CI refs preserve full coverage; Quick refs select red
     assert.equal(quick[1].parameters.buildScenarioApps, false);
     assert.equal(quick[1].parameters.buildProductOnly, false);
     assert.equal(quick[2].parameters.pipelineKind, 'QuickPR');
+    assert.ok(!quick.some(stage => stage.template?.endsWith('WinUI-RunSystemCompositionEngineTests-Stage.yml')));
   }
+  assert.ok(!stages('refs/pull/42/merge', { MUXFinalRelease: true })
+    .some(stage => stage.template?.endsWith('WinUI-RunSystemCompositionEngineTests-Stage.yml')));
   assert.equal(stages('refs/heads/validation/quick-pr/42/c100', { runFullValidation: false }).length, 1);
 });
 
@@ -101,7 +106,7 @@ test('Quick still builds x86 Debug and runs all twenty 25H2 developer-test shard
   const jobs = expand(tests.stages[0].jobs, { pipelineKind: 'QuickPR' });
   assert.deepEqual(jobs.map(job => job.parameters.runTestJobName), ['CreateTestPayload', 'RunTests25H2']);
   const runtime = read('build/AzurePipelinesTemplates/WinUI-RunTestPassOnPipeline-Job.yml');
-  assert.equal(expand(runtime.jobs[0].strategy, { testSuite: 'DevTestSuite' }).parallel, 20);
+  assert.equal(expand(runtime.jobs[0].strategy, { ...runtime.parameters, testSuite: 'DevTestSuite' }).parallel, 20);
 });
 
 test('privileged workflow uses trusted code, serialized publication and checkpoint-before-release', () => {

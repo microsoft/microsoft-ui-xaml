@@ -10,21 +10,21 @@
 
     <controls:SamplePresenter
         Header="Density"
-        Description="TableView.Density sets the row height and the built-in cell padding to Compact, Standard or Comfortable. Pick a preset and every row resizes at once, including the template cells: the 28 px avatar and the Department and Status chips. Group headers keep the same height in every preset, so with grouping on, the rows change and the headers do not. The cells here are read-only visuals, so nothing but the density changes their size."
+        Description="TableView.Density sets the minimum row, column-header and group-header heights and the built-in padding to Compact, Standard or Comfortable. Standard is the default. CompactTableViewStyle and ComfortableTableViewStyle select the same presets. Template content, such as the 28 px avatar and the Department and Status chips, can make rows taller than the preset minimum. The cells here are read-only visuals."
         Snippet="Density"
         StretchExample="True"
-        TryIt="Choose Compact, then Comfortable, and watch every row resize. Switch Shaping to Grouped and change the density again: the rows resize but the group headers keep their height. Then select a row and move it to the next group."
-        WhatToLookFor="Every row takes the new height at once, and the 28 px avatar and the chips still fit in Compact. Group headers keep the same height in every preset. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
+        TryIt="Choose Compact, Standard, then Comfortable and compare the rows and column headers. Switch Shaping to Grouped and change the density again to compare the group headers too. Then select a row and move it to the next group."
+        WhatToLookFor="Rows, column headers and group headers follow the density preset, with 24, 32 and 40 px minimum heights for Compact, Standard and Comfortable. Custom template content can make rows taller. Grouped, moving a row re-applies GroupBy, so the row jumps to its new group, and a group that loses its last row disappears.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
-            <!-- Template cells follow Density with no change of their own. -->
+            <!-- Custom template content can make rows taller than the density minimum. -->
             <tv:TableView
                 x:Name="PeopleTable"
                 AutomationProperties.AutomationId="DensityTable"
                 AutomationProperties.Name="People density"
                 ItemsSource="{x:Bind Source}"
-                Density="Standard"
+                Style="{StaticResource DefaultTableViewStyle}"
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
@@ -42,7 +42,7 @@
                 <controls:RailSection
                     IsFirst="True"
                     Header="Density"
-                    Description="Sets TableView.Density. Each preset changes the row height and the built-in cell padding; group headers are not affected.">
+                    Description="Sets TableView.Density. Each preset changes the minimum row, column-header and group-header heights and the built-in padding.">
                     <!-- snippet -->
                     <ComboBox
                         x:Name="DensitySelector"

@@ -1319,6 +1319,50 @@ IFACEMETHODIMP ListViewBase::OnKeyDown(
     return S_OK;
 }
 
+_Check_return_ HRESULT ListViewBase::GetTabEntryTargetIndex(
+    _In_ bool isBackward,
+    _Out_ INT* index)
+{
+    *index = -1;
+
+    // Candidate queries outside actual Tab processing must not change programmatic focus behavior.
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(GetHandle());
+    if (!focusManager ||
+        !(isBackward ? focusManager->IsMovingFocusToPreviousTabStop() : focusManager->IsMovingFocusToNextTabStop()))
+    {
+        return S_OK;
+    }
+
+    auto navigationMode = xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once;
+    IFC_RETURN(get_TabNavigation(&navigationMode));
+    if (navigationMode != xaml_input::KeyboardNavigationMode::KeyboardNavigationMode_Once)
+    {
+        return S_OK;
+    }
+
+    BOOLEAN singleSelectionFollowsFocus = FALSE;
+    IFC_RETURN(get_SingleSelectionFollowsFocus(&singleSelectionFollowsFocus));
+    auto selectionMode = xaml_controls::ListViewSelectionMode_None;
+    IFC_RETURN(get_SelectionMode(&selectionMode));
+    INT selectedIndex = -1;
+    IFC_RETURN(get_SelectedIndex(&selectedIndex));
+    if (!singleSelectionFollowsFocus || selectionMode != xaml_controls::ListViewSelectionMode_Single || selectedIndex < 0)
+    {
+        return S_OK;
+    }
+
+    // Match OnGettingFocus: only redirect to a selected item that can take focus.
+    ctl::ComPtr<IItemContainerMapping> itemMapping;
+    BOOLEAN isFocusable = FALSE;
+    IFC_RETURN(GetItemContainerMapping(&itemMapping));
+    IFC_RETURN(IsItemFocusable(itemMapping.Get(), selectedIndex, true /*unrealizedItemsAssumedFocusable*/, &isFocusable));
+    if (isFocusable)
+    {
+        *index = selectedIndex;
+    }
+    return S_OK;
+}
+
 // Handles when a key is released on the ListViewBase.
 IFACEMETHODIMP ListViewBase::OnKeyUp(
     _In_ xaml_input::IKeyRoutedEventArgs* pArgs)

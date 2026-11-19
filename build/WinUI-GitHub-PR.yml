@@ -191,6 +191,9 @@ extends:
           ${{ else }}:
             pipelineKind: PR
 
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false), ne(variables.isQuickValidation, 'True')) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunSystemCompositionEngineTests-Stage.yml
+
     - ${{ if and(eq(parameters.runFullValidation, true), ne(variables.isQuickValidation, 'True')) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:

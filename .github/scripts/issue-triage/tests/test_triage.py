@@ -318,7 +318,7 @@ class ValidationTests(TriageFixture):
         result = self.result(area="None", area_confidence="NONE")
         self.assertEqual(t.planned_labels(result, self.evidence, MAPPING), [])
 
-    def test_out_of_set_self_newer_non_integer_and_medium_duplicates_are_rejected(self):
+    def test_out_of_set_self_newer_non_integer_and_low_confidence_duplicates_are_rejected(self):
         for value in (True, "1", 999, 100, 101):
             with self.subTest(value=value), self.assertRaises(t.TriageError):
                 self.result(duplicate_candidates_json=json.dumps([
@@ -367,11 +367,24 @@ class RoutingTests(TriageFixture):
     def test_high_confidence_adds_one_area_and_derived_team(self):
         self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), ["area-Expander", "team-Controls"])
 
-    def test_lower_confidence_is_comment_only(self):
-        for confidence in ("MEDIUM", "LOW"):
-            self.assertEqual(t.planned_labels(self.result(area_confidence=confidence), self.evidence, MAPPING), [])
+    def test_medium_confidence_publishes_the_area_and_its_team_for_review(self):
+        self.client.issue["labels"] = [{"name": "bug"}]
+        evidence = t.prepare(self.client, event(), MAPPING)
+        result = t.validate(agent_output(evidence, area_confidence="MEDIUM"), evidence)
+        plan = t.publish(self.client, result, evidence, MAPPING, write=True)
+        self.assertEqual(plan["add_labels"], ["area-Expander", "needs-triage", "team-Controls"])
+        self.assertIn("medium confidence", plan["comment"])
+        self.assertNotIn("No automatic team assignment", plan["comment"])
+        self.assertTrue({"area-Expander", "team-Controls", "needs-triage"}
+                        <= set(t.label_names(self.client.issue)))
 
-    def test_unexplained_high_area_is_deferred_without_discarding_other_triage(self):
+    def test_low_or_no_confidence_does_not_add_an_area(self):
+        for area, confidence in (("area-Expander", "LOW"), ("None", "NONE")):
+            with self.subTest(confidence=confidence):
+                result = self.result(area=area, area_confidence=confidence)
+                self.assertEqual(t.planned_labels(result, self.evidence, MAPPING), [])
+
+    def test_unexplained_high_routes_the_area_and_team_at_medium_for_review(self):
         result = self.result(
             routing_reason="None", reproduction="INSUFFICIENT",
             missing_information="Please provide concrete steps.",
@@ -380,14 +393,17 @@ class RoutingTests(TriageFixture):
         self.assertTrue(result["review_notes"])
         plan = t.publish(self.client, result, self.evidence, MAPPING, write=True)
         self.assertTrue(plan["published"])
-        self.assertEqual(plan["add_labels"], ["needs-repro"])
+        self.assertEqual(plan["add_labels"], ["area-Expander", "needs-repro", "team-Controls"])
         self.assertIn("supporting report evidence", plan["comment"])
+        self.assertIn("Maintainer review remains required", plan["comment"])
         self.assertIn(result["summary"], plan["comment"])
-        self.assertNotIn("area-Expander", plan["add_labels"])
 
     def test_existing_area_wins_over_model(self):
         self.evidence["existing_labels"] += ["area-Binding"]
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), [])
+        for confidence in ("HIGH", "MEDIUM"):
+            with self.subTest(confidence=confidence):
+                self.assertEqual(t.planned_labels(
+                    self.result(area_confidence=confidence), self.evidence, MAPPING), [])
 
     def test_existing_area_can_supply_its_missing_team(self):
         self.evidence["existing_labels"] += ["area-Expander"]
@@ -395,7 +411,16 @@ class RoutingTests(TriageFixture):
 
     def test_existing_team_is_preserved_and_conflicting_area_is_not_added(self):
         self.evidence["existing_labels"] += ["team-Markup"]
-        self.assertEqual(t.planned_labels(self.result(), self.evidence, MAPPING), ["team-Core"])
+        for confidence in ("HIGH", "MEDIUM"):
+            with self.subTest(confidence=confidence):
+                self.assertEqual(t.planned_labels(
+                    self.result(area_confidence=confidence), self.evidence, MAPPING), ["team-Core"])
+
+    def test_medium_area_retains_review_with_an_existing_compatible_team(self):
+        self.evidence["existing_labels"] = ["bug", "team-Controls"]
+        result = self.result(area_confidence="MEDIUM")
+        self.assertEqual(t.planned_labels(result, self.evidence, MAPPING),
+                         ["area-Expander", "needs-triage"])
 
     def test_multiple_existing_areas_are_not_collapsed(self):
         self.evidence["existing_labels"] += ["area-Expander", "area-Binding"]
@@ -427,7 +452,7 @@ class RoutingTests(TriageFixture):
         t.validate_mapping(mapping, dict.fromkeys(set(mapping) | teams, ""))
         self.assertEqual(
             {area for area, entry in mapping.items() if entry["team"] is None},
-            {"area-External", "area-Performance"},
+            {"None", "area-External", "area-Performance"},
         )
 
 
@@ -492,9 +517,12 @@ class ConditionalRoutingTests(TriageFixture):
         with self.assertRaises(t.TriageError):
             self.result(team="team-Rendering")
 
-    def test_medium_confidence_does_not_apply_an_override(self):
+    def test_medium_confidence_applies_the_evidenced_override(self):
         result = self.conditional_result(area_confidence="MEDIUM")
-        self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+        self.assertEqual(
+            t.planned_labels(result, self.evidence, self.mapping),
+            ["area-Expander", "team-Core", "team-Rendering"],
+        )
 
     def test_team_compatibility_uses_the_selected_override_not_the_default(self):
         self.evidence["existing_labels"].append("team-Rendering")
@@ -585,7 +613,7 @@ class ConditionalRoutingTests(TriageFixture):
         self.assertEqual(self.client.writes, [])
         self.assertEqual(len(self.client.comments), 1)
 
-    def test_low_confidence_publication_stays_idempotent(self):
+    def test_low_ownership_confidence_publication_stays_idempotent(self):
         self.mapping["area-Expander"]["confidence"] = "low"
         self.client.issue["labels"] = [{"name": "bug"}]
         evidence = t.prepare(self.client, event(), self.mapping)
@@ -644,11 +672,14 @@ class CoreParentRoutingTests(TriageFixture):
         result = self.result(area="None", area_confidence="NONE")
         self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
 
-    def test_uncertain_new_child_does_not_add_either_team_label(self):
-        for confidence in ("MEDIUM", "LOW"):
+    def test_medium_new_child_adds_parent_and_low_adds_neither_team_label(self):
+        for confidence, expected in (
+            ("MEDIUM", ["area-Binding", "team-Core", "team-Markup"]),
+            ("LOW", []),
+        ):
             with self.subTest(confidence=confidence):
                 result = self.binding_result(area_confidence=confidence)
-                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), [])
+                self.assertEqual(t.planned_labels(result, self.evidence, self.mapping), expected)
 
     def test_non_core_routes_do_not_gain_a_parent(self):
         for team in ("team-Controls", "team-CompInput", "team-Design"):
@@ -895,6 +926,17 @@ class TeamParentConfigurationTests(unittest.TestCase):
 
 
 class MappingConfigurationTests(unittest.TestCase):
+    def test_team_only_configuration_has_no_unconditional_owner(self):
+        entry = {
+            "team": None, "confidence": "medium", "match": ["contribution guidance"],
+            "overrides": [{"id": "repo-guidance", "when": "Repository contribution guidance defect.",
+                           "team": "team-Controls"}],
+        }
+        t.validate_mapping({"None": entry}, CATALOG)
+        for changes in ({"team": "team-Controls"}, {"overrides": []}):
+            with self.subTest(changes=changes), self.assertRaises(t.TriageError):
+                t.validate_mapping({"None": {**entry, **changes}}, CATALOG)
+
     def test_invalid_shapes_and_confidence_fail_closed(self):
         for entry in (
             None, "team-Controls", {},
@@ -953,6 +995,7 @@ class MappingConfigurationTests(unittest.TestCase):
     def test_all_configured_conditional_routes_resolve_the_declared_team(self):
         mapping = t.read_json(str(t.MAP_PATH))
         expected = {
+            "None": ("repo-contribution-guidance", "team-Controls"),
             "area-AnimatedVisualPlayer": ("compositor-failure", "team-CompInput"),
             "area-Flyouts": ("rendering-artifact", "team-Rendering"),
             "area-Icon": ("glyph-rendering", "team-Rendering"),
@@ -962,6 +1005,11 @@ class MappingConfigurationTests(unittest.TestCase):
             "area-Materials": ("compositor-resource", "team-CompInput"),
             "area-AppWindow": ("xaml-hosting", "team-Reach"),
             "area-TitleBar": ("pointer-handling", "team-CompInput"),
+            "area-Infrastructure": ("controls-metadata-ordering", "team-Controls"),
+            "area-Islands": ("island-resize-presentation", "team-CompInput"),
+            "area-Lifetime": ("controls-item-lifetime", "team-Controls"),
+            "area-MediaPlayerElement": ("island-cast-command", "team-Controls"),
+            "area-NugetPackage": ("composition-interop-header-packaging", "team-CompInput"),
         }
         self.assertEqual(
             {area for area, entry in mapping.items() if entry.get("overrides")}, set(expected)

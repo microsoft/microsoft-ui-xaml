@@ -11,7 +11,8 @@ namespace WinUIProfiler.Engine.Target;
 [SupportedOSPlatform("windows")]
 public static class TargetLauncher
 {
-    public static Process LaunchUnpackaged(string executable, string arguments, string? workingDirectory)
+    public static Process LaunchUnpackaged(string executable, string arguments, string? workingDirectory,
+        bool isolateStandardHandles = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(executable);
         ArgumentNullException.ThrowIfNull(arguments);
@@ -33,6 +34,7 @@ public static class TargetLauncher
             throw new DirectoryNotFoundException(directory);
         }
 
+        if (isolateStandardHandles) return IsolatedProcess.Start(fullPath, arguments, directory);
         return Process.Start(new ProcessStartInfo(fullPath, arguments)
         {
             UseShellExecute = false,

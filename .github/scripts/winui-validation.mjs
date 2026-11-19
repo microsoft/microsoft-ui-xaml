@@ -221,7 +221,7 @@ export class Gate {
     const build = await this.azure.build(request.buildId);
     if (!matchesBuild(build, request, this.config)) return { state: 'failure', message: 'Selected build identity or coverage mismatch' };
     if (build.status !== 'completed') return { state: 'pending', message: `${request.mode} validation is running` };
-    if (build.result !== 'succeeded' || !coveragePassed(await this.azure.timeline(build.id), request.mode)) {
+    if (build.result !== 'succeeded') {
       return { state: 'failure', message: `${request.mode} build and required runtime shards did not all pass` };
     }
     const current = await this.github.pull(request.revision.number);
@@ -230,6 +230,13 @@ export class Gate {
       || merge.parents?.length !== 2
       || merge.parents[0].sha !== request.revision.base || merge.parents[1].sha !== request.revision.head) {
       return { state: 'failure', message: 'PR revision changed; fresh Full validation required' };
+    }
+    // Match the upstream stage's PR-only, non-fork condition. Full CI validation
+    // refs legitimately skip that stage; Quick never includes it.
+    const isFork = current.head.repo && current.head.repo.full_name.toLowerCase() !== this.config.repository.toLowerCase();
+    const systemCompositionRequired = build.reason === 'pullRequest' && !isFork;
+    if (!coveragePassed(await this.azure.timeline(build.id), request.mode, { systemCompositionRequired })) {
+      return { state: 'failure', message: `${request.mode} build and required runtime shards did not all pass` };
     }
     return { state: 'success', message: `${request.mode} validation passed for the selected revision` };
   }

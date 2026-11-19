@@ -102,6 +102,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItemPresenter when a new template replaces its SelectionIndicator
+    void OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator);
+
     // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
     bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
 
@@ -148,6 +151,8 @@ private:
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi);
+    bool IsContainerInMenuItemsTree(const winrt::NavigationViewItemBase& nvib);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
@@ -264,6 +269,8 @@ private:
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnItemsContainerSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnRootSplitViewSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void UpdateRootSplitViewClip(winrt::Size const& size);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
     void UpdateOpenPaneLength(double width);
@@ -295,6 +302,7 @@ private:
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
+    void AnimateSelectionChangedToSelectedItem();
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
@@ -357,6 +365,7 @@ private:
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
+    tracker_ref<winrt::RectangleGeometry> m_rootSplitViewClip{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
     tracker_ref<winrt::RowDefinition> m_itemsContainerRow{ this };
     tracker_ref<winrt::FrameworkElement> m_menuItemsScrollViewer{ this };
@@ -428,6 +437,7 @@ private:
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_itemsContainerSizeChangedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_rootSplitViewSizeChangedRevoker{};
     winrt::AutoSuggestBox::QuerySubmitted_revoker m_autoSuggestBoxQuerySubmittedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};

@@ -56,7 +56,7 @@ export function matchesBuild(build, request, config) {
       : ['individualCI', 'batchedCI'].includes(build.reason));
 }
 
-export function coveragePassed(records, mode) {
+export function coveragePassed(records, mode, { systemCompositionRequired = true } = {}) {
   const latest = new Map();
   for (const record of records) {
     if (!['Stage', 'Job'].includes(record.type)) continue;
@@ -73,6 +73,14 @@ export function coveragePassed(records, mode) {
     Object.assign(jobs, { 'Build_MUXFinalRelease.BuildMUX': 1, 'RunTests.RunTests23H2': 20,
       'RunTests.RunTestsRS5': 20, 'RunScenarioTests.RunAppTestsRS5': 5,
       'RunScenarioTests.RunAppTests25H2': 5, 'RunScenarioTests.RunAppTests23H2': 5 });
+    if (systemCompositionRequired) {
+      stages.push('RunSystemCompositionEngineTests');
+      Object.assign(jobs, {
+        'RunSystemCompositionEngineTests.CreateSystemCompositionEngineTestPayload_x86chk': 1,
+        'RunSystemCompositionEngineTests.RunSystemCompositionEngineTests_x86chk': 1,
+        'RunSystemCompositionEngineTests.RunSystemCompositionEngineBroadWPF_x86chk': 20,
+      });
+    }
   }
   return stages.every(stage => current.some(r => r.type === 'Stage' && r.identifier === stage && success(r)))
     && Object.entries(jobs).every(([prefix, count]) => {
