@@ -223,8 +223,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
-                // Outside HC, the framework's system brushes intentionally contain placeholder
-                // colors. Compare shared objects, not raw system colors from a different theme.
+                // This checks the inactive dictionary's aliases, not active-HC runtime lookup.
+                // Outside HC, system brushes contain placeholder colors, so compare shared objects.
                 var systemBrushes = SystemColorNames.Select(name => name + "Brush")
                     .Where(key => Application.Current.Resources.ContainsKey(key))
                     .Select(key => Application.Current.Resources[key] as SolidColorBrush)
@@ -353,36 +353,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyDisabledSelectionIndicatorReusesSharedBrushAcrossThemes()
         {
-            Grid host = null;
-            RunOnUIThread.Execute(() =>
-            {
-                EnsureTabularControlsResources();
-                host = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
-                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
-                    "<Border BorderBrush='{ThemeResource TableViewSelectionIndicatorDisabledBrush}' />" +
-                    "<Border BorderBrush='{ThemeResource AccentFillColorDisabledBrush}' />" +
-                    "</Grid>");
-                LoadContent(host);
-            });
-            IdleSynchronizer.Wait();
-
-            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
-            {
-                RunOnUIThread.Execute(() => host.RequestedTheme = theme);
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() =>
+            VerifyBrushesAcrossThemes(
+                new[] { "TableViewSelectionIndicatorDisabledBrush", "AccentFillColorDisabledBrush" },
+                (theme, brushes) =>
                 {
-                    var indicator = ((Border)host.Children[0]).BorderBrush as SolidColorBrush;
-                    var shared = ((Border)host.Children[1]).BorderBrush as SolidColorBrush;
-                    Verify.IsNotNull(indicator);
-                    Verify.IsNotNull(shared);
+                    var indicator = brushes["TableViewSelectionIndicatorDisabledBrush"];
+                    var shared = brushes["AccentFillColorDisabledBrush"];
                     Verify.IsTrue(ReferenceEquals(shared, indicator),
                         $"{theme}: disabled selection must reuse the shared accent-disabled brush.");
                     Verify.AreEqual(RequireThemeColor(theme == ElementTheme.Dark ? "Default" : "Light",
                         "AccentFillColorDisabled"), indicator.Color,
                         $"{theme}: the shared brush must follow the requested theme.");
                 });
-            }
         }
 
         [TestMethod]
@@ -390,19 +372,63 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var brushPairs = new[]
             {
-                ("TableViewRowForegroundBrush", "TextFillColorPrimaryBrush"),
-                ("TableViewHeaderForegroundBrush", "TextFillColorSecondaryBrush"),
-                ("TableViewRowForegroundDisabledBrush", "TextFillColorDisabledBrush"),
                 ("TableViewRowBackgroundBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewRowBackgroundAlternatingBrush", "SubtleFillColorTertiaryBrush"),
                 ("TableViewRowBackgroundPointerOverBrush", "SubtleFillColorSecondaryBrush"),
                 ("TableViewRowBackgroundPressedBrush", "SubtleFillColorTertiaryBrush"),
-                ("TableViewRowBackgroundAlternatingBrush", "SubtleFillColorTertiaryBrush"),
-                ("TableViewGridLineBrush", "DividerStrokeColorDefaultBrush"),
+                ("TableViewRowBackgroundSelectedBrush", "SubtleFillColorSecondaryBrush"),
+                ("TableViewRowBackgroundSelectedPointerOverBrush", "SubtleFillColorTertiaryBrush"),
+                ("TableViewRowBackgroundSelectedPressedBrush", "SubtleFillColorSecondaryBrush"),
+                ("TableViewRowBackgroundSelectedDisabledBrush", "SubtleFillColorSecondaryBrush"),
+                ("TableViewRowBackgroundDisabledBrush", "SubtleFillColorTransparentBrush"),
                 ("TableViewSelectionIndicatorBrush", "AccentFillColorDefaultBrush"),
                 ("TableViewSelectionIndicatorDisabledBrush", "AccentFillColorDisabledBrush"),
+                ("TableViewRowForegroundBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundSelectedBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundSelectedPointerOverBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundSelectedPressedBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundPointerOverBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundPressedBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewRowForegroundDisabledBrush", "TextFillColorDisabledBrush"),
+                ("TableViewHeaderBackgroundBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderForegroundBrush", "TextFillColorSecondaryBrush"),
+                ("TableViewHeaderSeparatorBrush", "DividerStrokeColorDefaultBrush"),
+                ("TableViewHeaderBackgroundPointerOverBrush", "SubtleFillColorSecondaryBrush"),
+                ("TableViewHeaderBackgroundPressedBrush", "SubtleFillColorTertiaryBrush"),
+                ("TableViewHeaderBackgroundSortableBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderBorderBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderBorderSortableBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderBorderPointerOverBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderBorderPressedBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewHeaderForegroundPointerOverBrush", "TextFillColorSecondaryBrush"),
+                ("TableViewHeaderForegroundPressedBrush", "TextFillColorSecondaryBrush"),
+                ("TableViewGroupHeaderBackgroundBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewGroupHeaderBackgroundPointerOverBrush", "SubtleFillColorSecondaryBrush"),
+                ("TableViewGroupHeaderBackgroundPressedBrush", "SubtleFillColorTertiaryBrush"),
+                ("TableViewGroupHeaderInteractionBorderBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewGroupHeaderInteractionBorderPointerOverBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewGroupHeaderInteractionBorderPressedBrush", "SubtleFillColorTransparentBrush"),
+                ("TableViewGroupHeaderForegroundBrush", "TextFillColorPrimaryBrush"),
+                ("TableViewGroupHeaderBorderBrush", "DividerStrokeColorDefaultBrush"),
+                ("TableViewGridLineBrush", "DividerStrokeColorDefaultBrush"),
+                ("TableViewOuterBorderBrush", "DividerStrokeColorDefaultBrush"),
                 ("TableViewBorderlessOuterBorderBrush", "SubtleFillColorTransparentBrush"),
                 ("ResizeGripperSeparatorBrush", "ControlStrongStrokeColorDefaultBrush"),
             };
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                var resources = new TabularControlsResources();
+                var light = (ResourceDictionary)resources.ThemeDictionaries["Light"];
+                var paletteKeys = new HashSet<string>(CollectKeys(light).Where(key =>
+                    (key.StartsWith("TableView", StringComparison.Ordinal) &&
+                        key.EndsWith("Brush", StringComparison.Ordinal)) ||
+                    key == "ResizeGripperSeparatorBrush"), StringComparer.Ordinal);
+                Verify.AreEqual(brushPairs.Length, paletteKeys.Count,
+                    "Every palette brush must have exactly one expected alias.");
+                Verify.IsTrue(paletteKeys.SetEquals(brushPairs.Select(pair => pair.Item1)),
+                    "The alias table must cover every TableView and ResizeGripper palette brush.");
+            });
             VerifyBrushesAcrossThemes(brushPairs.SelectMany(pair => new[] { pair.Item1, pair.Item2 }),
                 (theme, brushes) =>
                 {
@@ -419,35 +445,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Action<ElementTheme, IReadOnlyDictionary<string, SolidColorBrush>> verify)
         {
             var resourceKeys = keys.Distinct().ToArray();
-            Grid host = null;
-            RunOnUIThread.Execute(() =>
+            foreach (var initialTheme in new[] { ElementTheme.Light, ElementTheme.Dark })
             {
-                EnsureTabularControlsResources();
-                string probes = string.Concat(resourceKeys.Select(key =>
-                    $"<Border Background='{{ThemeResource {key}}}' />"));
-                host = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
-                    "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' RequestedTheme='Light'>" +
-                    probes + "</Grid>");
-                LoadContent(host);
-            });
-            IdleSynchronizer.Wait();
-
-            foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark, ElementTheme.Light })
-            {
-                RunOnUIThread.Execute(() => host.RequestedTheme = theme);
-                IdleSynchronizer.Wait();
+                Grid host = null;
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(theme, host.ActualTheme, "The loaded probes must follow the requested theme.");
-                    var brushes = new Dictionary<string, SolidColorBrush>();
-                    for (int i = 0; i < resourceKeys.Length; i++)
-                    {
-                        var brush = ((Border)host.Children[i]).Background as SolidColorBrush;
-                        Verify.IsNotNull(brush, $"{theme}: {resourceKeys[i]} must resolve.");
-                        brushes.Add(resourceKeys[i], brush);
-                    }
-                    verify(theme, brushes);
+                    EnsureTabularControlsResources();
+                    string probes = string.Concat(resourceKeys.Select(key =>
+                        $"<Border Background='{{ThemeResource {key}}}' />"));
+                    host = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        $"RequestedTheme='{initialTheme}'>" + probes + "</Grid>");
+                    LoadContent(host);
                 });
+                IdleSynchronizer.Wait();
+
+                var oppositeTheme = initialTheme == ElementTheme.Light ? ElementTheme.Dark : ElementTheme.Light;
+                foreach (var theme in new[] { initialTheme, oppositeTheme, initialTheme })
+                {
+                    RunOnUIThread.Execute(() => host.RequestedTheme = theme);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(theme, host.ActualTheme, "The loaded probes must follow the requested theme.");
+                        var brushes = new Dictionary<string, SolidColorBrush>();
+                        for (int i = 0; i < resourceKeys.Length; i++)
+                        {
+                            var brush = ((Border)host.Children[i]).Background as SolidColorBrush;
+                            Verify.IsNotNull(brush, $"{initialTheme} start, {theme}: {resourceKeys[i]} must resolve.");
+                            brushes.Add(resourceKeys[i], brush);
+                        }
+                        verify(theme, brushes);
+                    });
+                }
             }
         }
 
