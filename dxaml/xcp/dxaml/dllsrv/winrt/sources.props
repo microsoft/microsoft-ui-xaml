@@ -120,6 +120,7 @@
                 dwmapi.dll;
                 ext-ms-win-imm-l1-*.dll;
                 ext-ms-win-uiacore-l1-*.dll;
+                gdiplus.dll;
                 imm32.dll;
                 microsoft.ui.xaml.internal.dll;
                 propsys.dll;

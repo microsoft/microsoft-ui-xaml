@@ -52,7 +52,7 @@ execution, one submission per drawing call, or discarding useful resources after
 | Proposed mode name | Rendering strategy | Content drawing implementation |
 |---|---|---|
 | `Composition` | Existing retained path | Existing behavior, unchanged |
-| `ImmediateGdiPlus` | Damage-driven immediate path | GDI+ on the CPU; text through DirectWrite |
+| `ImmediateGdiPlus` | Damage-driven immediate path | GDI+ on the CPU, including text |
 | `ImmediateD2DHardware` | Damage-driven immediate path | Direct2D on a hardware-backed D3D device |
 | `ImmediateD2DSoftware` | Damage-driven immediate path | Direct2D on a software device, initially WARP |
 
@@ -64,8 +64,9 @@ Plain GDI is not a candidate: it lacks antialiased geometry and per-pixel alpha,
 rounded corners and translucent fills. The GDI+ painter's contract is:
 
 - Use `SmoothingModeAntiAlias` for geometry and premultiplied 32-bit ARGB (`PixelFormat32bppPARGB`) bitmaps.
-- Render text through DirectWrite (for example `IDWriteBitmapRenderTarget`) rather than GDI+ text, so glyph
-  shaping and layout match XAML's text stack.
+- Render text with GDI+ (`Graphics::DrawString`, grayscale antialiasing on the PARGB bitmap) so the mode remains a
+  pure GDI+ data point (see the prototype implementation decisions below). Glyph shaping and layout therefore differ
+  from XAML's DirectWrite text stack; account for that in fidelity results.
 - Paint into a premultiplied bitmap and copy damaged regions to the presentable surface, because drawing GDI+ directly
   to a surface HDC does not reliably preserve alpha. Count this copy in memory and upload metrics.
 - Implement group opacity with an offscreen bitmap, as the other painters do.

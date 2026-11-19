@@ -7,9 +7,7 @@
 
 namespace RenderingBackendTests
 {
-    // GDI+-specific behavior that the backend-neutral PainterConformanceTests do not cover. Tests that need the real
-    // painter stay red (CreateGdiPlusPainter returns E_NOTIMPL) until the GDI+ painter lands; the pure helpers and the
-    // runtime refcount seam are green now.
+    // GDI+-specific behavior that the backend-neutral PainterConformanceTests do not cover.
     class GdiPlusPainterTests
     {
         BEGIN_TEST_CLASS(GdiPlusPainterTests)
@@ -33,9 +31,12 @@ namespace RenderingBackendTests
         TEST_METHOD(SteadyFramesDoNotLeakGdiObjectsOrCache);
         TEST_METHOD(IdenticalFrameCreatesNoResources);
 
-        // Upload/copy accounting.
+        // Upload/copy accounting and presentation.
         TEST_METHOD(DamageCopyBytesCountsClippedDamage);
         TEST_METHOD(PartialDamageUploadsOnlyDamagedPixels);
+        TEST_METHOD(PresentationCopiesDamageIntoBackBuffer);
+        TEST_METHOD(ResizeResizesAttachedSwapChain);
+        TEST_METHOD(RejectsNonBgraSwapChain);
     };
 
     class ResourceChurnEventTests

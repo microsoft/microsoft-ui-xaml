@@ -8,6 +8,9 @@
 #include <RenderingBackend.h>
 #include <cmath>
 #include <vector>
+#include <d3d11.h>
+#include <dxgi1_2.h>
+#include <wrl/client.h>
 
 namespace RenderingBackendTests
 {
@@ -15,6 +18,7 @@ namespace RenderingBackendTests
     using namespace WEX::Common;
     using namespace WEX::Logging;
     using namespace WEX::TestExecution;
+    using Microsoft::WRL::ComPtr;
 
     namespace
     {
@@ -134,6 +138,76 @@ namespace RenderingBackendTests
         uint32_t GdiObjectCount()
         {
             return GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
+        }
+
+        // The GDI+ painter has no device of its own; the root's swap chain can live on any D3D11 device. WARP keeps the
+        // tests hardware-independent.
+        ComPtr<ID3D11Device> CreateWarpDevice()
+        {
+            ComPtr<ID3D11Device> device;
+            VERIFY_SUCCEEDED(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, D3D11_CREATE_DEVICE_BGRA_SUPPORT, nullptr, 0,
+                D3D11_SDK_VERSION, &device, nullptr, nullptr));
+            return device;
+        }
+
+        ComPtr<IDXGISwapChain1> CreateCompositionSwapChain(ID3D11Device* device, uint32_t width, uint32_t height,
+            DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM)
+        {
+            ComPtr<IDXGIDevice> dxgiDevice;
+            ComPtr<IDXGIAdapter> adapter;
+            ComPtr<IDXGIFactory2> factory;
+            VERIFY_SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
+            VERIFY_SUCCEEDED(dxgiDevice->GetAdapter(&adapter));
+            VERIFY_SUCCEEDED(adapter->GetParent(IID_PPV_ARGS(&factory)));
+
+            DXGI_SWAP_CHAIN_DESC1 desc{};
+            desc.Width = width;
+            desc.Height = height;
+            desc.Format = format;
+            desc.SampleDesc.Count = 1;
+            desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            desc.BufferCount = 2;
+            desc.Scaling = DXGI_SCALING_STRETCH;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+            desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+            ComPtr<IDXGISwapChain1> swapChain;
+            VERIFY_SUCCEEDED(factory->CreateSwapChainForComposition(device, &desc, nullptr, &swapChain));
+            return swapChain;
+        }
+
+        DXGI_SWAP_CHAIN_DESC1 SwapChainDesc(IDXGISwapChain1* swapChain)
+        {
+            DXGI_SWAP_CHAIN_DESC1 desc{};
+            VERIFY_SUCCEEDED(swapChain->GetDesc1(&desc));
+            return desc;
+        }
+
+        // Reads the swap chain's current back buffer (buffer 0) through a staging copy.
+        Image ReadBackBuffer(ID3D11Device* device, IDXGISwapChain1* swapChain)
+        {
+            ComPtr<ID3D11Texture2D> backBuffer;
+            VERIFY_SUCCEEDED(swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
+            D3D11_TEXTURE2D_DESC desc{};
+            backBuffer->GetDesc(&desc);
+            desc.Usage = D3D11_USAGE_STAGING;
+            desc.BindFlags = 0;
+            desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+            desc.MiscFlags = 0;
+            ComPtr<ID3D11Texture2D> staging;
+            VERIFY_SUCCEEDED(device->CreateTexture2D(&desc, nullptr, &staging));
+            ComPtr<ID3D11DeviceContext> context;
+            device->GetImmediateContext(&context);
+            context->CopyResource(staging.Get(), backBuffer.Get());
+
+            Image image{ desc.Width, desc.Height, std::vector<uint8_t>(static_cast<size_t>(desc.Width) * desc.Height * 4) };
+            D3D11_MAPPED_SUBRESOURCE mapped{};
+            VERIFY_SUCCEEDED(context->Map(staging.Get(), 0, D3D11_MAP_READ, 0, &mapped));
+            for (uint32_t y = 0; y < desc.Height; ++y)
+            {
+                memcpy(&image.bytes[static_cast<size_t>(y) * desc.Width * 4], static_cast<const uint8_t*>(mapped.pData) + static_cast<size_t>(y) * mapped.RowPitch, static_cast<size_t>(desc.Width) * 4);
+            }
+            context->Unmap(staging.Get(), 0);
+            return image;
         }
     }
 
@@ -453,12 +527,20 @@ namespace RenderingBackendTests
     {
         auto painter = CreateGdiPlus();
         if (!painter) return;
-        auto stats = Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"no swap chain: offscreen only, nothing copied");
+
+        auto device = CreateWarpDevice();
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+
+        const RectF damage{ 8, 8, 40, 24 };
+        auto stats = Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &damage, 1);
         auto inventory = painter->GetResourceInventory();
+        VERIFY_ARE_EQUAL(static_cast<uint64_t>(c_size) * c_size, stats.damagedPixels, L"first frame after attach is fully damaged");
         VERIFY_ARE_EQUAL(static_cast<uint64_t>(c_size) * c_size * 4, inventory.uploadBytesThisFrame, L"full frame copies the whole bitmap");
         VERIFY_ARE_EQUAL(stats.damagedPixels * 4, inventory.uploadBytesThisFrame);
 
-        const RectF damage{ 8, 8, 40, 24 };
         stats = Paint(*painter, [](IImmediatePainter& p)
         {
             p.Clear(c_black);
@@ -476,6 +558,83 @@ namespace RenderingBackendTests
         VERIFY_ARE_EQUAL(2u, stats.damageRectCount);
         VERIFY_ARE_EQUAL(static_cast<uint64_t>(64 + 128), stats.damagedPixels);
         VERIFY_ARE_EQUAL(stats.damagedPixels * 4, inventory.uploadBytesThisFrame);
+
+        const RectF offTarget{ 48, 48, 80, 80 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &offTarget, 1);
+        VERIFY_ARE_EQUAL(16ull * 16 * 4, painter->GetResourceInventory().uploadBytesThisFrame, L"damage outside the target is not copied");
+
+        Read(*painter);
+        VERIFY_ARE_EQUAL(16ull * 16 * 4, painter->GetResourceInventory().uploadBytesThisFrame, L"ReadPixels is not counted");
+
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(nullptr));
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &damage, 1);
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"detached: offscreen only again");
+    }
+
+    void GdiPlusPainterTests::PresentationCopiesDamageIntoBackBuffer()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        auto device = CreateWarpDevice();
+        // Attaching resizes a mismatched swap chain to the painter's target.
+        auto swapChain = CreateCompositionSwapChain(device.Get(), 32, 16);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+        VERIFY_ARE_EQUAL(c_size, SwapChainDesc(swapChain.Get()).Width);
+        VERIFY_ARE_EQUAL(c_size, SwapChainDesc(swapChain.Get()).Height);
+
+        // Two buffers: after frames 1 (red, into A) and 2 (blue, into B), buffer 0 is A again and holds frame 1.
+        const ColorF red{ 1, 0, 0, 1 };
+        const ColorF blue{ 0, 0, 1, 0.5f };
+        Paint(*painter, [&](IImmediatePainter& p) { p.Clear(red); });
+        Paint(*painter, [&](IImmediatePainter& p) { p.Clear(blue); });
+        auto image = ReadBackBuffer(device.Get(), swapChain.Get());
+        LogPixel(L"frame 1 in buffer A", 8, 8, image.At(8, 8));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(8, 8), 0, 0, 255, 255), L"full frame copied into the back buffer");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(63, 63), 0, 0, 255, 255));
+
+        // Frame 3 (into A) damages the left half with premultiplied translucent green; frame 4 (into B) is tiny, so
+        // buffer 0 is A again and shows frame 3's damage.
+        const RectF left{ 0, 0, 32, 64 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear({ 0, 1, 0, 0.5f }); }, &left, 1);
+        const RectF corner{ 63, 0, 64, 1 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
+        image = ReadBackBuffer(device.Get(), swapChain.Get());
+        LogPixel(L"frame 3 damage in buffer A", 8, 40, image.At(8, 40));
+        LogPixel(L"outside frame 3 damage in buffer A", 48, 40, image.At(48, 40));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(8, 40), 0, 128, 0, 128), L"damaged pixels copied unchanged (premultiplied BGRA)");
+    }
+
+    void GdiPlusPainterTests::ResizeResizesAttachedSwapChain()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        auto device = CreateWarpDevice();
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+
+        VERIFY_SUCCEEDED(painter->Resize(96, 48, 1.0f));
+        VERIFY_ARE_EQUAL(96u, SwapChainDesc(swapChain.Get()).Width);
+        VERIFY_ARE_EQUAL(48u, SwapChainDesc(swapChain.Get()).Height);
+
+        const RectF damage{ 0, 0, 8, 8 };
+        const auto stats = Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_black); }, &damage, 1);
+        VERIFY_ARE_EQUAL(96ull * 48, stats.damagedPixels, L"first frame after Resize is fully damaged");
+        VERIFY_ARE_EQUAL(96ull * 48 * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+        const auto image = ReadBackBuffer(device.Get(), swapChain.Get());
+        VERIFY_ARE_EQUAL(96u, image.width);
+        VERIFY_IS_TRUE(IsPremultiplied(Read(*painter, 96, 48).At(90, 40), 0, 0, 0, 255), L"whole resized target painted");
+    }
+
+    void GdiPlusPainterTests::RejectsNonBgraSwapChain()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        auto device = CreateWarpDevice();
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size, DXGI_FORMAT_R8G8B8A8_UNORM);
+        VERIFY_ARE_EQUAL(E_INVALIDARG, painter->SetPresentationSwapChain(swapChain.Get()));
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"rejected swap chain is not attached");
     }
 
     // ---- ResourceChurn event ----
