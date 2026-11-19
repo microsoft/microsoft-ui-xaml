@@ -1,0 +1,10 @@
+scenario,metric,value,interval,grouping
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,998.0,Measured,Run:0
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251.0,Measured,Run:1
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,253.0,Measured,Run:2
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,252.0,Measured,Run:3
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,250.0,Measured,Run:4
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,254.0,Measured,Run:5
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,251.5,Measured,Run:6
+Lifecycle-MinApp.Cpp.MUX,CPU/WallTime,252.5,Measured,Run:7
+
