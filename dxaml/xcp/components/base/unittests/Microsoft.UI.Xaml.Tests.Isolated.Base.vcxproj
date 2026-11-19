@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ClInclude Include="BitVectorUnitTests.h"/>
+        <ClInclude Include="RenderingBackendTests.h"/>
         <ClInclude Include="RenderingResourceDiagnosticsTests.h"/>
         <ClInclude Include="CompactInlineVectorUnitTests.h"/>
         <ClInclude Include="IndexedListUnitTests.h"/>
@@ -36,6 +37,7 @@
         <ClCompile Include="VectorTreeUnitTests.cpp"/>
         <ClCompile Include="BitVectorUnitTests.cpp"/>
         <ClCompile Include="RenderingResourceDiagnosticsTests.cpp"/>
+        <ClCompile Include="RenderingBackendTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

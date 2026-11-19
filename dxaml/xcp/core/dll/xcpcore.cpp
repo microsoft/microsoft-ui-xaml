@@ -80,6 +80,7 @@
 #include "RefreshRateInfo.h"
 #include "GraphicsTelemetry.h"
 #include "XamlTelemetry.h"
+#include <RenderingBackend.h>
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -6421,6 +6422,8 @@ CCoreServices::NWDrawTree(
     TraceFrameBegin();
 
     XUINT32 frameNumber = m_uFrameNumber;
+    RenderingBackend::TraceSelectionIfNewSession();
+    RenderingBackend::TraceBackendFrameBegin(frameNumber);
     TraceLoggingProviderWrite(
         XamlTelemetry, "CoreServices_Frame",
         TraceLoggingBoolean(true, "IsStart"),
@@ -7016,6 +7019,7 @@ Cleanup:
     //       of changing the data format.
     TraceFrameInfo(*pFrameDrawn);
     TraceFrameEnd();
+    RenderingBackend::TraceBackendFrameEnd(frameNumber, *pFrameDrawn);
 
     TraceLoggingProviderWrite(
         XamlTelemetry, "CoreServices_Frame",
@@ -7260,6 +7264,7 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
     }
 
     TraceRenderWalkEnd1(pHWWalk->GetElementsVisited(), pHWWalk->GetElementsRenderedCount());
+    RenderingBackend::TraceRenderWalkStats(m_uFrameNumber, pHWWalk->GetElementsVisited(), pHWWalk->GetElementsRenderedCount());
 
     return S_OK;
 }

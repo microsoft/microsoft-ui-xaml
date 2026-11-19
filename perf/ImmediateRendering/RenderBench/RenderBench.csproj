@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Mirrors tools\WinUIProfiler\WinUIProfiler.App: unpackaged, self-contained WinAppSDK so local MUX bits can be staged
+       next to the exe (scripts\Stage-LocalRuntime.ps1). -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.22000.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.22000.0</SupportedOSPlatformVersion>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <SelfContained>true</SelfContained>
+    <Platforms>x64</Platforms>
+    <Platform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">x64</Platform>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RootNamespace>RenderBench</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishTrimmed>false</PublishTrimmed>
+    <DefaultLanguage>en-US</DefaultLanguage>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" />
+    <ProjectReference Include="..\RenderBench.Core\RenderBench.Core.csproj" />
+  </ItemGroup>
+  <Target Name="StageSelfContainedRuntime" AfterTargets="Build" DependsOnTargets="CreateWinRTRegistration">
+    <ItemGroup>
+      <BenchRuntimeFile Include="@(MicrosoftWindowsAppSDKFiles);@(MicrosoftWindowsAppSDKFilesRes)">
+        <Destination>$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)</Destination>
+      </BenchRuntimeFile>
+    </ItemGroup>
+    <Copy SourceFiles="@(BenchRuntimeFile)" DestinationFiles="@(BenchRuntimeFile->'%(Destination)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

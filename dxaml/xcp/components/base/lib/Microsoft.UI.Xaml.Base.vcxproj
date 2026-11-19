@@ -25,9 +25,11 @@
         <ClCompile Include="..\bit_vector.cpp"/>
         <ClCompile Include="..\DesignMode.cpp"/>
         <ClCompile Include="..\RenderingResourceDiagnostics.cpp"/>
+        <ClCompile Include="..\RenderingBackend.cpp"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ClInclude Include="..\inc\RenderingBackend.h"/>
         <ClInclude Include="..\inc\RenderingResourceDiagnostics.h"/>
         <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
