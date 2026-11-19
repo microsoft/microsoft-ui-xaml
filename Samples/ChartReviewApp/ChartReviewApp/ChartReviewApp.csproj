@@ -22,17 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Assets\SplashScreen.scale-200.png" />
-    <Content Include="Assets\LockScreenLogo.scale-200.png" />
-    <Content Include="Assets\Square150x150Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.scale-200.png" />
-    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <Content Include="Assets\StoreLogo.png" />
-    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- The 30 accessibility assessment scenarios shown on the Scenarios (30) page. -->
+    <!-- The 30 accessibility test scenarios shown on the Scenarios (30) page. -->
     <EmbeddedResource Include="scenarios.json" LogicalName="scenarios.json" />
     <!-- Optional build stamp shown on About this build (see README); absent in a plain build. -->
     <Content Include="BuildInfo.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('BuildInfo.json')" />

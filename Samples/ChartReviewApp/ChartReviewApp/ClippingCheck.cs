@@ -25,6 +25,19 @@ namespace ChartsSample
                 .Substring("--check-clipping=".Length);
             if (string.IsNullOrEmpty(path)) return;
 
+            try
+            {
+                await WriteClippingReport(path);
+            }
+            catch (Exception ex)
+            {
+                ReportTestHookFailure("--check-clipping", ex);
+            }
+            Application.Current.Exit();
+        }
+
+        private async Task WriteClippingReport(string path)
+        {
             var report = new StringBuilder();
             report.AppendLine($"text scale {_textScale:0.##}, window {AppWindow.Size.Width}x{AppWindow.Size.Height}");
             int clipped = 0;
@@ -62,7 +75,6 @@ namespace ChartsSample
             }
             report.AppendLine($"clipped={clipped}");
             File.WriteAllText(path, report.ToString());
-            Application.Current.Exit();
         }
 
         private static Control OwnerControl(DependencyObject element)

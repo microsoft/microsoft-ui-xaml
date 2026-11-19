@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -134,6 +135,13 @@ namespace ChartsSample
                 ApplyTheme();
                 var window = new Window { Title = "Charts secondary UI thread", Content = root };
                 window.AppWindow.Resize(new SizeInt32(620, 500));
+                // AppWindow sizes are physical pixels; once the display scale is known, size the window in DIPs.
+                root.Loaded += (_, _) =>
+                {
+                    double scale = root.XamlRoot?.RasterizationScale ?? 1.0;
+                    var work = DisplayArea.GetFromWindowId(window.AppWindow.Id, DisplayAreaFallback.Primary).WorkArea;
+                    window.AppWindow.Resize(new SizeInt32((int)Math.Min(620 * scale, work.Width * 0.95), (int)Math.Min(500 * scale, work.Height * 0.95)));
+                };
                 bool closed = false;
                 void OnClosed(object sender, WindowEventArgs args)
                 {

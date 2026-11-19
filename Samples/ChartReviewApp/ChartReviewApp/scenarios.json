@@ -194,7 +194,7 @@
   {
     "id": "live-updating-series",
     "title": "Live updating series",
-    "instructions": "Starts paused. Step changes Jan from 20 to 59, then back to 20. Feb-May stay fixed; the value axis rescales. Resume steps every two seconds. This is not a scrolling chart.",
+    "instructions": "Starts paused. Step changes Jan from 20 to 59, then back to 20. Feb-May stay fixed; the value axis rescales. Turn on Live updates to step every two seconds. This is not a scrolling chart.",
     "expectations": {
       "minimumCharts": 1,
       "minimumPoints": 5,
@@ -279,7 +279,7 @@
   {
     "id": "series-added-and-removed",
     "title": "Series added and removed",
-    "instructions": "Starts paused with one series. Step alternates one and two series (5 or 10 points). Resume repeats every three seconds. Reset pauses and restores one series.",
+    "instructions": "Starts paused with one series. Step alternates one and two series (5 or 10 points). Turn on Live updates to repeat every three seconds. Reset pauses and restores one series.",
     "expectations": {
       "minimumCharts": 1,
       "minimumPoints": 5,

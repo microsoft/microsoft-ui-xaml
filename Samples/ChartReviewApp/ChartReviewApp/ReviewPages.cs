@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -20,15 +21,17 @@ using Windows.UI.ViewManagement;
 
 namespace ChartsSample
 {
-    // Review-only pages: Design reference, Accessibility and About. Kept out of the upstream
-    // ChartApp files so the review app stays a small, readable delta on the engineering sample.
+    // Review-only pages: Design reference, Accessibility, Scenarios and About. The Line to Live data pages
+    // in MainWindow.xaml(.cs) are adapted copies of the engineering sample's; the README lists the differences.
     public sealed partial class MainWindow
     {
-        internal const string ReviewAppName = "Charts Review App";
+        internal const string ReviewAppName = "Chart Review App";
         internal const string ReviewAppVersion = "1.8";
 
         private readonly AccessibilitySettings _accessibility = new();
         private readonly UISettings _uiSettings = new();
+        private Windows.Foundation.TypedEventHandler<UISettings, object> _textScaleChanged;
+        private Windows.Foundation.TypedEventHandler<UISettings, object> _colorValuesChanged;
         private DataLines _environmentText;
 
         private static readonly string[] Week = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
@@ -43,14 +46,48 @@ namespace ChartsSample
             BuildScenariosPage();
             BuildAbout();
             RootGrid.Loaded += OnReviewRootLoaded;
-            // AccessibilitySettings.HighContrastChanged cannot be subscribed in an unpackaged desktop
-            // app (0x80070490); contrast changes raise ActualThemeChanged, handled in BuildAbout.
+            // UISettings raises these on a background thread. Contrast changes come from ColorValuesChanged:
+            // AccessibilitySettings.HighContrastChanged cannot be subscribed in an unpackaged desktop app
+            // (0x80070490), and ActualThemeChanged is raised only when a contrast theme is turned off, not
+            // when one is turned on or another is chosen.
+            _textScaleChanged = (_, _) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_closing) return;
+                UpdateEnvironmentText();
+                ApplyTextScaleLayout();
+            });
+            _colorValuesChanged = (_, _) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_closing) return;
+                ApplySurfaceColors();
+                UpdateEnvironmentText();
+            });
             try
             {
-                _uiSettings.TextScaleFactorChanged += (_, _) => DispatcherQueue.TryEnqueue(() => { UpdateEnvironmentText(); ApplyTextScaleLayout(); });
+                _uiSettings.TextScaleFactorChanged += _textScaleChanged;
+                _uiSettings.ColorValuesChanged += _colorValuesChanged;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Without these events, layout and colors follow the text size and contrast theme from startup only.
+                Debug.WriteLine($"UISettings events unavailable: {ex.Message}");
+            }
+        }
+
+        // Called when the window closes: stops the scenario and test-hook timers and the UISettings events,
+        // which would otherwise call into the closed window.
+        private void DetachReviewPages()
+        {
+            _scenarioTimer.Stop();
+            _seriesColorDump?.Stop();
+            try
+            {
+                _uiSettings.TextScaleFactorChanged -= _textScaleChanged;
+                _uiSettings.ColorValuesChanged -= _colorValuesChanged;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"UISettings events not removed: {ex.Message}");
             }
         }
 
@@ -69,6 +106,8 @@ namespace ChartsSample
             }
             UpdateEnvironmentText();
             ApplyTextScaleLayout();
+            // The display scale changes when the window moves to another display.
+            if (RootGrid.XamlRoot != null) RootGrid.XamlRoot.Changed += (_, _) => { if (!_closing) UpdateEnvironmentText(); };
             StartFocusWalkIfRequested();
             DumpDescriptionsIfRequested();
             CheckClippingIfRequested();
@@ -78,7 +117,15 @@ namespace ChartsSample
         private void ApplyTextScaleLayout()
         {
             double textScale = 1.0;
-            try { textScale = Math.Max(1.0, _uiSettings.TextScaleFactor); } catch (Exception) { }
+            try
+            {
+                textScale = Math.Max(1.0, _uiSettings.TextScaleFactor);
+            }
+            catch (Exception ex)
+            {
+                // The layout then stays at 100% text size.
+                Debug.WriteLine($"Text scale unavailable: {ex.Message}");
+            }
             _textScale = textScale;
             ScenarioNavigation.OpenPaneLength = Math.Min(224 * textScale, 440);
             OnViewportSizeChanged(this, null);
@@ -125,7 +172,7 @@ namespace ChartsSample
         }
 
         // Test hook (not for reviewers): --focus-walk=<count>[:<AutomationId>] moves focus forward the way
-        // Tab does, logs each stop to %TEMP%\ChartsReviewApp-focus.txt, then gives the named element
+        // Tab does, logs each stop to %TEMP%\ChartReviewApp-focus.txt, then gives the named element
         // keyboard focus so a screenshot shows its focus visual.
         private async void StartFocusWalkIfRequested()
         {
@@ -137,30 +184,45 @@ namespace ChartsSample
             int count = int.TryParse(parts[0], out int n) ? n : 20;
             string target = parts.Length > 1 ? parts[1] : null;
             var log = new StringBuilder();
-            await System.Threading.Tasks.Task.Delay(1500);
-            var options = new FindNextElementOptions { SearchRoot = RootGrid.XamlRoot.Content };
-            ScenarioNavigation.Focus(FocusState.Keyboard);
-            for (int i = 1; i <= count; i++)
+            try
             {
-                await FocusManager.TryMoveFocusAsync(FocusNavigationDirection.Next, options);
-                await System.Threading.Tasks.Task.Delay(150);
-                var focused = FocusManager.GetFocusedElement(RootGrid.XamlRoot) as DependencyObject;
-                string name = focused == null ? "" : AutomationProperties.GetName(focused);
-                string id = focused == null ? "" : AutomationProperties.GetAutomationId(focused);
-                string type = focused?.GetType().Name ?? "(none)";
-                string state = (focused as Control)?.FocusState.ToString() ?? "";
-                string visuals = (focused as Control)?.UseSystemFocusVisuals.ToString() ?? "";
-                if (focused is FrameworkElement fe && string.IsNullOrEmpty(id)) id = fe.Name;
-                log.AppendLine($"{i,2} {type} name='{name}' id='{id}' focusState={state} useSystemFocusVisuals={visuals}");
+                await System.Threading.Tasks.Task.Delay(1500);
+                var options = new FindNextElementOptions { SearchRoot = RootGrid.XamlRoot.Content };
+                ScenarioNavigation.Focus(FocusState.Keyboard);
+                for (int i = 1; i <= count; i++)
+                {
+                    await FocusManager.TryMoveFocusAsync(FocusNavigationDirection.Next, options);
+                    await System.Threading.Tasks.Task.Delay(150);
+                    var focused = FocusManager.GetFocusedElement(RootGrid.XamlRoot) as DependencyObject;
+                    string name = focused == null ? "" : AutomationProperties.GetName(focused);
+                    string id = focused == null ? "" : AutomationProperties.GetAutomationId(focused);
+                    string type = focused?.GetType().Name ?? "(none)";
+                    string state = (focused as Control)?.FocusState.ToString() ?? "";
+                    string visuals = (focused as Control)?.UseSystemFocusVisuals.ToString() ?? "";
+                    if (focused is FrameworkElement fe && string.IsNullOrEmpty(id)) id = fe.Name;
+                    log.AppendLine($"{i,2} {type} name='{name}' id='{id}' focusState={state} useSystemFocusVisuals={visuals}");
+                }
+                if (!string.IsNullOrEmpty(target))
+                {
+                    var element = FindByAutomationId(RootGrid, target) as Control;
+                    bool ok = element?.Focus(FocusState.Keyboard) ?? false;
+                    log.AppendLine($"Focus({target}, Keyboard) -> {ok}; FocusState={element?.FocusState}; UseSystemFocusVisuals={element?.UseSystemFocusVisuals}");
+                    if (element != null) element.StartBringIntoView();
+                }
+                File.WriteAllText(Path.Combine(Path.GetTempPath(), "ChartReviewApp-focus.txt"), log.ToString());
             }
-            if (!string.IsNullOrEmpty(target))
+            catch (Exception ex)
             {
-                var element = FindByAutomationId(RootGrid, target) as Control;
-                bool ok = element?.Focus(FocusState.Keyboard) ?? false;
-                log.AppendLine($"Focus({target}, Keyboard) -> {ok}; FocusState={element?.FocusState}; UseSystemFocusVisuals={element?.UseSystemFocusVisuals}");
-                if (element != null) element.StartBringIntoView();
+                ReportTestHookFailure("--focus-walk", ex);
             }
-            File.WriteAllText(Path.Combine(Path.GetTempPath(), "ChartsReviewApp-focus.txt"), log.ToString());
+        }
+
+        // Test hooks are async void and write to paths from the command line, so a failure is reported in the
+        // crash file and the status bar instead of ending the app.
+        private void ReportTestHookFailure(string option, Exception ex)
+        {
+            ChartReviewApp.App.WriteCrash($"{option} failed.{Environment.NewLine}{ex}");
+            StatusText.Text = $"{option} failed: {ex.Message}";
         }
 
         private static DependencyObject FindByAutomationId(DependencyObject root, string id)
@@ -176,15 +238,16 @@ namespace ChartsSample
         }
 
         // ---------------------------------------------------------------- Design reference
-        // The eight chart frames from the Fluent Windows Visual Library chart pages, built with
-        // product defaults only (no brushes, sizes or thicknesses set by the app).
+        // The eight chart frames from the Fluent chart design. Colors, sizes and line thickness are product
+        // defaults; the app sets the data, the axes (range, spacing and major grid lines) and the orientation.
 
         private void BuildDesignReference()
         {
             DesignScenario.Children.Add(Note(
-                "Each chart below matches a frame on the Figma chart pages (430 × 193) and uses product defaults only: " +
-                "the app sets data, axes and orientation, never colors, sizes or line thickness. " +
-                "Compare them with Figma in Light and Dark using the theme selector."));
+                "Each chart below matches a frame in the Fluent chart design (430 × 193). " +
+                "The app sets the data, the axes and the orientation, and turns on major grid lines on the value axis (the default is none); " +
+                "colors, sizes and line thickness are product defaults. " +
+                "Compare them with the design in Light and Dark using the theme selector."));
 
             // Two frames per row when the window is wide enough, one otherwise.
             var grid = new VariableSizedWrapGrid { Orientation = Orientation.Horizontal, ItemWidth = 462, ItemHeight = 256 };
@@ -279,8 +342,7 @@ namespace ChartsSample
         private void BuildAccessibilityCases()
         {
             A11yScenario.Children.Add(Note(
-                "Explore these charts with Narrator, Inspect or Accessibility Insights. Each card says what to check. " +
-                "The case numbers match the UI scope document."));
+                "Explore these charts with Narrator, Inspect or Accessibility Insights. Each card says what to check."));
 
             var grid = new Grid { ColumnSpacing = 16, RowSpacing = 16 };
             grid.ColumnDefinitions.Add(new ColumnDefinition());
@@ -391,7 +453,7 @@ namespace ChartsSample
             var info = ReadBuildInfo();
             AboutScenario.Children.Add(Heading(BuildLabel, AutomationHeadingLevel.Level2));
             AboutScenario.Children.Add(Note(
-                "Quote the review build below in every bug, together with the page, the theme, the text size and the display scale."));
+                "When you report an issue, include the build and environment below, with the page you were on. Copy build and environment copies both."));
 
             AboutScenario.Children.Add(Heading("Build information", AutomationHeadingLevel.Level2));
             var build = new DataLines();
@@ -422,8 +484,9 @@ namespace ChartsSample
                 var path = Path.Combine(AppContext.BaseDirectory, "BuildInfo.json");
                 return JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path)) ?? new();
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
             {
+                // BuildInfo.json is optional (see README); a plain build shows "unknown".
                 return new();
             }
         }
@@ -454,12 +517,22 @@ namespace ChartsSample
 
         private List<string> EnvironmentLines() => new()
         {
-            $"Windows: {Environment.OSVersion.Version}",
+            $"Windows: {WindowsVersion}",
             $"App theme: {RootGrid.ActualTheme} (selector: {(ThemeChoice.SelectedItem as ComboBoxItem)?.Content})",
             $"Contrast theme: {(_accessibility.HighContrast ? "On, " + _accessibility.HighContrastScheme : "Off")}",
             $"Text size: {Math.Round(_uiSettings.TextScaleFactor * 100)}%",
             $"Display scale: {(RootGrid.XamlRoot != null ? Math.Round(RootGrid.XamlRoot.RasterizationScale * 100) + "%" : "unknown")}",
         };
+
+        // Environment.OSVersion ends in .0; the update build revision (UBR) tells cumulative updates apart.
+        private static readonly string WindowsVersion = ReadWindowsVersion();
+
+        private static string ReadWindowsVersion()
+        {
+            var version = Environment.OSVersion.Version;
+            object ubr = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "UBR", null);
+            return ubr is int revision ? $"{version.Major}.{version.Minor}.{version.Build}.{revision}" : version.ToString();
+        }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr GetModuleHandle(string name);

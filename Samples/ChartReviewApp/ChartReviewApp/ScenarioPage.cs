@@ -19,9 +19,9 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace ChartsSample
 {
-    // The 30 accessibility assessment scenarios used for the Chart accessibility review. Data comes
-    // unchanged from scenarios.json; the chart settings that file does not carry (series kinds, axis labels and
-    // ranges, legend titles, app-set names, the replaced label) match the assessment app's UIA tree.
+    // The 30 accessibility test scenarios. Data comes unchanged from scenarios.json; the chart settings that
+    // file does not carry (series kinds, axis labels and ranges, legend titles, app-set names, the replaced
+    // label) are set in BuildScenarioChart and BuildScenarioSeries.
     public sealed partial class MainWindow
     {
         private sealed record ScenarioInfo(string Id, string Title, string Instructions, JsonElement Expectations, bool Live);
@@ -47,6 +47,8 @@ namespace ChartsSample
         private readonly List<Chart> _scenarioCharts = new();
         private ColumnDefinition _scenarioPickerColumn;
         private Button _scenarioOpenButton;
+        // Kept apart from the list's SelectedItem, which a search that hides the item clears.
+        private string _selectedScenarioId;
 
         private void BuildScenariosPage()
         {
@@ -59,7 +61,8 @@ namespace ChartsSample
 
             // Picker: search, count, list and Open. Selecting does not replace the open chart, so a screen
             // reader browsing the list is not interrupted; Open (or Enter / double-click) does.
-            var picker = new StackPanel { Spacing = 8 };
+            var picker = new GroupPanel { Spacing = 8 };
+            AutomationProperties.SetName(picker, "Find and open a scenario");
             picker.Children.Add(Heading("Scenarios", AutomationHeadingLevel.Level2));
             _scenarioSearch = new TextBox { PlaceholderText = "Find a scenario" };
             AutomationProperties.SetName(_scenarioSearch, "Find a scenario");
@@ -74,7 +77,11 @@ namespace ChartsSample
             AutomationProperties.SetName(_scenarioList, "Scenarios");
             AutomationProperties.SetAutomationId(_scenarioList, "ScenarioPicker");
             _scenarioList.DoubleTapped += (_, _) => OpenSelectedScenario();
-            _scenarioList.SelectionChanged += (_, _) => UpdateOpenScenarioEnabled();
+            _scenarioList.SelectionChanged += (_, _) =>
+            {
+                if ((_scenarioList.SelectedItem as ListViewItem)?.Tag is string id) _selectedScenarioId = id;
+                UpdateOpenScenarioEnabled();
+            };
             // ListView marks Enter handled before a KeyDown subscription sees it, so listen with
             // handledEventsToo, and open the item that has focus.
             _scenarioList.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((_, e) =>
@@ -89,7 +96,6 @@ namespace ChartsSample
             _scenarioOpenText = new TextBlock { Style = (Style)RootGrid.Resources["DescriptionStyle"] };
             picker.Children.Add(_scenarioOpenText);
             var open = new Button { Content = "Open scenario", Style = (Style)Application.Current.Resources["AccentButtonStyle"], HorizontalAlignment = HorizontalAlignment.Stretch };
-            AutomationProperties.SetName(open, "Open selected scenario");
             AutomationProperties.SetAutomationId(open, "OpenScenario");
             open.Click += (_, _) => OpenSelectedScenario();
             _scenarioOpenButton = open;
@@ -112,11 +118,12 @@ namespace ChartsSample
 
             // Buttons on one row that stacks when it doesn't fit (large text, narrow window), and the status
             // on its own wrapping line; horizontal scrolling is off, so nothing here may need more width.
-            _scenarioLivePanel = new StackPanel { Spacing = 8, Visibility = Visibility.Collapsed };
+            _scenarioLivePanel = new GroupPanel { Spacing = 8, Visibility = Visibility.Collapsed };
+            AutomationProperties.SetName(_scenarioLivePanel, "Live updates");
             var liveButtons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             // A toggle with a fixed label: pressed means live updates are running.
             _scenarioPauseButton = new ToggleButton { Content = "Live updates" };
-            AutomationProperties.SetAutomationId(_scenarioPauseButton, "ScenarioPauseResume");
+            AutomationProperties.SetAutomationId(_scenarioPauseButton, "ScenarioLiveUpdates");
             _scenarioPauseButton.Click += (_, _) => SetScenarioRunning(_scenarioPauseButton.IsChecked == true, announce: true);
             var step = new Button { Content = "Step" };
             AutomationProperties.SetName(step, "Step once");
@@ -192,7 +199,6 @@ namespace ChartsSample
         private void FilterScenarios(bool announce)
         {
             string query = _scenarioSearch?.Text?.Trim() ?? "";
-            string selected = (_scenarioList?.SelectedItem as ListViewItem)?.Tag as string;
             _scenarioItems.Clear();
             foreach (var s in _scenarios)
             {
@@ -207,7 +213,7 @@ namespace ChartsSample
                 AutomationProperties.SetName(item, s.Title);
                 AutomationProperties.SetAutomationId(item, "Scenario-" + s.Id);
                 _scenarioItems.Add(item);
-                if (s.Id == selected) _scenarioList.SelectedItem = item;
+                if (s.Id == _selectedScenarioId) _scenarioList.SelectedItem = item;
             }
             string count = _scenarioItems.Count switch
             {
@@ -430,7 +436,7 @@ namespace ChartsSample
                 _scenarioLiveStatus.Text = $"{(_scenarioTimer.IsEnabled ? "Running" : "Paused")}. Updates: {_scenarioUpdates}.";
         }
 
-        // Announces only on user actions (Resume, Pause, Step, Reset), never on timer ticks.
+        // Announces only on user actions (Live updates, Step, Reset), never on timer ticks.
         private void AnnounceScenarioStatus()
         {
             UpdateScenarioStatus();
@@ -450,19 +456,31 @@ namespace ChartsSample
                 .FirstOrDefault(a => a.StartsWith("--dump-descriptions=", StringComparison.OrdinalIgnoreCase))?
                 .Substring("--dump-descriptions=".Length);
             if (string.IsNullOrEmpty(path)) return;
-            ScenarioNavigation.SelectedItem = NavScenarios;
-            var output = new StringBuilder();
-            foreach (var s in _scenarios)
+            try
             {
-                OpenScenario(s);
-                await System.Threading.Tasks.Task.Delay(900);
-                foreach (var chart in _scenarioCharts)
+                ScenarioNavigation.SelectedItem = NavScenarios;
+                var output = new StringBuilder();
+                foreach (var s in _scenarios)
                 {
-                    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(chart);
-                    output.AppendLine($"{s.Id}\t{peer.GetName()}\t{peer.GetLocalizedControlType()}\t{peer.GetFullDescription()}");
+                    OpenScenario(s);
+                    await System.Threading.Tasks.Task.Delay(900);
+                    foreach (var chart in _scenarioCharts)
+                    {
+                        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(chart);
+                        if (peer == null)
+                        {
+                            output.AppendLine($"{s.Id}\t(no automation peer)");
+                            continue;
+                        }
+                        output.AppendLine($"{s.Id}\t{peer.GetName()}\t{peer.GetLocalizedControlType()}\t{peer.GetFullDescription()}");
+                    }
                 }
+                File.WriteAllText(path, output.ToString());
             }
-            File.WriteAllText(path, output.ToString());
+            catch (Exception ex)
+            {
+                ReportTestHookFailure("--dump-descriptions", ex);
+            }
             Application.Current.Exit();
         }
 

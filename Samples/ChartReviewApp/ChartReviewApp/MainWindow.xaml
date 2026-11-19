@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:charts="using:Microsoft.UI.Xaml.Controls.Charts"
     xmlns:local="using:ChartsSample"
-    Title="Charts Review App 1.8">
+    Title="Chart Review App 1.8">
 
     <Grid x:Name="RootGrid">
         <Grid.Resources>
@@ -193,8 +193,8 @@
                                                             <ComboBoxItem Content="Triangle" />
                                                             <ComboBoxItem Content="X" />
                                                             <ComboBoxItem Content="Asterisk" />
-                                                            <ComboBoxItem Content="ShortDash" />
-                                                            <ComboBoxItem Content="LongDash" />
+                                                            <ComboBoxItem Content="Short dash" />
+                                                            <ComboBoxItem Content="Long dash" />
                                                             <ComboBoxItem Content="Circle" />
                                                             <ComboBoxItem Content="Plus" />
                                                         </ComboBox>
@@ -234,7 +234,7 @@
                                                         </ComboBox>
                                                     </Grid>
                                                     <local:GroupPanel Spacing="4" AutomationProperties.Name="Presentation for both profit axes">
-                                                        <TextBlock Text="Presentation for both profit axes" Style="{StaticResource ControlHeadingStyle}" AutomationProperties.HeadingLevel="Level2" />
+                                                        <TextBlock Text="Presentation for both profit axes" Style="{StaticResource ControlHeadingStyle}" AutomationProperties.HeadingLevel="Level3" />
                                                     <Grid Tag="Choices" ColumnSpacing="12" RowSpacing="4" SizeChanged="OnEditorSizeChanged">
                                                         <CheckBox x:Name="AxisVisibleCheck" Content="Axes visible" IsChecked="True" Checked="OnAxisVisibleChanged" Unchecked="OnAxisVisibleChanged" />
                                                         <CheckBox x:Name="TickLabelsCheck" Content="Tick labels" IsChecked="True" Checked="OnTickLabelsChanged" Unchecked="OnTickLabelsChanged" />
@@ -396,7 +396,7 @@
                                                     <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
                                                 </ComboBox>
                                                 <StackPanel Spacing="8">
-                                                    <TextBox x:Name="DtLabelFormatBoxA" Header="Label format" Description="DateTimeFormatter template, for example month day year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month day year" ToolTipService.ToolTip="DateTimeFormatter template, for example month day year." AutomationProperties.HelpText="DateTimeFormatter template, for example month day year." PlaceholderText="Default (shortdate)" />
+                                                    <TextBox x:Name="DtLabelFormatBoxA" Header="Label format" Description="DateTimeFormatter template, for example month day year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month day year" PlaceholderText="Default (shortdate)" />
                                                     <Button x:Name="ApplyDailyFormatButton" Content="Apply daily label format" Click="OnDtLabelFormatAApply" />
                                                 </StackPanel>
                                             </Grid>
@@ -420,7 +420,7 @@
                                                     <x:String>Auto</x:String><x:String>Day</x:String><x:String>Week</x:String><x:String>Month</x:String><x:String>Year</x:String>
                                                 </ComboBox>
                                                 <StackPanel Spacing="8">
-                                                    <TextBox x:Name="DtLabelFormatBoxB" Header="Label format" Description="DateTimeFormatter template, for example month year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month year" ToolTipService.ToolTip="DateTimeFormatter template, for example month year." AutomationProperties.HelpText="DateTimeFormatter template, for example month year." PlaceholderText="Default (shortdate)" />
+                                                    <TextBox x:Name="DtLabelFormatBoxB" Header="Label format" Description="DateTimeFormatter template, for example month year." AutomationProperties.Name="Label format, DateTimeFormatter template, for example month year" PlaceholderText="Default (shortdate)" />
                                                     <Button x:Name="ApplyMonthlyFormatButton" Content="Apply monthly label format" Click="OnDtLabelFormatBApply" />
                                                 </StackPanel>
                                             </Grid>

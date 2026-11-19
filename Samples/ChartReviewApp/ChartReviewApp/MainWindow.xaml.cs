@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Diagnostics;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -88,7 +88,7 @@ namespace ChartsSample
         private bool _ready;
         private bool _syncing;
         private bool _closing;
-        private bool _lastEditSucceeded;
+        private bool _secondaryBusy;
         private bool _allowClose;
 
         public MainWindow(string variant)
@@ -135,7 +135,6 @@ namespace ChartsSample
             _updates.Start();
             UpdatesButton.IsChecked = true;
             UpdateApplyTitleEnabled();
-            MarkupChart.ActualThemeChanged += OnMarkupChartThemeChanged;
             RootGrid.ActualThemeChanged += (_, _) => ApplySurfaceColors();
             ApplySurfaceColors();
             StartSeriesColorDumpIfRequested();
@@ -239,16 +238,16 @@ namespace ChartsSample
         private void OnUpdateTick(object sender, object e)
         {
             // Only the Live data chart changes; the shared profit and expenses chart stays still for review.
-            UpdateValues(_codeValues, 0);
+            UpdateValues(_codeValues);
             _updateIndex = (_updateIndex + 1) % 30;
             UpdateDataText();
         }
 
-        private void UpdateValues(ObservableCollection<double> values, int bias)
+        private void UpdateValues(ObservableCollection<double> values)
         {
-            int index = (_updateIndex + bias) % values.Count;
+            int index = _updateIndex % values.Count;
             double value = values[index];
-            values[index] = value >= 48 ? value - 29 : value + 7 + bias;
+            values[index] = value >= 48 ? value - 29 : value + 7;
         }
 
         private void UpdateDataText()
@@ -335,9 +334,9 @@ namespace ChartsSample
                 "axes" => ("Axes & ordering", "Adjust value-axis bounds, category ordering, ticks and grid lines."),
                 "presentation" => ("Labels & markers", "Customize series defaults and indexed point labels and markers."),
                 "live" => ("Live data", "Watch values update and exercise an independent secondary UI thread."),
-                "design" => ("Design reference", "The Figma chart frames rendered with product defaults, for side-by-side comparison."),
+                "design" => ("Design reference", "The Fluent chart design frames rendered with product colors and sizes, for side-by-side comparison with the design."),
                 "accessibility" => ("Accessibility", "Cases for Narrator, Inspect and Accessibility Insights: names, descriptions and chart parts."),
-                "scenarios" => ("Accessibility scenarios", "The 30 scenarios from the accessibility assessment. Choose a scenario and select Open scenario."),
+                "scenarios" => ("Accessibility scenarios", "30 accessibility test scenarios. Choose a scenario and select Open scenario."),
                 "about" => ("About this build", "Review build, Charts source and the current theme, contrast, text size and display scale."),
                 _ => ("Line charts", "Compare monthly profit and expenses. Explore series defaults and the legend.")
             };
@@ -491,7 +490,7 @@ namespace ChartsSample
             foreach (double value in seed)
                 values.Add(value * (0.65 + 0.05 * (number % 4)) + number * 3);
             // The new values can widen an automatic Y range past the tick limit the axis editors keep.
-            if (chart == MarkupChart) CheckYAxisTicks(_yAxis.Minimum, _yAxis.Maximum, _yAxis.Spacing, values);
+            if (chart == MarkupChart && MarkupChart.Axes.Contains(_yAxis)) CheckYAxisTicks(_yAxis.Minimum, _yAxis.Maximum, _yAxis.Spacing, values);
             var samples = new Samples { ItemsSource = values };
             series.Title = $"Series {number}";
             series.XValues = categories;
@@ -681,8 +680,10 @@ namespace ChartsSample
                     return 0.2126 * window.R + 0.7152 * window.G + 0.0722 * window.B < 128;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // The contrast setting or its window color could not be read; the app theme decides instead.
+                Debug.WriteLine($"Contrast theme colors unavailable: {ex.Message}");
             }
             return RootGrid.ActualTheme == ElementTheme.Dark;
         }
@@ -713,6 +714,7 @@ namespace ChartsSample
                     }
                 }
             }
+            ReapplyAxisBrushes();
         }
 
         private static MarkerShape SelectedMarkerShape(ComboBox choice)
@@ -735,7 +737,7 @@ namespace ChartsSample
             AreaValuesCheckBox.IsChecked = series.ShowDataLabels;
             AreaMarkersCheckBox.IsChecked = series.ShowDataMarkers;
             AreaLegendCheckBox.IsChecked = AreaMarkupChart.ShowLegend;
-            AreaRemoveSeriesButton.IsEnabled = AreaMarkupChart.Series.Count > 1;
+            SetEnabledKeepingFocus(AreaRemoveSeriesButton, AreaMarkupChart.Series.Count > 1, AreaSeriesChoice);
             UpdateDataText();
         }
 
@@ -750,7 +752,7 @@ namespace ChartsSample
             BarLegendCheckBox.IsChecked = BarMarkupChart.ShowLegend;
             BarOrientationChoice.SelectedIndex = (int)series.Orientation;
             BarOrientationText.Text = $"Orientation: {series.Orientation}";
-            BarRemoveSeriesButton.IsEnabled = BarMarkupChart.Series.Count > 1;
+            SetEnabledKeepingFocus(BarRemoveSeriesButton, BarMarkupChart.Series.Count > 1, BarSeriesChoice);
             UpdateDataText();
         }
 
@@ -1015,12 +1017,12 @@ namespace ChartsSample
                 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private uint? SelectedOverrideIndex()
+        private uint? SelectedOverrideIndex(bool announce = true)
         {
             double value = OverrideIndexNumberBox.Value;
             if (!double.IsFinite(value) || value < 0 || value >= _months.Count || value != Math.Truncate(value))
             {
-                AnnounceStatus(PresentationKnobStatusText, "Point index must be a whole number from 0 to 5.");
+                if (announce) AnnounceStatus(PresentationKnobStatusText, "Point index must be a whole number from 0 to 5.");
                 return null;
             }
             return (uint)value;
@@ -1045,14 +1047,15 @@ namespace ChartsSample
             DataLabelBrushCheckBox.IsChecked = series.DataLabelBrush != null;
             DataMarkerBrushCheckBox.IsChecked = series.DataMarkerBrush != null;
             LegendVisibilityCheckBox.IsChecked = MarkupChart.ShowLegend;
-            LineRemoveSeriesButton.IsEnabled = MarkupChart.Series.Count > 1;
+            SetEnabledKeepingFocus(LineRemoveSeriesButton, MarkupChart.Series.Count > 1, PresentationSeriesComboBox);
             SyncAxisAvailability();
             UpdateDataText();
         }
 
+        // Sync runs after other edits (Add series, Remove selected), so it leaves the index error to edits of the box.
         private void SyncPresentationOverrideEditors()
         {
-            var index = SelectedOverrideIndex();
+            var index = SelectedOverrideIndex(announce: false);
             if (!index.HasValue)
             {
                 LabelOverrideTextBox.Text = "";
@@ -1083,8 +1086,7 @@ namespace ChartsSample
         {
             if (!_ready || _syncing || _closing || PresentationSeriesComboBox.SelectedIndex < 0) return;
             Synchronize(SyncPresentationKnobs);
-            if (SelectedOverrideIndex().HasValue)
-                PresentationKnobStatusText.Text = $"Editing {SelectedPresentationSeries().Title}.";
+            PresentationKnobStatusText.Text = $"Editing {SelectedPresentationSeries().Title}.";
         }
 
         private void OnOverrideIndexChanged(NumberBox sender, NumberBoxValueChangedEventArgs e)
@@ -1114,7 +1116,15 @@ namespace ChartsSample
         private void UpdateApplyTitleEnabled()
         {
             if (ApplyLegendTitleButton == null || MarkupChart == null) return;
-            ApplyLegendTitleButton.IsEnabled = LegendTitleTextBox.Text != (MarkupChart.LegendTitle ?? "");
+            SetEnabledKeepingFocus(ApplyLegendTitleButton, LegendTitleTextBox.Text != (MarkupChart.LegendTitle ?? ""), LegendTitleTextBox);
+        }
+
+        // Disabling the focused control moves focus on to the next one, where a second Enter or Space would
+        // act on something else (Reset line example, Visible); move focus to a chosen control first.
+        private static void SetEnabledKeepingFocus(Control control, bool enabled, Control focusTarget)
+        {
+            if (!enabled && control.FocusState != FocusState.Unfocused) focusTarget.Focus(control.FocusState);
+            control.IsEnabled = enabled;
         }
         private void OnShowDataLabelsClick(object sender, RoutedEventArgs e) =>
             EditPresentation(() => SelectedPresentationSeries().ShowDataLabels = ShowDataLabelsCheckBox.IsChecked == true,
@@ -1186,14 +1196,12 @@ namespace ChartsSample
             string announcement = null)
         {
             if (!_ready || _syncing || _closing) return;
-            _lastEditSucceeded = false;
             try
             {
                 edit();
                 // Brush changes alone can leave the rendered plot at its previous appearance.
                 chart?.InvalidateArrange();
                 AnnounceStatus(status, success, announcement);
-                _lastEditSucceeded = true;
             }
             catch (ArgumentException)
             {
@@ -1249,8 +1257,8 @@ namespace ChartsSample
         }
         private static double? OptionalNumber(NumberBox box) => double.IsNaN(box.Value) ? null : box.Value;
 
-        // The Chart draws one tick per Spacing step with no upper limit, so a tiny spacing (0.0001 on a 0-60
-        // axis is 600,000 ticks) freezes the UI thread. The sample keeps the Y axis to a readable tick count.
+        // The Chart draws one tick per Spacing step with no upper limit (#12550), so a tiny spacing (0.0001 on
+        // a 0-60 axis is 600,000 ticks) freezes the UI thread. The sample keeps the Y axis to a readable tick count.
         private const int MaxYAxisTicks = 200;
 
         // added: values of a series about to be added, which widen an automatic range.
@@ -1274,8 +1282,9 @@ namespace ChartsSample
             }
             double low = minimum ?? dataMin;
             double high = maximum ?? dataMax;
-            // Automatic bounds round outward, so allow for a range somewhat beyond the data.
-            double range = Math.Max(high - low, 1) * 1.25;
+            double range = Math.Max(high - low, 1);
+            // An automatic bound rounds outward, so allow for a range somewhat beyond the data.
+            if (minimum == null || maximum == null) range *= 1.25;
             if (!(step > 0) || range / step > MaxYAxisTicks)
                 throw new ArgumentException("The Y spacing gives too many ticks.");
         }
@@ -1326,14 +1335,15 @@ namespace ChartsSample
             EditBothAxes(axis => axis.AxisLineBrush = BrushFromIndex(AxisLineBrushBox.SelectedIndex), () => AxisLineBrushBox.SelectedIndex = BrushIndex(_yAxis.AxisLineBrush));
 
         private static SolidColorBrush ColorBrush(byte red, byte green, byte blue) => new(Color.FromArgb(255, red, green, blue));
-        // App-set axis colors (Red, Blue, Green): Windows system colors for Light and Dark, so text on
-        // either background keeps at least 4.5:1 contrast. Index 0 (Theme) leaves the product default.
+        // App-set axis colors (Red, Blue, Green): Windows system colors for a light and a dark surface, so text
+        // keeps at least 4.5:1 contrast. They follow the same surface as the series colors (IsDarkSurface), which
+        // includes the contrast theme's window color. Index 0 (Theme) leaves the product default.
         private static readonly Color[] LightAxisSamples = { Color.FromArgb(255, 196, 43, 28), Color.FromArgb(255, 0, 95, 184), Color.FromArgb(255, 15, 123, 15) };
         private static readonly Color[] DarkAxisSamples = { Color.FromArgb(255, 255, 153, 164), Color.FromArgb(255, 96, 205, 255), Color.FromArgb(255, 108, 203, 95) };
 
         private Brush BrushFromIndex(int index) =>
             index is >= 1 and <= 3
-                ? new SolidColorBrush((MarkupChart.ActualTheme == ElementTheme.Dark ? DarkAxisSamples : LightAxisSamples)[index - 1])
+                ? new SolidColorBrush((_darkSurface ? DarkAxisSamples : LightAxisSamples)[index - 1])
                 : null;
 
         private static int BrushIndex(Brush brush)
@@ -1346,8 +1356,8 @@ namespace ChartsSample
             return 0;
         }
 
-        // Re-resolve the app-set axis colors when the chart's theme changes.
-        private void OnMarkupChartThemeChanged(FrameworkElement sender, object args)
+        // Re-resolve the app-set axis colors when the surface changes (ApplySurfaceColors).
+        private void ReapplyAxisBrushes()
         {
             void Reapply(ComboBox box, Action<Brush> set)
             {
@@ -1389,26 +1399,33 @@ namespace ChartsSample
 
         private void SetDateFormat(DateTimeAxis axis, TextBox box, TextBlock status)
         {
-            string preview = "";
-            ApplyEdit(() =>
+            string template = box.Text.Trim();
+            string preview = null;
+            try
             {
-                string template = box.Text.Trim();
                 // DateTimeFormatter validates templates before they reach the axis.
                 var formatter = new DateTimeFormatter(template.Length == 0 ? "shortdate" : template);
                 preview = formatter.Format(new DateTimeOffset(2024, 1, 15, 0, 0, 0, TimeSpan.Zero));
-                axis.LabelFormat = template;
-            }, () =>
+            }
+            catch (ArgumentException)
             {
-                box.Text = axis.LabelFormat ?? "";
-                if (preview.Length > 0 && _lastEditSucceeded)
-                    status.Text += $" Example: {preview}";
-            }, status, "Label format applied.",
+                // An invalid template: ApplyEdit reports it and restores the current format.
+            }
+            ApplyEdit(() =>
+            {
+                if (preview == null) throw new ArgumentException("Invalid date template.");
+                axis.LabelFormat = template;
+            }, () => box.Text = axis.LabelFormat ?? "", status,
+                string.IsNullOrEmpty(preview) ? "Label format applied." : $"Label format applied. Example: {preview}",
                 "Invalid date template. Try shortdate or month day year; blank uses the default. Current format restored.");
         }
 
         private async void OnToggleSecondaryClick(object sender, RoutedEventArgs e)
         {
-            SecondaryButton.IsEnabled = false;
+            // The button stays enabled while the window opens or closes (disabling it would move keyboard
+            // focus to the next control); a click in that time is ignored.
+            if (_secondaryBusy) return;
+            _secondaryBusy = true;
             try
             {
                 if (_secondary != null)
@@ -1444,7 +1461,7 @@ namespace ChartsSample
             }
             finally
             {
-                if (!_closing) SecondaryButton.IsEnabled = true;
+                _secondaryBusy = false;
             }
         }
 
@@ -1469,6 +1486,7 @@ namespace ChartsSample
             _closing = true;
             _updates.Stop();
             _updates.Tick -= OnUpdateTick;
+            DetachReviewPages();
             _appWindow.Closing -= OnAppWindowClosing;
             Closed -= OnClosed;
         }

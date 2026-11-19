@@ -35,17 +35,17 @@ namespace ChartReviewApp
         }
 
         // A missing Chart DLL or .pri ends the process with a fail-fast in XAML and no message; name the
-        // missing file instead, in the crash file that SETUP.txt points to and in a message box.
+        // missing file instead, in the crash file and in a message box.
         private static void CheckChartComponent()
         {
             string folder = AppContext.BaseDirectory;
             foreach (string file in new[] { ChartsDll, ChartsPri })
             {
                 if (File.Exists(Path.Combine(folder, file))) continue;
-                string message = $"The Chart control is missing: {file} was not found in {folder}. " +
-                    "Extract the whole Charts Review App zip again, then run launch.cmd.";
+                string message = $"The Chart control is missing: {file} was not found next to the app in {folder}. " +
+                    "Rebuild or republish the sample.";
                 WriteCrash(message);
-                MessageBoxW(IntPtr.Zero, message, "Charts Review App", 0x10 /* MB_ICONERROR */);
+                MessageBoxW(IntPtr.Zero, message, ChartsSample.MainWindow.ReviewAppName, 0x10 /* MB_ICONERROR */);
                 Environment.Exit(1);
             }
         }
@@ -54,11 +54,13 @@ namespace ChartReviewApp
         {
             try
             {
-                string path = Path.Combine(Path.GetTempPath(), "ChartsReviewApp-crash.txt");
+                string path = Path.Combine(Path.GetTempPath(), "ChartReviewApp-crash.txt");
                 File.AppendAllText(path, $"{DateTime.Now:O} {ChartsSample.MainWindow.BuildLabel}{Environment.NewLine}{details}{Environment.NewLine}{Environment.NewLine}");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                // Nowhere else to report a failure to write the crash file.
+                System.Diagnostics.Debug.WriteLine($"Crash file not written: {ex.Message}");
             }
         }
 

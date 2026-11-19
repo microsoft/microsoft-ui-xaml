@@ -45,6 +45,7 @@ namespace ChartsSample
                 }
                 catch (IOException)
                 {
+                    // The reader can have the file open; the next tick, half a second later, rewrites it.
                 }
             };
             _seriesColorDump.Start();
