@@ -336,6 +336,44 @@ unsupported-content row as expected, so fidelity comparisons for that scene must
   state transitions.
 - **Gate:** no expected unsupported content; unsupported popups, carets or focus visuals are failures.
 
+### First extended-scene results (quick smoke, one run, GPU-less VM)
+
+`Run-RenderBench.ps1 -Modes composition,gdiplus,d2d-sw -Scenes <S3-S10 entries> -InputMode programmatic
+-Repetitions 1 -Quick` on the integration branch (local runtime staged). Single quick runs on a VM with WARP
+composition: directional only, not a result. In-process private commit only; COMP's DWM-side and GPU memory are not
+included, which favours COMP here (the S2 dashboard numbers include the comp surface pool in process).
+
+| Scene | Steady private MB (COMP / GDI+ / D2D-SW) | Peak private MB | Interaction frame p95 ms | Interaction CPU ms/s |
+|---|---|---|---|---|
+| inbox | 53 / 60 / 59 | 74 / 63 / 66 | 4.7 / 13.7 / 5.3 | 310 / 517 / 455 |
+| gallery | 73 / 98 / 105 | 106 / 140 / 126 | 16.9 / 126 / 19.2 | 615 / 1386 / 1367 |
+| gallery-decoded | 77 / 95 / 103 | 108 / 132 / 123 | 16.7 / 135 / 16.5 | 565 / 1374 / 1422 |
+| animated | 33 / 43 / 42 | 41 / 44 / 50 | 1.3 / 6.5 / 2.1 | 188 / 310 / 299 |
+| animated-noring | 33 / 43 / 42 | 44 / 43 / 42 | 1.5 / 6.0 / 2.0 | 236 / 299 / 275 |
+| reader | 45 / 39 / 47 | 56 / 41 / 49 | 10.3 / 13.0 / 4.8 | 686 / 554 / 448 |
+| layered | 33 / 38 / 43 | 51 / 38 / 44 | 2.0 / 9.8 / 2.0 | 180 / 196 / 190 |
+| datagrid | 147 / 117 / 125 | 202 / 143 / 151 | 38.5 / 25.9 / 22.0 | 402 / 375 / 399 |
+| multiwindow (5) | 46 / 33 / 44 | 78 / 84 / 90 | 100 / 76 / 65 | 384 / 347 / 343 |
+| multiwindow-tabs | 51 / 49 / 51 | 144 / 110 / 116 | 94 / 87 / 67 | 542 / 492 / 549 |
+| form | 34 / 45 / 38 | 47 / 45 / 39 | 3.6 / 4.9 / 2.6 | 270 / 244 / 288 |
+
+Gate: 25/33 pass. Expected failures: `animated` in every mode (scene is never idle; immediate modes draw ~1,850
+frames/min vs ~87 for COMP because every animation tick is a UI-thread paint), `layered` and `form` in immediate modes
+(acrylic fallback, ThemeShadow, approximated caret invert, windowed popup painted in the island).
+
+Observations to drive the next iteration:
+
+- Immediate modes win where element/visual count dominates (datagrid -20 to -29% steady, -25 to -29% peak; tabs peak
+  -20 to -24%) and lose where the fixed per-root swap chain + painter target dominates small scenes (animated, layered,
+  form: +4 to +11 MB). Next: drop the painter's own full-size target where possible (render straight into the back
+  buffer with a damage-preserving swap chain) and measure DWM/GPU memory so COMP is charged for its out-of-process cost.
+- Gallery is worse in immediate modes (+18 to +32 MB steady, 2.2-2.5x CPU, GDI+ p95 126 ms): decoded images are held twice (XAML
+  software surface + painter bitmap cache) and GDI+ scales with `DrawImage` on the CPU. Next: share the decoded surface
+  memory with the painter instead of copying, and cache scaled bitmaps for GDI+.
+- GDI+ text and scrolling are slower (inbox p95 13.7 ms vs 4.7); D2D-SW is at parity or better.
+- Animations cost a full UI-thread paint per tick in immediate modes; independent-animation offload is the open
+  design question.
+
 ## Required WinUI instrumentation
 
 The comparison depends on counters that do not exist today. Add them as TraceLogging/ETW events in the WinUI
