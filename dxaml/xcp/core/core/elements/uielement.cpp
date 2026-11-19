@@ -810,12 +810,6 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
 
         DirectUI::Visibility oldVisibility = GetVisibility();
 
-        CValue oldCanBeScrollAnchorValue;
-        if (args.m_pDP->GetIndex() == KnownPropertyIndex::UIElement_CanBeScrollAnchor)
-        {
-            IFC_RETURN(GetValueByIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, &oldCanBeScrollAnchorValue));
-        }
-
         // The call to SetValue should come after the following switch. Reorder after SL3!
         hr = CDependencyObject::SetValue(args);
 
@@ -905,20 +899,6 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
         case KnownPropertyIndex::UIElement_Opacity:
             {
                 OnSetLocalOpacity(wasOpacityImplicitAnimationStarted);
-                break;
-            }
-        case KnownPropertyIndex::UIElement_CanBeScrollAnchor:
-            {
-                if (SUCCEEDED(hr) && IsActive())
-                {
-                    CValue newCanBeScrollAnchorValue;
-                    IFC_RETURN(GetValueByIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, &newCanBeScrollAnchorValue));
-                    if (oldCanBeScrollAnchorValue.AsBool() != newCanBeScrollAnchorValue.AsBool())
-                    {
-                        IFC_RETURN(UpdateAnchorCandidateOnParentScrollProvider(newCanBeScrollAnchorValue.AsBool()));
-                    }
-                }
-
                 break;
             }
         case KnownPropertyIndex::UIElement_ProtectedCursor:
@@ -1027,6 +1007,16 @@ _Check_return_ HRESULT CUIElement::OnPropertyChanged(_In_ const PropertyChangedP
 
     switch (args.m_pDP->GetIndex())
     {
+        case KnownPropertyIndex::UIElement_CanBeScrollAnchor:
+        {
+            const bool canBeScrollAnchor = args.m_pNewValue->AsBool();
+            // Teardown callbacks can clear the flag after deactivation but before Leave unregisters it.
+            if (IsActive() || !canBeScrollAnchor)
+            {
+                IFC_RETURN(UpdateAnchorCandidateOnParentScrollProvider(canBeScrollAnchor));
+            }
+            break;
+        }
         case KnownPropertyIndex::RelativePanel_LeftOf:
         case KnownPropertyIndex::RelativePanel_Above:
         case KnownPropertyIndex::RelativePanel_RightOf:
