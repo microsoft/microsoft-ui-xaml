@@ -267,13 +267,13 @@ namespace RenderingBackend
                     HRESULT hr = ResizeSwapChain();
                     if (FAILED(hr))
                     {
-                        IFC_RETURN(OnFailure(hr));
+                        IFC_RETURN(HandleFailure(hr));
                     }
                 }
                 const HRESULT hr = CreateTarget();
                 if (FAILED(hr))
                 {
-                    IFC_RETURN(OnFailure(hr));
+                    IFC_RETURN(HandleFailure(hr));
                 }
                 return S_OK;
             }
@@ -300,7 +300,7 @@ namespace RenderingBackend
                     const HRESULT hr = EnsureDamageGeometry();
                     if (FAILED(hr))
                     {
-                        IFC_RETURN(OnFailure(hr));
+                        IFC_RETURN(HandleFailure(hr));
                     }
                 }
 
@@ -513,7 +513,7 @@ namespace RenderingBackend
                 }
                 if (FAILED(hr))
                 {
-                    IFC_RETURN(OnFailure(hr));
+                    IFC_RETURN(HandleFailure(hr));
                 }
                 return S_OK;
             }
@@ -547,7 +547,7 @@ namespace RenderingBackend
                     hr = m_device->CreateTexture2D(&desc, nullptr, &m_staging);
                     if (FAILED(hr))
                     {
-                        IFC_RETURN(OnFailure(hr));
+                        IFC_RETURN(HandleFailure(hr));
                     }
                     ++m_churnCreated;
                 }
@@ -557,7 +557,7 @@ namespace RenderingBackend
                 hr = m_d3dContext->Map(m_staging.Get(), 0, D3D11_MAP_READ, 0, &mapped);
                 if (FAILED(hr))
                 {
-                    IFC_RETURN(OnFailure(hr));
+                    IFC_RETURN(HandleFailure(hr));
                 }
                 const uint8_t* source = static_cast<const uint8_t*>(mapped.pData);
                 for (uint32_t y = 0; y < m_height; ++y)
@@ -617,7 +617,7 @@ namespace RenderingBackend
                     if (FAILED(hr))
                     {
                         m_swapChain.Reset();
-                        IFC_RETURN(OnFailure(hr));
+                        IFC_RETURN(HandleFailure(hr));
                     }
                 }
                 m_forceFullDamage = true;
@@ -979,7 +979,7 @@ namespace RenderingBackend
             }
 
             // Classifies a failed call: device loss makes the painter permanently failed; anything else is returned as is.
-            HRESULT OnFailure(HRESULT hr) noexcept
+            HRESULT HandleFailure(HRESULT hr) noexcept
             {
                 if (!m_lost && (IsDeviceLoss(hr) || FAILED(m_device->GetDeviceRemovedReason())))
                 {
