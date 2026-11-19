@@ -24,7 +24,7 @@ using Microsoft::WRL::ComPtr;
 
 namespace
 {
-    constexpr uint32_t c_maxDamageRects = 8;
+    constexpr uint32_t c_maxDamageRects = 32;
     constexpr uint32_t c_maxRawDamageRects = 256;
 
     bool IsEmptyRect(const RectF& r) noexcept
@@ -800,6 +800,12 @@ void ImmediateRenderer::EmitContent(
                 if (!wrap)
                 {
                     layout.right += fontSize * 2;
+                }
+                else
+                {
+                    // Headers are often arranged at exactly their measured width; a little slack keeps one-line
+                    // wrapping text from breaking its last word.
+                    layout.right += fontSize / 2;
                 }
                 const float overhang = std::max(2.0f, fontSize / 4);
                 const RectF ink{ layout.left - overhang, layout.top - overhang, layout.right + overhang, layout.bottom + overhang };
