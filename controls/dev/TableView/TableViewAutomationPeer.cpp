@@ -72,8 +72,7 @@ namespace
 
     // A container-free data-item peer for a selected, unrealized row. Reads never realize it; once
     // realized it forwards to the row's peer but keeps its own RuntimeId.
-    // A bound peer is instead the UIA element of one binding of a row to an item (the row peer's
-    // EventsSource); once the row is cleared or rebound, every member throws ElementNotAvailable.
+    // A bound peer is one row-to-item binding (the row peer's EventsSource); it goes stale on clear or rebind.
     class TableViewRowItemAutomationPeer :
         public TableViewBindingAutomationPeerT<
             TableViewRowItemAutomationPeer,
@@ -199,9 +198,7 @@ namespace
             return parent;
         }
 
-        // Published as a row's events source before any client opens it; an event redirected to it finds
-        // its window (in an island too) only through a parent. RefreshParent would create row peers, which
-        // re-enters here, so the table stands in until a Parent navigation re-resolves it.
+        // Parented to the table so events raised before a client opens it still find a window.
         void ParentToTable()
         {
             if (auto const table = m_table.get())
@@ -288,8 +285,7 @@ namespace
             return p ? p.GetCulture() : __super::GetCultureCore();
         }
 
-        // A selected-item peer does not forward: the framework re-parents returned children, which would
-        // steal the row's cell peers. A bound peer is the row to UIA, so the cells belong to it.
+        // A bound peer owns the row's cells; a selected-item peer does not, or it would steal them.
         winrt::IVector<winrt::AutomationPeer> GetChildrenCore()
         {
             return m_bound ? BoundRow().second.GetChildren() : nullptr;
@@ -321,8 +317,7 @@ namespace
             return peer ? ProviderFromPeer(peer) : nullptr;
         }
 
-        // Bound or not, act through this peer: the index is resolved (and the binding rechecked) after the
-        // enabled check, which can run app code that rebinds the row.
+        // The enabled check can run app code that rebinds the row, so the index is resolved after it.
         void AddToSelection()
         {
             ApplySelectionItemAction(TableViewRowAutomationPeer::SelectionItemAction::Add);
@@ -362,8 +357,7 @@ namespace
             row.StartBringIntoView(options);
         }
 
-        // TableViewBindingAutomationPeerT's hook: the row while this bound peer is current. Never a
-        // selected-item peer's row, which is not routing UIA to it.
+        // TableViewBindingAutomationPeerT's hook: the row while this bound peer is current.
         winrt::UIElement TryBoundContainer() { return TryBoundRow().first; }
 
         // The item's source index, or -1 once this peer no longer describes a row.
@@ -518,8 +512,7 @@ namespace
         int32_t m_lastIndex{ -1 };
 
     public:
-        // TableViewBindingAutomationPeerT's hook. The base AutomationPeer's value is the fallback while the
-        // row is unrealized: this peer has no owner of its own to read.
+        // TableViewBindingAutomationPeerT's hook; falls back to the base value while the row is unrealized.
         template <typename Forward, typename T>
         T ForwardToContainerPeer(Forward&& forward, T fallback)
         {
@@ -1340,8 +1333,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         }
         else if (auto const container = TryGetBoundContainer(startPeer))
         {
-            // A row's or header's binding peer: resolved through the container still routing UIA to
-            // it, so a stale one is refused.
+            // A row's or header's binding peer: resolved through its container, so a stale one is refused.
             startIndex = repeater.GetElementIndex(container);
             resolved = startIndex >= 0;
         }

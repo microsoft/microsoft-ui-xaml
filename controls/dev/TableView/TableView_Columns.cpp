@@ -64,34 +64,6 @@ double TableView::ComputeLeadingFrozenWidth()
     return width;
 }
 
-// Whether the cells panel pins this column: only the contiguous Leading prefix is, as above.
-bool TableView::IsLeadingFrozenColumn(winrt::TableViewColumn const& column)
-{
-    if (!column || column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-    {
-        return false;
-    }
-    if (auto columns = Columns())
-    {
-        for (auto const& candidate : columns)
-        {
-            if (!IsColumnOwnedBy(*this, candidate))
-            {
-                continue;
-            }
-            if (candidate == column)
-            {
-                return true;
-            }
-            if (candidate.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-            {
-                break;
-            }
-        }
-    }
-    return false;
-}
-
 void TableView::RefreshFrozenColumns()
 {
     const double leadingFrozenWidth = ComputeLeadingFrozenWidth();

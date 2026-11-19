@@ -58,8 +58,7 @@ winrt::IVector<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetChi
     {
         return children;
     }
-    // The chevron is a pure visual whose state ExpandCollapse already reports. It belongs to the
-    // container rather than the group, so exposing it would let a held element read another group.
+    // The chevron belongs to the container, not the group; ExpandCollapse already reports its state.
     auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
     auto filtered = winrt::single_threaded_vector<winrt::AutomationPeer>();
     for (auto const& child : children)
@@ -164,9 +163,7 @@ void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
     try
     {
-        // Raised on this peer, as TableViewRowAutomationPeer does: the framework resolves the window
-        // through this peer's owner, then routes the event to the group's element (EventsSource).
-        // The element has no owner, so raising on it directly finds no window and the event is dropped.
+        // Raised on this peer so the framework finds the window, then routes it to the EventsSource.
         RaisePropertyChangedEvent(
             winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
             box_value(oldState),

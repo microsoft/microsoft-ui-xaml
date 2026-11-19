@@ -85,8 +85,7 @@ public:
     // this peer reported and raises only for the ones that moved.
     void RaiseHierarchyPositionChanged();
 
-    // Called by the owning row when it installs or drops an item binding: values reported through
-    // the previous binding's element are not cached by clients of the new one.
+    // Called when the owning row installs or drops an item binding.
     void ResetReportedHierarchyState();
 
 private:

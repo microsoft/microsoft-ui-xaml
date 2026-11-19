@@ -46,8 +46,7 @@ public:
     bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
     // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
     bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
-    // UIA sees each binding of this row to an item as its own element (the row peer's EventsSource), so a
-    // held element never moves to the next item. A cleared or pooled row exposes none.
+    // Each item binding is its own UIA element (the row peer's EventsSource); a cleared row exposes none.
     void SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.

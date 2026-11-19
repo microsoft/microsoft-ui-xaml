@@ -105,8 +105,7 @@ inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
 template <typename D, typename... I>
 using TableViewComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
 
-// Real IID for TableViewBindingAutomationPeerT, so code given an arbitrary peer (a FindItemByProperty
-// startAfter) can type-test it, as IGroupedEntryTag does for GroupedEntry, and reach its container.
+// Lets code given an arbitrary peer (e.g. a FindItemByProperty startAfter) find its container.
 struct __declspec(uuid("6B1E52C4-3D7A-4F0B-9E21-8C5A0D47F3B6")) __declspec(novtable)
     ITableViewBindingAutomationPeerAccess : ::IUnknown
 {
@@ -125,11 +124,7 @@ inline winrt::UIElement TryGetBoundContainer(winrt::AutomationPeer const& peer)
     return container ? container.as<winrt::UIElement>() : nullptr;
 }
 
-// Base of the UIA element for one binding of a container (row, group header) to its data: the
-// container peer's EventsSource. UIA reads these from this element, not the container's peer, so
-// forward them and the container's AutomationProperties and set position still reach clients.
-// D supplies ForwardToContainerPeer(forward, fallback): forward applied to the container's peer;
-// and a non-throwing TryBoundContainer(): the container while this binding is current, else null.
+// UIA element for one binding of a container (row, group header) to its data; forwards to the container's peer.
 template <typename D, typename... I>
 struct TableViewBindingAutomationPeerT :
     ReferenceTracker<D, TableViewComposableAutomationPeerT, I..., ITableViewBindingAutomationPeerAccess>
@@ -193,8 +188,7 @@ struct TableViewBindingAutomationPeerT :
     }
 
 protected:
-    // The binding is current while the container's own peer still routes UIA to it. Compared by COM
-    // identity: the source can be any object an app installed.
+    // Current while the container's peer still has this as EventsSource (compared by COM identity).
     bool IsEventsSourceOf(winrt::AutomationPeer const& containerPeer)
     {
         auto const source = containerPeer ? containerPeer.EventsSource() : nullptr;
@@ -208,8 +202,7 @@ private:
         return static_cast<D*>(this)->ForwardToContainerPeer(std::forward<Fn>(forward), std::move(fallback));
     }
 
-    // The peer API exposes no getter for these, so read the container's AutomationProperties as a
-    // FrameworkElementAutomationPeer does.
+    // No peer getter exists for these, so read the container's AutomationProperties directly.
     using ElementsGetter = winrt::IVector<winrt::DependencyObject>(*)(winrt::DependencyObject const&);
     winrt::IIterable<winrt::AutomationPeer> ForwardPeerCollection(ElementsGetter getElements)
     {

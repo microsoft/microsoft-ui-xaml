@@ -99,9 +99,7 @@ public:
     // falls back to this instead.
     winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
     void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
-    // UIA sees each binding of this header to a group as its own element (the header peer's
-    // EventsSource), so a held element never moves to another group. With a group identity the
-    // element is the group's, shared through the owner; a cleared header exposes none.
+    // Each group binding is its own UIA element (the header peer's EventsSource); a cleared header exposes none.
     void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
     // Whether any element of the rendered content has an automation peer a client could hold.
     bool HasContentAutomationPeersInternal();

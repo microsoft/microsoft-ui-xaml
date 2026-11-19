@@ -60,8 +60,7 @@ void TableView::SetGroupAutomationElementInternal(winrt::hstring const& identity
 {
     if (m_groupAutomationElements.size() >= 256)
     {
-        // Clearing everything would hand a group still shown by a header a new element on its next
-        // container change, staling what clients hold for it.
+        // Prune only unshown groups, so a shown group keeps the element clients hold.
         std::erase_if(m_groupAutomationElements, [](auto const& entry) { return !TryGetBoundContainer(entry.second); });
     }
     m_groupAutomationElements.insert_or_assign(identity, element);
@@ -520,8 +519,7 @@ void TableView::ApplyGroupExpansionByIdentity(
     // ran app code above, so re-check the source before mutating; a stale request still falls through to drain
     // queued edit reshapes.
     auto const provider = m_tableViewSourceRowMetadata;
-    // Captured before the toggle so the header can announce it even if the reshape moves the group to another
-    // container (see m_pendingGroupExpansionStates).
+    // Captured before the toggle, in case the reshape moves the group to another container.
     std::optional<winrt::ExpandCollapseState> groupStateBefore;
     if (axis == BulkExpansionAxis::Groups && !subtree &&
         winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
@@ -611,8 +609,7 @@ void TableView::ApplyGroupExpansionByIdentity(
     }
 }
 
-// Built the way TableViewGroupHeaderAutomationPeer::ExpandCollapseState reports it, so an announced
-// pair always matches what the provider returns.
+// Built as TableViewGroupHeaderAutomationPeer::ExpandCollapseState reports it.
 static winrt::ExpandCollapseState GroupExpandCollapseState(bool isExpandable, bool isExpanded)
 {
     return !isExpandable ? winrt::ExpandCollapseState::LeafNode
@@ -1263,9 +1260,8 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     //    provider will never return.
     //
     // Raised from here, not from the IsExpanded DP: a recycled container often already carries the
-    // incoming value, so the DP never changes and a DP-based raise stays silent. A toggle's reshape
-    // can also give the group a container that last showed another group, so a toggled group takes
-    // its previous state from m_pendingGroupExpansionStates rather than from this container.
+    // incoming value, so the DP never changes and a DP-based raise stays silent.
+    // A toggled group may get another group's container, so its prior state comes from m_pendingGroupExpansionStates.
     const bool sameGroup = existing && SameGroupKey(existing.Key(), groupKey);
     auto previousState = !existing ? winrt::ExpandCollapseState::LeafNode
         : GroupExpandCollapseState(existing.IsExpandable(), existing.IsExpanded());
@@ -1318,8 +1314,7 @@ void TableView::PrepareGroupHeaderElement(winrt::TableViewGroupHeader const& hea
     }
     else if (!identity.empty() && GetGroupAutomationElementInternal(identity))
     {
-        // A client still holds this group's element: give it this container now, or it would stay
-        // on the header the group left until UIA happens to reach this one. Peer creation syncs.
+        // A client still holds this group's element: retarget it to this container now.
         winrt::FrameworkElementAutomationPeer::CreatePeerForElement(header);
     }
 

@@ -436,10 +436,7 @@ public:
         return TryGetContainerIdentity(container);
     }
 
-    // A group's UIA element (its header peer's EventsSource), kept by group identity so it follows the
-    // group when a reshape or scroll hands the group a different pooled container. Strong: a UIA
-    // client's hold does not keep the element alive while no header exposes it. Bounded by dropping
-    // the elements no header currently exposes; those a header exposes are kept.
+    // A group's UIA element by group identity, so it follows the group across pooled headers.
     winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
     {
         auto const it = m_groupAutomationElements.find(identity);
@@ -1198,13 +1195,9 @@ private:
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
     std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
 
-    // Group identity -> its ExpandCollapseState before a toggle that has not reached its header yet.
-    // The reshape can hand the group a pooled container that last showed a different group, so the
-    // header's own Content cannot say what the state was. Consumed by PrepareGroupHeaderElement and
-    // cleared after the post-expansion refresh.
+    // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
     std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;
-    // See GetGroupAutomationElementInternal. Cleared with m_rowMetadataGeneration: identities are only
-    // meaningful within one projection.
+    // Cleared with m_rowMetadataGeneration: identities are only meaningful within one projection.
     std::unordered_map<winrt::hstring, winrt::AutomationPeer> m_groupAutomationElements;
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
@@ -1408,10 +1401,6 @@ private:
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
     bool IsInUnrealizedBodyContainer(winrt::DependencyObject const& element) const;
-    void QueueOrphanedBodyFocusRescue();
-    bool m_orphanedBodyFocusRescueQueued{ false };
-    // The pending restore was started by that rescue: it owns focus only while focus stays stranded.
-    bool m_reshapeFocusFromOrphan{ false };
     // Keyboard moves to a row that is not arranged yet finish through the same attempt loop.
     void BeginPendingBodyFocus(
         int32_t row, int32_t column, bool cellLevel, std::optional<double> alignRatio, winrt::IInspectable const& item = nullptr);
@@ -1521,7 +1510,6 @@ private:
     bool m_isProcessingContextMenu{ false };
 
     double ComputeLeadingFrozenWidth();
-    bool IsLeadingFrozenColumn(winrt::TableViewColumn const& column);
     void RefreshFrozenColumns();
 
     double GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const;

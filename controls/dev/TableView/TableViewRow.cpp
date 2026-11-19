@@ -368,8 +368,7 @@ void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, 
     }
     else if (newBinding || !rowPeer.EventsSource())
     {
-        // Re-prepared for the same item (the caller kept its cells): restore that item's element, which
-        // the cells' peers are parented to and a client may hold. A new item gets a new element.
+        // Re-prepared for the same item: restore its element, which the kept cells are parented to.
         auto binding = newBinding ? nullptr : m_itemAutomationPeer.get();
         if (!binding)
         {
@@ -1184,8 +1183,7 @@ void TableViewRow::OnDataContextChanged(
         return;
     }
     m_cellsInvalidated = false;
-    // A pooled row taking a new item must not retarget held cell peers to it; the following prepare
-    // replaces those cells when the row's peer cannot be reused for the new item.
+    // A pooled row taking a new item must not retarget held cell peers to it.
     const bool rebuilt = RebuildCells(!m_inRecyclePool /* updateExistingCellPeerItems */);
     m_cellsRebuiltForDataContext = rebuilt && !m_cellsInvalidated && dataItem && DataContext() == dataItem;
 }
@@ -3297,10 +3295,8 @@ void TableViewRow::OnTemplateRootContextRequested(winrt::ContextRequestedEventAr
 
 // Row requests raised on the row itself: Shift+F10 / Menu key while the row (not a cell) has
 // focus. They start above the template root, so neither handler above sees them; without this
-// the row-template menu is skipped and the table fallback opens. A ContextFlyout on the row itself
-// is shown by the framework before this handler runs, so it wins over a template-root menu here.
-// Requests that bubbled up from inside the row were already offered to the handlers above and
-// keep bubbling.
+// the row-template menu is skipped and the table fallback opens. Requests that bubbled up from
+// inside the row were already offered to the handlers above and keep bubbling.
 void TableViewRow::OnRowContextRequested(winrt::ContextRequestedEventArgs const& args)
 {
     auto const source = args.OriginalSource().try_as<winrt::TableViewRow>();

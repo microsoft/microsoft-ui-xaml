@@ -249,8 +249,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies Shift+F10 on a focused row opens the row's own ContextFlyout even with a ContextFlyout on its template root: the framework shows a focused element's own menu first.")]
-        public void ShiftF10OnRowPrefersRowMenuOverTemplateMenu()
+        [TestProperty("Description", "Verifies Shift+F10 on a focused row opens a ContextFlyout on the row's template root before the row's own menu.")]
+        public void ShiftF10OnRowOpensRowTemplateMenu()
         {
             using (var setup = new TestSetupHelper(PageName))
             {
@@ -260,7 +260,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
 
-                VerifyMenuOpened(RowMenu, ContextMenuName(3), RowFocus(3));
+                VerifyMenuOpened(RowTemplateMenu, ContextMenuName(3), RowFocus(3));
                 CloseMenu();
             }
         }
@@ -376,7 +376,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies that after a click outside dismisses a row menu opened on another cell of the focused row, Tab out and back in lands on that cell's column header and Down returns to that cell (GH #12442).")]
+        [TestProperty("Description", "Verifies that after a click outside dismisses a row menu opened on another cell of the focused row, Tab out and back in returns to that cell (GH #12442).")]
         public void ClickOutsideMenuThenTabBackInReturnsToMenuCell()
         {
             using (var setup = new TestSetupHelper(PageName))
@@ -400,14 +400,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
                 Wait.ForIdle();
 
-                // With the header row shown, entry lands on the header of the column last used in the body.
                 ElementCache.Clear();
-                VerifyFocusedHeader(ContextMenuTable, "Age", "Shift+Tab back in must land on the Age header, the menu cell's column.");
-
-                KeyboardHelper.PressKey(Key.Down);
-                Wait.ForIdle();
-                ElementCache.Clear();
-                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Down from the Age header must return to row 4's Age cell.");
+                VerifyFocusedCell(ContextMenuTable, 4, ContextMenuAgeColumn, "Tab back into the body must return to row 4's Age cell.");
             }
         }
 

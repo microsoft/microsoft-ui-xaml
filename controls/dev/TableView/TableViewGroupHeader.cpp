@@ -54,18 +54,14 @@ TableViewGroupHeader::TableViewGroupHeader()
 
 namespace
 {
-    // The UIA element of one binding of a header to a group (the header peer's EventsSource). Not a
-    // FrameworkElementAutomationPeer, and only a weak reference to the header, so no core pointer
-    // outlives it. Once the header is cleared or rebound, every member throws ElementNotAvailable.
+    // UIA element of a header bound to a group (the header peer's EventsSource); stale once the header leaves the group.
     class TableViewGroupBindingAutomationPeer :
         public TableViewBindingAutomationPeerT<TableViewGroupBindingAutomationPeer, winrt::IExpandCollapseProvider, winrt::IGridItemProvider, winrt::IScrollItemProvider>
     {
     public:
         explicit TableViewGroupBindingAutomationPeer(winrt::TableViewGroupHeader const& header) : m_header(winrt::make_weak(header)) {}
 
-        // Patterns this element implements itself, so a held pattern object follows the group too
-        // instead of reading whichever group the header peer shows later. ScrollItem is a framework
-        // default for real element peers, which GetPattern does not return.
+        // Served here so a held pattern object follows the group, not whichever group the header shows later.
         winrt::IInspectable GetPatternCore(winrt::PatternInterface const& pattern)
         {
             auto const peer = HeaderPeer();
@@ -82,10 +78,13 @@ namespace
         void SetFocusCore() { HeaderPeer().SetFocus(); }
         void ShowContextMenuCore() { HeaderPeer().ShowContextMenu(); }
         winrt::IVector<winrt::AutomationPeer> GetChildrenCore() { return HeaderPeer().GetChildren(); }
-        // The framework's tree holds the header's own peer, not this one.
+        // Children are reached through this element so they parent to it, not to the pooled header's peer.
         winrt::IInspectable NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction)
         {
-            return HeaderPeer().Navigate(direction);
+            using Direction = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection;
+            auto const peer = HeaderPeer();
+            return direction == Direction::FirstChild || direction == Direction::LastChild
+                ? __super::NavigateCore(direction) : peer.Navigate(direction);
         }
 
         winrt::ExpandCollapseState ExpandCollapseState() { return HeaderPeer().as<winrt::IExpandCollapseProvider>().ExpandCollapseState(); }
@@ -131,9 +130,7 @@ namespace
             return bound.second;
         }
 
-        // The header and its peer while the header is in its table's repeater and its peer still has
-        // this binding as EventsSource; nulls otherwise. A header outside the repeater (its table's
-        // template was replaced, or it is pooled or pinned) no longer shows the group.
+        // The header and its peer while the header is in the repeater and still routes UIA to this binding.
         std::pair<winrt::TableViewGroupHeader, winrt::AutomationPeer> TryBoundHeader()
         {
             auto const header = m_header.get();
@@ -174,8 +171,7 @@ void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
     }
     else if (!groupIdentity.empty() && owner)
     {
-        // Keyed by group, not container: the element a client holds follows its group to whichever
-        // container shows it, and never to a different group.
+        // Keyed by group, so a held element follows its group to whichever container shows it.
         auto* const tableView = winrt::get_self<TableView>(owner);
         auto binding = tableView->GetGroupAutomationElementInternal(groupIdentity);
         if (binding)
@@ -201,8 +197,7 @@ void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
     }
     else if (!headerPeer.EventsSource())
     {
-        // Cleared and re-prepared for the same group (an expansion change replaces its entry):
-        // restore that group's element, so a client holding it keeps a live element.
+        // Re-prepared for the same group: restore its element so a held one stays live.
         auto binding = m_groupBinding.get();
         if (!binding)
         {
@@ -563,15 +558,13 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
         return;
     }
 
-    // Raised from a repeater re-prepare, before the header is reachable from the window again, so
-    // UIA drops it for subtree-scoped listeners. Announce once layout has settled instead.
+    // Deferred: the header is not reachable from the window yet during a repeater re-prepare.
     auto const queue = DispatcherQueue();
     if (!queue)
     {
         return;
     }
-    // The transition belongs to the group shown now, so it is bound to that group's element: a
-    // header re-prepared for another group while queued no longer routes to it.
+    // Bound to the current group's element so a header recycled while queued does not raise it.
     queue.TryEnqueue([weakThis = get_weak(), groupBinding = m_groupBinding, oldState, newState]()
     {
         auto const strongThis = weakThis.get();
@@ -581,8 +574,7 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
             return;
         }
 
-        // FromElement only: no live peer means no listener, so creating one purely to announce would
-        // materialize automation objects a client never asked for.
+        // FromElement only: no live peer means no listener to notify.
         auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*strongThis);
         auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr;
         if (!headerPeer || headerPeer.EventsSource() != binding)
