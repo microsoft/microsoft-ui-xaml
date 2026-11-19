@@ -150,6 +150,7 @@ runtimeclass CollectionViewSource
 | `ICollectionView.SourceCollection` (`IEnumerable`) | `ICollectionViewShaping.SourceCollection` (`Object`) | Implemented: the collection the view was created over (the CVS's `Source`, not a wrapper). `ICollectionView` is frozen, so it is on the shaping interface. |
 | `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | static `CollectionViewSource.GetDefaultView(Object)` | Implemented. One shared, shapeable view per list source (`IVector` / `IBindableVector`), created by `CollectionViewManager` and owned by no CVS, so it starts and stops grouping in place. The table holds it **weakly**: while anything holds the view, every call returns it; once nothing does, the next call creates a new one (its rules are gone). An `ICollectionView` source returns itself (WPF wraps it in a proxy), `null` returns `null`, and a non-list source (`IIterable`, `IVectorView`, `ICollectionViewFactory`) gets a new, unshared view on each call. Views are per UI thread. |
 | `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
+| `ICollectionView.Groups` (null while not grouping), the view kept when grouping starts or stops, `ItemsControl.IsGrouping` following it | `ICollectionView.CollectionGroups` of a shaping view: null while flat, else **one** `IObservableVector` for the view's lifetime; the view raises `PropertyChanged("CollectionGroups")` and then a `Reset` when grouping starts or stops; ListView, GridView, `ItemsControl` and TableView regroup the same `ItemsSource` | Implemented. A regroup is one `Reset` of `CollectionGroups`, raised once the groups are complete, then one `Reset` of the view (WPF raises `Reset` on `Groups`). WinRT `ICollectionView` has no `GroupDescriptions`, so the null/non-null switch plus `PropertyChanged` is the signal (see "Grouping keeps the view"). |
 | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
 | Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group. |
 | `ICollectionViewLiveShaping` (implemented by `ListCollectionView`) | `ICollectionViewLiveShaping`, implemented by the view a CVS creates over a vector (and by a default view) | Implemented; see "Live shaping". A separate interface, as in WPF, rather than members on `ICollectionViewShaping`. |
@@ -236,14 +237,21 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   triggers a **full recompute** and one `Reset`. `Refresh()` always recomputes fully. Plain `IVector` sources need
   `Refresh()`. `IIterable`-only sources are snapshotted, so re-set `Source`.
 - **Descriptor changes.** A change to `SortDescriptions`, `GroupDescriptions` or `Filter` reshapes an already
-  shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. When flat shaping first
+  shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. When shaping first
   starts on a `View` that already answers `ICollectionViewShaping`, that same `View` is retargeted to the shaped
-  output (one `Reset`; currency follows the item). A new `View` is created only when shaping first starts on any
-  other view, or when output switches between flat and grouped, the same way changing `IsSourceGrouped` does today
-  (controls read `CollectionGroups` once per `ItemsSource`; see "Architecture"). Clearing every descriptor of a flat
-  shaped view keeps that view, in
-  source order; clearing the last `GroupDescription` returns a new `View` (unshaped if no sort or filter remains).
-  Wrap several changes in `DeferRefresh()` to recompute (and raise `Reset`) once.
+  output (one `Reset`; currency follows the item). Adding the first or removing the last `GroupDescription` also keeps
+  the `View` (see "Grouping keeps the view"). A new `View` is created only when shaping first starts on a view that
+  cannot shape (an `IIterable` or `IVectorView` source), or when `IsSourceGrouped` changes. Clearing every descriptor
+  keeps the view, in source order. Wrap several changes in `DeferRefresh()` to recompute (and raise `Reset`) once.
+- **Grouping keeps the view** (WPF keeps its `ListCollectionView` and switches `Groups` between null and a group
+  collection). On a shaping view, `CollectionGroups` is null while the view is flat and, while it groups, one
+  `IObservableVector` object for the whole life of the view. Grouping starts or stops in place: the view switches
+  its items and `CollectionGroups`, raises `PropertyChanged("CollectionGroups")`, then one `Reset` (a consumer that
+  reacts to the property change reads the new items with the new groups). A regroup (a rule change, `Refresh()`, a
+  source `Reset`) raises one `Reset` on `CollectionGroups` once every group is built, then one `Reset` on the view.
+  When grouping stops, the group collection is emptied (one `Reset`) after the view's `Reset`, so it holds no items.
+  Views that do not shape (`IsSourceGrouped`, factory and app views) keep their behavior: an `IsSourceGrouped`
+  change still gives the CVS a new `View`, and their `CollectionGroups` changes are raised as before.
 - **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
   Otherwise the view moves to the first item. A rebuilt `View` starts at the first item, as today.
 - **Live shaping** (WPF `ICollectionViewLiveShaping`, `ListCollectionView.RestoreLiveShaping`). With `IsLiveSorting`,
@@ -305,8 +313,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
 7. **Property paths use the framework's `PropertyPathListener`**, the same way `GroupedDataCollectionView` resolves
    `ItemsPath` (`GroupedDataCollectionView_Partial.cpp:302-323`). Paths therefore resolve exactly like `{Binding}`.
 8. **Rebuild on descriptor change** copies `OnIsSourceGroupedChanged` → `EnsureView`
-   (`CollectionViewSource_Partial.cpp:73`, `:122`), but only to start shaping a view that cannot shape or to switch
-   between flat and grouped output. Otherwise the shaped view is reshaped in place.
+   (`CollectionViewSource_Partial.cpp:73`, `:122`), but only to start shaping a view that cannot shape. Otherwise
+   the shaped view is reshaped in place, including when grouping starts or stops.
 9. **`ICollectionViewShaping` is an optional interface on the view**, not a change to the frozen `ICollectionView`.
    It follows the `ICollectionViewFactory` / `ISupportIncrementalLoading` pattern of QI-able capabilities.
    `VectorCollectionView` implements it directly, and `QueryInterfaceImpl` answers it only when a CVS created the
@@ -336,10 +344,12 @@ As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over 
 - **`DeferRefresh`.** The level lives on the view. A deferral taken on the CVS takes one on its view while any CVS
   deferral is open (also on a view created while one is open), so deferrals from either side batch together.
 - **Flat and grouped in one class.** A shaping view presents flat output directly and grouped output through an
-  internal `GroupedDataCollectionView` over its `InternalList`, whose `CollectionGroups` it exposes. When the CVS
-  publishes the view, switching between flat and grouped output still gives the CVS a new `View`: ListView, GridView,
-  `ItemsControl` and TableView read `CollectionGroups` once per `ItemsSource`, so a view that started or stopped
-  grouping in place would not be regrouped by them. A view no CVS publishes (its CVS was collected) switches in place.
+  internal `GroupedDataCollectionView` over its group list, whose `CollectionGroups` it exposes. Each of the two
+  output lists and the grouped presentation is created once, so switching between flat and grouped output keeps the
+  view and its `CollectionGroups` object; the switch is announced with `PropertyChanged("CollectionGroups")` and a
+  `Reset` (see "Grouping keeps the view"). The grouped presentation rebuilds `CollectionGroups` as one `Reset`
+  (`GroupedDataCollectionView::SetRaisesSingleGroupsReset`); an `IsSourceGrouped` view's presentation still clears
+  and refills its groups one notification at a time, as before.
 
 ### Internal names follow WPF
 
@@ -372,12 +382,18 @@ WinUI classes and keep their names.
 
 ## How controls consume it
 
-- **ListView / GridView / ItemsControl.** Unchanged. They read `ICollectionView.CollectionGroups` when a `GroupStyle`
+- **ListView / GridView / ItemsControl.** They read `ICollectionView.CollectionGroups` when a `GroupStyle`
   is set (`ItemsControl_Partial.cpp:2658`, `ItemContainerGenerator_Partial.cpp:1978`,
   `ModernCollectionBasePanel_CacheManager_Partial.cpp:146`). The group header's DataContext is the computed group, so
-  `{Binding Key}` works.
+  `{Binding Key}` works. When `ItemsSource` is a shaping view (`ICollectionViewShaping`), `ItemsControl` also listens
+  to its `PropertyChanged("CollectionGroups")` and clears its containers as for a new `ItemsSource`
+  (`ItemsControl::OnCollectionViewPropertyChanged`); the next measure re-registers the items host, which subscribes
+  to the new `CollectionGroups` and re-evaluates `IsGrouping` and the group header layout, and the view's `Reset`
+  that follows regenerates the items with or without groups (WPF: `ItemsControl.IsGrouping` follows the view's
+  groups). Other `ICollectionView`s are not listened to, so their behavior is unchanged.
 - **SemanticZoom.** The zoomed-out view reads the same `CollectionGroups`
-  (`ListViewBase_Partial_SemanticZoomInformation.cpp:386`).
+  (`ListViewBase_Partial_SemanticZoomInformation.cpp:386`); a binding to `View.CollectionGroups` follows the
+  property change.
 - **TableView.** See the end-to-end story below.
 
 ## End to end: TableView on a shaped CollectionViewSource
@@ -482,8 +498,12 @@ filters or groups; the view never flattens, because expansion state is per contr
   reach the rows unchanged. After a header sort on a plain `ObservableCollection`, an `Add` arrives as one `Add` at
   its sorted position, not a `Reset`.
 - **Grouped view** (`CollectionGroups` is not null): the flattener reads each view group's `GroupItems` as they are
-  and emits a header row (`GroupedEntry`) plus the group's data rows. It re-reads `CollectionGroups` one dispatcher
-  turn after they change, once the view has finished regrouping. Expansion is keyed by the group's key value.
+  and emits a header row (`GroupedEntry`) plus the group's data rows. A shaping view's regroup (one `Reset` of
+  complete groups) is read at once; a group added or removed one at a time, and any other view's group changes
+  (an `IsSourceGrouped` view clears and refills its groups), are read one dispatcher turn later, once the view has
+  finished. When the view starts or stops grouping (`PropertyChanged("CollectionGroups")`), the same flattener
+  switches between flat and grouped rows; `ItemsSource` is not reassigned. Expansion is keyed by the group's key
+  value, so a collapsed group stays collapsed across a regroup and across grouping off and on.
 - **Tree** (`ItemKeyPath` / `ParentKeyPath`): the view's items, in the view's order, are indexed by key and parent key
   (`ParentKeyIndex`) and nested by the flattener; under a grouped view each root is placed in the group that holds
   it. The tree is rebuilt when the view changes.
@@ -559,8 +579,10 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 
 - **Codegen.** Generated outputs were first hand-written, then regenerated with `dxaml\xcp\runcodegen.cmd`
   (`a78612b94`, and again for `ICollectionViewShaping`). See "Regeneration" below.
-- **Flat/grouped switch.** Adding the first or removing the last `GroupDescription` gives the CVS a new `View`, so a
-  control bound to the old `View` must be given the new one (the sample reassigns `ItemsSource`).
+- **Flat/grouped switch.** Adding the first or removing the last `GroupDescription` keeps `View`; ListView, GridView
+  and `ItemsControl` regenerate their containers as for a new `ItemsSource` (scroll position and realized containers
+  are not kept, as after a `Reset`). A custom control that read `CollectionGroups` once per `ItemsSource` must listen
+  to the view's `PropertyChanged("CollectionGroups")`. Changing `IsSourceGrouped` still gives the CVS a new `View`.
 - **Reorder.** `ListViewBase` drag-reorder calls `RemoveAt` / `InsertAt` on the items source
   (`ListViewBase_Partial_Reorder.cpp:1498-1499`). Shaped views are read-only, the same as `IsSourceGrouped` views
   today, so set `CanReorderItems="False"`. WPF also blocks reorder on sorted views.
@@ -640,7 +662,7 @@ collections),
 `BindingIntegrationTests::CollectionViewShapingInterface` covers `ICollectionViewShaping`: offered by a descriptor-less
 flat view and not by an `IsSourceGrouped` view; starting shaping through it keeps the same view (one `Reset`, currency
 kept); offered by flat and grouped shaped views; shared descriptor collections; sort, `Filter` and `Refresh()` through
-the view reshaping the same view in place; and the grouped-view switch.
+the view reshaping the same view in place; and grouping through the view keeping that view.
 
 The capabilities added after the first POC each have a test in the same class:
 
@@ -685,6 +707,21 @@ checked:
   after remove, replace, source `Reset`, turning live shaping off or the CVS letting go of the view.
 - `CollectionViewLiveShapingDeferRefresh`: live changes wait for the deferral, then are restored incrementally; with a
   rule change pending, closing recomputes once.
+
+Grouping keeps the view (phase C):
+
+- `BindingIntegrationTests::CollectionViewSourceGroupingKeepsView`: grouping on, a regroup by sort and by
+  description (under `DeferRefresh`), grouping off and on again keep `View` and its `CollectionGroups` object; a
+  switch raises `PropertyChanged("CollectionGroups")` before the view's `Reset`; a regroup raises one `Reset` on
+  `CollectionGroups` (groups complete) and then one on the view; a source add stays incremental; ungrouping empties
+  the group collection.
+- `MoCoGroupingIntegrationTests::ListViewFollowsCollectionViewSourceGrouping` and
+  `GridViewFollowsCollectionViewSourceGrouping` (`dxaml/test/native/external/controls/moco`): with the CVS `View` as
+  `ItemsSource`, the control shows no headers, then three headers and `IsGrouping` after grouping on, follows a
+  regroup, shows flat items after grouping off and groups again, all with the same `ItemsSource`.
+- `TableView_DataBinding_APITests.VerifyCollectionViewGroupingToggleKeepsView`: TableView keeps the view as
+  `ItemsSource`, shows group rows after grouping on, shows a regroup before the dispatcher runs with a collapsed group
+  kept collapsed, shows flat rows after grouping off and groups again with the expansion kept.
 
 `TableView_DataBinding_APITests` (`controls\dev\TableView\APITests`) covers the end-to-end story:
 

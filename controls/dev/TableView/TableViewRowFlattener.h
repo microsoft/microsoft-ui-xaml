@@ -133,13 +133,13 @@ private:
 
     // Rebuilds for the current declaration; coalesces requests raised while it runs.
     void Update();
-    // Under a grouped view: rebuilds on a later dispatcher turn, once the view has finished regrouping.
+    // Under a grouped view: rebuilds on a later dispatcher turn, once the view has finished moving items.
     void ScheduleUpdate();
     void UpdateCore();
     void UpdateTree(Kind kind);
     std::vector<winrt::IInspectable> ReadViewItems() const;
     void ReleaseTree();
-    void OnViewChanged();
+    void OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
     void RaiseRowsChanged() const;
     void AssertOnUiThread() const;
     void SetKind(Kind kind, winrt::ItemsSourceView const& rows);
@@ -157,7 +157,9 @@ private:
         // GroupItems are its subgroups above the bottom level.
         winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup Inner{ nullptr };
     };
-    void OnViewGroupsChanged();
+    // Follows the view's CollectionGroups object; true when it changed (the view started or stopped grouping).
+    bool AttachViewGroups();
+    void OnViewGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
     void ReadViewGroupsNow() noexcept;
     void ReadViewGroups();
     void OnViewGroupSetChanged();
@@ -231,6 +233,10 @@ private:
 
     winrt::Microsoft::UI::Xaml::Data::ICollectionView m_view{ nullptr };
     winrt::event_token m_viewChangedToken{};
+    winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged m_viewNotify{ nullptr };
+    winrt::event_token m_viewPropertyChangedToken{};
+    // The view implements ICollectionViewShaping: it raises a regroup as one Reset of complete groups.
+    bool m_isShapingView{ false };
     // Affinity assertion only (chk).
     winrt::weak_ref<winrt::Microsoft::UI::Dispatching::DispatcherQueue> m_uiQueue{ nullptr };
 

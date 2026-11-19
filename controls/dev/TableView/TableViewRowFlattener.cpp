@@ -165,6 +165,10 @@ TableViewRowFlattener::~TableViewRowFlattener()
     {
         ShapingHelpers::SafeRevokeWith([&] { m_view.VectorChanged(m_viewChangedToken); });
     }
+    if (m_viewNotify && m_viewPropertyChangedToken.value)
+    {
+        ShapingHelpers::SafeRevokeWith([&] { m_viewNotify.PropertyChanged(m_viewPropertyChangedToken); });
+    }
     if (m_viewGroups && m_viewGroupsChangedToken.value)
     {
         ShapingHelpers::SafeRevokeWith([&] { m_viewGroups.VectorChanged(m_viewGroupsChangedToken); });
@@ -199,19 +203,70 @@ void TableViewRowFlattener::AssertOnUiThread() const
 void TableViewRowFlattener::Start()
 {
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
+    m_isShapingView = static_cast<bool>(m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>());
+    AttachViewGroups();
+
+    // A shaping view keeps its identity when it starts or stops grouping (WPF): CollectionGroups turns
+    // non-null or null and PropertyChanged("CollectionGroups") is raised before the view's Reset.
+    if (auto const notify = m_view.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>())
+    {
+        m_viewNotify = notify;
+        m_viewPropertyChangedToken = notify.PropertyChanged(
+            [weakThis](winrt::IInspectable const&, winrt::Microsoft::UI::Xaml::Data::PropertyChangedEventArgs const& args)
+            {
+                if (auto strongThis = weakThis.lock(); strongThis && args.PropertyName() == L"CollectionGroups")
+                {
+                    if (strongThis->AttachViewGroups())
+                    {
+                        strongThis->Update();
+                    }
+                }
+            });
+    }
+
+    m_viewChangedToken = m_view.VectorChanged(
+        [weakThis](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
+            winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
+        {
+            if (auto strongThis = weakThis.lock())
+            {
+                strongThis->OnViewChanged(args.CollectionChange());
+            }
+        });
+
+    Update();
+}
+
+bool TableViewRowFlattener::AttachViewGroups()
+{
+    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
     try
     {
-        if (auto const groups = m_view.CollectionGroups())
+        auto const groups = m_view.CollectionGroups();
+        if (groups == m_viewGroups)
+        {
+            return false;
+        }
+
+        if (m_viewGroups && m_viewGroupsChangedToken.value)
+        {
+            ShapingHelpers::SafeRevokeWith([&] { m_viewGroups.VectorChanged(m_viewGroupsChangedToken); });
+        }
+        m_viewGroups = nullptr;
+        m_viewGroupsChangedToken = {};
+        m_groups.clear();
+
+        if (groups)
         {
             m_viewGroups = groups;
             ReadViewGroups();
             m_viewGroupsChangedToken = groups.VectorChanged(
                 [weakThis](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
-                    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const&)
+                    winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const& args)
                 {
                     if (auto strongThis = weakThis.lock())
                     {
-                        strongThis->OnViewGroupsChanged();
+                        strongThis->OnViewGroupsChanged(args.CollectionChange());
                     }
                 });
         }
@@ -224,18 +279,7 @@ void TableViewRowFlattener::Start()
         m_viewGroupsChangedToken = {};
         m_groups.clear();
     }
-
-    m_viewChangedToken = m_view.VectorChanged(
-        [weakThis](winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const&,
-            winrt::Windows::Foundation::Collections::IVectorChangedEventArgs const&)
-        {
-            if (auto strongThis = weakThis.lock())
-            {
-                strongThis->OnViewChanged();
-            }
-        });
-
-    Update();
+    return true;
 }
 
 void TableViewRowFlattener::SetHierarchy(ShapingHelpers::KeySelector const& keySelector, ShapingHelpers::KeySelector const& parentKeySelector)
@@ -589,7 +633,7 @@ void TableViewRowFlattener::ReleaseTree()
     }
 }
 
-void TableViewRowFlattener::OnViewChanged()
+void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
 {
     // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items.
     if (m_kind == Kind::Tree)
@@ -598,7 +642,16 @@ void TableViewRowFlattener::OnViewChanged()
     }
     else if (m_kind == Kind::GroupedTree)
     {
-        ScheduleUpdate();
+        // A shaping view's Reset comes after its groups are complete; any other change may arrive while
+        // the view is still moving items between its groups.
+        if (m_isShapingView && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset)
+        {
+            Update();
+        }
+        else
+        {
+            ScheduleUpdate();
+        }
     }
 }
 
@@ -764,11 +817,19 @@ std::unordered_map<uintptr_t, winrt::hstring> TableViewRowFlattener::GroupIdenti
     return identityByItem;
 }
 
-void TableViewRowFlattener::OnViewGroupsChanged()
+void TableViewRowFlattener::OnViewGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
 {
-    // A view replaces its groups in several notifications (CollectionViewSource clears and refills them on
-    // a recompute). Read them once it has finished, so the grouped rows never see a partial group set: that
-    // would drop the expansion state of the groups missing from it.
+    // A shaping view rebuilds its groups as one Reset raised once they are complete, so it is read now.
+    if (m_isShapingView && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset)
+    {
+        ReadViewGroupsNow();
+        return;
+    }
+
+    // Other views replace their groups in several notifications (an IsSourceGrouped CollectionViewSource
+    // clears and refills them), and a shaping view adds or removes a group before its items follow. Read
+    // them once the view has finished, so the grouped rows never see a partial group set: that would drop
+    // the expansion state of the groups missing from it.
     if (m_readGroupsQueued)
     {
         return;

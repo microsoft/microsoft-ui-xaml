@@ -1653,40 +1653,38 @@ _Check_return_ HRESULT VectorCollectionView::OnShapingRulesChanged()
         return S_OK;
     }
 
-    // Controls read CollectionGroups once per ItemsSource, so when a CollectionViewSource publishes this view,
-    // switching between flat and grouped output gives it a new View, as changing IsSourceGrouped does.
-    if (isGrouping != m_isGrouping && m_hostRef)
-    {
-        ctl::ComPtr<xaml_data::ICollectionViewSource> spHost;
-        bool isHandled = false;
-        IFC_RETURN(m_hostRef.As(&spHost));
-        if (spHost)
-        {
-            IFC_RETURN(static_cast<CollectionViewSource*>(spHost.Get())->OnShapingViewGroupingChanged(this, &isHandled));
-            if (isHandled)
-            {
-                return S_OK;
-            }
-        }
-    }
-
     IFC_RETURN(StartShaping(isGrouping));
     return S_OK;
 }
 
-// Computes the output into a new InternalList and presents it: flat, or through a GroupedDataCollectionView.
-// Announced as one Reset; currency follows the item.
+// Computes the output into the view's flat or group list and presents it, announced as one Reset; currency
+// follows the item. As in WPF, starting or stopping grouping keeps the view and its CollectionGroups object:
+// CollectionGroups turns non-null or null, PropertyChanged("CollectionGroups") is raised, then the Reset.
 _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
 {
-    ctl::ComPtr<InternalList> spOutput;
     ctl::ComPtr<wfc::IVector<IInspectable*>> spPreviousOutput = m_tpInternalList.Get();
     const bool wasGrouping = m_isGrouping;
     HRESULT hr = S_OK;
 
-    IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(spOutput.ReleaseAndGetAddressOf()));
+    if (isGrouping && !m_tpGroupList)
+    {
+        ctl::ComPtr<InternalList> spGroupList;
+        ctl::ComPtr<xaml_data::ICollectionView> spGrouped;
+        IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(spGroupList.ReleaseAndGetAddressOf()));
+        IFC_RETURN(GroupedDataCollectionView::CreateInstance(spGroupList.Get(), nullptr /* pItemsPath */, spGrouped.ReleaseAndGetAddressOf()));
+        static_cast<GroupedDataCollectionView*>(spGrouped.Get())->SetRaisesSingleGroupsReset();
+        SetPtrValue(m_tpGroupList, static_cast<wfc::IVector<IInspectable*>*>(spGroupList.Get()));
+        SetPtrValue(m_tpGroupedPresentation, spGrouped.Get());
+    }
+    else if (!isGrouping && !m_tpFlatList)
+    {
+        ctl::ComPtr<InternalList> spFlatList;
+        IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(spFlatList.ReleaseAndGetAddressOf()));
+        SetPtrValue(m_tpFlatList, static_cast<wfc::IVector<IInspectable*>*>(spFlatList.Get()));
+    }
 
     m_isGrouping = isGrouping;
-    SetPtrValue(m_tpInternalList, static_cast<wfc::IVector<IInspectable*>*>(spOutput.Get()));
+    SetPtrValue(m_tpInternalList, isGrouping ? m_tpGroupList.Get() : m_tpFlatList.Get());
 
     m_isComputingShape = true;
     hr = RefreshOverride();
@@ -1702,17 +1700,19 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
     // The output is read-only, so index-based writes through the view fail instead of reordering the source.
     if (isGrouping)
     {
-        ctl::ComPtr<xaml_data::ICollectionView> spGrouped;
         ctl::ComPtr<wfc::IVector<IInspectable*>> spGroupedItems;
-        IFC_RETURN(GroupedDataCollectionView::CreateInstance(spOutput.Get(), nullptr /* pItemsPath */, spGrouped.ReleaseAndGetAddressOf()));
-        IFC_RETURN(spGrouped.As(&spGroupedItems));
-        SetPtrValue(m_tpGroupedPresentation, spGrouped.Get());
-        IFC_RETURN(RetargetSource(spGroupedItems.Get()));
+        IFC_RETURN(m_tpGroupedPresentation.As(&spGroupedItems));
+        IFC_RETURN(RetargetSource(spGroupedItems.Get(), !wasGrouping));
     }
     else
     {
-        m_tpGroupedPresentation.Clear();
-        IFC_RETURN(RetargetSource(spOutput.Get()));
+        IFC_RETURN(RetargetSource(m_tpFlatList.Get(), wasGrouping));
+    }
+
+    // The output no longer presented lets go of its items.
+    if (spPreviousOutput && spPreviousOutput.Get() != m_tpInternalList.Get())
+    {
+        IFC_RETURN(static_cast<InternalList*>(spPreviousOutput.Get())->ReplaceAll({}));
     }
 
     if (!m_epSourceListChangedHandler)
@@ -1739,7 +1739,7 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
 
 _Check_return_ HRESULT VectorCollectionView::get_CollectionGroupsImpl(_Out_ wfc::IObservableVector<IInspectable *> **value)
 {
-    if (m_tpGroupedPresentation)
+    if (m_isGrouping && m_tpGroupedPresentation)
     {
         IFC_RETURN(m_tpGroupedPresentation->get_CollectionGroups(value));
         return S_OK;

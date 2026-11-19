@@ -366,6 +366,35 @@ Cleanup:
 
 _Check_return_
 HRESULT
+GroupedDataCollectionView::CalculateGroupsAsOneReset()
+{
+    UINT nSize = 0;
+    std::vector<ctl::ComPtr<IInspectable>> groups;
+    ctl::ComPtr<wfc::IObservableVector<IInspectable *>> spGroups;
+
+    IFC_RETURN(get_CollectionGroups(&spGroups));
+
+    IFC_RETURN(m_tpSource->get_Size(&nSize));
+    groups.reserve(nSize);
+    for (UINT i = 0; i < nSize; i++)
+    {
+        ctl::ComPtr<IInspectable> spGroup;
+        ctl::ComPtr<ICollectionViewGroup> spCVG;
+        IFC_RETURN(m_tpSource->GetAt(i, &spGroup));
+        IFC_RETURN(CalculateCollectionViewGroup(spGroup.Get(), &spCVG));
+        groups.push_back(ctl::as_iinspectable(spCVG.Get()));
+    }
+
+    ClearGroupsOwner();
+
+    // A handler of the Reset may read the items, so their count is recalculated.
+    m_nNumberOfItemsInAllGroups = cNumberOfItemsNotCached;
+    IFC_RETURN(spGroups.Cast<ReadOnlyObservableTrackerCollection<IInspectable *>>()->InternalReplaceAll(groups));
+    return S_OK;
+}
+
+_Check_return_
+HRESULT
 GroupedDataCollectionView::CalculateCollectionViewGroup(
     _In_ IInspectable *pGroup,
     _Outptr_ ICollectionViewGroup **ppCVG)
@@ -521,7 +550,14 @@ GroupedDataCollectionView::OnGroupsChange(_In_ wfc::IVectorChangedEventArgs *pAr
 
     case wfc::CollectionChange_Reset:
         // The group collections has totally changed, recalculate the entire set of groups
-        IFC(CalculateGroups());
+        if (m_raisesSingleGroupsReset)
+        {
+            IFC(CalculateGroupsAsOneReset());
+        }
+        else
+        {
+            IFC(CalculateGroups());
+        }
         IFC(NotifyOfGroupChange(0, change));
         break;
     }

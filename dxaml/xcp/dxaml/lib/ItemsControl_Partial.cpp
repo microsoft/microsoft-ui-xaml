@@ -67,6 +67,8 @@ ItemsControl::~ItemsControl()
     }
 
     m_tpDisplayMemberTemplate.Clear();
+
+    DetachCollectionViewGroupingHandler();
 }
 
 // Prepares object's state.
@@ -207,6 +209,7 @@ _Check_return_
 {
     ctl::ComPtr<wfc::IIterable<IInspectable*>> spSource;
     ctl::ComPtr<IInspectable> newValue(pNewValue);
+    DetachCollectionViewGroupingHandler();
     // Give all the existing visual children a chance to clean up in ClearContainerForItemOverride().
     IFC_RETURN(ClearContainers(/*bHostIsReplaced*/ FALSE));
 
@@ -257,6 +260,64 @@ _Check_return_
     IFC_RETURN(get_Items(&spItems));
     IFC_RETURN(spItems.Cast<ItemCollection>()->UpdateItemsSourceList(spSource.Get()));
 
+    IFC_RETURN(AttachCollectionViewGroupingHandler(pNewValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT ItemsControl::AttachCollectionViewGroupingHandler(_In_opt_ IInspectable* pSource)
+{
+    DetachCollectionViewGroupingHandler();
+
+    if (!pSource || !ctl::is<xaml_data::ICollectionView>(pSource) || !ctl::is<xaml_data::ICollectionViewShaping>(pSource))
+    {
+        return S_OK;
+    }
+
+    auto spNotify = ctl::query_interface_cast<xaml_data::INotifyPropertyChanged>(pSource);
+    if (!spNotify)
+    {
+        return S_OK;
+    }
+
+    SetPtrValue(m_tpCollectionViewForGrouping, spNotify.Get());
+    IFC_RETURN(m_epCollectionViewPropertyChangedHandler.AttachEventHandler(spNotify.Get(),
+        [this](IInspectable*, xaml_data::IPropertyChangedEventArgs* pArgs)
+        {
+            auto pegThis = ctl::try_make_autopeg(this);
+            if (pegThis)
+            {
+                IFC_RETURN(OnCollectionViewPropertyChanged(pArgs));
+            }
+            return S_OK;
+        }));
+    return S_OK;
+}
+
+void ItemsControl::DetachCollectionViewGroupingHandler()
+{
+    if (m_epCollectionViewPropertyChangedHandler)
+    {
+        auto spNotify = m_tpCollectionViewForGrouping.GetSafeReference();
+        if (spNotify)
+        {
+            VERIFYHR(m_epCollectionViewPropertyChangedHandler.DetachEventHandler(spNotify.Get()));
+        }
+        else
+        {
+            m_epCollectionViewPropertyChangedHandler = ctl::EventPtr<PropertyChangedEventCallback>();
+        }
+    }
+    m_tpCollectionViewForGrouping.Clear();
+}
+
+_Check_return_ HRESULT ItemsControl::OnCollectionViewPropertyChanged(_In_ xaml_data::IPropertyChangedEventArgs* pArgs)
+{
+    wrl_wrappers::HString name;
+    IFC_RETURN(pArgs->get_PropertyName(name.GetAddressOf()));
+    if (wrl_wrappers::HStringReference(L"CollectionGroups") == name.Get())
+    {
+        IFC_RETURN(ClearContainers(/*bHostIsReplaced*/ FALSE));
+    }
     return S_OK;
 }
 
