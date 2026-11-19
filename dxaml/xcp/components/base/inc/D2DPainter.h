@@ -33,6 +33,11 @@ namespace RenderingBackend
 
         virtual D2DResourceCounters GetResourceCounters() const noexcept = 0;
 
+        // Bytes the last EndFrame copied from the painter's target into the attached swap chain's back buffer (damage
+        // rects clipped to the target, times 4), in both modes; 0 for offscreen frames. On WARP this equals
+        // ResourceInventory::uploadBytesThisFrame; on a hardware device it is a GPU-local copy and is not an upload.
+        virtual uint64_t GetPresentCopyBytesThisFrame() const noexcept = 0;
+
         // SetPresentationSwapChain is on IImmediatePainter; for D2D the swap chain must be on GetD3DDevice's device.
     };
 

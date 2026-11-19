@@ -7,15 +7,14 @@
 
 namespace RenderingBackendTests
 {
-    // D2D-SW (Direct2D on WARP) behavior that the backend-neutral PainterConformanceTests do not cover. Painter tests
-    // are red (E_NOTIMPL) until the D2D painter lands; the "Infrastructure" tests check the test seams themselves and
-    // pass today.
+    // D2D-SW (Direct2D on WARP) behavior that the backend-neutral PainterConformanceTests do not cover. The
+    // "Infrastructure" tests check the test seams themselves.
     class D2DSoftwarePainterTests
     {
         BEGIN_TEST_CLASS(D2DSoftwarePainterTests)
         END_TEST_CLASS()
 
-        // Infrastructure (green now).
+        // Infrastructure.
         TEST_METHOD(RejectsInvalidArguments);
         TEST_METHOD(WarpSupportsCompositionSwapChain);
         TEST_METHOD(DeviceRemovalCanBeSimulatedOnWarp);
