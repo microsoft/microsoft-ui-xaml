@@ -93,7 +93,7 @@
                 <ComboBox x:Name="Matches" x:Uid="SnapshotMatches" Grid.Column="1"
                           HorizontalAlignment="Stretch" SelectionChanged="Matches_SelectionChanged">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SnapshotTreeNode">
+                        <DataTemplate x:DataType="views:SnapshotTreeLabel">
                             <TextBlock Text="{x:Bind Label}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>

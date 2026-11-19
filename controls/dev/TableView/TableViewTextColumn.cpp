@@ -6,7 +6,38 @@
 #include "TableViewTextColumn.h"
 #include "TableView.h"
 #include "TableViewAutomationHelpers.h"
+#include "TableViewRow.h"
+#include "TableViewFocusHelpers.h"
+#include "TableViewFallbackMetrics.h"
+#include "GlobalDependencyProperty.h"
 #include "SharedHelpers.h"
+
+#include <winrt/Windows.UI.Xaml.Interop.h>
+
+namespace
+{
+    GlobalDependencyProperty s_generatedFontSizeProperty{ nullptr };
+
+    winrt::DependencyProperty GeneratedFontSizeProperty()
+    {
+        if (!s_generatedFontSizeProperty)
+        {
+            s_generatedFontSizeProperty = InitializeDependencyProperty(
+                L"TableViewGeneratedFontSize",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TableViewTextColumn>(),
+                true /* isAttached */,
+                winrt::box_value(0.0),
+                nullptr /* propertyChangedCallback */);
+        }
+        return s_generatedFontSizeProperty;
+    }
+}
+
+void TableViewTextColumn::ClearProperties()
+{
+    s_generatedFontSizeProperty = nullptr;
+}
 
 TableViewTextColumn::TableViewTextColumn()
 {
@@ -36,15 +67,26 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     // Cell content is left-aligned and vertically centered within the row (standard grid look).
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     // FontWeight stays unset so a TableView/app value inherits.
-    textBlock.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    // Density-aware built-in cell padding (Standard = 8,4,8,4 = unchanged default).
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback;
+    textBlock.FontSize(fontSize);
+    textBlock.SetValue(GeneratedFontSizeProperty(), winrt::box_value(fontSize));
+    textBlock.RegisterPropertyChangedCallback(winrt::TextBlock::FontSizeProperty(),
+        [](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            auto const text = sender.as<winrt::TextBlock>();
+            auto const stamp = text.ReadLocalValue(GeneratedFontSizeProperty()).try_as<winrt::IReference<double>>();
+            if (stamp && (text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()) || text.FontSize() != stamp.Value()))
+            {
+                text.ClearValue(GeneratedFontSizeProperty());
+            }
+        });
     if (owner)
     {
-        textBlock.Padding(winrt::get_self<TableView>(owner)->GetDensityCellPadding());
+        textBlock.Padding(winrt::get_self<TableView>(owner)->GetDisplayCellPadding());
     }
     else
     {
-        textBlock.Padding(winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
+        textBlock.Padding(TableViewDetails::GetDensityFallbackMetrics().textPadding);
     }
     textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
 
@@ -54,6 +96,88 @@ winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::II
     }
 
     return textBlock;
+}
+
+void TableViewTextColumn::RefreshGeneratedFontSize(winrt::TextBlock const& text, double fontSize)
+{
+    auto const property = GeneratedFontSizeProperty();
+    auto const stamp = text.ReadLocalValue(property).try_as<winrt::IReference<double>>();
+    if (!stamp)
+    {
+        return;
+    }
+    auto const localFont = text.ReadLocalValue(winrt::TextBlock::FontSizeProperty()).try_as<winrt::IReference<double>>();
+    if (!localFont || localFont.Value() != stamp.Value() || text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()))
+    {
+        text.ClearValue(property);
+        return;
+    }
+    if (text.FontSize() != fontSize)
+    {
+        // Update ownership before FontSize so our own callback does not mistake the restamp for an app override.
+        text.SetValue(property, winrt::box_value(fontSize));
+        text.FontSize(fontSize);
+    }
+}
+
+void TableViewTextColumn::RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner)
+{
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback;
+    if (editor.FontSize() != fontSize)
+    {
+        editor.FontSize(fontSize);
+    }
+    auto padding = owner
+        ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding()
+        : TableViewDetails::GetDensityFallbackMetrics().textPadding;
+    for (auto parent = winrt::VisualTreeHelper::GetParent(editor); parent;
+        parent = winrt::VisualTreeHelper::GetParent(parent))
+    {
+        if (auto const row = parent.try_as<winrt::TableViewRow>())
+        {
+            padding = TableViewDetails::OffsetContentPadding(
+                padding, winrt::get_self<TableViewRow>(row)->GetContentVerticalOffset());
+            break;
+        }
+    }
+    const auto border = editor.BorderThickness();
+    auto editorPadding = winrt::ThicknessHelper::FromLengths(
+        std::max(0.0, padding.Left - border.Left),
+        std::max(0.0, padding.Top - border.Top),
+        std::max(0.0, padding.Right - border.Right),
+        std::max(0.0, padding.Bottom - border.Bottom));
+    const auto minHeight = owner
+        ? winrt::get_self<TableView>(owner)->GetDensityRowMinHeight()
+        : TableViewDetails::GetDensityFallbackMetrics().rowMinHeight;
+    const auto contentElement = SharedHelpers::FindInVisualTreeByName(editor, L"ContentElement");
+    const auto scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
+    const auto textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
+    if (textView)
+    {
+        // Center against a fixed density target, not ActualHeight, so fallback fonts cannot grow the row cumulatively.
+        const auto line = textView.DesiredSize().Height;
+        const auto target = std::max(minHeight - border.Top - border.Bottom, line + editorPadding.Top + editorPadding.Bottom);
+        auto displayOffset = std::max(0.0, (minHeight - line - padding.Top - padding.Bottom) / 2.0);
+        if (editor.UseLayoutRounding())
+        {
+            if (auto const root = editor.XamlRoot(); root && root.RasterizationScale() > 0.0)
+            {
+                const auto scale = root.RasterizationScale();
+                displayOffset = std::round(displayOffset * scale) / scale;
+            }
+        }
+        // The centered display rounds its allocation offset; split the editor's remaining padding the same way.
+        editorPadding.Top = std::clamp(padding.Top + displayOffset - border.Top, 0.0, target - line);
+        editorPadding.Bottom = target - line - editorPadding.Top;
+    }
+    if (editor.Padding() != editorPadding)
+    {
+        editor.Padding(editorPadding);
+    }
+    if (editor.MinHeight() != minHeight)
+    {
+        editor.MinHeight(minHeight);
+    }
 }
 
 winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const winrt::IInspectable& dataItem)
@@ -79,64 +203,36 @@ winrt::FrameworkElement TableViewTextColumn::GenerateEditingElementCore(const wi
     // Match the display cell's metrics so swapping the TextBlock for the TextBox does not shift the
     // text or resize the row as the edit opens.
     textBox.VerticalAlignment(winrt::VerticalAlignment::Center);
-    textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : 14.0);
-    auto const cellPadding = owner
-        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4);
-    textBox.Padding(cellPadding);
-
-    // The template insets the text by BorderThickness, so subtract it to keep the editor as tall as the
-    // cell. It also top-aligns the line in a content area that MinHeight stretches, so pad the line
-    // into the middle of a fixed target height to keep it where the display text was.
-    textBox.Loaded([cellPadding, hooked = false](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&) mutable
-    {
-        auto const textBox = sender.as<winrt::TextBox>();
-        textBox.ApplyTemplate();
-        auto const border = textBox.BorderThickness();
-        auto const padTop = std::max(0.0, cellPadding.Top - border.Top);
-        auto const padBottom = std::max(0.0, cellPadding.Bottom - border.Bottom);
-        textBox.Padding(winrt::ThicknessHelper::FromLengths(
-            std::max(0.0, cellPadding.Left - border.Left), padTop,
-            std::max(0.0, cellPadding.Right - border.Right), padBottom));
-
-        auto const contentElement = SharedHelpers::FindInVisualTreeByName(textBox, L"ContentElement");
-        auto const scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
-        auto const textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
-        if (!textView)
+    textBox.FontSize(owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback);
+    // The TextBox template adds BorderThickness outside Padding; display text has no border.
+    // Re-evaluate when the inherited theme resolves the editor's style after attachment.
+    const auto weakOwner = owner ? winrt::make_weak(owner) : winrt::weak_ref<winrt::TableView>{};
+    textBox.RegisterPropertyChangedCallback(winrt::Control::BorderThicknessProperty(),
+        [weakOwner](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
         {
-            return;
-        }
-        auto const centerLine = [weakTextBox = winrt::make_weak(textBox), padTop, padBottom, border](winrt::IInspectable const& sender, auto const&)
+            RefreshEditorMetrics(sender.as<winrt::TextBox>(), weakOwner.get());
+        });
+    textBox.Loaded([weakOwner, hooked = false](winrt::IInspectable const& sender, winrt::RoutedEventArgs const&) mutable
         {
-            auto const textBox = weakTextBox.get();
-            if (!textBox)
+            auto const textBox = sender.as<winrt::TextBox>();
+            textBox.ApplyTemplate();
+            auto const contentElement = SharedHelpers::FindInVisualTreeByName(textBox, L"ContentElement");
+            auto const scrollViewer = contentElement ? contentElement.try_as<winrt::ScrollViewer>() : nullptr;
+            auto const textView = scrollViewer ? scrollViewer.Content().try_as<winrt::FrameworkElement>() : nullptr;
+            if (textView && !hooked)
             {
-                return;
+                textView.SizeChanged([weakTextBox = winrt::make_weak(textBox), weakOwner](winrt::IInspectable const&, auto const&)
+                    {
+                        if (auto const editor = weakTextBox.get())
+                        {
+                            RefreshEditorMetrics(editor, weakOwner.get());
+                        }
+                    });
+                hooked = true;
             }
-            double const line = sender.as<winrt::UIElement>().DesiredSize().Height;
-            auto const target = std::max(textBox.MinHeight() - border.Top - border.Bottom, line + padTop + padBottom);
-            auto const leftover = std::max(0.0, target - line);
-            auto const extra = (leftover - padTop - padBottom) / 2;
-            auto padding = textBox.Padding();
-            padding.Top = padTop + extra;
-            padding.Bottom = padBottom + extra;
-            textBox.Padding(padding);
-        };
-        if (!hooked)
-        {
-            textView.SizeChanged(centerLine);
-            hooked = true;
-        }
-        centerLine(textView, nullptr);
-    });
-
-    // The shipping TextBox style carries its own MinHeight (32px), which is taller than a Compact
-    // TableView row (30px). Left alone, opening an editor grows the row and shifts the rows below
-    // it. Clamp to the row's own minimum so the swap is visually neutral.
-    if (owner)
-    {
-        textBox.MinHeight(winrt::get_self<TableView>(owner)->GetDensityRowMinHeight());
-    }
+            RefreshEditorMetrics(textBox, weakOwner.get());
+        });
+    RefreshEditorMetrics(textBox, owner);
 
     // The consumer's Binding is reused rather than copied field-by-field so that Converter,
     // ConverterParameter, StringFormat and TargetNullValue all keep working in the editor.

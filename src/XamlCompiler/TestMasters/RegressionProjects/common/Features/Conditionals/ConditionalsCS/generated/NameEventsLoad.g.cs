@@ -282,10 +282,10 @@ namespace Conditionals
         }
 
         // Api Information for conditional namespace declarations
+        internal static bool IsTypePresentNot_ConditionalControls_V3Type = !global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("ConditionalControls.V3Type");
         internal static bool IsTypePresent_ConditionalControls_V1Type = global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("ConditionalControls.V1Type");
         internal static bool IsTypePresent_ConditionalControls_V2Type = global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("ConditionalControls.V2Type");
         internal static bool IsTypePresent_ConditionalControls_V3Type = global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("ConditionalControls.V3Type");
-        internal static bool IsTypePresentNot_ConditionalControls_V3Type = !global::Windows.Foundation.Metadata.ApiInformation.IsTypePresent("ConditionalControls.V3Type");
     }
 }
 

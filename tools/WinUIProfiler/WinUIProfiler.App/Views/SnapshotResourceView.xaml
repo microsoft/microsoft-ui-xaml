@@ -46,7 +46,7 @@
                        AutomationProperties.LiveSetting="Polite" />
             <TextBlock x:Name="Scope" x:Uid="SnapshotResourceScope" TextWrapping="Wrap"
                        Style="{StaticResource CaptionTextBlockStyle}" />
-            <ScrollViewer MaxHeight="360" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="ResourceTable" MaxHeight="360" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="8">
                     <ItemsControl x:Name="Groups">
                         <ItemsControl.ItemTemplate>
@@ -76,6 +76,10 @@
                                           HorizontalContentAlignment="Stretch" />
                         <ItemsControl x:Name="UnknownValues" ItemTemplate="{StaticResource ResourceRowTemplate}" />
                     </StackPanel>
+                    <Expander x:Uid="SnapshotTextureHeading" HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Stretch" AutomationProperties.AutomationId="TexturesGroup">
+                        <views:SnapshotTextureView x:Name="TextureSnapshot" MaxHeight="480" />
+                    </Expander>
                 </StackPanel>
             </ScrollViewer>
         </StackPanel>

@@ -438,13 +438,22 @@ void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double 
 
     const double oldExtent = scroller.ExtentHeight();
     const bool toEnd = verticalPercent >= 100.0 - 1e-9;
-    // The default element anchoring pulls the offset back whenever a re-measured row above the viewport
-    // shifts the anchor, so aiming for the end could stall short of it. Anchor at the far edge meanwhile.
+    // Keep far-edge anchoring as the extent grows, but not a row anchor that can undo the explicit
+    // scroll when re-measured. A ratio of 1 still selects row anchors before reaching the far edge.
     auto const anchorRatioProperty = winrt::ScrollViewer::VerticalAnchorRatioProperty();
     auto const localAnchorRatio = scroller.ReadLocalValue(anchorRatioProperty);
+    winrt::ScrollViewer::AnchorRequested_revoker endAnchorRequestedRevoker;
     if (toEnd)
     {
         scroller.VerticalAnchorRatio(1.0);
+        endAnchorRequestedRevoker = scroller.AnchorRequested(winrt::auto_revoke,
+            [this, request](winrt::ScrollViewer const&, winrt::AnchorRequestedEventArgs const& args)
+            {
+                if (request == m_scrollRequest)
+                {
+                    args.AnchorCandidates().Clear();
+                }
+            });
     }
     auto restoreAnchorRatio = gsl::finally([&]()
     {
@@ -452,6 +461,7 @@ void TableViewAutomationPeer::SetScrollPercent(double horizontalPercent, double 
         {
             return;
         }
+        endAnchorRequestedRevoker.revoke();
         if (localAnchorRatio == winrt::DependencyProperty::UnsetValue())
         {
             scroller.ClearValue(anchorRatioProperty);
@@ -842,7 +852,9 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
     {
         winrt::AutomationPeer peer{ nullptr };
         winrt::IInspectable item{ nullptr };
-        if (auto const view = repeater.ItemsSourceView(); view && selectedIndex < view.Count())
+        auto const view = repeater.ItemsSourceView();
+        const bool hasSelectedIndex = view && selectedIndex < view.Count();
+        if (hasSelectedIndex)
         {
             item = impl->UnwrapEditingDataItem(view.GetAt(selectedIndex));
         }
@@ -854,7 +866,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
 
         // Kept while its row is realized too, so a held item keeps one RuntimeId as it scrolls in and out.
         winrt::AutomationPeer itemPeer{ nullptr };
-        if (item)
+        if (hasSelectedIndex)
         {
             itemPeer = GetOrCreateSelectedItemPeer(*impl, item, selectedIndex, !rowElement /* create */);
         }
@@ -902,7 +914,7 @@ winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateSelectedItemPeer(Table
             return nullptr;
         }
         auto const repeater = table.GetRowsRepeaterInternal();
-        const bool byIndex = !TableView::SameInspectableIdentity(
+        const bool byIndex = !item || !TableView::SameInspectableIdentity(
             item, table.UnwrapEditingDataItem(repeater.ItemsSourceView().GetAt(index)));
         peer = winrt::make_self<TableViewRowItemAutomationPeer>(
             table.get_strong().as<winrt::TableView>(), item, index, byIndex).as<winrt::AutomationPeer>();

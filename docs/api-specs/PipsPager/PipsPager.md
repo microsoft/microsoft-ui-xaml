@@ -5,8 +5,7 @@ Instead of scrolling or panning through the content,
 users are able to page through the content with previous and next buttons or jump to specific pages. 
 
 This UI pagination behavior is supported in WinUI currently with the PagerControl. 
-(See PagerControl [spec](https://github.com/microsoft/microsoft-ui-xaml-specs/blob/user/savoyschuler/pagercontrol/active/PagerControl/PagerControl.md) 
-and PagerControl [proposal](https://github.com/microsoft/microsoft-ui-xaml/issues/60) 
+(See the PagerControl [proposal](https://github.com/microsoft/microsoft-ui-xaml/issues/60)
 for the latest updates.) The PagerControl works with page numbers in a few different formats:
 
 ![PagerControl example](images/PagerControl.jpg)
