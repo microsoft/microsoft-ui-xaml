@@ -72,6 +72,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that multiple Setters with x:Bind that have the same Property work as expected (last Setter wins)")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(MutableSetterAfterStyledElementsWereDestroyed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a mutable Setter still updates the live elements after many elements with the Style were destroyed")
+        END_TEST_METHOD()
+
 #pragma endregion
 
     private:

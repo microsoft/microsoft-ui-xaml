@@ -540,4 +540,66 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
+    void StyleWithXBindTests::MutableSetterAfterStyledElementsWereDestroyed()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
+
+        // A Style with a mutable setter lists the elements that use it. The list drops destroyed elements before it
+        // grows; the elements that are alive must still get the new setter value.
+        StackPanel^ stackPanel;
+        RunOnUIThread([&stackPanel]()
+        {
+            stackPanel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel"
+                L"  xmlns='http://schemas.microsoft.com/client/2007' "
+                L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel.Resources>"
+                L"    <Style x:Key='theStyle' TargetType='TextBlock'>"
+                L"      <Setter Property='Text' x:Name='setter0' x:ConnectionId='0' />"
+                L"    </Style>"
+                L"  </StackPanel.Resources>"
+                L"</StackPanel>"
+            ));
+
+            TestServices::WindowHelper->WindowContent = stackPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&stackPanel]()
+        {
+            auto style = safe_cast<Style^>(stackPanel->Resources->Lookup(Platform::StringReference(L"theStyle")));
+            for (unsigned int round = 0; round < 3; round++)
+            {
+                for (int i = 0; i < 300; i++)
+                {
+                    auto textBlock = ref new TextBlock();
+                    textBlock->Style = style;
+                    stackPanel->Children->Append(textBlock);
+                }
+
+                LOG_OUTPUT(L"Keep the first TextBlock of each round; the others are destroyed.");
+                while (stackPanel->Children->Size > round + 1)
+                {
+                    stackPanel->Children->RemoveAtEnd();
+                }
+            }
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&stackPanel]()
+        {
+            auto mutableSetter_Text = safe_cast<Setter^>(stackPanel->FindName(Platform::StringReference(L"setter0")));
+            auto newTextValue = Platform::StringReference(L"still listening");
+
+            mutableSetter_Text->Value = newTextValue;
+
+            VERIFY_ARE_EQUAL(3u, stackPanel->Children->Size);
+            for (unsigned int i = 0; i < stackPanel->Children->Size; i++)
+            {
+                VERIFY_ARE_EQUAL(newTextValue, safe_cast<TextBlock^>(stackPanel->Children->GetAt(i))->Text);
+            }
+        });
+    }
+
 } } } } } }
