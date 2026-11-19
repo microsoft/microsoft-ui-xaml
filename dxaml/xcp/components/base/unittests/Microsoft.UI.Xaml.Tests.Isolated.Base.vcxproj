@@ -58,6 +58,16 @@
         </Link>
     </ItemDefinitionGroup>
 
+    <!-- immediate-rendering-d2d-sw: D2D/WARP painter tests (d3d12 + D3D11On12 simulate device removal). -->
+    <ItemGroup>
+        <ClInclude Include="D2DSoftwarePainterTests.h"/>
+        <ClCompile Include="D2DSoftwarePainterTests.cpp"/>
+    </ItemGroup>
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>d2d1.lib;dwrite.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
     <ItemGroup>
         <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
         <ProjectReference Include="$(XamlSourcePath)\xcp\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj" Project="{47c659b9-130a-4eb2-b367-c556a179d0cb}"/>

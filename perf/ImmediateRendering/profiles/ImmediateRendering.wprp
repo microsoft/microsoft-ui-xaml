@@ -81,7 +81,7 @@
       </Keywords>
     </SystemProvider>
 
-    <!-- Native seam: BackendSelected, DeviceInfo, FrameBegin/End, RenderWalkStats, Paint*, ResourceInventory. -->
+    <!-- Native seam: BackendSelected, DeviceInfo, FrameBegin/End, RenderWalkStats, Paint*, ResourceInventory, DeviceLost (WARNING). -->
     <EventProvider Id="EventProvider_RenderingBackend" Name="d18ce99c-dd66-5390-18da-068546739801" Level="5" NonPagedMemory="true">
       <Keywords>
         <Keyword Value="0xF" />

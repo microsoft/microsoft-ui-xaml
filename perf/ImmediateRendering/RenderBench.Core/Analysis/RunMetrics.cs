@@ -74,7 +74,31 @@ public sealed record PhaseMetrics(
     // M3 on the adapter WinUI renders with (DeviceInfo.AdapterLuid). GpuLocalMBMedian/GpuNonLocalMBMedian stay the sum
     // over all adapters.
     double? RenderAdapterGpuLocalMBMedian = null,
-    double? RenderAdapterGpuNonLocalMBMedian = null);
+    double? RenderAdapterGpuNonLocalMBMedian = null,
+    ThreadCpuMetrics? ThreadCpu = null); // immediate-rendering-d2d-sw: W1/W2 CPU split
+
+// ---- Added by immediate-rendering-d2d-sw ----
+// CPU ms per ThreadCategory over a phase (last minus first ThreadCpuSample in the phase). Threads that start in ntdll
+// (thread pool) land in Other even when they run WARP/D2D work; use WPA CPU sampling with stacks for that attribution.
+public sealed record ThreadCpuMetrics(double WindowMs, double UiMs, double WarpRasterizerMs, double D2DDWriteMs,
+    double CompositionMs, double OtherMs)
+{
+    public double Ms(ThreadCategory category) => category switch
+    {
+        ThreadCategory.Ui => UiMs,
+        ThreadCategory.WarpRasterizer => WarpRasterizerMs,
+        ThreadCategory.D2DDWrite => D2DDWriteMs,
+        ThreadCategory.Composition => CompositionMs,
+        _ => OtherMs,
+    };
+
+    public double? MsPerSecond(ThreadCategory category) => WindowMs > 0 ? Ms(category) / (WindowMs / 1000.0) : null;
+
+    public double TotalMs => UiMs + WarpRasterizerMs + D2DDWriteMs + CompositionMs + OtherMs;
+}
+
+public sealed record ThreadModuleMetrics(string Module, string Category, int Threads, double CpuMs);
+// ---- End immediate-rendering-d2d-sw ----
 
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
@@ -92,7 +116,12 @@ public sealed record RunMetrics(
     // ---- Added by the D2D-HW branch ----
     // Set when the run was not executed (e.g. AdapterPolicy.NoHardwareAdapterReason for D2D-HW on a GPU-less machine).
     // A skipped run is neither a pass nor a gate failure.
-    string? SkipReason = null)
+    string? SkipReason = null,
+    // ---- Added by immediate-rendering-d2d-sw ----
+    IReadOnlyList<ThreadModuleMetrics>? ThreadModules = null,
+    IReadOnlyDictionary<string, string>? RasterModuleVersions = null,
+    int DeviceLostCount = 0)
+    // ---- End immediate-rendering-d2d-sw ----
 {
     public bool IsSkipped => SkipReason is not null;
     public bool GatePassed => !IsSkipped && Gate.All(g => g.Passed);

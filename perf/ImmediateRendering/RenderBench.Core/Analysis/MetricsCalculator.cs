@@ -69,8 +69,45 @@ public static class MetricsCalculator
         var gate = EvaluateGate(runStarted, records, selected, device, phaseMetrics, unsupported, options);
 
         return new RunMetrics(SchemaVersion, runStarted?.Scene ?? sceneReady?.Scene, pid, identity, startup, phaseMetrics,
-            latency, peakPrivate, peakGpu, gate);
+            latency, peakPrivate, peakGpu, gate,
+            // immediate-rendering-d2d-sw
+            ThreadModules: ThreadModules(records), RasterModuleVersions: RasterModuleVersions(records),
+            DeviceLostCount: records.OfType<DeviceLostRecord>().Count());
     }
+
+    // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----
+    static ThreadCpuMetrics? ComputeThreadCpu(BenchPhase phase, List<TraceRecord> records)
+    {
+        var samples = records.OfType<ThreadCpuSampleRecord>().Where(s => s.Phase == phase).OrderBy(s => s.TimeMs).ToList();
+        if (samples.Count < 2 || samples[^1].TimeMs <= samples[0].TimeMs)
+        {
+            return null;
+        }
+        var (first, last) = (samples[0], samples[^1]);
+        double Delta(ThreadCategory c) => Math.Max(0, last[c] - first[c]);
+        return new ThreadCpuMetrics(last.TimeMs - first.TimeMs, Delta(ThreadCategory.Ui), Delta(ThreadCategory.WarpRasterizer),
+            Delta(ThreadCategory.D2DDWrite), Delta(ThreadCategory.Composition), Delta(ThreadCategory.Other));
+    }
+
+    static IReadOnlyList<ThreadModuleMetrics>? ThreadModules(List<TraceRecord> records)
+    {
+        var modules = records.OfType<ThreadModuleSummaryRecord>()
+            .Select(m => new ThreadModuleMetrics(m.Module, m.Category, m.Threads, m.CpuMs))
+            .OrderByDescending(m => m.CpuMs)
+            .ToList();
+        return modules.Count == 0 ? null : modules;
+    }
+
+    static IReadOnlyDictionary<string, string>? RasterModuleVersions(List<TraceRecord> records)
+    {
+        var versions = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var v in records.OfType<RasterModuleVersionRecord>())
+        {
+            versions[v.Module] = v.Version;
+        }
+        return versions.Count == 0 ? null : versions;
+    }
+    // ---- End immediate-rendering-d2d-sw ----
 
     sealed record FrameSpan(uint Frame, double BeginMs, double EndMs, bool Drawn);
 
@@ -171,7 +208,8 @@ public static class MetricsCalculator
             // ---- Added by the D2D-HW branch ----
             GpuPaintMs: Distribution.From(GpuPaintMsInPhase(window, records, frames)),
             RenderAdapterGpuLocalMBMedian: Median(adapterSamples.Select(s => s.LocalBytes / MB)),
-            RenderAdapterGpuNonLocalMBMedian: Median(adapterSamples.Select(s => s.NonLocalBytes / MB)));
+            RenderAdapterGpuNonLocalMBMedian: Median(adapterSamples.Select(s => s.NonLocalBytes / MB)),
+            ThreadCpu: ComputeThreadCpu(window.Phase, records)); // immediate-rendering-d2d-sw
     }
 
     static double? ChurnPerSecond(List<TraceRecord> inPhase, PhaseWindow window, Func<ResourceChurnRecord, uint> select)

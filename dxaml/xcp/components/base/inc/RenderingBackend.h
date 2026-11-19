@@ -107,6 +107,12 @@ namespace RenderingBackend
     // while painting frameNumber. Event "ResourceChurn", Resources keyword. The analyzer reports per-phase rates.
     void TraceResourceChurn(Mode mode, uint32_t frameNumber, uint32_t created, uint32_t destroyed) noexcept;
     // ---- End: W6 resource churn ----
+
+    // ---- Added by immediate-rendering-d2d-sw ----
+    // The painter's device was removed or reset (test plan C4/T21). reason is the HRESULT the painter observed
+    // (for example DXGI_ERROR_DEVICE_REMOVED) and removedReason is ID3D11Device::GetDeviceRemovedReason().
+    void TraceDeviceLost(Mode mode, HRESULT reason, HRESULT removedReason, uint32_t frameNumber) noexcept;
+    // ---- End immediate-rendering-d2d-sw ----
 }
 
 // ---- Added by the D2D-HW branch: GPU time per paint (test plan W3) ----

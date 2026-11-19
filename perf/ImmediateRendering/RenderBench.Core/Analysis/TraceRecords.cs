@@ -48,3 +48,24 @@ public sealed record GpuPaintTimeRecord(double TimeMs, int ProcessId, uint Frame
 // Microsoft-WinUI-RenderBench GpuAdapterMemorySample: one adapter's QueryVideoMemoryInfo for the harness process.
 public sealed record GpuAdapterMemoryRecord(double TimeMs, int ProcessId, BenchPhase Phase, ulong AdapterLuid, long LocalBytes,
     long NonLocalBytes) : TraceRecord(TimeMs, ProcessId);
+// ---- Added by immediate-rendering-d2d-sw ----
+// Native: the painter's device was removed/reset (Reason/RemovedReason are HRESULTs).
+public sealed record DeviceLostRecord(double TimeMs, int ProcessId, BackendMode Mode, int Reason, int RemovedReason, uint Frame)
+    : TraceRecord(TimeMs, ProcessId);
+// Harness: cumulative CPU ms per ThreadCategory (W1/W2 CPU split).
+public sealed record ThreadCpuSampleRecord(double TimeMs, int ProcessId, BenchPhase Phase, double UiMs, double WarpRasterizerMs,
+    double D2DDWriteMs, double CompositionMs, double OtherMs, int ThreadCount) : TraceRecord(TimeMs, ProcessId)
+{
+    public double this[ThreadCategory category] => category switch
+    {
+        ThreadCategory.Ui => UiMs,
+        ThreadCategory.WarpRasterizer => WarpRasterizerMs,
+        ThreadCategory.D2DDWrite => D2DDWriteMs,
+        ThreadCategory.Composition => CompositionMs,
+        _ => OtherMs,
+    };
+}
+public sealed record ThreadModuleSummaryRecord(double TimeMs, int ProcessId, string Module, string Category, int Threads, double CpuMs)
+    : TraceRecord(TimeMs, ProcessId);
+public sealed record RasterModuleVersionRecord(double TimeMs, int ProcessId, string Module, string Version) : TraceRecord(TimeMs, ProcessId);
+// ---- End immediate-rendering-d2d-sw ----

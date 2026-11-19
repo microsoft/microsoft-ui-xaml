@@ -64,6 +64,9 @@ public static class EtlReader
                     U32(e, "Created"), U32(e, "Destroyed")),
                 // D2D-HW branch: W3 GPU paint time.
                 "GpuPaintTime" => new GpuPaintTimeRecord(t, pid, U32(e, "FrameNumber"), U64(e, "GpuMicroseconds")),
+                // Added by immediate-rendering-d2d-sw
+                "DeviceLost" => new DeviceLostRecord(t, pid, (BackendMode)U32(e, "Mode"), I32(e, "Reason"), I32(e, "RemovedReason"),
+                    U32(e, "FrameNumber")),
                 _ => null,
             };
         }
@@ -86,6 +89,13 @@ public static class EtlReader
                 // D2D-HW branch: per-adapter GPU memory.
                 "GpuAdapterMemorySample" => new GpuAdapterMemoryRecord(t, pid, (BenchPhase)I32(e, "Phase"), U64(e, "AdapterLuid"),
                     I64(e, "LocalBytes"), I64(e, "NonLocalBytes")),
+                // Added by immediate-rendering-d2d-sw
+                "ThreadCpuSample" => new ThreadCpuSampleRecord(t, pid, (BenchPhase)I32(e, "Phase"), F64(e, "UiMs"),
+                    F64(e, "WarpRasterizerMs"), F64(e, "D2DDWriteMs"), F64(e, "CompositionMs"), F64(e, "OtherMs"),
+                    I32(e, "ThreadCount")),
+                "ThreadModuleSummary" => new ThreadModuleSummaryRecord(t, pid, Str(e, "Module"), Str(e, "Category"),
+                    I32(e, "Threads"), F64(e, "CpuMs")),
+                "RasterModuleVersion" => new RasterModuleVersionRecord(t, pid, Str(e, "Module"), Str(e, "Version")),
                 _ => null,
             };
         }

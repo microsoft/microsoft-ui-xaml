@@ -207,6 +207,19 @@ Prototype status for `D2D-HW` (see `perf\ImmediateRendering\README.md`):
 - Without a qualifying hardware GPU, `D2D-HW` runs are recorded as skipped, not failed.
 - D2D-HW numbers must come from a real GPU machine.
 
+**D2D-SW readiness (prototype).** The following are in place for D2D-SW:
+
+- **Per-thread CPU split for W1/W2.** The harness emits `ThreadCpuSample`. It classifies threads by start module into
+  UI, WARP rasterizer, D2D/DWrite, composition, and other. `ntdll` thread-pool threads count as other, so attribute
+  those with Timing-profile stacks in WPA.
+- **`DeviceLost` event** on the native provider.
+- **Documented W5 copy contract.** For frames presented through a swap chain, upload bytes are damaged pixels × 4.
+  Offscreen frames report 0.
+- **WARP determinism test.** WARP output is pixel-identical across devices, so D2D-SW renders can serve as the C1
+  golden reference. The reference is pinned to the recorded `d3d10warp`/`d2d1`/`dwrite` versions.
+
+See `perf\ImmediateRendering\README.md`.
+
 ## Comparative report format
 
 For each test case, produce one table with the four modes as columns and the selected metrics as rows. Show
