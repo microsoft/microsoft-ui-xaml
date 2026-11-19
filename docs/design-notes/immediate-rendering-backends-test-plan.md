@@ -11,6 +11,7 @@ No harness, instrumentation event, or result described here exists yet unless st
 - [Run protocol](#run-protocol)
 - [Metric catalog](#metric-catalog)
 - [Test cases](#test-cases)
+- [Extended scenes](#extended-scenes)
 - [Required WinUI instrumentation](#required-winui-instrumentation)
 - [Comparative report format](#comparative-report-format)
 - [Measurement pitfalls](#measurement-pitfalls)
@@ -177,6 +178,163 @@ Run before any performance comparison for a scene is accepted.
 
 A backend that fails T24 to T26 for a scene is reported as "unsupported" or "incorrect" for that scene, and its
 performance numbers for that scene are excluded from comparisons.
+
+## Extended scenes
+
+Implemented in `perf\ImmediateRendering` (RenderBench) as scenes S3 to S10, next to S1 *settings* (T7) and S2
+*dashboard* (T8). Each is deterministic for `--seed`, runs the standard phases, and is selected with `--scene <name>`;
+per-scene defaults and variants are in the kit README ("Scenes"). The kit metrics referenced below map to the catalog:
+
+| Kit metric | Catalog id | Source |
+|---|---|---|
+| Frame interval p50/p95/p99, dropped frames (interval > 1.5 × vsync), longest gap, per phase | R2, R3 | Drawn `FrameEnd` events in the phase; refresh rate from `DisplayInfo` |
+| Long frames (`FrameBegin` → `FrameEnd` > 1.5 × vsync) | W1 | Same |
+| R1 by input kind (`click`, `wheel`, `key`, `tab`, `drag`) | R1 | `InputInjected` → next drawn frame end; SendInput runs only |
+| Programmatic change → frame | (R1 proxy) | Same, for `programmatic:` inputs; not a latency number |
+| Popup open time | R1 | Input → first drawn frame after `PopupOpened` |
+| Animation CPU ms/s during Steady | E1, W2 | Process CPU over Steady for scenes that animate while idle |
+| Memory per lifecycle step, marginal MB per window, fraction reclaimed | M1, M2 | `MemorySample` closing each `SceneStep` |
+| Scene counters (realized items/rows, image load ms, estimated decoded MB) | M1 context | `SceneValue` |
+| Unsupported content by type/detail, expected vs. unexpected | C3 | Native `UnsupportedContent` |
+
+**Input.** `--input-mode sendinput` injects real input; `programmatic` performs the same state changes through the XAML
+API at the same rate (`auto` picks programmatic outside an active console session). Programmatic runs are valid for
+frame, memory and CPU comparisons but not for R1. **Gate.** All extended scenes use the standard per-run gate, with two
+scene-specific rules: `SteadyStateIsIdle` is waived for S6, and `NoUnsupportedContent` fails only on content that isn't
+listed as expected for the scene (below). Expected unsupported content is still counted and shown in the report's
+unsupported-content row as expected, so fidelity comparisons for that scene must account for it.
+
+### S3 inbox (`inbox`, T9)
+
+- **Purpose:** scroll smoothness and virtualization churn with text-heavy list items.
+- **Content:** `ListView`, 10,000 seeded items; template: 40 px `Ellipse` avatar (solid color) with initials, sender
+  (SemiBold), subject (`CharacterEllipsis`), timestamp. Containers are filled in `ContainerContentChanging`.
+- **Interaction:** continuous scroll at 1,500 DIP/s reversing at the ends: `ChangeView` once per frame (programmatic) or
+  wheel notches at 10 Hz (SendInput).
+- **Metrics:** R2, R3 and frame interval percentiles during Interaction; W1 long frames; M1/M2/M3 (Interaction peak);
+  realized item count; W5 uploads for immediate modes.
+- **Hypothesis:** COMP keeps per-item visuals and scrolls by offsetting retained content, so its UI-thread cost is
+  realization only. Immediate modes repaint the exposed strip (or the viewport) every frame: GDIP's CPU text and
+  ellipse antialiasing is the likely bottleneck (dropped frames), D2D-HW should track COMP, D2D-SW sits between them
+  and is CPU-bound. Immediate modes should use less memory per realized item.
+- **Required features:** scroll offset (render-transform) handling with damage limited to the exposed area or a cached
+  scroll layer; text with trimming; antialiased ellipses; recycling without stale pixels (C2).
+- **Gate:** no expected unsupported content.
+
+### S4 reader (`reader`, T10, T25)
+
+- **Purpose:** rich text fidelity and the cost of selection highlight and slow scrolling.
+- **Content:** `RichTextBlock` in a `ScrollViewer`: a title and 25 seeded paragraphs mixing Segoe UI, Georgia and
+  Consolas, Normal/SemiBold/Bold weights, italics, 14–18 px sizes, and a `Hyperlink`.
+- **Interaction:** slow scroll (60 DIP/s, every frame) plus a selection change at 2 Hz (`Select` over visible text, or a
+  SendInput drag).
+- **Metrics:** R2, R3, frame interval percentiles; W1; R1 (`drag`) in SendInput runs; M1, M3; C1 on the final screenshot.
+- **Hypothesis:** glyph-run rendering dominates. GDIP's text path (GDI+ text, not DirectWrite) differs most in fidelity
+  and cost; D2D modes share DirectWrite with COMP and should match glyph shapes. Selection repaints only the selected
+  lines in immediate modes if damage is tracked per line.
+- **Required features:** multi-run text layout with mixed fonts, selection highlight, hyperlink underline/foreground,
+  vertical scrolling.
+- **Gate:** no expected unsupported content.
+
+### S5 gallery (`gallery`, variant `--decode-to-size`, T11)
+
+- **Purpose:** image decode and upload memory, and image scaling quality.
+- **Content:** `GridView` of 500 seeded 256×256 PNGs (gradients and shapes, generated once per seed under
+  `%TEMP%\RenderBench\images`) shown at 128×128. Default decodes at full size (`DecodePixelWidth` unset);
+  `--decode-to-size` sets `DecodePixelWidth = 128`.
+- **Interaction:** scroll at 800 DIP/s, plus hover zoom (`ScaleTransform` 1.1) on three visible items at 2 Hz
+  (programmatic) or real mouse moves (SendInput).
+- **Metrics:** M1, M3 peak and Recovery; estimated decoded MB; image load ms (`ImageOpened`); R2, R3; W5 uploads.
+- **Hypothesis:** COMP holds decoded images in GPU surfaces; immediate modes hold CPU bitmaps (GDIP, D2D-SW) or device
+  bitmaps (D2D-HW) and draw them scaled each repaint. Full-size decode quadruples image memory in every mode; the
+  difference between the variants isolates decode memory from rendering. GDIP scaling is the slowest and lowest quality.
+- **Required features:** `ImageBrush`/`Image` drawing with scale and the decode-size path, scale transforms on
+  realized items, image cache eviction when items recycle.
+- **Gate:** no expected unsupported content.
+
+### S6 animated (`animated`, variant `--no-progressring`, T12)
+
+- **Purpose:** the "animation tax": what an always-animating page costs when nothing else changes.
+- **Content:** `ProgressRing` (`IsActive`; drawn by `AnimatedVisualPlayer`, a Lottie Composition visual), indeterminate
+  `ProgressBar`, `InfoBar` whose `Opacity` fades forever (Storyboard, auto-reverse), an `Expander` toggled every 2 s,
+  and four `ToggleSwitch`es (knob animation). The scene animates during Steady by design.
+- **Interaction:** toggles at 1 Hz and InfoBar text updates at 0.5 Hz on top of the running animations.
+- **Metrics:** E1 animation CPU ms/s during Steady (the tax), drawn frames per second in Steady and Interaction, R2,
+  W1, M1, M3.
+- **Hypothesis:** COMP runs the ring, bar and opacity animations as independent Composition animations, so the UI
+  thread barely draws and the tax is mostly DWM/compositor work. Immediate modes must repaint each animated region on
+  the UI thread every frame (or promote it to a retained layer), so their tax is much higher; GDIP and D2D-SW pay it in
+  CPU. `--no-progressring` removes the Lottie content that immediate modes can't paint.
+- **Required features:** render-loop ticking for independent animations (opacity, transform), damage per animated
+  element, retained-layer promotion or an unsupported report for Composition-only visuals.
+- **Gate:** `SteadyStateIsIdle` waived (detail notes the animation tax). Expected unsupported content: types containing
+  `AnimatedVisualPlayer` or `ProgressRing` (default variant only). In `--no-progressring` nothing is expected.
+
+### S7 layered (`layered`, T5, T14)
+
+- **Purpose:** group-opacity correctness and how immediate modes treat Composition-only effects.
+- **Content:** `MicaBackdrop` window backdrop with a transparent root; an `AcrylicBrush` card over colored ellipses;
+  two `ThemeShadow` cards (`Translation` Z = 32, receiver set) beside identical cards without shadows; nested opacity
+  (0.8 container over a 0.6 child with overlapping rectangles); a translucent overlay over text; a translucent rounded
+  `Border` over text.
+- **Interaction:** overlay visibility toggles (ToggleButton, CheckBox) at 1 Hz; overlay opacity cycles at 2 Hz.
+- **Metrics:** C1 on the final screenshot (group opacity: the overlap of the two rectangles must not show through), M3,
+  M6 temporary surfaces, W1, unsupported content by type.
+- **Hypothesis:** immediate modes need an offscreen layer for group opacity (memory and fill cost); the rounded
+  translucent border is ordinary content and must render. Acrylic, mica and shadows are Composition effects that
+  immediate modes report unsupported (and draw the fallback color or nothing).
+- **Required features:** opacity layers with correct group semantics, rounded-rectangle fill/stroke with alpha,
+  visibility and opacity damage.
+- **Gate:** expected unsupported content: detail `Brush` (the acrylic brush) and anything whose type or detail mentions
+  `Shadow`, `Acrylic`, `Mica` or `Backdrop`. Unsupported opacity, rounded corners or text is a failure.
+
+### S8 datagrid (`datagrid`, T1, T3)
+
+- **Purpose:** many small text elements with scattered small updates and two-axis scrolling.
+- **Content:** `ItemsRepeater` of 1,000 rows, each 50 bordered `TextBlock` cells (96×28), inside a two-axis
+  `ScrollViewer`; a frozen header row in a separate `ScrollViewer` that follows horizontally only.
+- **Interaction:** 2% of the visible cells change at 10 Hz; every 2 s an animated scroll alternates vertical and
+  horizontal (programmatic `ChangeView`, or three wheel / horizontal-wheel notches).
+- **Metrics:** W1, W4 (damaged vs. painted pixels), R2, R3 (during the scroll animations), M1, M3, realized rows/cells.
+- **Hypothesis:** scattered small damage favors immediate modes only if damage is tracked per cell; a full-viewport
+  repaint at 10 Hz makes GDIP and D2D-SW CPU-bound. COMP pays per-element visual memory for thousands of cells.
+- **Required features:** many-rect damage union, clipping to the viewport, frozen-header composition (two scroll
+  viewers in one window), border strokes at pixel boundaries.
+- **Gate:** no expected unsupported content.
+
+### S9 multiwindow (`multiwindow`, `--windows 1|5|10`, variant `--tabs`, T13)
+
+- **Purpose:** marginal per-window cost and reclamation.
+- **Content:** N windows (default 10), each a new `Window` hosting an S1 Settings instance (seed + i). `--tabs`: one
+  window with a `TabView` of 20 S1 tabs, content realized on first visit.
+- **Interaction:** one lifecycle step every `--step-seconds` (2 s) with a `SceneStep` marker and memory sample: baseline,
+  open-1..N, minimize-all, restore-all, close-all, settled (after a full GC). `--tabs`: baseline, open-tab-2..20,
+  switch, close-tabs, settled.
+- **Metrics:** M1/M2 per step, marginal private MB per window (slope over baseline and open steps), fraction reclaimed
+  after close, M3, M7, drawn frames per step.
+- **Hypothesis:** each COMP window carries a DComp target, visual tree and surfaces; immediate windows carry a swap
+  chain/bitmap per window (GDIP, D2D-SW: CPU backing store sized to the window). The marginal cost difference is the
+  headline; minimize should release immediate-mode backing stores; reclamation should be similar.
+- **Required features:** per-window render loop and device sharing, backing-store release on minimize/close, resize on
+  restore.
+- **Gate:** no expected unsupported content.
+
+### S10 form (`form`, T10, T16, T26)
+
+- **Purpose:** text input latency, focus visuals, hover states and light-dismiss popups.
+- **Content:** three `TextBox`es, `ComboBox`, `CheckBox`, `ToggleSwitch`, `Slider`, a `Button` with a `Flyout`, a
+  `Button` with a `ToolTip`, and an accent Submit button.
+- **Interaction:** a fixed 21-step script at 10 Hz: typing (SendInput `KEYEVENTF_UNICODE` keystrokes, or
+  `TextBox.SelectedText`), Tab focus moves (`VK_TAB` or `Focus(Keyboard)`), hover on/off (mouse moves or
+  `VisualStateManager`), `ComboBox` open/close, `Flyout` open/close (click/Escape or API), `ToolTip` open/close.
+  Steady and Recovery start parked: popups closed, programmatic focus (no caret).
+- **Metrics:** R1 by kind (`key`, `tab`, `click`) in SendInput runs, popup open time, W1, R2, M1, M3.
+- **Hypothesis:** keystroke-to-frame latency is dominated by the UI-thread render of the TextBox and caret; immediate
+  modes should be comparable to COMP when damage is limited to the caret/line. Popups are separate windowed or
+  island content: they test the render loop's handling of additional roots and their first-frame time.
+- **Required features:** caret blink and focus visuals, popup/flyout roots (windowed popups), tooltip timing, visual
+  state transitions.
+- **Gate:** no expected unsupported content; unsupported popups, carets or focus visuals are failures.
 
 ## Required WinUI instrumentation
 
