@@ -36,6 +36,7 @@ namespace XamlGen
         const string ActivatorsHeaderFileName = "Activators.g.h";
         const string ActivatorsBodyFileName = "Activators.g.cpp";
         const string DependencyObjectTraitsFileName = "DependencyObjectTraits.g.h";
+        const string TrackerTargetTraitsFileName = "TrackerTargetTraits.g.h";
         const string FactoriesFileName = "Factories.g.cpp";
         const string UIElementControlDelegatesFileName = "UIElement.g.cpp";
         const string EnumValueTableFileName = "EnumValueTable.g.h";
@@ -285,6 +286,13 @@ namespace XamlGen
                 {
                     Model = defaultView,
                     OutputPath = ResolveOutputPath(DependencyObjectTraitsFileName)
+                };
+
+                // TrackerTargetTraits.g.h
+                yield return new Templates.Metadata.TrackerTargetTraits()
+                {
+                    Model = defaultView,
+                    OutputPath = ResolveOutputPath(TrackerTargetTraitsFileName)
                 };
 
                 // Activators.g.h
