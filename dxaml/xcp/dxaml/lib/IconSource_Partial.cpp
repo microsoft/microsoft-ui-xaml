@@ -71,21 +71,24 @@ _Check_return_ HRESULT IconSource::OnPropertyChanged2(_In_ const PropertyChanged
         ctl::ComPtr<IInspectable> newValue;
         IFC_RETURN(PropertyChangedParamsHelper::GetObjects(args, &oldValue, &newValue));
 
+        // Clear the element when the source value was cleared, so it falls back to its own inherited or default value.
+        // An explicitly set value, including null, is pushed as is.
+        const bool clearValue = GetHandle()->IsPropertyDefault(args.m_pDP);
+
         m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
-            [iconElementProperty, newValue](ctl::WeakRefPtr weakElement)
+            [iconElementProperty, newValue, clearValue](ctl::WeakRefPtr weakElement)
         {
             auto iconElement = weakElement.AsOrNull<IconElement>();
             
             if (iconElement)
             {
-                // CreateIconElement never copies a null value, so clear it to leave the element as if it had never been copied.
-                if (newValue)
+                if (clearValue)
                 {
-                    iconElement->SetValue(iconElementProperty.Get(), newValue.Get());
+                    iconElement->ClearValue(iconElementProperty.Get());
                 }
                 else
                 {
-                    iconElement->ClearValue(iconElementProperty.Get());
+                    iconElement->SetValue(iconElementProperty.Get(), newValue.Get());
                 }
             }
             
