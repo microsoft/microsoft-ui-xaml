@@ -66,7 +66,7 @@ set fre=
 set chk=
 set _BuildArch=
 set _BuildType=
-set _DotNetMoniker=net10.0
+set _DotNetMoniker=net11.0
 set _archIsSet=
 set _noPgo=
 

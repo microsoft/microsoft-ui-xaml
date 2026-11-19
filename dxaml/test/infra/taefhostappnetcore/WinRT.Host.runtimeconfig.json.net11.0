@@ -11,10 +11,6 @@
         "name": "Microsoft.WindowsDesktop.App",
         "version": "11.0.0"
       }
-    ],
-    "configProperties": {
-      "System.Runtime.InteropServices.TypeMappingEntryAssembly": "SharedTestProjections",
-      "CSWINRT_LOAD_COMPONENTS_IN_DEFAULT_ALC": true
-    }
+    ]
   }
 }
