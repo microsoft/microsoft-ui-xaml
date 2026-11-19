@@ -62,6 +62,22 @@ if ($heapTracing) {
     & wpr -heaptracingconfig (Split-Path -Leaf $BenchExe) enable | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "wpr -heaptracingconfig enable failed ($LASTEXITCODE)" }
 }
+
+# ---- Added by the D2D-HW branch ----
+# D2D-HW needs a real GPU. On machines without one (e.g. a Hyper-V VM) the native factory returns DXGI_ERROR_NOT_FOUND, so
+# instead of running and failing the gate, each D2D-HW run is recorded as SKIPPED ("no hardware adapter"); the report
+# shows "n/a (no GPU)". The analyzer applies the same adapter policy as the native factory, including
+# WINUI_RENDERING_ADAPTER_LUID.
+$skipD2DHardware = $false
+if ($Modes -contains 'd2d-hw') {
+    & $analyzer adapters
+    switch ($LASTEXITCODE) {
+        0 { }
+        1 { $skipD2DHardware = $true; Write-Warning 'd2d-hw: no hardware adapter; d2d-hw runs will be recorded as skipped.' }
+        default { throw "RenderBench.Analyzer adapters failed ($LASTEXITCODE); check WINUI_RENDERING_ADAPTER_LUID." }
+    }
+}
+
 try {
     for ($rep = 1; $rep -le $Repetitions; $rep++) {
         foreach ($scene in $Scenes) {
@@ -69,6 +85,10 @@ try {
             foreach ($mode in $order) {
                 $runDir = Join-Path $Results "$scene\$mode\run$rep"
                 New-Item -ItemType Directory -Force $runDir | Out-Null
+                if ($mode -eq 'd2d-hw' -and $skipD2DHardware) {
+                    & $analyzer skip $scene $mode 'no hardware adapter' --out (Join-Path $runDir 'metrics.json')
+                    continue
+                }
                 $etl = Join-Path $runDir 'trace.etl'
                 $env:WINUI_RENDERING_BACKEND = if ($mode -eq 'composition') { '' } else { $mode }
 

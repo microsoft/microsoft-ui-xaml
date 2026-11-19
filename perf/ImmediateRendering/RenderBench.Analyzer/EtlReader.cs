@@ -62,6 +62,8 @@ public static class EtlReader
                 // W6 (appended by immediate-rendering-gdiplus)
                 "ResourceChurn" => new ResourceChurnRecord(t, pid, (BackendMode)U32(e, "Mode"), U32(e, "FrameNumber"),
                     U32(e, "Created"), U32(e, "Destroyed")),
+                // D2D-HW branch: W3 GPU paint time.
+                "GpuPaintTime" => new GpuPaintTimeRecord(t, pid, U32(e, "FrameNumber"), U64(e, "GpuMicroseconds")),
                 _ => null,
             };
         }
@@ -81,6 +83,9 @@ public static class EtlReader
                     I32(e, "GdiObjects"), I32(e, "UserObjects"), F64(e, "CpuUserMs"), F64(e, "CpuKernelMs")),
                 "UpdateApplied" => new UpdateAppliedRecord(t, pid, I64(e, "Tick"), I32(e, "ChangedCount")),
                 "RunCompleted" => new RunCompletedRecord(t, pid, I32(e, "Status"), Str(e, "Detail")),
+                // D2D-HW branch: per-adapter GPU memory.
+                "GpuAdapterMemorySample" => new GpuAdapterMemoryRecord(t, pid, (BenchPhase)I32(e, "Phase"), U64(e, "AdapterLuid"),
+                    I64(e, "LocalBytes"), I64(e, "NonLocalBytes")),
                 _ => null,
             };
         }

@@ -44,6 +44,14 @@
         <ClCompile Include="GdiPlusPainterTests.cpp"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- D2D-HW branch -->
+        <ClInclude Include="D2DDeviceFactoryTests.h"/>
+        <ClInclude Include="GpuTimestampProfilerTests.h"/>
+        <ClCompile Include="D2DDeviceFactoryTests.cpp"/>
+        <ClCompile Include="GpuTimestampProfilerTests.cpp"/>
+    </ItemGroup>
+
     <ItemDefinitionGroup>
         <Link>
             <AdditionalDependencies>d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>

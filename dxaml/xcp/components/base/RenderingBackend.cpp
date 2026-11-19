@@ -299,3 +299,19 @@ namespace RenderingBackend
     }
     // ---- End: W6 resource churn ----
 }
+
+// ---- Added by the D2D-HW branch: GPU time per paint (test plan W3) ----
+namespace RenderingBackend
+{
+    void TraceGpuPaintTime(uint32_t frameNumber, uint64_t gpuMicroseconds) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "GpuPaintTime",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(Keywords::Paint),
+            TraceLoggingUInt32(frameNumber, "FrameNumber"),
+            TraceLoggingUInt64(gpuMicroseconds, "GpuMicroseconds"));
+    }
+}

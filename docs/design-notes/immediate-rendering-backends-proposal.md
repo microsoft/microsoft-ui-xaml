@@ -167,6 +167,16 @@ Per-root hardware/software selection requires a device-sharing strategy. A globa
 implementation of an independently selectable software root. Distinguish shared immutable assets from resources
 whose device affinity or lifetime belongs to a backend context.
 
+#### D2D-HW adapter selection (prototype)
+
+`D2DDeviceFactory.cpp` (policy in `inc\D2DDeviceFactory.h`) picks the first qualifying adapter from
+`IDXGIFactory6::EnumAdapterByGpuPreference(HIGH_PERFORMANCE)`, falling back to `EnumAdapters1` order. It rejects
+software adapters and every Microsoft (VendorId `0x1414`) adapter. On a Hyper-V VM, the display-only Hyper-V Video and
+Remote Display adapters show up in DXGI as extra "Microsoft Basic Render Driver" adapters without the software flag,
+and a D3D11 device created on them is still the Basic Render Driver. GPU-P guests report the host GPU vendor, so they
+still qualify. `WINUI_RENDERING_ADAPTER_LUID` (hex) pins an adapter, and the pin is strict. With no qualifying adapter,
+creation fails with `DXGI_ERROR_NOT_FOUND`; it never silently falls back to WARP.
+
 ### Painting and presentation
 
 Share immediate-mode scheduling, damage, and drawing order across painters. Direct2D hardware and WARP should issue

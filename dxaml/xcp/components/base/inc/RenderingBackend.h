@@ -108,3 +108,11 @@ namespace RenderingBackend
     void TraceResourceChurn(Mode mode, uint32_t frameNumber, uint32_t created, uint32_t destroyed) noexcept;
     // ---- End: W6 resource churn ----
 }
+
+// ---- Added by the D2D-HW branch: GPU time per paint (test plan W3) ----
+namespace RenderingBackend
+{
+    // GPU execution time of one root's paint, from D3D11 timestamp queries (GpuTimestampProfiler). Emitted when the
+    // result is read back, typically a frame or two after the paint; FrameNumber identifies the painted frame.
+    void TraceGpuPaintTime(uint32_t frameNumber, uint64_t gpuMicroseconds) noexcept;
+}

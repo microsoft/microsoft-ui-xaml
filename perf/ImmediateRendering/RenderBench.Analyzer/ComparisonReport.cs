@@ -38,6 +38,11 @@ public static class ComparisonReport
         new("M7 GDI objects, interaction (max)", m => m.Phase(BenchPhase.Interaction)?.GdiObjectsMax, "F0"),
         new("M7 GDI objects growth, interaction", m => m.Phase(BenchPhase.Interaction)?.GdiObjectsGrowth, "F0"),
         new("M7 USER objects, steady", m => m.Phase(BenchPhase.Steady)?.UserObjectsMax, "F0"),
+        // ---- Added by the D2D-HW branch ----
+        new("W3 GPU paint p50, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.GpuPaintMs?.P50, "F3"),
+        new("W3 GPU paint p95, interaction (ms)", m => m.Phase(BenchPhase.Interaction)?.GpuPaintMs?.P95, "F3"),
+        new("M3 GPU local, render adapter, steady (MB)", m => m.Phase(BenchPhase.Steady)?.RenderAdapterGpuLocalMBMedian),
+        new("M3 GPU non-local, render adapter, steady (MB)", m => m.Phase(BenchPhase.Steady)?.RenderAdapterGpuNonLocalMBMedian),
     ];
 
     static double? Ratio(PhaseMetrics? phase)
@@ -51,6 +56,7 @@ public static class ComparisonReport
         builder.AppendLine("Median across runs, with min-max in brackets and ratio to COMP. Runs that fail the gate are excluded");
         builder.AppendLine("from medians and counted in the gate row. R1* is input-injected to the next drawn UI frame end (a proxy;");
         builder.AppendLine("visible latency needs DWM present correlation).");
+        builder.AppendLine("Skipped runs (e.g. D2D-HW without a hardware GPU) are not gate failures; their cells read n/a.");
 
         foreach (var scene in runs.GroupBy(r => r.Metrics.Scene ?? "unknown").OrderBy(g => g.Key))
         {
@@ -72,10 +78,18 @@ public static class ComparisonReport
             builder.Append("| Gate (passed/runs) |");
             foreach (var (_, modeRuns) in byMode)
             {
-                var failures = modeRuns.Where(r => !r.GatePassed).SelectMany(r => r.Gate.Where(g => !g.Passed).Select(g => g.Name)).Distinct();
+                if (SkipCell(modeRuns) is not null)
+                {
+                    builder.Append(CultureInfo.InvariantCulture, $" skipped: {SkipReasons(modeRuns)} |");
+                    continue;
+                }
+                var executed = modeRuns.Where(r => !r.IsSkipped).ToList();
+                var failures = executed.Where(r => !r.GatePassed).SelectMany(r => r.Gate.Where(g => !g.Passed).Select(g => g.Name)).Distinct();
                 string detail = string.Join(", ", failures);
+                int skippedCount = modeRuns.Count - executed.Count;
                 builder.Append(CultureInfo.InvariantCulture,
-                    $" {modeRuns.Count(r => r.GatePassed)}/{modeRuns.Count}{(detail.Length > 0 ? $" ({detail})" : "")} |");
+                    $" {executed.Count(r => r.GatePassed)}/{executed.Count}{(detail.Length > 0 ? $" ({detail})" : "")}" +
+                    $"{(skippedCount > 0 ? $", {skippedCount} skipped ({SkipReasons(modeRuns)})" : "")} |");
             }
             builder.AppendLine();
 
@@ -89,7 +103,7 @@ public static class ComparisonReport
                     var values = modeRuns.Where(r => r.GatePassed).Select(row.Select).Where(v => v is not null).Select(v => v!.Value).ToList();
                     if (values.Count == 0)
                     {
-                        builder.Append(" - |");
+                        builder.Append(CultureInfo.InvariantCulture, $" {SkipCell(modeRuns) ?? "-"} |");
                         continue;
                     }
                     double median = Median(values.Select(v => (double?)v))!.Value;
@@ -113,6 +127,20 @@ public static class ComparisonReport
     // The harness request is the experiment label; the gate decides whether the run counts.
     static BackendMode ModeOf(RunMetrics metrics)
         => BackendModes.TryParse(metrics.Identity.HarnessRequested, out var mode) ? mode : BackendMode.Composition;
+
+    // ---- Added by the D2D-HW branch ----
+    // A mode whose runs were all skipped is shown as n/a with the reason instead of an empty column.
+    static string? SkipCell(IReadOnlyList<RunMetrics> modeRuns)
+    {
+        if (modeRuns.Count == 0 || !modeRuns.All(r => r.IsSkipped))
+        {
+            return null;
+        }
+        return modeRuns.All(r => r.SkipReason == AdapterPolicy.NoHardwareAdapterReason) ? "n/a (no GPU)" : "n/a (skipped)";
+    }
+
+    static string SkipReasons(IEnumerable<RunMetrics> modeRuns)
+        => string.Join(", ", modeRuns.Where(r => r.IsSkipped).Select(r => r.SkipReason).Distinct());
 
     static double? Median(IEnumerable<double?> values)
     {

@@ -7,7 +7,7 @@
                                                           graphics resource lifetime) and VirtualAlloc / reference set.
                                                           Heap allocations (with stacks) for processes opted in with
                                                           'wpr -heaptracingconfig RenderBench.exe enable' (GDI+ heap).
-    wpr -start ImmediateRendering.wprp!Gpu    -filemode   W3, W5: DxgKrnl DMA packets, VidMm allocations, DWM.
+    wpr -start ImmediateRendering.wprp!Gpu    -filemode   W3, M3, W5: DxgKrnl GPU utilization + VidMm memory, DXGI/D3D11 rundown, GpuPaintTime, DWM.
 
   Timing runs deliberately exclude Microsoft-Windows-XAML-Profiler, which is verbose and would perturb frame timing.
   The analyzer only needs Microsoft-WinUI-RenderingBackend, Microsoft-WinUI-RenderBench and kernel process start; the
@@ -108,11 +108,40 @@
       </Keywords>
     </EventProvider>
 
+    <!-- D2D-HW branch: W3 (GPU time) and M3 (GPU memory) in WPA's GPU Utilization and GPU memory tables. Keywords are the
+         built-in WPR GPU profile's 0x277 plus Memory: Base 0x1 | Profiler 0x2 (DMA packets, GPU queue) | References 0x4 |
+         Cdd 0x20 | Resource 0x40 | Memory 0x80 (VidMm allocations, residency) | Power 0x200. Rundown at start and save
+         records adapters, devices and allocations that already exist. -->
     <EventProvider Id="EventProvider_DxgKrnl_Detailed" Name="Microsoft-Windows-DxgKrnl" Level="5" NonPagedMemory="true">
       <Keywords>
-        <!-- Base | Profiler (DMA packets, GPU queue) | Resource | Memory (VidMm allocations). -->
-        <Keyword Value="0xC3" />
+        <Keyword Value="0x2F7" />
       </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0x2F7" />
+      </CaptureStateOnStart>
+      <CaptureStateOnSave Timeout="30">
+        <Keyword Value="0x2F7" />
+      </CaptureStateOnSave>
+    </EventProvider>
+
+    <!-- D2D-HW branch: DXGI and D3D11 object rundown (as in the built-in GPU profile) so WPA can name the device and
+         adapter behind each GPU queue. -->
+    <EventProvider Id="EventProvider_Dxgi" Name="Microsoft-Windows-DXGI" Level="6" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0xF" />
+      </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0xF" />
+      </CaptureStateOnStart>
+    </EventProvider>
+
+    <EventProvider Id="EventProvider_D3D11" Name="Microsoft-Windows-Direct3D11" Level="6" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0xF" />
+      </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0xF" />
+      </CaptureStateOnStart>
     </EventProvider>
 
     <EventProvider Id="EventProvider_DwmCore" Name="Microsoft-Windows-Dwm-Core" Level="4" NonPagedMemory="true" />
@@ -168,7 +197,7 @@
       </Collectors>
     </Profile>
 
-    <Profile Id="Gpu.Verbose.File" Name="Gpu" Description="RenderBench GPU: DMA packets, VidMm, DWM" DetailLevel="Verbose" LoggingMode="File">
+    <Profile Id="Gpu.Verbose.File" Name="Gpu" Description="RenderBench GPU: GPU utilization, GPU memory, GPU paint time, DWM" DetailLevel="Verbose" LoggingMode="File">
       <Collectors>
         <SystemCollectorId Value="SystemCollector_IR">
           <SystemProviderId Value="SystemProvider_IR_Gpu" />
@@ -179,6 +208,8 @@
             <EventProviderId Value="EventProvider_RenderBench" />
             <EventProviderId Value="EventProvider_KernelProcess" />
             <EventProviderId Value="EventProvider_DxgKrnl_Detailed" />
+            <EventProviderId Value="EventProvider_Dxgi" />
+            <EventProviderId Value="EventProvider_D3D11" />
             <EventProviderId Value="EventProvider_DwmCore" />
           </EventProviders>
         </EventCollectorId>

@@ -198,6 +198,15 @@ Status (GDI+ branch): resources created and destroyed per frame are emitted as `
 reported as W6 per second. GDI+ uploads are defined as the bytes copied from the CPU bitmap to the presentable surface:
 damaged pixels times 4, with no full-frame copy. The `Memory` WPR profile adds heap tracing so GDI+ heap growth (M2, M8)
 can be attributed.
+
+Prototype status for `D2D-HW` (see `perf\ImmediateRendering\README.md`):
+
+- W3 uses `GpuPaintTime` (frame number, GPU microseconds) from `GpuTimestampProfiler`, which wraps each paint in
+  non-blocking D3D11 timestamp queries.
+- M3 is also reported for the render adapter, matched by the `DeviceInfo` LUID.
+- Without a qualifying hardware GPU, `D2D-HW` runs are recorded as skipped, not failed.
+- D2D-HW numbers must come from a real GPU machine.
+
 ## Comparative report format
 
 For each test case, produce one table with the four modes as columns and the selected metrics as rows. Show

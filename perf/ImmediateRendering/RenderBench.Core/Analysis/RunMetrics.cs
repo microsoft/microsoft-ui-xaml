@@ -67,7 +67,14 @@ public sealed record PhaseMetrics(
     double? ResourcesCreatedPerSecond = null,
     double? ResourcesDestroyedPerSecond = null,
     // M7: last minus first GetGuiResources(GR_GDIOBJECTS) sample in the phase; a GDI handle leak shows as growth.
-    int? GdiObjectsGrowth = null);
+    int? GdiObjectsGrowth = null,
+    // ---- Added by the D2D-HW branch (defaults keep older metrics.json readable) ----
+    // W3: GPU time per paint from GpuPaintTime, attributed to the phase of its frame's FrameEnd.
+    Distribution? GpuPaintMs = null,
+    // M3 on the adapter WinUI renders with (DeviceInfo.AdapterLuid). GpuLocalMBMedian/GpuNonLocalMBMedian stay the sum
+    // over all adapters.
+    double? RenderAdapterGpuLocalMBMedian = null,
+    double? RenderAdapterGpuNonLocalMBMedian = null);
 
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
@@ -81,8 +88,13 @@ public sealed record RunMetrics(
     Distribution? InputToFrameMs,
     double? PeakPrivateMB,
     double? PeakGpuLocalMB,
-    IReadOnlyList<GateCheck> Gate)
+    IReadOnlyList<GateCheck> Gate,
+    // ---- Added by the D2D-HW branch ----
+    // Set when the run was not executed (e.g. AdapterPolicy.NoHardwareAdapterReason for D2D-HW on a GPU-less machine).
+    // A skipped run is neither a pass nor a gate failure.
+    string? SkipReason = null)
 {
-    public bool GatePassed => Gate.All(g => g.Passed);
+    public bool IsSkipped => SkipReason is not null;
+    public bool GatePassed => !IsSkipped && Gate.All(g => g.Passed);
     public PhaseMetrics? Phase(BenchPhase phase) => Phases.FirstOrDefault(p => p.Phase == phase);
 }

@@ -1,3 +1,4 @@
+using RenderBench;
 using RenderBench.Analysis;
 using RenderBench.Analyzer;
 
@@ -5,9 +6,12 @@ const string Usage = """
     RenderBench.Analyzer analyze <trace.etl> [--out metrics.json]   Parse one run's ETL into metrics JSON.
     RenderBench.Analyzer gate <metrics.json>...                     Print gate checks; exit 1 if any run fails.
     RenderBench.Analyzer report <resultsDir> [--out report.md]      Aggregate **/metrics.json into a comparison table.
+    RenderBench.Analyzer adapters                                   List DXGI adapters with the D2D-HW verdict; exit 0 if
+                                                                    one qualifies, 1 if none, 2 if the LUID override is bad.
+    RenderBench.Analyzer skip <scene> <mode> <reason> --out <json>  Write metrics.json for a run that was not executed.
     """;
 
-if (args.Length < 2)
+if (args.Length < (args.FirstOrDefault() == "adapters" ? 1 : 2))
 {
     Console.Error.WriteLine(Usage);
     return 2;
@@ -53,6 +57,16 @@ switch (args[0])
         Console.WriteLine($"{runs.Count} runs -> {output}");
         return 0;
     }
+    // ---- Added by the D2D-HW branch ----
+    case "adapters":
+        return AdapterReport.Print(Environment.GetEnvironmentVariable(AdapterPolicy.LuidEnvironmentVariable));
+    case "skip" when args.Length >= 4 && Option("--out") is { } skipOutput:
+    {
+        string scene = Enum.TryParse<SceneId>(args[1], ignoreCase: true, out var sceneId) ? sceneId.ToString() : args[1];
+        File.WriteAllText(skipOutput, MetricsJson.Serialize(MetricsCalculator.Skipped(scene, args[2], args[3])));
+        Console.WriteLine($"{scene} {args[2]}: SKIPPED ({args[3]}) -> {skipOutput}");
+        return 0;
+    }
     default:
         Console.Error.WriteLine(Usage);
         return 2;
@@ -60,6 +74,12 @@ switch (args[0])
 
 static bool PrintGate(string label, RunMetrics metrics)
 {
+    if (metrics.IsSkipped)
+    {
+        // D2D-HW branch: a run that was not executed (e.g. no hardware adapter) is not a gate failure.
+        Console.WriteLine($"{label}: scene={metrics.Scene} requested={metrics.Identity.HarnessRequested} gate=SKIP ({metrics.SkipReason})");
+        return true;
+    }
     Console.WriteLine($"{label}: scene={metrics.Scene} requested={metrics.Identity.Requested} effective={metrics.Identity.Effective} " +
         $"gate={(metrics.GatePassed ? "PASS" : "FAIL")}");
     foreach (var check in metrics.Gate)
