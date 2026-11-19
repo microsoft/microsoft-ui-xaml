@@ -10,6 +10,7 @@
 #include <vector>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#include <dwrite.h>
 #include <wrl/client.h>
 
 namespace RenderingBackendTests
@@ -635,6 +636,500 @@ namespace RenderingBackendTests
         VERIFY_ARE_EQUAL(E_INVALIDARG, painter->SetPresentationSwapChain(swapChain.Get()));
         Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
         VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"rejected swap chain is not attached");
+    }
+
+    // ---- Extended primitives ----
+
+    namespace
+    {
+        // Segoe UI glyphs for text with unshaped (cmap + design advance) positions; enough for GDI+ DrawDriverString.
+        struct TestGlyphs
+        {
+            ComPtr<IDWriteFontFace> face;
+            std::vector<uint16_t> indices;
+            std::vector<float> advances;
+        };
+
+        TestGlyphs MakeGlyphs(const wchar_t* text, float emSize)
+        {
+            TestGlyphs glyphs;
+            ComPtr<IDWriteFactory> factory;
+            VERIFY_SUCCEEDED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(factory.GetAddressOf())));
+            ComPtr<IDWriteFontCollection> collection;
+            VERIFY_SUCCEEDED(factory->GetSystemFontCollection(&collection));
+            UINT32 familyIndex = 0;
+            BOOL exists = FALSE;
+            VERIFY_SUCCEEDED(collection->FindFamilyName(L"Segoe UI", &familyIndex, &exists));
+            VERIFY_IS_TRUE(!!exists);
+            ComPtr<IDWriteFontFamily> family;
+            VERIFY_SUCCEEDED(collection->GetFontFamily(familyIndex, &family));
+            ComPtr<IDWriteFont> font;
+            VERIFY_SUCCEEDED(family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STRETCH_NORMAL, DWRITE_FONT_STYLE_NORMAL, &font));
+            VERIFY_SUCCEEDED(font->CreateFontFace(&glyphs.face));
+
+            const size_t length = wcslen(text);
+            std::vector<UINT32> codePoints(text, text + length);
+            glyphs.indices.resize(length);
+            VERIFY_SUCCEEDED(glyphs.face->GetGlyphIndices(codePoints.data(), static_cast<UINT32>(length), glyphs.indices.data()));
+            DWRITE_FONT_METRICS fontMetrics{};
+            glyphs.face->GetMetrics(&fontMetrics);
+            std::vector<DWRITE_GLYPH_METRICS> metrics(length);
+            VERIFY_SUCCEEDED(glyphs.face->GetDesignGlyphMetrics(glyphs.indices.data(), static_cast<UINT32>(length), metrics.data(), FALSE));
+            for (const auto& metric : metrics)
+            {
+                glyphs.advances.push_back(metric.advanceWidth * emSize / fontMetrics.designUnitsPerEm);
+            }
+            return glyphs;
+        }
+
+        GlyphRunDesc MakeRun(const TestGlyphs& glyphs, float emSize, PointF origin, uint32_t bidiLevel = 0)
+        {
+            GlyphRunDesc run{};
+            run.fontFace = glyphs.face.Get();
+            run.fontEmSize = emSize;
+            run.glyphIndices = glyphs.indices.data();
+            run.glyphAdvances = glyphs.advances.data();
+            run.glyphCount = static_cast<uint32_t>(glyphs.indices.size());
+            run.baselineOrigin = origin;
+            run.bidiLevel = bidiLevel;
+            return run;
+        }
+
+        // Bounding box of pixels that differ from opaque white; right/bottom exclusive. Empty: left >= right.
+        struct InkBounds
+        {
+            uint32_t left = UINT32_MAX, top = UINT32_MAX, right = 0, bottom = 0, count = 0;
+        };
+
+        InkBounds FindInk(const Image& image)
+        {
+            InkBounds ink;
+            for (uint32_t y = 0; y < image.height; ++y)
+            {
+                for (uint32_t x = 0; x < image.width; ++x)
+                {
+                    const auto p = image.At(x, y);
+                    if (p.r == 255 && p.g == 255 && p.b == 255) continue;
+                    ++ink.count;
+                    ink.left = std::min(ink.left, x);
+                    ink.top = std::min(ink.top, y);
+                    ink.right = std::max(ink.right, x + 1);
+                    ink.bottom = std::max(ink.bottom, y + 1);
+                }
+            }
+            return ink;
+        }
+
+        // A triangle: three verbs, closed.
+        constexpr PathVerb c_triangleVerbs[] = { PathVerb::MoveTo, PathVerb::LineTo, PathVerb::LineTo, PathVerb::Close };
+        constexpr PointF c_trianglePoints[] = { { 8, 8 }, { 56, 8 }, { 8, 56 } };
+
+        PathData Triangle(uint64_t cacheKey)
+        {
+            PathData path{};
+            path.verbs = c_triangleVerbs;
+            path.verbCount = ARRAYSIZE(c_triangleVerbs);
+            path.points = c_trianglePoints;
+            path.pointCount = ARRAYSIZE(c_trianglePoints);
+            path.cacheKey = cacheKey;
+            return path;
+        }
+
+        // Opaque premultiplied BGRA image with one color.
+        std::vector<uint8_t> SolidPixels(uint32_t width, uint32_t height, uint8_t b, uint8_t g, uint8_t r)
+        {
+            std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4);
+            for (size_t i = 0; i < pixels.size(); i += 4)
+            {
+                pixels[i] = b;
+                pixels[i + 1] = g;
+                pixels[i + 2] = r;
+                pixels[i + 3] = 255;
+            }
+            return pixels;
+        }
+
+        // Each row y gets a distinct opaque gray (4 * y), so moved rows are identifiable.
+        void PaintRowRamp(IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            for (uint32_t y = 0; y < c_size; ++y)
+            {
+                const float v = (4.0f * y) / 255.0f;
+                p.FillRectangle({ 0, static_cast<float>(y), static_cast<float>(c_size), static_cast<float>(y + 1) }, { v, v, v, 1 });
+            }
+        }
+    }
+
+    void GdiPlusPainterTests::RoundedClipIsAntialiasedInsideOpacityLayer()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushOpacityLayer(0.5f);
+            p.PushRoundedRectangleClip({ 8, 8, 56, 56 }, 16, 16);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip();
+            p.PopOpacityLayer();
+        });
+        const auto image = Read(*painter);
+        LogPixel(L"center", 32, 32, image.At(32, 32));
+        LogPixel(L"corner", 9, 9, image.At(9, 9));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(32, 32), 128, 128, 128, 255, 3), L"black at 50% group opacity over white");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(9, 9), 255, 255, 255, 255, 1), L"outside the rounded corner stays white");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(4, 32), 255, 255, 255, 255, 1), L"outside the clip stays white");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(8, 32), 128, 128, 128, 255, 3), L"straight edge on a pixel boundary is crisp");
+
+        // Along the corner arc (center (24,24), radius 16) coverage is partial: an antialiased, not aliased, clip.
+        uint32_t partial = 0;
+        for (uint32_t y = 8; y < 24; ++y)
+        {
+            for (uint32_t x = 8; x < 24; ++x)
+            {
+                const uint8_t g = image.At(x, y).g;
+                partial += (g > 132 && g < 250) ? 1 : 0;
+            }
+        }
+        Log::Comment(String().Format(L"partially covered pixels in the top-left corner: %u", partial));
+        VERIFY_IS_TRUE(partial >= 8, L"rounded clip edges are antialiased");
+    }
+
+    void GdiPlusPainterTests::RoundedClipSharesStackWithClipsAndLayers()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushAxisAlignedClip({ 0, 0, 32, 64 });
+            p.PushRoundedRectangleClip({ 8, 8, 56, 56 }, 4, 4);
+            p.PopAxisAlignedClip(); // does not match the top entry: ignored
+            p.PushOpacityLayer(1.0f);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip(); // does not match the top entry: ignored
+            p.PopOpacityLayer();
+            p.PopRoundedRectangleClip();
+            p.FillRectangle({ 40, 0, 48, 4 }, c_black); // only the axis-aligned clip [0,32) remains: clipped away
+            p.PopAxisAlignedClip();
+            p.FillRectangle({ 56, 60, 64, 64 }, c_black); // no clip left
+        });
+        const auto image = Read(*painter);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(20, 32), 0, 0, 0, 255, 1), L"inside both clips");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(40, 32), 255, 255, 255, 255, 1), L"axis-aligned clip still applied inside the rounded clip");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(4, 32), 255, 255, 255, 255, 1), L"rounded clip applied");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(44, 2), 255, 255, 255, 255, 1), L"axis-aligned clip outlives the rounded clip");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(60, 62), 0, 0, 0, 255, 1), L"stack fully unwound");
+
+        // An unbalanced frame is unwound by EndFrame in stack order.
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushRoundedRectangleClip({ 8, 8, 56, 56 }, 8, 8);
+            p.PushOpacityLayer(0.5f);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+        });
+        const auto unwound = Read(*painter);
+        VERIFY_IS_TRUE(IsPremultiplied(unwound.At(32, 32), 128, 128, 128, 255, 3), L"open layer and clip are composited at EndFrame");
+        VERIFY_IS_TRUE(IsPremultiplied(unwound.At(2, 2), 255, 255, 255, 255, 1));
+    }
+
+    void GdiPlusPainterTests::SquarePixelAlignedRoundedClipNeedsNoLayer()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        const uint64_t targetBytes = static_cast<uint64_t>(c_size) * c_size * 4;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushRoundedRectangleClip({ 8, 8, 24, 24 }, 0, 0);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
+        VERIFY_ARE_EQUAL(targetBytes, painter->GetResourceInventory().surfaceBytes, L"no layer or mask surface allocated");
+        const auto image = Read(*painter);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(8, 8), 0, 0, 0, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(24, 24), 255, 255, 255, 255, 1));
+
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushRoundedRectangleClip({ 8, 8, 24, 24 }, 4, 4);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
+        Log::Comment(String().Format(L"surface bytes with a rounded clip: %llu", painter->GetResourceInventory().surfaceBytes));
+        VERIFY_ARE_EQUAL(3 * targetBytes, painter->GetResourceInventory().surfaceBytes, L"target + one pooled layer + the mask");
+    }
+
+    void GdiPlusPainterTests::PathCacheIsSteadyAndBounded()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        const auto paintTriangles = [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.FillPath(Triangle(1), c_black);
+            p.StrokePath(Triangle(1), 2, { 1, 0, 0, 1 });
+            p.FillPath(Triangle(0), { 0, 0, 1, 0.5f }); // uncached: reuses the scratch path
+        };
+        Paint(*painter, paintTriangles);
+        const auto first = LastChurn(*painter);
+        const auto inventory = painter->GetResourceInventory();
+        const auto image = Read(*painter);
+        VERIFY_IS_TRUE(image.At(16, 16).r < 200, L"triangle interior painted");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(48, 48), 255, 255, 255, 255, 1), L"outside the hypotenuse untouched");
+
+        const auto stats = Paint(*painter, paintTriangles);
+        const auto second = LastChurn(*painter);
+        VERIFY_ARE_EQUAL(3u, stats.primitiveCount);
+        Log::Comment(String().Format(L"churn: first %u/%u, second %u/%u", first.created, first.destroyed, second.created, second.destroyed));
+        VERIFY_IS_TRUE(first.created > 0);
+        VERIFY_ARE_EQUAL(0u, second.created, L"cached and scratch paths are reused");
+        VERIFY_ARE_EQUAL(0u, second.destroyed);
+        VERIFY_ARE_EQUAL(inventory.cachedObjectCount, painter->GetResourceInventory().cachedObjectCount);
+        VERIFY_ARE_EQUAL(inventory.cacheBytes, painter->GetResourceInventory().cacheBytes);
+
+        // Many distinct keys: the LRU stays bounded and the evictions are reported.
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            for (uint64_t key = 100; key < 1100; ++key)
+            {
+                p.FillPath(Triangle(key), c_black);
+            }
+        });
+        const auto churn = LastChurn(*painter);
+        const auto bounded = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"1000 keys: churn %u/%u, cached objects %u -> %u, bytes %llu -> %llu", churn.created, churn.destroyed,
+            inventory.cachedObjectCount, bounded.cachedObjectCount, inventory.cacheBytes, bounded.cacheBytes));
+        VERIFY_ARE_EQUAL(1000u, churn.created);
+        VERIFY_IS_TRUE(churn.destroyed >= 1000 - 256, L"evictions are counted");
+        VERIFY_IS_TRUE(bounded.cachedObjectCount <= inventory.cachedObjectCount + 256, L"path cache is bounded");
+    }
+
+    void GdiPlusPainterTests::GlyphRunFontCacheIsSteadyAndBounded()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        const auto glyphs = MakeGlyphs(L"Hgw", 24);
+        const auto run = MakeRun(glyphs, 24, { 4, 40 });
+        const auto paintRun = [&](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawGlyphRun(run, c_black);
+        };
+        Paint(*painter, paintRun);
+        const auto first = LastChurn(*painter);
+        const auto inventory = painter->GetResourceInventory();
+        const auto ink = FindInk(Read(*painter));
+        Log::Comment(String().Format(L"ink %u pixels in [%u,%u)x[%u,%u)", ink.count, ink.left, ink.right, ink.top, ink.bottom));
+        VERIFY_IS_TRUE(ink.count > 40, L"glyphs drawn");
+        VERIFY_IS_TRUE(ink.left >= 4 && ink.left <= 8, L"first glyph starts at the origin");
+        VERIFY_IS_TRUE(ink.top >= 40 - 24 && ink.top <= 40 - 14, L"cap height of a 24px 'H' above the baseline (em size honored)");
+        VERIFY_IS_TRUE(ink.bottom > 40 && ink.bottom <= 40 + 8, L"descender of 'g' below the baseline");
+
+        Paint(*painter, paintRun);
+        const auto second = LastChurn(*painter);
+        Log::Comment(String().Format(L"churn: first %u/%u, second %u/%u", first.created, first.destroyed, second.created, second.destroyed));
+        VERIFY_IS_TRUE(first.created >= 2, L"font face mapping and font are created once");
+        VERIFY_ARE_EQUAL(0u, second.created);
+        VERIFY_ARE_EQUAL(0u, second.destroyed);
+        VERIFY_ARE_EQUAL(inventory.cachedObjectCount, painter->GetResourceInventory().cachedObjectCount);
+
+        // An animated font size: one font per size, bounded LRU, evictions reported.
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            for (uint32_t size = 0; size < 200; ++size)
+            {
+                p.DrawGlyphRun(MakeRun(glyphs, 8 + size * 0.25f, { 4, 40 }), c_black);
+            }
+        });
+        const auto churn = LastChurn(*painter);
+        const auto bounded = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"200 sizes: churn %u/%u, cached objects %u -> %u", churn.created, churn.destroyed,
+            inventory.cachedObjectCount, bounded.cachedObjectCount));
+        VERIFY_IS_TRUE(churn.created >= 199);
+        VERIFY_IS_TRUE(churn.destroyed >= 200 - 64, L"font evictions are counted");
+        VERIFY_IS_TRUE(bounded.cachedObjectCount <= inventory.cachedObjectCount + 64, L"glyph font cache is bounded");
+    }
+
+    void GdiPlusPainterTests::GlyphRunRightToLeftAdvancesLeftwards()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        const auto glyphs = MakeGlyphs(L"HHH", 16);
+        float width = 0;
+        for (float advance : glyphs.advances) width += advance;
+
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawGlyphRun(MakeRun(glyphs, 16, { 60, 30 }, 1), c_black);
+        });
+        const auto ink = FindInk(Read(*painter));
+        Log::Comment(String().Format(L"RTL ink [%u,%u), run width %.1f", ink.left, ink.right, width));
+        VERIFY_IS_TRUE(ink.count > 0);
+        VERIFY_IS_TRUE(ink.right <= 60, L"an RTL run extends left of its origin");
+        VERIFY_IS_TRUE(ink.left >= static_cast<uint32_t>(60 - width - 2), L"by about its total advance");
+
+        // Offsets move a glyph in the run's direction: positive advanceOffset moves an RTL glyph left.
+        const GlyphOffset offsets[] = { { 3, 0 }, { 3, 0 }, { 3, 0 } };
+        auto run = MakeRun(glyphs, 16, { 60, 30 }, 1);
+        run.glyphOffsets = offsets;
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawGlyphRun(run, c_black);
+        });
+        const auto shifted = FindInk(Read(*painter));
+        VERIFY_ARE_EQUAL(ink.left - 3, shifted.left);
+        VERIFY_ARE_EQUAL(ink.right - 3, shifted.right);
+    }
+
+    void GdiPlusPainterTests::BitmapCacheCountsBytesAndUploads()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        const auto before = painter->GetResourceInventory();
+        VERIFY_ARE_EQUAL(0ull, before.uploadBytesThisFrame);
+
+        const auto red = SolidPixels(16, 8, 0, 0, 255);
+        BitmapSource source{ 7, 1, 16, 8, 16 * 4, red.data() };
+        VERIFY_SUCCEEDED(painter->EnsureBitmap(source));
+        Paint(*painter, [](IImmediatePainter& p) { p.DrawBitmap(7, { 0, 0, 16, 8 }, nullptr, 1); });
+        auto inventory = painter->GetResourceInventory();
+        VERIFY_ARE_EQUAL(16ull * 8 * 4, inventory.uploadBytesThisFrame, L"copy made outside a frame counts in the next frame");
+        Log::Comment(String().Format(L"cache bytes %llu -> %llu, objects %u -> %u", before.cacheBytes, inventory.cacheBytes,
+            before.cachedObjectCount, inventory.cachedObjectCount));
+        VERIFY_IS_TRUE(inventory.cacheBytes >= before.cacheBytes + 16 * 8 * 4, L"bitmap storage counts in cacheBytes");
+
+        // Same (key, generation): no copy.
+        VERIFY_SUCCEEDED(painter->EnsureBitmap(source));
+        Paint(*painter, [](IImmediatePainter& p) { p.DrawBitmap(7, { 0, 0, 16, 8 }, nullptr, 1); });
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame);
+        VERIFY_ARE_EQUAL(0u, LastChurn(*painter).created);
+
+        // New generation inside a frame, same size: refreshed in place (copied, not recreated).
+        const auto blue = SolidPixels(16, 8, 255, 0, 0);
+        BitmapSource refreshed{ 7, 2, 16, 8, 16 * 4, blue.data() };
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            VERIFY_SUCCEEDED(p.EnsureBitmap(refreshed));
+            p.DrawBitmap(7, { 0, 0, 16, 8 }, nullptr, 1);
+        });
+        VERIFY_ARE_EQUAL(16ull * 8 * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+        VERIFY_ARE_EQUAL(0u, LastChurn(*painter).created);
+        VERIFY_IS_TRUE(IsPremultiplied(Read(*painter).At(8, 4), 255, 0, 0, 255, 1), L"refreshed pixels are drawn");
+
+        const auto loaded = painter->GetResourceInventory();
+        painter->ReleaseBitmap(7);
+        inventory = painter->GetResourceInventory();
+        VERIFY_ARE_EQUAL(16ull * 8 * 4, loaded.cacheBytes - inventory.cacheBytes, L"released bitmap storage leaves the cache");
+        VERIFY_ARE_EQUAL(loaded.cachedObjectCount - 1, inventory.cachedObjectCount);
+        const auto stats = Paint(*painter, [](IImmediatePainter& p) { p.DrawBitmap(7, { 0, 0, 16, 8 }, nullptr, 1); });
+        VERIFY_ARE_EQUAL(0u, stats.primitiveCount, L"unknown key is a no-op");
+    }
+
+    void GdiPlusPainterTests::BitmapDrawsOneToOneWithClampedEdges()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        // Left half red, right half green, so the 1:1 copy and the source rect are both observable.
+        auto pixels = SolidPixels(16, 16, 0, 0, 255);
+        for (uint32_t y = 0; y < 16; ++y)
+        {
+            for (uint32_t x = 8; x < 16; ++x)
+            {
+                uint8_t* p = &pixels[(y * 16 + x) * 4];
+                p[0] = 0; p[1] = 255; p[2] = 0;
+            }
+        }
+        VERIFY_SUCCEEDED(painter->EnsureBitmap({ 1, 1, 16, 16, 16 * 4, pixels.data() }));
+        const RectF greenHalf{ 8, 0, 16, 16 };
+        const auto stats = Paint(*painter, [&](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawBitmap(1, { 8, 8, 24, 24 }, nullptr, 1);
+            p.DrawBitmap(1, { 32, 8, 56, 32 }, &greenHalf, 1); // 3x upscale of the green half
+            p.DrawBitmap(1, { 8, 40, 24, 56 }, nullptr, 0.5f);
+        });
+        VERIFY_ARE_EQUAL(3u, stats.primitiveCount);
+        const auto image = Read(*painter);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(8, 8), 0, 0, 255, 255, 1), L"1:1 corner pixel exact (no fade at the edge)");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(15, 23), 0, 0, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(16, 8), 0, 255, 0, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(23, 23), 0, 255, 0, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(7, 8), 255, 255, 255, 255, 1), L"nothing outside the destination");
+        LogPixel(L"upscaled edge", 32, 8, image.At(32, 8));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(32, 8), 0, 255, 0, 255, 2), L"source rect edges clamp: no red bleed, no transparent fade");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(55, 31), 0, 255, 0, 255, 2));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(10, 44), 127, 127, 255, 255, 3), L"50% red over white");
+    }
+
+    void GdiPlusPainterTests::ScrollPixelsMovesRowsWithinRect()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        Paint(*painter, PaintRowRamp);
+        const auto before = Read(*painter);
+
+        VERIFY_ARE_EQUAL(S_OK, painter->ScrollPixels({ 0, 0, 32, 64 }, 0, -8)); // left half scrolls up by 8
+        VERIFY_ARE_EQUAL(S_OK, painter->ScrollPixels({ 32, 0, 64, 64 }, 0, 8)); // right half scrolls down by 8
+        auto image = Read(*painter);
+        for (uint32_t y = 0; y < 56; ++y)
+        {
+            VERIFY_ARE_EQUAL(before.At(0, y + 8).r, image.At(0, y).r);
+            VERIFY_ARE_EQUAL(before.At(31, y + 8).r, image.At(31, y).r);
+            VERIFY_ARE_EQUAL(before.At(32, y).r, image.At(32, y + 8).r, L"downward moves copy bottom-up (memmove-safe overlap)");
+        }
+        VERIFY_ARE_EQUAL(before.At(0, 60).r, image.At(0, 60).r, L"the exposed strip keeps stale pixels until repainted");
+        VERIFY_ARE_EQUAL(before.At(40, 2).r, image.At(40, 2).r);
+
+        // Horizontal, clipped to the rect and the target.
+        VERIFY_ARE_EQUAL(S_OK, painter->ScrollPixels({ 8, 8, 100, 16 }, 4, 0));
+        const auto shifted = Read(*painter);
+        VERIFY_IS_TRUE(memcmp(&shifted.bytes[(10 * 64 + 12) * 4], &image.bytes[(10 * 64 + 8) * 4], (64 - 12) * 4) == 0);
+        VERIFY_IS_TRUE(memcmp(&shifted.bytes[(16 * 64) * 4], &image.bytes[(16 * 64) * 4], 64 * 4) == 0, L"rows outside the rect untouched");
+
+        VERIFY_ARE_EQUAL(S_OK, painter->ScrollPixels({ 0, 0, 64, 64 }, 0, 100), L"moving everything out of the rect is a no-op");
+        VERIFY_SUCCEEDED(painter->BeginFrame(nullptr, 0));
+        VERIFY_ARE_EQUAL(E_ILLEGAL_METHOD_CALL, painter->ScrollPixels({ 0, 0, 64, 64 }, 0, 1));
+        FrameStats stats{};
+        VERIFY_SUCCEEDED(painter->EndFrame(&stats));
+    }
+
+    void GdiPlusPainterTests::ScrollPixelsPresentsMovedArea()
+    {
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        auto device = CreateWarpDevice();
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+        Paint(*painter, PaintRowRamp);
+        Paint(*painter, PaintRowRamp); // both flip buffers hold the ramp
+
+        // Scroll the left half up by 8 and repaint only the exposed strip.
+        VERIFY_SUCCEEDED(painter->ScrollPixels({ 0, 0, 32, 64 }, 0, -8));
+        const RectF strip{ 0, 56, 32, 64 };
+        const auto stats = Paint(*painter, [](IImmediatePainter& p) { p.FillRectangle({ 0, 0, 64, 64 }, c_black); }, &strip, 1);
+        VERIFY_ARE_EQUAL(32ull * 8, stats.damagedPixels, L"the moved area is not damage");
+        VERIFY_ARE_EQUAL(32ull * 64 * 4, painter->GetResourceInventory().uploadBytesThisFrame,
+            L"presented = exposed strip + moved area, without double counting");
+
+        const auto target = Read(*painter);
+        const auto presented = ReadBackBuffer(device.Get(), swapChain.Get());
+        for (uint32_t y = 0; y < c_size; y += 7)
+        {
+            VERIFY_ARE_EQUAL(target.At(4, y).r, presented.At(4, y).r, L"moved and repainted pixels reach the back buffer");
+        }
+        VERIFY_IS_TRUE(IsPremultiplied(presented.At(4, 60), 0, 0, 0, 255, 1));
+
+        // The scroll is consumed by that frame.
+        const RectF small{ 0, 0, 4, 4 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &small, 1);
+        VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
     }
 
     // ---- ResourceChurn event ----
