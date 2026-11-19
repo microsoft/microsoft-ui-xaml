@@ -540,17 +540,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleWithXBindTests::MutableSetterAfterStyledElementsWereDestroyed()
+    void StyleWithXBindTests::DestroyedStyledElementsAndStylesDoNotAccumulate()
     {
         TestCleanupWrapper cleanup;
         RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
 
-        // A Style with a mutable setter lists the elements that use it. The list drops destroyed elements before it
-        // grows; the elements that are alive must still get the new setter value.
-        StackPanel^ stackPanel;
-        RunOnUIThread([&stackPanel]()
+        // A Style with a mutable setter lists the elements that use it. Each generation styles one TextBlock with a Style
+        // that stays alive, and one with a new Style. Both TextBlocks and the new Style are destroyed at the end of the
+        // generation. Their entries must not keep allocations alive, and the live TextBlock must still get Setter changes.
+        const auto loadPanel = []()
         {
-            stackPanel = safe_cast<StackPanel^>(XamlReader::Load(
+            return safe_cast<StackPanel^>(XamlReader::Load(
                 L"<StackPanel"
                 L"  xmlns='http://schemas.microsoft.com/client/2007' "
                 L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
@@ -561,44 +561,64 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"  </StackPanel.Resources>"
                 L"</StackPanel>"
             ));
+        };
+        const auto getStyle = [](StackPanel^ panel)
+        {
+            return safe_cast<Style^>(panel->Resources->Lookup(Platform::StringReference(L"theStyle")));
+        };
 
-            TestServices::WindowHelper->WindowContent = stackPanel;
+        StackPanel^ livePanel;
+        TextBlock^ liveTextBlock;
+        RunOnUIThread([&]()
+        {
+            livePanel = loadPanel();
+            liveTextBlock = ref new TextBlock();
+            liveTextBlock->Style = getStyle(livePanel);
+            livePanel->Children->Append(liveTextBlock);
+            TestServices::WindowHelper->WindowContent = livePanel;
         });
         TestServices::WindowHelper->WaitForIdle();
 
-        RunOnUIThread([&stackPanel]()
+        RunOnUIThread([&]()
         {
-            auto style = safe_cast<Style^>(stackPanel->Resources->Lookup(Platform::StringReference(L"theStyle")));
-            for (unsigned int round = 0; round < 3; round++)
+            auto liveStyle = getStyle(livePanel);
+            constexpr unsigned int generationCount = 64;
+            const auto createGenerations = [&]()
             {
-                for (int i = 0; i < 300; i++)
+                for (unsigned int generation = 0; generation < generationCount; ++generation)
                 {
-                    auto textBlock = ref new TextBlock();
-                    textBlock->Style = style;
-                    stackPanel->Children->Append(textBlock);
+                    auto withLiveStyle = ref new TextBlock();
+                    withLiveStyle->Style = liveStyle;
+                    auto withNewStyle = ref new TextBlock();
+                    withNewStyle->Style = getStyle(loadPanel());
                 }
+            };
+            const auto outstanding = []()
+            {
+                return static_cast<int64_t>(TestServices::WindowHelper->GetAllocationCount()) -
+                    static_cast<int64_t>(TestServices::WindowHelper->GetDeallocationCount());
+            };
 
-                LOG_OUTPUT(L"Keep the first TextBlock of each round; the others are destroyed.");
-                while (stackPanel->Children->Size > round + 1)
-                {
-                    stackPanel->Children->RemoveAtEnd();
-                }
+            // Release builds count allocations only while the XAML profiler provider is enabled.
+            const auto allocationsBefore = TestServices::WindowHelper->GetAllocationCount();
+            createGenerations();
+            if (TestServices::WindowHelper->GetAllocationCount() == allocationsBefore)
+            {
+                LOG_OUTPUT(L"Allocation counting is off, so only the Setter change is verified.");
             }
-        });
-        TestServices::WindowHelper->WaitForIdle();
+            else
+            {
+                const auto outstandingBefore = outstanding();
+                createGenerations();
+                const auto growth = outstanding() - outstandingBefore;
 
-        RunOnUIThread([&stackPanel]()
-        {
-            auto mutableSetter_Text = safe_cast<Setter^>(stackPanel->FindName(Platform::StringReference(L"setter0")));
+                LOG_OUTPUT(L"Outstanding allocation growth: %lld", growth);
+                VERIFY_IS_LESS_THAN(growth, static_cast<int64_t>(generationCount / 2));
+            }
+
             auto newTextValue = Platform::StringReference(L"still listening");
-
-            mutableSetter_Text->Value = newTextValue;
-
-            VERIFY_ARE_EQUAL(3u, stackPanel->Children->Size);
-            for (unsigned int i = 0; i < stackPanel->Children->Size; i++)
-            {
-                VERIFY_ARE_EQUAL(newTextValue, safe_cast<TextBlock^>(stackPanel->Children->GetAt(i))->Text);
-            }
+            safe_cast<Setter^>(livePanel->FindName(Platform::StringReference(L"setter0")))->Value = newTextValue;
+            VERIFY_ARE_EQUAL(newTextValue, liveTextBlock->Text);
         });
     }
 
