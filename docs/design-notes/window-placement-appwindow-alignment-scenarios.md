@@ -31,6 +31,12 @@ Terms used below:
   app passes `true`.
 - **Work-area offset** is the window's position relative to the top-left corner of its display's
   work area. The work area is the display minus the taskbar.
+- **Released AppWindow** means the AppWindow in a released WinAppSDK, without the prototype
+  changes. The placement APIs there are experimental.
+- **Scenario names** (like `restore-maximized`) are stable IDs. Don't rename them. To evaluate a
+  different design, fork this doc and keep the names, so the two docs compare scenario by
+  scenario. Adding new scenarios is fine.
+
 Cascading is deferred. See [Cascade](#cascade).
 
 Status key:
@@ -38,13 +44,13 @@ Status key:
 | Status | Meaning |
 |---|---|
 | Supported | Demonstrated with the prototype DLLs by a test or a manual sample-app check. Does not mean released support. |
-| App-managed | The app does the work with existing APIs. WinUI doesn't test it. |
+| App-managed | The app does the work with public APIs, including the proposed ones. WinUI doesn't test it. |
 | Open | We want it, but it doesn't work yet, or the behavior isn't decided. |
 | Deferred | Not planned for phase 2. |
 
 Tests are in `dxaml\test\native\external\controls\window\WindowIntegrationTests_Placement.cpp`
-in this branch. "HL n" identifies a recorded manual sample-app check driven
-with Hyperloop. These coverage references describe prior prototype runs, not new runs
+in this branch. "Manual check" means we checked it by hand with `Samples\WindowPlacementApp`.
+These coverage references describe prior prototype runs, not new runs
 or validation of the current `main` branch.
 
 Code samples are C#. A scenario has a sample only when the app has to do more than this:
@@ -58,30 +64,30 @@ window.Activate();
 
 | Scenario | Status | Covered by |
 |---|---|---|
-| `first-launch-no-data` | Supported | `WindowPlacementFallbackWithoutSavedPlacement`, HL 12, HL 13 |
-| `restore-normal` | Supported | `WindowPlacementRestoreNormal`, `WindowPlacementPersistMovedBounds`, HL 1 |
-| `restore-maximized` | Supported | `WindowPlacementRestoreMaximized`, HL 2 |
+| `first-launch-no-data` | Supported | `WindowPlacementFallbackWithoutSavedPlacement`, manual check |
+| `restore-normal` | Supported | `WindowPlacementRestoreNormal`, `WindowPlacementPersistMovedBounds`, manual check |
+| `restore-maximized` | Supported | `WindowPlacementRestoreMaximized`, manual check |
 | `restore-only-on-first-activate` | Supported | `WindowPlacementRestoresOnlyOnFirstActivation`, `WindowPlacementSettingIdAfterActivationDoesNotRestore` |
 | `no-placement-id` | Supported | `WindowPlacementClearingIdDisablesSaving` |
 | `save-on-every-close-path` | Supported | `WindowPlacementSavesOnlyConfirmedSessionEnd`, `WindowPlacementSavesFinalCloseHandlerChanges`, `WindowPlacementSavesOnDestroy`, `WindowPlacementSavesDuringNativeDestruction`, `WindowPlacementSavesDuringSentMessages` |
 | `bad-saved-data` | Supported | `WindowPlacementRejectsInvalidRecords`, `WindowPlacementRecordCompatibility`, `WindowPlacementReportsHashCollision` |
-| `restore-minimized-default` | Supported | `WindowPlacementRestoreMinimizedNormal`, `WindowPlacementRestoreMinimizedMaximized`, HL 3 |
-| `restart-keep-minimized` | Supported | `WindowPlacementRestorationBehavior`, HL 4 |
-| `startupinfo-minimized` | Supported (`SaveOnClose` or `Manual` mode only) | HL 11 |
-| `startupinfo-minimized-no-data` | Deferred | Not tested |
+| `restore-minimized-default` | Supported | `WindowPlacementRestoreMinimizedNormal`, `WindowPlacementRestoreMinimizedMaximized`, manual check |
+| `restart-keep-minimized` | Supported | `WindowPlacementRestorationBehavior`, manual check |
+| `startupinfo-minimized` | Supported (`SaveOnClose` or `Manual` mode only) | Manual check |
+| `startupinfo-minimized-no-data` | Open | Not tested |
 | `startupinfo-maximized` | Open | Not tested |
-| `restart-same-virtual-desktop` | Open | Not tested |
-| `fullscreen-not-restored` | Supported | `WindowPlacementDoesNotRestoreFullScreen`, HL 5, HL G3 |
-| `maximized-then-fullscreen` | Supported | `WindowPlacementDoesNotRestoreFullScreen`, HL 5, HL G1 |
+| `restart-same-virtual-desktop` | Deferred | Not tested |
+| `fullscreen-not-restored` | Supported | `WindowPlacementDoesNotRestoreFullScreen`, manual check |
+| `maximized-then-fullscreen` | Supported | `WindowPlacementDoesNotRestoreFullScreen`, manual check |
 | `fullscreen-before-first-activate` | Supported | `WindowPlacementSkipsUnsupportedPresenters` |
-| `app-restores-fullscreen` | App-managed | Not tested |
+| `app-restores-fullscreen` | App-managed | Sample app (`--launch-fullscreen`). A manual check covers the hidden full-screen apply. |
 | `restore-snapped` | Supported | `WindowPlacementRestoreSnapped` |
 | `restore-minimized-snapped` | Open | `WindowPlacementDocumentsMinimizedSnappedCaptureLimitations`, `WindowPlacementRestoreMinimizedSnapped` |
 | `cascade-same-process` | Deferred | Not tested |
 | `cascade-new-process` | Deferred | Not tested |
 | `no-cascade-by-default` | Supported | `WindowPlacementDoesNotCascadeForSharedId` |
 | `multiple-ids` | Supported | `WindowPlacementSavesUsingCurrentId`, `WindowPlacementIdsAreCaseSensitive` |
-| `app-loads-and-applies` | Supported | `WindowPlacementModes`, HL 9a, HL 9b |
+| `app-loads-and-applies` | Supported | `WindowPlacementModes`, manual check |
 | `app-reads-after-activate` | Supported | `WindowPlacementTryLoadPlacementDetails` |
 | `app-saves-now` | Supported | `WindowPlacementSavePlacementDetails` |
 | `app-overrides-size` | Supported | `WindowPlacementActivatedCanOverrideSize`, `WindowPlacementSizeChangedCanOverrideRestoredSize` |
@@ -92,9 +98,9 @@ window.Activate();
 | `fixed-size-window` | Supported | `WindowPlacementRespectsFixedSizing` |
 | `display-changes` | Supported | `WindowPlacementPreferSameNameDisplay`, `WindowPlacementAdaptToReplacementDisplay`, `WindowPlacementPreserveLogicalSize`, `WindowPlacementMigratesChangedWorkArea` |
 | `launch-on-display-hint` | Open | Not tested |
-| `fallback-to-primary-display` | Open | Display-selection helpers are in the prototype. Sample app only, on one display with a faked `DeviceName`. No integration test. |
-| `no-flash-on-apply` | Open | HL 6 (hidden contract only) |
-| `restore-z-order` | Open | Not tested |
+| `fallback-to-primary-display` | App-managed | Sample app only: a faked `DeviceName` on one display, and a real second display removed. No integration test. |
+| `no-flash-on-apply` | Open | Manual check (stays hidden only) |
+| `restore-z-order` | App-managed | Not tested |
 | `compact-overlay` | Open | `WindowPlacementSkipsUnsupportedPresenters` |
 | `unpackaged-app` | Deferred | None |
 | `intentionally-off-screen` | Deferred | None |
@@ -129,9 +135,10 @@ WinUI keeps the maximized state and the normal bounds separately.
 5. Restore window
 6. Assert: Window bounds are the bounds from (1)
 
-> **STARTUPINFO.** Only a `SaveOnClose` or `Manual` app that passes `isFirstWindow: true` uses STARTUPINFO. Shipped
-> AppWindow then lets `SW_SHOW` override a saved maximized state. The prototype preserves
-> the saved state for neutral show commands such as `SW_SHOW`.
+> **STARTUPINFO.** Only a `SaveOnClose` or `Manual` app that passes `isFirstWindow: true` uses
+> STARTUPINFO. Released AppWindow then lets `SW_SHOW` override a saved maximized state, so the
+> window comes back normal. The prototype keeps the saved state for neutral show commands such
+> as `SW_SHOW`.
 
 Scenario `restore-only-on-first-activate`
 
@@ -161,7 +168,9 @@ window.PlacementId = "";
 
 Scenario `save-on-every-close-path`
 
-WinUI saves no matter how the window goes away.
+WinUI saves no matter how the window goes away. The usual save limits still apply: WinUI doesn't
+save a window that was never activated, a CompactOverlay window, or a window that started full
+screen (see `fullscreen-before-first-activate`).
 
 | Close path | Expected |
 |---|---|
@@ -212,7 +221,8 @@ user left it. That includes minimized windows.
 6. Assert: Window bounds are the bounds from (1)
 
 The app decides that this is a restart, and sets the behavior before the first `Activate` only on
-those launches. WinUI can't tell on its own. This works in all three modes.
+those launches. WinUI can't tell on its own. This works in all three modes. (In `Manual` mode, the
+app saves in step 2 itself.)
 Instead of `All`, the app can add only the proposed `AllowShowMinimized` flag (value 16).
 
 ```cs
@@ -253,19 +263,25 @@ window.Activate();
 
 Scenario `startupinfo-maximized`
 
-> **Open.** Not tested. We expect the same rule as `startupinfo-minimized`.
+> **Open.** Not tested. Same rule as `startupinfo-minimized`: it works only in `SaveOnClose` or
+> `Manual` mode, when the app passes `isFirstWindow: true`. The default
+> `PlacementRestorationBehavior` includes `AllowShowMaximized`, so we expect the window to open
+> maximized. If the app removes `AllowShowMaximized`, AppWindow drops the STARTUPINFO maximize too.
+> Whether STARTUPINFO should win in that case is an open question.
 
 1. Open window, move and resize it, close it normal
 2. Launch the process maximized (STARTUPINFO `wShowWindow` = `SW_SHOWMAXIMIZED`)
-3. Open window
+3. Open window in `SaveOnClose` mode, applying the saved details with `isFirstWindow: true`
 4. Expected: Window is maximized
 5. Restore window
 6. Expected: Window bounds are the bounds from (1)
 
 Scenario `restart-same-virtual-desktop`
 
-> **Open.** WinUI's record reserves room for a virtual desktop id, but WinUI doesn't fill or restore
-> it yet. `AppWindowPlacementDetails` has no virtual desktop field.
+> **Deferred.** WinUI's record reserves room for a virtual desktop id, but WinUI doesn't fill or
+> restore it. `AppWindowPlacementDetails` has no virtual desktop field. Plan: add an optional
+> virtual desktop id to the details, plus a `PlacementRestorationBehavior` flag (off by default)
+> to honor it.
 
 1. Move window to virtual desktop 2, then close it
 2. Re-open window with `PlacementRestorationBehavior` = `All`
@@ -273,14 +289,31 @@ Scenario `restart-same-virtual-desktop`
 
 Scenario `startupinfo-minimized-no-data`
 
-> **Deferred.** The window comes up normal: WinUI has no placement to apply, and plain `Activate`
-> does not explicitly apply the STARTUPINFO show command. This scenario and the interaction
-> with native first-show startup handling have not been verified.
+> **Open.** With no saved data, WinUI has nothing to apply, so this bypasses the placement logic.
+> Plain `Activate` doesn't apply the STARTUPINFO show command. Windows may already apply it on the
+> process's first show. That hasn't been checked.
 
 1. Clear saved data
 2. Launch the process minimized
 3. Open window
 4. Expected: Window is minimized
+
+An app may be able to handle this today (untested). With no saved data, it applies the hidden
+window's own placement with `isFirstWindow: true`. AppWindow then applies STARTUPINFO, including
+a minimize or a display hint (`launch-on-display-hint`), and keeps the window hidden.
+
+```cs
+window.PlacementId = "Main";
+window.PlacementMode = WindowPlacementMode.SaveOnClose;
+
+var details = window.TryLoadPlacementDetails()
+           ?? window.AppWindow.GetCurrentPlacement(); // No saved data: use the current bounds.
+window.AppWindow.SetCurrentPlacement(details, isFirstWindow: true);
+window.Activate();
+```
+
+A cleaner AppWindow API for this is an open question. The leading option: `SetCurrentPlacement` accepts
+null, so the app passes `TryLoadPlacementDetails()` directly.
 
 ## Full screen
 
@@ -290,7 +323,8 @@ Scenario `fullscreen-not-restored`
 
 1. Open window, move and resize it
 2. Switch to the FullScreen presenter, then close the window
-3. Re-open window, in any mode and with any `PlacementRestorationBehavior`
+3. Re-open window. WinUI restores it, or the app applies `TryLoadPlacementDetails`. Any
+   `PlacementRestorationBehavior`, including `All`.
 4. Assert: Window uses the Overlapped presenter and is normal, with the bounds from (1)
 
 Scenario `maximized-then-fullscreen`
@@ -601,7 +635,7 @@ window.Activate();
 ```
 
 > In the prototype, `SetCurrentPlacement` keeps a hidden window hidden, so the user doesn't
-> see the resize. Shipped AppWindow shows the window during the call.
+> see the resize. Released AppWindow shows the window during the call.
 
 ## Displays
 
@@ -640,41 +674,41 @@ Same rules as phase 1. AppWindow's PlacementEx now does this work.
 | Work area changed (taskbar moved or resized) | Window keeps its work-area offset. Works for normal, maximized, snapped, and minimized-from-snapped. |
 
 > **Known limitation.** The prototype's `SetCurrentPlacement` fits the window to the monitor.
-> Apps that rely on off-monitor or oversized windows will see a change.
+> Released AppWindow didn't. Apps that rely on off-monitor or oversized windows will see a change.
+> See `intentionally-off-screen`.
 
 Scenario `launch-on-display-hint`
 
 > **Open.** Not tested. A launcher can say which display to use (STARTUPINFO `hStdOutput` monitor
-> hint, for example from the taskbar on a second display). `RestoreAndSave` mode never honors STARTUPINFO.
-> In the other modes, the app passes `isFirstWindow: true` to use it.
+> hint, for example from the taskbar on a second display). `RestoreAndSave` mode never honors
+> STARTUPINFO. In the other modes, the app passes `isFirstWindow: true`, and AppWindow moves the
+> saved placement to the hint display. With no saved data there's nothing to apply, so this
+> depends on what Windows does for a plain first show (same gap as `startupinfo-minimized-no-data`).
 
-1. Clear saved data
+1. Save a placement on display 1, then close the app
 2. Launch the app from the taskbar on display 2
-3. Expected: Window opens on display 2
+3. Open window in `SaveOnClose` mode, applying the saved details with `isFirstWindow: true`
+4. Expected: Window opens on display 2, at the same work-area offset
 
 Scenario `fallback-to-primary-display`
 
-> **Open.** Uses the new `TryGetDisplayArea()` and `MoveToDisplayArea(DisplayArea)`
-> helpers on `AppWindowPlacementDetails`. Both are in the prototype as experimental APIs.
-> By default, a window whose saved display is gone opens on the
-> nearest display (see `display-changes`). Some apps want the primary display instead. Without
-> the helpers, the app can't tell that the saved display is gone, and can't redo PlacementEx's
-> work-area and DPI math itself.
->
-> WindowPlacementApp runs this code with Setup `ManualSaveInClosed` and "Fake missing display".
-> That option gives the loaded details a fake `DeviceName`, so `TryGetDisplayArea` returns null.
-> It passed on a VM with one display at 96 DPI, for a normal window and a snapped window.
-> It also passed on a VM with a real second display: the display was removed, and the
-> primary display was at 96 DPI and then at 144 DPI. The normal and snapped windows both
-> landed on the primary display with scaled rects.
-> Still open: the maximized case below through `MoveToDisplayArea` (a maximized
-> `RestoreAndSave` record did open maximized on the primary display), and an
-> integration test.
+By default, a window whose saved display is gone opens on the nearest display (see
+`display-changes`). Some apps want the primary display instead. The prototype adds two
+experimental helpers on `AppWindowPlacementDetails` for this: `TryGetDisplayArea()` and
+`MoveToDisplayArea(DisplayArea)`. Without them, the app can't tell that the saved display is
+gone, and can't redo the work-area and DPI math itself.
 
-1. Save a placement on display 2, maximized
+1. Save a placement on display 2, normal or snapped
 2. Disconnect display 2
 3. Open a window with the same id. The app moves the saved details to the primary display.
-4. Expected: Window opens on the primary display, maximized, with about the same logical size
+4. Expected: Window opens on the primary display, in the same state, with about the same
+   logical size
+
+> **Coverage.** WindowPlacementApp runs this code with Setup `ManualSaveInClosed`. It passed for
+> normal and snapped windows in two setups: one display with "Fake missing display" (a fake
+> `DeviceName`), and a real second display that was removed, with the primary at 96 and then
+> 144 DPI. Not verified yet: a maximized record through `MoveToDisplayArea`, and an integration
+> test.
 
 ```cs
 var window = new MainWindow();
@@ -702,19 +736,23 @@ window.Activate(); // Shows only. SaveOnClose mode.
 
 Scenario `no-flash-on-apply`
 
-> **Open.** Shipped AppWindow's `SetCurrentPlacement` shows and activates the window before WinUI's
-> own show code runs. The prototype changes the call to preserve visibility and avoid activation.
-> HL 6 confirms the window stays hidden and inactive during the call. We haven't tested for a
-> visible flash with frame recording.
+> **Open.** Released AppWindow's `SetCurrentPlacement` shows and activates the window before
+> WinUI's own show code runs. The prototype changes the call to keep the window hidden and
+> inactive. A manual check confirms the window stays hidden and inactive during the call. We haven't tested
+> for a visible flash with frame recording.
+>
+> On older Windows builds without `ApplyWindowAction`, applying a maximized state still shows and
+> activates the window briefly, while it's cloaked, then hides it again. The user doesn't see it,
+> but the app can get extra show, activate, and hide messages, and focus can move.
 
 1. Open window with saved data
 2. Expected: The window appears once, at its final bounds, with no visible move
 
-Smaller open and deferred scenarios:
+Smaller scenarios:
 
 | Scenario | Status | Notes |
 |---|---|---|
-| `restore-z-order` | Open | WinUI doesn't save z-order between windows. An app that cares sets it after it opens its windows, for example `docB.AppWindow.MoveInZOrderBelow(docA.AppWindow.Id)`. |
+| `restore-z-order` | App-managed | WinUI doesn't save z-order between windows. An app that cares sets it after it opens its windows, for example `docB.AppWindow.MoveInZOrderBelow(docA.AppWindow.Id)`. |
 | `compact-overlay` | Open | WinUI doesn't save placement while the window uses the CompactOverlay presenter. AppWindow doesn't remember the pre-CompactOverlay rect. |
 | `unpackaged-app` | Deferred | Same as phase 1. Without package identity, `TryLoadPlacementDetails` returns null and saving does nothing. The window still opens normally. |
 | `intentionally-off-screen` | Deferred | WinUI and AppWindow always fit the window on screen. An app that wants a window off screen moves it after `Activate`. |

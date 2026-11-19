@@ -49,10 +49,9 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
-  <!-- Optional: build against a prototype AppWindow projection from the WinAppSDK monorepo.
-       Set IxpProjectionPath to the folder that holds a locally built
-       Microsoft.InteractiveExperiences.Projection.dll, for example
-       <LiftedIXP>\bin\x64\Release\Published\CSharp\Experimental\net6.0-windows10.0.17763.0.
+  <!-- Optional: build against a locally built prototype AppWindow projection.
+       Set IxpProjectionPath to the folder that holds that build's
+       Microsoft.InteractiveExperiences.Projection.dll.
        The target swaps the NuGet copy for that one (compile and copy-local, including the
        HintPath that ResolveAssemblyReference uses) and defines
        IXP_PROTOTYPE_PROJECTION, which turns on the code that calls prototype-only AppWindow APIs.
