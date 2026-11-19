@@ -30,6 +30,14 @@
         <ClCompile Include="..\GdiPlusPainter.cpp"/>
         <ClCompile Include="..\D2DPainter.cpp"/>
         <ClCompile Include="..\D2DDeviceFactory.cpp"/>
+        <!-- D2D-HW branch -->
+        <ClCompile Include="..\GpuTimestampProfiler.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- D2D-HW branch -->
+        <ClInclude Include="..\inc\D2DDeviceFactory.h"/>
+        <ClInclude Include="..\inc\GpuTimestampProfiler.h"/>
     </ItemGroup>
 
     <ItemGroup>
