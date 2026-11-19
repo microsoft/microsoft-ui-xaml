@@ -20,6 +20,7 @@
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
+#include <XamlCompositionBrush.h>
 #include <dwrite.h>
 #include <algorithm>
 #include <cmath>
@@ -216,6 +217,13 @@ namespace
             *color = ToColor(solid->m_rgb, brushOpacity);
             return color->a > 0 ? BrushResult::Color : BrushResult::None;
         }
+        if (auto composition = do_pointer_cast<CXamlCompositionBrush>(brush))
+        {
+            // AcrylicBrush and other XamlCompositionBrushBase effects: paint the fallback color (the brush's own
+            // "effects unavailable" rendering); callers report it through CompositionBrushDetail.
+            *color = ToColor(composition->m_fallbackColor, brushOpacity);
+            return color->a > 0 ? BrushResult::Color : BrushResult::None;
+        }
         if (auto gradient = do_pointer_cast<CGradientBrush>(brush))
         {
             float a = 0, r = 0, g = 0, b = 0;
@@ -243,6 +251,25 @@ namespace
             return color->a > 0 ? BrushResult::Color : BrushResult::None;
         }
         return BrushResult::Unsupported;
+    }
+
+    // Unsupported-content detail for a brush painted with its fallback color, or nullptr.
+    const wchar_t* CompositionBrushDetail(_In_opt_ CBrush* brush) noexcept
+    {
+        if (do_pointer_cast<CXamlCompositionBrush>(brush) == nullptr)
+        {
+            return nullptr;
+        }
+        const CClassInfo* info = brush->GetClassInformation();
+        if (info != nullptr)
+        {
+            const xstring_ptr name = info->GetFullName();
+            if (!name.IsNullOrEmpty() && wcsstr(name.GetBuffer(), L"AcrylicBrush") != nullptr)
+            {
+                return L"AcrylicBrush:fallback";
+            }
+        }
+        return L"XamlCompositionBrush:fallback";
     }
 
     struct Fnv
@@ -1277,6 +1304,10 @@ void ImmediateRenderer::EmitContent(
         {
             ReportUnsupported(element, L"Brush");
         }
+        if (const wchar_t* detail = CompositionBrushDetail(background.get()))
+        {
+            ReportUnsupported(element, detail);
+        }
 
         if (backgroundResult == BrushResult::Color)
         {
@@ -1312,6 +1343,10 @@ void ImmediateRenderer::EmitContent(
         if (fillResult == BrushResult::Unsupported || strokeResult == BrushResult::Unsupported)
         {
             ReportUnsupported(element, L"Brush");
+        }
+        if (const wchar_t* detail = CompositionBrushDetail(shape->m_pFill))
+        {
+            ReportUnsupported(element, detail);
         }
 
         const float h = strokeResult == BrushResult::Color ? t / 2 : 0.0f;
@@ -1574,6 +1609,12 @@ void ImmediateRenderer::Walk(
     if (element->HasActiveProjection())
     {
         ReportUnsupported(element, L"Projection");
+    }
+
+    // ThemeShadow is a Composition projected/drop shadow; immediate modes do not draw shadows.
+    if (element->IsShadowCaster())
+    {
+        ReportUnsupported(element, L"ThemeShadow");
     }
 
     // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual, e.g. the
@@ -2173,9 +2214,9 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     // Upload decoded images the painter has not seen, and release ones no longer drawn.
     constexpr uint64_t c_bitmapIdleFrames = 120;
     ++state.frames;
-    for (const auto& surface : list.bitmaps)
+    for (const auto& decoded : list.bitmaps)
     {
-        const uint64_t key = reinterpret_cast<uint64_t>(surface.get());
+        const uint64_t key = reinterpret_cast<uint64_t>(decoded.get());
         auto found = state.bitmaps.find(key);
         if (found == state.bitmaps.end())
         {
@@ -2183,7 +2224,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
             XINT32 stride = 0;
             XUINT32 w = 0;
             XUINT32 h = 0;
-            if (FAILED(surface->Lock(&pixels, &stride, &w, &h)))
+            if (FAILED(decoded->Lock(&pixels, &stride, &w, &h)))
             {
                 continue;
             }
@@ -2195,12 +2236,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
             source.stride = static_cast<uint32_t>(stride);
             source.pixels = static_cast<const uint8_t*>(pixels);
             const HRESULT ensureHr = state.painter->EnsureBitmap(source);
-            IGNOREHR(surface->Unlock());
+            IGNOREHR(decoded->Unlock());
             if (FAILED(ensureHr))
             {
                 continue;
             }
-            found = state.bitmaps.emplace(key, IslandState::BitmapEntry{ surface, 0 }).first;
+            found = state.bitmaps.emplace(key, IslandState::BitmapEntry{ decoded, 0 }).first;
         }
         found->second.lastUsed = state.frames;
     }
