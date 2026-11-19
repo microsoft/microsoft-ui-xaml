@@ -75,7 +75,18 @@ public sealed record PhaseMetrics(
     // over all adapters.
     double? RenderAdapterGpuLocalMBMedian = null,
     double? RenderAdapterGpuNonLocalMBMedian = null,
-    ThreadCpuMetrics? ThreadCpu = null); // immediate-rendering-d2d-sw: W1/W2 CPU split
+    ThreadCpuMetrics? ThreadCpu = null, // immediate-rendering-d2d-sw: W1/W2 CPU split
+    // ---- Extended scenes S3-S10 ----
+    // R2/R3: intervals between consecutive drawn FrameEnds. In scenes without continuous interaction, gaps longer than
+    // MetricsCalculator.MaxContinuousGapMs are idle time between discrete inputs and are excluded.
+    Distribution? FrameIntervalMs = null,
+    // Intervals longer than 1.5x the vsync period (DisplayInfo; 60 Hz assumed when absent).
+    int? DroppedFrames = null,
+    // Frames whose FrameBegin-to-FrameEnd (UI thread work) exceeded 1.5x vsync.
+    int? LongFrames = null,
+    double? LongestFrameGapMs = null,
+    // SceneValue counters (RealizedItems, ImageLoadMs, ...) emitted during the phase; null when none.
+    IReadOnlyDictionary<string, Distribution>? SceneValues = null);
 
 // ---- Added by immediate-rendering-d2d-sw ----
 // CPU ms per ThreadCategory over a phase (last minus first ThreadCpuSample in the phase). Threads that start in ntdll
@@ -100,6 +111,10 @@ public sealed record ThreadCpuMetrics(double WindowMs, double UiMs, double WarpR
 public sealed record ThreadModuleMetrics(string Module, string Category, int Threads, double CpuMs);
 // ---- End immediate-rendering-d2d-sw ----
 
+// Memory after one S9 lifecycle step: the last sample before the next step (or the end of the phase).
+public sealed record StepMetrics(int Step, string Name, int Windows, double PrivateMB, double WorkingSetMB, double GpuLocalMB,
+    int GdiObjects, int UserObjects);
+
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
 public sealed record RunMetrics(
@@ -120,8 +135,29 @@ public sealed record RunMetrics(
     // ---- Added by immediate-rendering-d2d-sw ----
     IReadOnlyList<ThreadModuleMetrics>? ThreadModules = null,
     IReadOnlyDictionary<string, string>? RasterModuleVersions = null,
-    int DeviceLostCount = 0)
+    int DeviceLostCount = 0,
     // ---- End immediate-rendering-d2d-sw ----
+    // ---- Extended scenes S3-S10 ----
+    double? RefreshHz = null,
+    bool AnimatesWhileIdle = false,
+    // E1 'animation tax': Steady CPU ms/s of a scene that animates while idle (S6); null for static scenes.
+    double? AnimationCpuMsPerSecond = null,
+    string? InputMode = null,
+    string? InputModeReason = null,
+    // R1 per input kind (key, click, wheel, ...); programmatic state changes are excluded.
+    IReadOnlyDictionary<string, Distribution>? InputToFrameMsByKind = null,
+    // Programmatic state change (InputInjected kind 'programmatic:*') to next drawn frame; not input latency.
+    Distribution? ProgrammaticToFrameMs = null,
+    // Popup request (InputInjected) to the first drawn frame after the popup's Opened event.
+    Distribution? PopupOpenMs = null,
+    // S9 lifecycle steps with the settled memory of each step.
+    IReadOnlyList<StepMetrics>? Steps = null,
+    double? MarginalPrivateMBPerWindow = null,
+    double? PrivateMBReclaimedFraction = null,
+    // UnsupportedContent event counts by 'TypeName|Detail' and by Detail, and the entries the scene expects.
+    IReadOnlyDictionary<string, int>? UnsupportedByType = null,
+    IReadOnlyDictionary<string, int>? UnsupportedByDetail = null,
+    IReadOnlyList<string>? ExpectedUnsupported = null)
 {
     public bool IsSkipped => SkipReason is not null;
     public bool GatePassed => !IsSkipped && Gate.All(g => g.Passed);

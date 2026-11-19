@@ -22,7 +22,7 @@ public sealed record GateOptions
     public double MaxInputToFrameMs { get; init; } = 1000;
 }
 
-public static class MetricsCalculator
+public static partial class MetricsCalculator
 {
     public const string SchemaVersion = "1";
     const double MB = 1024.0 * 1024.0;
@@ -51,7 +51,12 @@ public static class MetricsCalculator
 
         var frames = PairFrames(records);
         var phases = BuildPhaseWindows(records);
-        var phaseMetrics = phases.Select(w => ComputePhase(w, records, frames, device?.AdapterLuid)).ToList();
+        var traits = records.OfType<SceneTraitsRecord>().FirstOrDefault();
+        double? refreshHz = records.OfType<DisplayInfoRecord>().FirstOrDefault(d => d.RefreshHz > 0)?.RefreshHz;
+        var phaseMetrics = phases
+            .Select(w => ExtendPhase(ComputePhase(w, records, frames, device?.AdapterLuid), w, records, frames, refreshHz,
+                traits?.ContinuousInteraction ?? false))
+            .ToList();
 
         var samples = records.OfType<MemorySampleRecord>().ToList();
         double? peakPrivate = samples.Count == 0 ? null : samples.Max(s => s.PrivateBytes) / MB;
@@ -64,15 +69,35 @@ public static class MetricsCalculator
             processStart is not null && sceneReady is not null ? sceneReady.TimeMs - processStart.TimeMs : null,
             processStart is not null && firstFrame is not null ? firstFrame.EndMs - processStart.TimeMs : null);
 
-        var latency = ComputeInputLatency(records, frames, options);
+        var latency = ComputeInputLatency(records, frames, options, IsRealInput);
+        var unsupportedCounts = CountUnsupported(runStarted?.Scene ?? sceneReady?.Scene, records);
 
-        var gate = EvaluateGate(runStarted, records, selected, device, phaseMetrics, unsupported, options);
+        var gate = EvaluateGate(runStarted, records, selected, device, phaseMetrics, unsupported, options,
+            traits?.AnimatesWhileIdle ?? false, unsupportedCounts);
+        var steadyMetrics = phaseMetrics.FirstOrDefault(p => p.Phase == BenchPhase.Steady);
+        var inputMode = records.OfType<InputModeRecord>().LastOrDefault();
+        var steps = ComputeSteps(records, phases);
 
         return new RunMetrics(SchemaVersion, runStarted?.Scene ?? sceneReady?.Scene, pid, identity, startup, phaseMetrics,
             latency, peakPrivate, peakGpu, gate,
             // immediate-rendering-d2d-sw
             ThreadModules: ThreadModules(records), RasterModuleVersions: RasterModuleVersions(records),
-            DeviceLostCount: records.OfType<DeviceLostRecord>().Count());
+            DeviceLostCount: records.OfType<DeviceLostRecord>().Count(),
+            // Extended scenes S3-S10
+            RefreshHz: refreshHz,
+            AnimatesWhileIdle: traits?.AnimatesWhileIdle ?? false,
+            AnimationCpuMsPerSecond: traits?.AnimatesWhileIdle == true ? steadyMetrics?.CpuMsPerSecond : null,
+            InputMode: inputMode?.Mode,
+            InputModeReason: inputMode?.Reason,
+            InputToFrameMsByKind: InputLatencyByKind(records, frames, options),
+            ProgrammaticToFrameMs: ComputeInputLatency(records, frames, options, i => !IsRealInput(i)),
+            PopupOpenMs: ComputePopupOpen(records, frames, options),
+            Steps: steps,
+            MarginalPrivateMBPerWindow: MarginalPerWindow(steps),
+            PrivateMBReclaimedFraction: ReclaimedFraction(steps),
+            UnsupportedByType: unsupportedCounts.ByType,
+            UnsupportedByDetail: unsupportedCounts.ByDetail,
+            ExpectedUnsupported: unsupportedCounts.Expected);
     }
 
     // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----
@@ -219,11 +244,12 @@ public static class MetricsCalculator
         return churn.Count == 0 || seconds <= 0 ? null : churn.Sum(c => (double)select(c)) / seconds;
     }
 
-    static Distribution? ComputeInputLatency(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options)
+    static Distribution? ComputeInputLatency(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options,
+        Func<InputInjectedRecord, bool> include)
     {
         var drawnEnds = frames.Where(f => f.Drawn).Select(f => f.EndMs).OrderBy(t => t).ToList();
         var latencies = new List<double>();
-        foreach (var input in records.OfType<InputInjectedRecord>())
+        foreach (var input in records.OfType<InputInjectedRecord>().Where(include))
         {
             int index = drawnEnds.BinarySearch(input.TimeMs);
             if (index < 0)
@@ -249,7 +275,9 @@ public static class MetricsCalculator
         DeviceInfoRecord? device,
         List<PhaseMetrics> phases,
         List<string> unsupported,
-        GateOptions options)
+        GateOptions options,
+        bool animatesWhileIdle,
+        UnsupportedCounts unsupportedCounts)
     {
         var checks = new List<GateCheck>();
         checks.Add(new(GateNames.HarnessRunStarted, runStarted is not null,
@@ -280,15 +308,24 @@ public static class MetricsCalculator
             interaction is null ? "no Interaction phase" : $"{interaction.FramesDrawn} drawn frames in Interaction"));
 
         var steady = phases.FirstOrDefault(p => p.Phase == BenchPhase.Steady);
-        checks.Add(new(GateNames.SteadyStateIsIdle,
-            steady is not null && steady.FramesDrawnPerMinute <= options.MaxSteadyFramesPerMinute,
-            steady is null ? "no Steady phase" : $"{steady.FramesDrawnPerMinute:F1} drawn frames/min (max {options.MaxSteadyFramesPerMinute})"));
+        if (animatesWhileIdle && steady is not null)
+        {
+            // The scene animates by design; its Steady CPU is reported as the animation tax (E1) instead.
+            checks.Add(new(GateNames.SteadyStateIsIdle, true,
+                $"scene animates while idle: {steady.FramesDrawnPerMinute:F1} drawn frames/min measured as animation tax " +
+                $"({steady.CpuMsPerSecond?.ToString("F1") ?? "n/a"} CPU ms/s)"));
+        }
+        else
+        {
+            checks.Add(new(GateNames.SteadyStateIsIdle,
+                steady is not null && steady.FramesDrawnPerMinute <= options.MaxSteadyFramesPerMinute,
+                steady is null ? "no Steady phase" : $"{steady.FramesDrawnPerMinute:F1} drawn frames/min (max {options.MaxSteadyFramesPerMinute})"));
+        }
 
         checks.Add(new(GateNames.MemorySampled, steady?.PrivateMBMedian is not null,
             steady?.PrivateMBMedian is null ? "no memory samples in Steady" : "present"));
 
-        checks.Add(new(GateNames.NoUnsupportedContent, unsupported.Count == 0,
-            unsupported.Count == 0 ? "none" : string.Join("; ", unsupported)));
+        checks.Add(EvaluateUnsupported(unsupported, unsupportedCounts));
         return checks;
     }
 

@@ -96,6 +96,13 @@ public static class EtlReader
                 "ThreadModuleSummary" => new ThreadModuleSummaryRecord(t, pid, Str(e, "Module"), Str(e, "Category"),
                     I32(e, "Threads"), F64(e, "CpuMs")),
                 "RasterModuleVersion" => new RasterModuleVersionRecord(t, pid, Str(e, "Module"), Str(e, "Version")),
+                // Extended scenes S3-S10
+                "InputModeSelected" => new InputModeRecord(t, pid, Str(e, "Mode"), Str(e, "Reason")),
+                "SceneTraits" => new SceneTraitsRecord(t, pid, Bool(e, "AnimatesWhileIdle"), Bool(e, "ContinuousInteraction")),
+                "DisplayInfo" => new DisplayInfoRecord(t, pid, F64(e, "RefreshHz")),
+                "SceneStep" => new SceneStepRecord(t, pid, I32(e, "Step"), Str(e, "StepName"), I32(e, "Windows")),
+                "SceneValue" => new SceneValueRecord(t, pid, Str(e, "Name"), F64(e, "Value")),
+                "PopupOpened" => new PopupOpenedRecord(t, pid, I64(e, "InputId"), Str(e, "Popup")),
                 _ => null,
             };
         }

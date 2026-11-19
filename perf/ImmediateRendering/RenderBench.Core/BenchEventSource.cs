@@ -59,8 +59,26 @@ public sealed class BenchEventSource : EventSource
     public void RunCompleted(int Status, string Detail) => WriteEvent(8, Status, Detail);
 
     [Event(9, Level = EventLevel.Informational)]
-    public void ScreenshotSaved(string Path, int Width, int Height) => WriteEvent(9, Path, Width, Height);
+    public void ScreenshotSaved(string Path, int Width, int Height, string Method) => WriteEvent(9, Path, Width, Height, Method);
 
+    // ---- Extended scenes S3-S10 ----
+    [Event(11, Level = EventLevel.Informational)]
+    public void InputModeSelected(string Mode, string Reason) => WriteEvent(11, Mode, Reason);
+
+    [Event(12, Level = EventLevel.Informational)]
+    public void SceneTraits(bool AnimatesWhileIdle, bool ContinuousInteraction) => WriteEvent(12, AnimatesWhileIdle, ContinuousInteraction);
+
+    [Event(13, Level = EventLevel.Informational)]
+    public void DisplayInfo(double RefreshHz) => WriteEvent(13, RefreshHz);
+
+    [Event(14, Level = EventLevel.Informational)]
+    public void SceneStep(int Step, string StepName, int Windows) => WriteEvent(14, Step, StepName, Windows);
+
+    [Event(15, Level = EventLevel.Informational)]
+    public void SceneValue(string Name, double Value) => WriteEvent(15, Name, Value);
+
+    [Event(16, Level = EventLevel.Informational)]
+    public void PopupOpened(long InputId, string Popup) => WriteEvent(16, InputId, Popup);
     // ---- Added by the D2D-HW branch ----
     // Per-adapter GPU memory for this process (IDXGIAdapter3::QueryVideoMemoryInfo), one event per adapter per sample,
     // emitted next to MemorySample. AdapterLuid uses the DeviceInfo packing so the analyzer can pick the render adapter.

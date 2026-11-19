@@ -69,3 +69,17 @@ public sealed record ThreadModuleSummaryRecord(double TimeMs, int ProcessId, str
     : TraceRecord(TimeMs, ProcessId);
 public sealed record RasterModuleVersionRecord(double TimeMs, int ProcessId, string Module, string Version) : TraceRecord(TimeMs, ProcessId);
 // ---- End immediate-rendering-d2d-sw ----
+// ---- Extended scenes S3-S10 (harness) ----
+// The input path the harness resolved for scripted interaction (SendInput or Programmatic) and why.
+public sealed record InputModeRecord(double TimeMs, int ProcessId, string Mode, string Reason) : TraceRecord(TimeMs, ProcessId);
+// AnimatesWhileIdle: the scene draws during Steady by design (S6). ContinuousInteraction: Interaction animates every
+// frame (scrolling), so every gap between frames counts toward dropped frames rather than being idle time.
+public sealed record SceneTraitsRecord(double TimeMs, int ProcessId, bool AnimatesWhileIdle, bool ContinuousInteraction)
+    : TraceRecord(TimeMs, ProcessId);
+public sealed record DisplayInfoRecord(double TimeMs, int ProcessId, double RefreshHz) : TraceRecord(TimeMs, ProcessId);
+// One scripted lifecycle step (S9: baseline, open-N, minimize-all, ...) and the number of open secondary windows after it.
+public sealed record SceneStepRecord(double TimeMs, int ProcessId, int Step, string Name, int Windows) : TraceRecord(TimeMs, ProcessId);
+// A scene-specific counter (RealizedItems, ImageLoadMs, ...).
+public sealed record SceneValueRecord(double TimeMs, int ProcessId, string Name, double Value) : TraceRecord(TimeMs, ProcessId);
+// A popup requested by input InputId raised its Opened event.
+public sealed record PopupOpenedRecord(double TimeMs, int ProcessId, long InputId, string Popup) : TraceRecord(TimeMs, ProcessId);

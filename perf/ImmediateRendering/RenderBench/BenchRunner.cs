@@ -39,7 +39,7 @@ sealed class BenchRunner(BenchOptions options)
             await ready.Task;
             Win32.ForceForeground(_hwnd);
 
-            BenchEventSource.Log.RunStarted(_scene.Name, Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable) ?? "",
+            BenchEventSource.Log.RunStarted(options.SceneLabel, Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable) ?? "",
                 options.Seed, options.Width, options.Height, _scene.Root.XamlRoot.RasterizationScale);
             BenchEventSource.Log.SceneReady(_scene.Name, CountElements(_scene.Root));
             _threadSampler.CaptureUiThread(); // immediate-rendering-d2d-sw
@@ -90,7 +90,7 @@ sealed class BenchRunner(BenchOptions options)
             if (options.ScreenshotPath is { } path)
             {
                 var (width, height) = Win32.SaveClientScreenshot(_hwnd, path);
-                BenchEventSource.Log.ScreenshotSaved(Path.GetFullPath(path), width, height);
+                BenchEventSource.Log.ScreenshotSaved(Path.GetFullPath(path), width, height, "Screen");
             }
         }
         catch (Exception ex)

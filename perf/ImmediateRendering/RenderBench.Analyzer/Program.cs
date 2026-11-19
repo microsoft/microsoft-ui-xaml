@@ -8,7 +8,10 @@ const string Usage = """
     RenderBench.Analyzer report <resultsDir> [--out report.md]      Aggregate **/metrics.json into a comparison table.
     RenderBench.Analyzer adapters                                   List DXGI adapters with the D2D-HW verdict; exit 0 if
                                                                     one qualifies, 1 if none, 2 if the LUID override is bad.
-    RenderBench.Analyzer skip <scene> <mode> <reason> --out <json>  Write metrics.json for a run that was not executed.
+    RenderBench.Analyzer skip <scene> <mode> <reason> --out <json> [--scene-args "<RenderBench args>"]
+                                                                    Write metrics.json for a run that was not executed;
+                                                                    --scene-args (e.g. "--decode-to-size") picks the
+                                                                    variant label so the report groups it correctly.
     """;
 
 if (args.Length < (args.FirstOrDefault() == "adapters" ? 1 : 2))
@@ -62,7 +65,10 @@ switch (args[0])
         return AdapterReport.Print(Environment.GetEnvironmentVariable(AdapterPolicy.LuidEnvironmentVariable));
     case "skip" when args.Length >= 4 && Option("--out") is { } skipOutput:
     {
-        string scene = Enum.TryParse<SceneId>(args[1], ignoreCase: true, out var sceneId) ? sceneId.ToString() : args[1];
+        string[] sceneArgs = (Option("--scene-args") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        string scene = BenchOptions.TryParse(["--scene", args[1], .. sceneArgs], out var sceneOptions, out _)
+            ? sceneOptions.SceneLabel
+            : args[1];
         File.WriteAllText(skipOutput, MetricsJson.Serialize(MetricsCalculator.Skipped(scene, args[2], args[3])));
         Console.WriteLine($"{scene} {args[2]}: SKIPPED ({args[3]}) -> {skipOutput}");
         return 0;
