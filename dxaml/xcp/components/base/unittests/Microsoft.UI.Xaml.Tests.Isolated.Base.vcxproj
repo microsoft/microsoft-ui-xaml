@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <ClInclude Include="BitVectorUnitTests.h"/>
+        <ClInclude Include="ImmediatePainterTests.h"/>
         <ClInclude Include="RenderingBackendTests.h"/>
         <ClInclude Include="RenderingResourceDiagnosticsTests.h"/>
         <ClInclude Include="CompactInlineVectorUnitTests.h"/>
@@ -38,10 +39,12 @@
         <ClCompile Include="BitVectorUnitTests.cpp"/>
         <ClCompile Include="RenderingResourceDiagnosticsTests.cpp"/>
         <ClCompile Include="RenderingBackendTests.cpp"/>
+        <ClCompile Include="ImmediatePainterTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>
         <Link>
+            <AdditionalDependencies>d3d11.lib;dxgi.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 

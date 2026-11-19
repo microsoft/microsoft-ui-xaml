@@ -26,9 +26,14 @@
         <ClCompile Include="..\DesignMode.cpp"/>
         <ClCompile Include="..\RenderingResourceDiagnostics.cpp"/>
         <ClCompile Include="..\RenderingBackend.cpp"/>
+        <ClCompile Include="..\ImmediatePainter.cpp"/>
+        <ClCompile Include="..\GdiPlusPainter.cpp"/>
+        <ClCompile Include="..\D2DPainter.cpp"/>
+        <ClCompile Include="..\D2DDeviceFactory.cpp"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ClInclude Include="..\inc\ImmediatePainter.h"/>
         <ClInclude Include="..\inc\RenderingBackend.h"/>
         <ClInclude Include="..\inc\RenderingResourceDiagnostics.h"/>
         <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
