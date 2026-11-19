@@ -37,6 +37,7 @@
         <ClInclude Include="..\inc\RenderingBackend.h"/>
         <ClInclude Include="..\inc\RenderingResourceDiagnostics.h"/>
         <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
+        <ClInclude Include="..\inc\GdiPlusPainter.h"/>
     </ItemGroup>
 
     <PropertyGroup>

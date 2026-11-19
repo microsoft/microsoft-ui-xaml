@@ -5,6 +5,8 @@
     wpr -start ImmediateRendering.wprp!Timing -filemode   W1-W4, S1, R1*, E1: CPU sampling + CSwitch, frame/paint markers.
     wpr -start ImmediateRendering.wprp!Memory -filemode   M1-M8: adds the XAML profiler provider (DComp surface memory,
                                                           graphics resource lifetime) and VirtualAlloc / reference set.
+                                                          Heap allocations (with stacks) for processes opted in with
+                                                          'wpr -heaptracingconfig RenderBench.exe enable' (GDI+ heap).
     wpr -start ImmediateRendering.wprp!Gpu    -filemode   W3, W5: DxgKrnl DMA packets, VidMm allocations, DWM.
 
   Timing runs deliberately exclude Microsoft-Windows-XAML-Profiler, which is verbose and would perturb frame timing.
@@ -22,6 +24,12 @@
       <BufferSize Value="1024" />
       <Buffers Value="256" />
     </EventCollector>
+
+    <!-- Appended by immediate-rendering-gdiplus: heap tracing collector (see the heap tracing block below). -->
+    <HeapEventCollector Id="HeapEventCollector_IR" Name="ImmediateRenderingHeapCollector">
+      <BufferSize Value="1024" />
+      <Buffers Value="128" />
+    </HeapEventCollector>
 
     <SystemProvider Id="SystemProvider_IR_Base">
       <Keywords>
@@ -60,6 +68,9 @@
       </Keywords>
       <Stacks>
         <Stack Value="VirtualAllocation" />
+        <!-- Appended by immediate-rendering-gdiplus: attribute heap growth (GDI+ is a CPU, heap-backed painter). -->
+        <Stack Value="HeapAllocation" />
+        <Stack Value="HeapReallocation" />
       </Stacks>
     </SystemProvider>
 
@@ -106,6 +117,17 @@
 
     <EventProvider Id="EventProvider_DwmCore" Name="Microsoft-Windows-Dwm-Core" Level="4" NonPagedMemory="true" />
 
+    <!-- ==== Begin: heap tracing (appended by immediate-rendering-gdiplus) ====
+         GDI+ keeps its bitmaps, paths and glyph caches in the process heap, so M2/M8 growth needs heap attribution.
+         HeapProcessId 0 traces processes opted in via "wpr -heaptracingconfig RenderBench.exe enable"
+         (scripts\Run-RenderBench.ps1 does this for -Profile Memory). Only the Memory profile enables it. -->
+    <HeapEventProvider Id="HeapEventProvider_IR_OptedIn">
+      <HeapProcessIds>
+        <HeapProcessId Value="0" />
+      </HeapProcessIds>
+    </HeapEventProvider>
+    <!-- ==== End: heap tracing ==== -->
+
     <Profile Id="Timing.Verbose.File" Name="Timing" Description="RenderBench timing: CPU, frames, paint" DetailLevel="Verbose" LoggingMode="File">
       <Collectors>
         <SystemCollectorId Value="SystemCollector_IR">
@@ -137,6 +159,12 @@
             <EventProviderId Value="EventProvider_DxgKrnl_Base" />
           </EventProviders>
         </EventCollectorId>
+        <!-- Appended by immediate-rendering-gdiplus: heap tracing. -->
+        <HeapEventCollectorId Value="HeapEventCollector_IR">
+          <HeapEventProviders>
+            <HeapEventProviderId Value="HeapEventProvider_IR_OptedIn" />
+          </HeapEventProviders>
+        </HeapEventCollectorId>
       </Collectors>
     </Profile>
 

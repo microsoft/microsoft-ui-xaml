@@ -182,6 +182,11 @@ sealed class FakeRenderingBackendSource : EventSource
     public void PaintEnd(uint FrameNumber, ulong RootId, ulong DamagedPixels, ulong PaintedPixels, uint PrimitiveCount,
         uint DamageRectCount)
         => WriteEvent(5, FrameNumber, RootId, DamagedPixels, PaintedPixels, PrimitiveCount, DamageRectCount);
+
+    // ---- Appended by immediate-rendering-gdiplus: W6 ----
+    [Event(16)]
+    public void ResourceChurn(uint Mode, uint FrameNumber, uint Created, uint Destroyed)
+        => WriteEvent(16, Mode, FrameNumber, Created, Destroyed);
 }
 
 static class EtlTests

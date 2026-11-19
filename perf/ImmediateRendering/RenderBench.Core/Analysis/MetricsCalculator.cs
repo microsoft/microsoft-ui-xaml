@@ -159,7 +159,18 @@ public static class MetricsCalculator
             Slope(samples.Select(s => (s.TimeMs / 60000.0, s.PrivateBytes / MB)).ToList()),
             lastInventory is null ? null : lastInventory.SurfaceBytes / MB,
             lastInventory is null ? null : lastInventory.CacheBytes / MB,
-            inPhase.OfType<UpdateAppliedRecord>().Count());
+            inPhase.OfType<UpdateAppliedRecord>().Count(),
+            // ---- Appended by immediate-rendering-gdiplus: W6 churn rates and M7 GDI growth ----
+            ChurnPerSecond(inPhase, window, c => c.Created),
+            ChurnPerSecond(inPhase, window, c => c.Destroyed),
+            samples.Count < 2 ? null : samples[^1].GdiObjects - samples[0].GdiObjects);
+    }
+
+    static double? ChurnPerSecond(List<TraceRecord> inPhase, PhaseWindow window, Func<ResourceChurnRecord, uint> select)
+    {
+        var churn = inPhase.OfType<ResourceChurnRecord>().ToList();
+        double seconds = (window.EndMs - window.BeginMs) / 1000.0;
+        return churn.Count == 0 || seconds <= 0 ? null : churn.Sum(c => (double)select(c)) / seconds;
     }
 
     static Distribution? ComputeInputLatency(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options)

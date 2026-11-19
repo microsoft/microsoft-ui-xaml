@@ -282,4 +282,20 @@ namespace RenderingBackend
             TraceLoggingWideString(typeName ? typeName : L"", "TypeName"),
             TraceLoggingWideString(detail ? detail : L"", "Detail"));
     }
+
+    // ---- Begin: W6 resource churn (appended by immediate-rendering-gdiplus) ----
+    void TraceResourceChurn(Mode mode, uint32_t frameNumber, uint32_t created, uint32_t destroyed) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "ResourceChurn",
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+            TraceLoggingKeyword(Keywords::Resources),
+            TraceLoggingUInt32(static_cast<uint32_t>(mode), "Mode"),
+            TraceLoggingUInt32(frameNumber, "FrameNumber"),
+            TraceLoggingUInt32(created, "Created"),
+            TraceLoggingUInt32(destroyed, "Destroyed"));
+    }
+    // ---- End: W6 resource churn ----
 }

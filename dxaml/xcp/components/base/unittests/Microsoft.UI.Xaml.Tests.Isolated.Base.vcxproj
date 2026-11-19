@@ -30,6 +30,7 @@
         <ClInclude Include="SmartPointerUnitTests.h"/>
         <ClInclude Include="ThreadLocalStorageUnitTests.h"/>
         <ClInclude Include="VectorTreeUnitTests.h"/>
+        <ClInclude Include="GdiPlusPainterTests.h"/>
 
         <ClCompile Include="CompactInlineVectorUnitTests.cpp"/>
         <ClCompile Include="IndexedListUnitTests.cpp"/>
@@ -40,6 +41,7 @@
         <ClCompile Include="RenderingResourceDiagnosticsTests.cpp"/>
         <ClCompile Include="RenderingBackendTests.cpp"/>
         <ClCompile Include="ImmediatePainterTests.cpp"/>
+        <ClCompile Include="GdiPlusPainterTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

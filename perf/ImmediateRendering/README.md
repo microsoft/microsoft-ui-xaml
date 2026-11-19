@@ -57,3 +57,17 @@ frames/min), `MemorySampled`, `NoUnsupportedContent`. Reports compute medians fr
 - GPU memory is `IDXGIAdapter3::QueryVideoMemoryInfo` for this process, summed over adapters. On a machine without a
   hardware GPU (for example a Hyper-V VM), it reads 0, and D2D-HW correctly fails `DeviceMatchesMode`.
 - Measure fre builds. chk builds capture an allocation stack per allocation.
+
+## GDI+ readiness
+
+- **ResourceChurn** (Resources keyword 0x8; fields Mode, FrameNumber, Created, Destroyed) is emitted with `RenderingBackend::TraceResourceChurn`
+  once per painted frame. The analyzer turns it into W6 created/destroyed per second per phase. A phase with no ResourceChurn events
+  reports null, not 0, so a backend that never emits it is visibly unmeasured.
+- M7: the report shows GDI objects (steady, interaction max, and interaction growth, which is last minus first sample) and USER objects.
+  GDI+ creates GDI objects only for text interop and the presentable copy, so growth should be 0.
+- The `Memory` profile adds heap allocation events with stacks for `RenderBench.exe`. `Run-RenderBench.ps1 -Profile Memory`
+  runs `wpr -heaptracingconfig RenderBench.exe enable/disable` around the matrix. Use WPA *Heap Allocations* to attribute GDI+
+  bitmap, path, and glyph-cache memory. `VirtualAlloc` covers large DIB sections.
+- The native GDI+-specific tests are in `dxaml\xcp\components\base\unittests\GdiPlusPainterTests.cpp`: runtime refcount, PARGB,
+  antialiasing, half-pixel offset, grayscale text, the 200-frame GDI handle/cache leak check, churn, and damage-only upload. They stay
+  red (E_NOTIMPL) until `CreateGdiPlusPainter` renders. The upload/copy accounting contract is documented in `GdiPlusPainter.cpp`.
