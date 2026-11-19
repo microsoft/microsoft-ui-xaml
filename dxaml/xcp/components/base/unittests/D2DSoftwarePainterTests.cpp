@@ -413,4 +413,77 @@ namespace RenderingBackendTests
         painter->GetResourceInventory();
         painter.reset();
     }
+
+    void D2DSoftwarePainterTests::MultiRectDamageReplacesOnlyDamagedPixels()
+    {
+        auto device = CreateWarpDevice();
+        auto painter = CreateWarpPainter(device.Get());
+        PaintSolid(*painter, c_red);
+
+        const RectF damage[] = { { 0, 0, 16, 16 }, { 32, 32, 48, 48 } };
+        const auto paintDamage = [&]()
+        {
+            return Paint(*painter, [](IImmediatePainter& p)
+            {
+                p.Clear({ 0, 0, 0, 0 });
+                p.FillRectangle({ 8, 8, 40, 40 }, c_blue);
+            }, damage, 2);
+        };
+        const auto stats = paintDamage();
+        VERIFY_ARE_EQUAL(2u, stats.damageRectCount);
+        VERIFY_ARE_EQUAL(2ull * 16 * 16, stats.damagedPixels);
+
+        const auto bytes = ReadAll(*painter, c_size, c_size);
+        const auto pixel = [&](uint32_t x, uint32_t y)
+        {
+            uint32_t value;
+            memcpy(&value, &bytes[(static_cast<size_t>(y) * c_size + x) * 4], sizeof(value));
+            return value; // 0xAARRGGBB
+        };
+        VERIFY_ARE_EQUAL(0x00000000u, pixel(2, 2), L"transparent Clear replaces inside the first rect");
+        VERIFY_ARE_EQUAL(0xFF0000FFu, pixel(12, 12), L"fill drawn inside the first rect");
+        VERIFY_ARE_EQUAL(0xFF0000FFu, pixel(36, 36), L"fill drawn inside the second rect");
+        VERIFY_ARE_EQUAL(0x00000000u, pixel(44, 44), L"transparent Clear replaces inside the second rect");
+        VERIFY_ARE_EQUAL(0xFFFF0000u, pixel(24, 24), L"between the rects keeps the previous frame");
+        VERIFY_ARE_EQUAL(0xFFFF0000u, pixel(60, 4), L"outside the damage keeps the previous frame");
+
+        const auto counters = painter->GetResourceCounters();
+        paintDamage();
+        const auto after = painter->GetResourceCounters();
+        VERIFY_ARE_EQUAL(counters.geometriesCreated, after.geometriesCreated, L"same damage reuses the mask geometry");
+    }
+
+    void D2DSoftwarePainterTests::RejectsSwapChainOnAnotherDevice()
+    {
+        auto device = CreateWarpDevice();
+        auto otherDevice = CreateWarpDevice();
+        auto painter = CreateWarpPainter(device.Get());
+        auto foreign = CreateCompositionSwapChain(otherDevice.Get(), c_size, c_size);
+        VERIFY_ARE_EQUAL(E_INVALIDARG, painter->SetPresentationSwapChain(foreign.Get()));
+
+        PaintSolid(*painter, c_red);
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"rejected swap chain is not attached");
+    }
+
+    void D2DSoftwarePainterTests::ResizeResizesAttachedSwapChain()
+    {
+        auto device = CreateWarpDevice();
+        auto painter = CreateWarpPainter(device.Get());
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+        PaintSolid(*painter, c_red);
+
+        VERIFY_SUCCEEDED(painter->Resize(32, 48, 1.0f));
+        DXGI_SWAP_CHAIN_DESC1 desc{};
+        VERIFY_SUCCEEDED(swapChain->GetDesc1(&desc));
+        VERIFY_ARE_EQUAL(32u, desc.Width);
+        VERIFY_ARE_EQUAL(48u, desc.Height);
+
+        const RectF damage{ 0, 0, 8, 8 };
+        const auto stats = Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_blue); }, &damage, 1);
+        VERIFY_ARE_EQUAL(32ull * 48, stats.damagedPixels, L"the frame after Resize is fully damaged");
+        VERIFY_ARE_EQUAL(32ull * 48 * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+        PaintSolid(*painter, c_red, &damage, 1);
+        VERIFY_ARE_EQUAL(8ull * 8 * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+    }
 }

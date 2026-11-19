@@ -31,5 +31,11 @@ namespace RenderingBackendTests
         TEST_METHOD(PresentedUploadIsClippedToTarget);
         // C4: removal is reported as failure, not a crash.
         TEST_METHOD(ReportsFailureAfterDeviceRemoval);
+        // Multi-rect damage: Clear replaces (even with transparent colors) only inside the rects; the mask is reused.
+        TEST_METHOD(MultiRectDamageReplacesOnlyDamagedPixels);
+        // The presentation swap chain must be on the painter's device.
+        TEST_METHOD(RejectsSwapChainOnAnotherDevice);
+        // Resize resizes the attached swap chain's buffers and fully damages the next frame.
+        TEST_METHOD(ResizeResizesAttachedSwapChain);
     };
 }

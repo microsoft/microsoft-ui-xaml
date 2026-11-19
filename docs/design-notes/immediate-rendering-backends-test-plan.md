@@ -217,6 +217,15 @@ Prototype status for `D2D-HW` (see `perf\ImmediateRendering\README.md`):
   Offscreen frames report 0.
 - **WARP determinism test.** WARP output is pixel-identical across devices, so D2D-SW renders can serve as the C1
   golden reference. The reference is pinned to the recorded `d3d10warp`/`d2d1`/`dwrite` versions.
+- **D2D painter.** `D2DPainter.cpp` serves both D2D modes; the D3D device decides hardware versus WARP. It draws into a
+  persistent premultiplied BGRA target, clips to the damage, and presents through the root's composition swap chain
+  by copying only the damage rects and calling `Present1` with matching dirty rects. Steady-state frames create no
+  brushes, text formats, geometries, layers, or targets (`ResourceChurn` stays silent). Device removal fails the frame,
+  emits `DeviceLost` once, and leaves the painter failed until the caller recreates it. On a hardware device each frame
+  is bracketed by `GpuTimestampProfiler` (W3, `GpuPaintTime`); on WARP it is not, because the raster cost is CPU time.
+  W5 for D2D-HW reports 0 upload bytes for the prototype primitives; the GPU-local back-buffer copy is exposed
+  separately. The hardware path shares all code with WARP but has only been validated without a GPU, so `D2D-HW`
+  conformance runs are still required on a GPU machine.
 
 See `perf\ImmediateRendering\README.md`.
 
