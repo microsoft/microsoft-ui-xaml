@@ -698,6 +698,10 @@ void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const
     if (m_reportedUnsupported.insert(key).second)
     {
         TraceUnsupportedContent(m_mode, className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
+        if (FILE* statsFile = GetStatsFile())
+        {
+            fwprintf(statsFile, L"# unsupported %s %s\n", className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
+        }
     }
 }
 
