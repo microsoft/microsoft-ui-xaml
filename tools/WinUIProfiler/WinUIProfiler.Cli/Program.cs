@@ -11,7 +11,10 @@ internal static class Program
 {
     // The commands CliApplication runs. Usage events name only these, never what was typed.
     private static readonly string[] Commands =
-        ["processes", "summary", "dump", "record", "launch", "objects", "timeline", "frames", "interesting"];
+    [
+        "processes", "summary", "dump", "record", "launch", "objects", "timeline", "frames", "interesting", "symbolize", "cpu",
+        "events", "info", "live", "targets", "snapshot"
+    ];
 
     private static int Main(string[] args)
     {

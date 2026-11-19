@@ -774,7 +774,8 @@ PrivateRuntime);
 
         var selected = Tabs.SelectedItem;
         var view = ReferenceEquals(selected, LaunchTab) ? "Launch" : ReferenceEquals(selected, FramesTab) ? "Frames" :
-            ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" : null;
+            ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" :
+            ReferenceEquals(selected, CpuTab) ? "Cpu" : null;
         if (view is not null && viewsOpened.Add(view))
         {
             UsageTelemetry.Track("Profiler.ViewOpened", new Dictionary<string, string> { ["view"] = view });
