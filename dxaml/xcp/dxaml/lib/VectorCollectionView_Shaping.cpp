@@ -665,6 +665,18 @@ namespace
         return S_OK;
     }
 
+    // Each group above pChild, up to the root, gets the change at the item's index among its leaves.
+    template <typename TChange>
+    _Check_return_ HRESULT ChangeAncestorLeaves(_In_ CollectionViewGroupInternal* pChild, UINT offset, const TChange& changeLeaf)
+    {
+        for (auto pGroup = pChild->GetParentNoRef(); pGroup && !pGroup->IsRoot(); pChild = pGroup, pGroup = pGroup->GetParentNoRef())
+        {
+            offset += pGroup->LeafCountBefore(pChild);
+            IFC_RETURN(changeLeaf(pGroup, offset));
+        }
+        return S_OK;
+    }
+
     // One level of grouping: the group name of an item (WPF: PropertyGroupDescription.GroupNameFromItem / NamesMatch).
     struct GroupLevel
     {
@@ -854,11 +866,11 @@ namespace
                 pGroup = pSubgroup;
             }
 
+            const UINT position = pGroup->LeafCount();
+            auto insertLeaf = [pItem](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->InsertLeaf(index, pItem, false /* isRaised */); };
             pGroup->SourceIndices().push_back(sourceIndex);
-            for (auto pAncestor = pGroup; pAncestor && !pAncestor->IsRoot(); pAncestor = pAncestor->GetParentNoRef())
-            {
-                IFC_RETURN(pAncestor->InsertLeaf(pAncestor->LeafCount(), pItem, false /* isRaised */));
-            }
+            IFC_RETURN(insertLeaf(pGroup, position));
+            IFC_RETURN(ChangeAncestorLeaves(pGroup, position, insertLeaf));
 
             return S_OK;
         }
@@ -1091,18 +1103,6 @@ namespace
 
         pInsertion->pGroup = pGroup;
         IFC_RETURN(FindLeafPosition(pGroup, comparer, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, &pInsertion->position));
-        return S_OK;
-    }
-
-    // Each group above pChild, up to the root, gets the change at the item's index among its leaves.
-    template <typename TChange>
-    _Check_return_ HRESULT ChangeAncestorLeaves(_In_ CollectionViewGroupInternal* pChild, UINT offset, const TChange& changeLeaf)
-    {
-        for (auto pGroup = pChild->GetParentNoRef(); pGroup && !pGroup->IsRoot(); pChild = pGroup, pGroup = pGroup->GetParentNoRef())
-        {
-            offset += pGroup->LeafCountBefore(pChild);
-            IFC_RETURN(changeLeaf(pGroup, offset));
-        }
         return S_OK;
     }
 
