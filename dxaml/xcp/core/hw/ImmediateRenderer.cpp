@@ -1525,6 +1525,26 @@ void ImmediateRenderer::EmitContent(
         const float t = stroke ? shape->GetStrokeThickness() : 0.0f;
         ColorF fillColor;
         BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
+        if (fillResult == BrushResult::Color && element->GetCompositeMode() == DirectUI::ElementCompositeMode::DestInvert)
+        {
+            // The TextBox caret inverts what is under it. Painters have no invert blend, so draw it in the text
+            // foreground (which contrasts with the background the same way) or, elsewhere, in the inverted color.
+            ColorF foreground;
+            const TextFormatting* formatting = nullptr;
+            CUIElement* parentElement = element->GetUIElementAdjustedParentInternal(false);
+            if (parentElement != nullptr && parentElement->GetTypeIndex() == KnownTypeIndex::TextBoxView
+                && SUCCEEDED(parentElement->GetTextFormatting(&formatting)) && formatting != nullptr
+                && ResolveBrush(formatting->m_pForeground, 1.0f, &foreground) == BrushResult::Color)
+            {
+                foreground.a *= fillColor.a;
+                fillColor = foreground;
+            }
+            else
+            {
+                fillColor = { 1 - fillColor.r, 1 - fillColor.g, 1 - fillColor.b, fillColor.a };
+            }
+            ReportUnsupported(element, L"CompositeMode DestInvert:approximated");
+        }
         ColorF strokeColor;
         const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), 1.0f, &strokeColor) : BrushResult::None;
         CImageBrush* fillImage = do_pointer_cast<CImageBrush>(shape->m_pFill);
