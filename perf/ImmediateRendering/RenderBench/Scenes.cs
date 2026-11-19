@@ -54,6 +54,9 @@ static class SceneFactory
         SceneId.Gallery => new GalleryScene(options),
         SceneId.Animated => new AnimatedScene(options),
         SceneId.Layered => new LayeredScene(options),
+        SceneId.DataGrid => new DataGridScene(options),
+        SceneId.MultiWindow => new MultiWindowScene(options),
+        SceneId.Form => new FormScene(options),
         _ => new SettingsScene(options),
     };
 }
