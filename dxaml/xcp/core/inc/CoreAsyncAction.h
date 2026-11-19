@@ -13,6 +13,7 @@ class ICoreAsyncAction
 {
 public:
     virtual bool CoreContinueAsyncAction() = 0;
+    virtual void CoreCancelAsyncAction() = 0;
     virtual void CoreFireCompletion() = 0;
     virtual void CoreReleaseRef() = 0;
     virtual void CoreSetError(HRESULT hr) = 0;
