@@ -965,7 +965,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         {
             r = IntersectRect(r, surface);
         }
-        damage.erase(std::remove_if(damage.begin(), damage.end(), IsEmptyRect), damage.end());
+        damage.erase(std::remove_if(damage.begin(), damage.end(), [](const RectF& r) { return IsEmptyRect(r); }), damage.end());
         if (damage.empty())
         {
             state.records = std::move(list.records);
