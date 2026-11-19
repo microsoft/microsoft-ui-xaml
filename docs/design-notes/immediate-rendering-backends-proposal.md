@@ -428,7 +428,7 @@ completed backend comparisons. No delivery dates are assumed before a scoped imp
 | Public selector placement | Window/island host before root resource initialization; exact API and late-call error behavior unresolved |
 | Per-root mixed devices | Root ownership is the goal; validate shared-device, asset-sharing, and presentation constraints first |
 | Layer granularity/promotion | Measure count, surface area, reason, and lifetime; establish explicit boundaries before automatic heuristics |
-| GDI+ fidelity and presentation | Prove antialiasing, alpha, DirectWrite text, DPI, copy/upload cost, and host integration rather than assuming parity; allow a slightly looser pixel tolerance than Direct2D |
+| GDI+ fidelity and presentation | Prove antialiasing, alpha, GDI+ text, DPI, copy/upload cost, and host integration rather than assuming parity; allow a slightly looser pixel tolerance than Direct2D |
 | Text rendering | Reuse layout/shaping where possible; specify text quality and editing/IME contracts across painters |
 | Threading | Initial UI-thread command generation is acceptable for experimentation; render-thread snapshots require a separate costed decision |
 | Advanced effects and interop | Classify supported/promoted/unsupported; ordering and group semantics can require more than local promotion |
@@ -439,6 +439,16 @@ completed backend comparisons. No delivery dates are assumed before a scoped imp
 
 The next executable decision is to agree on the first two memory-target workloads and the must-preserve scrolling,
 text, animation, and interop contracts. Then establish the M0 baseline before committing to broad compatibility work.
+
+### Prototype implementation decisions
+
+| Topic | Decision | Rationale |
+|---|---|---|
+| GDI+ text | The GDI+ painter draws text with GDI+ (grayscale antialiasing on the PARGB bitmap), not DirectWrite | Keeps the GDI+ backend a pure GDI+ data point |
+| gdiplus.dll loading | Delay-load gdiplus.dll in Microsoft.ui.xaml.dll | Composition and D2D processes never load it |
+| Presentation | All immediate modes present through one composition swap chain per root, hosted in a single Composition visual. GDI+ and D2D-SW copy only damaged pixels into the back buffer; D2D-HW draws into it directly | Same presentation path for every mode isolates painter cost, keeps islands, popups, and backdrops working, and makes copy bytes (W5) comparable |
+| CPU attribution | The analyzer attributes ETW CPU samples by the modules on each sample's stack (for example d3d10warp → WARP raster, gdiplus → GDI+ raster, dwrite → text, Microsoft.ui.xaml → XAML), instead of relying on thread start modules alone | WARP uses thread-pool threads and GDI+ runs on the UI thread, so a thread-based split cannot separate raster cost |
+| Fidelity references | No checked-in golden images. C1 compares each immediate mode against Composition rendered on the same machine and OS build, with per-region tolerances; exact equality is required only between two runs of the same mode (determinism) | Rasterizer DLL updates change antialiasing slightly; same-machine references need no maintenance |
 
 ## Source references
 
