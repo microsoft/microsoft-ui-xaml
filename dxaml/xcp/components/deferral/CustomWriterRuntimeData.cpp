@@ -26,6 +26,15 @@
 
 using namespace CustomRuntimeDataSerializationHelpers;
 
+_Check_return_ HRESULT CustomWriterRuntimeData::HasConnectionId(
+    _In_ XamlBinaryFormatSubReader2*,
+    _Out_ bool* hasConnectionId) const
+{
+    // Custom-data child streams stay deferred unless their runtime data opts into scanning.
+    *hasConnectionId = false;
+    return S_OK;
+}
+
 namespace
 {
     bool RequiresConditionallyDeclaredObjectsDeserialization(CustomWriterRuntimeDataTypeIndex typeIndex)

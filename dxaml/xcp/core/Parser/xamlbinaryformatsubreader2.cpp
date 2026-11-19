@@ -4,6 +4,7 @@
 #include "precomp.h"
 
 #include "CustomWriterRuntimeData.h"
+#include "SubObjectWriterResult.h"
 #include "XamlBinaryFormatCommon.h"
 #include "XamlBinaryFormatReader2.h"
 #include "XamlBinaryFormatSubReader2.h"
@@ -77,6 +78,18 @@ _Check_return_ HRESULT XamlBinaryFormatSubReader2::HasConnectionId(
             {
                 *hasConnectionId = true;
                 return S_OK;
+            }
+
+            if (node.GetNodeType() == ObjectWriterNodeType::SetCustomRuntimeData)
+            {
+                // Nested styles share the containing binding scope; template bodies do not.
+                IFC_RETURN(node.GetCustomWriterData()->HasConnectionId(
+                    node.GetCustomWriterNodeStream()->GetSubReader().get(),
+                    hasConnectionId));
+                if (*hasConnectionId)
+                {
+                    return S_OK;
+                }
             }
 
             if (node.RequiresNewScope())

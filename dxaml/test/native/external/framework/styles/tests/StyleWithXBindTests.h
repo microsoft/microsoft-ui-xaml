@@ -75,6 +75,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 #pragma endregion
 
 #pragma region Deferred setter values
+        BEGIN_TEST_METHOD(NestedStyleSetterValueConnectionIdRealizedBeforeLoading)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a connection ID in a nested style's setter value realizes both styles' values before Loading")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(NestedStyleWithConnectionIdInTemplateRemainsDeferred)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that connection IDs in a nested style's template body do not realize the outer setter value")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(NestedSetterValueConnectionIdRealizedBeforeLoading)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that an object nested in a deferred setter value with a connection ID is realized before Loading")

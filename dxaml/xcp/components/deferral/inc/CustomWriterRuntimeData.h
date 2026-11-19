@@ -41,6 +41,11 @@ public:
 
     virtual bool ShouldShare() const { return false; }
 
+    _Check_return_
+    virtual HRESULT HasConnectionId(
+        _In_ XamlBinaryFormatSubReader2* reader,
+        _Out_ bool* hasConnectionId) const;
+
     // PrepareStream allows a CustomWriterRuntimeData instance to modify the nodestream its attach to before having it persisted
     // to disk. This allows for optimizations to occur that make use of details known only after we've built up the
     // CustomRuntimeData. One might argue that a method like this doesn't belong on a class that is intended to only 
