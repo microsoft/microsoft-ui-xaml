@@ -1127,8 +1127,8 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(IsPremultiplied(presented.At(4, 60), 0, 0, 0, 255, 1));
 
         // The scroll is consumed by that frame.
-        const RectF small{ 0, 0, 4, 4 };
-        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &small, 1);
+        const RectF corner{ 0, 0, 4, 4 };
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); }, &corner, 1);
         VERIFY_ARE_EQUAL(16ull * 4, painter->GetResourceInventory().uploadBytesThisFrame);
     }
 
