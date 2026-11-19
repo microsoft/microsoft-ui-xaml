@@ -1,0 +1,113 @@
+name: WinUI validation
+
+# Adapted from the maintainer-command / validation-ref pattern in PR #11852.
+# The ordinary Actions job is NOT the required check. It publishes one separate
+# commit status after verifying the selected ADO build. No PR code runs here.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited, closed]
+  status:
+  check_run:
+    types: [completed]
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: winui-validation-publisher
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  reconcile:
+    if: >-
+      vars.WINUI_VALIDATION_ENABLED == 'true' &&
+      (
+        (github.event_name == 'issue_comment' &&
+         github.event.issue.pull_request != null &&
+         (contains(github.event.comment.body, '/winui ') ||
+          contains(github.event.comment.body, '/azp run') ||
+          contains(github.event.comment.body, '/AzurePipelines run'))) ||
+        (github.event_name == 'status' && github.event.context == vars.WINUI_ADO_PIPELINE_NAME) ||
+        (github.event_name == 'check_run' && github.event.check_run.name == vars.WINUI_ADO_PIPELINE_NAME) ||
+        github.event_name == 'pull_request_target' ||
+        github.event_name == 'schedule' ||
+        github.event_name == 'workflow_dispatch'
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: winui-validation
+    permissions:
+      actions: read
+      contents: write
+      issues: write
+      pull-requests: read
+      statuses: write
+      id-token: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      WINUI_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+      WINUI_ADO_ORGANIZATION: ${{ vars.WINUI_ADO_ORGANIZATION }}
+      WINUI_ADO_PROJECT: ${{ vars.WINUI_ADO_PROJECT }}
+      WINUI_ADO_PIPELINE_ID: ${{ vars.WINUI_ADO_PIPELINE_ID }}
+      WINUI_ADO_PIPELINE_NAME: ${{ vars.WINUI_ADO_PIPELINE_NAME }}
+      WINUI_VALIDATION_TARGETS: ${{ vars.WINUI_VALIDATION_TARGETS }}
+      WINUI_QUICK_APPROVERS: ${{ vars.WINUI_QUICK_APPROVERS }}
+    steps:
+      - name: Checkout trusted default-branch automation
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Sign in with the read-only Azure build identity
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.WINUI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.WINUI_AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Get an Azure DevOps access token
+        id: token
+        shell: bash
+        run: |
+          set -euo pipefail
+          token=$(az account get-access-token \
+            --resource 499b84ac-1321-427f-aa17-267ca6975798 \
+            --query accessToken --output tsv)
+          echo "::add-mask::$token"
+          echo "value=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Select and reconcile validation
+        id: gate
+        env:
+          AZURE_DEVOPS_TOKEN: ${{ steps.token.outputs.value }}
+        run: node .github/scripts/winui-validation.mjs
+
+      - name: Checkpoint selected-run state
+        id: checkpoint
+        if: always() && steps.gate.outputs.state_available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: winui-validation-state
+          path: ${{ runner.temp }}/winui-validation/state.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+
+      - name: Release completed transaction
+        if: >-
+          always() &&
+          steps.gate.outputs.safe_release == 'true' &&
+          (steps.checkpoint.outcome == 'success' || steps.gate.outputs.unchanged == 'true')
+        run: node .github/scripts/winui-validation.mjs release

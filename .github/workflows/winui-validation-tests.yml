@@ -1,0 +1,25 @@
+name: WinUI validation tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/scripts/winui-validation*'
+      - '.github/scripts/tests/winui-validation*'
+      - '.github/workflows/winui-validation*.yml'
+      - 'build/WinUI-GitHub-PR.yml'
+      - 'build/AzurePipelinesTemplates/WinUI-*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --prefix .github/scripts --ignore-scripts
+      - run: node --test .github/scripts/tests/winui-validation*.test.mjs
