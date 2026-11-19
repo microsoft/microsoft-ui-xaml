@@ -3,7 +3,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    [ValidateSet('Prepare', 'Investigate', 'Show', 'Evidence', 'Propose', 'Approve', 'Run', 'Status', 'Verify', 'Report')]
+    [ValidateSet('Explore', 'Prepare', 'Investigate', 'Show', 'Evidence', 'Propose', 'Approve', 'Run', 'Status', 'Verify', 'Report')]
     [string]$Action,
     [string]$StatePath,
     [string]$ProposalSha256,
@@ -13,6 +13,8 @@ param(
     [string]$DotNet,
     [ValidateSet('Fix', 'Investigation')]
     [string]$Phase = 'Fix',
+    [string]$ScenarioPlan,
+    [ValidatePattern('^[0-9a-fA-F]{64}$')][string]$ScenarioPlanSha256,
     [string]$Problem = 'Investigate the cost of constructing the control tree in this scenario. Identify evidence-backed hypotheses or request additional measurements.',
     [string]$CandidateManifest,
     [ValidateSet('Baseline', 'Candidate')]
@@ -52,6 +54,63 @@ function Save-State {
     Move-Item -LiteralPath $temporaryPath -Destination $StatePath -Force
 }
 
+if ($ScenarioPlan -and ($Action -ne 'Prepare' -or $Scenario -ne 'Control')) {
+    throw 'ScenarioPlan requires Prepare -Scenario Control.'
+}
+if ($ScenarioPlanSha256 -and -not $ScenarioPlan) {
+    throw 'ScenarioPlanSha256 requires an explicit ScenarioPlan.'
+}
+
+if ($Action -eq 'Explore') {
+    if ($Scenario -ne 'Control' -or $StatePath) {
+        throw 'Explore requires -Scenario Control and no StatePath. It opens the demo without a measurement.'
+    }
+    if (-not $DotNet) {
+        $DotNet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
+    }
+    $DotNet = (Resolve-Path -LiteralPath $DotNet -ErrorAction Stop).Path
+    $appRoot = Join-Path $PSScriptRoot 'ControlDemo'
+    $definition = Get-Content -LiteralPath (Join-Path $appRoot 'scenario.json') -Raw | ConvertFrom-Json
+    $buildRoot = Join-Path $env:LOCALAPPDATA ('WinUIProfilerHarness\Builds\' + [guid]::NewGuid().ToString('N'))
+    & pwsh -NoProfile -File (Join-Path $appRoot $definition.buildScript) `
+        -InitRun (Join-Path $repoRoot 'initrun.ps1') -DotNet $DotNet -OutputRoot $buildRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw 'The exploration app build failed.'
+    }
+    $executable = (Get-Content -LiteralPath (Join-Path $buildRoot $definition.buildOutput) -Raw).Trim()
+    $start = [Diagnostics.ProcessStartInfo]::new($executable)
+    $start.UseShellExecute = $false
+    $start.WorkingDirectory = Split-Path $executable -Parent
+    $start.ArgumentList.Add('--explore')
+    $process = [Diagnostics.Process]::Start($start)
+    try {
+        $deadline = [DateTime]::UtcNow.AddSeconds(30)
+        do {
+            if ($process.WaitForExit(100)) {
+                throw "The exploration app exited before its window was ready (exit $($process.ExitCode))."
+            }
+            $process.Refresh()
+        } while (($process.MainWindowHandle -eq [IntPtr]::Zero -or
+                  -not $process.MainWindowTitle.StartsWith('ControlDemo - Explore - ')) -and
+                 [DateTime]::UtcNow -lt $deadline)
+        if ($process.MainWindowHandle -eq [IntPtr]::Zero -or
+            -not $process.MainWindowTitle.StartsWith('ControlDemo - Explore - ')) {
+            throw 'The exploration app did not initialize an observable window.'
+        }
+        Write-Output "HARNESS-WINDOW: PID $($process.Id), HWND $($process.MainWindowHandle); no capture; close the window when finished."
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "The exploration app exited with code $($process.ExitCode)."
+        }
+    } finally {
+        if (-not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force
+        }
+        $process.Dispose()
+    }
+    exit 0
+}
+
 if ($Action -eq 'Prepare') {
     if ($StatePath) {
         throw 'Prepare creates a new state file; do not supply -StatePath.'
@@ -86,7 +145,8 @@ if ($Action -eq 'Prepare') {
             '.gitignore', 'README.md', 'App.xaml', 'App.xaml.cs', 'ScenarioWorkload.cs',
             'ControlDemo.csproj', 'Directory.Build.props', 'Directory.Build.targets',
             'app.manifest', 'global.json', 'NuGet.Config', 'packages.lock.json',
-            'markers.json', 'providers.txt', 'build.ps1', 'scenario.json'
+            'markers.json', 'providers.txt', 'build.ps1', 'scenario.json',
+            'ScenarioPlan.cs', 'scenario-capabilities.json', 'scenario_plan.py'
         )
         $helperFiles = @('capture.ps1', 'metrics.py', 'verify.py', 'profiler_query.py', '__init__.py')
         $testFiles = @('__init__.py', 'test_metrics.py')
@@ -116,6 +176,19 @@ if ($Action -eq 'Prepare') {
     }
 
     $baselinePath = Join-Path $sessionRoot 'baseline-measurement.json'
+    $preparedPlan = $null
+    if ($ScenarioPlan) {
+        $planPath = (Resolve-Path -LiteralPath $ScenarioPlan -ErrorAction Stop).Path
+        $planArguments = @('stage', '--root', $sampleRoot, '--plan', $planPath)
+        if ($ScenarioPlanSha256) {
+            $planArguments += @('--expected-sha256', $ScenarioPlanSha256)
+        }
+        $validation = & python -B (Join-Path $sampleRoot 'scenario_plan.py') @planArguments
+        if ($LASTEXITCODE -ne 0) {
+            throw 'The scenario plan is invalid, unsupported, or ambiguous. No app was built or executed.'
+        }
+        $preparedPlan = ($validation -join [Environment]::NewLine) | ConvertFrom-Json
+    }
     if ($Scenario -eq 'Control') {
         $contract = [ordered]@{
             schema = 'winui-profiler-control-poc/contract-v1'
@@ -140,14 +213,16 @@ if ($Action -eq 'Prepare') {
         } else {
             & python -B verify.py --output $baselinePath
         }
-        if ($LASTEXITCODE -ne 1) {
-            throw 'The seed must fail the work-budget check with exit code 1.'
+        $expectedExit = if ($ScenarioPlan) { 0 } else { 1 }
+        if ($LASTEXITCODE -ne $expectedExit) {
+            throw "Measurement returned exit $LASTEXITCODE; expected $expectedExit for this scenario mode."
         }
     } finally {
         Pop-Location
     }
     $baseline = Get-Content -LiteralPath $baselinePath -Raw | ConvertFrom-Json
-    if ($baseline.status -ne 'Failed' -or
+    $expectedStatus = if ($ScenarioPlan) { 'Measured' } else { 'Failed' }
+    if ($baseline.status -ne $expectedStatus -or
         ($Scenario -eq 'Synthetic' -and $baseline.reason -ne 'WorkBudgetExceeded')) {
         throw 'The baseline failed for an unexpected reason.'
     }
@@ -164,6 +239,7 @@ if ($Action -eq 'Prepare') {
         Report = $null
         LastResult = $null
         Investigation = $null
+        ScenarioPlanSha256 = $(if ($preparedPlan) { $preparedPlan.planSha256 } else { $null })
     }
     Save-State $state
     Write-Output "POC-STATE: $StatePath"
@@ -304,6 +380,9 @@ if ($Action -eq 'Propose') {
     }
     if ($active.RunId) {
         throw 'This state already has an ADE run. Prepare a new POC for another proposal.'
+    }
+    if ($state.PSObject.Properties['ScenarioPlanSha256'] -and $state.ScenarioPlanSha256) {
+        throw 'Custom action plans are measurement/investigation-only. No fix acceptance contract is configured.'
     }
     $task = if ($isControl) {
         'Reduce redundant layout work in ScenarioWorkload.cs. Edit only that file. Preserve the complete ordered tree of 40 Buttons and the protected caller''s final UpdateLayout. The protected ten-iteration WinUIProfiler layout-event gate must pass and the extractor tests must remain passing. Report actual evidence paths and distinguish this deliberately constructed app inefficiency from a framework defect or a statistical latency claim.'

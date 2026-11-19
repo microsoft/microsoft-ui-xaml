@@ -11,6 +11,9 @@
     "App.xaml",
     "App.xaml.cs",
     "ScenarioWorkload.cs",
+    "ScenarioPlan.cs",
+    "scenario-capabilities.json",
+    "scenario_plan.py",
     "ControlDemo.csproj",
     "Directory.Build.props",
     "Directory.Build.targets",
@@ -23,7 +26,7 @@
     "build.ps1",
     "scenario.json"
   ],
-  "sourceSnapshots": ["App.xaml.cs", "ScenarioWorkload.cs"],
+  "sourceSnapshots": ["App.xaml.cs", "ScenarioWorkload.cs", "ScenarioPlan.cs", "scenario-capabilities.json"],
   "editableFiles": ["ScenarioWorkload.cs"],
   "markers": {
     "provider": "ce339c72-348e-4e51-95ed-8db7f7d8fbc2",

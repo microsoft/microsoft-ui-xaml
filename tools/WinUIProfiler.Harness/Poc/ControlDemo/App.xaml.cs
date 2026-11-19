@@ -13,6 +13,8 @@ public partial class App : Application
     private const int ControlCount = 40;
     private readonly string _resultPath;
     private readonly int _displaySeconds;
+    private readonly ScenarioPlan? _scenarioPlan;
+    private readonly bool _explore;
     private Window? _window;
     private DispatcherQueueTimer? _closeTimer;
     private bool _started;
@@ -20,16 +22,36 @@ public partial class App : Application
     public App()
     {
         string[] arguments = Environment.GetCommandLineArgs();
-        if (arguments.Length is not (3 or 5) || arguments[1] != "--result" ||
+        if (arguments.Length == 2 && arguments[1] == "--explore")
+        {
+            _explore = true;
+            _resultPath = "";
+            InitializeComponent();
+            return;
+        }
+        if (arguments.Length < 3 || arguments.Length > 7 || arguments.Length % 2 != 1 || arguments[1] != "--result" ||
             !Path.IsPathFullyQualified(arguments[2]) || File.Exists(arguments[2]))
         {
-            throw new ArgumentException("Expected --result <new absolute JSON path> [--display-seconds <1-300>].");
+            throw new ArgumentException("Expected --explore, or --result <new absolute JSON path> [--scenario <plan>] [--display-seconds <1-300>].");
         }
-        if (arguments.Length == 5 &&
-            (arguments[3] != "--display-seconds" || !int.TryParse(arguments[4], out _displaySeconds) ||
-             _displaySeconds < 1 || _displaySeconds > 300))
+        var seen = new HashSet<string>();
+        for (int index = 3; index < arguments.Length; index += 2)
         {
-            throw new ArgumentException("Display duration must be between 1 and 300 seconds.");
+            if (!seen.Add(arguments[index]))
+            {
+                throw new ArgumentException("App arguments must not be repeated.");
+            }
+            if (arguments[index] == "--display-seconds" &&
+                int.TryParse(arguments[index + 1], out _displaySeconds) && _displaySeconds is >= 1 and <= 300)
+            {
+                continue;
+            }
+            if (arguments[index] == "--scenario" && Path.IsPathFullyQualified(arguments[index + 1]))
+            {
+                _scenarioPlan = ScenarioPlan.Load(arguments[index + 1]);
+                continue;
+            }
+            throw new ArgumentException("Invalid scenario or display-duration argument.");
         }
 
         _resultPath = arguments[2];
@@ -39,10 +61,11 @@ public partial class App : Application
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         var panel = new StackPanel();
+        var viewer = new ScrollViewer { Content = panel };
         _window = new Window
         {
             Title = "WinUI Profiler Harness - Layout Demo",
-            Content = new ScrollViewer { Content = panel }
+            Content = viewer
         };
         panel.Loaded += (_, _) =>
         {
@@ -53,7 +76,18 @@ public partial class App : Application
 
             _started = true;
             panel.UpdateLayout();
-            if (!panel.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RunScenario(panel)))
+            if (!panel.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (_explore)
+                {
+                    ScenarioWorkload.Populate(panel, ControlCount);
+                    _window!.Title = $"ControlDemo - Explore - {ControlCount} buttons - no capture";
+                }
+                else
+                {
+                    _ = RunScenarioAsync(panel, viewer);
+                }
+            }))
             {
                 throw new InvalidOperationException("The scenario could not be queued.");
             }
@@ -61,7 +95,7 @@ public partial class App : Application
         _window.Activate();
     }
 
-    private void RunScenario(StackPanel panel)
+    private async Task RunScenarioAsync(StackPanel panel, ScrollViewer viewer)
     {
         bool succeeded = false;
         try
@@ -72,12 +106,29 @@ public partial class App : Application
             }
 
             uint threadId = GetCurrentThreadId();
-            ScenarioEvents.Log.ScenarioStart(ControlCount);
-            ScenarioWorkload.Populate(panel, ControlCount);
+            int expected = _scenarioPlan?.FinalButtonCount ?? ControlCount;
+            var steps = new List<ScenarioStepResult>();
+            if (_scenarioPlan is not null)
+            {
+                ScenarioWorkload.Populate(panel, _scenarioPlan.InitialButtonCount);
+                panel.UpdateLayout();
+                await ScenarioPlan.SettleAsync(panel.DispatcherQueue);
+                if (!ScenarioPlan.HasExpectedButtons(panel, _scenarioPlan.InitialButtonCount))
+                {
+                    throw new InvalidOperationException("The initial button tree is incorrect.");
+                }
+            }
+            ScenarioEvents.Log.ScenarioStart(expected);
+            if (_scenarioPlan is null)
+            {
+                ScenarioWorkload.Populate(panel, ControlCount);
+            }
+            else
+            {
+                steps = await _scenarioPlan.ExecuteAsync(_window!, panel, viewer);
+            }
             panel.UpdateLayout();
-            bool correct = panel.Children.Count == ControlCount &&
-                panel.Children.Cast<UIElement>().Select((child, index) =>
-                    child is Button button && Equals(button.Content, $"Button {index}")).All(value => value);
+            bool correct = GetCurrentThreadId() == threadId && ScenarioPlan.HasExpectedButtons(panel, expected);
             ScenarioEvents.Log.ScenarioStop(panel.Children.Count, correct);
             if (!correct)
             {
@@ -94,6 +145,9 @@ public partial class App : Application
                 processCreatedUtc = process.StartTime.ToUniversalTime(),
                 uiThreadId = threadId,
                 controlCount = panel.Children.Count,
+                scenarioPlanSha256 = _scenarioPlan?.Sha256,
+                scenarioStepCount = steps.Count,
+                executedSteps = steps,
                 frameworkPath = framework.FileName,
                 frameworkVersion = framework.FileVersionInfo.FileVersion
             });
@@ -108,7 +162,7 @@ public partial class App : Application
         {
             if (succeeded && _displaySeconds > 0)
             {
-                _window!.Title = $"ControlDemo - {ControlCount} buttons verified - closes in {_displaySeconds}s";
+                _window!.Title = $"ControlDemo - {panel.Children.Count} buttons verified - closes in {_displaySeconds}s";
                 _closeTimer = panel.DispatcherQueue.CreateTimer();
                 _closeTimer.Interval = TimeSpan.FromSeconds(_displaySeconds);
                 _closeTimer.IsRepeating = false;
@@ -125,7 +179,11 @@ public partial class App : Application
     private void WriteResult(object result)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_resultPath)!);
-        File.WriteAllText(_resultPath, JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(_resultPath, JsonSerializer.Serialize(result, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
     }
 
     [DllImport("kernel32.dll")]
@@ -142,4 +200,10 @@ internal sealed class ScenarioEvents : EventSource
 
     [Event(2, Level = EventLevel.Informational, Opcode = EventOpcode.Stop, Task = (EventTask)1)]
     public void ScenarioStop(int actualControls, bool correct) => WriteEvent(2, actualControls, correct);
+
+    [Event(3, Level = EventLevel.Informational, Opcode = EventOpcode.Start, Task = (EventTask)2)]
+    public void StepStart(int index, string action) => WriteEvent(3, index, action);
+
+    [Event(4, Level = EventLevel.Informational, Opcode = EventOpcode.Stop, Task = (EventTask)2)]
+    public void StepStop(int index, int actualControls, bool correct) => WriteEvent(4, index, actualControls, correct);
 }

@@ -73,6 +73,12 @@ def extract_iteration(database: Path, app: dict, scenario: dict) -> dict:
                ORDER BY e.Seq""",
             (XAML_PROVIDER, app["uiThreadId"], start["Seq"], stop["Seq"]),
         ).fetchall()
+        observed_layout_provider = db.execute(
+            """SELECT 1 FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId
+               WHERE lower(t.ProviderId) = ? AND t.TraceLogging = 0
+                 AND t.EventId = 41 AND e.ThreadId = ? LIMIT 1""",
+            (XAML_PROVIDER, app["uiThreadId"]),
+        ).fetchone() is not None
 
     stack = []
     completed = 0
@@ -94,7 +100,7 @@ def extract_iteration(database: Path, app: dict, scenario: dict) -> dict:
             completed += 1
             if not stack:
                 busy_qpc += timestamp - began
-    if stack or completed == 0:
+    if stack or (completed == 0 and not (scenario.get("allowZeroLayout") is True and observed_layout_provider)):
         raise MeasurementError("The scenario has incomplete or missing layout telemetry.")
     return {
         "processId": app["processId"],
@@ -124,7 +130,8 @@ def summarize(manifest: dict, scenario: dict) -> dict:
         row.update(
             iteration=run["iteration"],
             trace=run["trace"],
-            withinBudget=row["layoutPassCount"] <= scenario["maxLayoutPasses"],
+            withinBudget=(row["layoutPassCount"] <= scenario["maxLayoutPasses"]
+                          if scenario["maxLayoutPasses"] is not None else None),
         )
         framework_hashes.add(run["frameworkSha256"])
         rows.append(row)
@@ -135,7 +142,8 @@ def summarize(manifest: dict, scenario: dict) -> dict:
     return {
         "schema": "winui-profiler-harness/measurement-v1",
         "scenario": scenario["name"],
-        "status": "Passed" if all(row["withinBudget"] for row in rows) else "Failed",
+        "status": ("Measured" if scenario["maxLayoutPasses"] is None
+                   else "Passed" if all(row["withinBudget"] for row in rows) else "Failed"),
         "measurementKind": "WinUIProfiler-process-scoped-XAML-layout-events",
         "maxLayoutPasses": scenario["maxLayoutPasses"],
         "timingIsAcceptanceCriterion": False,
@@ -160,9 +168,10 @@ def markdown_report(result: dict) -> str:
         "| --- | ---: | ---: | ---: | --- |",
     ]
     for row in result["iterations"]:
+        budget = row["withinBudget"] if row["withinBudget"] is not None else "Not evaluated"
         lines.append(
             f"| {row['iteration']} | {row['layoutPassCount']} | {row['scenarioMs']} "
-            f"| {row['layoutBusyMs']} | {row['withinBudget']} |"
+            f"| {row['layoutBusyMs']} | {budget} |"
         )
     summary = result["summary"]
     lines.extend(

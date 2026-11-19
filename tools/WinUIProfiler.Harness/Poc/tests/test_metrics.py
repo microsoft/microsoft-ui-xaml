@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from helpers.metrics import XAML_PROVIDER, MeasurementError, compare_manifests, extract_iteration
+from helpers.metrics import XAML_PROVIDER, MeasurementError, compare_manifests, extract_iteration, markdown_report, summarize
 from helpers.profiler_query import query, scenario_events, validate_inputs, verify_queries
 from helpers.verify import verify as verify_capture
 
@@ -148,6 +148,37 @@ class MetricsTests(unittest.TestCase):
         with self.assertRaises(MeasurementError):
             extract_iteration(self.database, self.app, self.scenario)
 
+    def test_zero_layout_requires_opt_in_and_positive_process_thread_provider_evidence(self):
+        self.change("DELETE FROM Events WHERE Seq IN (20,30)")
+        with self.assertRaises(MeasurementError):
+            extract_iteration(self.database, self.app, self.scenario)
+        self.scenario["allowZeroLayout"] = True
+        self.assertEqual(0, extract_iteration(self.database, self.app, self.scenario)["layoutPassCount"])
+        self.change("UPDATE Events SET ThreadId=999 WHERE Seq IN (1,2)")
+        with self.assertRaises(MeasurementError):
+            extract_iteration(self.database, self.app, self.scenario)
+
+    def test_zero_layout_opt_in_does_not_accept_missing_or_unbalanced_telemetry(self):
+        self.scenario["allowZeroLayout"] = True
+        self.change("DELETE FROM Events WHERE Seq=30")
+        with self.assertRaises(MeasurementError):
+            extract_iteration(self.database, self.app, self.scenario)
+        self.change("DELETE FROM Events WHERE TypeId IN (3,4)")
+        with self.assertRaises(MeasurementError):
+            extract_iteration(self.database, self.app, self.scenario)
+
+    def test_rejects_changed_plan_identity_or_incomplete_action_execution(self):
+        self.scenario["expectedResults"].update(scenarioPlanSha256="frozen-plan", scenarioStepCount=4)
+        self.app.update(scenarioPlanSha256="frozen-plan", scenarioStepCount=4)
+        self.assertEqual("frozen-plan", extract_iteration(self.database, self.app, self.scenario)["scenarioPlanSha256"])
+        for name, value in (("scenarioPlanSha256", "different"), ("scenarioStepCount", 3)):
+            with self.subTest(name=name):
+                expected = self.app[name]
+                self.app[name] = value
+                with self.assertRaises(MeasurementError):
+                    extract_iteration(self.database, self.app, self.scenario)
+                self.app[name] = expected
+
     def test_scenario_drilldown_excludes_other_threads_and_outside_markers(self):
         self.change(
             "CREATE TABLE EventDetails(Seq INTEGER, ThreadId INTEGER, Ms REAL, Provider TEXT, "
@@ -238,6 +269,15 @@ class MetricsTests(unittest.TestCase):
         candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
         with self.assertRaisesRegex(MeasurementError, "different framework"):
             compare_manifests(baseline_path, candidate_path, self.scenario)
+
+    def test_measurement_only_has_no_performance_pass_or_budget_claim(self):
+        _, manifest = self.make_capture("custom", 0)
+        self.scenario.update(maxLayoutPasses=None, allowZeroLayout=True)
+        result = summarize(manifest, self.scenario)
+        self.assertEqual("Measured", result["status"])
+        self.assertEqual(10, result["summary"]["iterationCount"])
+        self.assertTrue(all(row["withinBudget"] is None for row in result["iterations"]))
+        self.assertIn("Not evaluated", markdown_report(result))
 
     def test_comparison_rejects_repeated_database_or_changed_binary(self):
         baseline_path, _ = self.make_capture("baseline", 40)

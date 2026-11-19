@@ -80,7 +80,7 @@ try {
             $start.UseShellExecute = $false
             $start.WorkingDirectory = Split-Path $executable -Parent
             foreach ($argument in $scenario.launchArguments) {
-                $start.ArgumentList.Add($argument.Replace('{result}', $resultPath))
+                $start.ArgumentList.Add($argument.Replace('{result}', $resultPath).Replace('{sourceRoot}', $sourceRoot))
             }
             if ($DisplaySeconds -gt 0) {
                 foreach ($argument in $scenario.displayArguments) {
@@ -129,6 +129,12 @@ try {
         if (-not $app.passed -or $app.processId -ne $processId -or
             ([DateTime]$app.processCreatedUtc).ToUniversalTime() -ne $createdUtc) {
             throw "Iteration $iteration returned incorrect process or scenario results."
+        }
+        foreach ($expected in $scenario.expectedResults.PSObject.Properties) {
+            $actual = $app.PSObject.Properties[$expected.Name]
+            if (-not $actual -or $actual.Value -cne $expected.Value) {
+                throw "Iteration $iteration did not confirm the expected $($expected.Name)."
+            }
         }
         & $ProfilerCli record $trace --pid $processId --out $database --markers (Join-Path $sourceRoot $scenario.markersFile)
         if ($LASTEXITCODE -ne 0) {

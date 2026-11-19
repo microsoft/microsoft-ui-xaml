@@ -25,9 +25,10 @@ Neither mode implements the three profiler subagents.
 | --- | --- |
 | `Poc\Invoke-AdePoc.ps1` | Thin ADE command adapter and explicit staging |
 | `Poc\helpers` | Shared capture, extraction, profiler queries, verification, and evidence comparison |
-| `Poc\ControlDemo` | Test app, its build script, providers/markers, and protected `scenario.json` |
+| `Poc\ControlDemo` | Test app, bounded action runner/validator/catalog, build script, providers/markers, and protected `scenario.json` |
 | `Poc\sample` | Synthetic Python demonstration |
 | `Poc\tests` | Harness/helper tests |
+| `.github\skills\winui-profiler-scenario` | Copilot conversational scenario intake, clarification and confirmation |
 | `eng\ade\ui-profiler` | Generated plugin and separate synthetic, control, and investigation packs |
 | `%LOCALAPPDATA%\ade\runtime\0.1.0` | Shared ADE runtime, not checked in |
 | `%LOCALAPPDATA%\WinUIProfilerHarness\Poc` | Unique staged sample and state per preparation |
@@ -240,6 +241,73 @@ The app's `scenario.json` and the `helpers` directory are protected in both ADE
 workflows. Investigation staging includes only its configured measured source
 snapshots, scenario contract, and query/extraction helpers, not the demo README.
 
+### Natural-language ControlDemo scenarios
+
+Describe and refine the flow **in Copilot chat**. The repository's
+`winui-profiler-scenario` skill guides the conversation:
+
+> **User:** Profile ControlDemo: populate 60 buttons, make the window larger,
+> scroll to the end, then clear it.
+>
+> **Copilot:** What window width and height in physical pixels?
+>
+> **User:** 800 by 600.
+>
+> **Copilot:** Start empty; measure populate 60, resize to 800x600, scroll to
+> the end, then clear. Repeat in ten fresh processes after window load.
+> These are app-owned actions, not physical mouse input. Run this scenario?
+
+The user can revise the flow before confirming. They do not write JSON, run
+commands, or type hashes. Merely discussing a scenario never starts the app.
+Copilot itself supplies the model reasoning; scenario intake does not launch
+a separate agent/ADE approval cycle for every conversational turn.
+If the user just wants to open the app, `Explore -Scenario Control` builds and
+opens its default 40-button window without ETW or measurement. It stays open
+until closed. This is separate from measuring startup, which is not supported
+by the current action runner.
+
+Behind the scenes, Copilot retains the scenario-related request and explicit
+clarifications in session artifacts, compiles a bounded action plan, and runs
+`scenario_plan.py review`. The deterministic validator checks request identity,
+exact fields and parameter bounds. The user confirms a readable plan because
+syntax validation cannot establish semantic faithfulness. Unsupported actions
+or missing necessary parameters are explained or clarified, never silently
+dropped or replaced with the default flow.
+
+Only after confirmation does Copilot invoke `Prepare -Scenario Control
+-ScenarioPlan <path> -ScenarioPlanSha256 <reviewed hash>`. The hash is supplied
+by the agent, not the user, and prevents executing different plan bytes after
+review. This is a Copilot skill over the existing local harness, not a standalone
+MAF conversational service.
+
+`Prepare` freezes a validated plan in a new external sample, compiles matching
+marker/correctness expectations, builds once and captures ten fresh runs.
+Each run verifies the frozen plan's SHA-256, executed step count, final button
+tree and every step's action outcome. Per-step ETW markers and
+`executedSteps` in each `app-result.json` retain actual counts, window
+dimensions and scroll offsets. The plan is included in measured source hashes
+and investigation snapshots; changing it during a measurement invalidates it.
+
+Supported actions are `populate` (replace with 1-200 buttons), `clear`,
+`resize` (400-1600 by 300-1000 physical pixels), and `scroll` to `start`/`end`.
+A plan has at most 12 ordered steps. The app rejects scrolling content that
+does not actually overflow. `initialButtonCount` is unmeasured setup, only
+when explicitly requested; ordinary population remains inside the markers.
+Steps use app-owned hooks, not physical mouse/keyboard input. Clicks, typing,
+navigation, arbitrary waits/loops, other controls/apps and launch measurements
+are not supported in this milestone.
+
+`-Problem` still only asks an investigation question; it does not change actions.
+Custom flows report **Measured**, not a performance pass: no layout budget or
+fix-acceptance contract is invented. They can use `Investigate` with its separate
+approval, but fix `Propose` is blocked. A legitimate zero-layout interval needs
+explicit scenario opt-in and positive XAML layout-provider evidence from the
+same process/UI thread elsewhere in the complete trace. Lost, missing-provider
+or unbalanced telemetry is still invalid.
+
+Omitting `-ScenarioPlan` preserves the original 40-button fail-to-pass demo.
+Other apps and arbitrary scenario/test-code generation remain future work.
+
 ### See the app and audit the result
 
 The default app closes immediately after writing its result, so the benchmark
@@ -253,7 +321,7 @@ window can disappear before it is noticed. With a newly prepared Control state:
 
 This builds the staged baseline or successful ADE candidate and performs one observation capture. The window
 stays open for the requested duration **after** the scenario Stop marker, then
-closes. The title confirms the 40-button correctness check. This is separate
+closes. The title confirms the final button-count correctness check. This is separate
 from the ten-iteration acceptance check, and is not a replay of an old binary.
 States staged before the shared-helper layout need a fresh `Prepare` for
 measurement, investigation, or fix actions. Existing ADE runs/workspaces are not

@@ -53,7 +53,7 @@ def main() -> int:
         print(json.dumps({"status": "EnvironmentFailure", "error": str(error)}, indent=2))
         return 2
     print(json.dumps(result, indent=2))
-    return 0 if result["status"] == "Passed" else 1
+    return 0 if result["status"] in ("Passed", "Measured") else 1
 
 
 if __name__ == "__main__":

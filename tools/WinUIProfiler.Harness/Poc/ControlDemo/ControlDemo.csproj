@@ -18,6 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="[2.3.9]" />
+    <None Update="scenario-capabilities.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="StageDemoRuntime" AfterTargets="Build" DependsOnTargets="CreateWinRTRegistration">
     <ItemGroup>

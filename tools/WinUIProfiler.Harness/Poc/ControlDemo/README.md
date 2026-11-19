@@ -5,7 +5,7 @@ WinUIProfiler. It is local-only and intentionally small.
 
 ## What it measures
 
-The app inserts 40 Buttons into a StackPanel. The seed deliberately forces
+By default the app inserts 40 Buttons into a StackPanel. The seed deliberately forces
 layout after each insertion. A protected caller performs one final layout and
 verifies every button's count, order, and content. ETW markers bound only that
 scenario, not app launch.
@@ -21,9 +21,9 @@ WinUIProfiler.Cli.exe record <trace.etl> --pid <owned-pid> --out <session.sqlite
 The shared `..\helpers\metrics.py` opens each SQLite session read-only. It requires the expected process,
 both UI-thread markers, a complete untrimmed import, zero reported event loss,
 and balanced XAML Layout/Start (41) / Layout/Stop (42) pairs from the XAML provider
-inside those markers. Missing events are invalid data, never a measured zero.
+inside those markers. Missing layout telemetry is invalid in the default scenario.
 
-The shared `..\helpers\verify.py` returns 0 only when all ten valid iterations have at most four layout
+For the default scenario, the shared `..\helpers\verify.py` returns 0 only when all ten valid iterations have at most four layout
 passes and the app's correctness assertions pass. Exit 1 means measured work
 exceeds the budget; exit 2 means capture/import/environment failure. Per-run and
 mean values, ETLs, databases, source hashes, and runtime identity are retained.
@@ -38,6 +38,37 @@ files, and `scenario.json`. The scenario contract owns the 40-button expectation
 marker payloads, layout budget, source snapshots, and allowed edit paths. Capture,
 SQLite extraction, profiler queries, and verification live in the parent
 `helpers` directory; their tests live in the parent `tests` directory.
+The app also owns `ScenarioPlan.cs`, `scenario-capabilities.json` and
+`scenario_plan.py`: these define and validate its bounded action surface, not
+shared capture infrastructure.
+
+## User-selected flows
+
+Describe the flow in Copilot chat. The `winui-profiler-scenario` repository skill
+asks for missing details, retains explicit clarifications, validates a bounded
+JSON plan behind the scenes, and shows readable steps for confirmation.
+The user does not write JSON or copy hashes. Planning never builds or runs
+the app. After confirmation Copilot calls the existing adapter with the reviewed
+plan and its hash. See the parent README for a conversation example.
+
+The initial supported actions replace the panel with 1-200 buttons, clear it,
+resize the window (physical pixels), or scroll to the start/end. At most 12
+steps execute in order through app-owned hooks, with bounded settling and
+per-step correctness. This is not physical-input automation or arbitrary test
+generation. Unsupported or incomplete requests do not fall back to the seed.
+
+A custom flow starts after window load; explicitly requested prepopulation is
+unmeasured setup. Each measured run records its frozen plan hash, executed
+step count, final tree and per-step counts/dimensions/scroll offsets in
+`app-result.json`, plus ETW step markers. Capture rejects a different plan or
+incorrect result. The exact plan is retained with source hashes.
+
+Ten valid custom runs return **Measured** and exit 0, not a passed performance
+budget. Custom flows may use the separately approved investigation workflow;
+the existing seeded fix gate is blocked for them. A zero-layout interval is
+valid only with explicit opt-in and positive layout-provider evidence from the
+same process/UI thread elsewhere in the complete trace. Unbalanced events,
+missing providers and reported event loss still fail.
 
 ## Running it through ADE
 
@@ -64,6 +95,8 @@ observation capture, and closes it automatically. This is not a ten-run
 acceptance check. `Evidence -CandidateManifest <path>` independently recounts
 the saved baseline and candidate SQLite sessions; it does not trust a model's
 summary of the counts.
+`Explore -Scenario Control` instead opens the default app without recording
+anything and waits until its window is closed; no prepared state is needed.
 
 ## Prerequisites and boundaries
 

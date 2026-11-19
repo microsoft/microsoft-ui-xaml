@@ -8,6 +8,9 @@
   "protectedPaths": [
     "App.xaml.cs",
     "ScenarioWorkload.cs",
+    "ScenarioPlan.cs",
+    "scenario-capabilities.json",
+    "scenario-plan.json",
     "scenario.json",
     "helpers",
     "investigation.json"
