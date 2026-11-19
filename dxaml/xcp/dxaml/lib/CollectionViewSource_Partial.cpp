@@ -173,7 +173,9 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
 
         if (isShapeable)
         {
-            IFC(ApplyPropertiesToView(static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView))));
+            auto pShapingView = static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView));
+            pShapingView->SetSourceCollection(pNewSource);
+            IFC(ApplyPropertiesToView(pShapingView));
         }
 
         // Move the item to the first position on the newly created collection
@@ -238,6 +240,11 @@ DirectUI::CollectionViewSource::OnReferenceTrackerWalk(INT walkType )
 {
     if( m_pCVSViewChangedEventSource )
         m_pCVSViewChangedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+
+    if (m_spFilterRequestedEventSource)
+    {
+        m_spFilterRequestedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+    }
 
     CollectionViewSourceGenerated::OnReferenceTrackerWalk( walkType );
 

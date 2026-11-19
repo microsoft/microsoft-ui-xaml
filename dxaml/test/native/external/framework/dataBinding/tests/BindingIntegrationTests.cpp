@@ -4224,6 +4224,216 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CollectionViewSourceGroupSort()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto description = ref new PropertyGroupDescription(L"Int32Property");
+            VERIFY_ARE_EQUAL(0u, description->SortDescriptions->Size);
+            VERIFY_IS_NULL(description->CustomSort);
+
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+            auto view = cvs->View;
+            auto groups = view->CollectionGroups;
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Group SortDescriptions order the groups by a group property, in the same view.");
+            description->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
+
+            description->SortDescriptions->Clear();
+            description->SortDescriptions->Append(ref new SortDescription(L"Key", ListSortDirection::Descending));
+            VERIFY_ARE_STRINGS_EQUAL(L"2:d 1:ba 0:c", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"A new group is inserted at its place in the group order.");
+            auto groupCounts = std::make_shared<VectorChangeCounts>();
+            auto groupsToken = CountVectorChanges(groups, groupCounts);
+            source->Append(MakeShapingItem(L"e", 3));
+            VERIFY_ARE_STRINGS_EQUAL(L"3:e 2:d 1:ba 0:c", DescribeGroups(groups).c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"+0", groupCounts->log.c_str());
+            groups->VectorChanged -= groupsToken;
+
+            LOG_OUTPUT(L"A group CustomSort compares group names and replaces the group SortDescriptions.");
+            description->CustomSort = ref new CollectionViewComparer([](Object^ x, Object^ y)
+            {
+                return safe_cast<int32>(x) - safe_cast<int32>(y);
+            });
+            VERIFY_ARE_EQUAL(0u, description->SortDescriptions->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d 3:e", DescribeGroups(groups).c_str());
+
+            LOG_OUTPUT(L"Adding a group SortDescription drops the CustomSort.");
+            description->SortDescriptions->Append(ref new SortDescription(L"ItemCount", ListSortDirection::Descending));
+            VERIFY_IS_NULL(description->CustomSort);
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ba", DescribeGroups(groups).substr(0, 4).c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceCultureAndStringComparison()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            LOG_OUTPUT(L"Culture orders strings in that culture: Swedish sorts a-umlaut after z.");
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"z", 0));
+            source->Append(MakeShapingItem(L"\u00E4", 0));
+            source->Append(MakeShapingItem(L"a", 0));
+
+            auto cvs = ref new CollectionViewSource();
+            VERIFY_IS_NULL(cvs->Culture);
+            cvs->Culture = L"en-US";
+            cvs->Source = source;
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            auto view = cvs->View;
+            VERIFY_ARE_STRINGS_EQUAL(L"a\u00E4z", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"en-US", safe_cast<ICollectionViewShaping^>(view)->Culture->Data());
+
+            cvs->Culture = L"sv-SE";
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"az\u00E4", ShapingNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", safe_cast<ICollectionViewShaping^>(view)->Culture->Data());
+
+            bool threw = false;
+            try
+            {
+                cvs->Culture = L"not a culture";
+            }
+            catch (Platform::InvalidArgumentException^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+
+            LOG_OUTPUT(L"StringComparison decides which string group names match; Ordinal unless set.");
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, (ref new PropertyGroupDescription(L"StringProperty"))->StringComparison);
+
+            auto names = ref new Platform::Collections::Vector<Object^>();
+            names->Append(MakeShapingItem(L"a", 0));
+            names->Append(MakeShapingItem(L"A", 0));
+            names->Append(MakeShapingItem(L"b", 0));
+
+            auto ordinal = ref new CollectionViewSource();
+            ordinal->Source = names;
+            ordinal->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:a A:A b:b", DescribeGroups(ordinal->View->CollectionGroups).c_str());
+
+            auto ignoreCase = ref new CollectionViewSource();
+            ignoreCase->Source = names;
+            auto description = ref new PropertyGroupDescription(L"StringProperty", nullptr, CollectionViewStringComparison::OrdinalIgnoreCase);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, description->StringComparison);
+            ignoreCase->GroupDescriptions->Append(description);
+            VERIFY_ARE_STRINGS_EQUAL(L"a:aA b:b", DescribeGroups(ignoreCase->View->CollectionGroups).c_str());
+
+            LOG_OUTPUT(L"An item added later joins the group whose name matches it.");
+            names->Append(MakeShapingItem(L"B", 0));
+            VERIFY_ARE_STRINGS_EQUAL(L"a:aA b:bB", DescribeGroups(ignoreCase->View->CollectionGroups).c_str());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewShapingSourceCollection()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto shaping = safe_cast<ICollectionViewShaping^>(cvs->View);
+            VERIFY_IS_TRUE(shaping->SourceCollection == source);
+
+            LOG_OUTPUT(L"Shaping does not change it.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewShaping^>(cvs->View)->SourceCollection == source);
+
+            LOG_OUTPUT(L"A new Source gives a view over it.");
+            auto other = MakeShapingSource();
+            cvs->Source = other;
+            VERIFY_IS_TRUE(safe_cast<ICollectionViewShaping^>(cvs->View)->SourceCollection == other);
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceFilterEvent()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            auto view = cvs->View;
+
+            LOG_OUTPUT(L"A handler alone shapes the view: Accepted starts true and the handler decides.");
+            int raised = 0;
+            bool sawAcceptedByDefault = true;
+            auto token = cvs->FilterRequested += ref new FilterEventHandler([&](Object^ sender, FilterEventArgs^ e)
+            {
+                raised++;
+                sawAcceptedByDefault = sawAcceptedByDefault && e->Accepted;
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            VERIFY_ARE_EQUAL(4, raised);
+            VERIFY_IS_TRUE(sawAcceptedByDefault);
+            VERIFY_IS_TRUE(cvs->View == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"While the event has handlers it replaces the Filter delegate.");
+            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            {
+                return safe_cast<InpcDataSource^>(item)->Int32Property == 2;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(view)->Data());
+            source->Append(MakeShapingItem(L"e", 1));
+            VERIFY_ARE_STRINGS_EQUAL(L"bae", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"Removing the last handler hands filtering back to the delegate.");
+            cvs->FilterRequested -= token;
+            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(view)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGetDefaultView()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            VERIFY_IS_NULL(CollectionViewSource::GetDefaultView(nullptr));
+
+            LOG_OUTPUT(L"One view per source, shared by every caller.");
+            auto view = CollectionViewSource::GetDefaultView(source);
+            VERIFY_IS_NOT_NULL(view);
+            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(source) == view);
+            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(view) == view);
+            VERIFY_IS_FALSE(CollectionViewSource::GetDefaultView(MakeShapingSource()) == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
+
+            LOG_OUTPUT(L"It shapes with its own rules, and starts and stops grouping in place.");
+            auto shaping = safe_cast<ICollectionViewShaping^>(view);
+            VERIFY_IS_TRUE(shaping->SourceCollection == source);
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(view)->Data());
+            shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(source) == view);
+            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:c 2:d", DescribeGroups(view->CollectionGroups).c_str());
+            shaping->GroupDescriptions->Clear();
+            VERIFY_IS_NULL(view->CollectionGroups);
+
+            LOG_OUTPUT(L"A CollectionViewSource over the same source has its own view.");
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            VERIFY_IS_FALSE(cvs->View == view);
+            VERIFY_ARE_EQUAL(0u, safe_cast<ICollectionViewShaping^>(cvs->View)->SortDescriptions->Size);
+        });
+    }
+
     void BindingIntegrationTests::VerifyBoolToVisibilityConverter()
     {
         TestCleanupWrapper cleanup;

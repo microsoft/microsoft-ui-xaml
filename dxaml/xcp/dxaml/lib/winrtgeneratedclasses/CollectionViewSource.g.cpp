@@ -48,6 +48,26 @@ HRESULT DirectUI::CollectionViewSourceGenerated::QueryInterfaceImpl(_In_ REFIID 
 }
 
 // Properties.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_Culture(_Out_ HSTRING* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<CollectionViewSource*>(this)->get_CultureImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::put_Culture(_In_opt_ HSTRING value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<CollectionViewSource*>(this)->put_CultureImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::CollectionViewSourceGenerated::get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue)
 {
     HRESULT hr = S_OK;
@@ -191,6 +211,12 @@ HRESULT DirectUI::CollectionViewSourceFactory::QueryInterfaceImpl(_In_ REFIID ii
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStatics*>(this);
     }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Data::ICollectionViewSourceStaticsFeature_ExperimentalApi*>(this);
+    }
+#endif
     else
     {
         RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -226,6 +252,24 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_ItemsPathProperty(_Out
 // Static properties.
 
 // Static methods.
+IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::GetDefaultView(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "CollectionViewSource_GetDefaultView", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
+    IFC(CheckActivationAllowed());
+    IFC(GetDefaultViewImpl(pSource, ppReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "CollectionViewSource_GetDefaultView", hr);
+    }
+    RRETURN(hr);
+}
 
 namespace DirectUI
 {

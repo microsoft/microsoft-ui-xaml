@@ -592,7 +592,30 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
+        // WPF's CollectionViewSource.Culture, as a BCP-47 language tag.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.String Culture
+        {
+            get;
+            set;
+        }
+
+        // WPF's CollectionViewSource.Filter event; Filter is the delegate property here.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.Idl)]
+        [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+        public event Microsoft.UI.Xaml.Data.FilterEventHandler FilterRequested;
+
         public CollectionViewSource() { }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public static Microsoft.UI.Xaml.Data.ICollectionView GetDefaultView([Optional] Windows.Foundation.Object source)
+        {
+            return null;
+        }
 
         [VelocityFeature("Feature_ExperimentalApi")]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
@@ -631,6 +654,52 @@ namespace Microsoft.UI.Xaml.Data
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public delegate Windows.Foundation.Int32 CollectionViewComparer(Windows.Foundation.Object x, Windows.Foundation.Object y);
 
+    [DXamlIdlGroup("coretypes2")]
+    [CodeGen(CodeGenLevel.LookupOnly)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    public delegate void FilterEventHandler(Windows.Foundation.Object sender, Microsoft.UI.Xaml.Data.FilterEventArgs e);
+
+    [DXamlIdlGroup("coretypes2")]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [FrameworkTypePattern]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [Guids(ClassGuid = "4c2e9d39-8a3b-4b8e-9f43-5a0c2f7e1d61")]
+    public sealed class FilterEventArgs
+        : Windows.Foundation.Object
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Object Item
+        {
+            get;
+            internal set;
+        }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Boolean Accepted
+        {
+            get;
+            set;
+        }
+
+        internal FilterEventArgs() { }
+    }
+
+    // WPF's System.StringComparison, for PropertyGroupDescription.StringComparison.
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [DXamlIdlGroup("coretypes2")]
+    [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
+    public enum CollectionViewStringComparison
+    {
+        CurrentCulture = 0,
+        CurrentCultureIgnoreCase = 1,
+        InvariantCulture = 2,
+        InvariantCultureIgnoreCase = 3,
+        Ordinal = 4,
+        OrdinalIgnoreCase = 5,
+    }
+
     // Optional capability of an ICollectionView (like ICollectionViewFactory or ISupportIncrementalLoading):
     // a view a CollectionViewSource shapes forwards these to the owning CollectionViewSource.
     [DXamlIdlGroup("coretypes2")]
@@ -660,6 +729,14 @@ namespace Microsoft.UI.Xaml.Data
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(5)]
         Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort { get; set; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(6)]
+        Windows.Foundation.Object SourceCollection { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(7)]
+        Windows.Foundation.String Culture { get; set; }
     }
 
     [DXamlIdlGroup("coretypes2")]
@@ -699,6 +776,7 @@ namespace Microsoft.UI.Xaml.Data
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [VelocityFeature("Feature_ExperimentalApi")]
     [Guids(ClassGuid = "b161bc24-b3b5-4e1a-93e7-4174c0db7990")]
+    [CodeGen(partial: true)]
     public sealed class PropertyGroupDescription
         : Windows.Foundation.Object
     {
@@ -722,8 +800,37 @@ namespace Microsoft.UI.Xaml.Data
         [FactoryMethodName("CreateInstance")]
         public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName) { }
 
+        // WPF's PropertyGroupDescription.StringComparison: how string group names match. Ordinal unless set.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewStringComparison StringComparison
+        {
+            get;
+            private set;
+        }
+
+        // WPF's GroupDescription.SortDescriptions: orders the groups at this level by their properties (Name, ItemCount).
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [ReadOnly]
+        public Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions
+        {
+            get;
+        }
+
+        // WPF's GroupDescription.CustomSort; compares two group names.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort
+        {
+            get;
+            set;
+        }
+
         [FactoryMethodName("CreateInstanceWithConverter")]
         public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter) { }
+
+        [FactoryMethodName("CreateInstanceWithConverterAndStringComparison")]
+        public PropertyGroupDescription([Optional] Windows.Foundation.String propertyName, [Optional] Microsoft.UI.Xaml.Data.IValueConverter converter, Microsoft.UI.Xaml.Data.CollectionViewStringComparison stringComparison) { }
     }
 
     [CodeGen(CodeGenLevel.CoreOnly)]

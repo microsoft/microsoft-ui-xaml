@@ -29,7 +29,11 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_Converter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue) override { return This()->get_Converter(ppValue); }
+        IFACEMETHOD(get_CustomSort)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue) override { return This()->get_CustomSort(ppValue); }
+        IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
         IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) override { return This()->get_PropertyName(pValue); }
+        IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
+        IFACEMETHOD(get_StringComparison)(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison* pValue) override { return This()->get_StringComparison(pValue); }
     };
 }
 #endif
@@ -39,26 +43,27 @@ namespace DirectUI
 {
     class PropertyGroupDescription;
 
-    class __declspec(novtable) __declspec(uuid(__PropertyGroupDescription_GUID)) PropertyGroupDescription:
+    class __declspec(novtable) PropertyGroupDescriptionGenerated:
         public ctl::WeakReferenceSource
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, PropertyGroupDescription >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription, PropertyGroupDescriptionGenerated >
 #endif
     {
+        friend class DirectUI::PropertyGroupDescription;
 
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.Data.PropertyGroupDescription");
 
-        BEGIN_INTERFACE_MAP(PropertyGroupDescription, ctl::WeakReferenceSource)
+        BEGIN_INTERFACE_MAP(PropertyGroupDescriptionGenerated, ctl::WeakReferenceSource)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-            INTERFACE_ENTRY(PropertyGroupDescription, ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription)
+            INTERFACE_ENTRY(PropertyGroupDescriptionGenerated, ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription)
 #else
             INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
 #endif
-        END_INTERFACE_MAP(PropertyGroupDescription, ctl::WeakReferenceSource)
+        END_INTERFACE_MAP(PropertyGroupDescriptionGenerated, ctl::WeakReferenceSource)
 
     public:
-        PropertyGroupDescription();
-        ~PropertyGroupDescription() override;
+        PropertyGroupDescriptionGenerated();
+        ~PropertyGroupDescriptionGenerated() override;
 
         // Event source typedefs.
 
@@ -66,8 +71,13 @@ namespace DirectUI
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue);
         _Check_return_ HRESULT put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PropertyName(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_PropertyName(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_StringComparison(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison* pValue);
+        _Check_return_ HRESULT put_StringComparison(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value);
 
         // Events.
 
@@ -78,16 +88,15 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
     private:
-        // Customized properties.
-
-        // Customized methods.
 
         // Fields.
         ctl::ComPtr<ABI::Microsoft::UI::Xaml::Data::IValueConverter> m_pConverter;
         Microsoft::WRL::Wrappers::HString m_propertyName;
+        ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison m_stringComparison;
     };
 }
 
+#include "PropertyGroupDescription_Partial.h"
 
 namespace DirectUI
 {
@@ -115,6 +124,7 @@ namespace DirectUI
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
         IFACEMETHOD(CreateInstanceWithConverter)(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
+        IFACEMETHOD(CreateInstanceWithConverterAndStringComparison)(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison stringComparison, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
 
         // Static properties.
 
@@ -135,6 +145,7 @@ namespace DirectUI
     private:
         _Check_return_ HRESULT CreateInstanceImpl(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
         _Check_return_ HRESULT CreateInstanceWithConverterImpl(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithConverterAndStringComparisonImpl(_In_opt_ HSTRING propertyName, _In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pConverter, ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison stringComparison, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance);
 
         // Customized static properties.
 

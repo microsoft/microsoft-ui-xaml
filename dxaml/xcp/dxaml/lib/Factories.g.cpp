@@ -176,6 +176,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_RadioButton();
     _Check_return_ IActivationFactory* CreateActivationFactory_RichEditBox();
     _Check_return_ IActivationFactory* CreateActivationFactory_UserControl();
+    _Check_return_ IActivationFactory* CreateActivationFactory_FilterEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_SortDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorPaletteResources();
     _Check_return_ IActivationFactory* CreateActivationFactory_DragOperationDeferral();
@@ -835,6 +836,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RadioButton"), &DirectUI::CreateActivationFactory_RadioButton)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.RichEditBox"), &DirectUI::CreateActivationFactory_RichEditBox)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.UserControl"), &DirectUI::CreateActivationFactory_UserControl)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.FilterEventArgs"), &DirectUI::CreateActivationFactory_FilterEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.SortDescription"), &DirectUI::CreateActivationFactory_SortDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ColorPaletteResources"), &DirectUI::CreateActivationFactory_ColorPaletteResources)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DragOperationDeferral"), &DirectUI::CreateActivationFactory_DragOperationDeferral)

@@ -6790,6 +6790,7 @@ namespace Parser
         KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::FrameworkApplication_ResourceManagerRequested,
         KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
+        KnownEventIndex::CollectionViewSource_FilterRequested,
     };
 
     // Map known event indexes to stable event indexes
@@ -7072,6 +7073,7 @@ namespace Parser
         StableEventIndex::CollectionView_CurrentChanged,
         StableEventIndex::CollectionView_CurrentChanging,
         StableEventIndex::CollectionView_PropertyChanged,
+        StableEventIndex::CollectionViewSource_FilterRequested,
         StableEventIndex::UnknownType_UnknownEvent,
         StableEventIndex::UnknownType_UnknownEvent,
         StableEventIndex::PrintDocument_Paginate,
