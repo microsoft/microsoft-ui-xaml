@@ -23,12 +23,15 @@
     <CsWinRTEmitEntryPointInitializer>false</CsWinRTEmitEntryPointInitializer>
     <CsWinRTLoadComponentsInDefaultALC>true</CsWinRTLoadComponentsInDefaultALC>
     <CsWinRTWindowsMetadata />
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+    <WebView2EnableCsWinRTProjection>true</WebView2EnableCsWinRTProjection>
     <_IncludeDxamlTests Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32' or '$(Platform)' == 'x64'">true</_IncludeDxamlTests>
     <UseWPF Condition="'$(_IncludeDxamlTests)' == 'true'">true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UseCsWinRT3)' == 'true'">
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTv3PackageVersion)" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="$(WebView2PackageVersion)" />
     <Compile Include="SharedTestRoot.cs" />
     <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.TypeMappingEntryAssembly" Value="$(AssemblyName)" />
     <ProjectReference Include="$(ProjectRoot)controls\test\MUXControls.Test\MUXControls.Test.csproj" />
