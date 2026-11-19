@@ -37,6 +37,18 @@ namespace RenderingBackendTests
         TEST_METHOD(PresentationCopiesDamageIntoBackBuffer);
         TEST_METHOD(ResizeResizesAttachedSwapChain);
         TEST_METHOD(RejectsNonBgraSwapChain);
+
+        // Extended primitives (GDI+ implementation details).
+        TEST_METHOD(RoundedClipIsAntialiasedInsideOpacityLayer);
+        TEST_METHOD(RoundedClipSharesStackWithClipsAndLayers);
+        TEST_METHOD(SquarePixelAlignedRoundedClipNeedsNoLayer);
+        TEST_METHOD(PathCacheIsSteadyAndBounded);
+        TEST_METHOD(GlyphRunFontCacheIsSteadyAndBounded);
+        TEST_METHOD(GlyphRunRightToLeftAdvancesLeftwards);
+        TEST_METHOD(BitmapCacheCountsBytesAndUploads);
+        TEST_METHOD(BitmapDrawsOneToOneWithClampedEdges);
+        TEST_METHOD(ScrollPixelsMovesRowsWithinRect);
+        TEST_METHOD(ScrollPixelsPresentsMovedArea);
     };
 
     class ResourceChurnEventTests
