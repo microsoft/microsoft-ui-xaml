@@ -1606,6 +1606,17 @@ void CShape::ClearPCRenderData()
     m_alphaMask.Hide();
 }
 
+// Shape.GetAlphaMask prints the Fill and Stroke, which draws an ImageBrush from its image's software surface.
+static _Check_return_ HRESULT ReloadImageBrushSoftwareSurface(_In_opt_ CBrush* brush)
+{
+    if (brush != nullptr && brush->GetTypeIndex() == KnownTypeIndex::ImageBrush)
+    {
+        IFC_RETURN(static_cast<CImageBrush*>(brush)->ReloadSoftwareSurfaceIfReleased());
+    }
+
+    return S_OK;
+}
+
 _Check_return_ HRESULT CShape::NotifyRenderContent(
     HWRenderVisibility visibility
     )
@@ -1616,6 +1627,12 @@ _Check_return_ HRESULT CShape::NotifyRenderContent(
     }
     else
     {
+        if (m_alphaMask.IsPresent())
+        {
+            IFC_RETURN(ReloadImageBrushSoftwareSurface(m_pFill));
+            IFC_RETURN(ReloadImageBrushSoftwareSurface(GetStroke().get()));
+        }
+
         // Update the alpha mask.  This will check if there is one created and only update it if necessary.
         IFC_RETURN(m_alphaMask.UpdateIfAvailable(this));
     }
@@ -1626,6 +1643,8 @@ _Check_return_ HRESULT CShape::NotifyRenderContent(
 _Check_return_ HRESULT CShape::GetAlphaMask(
     _Outptr_ WUComp::ICompositionBrush** ppReturnValue)
 {
+    IFC_RETURN(ReloadImageBrushSoftwareSurface(m_pFill));
+    IFC_RETURN(ReloadImageBrushSoftwareSurface(GetStroke().get()));
     IFC_RETURN(m_alphaMask.Ensure(this));
     *ppReturnValue = m_alphaMask.GetCompositionBrush().Detach();
 
