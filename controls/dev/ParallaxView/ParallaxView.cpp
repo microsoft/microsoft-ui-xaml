@@ -547,7 +547,8 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
 // Updates the parallaxing composition animation.
 void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
 {
-    if (m_scrollInputHelper && m_scrollInputHelper->TargetElement() && m_scrollInputHelper->SourcePropertySet())
+    if (m_scrollInputHelper && m_scrollInputHelper->TargetElement() && m_scrollInputHelper->SourcePropertySet() &&
+        (HorizontalShift() != 0.0 || VerticalShift() != 0.0))
     {
         winrt::Visual targetVisual = winrt::ElementCompositionPreview::GetElementVisual(m_scrollInputHelper->TargetElement());
         if (m_targetVisual != targetVisual)

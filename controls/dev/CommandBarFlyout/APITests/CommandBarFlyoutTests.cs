@@ -378,9 +378,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 cbfcb = new CommandBarFlyoutCommandBar();
                 dba = new DesktopAcrylicBackdrop();
+                var transition = new ScalarTransition();
+                cbfcb.OpacityTransition = transition;
 
                 // cbfcb isn't in the tree yet. Setting this shouldn't crash. The parser will do this (set properties before inserting into tree).
                 cbfcb.SystemBackdrop = dba;
+                Verify.AreEqual(dba, cbfcb.SystemBackdrop);
+                Verify.AreEqual(transition, cbfcb.OpacityTransition);
 
                 // dbfcb shouldn't crash when it's destroyed.
                 cbfcb = null;
