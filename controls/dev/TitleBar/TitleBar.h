@@ -45,6 +45,7 @@ private:
     void UpdatePaneToggleButton();
     void UpdateHeight();
     void UpdateTitle();
+    void UpdateWindowTitle();
     void UpdateSubtitle();
     void UpdateLeftHeader();
     void UpdateContent();
@@ -63,6 +64,8 @@ private:
     void OnFlowDirectionChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnIconLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnContentLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void FindInteractableElements(const winrt::DependencyObject& element, bool parentIsDragRegion);
 
     void LoadBackButton();
@@ -73,12 +76,19 @@ private:
     winrt::WindowId GetAppWindowId();
     winrt::Microsoft::UI::Windowing::AppWindow TryGetAppWindow();
 
+    void EnsureInputActivationListener(winrt::WindowId const& appWindowId);
+    void ReleaseInputActivationListener() noexcept;
+    void ReleaseInputNonClientPointerSource() noexcept;
+    void ReleaseWindowResources() noexcept;
+
     winrt::event_token m_inputActivationChangedToken{};
     winrt::event_token m_windowRectChangedToken{};
     winrt::hstring m_defaultAppWindowTitle{};
     winrt::Button::Click_revoker m_backButtonClickRevoker{};
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_iconLayoutUpdatedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_contentLayoutUpdatedRevoker{};
     // Add a cached AppWindow field to avoid repeated GetFromWindowId calls
@@ -104,6 +114,7 @@ private:
     double m_compactModeThresholdWidth{ 0.0 };
     bool m_isCompact{ false };
     bool m_hasDefaultAppWindowTitle{ false };
+    bool m_isUnloaded{ false };
 
     static constexpr std::wstring_view s_leftPaddingColumnName{ L"LeftPaddingColumn"sv };
     static constexpr std::wstring_view s_rightPaddingColumnName{ L"RightPaddingColumn"sv };
