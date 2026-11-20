@@ -8,6 +8,7 @@
 
 #include "precomp.h"
 #include "ImmediateRenderer.h"
+#include "ImmediateRenderer.Materials.h"
 #include <ImmediateRenderingPolicy.h>
 #include <XamlProfilerTracing.h>
 #include "XamlIslandRoot.h"
@@ -16,6 +17,7 @@
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
+using ImmediateRenderingMaterials::TryGetCustomValue;
 
 namespace
 {
@@ -33,17 +35,6 @@ namespace
     {
         return object != nullptr && object->HasManagedPeer()
             && SUCCEEDED(FxCallbacks::FrameworkCallbacks_CheckPeerType(object, typeName, FALSE));
-    }
-
-    // Reads a custom (non-built-in) dependency property such as MUXC ProgressRing.IndeterminateSource. Fails safe:
-    // false when the type or property cannot be resolved.
-    bool TryGetCustomValue(_In_ CDependencyObject* object, _In_ const xstring_ptr& typeName, _In_ const xstring_ptr& propertyName, _Out_ CValue* value) noexcept
-    {
-        const CClassInfo* type = nullptr;
-        const CDependencyProperty* property = nullptr;
-        return SUCCEEDED(DirectUI::MetadataAPI::GetClassInfoByFullName(typeName, &type)) && type != nullptr
-            && SUCCEEDED(DirectUI::MetadataAPI::TryGetDependencyPropertyByName(type, propertyName, &property)) && property != nullptr
-            && SUCCEEDED(object->GetValue(property, value));
     }
 
     bool IsNullObject(const CValue& value) noexcept

@@ -26,5 +26,8 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(AcrylicLayersMatchMuxc);
         TEST_METHOD(OpaqueCoverRequiresFullContainment);
         TEST_METHOD(ProgressRingArc);
+        TEST_METHOD(BackdropDamageExpands);
+        TEST_METHOD(RoundedRectanglePathIsClosed);
+        TEST_METHOD(ArcPathEndsAtSweep);
     };
 }

@@ -321,6 +321,104 @@ namespace ImmediateRenderingPolicy
         return false;
     }
 
+    bool ExpandDamageForBackdrops(std::vector<RectF>& damage, _In_reads_(count) const BackdropArea* backdrops, uint32_t count) noexcept
+    {
+        auto intersects = [](const RectF& a, const RectF& b)
+        {
+            return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        };
+        bool any = false;
+        std::vector<bool> added(count, false);
+        for (bool changed = true; changed;)
+        {
+            changed = false;
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                const BackdropArea& b = backdrops[i];
+                if (added[i] || !(b.rect.right > b.rect.left) || !(b.rect.bottom > b.rect.top))
+                {
+                    continue;
+                }
+                const RectF sampled{ b.rect.left - b.margin, b.rect.top - b.margin, b.rect.right + b.margin, b.rect.bottom + b.margin };
+                const size_t n = damage.size();
+                for (size_t d = 0; d < n; ++d)
+                {
+                    if (intersects(damage[d], sampled))
+                    {
+                        damage.push_back(b.rect);
+                        added[i] = true;
+                        changed = any = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return any;
+    }
+
+    void AppendRoundedRectangle(const RectF& rect, float radiusX, float radiusY, std::vector<PathVerb>& verbs, std::vector<PointF>& points)
+    {
+        const float rx = std::clamp(radiusX, 0.0f, std::max(0.0f, (rect.right - rect.left) / 2));
+        const float ry = std::clamp(radiusY, 0.0f, std::max(0.0f, (rect.bottom - rect.top) / 2));
+        constexpr float k = 0.5522847f;
+        const float kx = rx * k;
+        const float ky = ry * k;
+        const float l = rect.left, t = rect.top, r = rect.right, b = rect.bottom;
+        auto move = [&](float x, float y) { verbs.push_back(PathVerb::MoveTo); points.push_back({ x, y }); };
+        auto line = [&](float x, float y) { verbs.push_back(PathVerb::LineTo); points.push_back({ x, y }); };
+        auto cubic = [&](float x1, float y1, float x2, float y2, float x, float y)
+        {
+            verbs.push_back(PathVerb::CubicTo);
+            points.push_back({ x1, y1 });
+            points.push_back({ x2, y2 });
+            points.push_back({ x, y });
+        };
+        const bool round = rx > 0 && ry > 0;
+        move(l + (round ? rx : 0), t);
+        line(r - (round ? rx : 0), t);
+        if (round) cubic(r - rx + kx, t, r, t + ry - ky, r, t + ry);
+        line(r, b - (round ? ry : 0));
+        if (round) cubic(r, b - ry + ky, r - rx + kx, b, r - rx, b);
+        line(l + (round ? rx : 0), b);
+        if (round) cubic(l + rx - kx, b, l, b - ry + ky, l, b - ry);
+        line(l, t + (round ? ry : 0));
+        if (round) cubic(l, t + ry - ky, l + rx - kx, t, l + rx, t);
+        verbs.push_back(PathVerb::Close);
+    }
+
+    void AppendArc(PointF center, float radius, float startDegrees, float sweepDegrees, std::vector<PathVerb>& verbs, std::vector<PointF>& points)
+    {
+        if (!(radius > 0) || !(sweepDegrees > 0))
+        {
+            return;
+        }
+        constexpr double toRadians = 3.14159265358979323846 / 180.0;
+        auto at = [&](double degrees, double r)
+        {
+            const double a = degrees * toRadians;
+            return PointF{ static_cast<float>(center.x + r * std::sin(a)), static_cast<float>(center.y - r * std::cos(a)) };
+        };
+        const double sweep = std::min<double>(sweepDegrees, 360.0);
+        const int segments = std::max(1, static_cast<int>(std::ceil(sweep / 90.0)));
+        const double step = sweep / segments;
+        const double handle = 4.0 / 3.0 * std::tan(step * toRadians / 4) * radius;
+        verbs.push_back(PathVerb::MoveTo);
+        points.push_back(at(startDegrees, radius));
+        for (int i = 0; i < segments; ++i)
+        {
+            const double a0 = startDegrees + step * i;
+            const double a1 = a0 + step;
+            const PointF p0 = at(a0, radius);
+            const PointF p1 = at(a1, radius);
+            // Tangent (clockwise) at angle a: (cos a, sin a).
+            const double r0 = a0 * toRadians, r1 = a1 * toRadians;
+            verbs.push_back(PathVerb::CubicTo);
+            points.push_back({ static_cast<float>(p0.x + handle * std::cos(r0)), static_cast<float>(p0.y + handle * std::sin(r0)) });
+            points.push_back({ static_cast<float>(p1.x - handle * std::cos(r1)), static_cast<float>(p1.y - handle * std::sin(r1)) });
+            points.push_back(p1);
+        }
+    }
+
     ArcSpan GetProgressRingArc(bool indeterminate, double value, double minimum, double maximum, double timeSeconds) noexcept
     {
         ArcSpan arc;

@@ -267,4 +267,54 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_IS_TRUE(a.sweepDegrees > 0 && b.sweepDegrees > a.sweepDegrees);
         VERIFY_IS_TRUE(Near(a.startDegrees, c.startDegrees) && Near(a.sweepDegrees, c.sweepDegrees)); // periodic
     }
+
+    void PolicyTests::BackdropDamageExpands()
+    {
+        // Damage near (within the margin of) the first backdrop repaints it; the second overlaps the first and chains.
+        const BackdropArea backdrops[] = { { { 100, 100, 200, 200 }, 10 }, { { 190, 100, 300, 200 }, 10 }, { { 500, 500, 600, 600 }, 10 } };
+        std::vector<RectF> damage{ { 80, 80, 95, 95 } };
+        VERIFY_IS_TRUE(ExpandDamageForBackdrops(damage, backdrops, 3));
+        VERIFY_ARE_EQUAL(3u, static_cast<uint32_t>(damage.size()));
+        VERIFY_IS_TRUE(Near(damage[1].left, 100) && Near(damage[2].right, 300));
+
+        std::vector<RectF> far{ { 0, 0, 50, 50 } };
+        VERIFY_IS_FALSE(ExpandDamageForBackdrops(far, backdrops, 3));
+        VERIFY_ARE_EQUAL(1u, static_cast<uint32_t>(far.size()));
+    }
+
+    void PolicyTests::RoundedRectanglePathIsClosed()
+    {
+        std::vector<PathVerb> verbs;
+        std::vector<PointF> points;
+        AppendRoundedRectangle({ 0, 0, 100, 40 }, 50, 50, verbs, points); // radii clamp to 50 x 20
+        VERIFY_ARE_EQUAL(static_cast<int>(PathVerb::MoveTo), static_cast<int>(verbs.front()));
+        VERIFY_ARE_EQUAL(static_cast<int>(PathVerb::Close), static_cast<int>(verbs.back()));
+        VERIFY_ARE_EQUAL(1u + 4u + 4u * 3u, static_cast<uint32_t>(points.size()));
+        for (const PointF& p : points)
+        {
+            VERIFY_IS_TRUE(p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 40);
+        }
+        VERIFY_IS_TRUE(Near(points.back().x, points.front().x) && Near(points.back().y, points.front().y));
+
+        verbs.clear();
+        points.clear();
+        AppendRoundedRectangle({ 0, 0, 10, 10 }, 0, 0, verbs, points);
+        VERIFY_ARE_EQUAL(5u, static_cast<uint32_t>(points.size())); // square corners: lines only
+    }
+
+    void PolicyTests::ArcPathEndsAtSweep()
+    {
+        std::vector<PathVerb> verbs;
+        std::vector<PointF> points;
+        AppendArc({ 50, 50 }, 10, 0, 90, verbs, points);
+        VERIFY_ARE_EQUAL(2u, static_cast<uint32_t>(verbs.size()));
+        VERIFY_IS_TRUE(Near(points.front().x, 50) && Near(points.front().y, 40)); // 12 o'clock
+        VERIFY_IS_TRUE(Near(points.back().x, 60) && Near(points.back().y, 50));   // 3 o'clock (clockwise)
+
+        verbs.clear();
+        points.clear();
+        AppendArc({ 0, 0 }, 10, 45, 270, verbs, points);
+        VERIFY_ARE_EQUAL(4u, static_cast<uint32_t>(verbs.size()));
+        VERIFY_IS_TRUE(Near(points.back().x, -7.0711f) && Near(points.back().y, -7.0711f));
+    }
 }

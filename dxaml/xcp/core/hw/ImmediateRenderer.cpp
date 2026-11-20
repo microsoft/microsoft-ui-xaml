@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "ImmediateRenderer.h"
+#include "ImmediateRenderer.Materials.h"
 #include <GdiPlusPainter.h>
 #include <RenderingResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
@@ -394,6 +395,9 @@ namespace ImmediateRenderingDetail
     {
         Nop, FillRect, FillRounded, StrokeRounded, Text, GlyphRun, Bitmap, FillPath, StrokePath,
         PushLayer, PopLayer, PushRoundedClip, PopRoundedClip,
+        // S13 (ImmediateRenderer.Materials.cpp). Gradients: paths[index] (no verbs: rounded rect `rect`); Shadow: blur in
+        // `thickness`, offset in sourceRect.left/top; Backdrop: blur in `thickness`.
+        FillGradient, FillPathGradient, Shadow, Backdrop,
     };
 
     struct Command
@@ -460,6 +464,10 @@ namespace ImmediateRenderingDetail
         std::vector<PathVerb> verbs;
         std::vector<PointF> points;
         bool nonZero = false;
+        // FillGradient/FillPathGradient
+        std::vector<GradientStop> stops;
+        PointF gradientStart, gradientEnd;
+        float gradientOpacity = 1;
     };
 
     // Output range of one walked subtree (children included), recorded post-order so a subtree's descendant spans are
@@ -1065,12 +1073,17 @@ namespace
                 const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
                 fnv.Add(q, sizeof(q));
             }
-            else if (command.type == CommandType::FillPath || command.type == CommandType::StrokePath)
+            else if (command.type == CommandType::FillPath || command.type == CommandType::StrokePath
+                || command.type == CommandType::FillGradient || command.type == CommandType::FillPathGradient)
             {
                 const PathGeometryData& path = list.paths[command.index];
                 fnv.Add(path.verbs.data(), path.verbs.size() * sizeof(PathVerb));
                 fnv.Add(path.points.data(), path.points.size() * sizeof(PointF));
                 fnv.AddValue(path.nonZero);
+                fnv.Add(path.stops.data(), path.stops.size() * sizeof(GradientStop));
+                fnv.AddValue(path.gradientStart);
+                fnv.AddValue(path.gradientEnd);
+                fnv.AddValue(path.gradientOpacity);
             }
             r.signature = fnv.hash;
 
@@ -1143,6 +1156,48 @@ namespace
             c.index = static_cast<uint32_t>(list.paths.size());
             list.paths.push_back(std::move(data));
             Push(c, localInk, m, ctx.clip, nullptr);
+        }
+
+        // S13: linear gradient fill of a rounded rect (data.verbs empty) or of a path (data.verbs set).
+        void Gradient(PathGeometryData data, const RectF& rect, float rx, float ry, const CMILMatrix& m, const RectF& localInk)
+        {
+            if (IsEmptyRect(localInk) || data.stops.empty()) return;
+            Command c;
+            c.type = data.verbs.empty() ? CommandType::FillGradient : CommandType::FillPathGradient;
+            c.rect = rect;
+            c.radiusX = rx;
+            c.radiusY = ry;
+            c.index = static_cast<uint32_t>(list.paths.size());
+            list.paths.push_back(std::move(data));
+            Push(c, localInk, m, ctx.clip, nullptr);
+        }
+
+        // S13: blurred shadow of a rounded rect. `clip` is the caster's parent clip (shadows escape the caster's clip).
+        void Shadow(const RectF& rect, float rx, float ry, const ImmediateRenderingPolicy::ShadowLayer& layer, const CMILMatrix& m, const RectF& clip)
+        {
+            if (IsEmptyRect(rect) || !(layer.color.a > 0)) return;
+            Command c;
+            c.type = CommandType::Shadow;
+            c.rect = rect;
+            c.radiusX = rx;
+            c.radiusY = ry;
+            c.thickness = layer.blurRadius;
+            c.sourceRect = { layer.offset.x, layer.offset.y, layer.offset.x, layer.offset.y };
+            c.color = layer.color;
+            Push(c, ImmediateRenderingPolicy::InflateForBlur(rect, layer.blurRadius, layer.offset), m, clip, nullptr);
+        }
+
+        // S13: blurs what is already painted under the rounded rect (AcrylicBrush).
+        void Backdrop(const RectF& rect, float rx, float ry, float blurRadius, const CMILMatrix& m)
+        {
+            if (IsEmptyRect(rect)) return;
+            Command c;
+            c.type = CommandType::Backdrop;
+            c.rect = rect;
+            c.radiusX = rx;
+            c.radiusY = ry;
+            c.thickness = blurRadius;
+            Push(c, rect, m, ctx.clip, nullptr);
         }
 
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
@@ -1518,6 +1573,88 @@ namespace
     }
 }
 
+// S13: LinearGradientBrush / AcrylicBrush fill of a rounded rect, or of the ring between `rect` and `hole` (gradient
+// borders). Returns true when the brush was handled here (callers skip their solid-color approximation).
+static bool EmitMaterialFill(
+    Emitter& emitter,
+    _In_opt_ CBrush* brush,
+    const RectF& rect,
+    float rx,
+    float ry,
+    _In_opt_ const RectF* hole,
+    float holeRadius,
+    const CMILMatrix& m,
+    _Outptr_result_maybenull_ const wchar_t** detail)
+{
+    using namespace ImmediateRenderingMaterials;
+    *detail = nullptr;
+    if (brush == nullptr || IsEmptyRect(rect))
+    {
+        return false;
+    }
+    auto ring = [&](PathGeometryData& data)
+    {
+        ImmediateRenderingPolicy::AppendRoundedRectangle(rect, rx, ry, data.verbs, data.points);
+        ImmediateRenderingPolicy::AppendRoundedRectangle(*hole, holeRadius, holeRadius, data.verbs, data.points);
+        data.nonZero = false;
+    };
+    GradientFill gradient;
+    ColorF solid;
+    switch (ResolveLinearGradient(brush, rect, 1.0f, &gradient, &solid))
+    {
+        case FillKind::NotHandled:
+            break;
+        case FillKind::None:
+            return true;
+        case FillKind::Solid:
+            if (hole != nullptr)
+            {
+                PathGeometryData data;
+                ring(data);
+                emitter.Path(std::move(data), 0, solid, m, rect);
+            }
+            else
+            {
+                emitter.Fill(rect, rx, ry, solid, m);
+            }
+            return true;
+        case FillKind::Gradient:
+        {
+            PathGeometryData data;
+            if (hole != nullptr)
+            {
+                ring(data);
+            }
+            data.stops = std::move(gradient.stops);
+            data.gradientStart = gradient.start;
+            data.gradientEnd = gradient.end;
+            data.gradientOpacity = gradient.opacity;
+            emitter.Gradient(std::move(data), rect, rx, ry, m, rect);
+            *detail = gradient.detail;
+            return true;
+        }
+    }
+
+    AcrylicFill acrylic;
+    if (hole == nullptr && ResolveAcrylic(brush, 1.0f, &acrylic))
+    {
+        *detail = acrylic.detail;
+        if (acrylic.blur)
+        {
+            // Noise texture is not drawn (small, costly to sample per pixel).
+            emitter.Backdrop(rect, rx, ry, ImmediateRenderingPolicy::AcrylicBlurRadius, m);
+            emitter.Fill(rect, rx, ry, acrylic.luminosity, m);
+            emitter.Fill(rect, rx, ry, acrylic.tint, m);
+        }
+        else if (acrylic.fallback.a > 0)
+        {
+            emitter.Fill(rect, rx, ry, acrylic.fallback, m);
+        }
+        return true;
+    }
+    return false;
+}
+
 void ImmediateRenderer::EmitContent(
     _In_ CUIElement* element,
     const WalkContext& ctx,
@@ -1555,9 +1692,28 @@ void ImmediateRenderer::EmitContent(
         {
             ReportUnsupported(element, L"Brush");
         }
-        if (const wchar_t* detail = CompositionBrushDetail(background.get()))
+        const wchar_t* materialDetail = nullptr;
+        if (background != nullptr && backgroundResult != BrushResult::Unsupported)
         {
-            ReportUnsupported(element, detail);
+            RectF fill{ 0, 0, width, height };
+            float fillRadius = radius;
+            if (fe->GetBackgroundSizing() == DirectUI::BackgroundSizing::InnerBorderEdge && borderResult == BrushResult::Color)
+            {
+                fill = { thickness.left, thickness.top, width - thickness.right, height - thickness.bottom };
+                fillRadius = std::max(0.0f, radius - t / 2);
+            }
+            if (EmitMaterialFill(emitter, background.get(), fill, fillRadius, fillRadius, nullptr, 0, world, &materialDetail))
+            {
+                backgroundResult = BrushResult::None;
+                if (materialDetail != nullptr)
+                {
+                    ReportUnsupported(element, materialDetail);
+                }
+            }
+            else if (const wchar_t* detail = CompositionBrushDetail(background.get()))
+            {
+                ReportUnsupported(element, detail);
+            }
         }
 
         if (backgroundResult == BrushResult::Color)
@@ -1615,10 +1771,6 @@ void ImmediateRenderer::EmitContent(
         {
             ReportUnsupported(element, L"Brush");
         }
-        if (const wchar_t* detail = CompositionBrushDetail(shape->m_pFill))
-        {
-            ReportUnsupported(element, detail);
-        }
 
         const float h = strokeResult == BrushResult::Color ? t / 2 : 0.0f;
         const RectF geometry{ h, h, width - h, height - h };
@@ -1634,8 +1786,20 @@ void ImmediateRenderer::EmitContent(
             rx = std::min(rectangle->m_eRadiusX, (geometry.right - geometry.left) / 2);
             ry = std::min(rectangle->m_eRadiusY, (geometry.bottom - geometry.top) / 2);
         }
-        if (fillResult == BrushResult::Color)
+        if (const wchar_t* detail = nullptr; fillResult != BrushResult::Unsupported
+            && EmitMaterialFill(emitter, shape->m_pFill, geometry, rx, ry, nullptr, 0, world, &detail))
         {
+            if (detail != nullptr)
+            {
+                ReportUnsupported(element, detail);
+            }
+        }
+        else if (fillResult == BrushResult::Color)
+        {
+            if (const wchar_t* compositionDetail = CompositionBrushDetail(shape->m_pFill))
+            {
+                ReportUnsupported(element, compositionDetail);
+            }
             emitter.Fill(geometry, rx, ry, fillColor, world);
         }
         else if (fillImage != nullptr)
@@ -1783,7 +1947,29 @@ void ImmediateRenderer::EmitContent(
         {
             ReportUnsupported(element, L"Shape stroke dashes");
         }
-        if (fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
+        ImmediateRenderingMaterials::GradientFill pathGradient;
+        ColorF pathSolid;
+        const auto pathFill = fillResult == BrushResult::Color && !flattener->fill.verbs.empty()
+            ? ImmediateRenderingMaterials::ResolveLinearGradient(shape->m_pFill, b, 1.0f, &pathGradient, &pathSolid)
+            : ImmediateRenderingMaterials::FillKind::NotHandled;
+        if (pathFill == ImmediateRenderingMaterials::FillKind::Gradient)
+        {
+            PathGeometryData data = std::move(flattener->fill);
+            data.stops = std::move(pathGradient.stops);
+            data.gradientStart = pathGradient.start;
+            data.gradientEnd = pathGradient.end;
+            data.gradientOpacity = pathGradient.opacity;
+            emitter.Gradient(std::move(data), b, 0, 0, world, b);
+            if (pathGradient.detail != nullptr)
+            {
+                ReportUnsupported(element, pathGradient.detail);
+            }
+        }
+        else if (pathFill == ImmediateRenderingMaterials::FillKind::Solid)
+        {
+            emitter.Path(std::move(flattener->fill), 0, pathSolid, world, b);
+        }
+        else if (pathFill == ImmediateRenderingMaterials::FillKind::NotHandled && fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
         {
             emitter.Path(std::move(flattener->fill), 0, fillColor, world, b);
         }
@@ -1835,12 +2021,26 @@ void ImmediateRenderer::EmitBorder(
         return;
     }
     const xref_ptr<CBrush> border = fe->GetBorderBrush();
+    const float radius = MaxOf(fe->GetCornerRadius());
+    {
+        // Gradient borders (e.g. ControlElevationBorderBrush): fill the ring between the outer and inner edges.
+        const RectF outer{ 0, 0, width, height };
+        const RectF inner{ thickness.left, thickness.top, width - thickness.right, height - thickness.bottom };
+        const wchar_t* detail = nullptr;
+        if (EmitMaterialFill(emitter, do_pointer_cast<CGradientBrush>(border.get()), outer, radius, radius, IsEmptyRect(inner) ? nullptr : &inner, std::max(0.0f, radius - t), ctx.world, &detail))
+        {
+            if (detail != nullptr)
+            {
+                ReportUnsupported(element, detail);
+            }
+            return;
+        }
+    }
     ColorF borderColor;
     if (ResolveBrush(border.get(), 1.0f, &borderColor) != BrushResult::Color)
     {
         return;
     }
-    const float radius = MaxOf(fe->GetCornerRadius());
     if (!IsUniform(thickness) && radius == 0)
     {
         emitter.Fill({ 0, 0, width, thickness.top }, 0, 0, borderColor, ctx.world);
@@ -2011,10 +2211,24 @@ void ImmediateRenderer::Walk(
         ReportUnsupported(element, L"Projection");
     }
 
-    // ThemeShadow is a Composition projected/drop shadow; immediate modes do not draw shadows.
-    if (element->IsShadowCaster())
+    // ThemeShadow: drawn as WinUI's drop-shadow recipe (ambient + directional) under the caster, in the caster's
+    // parent clip, scaled by the caster's own opacity.
+    CUIElement* shadowParent = element->IsShadowCaster() ? nullptr : element->GetUIElementAdjustedParentInternal();
+    if (element->IsShadowCaster()
+        || (shadowParent != nullptr && shadowParent->OfTypeByIndex<KnownTypeIndex::Popup>() && shadowParent->IsShadowCaster()))
     {
-        ReportUnsupported(element, L"ThemeShadow");
+        ImmediateRenderingMaterials::ThemeShadowFill shadow;
+        if (ImmediateRenderingMaterials::ResolveThemeShadow(element, &shadow))
+        {
+            Emitter emitter{ list, element, ctx };
+            const RectF bounds{ 0, 0, element->GetActualWidth(), element->GetActualHeight() };
+            for (uint32_t i = 0; i < shadow.count; ++i)
+            {
+                ImmediateRenderingPolicy::ShadowLayer layer = shadow.layers[i];
+                layer.color.a *= localOpacity;
+                emitter.Shadow(bounds, shadow.radiusX, shadow.radiusY, layer, ctx.world, ctx.clip);
+            }
+        }
     }
 
     // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual, e.g. the
@@ -2266,7 +2480,9 @@ bool ImmediateRenderer::ReuseSubtree(
             case CommandType::Text: shift(c.index, strDelta); break;
             case CommandType::GlyphRun: shift(c.index, glyphDelta); break;
             case CommandType::FillPath:
-            case CommandType::StrokePath: shift(c.index, pathDelta); break;
+            case CommandType::StrokePath:
+            case CommandType::FillGradient:
+            case CommandType::FillPathGradient: shift(c.index, pathDelta); break;
             case CommandType::Bitmap: shift(c.index, bitmapDelta); break;
             case CommandType::PushLayer:
             case CommandType::PushRoundedClip: shift(c.index, cmdDelta); break;
@@ -2607,6 +2823,32 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         }
     }
 
+    if (!fullDamage)
+    {
+        // S13: a backdrop blur (AcrylicBrush) samples what is under it: damage under or near it repaints all of it.
+        std::vector<ImmediateRenderingPolicy::BackdropArea> backdrops;
+        for (const Command& c : list.commands)
+        {
+            if (c.type == CommandType::Backdrop)
+            {
+                backdrops.push_back({ c.deviceBounds, std::ceil(1.5f * c.thickness * scale) });
+            }
+        }
+        if (!backdrops.empty())
+        {
+            std::vector<RectF> probe = damage;
+            for (const Blit& b : blits)
+            {
+                probe.push_back(b.rect);
+            }
+            const size_t withBlits = probe.size();
+            if (ImmediateRenderingPolicy::ExpandDamageForBackdrops(probe, backdrops.data(), static_cast<uint32_t>(backdrops.size())))
+            {
+                damage.insert(damage.end(), probe.begin() + withBlits, probe.end());
+            }
+        }
+    }
+
     bool ownFull = fullDamage;
     std::vector<RectF> ownDamage;
     if (!fullDamage)
@@ -2806,6 +3048,38 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                     }
                     break;
                 }
+                case CommandType::FillGradient:
+                case CommandType::FillPathGradient:
+                {
+                    const PathGeometryData& data = list.paths[c.index];
+                    LinearGradientDesc gradient;
+                    gradient.start = data.gradientStart;
+                    gradient.end = data.gradientEnd;
+                    gradient.stops = data.stops.data();
+                    gradient.stopCount = static_cast<uint32_t>(data.stops.size());
+                    gradient.opacity = data.gradientOpacity * c.opacity;
+                    if (c.type == CommandType::FillGradient)
+                    {
+                        painter.FillRoundedRectangleGradient(c.rect, c.radiusX, c.radiusY, gradient);
+                    }
+                    else
+                    {
+                        PathData path;
+                        path.verbs = data.verbs.data();
+                        path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                        path.points = data.points.data();
+                        path.pointCount = static_cast<uint32_t>(data.points.size());
+                        path.nonZeroFill = data.nonZero;
+                        painter.FillPathGradient(path, gradient);
+                    }
+                    break;
+                }
+                case CommandType::Shadow:
+                    painter.DrawRoundedRectangleShadow(c.rect, c.radiusX, c.radiusY, c.thickness, { c.sourceRect.left, c.sourceRect.top }, c.color);
+                    break;
+                case CommandType::Backdrop:
+                    painter.BlurBackdrop(c.rect, c.radiusX, c.radiusY, c.thickness);
+                    break;
                 default:
                     break;
             }

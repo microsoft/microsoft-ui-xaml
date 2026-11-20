@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 #include <ImmediatePainter.h>
 
 // Pure decision and mapping logic used by the immediate render walk (core\hw\ImmediateRenderer*.cpp). Kept free of
@@ -90,6 +91,25 @@ namespace ImmediateRenderingPolicy
 
     // AcrylicBrush backdrop blur radius (MUXC AcrylicBrush::sc_blurRadius), DIPs.
     constexpr float AcrylicBlurRadius = 30.0f;
+
+    // A backdrop blur reads the pixels under it (and up to `margin` around it): when damage touches that area, the
+    // whole blurred rect must be repainted. Grows `damage` (appending the affected backdrop rects) until stable and
+    // returns true when anything was added. All rects in the same (device) space.
+    struct BackdropArea
+    {
+        RenderingBackend::RectF rect;
+        float margin = 0;
+    };
+
+    bool ExpandDamageForBackdrops(std::vector<RenderingBackend::RectF>& damage, _In_reads_(count) const BackdropArea* backdrops, uint32_t count) noexcept;
+
+    // Appends a rounded rectangle (clockwise; cubic corners) as one closed figure.
+    void AppendRoundedRectangle(const RenderingBackend::RectF& rect, float radiusX, float radiusY,
+        std::vector<RenderingBackend::PathVerb>& verbs, std::vector<RenderingBackend::PointF>& points);
+
+    // Appends an open circular arc (center, radius; degrees clockwise from 12 o'clock) as cubic segments.
+    void AppendArc(RenderingBackend::PointF center, float radius, float startDegrees, float sweepDegrees,
+        std::vector<RenderingBackend::PathVerb>& verbs, std::vector<RenderingBackend::PointF>& points);
 
     // ---- S19 text ----
 

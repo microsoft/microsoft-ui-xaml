@@ -45,6 +45,7 @@
         <ClCompile Include="hwwalk.cpp"/>
         <ClCompile Include="ImmediateRenderer.cpp"/>
         <ClCompile Include="ImmediateRenderer.Fallback.cpp"/>
+<ClCompile Include="ImmediateRenderer.Materials.cpp"/>
         <ClCompile Include="hwcompnode.cpp"/>
         <ClCompile Include="DManipData.cpp"/>
         <ClCompile Include="hwtexturemgr.cpp"/>
