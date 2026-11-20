@@ -19,6 +19,8 @@
 #include "RectangleGeometry.h"
 #include "Transform.h"
 #include "RichTextBlock.h"
+#include "RichTextBlockOverflow.h"
+#include "PasswordBox.h"
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
@@ -1827,13 +1829,13 @@ void ImmediateRenderer::EmitContent(
             emitter.Stroke(geometry, rx, ry, t, strokeColor, world);
         }
     }
-    else if (type == KnownTypeIndex::TextBlock || type == KnownTypeIndex::RichTextBlock)
+    else if (type == KnownTypeIndex::TextBlock || type == KnownTypeIndex::RichTextBlock || type == KnownTypeIndex::RichTextBlockOverflow)
     {
         // Replay XAML's own DirectWrite layout (glyph runs, underlines, selection/highlight rects).
         TextEmitter sink(emitter, world);
-        HRESULT hr = type == KnownTypeIndex::TextBlock
-            ? static_cast<CTextBlock*>(element)->VisitImmediate(sink)
-            : static_cast<CRichTextBlock*>(element)->VisitImmediate(sink);
+        HRESULT hr = type == KnownTypeIndex::TextBlock ? static_cast<CTextBlock*>(element)->VisitImmediate(sink)
+            : type == KnownTypeIndex::RichTextBlock ? static_cast<CRichTextBlock*>(element)->VisitImmediate(sink)
+            : static_cast<CRichTextBlockOverflow*>(element)->VisitImmediate(sink);
         if (FAILED(hr))
         {
             ReportUnsupported(element, L"Text layout unavailable");
@@ -1863,9 +1865,18 @@ void ImmediateRenderer::EmitContent(
                 }
                 break;
             }
-            if (ancestor->OfTypeByIndex<KnownTypeIndex::PasswordBox>() || ancestor->OfTypeByIndex<KnownTypeIndex::RichEditBox>())
+            if (ancestor->OfTypeByIndex<KnownTypeIndex::PasswordBox>())
             {
-                ReportUnsupported(element, L"PasswordBox/RichEditBox text");
+                if (FAILED(static_cast<CPasswordBox*>(ancestor)->GetDisplayText(&text)))
+                {
+                    text.clear();
+                }
+                break;
+            }
+            if (ancestor->OfTypeByIndex<KnownTypeIndex::RichEditBox>())
+            {
+                // RichEditBox content is a formatted ITextDocument; only its plain layout could be approximated.
+                ReportUnsupported(element, L"RichEditBox text");
                 break;
             }
             ancestor = ancestor->GetParentInternal(false);
@@ -2004,8 +2015,7 @@ void ImmediateRenderer::EmitContent(
             }
         }
     }
-    else if (type == KnownTypeIndex::RichTextBlockOverflow
-        || type == KnownTypeIndex::Glyphs
+    else if (type == KnownTypeIndex::Glyphs
         || type == KnownTypeIndex::SwapChainPanel
         || type == KnownTypeIndex::MediaPlayerPresenter
         || element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
@@ -2996,6 +3006,47 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     {
         return fullDamage || std::any_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, bounds); });
     };
+    // S19: ClearType only where an earlier opaque fill in the same layer fully covers the run (the swap chain is
+    // transparent elsewhere, and layers are composited with alpha).
+    std::vector<uint8_t> clearTypeRuns(list.glyphRuns.size(), 0);
+    {
+        std::vector<std::vector<RectF>> opaqueByLayer(1);
+        for (const Command& c : list.commands)
+        {
+            if (IsPush(c.type))
+            {
+                opaqueByLayer.emplace_back();
+            }
+            else if (IsPop(c.type))
+            {
+                if (opaqueByLayer.size() > 1)
+                {
+                    opaqueByLayer.pop_back();
+                }
+            }
+            else if ((c.type == CommandType::FillRect || c.type == CommandType::FillRounded) && c.color.a >= 0.999f
+                && c.transform.m12 == 0 && c.transform.m21 == 0)
+            {
+                const float inset = std::ceil(std::max(c.radiusX, c.radiusY) * std::abs(c.transform.m11) * scale);
+                const RectF r{ c.deviceBounds.left + inset, c.deviceBounds.top + inset, c.deviceBounds.right - inset, c.deviceBounds.bottom - inset };
+                auto& opaque = opaqueByLayer.back();
+                if (!IsEmptyRect(r))
+                {
+                    if (opaque.size() >= 64)
+                    {
+                        opaque.erase(opaque.begin());
+                    }
+                    opaque.push_back(r);
+                }
+            }
+            else if (c.type == CommandType::GlyphRun && c.index < clearTypeRuns.size())
+            {
+                const auto& opaque = opaqueByLayer.back();
+                clearTypeRuns[c.index] = ImmediateRenderingPolicy::IsCoveredByOpaque(c.deviceBounds, opaque.data(), static_cast<uint32_t>(opaque.size())) ? 1 : 0;
+            }
+        }
+    }
+
     auto paint = [&](IImmediatePainter& painter)
     {
         painter.Clear({ 0, 0, 0, 0 });
@@ -3115,6 +3166,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                     run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
                     run.glyphCount = static_cast<uint32_t>(data.indices.size());
                     run.bidiLevel = data.bidiLevel;
+                    run.useColorFont = true;
+                    run.clearType = clearTypeRuns[c.index] != 0;
                     painter.DrawGlyphRun(run, c.color);
                     break;
                 }

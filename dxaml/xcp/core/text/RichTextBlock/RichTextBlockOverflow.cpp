@@ -21,6 +21,7 @@
 #include "LinkedRichTextBlockView.h"
 #include "RectUtil.h"
 #include "RootScale.h"
+#include <ImmediateTextSink.h>
 
 using namespace Focus;
 using namespace RichTextServices;
@@ -2313,4 +2314,23 @@ void CRichTextBlockOverflow::GetIndependentlyAnimatedBrushes(
     {
         SetInterface(*ppStrokeBrush, m_pMaster->GetSelectionManager()->GetSelectionBackgroundBrush());
     }
+}
+
+_Check_return_ HRESULT CRichTextBlockOverflow::VisitImmediate(_In_ ImmediateTextSink& sink)
+{
+    if (m_pPageNode == nullptr || m_pPageNode->IsMeasureDirty() || m_pPageNode->IsArrangeDirty()
+        || m_pPageNode->GetDrawingContext() == nullptr)
+    {
+        return S_OK;
+    }
+
+    if (m_redrawForArrange)
+    {
+        IFC_RETURN(m_pPageNode->Draw(TRUE));
+        m_redrawForArrange = false;
+    }
+
+    const CMILMatrix identity(TRUE);
+    m_pPageNode->GetDrawingContext()->VisitImmediate(identity, sink);
+    return S_OK;
 }

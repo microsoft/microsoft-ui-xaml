@@ -68,6 +68,9 @@ public:
     bool IsPassword() const final;
     bool IsPasswordRevealed() const final;
 
+    // Immediate rendering: the text as displayed (PasswordChar repeated, or the password while revealed).
+    _Check_return_ HRESULT GetDisplayText(_Out_ std::wstring* text) const;
+
     // DXaml framework pinvokes.
     _Check_return_ HRESULT RevealPassword(_In_ bool revealed, _In_ bool syncToggleButtonCheckedState = true);
 

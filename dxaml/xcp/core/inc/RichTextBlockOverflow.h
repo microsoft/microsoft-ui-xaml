@@ -8,6 +8,7 @@ class CRichTextBlock;
 class PageNode;
 class RichTextBlockBreak;
 class IContentRenderer;
+class ImmediateTextSink;
 
 #include "ILinkedTextContainer.h"
 #include "TextHighlightMerge.h"
@@ -86,6 +87,9 @@ public:
     CRichTextBlock* GetMaster() const { return m_pMaster; }
 
     PageNode* GetPageNode() const { return m_pPageNode; }
+
+    // Immediate rendering: replays the page's text drawing into sink (see CRichTextBlock::VisitImmediate).
+    _Check_return_ HRESULT VisitImmediate(_In_ ImmediateTextSink& sink);
 
     _Check_return_ HRESULT GetBaselineOffset(_Out_ float* pBaselineOffset);
 

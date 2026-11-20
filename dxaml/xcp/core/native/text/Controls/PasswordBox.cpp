@@ -883,3 +883,21 @@ _Check_return_ HRESULT CPasswordBox::CanPasteClipboardContent(
     pResult->SetBool(do_pointer_cast<CTextBoxBase>(pObject)->CanPasteClipboardContent());
     return S_OK;
 }
+
+_Check_return_ HRESULT CPasswordBox::GetDisplayText(_Out_ std::wstring* text) const
+{
+    text->clear();
+    xstring_ptr strPassword;
+    SecureZeroString secureZeroPassword(strPassword);
+    IFC_RETURN(CryptUnprotectPassword(strPassword));
+    if (IsPasswordRevealed())
+    {
+        text->assign(strPassword.GetBuffer(), strPassword.GetCount());
+    }
+    else
+    {
+        const WCHAR mask = m_strPasswordChar.GetCount() > 0 ? m_strPasswordChar.GetChar(0) : 0x25CF;
+        text->assign(strPassword.GetCount(), mask);
+    }
+    return S_OK;
+}
