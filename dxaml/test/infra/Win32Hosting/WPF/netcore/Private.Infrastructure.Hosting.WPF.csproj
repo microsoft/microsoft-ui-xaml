@@ -17,6 +17,7 @@
     <Compile Include="..\src\WindowsXamlHostBase.Layout.cs" />
     <Compile Include="..\winmd\**\*.cs" />
     <Compile Include="..\..\winmd\AppDomainExceptionHandler.cs" />
+    <Compile Include="..\..\winmd\SystemCompositionEngineTestSupport.cs" />
   </ItemGroup>
 
   <ItemGroup>

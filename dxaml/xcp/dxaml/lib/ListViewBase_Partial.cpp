@@ -2104,6 +2104,15 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                             isGroupHeader = supportsGroupHeadersAsTabStops;
                             newFocusIndex = (isGroupHeader ? m_firstAvailableGroupHeaderForFocus : m_firstAvailableItemForFocus);
                         }
+
+                        // Use the eventual focus-entry target so no other item is scrolled into view first.
+                        int tabEntryTargetIndex = -1;
+                        IFC_RETURN(GetTabEntryTargetIndex(isBackward, &tabEntryTargetIndex));
+                        if (tabEntryTargetIndex >= 0)
+                        {
+                            isGroupHeader = false;
+                            newFocusIndex = tabEntryTargetIndex;
+                        }
                     }
                 }
                 else

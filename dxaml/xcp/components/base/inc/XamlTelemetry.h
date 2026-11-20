@@ -85,9 +85,14 @@ public:
     enum : uint64_t
     {
         CoreKeyword = 0x4,
+        ParserKeyword = 0x10,
         LayoutKeyword = 0x40,
         ControlsKeyword = 0x80,
-        AppmodelKeyword = 0x100
+        AppmodelKeyword = 0x100,
+        RenderingKeyword = 0x1000,
+        AnimationKeyword = 0x2000,
+        InputKeyword = 0x8000,
+        DCompKeyword = 0x10000
     };
 
     struct Identity
@@ -150,6 +155,40 @@ public:
             TraceLoggingOpcode(WINEVENT_OPCODE_STOP)); \
     }
 
+    // Layout-manager passes (CLayoutManager): the subject is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(FireLayoutUpdated, WINEVENT_LEVEL_INFO, LayoutKeyword);
+    DEFINE_ELEMENT_ACTIVITY(FireSizeChanged, WINEVENT_LEVEL_INFO, LayoutKeyword);
+    // Per-element size-changed notification: the subject is the element whose size changed.
+    DEFINE_ELEMENT_ACTIVITY(IndividualSizeChanged, WINEVENT_LEVEL_INFO, LayoutKeyword);
+    // Root visual set on a visual tree: the subject is the root element.
+    DEFINE_ELEMENT_ACTIVITY(PutRootVisual, WINEVENT_LEVEL_INFO, CoreKeyword);
+
+    // Top-level layout passes (CLayoutManager::UpdateLayout): the subject is the layout root.
+    DEFINE_ELEMENT_ACTIVITY(Layout, WINEVENT_LEVEL_INFO, LayoutKeyword);
+    DEFINE_ELEMENT_ACTIVITY(Measure, WINEVENT_LEVEL_INFO, LayoutKeyword);
+    DEFINE_ELEMENT_ACTIVITY(Arrange, WINEVENT_LEVEL_INFO, LayoutKeyword);
+
+    // Layout transitions: the subject is the element the transition targets.
+    // RealizeTransition stays a point event: its retail Begin/End brackets a whole
+    // pass while the element identity is per-iteration inside the loop.
+    static void RealizeTransition(CDependencyObject* object)
+    {
+        TRACE_ELEMENT_EVENT("RealizeTransition", object, nullptr, WINEVENT_LEVEL_INFO, 0,
+            TraceLoggingOpcode(WINEVENT_OPCODE_INFO));
+    }
+    DEFINE_ELEMENT_ACTIVITY(CancelTransitions, WINEVENT_LEVEL_INFO, RenderingKeyword);
+    DEFINE_ELEMENT_ACTIVITY(ProcessLayoutForTransition, WINEVENT_LEVEL_VERBOSE, AnimationKeyword);
+
+    // Focus (CFocusManager): the subject can be a UI element or a non-UI Hyperlink.
+    DEFINE_ELEMENT_ACTIVITY(XYFocusEntered, WINEVENT_LEVEL_INFO, InputKeyword);
+    // XYFocusEntered adds the retail Begin's focus-direction string on the Begin edge.
+    static void XYFocusEnteredBegin(CDependencyObject* object, PCWSTR Direction)
+    {
+        TRACE_ELEMENT_EVENT("XYFocusEntered", object, nullptr, WINEVENT_LEVEL_INFO, InputKeyword,
+            TraceLoggingOpcode(WINEVENT_OPCODE_START),
+            TraceLoggingValue(Direction, "Direction"));
+    }
+
     // Items virtualization (dxaml projection layer): the subject is the container/panel.
     // GenerateContainer carries an identity on its End: the container is only realized near the
     // end of the generate call; CopyTo keeps it live through Cleanup.
@@ -202,6 +241,49 @@ public:
             TraceLoggingValue(PropertyType, "PropertyType"));
     }
 
+    // Control template/style operations (CControl): the subject is the control, not the style.
+    DEFINE_ELEMENT_ACTIVITY(GetBuiltInStyle, WINEVENT_LEVEL_INFO, ParserKeyword);
+    // GetBuiltInStyle adds the retail End's resolved style target-type name on the End edge.
+    static void GetBuiltInStyleEnd(CDependencyObject* object, PCWSTR StyleName)
+    {
+        TRACE_ELEMENT_EVENT("GetBuiltInStyle", object, nullptr, WINEVENT_LEVEL_INFO, ParserKeyword,
+            TraceLoggingOpcode(WINEVENT_OPCODE_STOP),
+            TraceLoggingValue(StyleName, "ClassName"));
+    }
+
+    // Hit-testing (CUIElement::BoundsTestEntry): the subject is the subtree being hit-tested.
+    DEFINE_ELEMENT_ACTIVITY(HitTest, WINEVENT_LEVEL_INFO, InputKeyword);
+    // Per-hit-test bounds cache stats, emitted once BoundsTestEntry completes. The subject is the
+    // same element as the enclosing HitTest activity; RecalculatedCount/ReusedCount mirror the
+    // retail Info payload.
+    static void OuterBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("OuterBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO, InputKeyword,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void InnerBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("InnerBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO, InputKeyword,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void ContentBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("ContentBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO, InputKeyword,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
+    static void ChildBoundsStats(CDependencyObject* object, uint32_t RecalculatedCount, uint32_t ReusedCount)
+    {
+        TRACE_ELEMENT_EVENT("ChildBoundsStats", object, nullptr, WINEVENT_LEVEL_INFO, InputKeyword,
+            TraceLoggingValue(RecalculatedCount, "RecalculatedCount"),
+            TraceLoggingValue(ReusedCount, "ReusedCount"));
+    }
+
     // Hub section count (Hub_Partial.cpp): the subject is the Hub whose section count changed.
     static void HubSectionCount(CDependencyObject* object, uint32_t SectionCount)
     {
@@ -223,6 +305,25 @@ public:
             TraceLoggingValue(Descriptor, "PageDescriptor"),
             TraceLoggingValue(NavigationMode, "NavigationMode"));
     }
+
+    // Text input scope/keyboard skin (CPasswordBox): the subject is the PasswordBox.
+    static void SendInputScopeToRichEdit(CDependencyObject* object, uint32_t InputScope)
+    {
+        TRACE_ELEMENT_EVENT("SendInputScopeToRichEdit", object, nullptr, WINEVENT_LEVEL_INFO, 0,
+            TraceLoggingValue(InputScope, "InputScopeValue"));
+    }
+
+    static void SetIhmKeyboardSkin(CDependencyObject* object, uint32_t KeyboardSkin)
+    {
+        TRACE_ELEMENT_EVENT("SetIhmKeyboardSkin", object, nullptr, WINEVENT_LEVEL_INFO, 0,
+            TraceLoggingValue(KeyboardSkin, "IKSkinValue"));
+    }
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(CompTreeRemoveChild,
+        uint64_t, Parent,
+        uint64_t, Child,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+        TraceLoggingKeyword(DCompKeyword));
 
     // Container-content-changing setup (ListViewBase_Partial_ContainerPhase.cpp): the subject is
     // the container being set up.

@@ -702,14 +702,20 @@ winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode cons
 
 winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item) const
 {
-    return IsContentMode() ?
-        ListViewModel().get()->GetAssociatedNode(item) :
-        item.try_as<winrt::TreeViewNode>();
+    if (const auto viewModel = ListViewModel())
+    {
+        return viewModel->NodeFromItem(item);
+    }
+    return item.try_as<winrt::TreeViewNode>();
 }
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node) const
 {
-    return (IsContentMode() && node) ? node.Content() : static_cast<winrt::IInspectable>(node);
+    if (const auto viewModel = ListViewModel())
+    {
+        return viewModel->ItemFromNode(node);
+    }
+    return node;
 }
 
 bool TreeViewList::IsContentMode() const

@@ -1230,9 +1230,17 @@ _Check_return_ HRESULT CJupiterWindow::OnIslandSysKeyDown(
     wsy::VirtualKey virtualKey {};
     IFC_RETURN(e->get_VirtualKey(&virtualKey));
 
-    bool handled = true;
+    // Keep the handled state from ProcessKeyEvents so combos Xaml doesn't handle (e.g. Alt+Space) reach
+    // DefWindowProc. Alt and F10 stay handled: DefWindowProc enters keyboard menu mode when they are
+    // released, which swallows the next key.
+    BOOLEAN handled = FALSE;
+    IFC_RETURN(e->get_Handled(&handled));
 
-    if (virtualKey == wsy::VirtualKey_F4)
+    if (virtualKey == wsy::VirtualKey_Menu || virtualKey == wsy::VirtualKey_F10)
+    {
+        handled = TRUE;
+    }
+    else if (virtualKey == wsy::VirtualKey_F4)
     {
         XUINT32 modifierKeys {};
         IFC_RETURN(gps->GetKeyboardModifiersState(&modifierKeys));

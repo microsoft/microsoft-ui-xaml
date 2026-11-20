@@ -820,8 +820,6 @@ IFACEMETHODIMP ListViewBaseItem::OnPointerReleased(
 
         m_inCheckboxPressedForTouch = FALSE;
 
-        AutomaticDragHelper* helper = DXamlCore::GetCurrent()->GetAutomaticDragHelper(this);
-
         m_tpLastTouchPressedArgs.Clear();
 
         if (!isHandled &&
@@ -832,7 +830,9 @@ IFACEMETHODIMP ListViewBaseItem::OnPointerReleased(
 
         IFC(ReleasePointerCapture(spPointer.Get()));
 
-        if (helper != nullptr)
+        // Look the helper up only now: the tap (ItemClick, selection) and capture-loss callouts
+        // above can clear CanDrag, which deletes the helper.
+        if (AutomaticDragHelper* helper = DXamlCore::GetCurrent()->GetAutomaticDragHelper(this))
         {
             IFC(helper->HandlePointerReleasedEventArgs(pArgs));
         }

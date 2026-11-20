@@ -29,7 +29,7 @@
 
     <ItemGroup>
         <ClInclude Include="..\inc\RenderingResourceDiagnostics.h"/>
-        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\XamlProfilerTracing.h"/>
+        <ClInclude Include="..\inc\XamlProfilerTracing.h"/>
     </ItemGroup>
 
     <PropertyGroup>

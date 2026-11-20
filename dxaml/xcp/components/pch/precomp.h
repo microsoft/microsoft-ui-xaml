@@ -125,6 +125,4 @@
 
 #include <dcomp.h>
 
-#ifdef XAMLPROFILER_ENABLED
 #include "XamlProfilerTracing.h"
-#endif

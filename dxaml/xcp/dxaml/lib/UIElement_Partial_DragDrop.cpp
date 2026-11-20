@@ -72,27 +72,6 @@ _Check_return_ HRESULT UIElement::StartDragAsyncImpl(
     IFC_RETURN(pPointerPoint->get_Position(&position));
     GetAnchorPoint(position, &position);
 
-    UINT pointerId = 0;
-    IFC_RETURN(pPointerPoint->get_PointerId(&pointerId));
-
-    mui::PointerDeviceType deviceType;
-    IFC_RETURN(pPointerPoint->get_PointerDeviceType(&deviceType));
-
-    const bool isMouse = (deviceType == mui::PointerDeviceType_Mouse);
-    if (!isMouse)
-    {
-        const auto hmod = ::GetModuleHandleA("microsoft.ui.input.dll");
-        if (hmod != nullptr)
-        {
-            using LiftedInputCapturePointerIdForDragAndDrop = HRESULT(*)(UINT);
-            const auto captureForDragAndDrop = reinterpret_cast<LiftedInputCapturePointerIdForDragAndDrop>(::GetProcAddress(hmod, "LiftedInputCapturePointerIdForDragAndDrop"));
-            if (captureForDragAndDrop)
-            {
-                IFC_RETURN(captureForDragAndDrop(pointerId));
-            }
-        }
-    }
-
     ctl::WeakRefPtr wpThis;
     IFC_RETURN(ctl::AsWeak(this, &wpThis));
 

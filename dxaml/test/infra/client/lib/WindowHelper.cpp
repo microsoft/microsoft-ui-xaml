@@ -2661,14 +2661,23 @@ HRESULT WindowHelper::ShutdownXaml()
         BOOLEAN isOneCore = FALSE;
         LogThrow_IfFailed(Utilities::IsOneCoreStatic(&isOneCore));
 
-        RunOnUIThread([&] () {
-            // Make sure we cleanup the release queue on every platform, this will be the last thing we do in case any of the following
-            // shutdown code puts something in the release queue (probably super unlikely, but doesn't hurt).
-            auto cleanupReleaseQueueOnExit = wil::scope_exit([&]{
-                RunOnUIThread([&testHooks]() {
-                    testHooks->CleanupReleaseQueue();
-                });
+        auto cleanupReleaseQueue = [&]() {
+            LogThrow_IfFailed(GCCollect());
+            RunOnUIThread([&testHooks]() {
+                testHooks->CleanupReleaseQueue();
             });
+        };
+
+        // Preserve cleanup on early exits without allowing a scope-guard destructor to throw.
+        auto cleanupReleaseQueueOnExit = wil::scope_exit([&]() noexcept {
+            try
+            {
+                cleanupReleaseQueue();
+            }
+            catch (...)
+            {
+                LOG_OUTPUT(L"WindowHelper::ShutdownXaml fallback release-queue cleanup failed.");
+            }
         });
 
         if (!!isOneCore)
@@ -2697,6 +2706,8 @@ HRESULT WindowHelper::ShutdownXaml()
                 testHooks->SetRuntimeEnabledFeatureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableCoreShutdown, false, nullptr);
             });
 
+            cleanupReleaseQueue();
+            cleanupReleaseQueueOnExit.release();
             return S_OK;
         }
 
@@ -2776,6 +2787,11 @@ HRESULT WindowHelper::ShutdownXaml()
             RpcClientEnsureConnected();
             LogThrow_IfFailed(RpcResetInputInjection());
         }
+
+        // Host replacement can create managed Xaml wrappers. Finalize them before draining the replacement core's
+        // release queue so they cannot enqueue native objects after the final cleanup.
+        cleanupReleaseQueue();
+        cleanupReleaseQueueOnExit.release();
     }
     COM_END
 }

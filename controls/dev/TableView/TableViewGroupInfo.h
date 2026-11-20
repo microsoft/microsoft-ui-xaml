@@ -12,9 +12,9 @@
 // remains the internal source of truth for kind / level / expansion; this exposes the group key
 // plus the metadata a header template needs.
 //
-// Updated IN PLACE by PrepareGroupHeaderElement rather than re-created per render: a template
-// binding IsExpanded or ItemCount must observe changes, and re-pointing Content at a fresh
-// instance every render would re-evaluate every binding in the content template.
+// Updated in place while the header represents the same group, so template bindings observe
+// metadata changes. Recycling to another group creates a new projection; references retained
+// by an open context menu must never change group identity.
 //
 // Deliberately a plain implementation<> rather than a ReferenceTracker, and not using the
 // generated properties base: this is a leaf value object with no outbound references to XAML

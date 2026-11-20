@@ -126,6 +126,8 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="RemoveFlyoutItemButton" AutomationProperties.Name="RemoveFlyoutItemButton" Click="RemoveFlyoutItem_Click" Content="Remove Flyout Item"/>
+                <Button x:Name="ResetFlyoutItemsButton" AutomationProperties.Name="ResetFlyoutItemsButton" Click="ResetFlyoutItems_Click" Content="Reset Flyout Items"/>
+                <Button x:Name="ReplaceFlyoutItemButton" AutomationProperties.Name="ReplaceFlyoutItemButton" Click="ReplaceFlyoutItem_Click" Content="Replace Flyout Item"/>
                 <Button x:Name="AddItemsToEmptyMenuBar" AutomationProperties.Name="AddItemsToEmptyMenuBar" Click="AddMenuBarToEmptyMenuBarItem_Click" Content="Add a menu item to the empty menu bar"/>
                 <Button x:Name="RemoveItemsFromOneChildrenItem" AutomationProperties.Name="RemoveItemsFromOneChildrenItem" Click="RemoveItemsFromOneChildrenItem_Click" Content="Remove items from One Children item"/>
             </StackPanel>

@@ -47,6 +47,14 @@ public sealed partial class SnapshotResourceView : UserControl
 
     public SnapshotResourceView() => InitializeComponent();
 
+    public double TableMaxHeight
+    {
+        get => ResourceTable.MaxHeight;
+        set => ResourceTable.MaxHeight = value;
+    }
+
+    public SnapshotTextureView Textures => TextureSnapshot;
+
     public void Show(SnapshotResourceCapture? before, SnapshotResourceCapture? after, bool comparison)
     {
         Status.Visibility = Visibility.Visible;

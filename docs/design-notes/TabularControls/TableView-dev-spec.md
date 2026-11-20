@@ -87,7 +87,7 @@ The full surface, including event args and enums, is in `TableView.idl`, `TableV
 TableView
 └─ Border (chrome; CornerRadius = ControlCornerRadius)
    └─ Grid: Row 0 = Auto (header band), Row 1 = * (body band)
-      ├─ Border PART_HeaderRow                    header background + 1px bottom rule
+      ├─ Border PART_HeaderRow                    header background; contains overlaid PART_HeaderGridLine
       │  └─ ScrollViewer PART_HeaderScroller      no user scrolling; H offset driven from the body
       │     └─ TableViewCellsPanel PART_HeaderHost   one TableViewColumnHeader per column
       └─ ScrollViewer PART_BodyScroller           H + V, auto scrollbars
@@ -97,14 +97,16 @@ TableView
 
 TableViewRow
 └─ Grid
-   ├─ Border PART_RootBorder                      row background
+   ├─ Border PART_RootBorder                      rounded background, same separator inset as PART_RowChrome
+   ├─ Border (layout padding)
    │  └─ Grid
-   │     ├─ ContentPresenter PART_CellForegroundPresenter   foreground for Selected* states
-   │     │  └─ Grid
-   │     │     ├─ TableViewCellsPanel PART_CellsHost         one TableViewCell per column
-   │     │     └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon
-   │     └─ Rectangle PART_SelectionIndicator     leading-edge pill, Opacity 0 unless Selected*
-   └─ Border PART_GridLineBorder                  1px bottom gridline, not hit-testable
+   │     └─ ContentPresenter PART_CellForegroundPresenter   foreground for Selected* states
+   │        └─ Grid
+   │           ├─ TableViewCellsPanel PART_CellsHost         one TableViewCell per column
+   │           └─ Border PART_RowExpanderGutter > FontIcon PART_RowExpanderIcon
+   ├─ Border PART_GridLineBorder                  1px bottom gridline, not hit-testable
+   └─ Grid PART_RowChrome                         native-focus target, excludes horizontal separators
+      └─ Border PART_SelectionIndicator           rounded whole-row outline, Opacity 0 unless Selected*
 ```
 
 `RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
@@ -176,6 +178,12 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 
 A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes; size changes apply on `DragCompleted`, not mid-drag.
 
+**Locked `*` columns.** A `*` column with `CanResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
+
+- **Start.** The first write of a resize (pointer, keyboard, UIA or double-click fit) holds every locked `*` column before the resized one at its `ActualWidth`, recording the `Auto` columns' total width and `LockedColumnHoldsSignature()`. Resizing an `Auto` column drops its width from the recorded `Auto` total, because it turns `Pixel`.
+- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
+- **Cancel.** A canceled drag puts back the holds that were in place before its first write.
+
 ## Row virtualization and recycling
 
 On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **reactively** through inheritance and bindings. Cells are never re-stamped, because changing a live cell during the repeater's measure re-enters layout and fails fast.
@@ -239,6 +247,7 @@ Editing is cell-scoped and starts only from user gestures (double-click, or `F2`
 - `TableViewRow::AbandonCellEdit` never touches focus. `TableView::TerminateEditWithoutVisualRestore` uses it from `OnRowElementClearing`, `RebuildCells`, `OnIsReadOnlyPropertyChanged` and `OnItemsSourcePropertyChanged`.
 - The cell restamp path keeps the edit open, because installing the editor itself triggers a re-measure.
 - The focus-loss commit is posted and re-evaluated once focus settles.
+- An explicit `Tab`/`Shift+Tab` departure is not opening-gesture recovery, even when XAML targets the edited cell's wrapper. It attempts the normal focus-loss commit without redirecting focus back into the editor. Navigation within a composite editor or its owned popups still keeps the edit open; validation can still veto the commit. This does not introduce adjacent-cell editing, wrapping, or automatic editing of a destination. Queued focus work is invalidated when its edit closes or its begin is abandoned.
 
 ## Keyboard navigation
 
@@ -291,20 +300,83 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 | v1 knob | Effect |
 |---|---|
 | `RowBackground`, `AlternatingRowBackground` | Opt-in banding; both null means unbanded. |
-| `GridLinesVisibility` | Body gridlines. Header lines are always drawn. |
-| `Density` | Row minimum height (`TableViewRowMinHeightCompact` / `TableViewRowMinHeight` / `TableViewRowMinHeightComfortable`, 30/40/48) and padding. |
+| `BandedTableViewStyle` | Named style from `TabularControlsResources`: sets only `AlternatingRowBackground` to `TabularSurfaceRowBackgroundAlternatingBrush` (Subtle/Tertiary in Light/Dark, window background in High Contrast). Gridlines and header styling remain independent. |
+| Outer border / `BorderlessTableViewStyle` | The default 1px frame uses `TabularSurfaceOuterBorderBrush` (DividerStrokeColorDefault in Light/Dark, GrayText in High Contrast). The named borderless style sets only `BorderBrush` to `TabularSurfaceBorderlessOuterBorderBrush`, transparent in Light/Dark but still GrayText in High Contrast. Both retain the 1px layout inset; the opt-out composes with banding through a derived style. |
+| `GridLinesVisibility` | Body gridlines, independent of header lines. |
+| Column-header gridlines | Dividers and bottom rule are always present, independent of body lines. Both use `TabularSurfaceHeaderSeparatorBrush`; the trailing column divider is suppressed at the viewport edge even with a hidden outer frame. |
+| `BorderBrush`, `BorderThickness` | Outer frame. DividerStrokeColorDefault in Light/Dark; system-color in High Contrast. The default 1px inset is retained by the borderless style for stable layout. |
+| `Density` | `Compact` / `Standard` / `Comfortable`: 24/32/40px minimum row/header heights and 14px text; Standard is the default. Cell/header control padding is 12,2,12,2 / 12,6,12,6 / 12,10,12,10; section-host padding is 4,2,12,2 / 4,6,12,6 / 4,10,12,10. Metric keys use Small / Medium / Large suffixes respectively. App metric overrides win. Auto widths persist unless font resources change. Original enum values remain Compact=0, Standard=1, Comfortable=2. |
+| Density styles | `DefaultTableViewStyle` selects Standard, `CompactTableViewStyle` selects Compact, and `ComfortableTableViewStyle` selects Comfortable. Each sets only `Density`; the density variants derive from the named default preset and retain the shared template. Local values and bindings take precedence; clearing a local value restores the style selection. Density composes with banded/borderless appearance through the property or a derived style. |
 | `ColumnHeaderStyle`, `TableViewColumn.HeaderStyle` | Header `Style`; the column's wins; no `BasedOn` needed. |
-| Theme keys | `TableViewCellFontSize` and `TableViewHeaderFontSize` (both 14), `TableViewHeaderFontWeight` (`SemiBold`), `TabularSurface*` brushes. |
+| `StrongTableViewColumnHeaderStyle` | Named style from `TabularControlsResources`: semibold primary text, sharing the default header template. Omit a header style for the regular secondary-text default. |
+| `StrongTableViewGroupHeaderStyle` | Named style from `TabularControlsResources`: semibold section title/count text only. Apply through an implicit `TableViewGroupHeader` style scoped to the table. Omit it for regular text; foreground and count opacity are unchanged. Independent of column-header styling. |
+| Theme keys | Cell/header font resources default to 14; `TableViewHeaderFontWeight` defaults to Normal. Cell/header text-padding resources are literal `12,9,12,11` / `12,5,12,7` / `12,1,12,3`; section text uses the same vertical padding with zero horizontal edges. Only arranged-divider compensation is calculated, preserving total padding. Brushes use `TabularSurface*` keys. |
 
-Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
+Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Disabled selection indicators reuse `AccentFillColorDisabledBrush` in Light/Dark; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
+
+XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A text column without an owning table uses Standard density's Medium fallback metrics for generated display text and editors. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
+
+Density padding resources must have finite, non-negative edges; invalid values are logged and replaced with the matching fallback metrics before optical alignment. Generated column-header padding and group-header density metrics use bindings with boxed scalar sources, without a back-reference to the header. Ownership is determined by binding identity rather than value equality, so an app local value or binding wins even when it equals the current density value. Group-header text padding receives the optical adjustment only while density still owns its padding. Column headers recheck ownership during measure because replacing a binding with an equal effective value does not raise a property-change notification or invalidate layout; the presenter reflects that override on the next measure pass.
+
+Unsuffixed sizing keys are intentionally unsupported; Standard density reads the explicit Medium keys, not unsuffixed aliases. Apps must migrate existing overrides using the [API spec's density metric migration table](../../api-specs/TableView/TableView-spec.md#migrating-density-metric-overrides). The unsuffixed cell/header font-size keys remain supported for Standard and Comfortable.
+
+The built-in section count uses `TabularSurfaceGroupHeaderCountOpacity` while enabled and opacity 1 while disabled, since its inherited disabled foreground already supplies the disabled appearance. This applies when loaded disabled and after template replacement, independently of count-visibility tracking. Custom content templates retain their own opacity.
+
+Column-header hover has no additional backplate in Light/Dark. Enabled, sortable, unsorted headers show the
+ascending sort affordance on hover, keyboard focus, or press without changing sorting or UIA
+sort help. Sorted headers retain their actual direction indicator. Pressed retains the existing
+theme-aware backplate; High Contrast keeps ButtonFace/ButtonText at rest and with keyboard focus,
+and uses Highlight/HighlightText on hover and while pressed.
+The reserved sort space is unchanged, so revealing the icon does not move text or resize columns.
+Unsorted pointer-hover entry/exit uses an 83ms linear opacity fade. Keep the inner glyph rendered
+until fade-out finishes; VSM owns interruption/reversal. Keyboard focus, pressed/sorted states,
+High Contrast, disabled/non-sortable headers and disabled Windows animations bypass the fade.
+
+Automated layout regressions check resource-driven padding, density heights, text containment,
+and inherited typography with rasterization-scale-aware layout tolerances, not exact glyph-ink
+centering across OS/font versions. Editor density tests retain start-edge alignment and unclipped
+text without requiring TextBlock and TextBox to expose identical vertical line metrics.
+Fade tests inspect the transition configuration and wait for settled visibility/opacity, including
+rapid state changes and sorting during a fade; they do not require CI to observe intermediate
+frames of an 83ms animation. Collapsed headers need not realize their templates until shown.
+
+Section-header backplates are transparent at rest in Light/Dark and use the unselected row
+hover/pressed brushes. Their background border binds the same `CornerRadius` as row backplates.
+High Contrast pairs ButtonText with ButtonFace at rest, including the matching interaction border,
+and retains Highlight/HighlightText during hover/pressed. Disabled sections use GrayText on ButtonFace.
+Do not substitute Window for ButtonFace: custom High Contrast schemes can give them different colors.
+
+The built-in text factory records font ownership on the element. An app FontSize change or
+binding relinquishes it; custom factory elements are unstamped. This also protects the saved
+editing display from density restamps. Editor metrics apply only to the active editor, not app-created
+display TextBoxes. Reentrant density changes replay after the current restamp; changed font metrics
+invalidate both column and cell-panel width caches.
+
+Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
+gridline colors by default, and are visible for every body
+`GridLinesVisibility` value except `None`, including `Vertical`. `RefreshGridLines` updates the
+overlay on preparation and live body-gridline changes; terminal-edge suppression still avoids
+doubling the outer border. The content border does not consume divider thickness in layout.
+High Contrast uses the system disabled color and a bottom-only `0,0,0,1` divider,
+without an extra top rule.
 
 | Key | Used for | Fluent | High Contrast |
 |---|---|---|---|
-| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
-| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorWindowTextColor` |
-| `TabularSurfaceOuterBorderBrush` | Control border | `CardStrokeColorDefault` | `SystemColorWindowTextColor` |
+| `TabularSurfaceGridLineBrush` | Body gridlines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceHeaderSeparatorBrush` | Header lines | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceGroupHeaderBorderBrush` | Section dividers | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceOuterBorderBrush` | Control border | `DividerStrokeColorDefault` | `SystemColorGrayTextColorBrush` |
+| `TabularSurfaceBorderlessOuterBorderBrush` | Borderless-style control border | Transparent | `SystemColorGrayTextColorBrush` |
 
-A sortable header's `CommonStates` change only the fill, so an app foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Row `CornerRadius` feeds only the focus visual, keeping the row stack rectangular. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.
+
+Horizontal separators occupy the effective top/bottom border strip inside the unchanged row slot. `PART_RowChrome` excludes that strip from the backplate, selection outline, and native-focus target; section headers use the same part for their backplate and focus. Content, editors, and cell hit targets keep their full-height layout. Template roots retain a transparent hit surface across the entire slot. Row `FocusVisualMargin` remains `0,-1,0,-1`; cell margins are adjusted from the arranged cell and chrome bounds so row and cell focus agree after fractional-DPI rounding. Updates follow cell arrangement, chrome/row size changes, and row focus-margin changes. Templates without `PART_RowChrome` retain full-row focus geometry. Terminal-gridline suppression also removes the corresponding chrome inset.
+
+The default template's `PART_LayoutRoot` exposes the arranged inner frame, including fractional-DPI border rounding. Terminal separators compare against that actual edge instead of subtracting the unrounded public thickness. At the vertical scroll limit, the comparison allows one pixel of combined viewport/content rounding; larger empty areas retain the final data separator. A transparent or absent outer brush does not replace a bottom separator. Trailing column dividers at the viewport edge remain suppressed regardless of outer-brush visibility; columns ending before that edge retain their dividers. Border-style changes and settled scrolling refresh this state without changing row heights or padding. Older/custom templates without `PART_LayoutRoot` retain the nominal border-inset comparison.
+
+The selection outline's `3,2,3,2` `TableViewSelectionIndicatorMargin` is relative to this visual area, abutting the inner native focus stroke along straight edges without covering either native 2px + 1px stroke. Its interior height is the arranged chrome height minus 6px, rather than the full row height minus 6px. The contrasting secondary focus stroke supplies visual separation; there is no additional empty gap. Corner radii are unchanged, so the curved portions leave additional space. Toggling gridlines does not add a pixel to the density height. Built-in text editors subtract their border thickness from cell padding to preserve text alignment. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+
+Text uses the same divider-free center as selection. `RefreshCellVisualGeometry` offsets the authored text padding by the difference between the arranged chrome and full-row centers; layout restamps use the same offset. Built-in editors subtract their border thickness from that padding and center the internal text view against a fixed density-height target. Metric refreshes follow density, border and text-view size changes, so fallback-font growth and shrinkage do not accumulate extra height. The editor frame and hit target retain the full row height. Section `PART_ContentHost` applies the chrome-center offset while preserving the header's public `Padding`. Offsets are bounded by the available padding; rows without separators use the authored padding.
 
 **Later:** per-element `RowStyle` (on `TableViewRow`) and `CellStyle` (on the `TableViewCell` wrapper), as in WPF, rather than a monolithic `TableStyle`, so standard `Style` machinery applies without a property explosion.
 
@@ -312,9 +384,9 @@ A sortable header's `CommonStates` change only the fill, so an app foreground su
 
 | Template | Parts |
 |---|---|
-| `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional). |
+| `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional), `PART_LayoutRoot` (`FrameworkElement`, optional, arranged inner frame for terminal separator comparison). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
-| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Root`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
+| `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Background`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
 | `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`. State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
 
 The scrollers are found as the nearest `ScrollViewer` ancestors of the header host and repeater, not by name. Row states are `CommonStates` (including four `Selected*` states), `RowExpansionStates`, `RowExpandabilityStates` and `RowHierarchyStates`, `Row`-prefixed so they cannot collide with an app's `Expanded`/`Collapsed`.
@@ -394,6 +466,10 @@ reclassify them. `Unloaded` and the destructor close a running test when they ru
   the category (callback, validation, write, factory or data).
 - An app fault TableView recovers from (a throwing `BeginningEdit` or `CellEditEnding` handler,
   validation read, editing template or display factory) is reported, and the outcome stays TableView's.
+- A sort or expansion deferred past an edit close is replayed later, from a dispatcher callback or ahead of a newer
+  request, where no caller can see its exception. TableView swallows the exception there and reports it as a recovered
+  app fault under that deferred operation (sort, group expansion or hierarchy expansion). A header `Style`'s
+  `ContentTemplateSelector` that throws is reported the same way under the header refresh, and the header falls back to its text.
 - The exception carries the blame. Each call into app code rethrows the app's exception tagged with the category,
   as a `CallerError` with the same HRESULT and error info (running out of memory stays a `std::bad_alloc`), and the
   shaping engine throws the app's collection and contract failures the same way; the catch that decides an outcome

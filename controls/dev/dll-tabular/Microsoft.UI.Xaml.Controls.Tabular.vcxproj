@@ -62,6 +62,14 @@
   <PropertyGroup>
     <CppWinRTParameters>$(CppWinRTParameters) -reference "$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd"</CppWinRTParameters>
   </PropertyGroup>
+  <!-- The reference projection (MUXC winmd) and the component projection both write
+       generated\winrt\Microsoft.UI.Xaml.XamlTypeInfo.h, since both declare types in that namespace. If only the
+       reference projection reruns, it overwrites the header without XamlControlsTabularXamlMetaDataProvider and
+       compilation fails with C2039. Make the component projection rerun whenever the reference projection did,
+       so its version of the header always wins. -->
+  <ItemGroup>
+    <CustomAdditionalComponentWinMDInputs Include="$(CppWinRTReferenceProjectionResponseFile)" />
+  </ItemGroup>
   <!-- Fail clearly when single-project builds run before MUXC produced the component winmd Tabular's
        C++/WinRT projection consumes. -->
   <Target Name="EnsureMuxcComponentWinMDBuilt" BeforeTargets="CppWinRTMakeComponentProjection;ClCompile">

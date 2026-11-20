@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.Graphics;
 using WinUIProfiler.App.ViewModels;
+using WinUIProfiler.Engine.Snapshots;
 
 namespace WinUIProfiler.App.Views;
 
@@ -71,7 +72,7 @@ public sealed partial class SnapshotViewerWindow : Window
         try
         {
             var token = lifetime.Token;
-            Data = await Task.Run(() => SnapshotViewerData.LoadAsync(Entry, token));
+            Data = await Task.Run(() => SnapshotFiles.LoadAsync(Entry, token));
             if (closed) return;
             AddRoots(XamlTree, SnapshotTreeKind.Xaml);
             AddRoots(CompositionTree, SnapshotTreeKind.Composition);
@@ -81,6 +82,7 @@ public sealed partial class SnapshotViewerWindow : Window
             ResourceSnapshot.Show(null, Data.Document.ResourceSnapshot, false);
             ResourceSnapshot.Visibility = Visibility.Visible;
             Viewer.Visibility = Visibility.Visible;
+            await ResourceSnapshot.Textures.ShowAsync(null, null, Entry, Data, token);
         }
         catch (OperationCanceledException) when (closed) { }
         catch (Exception error)
@@ -111,7 +113,7 @@ public sealed partial class SnapshotViewerWindow : Window
 
     private TreeViewNode CreateNode(SnapshotTreeKind kind, SnapshotTreeNode model)
     {
-        var label = new SnapshotTreeLabel(model.Label, model);
+        var label = new SnapshotTreeLabel(model.Label(), model);
         label.SetMatch((kind == SnapshotTreeKind.Xaml ? xamlMatches : visualMatches).Contains(model.Id));
         var node = new TreeViewNode { Content = label, HasUnrealizedChildren = model.Children.Count > 0 };
         (kind == SnapshotTreeKind.Xaml ? xamlNodes : visualNodes).Add(model.Id, node);
@@ -194,7 +196,7 @@ public sealed partial class SnapshotViewerWindow : Window
             matchTarget = kind == SnapshotTreeKind.Xaml ? SnapshotTreeKind.Composition : SnapshotTreeKind.Xaml;
             var targetIds = kind == SnapshotTreeKind.Xaml ? selection.VisualIds : selection.XamlIds;
             var targetData = matchTarget == SnapshotTreeKind.Xaml ? Data.Xaml : Data.Composition;
-            Matches.ItemsSource = targetIds.Select(id => targetData.Nodes[id]).ToArray();
+            Matches.ItemsSource = targetIds.Select(id => new SnapshotTreeLabel(targetData.Nodes[id].Label(), targetData.Nodes[id])).ToArray();
             Matches.SelectedIndex = targetIds.Count > 0 ? 0 : -1;
             SetSynchronizedSelection(target, targetIds.Count > 0 ? Reveal(matchTarget, targetIds[0]) : null);
             AutomationProperties.SetItemStatus(Matches, $"target={matchTarget};nodes={string.Join(",", targetIds)}");
@@ -251,7 +253,7 @@ public sealed partial class SnapshotViewerWindow : Window
 
     private void Matches_SelectionChanged(object sender, SelectionChangedEventArgs args)
     {
-        if (synchronizing || Matches.SelectedItem is not SnapshotTreeNode model) return;
+        if (synchronizing || Matches.SelectedItem is not SnapshotTreeLabel { Node: { } model }) return;
         try
         {
             synchronizing = true;
@@ -265,8 +267,8 @@ public sealed partial class SnapshotViewerWindow : Window
 
     private void UpdateDetails()
     {
-        XamlDetails.Text = (XamlTree.SelectedNode?.Content as SnapshotTreeLabel)?.Node?.Details ?? "";
-        CompositionDetails.Text = (CompositionTree.SelectedNode?.Content as SnapshotTreeLabel)?.Node?.Details ?? "";
+        XamlDetails.Text = (XamlTree.SelectedNode?.Content as SnapshotTreeLabel)?.Node?.Details() ?? "";
+        CompositionDetails.Text = (CompositionTree.SelectedNode?.Content as SnapshotTreeLabel)?.Node?.Details() ?? "";
     }
 
     private void ReportInteractionError(Exception error)

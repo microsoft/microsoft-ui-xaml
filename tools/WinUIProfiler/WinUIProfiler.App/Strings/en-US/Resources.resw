@@ -19,7 +19,9 @@
   <data name="Arguments.Header" xml:space="preserve"><value>Launch arguments</value></data>
   <data name="WorkingDirectory.Header" xml:space="preserve"><value>Working directory (optional; unpackaged only)</value></data>
   <data name="Endpoint.Header" xml:space="preserve"><value>Diagnostics endpoint</value></data>
-  <data name="Trust.Content" xml:space="preserve"><value>Trust local injector and TAP binaries (executes native code in the target)</value></data>
+  <data name="TrustNotice.Text" xml:space="preserve"><value>Connecting from this window automatically trusts the profiler's bundled injector and TAP binaries, which run native code in the selected app.</value></data>
+  <data name="SymbolPath.Header" xml:space="preserve"><value>Symbol path for CPU call stacks (optional): folders, shares or srv*cache*url, separated by ;</value></data>
+  <data name="SymbolPath.PlaceholderText" xml:space="preserve"><value>srv*C:\Symbols*https://msdl.microsoft.com/download/symbols</value></data>
   <data name="TraceProcess.Header" xml:space="preserve"><value>Process</value></data>
   <data name="TraceProcess.PlaceholderText" xml:space="preserve"><value>Select a process with XAML events</value></data>
   <data name="TraceProcessFormat" xml:space="preserve"><value>{0} (PID {1}) | {2:N0} events | {3:F1} s to {4:F1} s</value></data>
@@ -85,6 +87,12 @@
   <data name="SnapshotDiffCompare.Content" xml:space="preserve"><value>Compare</value></data>
   <data name="SnapshotDiffTitle" xml:space="preserve"><value>Snapshot comparison</value></data>
   <data name="SnapshotDiffHeading.Text" xml:space="preserve"><value>Snapshot comparison</value></data>
+  <data name="SnapshotTreeDiffTitle" xml:space="preserve"><value>Snapshot tree comparison</value></data>
+  <data name="SnapshotTreeDiffHeading.Text" xml:space="preserve"><value>Snapshot tree comparison</value></data>
+  <data name="SnapshotDiffOpenTrees.Content" xml:space="preserve"><value>Open tree diff...</value></data>
+  <data name="SnapshotDiffOpenTrees.ToolTipService.ToolTip" xml:space="preserve"><value>Open the full-height XAML and Composition tree diffs, including property changes, moved nodes, and reordered nodes.</value></data>
+  <data name="SnapshotDiffPropertiesHeading.Text" xml:space="preserve"><value>Selected node properties</value></data>
+  <data name="SnapshotDiffPropertyChangesOnly.Content" xml:space="preserve"><value>Show only changed properties</value></data>
   <data name="SnapshotDiffBeforeFormat" xml:space="preserve"><value>Before: PID {0} | {1}</value></data>
   <data name="SnapshotDiffAfterFormat" xml:space="preserve"><value>After: PID {0} | {1}</value></data>
   <data name="SnapshotDiffBeforeIdentity.AutomationProperties.Name" xml:space="preserve"><value>Before snapshot identity</value></data>
@@ -93,7 +101,50 @@
   <data name="SnapshotDiffLoading.AutomationProperties.Name" xml:space="preserve"><value>Comparing tree snapshots</value></data>
   <data name="SnapshotDiffError.Title" xml:space="preserve"><value>Snapshot comparison failed</value></data>
   <data name="SnapshotDiffChangesOnly.Content" xml:space="preserve"><value>Show only changed subtrees</value></data>
-  <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No differences in comparable tree, property, or memory values.</value></data>
+  <data name="SnapshotDiffNoDifferences.Text" xml:space="preserve"><value>No differences in comparable tree, property, resource, or texture values.</value></data>
+  <data name="SnapshotTextureHeading.Header" xml:space="preserve"><value>Textures</value></data>
+  <data name="SnapshotTextureStatus.AutomationProperties.Name" xml:space="preserve"><value>Texture recording availability</value></data>
+  <data name="SnapshotTextureScope.Text" xml:space="preserve"><value>Process-wide D3D11 texture metadata at the snapshot's end, not pixel previews or XAML-node ownership. Missing creation or destruction events do not prove an exact live-object census. Sizes are linked adapter allocations, not pixel-size estimates; shared allocations count once in the known subtotal. Missing links or sizes remain unknown. Late ETW evidence may refine this view. Descriptor Format values are numeric DXGI_FORMAT values.</value></data>
+  <data name="SnapshotTextureSource.AutomationProperties.Name" xml:space="preserve"><value>Original texture recording file</value></data>
+  <data name="SnapshotTextureRefresh.Content" xml:space="preserve"><value>Refresh recorded data</value></data>
+  <data name="SnapshotTextureAbout.Content" xml:space="preserve"><value>About texture data</value></data>
+  <data name="SnapshotTextureChangesOnly.Content" xml:space="preserve"><value>Show only changed textures</value></data>
+  <data name="SnapshotTextureList.AutomationProperties.Name" xml:space="preserve"><value>Textures at the selected snapshot time</value></data>
+  <data name="SnapshotTextureEmpty.Text" xml:space="preserve"><value>No matching texture observations. Empty or incomplete ETW evidence is not proof that no textures exist.</value></data>
+  <data name="SnapshotTextureBeforeDetails.Text" xml:space="preserve"><value>Before texture details</value></data>
+  <data name="SnapshotTextureAfterDetails" xml:space="preserve"><value>After texture details</value></data>
+  <data name="SnapshotTextureDetails" xml:space="preserve"><value>Texture, captured descriptor, and allocation links</value></data>
+  <data name="SnapshotTextureIdentity" xml:space="preserve"><value>Texture lifetime</value></data>
+  <data name="SnapshotTextureIdentityFormat" xml:space="preserve"><value>{0} {1} (lifetime {2})</value></data>
+  <data name="SnapshotTextureChange" xml:space="preserve"><value>Change</value></data>
+  <data name="SnapshotTextureBeforeBytes" xml:space="preserve"><value>Before linked bytes</value></data>
+  <data name="SnapshotTextureAfterBytes" xml:space="preserve"><value>After linked bytes</value></data>
+  <data name="SnapshotTextureLinkedBytes" xml:space="preserve"><value>Known linked bytes</value></data>
+  <data name="SnapshotTextureDeltaBytes" xml:space="preserve"><value>Delta bytes</value></data>
+  <data name="SnapshotTexturePathsFormat" xml:space="preserve"><value>Before: {0}&#10;After: {1}</value></data>
+  <data name="SnapshotTextureNoRecording" xml:space="preserve"><value>No recording was associated with this snapshot.</value></data>
+  <data name="SnapshotTextureLoading" xml:space="preserve"><value>Reading recorded texture observations...</value></data>
+  <data name="SnapshotTextureAvailable" xml:space="preserve"><value>Recorded texture evidence available.</value></data>
+  <data name="SnapshotTextureNotRecorded" xml:space="preserve"><value>This snapshot has no associated graphics recording, or the recording predates graphics lifetime storage.</value></data>
+  <data name="SnapshotTextureNoEvents" xml:space="preserve"><value>No D3D11 evidence was recorded at or before this snapshot. The provider may be unavailable, or its events may not have arrived yet.</value></data>
+  <data name="SnapshotTextureDifferentProcess" xml:space="preserve"><value>The recording does not identify this exact process instance. Its textures are not attributed to this snapshot.</value></data>
+  <data name="SnapshotTextureDifferentClock" xml:space="preserve"><value>The recording is not on this live snapshot's QPC clock. Its textures cannot be placed at this snapshot time.</value></data>
+  <data name="SnapshotTextureOutsideRecording" xml:space="preserve"><value>This snapshot precedes the recording's known start.</value></data>
+  <data name="SnapshotTextureHistoryTrimmed" xml:space="preserve"><value>The recording has already trimmed this snapshot time. Texture inventory and deltas are unavailable.</value></data>
+  <data name="SnapshotTextureUnavailable" xml:space="preserve"><value>The texture recording could not be read.</value></data>
+  <data name="SnapshotTextureTrimmed" xml:space="preserve"><value>Older evidence has been trimmed. Descriptors and links whose timing is no longer retained may be unavailable.</value></data>
+  <data name="SnapshotTextureLossFormat" xml:space="preserve"><value>ETW events lost: {0}; profiler events dropped: {1}. This inventory may be incomplete.</value></data>
+  <data name="SnapshotTextureRecording" xml:space="preserve"><value>Recording is active; ETW and writer buffers can delay evidence. Refresh to read newly committed events.</value></data>
+  <data name="SnapshotTextureSummaryFormat" xml:space="preserve"><value>{0:N0} observed texture lifetime(s) at {3:N3} ms. Known linked allocation bytes (deduplicated): {1}. Textures with incomplete size: {2:N0}.</value></data>
+  <data name="SnapshotTextureComparisonSummary" xml:space="preserve"><value>Before: {0}&#10;After: {1}&#10;{2}</value></data>
+  <data name="SnapshotTextureDeltaSummary" xml:space="preserve"><value>Texture-count delta: {0:+#,0;-#,0;0}; known linked-byte subtotal delta: {1}.</value></data>
+  <data name="SnapshotTextureNotComparable" xml:space="preserve"><value>Not comparable</value></data>
+  <data name="SnapshotTextureComparisonUnavailable" xml:space="preserve"><value>Lifetime matching and deltas require available evidence from the same recording. Inventories from different recordings are shown separately; equal handles are not matched.</value></data>
+  <data name="SnapshotTextureNotObserved" xml:space="preserve"><value>Not observed</value></data>
+  <data name="SnapshotTextureUnchanged" xml:space="preserve"><value>Unchanged</value></data>
+  <data name="SnapshotTextureAdded" xml:space="preserve"><value>Added</value></data>
+  <data name="SnapshotTextureRemoved" xml:space="preserve"><value>Removed</value></data>
+  <data name="SnapshotTextureChanged" xml:space="preserve"><value>Changed</value></data>
   <data name="SnapshotResourceHeading.Header" xml:space="preserve"><value>Resource allocations</value></data>
   <data name="SnapshotResourceStatus.AutomationProperties.Name" xml:space="preserve"><value>Resource snapshot availability</value></data>
   <data name="SnapshotResourceScope.Text" xml:space="preserve"><value>Sampled before tree enumeration, not scoped to the displayed nodes. Graphics totals accumulate across enabled profiling periods; earlier creations are not counted. All-zero graphics slots are omitted, not proof that no resources exist.</value></data>
@@ -135,6 +186,13 @@
   <data name="SnapshotDiffRootFormat" xml:space="preserve"><value>XamlRoot [{0}] | thread {1}</value></data>
   <data name="SnapshotDiffAdded" xml:space="preserve"><value>Added</value></data>
   <data name="SnapshotDiffRemoved" xml:space="preserve"><value>Removed</value></data>
+  <data name="SnapshotDiffAddedRemovedHeading.Text" xml:space="preserve"><value>Added and removed nodes</value></data>
+  <data name="SnapshotDiffAddedRemovedHeading.ToolTipService.ToolTip" xml:space="preserve"><value>Only added and removed nodes are listed. Click a row or press Enter to open the tree diff window and reveal it and its correlated nodes. Other changes remain available in that window.</value></data>
+  <data name="SnapshotDiffTableChange.Text" xml:space="preserve"><value>Change</value></data>
+  <data name="SnapshotDiffTableNode.Text" xml:space="preserve"><value>Node (type, name, address)</value></data>
+  <data name="SnapshotDiffXamlChanges.AutomationProperties.Name" xml:space="preserve"><value>Added and removed XAML nodes</value></data>
+  <data name="SnapshotDiffCompositionChanges.AutomationProperties.Name" xml:space="preserve"><value>Added and removed Composition nodes</value></data>
+  <data name="SnapshotDiffNoAddedRemoved.Text" xml:space="preserve"><value>No added or removed nodes.</value></data>
   <data name="SnapshotDiffProperties" xml:space="preserve"><value>Properties changed</value></data>
   <data name="SnapshotDiffMoved" xml:space="preserve"><value>Moved</value></data>
   <data name="SnapshotDiffReordered" xml:space="preserve"><value>Reordered</value></data>
@@ -151,7 +209,7 @@
   <data name="SnapshotDiffMappingStatus.ToolTipService.ToolTip" xml:space="preserve"><value>Link icons mark correlated nodes. Unchanged matches and their ancestors are shown as context, including when only changed subtrees are selected.</value></data>
   <data name="SnapshotDiffMatches.AutomationProperties.Name" xml:space="preserve"><value>Direct comparison node matches</value></data>
   <data name="SnapshotDiffMatches.ToolTipService.ToolTip" xml:space="preserve"><value>Choose a direct match from Before, After, or both captures to reveal it in the other tree.</value></data>
-  <data name="SnapshotDiffSelectNode" xml:space="preserve"><value>Select an element in either tree to inspect its changed properties and before/after locations.</value></data>
+  <data name="SnapshotDiffSelectNode" xml:space="preserve"><value>Select an element in either tree to inspect its properties and before/after locations.</value></data>
   <data name="SnapshotDiffSelectedFormat" xml:space="preserve"><value>{0}: [{1}] {2}</value></data>
   <data name="SnapshotDiffKindXaml" xml:space="preserve"><value>XAML</value></data>
   <data name="SnapshotDiffKindComposition" xml:space="preserve"><value>Composition</value></data>
@@ -164,7 +222,7 @@
   <data name="SnapshotDiffLocationFormat" xml:space="preserve"><value>parent {0} | child index {1}</value></data>
   <data name="SnapshotDiffTreeRoot" xml:space="preserve"><value>tree root</value></data>
   <data name="SnapshotDiffAbsent" xml:space="preserve"><value>(not present)</value></data>
-  <data name="SnapshotDiffProperty.Text" xml:space="preserve"><value>Changed property</value></data>
+  <data name="SnapshotDiffProperty.Text" xml:space="preserve"><value>Property</value></data>
   <data name="SnapshotDiffBeforeValue.Text" xml:space="preserve"><value>Before</value></data>
   <data name="SnapshotDiffAfterValue.Text" xml:space="preserve"><value>After</value></data>
   <data name="SnapshotDiffPropertyValues.AutomationProperties.Name" xml:space="preserve"><value>Before and after property values</value></data>
@@ -215,13 +273,19 @@
   <data name="RecordingFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB</value></data>
   <data name="RecordingTrimmedFormat" xml:space="preserve"><value>Session file {0} | {1:N0} events | {2:F1} MB | events before {4:F1} s trimmed</value></data>
   <data name="RecordingDetailsFormat" xml:space="preserve"><value>{0}&#10;Limit {1:N0} MB: the oldest events are removed to stay within it.</value></data>
+  <data name="CpuNoSamples" xml:space="preserve"><value>CPU: no samples of the process were recorded</value></data>
+  <data name="CpuSamplesFormat" xml:space="preserve"><value>CPU: {0:N0} samples with call stacks | set a symbol path before starting to name their functions</value></data>
+  <data name="CpuSamplesDetails" xml:space="preserve"><value>The CPU tab shows the hottest functions and their call stacks. The session file's HotFunctions, CpuSampleDetails and CpuFrames views have the samples; the CLI's cpu command lists the hottest functions, and its symbolize command names them from a symbol path.</value></data>
+  <data name="SymbolsPending" xml:space="preserve"><value>CPU: {0:N0} samples | naming their functions from {1}...</value></data>
+  <data name="SymbolsFormat" xml:space="preserve"><value>CPU: {0:N0} samples | symbols for {1:N0} of {2:N0} sampled modules | {3:N0} of {4:N0} code addresses named</value></data>
+  <data name="SymbolsDetailsFormat" xml:space="preserve"><value>Searched: {0}&#10;{1:N0} modules had no PDB on the symbol path, {2:N0} had no recorded PDB identity, {3:N0} have portable (managed) PDBs, which have no native names, and {4:N0} failed.</value></data>
+  <data name="SymbolsFailed" xml:space="preserve"><value>CPU: {0:N0} samples | naming their functions failed: {1}</value></data>
   <data name="ModeAutomation" xml:space="preserve"><value>Launch, attach, or trace mode</value></data>
   <data name="TargetAutomation" xml:space="preserve"><value>Executable path, application AUMID, or process ID</value></data>
   <data name="BrowseAutomation" xml:space="preserve"><value>Browse for target</value></data>
   <data name="ArgumentsAutomation" xml:space="preserve"><value>Launch arguments</value></data>
   <data name="DirectoryAutomation" xml:space="preserve"><value>Working directory</value></data>
   <data name="EndpointAutomation" xml:space="preserve"><value>Diagnostics endpoint</value></data>
-  <data name="TrustAutomation" xml:space="preserve"><value>Trust local injection binaries</value></data>
   <data name="ConnectAutomation" xml:space="preserve"><value>Launch and connect</value></data>
   <data name="DisconnectAutomation" xml:space="preserve"><value>Disconnect</value></data>
   <data name="TraceTargetAutomation" xml:space="preserve"><value>Trace file path</value></data>
@@ -234,6 +298,8 @@
   <data name="IdentityAutomation" xml:space="preserve"><value>Connected target identity</value></data>
   <data name="EtwAutomation" xml:space="preserve"><value>XAML ETW event counts</value></data>
   <data name="RecordingAutomation" xml:space="preserve"><value>Session file</value></data>
+  <data name="SymbolPathAutomation" xml:space="preserve"><value>Symbol path for CPU call stacks</value></data>
+  <data name="CpuAutomation" xml:space="preserve"><value>CPU sampling and symbols</value></data>
   <data name="UtilizationHeading" xml:space="preserve"><value>CPU and GPU utilization</value></data>
   <data name="MemoryHeading" xml:space="preserve"><value>Process memory</value></data>
   <data name="UtilizationAutomation" xml:space="preserve"><value>CPU and GPU usage graph</value></data>
@@ -249,8 +315,8 @@
   <data name="PrivateCommit" xml:space="preserve"><value>Private commit (long dash)</value></data>
   <data name="Unavailable" xml:space="preserve"><value>Unavailable</value></data>
   <data name="Waiting" xml:space="preserve"><value>Waiting for an authenticated TAP hello and process samples.</value></data>
-  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events are saved to a session file while connected or while a recorded trace is read; the Frames and Objects tabs show them.</value></data>
-  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Frames and Objects tabs show its events.</value></data>
+  <data name="MetricLimitations.Text" xml:space="preserve"><value>CPU uses processor-time utilization, not frequency-adjusted utility. GPU uses the busiest process GPU Engine counter, not the sum of parallel engines. Values can differ from Task Manager's refresh/aggregation. Missing and warm-up readings break graph lines. XAML ETW events, and those of the marker configuration's providers, are saved to a session file while connected or while a recorded trace is read; the Launch, Frames and Objects tabs show them.</value></data>
+  <data name="TraceMetricsNote.Text" xml:space="preserve"><value>A recorded trace has no running process, so there are no live metrics or tree snapshots for it. The Launch, Frames and Objects tabs show its events.</value></data>
   <data name="TargetSearch.PlaceholderText" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetSearch.AutomationProperties.Name" xml:space="preserve"><value>Search name, AUMID, or PID</value></data>
   <data name="TargetRefresh.Content" xml:space="preserve"><value>Refresh list</value></data>
@@ -263,6 +329,7 @@
   <data name="TargetSettings.AutomationProperties.Name" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSettingsHeader" xml:space="preserve"><value>Target and launch settings</value></data>
   <data name="TargetSummaryFormat" xml:space="preserve"><value>Target: {0} {1}</value></data>
+  <data name="TargetSummaryPrivateFormat" xml:space="preserve"><value>Target: {0} {1} | private WinUI from {2}</value></data>
   <data name="TraceSummaryFormat" xml:space="preserve"><value>Trace: {0}</value></data>
   <data name="TraceSummaryProcessFormat" xml:space="preserve"><value>Trace: {0} | PID {1}</value></data>
   <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
@@ -336,6 +403,51 @@
   <data name="PositionFilteredFormat" xml:space="preserve"><value>{0:N0}-{1:N0} of {2:N0} matching</value></data>
   <data name="EventDetails.AutomationProperties.Name" xml:space="preserve"><value>Fields of the selected event</value></data>
   <data name="ObjectLinksHeader.Text" xml:space="preserve"><value>Show the history of:</value></data>
+  <data name="LaunchTab.Header" xml:space="preserve"><value>Launch</value></data>
+  <data name="EditMarkers.Content" xml:space="preserve"><value>Edit markers</value></data>
+  <data name="EditMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Open your marker configuration, %LOCALAPPDATA%\WinUIProfiler\markers.json, in Notepad, or in the app that opens .json files if Notepad can't start. It is created from the default the first time. Add your app's provider and milestones, save the file, and select Reload.</value></data>
+  <data name="ReloadMarkers.Content" xml:space="preserve"><value>Reload</value></data>
+  <data name="ReloadMarkers.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the marker configuration again and show its milestones. A provider it adds is recorded from the next connection or trace reading.</value></data>
+  <data name="MarkersFileFormat" xml:space="preserve"><value>Milestones from {0}</value></data>
+  <data name="MarkersDefault" xml:space="preserve"><value>Milestones from the default marker configuration. Select Edit markers to add your app's own.</value></data>
+  <data name="MarkersInvalidTitle" xml:space="preserve"><value>The marker configuration is not valid, so the default is used</value></data>
+  <data name="MarkersEditFailedTitle" xml:space="preserve"><value>Could not open the marker configuration</value></data>
+  <data name="LaunchReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
+  <data name="LaunchNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file in the Frames tab.</value></data>
+  <data name="MilestoneProcessFormat" xml:space="preserve"><value>{0} (PID {1})</value></data>
+  <data name="MilestonePidFormat" xml:space="preserve"><value>Process {0}</value></data>
+  <data name="LaunchFromCreationFormat" xml:space="preserve"><value>{0} | times are from the process's creation</value></data>
+  <data name="LaunchFromCreationLateFormat" xml:space="preserve"><value>{0} | times are from the process's creation | the recording started at {1:N1} ms</value></data>
+  <data name="LaunchFromRecordingStartFormat" xml:space="preserve"><value>{0} | times are from the start of the recording</value></data>
+  <data name="LaunchFromLauncherFormat" xml:space="preserve"><value>{0} | times are from "{1}", which its launcher reached before creating the process</value></data>
+  <data name="LaunchProcessLauncherFormat" xml:space="preserve"><value>{0}, launched by {1}</value></data>
+  <data name="LaunchNoteAttached" xml:space="preserve"><value>The profiler connected to the running process, so the milestones before the recording started are missing, as are the first frame drawn and the milestones whose event repeats, such as First frame start. Launch the app from the profiler to record all of its launch.</value></data>
+  <data name="LaunchNoteNoProcessStart" xml:space="preserve"><value>When the process was created is not known, so times are from the start of the recording. A trace has it when it has the kernel's process events.</value></data>
+  <data name="LaunchNoteTrimmed" xml:space="preserve"><value>The session file deleted its oldest events to stay within its size limit before they were read, so milestones among them may be missing or show a later event.</value></data>
+  <data name="MilestoneHeaderLabel.Text" xml:space="preserve"><value>Milestone</value></data>
+  <data name="MilestoneHeaderTime.Text" xml:space="preserve"><value>Time (ms)</value></data>
+  <data name="MilestoneHeaderSincePrevious.Text" xml:space="preserve"><value>Since previous (ms)</value></data>
+  <data name="MilestoneHeaderTimeline.Text" xml:space="preserve"><value>Timeline</value></data>
+  <data name="MilestoneHeaderEvent.Text" xml:space="preserve"><value>Event</value></data>
+  <data name="MilestoneHeaderThread.Text" xml:space="preserve"><value>Thread</value></data>
+  <data name="MilestoneHeaderCount.Text" xml:space="preserve"><value>Events</value></data>
+  <data name="MilestoneHeaderTime.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>When the milestone was reached, from the process's creation or its launcher's earliest milestone before it, or from the start of the recording when the creation is not known.</value></data>
+  <data name="MilestoneHeaderSincePrevious.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The time from the milestone before.</value></data>
+  <data name="MilestoneHeaderTimeline.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Each bar runs from the milestone before to this one, on a scale that ends at the last milestone.</value></data>
+  <data name="MilestoneHeaderEvent.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The provider and event that mark the milestone, and the field values the event needs. "(launcher)" marks an event of the process that launched the app.</value></data>
+  <data name="MilestoneHeaderCount.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>How many events marked the milestone. Its time is the first one's, or for a launcher's milestone, the one nearest the process's creation.</value></data>
+  <data name="MilestoneList.AutomationProperties.Name" xml:space="preserve"><value>Launch milestones</value></data>
+  <data name="MilestoneSincePreviousFormat" xml:space="preserve"><value>+{0:N1}</value></data>
+  <data name="MilestoneBuiltInProcessCreated" xml:space="preserve"><value>Built in: the process's creation</value></data>
+  <data name="MilestoneBuiltInFirstFrame" xml:space="preserve"><value>Built in: the first drawn frame, as in the Frames tab</value></data>
+  <data name="MilestoneAccessibleFormat" xml:space="preserve"><value>{0} at {1:N1} ms</value></data>
+  <data name="MilestoneAccessibleSinceFormat" xml:space="preserve"><value>{0:N1} ms after the milestone before</value></data>
+  <data name="MilestoneAccessibleThreadFormat" xml:space="preserve"><value>Thread {0}</value></data>
+  <data name="MilestoneAccessibleCountFormat" xml:space="preserve"><value>The first of {0:N0} events</value></data>
+  <data name="MilestoneLabelFromFormat" xml:space="preserve"><value>Each {0}</value></data>
+  <data name="MilestoneNotReachedItemFormat" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="MilestoneLauncherEventFormat" xml:space="preserve"><value>{0} (launcher)</value></data>
+  <data name="MilestonesNotReachedFormat" xml:space="preserve"><value>Not reached: {0}. A provider added to the marker configuration is recorded from the next connection or trace reading.</value></data>
   <data name="ObjectsTab.Header" xml:space="preserve"><value>Objects</value></data>
   <data name="ObjectsFileFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals</value></data>
   <data name="ObjectsFileTrimmedFormat" xml:space="preserve"><value>{0} | {1:N0} elements | {2:N0} visuals | older events were trimmed</value></data>
@@ -375,4 +487,41 @@
   <data name="SnapshotVisualNotFoundFormat" xml:space="preserve"><value>{0} isn't in this session file. The recording may have started after it was inserted, or its events were trimmed.</value></data>
   <data name="SnapshotXamlTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its element's history in the Objects tab.</value></data>
   <data name="SnapshotCompositionTree.AutomationProperties.HelpText" xml:space="preserve"><value>Double-click a node to see its visual's history in the Objects tab.</value></data>
+  <data name="CpuTab.Header" xml:space="preserve"><value>CPU</value></data>
+  <data name="CpuViewThreads.AutomationProperties.Name" xml:space="preserve"><value>Thread</value></data>
+  <data name="CpuViewRefresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="CpuViewRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read the session file's call stacks again.</value></data>
+  <data name="CpuViewSearch.PlaceholderText" xml:space="preserve"><value>Search functions or modules</value></data>
+  <data name="CpuViewSearch.AutomationProperties.Name" xml:space="preserve"><value>Search functions or modules</value></data>
+  <data name="CpuViewSort.AutomationProperties.Name" xml:space="preserve"><value>Order functions by</value></data>
+  <data name="CpuViewSortSelf.Content" xml:space="preserve"><value>By self</value></data>
+  <data name="CpuViewSortTotal.Content" xml:space="preserve"><value>By total</value></data>
+  <data name="CpuViewHeaderSelf.Text" xml:space="preserve"><value>Self</value></data>
+  <data name="CpuViewHeaderSelf.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The share of the samples that were running the function itself (exclusive).</value></data>
+  <data name="CpuViewHeaderTotal.Text" xml:space="preserve"><value>Total</value></data>
+  <data name="CpuViewHeaderTotal.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The share of the samples that had the function anywhere on the call stack: running it or a function it called (inclusive).</value></data>
+  <data name="CpuViewHeaderFunction.Text" xml:space="preserve"><value>Function</value></data>
+  <data name="CpuViewHeaderMs.Text" xml:space="preserve"><value>CPU (ms)</value></data>
+  <data name="CpuViewHeaderMs.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>The CPU time the node's samples stand for: their count times the sampling interval.</value></data>
+  <data name="CpuViewFunctions.AutomationProperties.Name" xml:space="preserve"><value>Sampled functions</value></data>
+  <data name="CpuViewTreeMode.AutomationProperties.Name" xml:space="preserve"><value>Call tree</value></data>
+  <data name="CpuViewTopDown.Content" xml:space="preserve"><value>Call tree of all samples</value></data>
+  <data name="CpuViewCallers.Content" xml:space="preserve"><value>Callers of the selected function</value></data>
+  <data name="CpuViewCallees.Content" xml:space="preserve"><value>Callees of the selected function</value></data>
+  <data name="CpuViewCallTree.AutomationProperties.Name" xml:space="preserve"><value>Call stacks</value></data>
+  <data name="CpuViewSelectFunction.Text" xml:space="preserve"><value>Select a function on the left to see its callers or callees.</value></data>
+  <data name="CpuViewAllThreadsFormat" xml:space="preserve"><value>All threads ({0:N0} samples)</value></data>
+  <data name="CpuViewThreadFormat" xml:space="preserve"><value>Thread {0} ({1:N0} samples)</value></data>
+  <data name="CpuViewUiThreadFormat" xml:space="preserve"><value>UI thread {0} ({1:N0} samples)</value></data>
+  <data name="CpuViewAllSamples" xml:space="preserve"><value>All samples</value></data>
+  <data name="CpuViewMoreFormat" xml:space="preserve"><value>{0:N0} more functions</value></data>
+  <data name="CpuViewSummaryFormat" xml:space="preserve"><value>{0} | {1:N0} samples</value></data>
+  <data name="CpuViewSymbolsFormat" xml:space="preserve"><value>{0} | {1:N0} samples | functions named from {2}</value></data>
+  <data name="CpuViewLive" xml:space="preserve"><value>These are the call stacks saved so far, and Refresh reads newer ones. Their functions are named from the symbol path as their PDBs are found; without one, they show as module!0xaddress.</value></data>
+  <data name="CpuViewLiveChangedFormat" xml:space="preserve"><value>{0:N0} samples are saved now and {1:N0} are shown: Refresh to show the new ones. Their functions are named from the symbol path as their PDBs are found; without one, they show as module!0xaddress.</value></data>
+  <data name="CpuViewSymbolizing" xml:space="preserve"><value>Naming the sampled functions from the symbol path. The call stacks are shown when it's done.</value></data>
+  <data name="CpuViewNoSampling" xml:space="preserve"><value>This session file has no CPU samples. Live sampling needs the profiler to run as administrator, and a trace needs a CPU profile with stacks, such as WPR's CPU profile.</value></data>
+  <data name="CpuViewNotSymbolized" xml:space="preserve"><value>Functions are shown as module!0xaddress. To name them, fill in Symbol path (a folder, a share, or srv*C:\Symbols*https://msdl.microsoft.com/download/symbols) before connecting or opening the trace, or run: WinUIProfiler.Cli symbolize &lt;session.sqlite&gt; --symbol-path &lt;path&gt;, then Refresh.</value></data>
+  <data name="CpuViewFunctionToolTipFormat" xml:space="preserve"><value>{0}&#10;Self: {1:N0} samples ({2})&#10;Total: {3:N0} samples ({4})</value></data>
+  <data name="CpuViewNodeToolTipFormat" xml:space="preserve"><value>{0}&#10;{1:N0} samples ({2})</value></data>
 </root>

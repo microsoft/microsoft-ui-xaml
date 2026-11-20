@@ -116,4 +116,5 @@ interface RpcInterface
     HRESULT RpcSetDpi([in] LUID displayAdapterId, [in] unsigned int DisplayAdapterTargetId, [in] int newDpi, [out, optional] int* oldDpi);
 
     HRESULT RpcTraceConsumerBeginCountingForProcess([in] unsigned int processId, [in] __int64 startTimestamp);
+    HRESULT RpcETWWaiterStartWithTaskNameAndPayload(GUID providerGuid, [in, string] const WCHAR* taskName, [in, string] const WCHAR* payloadCriteria);
 }

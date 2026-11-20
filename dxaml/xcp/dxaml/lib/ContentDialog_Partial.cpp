@@ -647,6 +647,17 @@ ContentDialog::ShowAsyncWithPlacementImpl(
 {
     PerfXamlEvent_RAII perfXamlEvent(reinterpret_cast<uint64_t>(this), "ContentDialog::ShowAsync[WithPlacement]", true);
 
+    if (m_tpCurrentAsyncOperation || m_isShowAsyncStarting)
+    {
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_ASYNC_OPERATION_NOT_STARTED, ERROR_CONTENTDIALOG_MULTIPLE_OPEN));
+    }
+
+    m_isShowAsyncStarting = true;
+    auto resetShowAsyncStarting = wil::scope_exit([&]
+    {
+        m_isShowAsyncStarting = false;
+    });
+
     auto cleanupOnFailure = wil::scope_exit([&]
     {
         m_placementMode = PlacementMode::Undetermined;

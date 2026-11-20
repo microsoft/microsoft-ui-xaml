@@ -14,9 +14,6 @@
 #include <ImageDecodeBoundsFinder.h>
 #include <VisualContentRenderer.h>
 #include <HWCompNodeWinRT.h>
-#ifdef XAMLPROFILER_ENABLED
-#include <WucVisualTreeProfiler.h>
-#endif // XAMLPROFILER_ENABLED
 #include <HWRedirectedCompTreeNodeWinRT.h>
 #include <HWWindowedPopupCompTreeNodeWinRT.h>
 #include "MediaPlayerPresenter.h"
@@ -3272,7 +3269,8 @@ HWWalk::IsShapeMaskRequiredForRectangle(
 
     XCORNERRADIUS cornerRadius = pFrameworkElement->GetCornerRadius();
     CBrush * pBackgroundBrush = pFrameworkElement->GetBackgroundBrush();
-    CBrush * pBorderBrush = pFrameworkElement->GetBorderBrush();
+    // A border brush with zero thickness draws nothing.
+    CBrush * pBorderBrush = CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()) ? pFrameworkElement->GetBorderBrush() : nullptr;
 
     // Borders can often be drawn as simple SpriteVisuals, like Rectangles.
     // We will fallback to using a rasterized mask to render the shape if any of the following are true:
@@ -3508,15 +3506,11 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCurrentContainer(
     SetLastSpriteVisual(visual);
     *ppVisualCollectionNoRef = spVisualCollection.detach();
 
-    // Notify the XAML Profiler of this sprite/leaf visual edge. The parent container visual is
-    // itself a comp node's child collection visual (announced via the comp node's spine events),
-    // so the owner comp node can be derived from the parent id on the consumer side.
-#ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    // Notify the XAML Profiler of this sprite/leaf visual edge.
+    if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(m_pCurrentContainerNoRef, visual);
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -3532,12 +3526,10 @@ _Check_return_ HRESULT HWWalk::InsertVisualIntoCollection(
     IFC_RETURN(visualCollection->InsertAbove(visual, m_pCurrentSpriteVisualNoRef));
     SetLastSpriteVisual(visual);
 
-#ifdef XAMLPROFILER_ENABLED
-    if (WucVisualTreeProfiler::IsEnabled())
+    if (XamlProfilerTracing::IsEnabled())
     {
-        WucVisualTreeProfiler::NotifyChildInserted(m_pCurrentContainerNoRef, visual, 0 /* ownerCompNodeId */, -1 /* index */);
+        XamlProfilerTracing::NotifyChildInserted(m_pCurrentContainerNoRef, visual);
     }
-#endif // XAMLPROFILER_ENABLED
 
     return S_OK;
 }
@@ -3954,7 +3946,7 @@ CBrush*
 BorderOutlinePart::GetBrush(
     )
 {
-    return m_pFrameworkElement->GetBorderBrush();
+    return CBorder::HasNonZeroThickness(m_pFrameworkElement->GetBorderThickness()) ? m_pFrameworkElement->GetBorderBrush() : nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -3998,7 +3990,9 @@ bool BorderOutlinePart::ShouldUseCollapsedNineGrid()
     // Only use the nine grid memory optimization for border-like elements (Border/Grid/ContentPresenter) with a solid
     // color, gradient, or XamlCompositionBrushBase backrounds. Image brushes can have additional clips due to the image's
     // stretch mode, and we haven't tested all combinations for correctness yet.
-    CBrush* borderBrush = GetBrush();
+    // Use the BorderBrush property, not GetBrush(). GetBrush() ignores a brush with zero thickness, and that
+    // shouldn't change whether the background mask collapses.
+    CBrush* borderBrush = m_pFrameworkElement->GetBorderBrush();
     return !borderBrush
         || borderBrush->OfTypeByIndex(KnownTypeIndex::SolidColorBrush)
         || borderBrush->OfTypeByIndex(KnownTypeIndex::LinearGradientBrush)
