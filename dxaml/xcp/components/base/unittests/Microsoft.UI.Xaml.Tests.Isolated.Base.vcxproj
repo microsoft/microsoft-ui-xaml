@@ -26,6 +26,7 @@
         <ClInclude Include="ImmediatePainterTestHelpers.h"/>
         <ClInclude Include="ImmediatePainterExtendedTests.h"/>
         <ClInclude Include="RenderingBackendTests.h"/>
+        <ClInclude Include="ImmediateRenderingPolicyTests.h"/>
         <ClInclude Include="RenderingResourceDiagnosticsTests.h"/>
         <ClInclude Include="CompactInlineVectorUnitTests.h"/>
         <ClInclude Include="IndexedListUnitTests.h"/>
@@ -42,6 +43,7 @@
         <ClCompile Include="BitVectorUnitTests.cpp"/>
         <ClCompile Include="RenderingResourceDiagnosticsTests.cpp"/>
         <ClCompile Include="RenderingBackendTests.cpp"/>
+        <ClCompile Include="ImmediateRenderingPolicyTests.cpp"/>
         <ClCompile Include="ImmediatePainterTests.cpp"/>
         <ClCompile Include="ImmediatePainterExtendedTests.cpp"/>
         <ClCompile Include="GdiPlusPainterTests.cpp"/>

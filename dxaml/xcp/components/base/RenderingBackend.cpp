@@ -374,6 +374,19 @@ namespace RenderingBackend
             TraceLoggingWideString(detail ? detail : L"", "Detail"));
     }
 
+    void TraceWindowFallback(Mode mode, uint64_t rootId, _In_opt_z_ const wchar_t* reason) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "WindowFallback",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingKeyword(Keywords::Selection),
+            TraceLoggingUInt32(static_cast<uint32_t>(mode), "Mode"),
+            TraceLoggingUInt64(rootId, "RootId"),
+            TraceLoggingWideString(reason ? reason : L"", "Reason"));
+    }
+
     // ---- Begin: W6 resource churn (appended by immediate-rendering-gdiplus) ----
     void TraceResourceChurn(Mode mode, uint32_t frameNumber, uint32_t created, uint32_t destroyed) noexcept
     {

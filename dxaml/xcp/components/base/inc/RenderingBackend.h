@@ -114,6 +114,10 @@ namespace RenderingBackend
     // An element subtree that the immediate backend cannot draw; the root falls back to Composition.
     void TraceUnsupportedContent(Mode mode, _In_opt_z_ const wchar_t* typeName, _In_opt_z_ const wchar_t* detail) noexcept;
 
+    // S11/S16: an island (window) met content only Composition can render (composition interop, SwapChainPanel,
+    // media, app Lottie) and permanently switched from the immediate walk to HWWalk. Event "WindowFallback".
+    void TraceWindowFallback(Mode mode, uint64_t rootId, _In_opt_z_ const wchar_t* reason) noexcept;
+
     // ---- Begin: W6 resource churn (appended by immediate-rendering-gdiplus) ----
     // Backend-owned resources (brushes, pens, fonts, text formats, bitmaps, surfaces, textures) created and destroyed
     // while painting frameNumber. Event "ResourceChurn", Resources keyword. The analyzer reports per-phase rates.

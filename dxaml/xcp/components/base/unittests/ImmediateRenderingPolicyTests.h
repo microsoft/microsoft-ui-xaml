@@ -1,0 +1,30 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#include <WexTestClass.h>
+
+namespace ImmediateRenderingPolicyTests
+{
+    class PolicyTests
+    {
+        BEGIN_TEST_CLASS(PolicyTests)
+        END_TEST_CLASS()
+
+        TEST_METHOD(PlainElementDoesNotFallBack);
+        TEST_METHOD(InteropTriggersFallBack);
+        TEST_METHOD(BuiltInProgressRingHandInDoesNotFallBack);
+        TEST_METHOD(UntouchedHandOffVisualIsPaintable);
+        TEST_METHOD(TouchedHandOffVisualIsDetected);
+        TEST_METHOD(RelativeGradientMapsToBounds);
+        TEST_METHOD(AbsoluteGradientIsUnchanged);
+        TEST_METHOD(GradientTransformsAreApplied);
+        TEST_METHOD(DegenerateGradientIsRejected);
+        TEST_METHOD(ThemeShadowFollowsRecipe);
+        TEST_METHOD(BlurInflationCoversOffset);
+        TEST_METHOD(AcrylicLayersMatchMuxc);
+        TEST_METHOD(OpaqueCoverRequiresFullContainment);
+        TEST_METHOD(ProgressRingArc);
+    };
+}
