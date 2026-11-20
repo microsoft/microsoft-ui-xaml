@@ -686,6 +686,11 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
     CoalesceDamage(independent.extraDamage, c_maxDamageRects);
     ++independent.frames;
     independent.paintedFinal = !running;
+
+    if (!GetCapturePath().empty())
+    {
+        LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), (GetCapturePath() + L".rt.bmp").c_str()));
+    }
 }
 
 HRESULT ImmediateRenderer::ApplyDeviceLostSimulation(HRESULT hr, uint32_t frameNumber)
