@@ -634,6 +634,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // Scenario: ItemsSource with string and RadioButton items; item 3 is selected and focused, and Ctrl+Down twice
+        //     moves focus to item 5 without selecting it. The page then replaces (X key) or removes (Backspace) the focused
+        //     item 5 from its KeyDown handler, so the keyboard is the last input device when ItemsRepeater moves focus away
+        //     from the recycled container.
+        // Expected: focus moves to an item next to the replaced or removed item, and the selection stays on item 3.
+        // Failure means: RadioButtons::OnGettingFocus treated the focus move away from the recycled container as keyboard
+        //     navigation (selection follows focus) and selected the item that received focus.
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void RemovingOrReplacingFocusedItemWithKeyboardKeepsSelection()
+        {
+            using (var setup = new TestSetupHelper(new[] { "RadioButtons Tests", "RadioButtons Test" }))
+            {
+                elements = new RadioButtonsTestPageElements();
+                SetSource(RadioButtonsSourceLocation.ItemSource);
+                foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                {
+                    // Refill the items before the type is shown, so that each type starts from new items.
+                    SetNumberOfItems(10);
+                    SetItemType(type);
+                    foreach (bool replace in new[] { true, false })
+                    {
+                        Log.Comment($"{type} items: {(replace ? "replace" : "remove")} the focused item.");
+                        bool useBackup = type == RadioButtonsSourceType.String;
+                        TapOnItem(3, useBackup);
+                        VerifySelectedFocusedIndex(3);
+                        KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                        KeyboardHelper.PressKey(Key.Down);
+                        KeyboardHelper.PressKey(Key.Down);
+                        KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                        VerifySelectedIndex(3);
+                        VerifyFocusedIndex(5);
+
+                        KeyboardHelper.PressKey(replace ? Key.x : Key.Backspace);
+                        int focusedIndex = GetFocusedIndex();
+                        Log.Comment($"Focused index after the change: {focusedIndex}");
+                        VerifySelectedIndex(3);
+                        Verify.IsTrue(focusedIndex >= 4 && focusedIndex <= 6, "Focus moves to an item next to the changed item.");
+                    }
+                }
+            }
+        }
+
         // Scenario: 10 items with unconstrained width and MaxColumns 1, 3, 5, 7, 10, 20; then 77 items; then the host
         //     Border width set to 100, 200, 300, 500, 550 (for Items/ItemsSource x string/RadioButton items).
         // Expected: the test hooks report (rows, columns, larger columns) of (10,1,0), (3,3,1), (2,5,0), (1,7,3), (1,10,0),

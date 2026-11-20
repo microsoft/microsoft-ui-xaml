@@ -18,7 +18,7 @@ public:
 
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
-    void ClearElementToElementFactory(const winrt::UIElement& element);
+    bool ClearElementToElementFactory(const winrt::UIElement& element);
     void RecycleWithoutOwner(bool recycleWithoutOwner);
     int GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 
@@ -55,6 +55,8 @@ private:
     void EnsureEventSubscriptions();
 
     void UpdateElementIndex(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int index);
+
+    void OnItemsReplacedForNonVirtualizingLayout(int startIndex, int oldCount, int newCount);
 
     void InvalidateRealizedIndicesHeldByLayout();
     void EnsureFirstLastRealizedIndices();
