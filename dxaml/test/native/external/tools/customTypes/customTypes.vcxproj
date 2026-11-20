@@ -130,6 +130,7 @@
     <Page Include="SimpleTemplateResolutionPage.xaml" />
     <Page Include="PopupPage.xaml" />
     <Page Include="PageWithCustomUserControl.xaml" />
+    <Page Include="PageWithDeferredStyleSetter.xaml" />
     <Page Include="CustomUserControl.xaml" />
     <Page Include="XamlCompilerPage.xaml" />
   </ItemGroup>

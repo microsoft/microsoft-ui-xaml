@@ -186,6 +186,70 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             });
         }
 
+        void StyleTests::DeferredSetterValueCanBeInspectedAndEditedWhileOverridden()
+        {
+            unsigned int constructionCount = 0;
+            RunOnUIThread([&]
+            {
+                constructionCount = shared_types::CustomUserControl::GetConstructionCount();
+            });
+
+            auto componentLocation = ref new Uri(L"ms-appx:///resources/native/tools/PageWithDeferredStyleSetter.xaml");
+            wrl::ComPtr<VisualTreeServiceCallback> callback;
+            auto cleanup = m_connectionHelper->Advise(componentLocation, callback);
+            auto root = callback->GetElementByName(L"root");
+            auto buttonHandle = callback->GetElementByName(L"testButton").Handle;
+            auto button = ih_cast<Button>(buttonHandle);
+
+            RunOnUIThread([&]
+            {
+                VERIFY_ARE_EQUAL(constructionCount, shared_types::CustomUserControl::GetConstructionCount(),
+                    L"Applying the style must leave the overridden setter value deferred before inspection");
+                VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Local override") == 0);
+            });
+
+            // Even though Tag is set locally to "Local override", we can go get its overridden BaseValueSourceStyle value
+            auto styleValue = GetPropertyChainValue(buttonHandle, L"Tag", BaseValueSourceStyle);
+            auto valueHandle = ih_cast(styleValue.Value);
+            RunOnUIThread([&]
+            {
+                auto value = ih_cast<shared_types::CustomUserControl>(valueHandle);
+                VERIFY_IS_NOT_NULL(value);
+                VERIFY_ARE_EQUAL(37, value->CustomInt);
+                VERIFY_ARE_EQUAL(constructionCount + 1, shared_types::CustomUserControl::GetConstructionCount(),
+                    L"Diagnostics must realize the overridden value on demand");
+                // The setter value was realized, but the button's local Tag value must not have changed.
+                VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Local override") == 0);
+            });
+
+            auto style = GetItemFromElementResources(root, L"DeferredStyle");
+            auto setter = GetCollectionItem(style, L"Microsoft.UI.Xaml.Style.Setters", 0);
+            auto setterValue = GetPropertyChainValue(setter, L"Value", BaseValueSourceLocal);
+            VERIFY_ARE_EQUAL(valueHandle, ih_cast(setterValue.Value),
+                L"Inspecting Style.Setters must expose the same realized value");
+
+            auto editedValue = CreateInstance(L"Windows.Foundation.String", L"Edited setter value");
+            SetProperty(setter, editedValue, L"Microsoft.UI.Xaml.Setter.Value");
+            auto editedSetterValue = GetPropertyChainValue(setter, L"Value", BaseValueSourceLocal);
+            VERIFY_IS_TRUE(wcscmp(editedSetterValue.Value, L"Edited setter value") == 0);
+
+            RunOnUIThread([&]
+            {
+                VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Local override") == 0,
+                    L"Editing the setter must not replace the local override");
+            });
+
+            // Clear the local value and verify the edited style setter value becomes effective.
+            ClearProperty(buttonHandle, L"Microsoft.UI.Xaml.FrameworkElement.Tag");
+            RunOnUIThread([&]
+            {
+                VERIFY_IS_TRUE(wcscmp(safe_cast<Platform::String^>(button->Tag)->Data(), L"Edited setter value") == 0,
+                    L"Clearing the override must expose the value edited through diagnostics");
+                VERIFY_ARE_EQUAL(constructionCount + 1, shared_types::CustomUserControl::GetConstructionCount(),
+                    L"Inspection and editing must not recreate the original setter value");
+            });
+        }
+
         #pragma endregion
 
     }

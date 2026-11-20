@@ -337,6 +337,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DefaultStyleValueSurvivesExplicitStyleRemoval)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify through a weak reference that the default-style value's peer survives an explicit Style "
+                L"override and is reused when the override is removed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StyleSetterValuesStayDeferredWhileOverridden)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that notification does not realize an overridden setter, and its value is created and retained when needed.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsMissingResource)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a missing resource.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OverriddenStyleSetterReportsMissingResourceWhenExposed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that an overridden setter reports a missing resource only when its local override is cleared.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsConstructorFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a constructor failure.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(OverriddenStyleSetterReportsConstructorFailureWhenExposed)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that an overridden setter reports a constructor failure only when its local override is cleared.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(EffectiveStyleSetterReportsBasedOnRealizationFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that applying an effective setter reports a deferred realization failure from its BasedOn style.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DuplicateStyleSetterReportsRealizationFailure)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that duplicate setters report the effective setter's realization failure.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StyleSetterFailureDoesNotSurviveOverriddenReapplication)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a failed ClearValue does not poison reapplication with an overridden setter or a later successful realization.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyImplicitStyleInvalidationInThemeDictionaries)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that implicit styles are properly invalidated for a subtree when a ResourceDictionary is added to the subtree root and its ThemeDictionaries contains an implicit style")
@@ -370,5 +416,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void TestCanUseStyleWithNestedTemplateVSM(bool isExplicit);
         void TestCanUseStyleWithDeepNestedTemplateVSM(bool isExplicit);
         void TestCanCreateOptimizedStyle(bool useSetterTarget);
+        void TestStyleSetterFailure(bool overridden, bool throwingConstructor);
     };
 } } } } } }
