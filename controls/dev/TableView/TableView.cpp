@@ -964,11 +964,13 @@ try
         m_bodyScrollerViewChangedToken = {};
         m_bodyScrollerSizeChangedRevoker.revoke();
     }
+    m_headerScrollerViewChangedRevoker.revoke();
 
     // Reset resolved-on-Loaded refs so re-templating re-resolves them against the new tree.
     m_headerRow.set(nullptr);
     m_headerScroller.set(nullptr);
     m_bodyScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     m_bodyBringIntoViewRevoker.revoke();
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
@@ -1189,6 +1191,18 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
+        if (scroller)
+        {
+            m_headerScrollerViewChangedRevoker = scroller.ViewChanged(winrt::auto_revoke,
+                [weakThis = get_weak()](winrt::IInspectable const&, winrt::ScrollViewerViewChangedEventArgs const&)
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->UpdateHeaderScrollOffset();
+                    }
+                });
+        }
+        StartHeaderScrollAnimation();
     }
 }
 
@@ -1243,6 +1257,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
             InvalidateMeasure();
             RefreshFrozenColumns();
             QueueTerminalGridLineRefresh();
+            StartHeaderScrollAnimation();
         }
     }
 }
@@ -1306,20 +1321,93 @@ void TableView::OnBodyScrollerViewChanged(
         QueueTerminalGridLineRefresh();
     }
 
-    auto headerScroller = m_headerScroller.get();
-    if (!headerScroller)
+    SyncHeaderScroller();
+}
+
+void TableView::SyncHeaderScroller()
+{
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (!headerScroller || !bodyScroller || headerScroller == bodyScroller)
     {
         return;
     }
 
-    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5)
+    // ChangeView applies on the next layout pass, so HorizontalOffset can still read an older position.
+    const double bodyHOffset = bodyScroller.HorizontalOffset();
+    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5 && std::abs(m_headerRequestedOffset - bodyHOffset) < 0.5)
     {
-        // Skip near-equal offsets to avoid ViewChanged ping-pong.
         return;
     }
-
-    // Instant tracking keeps header and body visually glued.
+    m_headerRequestedOffset = bodyHOffset;
     headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
+}
+
+// Translation carries the band the rest of the way while the body pans on the compositor; it is 0 at rest.
+void TableView::StartHeaderScrollAnimation()
+{
+    auto const headerHost = m_headerHost.get();
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (m_headerScrollOffset || !headerHost || !headerScroller || !bodyScroller || headerScroller == bodyScroller)
+    {
+        return;
+    }
+
+    SyncHeaderScroller();
+    // ChangeView raises ViewChanging synchronously, and a handler can re-template or unload the TableView.
+    if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
+        m_bodyScroller.get() != bodyScroller)
+    {
+        return;
+    }
+
+    try
+    {
+        auto const bodyProperties = winrt::ElementCompositionPreview::GetScrollViewerManipulationPropertySet(bodyScroller);
+        auto const compositor = bodyProperties.Compositor();
+        auto offset = compositor.CreatePropertySet();
+        offset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        auto const animation = compositor.CreateExpressionAnimation(L"Vector3(body.Translation.X + header.X, 0, 0)");
+        animation.SetReferenceParameter(L"body", bodyProperties);
+        animation.SetReferenceParameter(L"header", offset);
+        animation.Target(L"Translation");
+        headerHost.StartAnimation(animation);
+        m_headerScrollAnimation = animation;
+        m_headerScrollOffset = offset;
+        m_bodyManipulationProperties = bodyProperties;
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Starting the header scroll animation failed.");
+    }
+}
+
+void TableView::UpdateHeaderScrollOffset()
+{
+    if (auto const headerScroller = m_headerScroller.get(); headerScroller && m_headerScrollOffset)
+    {
+        try
+        {
+            m_headerScrollOffset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        }
+        catch (...)
+        {
+            StopHeaderScrollAnimation();
+        }
+    }
+}
+
+void TableView::StopHeaderScrollAnimation()
+{
+    if (auto const headerHost = m_headerHost.get(); headerHost && m_headerScrollAnimation)
+    {
+        // Unlike StopAnimation, setting Translation cancels without writing the last animated value back.
+        try { headerHost.Translation({ 0.0f, 0.0f, 0.0f }); } catch (...) {}
+    }
+    m_headerScrollAnimation = nullptr;
+    m_headerScrollOffset = nullptr;
+    m_bodyManipulationProperties = nullptr;
 }
 
 winrt::AutomationPeer TableView::OnCreateAutomationPeer()
@@ -1425,6 +1513,7 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     {
         // Hidden headers are inactive; restore the tab stops stamped while they were hidden.
         RefreshHeaderTabStopsInternal();
+        SyncHeaderScroller();
     }
     InvalidateMeasure();
     QueueTerminalGridLineRefresh();
@@ -4170,8 +4259,10 @@ void TableView::OnTableViewUnloaded()
         }
     }
     m_bodyScrollerSizeChangedRevoker.revoke();
+    m_headerScrollerViewChangedRevoker.revoke();
     m_bodyScroller.set(nullptr);
     m_headerScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings
