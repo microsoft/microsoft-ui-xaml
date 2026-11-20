@@ -10,7 +10,7 @@
         Header*        - column-header surfaces
         GridLine*      - row/column separator brushes
 
-    IMPORTANT — why literal SolidColorBrush per theme instead of <StaticResource>
+    IMPORTANT — why neutral colors use literal SolidColorBrush per theme instead of <StaticResource>
     aliases to TextFillColor*Brush / SubtleFillColor*Brush / etc.:
 
     The aliased pattern (`<StaticResource ResourceKey="TextFillColorPrimaryBrush" />`)
@@ -32,144 +32,185 @@
     self-contained. The hex values mirror controls/dev/CommonStyles/Common_themeresources_any.xaml
     exactly so the visual identity stays in sync with the rest of WinUI. If the
     Fluent design system tweaks a token, refresh the corresponding hex here.
+    Inline comments identify the corresponding WinUI brush for each literal color.
 
-    HighContrast block continues to use {ThemeResource SystemColor*} which is a
-    re-resolving markup extension and works correctly across MergedDictionary
-    boundaries.
+    The disabled selection indicator references AccentFillColorDisabledBrush so
+    WinUI owns its disabled appearance. This is a neutral brush, not an accent-ramp color.
+    HighContrast entries alias the shared SystemColor*Brush resources instead of
+    allocating another SolidColorBrush for each surface. These aliases and the disabled
+    selection alias cross dictionary boundaries, so the historical lookup caveat above
+    requires verification in Light, Dark, HighContrast, and during live theme switching.
+    Reading an inactive theme dictionary is not a runtime theme test.
 -->
 <ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
 
             <!-- Row backgrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#0AFFFFFF" />                   <!-- SubtleFillColorTertiary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#0FFFFFFF" />                  <!-- SubtleFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#0AFFFFFF" />       <!-- SubtleFillColorTertiary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#0FFFFFFF" />           <!-- SubtleFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" /> <!-- AccentFillColorDefault (Dark) -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5DFFFFFF" />
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#0AFFFFFF" />              <!-- SubtleFillColorTertiaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#0FFFFFFF" />               <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#0AFFFFFF" />                   <!-- SubtleFillColorTertiaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#0FFFFFFF" />                  <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#0AFFFFFF" />       <!-- SubtleFillColorTertiaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#0FFFFFFF" />           <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" Color="#0FFFFFFF" />          <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorLight2}" /> <!-- AccentFillColorDefaultBrush (Dark) -->
+            <StaticResource x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
 
             <!-- Row foregrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#FFFFFF" />                            <!-- TextFillColorPrimary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#FFFFFF" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#FFFFFF" />                  <!-- TextFillColorPrimary (subtle pointer-over fill keeps primary text) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#FFFFFF" />                     <!-- TextFillColorPrimary -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5DFFFFFF" />                  <!-- TextFillColorDisabled -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#FFFFFF" />                            <!-- TextFillColorPrimaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#FFFFFF" />         <!-- TextFillColorPrimaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#FFFFFF" />             <!-- TextFillColorPrimaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#FFFFFF" />                  <!-- TextFillColorPrimaryBrush (subtle pointer-over fill keeps primary text) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#FFFFFF" />                     <!-- TextFillColorPrimaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5DFFFFFF" />                  <!-- TextFillColorDisabledBrush -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 visible step above row banding and proportional parity with the Light theme. -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26FFFFFF" />                       <!-- ~15% white (#26 alpha) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#15FFFFFF" />                        <!-- DividerStrokeColorDefault -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />            <!-- SubtleFillColorSecondary -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />                <!-- SubtleFillColorTertiary -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#FFFFFF" />               <!-- TextFillColorPrimary (the header's inherited rest foreground) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#FFFFFF" />                   <!-- TextFillColorPrimary (the header's inherited rest foreground) -->
+            <!-- Header surfaces -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#00FFFFFF" />                       <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#C5FFFFFF" />                       <!-- TextFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#15FFFFFF" />                        <!-- DividerStrokeColorDefaultBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />            <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />                <!-- SubtleFillColorTertiaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundSortableBrush" Color="#00FFFFFF" />               <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderBrush" Color="#00FFFFFF" />                           <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderSortableBrush" Color="#00FFFFFF" />                   <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPointerOverBrush" Color="#00FFFFFF" />               <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPressedBrush" Color="#00FFFFFF" />                   <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#C5FFFFFF" />             <!-- TextFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#C5FFFFFF" />                 <!-- TextFillColorSecondaryBrush -->
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#4C3A3A3A" />                  <!-- LayerFillColorDefault -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimary -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#00FFFFFF" />                <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="#0FFFFFFF" />       <!-- SubtleFillColorSecondaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="#0AFFFFFF" />           <!-- SubtleFillColorTertiaryBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="#00FFFFFF" />           <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="#00FFFFFF" /> <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="#00FFFFFF" />    <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#FFFFFF" />                    <!-- TextFillColorPrimaryBrush -->
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.77</x:Double>                                       <!-- TextFillColorSecondary over TextFillColorPrimary -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
-            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="#15FFFFFF" />                    <!-- DividerStrokeColorDefaultBrush -->
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,0,0,1</Thickness>
 
             <!-- Grid lines -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#15FFFFFF" />                               <!-- DividerStrokeColorDefault -->
-            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#19000000" />                            <!-- CardStrokeColorDefault -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#15FFFFFF" />                               <!-- DividerStrokeColorDefaultBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#15FFFFFF" />                           <!-- DividerStrokeColorDefaultBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderlessOuterBorderBrush" Color="Transparent" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
 
-            <!-- Light theme = Default. Same key set as Default (above) but with the
-                 WinUI Fluent Light-theme color values inlined per the IMPORTANT note
-                 at the top of this file. -->
+            <!-- Same key set as Default, with the WinUI Fluent Light-theme values. -->
 
             <!-- Row backgrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#09000000" />               <!-- SubtleFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#06000000" />                   <!-- SubtleFillColorTertiary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#09000000" />                  <!-- SubtleFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#06000000" />       <!-- SubtleFillColorTertiary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#09000000" />           <!-- SubtleFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparent -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" /> <!-- AccentFillColorDefault (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="#5C000000" />
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="#00FFFFFF" />                          <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundAlternatingBrush" Color="#06000000" />              <!-- SubtleFillColorTertiaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="#09000000" />               <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="#06000000" />                   <!-- SubtleFillColorTertiaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="#09000000" />                  <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="#06000000" />       <!-- SubtleFillColorTertiaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="#09000000" />           <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" Color="#09000000" />          <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="#00FFFFFF" />                  <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemAccentColorDark1}" /> <!-- AccentFillColorDefaultBrush (Light) -->
+            <StaticResource x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" ResourceKey="AccentFillColorDisabledBrush" />
 
             <!-- Row foregrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#E4000000" />                          <!-- TextFillColorPrimary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#E4000000" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#E4000000" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#E4000000" />              <!-- TextFillColorPrimary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#E4000000" />                 <!-- TextFillColorPrimary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5C000000" />                  <!-- TextFillColorDisabled (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="#E4000000" />                          <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="#E4000000" />                  <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="#E4000000" />       <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="#E4000000" />           <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="#E4000000" />              <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="#E4000000" />                 <!-- TextFillColorPrimaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="#5C000000" />                  <!-- TextFillColorDisabledBrush (Light) -->
 
-            <!-- Header surfaces. Header background bumped from #19 (~10%) to #26 (~15%) during visual tuning for
-                 clearer contrast above row banding (matches WPF DataGrid header strip). -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#26000000" />                       <!-- ~15% black (#26 alpha) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- DividerStrokeColorDefault (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#09000000" />            <!-- SubtleFillColorSecondary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#06000000" />                <!-- SubtleFillColorTertiary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#E4000000" />            <!-- TextFillColorPrimary (Light; the header's inherited rest foreground) -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#E4000000" />                <!-- TextFillColorPrimary (Light; the header's inherited rest foreground) -->
+            <!-- Header surfaces -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="#00FFFFFF" />                       <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundBrush" Color="#9E000000" />                       <!-- TextFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="#0F000000" />                        <!-- DividerStrokeColorDefaultBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="#09000000" />            <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="#06000000" />                <!-- SubtleFillColorTertiaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundSortableBrush" Color="#00FFFFFF" />               <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderBrush" Color="#00FFFFFF" />                           <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderSortableBrush" Color="#00FFFFFF" />                   <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPointerOverBrush" Color="#00FFFFFF" />               <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderBorderPressedBrush" Color="#00FFFFFF" />                   <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="#9E000000" />            <!-- TextFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="#9E000000" />                <!-- TextFillColorSecondaryBrush (Light) -->
 
             <!-- Group header surfaces (parity with Default theme) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#14000000" />                  <!-- subtle group-header band, a touch darker than the rows (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimary (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="#00FFFFFF" />                <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" Color="#09000000" />       <!-- SubtleFillColorSecondaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" Color="#06000000" />           <!-- SubtleFillColorTertiaryBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" Color="#00FFFFFF" />           <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" Color="#00FFFFFF" /> <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" Color="#00FFFFFF" />    <!-- SubtleFillColorTransparentBrush -->
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="#E4000000" />                  <!-- TextFillColorPrimaryBrush (Light) -->
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">0.7</x:Double>                                        <!-- TextFillColorSecondary over TextFillColorPrimary (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="Transparent" />
-            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0</Thickness>
+            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="#0F000000" />                    <!-- DividerStrokeColorDefaultBrush (Light) -->
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,0,0,1</Thickness>
 
             <!-- Grid lines -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#0F000000" />                               <!-- DividerStrokeColorDefault (Light) -->
-            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#0F000000" />                            <!-- CardStrokeColorDefault (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="#0F000000" />                               <!-- DividerStrokeColorDefaultBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="#0F000000" />                           <!-- DividerStrokeColorDefaultBrush (Light) -->
+            <SolidColorBrush x:Key="TabularSurfaceBorderlessOuterBorderBrush" Color="Transparent" />
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
-            <!-- §1.13 audit 2026-05-21: all brushes use ThemeResource System*Color tokens. -->
-
             <!-- Row backgrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowBackgroundDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundAlternatingBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundSelectedDisabledBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowBackgroundDisabledBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceSelectionIndicatorBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceSelectionIndicatorDisabledBrush" ResourceKey="SystemColorGrayTextColorBrush" />
 
             <!-- Row foregrounds -->
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceRowForegroundDisabledBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundSelectedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundSelectedPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceRowForegroundDisabledBrush" ResourceKey="SystemColorGrayTextColorBrush" />
 
             <!-- Header surfaces -->
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderSeparatorBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderBackgroundPressedBrush" Color="{ThemeResource SystemColorHighlightColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceHeaderForegroundPressedBrush" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <StaticResource x:Key="TabularSurfaceHeaderBackgroundBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderForegroundBrush" ResourceKey="SystemColorWindowTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderSeparatorBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBackgroundSortableBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBorderBrush" ResourceKey="SystemColorWindowColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBorderSortableBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBorderPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderBorderPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderForegroundPointerOverBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceHeaderForegroundPressedBrush" ResourceKey="SystemColorHighlightTextColorBrush" />
 
             <!-- Group-header row surfaces (P2.8 grouped rows) -->
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderForegroundBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderBackgroundBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderBackgroundPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderBackgroundPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderInteractionBorderBrush" ResourceKey="SystemColorButtonFaceColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderInteractionBorderPointerOverBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderInteractionBorderPressedBrush" ResourceKey="SystemColorHighlightColorBrush" />
+            <StaticResource x:Key="TabularSurfaceGroupHeaderForegroundBrush" ResourceKey="SystemColorButtonTextColorBrush" />
             <x:Double x:Key="TabularSurfaceGroupHeaderCountOpacity">1.0</x:Double>
-            <SolidColorBrush x:Key="TabularSurfaceGroupHeaderBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,1,0,1</Thickness>
+            <StaticResource x:Key="TabularSurfaceGroupHeaderBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <Thickness x:Key="TabularSurfaceGroupHeaderBorderThickness">0,0,0,1</Thickness>
 
             <!-- Grid lines -->
-            <SolidColorBrush x:Key="TabularSurfaceGridLineBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
-            <SolidColorBrush x:Key="TabularSurfaceOuterBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <StaticResource x:Key="TabularSurfaceGridLineBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceOuterBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
+            <StaticResource x:Key="TabularSurfaceBorderlessOuterBorderBrush" ResourceKey="SystemColorGrayTextColorBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

@@ -17,6 +17,8 @@ public:
 
     TableViewTextColumn();
 
+    static void ClearProperties();
+
     // Setter lets XAML pass the Binding object through without evaluating it.
     winrt::Microsoft::UI::Xaml::Data::Binding Binding();
     void Binding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);
@@ -33,6 +35,8 @@ public:
     // authored separately. The public answer to "which field is this column about?" is the base
     // column's SortMemberPath, so this must never become a second public concept.
     winrt::hstring GetEditingPropertyPath() const;
+    static void RefreshGeneratedFontSize(winrt::TextBlock const& text, double fontSize);
+    static void RefreshEditorMetrics(winrt::TextBox const& editor, winrt::TableView const& owner);
 
 private:
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_binding{ this };

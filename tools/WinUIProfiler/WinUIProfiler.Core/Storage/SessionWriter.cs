@@ -10,6 +10,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.Engine.Storage;
@@ -57,13 +58,17 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // object indexes.
     private const int RowOverheadBytes = 100;
 
-    private readonly BlockingCollection<(long Sequence, ProfilerEvent Event)> queue = new(16_384);
+    private readonly BlockingCollection<QueueItem> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
+    private readonly CpuSampleIndex cpu;
+    // What SetCpuSampling gave, stored when the file is closed.
+    private CpuSamplingResult? cpuSampling;
+    private long droppedSamples;
     private readonly int processId;
     // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode,
     // launcher, ETW ID and version. Usually one layout each; a field that is sometimes null gives a second.
@@ -116,6 +121,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects = new(connection);
         frames = new(connection);
         graphics = new(connection);
+        cpu = new(connection);
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
     }
@@ -220,9 +226,46 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         if (failure is null)
         {
-            queue.Add((sequence, profilerEvent));
+            queue.Add(new(sequence, profilerEvent, null));
         }
     }
+
+    // Stores a CPU sample of the target, in its own transactions. A recorded trace's reader waits while the writer is
+    // behind; live sampling doesn't (wait false), so the kernel session's buffers don't fill: the sample is dropped and
+    // counted instead. After a failure or once the file is closing, samples are no longer stored.
+    internal void PostSample(CompletedSample sample, bool wait)
+    {
+        if (failure is not null || Volatile.Read(ref closed) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (wait)
+            {
+                queue.Add(new(0, null, sample));
+            }
+            else if (!queue.TryAdd(new(0, null, sample)))
+            {
+                Interlocked.Increment(ref droppedSamples);
+            }
+        }
+        catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException)
+        {
+            // Closed meanwhile.
+        }
+    }
+
+    // What the CPU sampling recorded, or why there is none (summary null), stored in the CpuSampling row when the file is
+    // closed. Without a call, the file has no CpuSampling row: the session didn't sample.
+    internal void SetCpuSampling(CpuSamplingSummary? summary, string? note) =>
+        Interlocked.Exchange(ref cpuSampling, new(summary, note));
+
+    private sealed record CpuSamplingResult(CpuSamplingSummary? Summary, string? Note);
+
+    // An event, or a CPU sample when Sample is set.
+    private readonly record struct QueueItem(long Sequence, ProfilerEvent? Event, CompletedSample? Sample);
 
     // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
     // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
@@ -237,13 +280,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private void Run()
     {
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
+        var samples = new List<CompletedSample>();
         try
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
-                batch.Add(first);
+                Add(first);
                 var started = Stopwatch.GetTimestamp();
-                while (batch.Count < BatchSize)
+                while (batch.Count + samples.Count < BatchSize)
                 {
                     var remaining = BatchInterval - Stopwatch.GetElapsedTime(started);
                     if (remaining <= TimeSpan.Zero || !queue.TryTake(out var next, remaining))
@@ -251,11 +295,20 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                         break;
                     }
 
-                    batch.Add(next);
+                    Add(next);
                 }
 
-                Write(batch);
-                batch.Clear();
+                if (batch.Count > 0)
+                {
+                    Write(batch);
+                    batch.Clear();
+                }
+
+                if (samples.Count > 0)
+                {
+                    WriteSamples(samples);
+                    samples.Clear();
+                }
             }
         }
         catch (Exception error)
@@ -267,6 +320,34 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             {
             }
         }
+
+        void Add(QueueItem item)
+        {
+            if (item.Sample is { } sample)
+            {
+                samples.Add(sample);
+            }
+            else
+            {
+                batch.Add((item.Sequence, item.Event!));
+            }
+        }
+    }
+
+    private void WriteSamples(List<CompletedSample> samples)
+    {
+        TrimIfNeeded(cpu.IncomingBytes(samples));
+        using (var transaction = connection.BeginTransaction())
+        {
+            foreach (var sample in samples)
+            {
+                cpu.Add(sample, transaction);
+            }
+
+            transaction.Commit();
+        }
+
+        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
     }
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
@@ -430,7 +511,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
+    // Deletes the oldest data until what's stored plus the incoming batch fits under the trim point: the oldest events, with
+    // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
+    // or no event can be deleted. The call stacks and code addresses no sample has any more go with them.
     private void TrimIfNeeded(long incomingBytes)
     {
         while ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
@@ -438,35 +521,65 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
-            if (oldest == 0 || newest <= oldest)
+            long? firstEvent = oldest != 0 && newest > oldest ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1") : null;
+            var firstSample = cpu.FirstQpc();
+            if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
+            {
+                TrimEvents(oldest, newest);
+            }
+            else if (firstSample is null || !TrimSamples(firstEvent))
             {
                 return;
             }
+        }
+    }
 
-            var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
-            long qpc;
-            using (var transaction = connection.BeginTransaction())
+    // Deletes the oldest events, with the CPU samples from before the first event left.
+    private void TrimEvents(long oldest, long newest)
+    {
+        var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
+        long qpc;
+        using (var transaction = connection.BeginTransaction())
+        {
+            objects.Trim(cutoff, transaction);
+            frames.Trim(cutoff, transaction);
+            graphics.Trim(cutoff, transaction);
+            Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
+            // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+            // process's first event from the cutoff, or else the cutoff's.
+            qpc = Sql.Scalar(connection, """
+                SELECT COALESCE(
+                    (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                        AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                    (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+                """, transaction, ("$cutoff", cutoff));
+            Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
+                ("$cutoff", cutoff), ("$qpc", qpc));
+            if (cpu.Trim(qpc, transaction) > 0)
             {
-                objects.Trim(cutoff, transaction);
-                frames.Trim(cutoff, transaction);
-                graphics.Trim(cutoff, transaction);
-                Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-                // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
-                // process's first event from the cutoff, or else the cutoff's.
-                qpc = Sql.Scalar(connection, """
-                    SELECT COALESCE(
-                        (SELECT Qpc FROM Events WHERE Seq >= $cutoff
-                            AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
-                        (SELECT Qpc FROM Events WHERE Seq = $cutoff))
-                    """, transaction, ("$cutoff", cutoff));
-                Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
-                    ("$cutoff", cutoff), ("$qpc", qpc));
-                transaction.Commit();
+                cpu.Prune(transaction);
             }
 
-            Interlocked.Exchange(ref oldestSequence, cutoff);
-            Interlocked.Exchange(ref completeFromQpc, qpc);
+            transaction.Commit();
         }
+
+        Interlocked.Exchange(ref oldestSequence, cutoff);
+        Interlocked.Exchange(ref completeFromQpc, qpc);
+    }
+
+    // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
+    // event it keeps. Returns false when none was deleted.
+    private bool TrimSamples(long? firstEvent)
+    {
+        using var transaction = connection.BeginTransaction();
+        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, transaction) == 0)
+        {
+            return false;
+        }
+
+        cpu.Prune(transaction);
+        transaction.Commit();
+        return true;
     }
 
     // Stores the remaining events, records how the session ended and closes the file. Call after the last Process call.
@@ -484,6 +597,13 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             if (failure is null)
             {
                 StoreProcessStart(null);
+                if (Interlocked.Exchange(ref cpuSampling, null) is { } sampling)
+                {
+                    using var transaction = connection.BeginTransaction();
+                    cpu.Finish(sampling.Summary, Interlocked.Read(ref droppedSamples), sampling.Note, transaction);
+                    transaction.Commit();
+                }
+
                 Sql.Execute(connection,
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),
@@ -505,6 +625,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             objects.Dispose();
             frames.Dispose();
             graphics.Dispose();
+            cpu.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();
