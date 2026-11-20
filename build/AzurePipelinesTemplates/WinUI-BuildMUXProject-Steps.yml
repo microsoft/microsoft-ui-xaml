@@ -626,6 +626,7 @@ steps:
   - ${{ if eq(parameters.signOutput, true) }}:
     - template: WinUI-EsrpCodeSigning-Wrapper.yml
       parameters:
+        IsOfficial: ${{ parameters.IsOfficial }}
         IsMonobuild: ${{ parameters.IsMonobuild }}
         InnerParams:
           FolderPath: '$(ob_outputDirectory)'
