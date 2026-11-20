@@ -1,0 +1,515 @@
+# Stages a bounded sample and forwards governed fix operations to ADE.
+#Requires -Version 7
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory)]
+    [ValidateSet('Explore', 'Prepare', 'StartFlow', 'ContinueFlow', 'FlowStatus', 'FlowReport', 'Investigate', 'Show', 'Evidence', 'Propose', 'Approve', 'Run', 'Status', 'Verify', 'Report')]
+    [string]$Action,
+    [string]$StatePath,
+    [string]$FlowPath,
+    [ValidateRange(1, 10)][int]$MaxAnalysisCycles = 3,
+    [ValidateRange(60, 86400)][int]$FlowTimeoutSeconds = 3600,
+    [string]$ProposalSha256,
+    [ValidateSet('Synthetic', 'Control')]
+    [string]$Scenario = 'Synthetic',
+    [string]$ProfilerCli,
+    [string]$DotNet,
+    [ValidateSet('Fix', 'Investigation')]
+    [string]$Phase = 'Fix',
+    [string]$ScenarioPlan,
+    [ValidatePattern('^[0-9a-fA-F]{64}$')][string]$ScenarioPlanSha256,
+    [string]$Problem = 'Investigate the cost of constructing the control tree in this scenario. Identify evidence-backed hypotheses or request additional measurements.',
+    [string]$CandidateManifest,
+    [ValidateSet('Baseline', 'Candidate')]
+    [string]$Variant = 'Baseline',
+    [ValidateRange(1, 300)][int]$DisplaySeconds = 30,
+    [string]$ArtifactsRoot = (Join-Path $env:LOCALAPPDATA 'WinUIProfilerHarness\Poc')
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+$PSNativeCommandUseErrorActionPreference = $false
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\..'))
+$pluginRoot = Join-Path $repoRoot 'eng\ade\ui-profiler'
+$launcher = Join-Path $pluginRoot 'scripts\ade.ps1'
+
+function Invoke-AdeCommand {
+    param([string[]]$Arguments)
+
+    $lines = @()
+    & $launcher @Arguments | Tee-Object -Variable lines | ForEach-Object { Write-Host $_ }
+    $exitCode = $LASTEXITCODE
+    $results = @($lines | Where-Object { $_ -is [string] -and $_.StartsWith('ADE-RESULT: ') })
+    if ($results.Count -eq 0) {
+        throw "ADE returned exit code $exitCode without an ADE-RESULT record."
+    }
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Result = $results[-1].Substring('ADE-RESULT: '.Length) | ConvertFrom-Json
+    }
+}
+
+function Save-State {
+    param($State)
+
+    $temporaryPath = "$StatePath.tmp"
+    [IO.File]::WriteAllText($temporaryPath, ($State | ConvertTo-Json -Depth 20))
+    Move-Item -LiteralPath $temporaryPath -Destination $StatePath -Force
+}
+
+if ($Action -in 'StartFlow', 'ContinueFlow', 'FlowStatus', 'FlowReport') {
+    $flowArguments = @('-B', '-m', 'helpers.flow', $Action, '--adapter', $PSCommandPath)
+    if ($Action -eq 'StartFlow') {
+        if (-not $StatePath -or $FlowPath) {
+            throw 'StartFlow requires the exact Prepare StatePath and no FlowPath.'
+        }
+        $flowArguments += @('--state', $StatePath, '--problem', $Problem,
+            '--max-cycles', "$MaxAnalysisCycles", '--timeout-seconds', "$FlowTimeoutSeconds")
+    } else {
+        if (-not $FlowPath -or $StatePath) {
+            throw "$Action requires FlowPath, not StatePath."
+        }
+        $flowArguments += @('--flow', $FlowPath)
+    }
+    if ($ProposalSha256) {
+        if ($Action -ne 'ContinueFlow') { throw 'Only ContinueFlow accepts a proposal approval.' }
+        $flowArguments += @('--approved-hash', $ProposalSha256)
+    }
+    Push-Location $PSScriptRoot
+    try { & python @flowArguments } finally { Pop-Location }
+    exit $LASTEXITCODE
+}
+
+if ($ScenarioPlan -and ($Action -ne 'Prepare' -or $Scenario -ne 'Control')) {
+    throw 'ScenarioPlan requires Prepare -Scenario Control.'
+}
+if ($ScenarioPlanSha256 -and -not $ScenarioPlan) {
+    throw 'ScenarioPlanSha256 requires an explicit ScenarioPlan.'
+}
+
+if ($Action -eq 'Explore') {
+    if ($Scenario -ne 'Control' -or $StatePath) {
+        throw 'Explore requires -Scenario Control and no StatePath. It opens the demo without a measurement.'
+    }
+    if (-not $DotNet) {
+        $DotNet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
+    }
+    $DotNet = (Resolve-Path -LiteralPath $DotNet -ErrorAction Stop).Path
+    $appRoot = Join-Path $PSScriptRoot 'ControlDemo'
+    $definition = Get-Content -LiteralPath (Join-Path $appRoot 'scenario.json') -Raw | ConvertFrom-Json
+    $buildRoot = Join-Path $env:LOCALAPPDATA ('WinUIProfilerHarness\Builds\' + [guid]::NewGuid().ToString('N'))
+    & pwsh -NoProfile -File (Join-Path $appRoot $definition.buildScript) `
+        -InitRun (Join-Path $repoRoot 'initrun.ps1') -DotNet $DotNet -OutputRoot $buildRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw 'The exploration app build failed.'
+    }
+    $executable = (Get-Content -LiteralPath (Join-Path $buildRoot $definition.buildOutput) -Raw).Trim()
+    $start = [Diagnostics.ProcessStartInfo]::new($executable)
+    $start.UseShellExecute = $false
+    $start.WorkingDirectory = Split-Path $executable -Parent
+    $start.ArgumentList.Add('--explore')
+    $process = [Diagnostics.Process]::Start($start)
+    try {
+        $deadline = [DateTime]::UtcNow.AddSeconds(30)
+        do {
+            if ($process.WaitForExit(100)) {
+                throw "The exploration app exited before its window was ready (exit $($process.ExitCode))."
+            }
+            $process.Refresh()
+        } while (($process.MainWindowHandle -eq [IntPtr]::Zero -or
+                  -not $process.MainWindowTitle.StartsWith('ControlDemo - Explore - ')) -and
+                 [DateTime]::UtcNow -lt $deadline)
+        if ($process.MainWindowHandle -eq [IntPtr]::Zero -or
+            -not $process.MainWindowTitle.StartsWith('ControlDemo - Explore - ')) {
+            throw 'The exploration app did not initialize an observable window.'
+        }
+        Write-Output "HARNESS-WINDOW: PID $($process.Id), HWND $($process.MainWindowHandle); no capture; close the window when finished."
+        $process.WaitForExit()
+        if ($process.ExitCode -ne 0) {
+            throw "The exploration app exited with code $($process.ExitCode)."
+        }
+    } finally {
+        if (-not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force
+        }
+        $process.Dispose()
+    }
+    exit 0
+}
+
+if ($Action -eq 'Prepare') {
+    if ($StatePath) {
+        throw 'Prepare creates a new state file; do not supply -StatePath.'
+    }
+    $artifacts = [IO.Path]::GetFullPath($ArtifactsRoot)
+    if ($artifacts.TrimEnd('\') -eq $repoRoot.TrimEnd('\') -or
+        $artifacts.StartsWith("$($repoRoot.TrimEnd('\'))\", [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'ArtifactsRoot must be outside the WinUI source repository.'
+    }
+    Get-Command python, git -ErrorAction Stop | Out-Null
+    $pack = if ($Scenario -eq 'Control') { Join-Path $pluginRoot 'control-pack' } else { Join-Path $pluginRoot 'pack' }
+    $doctor = Invoke-AdeCommand -Arguments @('doctor', '--pack', $pack)
+    if ($doctor.ExitCode -ne 0) {
+        exit $doctor.ExitCode
+    }
+
+    $name = '{0}-{1}' -f [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N')
+    $sessionRoot = Join-Path $artifacts $name
+    $sampleRoot = Join-Path $sessionRoot 'sample'
+    if ($Scenario -eq 'Control') {
+        Get-Command dotnet, logman -ErrorAction Stop | Out-Null
+        $sourceSample = Join-Path $PSScriptRoot 'ControlDemo'
+        if (-not $ProfilerCli) {
+            $ProfilerCli = Join-Path $repoRoot 'tools\WinUIProfiler\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
+        }
+        $ProfilerCli = (Resolve-Path -LiteralPath $ProfilerCli -ErrorAction Stop).Path
+        if (-not $DotNet) {
+            $DotNet = Join-Path $env:ProgramFiles 'dotnet\dotnet.exe'
+        }
+        $DotNet = (Resolve-Path -LiteralPath $DotNet -ErrorAction Stop).Path
+        $files = @(
+            '.gitignore', 'README.md', 'App.xaml', 'App.xaml.cs', 'ScenarioWorkload.cs',
+            'ControlDemo.csproj', 'Directory.Build.props', 'Directory.Build.targets',
+            'app.manifest', 'global.json', 'NuGet.Config', 'packages.lock.json',
+            'markers.json', 'providers.txt', 'build.ps1', 'scenario.json',
+            'ScenarioPlan.cs', 'scenario-capabilities.json', 'scenario_plan.py'
+        )
+        $helperFiles = @('capture.ps1', 'metrics.py', 'verify.py', 'profiler_query.py', 'validate_fix.py', '__init__.py')
+        $testFiles = @('__init__.py', 'test_metrics.py')
+        $workload = 'ScenarioWorkload.cs'
+    } else {
+        $sourceSample = Join-Path $PSScriptRoot 'sample'
+        $files = @(
+            '.gitignore', 'README.md', 'workload.py', 'verify.py',
+            'tests\__init__.py', 'tests\test_workload.py'
+        )
+        $workload = 'workload.py'
+    }
+    foreach ($relativePath in $files) {
+        $destination = Join-Path $sampleRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $sourceSample $relativePath) -Destination $destination
+    }
+    if ($Scenario -eq 'Control') {
+        foreach ($folder in @('helpers', 'tests')) {
+            $names = if ($folder -eq 'helpers') { $helperFiles } else { $testFiles }
+            New-Item -ItemType Directory -Path (Join-Path $sampleRoot $folder) | Out-Null
+            foreach ($name in $names) {
+                Copy-Item -LiteralPath (Join-Path $PSScriptRoot "$folder\$name") `
+                    -Destination (Join-Path $sampleRoot "$folder\$name")
+            }
+        }
+    }
+
+    $baselinePath = Join-Path $sessionRoot 'baseline-measurement.json'
+    $preparedPlan = $null
+    if ($ScenarioPlan) {
+        $planPath = (Resolve-Path -LiteralPath $ScenarioPlan -ErrorAction Stop).Path
+        $planArguments = @('stage', '--root', $sampleRoot, '--plan', $planPath)
+        if ($ScenarioPlanSha256) {
+            $planArguments += @('--expected-sha256', $ScenarioPlanSha256)
+        }
+        $validation = & python -B (Join-Path $sampleRoot 'scenario_plan.py') @planArguments
+        if ($LASTEXITCODE -ne 0) {
+            throw 'The scenario plan is invalid, unsupported, or ambiguous. No app was built or executed.'
+        }
+        $preparedPlan = ($validation -join [Environment]::NewLine) | ConvertFrom-Json
+    }
+    if ($Scenario -eq 'Control') {
+        $contract = [ordered]@{
+            schema = 'winui-profiler-control-poc/contract-v1'
+            profilerCli = $ProfilerCli
+            profilerSha256 = (Get-FileHash -LiteralPath $ProfilerCli).Hash.ToLowerInvariant()
+            initRun = Join-Path $repoRoot 'initrun.ps1'
+            dotnet = $DotNet
+            artifactsRoot = Join-Path $sessionRoot 'measurements'
+        }
+        [IO.File]::WriteAllText(
+            (Join-Path $sampleRoot 'measurement-contract.json'),
+            ($contract | ConvertTo-Json -Depth 10))
+    }
+    Push-Location $sampleRoot
+    try {
+        & python -B -m unittest discover -s tests -t .
+        if ($LASTEXITCODE -ne 0) {
+            throw 'The seed correctness tests failed; this is not the expected POC baseline.'
+        }
+        if ($Scenario -eq 'Control') {
+            & python -B -m helpers.verify --root . | Tee-Object -FilePath $baselinePath
+        } else {
+            & python -B verify.py --output $baselinePath
+        }
+        $expectedExit = if ($ScenarioPlan) { 0 } else { 1 }
+        if ($LASTEXITCODE -ne $expectedExit) {
+            throw "Measurement returned exit $LASTEXITCODE; expected $expectedExit for this scenario mode."
+        }
+    } finally {
+        Pop-Location
+    }
+    $baseline = Get-Content -LiteralPath $baselinePath -Raw | ConvertFrom-Json
+    $expectedStatus = if ($ScenarioPlan) { 'Measured' } else { 'Failed' }
+    if ($baseline.status -ne $expectedStatus -or
+        ($Scenario -eq 'Synthetic' -and $baseline.reason -ne 'WorkBudgetExceeded')) {
+        throw 'The baseline failed for an unexpected reason.'
+    }
+    $StatePath = Join-Path $sessionRoot 'state.json'
+    $state = [pscustomobject]@{
+        Schema = 'winui-profiler-ade-poc/state-v1'
+        Scenario = $Scenario
+        PackRoot = $pack
+        SampleRoot = $sampleRoot
+        BaselineMeasurement = $baselinePath
+        SourceWorkloadSha256 = (Get-FileHash -LiteralPath (Join-Path $sourceSample $workload)).Hash
+        RunId = $null
+        ProposalSha256 = $null
+        Report = $null
+        LastResult = $null
+        Investigation = $null
+        ScenarioPlanSha256 = $(if ($preparedPlan) { $preparedPlan.planSha256 } else { $null })
+    }
+    Save-State $state
+    Write-Output "POC-STATE: $StatePath"
+    exit 0
+}
+
+if (-not $StatePath) {
+    throw "$Action requires -StatePath from a successful Prepare."
+}
+$StatePath = (Resolve-Path -LiteralPath $StatePath -ErrorAction Stop).Path
+$state = Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
+if ($state.Schema -ne 'winui-profiler-ade-poc/state-v1') {
+    throw 'The state file is not a supported POC state.'
+}
+
+$isControl = $state.PSObject.Properties['Scenario'] -and $state.Scenario -eq 'Control'
+if ($Action -in 'Investigate', 'Show', 'Evidence' -and -not $isControl) {
+    throw "$Action requires a Control state."
+}
+if ($isControl -and $Action -notin 'Status', 'Verify', 'Report' -and
+    -not (Test-Path -LiteralPath (Join-Path $state.SampleRoot 'helpers\verify.py') -PathType Leaf)) {
+    throw 'This Control state predates the shared-helper layout. Run Prepare again; retained ADE runs are unchanged.'
+}
+if ($Action -eq 'Evidence') {
+    if (-not $CandidateManifest) {
+        throw 'Evidence requires an explicit -CandidateManifest; it never selects the latest capture.'
+    }
+    $CandidateManifest = (Resolve-Path -LiteralPath $CandidateManifest -ErrorAction Stop).Path
+    $baseline = Get-Content -LiteralPath $state.BaselineMeasurement -Raw | ConvertFrom-Json
+    $output = Join-Path (Split-Path $StatePath -Parent) ('comparison-' + [guid]::NewGuid().ToString('N') + '.md')
+    Push-Location $PSScriptRoot
+    try {
+        & python -B -m helpers.metrics --scenario (Join-Path $state.SampleRoot 'scenario.json') `
+            --baseline $baseline.captureManifest --candidate $CandidateManifest --output $output
+    } finally {
+        Pop-Location
+    }
+    if ($LASTEXITCODE -eq 0) {
+        Write-Output "POC-EVIDENCE: $output"
+    }
+    exit $LASTEXITCODE
+}
+if ($Action -eq 'Show') {
+    $sourceRoot = $state.SampleRoot
+    if ($Variant -eq 'Candidate') {
+        if (-not $state.PSObject.Properties['FixRunDir'] -or -not $state.FixRunDir) {
+            throw 'Showing the candidate requires a completed successful fix run from this adapter.'
+        }
+        $sourceRoot = Join-Path $state.FixRunDir 'workcopy'
+    }
+    $contract = Get-Content -LiteralPath (Join-Path $sourceRoot 'measurement-contract.json') -Raw | ConvertFrom-Json
+    $output = Join-Path (Split-Path $StatePath -Parent) ('observation-' + [guid]::NewGuid().ToString('N'))
+    Write-Host "Showing $Variant for $DisplaySeconds seconds after the scenario. This is not a ten-run acceptance check."
+    & pwsh -NoProfile -File (Join-Path $sourceRoot 'helpers\capture.ps1') `
+        -SourceRoot $sourceRoot -ScenarioFile (Join-Path $sourceRoot 'scenario.json') `
+        -ProfilerCli $contract.profilerCli -InitRun $contract.initRun -DotNet $contract.dotnet `
+        -RunDirectory $output -Iterations 1 -DisplaySeconds $DisplaySeconds
+    exit $LASTEXITCODE
+}
+
+$active = $state
+if ($Action -eq 'Investigate') {
+    if ($state.PSObject.Properties['Investigation'] -and $state.Investigation -and $state.Investigation.RunId) {
+        throw 'This state already has an investigation. Prepare a new POC for another investigation.'
+    }
+    $pack = Join-Path $pluginRoot 'investigation-pack'
+    $doctor = Invoke-AdeCommand -Arguments @('doctor', '--pack', $pack)
+    if ($doctor.ExitCode -ne 0) {
+        exit $doctor.ExitCode
+    }
+    $baseline = Get-Content -LiteralPath $state.BaselineMeasurement -Raw | ConvertFrom-Json
+    $manifestPath = $baseline.captureManifest
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $scenarioDefinition = Get-Content -LiteralPath (Join-Path $state.SampleRoot 'scenario.json') -Raw | ConvertFrom-Json
+    $inputRoot = Join-Path (Split-Path $StatePath -Parent) ('investigation-' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $inputRoot | Out-Null
+    foreach ($name in @('scenario.json') + @($scenarioDefinition.sourceSnapshots)) {
+        $destination = Join-Path $inputRoot $name
+        New-Item -ItemType Directory -Path (Split-Path $destination -Parent) -Force | Out-Null
+        Copy-Item -LiteralPath (Join-Path $state.SampleRoot $name) -Destination $destination
+    }
+    New-Item -ItemType Directory -Path (Join-Path $inputRoot 'helpers') | Out-Null
+    foreach ($name in @('metrics.py', 'profiler_query.py', '__init__.py')) {
+        Copy-Item -LiteralPath (Join-Path $state.SampleRoot "helpers\$name") `
+            -Destination (Join-Path $inputRoot "helpers\$name")
+    }
+    $paths = @($manifestPath, $manifest.profilerCli)
+    $paths += @('scenario.json') + @($scenarioDefinition.sourceSnapshots) |
+        ForEach-Object { Join-Path $state.SampleRoot $_ }
+    foreach ($run in $manifest.iterations) {
+        $paths += @($run.database, $run.appResult)
+    }
+    $inputs = @($paths | ForEach-Object {
+        [ordered]@{ path = $_; sha256 = (Get-FileHash -LiteralPath $_).Hash.ToLowerInvariant() }
+    })
+    $contract = [ordered]@{
+        schema = 'winui-profiler-harness/investigation-v1'
+        problem = $Problem
+        captureManifest = $manifestPath
+        profilerCli = $manifest.profilerCli
+        inputs = $inputs
+    }
+    if ($state.PSObject.Properties['FlowContext'] -and $state.FlowContext) {
+        $contract.flow = $state.FlowContext
+        $contract.inputs += @($state.FlowContext.inputs)
+    }
+    [IO.File]::WriteAllText(
+        (Join-Path $inputRoot 'investigation.json'), ($contract | ConvertTo-Json -Depth 10))
+    $active = [pscustomobject]@{
+        RunId = $null
+        ProposalSha256 = $null
+        Report = $null
+        LastResult = $null
+        Evidence = $null
+    }
+    $state | Add-Member -NotePropertyName Investigation -NotePropertyValue $active -Force
+    $arguments = @(
+        'propose', '--type', 'perf-investigate', '--repo', $inputRoot, '--pack', $pack,
+        '--task', "$Problem In proposal planning, plan queries only; do not read app source or diagnose yet. In approved execution, start with the profiler queries, not app source. Follow the perf-investigate workflow. Do not apply a fix."
+    )
+} elseif ($Phase -eq 'Investigation') {
+    if (-not $isControl -or -not $state.PSObject.Properties['Investigation'] -or -not $state.Investigation) {
+        throw 'No investigation proposal exists. Run Investigate first.'
+    }
+    $active = $state.Investigation
+}
+
+if ($Action -eq 'Report') {
+    if (-not $active.Report) {
+        throw 'This POC does not have an ADE proposal or report yet.'
+    }
+    Get-Content -LiteralPath $active.Report -Raw
+    if ($Phase -eq 'Investigation' -and $active.Evidence) {
+        Get-Content -LiteralPath $active.Evidence.diagnosis -Raw
+    }
+    return
+}
+
+if ($Action -eq 'Propose') {
+    if ($Phase -ne 'Fix') {
+        throw 'Use Investigate to create the investigation proposal.'
+    }
+    if ($active.RunId) {
+        throw 'This state already has an ADE run. Prepare a new POC for another proposal.'
+    }
+    $relativeValidation = $state.PSObject.Properties['FlowValidation'] -and $state.FlowValidation
+    if ($state.PSObject.Properties['ScenarioPlanSha256'] -and $state.ScenarioPlanSha256 -and -not $relativeValidation) {
+        throw 'Custom action plans are measurement/investigation-only. No fix acceptance contract is configured.'
+    }
+    $task = if ($isControl) {
+        'Reduce redundant layout work in ScenarioWorkload.cs. Edit only that file. Preserve the complete ordered tree of 40 Buttons and the protected caller''s final UpdateLayout. The protected ten-iteration WinUIProfiler layout-event gate must pass and the extractor tests must remain passing. Report actual evidence paths and distinguish this deliberately constructed app inefficiency from a framework defect or a statistical latency claim.'
+    } else {
+        'Fix the repeated label-normalization work in Catalog. Edit only workload.py. Preserve all existing matching behavior. The protected work-count check must pass, and the correctness tests must remain passing. This is a synthetic ADE engine demonstration, not a WinUI performance claim.'
+    }
+    if ($isControl -and $state.PSObject.Properties['Investigation'] -and $state.Investigation) {
+        $evidence = $state.Investigation.Evidence
+        if (-not $evidence -or $evidence.decision.status -ne 'RecommendationReady') {
+            throw 'The investigation must complete with verified evidence and a recommendation before proposing a fix.'
+        }
+        if ((Get-FileHash -LiteralPath $evidence.diagnosis).Hash.ToLowerInvariant() -ne $evidence.diagnosisSha256) {
+            throw 'The investigation deliverable changed after verification.'
+        }
+        $queryRoot = Split-Path (Split-Path $evidence.diagnosis -Parent) -Parent
+        Push-Location $queryRoot
+        try {
+            $validation = & python -B -m helpers.profiler_query verify --root .
+        } finally {
+            Pop-Location
+        }
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Investigation inputs or query evidence changed; do not propose a fix from stale evidence.'
+        }
+        $currentEvidence = ($validation -join [Environment]::NewLine) | ConvertFrom-Json
+        if ($currentEvidence.decision.status -ne 'RecommendationReady' -or
+            $currentEvidence.diagnosisSha256 -ne $evidence.diagnosisSha256 -or
+            ($evidence.PSObject.Properties['decisionSha256'] -and
+             $currentEvidence.decisionSha256 -ne $evidence.decisionSha256)) {
+            throw 'The verified investigation no longer matches the recommendation.'
+        }
+        $task = 'Implement the evidence-backed recommendation below. Edit only ScenarioWorkload.cs. Preserve correctness and the protected measurement contract. Validate the hypothesis with the ten-run verifier; do not claim a confirmed root cause unless the controlled change supports it.' +
+            [Environment]::NewLine + (Get-Content -LiteralPath $evidence.diagnosis -Raw)
+    }
+    if ($relativeValidation) {
+        if (-not $state.Investigation -or -not $state.Investigation.Evidence -or
+            -not (Test-Path -LiteralPath (Join-Path $state.SampleRoot 'fix-validation.json') -PathType Leaf)) {
+            throw 'Baseline-relative fixing requires a verified investigation and a protected validation contract.'
+        }
+        $task += [Environment]::NewLine +
+            'Use fix-validation.json and python -B -m helpers.validate_fix --root . for the unchanged scenario. ' +
+            'The configured per-run reduction is required; the seed budget is not the acceptance rule. ' +
+            ($currentEvidence.decision.recommendation | ConvertTo-Json -Depth 10)
+    }
+    $arguments = @(
+        'propose',
+        '--type', $(if ($relativeValidation) { 'perf-optimize' } else { 'perf-fix' }),
+        '--repo', $state.SampleRoot,
+        '--task', $task,
+        '--check', $(if ($relativeValidation) { 'python -B -m helpers.validate_fix --root .' }
+                    elseif ($isControl) { 'python -B -m helpers.verify --root .' } else { 'python -B verify.py' })
+    )
+    if ($state.PSObject.Properties['PackRoot']) {
+        $arguments += @('--pack', $state.PackRoot)
+    }
+} elseif ($Action -ne 'Investigate') {
+    if (-not $active.RunId) {
+        throw "$Action requires a successful Propose first."
+    }
+    $arguments = @($Action.ToLowerInvariant(), '--run', $active.RunId)
+    if ($Action -eq 'Approve') {
+        if (-not $ProposalSha256 -or $ProposalSha256 -cne $active.ProposalSha256) {
+            throw 'Approve requires the exact -ProposalSha256 shown in the proposal. Obtain human approval first.'
+        }
+        $arguments += @('--hash', $ProposalSha256)
+    }
+}
+
+$response = Invoke-AdeCommand -Arguments $arguments
+$active.LastResult = $response.Result
+if ($response.ExitCode -eq 0 -and $Action -in 'Propose', 'Investigate') {
+    $active.RunId = $response.Result.runId
+    $active.ProposalSha256 = $response.Result.proposalSha256
+}
+$reportProperty = $response.Result.PSObject.Properties['report']
+if ($reportProperty -and $reportProperty.Value) {
+    $active.Report = $reportProperty.Value
+}
+Save-State $state
+if ($response.ExitCode -eq 0 -and $Action -eq 'Run' -and $Phase -eq 'Fix' -and
+    $response.Result.stopReason -eq 'Passed') {
+    $state | Add-Member -NotePropertyName FixRunDir -NotePropertyValue $response.Result.runDir -Force
+    Save-State $state
+}
+if ($response.ExitCode -eq 0 -and $Action -eq 'Run' -and $Phase -eq 'Investigation') {
+    Push-Location (Join-Path $response.Result.runDir 'workcopy')
+    try {
+        $validation = & python -B -m helpers.profiler_query verify --root .
+    } finally {
+        Pop-Location
+    }
+    if ($LASTEXITCODE -ne 0) {
+        throw 'ADE completed, but profiler evidence verification failed. Do not use this diagnosis for a fix.'
+    }
+    $active.Evidence = ($validation -join [Environment]::NewLine) | ConvertFrom-Json
+    Save-State $state
+}
+Write-Output "POC-STATE: $StatePath"
+exit $response.ExitCode

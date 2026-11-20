@@ -1,0 +1,37 @@
+{
+  "schema": "ade.team/v1",
+  "team": "ui-profiler",
+  "displayName": "WinUI Profiler",
+  "packVersion": "0.1.0",
+  "runtimeVersion": "0.1.0",
+
+  "checks": [
+    {
+      "id": "catalog-correctness",
+      "command": "python -B -m unittest discover -s tests -t .",
+      "timeoutSeconds": 60
+    }
+  ],
+
+  "protectedPaths": [
+    "tests",
+    "verify.py",
+    "README.md",
+    ".gitignore"
+  ],
+
+  // Optional. Leave empty to use the defaults: .git, .vs, bin, obj, node_modules, .venv, __pycache__, .ade.
+  "copyExclude": [],
+
+  "limits": {
+    "maxRounds": 2,
+    "roundTimeoutSeconds": 600,
+    "checkTimeoutSeconds": 60,
+    "maxKnowledgeBytes": 40000
+  },
+
+  "permissions": {
+    "shell": true,
+    "urls": false
+  }
+}

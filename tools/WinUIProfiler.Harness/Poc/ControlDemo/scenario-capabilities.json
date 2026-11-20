@@ -1,0 +1,32 @@
+{
+  "schema": "winui-profiler-control-capabilities/v1",
+  "app": "ControlDemo",
+  "planSchema": "winui-profiler-control-scenario/v1",
+  "limits": {
+    "maxSteps": 12,
+    "maxButtons": 200,
+    "minWidth": 400,
+    "maxWidth": 1600,
+    "minHeight": 300,
+    "maxHeight": 1000
+  },
+  "actions": {
+    "populate": "Replace the panel with count buttons, labeled Button 0 through Button count-1. Requires integer count from 1 to maxButtons.",
+    "clear": "Remove all buttons from the panel. No parameters.",
+    "resize": "Resize the app window to integer width and height in physical pixels, within the declared limits.",
+    "scroll": "Scroll the panel to position start or end, with animations disabled. Requires a nonempty panel and actual scrollable content at execution."
+  },
+  "execution": [
+    "Each iteration launches a fresh app process. The measured region starts after the window is loaded.",
+    "initialButtonCount is setup outside the measured region. Use zero unless the request explicitly requires a prepopulated panel.",
+    "Steps execute in order on the UI thread, with layout/dispatcher settling and per-step correctness checks.",
+    "Every scenario is measured ten times. The user reviews the generated plan before starting preparation.",
+    "Capture reports layout counts and scenario duration; it does not measure presented frames, CPU stacks, memory or app-launch latency.",
+    "Custom scenarios are measurement/investigation-only in this milestone, not governed fix-acceptance tests."
+  ],
+  "unsupported": [
+    "Clicking or typing, navigation, dialogs, file/network access, other controls or apps, arbitrary code and shell commands.",
+    "Launch-time measurements, arbitrary waits, loops, randomness, changing iteration count or changing performance budgets.",
+    "A request with unspecified necessary counts, dimensions or scroll positions must return NeedsClarification."
+  ]
+}

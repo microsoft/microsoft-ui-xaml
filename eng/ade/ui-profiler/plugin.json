@@ -1,0 +1,12 @@
+{
+  "name": "ui-profiler",
+  "version": "0.1.0",
+  "description": "WinUI Profiler Agentic Development Environment (ADE). Does any kind of engineering work in a copy of your repository: bug fixes, features, changes, research and team work types, alone or in a personal workstream. You approve a proposal before any change. A shared Microsoft Agent Framework loop runs the coding agent, runs your checks and writes a report, a diff and a provenance record. Start with /ui-profiler:work.",
+  "author": {
+    "name": "WinUI Profiler",
+    "email": "ui-profiler@example.invalid"
+  },
+  "keywords": ["ade", "ui-profiler", "bug-fix", "feature", "research", "work-types", "agentic-loop"],
+  "skills": "skills/",
+  "agents": "agents/"
+}

@@ -1,0 +1,47 @@
+{
+  "name": "ControlDemo",
+  "buildScript": "build.ps1",
+  "buildOutput": "obj\\ControlDemoOutput.txt",
+  "managedAssembly": true,
+  "providersFile": "providers.txt",
+  "markersFile": "markers.json",
+  "launchArguments": ["--result", "{result}"],
+  "displayArguments": ["--display-seconds", "{seconds}"],
+  "sourceFiles": [
+    "App.xaml",
+    "App.xaml.cs",
+    "ScenarioWorkload.cs",
+    "ScenarioPlan.cs",
+    "scenario-capabilities.json",
+    "scenario_plan.py",
+    "ControlDemo.csproj",
+    "Directory.Build.props",
+    "Directory.Build.targets",
+    "app.manifest",
+    "global.json",
+    "NuGet.Config",
+    "markers.json",
+    "providers.txt",
+    "packages.lock.json",
+    "build.ps1",
+    "scenario.json"
+  ],
+  "sourceSnapshots": ["App.xaml.cs", "ScenarioWorkload.cs", "ScenarioPlan.cs", "scenario-capabilities.json"],
+  "editableFiles": ["ScenarioWorkload.cs"],
+  "markers": {
+    "provider": "ce339c72-348e-4e51-95ed-8db7f7d8fbc2",
+    "startEventId": 1,
+    "stopEventId": 2,
+    "startPayload": [40],
+    "stopPayload": [40, true]
+  },
+  "expectedResults": {
+    "controlCount": 40
+  },
+  "minimumIterations": 10,
+  "maxLayoutPasses": 4,
+  "limitations": [
+    "This controlled app scenario is not evidence of a framework defect or presented-frame latency.",
+    "The count gate validates reduced layout work, not a statistical timing claim."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "providers": [
+    {
+      "name": "WinUIProfilerHarness-ControlDemo",
+      "guid": "ce339c72-348e-4e51-95ed-8db7f7d8fbc2"
+    }
+  ],
+  "milestones": []
+}

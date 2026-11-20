@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/agency-microsoft/.github-private/main/agency.schema.json",
+  "authors": [
+    {
+      "name": "WinUI Profiler",
+      "email": "ui-profiler@example.invalid"
+    }
+  ],
+  "engines": ["copilot"],
+  "category": "developer-tools",
+  "platforms": ["windows"]
+}
