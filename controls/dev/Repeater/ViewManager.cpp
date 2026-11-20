@@ -402,6 +402,41 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
 
 void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    // A handler of an event raised below (for example ElementIndexChanged) can replace ItemsSource or ItemTemplate.
+    // That resets the repeater and ends this change, so the rest of these args no longer applies to the realized elements.
+    const auto hasChangeEnded = [this]()
+    {
+        if (m_owner->IsProcessingCollectionChange())
+        {
+            return false;
+        }
+        InvalidateRealizedIndicesHeldByLayout();
+        return true;
+    };
+
+    // The realized elements are re-indexed (and the realized range updated) before any event is raised, and
+    // ElementIndexChanged is raised at the end. So handlers see the new index of every re-indexed element, elements they
+    // realize are not re-indexed, and the change is fully applied to the realized elements even if a handler ends it.
+    // Removed or replaced elements that the layout clears itself keep their old index until it clears them.
+    struct IndexChange
+    {
+        winrt::UIElement element;
+        winrt::com_ptr<VirtualizationInfo> virtInfo;
+        int oldIndex;
+        int newIndex;
+    };
+    std::vector<IndexChange> indexChanges;
+    bool removedElementsKeepOldIndex = false;
+    const auto updateIndex = [&indexChanges](const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int newIndex)
+    {
+        const int oldIndex = virtInfo->Index();
+        if (oldIndex != newIndex)
+        {
+            virtInfo->UpdateIndex(newIndex);
+            indexChanges.push_back({ element, virtInfo, oldIndex, newIndex });
+        }
+    };
+
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
     switch (args.Action())
@@ -424,7 +459,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
 
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
-                    UpdateElementIndex(element, virtInfo, dataIndex + newCount);
+                    updateIndex(element, virtInfo, dataIndex + newCount);
                 }
             }
         }
@@ -441,7 +476,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 if (virtInfo->IsRealized() && dataIndex >= newIndex)
                 {
                     auto element = elementInfo.PinnedElement();
-                    UpdateElementIndex(element, virtInfo, dataIndex + newCount);
+                    updateIndex(element, virtInfo, dataIndex + newCount);
                 }
             }
         }
@@ -492,13 +527,14 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 {
                     if (dataIndex >= oldStartIndex + oldCount)
                     {
-                        UpdateElementIndex(element, virtInfo, dataIndex + countChange);
+                        updateIndex(element, virtInfo, dataIndex + countChange);
                     }
                 }
             }
 
-            EnsureFirstLastRealizedIndices();
-            m_lastRealizedElementIndexHeldByLayout += countChange;
+            // The realized range is computed again from the new indices when it is next needed.
+            InvalidateRealizedIndicesHeldByLayout();
+            removedElementsKeepOldIndex = true;
         }
         break;
     }
@@ -507,6 +543,7 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     {
         const auto oldStartIndex = args.OldStartingIndex();
         const auto oldCount = static_cast<int>(args.OldItems().Size());
+        std::vector<std::pair<winrt::UIElement, winrt::com_ptr<VirtualizationInfo>>> removedElements;
         const auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
         {
@@ -519,16 +556,82 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
                 if (virtInfo->AutoRecycleCandidate() && oldStartIndex <= dataIndex && dataIndex < oldStartIndex + oldCount)
                 {
                     // If we are doing the mapping, remove the element who's data was removed.
-                    m_owner->ClearElementImpl(element);
+                    removedElements.emplace_back(element, virtInfo);
                 }
                 else if (dataIndex >= (oldStartIndex + oldCount))
                 {
-                    UpdateElementIndex(element, virtInfo, dataIndex - oldCount);
+                    updateIndex(element, virtInfo, dataIndex - oldCount);
                 }
             }
         }
 
         InvalidateRealizedIndicesHeldByLayout();
+
+        // Clearing raises ElementClearing.
+        for (const auto& [element, virtInfo] : removedElements)
+        {
+            if (hasChangeEnded())
+            {
+                return;
+            }
+
+            if (virtInfo->IsRealized())
+            {
+                m_owner->ClearElementImpl(element);
+            }
+        }
+
+        // A handler of ElementClearing can compute the realized range again (for example GetOrCreateElement for an index that
+        // is not realized) while a removed element still counts, and clearing it then shrinks that range. Compute it again later.
+        InvalidateRealizedIndicesHeldByLayout();
+        removedElementsKeepOldIndex = true;
+        break;
+    }
+
+    case winrt::NotifyCollectionChangedAction::Move:
+    {
+        // The moved items still exist, so realized elements are re-indexed rather than cleared.
+        // The layout updates its own bookkeeping afterwards (for example ElementManager handles Move as Remove + Add).
+        const int oldStartIndex = args.OldStartingIndex();
+        const int newStartIndex = args.NewStartingIndex();
+        // Same fallback as ElementManager::DataSourceChanged when the source does not provide the moved items.
+        const int count = args.OldItems() ? static_cast<int>(args.OldItems().Size()) : 1;
+
+        if (oldStartIndex != newStartIndex && count > 0)
+        {
+            // Pinned elements are children too, so each realized element is visited exactly once.
+            const auto children = m_owner->Children();
+            const auto childCount = children.Size();
+            for (unsigned i = 0u; i < childCount; ++i)
+            {
+                const auto element = children.GetAt(i);
+                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                if (virtInfo->IsRealized())
+                {
+                    const int oldIndex = virtInfo->Index();
+                    int newIndex = oldIndex;
+                    if (oldIndex >= oldStartIndex && oldIndex < oldStartIndex + count)
+                    {
+                        // One of the moved items.
+                        newIndex = newStartIndex + (oldIndex - oldStartIndex);
+                    }
+                    else if (oldStartIndex < newStartIndex && oldIndex >= oldStartIndex + count && oldIndex < newStartIndex + count)
+                    {
+                        // Items between the old and new positions shift back.
+                        newIndex = oldIndex - count;
+                    }
+                    else if (oldStartIndex > newStartIndex && oldIndex >= newStartIndex && oldIndex < oldStartIndex)
+                    {
+                        // Items between the new and old positions shift forward.
+                        newIndex = oldIndex + count;
+                    }
+
+                    updateIndex(element, virtInfo, newIndex);
+                }
+            }
+
+            InvalidateRealizedIndicesHeldByLayout();
+        }
         break;
     }
 
@@ -550,6 +653,11 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             auto children = m_owner->Children();
             for (unsigned i = 0u; i < children.Size(); ++i)
             {
+                if (hasChangeEnded())
+                {
+                    return;
+                }
+
                 auto element = children.GetAt(i);
                 auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
                 if (virtInfo->IsRealized() && virtInfo->AutoRecycleCandidate())
@@ -562,6 +670,29 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
         InvalidateRealizedIndicesHeldByLayout();
 
         break;
+    }
+
+    for (const auto& indexChange : indexChanges)
+    {
+        if (hasChangeEnded())
+        {
+            return;
+        }
+
+        // An earlier handler can clear elements (for example by replacing ItemsSource). Only report
+        // elements that are still realized at their new index.
+        if (indexChange.virtInfo->IsRealized() && indexChange.virtInfo->Index() == indexChange.newIndex)
+        {
+            m_owner->OnElementIndexChanged(indexChange.element, indexChange.oldIndex, indexChange.newIndex);
+        }
+    }
+
+    if (removedElementsKeepOldIndex)
+    {
+        // A handler above can compute the realized range again (for example GetOrCreateElement for an index that is not
+        // realized) while a removed or replaced element still has its old index. When the layout clears that element after
+        // this change, the range would shrink past a shifted element. Compute it again when it is next needed.
+        InvalidateRealizedIndicesHeldByLayout();
     }
 }
 
@@ -670,8 +801,7 @@ winrt::UIElement ViewManager::GetElementFromUniqueIdResetPool(int index)
             UpdateElementIndex(element, virtInfo, index);
 
             // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
         }
     }
 
@@ -709,8 +839,7 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
             elementInfo.VirtualizationInfo()->MoveOwnershipToLayoutFromPinnedPool();
 
             // Update realized indices
-            m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-            m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+            ExtendRealizedIndicesHeldByLayout(index);
             break;
         }
     }
@@ -878,8 +1007,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     }
 
     // Update realized indices
-    m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
-    m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    ExtendRealizedIndicesHeldByLayout(index);
 
 #ifdef DBG
     if (VirtualizationInfo::GetLogItemIndex() == index)
@@ -1040,6 +1168,18 @@ void ViewManager::InvalidateRealizedIndicesHeldByLayout()
 {
     m_firstRealizedElementIndexHeldByLayout = FirstRealizedElementIndexDefault;
     m_lastRealizedElementIndexHeldByLayout = LastRealizedElementIndexDefault;
+}
+
+void ViewManager::ExtendRealizedIndicesHeldByLayout(int index)
+{
+    // Only a valid range is extended. An invalid range is computed again from all the children when it is next needed
+    // (GetElementIfAlreadyHeldByLayout). Starting it from this index would leave out the other realized elements, and
+    // a later Add (EnsureFirstLastRealizedIndices) would then not shift them.
+    if (m_firstRealizedElementIndexHeldByLayout != FirstRealizedElementIndexDefault)
+    {
+        m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
+        m_lastRealizedElementIndexHeldByLayout = std::max(m_lastRealizedElementIndexHeldByLayout, index);
+    }
 }
 
 ViewManager::PinnedElementInfo::PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element) :

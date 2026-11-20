@@ -116,6 +116,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a repeater of 5 Buttons over an ObservableCollection; Move(0, 3), then layout (GitHub issue #11570).
+        // Expected: the repeater peer reports one child per item in data order, and child peer i belongs to
+        //           TryGetElement(i), which shows item i.
+        // A failure means: screen readers get items in the wrong order, or peers that do not match the index APIs, after
+        //                  a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that the repeater automation peer reports children in data order and in agreement with TryGetElement after an ObservableCollection.Move.")]
+        public void VerifyChildrenPeersAfterMove()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30'/></DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+
+                data.Move(0, 3);
+                repeater.UpdateLayout();
+
+                var peer = FrameworkElementAutomationPeer.CreatePeerForElement(repeater);
+                var children = peer.GetChildren().Select(p => ((FrameworkElementAutomationPeer)p).Owner).ToList();
+                Log.Comment("Peer children: " + string.Join(", ", children.Select(c => (c as Button)?.Content)));
+                Verify.AreEqual(data.Count, children.Count);
+                for (int i = 0; i < data.Count; i++)
+                {
+                    Verify.AreEqual(data[i], ((Button)children[i]).Content, $"Child peer {i} shows item {i}.");
+                    Verify.AreSame(repeater.TryGetElement(i), children[i], $"Child peer {i} belongs to TryGetElement({i}).");
+                }
+            });
+        }
+
         private ItemsRepeater CreateRepeater(object dataSource, object elementFactory, VirtualizingLayout layout = null)
         {
             var repeater = new ItemsRepeater

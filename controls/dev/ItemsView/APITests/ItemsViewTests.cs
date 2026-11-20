@@ -2717,6 +2717,81 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: an ItemsView (StackLayout) over an ObservableCollection of 5 strings, all realized; Move(0, 3), then
+        //           layout (GitHub issue #11570).
+        // Expected: right after the Move the ItemContainers of the shifted items report their post-move index and
+        //           PositionInSet = index + 1; after layout, for every index i, the inner repeater's TryGetElement(i) shows
+        //           item i, GetElementIndex round-trips and PositionInSet is i + 1.
+        // A failure means: ItemsView containers report stale indices or PositionInSet after a Move.
+        [TestMethod]
+        [TestProperty("Description", "Verifies ItemsView container indices and PositionInSet after an ObservableCollection.Move.")]
+        public void VerifyItemContainersAfterMove()
+        {
+            ItemsView itemsView = null;
+            ObservableCollection<string> itemsSource = null;
+            AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemsSource = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+                itemsView = new ItemsView()
+                {
+                    ItemsSource = itemsSource,
+                    ItemTemplate = XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <ItemContainer Height='30'>
+                              <TextBlock Text='{Binding}'/>
+                            </ItemContainer>
+                          </DataTemplate>") as DataTemplate
+                };
+                SetupDefaultUI(itemsView, itemsViewLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                ItemsRepeater itemsRepeater = itemsView.ScrollView.Content as ItemsRepeater;
+                Verify.IsNotNull(itemsRepeater);
+
+                Func<UIElement, string> getText = (element) => ((element as ItemContainer)?.Child as TextBlock)?.Text;
+
+                for (int i = 0; i < itemsSource.Count; i++)
+                {
+                    Verify.AreEqual(itemsSource[i], getText(itemsRepeater.TryGetElement(i)), $"Before Move: TryGetElement({i}).");
+                }
+
+                Log.Comment("Move(0, 3)");
+                itemsSource.Move(0, 3);
+
+                int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
+                for (int c = 0; c < childrenCount; c++)
+                {
+                    var child = (UIElement)VisualTreeHelper.GetChild(itemsRepeater, c);
+                    int index = itemsRepeater.GetElementIndex(child);
+                    Log.Comment($"Right after Move: child '{getText(child)}' index {index} PositionInSet {AutomationProperties.GetPositionInSet(child)}");
+                    if (index >= 0)
+                    {
+                        Verify.AreEqual(itemsSource[index], getText(child), $"Right after Move: the child that reports index {index} shows item {index}.");
+                        Verify.AreEqual(index + 1, AutomationProperties.GetPositionInSet(child), $"Right after Move: PositionInSet of the child at index {index}.");
+                    }
+                }
+
+                itemsRepeater.UpdateLayout();
+
+                for (int i = 0; i < itemsSource.Count; i++)
+                {
+                    var element = itemsRepeater.TryGetElement(i);
+                    Log.Comment($"After layout: TryGetElement({i}) '{getText(element)}'");
+                    Verify.IsNotNull(element, $"After layout: TryGetElement({i}).");
+                    Verify.AreEqual(itemsSource[i], getText(element), $"After layout: TryGetElement({i}) shows item {i}.");
+                    Verify.AreEqual(i, itemsRepeater.GetElementIndex(element));
+                    Verify.AreEqual(i + 1, AutomationProperties.GetPositionInSet(element), $"After layout: PositionInSet of item {i}.");
+                }
+            });
+        }
+
         private void SetupDefaultUI(
             ItemsView itemsView,
             AutoResetEvent itemsViewLoadedEvent = null,

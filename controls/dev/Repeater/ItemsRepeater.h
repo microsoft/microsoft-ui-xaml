@@ -106,6 +106,8 @@ public:
     void OnElementClearing(const winrt::UIElement& element);
     void OnElementIndexChanged(const winrt::UIElement& element, int oldIndex, int newIndex);
 
+    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
+
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
     {
         static GlobalDependencyProperty s_VirtualizationInfoProperty =
@@ -143,7 +145,6 @@ private:
     void EnsureDefaultLayoutState();
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
-    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     winrt::IIterable<winrt::DependencyObject> CreateChildrenInTabFocusOrderIterable();
 

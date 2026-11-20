@@ -1656,6 +1656,72 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        // Scenario: a SelectionModel over an ObservableCollection with item 3 selected. RemoveAt(0) / Insert(0) shifts the
+        //           selection, so SelectionModel raises SelectionChanged while its ItemsSourceView is still raising
+        //           CollectionChanged. The SelectionChanged handler sets SelectionModel.Source to a new collection, which
+        //           releases the last reference to the old ItemsSourceView.
+        // Expected: no crash. Source is the new collection, nothing is selected, the old collection no longer affects the
+        //           selection, and a change of the new collection updates the selection normally.
+        // A failure means: the old ItemsSourceView is destroyed while it is still raising CollectionChanged (crash of the test
+        //                  process, GitHub #11570 follow-up), or the SelectionModel keeps listening to the old collection.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing SelectionModel.Source from a SelectionChanged handler raised during a Remove does not crash.")]
+        public void VerifySourceReplacedInSelectionChangedDuringRemove()
+        {
+            VerifySourceReplacedInSelectionChangedDuringCollectionChange("RemoveAt(0)", data => data.RemoveAt(0));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing SelectionModel.Source from a SelectionChanged handler raised during an Insert does not crash.")]
+        public void VerifySourceReplacedInSelectionChangedDuringInsert()
+        {
+            VerifySourceReplacedInSelectionChangedDuringCollectionChange("Insert(0)", data => data.Insert(0, 100));
+        }
+
+        private void VerifySourceReplacedInSelectionChangedDuringCollectionChange(string operation, Action<ObservableCollection<int>> change)
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new ObservableCollection<int>(Enumerable.Range(0, 10));
+                var newData = new ObservableCollection<int>(Enumerable.Range(20, 5));
+                var selectionModel = new SelectionModel() { Source = data };
+                selectionModel.Select(3);
+                Verify.AreEqual("R.3", SelectedIndicesAsString(selectionModel));
+
+                bool replaced = false;
+                int selectionChangedCount = 0;
+                selectionModel.SelectionChanged += (sender, args) =>
+                {
+                    selectionChangedCount++;
+                    Log.Comment($"SelectionChanged #{selectionChangedCount}: Source is {(sender.Source == data ? "the old" : "the new")} collection, selected [{SelectedIndicesAsString(sender)}]");
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: Source = new collection");
+                        sender.Source = newData;
+                    }
+                };
+
+                Log.Comment(operation);
+                change(data);
+                Log.Comment($"{operation} returned");
+
+                Verify.IsTrue(replaced, $"{operation} shifted the selection, so SelectionChanged was raised and the handler replaced Source.");
+                Verify.AreSame(newData, selectionModel.Source, "Source is the new collection.");
+                Verify.AreEqual(0, selectionModel.SelectedIndices.Count, "Replacing Source clears the selection.");
+
+                int countBefore = selectionChangedCount;
+                data.RemoveAt(0);
+                Verify.AreEqual(countBefore, selectionChangedCount, "A change of the old collection does not raise SelectionChanged.");
+                Verify.AreEqual(0, selectionModel.SelectedIndices.Count, "A change of the old collection does not change the selection.");
+
+                selectionModel.Select(1);
+                newData.Insert(0, 100);
+                Verify.AreEqual("R.2", SelectedIndicesAsString(selectionModel), "A change of the new collection shifts the selection.");
+                Verify.AreEqual(21, (int)selectionModel.SelectedItem, "The selected item is still item 21.");
+            });
+        }
+
         private void VerifyAllFlatItemsSelected(SelectionModel selectionModel, List<int> source)
         {
             Verify.AreEqual(source.Count, selectionModel.SelectedIndices.Count);
