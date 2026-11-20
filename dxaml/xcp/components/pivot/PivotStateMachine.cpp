@@ -16,7 +16,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
 
 #if defined(DBG)
 const WCHAR* PivotStateMachine::c_pivotStateStrings[] =
-    { L"Uninitialized", L"MeasurePending", L"ArrangePending", L"Idle", L"InNonInertial", L"InFinishTransition"
+    { L"Uninitialized", L"MeasurePending", L"ArrangePending", L"Idle", L"InNonInertial", L"InFinishTransition",
     L"InFlyOutProgrammaticInertial", L"InFlyInProgrammaticInertial", L"InSnapBackInertial", L"ProgrammaticInertial",
     L"LockedPending", L"Locked"};
 #endif
