@@ -46,6 +46,7 @@ public:
     bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
     // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
     bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
+    void SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -169,7 +170,7 @@ public:
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
-    bool HasCellAutomationPeers() const;
+    bool HasCellAutomationPeers(winrt::IInspectable const& otherThanItem = nullptr) const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
@@ -333,6 +334,7 @@ private:
     bool m_cellsInvalidated{ false };
     // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
     bool m_inRecyclePool{ false };
+    winrt::weak_ref<winrt::AutomationPeer> m_itemAutomationPeer{ nullptr };
 
     tracker_ref<winrt::TableViewColumn> m_editingColumn{ this };
     tracker_ref<winrt::Grid> m_editingCellWrapper{ this };

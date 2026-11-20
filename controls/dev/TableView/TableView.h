@@ -436,6 +436,13 @@ public:
         return TryGetContainerIdentity(container);
     }
 
+    winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
+    {
+        auto const it = m_groupAutomationElements.find(identity);
+        return it != m_groupAutomationElements.end() ? it->second : nullptr;
+    }
+    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element);
+
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
     void SetCellCursorActiveInternal(bool active);
@@ -1212,6 +1219,12 @@ private:
         bool subtree = false);
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
+    std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
+
+    // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
+    std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;
+    // Cleared with m_rowMetadataGeneration: identities are only meaningful within one projection.
+    std::unordered_map<winrt::hstring, winrt::AutomationPeer> m_groupAutomationElements;
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
