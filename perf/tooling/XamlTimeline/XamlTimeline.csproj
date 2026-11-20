@@ -2,7 +2,7 @@
 
   <!--
     Shared timeline core used by BOTH the WinUI viewer (XamlTelemtryViewerWInui3,
-    net8.0-windows) and the WPA plugin (AppBootingVisualizerPlugin, netstandard2.0).
+    net10.0-windows) and the WPA plugin (AppBootingVisualizerPlugin, netstandard2.0).
     Target netstandard2.0 — the common denominator both consumers can reference —
     and keep ZERO external package dependencies so the WPA .ptix gains no new DLLs.
     Modern C# (records, init, nullable) is enabled via LangVersion + the small

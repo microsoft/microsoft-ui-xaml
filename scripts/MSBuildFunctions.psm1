@@ -1,49 +1,37 @@
+param([string]$VsVersionToInstall = "Release18x")
+
 # Information about the MSBuild version we depend on and the install script for it.
 # This script is designed so that only these two variables need to change if we have
 # a new dependency on a specific version of MSBuild. If the cmd prompt used for init
 # isn't the correct one, this will download MSBuild to the .buildtools directory. The
 # version can be as precise as we need it to be (i.e. 16.8.0.45203), but we should
 # be as flexible as we can
-[version]$MSBuildVer = "16.9"
+[version]$MSBuildVer = "18.0"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $vsconfigPath = "$repoRoot\.vsconfig_buildtools"
 
-# This URI corresponds to MSBuild 16.8. If this ever changes, change the MSBuildVer
-# property above.
-# Index of Visual Studio Build Tools download links:
-#   https://docs.microsoft.com/en-us/visualstudio/releases/2019/history#installing-an-earlier-release
-# NOTE: As of 5/25/01, the VS BuildTools is broken and unnecessary (all agents now being on VS 16.9),
-# and has been disabled. If/when we need to return to using it, a cached offline version in the repo
-# should be used instead, to ensure version stability of the VS BuildTools install itself:
-# https://developercommunity.visualstudio.com/t/vs-168-buildtools-install-is-now-laying-down-1610/1434962?from=email&viewtype=all
-
-# 16.9 build tools
-#$MSBuildInstallURI = "https://download.visualstudio.microsoft.com/download/pr/5c555b0d-fffd-45a2-9929-4a5bb59479a4/68c048e8c687ed045d1efd3fdc531e5ce95c05dc374b5aaaeec3614ca8ed2044/vs_BuildTools.exe"
-
-# 16.x latest built tools
-#$MSBuildInstallURI = "https://aka.ms/vs/16/release/vs_buildtools.exe"
-
-# Note: we use vs_community instead of vs_buildtools for 17.0, as some controls projects use the Microsoft.Windows.Design.Metadata.ProvideMetadataAttribute type.
+# Note: we use vs_community instead of vs_buildtools, as some controls projects use the Microsoft.Windows.Design.Metadata.ProvideMetadataAttribute type.
 # This type comes from Microsoft.Windows.Design.Extensibility.dll, which only ships in VS flavors with an IDE.  vs_buildtools does not have a component
 # with Microsoft.Windows.Design.Extensibility in it.
-
-# 17.x Preview build tools
-#$MSBuildInstallURI = "https://aka.ms/vs/17/pre/vs_community.exe"
-
-# 17.x GA build 
 
 $VSInstallURIs = @{}
 $VSInstallURIs.BuildTools169 = 'https://download.visualstudio.microsoft.com/download/pr/5c555b0d-fffd-45a2-9929-4a5bb59479a4/68c048e8c687ed045d1efd3fdc531e5ce95c05dc374b5aaaeec3614ca8ed2044/vs_BuildTools.exe'
 $VSInstallURIs.Latest16x = 'https://aka.ms/vs/16/release/vs_buildtools.exe'
 $VSInstallURIs.Release17x = 'https://aka.ms/vs/17/release/vs_community.exe'
 $VSInstallURIs.Preview17x = 'https://aka.ms/vs/17/pre/vs_community.exe'
+$VSInstallURIs.Release18x = 'https://aka.ms/vs/18/release/vs_community.exe'
+$VSInstallURIs.Preview18x = 'https://aka.ms/vs/18/pre/vs_community.exe'
 
 if ( [string]::IsNullOrEmpty( $VsVersionToInstall ))
 {
-    $VsVersionToInstall = $VSInstallURIs.Release17x
+    $VsVersionToInstall = "Release18x"
 }
 
-$MSBuildInstallURI = $VsVersionToInstall
+if (-not $VSInstallURIs.ContainsKey($VsVersionToInstall))
+{
+    throw "Unknown Visual Studio version: $VsVersionToInstall"
+}
+$MSBuildInstallURI = $VSInstallURIs[$VsVersionToInstall]
 
 $MSBuildInstallParams = "--norestart --quiet --force --installPath ""{0}"" {1} --config $vsconfigPath"
 $MSBuildUninstallParams = "uninstall --norestart --quiet --force --installPath ""{0}"" {1}"

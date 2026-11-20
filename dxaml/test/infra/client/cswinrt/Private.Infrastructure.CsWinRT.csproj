@@ -59,18 +59,25 @@
   </Target>
 
   <ItemGroup>
-    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\$(_DotNetMoniker)\winrt.runtime.dll">
-      <Destination>$(TestBinplaceDestinationPath)</Destination>
-    </BinplaceItem>
     <!--
       Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage publishes
       Microsoft.InteractiveExperiences.Projection.dll only under
       lib\net6.0-windows<CurrentLiftedIXPTargetPlatformVersion>\ - there is no net8.0-windows variant yet.
-      The .NET 6 projection assembly is forward-compatible with .NET 8 consumers, so we continue to
+      The .NET 6 projection assembly is forward-compatible with newer consumers, so we continue to
       reference the net6.0-windows folder here. Update once the IXP transport package ships a net8.0-windows lib.
     -->
     <BinplaceItem Include="$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)\lib\net6.0-windows$(CurrentLiftedIXPTargetPlatformVersion)\Microsoft.InteractiveExperiences.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
   </ItemGroup>
+
+  <Target Name="BinplaceCsWinRTRuntime" AfterTargets="ResolveReferences" BeforeTargets="AddBinplaceItems">
+    <ItemGroup>
+      <_CsWinRTRuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'WinRT.Runtime.dll'" />
+      <BinplaceItem Include="@(_CsWinRTRuntimeReference)">
+        <Destination>$(TestBinplaceDestinationPath)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+    <Error Condition="'@(_CsWinRTRuntimeReference)' == ''" Text="The resolved CsWinRT runtime reference is missing." />
+  </Target>
 </Project>

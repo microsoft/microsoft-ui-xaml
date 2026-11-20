@@ -47,7 +47,7 @@
 
   <!-- Binplace dotnet installer -->
   <ItemGroup>
-    <BinplaceItem Include="$(ProjectRoot).tools\$(DotNetRuntimeInstallerArch)\dotnet-windowsdesktop-runtime-installer.exe">
+    <BinplaceItem Include="$(ProjectRoot).tools\$(DotNetRuntimeInstallerArch)\$(_DotNetMoniker)\dotnet-windowsdesktop-runtime-installer.exe">
       <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
     </BinplaceItem>
   </ItemGroup>

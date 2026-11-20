@@ -41,8 +41,8 @@ setlocal enableextensions enabledelayedexpansion
 set _ARGS=
 set _PreserveContext=0
 
-rem We are targeting VS 2019 (version 16.x) or later
-set VsVersion=16.0
+rem The .NET 10 SDK requires VS 2026 (MSBuild 18) or later.
+set VsVersion=18.0
 
 :ParseArgs
 if "%1" EQU "" (

@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <!-- WindowsAppSDK 1.6 requires Win SDK 10.0.19041+; we keep MinVersion lower so
          the app launches on older Win10 builds where supported APIs allow. -->
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>OSFrameworkLens</RootNamespace>
     <AssemblyName>OSFrameworkLens</AssemblyName>
