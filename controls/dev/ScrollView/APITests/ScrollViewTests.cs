@@ -68,6 +68,104 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private ScrollViewVisualStateCounts m_scrollViewVisualStateCounts;
 
         [TestMethod]
+        [TestProperty("Description", "Verifies automatic anchor registration does not retain a removed child while the scroller remains loaded.")]
+        [TestProperty("data:AnchorAssignment", "{RepeatedTrue, StyleThenLocalTrue, CallbackRestoresTrue}")]
+        public void VerifyCanBeScrollAnchorDoesNotRetainRemovedChild()
+        {
+            string assignment = ((string)TestContext.DataRow["AnchorAssignment"]).Trim();
+            ScrollView scroller = null;
+            Border child = null;
+            WeakReference childReference = null;
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    child = new Border { Width = 600, Height = 600 };
+                    childReference = new WeakReference(child);
+                    scroller = new ScrollView { Width = 300, Height = 200, Content = child };
+                    Content = scroller;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(scroller.IsLoaded);
+                    Verify.IsTrue(child.IsLoaded);
+
+                    switch (assignment)
+                    {
+                        case "RepeatedTrue":
+                            child.CanBeScrollAnchor = true;
+                            child.CanBeScrollAnchor = true;
+                            break;
+                        case "StyleThenLocalTrue":
+                            child.Style = new Style
+                            {
+                                TargetType = typeof(Border),
+                                Setters = { new Setter(UIElement.CanBeScrollAnchorProperty, true) }
+                            };
+                            Verify.IsTrue(child.CanBeScrollAnchor);
+                            child.CanBeScrollAnchor = true;
+                            break;
+                        case "CallbackRestoresTrue":
+                            child.CanBeScrollAnchor = true;
+                            bool restored = false;
+                            long token = child.RegisterPropertyChangedCallback(
+                                UIElement.CanBeScrollAnchorProperty, (sender, property) =>
+                                {
+                                    var element = (UIElement)sender;
+                                    if (!element.CanBeScrollAnchor)
+                                    {
+                                        restored = true;
+                                        element.CanBeScrollAnchor = true;
+                                    }
+                                });
+                            try
+                            {
+                                child.CanBeScrollAnchor = false;
+                                Verify.IsTrue(restored);
+                                Verify.IsTrue(child.CanBeScrollAnchor);
+                            }
+                            finally
+                            {
+                                child.UnregisterPropertyChangedCallback(UIElement.CanBeScrollAnchorProperty, token);
+                            }
+                            break;
+                        default:
+                            Verify.Fail("Unknown anchor assignment: " + assignment);
+                            break;
+                    }
+
+                    scroller.Content = null;
+                    child = null;
+                });
+
+                for (int pass = 0; pass < 3; pass++)
+                {
+                    IdleSynchronizer.Wait();
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(scroller.IsLoaded, "The scroller must outlive the removed child.");
+                    Verify.IsNull(scroller.Content);
+                    Verify.IsFalse(childReference.IsAlive, "The removed anchor candidate must be collected.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Content = null);
+                GC.KeepAlive(scroller);
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the ScrollView default properties.")]
         public void VerifyDefaultPropertyValues()
         {
