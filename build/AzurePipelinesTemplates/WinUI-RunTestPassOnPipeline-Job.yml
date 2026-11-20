@@ -15,6 +15,12 @@ parameters:
   workItemsProjNameFilter: 'RunTestsInHelix-*.proj'
   preTestSteps: []
   compositionEngineLafToken: ''
+  # Collect VS static coverage around this job's te.exe runs. The product DLL(s) in the payload
+  # must already be instrumented (see Instrument-CoveragePayload.ps1); each instrumented module
+  # gets its own independent collector/session, auto-discovered from the payload's
+  # _coverage-session-id-*.txt files. Default false so every existing consumer (Nightly,
+  # Official, ScenarioTests) is unaffected.
+  collectCodeCoverage: false
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -86,6 +92,15 @@ jobs:
     ${{ if eq( parameters.buildPlatform, 'arm64') }}:
       skipComponentGovernanceDetection: true # dotnet install currently fails on arm64 with "Unsupported OS/platform configuration detected, not downloading .NET..."
 
+    # Code coverage: append the switch to the slice runner only when coverage is on. When off
+    # this resolves to an empty string, leaving the existing command line unchanged. No session
+    # id is passed - RunTestPassSliceOnBuildAgent.ps1 auto-discovers one collector session per
+    # instrumented module from the payload's _coverage-session-id-*.txt files.
+    ${{ if eq(parameters.collectCodeCoverage, true) }}:
+      coverageArg: '-CollectCodeCoverage'
+    ${{ else }}:
+      coverageArg: ''
+
   steps:
   - task: PowerShell@2
     displayName: 'Display OS version info'
@@ -139,7 +154,7 @@ jobs:
       # The secured launch-request path uses Windows-only memory-mapping ACL APIs.
       pwsh: false
       filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
-      arguments: -WorkItemProjFileNameFilter "$(workItemsProjNameFilter)" -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      arguments: -WorkItemProjFileNameFilter "$(workItemsProjNameFilter)" -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} $(coverageArg)
       errorActionPreference: stop
       workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
     env:
@@ -157,6 +172,50 @@ jobs:
       arguments: -SearchRoot "$(uploadRootInner)"
       errorActionPreference: continue
       workingDirectory: $(Build.SourcesDirectory)
+
+  - ${{ if eq(parameters.collectCodeCoverage, true) }}:
+    # Move the raw coverage data into a CodeCoverage\ folder under the job's upload root so it
+    # rides along in this job's existing test-output artifact (published below by the
+    # already-existing PublishPipelineArtifact@1 step) - no separate artifact needed. The
+    # collector logs are kept alongside so an empty or missing .coverage can be diagnosed.
+    - task: PowerShell@2
+      displayName: Stage code coverage output
+      condition: always()
+      inputs:
+        targetType: 'inline'
+        script: |
+          $coverageStageDir = "$(uploadRootInner)\CodeCoverage"
+          New-Item -ItemType Directory -Force -Path $coverageStageDir | Out-Null
+          $files = @(Get-ChildItem -Path "$(uploadRootInner)" -Filter 'coverage-*.coverage' -ErrorAction SilentlyContinue) +
+                   @(Get-ChildItem -Path "$(uploadRootInner)" -Filter '_coverage-collector-*.log*' -ErrorAction SilentlyContinue)
+          if ($files.Count -eq 0) {
+            Write-Host "##vso[task.logissue type=warning]No code coverage output found in $(uploadRootInner)."
+          }
+          foreach ($f in $files) {
+            $sizeMB = [math]::Round($f.Length / 1MB, 2)
+            Write-Host "Staging $f - $sizeMB MB"
+            Move-Item -Path $f.FullName -Destination $coverageStageDir -Force
+          }
+          # Record this test host's OS build next to its .coverage files. Converting coverage to
+          # StackSampler .scc (ConvertCoverageToScc job) needs the BuildLabEx of the machine that
+          # RAN the tests - it cannot be inferred later from the conversion agent.
+          $cv = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+          [ordered]@{
+            BuildLabEx         = $cv.BuildLabEx
+            ProductName        = $cv.ProductName
+            DisplayVersion     = $cv.DisplayVersion
+            ReleaseId          = $cv.ReleaseId
+            CurrentBuild       = $cv.CurrentBuild
+            CurrentBuildNumber = $cv.CurrentBuildNumber
+            CurrentMajor       = $cv.CurrentMajorVersionNumber
+            CurrentMinor       = $cv.CurrentMinorVersionNumber
+            Ubr                = $cv.UBR
+            EditionId          = $cv.EditionID
+            InstallationType   = $cv.InstallationType
+            ComputerName       = $env:COMPUTERNAME
+            JobPositionInPhase = '$(System.JobPositionInPhase)'
+          } | ConvertTo-Json | Set-Content "$coverageStageDir\_coverage-host-os.json" -Encoding UTF8
+          Write-Host "Test host BuildLabEx: $($cv.BuildLabEx)"
 
   - task: PublishTestResults@2
     condition: and(always(), eq(variables['TestSliceHasWork'], 'true'))
