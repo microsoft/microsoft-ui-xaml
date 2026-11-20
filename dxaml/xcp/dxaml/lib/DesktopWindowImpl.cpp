@@ -2261,6 +2261,10 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WindowHandle(_Out_ HWND* pValue)
 
 void DesktopWindowImpl::Shutdown()
 {
+    // Keep the non-client input source alive until its parent HWND is destroyed.
+    // Its final release can destroy helper HWNDs and synchronously send parent notifications.
+    const auto nonClientInputSource = m_windowChrome->GetNonClientInputPtrSrc();
+
     if (AreNewWindowingApisEnabled())
     {
         RefreshWindowPlacementEligibility();
