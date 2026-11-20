@@ -673,3 +673,34 @@ abs diff ≤ 0.002. Leak gates (S20, S21) need non-quick runs.
 Open gaps: animated scroll (`ChangeView`) does not tick off the UI thread; real device-removed paths are untested
 (simulated only); RichEditBox text is not painted; gradient strokes use the average color; Mica is drawn as its
 fallback color; D2D-HW is not measured (no GPU).
+
+### D2D-SW back-buffer fix (commit 308ba5a15)
+
+On a GPU-less VM Comp and D2D-SW both rasterize on WARP, so D2D-SW should cost about what Comp costs. Before the
+fix it did not, because the painter drew into its own full-window texture and copied the damage into the swap chain
+back buffer on every present. Now the D2D target wraps `GetBuffer(0)` while a swap chain is attached. Before drawing,
+scrolling or reading pixels, the painter copies the previous frame's dirty rects forward from the front buffer
+(`GetBuffer(BufferCount - 1)`), because flip model only fills the new back buffer at the next Present. On detach the
+last frame is copied into a fresh offscreen target. Test: `AttachedSwapChainBackBufferIsTheTarget`; 230/230
+RenderingBackendTests pass.
+
+Remeasured Comp (Lifted) and D2D-SW on all 27 entries (54 runs, all gates pass). The rerun ran over RDP at 32 Hz,
+where the first matrix ran on the console at 60 Hz, and that raised Comp too (S2 118 → 155 MB). So the comparison is
+D2D-SW against Comp from the same session:
+
+| Steady D2D-SW vs same-session Comp | Before | After |
+|---|---|---|
+| Geometric mean, 27 entries | 107% | 101% |
+| S5 `gallery` | +32% | +11% |
+| S7 `layered` | +61% | +28% |
+| S10 `form` | +45% | +23% |
+| S14 `popups` | +42% | +8% |
+| S13 `materials` | +61% | +40% |
+
+Live VirtualQuery check (committed private, idle): S10 D2D-SW 56.4 → 49.8 MB against Comp 36.8 MB; S1 D2D-SW
+37.3 MB against Comp 39.7 MB. The remaining S10 gap is in the process heap (35 vs 26 MB commit), from WARP, D2D and
+DWrite caches and per-popup painters.
+
+Sharing XAML's D3D device is deliberately not done. The second WARP device costs about 0.4 MB (1.7 MB with its D2D
+context), while sharing it would need the shared-device lock on both the UI thread and the independent-animation render
+thread, plus a new device-loss path.
