@@ -306,8 +306,9 @@ _Check_return_ HRESULT CSoftwareBitmapSource::PrepareCopyParams(
     // a successful upload. That discard happens in ImageSurfaceWrapper::UpdateSurfaceFromSoftware via a call to
     // ImageSurfaceWrapper::ReleaseSoftwareSurfaceIfAllowed.
     //
-    // Todo: I don't think software rendering scenarios exist anymore. BitmapCache is gone, and alpha mask rendering in
-    // BaseContentRenderer no longer asks for a software surface either. I think this whole flag/mechanism can be deleted.
+    // Todo: I don't think software rendering scenarios exist anymore. BitmapCache is gone. The only remaining caller of
+    // CImageBrush::ReloadSoftwareSurfaceIfReleased is CShape::GetAlphaMask/NotifyRenderContent, which need the software
+    // surface to print a Shape.GetAlphaMask() mask.
     //
     if (!forceCopyToSoftwareSurface &&
         !m_pImageSurfaceWrapper->MustKeepSystemMemory() &&

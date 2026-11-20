@@ -1643,8 +1643,13 @@ _Check_return_ HRESULT CShape::NotifyRenderContent(
 _Check_return_ HRESULT CShape::GetAlphaMask(
     _Outptr_ WUComp::ICompositionBrush** ppReturnValue)
 {
-    IFC_RETURN(ReloadImageBrushSoftwareSurface(m_pFill));
-    IFC_RETURN(ReloadImageBrushSoftwareSurface(GetStroke().get()));
+    // Off-tree the ImageBrush hasn't registered its image callbacks and the mask isn't drawn; NotifyRenderContent
+    // requests the surface once the shape is live.
+    if (IsActive())
+    {
+        IFC_RETURN(ReloadImageBrushSoftwareSurface(m_pFill));
+        IFC_RETURN(ReloadImageBrushSoftwareSurface(GetStroke().get()));
+    }
     IFC_RETURN(m_alphaMask.Ensure(this));
     *ppReturnValue = m_alphaMask.GetCompositionBrush().Detach();
 
