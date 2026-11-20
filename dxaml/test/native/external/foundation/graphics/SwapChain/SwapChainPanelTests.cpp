@@ -1868,23 +1868,36 @@ SwapChainPanelTests::IndependentInputSourceThreadingObservation SwapChainPanelTe
     });
 
     LOG_OUTPUT(L"Calling CreateCoreIndependentInputSource(DeviceKinds::None) on a thread pool thread.");
+
+    // The work item owns everything it touches (panel, result storage and completion event), so if
+    // WaitForDefault() times out and this helper unwinds, a late-running worker never references
+    // destroyed stack state.
+    struct OffThreadResult
+    {
+        HRESULT callResult = E_PENDING;
+        bool resultIsNull = false;
+    };
+    auto offThreadResult = std::make_shared<OffThreadResult>();
     auto workItemCompletedEvent = std::make_shared<Event>();
-    auto workItemHandler = ref new ::Windows::System::Threading::WorkItemHandler([&] (IAsyncAction ^)
+    SwapChainPanel^ workItemPanel = scp;
+    auto workItemHandler = ref new ::Windows::System::Threading::WorkItemHandler([workItemPanel, offThreadResult, workItemCompletedEvent] (IAsyncAction ^)
     {
         try
         {
-            ixp::InputPointerSource^ inputPointerSource = scp->CreateCoreIndependentInputSource(::Microsoft::UI::Input::InputPointerSourceDeviceKinds::None);
-            observation.offThreadNoneResultIsNull = (inputPointerSource == nullptr);
-            observation.offThreadNoneCallResult = S_OK;
+            ixp::InputPointerSource^ inputPointerSource = workItemPanel->CreateCoreIndependentInputSource(::Microsoft::UI::Input::InputPointerSourceDeviceKinds::None);
+            offThreadResult->resultIsNull = (inputPointerSource == nullptr);
+            offThreadResult->callResult = S_OK;
         }
         catch (Platform::Exception^ ex)
         {
-            observation.offThreadNoneCallResult = ex->HResult;
+            offThreadResult->callResult = ex->HResult;
         }
         workItemCompletedEvent->Set();
     });
     ::Windows::System::Threading::ThreadPool::RunAsync(workItemHandler, WorkItemPriority::High, WorkItemOptions::TimeSliced);
     workItemCompletedEvent->WaitForDefault();
+    observation.offThreadNoneCallResult = offThreadResult->callResult;
+    observation.offThreadNoneResultIsNull = offThreadResult->resultIsNull;
     TestServices::WindowHelper->WaitForIdle();
 
     LOG_OUTPUT(L"UI thread call result: 0x%08x; off-thread DeviceKinds::None call result: 0x%08x, returned null: %d.",
