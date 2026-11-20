@@ -66,8 +66,18 @@ _Check_return_ HRESULT IconSource::OnPropertyChanged2(_In_ const PropertyChanged
     
     if (iconElementProperty)
     {
+        // Core-initiated changes (e.g. a ThemeResource re-resolved on theme change) carry only the CValue; forwarding
+        // a null outer value would null out properties such as FontIcon.FontFamily.
+        ctl::ComPtr<IInspectable> unboxedNewValue;
+        IInspectable* newValueNoRef = args.m_pNewValueOuterNoRef;
+        if (newValueNoRef == nullptr && args.m_pNewValue != nullptr && !args.m_pNewValue->IsNullOrUnset())
+        {
+            IFC_RETURN(CValueBoxer::UnboxObjectValue(args.m_pNewValue, args.m_pDP->GetPropertyType(), &unboxedNewValue));
+            newValueNoRef = unboxedNewValue.Get();
+        }
+
         m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
-            [iconElementProperty, newValue = args.m_pNewValueOuterNoRef](ctl::WeakRefPtr weakElement)
+            [iconElementProperty, newValue = newValueNoRef](ctl::WeakRefPtr weakElement)
         {
             auto iconElement = weakElement.AsOrNull<IconElement>();
             
