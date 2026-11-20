@@ -27,6 +27,16 @@ public static class Program
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var (engine, changes) = BenchOptions.ParseStartup(args);
 
+        // Native immediate-backend test hooks (S21 device lost, S22 capture) are read at startup.
+        string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RenderBench");
+        foreach (var (name, value) in BenchOptions.StartupEnvironment(args, Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable),
+            Environment.ProcessId, dataDirectory, Environment.GetEnvironmentVariable))
+        {
+            Directory.CreateDirectory(dataDirectory);
+            Environment.SetEnvironmentVariable(name, value);
+            Console.Error.WriteLine($"startup: {name}={value}");
+        }
+
         if (changes == OptionalChangesChoice.All)
         {
             foreach (var (name, id) in s_allOptionalChanges)

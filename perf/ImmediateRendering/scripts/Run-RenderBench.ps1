@@ -12,8 +12,10 @@ for each scene. Each run:
   5. runs RenderBench.Analyzer analyze -> metrics.json next to the trace.
 Afterwards it writes <Results>\report.md. Requires an elevated shell (WPR).
 
--Scenes picks entries from the scene matrix below (default: all, S1/S2 first). Variant entries (gallery-decoded,
-animated-noring, multiwindow-tabs) add their RenderBench flags; results go to <Results>\<entry>\<mode>\run<N>.
+-Scenes picks entries from the scene matrix below (default: S1-S10 with their variants, S1/S2 first), plan-id aliases
+(s1..s23) or the groups full-backend (S11-S23) and all. Variant entries (gallery-decoded, animated-noring,
+multiwindow-tabs, interop-nointerop, lottie-noplayer, swapchain-nomedia) add their RenderBench flags; results go to
+<Results>\<entry>\<mode>\run<N>.
 Full runs use each scene's default phase lengths (README, "Scenes"); -Quick shortens every phase, per scene.
 
 .EXAMPLE
@@ -21,13 +23,15 @@ Full runs use each scene's default phase lengths (README, "Scenes"); -Quick shor
 
 .EXAMPLE
 .\Run-RenderBench.ps1 -Scenes inbox,gallery,gallery-decoded -InputMode programmatic -Repetitions 3
+.EXAMPLE
+.\Run-RenderBench.ps1 -Modes composition,gdiplus -Scenes s11,s11-nointerop,s15 -InputMode programmatic -Quick
 #>
 [CmdletBinding()]
 param(
     [ValidateSet('composition', 'gdiplus', 'd2d-hw', 'd2d-sw')]
     [string[]]$Modes = @('composition', 'gdiplus', 'd2d-hw', 'd2d-sw'),
-    [ValidateSet('settings', 'dashboard', 'inbox', 'gallery', 'gallery-decoded', 'animated', 'animated-noring', 'reader',
-        'layered', 'datagrid', 'multiwindow', 'multiwindow-tabs', 'form')]
+    # Entries of the scene matrix below, plan-id aliases (s1..s23, s11-nointerop, s12-noplayer, s16-nomedia), or the
+    # groups 'full-backend' (S11-S16, S19-S23 and their variants) and 'all'. Validated after the matrix is defined.
     [string[]]$Scenes = @('settings', 'dashboard', 'inbox', 'gallery', 'gallery-decoded', 'animated', 'animated-noring',
         'reader', 'layered', 'datagrid', 'multiwindow', 'multiwindow-tabs', 'form'),
     # auto picks programmatic input in remote/disconnected sessions (README, "Input modes").
@@ -84,7 +88,42 @@ $sceneMatrix = [ordered]@{
     'multiwindow'      = @{ Args = @('--scene', 'multiwindow');                   Quick = 6; QuickArgs = @('--windows', '5', '--step-seconds', '1') }
     'multiwindow-tabs' = @{ Args = @('--scene', 'multiwindow', '--tabs');         Quick = 6; QuickArgs = @('--step-seconds', '0.5') }
     'form'             = @{ Args = @('--scene', 'form');                          Quick = 8 }
+    # Full-backend scenes (test plan S11-S23; S17 WebView2 and S18 InkCanvas are out of scope). S11/S12-player/S16
+    # expect a per-window WindowFallback to Composition in immediate modes; the -no* variants must stay immediate.
+    'interop'           = @{ Args = @('--scene', 'interop');                     Quick = 6 }
+    'interop-nointerop' = @{ Args = @('--scene', 'interop', '--no-interop');     Quick = 6 }
+    'materials'         = @{ Args = @('--scene', 'materials');                   Quick = 6 }
+    'popups'            = @{ Args = @('--scene', 'popups');                      Quick = 12 }
+    'independent'       = @{ Args = @('--scene', 'independent');                 Quick = 10 }
+    'lottie'            = @{ Args = @('--scene', 'lottie');                      Quick = 6 }
+    'lottie-noplayer'   = @{ Args = @('--scene', 'lottie', '--no-player');       Quick = 6 }
+    'text'              = @{ Args = @('--scene', 'text');                        Quick = 6 }
+    'swapchain'         = @{ Args = @('--scene', 'swapchain');                   Quick = 6 }
+    'swapchain-nomedia' = @{ Args = @('--scene', 'swapchain', '--no-media');     Quick = 6 }
+    # S20/S21 leak gates need 100 cycles; -Quick runs fewer and reports those gates as n/a.
+    'dpitheme'          = @{ Args = @('--scene', 'dpitheme');                    Quick = 10; QuickArgs = @('--items', '20') }
+    'devicelost'        = @{ Args = @('--scene', 'devicelost');                  Quick = 6 }
+    'accessibility'     = @{ Args = @('--scene', 'accessibility');               Quick = 6 }
+    'appshell'          = @{ Args = @('--scene', 'appshell');                    Quick = 10; QuickArgs = @('--items', '500') }
 }
+$sceneAliases = @{
+    's1' = 'settings'; 's2' = 'dashboard'; 's3' = 'inbox'; 's4' = 'gallery'; 's5' = 'animated'; 's6' = 'reader'
+    's7' = 'layered'; 's8' = 'datagrid'; 's9' = 'multiwindow'; 's10' = 'form'
+    's11' = 'interop'; 's11-nointerop' = 'interop-nointerop'; 's12' = 'lottie'; 's12-noplayer' = 'lottie-noplayer'
+    's13' = 'materials'; 's14' = 'popups'; 's15' = 'independent'; 's16' = 'swapchain'; 's16-nomedia' = 'swapchain-nomedia'
+    's19' = 'text'; 's20' = 'dpitheme'; 's21' = 'devicelost'; 's22' = 'accessibility'; 's23' = 'appshell'
+}
+$fullBackendScenes = @('interop', 'interop-nointerop', 'lottie', 'lottie-noplayer', 'materials', 'popups', 'independent',
+    'swapchain', 'swapchain-nomedia', 'text', 'dpitheme', 'devicelost', 'accessibility', 'appshell')
+$Scenes = @(foreach ($entry in $Scenes) {
+    $name = $entry.ToLowerInvariant()
+    if ($name -eq 'all') { @($sceneMatrix.Keys) }
+    elseif ($name -eq 'full-backend') { $fullBackendScenes }
+    elseif ($sceneAliases.ContainsKey($name)) { $sceneAliases[$name] }
+    elseif ($sceneMatrix.Contains($name)) { $name }
+    elseif ($name -in 's17', 's18') { throw "$entry (WebView2/InkCanvas) is out of scope; see the test plan." }
+    else { throw "Unknown scene '$entry'. Valid: $((@($sceneMatrix.Keys) + @($sceneAliases.Keys) + 'full-backend', 'all') -join ', ')" }
+}) | Select-Object -Unique
 function Get-SceneArgs([string]$entry) {
     $spec = $sceneMatrix[$entry]
     $sceneArgs = @($spec.Args)

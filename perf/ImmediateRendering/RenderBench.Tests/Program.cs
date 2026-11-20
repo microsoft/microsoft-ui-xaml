@@ -35,5 +35,6 @@ if (Arg("--acceptance") is { } resultsDir)
 
 return TestRunner.Run(
     [.. AnalysisTests.All(), .. OptionsTests.All(), .. ProfileTests.All(), .. EtlTests.All(),
-     .. GdiPlusReadinessTests.All(), .. D2DHardwareTests.All(), .. ThreadCpuTests.All(), .. ExtendedScenesTests.All()],
+     .. GdiPlusReadinessTests.All(), .. D2DHardwareTests.All(), .. ThreadCpuTests.All(), .. ExtendedScenesTests.All(),
+     .. FullBackendScenesTests.All()],
     Arg("--filter"));

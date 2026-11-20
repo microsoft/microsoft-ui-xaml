@@ -190,6 +190,10 @@ sealed class FakeRenderingBackendSource : EventSource
     // D2D-HW branch: W3.
     [Event(6)]
     public void GpuPaintTime(uint FrameNumber, ulong GpuMicroseconds) => WriteEvent(6, FrameNumber, GpuMicroseconds);
+
+    // S11/S12/S16: a window switched to Composition (per-window fallback).
+    [Event(30)]
+    public void WindowFallback(uint Mode, ulong RootId, string Reason) => WriteEvent(30, Mode, RootId, Reason);
 }
 
 static class EtlTests

@@ -60,7 +60,7 @@ static class ExtendedScenesTests
             Equal(planId, SceneCatalog.Get(scene).PlanId, $"{text} plan id");
             Equal(text, SceneCatalog.Get(scene).CliName, $"{text} cli name");
         }
-        Equal(10, SceneCatalog.All.Count, "catalog size");
+        Equal(21, SceneCatalog.All.Count, "catalog size (S1-S23 without the out-of-scope S17/S18)");
         Equal(SceneId.Settings, SceneCatalog.All[0].Id, "S1 first");
         Equal(SceneId.Dashboard, SceneCatalog.All[1].Id, "S2 second");
     }
@@ -68,7 +68,7 @@ static class ExtendedScenesTests
     static void RejectsNumericAndUnknownScenes()
     {
         Expect(!BenchOptions.TryParse(["--scene", "3"], out _, out _), "numeric scene");
-        Expect(!BenchOptions.TryParse(["--scene", "s11"], out _, out _), "unknown plan id");
+        Expect(!BenchOptions.TryParse(["--scene", "s24"], out _, out _), "unknown plan id");
         Expect(!BenchOptions.TryParse(["--scene", "grid"], out _, out var error), "unknown name");
         Expect(error!.Contains("inbox"), $"error lists valid scenes: {error}");
     }
@@ -181,7 +181,7 @@ static class ExtendedScenesTests
     // ---- Metrics on synthetic traces ----
 
     // A minimal well-formed run: Warmup [100,200), Steady [200,60200), Interaction [60200,62200), Recovery [62200,62300).
-    sealed class MiniRun
+    internal sealed class MiniRun
     {
         public const int Pid = 5150;
         public string Scene { get; init; } = "Inbox";

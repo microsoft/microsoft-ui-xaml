@@ -79,6 +79,14 @@ public sealed class BenchEventSource : EventSource
 
     [Event(16, Level = EventLevel.Informational)]
     public void PopupOpened(long InputId, string Popup) => WriteEvent(16, InputId, Popup);
+
+    // ---- Full-backend scenes S11-S23 ----
+    // S15: the UI thread is about to be blocked for DurationMs (planned) / was blocked for DurationMs (measured).
+    [Event(17, Level = EventLevel.Informational)]
+    public void UiBlockBegin(int BlockId, double DurationMs) => WriteEvent(17, BlockId, DurationMs);
+
+    [Event(18, Level = EventLevel.Informational)]
+    public void UiBlockEnd(int BlockId, double DurationMs) => WriteEvent(18, BlockId, DurationMs);
     // ---- Added by the D2D-HW branch ----
     // Per-adapter GPU memory for this process (IDXGIAdapter3::QueryVideoMemoryInfo), one event per adapter per sample,
     // emitted next to MemorySample. AdapterLuid uses the DeviceInfo packing so the analyzer can pick the render adapter.

@@ -19,7 +19,7 @@ Until a backend sets its bit in `RenderingBackend::GetAvailableModes()`, a reque
 | Path | What it is |
 |---|---|
 | `dxaml\xcp\components\base\RenderingBackend.cpp` | Native seam: mode selection and the `Microsoft-WinUI-RenderingBackend` ETW provider (`{d18ce99c-dd66-5390-18da-068546739801}`). Events: BackendSelected, DeviceInfo, FrameBegin/End, RenderWalkStats, PaintBegin/End, ResourceInventory, UnsupportedContent |
-| `RenderBench\` | WinUI harness app. Scenes S1–S10 (see [Scenes](#scenes)); phases Warmup → Steady → Interaction → Recovery; `Microsoft-WinUI-RenderBench` markers; memory, GPU, GDI and CPU sampling; SendInput or programmatic input; screenshot |
+| `RenderBench\` | WinUI harness app. Scenes S1–S16 and S19–S23 (see [Scenes](#scenes)); phases Warmup → Steady → Interaction → Recovery; `Microsoft-WinUI-RenderBench` markers; memory, GPU, GDI and CPU sampling; SendInput or programmatic input; screenshot |
 | `RenderBench.Core\` | Shared options, mode names, EventSource, and the metrics model and calculator |
 | `RenderBench.Analyzer\` | `analyze <etl>` → `metrics.json` + gate, `gate <json>...`, `report <dir>` → `report.md`, `records <etl>` (debug dump) |
 | `RenderBench.Tests\` | Console test runner: analysis, options, WPR profile, and ETW round-trip tests; `--acceptance <dir>` |
@@ -49,8 +49,10 @@ Every run directory contains `trace.etl`, `metrics.json`, `screenshot.bmp`, and 
 
 `--scene <name>` (or the plan id, e.g. `--scene S3`). Each scene is deterministic for `--seed`. Defaults apply unless the
 flag is given explicitly; variant flags are rejected for other scenes. `Run-RenderBench.ps1 -Scenes` takes the matrix
-entry names in the last column (default: all, S1/S2 first). Details, hypotheses and gate rules per scene are in the test
-plan, "Extended scenes".
+entry names in the last column, plan-id aliases (`s1`..`s23`, `s11-nointerop`, `s12-noplayer`, `s16-nomedia`) or the
+groups `full-backend` and `all` (default: S1–S10 and their variants, S1/S2 first). Window titles are
+`RenderBench <PlanId> <label> [<backend>]`, where the label includes the variant (e.g. `Lottie-NoPlayer`). Details,
+hypotheses and gate rules per scene are in the test plan, "Extended scenes" and "Full-backend scenes".
 
 | Id | `--scene` | Content | Interaction | Defaults (`--interaction`, `--update-hz`, `--input-hz`, `--scroll-speed`, `--items`) | Variants (matrix entry) |
 |---|---|---|---|---|---|
@@ -64,11 +66,32 @@ plan, "Extended scenes".
 | S8 | `datagrid` | `ItemsRepeater` rows, 50 columns × 1,000 rows of bordered cells, frozen header | 2% of visible cells at 10 Hz + alternating V/H scrolls | 30 s, 10 Hz, 0.5 Hz, –, 1000 | – (`datagrid`) |
 | S9 | `multiwindow` | N windows of S1 (`--windows 1\|5\|10`, default 10) | lifecycle steps: baseline, open-1..N, minimize-all, restore-all, close-all, settled; one per `--step-seconds` (2) | 30 s | `--tabs`: one TabView of 20 S1 tabs (`multiwindow-tabs`) |
 | S10 | `form` | 3 TextBoxes, ComboBox, CheckBox, ToggleSwitch, Slider, Button+Flyout, Button+ToolTip, Submit | typing, Tab focus, hover, ComboBox/Flyout/ToolTip open/close | 30 s, –, 10 Hz | – (`form`) |
+| S11 | `interop` | `SetElementChildVisual` SpriteVisual with an expression animation, `GetElementVisual` + implicit Offset animation, `ConnectedAnimation` between two views | view swaps + card moves | 20 s, 2 Hz, 1 Hz | `--no-interop`: same layout without composition interop, must stay immediate (`interop-nointerop`) |
+| S12 | `lottie` | ProgressRings, `AnimatedIcon` buttons, CheckBox, `AnimatedVisualPlayer` with a hand-coded `IAnimatedVisualSource` (rotating ShapeVisual) | pointer-state changes on AnimatedIcons | 20 s, –, 1 Hz | `--no-player` (`lottie-noplayer`) |
+| S13 | `materials` | Mica window backdrop, `AcrylicBrush` panes, ThemeShadow cards (Translation Z), elevation borders, `LinearGradientBrush` fills | card elevation + gradient changes | 20 s, 2 Hz, 1 Hz | – (`materials`) |
+| S14 | `popups` | 560×400 window; Flyout, MenuFlyout, ComboBox, TeachingTip, ToolTip and Popup with `ShouldConstrainToRootBounds=false` placed partly outside the window | open-1..6 / closed steps, then open/close cycles | 30 s, –, 1 Hz | – (`popups`) |
+| S15 | `independent` | 2000-item list scrolled with animated `ChangeView`, looping opacity/translate Storyboard, ProgressRing; UI thread blocked 1000 ms every 4 s | animated scroll | 20 s, –, –, 600 DIP/s, 2000 | – (`independent`) |
+| S16 | `swapchain` | `SwapChainPanel` with a raw-COM D3D11 swap chain cleared to an animated color + `MediaPlayerElement` playing a generated clip | continuous presents | 20 s | `--no-media`: SwapChainPanel only, still falls back (`swapchain-nomedia`) |
+| S19 | `text` | RTL Arabic/Hebrew, Devanagari/Thai, color emoji, a CFF (.otf) font if installed, Segoe UI Variable weights, ClearType vs grayscale areas, RichTextBlock mixed runs, 72 pt text, 1000 TextBlocks in an ItemsRepeater | scroll | 20 s, –, –, 300 DIP/s, 1000 | – (`text`) |
+| S20 | `dpitheme` | Settings-like page; per cycle an `AppWindow.Resize`, every 5th a `RequestedTheme` toggle, every 25th a move to a monitor with another DPI (if any) | `--items` cycles | 60 s, –, –, –, 100 | – (`dpitheme`) |
+| S21 | `devicelost` | S2 dashboard with `WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST` set (`--device-lost <frames\|every:N>`, default `every:10`; immediate modes only) | 30 Hz updates | 45 s, 30 Hz | – (`devicelost`) |
+| S22 | `accessibility` | 50 controls; keyboard focus visuals; every 10th move `RenderTargetBitmap` of a subtree vs the on-screen capture (`WINUI_IMMEDIATE_CAPTURE` BMP in immediate modes) | `Focus(Keyboard)` moves | 30 s, –, 4 Hz, –, 50 | – (`accessibility`) |
+| S23 | `appshell` | NavigationView shell: settings pages (cards, toggles, expanders), Explorer-like ListView (5 columns × 2000 rows), gallery grid of control samples | navigate through 10 pages | 30 s, –, 0.5 Hz, –, 2000 | – (`appshell`) |
 
 - S5 writes its images once per seed to `%TEMP%\RenderBench\images\seed<N>` (a `complete.txt` marker holds the count).
 - S6 animates during Steady by design: `SteadyStateIsIdle` is waived and Steady CPU is reported as the *animation tax*
   (E1 animation CPU ms/s).
 - S9's Interaction is its lifecycle: it lasts max(`--interaction`, steps × `--step-seconds`).
+- S11, S12 (with the player) and S16 expect the native `WindowFallback` event (RenderingBackend provider; Mode, RootId,
+  Reason) in immediate modes: the window switches to Composition. `interop-nointerop` and `lottie-noplayer` must not
+  fall back; `swapchain-nomedia` still has the SwapChainPanel and falls back.
+- S16 generates its clip once with `MediaComposition` into `%LOCALAPPDATA%\RenderBench\media\colors.mp4`; if that or
+  the D3D11 swap chain fails, the `MediaAvailable`/`SwapChainAvailable` scene values are 0 and that part is skipped.
+- S19 reports `CffFontPresent` (0 when no system `.otf` with CFF outlines is found; that variant is skipped).
+- S20's DPI move needs two monitors with different DPI (`DpiChangeAvailable`); otherwise DPI change is manual.
+- S21/S22 hooks are environment variables set by RenderBench at startup for immediate modes (written to
+  `stderr.txt` as `startup:` lines); captures go to `%LOCALAPPDATA%\RenderBench`. High contrast is manual-only.
+- S17 (WebView2) and S18 (InkCanvas) are out of scope.
 
 ## Input modes
 
@@ -123,14 +146,27 @@ Added to `metrics.json` and the report (test plan metric ids in parentheses):
 - R1 by input kind (`click`, `wheel`, `key`, `tab`, `drag`, ...) and popup open time (input → first frame after
   `PopupOpened`; S10).
 - Unsupported content by type and detail, split into expected and unexpected per scene (S6 ProgressRing /
-  AnimatedVisualPlayer, S7 acrylic / mica / shadow); `NoUnsupportedContent` fails only on unexpected content.
+  AnimatedVisualPlayer, S7 acrylic / mica / shadow); `NoUnsupportedContent` fails only on unexpected content. Details
+  ending in `:approximated` (e.g. Mica's fallback color) are always allowed, and content in a scene that expects a
+  window fallback is allowed once the fallback was observed.
+- Full-backend scenes: `WindowFallbackCount`/`WindowFallbackReasons`/`ExpectsWindowFallback`; S15 `UiBlocks`
+  (frames drawn and max frame gap per deliberate UI-thread block), `FramesDuringUiBlock`,
+  `MaxFrameGapDuringUiBlockMs` and the screen probe values `BlockScreenChanges`/`BlockMaxScreenGapMs`; S20/S23
+  `ChangeToFrameMsByKind` (resize, theme, dpi, navigate) and `UnmatchedChanges`; S20 `CycleLeakPrivateMB`
+  (cycle-100 minus cycle-10); S21 `DeviceLostRecoveryMs` and `DeviceLostLeakPrivateMB`; S14 `PopupOpenMsByKind` and
+  `PrivateMBPerOpenPopup`; S22 `RtbSuccessRate` and `CaptureMeanAbsDiff` (mean absolute BGRA difference, 0..255).
 
 ## Gate (per run)
 
 `HarnessRunStarted`, `HarnessCompleted`, `BackendSelectedPresent`, `RequestReachedRuntime`, `EffectiveMatchesRequested`,
 `DeviceMatchesMode` (D2D-SW must be WARP, D2D-HW must not be), `FramesObserved`, `SteadyStateIsIdle` (at most 6 drawn
 frames/min; waived with "animation tax" for S6), `MemorySampled`, `NoUnsupportedContent` (expected content per scene is
-allowed; see Extended metrics). Reports compute medians from gated runs only.
+allowed; see Extended metrics), `WindowFallbackAsExpected` (immediate modes: S11/S12/S16 pass only if a
+`WindowFallback` was observed, every other scene fails if one was; n/a for composition). Scene gates: S15
+`UiBlockObserved`; S20 `RecoveryWithinLimit` (p95 change-to-frame per kind ≤ 1000 ms, no unmatched changes) and
+`NoCycleLeak` (< 2 MB); S21 immediate `DeviceLostObserved`, `RecoveryWithinLimit` (≤ 1000 ms) and `NoCycleLeak`
+(n/a below 100 losses); S22 `RenderTargetBitmapOk` (every render succeeded) and `CaptureWithinTolerance` (mean abs
+diff ≤ 8). Reports compute medians from gated runs only.
 
 ## Notes
 
