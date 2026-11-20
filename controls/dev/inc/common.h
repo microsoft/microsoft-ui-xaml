@@ -22,4 +22,3 @@ using ResourceIdType = const winrt::hstring &;
 #include "GlobalDependencyProperty.h"
 #include "CollectionHelper.h"
 #include "RoutedEventHelpers.h"
-#include "MUXControlsFactory.h"
