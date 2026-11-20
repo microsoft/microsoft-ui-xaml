@@ -62,6 +62,7 @@ namespace InkTelemetry
         ActivateCustomDrying = 4,
         BeginDry = 5,
         EndDry = 6,
+        CreateWetStrokeUpdateSource = 7,
     };
 
     // Owned by one InkCanvas and only touched on its UI thread.
