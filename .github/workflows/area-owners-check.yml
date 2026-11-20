@@ -23,7 +23,7 @@ jobs:
       # The merge commit (HEAD) and its first parent (the base branch tip). Only
       # trees are needed to list files, so blobs outside .github are not fetched.
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 2
           filter: blob:none
