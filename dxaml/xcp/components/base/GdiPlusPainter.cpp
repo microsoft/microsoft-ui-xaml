@@ -935,6 +935,12 @@ namespace RenderingBackend
                     }
                 }
 
+                // TODO(S13/S23): implemented test-first on the gdiplus branch.
+                void FillRoundedRectangleGradient(const RectF&, float, float, const LinearGradientDesc&) noexcept override {}
+                void FillPathGradient(const PathData&, const LinearGradientDesc&) noexcept override {}
+                void DrawRoundedRectangleShadow(const RectF&, float, float, float, const PointF&, const ColorF&) noexcept override {}
+                void BlurBackdrop(const RectF&, float, float, float) noexcept override {}
+
                 HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept override
                 {
                     if (m_inFrame)

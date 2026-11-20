@@ -88,6 +88,27 @@ namespace RenderingBackend
         uint32_t glyphCount = 0;
         PointF baselineOrigin;                 // DIPs
         uint32_t bidiLevel = 0;                // odd = right-to-left
+        // S19: color fonts (COLR/CPAL emoji) draw their color layers; the run color is used for the foreground layer
+        // (palette index 0xFFFF). Painters detect color fonts themselves (IDWriteFontFace2::IsColorFont).
+        bool useColorFont = true;
+        // S19: ClearType (subpixel) antialiasing when the target is opaque under the run; grayscale otherwise.
+        bool clearType = false;
+    };
+
+    struct GradientStop
+    {
+        float offset = 0; // 0..1
+        ColorF color;
+    };
+
+    // S13/S23: LinearGradientBrush. Points are in the same DIP space as the filled shape (callers map
+    // MappingMode=RelativeToBoundingBox to absolute). Clamp extend mode; sRGB interpolation, like Composition.
+    struct LinearGradientDesc
+    {
+        PointF start, end;
+        const GradientStop* stops = nullptr;
+        uint32_t stopCount = 0;
+        float opacity = 1;
     };
 
     struct BitmapSource
@@ -179,6 +200,24 @@ namespace RenderingBackend
         // frame's damage. The moved area is presented with the next frame (it counts as presented area and in
         // uploadBytesThisFrame) even though it is not repainted. Returns E_ILLEGAL_METHOD_CALL inside a frame.
         virtual HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept = 0;
+
+        // ---- Primitives for scenes S11-S23 (see test plan "Full-backend scenes") ----
+
+        // Gradient fills (S13 acrylic tint/luminosity, S23 shells). radiusX/radiusY = 0 is a plain rectangle.
+        virtual void FillRoundedRectangleGradient(const RectF& rect, float radiusX, float radiusY, const LinearGradientDesc& gradient) noexcept = 0;
+        virtual void FillPathGradient(const PathData& path, const LinearGradientDesc& gradient) noexcept = 0;
+
+        // S13: drop shadow of a rounded rectangle (ThemeShadow, DropShadow, Flyout/ContentDialog elevation).
+        // Gaussian blur with standard deviation blurRadius/2 (DIPs) of the shape offset by offset, filled with color.
+        // The shadow is not drawn under the shape itself (knockout), matching ThemeShadow's casting behavior.
+        virtual void DrawRoundedRectangleShadow(const RectF& rect, float radiusX, float radiusY, float blurRadius, const PointF& offset, const ColorF& color) noexcept = 0;
+
+        // S13: in-app backdrop blur (AcrylicBrush BackgroundSource=Backdrop). Gaussian-blurs (standard deviation
+        // blurRadius/2, DIPs) the pixels already painted this frame inside the rounded rect, in place. The caller then
+        // draws tint/luminosity/noise on top. Pixels outside the damage are treated as already painted, so the caller
+        // must include the blur's full bounds (rect inflated by 3*sigma) in the damage when anything under it changes.
+        virtual void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept = 0;
+
         virtual HRESULT EndFrame(_Out_ FrameStats* stats) noexcept = 0;
 
         // Copies the current target as premultiplied BGRA8. For tests and fidelity capture, not the present path.
