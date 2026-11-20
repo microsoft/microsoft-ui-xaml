@@ -18,6 +18,8 @@ struct LayoutTransitionCompletedData;
 class CStoryboard final
     : public CParallelTimeline
 {
+    friend struct ImmediateAnimationAccess;
+
 private:
     CStoryboard(_In_ CCoreServices *pCore)
         : CParallelTimeline(pCore)

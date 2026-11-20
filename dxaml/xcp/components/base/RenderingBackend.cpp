@@ -422,3 +422,55 @@ namespace RenderingBackend
             TraceLoggingUInt64(gpuMicroseconds, "GpuMicroseconds"));
     }
 }
+// ---- Added by immediate-rendering-renderthread (S15/S21) ----
+namespace RenderingBackend
+{
+    void TraceIndependentFrame(uint32_t independentFrame, uint64_t rootId, uint32_t layerCount, uint32_t uiIdleMs,
+        uint64_t damagePixels, uint64_t paintMicroseconds, HRESULT result) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "IndependentFrame",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+            TraceLoggingKeyword(Keywords::Frame),
+            TraceLoggingUInt32(independentFrame, "IndependentFrame"),
+            TraceLoggingUInt64(rootId, "RootId"),
+            TraceLoggingUInt32(layerCount, "LayerCount"),
+            TraceLoggingUInt32(uiIdleMs, "UiIdleMs"),
+            TraceLoggingUInt64(damagePixels, "DamagePixels"),
+            TraceLoggingUInt64(paintMicroseconds, "PaintMicroseconds"),
+            TraceLoggingHResult(result, "Result"));
+    }
+
+    void TraceDeviceRecovered(Mode mode, uint32_t elapsedMs, uint32_t frameNumber, bool simulated, uint32_t lossCount) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "DeviceRecovered",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingKeyword(Keywords::Selection),
+            TraceLoggingUInt32(static_cast<uint32_t>(mode), "Mode"),
+            TraceLoggingUInt32(elapsedMs, "ElapsedMs"),
+            TraceLoggingUInt32(frameNumber, "FrameNumber"),
+            TraceLoggingBool(simulated, "Simulated"),
+            TraceLoggingUInt32(lossCount, "LossCount"));
+    }
+
+    void TraceTargetChanged(uint64_t rootId, uint32_t width, uint32_t height, float scale, uint32_t reason, uint32_t frameNumber) noexcept
+    {
+        EnsureRegistered();
+        TraceLoggingWrite(
+            g_renderingBackendProvider,
+            "TargetChanged",
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+            TraceLoggingKeyword(Keywords::Frame),
+            TraceLoggingUInt64(rootId, "RootId"),
+            TraceLoggingUInt32(width, "Width"),
+            TraceLoggingUInt32(height, "Height"),
+            TraceLoggingFloat32(scale, "Scale"),
+            TraceLoggingUInt32(reason, "Reason"),
+            TraceLoggingUInt32(frameNumber, "FrameNumber"));
+    }
+}

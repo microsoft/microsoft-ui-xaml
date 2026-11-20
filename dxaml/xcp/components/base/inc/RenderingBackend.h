@@ -134,3 +134,18 @@ namespace RenderingBackend
     // result is read back, typically a frame or two after the paint; FrameNumber identifies the painted frame.
     void TraceGpuPaintTime(uint32_t frameNumber, uint64_t gpuMicroseconds) noexcept;
 }
+// ---- Added by immediate-rendering-renderthread (S15/S21) ----
+namespace RenderingBackend
+{
+    // A frame presented by the immediate render thread without the UI thread (independent animations, spinners).
+    // uiIdleMs: time since the UI thread last presented this root. Event "IndependentFrame", Frame keyword.
+    void TraceIndependentFrame(uint32_t independentFrame, uint64_t rootId, uint32_t layerCount, uint32_t uiIdleMs,
+        uint64_t damagePixels, uint64_t paintMicroseconds, HRESULT result) noexcept;
+
+    // The immediate renderer presented again after a device loss (real or WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST).
+    // elapsedMs: from the loss to the first successful present. Event "DeviceRecovered", Selection keyword.
+    void TraceDeviceRecovered(Mode mode, uint32_t elapsedMs, uint32_t frameNumber, bool simulated, uint32_t lossCount) noexcept;
+
+    // An immediate root's target changed size, rasterization scale or theme (S20). Event "TargetChanged".
+    void TraceTargetChanged(uint64_t rootId, uint32_t width, uint32_t height, float scale, uint32_t reason, uint32_t frameNumber) noexcept;
+}

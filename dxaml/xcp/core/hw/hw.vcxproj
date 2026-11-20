@@ -37,6 +37,8 @@
         <ClInclude Include="hwtexturemgr.h"/>
         <ClInclude Include="hwwalk.h"/>
         <ClInclude Include="ImmediateRenderer.h"/>
+        <ClInclude Include="ImmediateRenderer.Independent.h"/>
+        <None Include="ImmediateRenderer.Independent.inl"/>
         <ClInclude Include="ManipulationTransform.h"/>
         <ClInclude Include="precomp.h"/>
         <ClInclude Include="VisualContentRenderer.h"/>

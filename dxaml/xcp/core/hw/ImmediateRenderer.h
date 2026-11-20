@@ -20,6 +20,8 @@ namespace ImmediateRenderingDetail
 {
     struct DisplayList;
     struct WalkContext;
+    struct IndependentState;
+    struct IndependentProbe;
 }
 
 // "Retained XAML, immediate rendering" prototype (docs/design-notes/immediate-rendering-backends-proposal.md).
@@ -50,6 +52,9 @@ public:
     void ResetStats() noexcept { m_elementsVisited = 0; m_elementsRendered = 0; m_elementsCulled = 0; }
     uint32_t GetElementsVisited() const noexcept { return m_elementsVisited; }
     uint32_t GetElementsRendered() const noexcept { return m_elementsRendered; }
+
+    // True while a device-lost recovery is pending: the caller must schedule another frame.
+    bool NeedsFrame() const noexcept;
 
 private:
     struct IslandState;
@@ -101,4 +106,25 @@ private:
     uint32_t m_subtreesReused = 0;
     // Previous frame's display list of the island being walked: clean subtrees reuse their commands from it.
     ImmediateRenderingDetail::DisplayList* m_previousWalk = nullptr;
+
+    // ---- Render thread (S15), device-lost recovery (S21), target changes (S20): ImmediateRenderer.Independent.inl ----
+    void BuildAnimationIndex(_In_ CXamlIslandRoot* island);
+    void ProbeIndependent(_In_ CUIElement* element, _Out_ ImmediateRenderingDetail::IndependentProbe& probe);
+    void FinishIndependentLayer(
+        _In_ CUIElement* element,
+        size_t layerIndex,
+        ImmediateRenderingDetail::IndependentProbe& probe,
+        const ImmediateRenderingDetail::WalkContext& ctx,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+    void AppendIndependentDamage(_Inout_ IslandState& state, _Inout_ std::vector<RenderingBackend::RectF>& damage, bool hasBlits, _Inout_ bool& fullDamage);
+    void OnIslandPresented(_Inout_ IslandState& state, uint32_t frameNumber);
+    void StartRenderThreadIfNeeded();
+    void StopRenderThread() noexcept;
+    void RenderThreadMain();
+    void RenderIndependentFrame(_In_ CXamlIslandRoot* island, _Inout_ IslandState& state, int64_t now);
+    HRESULT ApplyDeviceLostSimulation(HRESULT hr, uint32_t frameNumber);
+    void OnDeviceLost(HRESULT hr, uint32_t frameNumber);
+    void CheckTargetChanges(_In_ CXamlIslandRoot* island, uint32_t frameNumber, uint32_t width, uint32_t height, float scale);
+
+    std::unique_ptr<ImmediateRenderingDetail::IndependentState> m_independent;
 };
