@@ -40,6 +40,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -160,6 +161,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -280,6 +282,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -400,6 +403,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -523,6 +527,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -646,6 +651,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -767,6 +773,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -887,6 +894,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -1007,6 +1015,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -1127,6 +1136,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -1247,6 +1257,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
@@ -1368,6 +1379,7 @@
             <Property Name="ActualHeight" Value="32" />
             <Property Name="ActualWidth" Value="20" />
             <Property Name="Height" Value="32" />
+            <Property Name="Name" Value="TextLabelGlyphPanel" />
             <Property Name="RenderSize" Value="20x32" />
             <Property Name="VerticalAlignment" Value="0" />
             <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">

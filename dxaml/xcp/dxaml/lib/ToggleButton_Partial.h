@@ -20,6 +20,8 @@ namespace DirectUI
             // Prepares object's state
             _Check_return_ HRESULT Initialize() override;
 
+            _Check_return_ HRESULT AlignTextLabelGlyph();
+
             _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
                 
             // Change to the correct visual state for the ToggleButton.

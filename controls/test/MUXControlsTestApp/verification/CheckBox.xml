@@ -54,6 +54,7 @@
           FocusVisualSecondaryThickness=1,1,1,1
           Height=20
           Margin=0,0,0,0
+          Name=TextLabelGlyphPanel
           Padding=0,0,0,0
           RenderSize=20,20
           Visibility=Visible

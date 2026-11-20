@@ -367,7 +367,7 @@
               <ColumnDefinition Width="20" />
               <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Grid VerticalAlignment="Top" Height="32">
+            <Grid x:Name="TextLabelGlyphPanel" VerticalAlignment="Top" Height="32">
               <Ellipse x:Name="OuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseStroke}" Fill="{ThemeResource RadioButtonOuterEllipseFill}" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
               <!-- A seperate element is added since the two orthogonal state groups that cannot touch the same property -->
               <Ellipse x:Name="CheckOuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseCheckedStroke}" Fill="{ThemeResource RadioButtonOuterEllipseCheckedFill}" Opacity="0" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />

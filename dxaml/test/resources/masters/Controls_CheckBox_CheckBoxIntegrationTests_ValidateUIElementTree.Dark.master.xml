@@ -46,6 +46,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -157,6 +158,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -268,6 +270,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -382,6 +385,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -494,6 +498,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -606,6 +611,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -718,6 +724,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -833,6 +840,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -946,6 +954,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1059,6 +1068,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1172,6 +1182,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1288,6 +1299,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1405,6 +1417,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1516,6 +1529,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1627,6 +1641,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1739,6 +1754,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1851,6 +1867,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -1963,6 +1980,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -2076,6 +2094,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -2189,6 +2208,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
@@ -2302,6 +2322,7 @@
               <Property Name="ActualWidth" Value="20" />
               <Property Name="Grid.Column" Value="0" />
               <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="TextLabelGlyphPanel" />
               <Property Name="RenderSize" Value="20x20" />
               <Property Name="VerticalAlignment" Value="1" />
               <Property Name="Width" Value="20" />
