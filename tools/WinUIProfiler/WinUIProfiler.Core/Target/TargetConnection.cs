@@ -697,6 +697,39 @@ History);
     private async Task CleanupAsync(bool targetExited = false)
     {
         var errors = new List<Exception>();
+        // Disconnect from the TAP first. The heartbeat has stopped, and the TAP closes the pipe when no request comes for
+        // 30 seconds (PipeServer OperationMilliseconds); closing a large recording can take longer than that, and a
+        // Disconnect sent after it then fails with "Pipe is broken".
+        if (tap is not null)
+        {
+            try
+            {
+                if (!targetExited && Failure is null && !tap.IsClosed)
+                {
+                    await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+            catch (Exception error)
+            {
+                errors.Add(error);
+
+            }
+            finally
+            {
+                try
+                {
+                    await tap.DisposeAsync().ConfigureAwait(false);
+
+                }
+                catch (Exception error)
+                {
+                    errors.Add(error);
+
+                }
+                tap = null;
+            }
+        }
+
         try
         {
             // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
@@ -751,35 +784,6 @@ History);
 
             }
             sampling = null;
-        }
-        if (tap is not null)
-        {
-            try
-            {
-                if (!targetExited && Failure is null && !tap.IsClosed)
-                {
-                    await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
-                }
-            }
-            catch (Exception error)
-            {
-                errors.Add(error);
-
-            }
-            finally
-            {
-                try
-                {
-                    await tap.DisposeAsync().ConfigureAwait(false);
-
-                }
-                catch (Exception error)
-                {
-                    errors.Add(error);
-
-                }
-                tap = null;
-            }
         }
         if (nativeLaunch is not null) nativeLaunch.Dispose();
         else target?.Dispose();
