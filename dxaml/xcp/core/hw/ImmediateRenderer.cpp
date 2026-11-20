@@ -577,6 +577,7 @@ void ImmediateRenderer::ReleaseResources() noexcept
 
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
 {
+    PruneFallenBack(dcompTreeHost);
     auto& renderData = dcompTreeHost->GetXamlIslandRenderData();
     for (auto it = m_islands.begin(); it != m_islands.end();)
     {
@@ -755,6 +756,11 @@ void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const
             fwprintf(statsFile, L"# unsupported %s %s\n", className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
         }
     }
+}
+
+FILE* ImmediateRenderer::StatsFile() noexcept
+{
+    return GetStatsFile();
 }
 
 namespace
@@ -1862,6 +1868,8 @@ void ImmediateRenderer::Walk(
         return;
     }
 
+    CheckFallback(element);
+
     const KnownTypeIndex type = element->GetTypeIndex();
     switch (type)
     {
@@ -2353,7 +2361,20 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         state.previousWalk = DisplayList();
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
         auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
+        m_pendingFallback = nullptr;
         Walk(island, root, list);
+    }
+
+    if (m_pendingFallback != nullptr)
+    {
+        // S11/S16: the island switches to Composition for good; free its painter, swap chain and sprite.
+        FallBackIsland(dcompTreeHost, island);
+        if (state.painter)
+        {
+            IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+        }
+        m_islands.erase(island);
+        return S_OK;
     }
 
     const RectF surface{ 0, 0, static_cast<float>(width), static_cast<float>(height) };

@@ -5,6 +5,7 @@
 
 #include <ImmediatePainter.h>
 #include <wrl/client.h>
+#include <cstdio>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -46,6 +47,12 @@ public:
 
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
+
+    // S11/S16 per-window fallback (ImmediateRenderer.Fallback.cpp): an island whose walk found Composition-only
+    // content is rendered by HWWalk from then on. ConsumeFallbackRedraw is true once, for the first HWWalk pass, which
+    // must force a full redraw (the island's subtree never had comp nodes).
+    bool IsFallenBack(_In_ CXamlIslandRoot* island) const noexcept;
+    bool ConsumeFallbackRedraw(_In_ CXamlIslandRoot* island) noexcept;
 
     void ResetStats() noexcept { m_elementsVisited = 0; m_elementsRendered = 0; m_elementsCulled = 0; }
     uint32_t GetElementsVisited() const noexcept { return m_elementsVisited; }
@@ -89,6 +96,14 @@ private:
 
     static void SaveScrollers(_Inout_ IslandState& state, const ImmediateRenderingDetail::DisplayList& list);
     void ReportUnsupported(_In_ CUIElement* element, _In_z_ const wchar_t* detail);
+    static FILE* StatsFile() noexcept;
+
+    // ImmediateRenderer.Fallback.cpp
+    void CheckFallback(_In_ CUIElement* element) noexcept;
+    void FallBackIsland(_In_ DCompTreeHost* dcompTreeHost, _In_ CXamlIslandRoot* island) noexcept;
+    void PruneFallenBack(_In_ DCompTreeHost* dcompTreeHost) noexcept;
+    static bool IsBuiltInProgressRingPlayer(_In_ CUIElement* element) noexcept;
+    static bool IsHandOffVisualTouched(_In_ CUIElement* element) noexcept;
 
     RenderingBackend::Mode m_mode;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -101,4 +116,9 @@ private:
     uint32_t m_subtreesReused = 0;
     // Previous frame's display list of the island being walked: clean subtrees reuse their commands from it.
     ImmediateRenderingDetail::DisplayList* m_previousWalk = nullptr;
+    // Fallback trigger found by the current walk (static reason string) and the element's class name.
+    const wchar_t* m_pendingFallback = nullptr;
+    std::wstring m_pendingFallbackClass;
+    // Islands rendered by HWWalk; value: the next HWWalk pass must force a full redraw.
+    std::unordered_map<CXamlIslandRoot*, bool> m_fallenBack;
 };

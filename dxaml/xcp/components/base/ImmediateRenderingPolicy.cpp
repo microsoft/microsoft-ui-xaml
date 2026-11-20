@@ -141,15 +141,15 @@ namespace ImmediateRenderingPolicy
         // t(q) = dot(q, g) + c, an affine function of q, so the mapped gradient is still linear: its local axis is g.
         const double gx = (inverse.m11 * dx + inverse.m12 * dy) / lengthSquared;
         const double gy = (inverse.m21 * dx + inverse.m22 * dy) / lengthSquared;
-        const double c = ((inverse.dx - input.start.x) * dx + (inverse.dy - input.start.y) * dy) / lengthSquared;
         const double gSquared = gx * gx + gy * gy;
         if (!(gSquared > 1e-18) || !std::isfinite(gSquared))
         {
             return false;
         }
 
-        const double sx = -c * gx / gSquared;
-        const double sy = -c * gy / gSquared;
+        // The mapped start point has t = 0; the end lies one gradient length along the (local) axis g.
+        const double sx = static_cast<double>(input.start.x) * toLocal.m11 + static_cast<double>(input.start.y) * toLocal.m21 + toLocal.dx;
+        const double sy = static_cast<double>(input.start.x) * toLocal.m12 + static_cast<double>(input.start.y) * toLocal.m22 + toLocal.dy;
         start->x = static_cast<float>(sx);
         start->y = static_cast<float>(sy);
         end->x = static_cast<float>(sx + gx / gSquared);

@@ -7196,8 +7196,10 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                 // Immediate-rendering prototype: paint the island through the painter into its own swap chain instead
                 // of producing comp nodes. HWWalk never visits the island, so no comp peer or visual content exists
                 // for its subtree. Paint failures are traced and retried on the next dirty frame; they never fail the
-                // render walk (which would fail fast).
-                if (m_immediateRenderer != nullptr)
+                // render walk (which would fail fast). An island that fell back to Composition (S11/S16) is rendered
+                // by HWWalk below, with a full redraw on its first pass.
+                bool islandForceRedraw = forceRedraw;
+                if (m_immediateRenderer != nullptr && !m_immediateRenderer->IsFallenBack(xamlIslandRoot))
                 {
                     if (xamlIslandRoot->IsActive())
                     {
@@ -7206,9 +7208,20 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                         {
                             LOG_HR(paintHr);
                         }
-                        xamlIslandRoot->PropagateNWClean();
+                        if (!m_immediateRenderer->IsFallenBack(xamlIslandRoot))
+                        {
+                            xamlIslandRoot->PropagateNWClean();
+                            continue;
+                        }
                     }
-                    continue;
+                    else
+                    {
+                        continue;
+                    }
+                }
+                if (m_immediateRenderer != nullptr && m_immediateRenderer->ConsumeFallbackRedraw(xamlIslandRoot))
+                {
+                    islandForceRedraw = true;
                 }
 
                 // During test cleanup we can have XamlIslandRoot that are still alive but have no content.
@@ -7218,7 +7231,7 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                     IFC_RETURN(pHWWalk->RenderRoot(
                         xamlIslandRoot,
                         pRenderTarget,
-                        forceRedraw,
+                        islandForceRedraw,
                         scale,
                         hasUIAClientsListeningToStructure));
 
