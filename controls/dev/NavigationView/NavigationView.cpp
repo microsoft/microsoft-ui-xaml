@@ -24,6 +24,8 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
+#include "SelectionNode.h"
+#include "SelectionModel.h"
 #include <ItemsRepeater.common.h>
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
@@ -2594,16 +2596,33 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     {
         return;
     }
-    UpdateSelectionModelSelectionForSelectedItem(nextItem);
+    const bool isNextItemInMenus = UpdateSelectionModelSelectionForSelectedItem(nextItem);
     if (selectionOwnershipLost())
     {
         return;
     }
 
-    if (!nextItem && m_selectionModel)
+    // nextItem has no index path when it is null or an item outside the menus (#8266), so any path left in the
+    // selection model is stale (unless the model already holds nextItem, e.g. while its container is detached).
+    bool hasStaleSelectionModelPath = m_selectionModel && (!nextItem || (m_appliedTemplate && !isNextItemInMenus));
+    if (hasStaleSelectionModelPath && nextItem)
     {
-        // A redirect can clear SelectedItem before the invoked item's container was selected,
-        // so no container deselection removes the invoked item from the selection model.
+        // Reading the model's item calls into the items source (GetAt/IndexOf), which can start a new selection.
+        hasStaleSelectionModelPath = !winrt::get_self<SelectionModel>(m_selectionModel)->IsSelectedItem(nextItem);
+        if (selectionOwnershipLost())
+        {
+            return;
+        }
+    }
+
+    if (hasStaleSelectionModelPath)
+    {
+        // Nothing is left to move out of the Top overflow when its flyout closes.
+        m_moveTopNavOverflowItemOnFlyoutClose = false;
+
+        // A redirect can clear SelectedItem before the invoked item's container was selected, and a data item
+        // selected before its container existed never had a container to deselect, so no container deselection
+        // removes the old item from the selection model.
         if (auto const selectedIndexPath = m_selectionModel.SelectedIndex())
         {
             auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange]()
@@ -2714,11 +2733,12 @@ void NavigationView::CompletePendingSelectionChange()
     }
 }
 
-void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
+// Returns whether selectedItem was found in the menus.
+bool NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::IInspectable& selectedItem)
 {
     if (!m_appliedTemplate)
     {
-        return;
+        return false;
     }
 
     winrt::IndexPath indexPath{ nullptr };
@@ -2742,7 +2762,9 @@ void NavigationView::UpdateSelectionModelSelectionForSelectedItem(const winrt::I
             });
         m_shouldIgnoreNextSelectionChange = true;
         UpdateSelectionModelSelection(indexPath);
+        return true;
     }
+    return false;
 }
 
 void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
