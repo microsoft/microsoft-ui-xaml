@@ -93,6 +93,115 @@ try
     Test-VersionResource -Name 'Standalone' -Version '' -ExpectedVersions $standaloneVersions
     Test-VersionResource -Name 'LegacyMonobuild' -Version '$(WindowsAppSDKBinaryVersion)' -ExpectedVersions $standaloneVersions
 
+    $localizedResource = Join-Path $testRoot 'Localized.rc'
+    $localizedBinary = Join-Path $testRoot 'Microsoft.ui.xaml.dll.mui'
+    [System.IO.File]::WriteAllLines($localizedResource, @(
+        '#include <winver.h>',
+        'LANGUAGE 7, 1',
+        '1 VERSIONINFO',
+        'FILEVERSION 3,2,0,0',
+        'PRODUCTVERSION 2,0,0,0',
+        'BEGIN',
+        '  BLOCK "StringFileInfo"',
+        '  BEGIN',
+        '    BLOCK "040704b0"',
+        '    BEGIN',
+        '      VALUE "FileVersion", "3.2.0.2610\0"',
+        '      VALUE "ProductVersion", "2.0\0"',
+        '      VALUE "OriginalFilename", "Microsoft.ui.xaml.dll.mui\0"',
+        '      VALUE "LegalCopyright", L"\x00a9 Microsoft Corporation\0"',
+        '    END',
+        '  END',
+        '  BLOCK "VarFileInfo"',
+        '  BEGIN',
+        '    VALUE "Translation", 0x407, 1200',
+        '  END',
+        'END',
+        'STRINGTABLE',
+        'BEGIN',
+        '  100 L"Lokalisierte Zeichenfolge"',
+        'END'
+    ))
+    & $resourceCompiler.Source /nologo /fo (Join-Path $testRoot 'Localized.res') $localizedResource
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw 'Localized resource compilation failed.'
+    }
+    & $linker.Source /nologo /dll /noentry /machine:x64 "/out:$localizedBinary" (Join-Path $testRoot 'Localized.res')
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw 'Localized resource linking failed.'
+    }
+    $localizedInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary)
+    if (-not ('LocalizedResourceFixture' -as [type]))
+    {
+        Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public static class LocalizedResourceFixture
+{
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr LoadLibraryEx(string path, IntPtr file, uint flags);
+    [DllImport("kernel32.dll")]
+    private static extern bool FreeLibrary(IntPtr module);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern int LoadString(IntPtr module, uint id, StringBuilder value, int capacity);
+
+    public static string ReadString(string path)
+    {
+        IntPtr module = LoadLibraryEx(path, IntPtr.Zero, 0x22);
+        if (module == IntPtr.Zero)
+        {
+            throw new Win32Exception();
+        }
+        try
+        {
+            StringBuilder value = new StringBuilder(256);
+            if (LoadString(module, 100, value, value.Capacity) == 0)
+            {
+                throw new Win32Exception();
+            }
+            return value.ToString();
+        }
+        finally
+        {
+            FreeLibrary(module);
+        }
+    }
+}
+'@
+    }
+    foreach ($version in @('102.7.3.41', '65535.65535.65535.65535', '102.7.3.0'))
+    {
+        & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary -Version $version | Out-Null
+        $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary)
+        $actualVersions = @(
+            (@($info.FileMajorPart, $info.FileMinorPart, $info.FileBuildPart, $info.FilePrivatePart) -join '.'),
+            $info.FileVersion,
+            (@($info.ProductMajorPart, $info.ProductMinorPart, $info.ProductBuildPart, $info.ProductPrivatePart) -join '.'),
+            $info.ProductVersion
+        )
+        if (@($actualVersions | Where-Object { $_ -cne $version }).Count -gt 0)
+        {
+            throw "Localized fixed/string file/product versions did not converge to '$version'."
+        }
+        foreach ($field in @('OriginalFilename', 'LegalCopyright', 'Language'))
+        {
+            if ($info.$field -cne $localizedInfo.$field)
+            {
+                throw "Stamping a localized version changed $field."
+            }
+        }
+        if ([LocalizedResourceFixture]::ReadString($localizedBinary) -cne 'Lokalisierte Zeichenfolge')
+        {
+            throw 'Stamping a localized version changed another resource.'
+        }
+        Write-Output "PASS: localized MUI version '$version' preserves translated metadata."
+    }
+
     $invalidVersions = @(
         @{ Version = "10$([char]0x0662).6.6.21"; Message = 'is not a numeric four-part version' },
         @{ Version = '102.6.6'; Message = 'is not a numeric four-part version' },
@@ -116,6 +225,22 @@ try
             throw "Invalid version '$($case.Version)' did not fail the expected validation before generating a header: $failure"
         }
         Write-Output "PASS: rejected '$($case.Version)' before generating a header."
+
+        $beforeContents = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($localizedBinary))
+        $failure = $null
+        try
+        {
+            & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary -Version $case.Version | Out-Null
+        }
+        catch
+        {
+            $failure = $_
+        }
+        if (-not $failure -or [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($localizedBinary)) -cne $beforeContents)
+        {
+            throw "Invalid version '$($case.Version)' did not fail before modifying the localized binary."
+        }
+        Write-Output "PASS: rejected '$($case.Version)' before modifying localized resources."
     }
 }
 finally

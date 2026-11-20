@@ -74,6 +74,11 @@ namespace MUXControlsTestApp
             FileItem.Items.Add(new MenuFlyoutItem { Text = "Replacement Flyout Item" });
         }
 
+        private void ReplaceFlyoutItem_Click(object sender, RoutedEventArgs e)
+        {
+            FileItem.Items[1] = new MenuFlyoutItem { Text = "Replaced Open Item" };
+        }
+
         private void NewItem_Click(object sender, RoutedEventArgs e)
         {
             TextOutput.Text = "New Clicked";
