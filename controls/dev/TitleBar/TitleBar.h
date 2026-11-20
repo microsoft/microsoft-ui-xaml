@@ -104,6 +104,7 @@ private:
     double m_compactModeThresholdWidth{ 0.0 };
     bool m_isCompact{ false };
     bool m_hasDefaultAppWindowTitle{ false };
+    bool m_isDragRegionUpdatePending{ false };
 
     static constexpr std::wstring_view s_leftPaddingColumnName{ L"LeftPaddingColumn"sv };
     static constexpr std::wstring_view s_rightPaddingColumnName{ L"RightPaddingColumn"sv };
