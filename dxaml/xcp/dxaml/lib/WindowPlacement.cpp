@@ -21,6 +21,8 @@ namespace
 {
     using PropertyMap = wfc::IMap<HSTRING, IInspectable*>;
     namespace storage = ABI::Microsoft::Windows::Storage;
+    namespace windowing = ABI::Microsoft::UI::Windowing;
+    using PlacementDetails = windowing::IAppWindowPlacementDetails;
 
     constexpr uint32_t c_recordVersion = 1;
     constexpr uint32_t c_maxRecordSize = 8192;
@@ -97,17 +99,119 @@ namespace
     {
         if (state == SavedWindowState::Maximized)
         {
-            return SW_MAXIMIZE;
+            return SW_SHOWMAXIMIZED;
         }
 
         if (state == SavedWindowState::MinimizedFromNormal ||
             state == SavedWindowState::MinimizedFromMaximized ||
             state == SavedWindowState::MinimizedFromSnapped)
         {
-            return SW_MINIMIZE;
+            // Match the show command that GetWindowPlacement and AppWindow.GetCurrentPlacement report.
+            return SW_SHOWMINIMIZED;
         }
 
-        return SW_NORMAL;
+        return SW_SHOWNORMAL;
+    }
+
+    RECT ToRect(const ABI::Windows::Graphics::RectInt32& rect)
+    {
+        return { rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height };
+    }
+
+    ABI::Windows::Graphics::RectInt32 ToRectInt32(const RECT& rect)
+    {
+        return { rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top };
+    }
+
+    // WinUI's copy of PlacementEx and AppWindow's PlacementInfo use different flag values.
+    // Flags without an equivalent (KeepHidden, NoActivate, AllowPartiallyOffScreen, ...) are dropped.
+    struct FlagMapping
+    {
+        PlacementFlags placementEx;
+        windowing::PlacementInfo appWindow;
+    };
+    constexpr FlagMapping c_flagMappings[] =
+    {
+        { PlacementFlags::RestoreToMaximized, windowing::PlacementInfo_RestoreToMaximized },
+        { PlacementFlags::RestoreToArranged, windowing::PlacementInfo_RestoreToArranged },
+        { PlacementFlags::Arranged, windowing::PlacementInfo_Arranged },
+        { PlacementFlags::AllowSizing, windowing::PlacementInfo_Resizable },
+        { PlacementFlags::FullScreen, windowing::PlacementInfo_FullScreen },
+    };
+
+    HRESULT ToPlacementEx(_In_ PlacementDetails* details, _Out_ PlacementEx& placement)
+    {
+        placement.Clear();
+
+        ABI::Windows::Graphics::RectInt32 normalRect{}, workArea{}, arrangeRect{};
+        INT32 dpi = 0;
+        INT32 showCmd = 0;
+        windowing::PlacementInfo info{};
+        wrl_wrappers::HString deviceName;
+        IFC_RETURN(details->get_NormalRect(&normalRect));
+        IFC_RETURN(details->get_WorkArea(&workArea));
+        IFC_RETURN(details->get_ArrangeRect(&arrangeRect));
+        IFC_RETURN(details->get_Dpi(&dpi));
+        IFC_RETURN(details->get_ShowCmd(&showCmd));
+        IFC_RETURN(details->get_Flags(&info));
+        IFC_RETURN(details->get_DeviceName(deviceName.GetAddressOf()));
+
+        // AppWindowPlacementDetails.Create doesn't validate. Reject values that can't be a placement.
+        IFCEXPECTRC_RETURN(dpi >= 96 && static_cast<uint32_t>(dpi) <= c_maxDpi, E_INVALIDARG);
+        IFCEXPECTRC_RETURN(showCmd >= 0 && showCmd <= SW_MAX, E_INVALIDARG);
+
+        placement.normalRect = ToRect(normalRect);
+        placement.workArea = ToRect(workArea);
+        placement.arrangeRect = ToRect(arrangeRect);
+        placement.dpi = static_cast<UINT>(dpi);
+        placement.showCmd = static_cast<UINT>(showCmd);
+        for (const auto& mapping : c_flagMappings)
+        {
+            if ((static_cast<uint32_t>(info) & static_cast<uint32_t>(mapping.appWindow)) != 0)
+            {
+                placement.flags |= mapping.placementEx;
+            }
+        }
+
+        IFC_RETURN(StringCchCopyW(placement.deviceName, ARRAYSIZE(placement.deviceName),
+            WindowsGetStringRawBuffer(deviceName.Get(), nullptr)));
+
+        return S_OK;
+    }
+
+    HRESULT FromPlacementEx(const PlacementEx& placement, _COM_Outptr_ PlacementDetails** details)
+    {
+        *details = nullptr;
+
+        wrl::ComPtr<windowing::IAppWindowPlacementDetailsStatics> statics;
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Windowing_AppWindowPlacementDetails).Get(),
+            &statics));
+
+        uint32_t info = 0;
+        for (const auto& mapping : c_flagMappings)
+        {
+            if (placement.HasFlag(mapping.placementEx))
+            {
+                info |= static_cast<uint32_t>(mapping.appWindow);
+            }
+        }
+
+        // Use the string length, not the buffer size, so the HSTRING has no padding nulls.
+        const size_t deviceNameLength = wcsnlen(placement.deviceName, ARRAYSIZE(placement.deviceName));
+        IFCEXPECTRC_RETURN(deviceNameLength < ARRAYSIZE(placement.deviceName), E_INVALIDARG);
+
+        IFC_RETURN(statics->Create(
+            ToRectInt32(placement.normalRect),
+            ToRectInt32(placement.workArea),
+            static_cast<INT32>(placement.dpi),
+            static_cast<INT32>(placement.showCmd),
+            ToRectInt32(placement.arrangeRect),
+            static_cast<windowing::PlacementInfo>(info),
+            wrl_wrappers::HStringReference(placement.deviceName, static_cast<unsigned int>(deviceNameLength)).Get(),
+            details));
+
+        return S_OK;
     }
 
     HRESULT ReadPlacement(
@@ -239,21 +343,14 @@ HRESULT WindowPlacement::SetId(_In_opt_ HSTRING value)
     IFCEXPECTRC_RETURN(WindowsGetStringLen(value) <= MAX_PATH, E_INVALIDARG);
     IFC_RETURN(m_id.Set(value));
 
-    if (!WindowsIsStringEmpty(value))
-    {
-        // Storage is optional; failure must not make a window property unusable.
-        IGNOREHR(EnsureStorage());
-    }
-
     return S_OK;
 }
 
 HRESULT WindowPlacement::EnsureStorage()
 {
-    if (m_settings)
-    {
-        return S_OK;
-    }
+    // Reopen the container on every use. The app can delete it (DeleteContainer or
+    // ApplicationData.ClearAsync), and writes to a stale Values map would be lost.
+    m_settings.Reset();
 
     UINT32 length = 0;
     if (GetCurrentPackageFullName(&length, nullptr) != ERROR_INSUFFICIENT_BUFFER)
@@ -287,12 +384,14 @@ HRESULT WindowPlacement::EnsureStorage()
     return S_OK;
 }
 
-HRESULT WindowPlacement::TryLoadAndApply(HWND hwnd, _Out_ PlacementResult* result)
+HRESULT WindowPlacement::TryLoad(_Outptr_result_maybenull_ PlacementDetails** details, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(details);
     IFCPTR_RETURN(result);
+    *details = nullptr;
     *result = PlacementResult::None;
 
-    if (WindowsIsStringEmpty(m_id.Get()))
+    if (!HasId())
     {
         // An empty string means placement is disabled, but this is not an error.
         return S_OK;
@@ -337,56 +436,49 @@ HRESULT WindowPlacement::TryLoadAndApply(HWND hwnd, _Out_ PlacementResult* resul
     IFCEXPECTRC_RETURN(record.Get(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFC_RETURN(ReadPlacement(record.Get(), m_id.Get(), placement, *result));
 
-    // Reopen minimized windows at their restore target, including snap bounds when available.
-    // PlacementEx needs Arranged, not just RestoreToArranged, to apply those bounds now.
-    if (placement.HasFlag(PlacementFlags::RestoreToArranged))
-    {
-        placement.flags &= ~PlacementFlags::RestoreToArranged;
-        placement.flags |= PlacementFlags::Arranged;
-    }
+    // WinUI never restores full screen, in either mode. Strip the flag so AppWindow doesn't switch
+    // presenters. The app can enter full screen itself.
+    placement.flags &= ~PlacementFlags::FullScreen;
 
-    placement.RestoreIfMinimized();
-    placement.flags |= PlacementFlags::KeepHidden | PlacementFlags::NoActivate;
-    if (GetWindowLongPtr(hwnd, GWL_STYLE) & WS_THICKFRAME)
-    {
-        placement.flags |= PlacementFlags::AllowSizing;
-    }
+    // The record doesn't store resizability. Always allow AppWindow to shrink the window to fit
+    // a smaller screen, even if the app made the window fixed size.
+    placement.flags |= PlacementFlags::AllowSizing;
+    IFC_RETURN(FromPlacementEx(placement, details));
 
-    // Apply the restored bounds and window state to the HWND.
-    IFCEXPECTRC_RETURN(PlacementEx::SetPlacement(hwnd, &placement), E_FAIL);
-
-    *result |= PlacementResult::LoadedAndApplied;
+    *result |= PlacementResult::Found;
 
     return S_OK;
 }
 
-HRESULT WindowPlacement::Save(HWND hwnd, _Out_ PlacementResult* result)
+HRESULT WindowPlacement::Save(_In_ PlacementDetails* details, _Out_ PlacementResult* result)
 {
+    IFCPTR_RETURN(details);
     IFCPTR_RETURN(result);
     *result = PlacementResult::None;
 
     // An empty id opts out. Storage is unavailable without package identity or if setup failed.
     // Saving is best effort; skip it rather than interfere with window shutdown.
-    if (WindowsIsStringEmpty(m_id.Get()) || !m_settings)
+    if (!HasId())
+    {
+        return S_OK;
+    }
+
+    IGNOREHR(EnsureStorage());
+    if (!m_settings)
     {
         return S_OK;
     }
 
     PlacementEx placement;
-    // Keep the earlier record if capture fails or returns bounds/DPI that the reader would reject.
-    IFCEXPECTRC_RETURN(PlacementEx::GetPlacement(hwnd, &placement), E_FAIL);
-
-    // Full-screen placement is also excluded: phase 1 only saves overlapped-window placement.
-    if (placement.HasFlag(PlacementFlags::FullScreen))
-    {
-        return S_OK;
-    }
-
+    // Keep the earlier record if the details have bounds/DPI that the reader would reject.
+    IFC_RETURN(ToPlacementEx(details, placement));
     IFCEXPECTRC_RETURN(placement.IsValid(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFCEXPECTRC_RETURN(IsValidRect(placement.normalRect), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
     IFCEXPECTRC_RETURN(IsValidRect(placement.workArea), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
-    IFCEXPECTRC_RETURN(placement.dpi <= c_maxDpi, HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
 
+    // The record has no full screen state, so any FullScreen flag in the details is not stored.
+    // In full screen, AppWindow reports the overlapped placement underneath it (normal, maximized,
+    // or snapped). The app decides whether to enter full screen again after a restart.
     const bool minimized = PlacementEx::IsMinimizeShowCmd(placement.showCmd);
     const bool arranged = placement.HasFlag(PlacementFlags::Arranged) ||
                           placement.HasFlag(PlacementFlags::RestoreToArranged);

@@ -38,6 +38,10 @@ namespace DirectUI
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
         _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value) override;
         _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_PlacementModeImpl(_Out_ xaml::WindowPlacementMode* value) override;
+        _Check_return_ HRESULT put_PlacementModeImpl(xaml::WindowPlacementMode value) override;
+        _Check_return_ HRESULT TryLoadPlacementDetailsImpl(_Outptr_result_maybenull_ ixp::IAppWindowPlacementDetails** value) override;
+        _Check_return_ HRESULT SavePlacementDetailsImpl() override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
@@ -139,9 +143,20 @@ namespace DirectUI
     private:
         _Check_return_ HRESULT ApplyInitialWindowPlacement();
         void TryApplySavedWindowPlacement();
+        // Reads the live presenter kind. Apps can switch presenters between activation and close.
+        bool TryGetPresenterKind(_Out_ ixp::AppWindowPresenterKind* kind);
         bool HasOverlappedPresenter();
         void RefreshWindowPlacementEligibility();
+        // Saves on close or session end, if the window is eligible (see RefreshWindowPlacementEligibility).
         _Check_return_ HRESULT SaveWindowPlacement();
+        // Saves now, with no eligibility check. Does nothing without a PlacementId.
+        _Check_return_ HRESULT SaveCurrentPlacement();
+        // Gets the placement to save from AppWindow.GetCurrentPlacement. In FullScreen, AppWindow returns
+        // the overlapped placement underneath it (normal, maximized, or snapped). WinUI doesn't save full screen.
+        _Check_return_ HRESULT GetPlacementToSave(_Outptr_result_maybenull_ ixp::IAppWindowPlacementDetails** details);
+        // Applies details with AppWindow.SetCurrentPlacement, using the AppWindow's PlacementRestorationBehavior.
+        _Check_return_ HRESULT ApplyPlacementDetails(_In_ ixp::IAppWindowPlacementDetails* details, _Out_ bool* applied);
+        void MarkPlacementSaved();
 
         LRESULT OnDpiChanged(WPARAM wParam, LPARAM lParam);
         _Check_return_ HRESULT OnSizeChanged(WPARAM wParam, LPARAM lParam);
@@ -169,20 +184,16 @@ namespace DirectUI
         // AppWindow is using the default Overlapped presenter.
         _Check_return_ HRESULT GetRestoredClientSizeInDips(_Out_ wf::Size* pValue);
         _Check_return_ HRESULT ApplyRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
-        _Check_return_ HRESULT GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize);
+        _Check_return_ HRESULT GetSavedRestoreChromeSizeInPixels(UINT dpi, _Out_ SIZE* pChromeSize);
         
         // Applies the requested client size now, or defers it (pending) until we can honor it.
         _Check_return_ HRESULT ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height);
 
-        // Reads the Win32 restore size (rcNormalPosition) while maximized/minimized. Sets the out flag
-        // only in that case; otherwise the caller falls back to another source.
-        _Check_return_ HRESULT TryGetWin32RestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue);
-
         // Live chrome (outer minus client) in pixels
         _Check_return_ HRESULT MeasureLiveChromeInPixels(_Out_ SIZE* pChromeSize);
         float GetWindowScale();
-        // Tracks the restored size (client + chrome, both DIPs) as a unit.
-        void SetTrackedRestoredSize(wf::Size clientDips, wf::Size chromeDips);
+        // Remembers restored-state chrome without shadowing the restored window size.
+        void TrackRestoredChrome(bool measureChrome = true);
         _Check_return_ HRESULT ValidateWidthHeightValue(DOUBLE value);
 
         // Only the Default/Overlapped presenters support Width/Height sizing.
@@ -192,15 +203,12 @@ namespace DirectUI
         // True once the app has opted into preserving client height across title-bar toggles.
         bool HasExplicitClientHeight() const { return m_hasExplicitClientHeight; }
 
-        // Tracks the live client size as the restored size, but only while in the restored state.
-        void TrackLastRestoredClientSize();
-        // Defers TrackLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
-        void ScheduleTrackLastRestoredClientSize();
         // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
         _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
         // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
         // presenter, and re-applies the Min/Max size constraints once we're back on an OverlappedPresenter.
         _Check_return_ HRESULT OnAppWindowChanged(_In_ ixp::IAppWindow* sender, _In_ ixp::IAppWindowChangedEventArgs* args);
+        _Check_return_ HRESULT OnAppWindowDestroying(_In_ ixp::IAppWindow* sender, _In_ IInspectable* args);
         
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
@@ -238,7 +246,7 @@ namespace DirectUI
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
 
-        // Tracks initial placement progress, presenter eligibility, and saving during window destruction.
+        // Tracks initial placement progress, presenter eligibility, and whether the close-time save happened.
         // This is separate from native activation and normal/maximized window state.
         enum class PlacementState
         {
@@ -247,10 +255,17 @@ namespace DirectUI
             InitialPlacementAttempted,
             ReadyToSave,
             SavingDisabledForPresenter,
-            SavingOnDestroy,
+            // Placement was saved during close (Shutdown or AppWindow.Destroying). Don't save again.
+            Saved,
         };
         WindowPlacement m_windowPlacement;
         PlacementState m_placementState = PlacementState::NotStarted;
+        // RestoreAndSave: the first Window.Activate applies saved placement. SaveOnClose and Manual: the app applies placement.
+        xaml::WindowPlacementMode m_placementMode = xaml::WindowPlacementMode_RestoreAndSave;
+        // Set when the window has real normal (restored) bounds: it used the Overlapped presenter, or
+        // initial placement came from saved data or the app (Manual). A window that starts in FullScreen only has
+        // the default CreateWindow bounds, so WinUI doesn't save it over the existing record.
+        bool m_hasNormalBoundsToSave = false;
 
         // --------------------------------------------------
         // Window sizing support
@@ -265,37 +280,25 @@ namespace DirectUI
         std::optional<double> m_pendingClientWidthDips;
         std::optional<double> m_pendingClientHeightDips;
 
-        // The window's last known restored size in DIPs - the client-area size and its non-client
-        // chrome (outer window rect minus client rect) the window has, or returns to, when it isn't
-        // maximized, minimized, or in a non-sizing presenter. While open, client and chrome are
-        // tracked together (see SetTrackedRestoredSize). After close, client preserves the final
-        // resolved size; pending requests still take precedence and chrome is no longer used.
-        struct TrackedRestoredSize
+        // AppWindow placement supplies the restored outer rect. Keep only the restored-state chrome
+        // needed to convert that rect to Window.Width/Height's client DIPs.
+        struct TrackedRestoredChrome
         {
-            wf::Size client;
-            wf::Size chrome;
+            wf::Size dips;
+            bool hasMeasuredChrome = false;
             bool extendsContentIntoTitleBar = false;
+            DWORD style = 0;
+            DWORD exStyle = 0;
+            bool hasMenu = false;
         };
-        std::optional<TrackedRestoredSize> m_trackedRestoredSize;
+        std::optional<TrackedRestoredChrome> m_trackedRestoredChrome;
 
-        // When true, we're applying a restored-size request through SetWindowPos and expect a synchronous WM_SIZE.
-        // On the next WM_SIZE, clear this flag and track the size before raising Window.SizeChanged.
-        bool m_trackRestoredSizeOnNextSize = false;
-
-        // We've scheduled an update of the restored client size onto the dispatcher queue
-        bool m_restoredSizeUpdateScheduled = false;
-
-        // True while the user is interactively moving/resizing the window.
-        bool m_inSizeMove = false;
-
-        // Lifetime sentinel for deferred (DispatcherQueue) restored-size callbacks. Lazily allocated
-        // the first time we enqueue such a callback (ScheduleTrackLastRestoredClientSize); stays null
-        // for windows that never schedule one. Shutdown() clears it so a callback outliving the window
-        // no-ops instead of touching freed memory.
-        std::shared_ptr<bool> m_isWindowAlive;
+        // Window.Width/Height remain readable after close.
+        std::optional<wf::Size> m_closedRestoredClientSize;
 
         EventRegistrationToken m_takeFocusRequestedEventToken;
         EventRegistrationToken m_appWindowChangedToken{};
+        EventRegistrationToken m_appWindowDestroyingToken{};
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
         HWND m_positioningBridgeWindowHandle = NULL;

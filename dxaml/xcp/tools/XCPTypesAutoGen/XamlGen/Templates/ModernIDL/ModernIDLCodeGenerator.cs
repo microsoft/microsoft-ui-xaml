@@ -237,6 +237,18 @@ namespace XamlGen.Templates.ModernIDL
             WriteLine(");");
         }
 
+        // MIDL warns (MIDL5135) when a non-[experimental] type references an [experimental] one.
+        // Codegen can't mark members [experimental] because MIDL rejects [experimental] with [feature],
+        // so suppress the warning around runtime classes that reference experimental imported types.
+        protected static bool ReferencesExperimentalType(ClassDefinition classDef)
+        {
+            Func<TypeReference, bool> isExperimental = t => t?.Type?.IdlTypeInfo?.IsExperimental == true;
+
+            return classDef.AllProperties.Any(p => isExperimental(p.PropertyType)) ||
+                classDef.AllEvents.Any(e => isExperimental(e.EventHandlerType)) ||
+                classDef.AllMethods.Any(m => isExperimental(m.ReturnType) || m.Parameters.Any(p => isExperimental(p.ParameterType)));
+        }
+
         protected void WriteRuntimeClassAttributes(ClassDefinition classDef)
         {
             WriteAttributes(classDef);

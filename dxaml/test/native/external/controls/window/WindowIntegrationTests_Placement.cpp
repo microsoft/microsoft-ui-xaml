@@ -452,6 +452,18 @@ namespace
         return bounds;
     }
 
+    bool HasPlacementFlag(::Microsoft::UI::Windowing::AppWindowPlacementDetails^ details,
+        ::Microsoft::UI::Windowing::PlacementInfo flag)
+    {
+        return (static_cast<unsigned int>(details->Flags) & static_cast<unsigned int>(flag)) != 0;
+    }
+
+    void VerifyDetailsNormalRect(const RECT& expected, ::Microsoft::UI::Windowing::AppWindowPlacementDetails^ details)
+    {
+        const auto rect = details->NormalRect;
+        VerifyBoundsEqual(expected, RECT{ rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height });
+    }
+
     void VerifyClientSizeInDips(xaml::Window^ window, double width, double height)
     {
         // Check the actual client area in DIPs; property getters can return pending size requests.
@@ -1102,6 +1114,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 { L"Negative width", [](const Record& r) { r->fields.normalRect.right = r->fields.normalRect.left - 1; } },
                 { L"Invalid normal rectangle", [](const Record& r) { r->fields.normalRect.left = INT_MAX; } },
                 { L"Unknown state", [](const Record& r) { r->fields.state = 99; } },
+                { L"Unknown state 6 (unshipped full screen)", [](const Record& r) { r->fields.state = 6; } },
                 { L"Partial snap rectangle", [](const Record& r) { r->fields.snapRect.left = 1; } },
                 { L"Zero dpi", [](const Record& r) { r->fields.dpi = 0; } },
                 { L"Zero height", [](const Record& r) { r->fields.normalRect.bottom = r->fields.normalRect.top; } },
@@ -1394,6 +1407,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 window->Close();
                 auto normal = data.ReadRecord()->fields.normalRect;
                 VERIFY_ARE_EQUAL(420L, normal.right - normal.left);
+
+                // FullScreen after activation saves the Overlapped placement. See WindowPlacementDoesNotRestoreFullScreen.
+                if (kind == ::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen)
+                {
+                    continue;
+                }
 
                 WindowAutoCloser changed;
                 changed.Attach(ref new xaml::Window());
@@ -1719,8 +1738,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 {
                     window->Close();
                 }
+                // Close saves in Shutdown, before DestroyWindow, while AppWindow still has its presenter.
                 VERIFY_IS_TRUE(observation.received);
-                VERIFY_IS_FALSE(observation.savedBefore);
+                VERIFY_IS_TRUE(observation.savedBefore);
                 VERIFY_IS_TRUE(observation.savedAfter);
                 VerifyBoundsEqual(bounds, ReadSavedNormalBounds(data));
             }
@@ -1786,13 +1806,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestCleanupWrapper cleanup;
         RunOnUIThread([&]()
         {
-            for (auto kind : { ::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen,
-                ::Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay })
+            // FullScreen saves the Overlapped placement during native destruction. See WindowPlacementDoesNotRestoreFullScreen.
+            for (auto kind : { ::Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay })
             {
                 for (bool useAppWindowDestroy : { false, true })
                 {
-                    LOG_OUTPUT(L"Native destruction skips %s: %s",
-                        kind == ::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen ? L"full-screen" : L"compact-overlay",
+                    LOG_OUTPUT(L"Native destruction skips compact-overlay: %s",
                         useAppWindowDestroy ? L"AppWindow.Destroy" : L"DestroyWindow");
                     PlacementData data;
                     const RECT savedBounds = SavePlacementFromNewWindow(data);
@@ -2200,8 +2219,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"Fit oversized placement: %s", resizable ? L"resizable" : L"fixed-size");
             PlacementData data;
             WindowAutoCloser window;
-            RECT workArea{}, oversized{}, initial{};
-            SIZE maxTrack{};
+            RECT workArea{}, oversized{};
             RunOnUIThread([&]()
             {
                 SavePlacementFromNewWindow(data);
@@ -2216,11 +2234,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 record->fields.normalRect = oversized;
                 data.WriteRecord(record);
                 window.Attach(ref new xaml::Window());
-                initial = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
                 safe_cast<::Microsoft::UI::Windowing::OverlappedPresenter^>(
                     window->AppWindow->Presenter)->IsResizable = resizable;
-                const UINT dpi = GetDpiForWindow(GetHwnd(window.get()));
-                maxTrack = { GetSystemMetricsForDpi(SM_CXMAXTRACK, dpi), GetSystemMetricsForDpi(SM_CYMAXTRACK, dpi) };
                 window->PlacementId = data.id;
                 window->Activate();
             });
@@ -2234,26 +2250,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 const LONG height = actual.bottom - actual.top;
                 VERIFY_ARE_EQUAL(resizable, safe_cast<::Microsoft::UI::Windowing::OverlappedPresenter^>(
                     window->AppWindow->Presenter)->IsResizable);
-                if (resizable)
-                {
-                    VERIFY_IS_TRUE(width <= workArea.right - workArea.left);
-                    VERIFY_IS_TRUE(height <= workArea.bottom - workArea.top);
-                }
-                else
-                {
-                    // Windows can keep the fixed size or apply the saved size.
-                    // Require one complete outcome, not a mix of their dimensions.
-                    VERIFY_IS_TRUE(maxTrack.cx > 0);
-                    VERIFY_IS_TRUE(maxTrack.cy > 0);
-                    const LONG savedWidth = oversized.right - oversized.left;
-                    const LONG savedHeight = oversized.bottom - oversized.top;
-                    const bool preservedSize = width == initial.right - initial.left &&
-                        height == initial.bottom - initial.top;
-                    const bool restoredSavedSize = width == (savedWidth < maxTrack.cx ? savedWidth : maxTrack.cx) &&
-                        height == (savedHeight < maxTrack.cy ? savedHeight : maxTrack.cy);
-                    VERIFY_IS_TRUE(preservedSize || restoredSavedSize);
-                }
-                // Fixed-size windows may extend past the edges, but their title bar stays reachable.
+                // WinUI lets AppWindow shrink the saved rect even for a fixed-size window
+                // (Windows can also keep the smaller pre-Activate size). Either way it fits.
+                VERIFY_IS_TRUE(width <= workArea.right - workArea.left);
+                VERIFY_IS_TRUE(height <= workArea.bottom - workArea.top);
+                // The title bar stays reachable.
                 VERIFY_IS_TRUE(actual.left >= workArea.left);
                 VERIFY_IS_TRUE(actual.top >= workArea.top);
                 VERIFY_IS_TRUE(actual.top < workArea.bottom);
@@ -2437,6 +2438,506 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 });
             }
         }
+    }
+
+    void WindowIntegrationTests::WindowPlacementDoesNotRestoreFullScreen()
+    {
+        TestCleanupWrapper cleanup;
+        using ::Microsoft::UI::Windowing::AppWindowPresenterKind;
+
+        // WinUI doesn't persist FullScreen. Saving while FullScreen stores the Overlapped
+        // placement underneath it, and the next window opens Overlapped.
+        for (bool maximized : { false, true })
+        {
+            LOG_OUTPUT(L"FullScreen entered from %s.", maximized ? L"maximized" : L"normal");
+            const auto expectedState = maximized ? SavedWindowState::Maximized : SavedWindowState::Normal;
+            PlacementData data;
+            RECT movedBounds{};
+            {
+                WindowAutoCloser window;
+                RunOnUIThread([&]()
+                {
+                    window.Attach(ref new xaml::Window());
+                    window->PlacementId = data.id;
+                    window->Activate();
+                    movedBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                    if (maximized)
+                    {
+                        ShowWindow(GetHwnd(window.get()), SW_MAXIMIZE);
+                    }
+                });
+                // Let the deferred Overlapped placement cache update before leaving Overlapped.
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                    VERIFY_IS_FALSE(data.HasRecord());
+                    window->SavePlacementDetails();
+                    VerifySavedState(data, expectedState);
+                    VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+
+                    // Remove the record so Close must save it again.
+                    data.values->Remove(data.key);
+                    window->Close();
+                    VerifySavedState(data, expectedState);
+                    VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+                });
+            }
+
+            WindowAutoCloser restoredWindow;
+            RunOnUIThread([&]()
+            {
+                restoredWindow.Attach(ref new xaml::Window());
+                restoredWindow->PlacementId = data.id;
+                restoredWindow->Activate();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                const auto hwnd = GetHwnd(restoredWindow.get());
+                VERIFY_IS_TRUE(restoredWindow->AppWindow->Presenter->Kind == AppWindowPresenterKind::Overlapped);
+                VERIFY_ARE_EQUAL(maximized, !!IsZoomed(hwnd));
+                VerifyBoundsNear(hwnd, movedBounds, GetNormalBoundsOnScreen(hwnd));
+                restoredWindow->Close();
+                VerifySavedState(data, expectedState);
+            });
+        }
+
+        // Native destruction while FullScreen saves the Overlapped state underneath.
+        for (bool useAppWindowDestroy : { false, true })
+        {
+            LOG_OUTPUT(L"Native destruction while full-screen saves normal: %s",
+                useAppWindowDestroy ? L"AppWindow.Destroy" : L"DestroyWindow");
+            PlacementData nativeData;
+            WindowAutoCloser window;
+            RECT nativeMovedBounds{};
+            RunOnUIThread([&]()
+            {
+                SavePlacementFromNewWindow(nativeData);
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = nativeData.id;
+                window->Activate();
+                nativeMovedBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                window->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                const auto hwnd = GetHwnd(window.get());
+                NativeDestructionCleanup nativeCleanup(window.get(), nativeData);
+                if (useAppWindowDestroy)
+                {
+                    window->AppWindow->Destroy();
+                }
+                else
+                {
+                    VERIFY_IS_TRUE(!!DestroyWindow(hwnd));
+                }
+                VERIFY_IS_FALSE(!!IsWindow(hwnd));
+                VERIFY_IS_NOT_NULL(nativeCleanup.recordBeforeClose.get());
+                VERIFY_ARE_EQUAL(static_cast<uint32_t>(SavedWindowState::Normal), nativeCleanup.recordBeforeClose->fields.state);
+                VerifyBoundsEqual(nativeMovedBounds, nativeCleanup.recordBeforeClose->fields.normalRect);
+            });
+        }
+    }
+
+    void WindowIntegrationTests::WindowPlacementTryLoadPlacementDetails()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            using ::Microsoft::UI::Windowing::PlacementInfo;
+
+            LOG_OUTPUT(L"No PlacementId returns null.");
+            {
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                VERIFY_IS_NULL(window->TryLoadPlacementDetails());
+            }
+
+            LOG_OUTPUT(L"No saved record returns null.");
+            {
+                PlacementData data;
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                VERIFY_IS_NULL(window->TryLoadPlacementDetails());
+            }
+
+            LOG_OUTPUT(L"A normal record returns its details.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                auto details = window->TryLoadPlacementDetails();
+                VERIFY_IS_NOT_NULL(details);
+                VerifyDetailsNormalRect(savedBounds, details);
+                VERIFY_IS_TRUE(details->Dpi >= 96);
+                VERIFY_ARE_EQUAL(static_cast<int>(SW_SHOWNORMAL), static_cast<int>(details->ShowCmd));
+                VERIFY_IS_FALSE(HasPlacementFlag(details, PlacementInfo::RestoreToMaximized));
+                VERIFY_IS_FALSE(HasPlacementFlag(details, PlacementInfo::FullScreen));
+
+                // The device name matches the record, without the record buffer's padding nulls.
+                const auto record = data.ReadRecord();
+                const auto deviceName = details->DeviceName;
+                VERIFY_IS_TRUE(record->fields.deviceName[0] != L'\0');
+                VERIFY_ARE_EQUAL(wcslen(record->fields.deviceName), static_cast<size_t>(deviceName->Length()));
+                VERIFY_ARE_EQUAL(0, wcscmp(record->fields.deviceName, deviceName->Data()));
+
+                // Calling it again after activation returns the same record.
+                window->Activate();
+                details = window->TryLoadPlacementDetails();
+                VERIFY_IS_NOT_NULL(details);
+                VerifyDetailsNormalRect(savedBounds, details);
+
+                window->Close();
+                VERIFY_THROWS_SPECIFIC_WINRT(window->TryLoadPlacementDetails(), Platform::Exception^,
+                    [](Platform::Exception^) { return true; });
+            }
+
+            LOG_OUTPUT(L"Maximized and minimized-from-maximized records.");
+            for (auto state : { SavedWindowState::Maximized, SavedWindowState::MinimizedFromMaximized })
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data, state);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                auto details = window->TryLoadPlacementDetails();
+                VERIFY_IS_NOT_NULL(details);
+                VerifyDetailsNormalRect(savedBounds, details);
+                if (state == SavedWindowState::Maximized)
+                {
+                    VERIFY_ARE_EQUAL(static_cast<int>(SW_SHOWMAXIMIZED), static_cast<int>(details->ShowCmd));
+                }
+                else
+                {
+                    VERIFY_ARE_EQUAL(static_cast<int>(SW_SHOWMINIMIZED), static_cast<int>(details->ShowCmd));
+                    VERIFY_IS_TRUE(HasPlacementFlag(details, PlacementInfo::RestoreToMaximized));
+                }
+            }
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlacementModes()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Default value and validation.");
+            {
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                VERIFY_IS_TRUE(window->PlacementMode == xaml::WindowPlacementMode::RestoreAndSave);
+                window->PlacementMode = xaml::WindowPlacementMode::SaveOnClose;
+                VERIFY_IS_TRUE(window->PlacementMode == xaml::WindowPlacementMode::SaveOnClose);
+                window->PlacementMode = xaml::WindowPlacementMode::Manual;
+                VERIFY_IS_TRUE(window->PlacementMode == xaml::WindowPlacementMode::Manual);
+                VERIFY_THROWS_SPECIFIC_WINRT(
+                    window->PlacementMode = static_cast<xaml::WindowPlacementMode>(99),
+                    Platform::Exception^, [](Platform::Exception^ ex) { return ex->HResult == E_INVALIDARG; });
+                VERIFY_IS_TRUE(window->PlacementMode == xaml::WindowPlacementMode::Manual);
+            }
+
+            LOG_OUTPUT(L"SaveOnClose: Activate doesn't apply saved placement, but Close still saves.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->PlacementMode = xaml::WindowPlacementMode::SaveOnClose;
+                const RECT appBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                VERIFY_IS_FALSE(!!EqualRect(&savedBounds, &appBounds));
+                window->Activate();
+                VerifyBoundsEqual(appBounds, GetWindowBounds(window.get()));
+                window->Close();
+                VerifyBoundsEqual(appBounds, ReadSavedNormalBounds(data));
+            }
+
+            LOG_OUTPUT(L"Manual: Activate doesn't apply saved placement and Close doesn't save. SavePlacementDetails still saves.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->PlacementMode = xaml::WindowPlacementMode::Manual;
+                const RECT appBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                VERIFY_IS_FALSE(!!EqualRect(&savedBounds, &appBounds));
+                window->Activate();
+                VerifyBoundsEqual(appBounds, GetWindowBounds(window.get()));
+                const RECT movedBounds = MoveAndResizeWindow(window.get(), { 140, 140 }, { 480, 360 });
+                window->Close();
+                VerifyBoundsEqual(savedBounds, ReadSavedNormalBounds(data));
+
+                WindowAutoCloser window2;
+                window2.Attach(ref new xaml::Window());
+                window2->PlacementId = data.id;
+                window2->PlacementMode = xaml::WindowPlacementMode::Manual;
+                window2->Activate();
+                const RECT explicitBounds = MoveAndResizeWindow(window2.get(), { 160, 160 }, { 500, 380 });
+                VERIFY_IS_FALSE(!!EqualRect(&movedBounds, &explicitBounds));
+                window2->SavePlacementDetails();
+                VerifyBoundsEqual(explicitBounds, ReadSavedNormalBounds(data));
+                MoveAndResizeWindow(window2.get(), { 100, 100 }, { 460, 340 });
+                window2->Close();
+                VerifyBoundsEqual(explicitBounds, ReadSavedNormalBounds(data));
+            }
+
+            LOG_OUTPUT(L"Manual: the app applies the details with AppWindow.SetCurrentPlacement.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->PlacementMode = xaml::WindowPlacementMode::Manual;
+                auto details = window->TryLoadPlacementDetails();
+                VERIFY_IS_NOT_NULL(details);
+                VERIFY_IS_TRUE(window->AppWindow->SetCurrentPlacement(details, false));
+                window->Activate();
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+            }
+
+            LOG_OUTPUT(L"RestoreAndSave: TryLoad before Activate doesn't opt out of automatic restore.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                VERIFY_IS_NOT_NULL(window->TryLoadPlacementDetails());
+                MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                window->Activate();
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+            }
+
+            LOG_OUTPUT(L"Setting SaveOnClose after the first Activate is allowed and keeps saving on close.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->Activate();
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+                window->PlacementMode = xaml::WindowPlacementMode::SaveOnClose;
+                const RECT movedBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                window->Close();
+                VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+            }
+
+            LOG_OUTPUT(L"Setting Manual after the first Activate turns off the save on close.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->Activate();
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+                window->PlacementMode = xaml::WindowPlacementMode::Manual;
+                MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+                window->Close();
+                VerifyBoundsEqual(savedBounds, ReadSavedNormalBounds(data));
+            }
+        });
+
+        for (bool maximized : { false, true })
+        {
+            using ::Microsoft::UI::Windowing::AppWindowPresenterKind;
+            using ::Microsoft::UI::Windowing::PlacementInfo;
+            using ::Microsoft::UI::Windowing::PlacementRestorationBehavior;
+            LOG_OUTPUT(L"Manual: full-screen details (%s underneath) keep a hidden window hidden until Activate.",
+                maximized ? L"maximized" : L"normal");
+
+            ::Microsoft::UI::Windowing::AppWindowPlacementDetails^ details = nullptr;
+            RECT normalBounds{};
+            {
+                WindowAutoCloser source;
+                RunOnUIThread([&]()
+                {
+                    source.Attach(ref new xaml::Window());
+                    source->Activate();
+                    normalBounds = MoveAndResizeWindow(source.get(), { 120, 120 }, { 500, 360 });
+                    if (maximized)
+                    {
+                        ShowWindow(GetHwnd(source.get()), SW_MAXIMIZE);
+                    }
+                    source->AppWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    details = source->AppWindow->GetCurrentPlacement();
+                    VERIFY_IS_TRUE(HasPlacementFlag(details, PlacementInfo::FullScreen));
+                    source->Close();
+                });
+            }
+
+            WindowAutoCloser window;
+            HWND hwnd{};
+            RunOnUIThread([&]()
+            {
+                window.Attach(ref new xaml::Window());
+                window->PlacementMode = xaml::WindowPlacementMode::Manual;
+                window->AppWindow->PlacementRestorationBehavior = PlacementRestorationBehavior::All;
+                hwnd = GetHwnd(window.get());
+                VERIFY_IS_FALSE(!!IsWindowVisible(hwnd));
+                VERIFY_IS_TRUE(window->AppWindow->SetCurrentPlacement(details, false));
+                VERIFY_IS_FALSE(!!IsWindowVisible(hwnd));
+                VERIFY_IS_TRUE(GetForegroundWindow() != hwnd);
+                VERIFY_IS_TRUE(window->AppWindow->Presenter->Kind == AppWindowPresenterKind::FullScreen);
+                window->Activate();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(!!IsWindowVisible(hwnd));
+                VERIFY_IS_TRUE(window->AppWindow->Presenter->Kind == AppWindowPresenterKind::FullScreen);
+                window->AppWindow->SetPresenter(AppWindowPresenterKind::Overlapped);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(maximized, !!IsZoomed(hwnd));
+                if (!maximized)
+                {
+                    VerifyBoundsEqual(normalBounds, GetWindowBounds(window.get()));
+                }
+            });
+        }
+    }
+
+    void WindowIntegrationTests::WindowPlacementSavePlacementDetails()
+    {
+        TestCleanupWrapper cleanup;
+        using ::Microsoft::UI::Windowing::AppWindowPresenterKind;
+
+        LOG_OUTPUT(L"Saves the current bounds without closing.");
+        PlacementData data;
+        WindowAutoCloser window;
+        RECT movedBounds{};
+        RunOnUIThread([&]()
+        {
+            window.Attach(ref new xaml::Window());
+            window->PlacementId = data.id;
+            window->Activate();
+            movedBounds = MoveAndResizeWindow(window.get(), { 100, 100 }, { 460, 340 });
+            VERIFY_IS_FALSE(data.HasRecord());
+            window->SavePlacementDetails();
+            VerifySavedState(data, SavedWindowState::Normal);
+            VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+
+            ShowWindow(GetHwnd(window.get()), SW_MAXIMIZE);
+            window->SavePlacementDetails();
+            VerifySavedState(data, SavedWindowState::Maximized);
+            VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+            ShowWindow(GetHwnd(window.get()), SW_RESTORE);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"CompactOverlay keeps the earlier record.");
+            window->SavePlacementDetails();
+            window->AppWindow->SetPresenter(AppWindowPresenterKind::CompactOverlay);
+            MoveAndResizeWindow(window.get(), { 200, 200 }, { 300, 200 });
+            window->SavePlacementDetails();
+            VerifySavedState(data, SavedWindowState::Normal);
+            VerifyBoundsEqual(movedBounds, ReadSavedNormalBounds(data));
+
+            window->Close();
+            VERIFY_THROWS_SPECIFIC_WINRT(window->SavePlacementDetails(), Platform::Exception^,
+                [](Platform::Exception^) { return true; });
+
+            LOG_OUTPUT(L"No PlacementId does nothing.");
+            WindowAutoCloser noIdWindow;
+            noIdWindow.Attach(ref new xaml::Window());
+            noIdWindow->Activate();
+            noIdWindow->SavePlacementDetails();
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlacementRestorationBehavior()
+    {
+        TestCleanupWrapper cleanup;
+        using ::Microsoft::UI::Windowing::PlacementRestorationBehavior;
+        RunOnUIThread([&]()
+        {
+            {
+                // RestoreAndSave mode never applies STARTUPINFO, so the test host's launch settings don't
+                // affect these checks. Log them in case that changes.
+                STARTUPINFO si{ sizeof(si) };
+                GetStartupInfo(&si);
+                LOG_OUTPUT(L"Test host STARTUPINFO: dwFlags=0x%x wShowWindow=%u", si.dwFlags, si.wShowWindow);
+            }
+
+            LOG_OUTPUT(L"AppWindow's default behavior opens a minimized record restored and active.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data, SavedWindowState::MinimizedFromNormal);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->Activate();
+                const auto hwnd = GetHwnd(window.get());
+                VERIFY_IS_FALSE(!!IsIconic(hwnd));
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+            }
+
+            LOG_OUTPUT(L"Restart: with PlacementRestorationBehavior.All, a minimized record stays minimized and inactive.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data, SavedWindowState::MinimizedFromNormal);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->AppWindow->PlacementRestorationBehavior = PlacementRestorationBehavior::All;
+                window->Activate();
+                const auto hwnd = GetHwnd(window.get());
+                VERIFY_IS_TRUE(!!IsIconic(hwnd));
+                VERIFY_IS_TRUE(!!IsWindowVisible(hwnd));
+                VERIFY_IS_TRUE(GetForegroundWindow() != hwnd);
+                window->Close();
+                VerifySavedState(data, SavedWindowState::MinimizedFromNormal);
+                VerifyBoundsEqual(savedBounds, ReadSavedNormalBounds(data));
+            }
+
+            LOG_OUTPUT(L"Without AllowShowMaximized, a maximized record opens normal.");
+            {
+                PlacementData data;
+                const RECT savedBounds = SavePlacementFromNewWindow(data, SavedWindowState::Maximized);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                window->AppWindow->PlacementRestorationBehavior = PlacementRestorationBehavior::AllowShowArranged;
+                window->Activate();
+                const auto hwnd = GetHwnd(window.get());
+                VERIFY_IS_FALSE(!!IsZoomed(hwnd));
+                VerifyBoundsEqual(savedBounds, GetWindowBounds(window.get()));
+            }
+
+            for (bool restart : { false, true })
+            {
+                LOG_OUTPUT(L"%s restores a maximized window maximized.", restart ? L"All" : L"The default");
+                PlacementData data;
+                SavePlacementFromNewWindow(data, SavedWindowState::Maximized);
+                WindowAutoCloser window;
+                window.Attach(ref new xaml::Window());
+                window->PlacementId = data.id;
+                if (restart)
+                {
+                    window->AppWindow->PlacementRestorationBehavior = PlacementRestorationBehavior::All;
+                }
+                window->Activate();
+                const auto hwnd = GetHwnd(window.get());
+                VERIFY_IS_TRUE(!!IsZoomed(hwnd));
+                VERIFY_IS_FALSE(!!IsIconic(hwnd));
+            }
+        });
     }
 
 }}}}}}

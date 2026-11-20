@@ -310,6 +310,15 @@ namespace Microsoft.UI.Xaml
         Wrap,
         WrapWholeWords,
     };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+    [webhosthidden]
+    enum WindowPlacementMode
+    {
+        RestoreAndSave,
+        SaveOnClose,
+        Manual,
+    };
 }
 namespace Microsoft.UI.Xaml.Media
 {
@@ -600,6 +609,7 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextReadingOrder>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextTrimming>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.TextWrapping>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.WindowPlacementMode>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationActiveEnd>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationAnimationStyle>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Automation.AutomationBulletStyle>;
@@ -826,6 +836,7 @@ namespace Microsoft.UI.Xaml
         static Boolean Equals(Windows.Foundation.Size target, Windows.Foundation.Size value);
     };
 
+    midl_pragma warning(disable: 5135)
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Content")]
@@ -870,8 +881,12 @@ namespace Microsoft.UI.Xaml
             Double MaxWidth;
             Double MaxHeight;
             String PlacementId;
+            Microsoft.UI.Xaml.WindowPlacementMode PlacementMode;
+            Microsoft.UI.Windowing.AppWindowPlacementDetails TryLoadPlacementDetails();
+            void SavePlacementDetails();
         }
     };
+    midl_pragma warning(default: 5135)
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]

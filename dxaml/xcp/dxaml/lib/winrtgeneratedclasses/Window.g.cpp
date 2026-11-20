@@ -274,10 +274,30 @@ Cleanup:
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_PlacementId(_In_opt_ HSTRING value)
 {
     HRESULT hr = S_OK;
-
+    
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Window*>(this)->put_PlacementIdImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_PlacementMode(_Out_ ABI::Microsoft::UI::Xaml::WindowPlacementMode* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_PlacementModeImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_PlacementMode(ABI::Microsoft::UI::Xaml::WindowPlacementMode value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_PlacementModeImpl(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -485,6 +505,26 @@ Cleanup:
     }
     RRETURN(hr);
 }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::SavePlacementDetails()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_SavePlacementDetails", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->SavePlacementDetailsImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_SavePlacementDetails", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 IFACEMETHODIMP DirectUI::WindowGenerated::SetAtlasRequestCallback(_In_opt_ ABI::Microsoft::UI::Xaml::IAtlasRequestCallback* pCallback)
 {
     HRESULT hr = S_OK;
@@ -557,6 +597,27 @@ Cleanup:
     }
     RRETURN(hr);
 }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::TryLoadPlacementDetails(_Outptr_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** ppReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "Window_TryLoadPlacementDetails", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppReturnValue);
+    *ppReturnValue={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->TryLoadPlacementDetailsImpl(ppReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "Window_TryLoadPlacementDetails", hr);
+    }
+    RRETURN(hr);
+}
+#endif
 
 HRESULT DirectUI::WindowFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {

@@ -27,6 +27,9 @@ namespace XamlGen.Templates.ModernIDL
         public override string TransformText()
         {
             this.Write("\r\n");
+ if (ReferencesExperimentalType(Model)) { 
+            this.Write("midl_pragma warning(disable: 5135)\r\n");
+ } 
  this.WriteRuntimeClassAttributes(Model); 
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.GetRuntimeClassString()));
             this.Write(" ");
@@ -71,6 +74,9 @@ namespace XamlGen.Templates.ModernIDL
    EndVersion(version); 
  } 
             this.Write("};");
+ if (ReferencesExperimentalType(Model)) { 
+            this.Write("\r\nmidl_pragma warning(default: 5135)");
+ } 
             return this.GenerationEnvironment.ToString();
         }
     }

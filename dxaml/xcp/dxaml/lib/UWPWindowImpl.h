@@ -36,6 +36,10 @@ namespace DirectUI
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
         _Check_return_ HRESULT get_PlacementIdImpl(_Out_ HSTRING* value) override;
         _Check_return_ HRESULT put_PlacementIdImpl(_In_opt_ HSTRING value) override;
+        _Check_return_ HRESULT get_PlacementModeImpl(_Out_ xaml::WindowPlacementMode* value) override;
+        _Check_return_ HRESULT put_PlacementModeImpl(xaml::WindowPlacementMode value) override;
+        _Check_return_ HRESULT TryLoadPlacementDetailsImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** value) override;
+        _Check_return_ HRESULT SavePlacementDetailsImpl() override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;

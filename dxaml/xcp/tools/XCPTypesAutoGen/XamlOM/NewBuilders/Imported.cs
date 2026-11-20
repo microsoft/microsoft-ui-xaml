@@ -16,6 +16,16 @@ namespace XamlOM
             set;
         }
 
+        /// <summary>
+        /// Set when the imported IDL marks the type [experimental]. Runtime classes that reference
+        /// the type get MIDL warning 5135 suppressed around their definition.
+        /// </summary>
+        public bool IsExperimental
+        {
+            get;
+            set;
+        }
+
         public ImportedAttribute()
         {
         }
@@ -29,6 +39,7 @@ namespace XamlOM
         {
             definition.IsImported = true;
             definition.IdlTypeInfo.IsImported = true;
+            definition.IdlTypeInfo.IsExperimental = IsExperimental;
 
             if (!string.IsNullOrEmpty(IdlFileName))
             {
