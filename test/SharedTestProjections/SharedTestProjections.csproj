@@ -43,6 +43,7 @@
     <ProjectReference Include="$(ProjectRoot)src\projection\private\Microsoft.WinUI.csproj" SetTargetFramework="TargetFramework=$(WinUIProjectionConsumerTFM)" />
     <Reference Include="Microsoft.Windows.ApplicationModel.Resources.Projection">
       <HintPath>$(LiftedMRTPackagePath)\ref\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll</HintPath>
+      <Private>false</Private>
       <CsWinRTInputs>$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd</CsWinRTInputs>
     </Reference>
   </ItemGroup>
@@ -53,6 +54,13 @@
           Condition="'$(UseCsWinRT3)' == 'true'">
     <Copy SourceFiles="$(OutDir)$(TargetName).runtimeconfig.json" DestinationFiles="$(OutDir)WinRT.Host.runtimeconfig.json" SkipUnchangedFiles="true" />
     <ItemGroup>
+      <BinplaceItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'">
+        <Destination>$(TestBinplaceDestinationPath)\SharedTestProjections\%(ReferenceCopyLocalPaths.DestinationSubDirectory)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(LiftedMRTLibPath)\$(WindowsAppSdkTargetFrameworkMoniker_v3)\Microsoft.Windows.ApplicationModel.Resources.Projection.dll"
+                    Condition="'$(_IncludeDxamlTests)' == 'true'">
+        <Destination>$(TestBinplaceDestinationPath)\SharedTestProjections</Destination>
+      </BinplaceItem>
       <BinplaceItem Include="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).runtimeconfig.json;$(OutDir)WinRT.*.dll;$(OutDir)WinRT.Host.runtimeconfig.json">
         <Destination>$(TestBinplaceDestinationPath)\SharedTestProjections</Destination>
       </BinplaceItem>

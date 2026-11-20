@@ -331,6 +331,15 @@ if ($UseSharedTestProjections -and ($Mode -eq "DevTestSuite" -or $Mode -eq "Scen
             throw "Shared TAEF projection '$assemblyName' not found under '$sharedProjectionRoot'. Build SharedTestProjections first."
         }
     }
+    # Type maps can reference package projections that remain outside the merged sidecars.
+    $sharedProjectionPath = (Get-Item -LiteralPath $sharedProjectionRoot).FullName
+    foreach ($dependency in Get-ChildItem -LiteralPath $sharedProjectionRoot -Filter *.dll -Recurse -File)
+    {
+        $relativePath = $dependency.FullName.Substring($sharedProjectionPath.Length + 1)
+        $destination = Join-Path $managedTestRoot $relativePath
+        New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force -ErrorAction Stop | Out-Null
+        Copy-Item -LiteralPath $dependency.FullName -Destination $destination -Force -ErrorAction Stop
+    }
     foreach ($assemblyName in "SharedTestProjections.dll", "SharedTestProjections.runtimeconfig.json", "WinRT.Interop.dll", "WinRT.Projection.dll", "WinRT.Component.dll", "WinRT.Sdk.Projection.dll", "WinRT.Host.runtimeconfig.json")
     {
         $source = Join-Path $sharedProjectionRoot $assemblyName
