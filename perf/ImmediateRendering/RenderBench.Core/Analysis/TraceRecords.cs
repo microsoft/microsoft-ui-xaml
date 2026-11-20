@@ -83,3 +83,12 @@ public sealed record SceneStepRecord(double TimeMs, int ProcessId, int Step, str
 public sealed record SceneValueRecord(double TimeMs, int ProcessId, string Name, double Value) : TraceRecord(TimeMs, ProcessId);
 // A popup requested by input InputId raised its Opened event.
 public sealed record PopupOpenedRecord(double TimeMs, int ProcessId, long InputId, string Popup) : TraceRecord(TimeMs, ProcessId);
+// ---- Full-backend scenes S11-S23 ----
+// Native: one window (island root RootId) switched to Composition for the rest of its lifetime because it contains
+// content the immediate backends don't render (interop visuals, SwapChainPanel, media, custom Lottie). Reason is the
+// native reason name (or number).
+public sealed record WindowFallbackRecord(double TimeMs, int ProcessId, BackendMode Mode, ulong RootId, string Reason)
+    : TraceRecord(TimeMs, ProcessId);
+// Harness (S15): the UI thread is deliberately blocked. Begin carries the planned duration, End the measured one.
+public sealed record UiBlockRecord(double TimeMs, int ProcessId, int BlockId, bool IsBegin, double DurationMs)
+    : TraceRecord(TimeMs, ProcessId);

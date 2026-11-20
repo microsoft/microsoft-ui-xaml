@@ -117,6 +117,10 @@ public sealed record StepMetrics(int Step, string Name, int Windows, double Priv
 
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
+// S15: one deliberate UI-thread block. MaxFrameGapMs covers the last drawn frame before the block through the first
+// after it; null when there is no drawn frame on either side.
+public sealed record UiBlockMetrics(int BlockId, double DurationMs, int FramesDrawn, double? MaxFrameGapMs);
+
 public sealed record RunMetrics(
     string SchemaVersion,
     string? Scene,
@@ -157,7 +161,31 @@ public sealed record RunMetrics(
     // UnsupportedContent event counts by 'TypeName|Detail' and by Detail, and the entries the scene expects.
     IReadOnlyDictionary<string, int>? UnsupportedByType = null,
     IReadOnlyDictionary<string, int>? UnsupportedByDetail = null,
-    IReadOnlyList<string>? ExpectedUnsupported = null)
+    IReadOnlyList<string>? ExpectedUnsupported = null,
+    // ---- Full-backend scenes S11-S23 ----
+    // WindowFallback events (per-window switch to Composition) and whether this scene variant expects one.
+    int WindowFallbackCount = 0,
+    IReadOnlyList<string>? WindowFallbackReasons = null,
+    bool ExpectsWindowFallback = false,
+    // S15: drawn frames and the longest gap between drawn frames around each deliberate UI-thread block.
+    IReadOnlyList<UiBlockMetrics>? UiBlocks = null,
+    int? FramesDuringUiBlock = null,
+    double? MaxFrameGapDuringUiBlockMs = null,
+    // S20/S23: programmatic change (resize, theme, dpi, navigate) to the next drawn frame, by kind, within
+    // MetricsCalculator.MaxChangeToFrameMs; changes without a frame in that window are counted as unmatched.
+    IReadOnlyDictionary<string, Distribution>? ChangeToFrameMsByKind = null,
+    int? UnmatchedChanges = null,
+    // S20: private MB at step cycle-100 minus cycle-10 (each sampled right before its step).
+    double? CycleLeakPrivateMB = null,
+    // S21: DeviceLost to the next drawn frame, and private MB after the 100th recovery minus after the 10th.
+    Distribution? DeviceLostRecoveryMs = null,
+    double? DeviceLostLeakPrivateMB = null,
+    // S14: popup open time per popup kind, and the slope of private MB over the number of open popups.
+    IReadOnlyDictionary<string, Distribution>? PopupOpenMsByKind = null,
+    double? PrivateMBPerOpenPopup = null,
+    // S22: share of successful RenderTargetBitmap renders and the mean of the capture comparisons (0..255).
+    double? RtbSuccessRate = null,
+    double? CaptureMeanAbsDiff = null)
 {
     public bool IsSkipped => SkipReason is not null;
     public bool GatePassed => !IsSkipped && Gate.All(g => g.Passed);

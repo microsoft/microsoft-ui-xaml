@@ -57,6 +57,17 @@ static class SceneFactory
         SceneId.DataGrid => new DataGridScene(options),
         SceneId.MultiWindow => new MultiWindowScene(options),
         SceneId.Form => new FormScene(options),
+        SceneId.CompositionInterop => new InteropScene(options),
+        SceneId.Materials => new MaterialsScene(options),
+        SceneId.WindowedPopups => new PopupsScene(options),
+        SceneId.IndependentAnimation => new IndependentScene(options),
+        SceneId.Lottie => new LottieScene(options),
+        SceneId.TextStress => new TextStressScene(options),
+        SceneId.SwapChainMedia => new SwapChainScene(options),
+        SceneId.DpiTheme => new DpiThemeScene(options),
+        SceneId.DeviceLost => new DeviceLostScene(options),
+        SceneId.Accessibility => new AccessibilityScene(options),
+        SceneId.AppShell => new AppShellScene(options),
         _ => new SettingsScene(options),
     };
 }

@@ -40,6 +40,12 @@ public sealed record BenchOptions
     public double StepSeconds { get; init; } = 2; // S9: time between lifecycle steps
     public CompositionEngineChoice CompositionEngine { get; init; } = CompositionEngineChoice.Lifted;
     public OptionalChangesChoice OptionalChanges { get; init; } = OptionalChangesChoice.None;
+    // ---- Full-backend scenes (S11-S23) ----
+    public bool NoInterop { get; init; }   // S11: same layout without ElementCompositionPreview/connected animation
+    public bool NoPlayer { get; init; }    // S12: without the custom AnimatedVisualPlayer
+    public bool NoMedia { get; init; }     // S16: SwapChainPanel only, no MediaPlayerElement
+    // S21: WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST value ("every:N" or a sorted frame list); null for other scenes.
+    public string? DeviceLost { get; init; }
 
     // Scene name used in RunStarted and in reports; variants are separate experiments, so they get separate labels.
     public string SceneLabel => Scene switch
@@ -47,14 +53,18 @@ public sealed record BenchOptions
         SceneId.Gallery when DecodeToSize => "Gallery-DecodeToSize",
         SceneId.Animated when NoProgressRing => "Animated-NoProgressRing",
         SceneId.MultiWindow => Tabs ? "MultiWindow-Tabs" : $"MultiWindow-{Windows}",
+        SceneId.CompositionInterop when NoInterop => "CompositionInterop-NoInterop",
+        SceneId.Lottie when NoPlayer => "Lottie-NoPlayer",
+        SceneId.SwapChainMedia when NoMedia => "SwapChainMedia-NoMedia",
         _ => SceneCatalog.Get(Scene).DisplayName,
     };
 
     public static readonly string Usage =
-        $"RenderBench --scene {SceneCatalog.CliNames} (or s1..s10) [--warmup s] [--settle s] [--interaction s] [--recovery s] " +
+        $"RenderBench --scene {SceneCatalog.CliNames} (or {SceneCatalog.PlanIdRange}) [--warmup s] [--settle s] [--interaction s] [--recovery s] " +
         "[--seed n] [--width px] [--height px] [--sample-ms n] [--tiles n] [--update-fraction f] [--update-hz f] " +
         "[--input-hz f] [--input-mode auto|sendinput|programmatic] [--scroll-speed dips/s] [--items n] " +
         "[--decode-to-size] [--no-progressring] [--windows n] [--tabs] [--step-seconds s] " +
+        "[--no-interop] [--no-player] [--no-media] [--device-lost every:N|frame,frame,...] " +
         "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow|xaml] " +
         "[--composition-engine lifted|system] [--optional-changes none|all] [--no-exit]";
 
@@ -85,6 +95,10 @@ public sealed record BenchOptions
         ["--tabs"] = SceneId.MultiWindow,
         ["--windows"] = SceneId.MultiWindow,
         ["--step-seconds"] = SceneId.MultiWindow,
+        ["--no-interop"] = SceneId.CompositionInterop,
+        ["--no-player"] = SceneId.Lottie,
+        ["--no-media"] = SceneId.SwapChainMedia,
+        ["--device-lost"] = SceneId.DeviceLost,
     };
 
     public static bool TryParse(IReadOnlyList<string> args, out BenchOptions options, out string? error)
@@ -102,6 +116,9 @@ public sealed record BenchOptions
                 case "--decode-to-size": options = options with { DecodeToSize = true }; continue;
                 case "--no-progressring": options = options with { NoProgressRing = true }; continue;
                 case "--tabs": options = options with { Tabs = true }; continue;
+                case "--no-interop": options = options with { NoInterop = true }; continue;
+                case "--no-player": options = options with { NoPlayer = true }; continue;
+                case "--no-media": options = options with { NoMedia = true }; continue;
             }
             if (i + 1 >= args.Count)
             {
@@ -114,7 +131,7 @@ public sealed record BenchOptions
                 case "--scene":
                     if (!SceneCatalog.TryParse(value, out var scene))
                     {
-                        error = $"Unknown scene '{value}'; expected {SceneCatalog.CliNames} or s1..s10";
+                        error = $"Unknown scene '{value}'; expected {SceneCatalog.CliNames} or {SceneCatalog.PlanIdRange}";
                         return false;
                     }
                     options = options with { Scene = scene };
@@ -158,6 +175,14 @@ public sealed record BenchOptions
                     options = options with { ScreenshotMethod = method };
                     break;
                 case "--screenshot": options = options with { ScreenshotPath = value }; break;
+                case "--device-lost":
+                    if (!ImmediateHooks.TryNormalizeDeviceLost(value, out var spec))
+                    {
+                        error = $"{arg} expects every:N (N >= 1) or a comma-separated list of frame numbers >= 1, got '{value}'";
+                        return false;
+                    }
+                    options = options with { DeviceLost = spec };
+                    break;
                 case "--composition-engine":
                     if (!TryEnum<CompositionEngineChoice>(value, arg, out var engine, ref error)) return false;
                     options = options with { CompositionEngine = engine };
@@ -189,8 +214,39 @@ public sealed record BenchOptions
             InputHz = seen.Contains("--input-hz") ? options.InputHz : defaults.InputHz,
             ScrollSpeed = seen.Contains("--scroll-speed") ? options.ScrollSpeed : defaults.ScrollSpeed,
             Items = seen.Contains("--items") ? options.Items : defaults.Items,
+            DeviceLost = options.Scene == SceneId.DeviceLost ? options.DeviceLost ?? ImmediateHooks.DefaultDeviceLost : null,
         };
         return true;
+    }
+
+    // Native test hooks are read once at startup, so Program.Main sets them before Application.Start. Only immediate
+    // modes honor them: Composition has no device-lost hook, and S22 captures the screen instead. A value already in the
+    // environment wins (manual experiments). Returns nothing when the command line does not parse.
+    public static IReadOnlyDictionary<string, string> StartupEnvironment(IReadOnlyList<string> args, string? backend, int processId,
+        string dataDirectory, Func<string, string?> getEnvironment)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (!TryParse(args, out var options, out _) ||
+            !BackendModes.TryParse(backend, out var mode) || mode == BackendMode.Composition)
+        {
+            return result;
+        }
+        void Set(string name, string value)
+        {
+            if (string.IsNullOrEmpty(getEnvironment(name)))
+            {
+                result[name] = value;
+            }
+        }
+        if (options.Scene == SceneId.DeviceLost && options.DeviceLost is { } spec)
+        {
+            Set(ImmediateHooks.SimulateDeviceLostVariable, spec);
+        }
+        if (options.Scene == SceneId.Accessibility)
+        {
+            Set(ImmediateHooks.CaptureVariable, Path.Combine(dataDirectory, $"capture-{processId}.bmp"));
+        }
+        return result;
     }
 
     static bool TryEnum<T>(string value, string arg, out T result, ref string? error) where T : struct, Enum
