@@ -26,6 +26,10 @@ namespace RenderingBackend
         uint32_t bitmapsCreated = 0;      // image bitmaps created by EnsureBitmap (not refreshed in place)
         uint32_t bitmapUploads = 0;       // EnsureBitmap pixel copies: creations plus in-place refreshes
         uint32_t scratchSurfacesCreated = 0; // ScrollPixels intermediate textures
+        uint32_t gradientBrushesCreated = 0; // linear gradient brushes (each with its own stop collection)
+        uint32_t effectsCreated = 0;      // Shadow and backdrop-blur effect objects
+        uint32_t intermediateBitmapsCreated = 0; // shadow bitmaps and backdrop scratch surfaces
+        uint32_t commandListsCreated = 0; // shadow shapes and backdrop masks
     };
 
     class ID2DImmediatePainter : public IImmediatePainter
