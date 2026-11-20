@@ -6,6 +6,7 @@
 #include "XamlOM.WinUI.h"
 #include "DiagnosticsInterop.h"
 #include "wil\resource.h"
+#include <weakreference.h>
 #include <vector>
 
 enum class KnownTypeIndex : UINT16;
@@ -42,7 +43,18 @@ namespace Diagnostics
     public:
         virtual ~RuntimeObject();
 
+        // Returns the object being mirrored. This can return nullptr when the backing object is held
+        // weakly (see TryMakeBackingReferenceWeak) and has already been destroyed. Callers must treat a
+        // null result as "this object is no longer available" rather than as a programming error.
         Microsoft::WRL::ComPtr<IInspectable> GetBackingObject() const;
+
+        // Downgrades the reference to the backing object from strong to weak, and returns whether the
+        // downgrade happened. Used for tree roots (e.g. DesktopWindowXamlSource): the mirror tree is torn
+        // down in response to the root's destructor raising VisualMutationType::Remove, so holding the root
+        // alive from here would make that notification unreachable and leak the entire mirrored subtree.
+        // Returns false if the backing object does not support IWeakReferenceSource, in which case the
+        // strong reference is kept.
+        bool TryMakeBackingReferenceWeak();
 
         // Temporary methods for updating the storage of properties. Ideally we can remove this and GetValue/ClearValue.
         // Can do the right thing. These are required because of how ResourceDependency and ResolveResource works.
@@ -121,7 +133,12 @@ namespace Diagnostics
         virtual void Initialize(_In_ IInspectable* backingObject, std::shared_ptr<RuntimeObject> parent);
     private:
         InstanceHandle m_handle{};
+
+        mutable wil::srwlock m_backingObjectLock;
+        // Exactly one of these holds the backing object. m_backingObject is used by default; roots are
+        // downgraded to m_backingWeak by TryMakeBackingReferenceWeak so that they can be destroyed.
         Microsoft::WRL::ComPtr<IInspectable> m_backingObject;
+        Microsoft::WRL::ComPtr<IWeakReference> m_backingWeak;
         std::weak_ptr<RuntimeObject> m_parent;
         std::map<RuntimeProperty, std::shared_ptr<RuntimeObject>> m_values;
         std::map<int, std::shared_ptr<RuntimeObject>> m_valueSources;

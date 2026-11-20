@@ -51,6 +51,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(VerifyAbandonedDesktopWindowXamlSourceRootIsReleased)
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+                TEST_METHOD_PROPERTY(L"UAP:AppXManifest", APPXMANIFEST_WINDOWS_VERSION_CURRENT_CENTENNIAL)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+                TEST_METHOD_PROPERTY(L"UAP:Host", L"PackagedCwa")
+                TEST_METHOD_PROPERTY(L"UAP:Praid", L"XamlNativeTAEFTests")
+                TEST_METHOD_PROPERTY(L"ThreadingModel", L"STA")
+                TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(UseDesktopWindowXamlSourceSystemBackdrop)
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
