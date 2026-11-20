@@ -42,6 +42,9 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
         try
         {
             _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_window);
+            string backend = Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable) is { Length: > 0 } b
+                ? b : $"comp-{options.CompositionEngine.ToString().ToLowerInvariant()}";
+            _window.Title = $"RenderBench {SceneCatalog.Get(options.Scene).PlanId} {options.SceneLabel} [{backend}]";
             _window.AppWindow.MoveAndResize(new RectInt32(40, 40, options.Width, options.Height));
             _scene = SceneFactory.Create(options);
             await _scene.PrepareAsync();
