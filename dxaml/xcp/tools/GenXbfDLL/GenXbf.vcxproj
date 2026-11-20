@@ -39,6 +39,7 @@
     <ResourceCompile Include="GenXbf.rc" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PInvokesStub.cpp" />
+    <ClCompile Include="FxCallbacksStub.cpp" />
     <ClCompile Include="MetadataAPIStub.cpp" />
     <ClCompile Include="comTemplateLibraryStub.cpp" />
     <ClCompile Include="XbfCoreServices.cpp" />

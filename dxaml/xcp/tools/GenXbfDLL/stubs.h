@@ -79,12 +79,7 @@ namespace ctl
 
 namespace FxCallbacks
 {
-    _Check_return_ HRESULT FrameworkCallbacks_CheckPeerType(_In_ CDependencyObject* nativeRoot, _In_ const xstring_ptr& strPeerType, _In_ XINT32 bCheckExact)
-    {
-        return E_NOTIMPL;
-    }
-
-    void XamlRoot_RaiseChanged(_In_ IInspectable* xamlRootInsp) {}
-
-    void XamlRoot_RaiseInputActivationChanged(_In_ IInspectable* xamlRootInsp) {}
+    _Check_return_ HRESULT FrameworkCallbacks_CheckPeerType(_In_ CDependencyObject* nativeRoot, _In_ const xstring_ptr& strPeerType, _In_ XINT32 bCheckExact);
+    void XamlRoot_RaiseChanged(_In_ IInspectable* xamlRootInsp);
+    void XamlRoot_RaiseInputActivationChanged(_In_ IInspectable* xamlRootInsp);
 }
