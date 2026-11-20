@@ -27,11 +27,7 @@
 
 namespace
 {
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
@@ -1238,6 +1234,10 @@ void TableView::OnPreviewKeyDownForNavigation(
     const winrt::KeyRoutedEventArgs& args)
 {
     m_navKeyHandledEarly = false;
+    if (TryHandleKeyDuringPendingTabEditMove(args))
+    {
+        return;
+    }
     using winrt::Windows::System::VirtualKey;
     const auto pressed = args.Key();
     const bool isModifier = pressed == VirtualKey::Shift || pressed == VirtualKey::Control || pressed == VirtualKey::Menu ||
@@ -1999,6 +1999,9 @@ void TableView::RestoreBodyFocusAfterReshape()
     m_pendingBodyFocusItem = nullptr;
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
+    // The re-shape re-aims focus at the captured row, so a pending Tab target is no longer where
+    // focus will land.
+    EndPendingTabEditMove();
 
     m_reshapeFocusArmedThisTurn = true;
     if (auto const queue = DispatcherQueue())
@@ -2091,6 +2094,7 @@ void TableView::CancelReshapeFocusRestore()
 {
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
+    EndPendingTabEditMove();
     m_pendingBodyFocusFromKeyboard = false;
     m_pendingBodyFocusOrigin = nullptr;
     m_requestedBodyVerticalOffset.reset();
@@ -2110,9 +2114,19 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
+    if (m_reshapeFocusArmedThisTurn)
+    {
+        return;
+    }
+    if (m_pendingReshapeFocusRow >= 0)
     {
         CancelReshapeFocusRestore();
+    }
+    else if (m_tabEditMovePending)
+    {
+        // The restore landed and handed its Tab move to a posted BeginEdit; input before that
+        // runs is still newer intent.
+        EndPendingTabEditMove();
     }
 }
 
@@ -2166,7 +2180,46 @@ void TableView::OnReshapeFocusAttempt()
 
     if (landed)
     {
+        auto const editItem = m_beginEditAfterBodyFocusItem.get();
+        auto const editColumn = m_beginEditAfterBodyFocusColumn.get();
+        // Posted: inside LayoutUpdated a CellEditingTemplate editor cannot be realized and focused.
+        auto const queue = editItem && editColumn ? DispatcherQueue() : nullptr;
+        // Hand a Tab move to the posted BeginEdit below without releasing its live-shaping hold.
+        const bool handOff = queue && std::exchange(m_tabEditMovePending, false);
         CancelReshapeFocusRestore();
+        if (handOff)
+        {
+            m_tabEditMovePending = true;
+            const uint32_t generation = m_tabEditMoveGeneration;
+            if (!queue.TryEnqueue([weakThis = get_weak(), editItem, editColumn, generation]()
+            {
+                auto const strongThis = weakThis.get();
+                if (!strongThis || strongThis->m_tabEditMoveGeneration != generation)
+                {
+                    // Escape, another key, or a newer restore retired the move.
+                    return;
+                }
+                try
+                {
+                    // The column can be hidden or locked, and focus can move to another cell of
+                    // the row, while the row realizes.
+                    if (!strongThis->IsEditing() && strongThis->IsColumnCellEditableInternal(editColumn) &&
+                        strongThis->IsBodyFocusOnCell(editItem, editColumn))
+                    {
+                        strongThis->BeginEdit(editItem, editColumn);
+                    }
+                }
+                catch (...)
+                {
+                    // Best-effort; never fail-fast the dispatcher.
+                }
+                // Resumes live shaping only if the edit did not open; its close resumes otherwise.
+                strongThis->EndPendingTabEditMove();
+            }))
+            {
+                EndPendingTabEditMove();
+            }
+        }
         return;
     }
 

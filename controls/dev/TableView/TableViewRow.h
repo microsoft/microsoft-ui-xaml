@@ -137,8 +137,13 @@ public:
 
     bool BeginCellEdit(const winrt::TableViewColumn& column, const winrt::IInspectable& dataItem);
 
-    // Restores the display visual. Safe to call when no cell edit is open.
-    void EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure = nullptr, bool* applicationFault = nullptr);
+    // Restores the display visual. Safe to call when no cell edit is open. A focused editor hands
+    // focus to `focusColumn`'s cell when given and focusable, otherwise to the edited cell.
+    void EndCellEdit(
+        winrt::TableViewEditAction action,
+        std::optional<HRESULT>* displayFailure = nullptr,
+        bool* applicationFault = nullptr,
+        winrt::TableViewColumn const& focusColumn = nullptr);
 
     winrt::FrameworkElement GetEditingElement() const { return m_editingElement.get(); }
 
@@ -157,6 +162,9 @@ public:
     void OnPointerPressedForEditing(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+
+    // For a Tab that closed an editor and continues from its cell, as OnKeyDown does for a focused cell.
+    void PrepareTabWalkFromCellInternal();
 
 private:
     void ResetCellAutomationNames();

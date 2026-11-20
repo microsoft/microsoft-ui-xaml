@@ -80,11 +80,7 @@ namespace
         }
     }
 
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Collects tab stops BELOW a cell wrapper (the wrapper is owned by SetCellsTabStopInternal).
     // Keeps descending past a found tab stop: a focusable container can hold more.
@@ -875,10 +871,9 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         args.Key() == winrt::VirtualKey::Tab &&
         // Ctrl+Tab is app-level navigation and Alt is the resize chord; neither is a band move.
         !IsKeyDown(winrt::VirtualKey::Control) &&
-        !IsKeyDown(winrt::VirtualKey::Menu) &&
-        IsGridLevelFocusInternal())
+        !IsKeyDown(winrt::VirtualKey::Menu))
     {
-        SuppressCellContentTabStopsForTabWalkInternal();
+        PrepareTabWalkFromCellInternal();
     }
 
     // Unmodified only: Ctrl+arrow is focus-without-select; Shift/Alt chords belong to the app.
@@ -913,6 +908,14 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 void TableViewRow::EnableRowFocusInternal()
 {
     IsTabStop(true);
+}
+
+void TableViewRow::PrepareTabWalkFromCellInternal()
+{
+    if (IsGridLevelFocusInternal())
+    {
+        SuppressCellContentTabStopsForTabWalkInternal();
+    }
 }
 
 void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
@@ -2873,7 +2876,11 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     return true;
 }
 
-void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure, bool* applicationFault)
+void TableViewRow::EndCellEdit(
+    winrt::TableViewEditAction action,
+    std::optional<HRESULT>* displayFailure,
+    bool* applicationFault,
+    winrt::TableViewColumn const& focusColumn)
 {
     auto const cellWrapper = m_editingCellWrapper.get();
     auto const weakPeer = m_editingAutomationPeer;
@@ -2936,7 +2943,30 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             // Closing edit returns to cell level, so re-arm cells before restoring focus.
             SetCellLevelInternal(true);
 
-            if (!cellWrapper.Focus(restoreState))
+            // A Tab move to a cell in this row lands there directly, so a screen reader hears one
+            // focus change for the cell instead of a pass through the cell just left.
+            winrt::UIElement handoffCell{ nullptr };
+            // A CellEditEnding handler can lock the target, and a locked cell with a context flyout
+            // still takes focus, so check editability as TryMoveEditToAdjacentCell does.
+            auto const owner = GetOwningTableView();
+            if (focusColumn && owner && IsVisibleColumn(focusColumn) &&
+                winrt::get_self<TableView>(owner)->IsColumnCellEditableInternal(focusColumn))
+            {
+                if (auto const host = m_cellsHost.get())
+                {
+                    for (auto const& child : host.Children())
+                    {
+                        if (child && child != cellWrapper && GetCellOwningColumn(child) == focusColumn)
+                        {
+                            handoffCell = child;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const bool handedOff = handoffCell && handoffCell.Focus(restoreState);
+            if (!handedOff && !cellWrapper.Focus(restoreState))
             {
                 SetCellLevelInternal(false);
                 Focus(restoreState);
