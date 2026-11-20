@@ -2239,8 +2239,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         if ((prevIndicator != nextIndicator) && paneContentGrid && prevIndicator && nextIndicator && SharedHelpers::IsAnimationsEnabled())
         {
             // Make sure both indicators are visible and in their original locations
-            ResetElementAnimationProperties(prevIndicator, 1.0f, true /* forAnimation */);
-            ResetElementAnimationProperties(nextIndicator, 1.0f, true /* forAnimation */);
+            ResetElementAnimationProperties(prevIndicator, 1.0f);
+            ResetElementAnimationProperties(nextIndicator, 1.0f);
 
             // get the item positions in the pane
             const winrt::Point point = winrt::Point(0, 0);
