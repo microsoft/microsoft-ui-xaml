@@ -313,11 +313,13 @@ sealed class SwapChainScene : IScene
     D3DSwapChain? _swapChain;
     string? _clip;
     double _time;
+    long _presents;
     bool _swapChainOk;
+    readonly TextBlock _status = new() { Text = "XAML text next to the swap chain content." };
     readonly System.Diagnostics.Stopwatch _clock = new();
 
     public string Name => _withMedia ? "SwapChainMedia" : "SwapChainMedia-NoMedia";
-    public bool IsDynamic => false;
+    public bool IsDynamic => true;
     public bool AnimatesWhileIdle => true;
     public FrameworkElement Root { get; }
     public IReadOnlyList<FrameworkElement> InputTargets => [];
@@ -345,7 +347,7 @@ sealed class SwapChainScene : IScene
                     {
                         new TextBlock { Text = "SwapChainPanel and media", Style = SettingsScene.Style("TitleTextBlockStyle") },
                         panels,
-                        new TextBlock { Text = "XAML text next to the swap chain content." },
+                        _status,
                     },
                 },
             },
@@ -426,6 +428,7 @@ sealed class SwapChainScene : IScene
                 (float)(0.5 + 0.5 * Math.Sin(_time * 2)),
                 (float)(0.5 + 0.5 * Math.Sin(_time * 2 + 2.1)),
                 (float)(0.5 + 0.5 * Math.Sin(_time * 2 + 4.2)));
+            _presents++;
         }
         catch (Exception ex)
         {
@@ -435,7 +438,12 @@ sealed class SwapChainScene : IScene
         }
     }
 
-    public int ApplyUpdate() => 0;
+    // XAML content next to the swap chain changes at UpdateHz so the window keeps drawing XAML frames too.
+    public int ApplyUpdate()
+    {
+        _status.Text = $"XAML text next to the swap chain content: {_presents} presents.";
+        return 1;
+    }
 
     public IEnumerable<(string Name, double Value)> Counters() =>
         [("SwapChainAvailable", _swapChainOk ? 1 : 0), ("MediaAvailable", _clip is null ? 0 : 1)];
@@ -489,6 +497,7 @@ sealed class DpiThemeScene : IScene
 
     void ToggleTheme()
     {
+        Console.Error.WriteLine($"S20: theme -> {(_root.RequestedTheme == ElementTheme.Dark ? "Light" : "Dark")}");
         _root.RequestedTheme = _root.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
         ApplyBackground();
     }
@@ -509,6 +518,7 @@ sealed class DpiThemeScene : IScene
         for (int cycle = 1; cycle <= _cycles; cycle++)
         {
             var size = new SizeInt32(_random.Next(640, 1600), _random.Next(480, 1000));
+            Console.Error.WriteLine($"S20: cycle {cycle} resize {size.Width}x{size.Height}");
             host.MarkInput("resize", "Window", programmatic: true);
             window.Resize(size);
             await Settle();
@@ -711,7 +721,7 @@ sealed class AccessibilityScene : IScene
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"S22: RenderTargetBitmap failed: {ex.Message}");
+                Console.Error.WriteLine($"S22: RenderTargetBitmap failed: 0x{ex.HResult:X8} {ex.GetType().Name} {ex.Message}");
                 if (emit)
                 {
                     BenchEventSource.Log.SceneValue(Analysis.SceneValueNames.RtbSuccess, 0);
@@ -964,6 +974,8 @@ sealed class AppShellScene : IScene
             await FullBackend.NextFrameAsync();
             await Task.Delay(100);
         }
+        // Let the last navigation's transitions (selection indicator, page entrance) finish before Steady.
+        await Task.Delay(1500);
     }
 
     public Task? RunInteractionAsync(ISceneHost host, CancellationToken token)

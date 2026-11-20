@@ -67,7 +67,7 @@ public static class SceneCatalog
         new(SceneId.Form, "form", "S10", "Form", new(30, 10, 10, 0, 0), "typing, focus, hover and popups"),
         // Full-backend scenes in execution order. Items: S15 list rows, S19 small TextBlocks, S20 cycles, S22 focus
         // targets, S23 details rows.
-        new(SceneId.CompositionInterop, "interop", "S11", "CompositionInterop", new(20, 2, 1, 0, 0),
+        new(SceneId.CompositionInterop, "interop", "S11", "CompositionInterop", new(20, 0, 1, 0, 0),
             "hand-in visual with expression animation, implicit offset and connected animations"),
         new(SceneId.Materials, "materials", "S13", "Materials", new(20, 2, 1, 0, 0), "acrylic, mica, ThemeShadow, gradients"),
         new(SceneId.WindowedPopups, "popups", "S14", "WindowedPopups", new(30, 0, 1, 0, 0),
@@ -77,7 +77,7 @@ public static class SceneCatalog
         new(SceneId.Lottie, "lottie", "S12", "Lottie", new(20, 0, 1, 0, 0), "ProgressRing, AnimatedIcon, custom AnimatedVisualPlayer"),
         new(SceneId.TextStress, "text", "S19", "TextStress", new(20, 0, 0, 300, 1_000),
             "RTL/complex scripts, emoji, CFF, ClearType vs grayscale; scroll"),
-        new(SceneId.SwapChainMedia, "swapchain", "S16", "SwapChainMedia", new(20, 0, 0, 0, 0), "SwapChainPanel and MediaPlayerElement"),
+        new(SceneId.SwapChainMedia, "swapchain", "S16", "SwapChainMedia", new(20, 2, 0, 0, 0), "SwapChainPanel and MediaPlayerElement"),
         new(SceneId.DpiTheme, "dpitheme", "S20", "DpiTheme", new(60, 0, 0, 0, 100), "theme toggles, resize storm, DPI change"),
         new(SceneId.DeviceLost, "devicelost", "S21", "DeviceLost", new(45, 30, 0, 0, 0), "simulated device loss and recovery"),
         new(SceneId.Accessibility, "accessibility", "S22", "Accessibility", new(30, 0, 4, 0, 50),
