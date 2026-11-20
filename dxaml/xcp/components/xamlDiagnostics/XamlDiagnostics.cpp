@@ -26,6 +26,7 @@
 #include "DoPointerCast.h"
 #include "MarkupExtension.h"
 #include "uielement.h"
+#include "HWCompNode.h"
 #include "ObjectWriterStack.h"
 #include "ObjectWriterFrame.h"
 #include "RuntimeDictionary.h"
@@ -723,6 +724,40 @@ XamlDiagnostics::GetIInspectableFromHandle(
     }
 
     return E_NOTFOUND;
+}
+
+IFACEMETHODIMP
+XamlDiagnostics::TryGetExistingElementVisual(
+    _In_ InstanceHandle element,
+    _Outptr_result_maybenull_ IInspectable** visual)
+{
+    SuspendFailFastOnStowedException suspender;
+    IFCPTR_RETURN(visual);
+    *visual = nullptr;
+
+    std::shared_ptr<RuntimeObject> object;
+    if (element == 0 || !TryFindObjectFromHandle(element, object))
+    {
+        IFC_RETURN(E_NOTFOUND);
+    }
+    if (object->GetAssociatedThreadId() != GetCurrentThreadId())
+    {
+        IFC_RETURN(RPC_E_WRONG_THREAD);
+    }
+
+    wrl::ComPtr<xaml::IUIElement> uiElement;
+    IFC_RETURN(object->GetBackingObject().As(&uiElement));
+    const auto core = DiagnosticsInterop::ConvertToCore(uiElement.Get());
+    const auto coreElement = do_pointer_cast<CUIElement>(core.get());
+    IFCPTR_RETURN(coreElement);
+    if (const auto peer = coreElement->GetCompositionPeer())
+    {
+        if (const auto existingVisual = peer->GetHandOffVisual())
+        {
+            IFC_RETURN(existingVisual->QueryInterface(IID_PPV_ARGS(visual)));
+        }
+    }
+    return S_OK;
 }
 
 bool XamlDiagnostics::TryFindObjectFromHandle(InstanceHandle handle, std::shared_ptr<Diagnostics::RuntimeObject>& object)
