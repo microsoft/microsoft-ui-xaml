@@ -100,6 +100,9 @@
           "Microsoft.Diagnostics.Tracing.TraceEvent": "[3.2.8, 3.2.8]"
         }
       },
+      "winuiprofiler.telemetry": {
+        "type": "Project"
+      },
       "Microsoft.Data.Sqlite": {
         "type": "CentralTransitive",
         "requested": "[10.0.13, 10.0.13]",

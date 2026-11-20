@@ -1600,6 +1600,33 @@ dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
 & '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe' --listtools
 ```
 
+## Data collection
+
+The app, `WinUIProfiler.Cli` and the MCP server can send a few usage events to
+Microsoft, to show the WinUI team how many people use the profiler and which
+features they use. Builds from this repository send nothing: telemetry is on
+only when `WINUI_TOOLS_TELEMETRY_CONNECTION_STRING` names an Application
+Insights resource, which only internal distributions set. Set
+`WINUI_TOOLS_TELEMETRY_OPTOUT=1` to turn it off.
+
+When it is on, the first run shows a notice (in the app, or on standard error
+for the CLI), and the tools send these events, each with the tool's version and
+a random install ID kept in `%LOCALAPPDATA%\WinUITools\install-id`:
+
+| Event | When | Values |
+| --- | --- | --- |
+| `Profiler.SessionStarted` | A connection, a trace reading or an opened session file starts | Online or offline, and the target app |
+| `Profiler.SessionEnded` | It ends | Completed, cancelled or failed, and its duration |
+| `Profiler.ViewOpened` | The user first opens a tab | The tab |
+| `Profiler.CliCommand` | A CLI command ends | The command, its outcome and duration |
+| `Profiler.McpToolCall` | An MCP tool call ends | The tool, its outcome and duration |
+
+The target app is named only when it is a Microsoft app; for any other app, the
+event holds a short hash of its executable's name. The events never hold source
+code, XAML, file paths, user or machine names, prompts, model output, event
+contents, call stacks, exception messages, or MCP tool arguments or results.
+`WINUI_TOOLS_CHANNEL` names how the tool was obtained, `unknown` by default.
+
 ## Limitations
 
 CPU uses processor-time utilization, not Task Manager's frequency-adjusted
