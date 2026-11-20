@@ -28,6 +28,7 @@ _Check_return_ HRESULT ListViewBase::ProcessDataVirtualizationScrollOffsets()
 
     if (spPaginatedPanel && m_tpScrollViewer && !m_isLoadAsyncInProgress)
     {
+        m_isIncrementalLoadingCheckPending = FALSE;
         ctl::ComPtr<IScrollInfo> spScrollInfo;
         INT lastItemInViewport = -1;
 
@@ -75,6 +76,22 @@ _Check_return_ HRESULT ListViewBase::ProcessDataVirtualizationScrollOffsets()
                 // Since we're not grouping then the count will be the number of items
                 IFC(get_Items(&spItems));
                 IFC(spItems.Cast<ItemCollection>()->get_Size(&itemsCount));
+            }
+
+            if (itemsCount > 0 && lastItemInViewport < 0 && ctl::is<IModernCollectionBasePanel>(spItemsHost))
+            {
+                const auto itemsHost = static_cast<CUIElement*>(spItemsHost.Cast<Panel>()->GetHandle());
+                if (itemsHost->GetIsMeasureDirty() ||
+                    itemsHost->GetIsOnMeasureDirtyPath() ||
+                    itemsHost->GetIsMeasuringSelf())
+                {
+                    // No item has been laid out yet, so the viewport index and page estimate are
+                    // placeholders. Retry after virtualization finishes instead of loading one item.
+                    m_isIncrementalLoadingCheckPending = TRUE;
+                    // A same-size remeasure can otherwise skip the panel's arrange and its notification.
+                    itemsHost->InvalidateArrange();
+                    return S_OK;
+                }
             }
 
             // Get the increment load threshold specified in page units.
@@ -253,7 +270,15 @@ _Check_return_ HRESULT ListViewBase::LoadMoreItemsAsyncInternal(
 // overridden from ItemsControl (IGeneratorHost)
 _Check_return_ IFACEMETHODIMP ListViewBase::VirtualizationFinished()
 {
-    return InvokeDataSourceRangesChanged();
+    IFC_RETURN(InvokeDataSourceRangesChanged());
+
+    if (m_isIncrementalLoadingCheckPending && IsInLiveTree())
+    {
+        m_isIncrementalLoadingCheckPending = FALSE;
+        IFC_RETURN(ProcessDataVirtualizationScrollOffsets());
+    }
+
+    return S_OK;
 }
 
 // Stores a handle to the items source as an IItemsRangeInfo if possible
