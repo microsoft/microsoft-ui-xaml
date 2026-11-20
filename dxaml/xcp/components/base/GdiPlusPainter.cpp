@@ -1174,22 +1174,22 @@ namespace RenderingBackend
                     {
                         return;
                     }
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(rect, 0));
+                    MaskSpace space;
+                    if (radiusX > 0 && radiusY > 0 && GetMaskSpace(space) && space.axisAligned &&
+                        FillRoundedGradientExact(rect, radiusX, radiusY, gradient, *brush, space))
+                    {
+                        return;
+                    }
                     FineAntialiasing fine(Current());
                     if (BuildRoundedPath(rect, radiusX, radiusY))
                     {
-                        // GDI+ flattens curves with ~1/4 px chords, which visibly shrinks the corner coverage; flatten to ~1/32 px.
-                        MaskSpace space;
-                        if (GetMaskSpace(space))
-                        {
-                            Record(m_path->Flatten(nullptr, 1.0f / (32 * std::max(space.ax, space.ay))));
-                        }
                         Record(Current().FillPath(brush, m_path.get()));
                     }
                     else
                     {
                         Record(Current().FillRectangle(brush, ToGdiRect(rect)));
                     }
-                    m_stats.paintedPixels += VisibleArea(DeviceBounds(rect, 0));
                 }
 
                 void FillPathGradient(const PathData& data, const LinearGradientDesc& gradient) noexcept override
@@ -2610,6 +2610,132 @@ namespace RenderingBackend
                     m_gradientBrushBytes += entry.bytes;
                     ++m_frameCreated;
                     return entry.brush.get();
+                }
+
+                // Premultiplied BGRA of the gradient (m_sortedStops, as left by GetGradientBrush) at axis parameter t,
+                // interpolated in premultiplied space and clamped at the ends, scaled by opacity * coverage / 255.
+                uint32_t GradientPixel(float t, float opacity, uint32_t coverage) const noexcept
+                {
+                    const auto& stops = m_sortedStops;
+                    size_t index = 0;
+                    while (index < stops.size() && stops[index].offset <= t)
+                    {
+                        ++index;
+                    }
+                    const GradientStop& s0 = stops[index == 0 ? 0 : index - 1];
+                    const GradientStop& s1 = stops[index == stops.size() ? stops.size() - 1 : index];
+                    const float span = s1.offset - s0.offset;
+                    const float f = span > 0 ? std::clamp((t - s0.offset) / span, 0.0f, 1.0f) : (index == 0 ? 1.0f : 0.0f);
+                    const float a0 = std::clamp(s0.color.a, 0.0f, 1.0f), a1 = std::clamp(s1.color.a, 0.0f, 1.0f);
+                    const float scale = opacity * coverage / 255;
+                    const auto channel = [&](float c0, float c1) { return (c0 * a0 + (c1 * a1 - c0 * a0) * f) * scale; };
+                    return (static_cast<uint32_t>(ToByte((a0 + (a1 - a0) * f) * scale)) << 24) |
+                        (static_cast<uint32_t>(ToByte(channel(s0.color.r, s1.color.r))) << 16) |
+                        (static_cast<uint32_t>(ToByte(channel(s0.color.g, s1.color.g))) << 8) | ToByte(channel(s0.color.b, s1.color.b));
+                }
+
+                // Rounded-rect gradient fill under an axis-aligned transform with exact corner coverage (GDI+ antialiasing
+                // underestimates curved edges): the straight-edged cross goes through the gradient brush, with its inner
+                // edges on device pixel boundaries; the four corner blocks are computed in software and copied 1:1.
+                bool FillRoundedGradientExact(const RectF& rect, float radiusX, float radiusY, const LinearGradientDesc& gradient,
+                    Gdiplus::Brush& brush, const MaskSpace& space) noexcept
+                {
+                    constexpr int64_t c_maxCornerPixels = 1 << 18;
+                    const RectF d = space.Map(rect);
+                    const float width = d.right - d.left, height = d.bottom - d.top;
+                    if (!(width > 0) || !(height > 0) || !std::isfinite(width) || !std::isfinite(height) || !std::isfinite(d.left) || !std::isfinite(d.top) ||
+                        std::abs(d.left) > 1e6f || std::abs(d.top) > 1e6f || std::abs(d.right) > 1e6f || std::abs(d.bottom) > 1e6f || m_sortedStops.empty())
+                    {
+                        return false;
+                    }
+                    const float rx = std::min(radiusX * space.ax, width / 2);
+                    const float ry = std::min(radiusY * space.ay, height / 2);
+                    const int32_t l = static_cast<int32_t>(std::floor(d.left)), t = static_cast<int32_t>(std::floor(d.top));
+                    const int32_t r = static_cast<int32_t>(std::ceil(d.right)), b = static_cast<int32_t>(std::ceil(d.bottom));
+                    int32_t xl = static_cast<int32_t>(std::ceil(d.left + rx)), xr = static_cast<int32_t>(std::floor(d.right - rx));
+                    int32_t yt = static_cast<int32_t>(std::ceil(d.top + ry)), yb = static_cast<int32_t>(std::floor(d.bottom - ry));
+                    if (xl >= xr)
+                    {
+                        xl = xr = r;
+                    }
+                    if (yt >= yb)
+                    {
+                        yt = yb = b;
+                    }
+                    const int32_t cornerWidth = std::max(xl - l, r - xr), cornerHeight = std::max(yt - t, b - yb);
+                    if (static_cast<int64_t>(cornerWidth) * cornerHeight > c_maxCornerPixels ||
+                        !EnsureShadowScratch(static_cast<uint32_t>(cornerWidth) + 1, static_cast<uint32_t>(cornerHeight) + 1))
+                    {
+                        return false;
+                    }
+
+                    Gdiplus::Graphics& graphics = Current();
+                    const auto toDipX = [&](float x) { return (x - space.bx) / space.ax; };
+                    const auto toDipY = [&](float y) { return (y - space.by) / space.ay; };
+                    Gdiplus::GraphicsPath& path = *m_path;
+                    Record(path.Reset());
+                    const auto addRect = [&](float x0, float y0, float x1, float y1)
+                    {
+                        x0 = std::max(x0, d.left);
+                        y0 = std::max(y0, d.top);
+                        x1 = std::min(x1, d.right);
+                        y1 = std::min(y1, d.bottom);
+                        if (x1 > x0 && y1 > y0)
+                        {
+                            Record(path.AddRectangle(Gdiplus::RectF(toDipX(x0), toDipY(y0), toDipX(x1) - toDipX(x0), toDipY(y1) - toDipY(y0))));
+                        }
+                    };
+                    addRect(d.left, static_cast<float>(yt), d.right, static_cast<float>(yb));
+                    addRect(static_cast<float>(xl), d.top, static_cast<float>(xr), static_cast<float>(yt));
+                    addRect(static_cast<float>(xl), static_cast<float>(yb), static_cast<float>(xr), d.bottom);
+                    if (path.GetPointCount() > 0)
+                    {
+                        Record(graphics.FillPath(&brush, &path));
+                    }
+
+                    const float dx = gradient.end.x - gradient.start.x, dy = gradient.end.y - gradient.start.y;
+                    const float length2 = dx * dx + dy * dy;
+                    const bool degenerate = m_sortedStops.size() == 1 || !(length2 > 1e-12f) || !std::isfinite(length2);
+                    const float opacity = std::min(gradient.opacity, 1.0f);
+                    const uint32_t stride = m_shadowScratchWidth;
+                    uint32_t* pixels = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
+                    const auto corner = [&](int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+                    {
+                        if (x1 <= x0 || y1 <= y0)
+                        {
+                            return;
+                        }
+                        const uint32_t w = static_cast<uint32_t>(x1 - x0), h = static_cast<uint32_t>(y1 - y0);
+                        for (uint32_t y = 0; y < h; ++y)
+                        {
+                            uint32_t* row = pixels + static_cast<size_t>(y) * stride;
+                            const float py = toDipY(y0 + y + 0.5f) - gradient.start.y;
+                            for (uint32_t x = 0; x < w; ++x)
+                            {
+                                const uint32_t coverage = RoundedRectCoverage(d, rx, ry, x0 + static_cast<int32_t>(x), y0 + static_cast<int32_t>(y));
+                                if (coverage == 0)
+                                {
+                                    row[x] = 0;
+                                    continue;
+                                }
+                                const float px = toDipX(x0 + x + 0.5f) - gradient.start.x;
+                                const float along = degenerate ? 1.0f : (px * dx + py * dy) / length2;
+                                row[x] = GradientPixel(along, opacity, coverage);
+                            }
+                            row[w] = 0;
+                        }
+                        memset(pixels + static_cast<size_t>(h) * stride, 0, static_cast<size_t>(w + 1) * 4);
+                        Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(x0, y0, static_cast<INT>(w), static_cast<INT>(h)),
+                            0, 0, static_cast<INT>(w), static_cast<INT>(h), Gdiplus::UnitPixel, nullptr));
+                        graphics.Flush(Gdiplus::FlushIntentionSync);
+                    };
+                    Record(graphics.ResetTransform());
+                    corner(l, t, xl, yt);
+                    corner(xr, t, r, yt);
+                    corner(l, yb, xl, b);
+                    corner(xr, yb, r, b);
+                    Record(graphics.SetTransform(m_transform.get()));
+                    return true;
                 }
 
                 Surface& CurrentSurface() noexcept
