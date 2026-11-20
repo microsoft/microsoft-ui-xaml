@@ -97,6 +97,7 @@ class CPopup : public CFrameworkElement
 protected:
     friend class CPopupRoot;
     friend class HWWalk;
+    friend class ImmediateRenderer;
     friend struct ImplicitCloseGuard;
 
     CPopup(_In_ CCoreServices *pCore);

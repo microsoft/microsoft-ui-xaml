@@ -14,6 +14,7 @@
 
 class CUIElement;
 class CXamlIslandRoot;
+class CPopup;
 class DCompTreeHost;
 class CMILMatrix;
 
@@ -104,6 +105,39 @@ private:
     void PruneFallenBack(_In_ DCompTreeHost* dcompTreeHost) noexcept;
     static bool IsBuiltInProgressRingPlayer(_In_ CUIElement* element) noexcept;
     static bool IsHandOffVisualTouched(_In_ CUIElement* element) noexcept;
+
+    // Walks into a display list, diffs, and paints one swap chain (an island, or a windowed popup's window).
+    _Check_return_ HRESULT RenderSurface(
+        _Inout_ IslandState& state,
+        uint32_t frameNumber,
+        uint64_t surfaceId,
+        const ImmediateRenderingDetail::WalkContext& root,
+        _In_ void (*walk)(_In_ ImmediateRenderer* self, _In_ void* walkContext,
+            const ImmediateRenderingDetail::WalkContext& root, _Inout_ ImmediateRenderingDetail::DisplayList& list),
+        _In_ void* walkContext,
+        _Out_ bool* fellBack);
+    _Check_return_ HRESULT RenderWindowedPopups(
+        _In_ DCompTreeHost* dcompTreeHost,
+        _Inout_ IslandState& islandState,
+        _Inout_ ImmediateRenderingDetail::DisplayList& islandList,
+        uint32_t frameNumber,
+        _Out_ bool* fellBack);
+
+    // S14 (ImmediateRenderer.Popups.cpp): windowed popups get their own swap chain + sprite, hosted as the popup
+    // window's root visual (where HWWalk hosts the popup child's comp node visual).
+    struct WindowedPopupGeometry
+    {
+        float originX = 0;   // DIPs, island space: the popup window's top-left
+        float originY = 0;
+        uint32_t width = 0;  // physical pixels
+        uint32_t height = 0;
+    };
+    static bool PaintWindowedPopupsInIsland() noexcept;
+    static _Check_return_ HRESULT GetWindowedPopupGeometry(_In_ CPopup* popup, float scale, _Out_ WindowedPopupGeometry* geometry);
+    // Hosts the visual in the popup window and maps it to cover the window; *flipped: RTL-flipped root (approximated).
+    static _Check_return_ HRESULT AttachWindowedPopupVisual(_In_ CPopup* popup, _In_ IUnknown* visual, uint32_t width,
+        uint32_t height, _Out_ bool* flipped);
+    static void DetachWindowedPopupVisual(_In_ CPopup* popup, _In_ IUnknown* visual) noexcept;
 
     RenderingBackend::Mode m_mode;
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;

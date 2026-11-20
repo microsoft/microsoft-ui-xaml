@@ -504,6 +504,8 @@ namespace ImmediateRenderingDetail
         std::vector<SubtreeSpan> spans;
         std::unordered_map<const CUIElement*, uint32_t> spanIndex;
         uint32_t uncacheable = 0; // bumped by content that depends on more than the parent context (popups, scrollers)
+        // Open windowed popups found by the island walk and the world transform of their child (S14).
+        std::vector<std::pair<CPopup*, CMILMatrix>> windowedPopups;
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -557,6 +559,16 @@ struct ImmediateRenderer::IslandState
     std::unordered_map<uint64_t, BitmapEntry> bitmaps;
     uint64_t frames = 0;
     DisplayList previousWalk;
+    // S14: an island's open windowed popups, each painted into its own swap chain hosted in the popup window.
+    struct WindowedPopup
+    {
+        xref_ptr<CPopup> popup;
+        std::unique_ptr<IslandState> surface;
+        int64_t openedUs = 0;
+        bool presented = false;
+    };
+    std::vector<WindowedPopup> popups;
+    bool windowedPopup = false; // this state paints a windowed popup's window
 };
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
@@ -2088,10 +2100,10 @@ void ImmediateRenderer::Walk(
             for (auto it = popups.rbegin(); it != popups.rend(); ++it)
             {
                 CPopup* popup = *it;
-                if (popup->IsWindowed())
+                const bool windowed = popup->IsWindowed();
+                if (windowed && PaintWindowedPopupsInIsland())
                 {
-                    // Windowed popups own an HWND/ContentIsland; immediate modes paint them into the island's swap
-                    // chain instead, so content outside the window bounds is clipped.
+                    // Diagnostic (WINUI_IMMEDIATE_INLINE_POPUPS=1): content outside the island bounds is clipped.
                     ReportUnsupported(popup, L"Windowed popup:painted in island");
                 }
                 if (popup->m_overlayElement != nullptr)
@@ -2107,6 +2119,11 @@ void ImmediateRenderer::Walk(
                     popupWorld.Append(local);
                 }
                 popupWorld.Append(parent.world);
+                if (windowed && !PaintWindowedPopupsInIsland())
+                {
+                    list.windowedPopups.emplace_back(popup, popupWorld);
+                    continue;
+                }
                 WalkContext childCtx = popupCtx;
                 // Walk() appends the child's own local transform (its arrange offset under the PopupRoot) to this.
                 childCtx.world = popupWorld;
@@ -2557,6 +2574,61 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         return hr;
     }
 
+    const RectF islandClip{ 0, 0, width / scale, height / scale };
+    WalkContext root;
+    root.clip = islandClip;
+    root.contentClip = islandClip;
+    root.scale = scale;
+    bool fellBack = false;
+    hr = RenderSurface(state, frameNumber, reinterpret_cast<uint64_t>(island), root,
+        [](ImmediateRenderer* self, void* context, const WalkContext& rootContext, DisplayList& list)
+        {
+            self->Walk(static_cast<CXamlIslandRoot*>(context), rootContext, list);
+        }, island, &fellBack);
+
+    if (!fellBack && SUCCEEDED(hr))
+    {
+        // The island's display list is state.previousWalk once presented.
+        hr = RenderWindowedPopups(dcompTreeHost, state, state.previousWalk, frameNumber, &fellBack);
+    }
+
+    if (fellBack)
+    {
+        // S11/S16: the island switches to Composition for good; free its painter, swap chain and sprite.
+        FallBackIsland(dcompTreeHost, island);
+        for (auto& entry : state.popups)
+        {
+            if (entry.surface->sprite)
+            {
+                DetachWindowedPopupVisual(entry.popup.get(), entry.surface->sprite.Get());
+            }
+        }
+        if (state.painter)
+        {
+            IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+        }
+        m_islands.erase(island);
+        return S_OK;
+    }
+    return hr;
+}
+
+_Check_return_ HRESULT ImmediateRenderer::RenderSurface(
+    _Inout_ IslandState& state,
+    uint32_t frameNumber,
+    uint64_t surfaceId,
+    const WalkContext& root,
+    _In_ void (*walkSurface)(_In_ ImmediateRenderer* self, _In_ void* walkContext, const WalkContext& root, _Inout_ DisplayList& list),
+    _In_ void* walkContext,
+    _Out_ bool* fellBack)
+{
+    *fellBack = false;
+    HRESULT hr = S_OK;
+    const uint32_t width = state.width;
+    const uint32_t height = state.height;
+    const float scale = state.scale;
+    const RectF islandClip = root.clip;
+
     // Pass 1: walk the element tree into a display list (DIPs, island space).
     FILE* const statsFile = GetStatsFile();
     const int64_t walkStart = statsFile ? QpcMicroseconds() : 0;
@@ -2566,11 +2638,6 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     const uint32_t reusedBefore = m_subtreesReused;
     DisplayList list;
     list.records.reserve(state.records.size());
-    const RectF islandClip{ 0, 0, width / scale, height / scale };
-    WalkContext root;
-    root.clip = islandClip;
-    root.contentClip = islandClip;
-    root.scale = scale;
     {
         // The previous list is consumed (moved from) by subtree reuse; this frame's list replaces it afterwards.
         DisplayList previous = std::move(state.previousWalk);
@@ -2578,18 +2645,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
         auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
         m_pendingFallback = nullptr;
-        Walk(island, root, list);
+        walkSurface(this, walkContext, root, list);
     }
 
     if (m_pendingFallback != nullptr)
     {
-        // S11/S16: the island switches to Composition for good; free its painter, swap chain and sprite.
-        FallBackIsland(dcompTreeHost, island);
-        if (state.painter)
-        {
-            IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
-        }
-        m_islands.erase(island);
+        *fellBack = true;
         return S_OK;
     }
 
@@ -3135,7 +3196,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
 
     const int64_t paintStart = statsFile ? QpcMicroseconds() : 0;
-    hr = PaintTracedFrame(*state.painter, frameNumber, reinterpret_cast<uint64_t>(island),
+    hr = PaintTracedFrame(*state.painter, frameNumber, surfaceId,
         fullDamage ? nullptr : damage.data(), fullDamage ? 0 : static_cast<uint32_t>(damage.size()), paint);
     if (statsFile)
     {
@@ -3152,7 +3213,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
                 damagePixels += static_cast<double>(d.right - d.left) * (d.bottom - d.top);
             }
         }
-        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld %u\n", frameNumber, static_cast<void*>(island),
+        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld %u\n", frameNumber, reinterpret_cast<void*>(surfaceId),
             list.records.size(), m_elementsVisited - visitedBefore, m_elementsRendered - renderedBefore,
             m_elementsCulled - culledBefore, list.commands.size(), blits.size(), blits.empty() ? 0 : blits[0].dx,
             blits.empty() ? 0 : blits[0].dy, fullDamage ? 0 : damage.size(), damagePixels, fullDamage ? 1 : 0,
@@ -3198,7 +3259,128 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
 
     if (!GetCapturePath().empty())
     {
-        LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), GetCapturePath().c_str()));
+        const std::wstring capturePath = state.windowedPopup ? GetCapturePath() + L".popup.bmp" : GetCapturePath();
+        LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), capturePath.c_str()));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT ImmediateRenderer::RenderWindowedPopups(
+    _In_ DCompTreeHost* dcompTreeHost,
+    _Inout_ IslandState& islandState,
+    _Inout_ DisplayList& islandList,
+    uint32_t frameNumber,
+    _Out_ bool* fellBack)
+{
+    *fellBack = false;
+    const auto& open = islandList.windowedPopups;
+    auto& popups = islandState.popups;
+    auto isOpen = [&](const CPopup* popup)
+    {
+        return std::any_of(open.begin(), open.end(), [&](const auto& entry) { return entry.first == popup; });
+    };
+    for (auto it = popups.begin(); it != popups.end();)
+    {
+        if (!isOpen(it->popup.get()))
+        {
+            if (it->surface->sprite)
+            {
+                DetachWindowedPopupVisual(it->popup.get(), it->surface->sprite.Get());
+            }
+            it = popups.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    for (const auto& entry : open)
+    {
+        CPopup* const popup = entry.first;
+        auto found = std::find_if(popups.begin(), popups.end(), [&](const auto& p) { return p.popup.get() == popup; });
+        if (found == popups.end())
+        {
+            IslandState::WindowedPopup created;
+            created.popup = xref_ptr<CPopup>(popup);
+            created.surface = std::make_unique<IslandState>();
+            created.surface->windowedPopup = true;
+            created.openedUs = QpcMicroseconds();
+            popups.push_back(std::move(created));
+            found = popups.end() - 1;
+        }
+        IslandState::WindowedPopup& windowed = *found;
+        IslandState& surface = *windowed.surface;
+
+        float scale = RootScale::GetRasterizationScaleForElement(popup);
+        if (!(scale > 0))
+        {
+            scale = 1.0f;
+        }
+        WindowedPopupGeometry geometry;
+        IFC_RETURN(GetWindowedPopupGeometry(popup, scale, &geometry));
+        if (geometry.width == 0 || geometry.height == 0)
+        {
+            continue;
+        }
+        HRESULT hr = EnsureIslandResources(dcompTreeHost, nullptr, surface, geometry.width, geometry.height, scale);
+        if (FAILED(hr))
+        {
+            if (IsDeviceLost(hr))
+            {
+                ReleaseResources();
+            }
+            return hr;
+        }
+        bool flipped = false;
+        IFC_RETURN(AttachWindowedPopupVisual(popup, surface.sprite.Get(), geometry.width, geometry.height, &flipped));
+        if (flipped)
+        {
+            ReportUnsupported(popup, L"Windowed popup RTL flip:approximated");
+        }
+
+        // The popup's content in island DIPs, translated so the window's top-left is the surface origin.
+        WalkContext root;
+        root.clip = { 0, 0, geometry.width / scale, geometry.height / scale };
+        root.contentClip = root.clip;
+        root.scale = scale;
+        CMILMatrix toWindow(true);
+        toWindow.SetDx(-geometry.originX);
+        toWindow.SetDy(-geometry.originY);
+        root.world = entry.second;
+        root.world.Append(toWindow);
+
+        bool popupFellBack = false;
+        hr = RenderSurface(surface, frameNumber, reinterpret_cast<uint64_t>(popup), root,
+            [](ImmediateRenderer* self, void* context, const WalkContext& rootContext, DisplayList& list)
+            {
+                auto walkPopup = static_cast<CPopup*>(context);
+                if (walkPopup->m_unloadingChild)
+                {
+                    self->Walk(walkPopup->m_unloadingChild.get(), rootContext, list);
+                }
+                if (walkPopup->m_pChild != nullptr)
+                {
+                    self->Walk(walkPopup->m_pChild, rootContext, list);
+                }
+            }, popup, &popupFellBack);
+        if (popupFellBack)
+        {
+            *fellBack = true;
+            return S_OK;
+        }
+        IFC_RETURN(hr); // device lost: ReleaseResources already dropped islandState
+
+        if (!windowed.presented)
+        {
+            windowed.presented = true;
+            if (FILE* statsFile = GetStatsFile())
+            {
+                fprintf(statsFile, "# popup-first-frame %p %ux%u %lld us\n", static_cast<void*>(popup), geometry.width,
+                    geometry.height, static_cast<long long>(QpcMicroseconds() - windowed.openedUs));
+                fflush(statsFile);
+            }
+        }
     }
     return S_OK;
 }
