@@ -1020,7 +1020,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                     if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
                     {
                         // Remove selection indication if we are not in the middle of an ongoing animation
-                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f, false /* forAnimation */);
                         m_activeIndicator.set(nullptr);
                     }
                     m_selectionModel.DeselectAt(indexPathFromModel);
@@ -1530,7 +1530,7 @@ void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldInd
         OnAnimationComplete(nullptr, nullptr);
     }
     m_activeIndicator.set(newIndicator);
-    ResetElementAnimationProperties(newIndicator, 1.0f);
+    ResetElementAnimationProperties(newIndicator, 1.0f, false /* forAnimation */);
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -2221,7 +2221,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         {
             if (prevIndicator && prevIndicator != m_prevIndicator.get())
             {
-                ResetElementAnimationProperties(prevIndicator, 0.0f);
+                ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
             }
             haveValidAnimation = true;
         }
@@ -2315,8 +2315,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         else if (prevIndicator != nextIndicator)
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
-            ResetElementAnimationProperties(prevIndicator, 0.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
+            ResetElementAnimationProperties(nextIndicator, 1.0f, false /* forAnimation */);
         }
 
         m_activeIndicator.set(nextIndicator);
