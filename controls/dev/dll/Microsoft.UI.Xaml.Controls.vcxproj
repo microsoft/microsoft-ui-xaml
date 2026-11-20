@@ -28,6 +28,21 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.UI.Xaml.Common.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\Telemetry\Muxc.TestInProduction.props" />
+  <Import Project="$(TestInProductionTargetsFile)" Condition="Exists('$(TestInProductionTargetsFile)')" />
+  <PropertyGroup>
+    <ExternalIncludePath>$(TestInProductionPkgDirectory)\inc;$(TestInProductionPkgDirectory)\inc\tip;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <Target Name="EnsureMuxcTipPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <Error Condition="!Exists('$(TestInProductionTargetsFile)')"
+           Text="The selected TestInProduction package is missing. Restore NuGet packages before building. Missing file: $(TestInProductionTargetsFile)" />
+    <PropertyGroup>
+      <_MuxcTipStubReason Condition="'$(MuxcTIPProductionVersion)' == ''">$(MuxcTIPPackagesConfig) is missing or names no Microsoft.Windows.TestInProduction version</_MuxcTipStubReason>
+      <_MuxcTipStubReason Condition="'$(MuxcTIPProductionVersion)' != ''">Microsoft.Windows.TestInProduction $(MuxcTIPProductionVersion) is not restored ($(MuxcTIPProductionTargetsFile) does not exist); restore $(MuxcTIPPackagesConfig) into $(NugetPackageDirectory)</_MuxcTipStubReason>
+    </PropertyGroup>
+    <Warning Condition="'$(IsInternalWinUIBuild)' == 'true' and '$(TF_BUILD)' != '' and '$(TestInProductionIsReal)' != 'true' and '$(UseTestInProductionStub)' != 'true'"
+           Text="MUXC TiP would build with the public stub and report nothing: $(_MuxcTipStubReason). Set UseTestInProductionStub=true to choose the stub on purpose." />
+  </Target>
   <ItemDefinitionGroup>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.Controls.def</ModuleDefinitionFile>
