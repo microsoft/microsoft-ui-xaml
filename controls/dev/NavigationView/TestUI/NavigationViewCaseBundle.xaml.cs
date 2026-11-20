@@ -18,6 +18,7 @@ namespace MUXControlsTestApp
         {
             LogController.InitializeLogging();
             this.InitializeComponent();
+            NavigateToDragPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewDragPage), 0); };
             NavigateToPointerFocusPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPointerFocusPage), 0); };
             NavigationViewPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPage), 0); };
             NavigationViewInfoBadgePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInfoBadgeTestPage), 0); };
