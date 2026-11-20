@@ -135,9 +135,14 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
             _counterTimer?.Stop();
             if (_sampleTimer is not null)
             {
-                using var stopped = new ManualResetEvent(false);
+                // Dispose the event only once the timer has signalled it; if the wait times out (a sample is still
+                // running) the timer signals it later, and a disposed handle would crash a --no-exit process.
+                var stopped = new ManualResetEvent(false);
                 _sampleTimer.Dispose(stopped);
-                stopped.WaitOne(1000);
+                if (stopped.WaitOne(1000))
+                {
+                    stopped.Dispose();
+                }
             }
             try
             {
