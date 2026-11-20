@@ -51,6 +51,14 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
+    <!--
+      /debugtype:cv (added to the Debug link for code coverage in Microsoft.UI.Xaml.Common.targets)
+      is incompatible with incremental linking, which UseDebugLibraries=true turns on by default.
+      Turn it off for the same opt-in coverage builds only, so the normal Debug inner loop keeps
+      incremental linking. This mirrors eng\configuration.props, which disables LinkIncremental
+      repo-wide for MUX for exactly this reason.
+    -->
+    <LinkIncremental Condition="'$(EnableCodeCoverageLinkOptions)' == 'true'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
