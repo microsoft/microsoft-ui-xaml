@@ -18,7 +18,10 @@
 #include <vector>
 #include <d3d11.h>
 #include <dxgi1_2.h>
-#include <dwrite.h>
+#include <array>
+#include <tuple>
+#include <d2d1.h>
+#include <dwrite_3.h>
 #include <wrl/client.h>
 
 // GDI+ headers call min/max unqualified; precomp.h undefines the macros.
@@ -76,6 +79,23 @@ namespace Gdiplus
 //     in cacheBytes (width * height * 4 per bitmap).
 //   - ScrollPixels memmoves rows of the PARGB target. The moved area is added (without double counting overlap with the
 //     damage) to the next frame's back-buffer copy and Present1 dirty rects.
+// - S11-S23 primitives:
+//   - Gradients: Gdiplus::LinearGradientBrush wraps instead of clamping, so the brush axis is extended to cover the
+//     shape's projection (quantized to 1/8 of the gradient length so small motion reuses the brush) and padded with the
+//     end colors; SetInterpolationColors carries the stops. GDI+ interpolates straight colors, so segments whose alphas
+//     differ are subdivided to approximate premultiplied interpolation like D2D. Brushes are cached in a bounded LRU.
+//   - Shadows: the offset shape's exact coverage is rasterized into an 8-bit mask (shape + 3 sigma, physical pixels,
+//     subpixel phase quantized to 1/8 px) and blurred with three box passes per axis; masks are cached in a bounded LRU
+//     keyed by (size, radii, sigma, phase) and count in cacheBytes. Compositing colors the mask, knocks out the shape's
+//     own coverage, and draws it with DrawImage (1:1 under axis-aligned transforms, bilinear otherwise).
+//   - BlurBackdrop blurs the current surface's pixels in place (three box passes per axis, edge clamp) inside the
+//     rounded rect's antialiased coverage, clipped to the current clip and damage.
+//   - Glyph runs: color fonts (IDWriteFontFace2::IsColorFont) are split into palette layers with
+//     IDWriteFactory2::TranslateColorGlyphRun. Faces GDI+ cannot draw faithfully (non-TrueType outlines, variable fonts,
+//     fonts outside the system collection, failed GDI mapping) are drawn from DirectWrite outlines
+//     (GetGlyphRunOutline into a GraphicsPath, cached per (face, glyph, em size) in a bounded LRU). clearType runs use
+//     TextRenderingHintClearTypeGridFit when every pixel under the run is opaque, grayscale otherwise; outline-drawn
+//     glyphs are always grayscale.
 namespace RenderingBackend
 {
     namespace GdiPlus
@@ -303,6 +323,228 @@ namespace RenderingBackend
             constexpr size_t c_maxGlyphFonts = 64;
             constexpr uint64_t c_fontFaceBytes = sizeof(LOGFONTW) + 64;
             constexpr uint64_t c_dwriteInteropBytes = 256;
+            constexpr size_t c_maxGradientBrushes = 32;
+            constexpr uint64_t c_gradientBrushBytes = 256;
+            constexpr uint64_t c_gradientStopBytes = sizeof(Gdiplus::ARGB) + sizeof(Gdiplus::REAL);
+            constexpr size_t c_maxShadowMasks = 32;
+            constexpr uint64_t c_maxShadowMaskBytes = 4 << 20;
+            constexpr uint64_t c_maxShadowPixels = 16 << 20;
+            constexpr uint64_t c_releaseScratchBytes = 4 << 20; // larger scratch surfaces are freed at EndFrame
+            constexpr float c_maxSigma = 128;                   // physical pixels
+            constexpr size_t c_maxGlyphOutlines = 2048;
+            constexpr uint64_t c_maxGlyphOutlineBytes = 2 << 20;
+            constexpr uint64_t c_glyphOutlineBytes = 128;
+
+            // Gradient fills use 8x8 supersampling (SmoothingModeAntiAlias8x8, GDI+ 1.1): the default 8x4 grid
+            // rounds the thin coverage of a curved edge over a gradient to near 0 or 1.
+            class FineAntialiasing
+            {
+            public:
+                explicit FineAntialiasing(Gdiplus::Graphics& graphics) noexcept
+                    : m_graphics(graphics), m_previous(graphics.GetSmoothingMode())
+                {
+                    m_graphics.SetSmoothingMode(static_cast<Gdiplus::SmoothingMode>(Gdiplus::SmoothingModeAntiAlias + 1));
+                }
+                ~FineAntialiasing()
+                {
+                    m_graphics.SetSmoothingMode(m_previous);
+                }
+                FineAntialiasing(const FineAntialiasing&) = delete;
+                FineAntialiasing& operator=(const FineAntialiasing&) = delete;
+
+            private:
+                Gdiplus::Graphics& m_graphics;
+                Gdiplus::SmoothingMode m_previous;
+            };
+
+            // Radii of three box filters approximating a gaussian of standard deviation sigma.
+            void BoxRadii(float sigma, int32_t (&radii)[3]) noexcept
+            {
+                radii[0] = radii[1] = radii[2] = 0;
+                if (!(sigma > 0))
+                {
+                    return;
+                }
+                const float variance12 = 12 * sigma * sigma;
+                int32_t lower = static_cast<int32_t>(std::floor(std::sqrt(variance12 / 3 + 1)));
+                if (lower % 2 == 0)
+                {
+                    --lower;
+                }
+                lower = std::max(lower, 1);
+                const int32_t upper = lower + 2;
+                const float lowerF = static_cast<float>(lower);
+                const int32_t lowerCount = static_cast<int32_t>(std::lround((variance12 - 3 * lowerF * lowerF - 12 * lowerF - 9) / (-4 * lowerF - 4)));
+                for (int32_t index = 0; index < 3; ++index)
+                {
+                    radii[index] = ((index < lowerCount ? lower : upper) - 1) / 2;
+                }
+            }
+
+            // One box-filter pass over `lines` lines of `length` samples (`channels` interleaved bytes each). Samples are
+            // sampleStep bytes apart and lines lineStep bytes apart, so the same code runs rows and columns. Edges clamp.
+            void BoxBlurPass(uint8_t* data, int32_t length, int32_t lines, ptrdiff_t sampleStep, ptrdiff_t lineStep, int32_t channels,
+                int32_t radius, std::vector<uint32_t>& line)
+            {
+                if (radius <= 0 || length <= 0)
+                {
+                    return;
+                }
+                const uint32_t window = static_cast<uint32_t>(2 * radius + 1);
+                line.resize(static_cast<size_t>(length) * channels);
+                for (int32_t lineIndex = 0; lineIndex < lines; ++lineIndex)
+                {
+                    uint8_t* base = data + lineIndex * lineStep;
+                    for (int32_t i = 0; i < length; ++i)
+                    {
+                        for (int32_t c = 0; c < channels; ++c)
+                        {
+                            line[static_cast<size_t>(i) * channels + c] = base[i * sampleStep + c];
+                        }
+                    }
+                    for (int32_t c = 0; c < channels; ++c)
+                    {
+                        const auto at = [&](int32_t i) { return line[static_cast<size_t>(std::clamp(i, 0, length - 1)) * channels + c]; };
+                        uint32_t sum = 0;
+                        for (int32_t k = -radius; k <= radius; ++k)
+                        {
+                            sum += at(k);
+                        }
+                        for (int32_t i = 0; i < length; ++i)
+                        {
+                            base[i * sampleStep + c] = static_cast<uint8_t>((sum + window / 2) / window);
+                            sum = sum + at(i + radius + 1) - at(i - radius);
+                        }
+                    }
+                }
+            }
+
+            // Three box passes per axis over a width x height image with `channels` bytes per pixel and rowStride bytes per row.
+            void GaussianBlur(uint8_t* data, int32_t width, int32_t height, ptrdiff_t rowStride, int32_t channels, float sigmaX, float sigmaY,
+                std::vector<uint32_t>& line)
+            {
+                int32_t radii[3];
+                BoxRadii(sigmaX, radii);
+                for (int32_t radius : radii)
+                {
+                    BoxBlurPass(data, width, height, channels, rowStride, channels, radius, line);
+                }
+                BoxRadii(sigmaY, radii);
+                for (int32_t radius : radii)
+                {
+                    BoxBlurPass(data, height, width, rowStride, channels, channels, radius, line);
+                }
+            }
+
+            // Collects a DirectWrite glyph outline (DIPs, y down, origin on the baseline) into a GraphicsPath. Lives on the
+            // stack for one GetGlyphRunOutline call, so reference counting is nominal.
+            class GraphicsPathSink final : public IDWriteGeometrySink
+            {
+            public:
+                explicit GraphicsPathSink(Gdiplus::GraphicsPath& path) noexcept : m_path(path) {}
+
+                IFACEMETHODIMP QueryInterface(REFIID iid, void** object) noexcept override
+                {
+                    if (object == nullptr)
+                    {
+                        return E_POINTER;
+                    }
+                    if (iid == __uuidof(IUnknown) || iid == __uuidof(ID2D1SimplifiedGeometrySink))
+                    {
+                        *object = static_cast<IDWriteGeometrySink*>(this);
+                        return S_OK;
+                    }
+                    *object = nullptr;
+                    return E_NOINTERFACE;
+                }
+                IFACEMETHODIMP_(ULONG) AddRef() noexcept override { return 1; }
+                IFACEMETHODIMP_(ULONG) Release() noexcept override { return 1; }
+
+                IFACEMETHODIMP_(void) SetFillMode(D2D1_FILL_MODE fillMode) noexcept override
+                {
+                    Check(m_path.SetFillMode(fillMode == D2D1_FILL_MODE_WINDING ? Gdiplus::FillModeWinding : Gdiplus::FillModeAlternate));
+                }
+                IFACEMETHODIMP_(void) SetSegmentFlags(D2D1_PATH_SEGMENT) noexcept override {}
+                IFACEMETHODIMP_(void) BeginFigure(D2D1_POINT_2F startPoint, D2D1_FIGURE_BEGIN) noexcept override
+                {
+                    Check(m_path.StartFigure());
+                    m_current = Gdiplus::PointF(startPoint.x, startPoint.y);
+                }
+                IFACEMETHODIMP_(void) AddLines(const D2D1_POINT_2F* points, UINT32 count) noexcept override
+                {
+                    for (UINT32 index = 0; index < count; ++index)
+                    {
+                        const Gdiplus::PointF end(points[index].x, points[index].y);
+                        Check(m_path.AddLine(m_current, end));
+                        m_current = end;
+                    }
+                }
+                IFACEMETHODIMP_(void) AddBeziers(const D2D1_BEZIER_SEGMENT* beziers, UINT32 count) noexcept override
+                {
+                    for (UINT32 index = 0; index < count; ++index)
+                    {
+                        const D2D1_BEZIER_SEGMENT& b = beziers[index];
+                        const Gdiplus::PointF end(b.point3.x, b.point3.y);
+                        Check(m_path.AddBezier(m_current, Gdiplus::PointF(b.point1.x, b.point1.y), Gdiplus::PointF(b.point2.x, b.point2.y), end));
+                        m_current = end;
+                    }
+                }
+                IFACEMETHODIMP_(void) EndFigure(D2D1_FIGURE_END figureEnd) noexcept override
+                {
+                    if (figureEnd == D2D1_FIGURE_END_CLOSED)
+                    {
+                        Check(m_path.CloseFigure());
+                    }
+                }
+                IFACEMETHODIMP Close() noexcept override { return m_ok ? S_OK : E_FAIL; }
+
+            private:
+                void Check(Gdiplus::Status status) noexcept { m_ok = m_ok && status == Gdiplus::Ok; }
+
+                Gdiplus::GraphicsPath& m_path;
+                Gdiplus::PointF m_current;
+                bool m_ok = true;
+            };
+
+            // Maps DIPs to the pixel grid shadows and backdrop blurs are computed on: device pixels under an axis-aligned
+            // transform (X = ax * x + bx), otherwise a local grid scaled like the transform (bx = by = 0) that is then
+            // drawn through the world transform.
+            struct MaskSpace
+            {
+                bool axisAligned = false;
+                float ax = 1, ay = 1, bx = 0, by = 0;
+
+                RectF Map(const RectF& rect) const noexcept
+                {
+                    return { ax * rect.left + bx, ay * rect.top + by, ax * rect.right + bx, ay * rect.bottom + by };
+                }
+            };
+
+            using ShadowKey = std::array<uint32_t, 7>; // width, height, radiusX, radiusY, sigmaX, sigmaY bits; phase
+
+            struct ShadowMask
+            {
+                uint32_t width = 0, height = 0;
+                std::vector<uint8_t> alpha;
+                std::list<ShadowKey>::iterator lru;
+            };
+
+            struct GradientBrushEntry
+            {
+                std::unique_ptr<Gdiplus::LinearGradientBrush> brush;
+                uint64_t bytes = 0;
+                std::list<std::vector<uint32_t>>::iterator lru;
+            };
+
+            using GlyphOutlineKey = std::tuple<IDWriteFontFace*, uint16_t, uint32_t>; // face, glyph, em size bits
+
+            struct GlyphOutlineEntry
+            {
+                Microsoft::WRL::ComPtr<IDWriteFontFace> face; // keeps the pointer key from being reused
+                std::unique_ptr<Gdiplus::GraphicsPath> path;  // empty for blank glyphs
+                uint64_t bytes = 0;
+                std::list<GlyphOutlineKey>::iterator lru;
+            };
 
             // One stack for clips and layers: pops must nest.
             enum class StackEntry : uint8_t
@@ -346,6 +588,8 @@ namespace RenderingBackend
                 Microsoft::WRL::ComPtr<IDWriteFontFace> face; // keeps the pointer key from being reused
                 Gdiplus::FontFamily* family = nullptr;        // owned by m_fontFamilies; nullptr if GDI+ cannot use it
                 INT style = Gdiplus::FontStyleRegular;
+                bool isColor = false;                         // COLR/CPAL layers
+                bool outline = false;                         // draw from DirectWrite outlines instead of GDI+ text
             };
 
             using GlyphFontKey = std::pair<IDWriteFontFace*, uint32_t>; // face, em size bits
@@ -755,44 +999,28 @@ namespace RenderingBackend
                     {
                         return;
                     }
-                    Gdiplus::Font* font = GetGlyphFont(run.fontFace, run.fontEmSize);
-                    Gdiplus::SolidBrush* brush = font ? GetBrush(color) : nullptr;
-                    if (!brush)
+                    const FontFaceEntry* entry = GetFontFace(run.fontFace);
+                    if (!entry)
                     {
                         return;
                     }
+                    const bool outline = entry->outline;
+                    const bool isColor = entry->isColor;
+                    float minX, maxX, minY, maxY;
+                    LayoutGlyphs(run, minX, maxX, minY, maxY);
 
-                    // Explicit glyph origins from DirectWrite's advances and offsets. Right-to-left runs advance leftwards
-                    // from the origin, and a positive advanceOffset moves a glyph in the run's direction (left for RTL),
-                    // matching DWRITE_GLYPH_OFFSET.
-                    const uint32_t count = std::min<uint32_t>(run.glyphCount, INT_MAX);
-                    const bool rightToLeft = (run.bidiLevel & 1) != 0;
-                    m_glyphPositions.resize(count);
-                    float pen = 0;
-                    float minX = INFINITY, maxX = -INFINITY, minY = INFINITY, maxY = -INFINITY;
-                    for (uint32_t index = 0; index < count; ++index)
+                    bool clearType = false;
+                    if (run.clearType)
                     {
-                        const float advance = run.glyphAdvances[index];
-                        const GlyphOffset offset = run.glyphOffsets ? run.glyphOffsets[index] : GlyphOffset{};
-                        float x;
-                        if (rightToLeft)
-                        {
-                            pen += advance;
-                            x = run.baselineOrigin.x - pen - offset.advanceOffset;
-                        }
-                        else
-                        {
-                            x = run.baselineOrigin.x + pen + offset.advanceOffset;
-                            pen += advance;
-                        }
-                        const float y = run.baselineOrigin.y - offset.ascenderOffset;
-                        m_glyphPositions[index] = Gdiplus::PointF(x, y);
-                        minX = std::min({ minX, x, x + advance });
-                        maxX = std::max({ maxX, x, x + advance });
-                        minY = std::min(minY, y);
-                        maxY = std::max(maxY, y);
+                        DWRITE_FONT_METRICS metrics{};
+                        run.fontFace->GetMetrics(&metrics);
+                        const float scale = metrics.designUnitsPerEm ? run.fontEmSize / metrics.designUnitsPerEm : 0;
+                        clearType = IsOpaqueUnder(DeviceBounds({ minX, minY - metrics.ascent * scale, maxX, maxY + metrics.descent * scale }, 0));
                     }
-                    Record(Current().DrawDriverString(run.glyphIndices, static_cast<INT>(count), font, brush, m_glyphPositions.data(), 0, nullptr));
+                    if (!(run.useColorFont && isColor && DrawColorLayers(run, color, clearType)))
+                    {
+                        DrawGlyphs(run, color, outline, clearType);
+                    }
 
                     // Ink estimate: ascent above and descent below the baselines, plus some side bearing overhang.
                     const float em = run.fontEmSize;
@@ -935,11 +1163,264 @@ namespace RenderingBackend
                     }
                 }
 
-                // TODO(S13/S23): implemented test-first on the gdiplus branch.
-                void FillRoundedRectangleGradient(const RectF&, float, float, const LinearGradientDesc&) noexcept override {}
-                void FillPathGradient(const PathData&, const LinearGradientDesc&) noexcept override {}
-                void DrawRoundedRectangleShadow(const RectF&, float, float, float, const PointF&, const ColorF&) noexcept override {}
-                void BlurBackdrop(const RectF&, float, float, float) noexcept override {}
+                void FillRoundedRectangleGradient(const RectF& rect, float radiusX, float radiusY, const LinearGradientDesc& gradient) noexcept override
+                {
+                    if (!BeginPrimitive())
+                    {
+                        return;
+                    }
+                    Gdiplus::Brush* brush = GetGradientBrush(gradient, rect);
+                    if (!brush)
+                    {
+                        return;
+                    }
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(rect, 0));
+                    MaskSpace space;
+                    if (radiusX > 0 && radiusY > 0 && GetMaskSpace(space) && space.axisAligned &&
+                        FillRoundedGradientExact(rect, radiusX, radiusY, gradient, *brush, space))
+                    {
+                        return;
+                    }
+                    FineAntialiasing fine(Current());
+                    if (BuildRoundedPath(rect, radiusX, radiusY))
+                    {
+                        Record(Current().FillPath(brush, m_path.get()));
+                    }
+                    else
+                    {
+                        Record(Current().FillRectangle(brush, ToGdiRect(rect)));
+                    }
+                }
+
+                void FillPathGradient(const PathData& data, const LinearGradientDesc& gradient) noexcept override
+                {
+                    if (!BeginPrimitive())
+                    {
+                        return;
+                    }
+                    RectF bounds{};
+                    Gdiplus::GraphicsPath* path = GetPath(data, bounds);
+                    Gdiplus::Brush* brush = path ? GetGradientBrush(gradient, bounds) : nullptr;
+                    if (!brush)
+                    {
+                        return;
+                    }
+                    FineAntialiasing fine(Current());
+                    Record(Current().FillPath(brush, path));
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(bounds, 0));
+                }
+
+                void DrawRoundedRectangleShadow(const RectF& rect, float radiusX, float radiusY, float blurRadius, const PointF& offset, const ColorF& color) noexcept override
+                {
+                    if (!BeginPrimitive() || !(color.a > 0) || !std::isfinite(offset.x) || !std::isfinite(offset.y))
+                    {
+                        return;
+                    }
+                    MaskSpace space;
+                    if (!GetMaskSpace(space))
+                    {
+                        return;
+                    }
+                    const RectF shape = space.Map({ rect.left + offset.x, rect.top + offset.y, rect.right + offset.x, rect.bottom + offset.y });
+                    const float width = shape.right - shape.left;
+                    const float height = shape.bottom - shape.top;
+                    if (!(width > 0) || !(height > 0) || !std::isfinite(width) || !std::isfinite(height) || !std::isfinite(shape.left) || !std::isfinite(shape.top))
+                    {
+                        return;
+                    }
+                    const bool rounded = radiusX > 0 && radiusY > 0;
+                    const float rx = rounded ? std::min(radiusX * space.ax, width / 2) : 0;
+                    const float ry = rounded ? std::min(radiusY * space.ay, height / 2) : 0;
+                    const float blur = (blurRadius > 0 && std::isfinite(blurRadius)) ? blurRadius : 0;
+                    const float sigmaX = std::min(blur / 2 * space.ax, c_maxSigma);
+                    const float sigmaY = std::min(blur / 2 * space.ay, c_maxSigma);
+                    const int32_t padX = static_cast<int32_t>(std::ceil(3 * sigmaX)) + 1;
+                    const int32_t padY = static_cast<int32_t>(std::ceil(3 * sigmaY)) + 1;
+
+                    // Subpixel phase quantized to 1/8 px, so moving shadows reuse masks.
+                    const auto phase = [](float edge, int32_t& origin) noexcept
+                    {
+                        const float floored = std::floor(edge);
+                        const uint32_t eighths = static_cast<uint32_t>(std::lround((edge - floored) * 8));
+                        origin = ToPixel(floored) + (eighths == 8 ? 1 : 0);
+                        return eighths & 7;
+                    };
+                    int32_t shapeX = 0, shapeY = 0;
+                    const uint32_t phaseX = phase(shape.left, shapeX);
+                    const uint32_t phaseY = phase(shape.top, shapeY);
+                    const double maskWidth = std::ceil(phaseX / 8.0 + width) + 2.0 * padX;
+                    const double maskHeight = std::ceil(phaseY / 8.0 + height) + 2.0 * padY;
+                    if (maskWidth * maskHeight > static_cast<double>(c_maxShadowPixels))
+                    {
+                        return;
+                    }
+                    const uint32_t w = static_cast<uint32_t>(maskWidth);
+                    const uint32_t h = static_cast<uint32_t>(maskHeight);
+                    const RectF maskShape{ padX + phaseX / 8.0f, padY + phaseY / 8.0f, padX + phaseX / 8.0f + width, padY + phaseY / 8.0f + height };
+                    const ShadowKey key{ FloatBits(width), FloatBits(height), FloatBits(rx), FloatBits(ry), FloatBits(sigmaX), FloatBits(sigmaY), (phaseX << 3) | phaseY };
+                    const ShadowMask* mask = GetShadowMask(key, w, h, maskShape, rx, ry, sigmaX, sigmaY);
+                    if (!mask || !EnsureShadowScratch(w + 1, h + 1))
+                    {
+                        return;
+                    }
+
+                    // Color the mask and knock out the shape itself (without the offset), both in mask pixels.
+                    const int32_t originX = shapeX - padX;
+                    const int32_t originY = shapeY - padY;
+                    const RectF knockDevice = space.Map(rect);
+                    const RectF knock{ knockDevice.left - originX, knockDevice.top - originY, knockDevice.right - originX, knockDevice.bottom - originY };
+                    const float kw = knock.right - knock.left, kh = knock.bottom - knock.top;
+                    const float krx = rounded ? std::min(radiusX * space.ax, kw / 2) : 0;
+                    const float kry = rounded ? std::min(radiusY * space.ay, kh / 2) : 0;
+                    const bool knockout = kw > 0 && kh > 0;
+                    const float alpha = std::min(color.a, 1.0f);
+                    uint32_t palette[256];
+                    for (uint32_t coverage = 0; coverage < 256; ++coverage)
+                    {
+                        const float a = alpha * coverage / 255;
+                        palette[coverage] = (static_cast<uint32_t>(ToByte(a)) << 24) | (static_cast<uint32_t>(ToByte(color.r * a)) << 16) |
+                            (static_cast<uint32_t>(ToByte(color.g * a)) << 8) | ToByte(color.b * a);
+                    }
+                    const uint32_t stride = m_shadowScratchWidth;
+                    uint32_t* pixels = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
+                    for (uint32_t y = 0; y < h; ++y)
+                    {
+                        const uint8_t* source = mask->alpha.data() + static_cast<size_t>(y) * w;
+                        uint32_t* destination = pixels + static_cast<size_t>(y) * stride;
+                        for (uint32_t x = 0; x < w; ++x)
+                        {
+                            uint32_t coverage = source[x];
+                            if (coverage != 0 && knockout)
+                            {
+                                const uint32_t knocked = RoundedRectCoverage(knock, krx, kry, static_cast<int32_t>(x), static_cast<int32_t>(y));
+                                coverage = (coverage * (255 - knocked) + 127) / 255;
+                            }
+                            destination[x] = palette[coverage];
+                        }
+                        destination[w] = 0;
+                    }
+                    memset(pixels + static_cast<size_t>(h) * stride, 0, static_cast<size_t>(w + 1) * 4);
+
+                    Gdiplus::Graphics& graphics = Current();
+                    if (space.axisAligned)
+                    {
+                        // Identity transform, integer rects, nearest-neighbor sampling, and half pixel offset: a 1:1 copy.
+                        Record(graphics.ResetTransform());
+                        Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(originX, originY, static_cast<INT>(w), static_cast<INT>(h)),
+                            0, 0, static_cast<INT>(w), static_cast<INT>(h), Gdiplus::UnitPixel, nullptr));
+                        Record(graphics.SetTransform(m_transform.get()));
+                        m_stats.paintedPixels += VisibleArea({ originX, originY, originX + static_cast<int32_t>(w), originY + static_cast<int32_t>(h) });
+                    }
+                    else
+                    {
+                        const RectF destination{ originX / space.ax, originY / space.ay, (originX + static_cast<float>(w)) / space.ax, (originY + static_cast<float>(h)) / space.ay };
+                        Record(graphics.SetInterpolationMode(Gdiplus::InterpolationModeBilinear));
+                        Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), ToGdiRect(destination), 0, 0, static_cast<Gdiplus::REAL>(w),
+                            static_cast<Gdiplus::REAL>(h), Gdiplus::UnitPixel));
+                        Record(graphics.SetInterpolationMode(Gdiplus::InterpolationModeNearestNeighbor));
+                        m_stats.paintedPixels += VisibleArea(DeviceBounds(destination, 0));
+                    }
+                }
+
+                void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept override
+                {
+                    if (!m_inFrame || !(blurRadius > 0) || !std::isfinite(blurRadius))
+                    {
+                        return;
+                    }
+                    if (!BeginPrimitive())
+                    {
+                        return;
+                    }
+                    MaskSpace space;
+                    if (!GetMaskSpace(space))
+                    {
+                        return;
+                    }
+                    const PixelRect region = Intersect(Intersect(DeviceBounds(rect, 0), CurrentClip()), m_damageBounds);
+                    if (region.IsEmpty())
+                    {
+                        return;
+                    }
+                    const float sigmaX = std::min(blurRadius / 2 * space.ax, c_maxSigma);
+                    const float sigmaY = std::min(blurRadius / 2 * space.ay, c_maxSigma);
+                    const int32_t padX = static_cast<int32_t>(std::ceil(3 * sigmaX)) + 1;
+                    const int32_t padY = static_cast<int32_t>(std::ceil(3 * sigmaY)) + 1;
+                    const PixelRect source = Intersect({ region.left - padX, region.top - padY, region.right + padX, region.bottom + padY }, FullTarget());
+                    const int32_t sw = source.right - source.left;
+                    const int32_t sh = source.bottom - source.top;
+
+                    Surface& surface = CurrentSurface();
+                    surface.graphics->Flush(Gdiplus::FlushIntentionSync);
+                    const size_t stride = static_cast<size_t>(m_width) * 4;
+                    const size_t blurStride = static_cast<size_t>(sw) * 4;
+                    m_blurPixels.resize(blurStride * sh);
+                    for (int32_t y = 0; y < sh; ++y)
+                    {
+                        memcpy(m_blurPixels.data() + y * blurStride, surface.pixels.data() + (source.top + y) * stride + static_cast<size_t>(source.left) * 4, blurStride);
+                    }
+                    GaussianBlur(m_blurPixels.data(), sw, sh, static_cast<ptrdiff_t>(blurStride), 4, sigmaX, sigmaY, m_blurLine);
+
+                    // Antialiased coverage of the rounded rect: exact under axis-aligned transforms, pixel-center tests
+                    // through the inverse transform otherwise.
+                    const RectF device = space.Map(rect);
+                    const bool rounded = radiusX > 0 && radiusY > 0;
+                    const float drx = rounded ? std::min(radiusX * space.ax, (device.right - device.left) / 2) : 0;
+                    const float dry = rounded ? std::min(radiusY * space.ay, (device.bottom - device.top) / 2) : 0;
+                    const Matrix3x2F& t = m_userTransform;
+                    const float determinant = t.m11 * t.m22 - t.m21 * t.m12;
+                    if (!space.axisAligned && !(std::fabs(determinant) > 0))
+                    {
+                        return;
+                    }
+                    const float lrx = rounded ? std::min(radiusX, (rect.right - rect.left) / 2) : 0;
+                    const float lry = rounded ? std::min(radiusY, (rect.bottom - rect.top) / 2) : 0;
+                    const auto coverageAt = [&](int32_t x, int32_t y) noexcept -> uint32_t
+                    {
+                        if (space.axisAligned)
+                        {
+                            return RoundedRectCoverage(device, drx, dry, x, y);
+                        }
+                        const float u = (x + 0.5f) / m_dpiScale - t.dx;
+                        const float v = (y + 0.5f) / m_dpiScale - t.dy;
+                        const float lx = (u * t.m22 - v * t.m21) / determinant;
+                        const float ly = (v * t.m11 - u * t.m12) / determinant;
+                        if (!(lx >= rect.left && lx < rect.right && ly >= rect.top && ly < rect.bottom))
+                        {
+                            return 0;
+                        }
+                        if (lrx > 0 && lry > 0)
+                        {
+                            const float nx = (lx - std::clamp(lx, rect.left + lrx, rect.right - lrx)) / lrx;
+                            const float ny = (ly - std::clamp(ly, rect.top + lry, rect.bottom - lry)) / lry;
+                            return nx * nx + ny * ny <= 1 ? 255 : 0;
+                        }
+                        return 255;
+                    };
+
+                    for (const PixelRect& damage : m_damage)
+                    {
+                        const PixelRect area = Intersect(damage, region);
+                        for (int32_t y = area.top; y < area.bottom; ++y)
+                        {
+                            uint8_t* destination = surface.pixels.data() + y * stride + static_cast<size_t>(area.left) * 4;
+                            const uint8_t* blurred = m_blurPixels.data() + (y - source.top) * blurStride + static_cast<size_t>(area.left - source.left) * 4;
+                            for (int32_t x = area.left; x < area.right; ++x, destination += 4, blurred += 4)
+                            {
+                                const uint32_t coverage = coverageAt(x, y);
+                                if (coverage == 0)
+                                {
+                                    continue;
+                                }
+                                for (int channel = 0; channel < 4; ++channel)
+                                {
+                                    destination[channel] = static_cast<uint8_t>((destination[channel] * (255 - coverage) + blurred[channel] * coverage + 127) / 255);
+                                }
+                            }
+                        }
+                    }
+                    m_stats.paintedPixels += VisibleArea(region);
+                }
 
                 HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept override
                 {
@@ -1015,6 +1496,7 @@ namespace RenderingBackend
                     m_layerStack.clear();
                     m_target.graphics->Flush(Gdiplus::FlushIntentionSync);
                     m_inFrame = false;
+                    ReleaseLargeScratch();
 
                     HRESULT hr = m_frameHr;
                     if (SUCCEEDED(hr) && m_swapChain)
@@ -1071,6 +1553,11 @@ namespace RenderingBackend
                         (m_path ? c_pathBytes : 0) + (m_transform ? c_matrixBytes : 0) + m_pathCacheBytes + m_fontFaces.size() * c_fontFaceBytes +
                         m_glyphFonts.size() * c_fontBytes + bitmapBytes + (m_bitmapAttributes ? c_imageAttributesBytes : 0) +
                         (m_gdiInterop ? c_dwriteInteropBytes : 0);
+                    // S11-S23 caches: gradient brushes, shadow masks, the shadow compositing scratch, glyph outlines.
+                    inventory.cachedObjectCount += static_cast<uint32_t>(m_gradientBrushes.size() + m_shadowMasks.size() + m_glyphOutlines.size()) +
+                        (m_shadowScratch.bitmap ? 1 : 0);
+                    inventory.cacheBytes += m_gradientBrushBytes + m_shadowMaskBytes + m_glyphOutlineBytes +
+                        m_shadowScratch.pixels.size() + m_blurPixels.capacity() + m_blurLine.capacity() * sizeof(uint32_t);
                     inventory.uploadBytesThisFrame = m_uploadBytes;
                     return inventory;
                 }
@@ -1550,13 +2037,20 @@ namespace RenderingBackend
                         HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(factory.GetAddressOf()));
                         if (SUCCEEDED(hr))
                         {
+                            hr = factory->GetSystemFontCollection(&m_systemFonts, FALSE);
+                        }
+                        if (SUCCEEDED(hr))
+                        {
                             hr = factory->GetGdiInterop(&m_gdiInterop);
                         }
                         if (FAILED(hr))
                         {
+                            m_systemFonts.Reset();
                             Fail(hr);
                             return nullptr;
                         }
+                        // Optional (Windows 8.1+): color glyph layers.
+                        static_cast<void>(factory.As(&m_dwriteFactory2));
                         ++m_frameCreated;
                     }
                     if (m_fontFaces.size() >= c_maxFontFaces)
@@ -1570,14 +2064,48 @@ namespace RenderingBackend
 
                     FontFaceEntry entry{};
                     entry.face = face;
+                    Microsoft::WRL::ComPtr<IDWriteFontFace2> face2;
+                    entry.isColor = SUCCEEDED(face->QueryInterface(IID_PPV_ARGS(&face2))) && face2->IsColorFont();
+
+                    // GDI+ text only draws installed TrueType-outline fonts at their default instance; anything else is
+                    // drawn from DirectWrite outlines.
+                    const DWRITE_FONT_FACE_TYPE type = face->GetType();
+                    bool outline = type != DWRITE_FONT_FACE_TYPE_TRUETYPE && type != DWRITE_FONT_FACE_TYPE_TRUETYPE_COLLECTION;
+                    if (!outline)
+                    {
+                        // Collections report OPENTYPE_COLLECTION even for PostScript (CFF/CFF2) outlines.
+                        for (const UINT32 tag : { DWRITE_MAKE_OPENTYPE_TAG('C', 'F', 'F', ' '), DWRITE_MAKE_OPENTYPE_TAG('C', 'F', 'F', '2') })
+                        {
+                            const void* data = nullptr;
+                            UINT32 size = 0;
+                            void* context = nullptr;
+                            BOOL exists = FALSE;
+                            if (SUCCEEDED(face->TryGetFontTable(tag, &data, &size, &context, &exists)) && exists)
+                            {
+                                face->ReleaseFontTable(context);
+                                outline = true;
+                            }
+                        }
+                    }
+                    Microsoft::WRL::ComPtr<IDWriteFontFace5> face5;
+                    if (!outline && SUCCEEDED(face->QueryInterface(IID_PPV_ARGS(&face5))) && face5->HasVariations())
+                    {
+                        outline = true;
+                    }
+                    Microsoft::WRL::ComPtr<IDWriteFont> systemFont;
+                    if (!outline && FAILED(m_systemFonts->GetFontFromFontFace(face, &systemFont)))
+                    {
+                        outline = true; // private or in-memory font: GDI cannot map it by name
+                    }
                     LOGFONTW logFont{};
-                    if (SUCCEEDED(m_gdiInterop->ConvertFontFaceToLOGFONT(face, &logFont)))
+                    if (!outline && SUCCEEDED(m_gdiInterop->ConvertFontFaceToLOGFONT(face, &logFont)))
                     {
                         // The GDI family name already selects weight-specific faces (for example "Segoe UI Semibold");
                         // GDI+ styles only add bold and italic.
                         entry.family = GetFontFamily(logFont.lfFaceName);
                         entry.style = (logFont.lfWeight >= FW_BOLD ? Gdiplus::FontStyleBold : 0) | (logFont.lfItalic ? Gdiplus::FontStyleItalic : 0);
                     }
+                    entry.outline = outline || !entry.family;
                     const FontFaceEntry* result = &m_fontFaces.emplace(face, std::move(entry)).first->second;
                     ++m_frameCreated;
                     return result;
@@ -1595,7 +2123,7 @@ namespace RenderingBackend
                     const FontFaceEntry* entry = GetFontFace(face);
                     if (!entry || !entry->family)
                     {
-                        // Not a font GDI+ can use (for example CFF outlines or a private collection): nothing is drawn.
+                        // Not a font GDI+ can use (for example CFF outlines or a private collection): callers draw outlines.
                         return nullptr;
                     }
                     // UnitPixel: the em size is in world units (DIPs), so the DPI scale in the world transform applies.
@@ -1620,6 +2148,604 @@ namespace RenderingBackend
                     glyphFont.lru = m_glyphFontLru.begin();
                     ++m_frameCreated;
                     return glyphFont.font.get();
+                }
+
+                // Explicit glyph origins (m_glyphPositions) from DirectWrite's advances and offsets, and the extent of the
+                // pen positions and baselines. Right-to-left runs advance leftwards from the origin, and a positive
+                // advanceOffset moves a glyph in the run's direction (left for RTL), matching DWRITE_GLYPH_OFFSET.
+                void LayoutGlyphs(const GlyphRunDesc& run, float& minX, float& maxX, float& minY, float& maxY) noexcept
+                {
+                    const uint32_t count = std::min<uint32_t>(run.glyphCount, INT_MAX);
+                    const bool rightToLeft = (run.bidiLevel & 1) != 0;
+                    m_glyphPositions.resize(count);
+                    float pen = 0;
+                    minX = INFINITY, maxX = -INFINITY, minY = INFINITY, maxY = -INFINITY;
+                    for (uint32_t index = 0; index < count; ++index)
+                    {
+                        const float advance = run.glyphAdvances[index];
+                        const GlyphOffset offset = run.glyphOffsets ? run.glyphOffsets[index] : GlyphOffset{};
+                        float x;
+                        if (rightToLeft)
+                        {
+                            pen += advance;
+                            x = run.baselineOrigin.x - pen - offset.advanceOffset;
+                        }
+                        else
+                        {
+                            x = run.baselineOrigin.x + pen + offset.advanceOffset;
+                            pen += advance;
+                        }
+                        const float y = run.baselineOrigin.y - offset.ascenderOffset;
+                        m_glyphPositions[index] = Gdiplus::PointF(x, y);
+                        minX = std::min({ minX, x, x + advance });
+                        maxX = std::max({ maxX, x, x + advance });
+                        minY = std::min(minY, y);
+                        maxY = std::max(maxY, y);
+                    }
+                }
+
+                // One monochrome run: GDI+ text (DrawDriverString with glyph indices) for fonts GDI maps faithfully,
+                // otherwise cached DirectWrite outlines filled as paths.
+                void DrawGlyphs(const GlyphRunDesc& run, const ColorF& color, bool outline, bool clearType) noexcept
+                {
+                    if (run.glyphIndices == nullptr || run.glyphAdvances == nullptr || run.glyphCount == 0)
+                    {
+                        return;
+                    }
+                    Gdiplus::SolidBrush* brush = GetBrush(color);
+                    if (!brush)
+                    {
+                        return;
+                    }
+                    float minX, maxX, minY, maxY;
+                    LayoutGlyphs(run, minX, maxX, minY, maxY);
+                    const uint32_t count = static_cast<uint32_t>(m_glyphPositions.size());
+                    Gdiplus::Graphics& graphics = Current();
+                    if (!outline)
+                    {
+                        if (Gdiplus::Font* font = GetGlyphFont(run.fontFace, run.fontEmSize))
+                        {
+                            if (clearType)
+                            {
+                                Record(graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintClearTypeGridFit));
+                            }
+                            Record(graphics.DrawDriverString(run.glyphIndices, static_cast<INT>(count), font, brush, m_glyphPositions.data(), 0, nullptr));
+                            if (clearType)
+                            {
+                                Record(graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias));
+                            }
+                            return;
+                        }
+                    }
+                    for (uint32_t index = 0; index < count; ++index)
+                    {
+                        Gdiplus::GraphicsPath* path = GetGlyphOutline(run.fontFace, run.glyphIndices[index], run.fontEmSize);
+                        if (!path)
+                        {
+                            continue;
+                        }
+                        Record(graphics.TranslateTransform(m_glyphPositions[index].X, m_glyphPositions[index].Y, Gdiplus::MatrixOrderPrepend));
+                        Record(graphics.FillPath(brush, path));
+                        Record(graphics.SetTransform(m_transform.get()));
+                    }
+                }
+
+                // Color font layers (COLR/CPAL); false when the run has no color glyphs (draw it monochrome).
+                bool DrawColorLayers(const GlyphRunDesc& run, const ColorF& color, bool clearType) noexcept
+                {
+                    if (!m_dwriteFactory2)
+                    {
+                        return false;
+                    }
+                    static_assert(sizeof(GlyphOffset) == sizeof(DWRITE_GLYPH_OFFSET));
+                    DWRITE_GLYPH_RUN glyphRun{};
+                    glyphRun.fontFace = run.fontFace;
+                    glyphRun.fontEmSize = run.fontEmSize;
+                    glyphRun.glyphCount = run.glyphCount;
+                    glyphRun.glyphIndices = run.glyphIndices;
+                    glyphRun.glyphAdvances = run.glyphAdvances;
+                    glyphRun.glyphOffsets = reinterpret_cast<const DWRITE_GLYPH_OFFSET*>(run.glyphOffsets);
+                    glyphRun.bidiLevel = run.bidiLevel;
+                    Microsoft::WRL::ComPtr<IDWriteColorGlyphRunEnumerator> layers;
+                    if (FAILED(m_dwriteFactory2->TranslateColorGlyphRun(run.baselineOrigin.x, run.baselineOrigin.y, &glyphRun, nullptr,
+                        DWRITE_MEASURING_MODE_NATURAL, nullptr, 0, &layers)))
+                    {
+                        return false; // DWRITE_E_NOCOLOR
+                    }
+                    BOOL hasRun = FALSE;
+                    while (SUCCEEDED(layers->MoveNext(&hasRun)) && hasRun)
+                    {
+                        const DWRITE_COLOR_GLYPH_RUN* layer = nullptr;
+                        if (FAILED(layers->GetCurrentRun(&layer)) || layer == nullptr || layer->glyphRun.fontFace == nullptr)
+                        {
+                            continue;
+                        }
+                        GlyphRunDesc layerRun{};
+                        layerRun.fontFace = layer->glyphRun.fontFace;
+                        layerRun.fontEmSize = layer->glyphRun.fontEmSize;
+                        layerRun.glyphIndices = layer->glyphRun.glyphIndices;
+                        layerRun.glyphAdvances = layer->glyphRun.glyphAdvances;
+                        layerRun.glyphOffsets = reinterpret_cast<const GlyphOffset*>(layer->glyphRun.glyphOffsets);
+                        layerRun.glyphCount = layer->glyphRun.glyphCount;
+                        layerRun.bidiLevel = layer->glyphRun.bidiLevel;
+                        layerRun.baselineOrigin = { layer->baselineOriginX, layer->baselineOriginY };
+                        const ColorF layerColor = layer->paletteIndex == 0xFFFF ? color :
+                            ColorF{ layer->runColor.r, layer->runColor.g, layer->runColor.b, layer->runColor.a };
+                        const FontFaceEntry* entry = GetFontFace(layerRun.fontFace);
+                        if (entry)
+                        {
+                            DrawGlyphs(layerRun, layerColor, entry->outline, clearType);
+                        }
+                    }
+                    return true;
+                }
+
+                // Outline of one glyph at the origin (DIPs, y down), cached per (face, glyph, em size); nullptr for blank
+                // glyphs and failures.
+                Gdiplus::GraphicsPath* GetGlyphOutline(IDWriteFontFace* face, uint16_t glyph, float emSize) noexcept
+                {
+                    const GlyphOutlineKey key{ face, glyph, FloatBits(emSize) };
+                    const auto found = m_glyphOutlines.find(key);
+                    if (found != m_glyphOutlines.end())
+                    {
+                        m_glyphOutlineLru.splice(m_glyphOutlineLru.begin(), m_glyphOutlineLru, found->second.lru);
+                        return found->second.path->GetPointCount() > 0 ? found->second.path.get() : nullptr;
+                    }
+                    std::unique_ptr<Gdiplus::GraphicsPath> path(new Gdiplus::GraphicsPath(Gdiplus::FillModeWinding));
+                    if (FAILED(CheckCreated(path)))
+                    {
+                        return nullptr;
+                    }
+                    GraphicsPathSink sink(*path);
+                    if (FAILED(face->GetGlyphRunOutline(emSize, &glyph, nullptr, nullptr, 1, FALSE, FALSE, &sink)) || FAILED(sink.Close()))
+                    {
+                        return nullptr;
+                    }
+                    const uint64_t bytes = c_glyphOutlineBytes + static_cast<uint64_t>(path->GetPointCount()) * c_pathPointBytes;
+                    while (!m_glyphOutlines.empty() && (m_glyphOutlines.size() >= c_maxGlyphOutlines || m_glyphOutlineBytes + bytes > c_maxGlyphOutlineBytes))
+                    {
+                        const auto victim = m_glyphOutlines.find(m_glyphOutlineLru.back());
+                        m_glyphOutlineBytes -= victim->second.bytes;
+                        m_glyphOutlines.erase(victim);
+                        m_glyphOutlineLru.pop_back();
+                        ++m_frameDestroyed;
+                    }
+                    m_glyphOutlineLru.push_front(key);
+                    GlyphOutlineEntry& entry = m_glyphOutlines[key];
+                    entry.face = face;
+                    entry.path = std::move(path);
+                    entry.bytes = bytes;
+                    entry.lru = m_glyphOutlineLru.begin();
+                    m_glyphOutlineBytes += bytes;
+                    ++m_frameCreated;
+                    return entry.path->GetPointCount() > 0 ? entry.path.get() : nullptr;
+                }
+
+                // True when every pixel of bounds (within the current clip) is opaque on the current surface, so ClearType's
+                // per-channel coverage can be blended without an alpha channel.
+                bool IsOpaqueUnder(const PixelRect& bounds) noexcept
+                {
+                    const PixelRect area = Intersect(Intersect(bounds, CurrentClip()), FullTarget());
+                    if (area.IsEmpty())
+                    {
+                        return false;
+                    }
+                    Surface& surface = CurrentSurface();
+                    surface.graphics->Flush(Gdiplus::FlushIntentionSync);
+                    const size_t stride = static_cast<size_t>(m_width) * 4;
+                    for (int32_t y = area.top; y < area.bottom; ++y)
+                    {
+                        const uint8_t* row = surface.pixels.data() + y * stride + 3;
+                        for (int32_t x = area.left; x < area.right; ++x)
+                        {
+                            if (row[static_cast<size_t>(x) * 4] != 255)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+
+                bool GetMaskSpace(MaskSpace& space) const noexcept
+                {
+                    const Matrix3x2F& t = m_userTransform;
+                    const float s = m_dpiScale;
+                    space = {};
+                    if (t.m12 == 0 && t.m21 == 0 && t.m11 > 0 && t.m22 > 0)
+                    {
+                        space.axisAligned = true;
+                        space.ax = t.m11 * s;
+                        space.ay = t.m22 * s;
+                        space.bx = t.dx * s;
+                        space.by = t.dy * s;
+                    }
+                    else
+                    {
+                        space.ax = std::hypot(t.m11, t.m12) * s;
+                        space.ay = std::hypot(t.m21, t.m22) * s;
+                    }
+                    return space.ax > 0 && space.ay > 0 && std::isfinite(space.ax) && std::isfinite(space.ay) && std::isfinite(space.bx) && std::isfinite(space.by);
+                }
+
+                // Blurred coverage of a rounded rect (shape in mask pixels), cached in a bounded LRU.
+                const ShadowMask* GetShadowMask(const ShadowKey& key, uint32_t width, uint32_t height, const RectF& shape, float rx, float ry,
+                    float sigmaX, float sigmaY) noexcept
+                {
+                    const auto found = m_shadowMasks.find(key);
+                    if (found != m_shadowMasks.end())
+                    {
+                        m_shadowLru.splice(m_shadowLru.begin(), m_shadowLru, found->second.lru);
+                        return &found->second;
+                    }
+                    ShadowMask mask{};
+                    mask.width = width;
+                    mask.height = height;
+                    mask.alpha.assign(static_cast<size_t>(width) * height, 0);
+                    const int32_t top = static_cast<int32_t>(std::floor(shape.top));
+                    const int32_t bottom = std::min(static_cast<int32_t>(std::ceil(shape.bottom)), static_cast<int32_t>(height));
+                    const int32_t left = static_cast<int32_t>(std::floor(shape.left));
+                    const int32_t right = std::min(static_cast<int32_t>(std::ceil(shape.right)), static_cast<int32_t>(width));
+                    for (int32_t y = std::max(top, 0); y < bottom; ++y)
+                    {
+                        uint8_t* row = mask.alpha.data() + static_cast<size_t>(y) * width;
+                        for (int32_t x = std::max(left, 0); x < right; ++x)
+                        {
+                            row[x] = static_cast<uint8_t>(RoundedRectCoverage(shape, rx, ry, x, y));
+                        }
+                    }
+                    GaussianBlur(mask.alpha.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), static_cast<ptrdiff_t>(width), 1,
+                        sigmaX, sigmaY, m_blurLine);
+
+                    const uint64_t bytes = mask.alpha.size();
+                    while (!m_shadowMasks.empty() && (m_shadowMasks.size() >= c_maxShadowMasks || m_shadowMaskBytes + bytes > c_maxShadowMaskBytes))
+                    {
+                        const auto victim = m_shadowMasks.find(m_shadowLru.back());
+                        m_shadowMaskBytes -= victim->second.alpha.size();
+                        m_shadowMasks.erase(victim);
+                        m_shadowLru.pop_back();
+                        ++m_frameDestroyed;
+                    }
+                    m_shadowLru.push_front(key);
+                    ShadowMask& entry = m_shadowMasks[key];
+                    entry = std::move(mask);
+                    entry.lru = m_shadowLru.begin();
+                    m_shadowMaskBytes += bytes;
+                    ++m_frameCreated;
+                    return &entry;
+                }
+
+                // PARGB scratch the colored shadow is composited from; grows to the largest shadow drawn.
+                bool EnsureShadowScratch(uint32_t width, uint32_t height) noexcept
+                {
+                    if (m_shadowScratch.bitmap && width <= m_shadowScratchWidth && height <= m_shadowScratchHeight)
+                    {
+                        return true;
+                    }
+                    const uint32_t newWidth = std::max(width, m_shadowScratchWidth);
+                    const uint32_t newHeight = std::max(height, m_shadowScratchHeight);
+                    if (m_shadowScratch.bitmap)
+                    {
+                        ++m_frameDestroyed;
+                    }
+                    ReleaseSurface(m_shadowScratch);
+                    m_shadowScratchWidth = m_shadowScratchHeight = 0;
+                    m_shadowScratch.pixels.assign(static_cast<size_t>(newWidth) * newHeight * 4, 0);
+                    m_shadowScratch.bitmap.reset(new Gdiplus::Bitmap(static_cast<INT>(newWidth), static_cast<INT>(newHeight), static_cast<INT>(newWidth * 4),
+                        PixelFormat32bppPARGB, m_shadowScratch.pixels.data()));
+                    const HRESULT hr = CheckCreated(m_shadowScratch.bitmap);
+                    if (FAILED(hr))
+                    {
+                        ReleaseSurface(m_shadowScratch);
+                        Fail(hr);
+                        return false;
+                    }
+                    ++m_frameCreated;
+                    m_shadowScratchWidth = newWidth;
+                    m_shadowScratchHeight = newHeight;
+                    return true;
+                }
+
+                // Scratch buffers sized by an unusually large shadow or blur are not kept between frames.
+                void ReleaseLargeScratch() noexcept
+                {
+                    if (m_shadowScratch.pixels.size() > c_releaseScratchBytes)
+                    {
+                        ReleaseSurface(m_shadowScratch);
+                        m_shadowScratchWidth = m_shadowScratchHeight = 0;
+                        ++m_frameDestroyed;
+                    }
+                    if (m_blurPixels.capacity() > c_releaseScratchBytes)
+                    {
+                        m_blurPixels.clear();
+                        m_blurPixels.shrink_to_fit();
+                    }
+                }
+
+                // Linear gradient brush that behaves like clamp mode over bounds (DIPs): the brush axis is extended to
+                // cover bounds' projection and padded with the end colors, so GDI+'s wrapping never shows inside the
+                // shape. nullptr draws nothing; degenerate gradients use a solid brush.
+                Gdiplus::Brush* GetGradientBrush(const LinearGradientDesc& gradient, const RectF& bounds) noexcept
+                {
+                    if (gradient.stops == nullptr || gradient.stopCount == 0 || !(gradient.opacity > 0))
+                    {
+                        return nullptr;
+                    }
+                    const float opacity = std::min(gradient.opacity, 1.0f);
+                    m_sortedStops.assign(gradient.stops, gradient.stops + gradient.stopCount);
+                    for (GradientStop& stop : m_sortedStops)
+                    {
+                        stop.offset = std::isfinite(stop.offset) ? std::clamp(stop.offset, 0.0f, 1.0f) : 0.0f;
+                    }
+                    std::stable_sort(m_sortedStops.begin(), m_sortedStops.end(), [](const GradientStop& a, const GradientStop& b) { return a.offset < b.offset; });
+
+                    const PointF start = gradient.start;
+                    const float dx = gradient.end.x - start.x;
+                    const float dy = gradient.end.y - start.y;
+                    const float length2 = dx * dx + dy * dy;
+                    if (m_sortedStops.size() == 1 || !(length2 > 1e-12f) || !std::isfinite(length2) || !std::isfinite(start.x) || !std::isfinite(start.y))
+                    {
+                        ColorF solid = m_sortedStops.back().color;
+                        solid.a *= opacity;
+                        return GetBrush(solid);
+                    }
+
+                    // Extend the axis over the shape's projection (plus 2 DIPs), quantized to 1/8 of the gradient length.
+                    float tMin = 0, tMax = 1;
+                    if (std::isfinite(bounds.left) && std::isfinite(bounds.top) && std::isfinite(bounds.right) && std::isfinite(bounds.bottom))
+                    {
+                        const float margin = 2 / std::sqrt(length2);
+                        for (float x : { bounds.left, bounds.right })
+                        {
+                            for (float y : { bounds.top, bounds.bottom })
+                            {
+                                const float t = ((x - start.x) * dx + (y - start.y) * dy) / length2;
+                                tMin = std::min(tMin, t - margin);
+                                tMax = std::max(tMax, t + margin);
+                            }
+                        }
+                    }
+                    tMin = std::max(std::floor(tMin * 8) / 8, -4096.0f);
+                    tMax = std::min(std::ceil(tMax * 8) / 8, 4096.0f);
+                    if (tMin >= 0)
+                    {
+                        tMin = -0.125f;
+                    }
+                    if (tMax <= 1)
+                    {
+                        tMax = 1.125f;
+                    }
+                    const float span = tMax - tMin;
+
+                    m_gradientColors.clear();
+                    m_gradientPositions.clear();
+                    const auto add = [&](float position, const ColorF& color)
+                    {
+                        ColorF scaled = color;
+                        scaled.a = std::clamp(scaled.a, 0.0f, 1.0f) * opacity;
+                        if (!m_gradientPositions.empty())
+                        {
+                            // GDI+ wants increasing positions; hard stops become (nearly) coincident ones.
+                            position = std::max(position, m_gradientPositions.back() + 1e-6f);
+                        }
+                        m_gradientPositions.push_back(position);
+                        m_gradientColors.push_back(ToGdiColor(scaled));
+                    };
+                    add(0, m_sortedStops.front().color);
+                    for (size_t index = 0; index < m_sortedStops.size(); ++index)
+                    {
+                        const GradientStop& stop = m_sortedStops[index];
+                        if (index > 0)
+                        {
+                            // GDI+ interpolates straight colors; approximate premultiplied interpolation where alpha changes.
+                            const GradientStop& previous = m_sortedStops[index - 1];
+                            const float a0 = std::clamp(previous.color.a, 0.0f, 1.0f), a1 = std::clamp(stop.color.a, 0.0f, 1.0f);
+                            if (a0 != a1 && stop.offset > previous.offset)
+                            {
+                                constexpr int c_steps = 8;
+                                for (int step = 1; step < c_steps; ++step)
+                                {
+                                    const float f = static_cast<float>(step) / c_steps;
+                                    const float a = a0 + (a1 - a0) * f;
+                                    const auto channel = [&](float c0, float c1) { return a > 0 ? (c0 * a0 + (c1 * a1 - c0 * a0) * f) / a : 0.0f; };
+                                    const ColorF mixed{ channel(previous.color.r, stop.color.r), channel(previous.color.g, stop.color.g),
+                                        channel(previous.color.b, stop.color.b), a };
+                                    add((previous.offset + (stop.offset - previous.offset) * f - tMin) / span, mixed);
+                                }
+                            }
+                        }
+                        add((stop.offset - tMin) / span, stop.color);
+                    }
+                    add(1, m_sortedStops.back().color);
+                    m_gradientPositions.back() = 1;
+                    for (size_t index = m_gradientPositions.size() - 1; index-- > 0;)
+                    {
+                        m_gradientPositions[index] = std::min(m_gradientPositions[index], m_gradientPositions[index + 1] - 1e-6f);
+                    }
+
+                    const Gdiplus::PointF p0(start.x + dx * tMin, start.y + dy * tMin);
+                    const Gdiplus::PointF p1(start.x + dx * tMax, start.y + dy * tMax);
+                    std::vector<uint32_t>& key = m_gradientKey;
+                    key.assign({ FloatBits(p0.X), FloatBits(p0.Y), FloatBits(p1.X), FloatBits(p1.Y) });
+                    for (size_t index = 0; index < m_gradientColors.size(); ++index)
+                    {
+                        key.push_back(m_gradientColors[index].GetValue());
+                        key.push_back(FloatBits(m_gradientPositions[index]));
+                    }
+                    const auto found = m_gradientBrushes.find(key);
+                    if (found != m_gradientBrushes.end())
+                    {
+                        m_gradientLru.splice(m_gradientLru.begin(), m_gradientLru, found->second.lru);
+                        return found->second.brush.get();
+                    }
+
+                    std::unique_ptr<Gdiplus::LinearGradientBrush> brush(new Gdiplus::LinearGradientBrush(p0, p1, m_gradientColors.front(), m_gradientColors.back()));
+                    HRESULT hr = CheckCreated(brush);
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = HResultFromStatus(brush->SetInterpolationColors(m_gradientColors.data(), m_gradientPositions.data(), static_cast<INT>(m_gradientColors.size())));
+                    }
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = HResultFromStatus(brush->SetWrapMode(Gdiplus::WrapModeTileFlipX));
+                    }
+                    if (FAILED(hr))
+                    {
+                        Fail(hr);
+                        return nullptr;
+                    }
+                    while (m_gradientBrushes.size() >= c_maxGradientBrushes)
+                    {
+                        const auto victim = m_gradientBrushes.find(m_gradientLru.back());
+                        m_gradientBrushBytes -= victim->second.bytes;
+                        m_gradientBrushes.erase(victim);
+                        m_gradientLru.pop_back();
+                        ++m_frameDestroyed;
+                    }
+                    m_gradientLru.push_front(key);
+                    GradientBrushEntry& entry = m_gradientBrushes[key];
+                    entry.brush = std::move(brush);
+                    entry.bytes = c_gradientBrushBytes + m_gradientColors.size() * c_gradientStopBytes;
+                    entry.lru = m_gradientLru.begin();
+                    m_gradientBrushBytes += entry.bytes;
+                    ++m_frameCreated;
+                    return entry.brush.get();
+                }
+
+                // Premultiplied BGRA of the gradient (m_sortedStops, as left by GetGradientBrush) at axis parameter t,
+                // interpolated in premultiplied space and clamped at the ends, scaled by opacity * coverage / 255.
+                uint32_t GradientPixel(float t, float opacity, uint32_t coverage) const noexcept
+                {
+                    const auto& stops = m_sortedStops;
+                    size_t index = 0;
+                    while (index < stops.size() && stops[index].offset <= t)
+                    {
+                        ++index;
+                    }
+                    const GradientStop& s0 = stops[index == 0 ? 0 : index - 1];
+                    const GradientStop& s1 = stops[index == stops.size() ? stops.size() - 1 : index];
+                    const float span = s1.offset - s0.offset;
+                    const float f = span > 0 ? std::clamp((t - s0.offset) / span, 0.0f, 1.0f) : (index == 0 ? 1.0f : 0.0f);
+                    const float a0 = std::clamp(s0.color.a, 0.0f, 1.0f), a1 = std::clamp(s1.color.a, 0.0f, 1.0f);
+                    const float scale = opacity * coverage / 255;
+                    const auto channel = [&](float c0, float c1) { return (c0 * a0 + (c1 * a1 - c0 * a0) * f) * scale; };
+                    return (static_cast<uint32_t>(ToByte((a0 + (a1 - a0) * f) * scale)) << 24) |
+                        (static_cast<uint32_t>(ToByte(channel(s0.color.r, s1.color.r))) << 16) |
+                        (static_cast<uint32_t>(ToByte(channel(s0.color.g, s1.color.g))) << 8) | ToByte(channel(s0.color.b, s1.color.b));
+                }
+
+                // Rounded-rect gradient fill under an axis-aligned transform with exact corner coverage (GDI+ antialiasing
+                // underestimates curved edges): the straight-edged cross goes through the gradient brush, with its inner
+                // edges on device pixel boundaries; the four corner blocks are computed in software and copied 1:1.
+                bool FillRoundedGradientExact(const RectF& rect, float radiusX, float radiusY, const LinearGradientDesc& gradient,
+                    Gdiplus::Brush& brush, const MaskSpace& space) noexcept
+                {
+                    constexpr int64_t c_maxCornerPixels = 1 << 18;
+                    const RectF d = space.Map(rect);
+                    const float width = d.right - d.left, height = d.bottom - d.top;
+                    if (!(width > 0) || !(height > 0) || !std::isfinite(width) || !std::isfinite(height) || !std::isfinite(d.left) || !std::isfinite(d.top) ||
+                        std::abs(d.left) > 1e6f || std::abs(d.top) > 1e6f || std::abs(d.right) > 1e6f || std::abs(d.bottom) > 1e6f || m_sortedStops.empty())
+                    {
+                        return false;
+                    }
+                    const float rx = std::min(radiusX * space.ax, width / 2);
+                    const float ry = std::min(radiusY * space.ay, height / 2);
+                    const int32_t l = static_cast<int32_t>(std::floor(d.left)), t = static_cast<int32_t>(std::floor(d.top));
+                    const int32_t r = static_cast<int32_t>(std::ceil(d.right)), b = static_cast<int32_t>(std::ceil(d.bottom));
+                    int32_t xl = static_cast<int32_t>(std::ceil(d.left + rx)), xr = static_cast<int32_t>(std::floor(d.right - rx));
+                    int32_t yt = static_cast<int32_t>(std::ceil(d.top + ry)), yb = static_cast<int32_t>(std::floor(d.bottom - ry));
+                    if (xl >= xr)
+                    {
+                        xl = xr = r;
+                    }
+                    if (yt >= yb)
+                    {
+                        yt = yb = b;
+                    }
+                    const int32_t cornerWidth = std::max(xl - l, r - xr), cornerHeight = std::max(yt - t, b - yb);
+                    if (static_cast<int64_t>(cornerWidth) * cornerHeight > c_maxCornerPixels ||
+                        !EnsureShadowScratch(static_cast<uint32_t>(cornerWidth) + 1, static_cast<uint32_t>(cornerHeight) + 1))
+                    {
+                        return false;
+                    }
+
+                    Gdiplus::Graphics& graphics = Current();
+                    const auto toDipX = [&](float x) { return (x - space.bx) / space.ax; };
+                    const auto toDipY = [&](float y) { return (y - space.by) / space.ay; };
+                    Gdiplus::GraphicsPath& path = *m_path;
+                    Record(path.Reset());
+                    const auto addRect = [&](float x0, float y0, float x1, float y1)
+                    {
+                        x0 = std::max(x0, d.left);
+                        y0 = std::max(y0, d.top);
+                        x1 = std::min(x1, d.right);
+                        y1 = std::min(y1, d.bottom);
+                        if (x1 > x0 && y1 > y0)
+                        {
+                            Record(path.AddRectangle(Gdiplus::RectF(toDipX(x0), toDipY(y0), toDipX(x1) - toDipX(x0), toDipY(y1) - toDipY(y0))));
+                        }
+                    };
+                    addRect(d.left, static_cast<float>(yt), d.right, static_cast<float>(yb));
+                    addRect(static_cast<float>(xl), d.top, static_cast<float>(xr), static_cast<float>(yt));
+                    addRect(static_cast<float>(xl), static_cast<float>(yb), static_cast<float>(xr), d.bottom);
+                    if (path.GetPointCount() > 0)
+                    {
+                        Record(graphics.FillPath(&brush, &path));
+                    }
+
+                    const float dx = gradient.end.x - gradient.start.x, dy = gradient.end.y - gradient.start.y;
+                    const float length2 = dx * dx + dy * dy;
+                    const bool degenerate = m_sortedStops.size() == 1 || !(length2 > 1e-12f) || !std::isfinite(length2);
+                    const float opacity = std::min(gradient.opacity, 1.0f);
+                    const uint32_t stride = m_shadowScratchWidth;
+                    uint32_t* pixels = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
+                    const auto corner = [&](int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+                    {
+                        if (x1 <= x0 || y1 <= y0)
+                        {
+                            return;
+                        }
+                        const uint32_t w = static_cast<uint32_t>(x1 - x0), h = static_cast<uint32_t>(y1 - y0);
+                        for (uint32_t y = 0; y < h; ++y)
+                        {
+                            uint32_t* row = pixels + static_cast<size_t>(y) * stride;
+                            const float py = toDipY(y0 + y + 0.5f) - gradient.start.y;
+                            for (uint32_t x = 0; x < w; ++x)
+                            {
+                                const uint32_t coverage = RoundedRectCoverage(d, rx, ry, x0 + static_cast<int32_t>(x), y0 + static_cast<int32_t>(y));
+                                if (coverage == 0)
+                                {
+                                    row[x] = 0;
+                                    continue;
+                                }
+                                const float px = toDipX(x0 + x + 0.5f) - gradient.start.x;
+                                const float along = degenerate ? 1.0f : (px * dx + py * dy) / length2;
+                                row[x] = GradientPixel(along, opacity, coverage);
+                            }
+                            row[w] = 0;
+                        }
+                        memset(pixels + static_cast<size_t>(h) * stride, 0, static_cast<size_t>(w + 1) * 4);
+                        Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(x0, y0, static_cast<INT>(w), static_cast<INT>(h)),
+                            0, 0, static_cast<INT>(w), static_cast<INT>(h), Gdiplus::UnitPixel, nullptr));
+                        graphics.Flush(Gdiplus::FlushIntentionSync);
+                    };
+                    Record(graphics.ResetTransform());
+                    corner(l, t, xl, yt);
+                    corner(xr, t, r, yt);
+                    corner(l, yb, xl, b);
+                    corner(xr, yb, r, b);
+                    Record(graphics.SetTransform(m_transform.get()));
+                    return true;
+                }
+
+                Surface& CurrentSurface() noexcept
+                {
+                    const size_t depth = m_layerStack.size();
+                    if (depth > 0 && m_layerStack.back().active)
+                    {
+                        return *m_layers[depth - 1];
+                    }
+                    return m_target;
                 }
 
                 // Bilinear sampling clamps at the source rect's edges instead of fading to transparent.
@@ -1982,6 +3108,27 @@ namespace RenderingBackend
                 std::vector<PixelRect> m_scrolledAreas; // moved by ScrollPixels since the last frame; disjoint
                 std::vector<PixelRect> m_presentRects;
                 uint64_t m_pendingUploadBytes = 0;      // EnsureBitmap copies made outside a frame
+
+                // S11-S23 primitives.
+                Microsoft::WRL::ComPtr<IDWriteFactory2> m_dwriteFactory2; // color glyph layers; null before Windows 8.1
+                Microsoft::WRL::ComPtr<IDWriteFontCollection> m_systemFonts;
+                std::map<GlyphOutlineKey, GlyphOutlineEntry> m_glyphOutlines;
+                std::list<GlyphOutlineKey> m_glyphOutlineLru;
+                uint64_t m_glyphOutlineBytes = 0;
+                std::vector<GradientStop> m_sortedStops;
+                std::vector<Gdiplus::Color> m_gradientColors;
+                std::vector<Gdiplus::REAL> m_gradientPositions;
+                std::vector<uint32_t> m_gradientKey;
+                std::map<std::vector<uint32_t>, GradientBrushEntry> m_gradientBrushes;
+                std::list<std::vector<uint32_t>> m_gradientLru;
+                uint64_t m_gradientBrushBytes = 0;
+                std::map<ShadowKey, ShadowMask> m_shadowMasks;
+                std::list<ShadowKey> m_shadowLru;
+                uint64_t m_shadowMaskBytes = 0;
+                Surface m_shadowScratch; // bitmap only (no Graphics)
+                uint32_t m_shadowScratchWidth = 0, m_shadowScratchHeight = 0;
+                std::vector<uint8_t> m_blurPixels;
+                std::vector<uint32_t> m_blurLine;
 
                 Microsoft::WRL::ComPtr<IDXGISwapChain1> m_swapChain;
                 Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
