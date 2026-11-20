@@ -277,9 +277,9 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(3u, static_cast<uint32_t>(damage.size()));
         VERIFY_IS_TRUE(Near(damage[1].left, 100) && Near(damage[2].right, 300));
 
-        std::vector<RectF> far{ { 0, 0, 50, 50 } };
-        VERIFY_IS_FALSE(ExpandDamageForBackdrops(far, backdrops, 3));
-        VERIFY_ARE_EQUAL(1u, static_cast<uint32_t>(far.size()));
+        std::vector<RectF> distant{ { 0, 0, 50, 50 } };
+        VERIFY_IS_FALSE(ExpandDamageForBackdrops(distant, backdrops, 3));
+        VERIFY_ARE_EQUAL(1u, static_cast<uint32_t>(distant.size()));
     }
 
     void PolicyTests::RoundedRectanglePathIsClosed()
