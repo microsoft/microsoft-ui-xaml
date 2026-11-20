@@ -2977,6 +2977,45 @@ HRESULT UIElement::ResumeNewDispatchIfAvailableImpl()
     return S_OK;
 }
 
+// Like SetValue, except that a binding the property has in its framework-side value (a Binding, or a TemplateBinding
+// on a custom property) is kept. SetValue keeps only a TwoWay binding; this keeps any of them the same way: the new
+// value replaces the value the binding provides (and a TwoWay binding passes it on to its source) until the binding
+// next updates the property. Without such a binding it is SetValue (so e.g. a TemplateBinding that core stores for a
+// core property is still cleared). Controls use this to close themselves without clearing an app's OneWay IsOpen
+// binding, the way Popup::Close keeps a binding on Popup.IsOpen by setting only the effective value.
+_Check_return_ HRESULT UIElement::SetValuePreservingBindingImpl(_In_ xaml::IDependencyProperty* dp, _In_ IInspectable* value)
+{
+    const CDependencyProperty* property = static_cast<DependencyPropertyHandle*>(dp)->GetDP();
+
+    BOOLEAN isUnsetValue = FALSE;
+    IFC_RETURN(DependencyPropertyFactory::IsUnsetValue(value, isUnsetValue));
+    if (property->IsReadOnly() || isUnsetValue)
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
+    EffectiveValueEntry* valueEntry = TryGetEffectiveValueEntry(property->GetIndex());
+    if (!valueEntry || !valueEntry->IsExpression())
+    {
+        IFC_RETURN(SetValue(property, value));
+        return S_OK;
+    }
+
+    ctl::ComPtr<IInspectable> oldValue;
+    IFC_RETURN(GetValue(property, &oldValue));
+    auto pegOldValue = ctl::make_autopeg(oldValue.Get());
+
+    bool areEqual = false;
+    IFC_RETURN(PropertyValue::AreEqual(oldValue.Get(), value, &areEqual));
+    if (!areEqual)
+    {
+        IFC_RETURN(valueEntry->SetExpressionValue(value));
+        IFC_RETURN(UpdateEffectiveValue(property, valueEntry, ValueOperationDefault, ::BaseValueSourceUnknown));
+    }
+
+    return S_OK;
+}
+
 // Called when FocusManager is looking for the first focusable element from the specified search scope.
 _Check_return_ HRESULT
 UIElement::GetFirstFocusableElement(

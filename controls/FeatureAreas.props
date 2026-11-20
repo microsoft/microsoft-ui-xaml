@@ -98,6 +98,8 @@
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
     <!-- The RadioButtons control is used in the test UI. -->
     <FeatureRadioButtonsEnabled>productOnly</FeatureRadioButtonsEnabled>
+    <!-- The TeachingTip control is used in the test UI. -->
+    <FeatureTeachingTipEnabled Condition="'$(FeatureTeachingTipEnabled)' != 'true'">productOnly</FeatureTeachingTipEnabled>
   </PropertyGroup>
   <!-- Dependencies for PagerControl -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeaturePagerControlEnabled) == 'true'">
@@ -169,6 +171,9 @@
   </PropertyGroup>
   <!-- Dependencies for TeachingTip -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTeachingTipEnabled) == 'true'">
+    <FeatureRepeaterEnabled Condition="'$(FeatureRepeaterEnabled)' != 'true'">productOnly</FeatureRepeaterEnabled>
+    <!-- The NavigationView control is used in the tests. -->
+    <FeatureNavigationViewEnabled Condition="'$(FeatureNavigationViewEnabled)' != 'true'">productOnly</FeatureNavigationViewEnabled>
   </PropertyGroup>
   <!-- Dependencies for TreeView -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureTreeViewEnabled) == 'true'">

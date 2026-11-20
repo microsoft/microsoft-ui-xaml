@@ -4811,6 +4811,25 @@ Cleanup:
     }
     RRETURN(hr);
 }
+IFACEMETHODIMP DirectUI::UIElementGenerated::SetValuePreservingBinding(_In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pDp, _In_ IInspectable* pValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_SetValuePreservingBinding", 0);
+    }
+    ARG_NOTNULL(pDp, "dp");
+    ARG_NOTNULL(pValue, "value");
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<UIElement*>(this)->SetValuePreservingBindingImpl(pDp, pValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_SetValuePreservingBinding", hr);
+    }
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::UIElementGenerated::StartAnimation(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
