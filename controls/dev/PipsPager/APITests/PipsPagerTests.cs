@@ -123,5 +123,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(expectedNewIndex, newIndex, "Expected PreviousPageIndex:" + expectedNewIndex + ", actual: " + newIndex);
             }
         }
+
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // Scenario: NumberOfPages = 5, SelectedPageIndex = 4, keyboard focus on the last pip; NumberOfPages = 3 removes the
+        //           focused pip.
+        // Expected: no exception; after layout focus is on a realized pip (PipsPager redirects focus in the pips area to the
+        //           selected pip) or outside the pips repeater, never on a cleared pip.
+        // A failure means: focus is left on the removed pip.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that reducing NumberOfPages so that the focused pip is removed moves focus to a realized pip or out of the pips, not onto a cleared pip.")]
+        public void VerifyRemovingFocusedPipDoesNotLeaveFocusOnClearedPip()
+        {
+            PipsPager pager = null;
+            ItemsRepeater repeater = null;
+            UIElement lastPip = null;
+            var gotFocus = new global::System.Threading.ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                pager = new PipsPager { NumberOfPages = 5, SelectedPageIndex = 4 };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(pager);
+                root.Children.Add(new Button { Content = "After" });
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = (ItemsRepeater)pager.FindVisualChildByName("PipsPagerItemsRepeater");
+                Verify.IsNotNull(repeater, "The pips ItemsRepeater could not be retrieved");
+                lastPip = repeater.TryGetElement(4);
+                Verify.IsNotNull(lastPip, "Precondition: the last pip is realized.");
+                lastPip.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(lastPip.Focus(FocusState.Keyboard), "Precondition: the last pip takes focus.");
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for the last pip to get focus.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => pager.NumberOfPages = 3);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(pager.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused: {focused?.GetType().Name}; SelectedPageIndex={pager.SelectedPageIndex}");
+                for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    if (VisualTreeHelper.GetParent(node) == repeater)
+                    {
+                        int index = repeater.GetElementIndex((UIElement)node);
+                        Log.Comment($"The focused element is pip {index}.");
+                        Verify.IsTrue(index >= 0, "Focus is not on a cleared pip.");
+                        break;
+                    }
+                }
+            });
+        }
+
+        #endregion
     }
 }

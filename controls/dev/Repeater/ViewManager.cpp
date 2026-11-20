@@ -12,6 +12,7 @@ ViewManager::ViewManager(ItemsRepeater* owner) :
     m_owner(owner),
     m_resetPool(owner),
     m_lastFocusedElement(owner),
+    m_pendingFocusMoveElement(owner),
     m_phaser(owner),
     m_ElementFactoryGetArgs(owner),
     m_ElementFactoryRecycleArgs(owner)
@@ -98,6 +99,27 @@ winrt::UIElement ViewManager::GetElement(int index, bool forceCreate, bool suppr
 void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange)
 {
     const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+
+    if (virtInfo->IsInPinnedPool())
+    {
+        // The element is not held by the layout, so the realized range is not affected.
+        // Only a collection change releases a pinned element (layout clears keep it, for example to keep focus).
+        // It must not go to the unique id reset pool or the animator, which only take elements owned by the layout.
+        if (isClearedDueToCollectionChange)
+        {
+            const auto it = std::find_if(m_pinnedPool.begin(), m_pinnedPool.end(),
+                [&element](const PinnedElementInfo& info) { return info.PinnedElement() == element; });
+            MUX_ASSERT(it != m_pinnedPool.end());
+            if (it != m_pinnedPool.end())
+            {
+                m_pinnedPool.erase(it);
+            }
+
+            ClearElementToElementFactory(element);
+        }
+        return;
+    }
+
     const int index = virtInfo->Index();
     const bool cleared =
         ClearElementToUniqueIdResetPool(element, virtInfo) ||
@@ -155,6 +177,28 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+    // Read the index before the ownership move resets it.
+    const int clearedIndex = virtInfo->Index();
+    const bool isFocusedElement = m_lastFocusedElement == element;
+    const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
+    // Focus moved to this element before the focus events updated the tracked element (see OnFocusedElementCleared).
+    const bool isFocusedAfterPendingMove = !isFocusedElement && !containsNestedFocus &&
+        m_pendingFocusMoveElement && m_pendingFocusMoveElement.get() != element && GetFocusedChild() == element;
+    // Focus is outside the owner, for example in a flyout opened from this element, and can return to it.
+    const auto lastFocusedElementBeforeFocusLeft = m_lastFocusedElement ? nullptr : m_lastFocusedElementBeforeFocusLeft.get();
+    const bool isLastFocusedElement = isFocusedElement || containsNestedFocus || lastFocusedElementBeforeFocusLeft == element;
+    // Read before the element leaves the tree: then the core moves focus to the next tab stop (CControl::LeaveImpl).
+    const bool hasFocus = isFocusedAfterPendingMove || ((isFocusedElement || containsNestedFocus) && GetFocusedChild() == element);
+    if (isFocusedElement)
+    {
+        // The focus pins of the ancestor repeaters' elements are released when the pending focus move runs. Releasing
+        // them now could let an ancestor repeater clear the element that contains the owner (an element pinned out of
+        // view) before the move. The element's own pin is reset by MoveOwnershipToElementFactory; removing it here
+        // would invalidate the owner's measure during the collection change, and an UpdateLayout call from an
+        // ElementClearing handler would then run the owner's layout inside the change, which throws.
+        ++m_pendingAncestorUnpinCount;
+    }
+
     virtInfo->MoveOwnershipToElementFactory();
 
     // During creation of this object, we were the one setting the DataContext, so clear it now.
@@ -207,116 +251,685 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     }
 
     m_phaser.StopPhasing(element, virtInfo);
-    if (m_lastFocusedElement == element)
+    if (isFocusedElement || containsNestedFocus)
     {
-        // Focused element is going away. Remove the tracked last focused element
-        // and pick a reasonable next focus if we can find one within the layout 
-        // realized elements.
-        const int clearedIndex = virtInfo->Index();
-        MoveFocusFromClearedIndex(clearedIndex);
+        OnFocusedElementCleared(element, clearedIndex);
+    }
+    else if (isFocusedAfterPendingMove)
+    {
+        m_pendingFocusMoveElement.set(element);
+        m_pendingFocusMoveOnChangeProcessed = IsProcessingRemove();
+    }
+
+    if (hasFocus && m_pendingFocusMoveElement)
+    {
+        // An element factory that removes the element from Children (no ItemTemplate, NavigationViewItemsFactory) makes
+        // the core move focus to the next tab stop, which can be outside the owner. That is not a user move.
+        m_pendingFocusMoveFocusLeftOwner = !GetFocusedChild();
+        if (m_pendingFocusMoveFocusLeftOwner)
+        {
+            const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+            const auto focused = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+            m_pendingFocusMoveFocusAfterClear = focused ? winrt::make_weak(focused) : nullptr;
+        }
+    }
+
+    // When a remove transition completes, the element that was handed to it is cleared again, with no index (it is owned
+    // by the animator). Keep the index remembered when it was handed to the transition.
+    const bool isRememberedElementWithoutIndex = clearedIndex < 0 && m_clearedFocusedElement.get() == element;
+    if (isLastFocusedElement && !isRememberedElementWithoutIndex)
+    {
+        m_clearedFocusedElement = winrt::make_weak(element);
+        m_clearedFocusedElementIndex = AdjustClearedIndexForCollectionChange(clearedIndex);
+        m_clearedFocusedElementIndexTracksItem = ClearedIndexTracksItem();
     }
 
     ITEMSREPEATER_TRACE_PERF_DBG(L"ElementCleared");
 }
 
-void ViewManager::MoveFocusFromClearedIndex(int clearedIndex)
+// UpdateFocusedElement tracks only the elements of the repeater nearest to the focused element. When focus is on an item
+// of a nested repeater inside the element, the element is not tracked, but it is pinned (UpdatePin pins the elements of
+// the ancestor repeaters). Clearing it must move focus like clearing a tracked element: the nested repeater cannot move
+// focus to one of this repeater's items.
+bool ViewManager::ContainsNestedFocus(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo)
 {
-    winrt::UIElement focusedChild = nullptr;
-    if (auto focusCandidate = FindFocusCandidate(clearedIndex, focusedChild))
+    return !m_lastFocusedElement && !m_pendingFocusMoveElement && virtInfo->IsPinned() && GetFocusedChild() == element;
+}
+
+bool ViewManager::IsFocusMovePendingFor(const winrt::UIElement& element) const
+{
+    return m_pendingFocusMoveElement && m_pendingFocusMoveElement.get() == element;
+}
+
+// The tracked focused element is going away. Stop tracking it, and move focus after the next layout pass:
+// during a collection change the other realized elements can be cleared by the same change, and during
+// layout the realized range is being updated, so a target picked now could be cleared next.
+void ViewManager::OnFocusedElementCleared(const winrt::UIElement& element, int clearedIndex)
+{
+    // False when focus is in a nested repeater inside the element (ContainsNestedFocus).
+    const bool isTrackedElement = m_lastFocusedElement == element;
+    m_lastFocusedElement.set(nullptr);
+    clearedIndex = AdjustClearedIndexForCollectionChange(clearedIndex);
+    const auto focusState = GetFocusStateForMove();
+
+    m_pendingFocusMoveElement.set(element);
+    if (const auto focusedChild = GetFocusedChild())
     {
-        winrt::FocusState focusState = winrt::FocusState::Programmatic;
-        if (m_lastFocusedElement)
+        if (focusedChild != element)
         {
-            if (auto focusedAsControl = m_lastFocusedElement.try_as<winrt::Control>())
+            const auto focusedChildVirtInfo = ItemsRepeater::TryGetVirtualizationInfo(focusedChild);
+            if (focusedChildVirtInfo && !focusedChildVirtInfo->IsHeldByLayout())
             {
-                focusState = focusedAsControl.FocusState();
+                // Focus moved to another element before the focus events updated the tracked element, and that
+                // element was cleared too. Focus is moved away from it instead.
+                m_pendingFocusMoveElement.set(focusedChild);
             }
         }
-
-        // If the last focused element has focus, use its focus state, if not use programmatic.
-        focusState = focusState == winrt::FocusState::Unfocused ? winrt::FocusState::Programmatic : focusState;
-
-        // Since this focus change is due to the focused element getting recycled, don't activate the window.
-        focusCandidate.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState);
-
-        m_lastFocusedElement.set(focusedChild);
-        // Add pin to hold the focused element.
-        UpdatePin(focusedChild, true /* addPin */);
     }
-    else
+    m_pendingFocusMoveIndex = clearedIndex;
+    m_pendingFocusMoveIndexTracksItem = ClearedIndexTracksItem();
+    m_pendingFocusMoveState = focusState;
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+    // Also after a Replace of the tracked element. Not when focus is in a nested repeater inside the element: the layout
+    // reuses the element for the new item and the nested repeater keeps focus at the same inner position.
+    const auto change = m_owner->ProcessingCollectionChange();
+    m_pendingFocusMoveOnChangeProcessed = IsProcessingRemove() ||
+        (isTrackedElement && change && change.Action() == winrt::NotifyCollectionChangedAction::Replace);
+}
+
+bool ViewManager::IsProcessingRemove()
+{
+    const auto change = m_owner->ProcessingCollectionChange();
+    return change && change.Action() == winrt::NotifyCollectionChangedAction::Remove;
+}
+
+// True if the cleared index is the position of an item that later changes can shift: the element was cleared by a
+// Remove or Replace. After a Reset the index is only a position in a new item list.
+bool ViewManager::ClearedIndexTracksItem()
+{
+    const auto change = m_owner->ProcessingCollectionChange();
+    return change &&
+        change.Action() != winrt::NotifyCollectionChangedAction::Reset &&
+        change.Action() != winrt::NotifyCollectionChangedAction::Move;
+}
+
+int ViewManager::AdjustClearedIndexForCollectionChange(int clearedIndex)
+{
+    if (const auto change = m_owner->ProcessingCollectionChange())
     {
-        // We could not find a candiate.
-        m_lastFocusedElement.set(nullptr);
+        if (change.Action() == winrt::NotifyCollectionChangedAction::Remove)
+        {
+            // The items that follow the removed range now start at the first removed index.
+            clearedIndex = std::min(clearedIndex, change.OldStartingIndex());
+        }
+    }
+    return clearedIndex;
+}
+
+// Returns the index that the item position 'index' has after the change: inserted items before it move it forward,
+// removed items before it move it back, and if its item was removed, the first item that followed it takes its place.
+int ViewManager::ShiftIndexForCollectionChange(int index, const winrt::NotifyCollectionChangedEventArgs& args)
+{
+    if (index < 0)
+    {
+        return index;
+    }
+
+    switch (args.Action())
+    {
+    case winrt::NotifyCollectionChangedAction::Add:
+    {
+        const int newIndex = args.NewStartingIndex();
+        if (newIndex >= 0 && newIndex <= index)
+        {
+            index += static_cast<int>(args.NewItems().Size());
+        }
+        break;
+    }
+
+    case winrt::NotifyCollectionChangedAction::Remove:
+    {
+        const int oldIndex = args.OldStartingIndex();
+        const int oldCount = static_cast<int>(args.OldItems().Size());
+        if (oldIndex >= 0 && oldIndex < index)
+        {
+            index = std::max(oldIndex, index - oldCount);
+        }
+        break;
+    }
+
+    case winrt::NotifyCollectionChangedAction::Replace:
+    {
+        const int oldIndex = args.OldStartingIndex();
+        const int oldCount = static_cast<int>(args.OldItems().Size());
+        if (oldIndex >= 0 && index >= oldIndex + oldCount)
+        {
+            index += static_cast<int>(args.NewItems().Size()) - oldCount;
+        }
+        break;
+    }
+
+    default:
+        // Reset and Move: the item positions are not known.
+        break;
+    }
+
+    return index;
+}
+
+winrt::FocusState ViewManager::GetFocusStateForMove()
+{
+    if (const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot())
+    {
+        if (const auto focusedAsControl = winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::Control>())
+        {
+            const auto focusState = focusedAsControl.FocusState();
+            if (focusState != winrt::FocusState::Unfocused)
+            {
+                return focusState;
+            }
+        }
+    }
+    return winrt::FocusState::Programmatic;
+}
+
+// Focus returned to a cleared element that had focus, for example when a flyout opened from the element closes after
+// the element's item was removed (the popup restores focus to the element that had focus when it opened). Move focus
+// to the item at the cleared index after the next layout pass, as if focus had stayed on the element. Returns true if
+// the move was recorded.
+bool ViewManager::TryRecordFocusReturnedToClearedElement(const winrt::UIElement& element)
+{
+    if (m_pendingFocusMoveElement || m_lastFocusedElement || !m_clearedFocusedElement || m_clearedFocusedElementIndex < 0)
+    {
+        return false;
+    }
+
+    const auto clearedElement = m_clearedFocusedElement.get();
+    if (!clearedElement || clearedElement != element || GetFocusedChild() != clearedElement)
+    {
+        return false;
+    }
+
+    const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(clearedElement);
+    if (!virtInfo || virtInfo->IsRealized())
+    {
+        return false;
+    }
+
+    m_pendingFocusMoveElement.set(clearedElement);
+    m_pendingFocusMoveIndex = m_clearedFocusedElementIndex;
+    m_pendingFocusMoveIndexTracksItem = m_clearedFocusedElementIndexTracksItem;
+    m_pendingFocusMoveState = GetFocusStateForMove();
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+    m_pendingFocusMoveOnChangeProcessed = false;
+    return true;
+}
+
+void ViewManager::ReleaseAncestorPinsOfClearedFocusedElement()
+{
+    for (; m_pendingAncestorUnpinCount > 0u; --m_pendingAncestorUnpinCount)
+    {
+        UpdatePin(static_cast<winrt::UIElement>(*m_owner), false /* addPin */);
     }
 }
 
-winrt::Control ViewManager::FindFocusCandidate(int clearedIndex, winrt::UIElement& focusedChild)
+void ViewManager::OnOwnerLayoutUpdated()
 {
-    // Walk through all the children and find elements with index before and after the cleared index.
-    // Note that during a delete the next element would now have the same index.
-    int previousIndex = std::numeric_limits<int>::min();
-    int nextIndex = std::numeric_limits<int>::max();
-    winrt::UIElement nextElement = nullptr;
-    winrt::UIElement previousElement = nullptr;
-    auto children = m_owner->Children();
+    ReleaseAncestorPinsOfClearedFocusedElement();
+
+    if (!m_pendingFocusMoveElement)
+    {
+        return;
+    }
+
+    const auto clearedElement = m_pendingFocusMoveElement.get();
+    const int clearedIndex = m_pendingFocusMoveIndex;
+    const auto focusState = m_pendingFocusMoveState;
+    const bool focusLeftOwner = m_pendingFocusMoveFocusLeftOwner;
+    const auto focusAfterClear = m_pendingFocusMoveFocusAfterClear.get();
+    const auto interimElement = m_pendingFocusMoveInterimElement.get();
+    m_pendingFocusMoveElement.set(nullptr);
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+
+    // Only move focus if it is still on a child that is not held by the layout (the cleared element, or another
+    // cleared element focused in the meantime), still on the element that focus moved to when the change was processed,
+    // or still where the core moved it when the cleared element left the tree. If the app or user moved focus elsewhere,
+    // leave it there.
+    const auto focusedChild = GetFocusedChild();
+    if (!focusedChild)
+    {
+        const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+        if (!focusLeftOwner || !xamlRoot ||
+            winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() != focusAfterClear)
+        {
+            return;
+        }
+    }
+
+    const auto focusedChildVirtInfo = focusedChild ? ItemsRepeater::TryGetVirtualizationInfo(focusedChild) : nullptr;
+    if (focusedChildVirtInfo && focusedChildVirtInfo->IsHeldByLayout() && focusedChild != clearedElement && focusedChild != interimElement)
+    {
+        UpdateFocusedElement();
+        return;
+    }
+
+    if (!TryFocusRealizedChild(clearedIndex, focusState, focusedChild))
+    {
+        // There is no realized item to move focus to, for example because the source is empty.
+        TryMoveFocusOutOfOwner(focusState);
+    }
+
+    // A GettingFocus handler may have changed the source and cleared the new target. If focus is now on another
+    // element that is not held by the layout, try again after the next layout pass.
+    const auto newFocusedChild = GetFocusedChild();
+    const auto newFocusedChildVirtInfo = newFocusedChild ? ItemsRepeater::TryGetVirtualizationInfo(newFocusedChild) : nullptr;
+    if (newFocusedChildVirtInfo && newFocusedChild != focusedChild && !newFocusedChildVirtInfo->IsHeldByLayout())
+    {
+        m_pendingFocusMoveElement.set(newFocusedChild);
+        m_pendingFocusMoveIndex = clearedIndex;
+        m_pendingFocusMoveState = focusState;
+        m_pendingFocusMoveOnChangeProcessed = false;
+        return;
+    }
+
+    UpdateFocusedElement();
+}
+
+// The owner processed a change of its items source; this runs outside of the change and of layout. Input that is already
+// queued (keys pressed in a row) is delivered before the next layout pass, so focus must not stay on an element that a
+// Remove or a Replace cleared until then: move it now to the realized element nearest to the cleared index, among the
+// elements that the change kept (after a Remove, the item that follows the removed one has its index). The move after the
+// layout pass then moves focus to the item at the cleared index (after a Replace, the new item). Not done for a Reset, or
+// when focus is in a nested repeater inside the element cleared by a Replace: the layout reuses the element for the new
+// item and the nested repeater keeps focus at the same inner position.
+void ViewManager::OnOwnerCollectionChangeProcessed()
+{
+    if (!m_pendingFocusMoveElement || !m_pendingFocusMoveOnChangeProcessed)
+    {
+        return;
+    }
+
+    // As in OnOwnerLayoutUpdated: only if focus is still on the cleared element, or where the core moved it when the
+    // cleared element left the tree.
+    if (const auto focusedChild = GetFocusedChild())
+    {
+        if (focusedChild != m_pendingFocusMoveElement.get())
+        {
+            return;
+        }
+    }
+    else
+    {
+        const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+        if (!m_pendingFocusMoveFocusLeftOwner || !xamlRoot ||
+            winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() != m_pendingFocusMoveFocusAfterClear.get())
+        {
+            return;
+        }
+    }
+
+    bool hasRealizedChild = false;
+    const auto children = m_owner->Children();
+    for (unsigned i = 0u; i < children.Size() && !hasRealizedChild; ++i)
+    {
+        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(children.GetAt(i));
+        hasRealizedChild = virtInfo && virtInfo->IsHeldByLayout();
+    }
+    if (!hasRealizedChild)
+    {
+        // The move after the layout pass runs, once the layout has realized the current items.
+        return;
+    }
+
+    winrt::UIElement focusedCandidate{ nullptr };
+    if (TryFocusRealizedChild(m_pendingFocusMoveIndex, m_pendingFocusMoveState, nullptr /* focusedChild */, &focusedCandidate))
+    {
+        // The move after the layout pass checks that focus is still on this element. If a GettingFocus handler moved
+        // focus to another element, that element is the app's choice.
+        const auto newFocusedChild = GetFocusedChild();
+        m_pendingFocusMoveInterimElement = newFocusedChild && newFocusedChild == focusedCandidate ? winrt::make_weak(newFocusedChild) : nullptr;
+    }
+    else
+    {
+        // Every item refused focus. Move focus out of the owner now, as the move after the layout pass would, instead of
+        // trying the same items again then.
+        m_pendingFocusMoveElement.set(nullptr);
+        TryMoveFocusOutOfOwner(m_pendingFocusMoveState);
+    }
+
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    UpdateFocusedElement();
+}
+
+void ViewManager::OnOwnerUnloaded()
+{
+    ReleaseAncestorPinsOfClearedFocusedElement();
+    m_pendingFocusMoveElement.set(nullptr);
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+}
+
+// Returns the direct child of the owner that has focus or contains the focused element.
+winrt::UIElement ViewManager::GetFocusedChild()
+{
+    const auto owner = static_cast<winrt::DependencyObject>(*m_owner);
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    if (!xamlRoot)
+    {
+        return nullptr;
+    }
+
+    auto child = winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>();
+    while (child)
+    {
+        auto parent = CachedVisualTreeHelpers::GetParent(child);
+        if (parent == owner)
+        {
+            return child.try_as<winrt::UIElement>();
+        }
+        child = parent;
+    }
+
+    return nullptr;
+}
+
+// Moves focus to the realized element nearest to the cleared index (a descendant of it if the element is not focusable).
+// On a tie, the element that now has the cleared index or follows it wins, because after a removal the next item takes
+// the removed item's index. focusedChild (optional) is the child that contains focus; if the layout reused it, focus is
+// kept in it. Returns true if focus moved or was kept; focusedCandidate (optional) is then the element that focus was moved to
+// or kept in (a GettingFocus handler can have moved focus elsewhere).
+bool ViewManager::TryFocusRealizedChild(int clearedIndex, winrt::FocusState focusState, const winrt::UIElement& focusedChild, winrt::UIElement* focusedCandidate)
+{
+    std::vector<std::pair<int, winrt::UIElement>> candidates;
+    const auto children = m_owner->Children();
     for (unsigned i = 0u; i < children.Size(); ++i)
     {
-        auto child = children.GetAt(i);
-        auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(child);
+        const auto child = children.GetAt(i);
+        const auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(child);
         if (virtInfo && virtInfo->IsHeldByLayout())
         {
-            const int currentIndex = virtInfo->Index();
-            if (currentIndex < clearedIndex)
+            candidates.emplace_back(virtInfo->Index(), child);
+        }
+    }
+
+    std::stable_sort(candidates.begin(), candidates.end(),
+        [clearedIndex](const auto& left, const auto& right)
+        {
+            const int64_t leftDistance = std::abs(static_cast<int64_t>(left.first) - clearedIndex);
+            const int64_t rightDistance = std::abs(static_cast<int64_t>(right.first) - clearedIndex);
+            if (leftDistance != rightDistance)
             {
-                if (currentIndex > previousIndex)
+                return leftDistance < rightDistance;
+            }
+            return left.first > right.first;
+        });
+
+    for (const auto& candidate : candidates)
+    {
+        // The layout reused the focused element for this item. Keep focus in it.
+        if ((focusedChild && candidate.second == focusedChild && TryKeepFocusInReusedElement(focusedChild)) ||
+            TryFocusChild(candidate.second, candidate.first < clearedIndex /* focusLastDescendant */, focusState))
+        {
+            if (focusedCandidate)
+            {
+                *focusedCandidate = candidate.second;
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// The layout reused the element that contains focus for another item. Focus can be on an element that a nested repeater
+// inside it cleared when the element got its new item (the element holds a new nested source). Returns true if focus is
+// on a realized element of every nested repeater, or if the nested repeater moved focus to one of its realized elements.
+bool ViewManager::TryKeepFocusInReusedElement(const winrt::UIElement& element)
+{
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    auto current = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+    while (current && current != static_cast<winrt::DependencyObject>(element))
+    {
+        const auto parent = CachedVisualTreeHelpers::GetParent(current);
+        if (const auto nestedRepeater = parent.try_as<winrt::ItemsRepeater>())
+        {
+            const auto currentAsElement = current.try_as<winrt::UIElement>();
+            const auto virtInfo = currentAsElement ? ItemsRepeater::TryGetVirtualizationInfo(currentAsElement) : nullptr;
+            if (virtInfo && !virtInfo->IsRealized())
+            {
+                return winrt::get_self<ItemsRepeater>(nestedRepeater)->ViewManager().TryMovePendingFocusToRealizedChild();
+            }
+        }
+        current = parent;
+    }
+
+    return true;
+}
+
+// Called by an ancestor repeater that reused the element containing this repeater while focus is still on an element
+// that this repeater cleared. Moving focus out of this repeater is left to the ancestor, which tries its other items.
+bool ViewManager::TryMovePendingFocusToRealizedChild()
+{
+    if (!m_pendingFocusMoveElement)
+    {
+        return false;
+    }
+
+    const int clearedIndex = m_pendingFocusMoveIndex;
+    const auto focusState = m_pendingFocusMoveState;
+    m_pendingFocusMoveElement.set(nullptr);
+    m_pendingFocusMoveFocusLeftOwner = false;
+    m_pendingFocusMoveFocusAfterClear = nullptr;
+    m_pendingFocusMoveInterimElement = nullptr;
+    ReleaseAncestorPinsOfClearedFocusedElement();
+
+    const auto focusedChild = GetFocusedChild();
+    const bool focusMoved = TryFocusRealizedChild(clearedIndex, focusState, nullptr /* focusedChild */);
+
+    // As in OnOwnerLayoutUpdated: a GettingFocus handler may have changed the source and cleared the new target. Keep the
+    // move pending, so that this repeater moves focus again in its next LayoutUpdated handler, and stop the ancestor.
+    const auto newFocusedChild = GetFocusedChild();
+    const auto newFocusedChildVirtInfo = newFocusedChild ? ItemsRepeater::TryGetVirtualizationInfo(newFocusedChild) : nullptr;
+    if (newFocusedChildVirtInfo && newFocusedChild != focusedChild && !newFocusedChildVirtInfo->IsHeldByLayout())
+    {
+        m_pendingFocusMoveElement.set(newFocusedChild);
+        m_pendingFocusMoveIndex = clearedIndex;
+        m_pendingFocusMoveState = focusState;
+        m_pendingFocusMoveOnChangeProcessed = false;
+        return true;
+    }
+
+    UpdateFocusedElement();
+    return focusMoved;
+}
+
+bool ViewManager::TryFocusChild(const winrt::UIElement& child, bool focusLastDescendant, winrt::FocusState focusState)
+{
+    if (child.try_as<winrt::Control>() && TryFocus(child, focusState))
+    {
+        return true;
+    }
+
+    // If the container itself is not focusable, find a descendant that is.
+    const auto descendant = focusLastDescendant ?
+        winrt::FocusManager::FindLastFocusableElement(child) :
+        winrt::FocusManager::FindFirstFocusableElement(child);
+    if (const auto descendantAsElement = descendant.try_as<winrt::UIElement>())
+    {
+        return TryFocus(descendantAsElement, focusState);
+    }
+
+    return false;
+}
+
+// Returns true if focus moved: to the element, or to another element chosen by a GettingFocus handler.
+bool ViewManager::TryFocus(const winrt::UIElement& element, winrt::FocusState focusState)
+{
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    const auto focusedBefore = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+
+    // Since this focus change is due to the focused element getting recycled, don't activate the window.
+    if (!element.as<winrt::IUIElementPrivate>().FocusNoActivate(focusState))
+    {
+        return false;
+    }
+
+    // FocusNoActivate also returns true when a GettingFocus or LosingFocus handler cancels the move.
+    const auto focusedAfter = xamlRoot ? winrt::FocusManager::GetFocusedElement(xamlRoot).try_as<winrt::DependencyObject>() : nullptr;
+    return focusedAfter != focusedBefore || focusedAfter == static_cast<winrt::DependencyObject>(element);
+}
+
+// Moves focus to the nearest focusable element outside the owner: the first one that follows the owner in tree order,
+// or else the last one that precedes it. The search starts at the owner, not at the focused element: a Tab step from a
+// focused element inside a cleared container can stay inside that container. It does not cycle to the start of the
+// window, and it stays inside the XamlRoot content, inside the open popup that contains the owner, inside the nearest
+// ancestor whose TabFocusNavigation is Cycle, and inside an open SplitView pane that can be light dismissed and has a
+// focusable element.
+bool ViewManager::TryMoveFocusOutOfOwner(winrt::FocusState focusState)
+{
+    const auto xamlRoot = static_cast<winrt::UIElement>(*m_owner).XamlRoot();
+    if (!xamlRoot)
+    {
+        return false;
+    }
+
+    const auto content = xamlRoot.Content();
+    std::vector<winrt::UIElement> popupChildren;
+    for (const auto& popup : winrt::VisualTreeHelper::GetOpenPopupsForXamlRoot(xamlRoot))
+    {
+        if (const auto popupChild = popup.Child())
+        {
+            popupChildren.push_back(popupChild);
+        }
+    }
+
+    // The ancestors of the owner up to the search scope, each with its child on the path to the owner.
+    std::vector<std::pair<winrt::DependencyObject, winrt::UIElement>> path;
+    winrt::UIElement current = *m_owner;
+    while (current && current != content && std::find(popupChildren.begin(), popupChildren.end(), current) == popupChildren.end())
+    {
+        const auto parent = CachedVisualTreeHelpers::GetParent(current);
+        if (!parent)
+        {
+            break;
+        }
+
+        // An open SplitView pane that can be light dismissed keeps Tab focus inside it when it has a focusable element
+        // (CSplitView::ProcessTabStop), so focus does not leave the pane then.
+        if (const auto splitView = parent.try_as<winrt::SplitView>(); splitView && splitView.IsPaneOpen() &&
+            (splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay))
+        {
+            const auto pane = splitView.Pane();
+            const auto paneLevel = std::find_if(path.begin(), path.end(), [&pane](const auto& level) { return pane && level.second == pane; });
+            if (paneLevel != path.end() && winrt::FocusManager::FindFirstFocusableElement(paneLevel->first))
+            {
+                path.erase(paneLevel + 1, path.end());
+                break;
+            }
+        }
+
+        if (const auto parentRepeater = parent.try_as<winrt::ItemsRepeater>())
+        {
+            if (winrt::get_self<ItemsRepeater>(parentRepeater)->ViewManager().IsFocusMovePendingFor(current))
+            {
+                // An ancestor repeater cleared the element that contains the owner, and moves focus to one of its own
+                // items after its layout pass. Moving focus from here could leave that repeater although it has items.
+                return false;
+            }
+        }
+
+        path.emplace_back(parent, current);
+
+        // Tab wraps around inside an ancestor whose TabFocusNavigation is Cycle, so focus does not leave it.
+        if (const auto parentAsElement = parent.try_as<winrt::UIElement>(); parentAsElement && parentAsElement.TabFocusNavigation() == winrt::KeyboardNavigationMode::Cycle)
+        {
+            break;
+        }
+
+        current = parent.try_as<winrt::UIElement>();
+    }
+
+    for (const bool forward : { true, false })
+    {
+        for (const auto& [parent, child] : path)
+        {
+            const auto siblings = GetChildrenInTabOrder(parent);
+            const auto position = std::find(siblings.begin(), siblings.end(), child);
+            if (position == siblings.end())
+            {
+                continue;
+            }
+
+            if (forward)
+            {
+                for (auto sibling = position + 1; sibling != siblings.end(); ++sibling)
                 {
-                    previousIndex = currentIndex;
-                    previousElement = child;
+                    if (TryFocusChild(*sibling, false /* focusLastDescendant */, focusState))
+                    {
+                        return true;
+                    }
                 }
             }
-            else if (currentIndex >= clearedIndex)
+            else
             {
-                // Note that we use >= above because if we deleted the focused element, 
-                // the next element would have the same index now.
-                if (currentIndex < nextIndex)
+                for (auto sibling = std::make_reverse_iterator(position); sibling != siblings.rend(); ++sibling)
                 {
-                    nextIndex = currentIndex;
-                    nextElement = child;
+                    if (TryFocusChild(*sibling, true /* focusLastDescendant */, focusState))
+                    {
+                        return true;
+                    }
+                }
+
+                // A focusable parent comes before its children in tab order.
+                if (const auto parentAsControl = parent.try_as<winrt::Control>(); parentAsControl && TryFocus(parentAsControl, focusState))
+                {
+                    return true;
                 }
             }
         }
     }
 
-    // Find the next element if one exists, if not use the previous element.
-    // If the container itself is not focusable, find a descendent that is.
-    winrt::Control focusCandidate = nullptr;
-    if (nextElement)
+    return false;
+}
+
+// The children of the parent in tab order. An ItemsRepeater lists only its realized children, sorted by index.
+std::vector<winrt::UIElement> ViewManager::GetChildrenInTabOrder(const winrt::DependencyObject& parent)
+{
+    std::vector<winrt::UIElement> children;
+    if (const auto repeater = parent.try_as<winrt::ItemsRepeater>())
     {
-        focusedChild = nextElement.try_as<winrt::UIElement>();
-        focusCandidate = nextElement.try_as<winrt::Control>();
-        if (!focusCandidate)
+        if (const auto realizedChildren = winrt::get_self<ItemsRepeater>(repeater)->GetChildrenInTabFocusOrder())
         {
-            if (auto firstFocus = winrt::FocusManager::FindFirstFocusableElement(nextElement))
+            for (const auto& child : realizedChildren)
             {
-                focusCandidate = firstFocus.try_as<winrt::Control>();
+                if (const auto childAsElement = child.try_as<winrt::UIElement>())
+                {
+                    children.push_back(childAsElement);
+                }
+            }
+        }
+    }
+    else
+    {
+        const int count = winrt::VisualTreeHelper::GetChildrenCount(parent);
+        for (int i = 0; i < count; ++i)
+        {
+            if (const auto childAsElement = winrt::VisualTreeHelper::GetChild(parent, i).try_as<winrt::UIElement>())
+            {
+                children.push_back(childAsElement);
             }
         }
     }
 
-    if (!focusCandidate && previousElement)
-    {
-        focusedChild = previousElement.try_as<winrt::UIElement>();
-        focusCandidate = previousElement.try_as<winrt::Control>();
-        if (!previousElement)
-        {
-            if (auto lastFocus = winrt::FocusManager::FindLastFocusableElement(previousElement))
-            {
-                focusCandidate = lastFocus.try_as<winrt::Control>();
-            }
-        }
-    }
-
-    return focusCandidate;
+    return children;
 }
 
 int ViewManager::GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo)
@@ -402,6 +1015,22 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
 
 void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
+    // A focus move recorded by an earlier Remove or Replace targets an item position; keep it on the same position.
+    // After a Reset the positions are those of a new item list, so the index is no longer shifted.
+    if (m_pendingFocusMoveElement && m_pendingFocusMoveIndexTracksItem)
+    {
+        m_pendingFocusMoveIndex = ShiftIndexForCollectionChange(m_pendingFocusMoveIndex, args);
+    }
+    if (m_clearedFocusedElement && m_clearedFocusedElementIndexTracksItem)
+    {
+        m_clearedFocusedElementIndex = ShiftIndexForCollectionChange(m_clearedFocusedElementIndex, args);
+    }
+    if (args.Action() == winrt::NotifyCollectionChangedAction::Reset || args.Action() == winrt::NotifyCollectionChangedAction::Move)
+    {
+        m_pendingFocusMoveIndexTracksItem = false;
+        m_clearedFocusedElementIndexTracksItem = false;
+    }
+
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
     switch (args.Action())
@@ -476,6 +1105,9 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
             throw winrt::hresult_error(E_FAIL, L"Replace notification with args.NewItemCount value of 0 is not allowed. Use Remove action instead.");
         }
 
+        // Pinned elements of replaced items show old data.
+        ClearPinnedElementsForCollectionChange(oldStartIndex, oldCount);
+
         const int countChange = newCount - oldCount;
         if (countChange != 0)
         {
@@ -507,6 +1139,10 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     {
         const auto oldStartIndex = args.OldStartingIndex();
         const auto oldCount = static_cast<int>(args.OldItems().Size());
+
+        // Pinned elements of removed items are cleared before the loop below shifts the indices.
+        ClearPinnedElementsForCollectionChange(oldStartIndex, oldCount);
+
         const auto children = m_owner->Children();
         for (unsigned i = 0u; i < children.Size(); ++i)
         {
@@ -533,6 +1169,9 @@ void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::
     }
 
     case winrt::NotifyCollectionChangedAction::Reset:
+        // The indices of pinned elements are not valid anymore, and they are looked up by index.
+        ClearPinnedElementsForCollectionChange();
+
         // If we get multiple resets back to back before
         // running layout, we dont have to clear all the elements again.         
         if (!m_isDataSourceStableResetPending)
@@ -601,6 +1240,27 @@ void ViewManager::OnOwnerArranged()
 
         // Flush the realized indices once the stable reset pool is cleared to start fresh.
         InvalidateRealizedIndicesHeldByLayout();
+    }
+}
+
+void ViewManager::ClearPinnedElementsForCollectionChange(int startIndex, int count)
+{
+    // The layout does not hold pinned elements, so it does not clear them when their items change.
+    std::vector<winrt::UIElement> elementsToClear;
+    for (const auto& elementInfo : m_pinnedPool)
+    {
+        const int index = elementInfo.VirtualizationInfo()->Index();
+        if (index >= startIndex && index - startIndex < count)
+        {
+            elementsToClear.push_back(elementInfo.PinnedElement());
+        }
+    }
+
+    for (const auto& element : elementsToClear)
+    {
+        // Goes through ClearElement, which removes the element from the pinned pool because a collection change is
+        // being processed, and through ViewportManager::OnElementCleared.
+        m_owner->ClearElementImpl(element);
     }
 }
 
@@ -804,6 +1464,12 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     // Clear flag
     virtInfo->MustClearDataContext(false);
 
+    if (m_clearedFocusedElement && element == m_clearedFocusedElement.get())
+    {
+        // Focus returned to the cleared element that is reused now, before the focus events ran (see OnFocusChanged).
+        TryRecordFocusReturnedToClearedElement(element);
+    }
+
     if (data != element)
     {
         // Prepare the element
@@ -912,24 +1578,38 @@ bool ViewManager::ClearElementToAnimator(const winrt::UIElement& element, const 
     if (cleared)
     {
         const int clearedIndex = virtInfo->Index();
-        virtInfo->MoveOwnershipToAnimator();
-        if (m_lastFocusedElement == element)
+        const bool isFocusedElement = m_lastFocusedElement == element;
+        const bool containsNestedFocus = ContainsNestedFocus(element, virtInfo);
+        const auto lastFocusedElementBeforeFocusLeft = m_lastFocusedElement ? nullptr : m_lastFocusedElementBeforeFocusLeft.get();
+        if (isFocusedElement)
         {
-            // Focused element is going away. Remove the tracked last focused element
-            // and pick a reasonable next focus if we can find one within the layout 
-            // realized elements.
-            MoveFocusFromClearedIndex(clearedIndex);
+            // The focus pins of the ancestor repeaters' elements are released when the pending focus move runs (see
+            // ClearElementToElementFactory). MoveOwnershipToAnimator resets the element's own pin.
+            ++m_pendingAncestorUnpinCount;
         }
 
+        virtInfo->MoveOwnershipToAnimator();
+        if (isFocusedElement || containsNestedFocus)
+        {
+            OnFocusedElementCleared(element, clearedIndex);
+        }
+
+        if (isFocusedElement || containsNestedFocus || lastFocusedElementBeforeFocusLeft == element)
+        {
+            m_clearedFocusedElement = winrt::make_weak(element);
+            m_clearedFocusedElementIndex = AdjustClearedIndexForCollectionChange(clearedIndex);
+            m_clearedFocusedElementIndexTracksItem = ClearedIndexTracksItem();
+        }
     }
     return cleared;
 }
 
 bool ViewManager::ClearElementToPinnedPool(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, bool isClearedDueToCollectionChange)
 {
-    const bool isInPinnedPool = virtInfo->IsInPinnedPool(); 
+    // Elements that are already in the pinned pool are handled by ClearElement.
+    MUX_ASSERT(!virtInfo->IsInPinnedPool());
     const bool moveToPinnedPool =
-        !isClearedDueToCollectionChange && virtInfo->IsPinned() && !isInPinnedPool;
+        !isClearedDueToCollectionChange && virtInfo->IsPinned();
 
     if (moveToPinnedPool)
     {
@@ -950,8 +1630,7 @@ bool ViewManager::ClearElementToPinnedPool(const winrt::UIElement& element, cons
         virtInfo->MoveOwnershipToPinnedPool();
     }
 
-    // Element is already in pinnedPool or is moved to pinnedPool. Both mean element is cleared.
-    return isInPinnedPool || moveToPinnedPool;
+    return moveToPinnedPool;
 }
 
 #pragma endregion
@@ -997,14 +1676,22 @@ void ViewManager::UpdateFocusedElement()
     // we need to unpin the old one and pin the new one.
     if (m_lastFocusedElement != focusedElement)
     {
+        // Release the pins of a cleared focused element first: an ancestor element that both pin keeps one pin.
+        ReleaseAncestorPinsOfClearedFocusedElement();
+
         if (m_lastFocusedElement)
         {
             UpdatePin(m_lastFocusedElement.get(), false /* addPin */);
+            if (!focusedElement)
+            {
+                m_lastFocusedElementBeforeFocusLeft = winrt::make_weak(m_lastFocusedElement.get());
+            }
         }
 
         if (focusedElement)
         {
             UpdatePin(focusedElement, true /* addPin */);
+            m_lastFocusedElementBeforeFocusLeft = nullptr;
         }
 
         m_lastFocusedElement.set(focusedElement);
@@ -1014,6 +1701,14 @@ void ViewManager::UpdateFocusedElement()
 void ViewManager::OnFocusChanged(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     UpdateFocusedElement();
+    if (m_clearedFocusedElement && !m_pendingFocusMoveElement && !m_lastFocusedElement)
+    {
+        if (const auto focusedChild = GetFocusedChild(); focusedChild && TryRecordFocusReturnedToClearedElement(focusedChild))
+        {
+            // Make sure that a layout pass follows, so that the move runs in the LayoutUpdated handler.
+            static_cast<winrt::UIElement>(*m_owner).InvalidateArrange();
+        }
+    }
 }
 
 void ViewManager::EnsureEventSubscriptions()

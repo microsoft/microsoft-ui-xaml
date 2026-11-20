@@ -1846,8 +1846,8 @@ void TableView::TrackBodyFocusPosition()
 {
     if (m_suppressBodyFocusTracking)
     {
-        // Inside a re-shape: ItemsRepeater's focus rescue (MoveFocusFromClearedIndex) must not
-        // overwrite the user's position.
+        // Inside a re-shape: ItemsRepeater's focus move away from a cleared focused element
+        // (ViewManager::OnOwnerLayoutUpdated) must not overwrite the user's position.
         return;
     }
 

@@ -514,6 +514,7 @@ void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winr
     {
         m_viewportManager.ResetScrollers();
         m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
+        m_viewManager.OnOwnerUnloaded();
     }
 }
 
@@ -523,6 +524,13 @@ void ItemsRepeater::OnLayoutUpdated(const winrt::IInspectable& /*sender*/, const
     m_stackLayoutMeasureCounter = 0u;
 
     EnsureDefaultLayoutState();
+
+    // Move focus away from a focused element that was cleared, now that the layout has realized the current items.
+    // LayoutUpdated can be raised from an UpdateLayout call made inside a collection change; wait for the next one then.
+    if (!m_isLayoutInProgress && !IsProcessingCollectionChange())
+    {
+        m_viewManager.OnOwnerLayoutUpdated();
+    }
 }
 
 void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
@@ -562,6 +570,9 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
+            // The pinned elements belong to the old source.
+            m_viewManager.ClearPinnedElementsForCollectionChange();
+
             // After a data source change, reset the potential cache buffer so that the realization window regrows from scratch.
             m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
 
@@ -581,6 +592,7 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
                 {
                     m_viewManager.RecycleWithoutOwner(false);
                 });
+                m_viewManager.ClearPinnedElementsForCollectionChange();
                 for (const auto& element : Children())
                 {
                     if (GetVirtualizationInfo(element)->IsRealized())
@@ -623,6 +635,14 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
                 m_processingItemsSourceChange.set(nullptr);
             });
         m_processingItemsSourceChange.set(args);
+
+        // The pinned elements were created with the old template. Clear them before the template changes so that they
+        // go back to the old template. With no old template (for example the default template that is set during layout
+        // when the first item that is not a UIElement is realized), the pinned elements are UIElement items and are kept.
+        if (oldValue)
+        {
+            m_viewManager.ClearPinnedElementsForCollectionChange();
+        }
 
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
@@ -791,6 +811,11 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
             InvalidateMeasure();
         }
     }
+
+    // The change is processed. Move focus away from a focused element that it cleared now, before input that is already
+    // queued is delivered (the final action resets the change again, without effect).
+    m_processingItemsSourceChange.set(nullptr);
+    m_viewManager.OnOwnerCollectionChangeProcessed();
 }
 
 void ItemsRepeater::InvalidateMeasureForLayout(winrt::Layout const&, winrt::IInspectable const&)

@@ -77,6 +77,9 @@ public:
     winrt::UIElement GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElementImpl(const winrt::UIElement& element);
 
+    // Returns the collection change being processed, or null outside of a collection change.
+    winrt::NotifyCollectionChangedEventArgs ProcessingCollectionChange() const { return m_processingItemsSourceChange.get(); }
+
     // Mapping APIs (exception based)
     int GetElementIndexImpl(const winrt::UIElement& element);
     winrt::UIElement GetElementFromIndexImpl(int index);

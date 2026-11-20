@@ -1307,5 +1307,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(breadcrumbNode3, "A fourth item should have been rendered by the BreadcrumControl");
             });
         }
+
+        #region Focus after ItemsSource changes (task.ms/56189664)
+
+        // Scenario: BreadcrumbBar with 5 items; keyboard focus on one of its BreadcrumbBarItems; the ItemsSource is replaced
+        //           by a shorter list of new items (what an app does when it navigates on ItemClicked).
+        // Expected: no exception; after layout focus is not on a cleared BreadcrumbBarItem (index -1 in the repeater).
+        // A failure means: the repeater leaves focus on a BreadcrumbBarItem it cleared during the reassignment.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing the ItemsSource with a shorter list while a BreadcrumbBarItem has focus does not leave focus on a cleared item.")]
+        public void VerifyTruncatingItemsSourceWithFocusedItemDoesNotLeaveFocusOnClearedItem()
+        {
+            BreadcrumbBar breadcrumb = null;
+            ItemsRepeater repeater = null;
+            var gotFocus = new global::System.Threading.ManualResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                breadcrumb = new BreadcrumbBar { ItemsSource = new List<string> { "Node 0", "Node 1", "Node 2", "Node 3", "Node 4" } };
+                var root = new StackPanel();
+                root.Children.Add(new Button { Content = "Before" });
+                root.Children.Add(breadcrumb);
+                root.Children.Add(new Button { Content = "After" });
+                Content = root;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = (ItemsRepeater)breadcrumb.FindVisualChildByName("PART_ItemsRepeater");
+                Verify.IsNotNull(repeater, "The underlying items repeater could not be retrieved");
+                // Index 0 of the repeater is the ellipsis item; index 2 is "Node 1". BreadcrumbBar may redirect keyboard focus
+                // that comes from outside to another item, so wait for focus on any item.
+                var item = (BreadcrumbBarItem)repeater.TryGetElement(2);
+                breadcrumb.GotFocus += delegate { gotFocus.Set(); };
+                Verify.IsTrue(item.Focus(FocusState.Keyboard), "Precondition: the BreadcrumbBarItem takes focus.");
+            });
+            Verify.IsTrue(gotFocus.WaitOne(DefaultWaitTimeInMS), "Waiting for a BreadcrumbBarItem to get focus.");
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(breadcrumb.XamlRoot) as UIElement;
+                Log.Comment($"Focused before the change: {focused?.GetType().Name} '{(focused as ContentControl)?.Content}' (repeater index {repeater.GetElementIndex(focused)})");
+                Verify.IsTrue(repeater.GetElementIndex(focused) >= 0, "Precondition: an item of the BreadcrumbBar has focus.");
+
+                // Every item of the new source is different, so every element of the old source is cleared.
+                breadcrumb.ItemsSource = new List<string> { "New 0", "New 1" };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(breadcrumb.XamlRoot) as DependencyObject;
+                Log.Comment($"Focused: {focused?.GetType().Name} '{(focused as ContentControl)?.Content}'");
+                for (var node = focused; node != null; node = VisualTreeHelper.GetParent(node))
+                {
+                    if (VisualTreeHelper.GetParent(node) == repeater)
+                    {
+                        int index = repeater.GetElementIndex((UIElement)node);
+                        Log.Comment($"The focused element is in repeater item {index}.");
+                        Verify.IsTrue(index >= 0, "Focus is not on a cleared BreadcrumbBarItem.");
+                        break;
+                    }
+                }
+            });
+        }
+
+        #endregion
     }
 }
