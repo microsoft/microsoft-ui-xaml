@@ -2392,7 +2392,7 @@ _Check_return_ HRESULT AutomationPeer::UIAPatternInvoke(
     // Assign CValue parameters
     pValueParams = (Automation::CValue*)pvParams;
 
-    switch (ePatternInterface)
+    switch (static_cast<xaml_automation_peers::PatternInterface>(ePatternInterface))
     {
         case xaml_automation_peers::PatternInterface_Invoke:
             IFC(ctl::do_query_interface(pInvokeProvider, pTargetAsIInspectable));
