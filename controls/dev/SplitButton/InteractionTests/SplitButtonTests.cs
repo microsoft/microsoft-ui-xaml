@@ -220,6 +220,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void DisablingWhileGamepadButtonIsDownClearsPressedState()
+        {
+            using (var setup = new TestSetupHelper("SplitButton Tests"))
+            {
+                SplitButton splitButton = FindElement.ByName<SplitButton>("ToggleSplitButton");
+                CheckBox enableCheckBox = FindElement.ByName<CheckBox>("ToggleSplitButtonEnableCheckBox");
+                TextBlock toggleStateTextBlock = FindElement.ByName<TextBlock>("ToggleStateTextBlock");
+
+                Verify.AreEqual(ToggleState.On, enableCheckBox.ToggleState);
+                Verify.AreEqual("Unchecked", toggleStateTextBlock.DocumentText);
+
+                splitButton.SetFocus();
+                Wait.ForIdle();
+
+                Log.Comment("Disable the control while GamepadA remains down so the control does not receive KeyUp");
+                GamepadHelper.PressButton(splitButton, GamepadButton.A, () =>
+                {
+                    enableCheckBox.Uncheck();
+                    Wait.ForIdle();
+                    Verify.IsFalse(splitButton.IsEnabled);
+                });
+
+                enableCheckBox.Check();
+                Wait.ForIdle();
+                Verify.IsTrue(splitButton.IsEnabled);
+
+                Log.Comment("Verify the primary region is restored instead of remaining covered by SecondaryButtonSpan");
+                ClickPrimaryButton(splitButton);
+                Verify.AreEqual("Checked", toggleStateTextBlock.DocumentText);
+            }
+        }
+
+        [TestMethod]
         public void ToggleTest()
         {
             using (var setup = new TestSetupHelper("SplitButton Tests"))
