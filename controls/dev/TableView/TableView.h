@@ -436,6 +436,13 @@ public:
         return TryGetContainerIdentity(container);
     }
 
+    winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
+    {
+        auto const it = m_groupAutomationElements.find(identity);
+        return it != m_groupAutomationElements.end() ? it->second : nullptr;
+    }
+    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element);
+
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
     void SetCellCursorActiveInternal(bool active);
@@ -573,6 +580,22 @@ public:
     void ResetEditFocusTracking();
     // Keeps the Escape that closed an editor's flyout from also cancelling the edit.
     void MarkEditorFlyoutClosing();
+    // True when Tab is consumed, including by a vetoed commit.
+    bool TryMoveEditToAdjacentCell(bool forward);
+    bool IsTabEditMovePending() const noexcept { return m_tabEditMovePending; }
+    // Drops a pending Tab move's BeginEdit and releases the live-shaping hold it kept.
+    void EndPendingTabEditMove();
+    // While a Tab move waits for its row, a repeated Tab is swallowed and Escape drops the edit.
+    bool TryHandleKeyDuringPendingTabEditMove(const winrt::KeyRoutedEventArgs& args);
+    void FindAdjacentEditableColumns(
+        winrt::TableViewColumn const& source,
+        bool forward,
+        winrt::TableViewColumn& inRow,
+        winrt::TableViewColumn& wrap);
+    int32_t StepToAdjacentDataRow(int32_t row, bool forward);
+    bool IsBodyFocusOnItem(winrt::IInspectable const& item);
+    bool IsBodyFocusOnCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
+    bool HasTabStopAfterFocusInEditor(winrt::XamlRoot const& root, winrt::FrameworkElement const& editingElement, bool forward);
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
@@ -848,6 +871,17 @@ private:
     // Bumped when a forced teardown closes an edit awaiting a deferral, so a late completion can
     // recognise itself as stale.
     uint32_t m_editGeneration{ 0 };
+
+    // A Tab target outside the viewport: BeginEdit runs once the pending body focus lands on it.
+    tracker_ref<winrt::IInspectable> m_beginEditAfterBodyFocusItem{ this };
+    tracker_ref<winrt::TableViewColumn> m_beginEditAfterBodyFocusColumn{ this };
+    // True from the off-screen Tab move until its BeginEdit runs or the move is dropped. Holds live
+    // shaping, so a reshape from the commit cannot re-aim focus away from the target.
+    bool m_tabEditMovePending{ false };
+    // Bumped when a pending Tab move ends, so its posted BeginEdit can recognise itself as stale.
+    uint32_t m_tabEditMoveGeneration{ 0 };
+    // Set only across a Tab move's commit: the same-row cell the closing editor hands focus to.
+    tracker_ref<winrt::TableViewColumn> m_editCloseFocusColumn{ this };
 
     // Pending source-reshaping operations. A deque, not a vector: the drain pops from the front so
     // replay order matches arrival order.
@@ -1185,6 +1219,12 @@ private:
         bool subtree = false);
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
+    std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
+
+    // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
+    std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;
+    // Cleared with m_rowMetadataGeneration: identities are only meaningful within one projection.
+    std::unordered_map<winrt::hstring, winrt::AutomationPeer> m_groupAutomationElements;
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);

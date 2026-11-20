@@ -512,20 +512,7 @@ int32_t TableViewColumnHeaderAutomationPeer::GetColumnIndex()
     {
         if (auto const col = m_column.get())
         {
-            if (!IsVisibleColumn(col))
-            {
-                return -1;
-            }
-
-            if (auto const columns = owner.Columns())
-            {
-                int32_t logicalIndex = 0;
-                for (auto const& c : columns)
-                {
-                    if (c == col) { return logicalIndex; }
-                    if (IsVisibleColumn(c)) { ++logicalIndex; }
-                }
-            }
+            return VisibleColumnIndexOf(owner.Columns(), col);
         }
     }
     return -1;
