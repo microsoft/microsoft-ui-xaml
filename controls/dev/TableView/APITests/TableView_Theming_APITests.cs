@@ -6265,9 +6265,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var fill = Color.FromArgb(0xFF, 0x20, 0x40, 0x60);
             var outline = Color.FromArgb(0xFF, 0x12, 0x9E, 0x5A);
             var replacementOutline = Color.FromArgb(0xFF, 0xA0, 0x30, 0x20);
+            var brushKeys = new[]
+            {
+                "TableViewHeaderBackgroundBrush",
+                "TableViewHeaderBackgroundSortableBrush",
+                "TableViewHeaderBackgroundPointerOverBrush",
+                "TableViewHeaderBackgroundPressedBrush",
+                "TableViewHeaderBorderBrush",
+                "TableViewHeaderBorderSortableBrush",
+                "TableViewHeaderBorderPointerOverBrush",
+                "TableViewHeaderBorderPressedBrush",
+                "TableViewGroupHeaderBackgroundBrush",
+                "TableViewGroupHeaderBackgroundPointerOverBrush",
+                "TableViewGroupHeaderBackgroundPressedBrush",
+                "TableViewGroupHeaderInteractionBorderBrush",
+                "TableViewGroupHeaderInteractionBorderPointerOverBrush",
+                "TableViewGroupHeaderInteractionBorderPressedBrush",
+            };
 
             foreach (var theme in new[] { "HighContrast", "Light", "Default" })
             {
+                var sourceBrushes = new Dictionary<string, SolidColorBrush>();
+                Thickness headerThickness = default;
+                Grid probes = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    EnsureTabularControlsResources();
+                    if (theme == "HighContrast")
+                    {
+                        // Simulate HC plate geometry with authored system-brush mappings, not active-HC lookup.
+                        var resources = new TabularControlsResources();
+                        var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
+                        foreach (var key in brushKeys)
+                        {
+                            sourceBrushes[key] = (SolidColorBrush)dictionary[key];
+                        }
+                        headerThickness = (Thickness)dictionary["TableViewHeaderInteractionBorderThickness"];
+                    }
+                    else
+                    {
+                        string bindings = string.Concat(brushKeys.Select(key =>
+                            $"<Border Background='{{ThemeResource {key}}}' />"));
+                        probes = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                            "<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                            $"RequestedTheme='{(theme == "Light" ? ElementTheme.Light : ElementTheme.Dark)}'>" +
+                            "<Border BorderThickness='{ThemeResource TableViewHeaderInteractionBorderThickness}' />" +
+                            bindings + "</Grid>");
+                        LoadContent(probes);
+                    }
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    if (theme != "HighContrast")
+                    {
+                        Verify.AreEqual(theme == "Light" ? ElementTheme.Light : ElementTheme.Dark, probes.ActualTheme);
+                        headerThickness = ((Border)probes.Children[0]).BorderThickness;
+                        for (int i = 0; i < brushKeys.Length; i++)
+                        {
+                            var brush = ((Border)probes.Children[i + 1]).Background as SolidColorBrush;
+                            Verify.IsNotNull(brush, $"{theme}: {brushKeys[i]} must resolve on a loaded element.");
+                            sourceBrushes[brushKeys[i]] = brush;
+                        }
+                        var pressed = RequireThemeColor(theme, "SubtleFillColorTertiary");
+                        Verify.AreEqual(pressed, sourceBrushes["TableViewHeaderBackgroundPressedBrush"].Color,
+                            $"{theme}: the snapshot must use the requested theme's pressed fill.");
+                        Verify.AreEqual(pressed, sourceBrushes["TableViewGroupHeaderBackgroundPressedBrush"].Color);
+                        Verify.AreEqual(RequireThemeColor(theme, "SubtleFillColorSecondary"),
+                            sourceBrushes["TableViewGroupHeaderBackgroundPointerOverBrush"].Color);
+                    }
+                    Verify.AreEqual(new Thickness(theme == "HighContrast" ? 1 : 0), headerThickness);
+                });
+
                 foreach (var density in DensityCases)
                 {
                     foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
@@ -6276,25 +6345,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var brushes = new Dictionary<string, SolidColorBrush>();
                         RunOnUIThread.Execute(() =>
                         {
-                            var resources = new TabularControlsResources();
-                            var dictionary = (ResourceDictionary)resources.ThemeDictionaries[theme];
                             tableView = CreateGroupedThemingTable();
                             tableView.RequestedTheme = theme == "Light" ? ElementTheme.Light : ElementTheme.Dark;
                             tableView.Density = density.Density;
                             tableView.FlowDirection = flow;
                             tableView.HighContrastAdjustment = ElementHighContrastAdjustment.None;
-                            foreach (var entry in dictionary)
+                            foreach (var entry in sourceBrushes)
                             {
-                                if (entry.Key is string key && key.StartsWith("TableView", StringComparison.Ordinal)
-                                    && entry.Value is SolidColorBrush brush)
-                                {
-                                    brushes[key] = new SolidColorBrush(brush.Color) { Opacity = brush.Opacity };
-                                    tableView.Resources[key] = brushes[key];
-                                }
+                                brushes[entry.Key] = new SolidColorBrush(entry.Value.Color) { Opacity = entry.Value.Opacity };
+                                tableView.Resources[entry.Key] = brushes[entry.Key];
                             }
-                            var thickness = (Thickness)dictionary["TableViewHeaderInteractionBorderThickness"];
-                            Verify.AreEqual(new Thickness(theme == "HighContrast" ? 1 : 0), thickness);
-                            tableView.Resources["TableViewHeaderInteractionBorderThickness"] = thickness;
+                            tableView.Resources["TableViewHeaderInteractionBorderThickness"] = headerThickness;
                             LoadContent(tableView);
                         });
                         IdleSynchronizer.Wait();

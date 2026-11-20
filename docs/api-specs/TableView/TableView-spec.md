@@ -145,7 +145,7 @@ public sealed record Order(string OrderNumber, string Customer, string Status);
 
 `GridLinesVisibility` controls only the body gridlines and defaults to `All`. Column-header dividers and the bottom rule are always present, independently of body gridlines. The trailing column divider is suppressed where it meets the viewport edge, even when the outer frame is hidden.
 
-Both header strokes paint `TableViewHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines use `SystemColorGrayTextColor` (the system disabled color), while the outer border retains `SystemColorWindowTextColor`. `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
+Both header strokes paint `TableViewHeaderSeparatorBrush`; overriding that brush with `Transparent` still hides both. In High Contrast, body and column-header gridlines and the outer border use `SystemColorGrayTextColorBrush` (the system disabled color). `Density` controls row and cell spacing. Column-header height matches row height; built-in header and text-cell content is vertically centered.
 
 `Compact`, `Standard`, and `Comfortable` have 24/32/40px minimum row, column-header, and
 section-header heights. Larger text or custom content can grow them. Built-in text is 14px
@@ -261,7 +261,7 @@ keys must rename their overrides to `TableView*`, keeping the suffix: for exampl
 `TabularSurfaceGridLineBrush` becomes `TableViewGridLineBrush`. The old names have no compatibility
 aliases. Existing TableView metric keys and `ResizeGripperSeparatorBrush` are unchanged.
 
-The outer border uses `DividerStrokeColorDefault` in Light/Dark and `SystemColorWindowTextColor` in
+The outer border uses `DividerStrokeColorDefaultBrush` in Light/Dark and `SystemColorGrayTextColorBrush` in
 High Contrast. To hide it in Light/Dark while preserving the High Contrast frame, use:
 
 ```xml
@@ -269,7 +269,7 @@ High Contrast. To hide it in Light/Dark while preserving the High Contrast frame
 ```
 
 `BorderlessTableViewStyle` sets only `BorderBrush` to `TableViewBorderlessOuterBorderBrush`:
-transparent in Light/Dark, WindowText in High Contrast. The 1px layout inset is retained.
+transparent in Light/Dark, GrayText in High Contrast. The 1px layout inset is retained.
 To combine it with banding, derive from `BandedTableViewStyle` and set that brush.
 A literal `BorderBrush="Transparent"` hides the frame in every theme.
 
