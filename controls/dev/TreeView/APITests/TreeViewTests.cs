@@ -692,6 +692,132 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Single selection (Node mode including null-Content node and reentrant veto, plus Content mode
+        //   with nested items); toggle TreeViewItem.IsSelected (Ctrl + Left Click path) and clear ItemsSource.
+        // Expected: Inside SelectionChanged, SelectedNode/SelectedNodes and SelectedItem/SelectedItems already match
+        //   the newly selected or deselected row, and reentrant handler overrides are preserved.
+        // Failure means: TreeView::OnListControlSelectionChanged raises SelectionChanged before syncing SelectedNode
+        //   from m_listControl.SelectedIndex() and SelectedItem, or overwrites reentrant handler changes afterward.
+        [TestMethod]
+        public void TreeViewSelectedNodeInSelectionChangedSingleMode()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TreeViewNode observedSelectedNode = null;
+                TreeViewNode[] observedSelectedNodes = Array.Empty<TreeViewNode>();
+                object observedSelectedItem = null;
+                object[] observedSelectedItems = Array.Empty<object>();
+                int selectionChangedCount = 0;
+                bool vetoSelection = false;
+
+                var treeView = new TreeView { SelectionMode = TreeViewSelectionMode.Single };
+                var node1 = new TreeViewNode { Content = "Node1" };
+                var node2 = new TreeViewNode { Content = null };
+                treeView.RootNodes.Add(node1);
+                treeView.RootNodes.Add(node2);
+
+                treeView.SelectionChanged += (sender, args) =>
+                {
+                    selectionChangedCount++;
+                    observedSelectedNode = sender.SelectedNode;
+                    observedSelectedNodes = sender.SelectedNodes.ToArray();
+                    observedSelectedItem = sender.SelectedItem;
+                    observedSelectedItems = sender.SelectedItems.ToArray();
+
+                    if (vetoSelection && sender.SelectedNode != null)
+                    {
+                        sender.SelectedNode = null;
+                    }
+                };
+
+                Content = treeView;
+                Content.UpdateLayout();
+
+                var tvi1 = (TreeViewItem)treeView.ContainerFromNode(node1);
+                var tvi2 = (TreeViewItem)treeView.ContainerFromNode(node2);
+
+                // Select first item via SelectorItem.IsSelected toggle (Ctrl + Left Click path).
+                tvi1.IsSelected = true;
+                Verify.AreEqual(1, selectionChangedCount);
+                Verify.AreEqual(node1, observedSelectedNode);
+                Verify.AreEqual(1, observedSelectedNodes.Length);
+                Verify.AreEqual(node1, observedSelectedNodes[0]);
+                Verify.AreEqual(node1, observedSelectedItem);
+                Verify.AreEqual(1, observedSelectedItems.Length);
+                Verify.AreEqual(node1, observedSelectedItems[0]);
+
+                // Switch selection to second item (with null Content) via toggle.
+                tvi2.IsSelected = true;
+                Verify.AreEqual(2, selectionChangedCount);
+                Verify.AreEqual(node2, observedSelectedNode);
+                Verify.AreEqual(1, observedSelectedNodes.Length);
+                Verify.AreEqual(node2, observedSelectedNodes[0]);
+                Verify.AreEqual(node2, observedSelectedItem);
+                Verify.AreEqual(1, observedSelectedItems.Length);
+                Verify.AreEqual(node2, observedSelectedItems[0]);
+
+                // Deselect active item via Ctrl + Left Click toggle.
+                tvi2.IsSelected = false;
+                Verify.AreEqual(3, selectionChangedCount);
+                Verify.IsNull(observedSelectedNode);
+                Verify.AreEqual(0, observedSelectedNodes.Length);
+                Verify.IsNull(observedSelectedItem);
+                Verify.AreEqual(0, observedSelectedItems.Length);
+
+                // Reentrant handler clearing SelectedNode inside SelectionChanged must not be overwritten.
+                vetoSelection = true;
+                tvi1.IsSelected = true;
+                vetoSelection = false;
+                Verify.IsNull(treeView.SelectedNode);
+                Verify.IsNull(treeView.SelectedItem);
+                Verify.IsFalse(tvi1.IsSelected);
+
+                // Content mode (ItemsSource): toggle selection, switch items, deselect, and clear source.
+                var contentTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var contentItems = CreateTreeViewItemsSource();
+                contentTreeView.ItemsSource = contentItems;
+                contentTreeView.SelectionChanged += (sender, args) =>
+                {
+                    observedSelectedNode = sender.SelectedNode;
+                    observedSelectedNodes = sender.SelectedNodes.ToArray();
+                    observedSelectedItem = sender.SelectedItem;
+                    observedSelectedItems = sender.SelectedItems.ToArray();
+                };
+
+                Content = contentTreeView;
+                Content.UpdateLayout();
+
+                var rootNode1 = contentTreeView.RootNodes[1];
+                var expectedItem1 = contentItems[1];
+                var contentRootTvi1 = (TreeViewItem)contentTreeView.ContainerFromNode(rootNode1);
+                contentRootTvi1.IsSelected = true;
+                Verify.AreEqual(rootNode1, observedSelectedNode);
+                Verify.AreEqual(1, observedSelectedNodes.Length);
+                Verify.AreEqual(rootNode1, observedSelectedNodes[0]);
+                Verify.AreEqual(expectedItem1, observedSelectedItem);
+                Verify.AreEqual(1, observedSelectedItems.Length);
+                Verify.AreEqual(expectedItem1, observedSelectedItems[0]);
+
+                contentRootTvi1.IsSelected = false;
+                Verify.IsNull(observedSelectedNode);
+                Verify.AreEqual(0, observedSelectedNodes.Length);
+                Verify.IsNull(observedSelectedItem);
+                Verify.AreEqual(0, observedSelectedItems.Length);
+
+                var rootNode0 = contentTreeView.RootNodes[0];
+                var contentRootTvi0 = (TreeViewItem)contentTreeView.ContainerFromNode(rootNode0);
+                contentRootTvi0.IsSelected = true;
+                Verify.AreEqual(rootNode0, observedSelectedNode);
+                Verify.AreEqual(contentItems[0], observedSelectedItem);
+
+                contentTreeView.ItemsSource = null;
+                Verify.IsNull(observedSelectedNode);
+                Verify.AreEqual(0, observedSelectedNodes.Length);
+                Verify.IsNull(observedSelectedItem);
+                Verify.AreEqual(0, observedSelectedItems.Length);
+            });
+        }
+
         // Scenario: Node mode, Multiple selection, pre-expanded 1(11,12,13), 2(21), 3; select 1, set 11 selected
         //   then unselected, then SelectAll().
         // Expected: AddedItems = 1 + its 3 children; then RemovedItems = [11] only; SelectAll adds all 7 nodes.

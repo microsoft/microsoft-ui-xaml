@@ -310,30 +310,28 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
 {
     if (SelectionMode() == winrt::TreeViewSelectionMode::Single)
     {
-        RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
-
-        const auto newSelectedItem = [args]() {
-            if(const auto& newItems = args.AddedItems())
-            {
-                if (newItems.Size() > 0)
-                {
-                    return newItems.GetAt(0);
-                }
-                else
-                {
-                    return (winrt::IInspectable)nullptr;
-                }
-            }
-            else
-            {
-                return (winrt::IInspectable)nullptr;
-            }
-        }();
-
-        if (SelectedItem() != newSelectedItem)
+        if (const auto listControl = ListControl())
         {
-            SelectedItem(newSelectedItem);
+            if (const auto viewModel = listControl->ListViewModel())
+            {
+                const int selectedIndex = m_listControl.get().SelectedIndex();
+                const auto newSelectedNode = listControl->IsFlatIndexValid(selectedIndex)
+                    ? viewModel->GetNodeAt(selectedIndex)
+                    : nullptr;
+                if (SelectedNode() != newSelectedNode)
+                {
+                    SelectedNode(newSelectedNode);
+                }
+
+                const auto newSelectedItem = newSelectedNode ? viewModel->ItemFromNode(newSelectedNode) : nullptr;
+                if (SelectedItem() != newSelectedItem)
+                {
+                    SelectedItem(newSelectedItem);
+                }
+            }
         }
+
+        RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
     }
 }
 
