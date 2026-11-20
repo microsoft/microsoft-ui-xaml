@@ -2,6 +2,26 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
+  # Instrument the product DLL(s) and collect coverage on this stage's Win10-RS5 test slices,
+  # then merge and publish. Default false so Nightly, PR and any other consumer of this stage
+  # are unaffected; when true, only the RS5 job runs (25H2/23H2 are skipped) and a
+  # MergeCodeCoverage job is appended.
+  collectCodeCoverage: false
+  # Which single OS the coverage pass runs on. Only used when collectCodeCoverage is true.
+  coverageTestOS: 'Win10-RS5'
+  # Which product DLL(s) to instrument, as a LIST (one entry per DLL) - not a space-separated
+  # string. Only used when collectCodeCoverage is true. Defaults to just the framework/core DLL
+  # for this focused pass. Each module gets its own independent session id/collector,
+  # auto-generated and auto-discovered - no session id parameter is needed here.
+  coverageModules:
+  - 'Microsoft.ui.xaml.dll'
+  # Module stems (coverageModules entries with the .dll extension stripped) whose raw per-slice
+  # coverage should be merged independently of one another. Must stay in sync with
+  # coverageModules. Only used when collectCodeCoverage is true.
+  coverageModuleStems:
+  - 'Microsoft.ui.xaml'
+  # Code Coverage tab layout: PerModuleFolders or Combined (see WinUI-MergeCodeCoverage-Job.yml).
+  coverageTabLayout: 'PerModuleFolders'
 
 stages:
 - stage: RunTests
@@ -15,15 +35,19 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
       testPayloadArtifactName: 'TestPayload'
+      collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
+      coverageTestOS: ${{ parameters.coverageTestOS }}
+      coverageModules: ${{ parameters.coverageModules }}
 
-  - template: WinUI-RunTestPassOnPipeline-Job.yml
-    parameters:
-      runTestJobName: RunTests25H2
-      dependsOn: CreateTestPayload
-      testOS: 'Win11-25H2'
-      testPayloadArtifactName: 'TestPayload'
+  - ${{ if ne(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTests25H2
+        dependsOn: CreateTestPayload
+        testOS: 'Win11-25H2'
+        testPayloadArtifactName: 'TestPayload'
 
-  - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+  - ${{ if and(ne(parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTests23H2
@@ -31,9 +55,26 @@ stages:
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
 
+  # RunTestsRS5 runs whenever it normally would (pipelineKind != QuickPR), OR whenever coverage
+  # mode is on (coverage always targets a single RS5 leg, regardless of pipelineKind). For every
+  # existing caller collectCodeCoverage is false/omitted, so this reduces to exactly
+  # ne(pipelineKind, 'QuickPR') - unchanged from today.
+  - ${{ if or(ne(parameters.pipelineKind, 'QuickPR'), eq(parameters.collectCodeCoverage, true)) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTestsRS5
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
+        collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
+
+  # Coverage merge: gather RunTestsRS5's per-slice .coverage files for every module stem, merge
+  # them, and publish combined + per-DLL reports. Only runs when coverage is on.
+  - ${{ if eq(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-MergeCodeCoverage-Job.yml
+      parameters:
+        runTestJobName: MergeCodeCoverage
+        dependsOn:
+          - RunTestsRS5
+        coverageModuleStems: ${{ parameters.coverageModuleStems }}
+        coverageTabLayout: ${{ parameters.coverageTabLayout }}
