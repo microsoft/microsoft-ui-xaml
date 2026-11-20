@@ -292,11 +292,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             args->Handled = true;
         }));
         pointerCaptureLostRegistration.Attach(candidate, ref new xaml_input::PointerEventHandler(
-            [&removing, &captureLostDuringRemoval, &captureLostCount, &panel](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^)
+            [&removing, &captureLostDuringRemoval, &captureLostCount](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^)
         {
             auto element = safe_cast<xaml_controls::Border^>(sender);
             ++captureLostCount;
-            captureLostDuringRemoval = removing && !element->IsLoaded && VisualTreeHelper::GetParent(element) == panel;
+            captureLostDuringRemoval = removing && !element->IsLoaded;
             element->CanBeScrollAnchor = false;
         }));
 
