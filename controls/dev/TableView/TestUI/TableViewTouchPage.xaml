@@ -47,6 +47,7 @@
             <controls:TableView x:Name="TouchScrollingTableView"
                                 AutomationProperties.Name="TouchScrollingTableView"
                                 AutomationProperties.AutomationId="TouchScrollingTableView"
+                                GridLinesVisibility="All"
                                 Height="300"
                                 Width="360"
                                 HorizontalAlignment="Left"
