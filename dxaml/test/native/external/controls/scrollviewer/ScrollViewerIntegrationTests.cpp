@@ -147,6 +147,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             RunOnUIThread([&]()
             {
+                auto releaseCandidates = wil::scope_exit([&]()
+                {
+                    candidateDuringSetup = nullptr;
+                    candidateDuringDetach = nullptr;
+                });
                 auto candidate = safe_cast<xaml_controls::Border^>(panel->Children->GetAt(0));
                 VERIFY_IS_TRUE(candidateWeakRef.Resolve<xaml_controls::Border>() == candidate);
                 if (scenario < 2)
@@ -206,21 +211,31 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     VERIFY_IS_TRUE(candidate->CanBeScrollAnchor);
                 }
 
-                candidateDuringSetup = nullptr;
                 panel->Children->RemoveAt(0);
+
+                // Refresh the selected-anchor cache independently of candidate registration.
+                scrollViewer->InvalidateArrange();
+                scrollViewer->UpdateLayout();
             });
 
             TestServices::WindowHelper->WaitForIdle();
             // The WPF host can retain managed references until collection.
             TestServices::WindowHelper->GCCollect();
+            TestServices::WindowHelper->WaitForIdle();
 
             RunOnUIThread([&]()
             {
-                VERIFY_IS_NOT_NULL(scrollViewer->Content);
+                auto resetContent = wil::scope_exit([&]()
+                {
+                    TestServices::WindowHelper->WindowContent = nullptr;
+                    panel = nullptr;
+                    scrollViewer = nullptr;
+                });
+                VERIFY_IS_TRUE(scrollViewer->IsLoaded);
+                VERIFY_IS_TRUE(scrollViewer->Content == panel);
+                VERIFY_IS_TRUE(panel->IsLoaded);
+                VERIFY_ARE_EQUAL(0U, panel->Children->Size);
                 VERIFY_IS_NULL(candidateWeakRef.Resolve<Object>());
-                TestServices::WindowHelper->WindowContent = nullptr;
-                panel = nullptr;
-                scrollViewer = nullptr;
             });
         }
     }
@@ -235,6 +250,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         bool captured = false;
         bool removing = false;
         bool captureLostDuringRemoval = false;
+        unsigned int captureLostCount = 0;
+        wf::Point mousePosition{};
         auto pointerPressedRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerPressed);
         auto pointerCaptureLostRegistration = CreateSafeEventRegistration(xaml::UIElement, PointerCaptureLost);
 
@@ -248,8 +265,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             scrollViewer->VerticalScrollMode = xaml_controls::ScrollMode::Disabled;
             panel = ref new xaml_controls::StackPanel();
             panel->Height = 600;
+            panel->ChildrenTransitions = ref new xaml_animation::TransitionCollection();
             candidate = ref new xaml_controls::Border();
             candidate->Height = 80;
+            candidate->Transitions = ref new xaml_animation::TransitionCollection();
             candidate->Background = ref new SolidColorBrush(Microsoft::UI::Colors::Blue);
             candidateWeakRef = WeakReference(candidate);
             panel->Children->Append(candidate);
@@ -259,6 +278,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
         TestServices::WindowHelper->WaitForIdle();
 
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(scrollViewer->IsLoaded);
+            VERIFY_IS_TRUE(candidate->IsLoaded);
+            mousePosition = ControlHelper::GetCenterOfElement(candidate);
+        });
+
         pointerPressedRegistration.Attach(candidate, ref new xaml_input::PointerEventHandler(
             [&captured](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^ args)
         {
@@ -266,39 +292,70 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             args->Handled = true;
         }));
         pointerCaptureLostRegistration.Attach(candidate, ref new xaml_input::PointerEventHandler(
-            [&removing, &captureLostDuringRemoval](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^)
+            [&removing, &captureLostDuringRemoval, &captureLostCount, &panel](Platform::Object^ sender, xaml_input::PointerRoutedEventArgs^)
         {
-            captureLostDuringRemoval = captureLostDuringRemoval || removing;
-            safe_cast<xaml::UIElement^>(sender)->CanBeScrollAnchor = false;
+            auto element = safe_cast<xaml_controls::Border^>(sender);
+            ++captureLostCount;
+            captureLostDuringRemoval = removing && !element->IsLoaded && VisualTreeHelper::GetParent(element) == panel;
+            element->CanBeScrollAnchor = false;
         }));
 
-        TestServices::InputHelper->DynamicPressCenter(candidate, 0, 0, PointerFinger::Finger1);
+        bool mouseButtonDown = false;
+        auto releaseMouseButton = [&]()
+        {
+            if (mouseButtonDown)
+            {
+                mouseButtonDown = false;
+                TestServices::InputHelper->MouseButtonUp(mousePosition, MouseButton::Left);
+            }
+        };
+        auto releaseMouseOnExit = wil::scope_exit([&]() { releaseMouseButton(); });
+
+        // Mouse input retains the pointer point needed for synchronous capture loss on removal.
+        mouseButtonDown = true;
+        TestServices::InputHelper->MouseButtonDown(mousePosition, MouseButton::Left);
         TestServices::WindowHelper->WaitForIdle();
         RunOnUIThread([&]()
         {
+            auto releaseCandidate = wil::scope_exit([&]() { candidate = nullptr; });
+            VERIFY_IS_TRUE(captured);
+            VERIFY_IS_TRUE(candidate->IsLoaded);
+            VERIFY_ARE_EQUAL(1U, candidate->PointerCaptures->Size);
+            VERIFY_ARE_EQUAL(0U, captureLostCount);
+            auto resetRemoving = wil::scope_exit([&]() { removing = false; });
             removing = true;
             panel->Children->RemoveAt(0);
             removing = false;
+            VERIFY_ARE_EQUAL(1U, captureLostCount);
+            VERIFY_IS_TRUE(captureLostDuringRemoval);
+            VERIFY_IS_FALSE(candidate->CanBeScrollAnchor);
         });
-        TestServices::InputHelper->DynamicRelease(PointerFinger::Finger1);
+        releaseMouseButton();
         TestServices::WindowHelper->WaitForIdle();
 
         pointerPressedRegistration.Detach();
         pointerCaptureLostRegistration.Detach();
         RunOnUIThread([&]()
         {
-            VERIFY_IS_TRUE(captured);
-            VERIFY_IS_TRUE(captureLostDuringRemoval);
-            VERIFY_IS_FALSE(candidate->CanBeScrollAnchor);
-            candidate = nullptr;
+            scrollViewer->InvalidateArrange();
+            scrollViewer->UpdateLayout();
         });
         TestServices::WindowHelper->WaitForIdle();
         TestServices::WindowHelper->GCCollect();
+        TestServices::WindowHelper->WaitForIdle();
         RunOnUIThread([&]()
         {
-            VERIFY_IS_NOT_NULL(scrollViewer->Content);
+            auto resetContent = wil::scope_exit([&]()
+            {
+                TestServices::WindowHelper->WindowContent = nullptr;
+                panel = nullptr;
+                scrollViewer = nullptr;
+            });
+            VERIFY_IS_TRUE(scrollViewer->IsLoaded);
+            VERIFY_IS_TRUE(scrollViewer->Content == panel);
+            VERIFY_IS_TRUE(panel->IsLoaded);
+            VERIFY_ARE_EQUAL(0U, panel->Children->Size);
             VERIFY_IS_NULL(candidateWeakRef.Resolve<Object>());
-            TestServices::WindowHelper->WindowContent = nullptr;
         });
     }
 
