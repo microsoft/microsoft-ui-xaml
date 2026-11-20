@@ -7208,6 +7208,10 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                         {
                             LOG_HR(paintHr);
                         }
+                        if (m_immediateRenderer->NeedsFrame())
+                        {
+                            RequestAdditionalFrame(RequestFrameReason::DeviceLost);
+                        }
                         if (!m_immediateRenderer->IsFallenBack(xamlIslandRoot))
                         {
                             xamlIslandRoot->PropagateNWClean();

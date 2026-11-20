@@ -137,7 +137,7 @@ public static class EtlReader
         return index < 0 ? null : e.PayloadValue(index);
     }
 
-    static uint U32(TraceEvent e, string field) => Payload(e, field) is { } v ? Convert.ToUInt32(v) : 0;
+    static uint U32(TraceEvent e, string field) => Payload(e, field) switch { int i => unchecked((uint)i), { } v => Convert.ToUInt32(v), _ => 0 };
     static ulong U64(TraceEvent e, string field) => Payload(e, field) is { } v ? Convert.ToUInt64(v) : 0;
     static int I32(TraceEvent e, string field) => Payload(e, field) is { } v ? Convert.ToInt32(v) : 0;
     static long I64(TraceEvent e, string field) => Payload(e, field) is { } v ? Convert.ToInt64(v) : 0;

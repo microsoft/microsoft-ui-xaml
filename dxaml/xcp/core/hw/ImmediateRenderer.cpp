@@ -31,6 +31,7 @@
 #include <dwrite.h>
 #include <algorithm>
 #include <cmath>
+#include "ImmediateRenderer.Independent.h"
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -424,6 +425,7 @@ namespace ImmediateRenderingDetail
         RectF sourceRect;      // Bitmap, pixels; empty = whole bitmap
         const CUIElement* owner = nullptr;
         uint32_t foldedFrom = UINT32_MAX; // index of the opacity group folded into this command (subtree reuse)
+        bool pinned = false;   // PushLayer of an independent layer: never folded (the render thread re-evaluates it)
     };
 
     struct GlyphRunData
@@ -511,6 +513,8 @@ namespace ImmediateRenderingDetail
         uint32_t uncacheable = 0; // bumped by content that depends on more than the parent context (popups, scrollers)
         // Open windowed popups found by the island walk and the world transform of their child (S14).
         std::vector<std::pair<CPopup*, CMILMatrix>> windowedPopups;
+        std::vector<IndependentLayer> layers; // innermost first
+        int64_t snapshotQpc = 0;  // QPC (microseconds) when the walk sampled the animation clocks
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -574,21 +578,25 @@ struct ImmediateRenderer::IslandState
     };
     std::vector<WindowedPopup> popups;
     bool windowedPopup = false; // this state paints a windowed popup's window
+    IndependentIsland independent;
 };
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
     : m_mode(mode)
+    , m_independent(std::make_unique<IndependentState>())
 {
     SetCaptureElementCallback(&ImmediateRenderer::CaptureElementCallback);
 }
 
 ImmediateRenderer::~ImmediateRenderer()
 {
+    StopRenderThread();
     ReleaseResources();
 }
 
 void ImmediateRenderer::ReleaseResources() noexcept
 {
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
     for (auto& entry : m_islands)
     {
         if (entry.second->painter)
@@ -605,6 +613,7 @@ void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
 {
     PruneFallenBack(dcompTreeHost);
     auto& renderData = dcompTreeHost->GetXamlIslandRenderData();
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
     for (auto it = m_islands.begin(); it != m_islands.end();)
     {
         if (renderData.find(it->first) == renderData.end())
@@ -1564,7 +1573,7 @@ namespace
             push.type = CommandType::Nop;
             return;
         }
-        if (isLayer && draws == 1 && !nested)
+        if (isLayer && draws == 1 && !nested && !push.pinned)
         {
             Command& c = list.commands[single];
             c.color.a *= push.opacity;
@@ -2265,6 +2274,12 @@ void ImmediateRenderer::Walk(
     {
         return;
     }
+    IndependentProbe probe;
+    ProbeIndependent(element, probe);
+    if (probe.active)
+    {
+        ++list.uncacheable;
+    }
 
     WalkContext ctx = parent;
     ctx.scrollerContent = false;
@@ -2280,6 +2295,7 @@ void ImmediateRenderer::Walk(
     {
         clipTo(TransformRectBounds(parent.world, FromXRect(element->LayoutClipGeometry->m_rc)));
     }
+    probe.outerClip = ctx.clip;
 
     {
         CMILMatrix local;
@@ -2402,7 +2418,7 @@ void ImmediateRenderer::Walk(
         {
             constexpr float c_cullMargin = 8.0f;
             const RectF local{ inner.left - c_cullMargin, inner.top - c_cullMargin, inner.right + c_cullMargin, inner.bottom + c_cullMargin };
-            if (!RectsIntersect(TransformRectBounds(ctx.world, local), ctx.clip))
+            if (!probe.active && !RectsIntersect(TransformRectBounds(ctx.world, local), ctx.clip))
             {
                 ++m_elementsCulled;
                 return;
@@ -2412,13 +2428,14 @@ void ImmediateRenderer::Walk(
 
     // Group opacity: the element and its subtree are composited together, then blended once.
     size_t layerIndex = SIZE_MAX;
-    if (localOpacity < 1.0f)
+    if (localOpacity < 1.0f || probe.active)
     {
         layerIndex = list.commands.size();
         Command push;
         push.type = CommandType::PushLayer;
         push.opacity = localOpacity;
         push.owner = element;
+        push.pinned = probe.active;
         list.commands.push_back(push);
     }
 
@@ -2519,7 +2536,16 @@ void ImmediateRenderer::Walk(
     }
     if (layerIndex != SIZE_MAX)
     {
+        if (probe.active)
+        {
+            FinishIndependentLayer(element, layerIndex, probe, ctx, list);
+        }
         CloseGroup(list, layerIndex, element, ctx, ctx.world);
+        if (probe.active && list.commands[layerIndex].type == CommandType::PushLayer)
+        {
+            probe.layer.pushIndex = static_cast<uint32_t>(layerIndex);
+            list.layers.push_back(std::move(probe.layer));
+        }
     }
 
     // Leaves are cheap to re-emit; record spans for subtrees only.
@@ -2658,6 +2684,220 @@ bool ImmediateRenderer::ReuseSubtree(
     return true;
 }
 
+// Replays a display list's commands that intersect the damage. skipGroups: skip push/pop groups whose recorded bounds miss
+// the damage (the render thread moves layers outside their recorded group bounds, so it replays every group).
+static void ReplayCommands(
+    IImmediatePainter& painter,
+    const std::vector<Command>& commands,
+    const DisplayList& list,
+    const RectF& islandClip,
+    bool fullDamage,
+    const std::vector<RectF>& damage,
+    bool skipGroups,
+    _Inout_ uint32_t& elementsRendered,
+    _In_opt_ const std::vector<uint8_t>* clearTypeRuns = nullptr)
+{
+    auto intersects = [&](const RectF& bounds)
+    {
+        return fullDamage || std::any_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, bounds); });
+    };
+    std::vector<bool> layerPushed;
+    painter.Clear({ 0, 0, 0, 0 });
+    const Matrix3x2F identity;
+    Matrix3x2F current = identity;
+    bool clipPushed = false;
+    RectF currentClip{};
+    const CUIElement* lastOwner = nullptr;
+    auto setTransform = [&](const Matrix3x2F& m)
+    {
+        if (memcmp(&current, &m, sizeof(m)) != 0)
+        {
+            painter.SetTransform(m);
+            current = m;
+        }
+    };
+    auto popClip = [&]
+    {
+        if (clipPushed)
+        {
+            painter.PopAxisAlignedClip();
+            clipPushed = false;
+        }
+    };
+    for (size_t i = 0; i < commands.size(); ++i)
+    {
+        const Command& c = commands[i];
+        if (c.type == CommandType::Nop)
+        {
+            continue;
+        }
+        if (IsPush(c.type))
+        {
+            if (skipGroups && !intersects(c.deviceBounds))
+            {
+                i = c.index; // skip the whole group, including its pop
+                continue;
+            }
+            popClip();
+            if (c.type == CommandType::PushLayer)
+            {
+                // Pinned (independent) layers can reach opacity 1: no layer needed.
+                layerPushed.push_back(c.opacity < 1.0f);
+                if (c.opacity < 1.0f)
+                {
+                    painter.PushOpacityLayer(c.opacity);
+                }
+            }
+            else
+            {
+                setTransform(c.transform);
+                painter.PushRoundedRectangleClip(c.rect, c.radiusX, c.radiusY);
+            }
+            continue;
+        }
+        if (IsPop(c.type))
+        {
+            popClip();
+            if (c.type == CommandType::PopLayer)
+            {
+                if (!layerPushed.empty() && layerPushed.back())
+                {
+                    painter.PopOpacityLayer();
+                }
+                if (!layerPushed.empty())
+                {
+                    layerPushed.pop_back();
+                }
+            }
+            else
+            {
+                painter.PopRoundedRectangleClip();
+            }
+            continue;
+        }
+        if (!intersects(c.deviceBounds))
+        {
+            continue;
+        }
+        if (c.owner != lastOwner)
+        {
+            lastOwner = c.owner;
+            ++elementsRendered;
+        }
+        const bool needsClip = !(c.clip.left <= islandClip.left && c.clip.top <= islandClip.top
+            && c.clip.right >= islandClip.right && c.clip.bottom >= islandClip.bottom);
+        if (clipPushed && (!needsClip || !RectsEqual(currentClip, c.clip)))
+        {
+            popClip();
+        }
+        if (needsClip && !clipPushed)
+        {
+            // Clip rects are in island space; push them untransformed.
+            setTransform(identity);
+            painter.PushAxisAlignedClip(c.clip);
+            clipPushed = true;
+            currentClip = c.clip;
+        }
+        setTransform(c.transform);
+        switch (c.type)
+        {
+            case CommandType::FillRect:
+                painter.FillRectangle(c.rect, c.color);
+                break;
+            case CommandType::FillRounded:
+                painter.FillRoundedRectangle(c.rect, c.radiusX, c.radiusY, c.color);
+                break;
+            case CommandType::StrokeRounded:
+                painter.StrokeRoundedRectangle(c.rect, c.radiusX, c.radiusY, c.thickness, c.color);
+                break;
+            case CommandType::Text:
+            {
+                const std::wstring& text = list.strings[c.index];
+                TextStyle style;
+                style.fontFamily = list.strings[c.index + 1].c_str();
+                style.fontSize = c.fontSize;
+                style.fontWeight = c.fontWeight;
+                painter.DrawText(text.c_str(), static_cast<uint32_t>(text.size()), style, c.rect, c.color);
+                break;
+            }
+            case CommandType::GlyphRun:
+            {
+                const GlyphRunData& data = list.glyphRuns[c.index];
+                GlyphRunDesc run;
+                run.fontFace = data.face.Get();
+                run.fontEmSize = data.emSize;
+                run.glyphIndices = data.indices.data();
+                run.glyphAdvances = data.advances.data();
+                run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
+                run.glyphCount = static_cast<uint32_t>(data.indices.size());
+                run.bidiLevel = data.bidiLevel;
+                run.useColorFont = true;
+                run.clearType = clearTypeRuns != nullptr && c.index < clearTypeRuns->size() && (*clearTypeRuns)[c.index] != 0;
+                painter.DrawGlyphRun(run, c.color);
+                break;
+            }
+            case CommandType::Bitmap:
+                painter.DrawBitmap(c.key, c.rect, IsEmptyRect(c.sourceRect) ? nullptr : &c.sourceRect, c.opacity);
+                break;
+            case CommandType::FillPath:
+            case CommandType::StrokePath:
+            {
+                const PathGeometryData& data = list.paths[c.index];
+                PathData path;
+                path.verbs = data.verbs.data();
+                path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                path.points = data.points.data();
+                path.pointCount = static_cast<uint32_t>(data.points.size());
+                path.nonZeroFill = data.nonZero;
+                if (c.type == CommandType::FillPath)
+                {
+                    painter.FillPath(path, c.color);
+                }
+                else
+                {
+                    painter.StrokePath(path, c.thickness, c.color);
+                }
+                break;
+            }
+            case CommandType::FillGradient:
+            case CommandType::FillPathGradient:
+            {
+                const PathGeometryData& data = list.paths[c.index];
+                LinearGradientDesc gradient;
+                gradient.start = data.gradientStart;
+                gradient.end = data.gradientEnd;
+                gradient.stops = data.stops.data();
+                gradient.stopCount = static_cast<uint32_t>(data.stops.size());
+                gradient.opacity = data.gradientOpacity * c.opacity;
+                if (c.type == CommandType::FillGradient)
+                {
+                    painter.FillRoundedRectangleGradient(c.rect, c.radiusX, c.radiusY, gradient);
+                }
+                else
+                {
+                    PathData path;
+                    path.verbs = data.verbs.data();
+                    path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                    path.points = data.points.data();
+                    path.pointCount = static_cast<uint32_t>(data.points.size());
+                    path.nonZeroFill = data.nonZero;
+                    painter.FillPathGradient(path, gradient);
+                }
+                break;
+            }
+            case CommandType::Shadow:
+                painter.DrawRoundedRectangleShadow(c.rect, c.radiusX, c.radiusY, c.thickness, { c.sourceRect.left, c.sourceRect.top }, c.color);
+                break;
+            case CommandType::Backdrop:
+                painter.BlurBackdrop(c.rect, c.radiusX, c.radiusY, c.thickness);
+                break;
+            default:
+                break;
+        }
+    }
+    popClip();
+}
+
 _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     _In_ DCompTreeHost* dcompTreeHost,
     _In_ CXamlIslandRoot* island,
@@ -2676,6 +2916,15 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         scale = 1.0f;
     }
 
+    std::lock_guard<std::recursive_mutex> independentLock(m_independent->mutex);
+    if (FAILED(m_independent->renderThreadLoss))
+    {
+        OnDeviceLost(m_independent->renderThreadLoss, frameNumber);
+        ReleaseResources();
+    }
+    CheckTargetChanges(island, frameNumber, width, height, scale);
+    BuildAnimationIndex(island);
+
     auto& slot = m_islands[island];
     if (!slot)
     {
@@ -2689,10 +2938,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         m_islands.erase(island);
         if (IsDeviceLost(hr))
         {
+            OnDeviceLost(hr, frameNumber);
             ReleaseResources();
         }
         return hr;
     }
+    state.independent.lastUiQpc = QpcMicroseconds();
 
     const RectF islandClip{ 0, 0, width / scale, height / scale };
     WalkContext root;
@@ -2766,6 +3017,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
         m_pendingFallback = nullptr;
         walkSurface(this, walkContext, root, list);
+        list.snapshotQpc = QpcMicroseconds();
     }
 
     if (m_pendingFallback != nullptr)
@@ -3030,6 +3282,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         }
     }
 
+    AppendIndependentDamage(state, damage, !blits.empty(), fullDamage);
     bool ownFull = fullDamage;
     std::vector<RectF> ownDamage;
     if (!fullDamage)
@@ -3044,6 +3297,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             state.records = list.records;
             SaveScrollers(state, list);
             state.previousWalk = std::move(list);
+            OnIslandPresented(state, frameNumber);
             return S_OK;
         }
         ownDamage = damage;
@@ -3080,10 +3334,6 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     }
 
     // Pass 2: replay commands that intersect the damage.
-    auto intersectsDamage = [&](const RectF& bounds)
-    {
-        return fullDamage || std::any_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, bounds); });
-    };
     // S19: ClearType only where an earlier opaque fill in the same layer fully covers the run (the swap chain is
     // transparent elsewhere, and layers are composited with alpha).
     std::vector<uint8_t> clearTypeRuns(list.glyphRuns.size(), 0);
@@ -3127,188 +3377,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
 
     auto paint = [&](IImmediatePainter& painter)
     {
-        painter.Clear({ 0, 0, 0, 0 });
-        const Matrix3x2F identity;
-        Matrix3x2F current = identity;
-        bool clipPushed = false;
-        RectF currentClip{};
-        const CUIElement* lastOwner = nullptr;
-        auto setTransform = [&](const Matrix3x2F& m)
-        {
-            if (memcmp(&current, &m, sizeof(m)) != 0)
-            {
-                painter.SetTransform(m);
-                current = m;
-            }
-        };
-        auto popClip = [&]
-        {
-            if (clipPushed)
-            {
-                painter.PopAxisAlignedClip();
-                clipPushed = false;
-            }
-        };
-        for (size_t i = 0; i < list.commands.size(); ++i)
-        {
-            const Command& c = list.commands[i];
-            if (c.type == CommandType::Nop)
-            {
-                continue;
-            }
-            if (IsPush(c.type))
-            {
-                if (!intersectsDamage(c.deviceBounds))
-                {
-                    i = c.index; // skip the whole group, including its pop
-                    continue;
-                }
-                popClip();
-                if (c.type == CommandType::PushLayer)
-                {
-                    painter.PushOpacityLayer(c.opacity);
-                }
-                else
-                {
-                    setTransform(c.transform);
-                    painter.PushRoundedRectangleClip(c.rect, c.radiusX, c.radiusY);
-                }
-                continue;
-            }
-            if (IsPop(c.type))
-            {
-                popClip();
-                if (c.type == CommandType::PopLayer)
-                {
-                    painter.PopOpacityLayer();
-                }
-                else
-                {
-                    painter.PopRoundedRectangleClip();
-                }
-                continue;
-            }
-            if (!intersectsDamage(c.deviceBounds))
-            {
-                continue;
-            }
-            if (c.owner != lastOwner)
-            {
-                lastOwner = c.owner;
-                ++m_elementsRendered;
-            }
-            const bool needsClip = !(c.clip.left <= islandClip.left && c.clip.top <= islandClip.top
-                && c.clip.right >= islandClip.right && c.clip.bottom >= islandClip.bottom);
-            if (clipPushed && (!needsClip || !RectsEqual(currentClip, c.clip)))
-            {
-                popClip();
-            }
-            if (needsClip && !clipPushed)
-            {
-                // Clip rects are in island space; push them untransformed.
-                setTransform(identity);
-                painter.PushAxisAlignedClip(c.clip);
-                clipPushed = true;
-                currentClip = c.clip;
-            }
-            setTransform(c.transform);
-            switch (c.type)
-            {
-                case CommandType::FillRect:
-                    painter.FillRectangle(c.rect, c.color);
-                    break;
-                case CommandType::FillRounded:
-                    painter.FillRoundedRectangle(c.rect, c.radiusX, c.radiusY, c.color);
-                    break;
-                case CommandType::StrokeRounded:
-                    painter.StrokeRoundedRectangle(c.rect, c.radiusX, c.radiusY, c.thickness, c.color);
-                    break;
-                case CommandType::Text:
-                {
-                    const std::wstring& text = list.strings[c.index];
-                    TextStyle style;
-                    style.fontFamily = list.strings[c.index + 1].c_str();
-                    style.fontSize = c.fontSize;
-                    style.fontWeight = c.fontWeight;
-                    painter.DrawText(text.c_str(), static_cast<uint32_t>(text.size()), style, c.rect, c.color);
-                    break;
-                }
-                case CommandType::GlyphRun:
-                {
-                    const GlyphRunData& data = list.glyphRuns[c.index];
-                    GlyphRunDesc run;
-                    run.fontFace = data.face.Get();
-                    run.fontEmSize = data.emSize;
-                    run.glyphIndices = data.indices.data();
-                    run.glyphAdvances = data.advances.data();
-                    run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
-                    run.glyphCount = static_cast<uint32_t>(data.indices.size());
-                    run.bidiLevel = data.bidiLevel;
-                    run.useColorFont = true;
-                    run.clearType = clearTypeRuns[c.index] != 0;
-                    painter.DrawGlyphRun(run, c.color);
-                    break;
-                }
-                case CommandType::Bitmap:
-                    painter.DrawBitmap(c.key, c.rect, IsEmptyRect(c.sourceRect) ? nullptr : &c.sourceRect, c.opacity);
-                    break;
-                case CommandType::FillPath:
-                case CommandType::StrokePath:
-                {
-                    const PathGeometryData& data = list.paths[c.index];
-                    PathData path;
-                    path.verbs = data.verbs.data();
-                    path.verbCount = static_cast<uint32_t>(data.verbs.size());
-                    path.points = data.points.data();
-                    path.pointCount = static_cast<uint32_t>(data.points.size());
-                    path.nonZeroFill = data.nonZero;
-                    if (c.type == CommandType::FillPath)
-                    {
-                        painter.FillPath(path, c.color);
-                    }
-                    else
-                    {
-                        painter.StrokePath(path, c.thickness, c.color);
-                    }
-                    break;
-                }
-                case CommandType::FillGradient:
-                case CommandType::FillPathGradient:
-                {
-                    const PathGeometryData& data = list.paths[c.index];
-                    LinearGradientDesc gradient;
-                    gradient.start = data.gradientStart;
-                    gradient.end = data.gradientEnd;
-                    gradient.stops = data.stops.data();
-                    gradient.stopCount = static_cast<uint32_t>(data.stops.size());
-                    gradient.opacity = data.gradientOpacity * c.opacity;
-                    if (c.type == CommandType::FillGradient)
-                    {
-                        painter.FillRoundedRectangleGradient(c.rect, c.radiusX, c.radiusY, gradient);
-                    }
-                    else
-                    {
-                        PathData path;
-                        path.verbs = data.verbs.data();
-                        path.verbCount = static_cast<uint32_t>(data.verbs.size());
-                        path.points = data.points.data();
-                        path.pointCount = static_cast<uint32_t>(data.points.size());
-                        path.nonZeroFill = data.nonZero;
-                        painter.FillPathGradient(path, gradient);
-                    }
-                    break;
-                }
-                case CommandType::Shadow:
-                    painter.DrawRoundedRectangleShadow(c.rect, c.radiusX, c.radiusY, c.thickness, { c.sourceRect.left, c.sourceRect.top }, c.color);
-                    break;
-                case CommandType::Backdrop:
-                    painter.BlurBackdrop(c.rect, c.radiusX, c.radiusY, c.thickness);
-                    break;
-                default:
-                    break;
-            }
-        }
-        popClip();
+        ReplayCommands(painter, list.commands, list, islandClip, fullDamage, damage, true, m_elementsRendered, &clearTypeRuns);
     };
 
     // Upload decoded images the painter has not seen, and release ones no longer drawn.
@@ -3361,6 +3430,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     const int64_t paintStart = statsFile ? QpcMicroseconds() : 0;
     hr = PaintTracedFrame(*state.painter, frameNumber, surfaceId,
         fullDamage ? nullptr : damage.data(), fullDamage ? 0 : static_cast<uint32_t>(damage.size()), paint);
+    hr = ApplyDeviceLostSimulation(hr, frameNumber);
     if (statsFile)
     {
         const int64_t paintEnd = QpcMicroseconds();
@@ -3398,6 +3468,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     {
         if (IsDeviceLost(hr))
         {
+            OnDeviceLost(hr, frameNumber);
             ReleaseResources();
         }
         else
@@ -3419,6 +3490,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     state.records = list.records;
     SaveScrollers(state, list);
     state.previousWalk = std::move(list);
+    OnIslandPresented(state, frameNumber);
 
     if (!GetCapturePath().empty() && state.swapChain)
     {
@@ -3651,3 +3723,5 @@ void ImmediateRenderer::SaveScrollers(_Inout_ IslandState& state, const DisplayL
         state.scrollers[s.presenter] = s;
     }
 }
+
+#include "ImmediateRenderer.Independent.inl"

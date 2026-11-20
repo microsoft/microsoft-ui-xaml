@@ -246,6 +246,8 @@ public:
     static bool ShouldFailFast();
 
 private:
+    friend struct ImmediateAnimationAccess;
+
     CTimeManager(_In_ CCoreServices *pCore, _In_ RefreshAlignedClock* pClock);
     ~CTimeManager() override;
 
