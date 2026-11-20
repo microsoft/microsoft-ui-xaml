@@ -1177,6 +1177,12 @@ namespace RenderingBackend
                     FineAntialiasing fine(Current());
                     if (BuildRoundedPath(rect, radiusX, radiusY))
                     {
+                        // GDI+ flattens curves with ~1/4 px chords, which visibly shrinks the corner coverage; flatten to ~1/32 px.
+                        MaskSpace space;
+                        if (GetMaskSpace(space))
+                        {
+                            Record(m_path->Flatten(nullptr, 1.0f / (32 * std::max(space.ax, space.ay))));
+                        }
                         Record(Current().FillPath(brush, m_path.get()));
                     }
                     else
