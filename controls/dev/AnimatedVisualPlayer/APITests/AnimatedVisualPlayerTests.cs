@@ -1146,8 +1146,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             player.InvalidateMeasure();
             player.Measure(available);
             Log.Comment($"Stretch={stretch} available={available} desired={player.DesiredSize}");
-            Verify.IsLessThan(Math.Abs(expected.Width - player.DesiredSize.Width), 0.01, $"Desired width for Stretch={stretch}, available={available}");
-            Verify.IsLessThan(Math.Abs(expected.Height - player.DesiredSize.Height), 0.01, $"Desired height for Stretch={stretch}, available={available}");
+            Verify.IsLessThan(Math.Abs((double)expected.Width - player.DesiredSize.Width), 0.01, $"Desired width for Stretch={stretch}, available={available}");
+            Verify.IsLessThan(Math.Abs((double)expected.Height - player.DesiredSize.Height), 0.01, $"Desired height for Stretch={stretch}, available={available}");
         }
 
         private void ArrangeWithStretch(AnimatedVisualPlayer player, Stretch stretch)
