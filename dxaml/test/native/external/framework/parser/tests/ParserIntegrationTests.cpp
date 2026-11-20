@@ -19,6 +19,9 @@
 
 #include <CustomTypeMetadataProvider.h>
 #include <ParserTests.CustomButton.h>
+#include <ParserTests.CustomSelectors.h>
+#include "BuiltInListViewRoot.xaml.h"
+#include "CustomListViewRoot.xaml.h"
 #include <CustomMetadataRegistrar.h>
 
 using namespace Platform;
@@ -1295,6 +1298,125 @@ L"<Control xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
 
         LOG_OUTPUT(L"Testing without XBFv2");
         loadMarkupAndVerify(false);
+    }
+
+    static void VerifyMarkupSelection(
+        Microsoft::UI::Xaml::Controls::Primitives::Selector^ selector,
+        int expectedIndex,
+        Platform::String^ expectedItem)
+    {
+        VERIFY_ARE_EQUAL(expectedIndex, selector->SelectedIndex);
+
+        if (expectedIndex < 0)
+        {
+            VERIFY_IS_NULL(selector->SelectedItem);
+            return;
+        }
+
+        VERIFY_IS_TRUE(expectedIndex < static_cast<int>(selector->Items->Size));
+        VERIFY_IS_TRUE(expectedItem == safe_cast<Platform::String^>(selector->SelectedItem));
+        VERIFY_IS_TRUE(expectedItem == safe_cast<Platform::String^>(selector->Items->GetAt(expectedIndex)));
+
+        if (auto listViewBase = dynamic_cast<ListViewBase^>(selector))
+        {
+            VERIFY_ARE_EQUAL(1u, listViewBase->SelectedItems->Size);
+        }
+    }
+
+    void ParserIntegrationTests::CustomSelectorsApplySelectionFromMarkupAfterItems()
+    {
+        TestCleanupWrapper cleanup;
+        StackPanel^ root = nullptr;
+
+        auto verifyAll = [&]()
+        {
+            using namespace ::Tests::Native::External::Framework::Parser::Selectors;
+
+            LOG_OUTPUT(L"Two-level custom ListView subclass, SelectedIndex in the middle.");
+            VerifyMarkupSelection(safe_cast<CustomListView^>(root->FindName(L"ListMiddle")), 1, L"B");
+
+            LOG_OUTPUT(L"Custom ListView subclass, SelectedIndex on the last inline item.");
+            VerifyMarkupSelection(safe_cast<CustomListView^>(root->FindName(L"ListLast")), 6, L"G");
+
+            LOG_OUTPUT(L"Custom ListView subclass without a selection stays unselected.");
+            VerifyMarkupSelection(safe_cast<CustomListView^>(root->FindName(L"ListNone")), -1, nullptr);
+
+            LOG_OUTPUT(L"Custom ListView subclass with an explicitly selected inline container.");
+            auto listWithSelectedContainer = safe_cast<CustomListView^>(root->FindName(L"ListItemIsSelected"));
+            VERIFY_ARE_EQUAL(1, listWithSelectedContainer->SelectedIndex);
+            VERIFY_IS_TRUE(listWithSelectedContainer->SelectedItem == root->FindName(L"SelectedContainer"));
+
+            LOG_OUTPUT(L"Custom GridView and ComboBox subclasses share the Selector initialization path.");
+            VerifyMarkupSelection(safe_cast<CustomGridView^>(root->FindName(L"Grid")), 1, L"B");
+            VerifyMarkupSelection(safe_cast<CustomComboBox^>(root->FindName(L"Combo")), 1, L"B");
+        };
+
+        RunOnUIThread([&]()
+        {
+            root = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                L"            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                L"            xmlns:local='using:Tests.Native.External.Framework.Parser.Selectors'>"
+                L"  <local:CustomListView x:Name='ListMiddle' SelectedIndex='1'>"
+                L"    <x:String>A</x:String><x:String>B</x:String><x:String>C</x:String>"
+                L"  </local:CustomListView>"
+                L"  <local:CustomListView x:Name='ListLast' SelectedIndex='6'>"
+                L"    <x:String>A</x:String><x:String>B</x:String><x:String>C</x:String><x:String>D</x:String>"
+                L"    <x:String>E</x:String><x:String>F</x:String><x:String>G</x:String>"
+                L"  </local:CustomListView>"
+                L"  <local:CustomListView x:Name='ListNone'>"
+                L"    <x:String>A</x:String><x:String>B</x:String><x:String>C</x:String>"
+                L"  </local:CustomListView>"
+                L"  <local:CustomListView x:Name='ListItemIsSelected'>"
+                L"    <ListViewItem Content='A' />"
+                L"    <ListViewItem x:Name='SelectedContainer' Content='B' IsSelected='True' />"
+                L"    <ListViewItem Content='C' />"
+                L"  </local:CustomListView>"
+                L"  <local:CustomGridView x:Name='Grid' SelectedIndex='1'>"
+                L"    <x:String>A</x:String><x:String>B</x:String><x:String>C</x:String>"
+                L"  </local:CustomGridView>"
+                L"  <local:CustomComboBox x:Name='Combo' SelectedIndex='1'>"
+                L"    <x:String>A</x:String><x:String>B</x:String><x:String>C</x:String>"
+                L"  </local:CustomComboBox>"
+                L"</StackPanel>"));
+
+            LOG_OUTPUT(L"Verifying selection immediately after parsing.");
+            verifyAll();
+
+            TestServices::WindowHelper->WindowContent = root;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Verifying selection after the tree is loaded.");
+            verifyAll();
+
+            auto list = safe_cast<ListViewBase^>(root->FindName(L"ListMiddle"));
+            auto selectedContainer = safe_cast<ListViewItem^>(list->ContainerFromIndex(1));
+            VERIFY_IS_NOT_NULL(selectedContainer);
+            VERIFY_IS_TRUE(selectedContainer->IsSelected);
+            VERIFY_IS_FALSE(safe_cast<ListViewItem^>(list->ContainerFromIndex(2))->IsSelected);
+        });
+    }
+
+    void ParserIntegrationTests::XClassSelectorRootsApplySelectionFromMarkup()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            using namespace ::Tests::Native::External::Framework::Parser::Selectors;
+
+            LOG_OUTPUT(L"x:Class root whose root element is a built-in ListView.");
+            auto builtInRoot = ref new BuiltInListViewRoot();
+            VerifyMarkupSelection(builtInRoot, 1, L"B");
+
+            LOG_OUTPUT(L"x:Class root whose root element is a custom ListView subclass.");
+            auto customRoot = ref new CustomListViewRoot();
+            VerifyMarkupSelection(customRoot, 1, L"B");
+        });
     }
 
 } } } } } }
