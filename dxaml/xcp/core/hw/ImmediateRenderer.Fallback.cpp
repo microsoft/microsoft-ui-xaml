@@ -160,6 +160,16 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
     interop.handOffVisualTouched = element->HasFacadeAnimation()
         || (element->IsUsingHandOffVisual() && IsHandOffVisualTouched(element));
 
+    // S12: AnimatedIcon skips its Lottie visual under immediate rendering and shows FallbackIconSource (AnimatedIcon.cpp).
+    if (type == KnownTypeIndex::IconElement)
+    {
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_animatedIcon, L"Microsoft.UI.Xaml.Controls.AnimatedIcon");
+        if (IsPeerOfType(element, c_animatedIcon))
+        {
+            ReportUnsupported(element, L"AnimatedIcon:approximated");
+        }
+    }
+
     if (const wchar_t* reason = ImmediateRenderingPolicy::GetFallbackReason(interop))
     {
         if (FallbackDisabled())

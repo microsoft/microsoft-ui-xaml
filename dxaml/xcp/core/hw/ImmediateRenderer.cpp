@@ -10,6 +10,7 @@
 #include <d3d11.h>
 #include <dxgi1_2.h>
 #include <RootScale.h>
+#include <UIThreadScheduler.h>
 #include "XamlIslandRoot.h"
 #include "TextBlock.h"
 #include "SolidColorBrush.h"
@@ -2248,13 +2249,6 @@ void ImmediateRenderer::Walk(
         }
     }
 
-    // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual, e.g. the
-    // AnimatedIcon used by CheckBox/RadioButton glyphs) has no XAML primitives to paint.
-    if (element->IsUsingHandInVisual())
-    {
-        ReportUnsupported(element, L"Hand-in Composition visual");
-    }
-
     // Clip rects are tracked as world-space bounding boxes; exact for scale/translate transforms (the target scenes).
     if (const xref_ptr<CGeometry> elementClip = element->GetClip())
     {
@@ -2345,6 +2339,44 @@ void ImmediateRenderer::Walk(
     const bool roundedClip = element->RequiresCompNodeForRoundedCorners() && IsBorderLike(element);
 
     EmitContent(element, ctx, roundedClip, list);
+
+    // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual) has no XAML
+    // primitives to paint; ProgressRing's built-in Lottie is drawn natively (S12). Other hand-in content makes the
+    // island fall back to Composition (CheckFallback), unless fallback is disabled.
+    if (element->IsUsingHandInVisual())
+    {
+        ImmediateRenderingMaterials::ProgressRingFill ring;
+        if (!IsBuiltInProgressRingPlayer(element))
+        {
+            ReportUnsupported(element, L"Hand-in Composition visual");
+        }
+        else if (ImmediateRenderingMaterials::ResolveProgressRing(element, static_cast<double>(QpcMicroseconds()) / 1e6, &ring))
+        {
+            Emitter emitter{ list, element, ctx };
+            const RectF ink{ ring.centerX - ring.radius - ring.thickness, ring.centerY - ring.radius - ring.thickness,
+                ring.centerX + ring.radius + ring.thickness, ring.centerY + ring.radius + ring.thickness };
+            if (ring.background.a > 0 && !ring.track.verbs.empty())
+            {
+                PathGeometryData track;
+                track.verbs = std::move(ring.track.verbs);
+                track.points = std::move(ring.track.points);
+                emitter.Path(std::move(track), ring.thickness, ring.background, ctx.world, ink);
+            }
+            if (ring.foreground.a > 0 && !ring.arc.verbs.empty())
+            {
+                PathGeometryData arc;
+                arc.verbs = std::move(ring.arc.verbs);
+                arc.points = std::move(ring.arc.points);
+                emitter.Path(std::move(arc), ring.thickness, ring.foreground, ctx.world, ink);
+            }
+            if (ring.animating)
+            {
+                // Time-based: never reuse this subtree, and keep frames coming while the ring spins.
+                ++list.uncacheable;
+                element->GetContext()->RequestAdditionalFrame(RequestFrameReason::AnimationTick);
+            }
+        }
+    }
 
     WalkContext childCtx = ctx;
     size_t clipIndex = SIZE_MAX;

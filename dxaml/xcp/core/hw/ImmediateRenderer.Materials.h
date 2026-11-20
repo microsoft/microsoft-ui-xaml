@@ -60,6 +60,29 @@ namespace ImmediateRenderingMaterials
     // HWCompTreeNodeWinRT::UpdateDropShadowVisual. False when the element casts no visible shadow.
     bool ResolveThemeShadow(_In_ CUIElement* element, _Out_ ThemeShadowFill* shadow);
 
+    // S12: the built-in ProgressRing Lottie drawn natively, as stroked arcs in the player's local DIP space.
+    struct PathData
+    {
+        std::vector<RenderingBackend::PathVerb> verbs;
+        std::vector<RenderingBackend::PointF> points;
+    };
+    struct ProgressRingFill
+    {
+        float centerX = 0;
+        float centerY = 0;
+        float radius = 0;
+        float thickness = 0;
+        RenderingBackend::ColorF foreground;
+        RenderingBackend::ColorF background;
+        PathData track;          // full circle in `background`
+        PathData arc;            // progress / spinning arc in `foreground`
+        bool animating = false;  // indeterminate and active: needs another frame
+    };
+
+    // `player` is the AnimatedVisualPlayer in ProgressRing's template (IsBuiltInProgressRingPlayer). False when the
+    // ring draws nothing (inactive, empty).
+    bool ResolveProgressRing(_In_ CUIElement* player, double timeSeconds, _Out_ ProgressRingFill* ring);
+
     // Reads a custom (non-built-in) dependency property, e.g. MUXC AcrylicBrush.TintColor. Fails safe.
     bool TryGetCustomValue(_In_ CDependencyObject* object, _In_ const xstring_ptr& typeName, _In_ const xstring_ptr& propertyName, _Out_ CValue* value) noexcept;
 }

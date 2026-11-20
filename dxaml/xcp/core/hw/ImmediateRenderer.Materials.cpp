@@ -14,6 +14,7 @@
 #include "ThemeShadow.h"
 #include "Transform.h"
 #include "rectangle.h"
+#include "SolidColorBrush.h"
 #include <algorithm>
 
 using namespace RenderingBackend;
@@ -292,5 +293,95 @@ namespace ImmediateRenderingMaterials
             }
         }
         return true;
+    }
+
+    bool ResolveProgressRing(_In_ CUIElement* player, double timeSeconds, _Out_ ProgressRingFill* ring)
+    {
+        *ring = {};
+        CDependencyObject* progressRing = player->GetTemplatedParent();
+        if (progressRing == nullptr)
+        {
+            return false;
+        }
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_progressRing, L"Microsoft.UI.Xaml.Controls.ProgressRing");
+        auto readBool = [&](const xstring_ptr& name, bool fallback)
+        {
+            CValue value;
+            if (!TryGetCustomValue(progressRing, c_progressRing, name, &value))
+            {
+                return fallback;
+            }
+            if (value.GetType() == valueBool)
+            {
+                return !!value.AsBool();
+            }
+            Microsoft::WRL::ComPtr<wf::IReference<bool>> reference;
+            boolean result = fallback;
+            if (value.GetType() == valueIInspectable && value.AsIInspectable() != nullptr
+                && SUCCEEDED(value.AsIInspectable()->QueryInterface(IID_PPV_ARGS(&reference))) && SUCCEEDED(reference->get_Value(&result)))
+            {
+                return !!result;
+            }
+            return fallback;
+        };
+        auto readDouble = [&](const xstring_ptr& name, double fallback)
+        {
+            CValue value;
+            double result = fallback;
+            return TryGetCustomValue(progressRing, c_progressRing, name, &value) && TryGetDouble(value, &result) ? result : fallback;
+        };
+        auto readBrush = [&](KnownPropertyIndex index)
+        {
+            CValue value;
+            ColorF color{ 0, 0, 0, 0 };
+            if (SUCCEEDED(progressRing->GetValueByIndex(index, &value)) && value.GetType() == valueObject)
+            {
+                if (auto solid = do_pointer_cast<CSolidColorBrush>(value.AsObject()))
+                {
+                    color = FromArgb(solid->m_rgb, solid->m_eOpacity);
+                }
+            }
+            return color;
+        };
+
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_isActive, L"IsActive");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_isIndeterminate, L"IsIndeterminate");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_value, L"Value");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_minimum, L"Minimum");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_maximum, L"Maximum");
+        if (!readBool(c_isActive, true))
+        {
+            return false;
+        }
+        const bool indeterminate = readBool(c_isIndeterminate, true);
+
+        const float width = player->GetActualWidth();
+        const float height = player->GetActualHeight();
+        const float size = std::min(width, height);
+        if (!(size > 0))
+        {
+            return false;
+        }
+        // The built-in Lottie's stroke is a tenth of the ring's size (80x80 design, 8 px stroke).
+        ring->thickness = std::max(1.0f, size / 10);
+        ring->radius = (size - ring->thickness) / 2;
+        ring->centerX = width / 2;
+        ring->centerY = height / 2;
+        ring->foreground = readBrush(KnownPropertyIndex::Control_Foreground);
+        ring->background = readBrush(KnownPropertyIndex::Control_Background);
+        ring->animating = indeterminate;
+
+        const PointF center{ ring->centerX, ring->centerY };
+        if (ring->background.a > 0)
+        {
+            ImmediateRenderingPolicy::AppendArc(center, ring->radius, 0, 360, ring->track.verbs, ring->track.points);
+        }
+        const ImmediateRenderingPolicy::ArcSpan arc = ImmediateRenderingPolicy::GetProgressRingArc(indeterminate,
+            readDouble(c_value, 0), readDouble(c_minimum, 0), readDouble(c_maximum, 100), timeSeconds);
+        if (arc.sweepDegrees > 0)
+        {
+            ImmediateRenderingPolicy::AppendArc(center, ring->radius, arc.startDegrees, arc.sweepDegrees, ring->arc.verbs, ring->arc.points);
+        }
+        return !ring->track.verbs.empty() || !ring->arc.verbs.empty() || ring->animating;
     }
 }
