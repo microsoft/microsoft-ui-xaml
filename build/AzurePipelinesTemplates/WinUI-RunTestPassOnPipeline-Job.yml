@@ -8,6 +8,7 @@ parameters:
   buildConfiguration: chk
   testOS: 'Win11-25H2'
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
+  useCsWinRT3: false
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
@@ -40,7 +41,11 @@ jobs:
     ${{ if eq( parameters.testSuite, 'DevTestSuite') }}:
       parallel: 20
     ${{ if eq( parameters.testSuite, 'ScenarioTestSuite') }}:
-      parallel: 5
+      # Run the small v3 C# scenario suite on a single agent.
+      ${{ if eq(parameters.useCsWinRT3, true) }}:
+        parallel: 1
+      ${{ else }}:
+        parallel: 5
 
   variables:
     # CreateTestPayload publishes as <testPayloadArtifactName>_<testOS>_<buildOutput>,

@@ -618,6 +618,26 @@ steps:
           additionalMsBuildArgs: '/p:UseCsWinRT3=true'
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: false
+      - template: WinUI-BuildSampleApp-Steps.yml
+        parameters:
+          displayName: DisableXamlGeneratedMainCs_CsWinRT3
+          solution: Samples\DisableXamlGeneratedMain\Cs\DisableXamlGeneratedMainCs.csproj
+          artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+          msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=false'
+          additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+          runStaticAnalysis: false
+      - template: WinUI-BuildSampleApp-Steps.yml
+        parameters:
+          displayName: DisableXamlGeneratedMainNoCtorCs_CsWinRT3
+          solution: Samples\DisableXamlGeneratedMain\CsNoCtor\DisableXamlGeneratedMainNoCtorCs.csproj
+          artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+          msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=false'
+          additionalMsBuildArgs: '/p:UseCsWinRT3=true'
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+          runStaticAnalysis: false
       # Gallery remains disabled until its managed dependencies support CsWinRT 3.0.
     - task: CopyFiles@2
       displayName: 'Copy CsWinRT 3.0 binaries to drop_cswinrt3'

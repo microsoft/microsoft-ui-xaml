@@ -34,6 +34,7 @@ stages:
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTestsRS5
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
       runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
@@ -45,6 +46,7 @@ stages:
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTests25H2
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
       runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
@@ -56,6 +58,7 @@ stages:
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
       runTestJobName: RunAppTests23H2
+      useCsWinRT3: ${{ parameters.useCsWinRT3 }}
       runTestStageName: ${{ parameters.runArtifactNamespace }}
       dependsOn: CreateAppTestPayload
       testSuite: ScenarioTestSuite
@@ -69,6 +72,7 @@ stages:
       - template: WinUI-RunTestPassOnPipeline-Job.yml
         parameters:
           runTestJobName: RunAppTestsArm64_23h2
+          useCsWinRT3: ${{ parameters.useCsWinRT3 }}
           runTestStageName: ${{ parameters.runArtifactNamespace }}
           dependsOn: CreateAppTestPayload
           testSuite: ScenarioTestSuite
@@ -80,6 +84,7 @@ stages:
       - template: WinUI-RunTestPassOnPipeline-Job.yml
         parameters:
           runTestJobName: RunAppTestsArm64ec_23h2
+          useCsWinRT3: ${{ parameters.useCsWinRT3 }}
           runTestStageName: ${{ parameters.runArtifactNamespace }}
           dependsOn: CreateAppTestPayload
           testSuite: ScenarioTestSuite

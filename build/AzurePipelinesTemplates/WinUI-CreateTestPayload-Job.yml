@@ -72,7 +72,10 @@ jobs:
       - name: muxControlsTestFilePattern
         value: 'Test\MUXControls.Test.dll'
       - name: scenarioTestTaefQuery
-        value: "@Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.WinUICsDesktopSampleAppTests.*'"
+        value: >-
+          (@Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.WinUICsDesktopSampleAppTests.*'
+          OR @Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.DisableXamlGeneratedMainCsAppTests.*'
+          OR @Name='Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.DisableXamlGeneratedMainNoCtorCsAppTests.*')
       - name: projectionPayloadAdditionalArguments
         value: '-UseSharedTestProjections -SkipWinUIGallery'
     - ${{ else }}:
