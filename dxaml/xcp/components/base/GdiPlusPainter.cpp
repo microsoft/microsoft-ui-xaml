@@ -335,6 +335,28 @@ namespace RenderingBackend
             constexpr uint64_t c_maxGlyphOutlineBytes = 2 << 20;
             constexpr uint64_t c_glyphOutlineBytes = 128;
 
+            // Gradient fills use 8x8 supersampling (SmoothingModeAntiAlias8x8, GDI+ 1.1): the default 8x4 grid
+            // rounds the thin coverage of a curved edge over a gradient to near 0 or 1.
+            class FineAntialiasing
+            {
+            public:
+                explicit FineAntialiasing(Gdiplus::Graphics& graphics) noexcept
+                    : m_graphics(graphics), m_previous(graphics.GetSmoothingMode())
+                {
+                    m_graphics.SetSmoothingMode(static_cast<Gdiplus::SmoothingMode>(Gdiplus::SmoothingModeAntiAlias + 1));
+                }
+                ~FineAntialiasing()
+                {
+                    m_graphics.SetSmoothingMode(m_previous);
+                }
+                FineAntialiasing(const FineAntialiasing&) = delete;
+                FineAntialiasing& operator=(const FineAntialiasing&) = delete;
+
+            private:
+                Gdiplus::Graphics& m_graphics;
+                Gdiplus::SmoothingMode m_previous;
+            };
+
             // Radii of three box filters approximating a gaussian of standard deviation sigma.
             void BoxRadii(float sigma, int32_t (&radii)[3]) noexcept
             {
@@ -1152,6 +1174,7 @@ namespace RenderingBackend
                     {
                         return;
                     }
+                    FineAntialiasing fine(Current());
                     if (BuildRoundedPath(rect, radiusX, radiusY))
                     {
                         Record(Current().FillPath(brush, m_path.get()));
@@ -1176,6 +1199,7 @@ namespace RenderingBackend
                     {
                         return;
                     }
+                    FineAntialiasing fine(Current());
                     Record(Current().FillPath(brush, path));
                     m_stats.paintedPixels += VisibleArea(DeviceBounds(bounds, 0));
                 }
