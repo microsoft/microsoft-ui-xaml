@@ -96,6 +96,18 @@ composing). `xaml` uses `RenderTargetBitmap` directly. The method used is record
 `RenderTargetBitmap` is the framework's own render: it has no window backdrop (S7's Mica area is black), no popups or
 other windows, and isn't what DWM shows, so use a console session (`screen`) for C1 fidelity comparisons.
 
+## Composition engine and XamlOptionalChanges
+
+`Run-RenderBench.ps1 -CompositionEngine Lifted|System -OptionalChanges None|All` (RenderBench:
+`--composition-engine lifted|system --optional-changes none|all`). `Program.cs` owns `Main` (`DISABLE_XAML_GENERATED_MAIN`)
+so both are applied before `Application.Start`, following the wiki "Opting Into WinUI 3 Composition Engine &
+XamlOptionalChanges Performance APIs". `System` applies to composition mode only: the script sets the internal
+`HKLM\Software\Microsoft\WinUI\RenderingEngine\Switcher\ProcessOverrides\RenderBench.exe=1` override for the run (restoring
+any previous value afterwards; needs a supporting internal OS build), and RenderBench calls
+`CompositionEngine.TrySetProcessEngine(System)`. If that returns false, the run exits 4 instead of measuring Lifted.
+`All` enables every `XamlChangeId`. Results of both calls are written to the run's `stderr.txt` as `startup:` lines.
+Private memory excludes DWM, so System-engine numbers understate composition's total cost.
+
 ## Extended metrics
 
 Added to `metrics.json` and the report (test plan metric ids in parentheses):

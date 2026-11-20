@@ -43,7 +43,14 @@ param(
     [switch]$Quick,
     # Delete trace.etl after metrics.json is written (Timing ETLs are ~15 MB/s with CPU stacks).
     [switch]$DeleteTraces,
-    [string[]]$ExtraArgs = @()
+    [string[]]$ExtraArgs = @(),
+    # Composition-mode engine. System uses the internal Switcher\ProcessOverrides key (set for the run, then restored)
+    # plus CompositionEngine.TrySetProcessEngine(System) in RenderBench's Main; a run that can't select it exits 4.
+    [ValidateSet('Lifted', 'System')]
+    [string]$CompositionEngine = 'Lifted',
+    # XamlOptionalChanges opt-ins (all modes).
+    [ValidateSet('None', 'All')]
+    [string]$OptionalChanges = 'None'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,6 +101,14 @@ $Results = (Resolve-Path $Results).Path
 
 $random = [Random]::new($Seed)
 $previous = $env:WINUI_RENDERING_BACKEND
+$switcherKey = 'HKLM:\Software\Microsoft\WinUI\RenderingEngine\Switcher\ProcessOverrides'
+$benchExeName = Split-Path -Leaf $BenchExe
+$previousOverride = $null
+if ($CompositionEngine -eq 'System' -and $Modes -contains 'composition') {
+    if (-not (Test-Path $switcherKey)) { New-Item -Force $switcherKey | Out-Null }  # -Force on an existing key wipes its values
+    $previousOverride = (Get-ItemProperty $switcherKey -Name $benchExeName -ErrorAction SilentlyContinue).$benchExeName
+    New-ItemProperty $switcherKey -Name $benchExeName -PropertyType DWord -Value 1 -Force | Out-Null
+}
 # Memory profile: opt RenderBench.exe into heap tracing (HeapProcessId 0 in the wprp) so GDI+ heap use is attributable.
 $heapTracing = $Profile -eq 'Memory'
 if ($heapTracing) {
@@ -138,6 +153,8 @@ try {
                 if ($LASTEXITCODE -ne 0) { throw "wpr -start failed ($LASTEXITCODE)" }
                 try {
                     $benchArgs = $sceneArgs + @('--seed', $Seed, '--screenshot', (Join-Path $runDir 'screenshot.bmp')) + $ExtraArgs
+                    if ($mode -eq 'composition') { $benchArgs += @('--composition-engine', $CompositionEngine.ToLowerInvariant()) }
+                    $benchArgs += @('--optional-changes', $OptionalChanges.ToLowerInvariant())
                     $process = Start-Process -FilePath $BenchExe -ArgumentList $benchArgs -PassThru -Wait `
                         -RedirectStandardError (Join-Path $runDir 'stderr.txt')
                     "exit $($process.ExitCode)" | Set-Content (Join-Path $runDir 'exitcode.txt')
@@ -156,6 +173,14 @@ try {
 }
 finally {
     $env:WINUI_RENDERING_BACKEND = $previous
+    if ($CompositionEngine -eq 'System' -and $Modes -contains 'composition') {
+        if ($null -ne $previousOverride) {
+            New-ItemProperty $switcherKey -Name $benchExeName -PropertyType DWord -Value $previousOverride -Force | Out-Null
+        }
+        else {
+            Remove-ItemProperty $switcherKey -Name $benchExeName -ErrorAction SilentlyContinue
+        }
+    }
     if ($heapTracing) {
         & wpr -heaptracingconfig (Split-Path -Leaf $BenchExe) disable | Out-Null
     }

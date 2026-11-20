@@ -2,6 +2,13 @@ using System.Globalization;
 
 namespace RenderBench;
 
+// Composition engine for the composition backend: Lifted (WinAppSDK in-process, default) or System (OS compositor via
+// CompositionEngine.TrySetProcessEngine; a Limited Access Feature, or the internal Switcher\ProcessOverrides key).
+public enum CompositionEngineChoice { Lifted, System }
+
+// XamlOptionalChanges opt-ins applied before Application.Start.
+public enum OptionalChangesChoice { None, All }
+
 public sealed record BenchOptions
 {
     public SceneId Scene { get; init; } = SceneId.Settings;
@@ -31,6 +38,8 @@ public sealed record BenchOptions
     public int Windows { get; init; } = 10;      // S9
     public bool Tabs { get; init; }              // S9: one window with a 20-tab TabView instead of N windows
     public double StepSeconds { get; init; } = 2; // S9: time between lifecycle steps
+    public CompositionEngineChoice CompositionEngine { get; init; } = CompositionEngineChoice.Lifted;
+    public OptionalChangesChoice OptionalChanges { get; init; } = OptionalChangesChoice.None;
 
     // Scene name used in RunStarted and in reports; variants are separate experiments, so they get separate labels.
     public string SceneLabel => Scene switch
@@ -46,7 +55,28 @@ public sealed record BenchOptions
         "[--seed n] [--width px] [--height px] [--sample-ms n] [--tiles n] [--update-fraction f] [--update-hz f] " +
         "[--input-hz f] [--input-mode auto|sendinput|programmatic] [--scroll-speed dips/s] [--items n] " +
         "[--decode-to-size] [--no-progressring] [--windows n] [--tabs] [--step-seconds s] " +
-        "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow|xaml] [--no-exit]";
+        "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow|xaml] " +
+        "[--composition-engine lifted|system] [--optional-changes none|all] [--no-exit]";
+
+    // The engine and optional changes must be set before Application.Start, before OnLaunched parses the full command
+    // line; this lenient pre-pass reads only those two (TryParse validates them later).
+    public static (CompositionEngineChoice Engine, OptionalChangesChoice Changes) ParseStartup(IReadOnlyList<string> args)
+    {
+        var engine = CompositionEngineChoice.Lifted;
+        var changes = OptionalChangesChoice.None;
+        for (int i = 0; i + 1 < args.Count; i++)
+        {
+            if (args[i] == "--composition-engine" && Enum.TryParse(args[i + 1], ignoreCase: true, out CompositionEngineChoice e))
+            {
+                engine = e;
+            }
+            else if (args[i] == "--optional-changes" && Enum.TryParse(args[i + 1], ignoreCase: true, out OptionalChangesChoice c))
+            {
+                changes = c;
+            }
+        }
+        return (engine, changes);
+    }
 
     static readonly Dictionary<string, SceneId> s_variantScenes = new()
     {
@@ -128,6 +158,14 @@ public sealed record BenchOptions
                     options = options with { ScreenshotMethod = method };
                     break;
                 case "--screenshot": options = options with { ScreenshotPath = value }; break;
+                case "--composition-engine":
+                    if (!TryEnum<CompositionEngineChoice>(value, arg, out var engine, ref error)) return false;
+                    options = options with { CompositionEngine = engine };
+                    break;
+                case "--optional-changes":
+                    if (!TryEnum<OptionalChangesChoice>(value, arg, out var changes, ref error)) return false;
+                    options = options with { OptionalChanges = changes };
+                    break;
                 default:
                     error = $"Unknown argument {arg}";
                     return false;

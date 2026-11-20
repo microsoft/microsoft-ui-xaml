@@ -18,6 +18,7 @@ static class ExtendedScenesTests
         new("Extended.Options.RejectsBadVariants", RejectsBadVariants),
         new("Extended.Options.PerSceneDefaultsAndOverrides", PerSceneDefaultsAndOverrides),
         new("Extended.Options.SceneLabels", SceneLabels),
+        new("Extended.Options.CompositionEngineAndOptionalChanges", CompositionEngineAndOptionalChanges),
         new("Extended.Metrics.FrameIntervalsAndDroppedFrames", FrameIntervalsAndDroppedFrames),
         new("Extended.Metrics.DiscreteInteractionIgnoresIdleGaps", DiscreteInteractionIgnoresIdleGaps),
         new("Extended.Metrics.DefaultRefreshWithoutDisplayInfo", DefaultRefreshWithoutDisplayInfo),
@@ -96,6 +97,27 @@ static class ExtendedScenesTests
         Equal(ScreenshotMethod.Auto, d.ScreenshotMethod, "screenshot default");
         Equal(InputMode.Programmatic, Parse("--input-mode", "programmatic").InputMode, "programmatic");
         Equal(ScreenshotMethod.Xaml, Parse("--screenshot-method", "xaml").ScreenshotMethod, "xaml screenshot");
+    }
+
+    static void CompositionEngineAndOptionalChanges()
+    {
+        var d = Parse();
+        Equal(CompositionEngineChoice.Lifted, d.CompositionEngine, "engine defaults to lifted");
+        Equal(OptionalChangesChoice.None, d.OptionalChanges, "optional changes default to none");
+
+        var s = Parse("--scene", "inbox", "--composition-engine", "system", "--optional-changes", "all");
+        Equal(CompositionEngineChoice.System, s.CompositionEngine, "system engine");
+        Equal(OptionalChangesChoice.All, s.OptionalChanges, "all optional changes");
+        Equal(CompositionEngineChoice.Lifted, Parse("--composition-engine", "LIFTED").CompositionEngine, "case-insensitive");
+
+        Expect(!BenchOptions.TryParse(["--composition-engine", "dwm"], out _, out _), "unknown engine");
+        Expect(!BenchOptions.TryParse(["--optional-changes", "some"], out _, out _), "unknown optional-changes value");
+
+        // Program.Main reads these before Application.Start, ignoring everything else on the command line.
+        var (engine, changes) = BenchOptions.ParseStartup(["--scene", "s3", "--composition-engine", "system", "--optional-changes", "all"]);
+        Equal(CompositionEngineChoice.System, engine, "startup engine");
+        Equal(OptionalChangesChoice.All, changes, "startup optional changes");
+        Equal((CompositionEngineChoice.Lifted, OptionalChangesChoice.None), BenchOptions.ParseStartup(["--composition-engine"]), "missing value");
     }
 
     static void RejectsBadVariants()

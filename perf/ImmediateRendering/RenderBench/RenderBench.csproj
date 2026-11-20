@@ -21,6 +21,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishTrimmed>false</PublishTrimmed>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <!-- Program.cs owns Main so the composition engine and XamlOptionalChanges are set before Application.Start. -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
