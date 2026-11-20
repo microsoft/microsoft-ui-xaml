@@ -82,7 +82,13 @@ bool ImmediateRenderer::IsHandOffVisualTouched(_In_ CUIElement* element) noexcep
     }
 
     ImmediateRenderingPolicy::HandOffVisualState state;
+    // Opacity equal to UIElement.Opacity is not an app change: controls mirror the two (NavigationView's
+    // ResetElementAnimationProperties sets both to 0 on the previous selection indicator) and the walk paints it.
     IGNOREHR(visual->get_Opacity(&state.opacity));
+    if (std::fabs(state.opacity - element->GetOpacityLocal()) <= 1e-4f)
+    {
+        state.opacity = 1;
+    }
     IGNOREHR(visual->get_RotationAngle(&state.rotationAngle));
     wfn::Vector3 v{};
     if (SUCCEEDED(visual->get_Offset(&v)))
