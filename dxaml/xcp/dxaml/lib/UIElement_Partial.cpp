@@ -2504,6 +2504,30 @@ UIElementFactory::RegisterAsScrollPortImpl(_In_ xaml::IUIElement* element)
 }
 
 _Check_return_ HRESULT
+UIElementFactory::InvalidateViewportImpl(_In_ xaml::IUIElement* element)
+{
+    UIElement* uiElement = static_cast<UIElement*>(element);
+
+    IFC_RETURN(uiElement->CheckThread());
+
+    CUIElement* coreElement = static_cast<CUIElement*>(uiElement->GetHandle());
+
+    if (coreElement)
+    {
+        if (coreElement->IsScroller())
+        {
+            coreElement->InvalidateViewport();
+        }
+        else
+        {
+            IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_FAIL, ERROR_INVALIDATEVIEWPORT_REQUIRES_SCROLLER));
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
 UIElementFactory::TryStartDirectManipulationImpl(
     _In_ xaml_input::IPointer* pValue,
     _Out_ BOOLEAN* pReturnValue)
