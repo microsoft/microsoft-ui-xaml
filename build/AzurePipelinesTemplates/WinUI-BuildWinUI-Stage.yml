@@ -69,23 +69,23 @@ stages:
             buildOutput: 'x86'
             normalizedConfiguration: 'chk'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'BuildAndTest') }}:
+        ${{ if and(in( parameters.pipelineKind, 'BuildAndTest'), ne(parameters.collectCodeCoverage, true)) }}:
           build:
             shouldPgo: false
             # buildPlatform and normalizedConfiguration are set at queue time for this pipeline
-        ${{ if in( parameters.pipelineKind, 'Localization') }}:
+        ${{ if and(in( parameters.pipelineKind, 'Localization'), ne(parameters.collectCodeCoverage, true)) }}:
           Release_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
             normalizedConfiguration: 'fre'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'PR-2') }}:
+        ${{ if and(in( parameters.pipelineKind, 'PR-2'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x64:
             buildPlatform: 'x64'
             buildOutput: 'amd64'
             normalizedConfiguration: 'chk'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'GitHubPR') }}:
+        ${{ if and(in( parameters.pipelineKind, 'GitHubPR'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
@@ -137,7 +137,7 @@ stages:
             buildOutput: 'arm64ec'
             normalizedConfiguration: 'fre'
             shouldPgo: false
-        ${{ if eq( parameters.pipelineKind, 'QuickPR') }}:
+        ${{ if and(eq( parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'

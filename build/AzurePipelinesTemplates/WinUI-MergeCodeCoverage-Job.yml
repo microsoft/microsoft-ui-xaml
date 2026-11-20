@@ -38,6 +38,7 @@ jobs:
     type: windows
 
   variables:
+    coverageDownloadDir: '$(Build.SourcesDirectory)\coverageDownload'
     coverageInputDir: '$(Build.SourcesDirectory)\coverageInput'
     coverageOutRoot: '$(Build.SourcesDirectory)\out\CodeCoverage'
     ob_outputDirectory: '$(Build.SourcesDirectory)\out'
@@ -63,13 +64,23 @@ jobs:
         # convenience. Reset the exit code so a missing feed does not mark the job succeededWithIssues.
         exit 0
 
+  # Each slice stages its coverage under CodeCoverage\Attempt<N>\ in its test-output artifact. A re-run
+  # that changes a slice's status leaves one artifact per status, so download them all, then keep only
+  # the latest attempt of each slice before merging.
   - ${{ each stem in parameters.coverageModuleStems }}:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download per-slice coverage files (${{ stem }})'
       inputs:
         buildType: current
-        itemPattern: '**/coverage-*-${{ stem }}.coverage'
-        targetPath: '$(coverageInputDir)\${{ stem }}'
+        itemPattern: '**/CodeCoverage/Attempt*/coverage-*-${{ stem }}.coverage'
+        targetPath: '$(coverageDownloadDir)\${{ stem }}'
+
+  - task: powershell@2
+    displayName: 'Select the latest attempt of each slice'
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\coverage\Select-LatestCoverageAttempt.ps1
+      arguments: -DownloadDir "$(coverageDownloadDir)" -OutputDir "$(coverageInputDir)"
 
   - task: powershell@2
     displayName: 'Merge and correct code coverage (combined + per DLL)'

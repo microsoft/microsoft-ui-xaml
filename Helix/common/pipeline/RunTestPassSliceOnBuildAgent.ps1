@@ -388,7 +388,7 @@ finally
     # -- Code coverage: flush this slice's data by shutting every module's collector down. ----
     # This lives in a finally so a failing work item above still flushes whatever coverage was
     # collected and never leaves a collector process running. Each session is shut down
-    # independently (own try/finally) so one module's shutdown failure doesn't skip another
+    # independently (own try/catch/finally) so one module's shutdown failure doesn't skip another
     # module's cleanup.
     try
     {
@@ -399,8 +399,20 @@ finally
                 try
                 {
                     Write-Host "Shutting down coverage collector for '$($session.ModuleStem)' (session=$($session.SessionId))..."
-                    & $CoverageToolPath shutdown $session.SessionId 2>&1 | Write-Host
-                    $shutdownExitCode = $LASTEXITCODE
+                    # Windows PowerShell 5.1 turns native stderr into a terminating error under
+                    # ErrorActionPreference=Stop when it is redirected with 2>&1; relax it for the
+                    # call so a chatty shutdown can't abort the flush.
+                    $prevErrorActionPreference = $ErrorActionPreference
+                    $ErrorActionPreference = 'Continue'
+                    try
+                    {
+                        & $CoverageToolPath shutdown $session.SessionId 2>&1 | Write-Host
+                        $shutdownExitCode = $LASTEXITCODE
+                    }
+                    finally
+                    {
+                        $ErrorActionPreference = $prevErrorActionPreference
+                    }
                     if ($shutdownExitCode -ne 0)
                     {
                         Write-Host "##vso[task.logissue type=warning]Coverage collector shutdown failed for '$($session.ModuleStem)' with exit code $shutdownExitCode (session=$($session.SessionId))."
@@ -415,6 +427,12 @@ finally
                     {
                         Write-Host "##vso[task.logissue type=warning]No coverage data produced for module '$($session.ModuleStem)' on this slice (session=$($session.SessionId))."
                     }
+                }
+                catch
+                {
+                    # Fail-open per module: log and keep going so the remaining collectors are
+                    # still shut down and flushed.
+                    Write-Host "##vso[task.logissue type=warning]Coverage collector shutdown for '$($session.ModuleStem)' threw (session=$($session.SessionId)); continuing with the remaining modules. $($_.Exception.Message)"
                 }
                 finally
                 {
