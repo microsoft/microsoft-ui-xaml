@@ -64,7 +64,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every default-activatable public Microsoft.UI.Xaml.dll class reports its runtime class name, returns non-empty IIDs that include the WinRT IID of its default interface, and rejects an unknown IID.")]
         public void VerifyInstanceInspectableSurface()
         {
-            var result = new SweepResult("Instance IInspectable surface");
+            var result = new SweepResult(SweepCategory.InstanceInspectable);
             int activated = 0;
 
             foreach (Type type in Catalog.ActivatableClasses)
@@ -105,10 +105,10 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         }
 
         [TestMethod]
-        [Description("Every public runtime class served by Microsoft.UI.Xaml.dll!DllGetActivationFactory returns a factory whose runtime class name is the inherited ComBase null HSTRING, which returns non-empty IIDs and answers QueryInterface for IActivationFactory and every projected statics/factory interface; unknown classes fail with CLASS_E_CLASSNOTAVAILABLE.")]
+        [Description("Every public runtime class served by Microsoft.UI.Xaml.dll!DllGetActivationFactory returns a factory whose runtime class name is the inherited ComBase null HSTRING, which returns non-empty IIDs and answers QueryInterface for IActivationFactory and every projected statics/factory interface; unknown classes fail with CLASS_E_CLASSNOTAVAILABLE; every class Microsoft.UI.Xaml.dll owns (registered to it in the deployed AppXManifest.xml or recorded in KnownUnregisteredMuxClasses) is served, and no other class is.")]
         public void VerifyActivationFactoryInspectableSurface()
         {
-            var result = new SweepResult("Activation factory IInspectable surface");
+            var result = new SweepResult(SweepCategory.ActivationFactories);
             int staticsInterfacesMatched = 0;
 
             foreach (Type type in Catalog.MuxRuntimeClasses)
@@ -181,6 +181,30 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                     $"{unserved.Key}: DllGetActivationFactory returned 0x{unserved.Value:X8}, expected CLASS_E_CLASSNOTAVAILABLE");
             }
             Log.Comment($"Public classes not served by Microsoft.UI.Xaml.dll: {Catalog.UnservedClasses.Count}.");
+
+            // Ownership is decided independently of the DLL under test (deployed registration manifest plus the recorded
+            // unregistered Microsoft.UI.Xaml.dll classes), so an owned class that stops being served cannot silently drop out
+            // of the sweeps, and a class that starts being served without being recorded as owned is reported.
+            foreach (string failure in Catalog.OwnershipFailures)
+            {
+                result.Fail(failure);
+            }
+            foreach (string pinned in ApiSurfaceAllowList.KnownUnregisteredMuxClasses)
+            {
+                if (!Catalog.ProbedClasses.Contains(pinned))
+                {
+                    result.Fail($"{pinned}: listed in KnownUnregisteredMuxClasses but is no longer a public class - remove the entry");
+                }
+                else if (Catalog.ClassRegistrations.TryGetValue(pinned, out string server))
+                {
+                    result.Fail($"{pinned}: listed in KnownUnregisteredMuxClasses but is now registered to {server} - remove the entry");
+                }
+                else
+                {
+                    result.Pass();
+                }
+            }
+            Log.Comment($"Ownership: {Catalog.ClassRegistrations.Count} manifest registrations, {ApiSurfaceAllowList.KnownUnregisteredMuxClasses.Count} recorded unregistered Microsoft.UI.Xaml.dll classes, {Catalog.OwnershipFailures.Count} ownership failures.");
             result.Report(minimumPassed: 2000);
             Verify.IsTrue(Catalog.MuxRuntimeClasses.Count >= 400, $"Expected at least 400 public Microsoft.UI.Xaml.dll runtime classes, found {Catalog.MuxRuntimeClasses.Count}.");
             Verify.IsTrue(staticsInterfacesMatched >= 300, $"Expected at least 300 projected statics/factory interfaces, matched {staticsInterfacesMatched}.");
@@ -190,7 +214,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("IInspectable::GetIids is consistent with QueryInterface: every IID an instance or activation factory reports is queryable, and every factory reports each projected statics/factory interface it implements; recorded product defects (ApiSurfaceAllowList.KnownProductDefects) must still reproduce exactly.")]
         public void VerifyGetIidsEntriesAreQueryable()
         {
-            var result = new SweepResult("GetIids consistency");
+            var result = new SweepResult(SweepCategory.GetIidsConsistency);
             var evaluated = new HashSet<KnownIidDefect>();
 
             foreach (Type type in Catalog.ActivatableClasses)
@@ -273,7 +297,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every public static DependencyProperty identifier is non-null, returns the same object on every read and is distinct from the other identifiers of its owner type.")]
         public void VerifyStaticDependencyPropertyIdentifiers()
         {
-            var result = new SweepResult("Static dependency property identifiers");
+            var result = new SweepResult(SweepCategory.StaticDependencyProperties);
             int identifiers = 0;
 
             foreach (Type type in Catalog.MuxRuntimeClasses)
@@ -327,7 +351,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every attached property Get/Set accessor pair agrees with DependencyObject.GetValue, round-trips its current and a distinct sample value, and ClearValue restores the original value.")]
         public void VerifyAttachedPropertyAccessorsRoundTrip()
         {
-            var result = new SweepResult("Attached property accessors");
+            var result = new SweepResult(SweepCategory.AttachedProperties);
             int pairs = 0;
 
             using (var pool = new InstancePool(result))
@@ -363,9 +387,13 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every readable instance property returns the same value as GetValue on its DependencyProperty; writable properties keep their value when set to it and round-trip a distinct boolean/enum sample; the generated accessors reject calls from a non-UI thread.")]
         public void VerifyInstancePropertyGetSetRoundTrip()
         {
-            var result = new SweepResult("Instance properties");
+            var result = new SweepResult(SweepCategory.InstanceProperties);
             int gets = 0, dpChecks = 0, writes = 0, samples = 0;
             var divergencesExercised = new HashSet<string>(StringComparer.Ordinal);
+
+            // The comparison oracle itself: null and "" are equivalent, but a string never equals a non-string value.
+            result.Check(AreSameValue(null, string.Empty) && AreSameValue(string.Empty, null) && !AreSameValue(string.Empty, 42) &&
+                         !AreSameValue(false, string.Empty) && !AreSameValue("a", "b"), "AreSameValue string normalization is not limited to string/null operands");
 
             using (var pool = new InstancePool(result))
             {
@@ -496,7 +524,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every public instance event and every UIElement routed event accepts and releases a handler (null routed handlers fail with E_INVALIDARG), representative events stop being delivered after removal, and VisualStateManager raise methods reject null arguments with E_INVALIDARG.")]
         public void VerifyInstanceEventAddRemove()
         {
-            var result = new SweepResult("Events");
+            var result = new SweepResult(SweepCategory.Events);
             int events = 0, routedEvents = 0;
 
             using (var pool = new InstancePool(result))
@@ -577,7 +605,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("Every enum value name of each enum-typed dependency property parses from XAML attribute text to that value (flags combine), invalid names fail with E_XAMLPARSEFAILED, and Microsoft.UI.Xaml enums parse as keyed object elements.")]
         public void VerifyEnumStringConversionThroughXaml()
         {
-            var result = new SweepResult("Enum text conversion");
+            var result = new SweepResult(SweepCategory.EnumTextConversion);
             int attributeValues = 0, objectElementValues = 0, enumTypes = 0;
 
             using (var pool = new InstancePool(result))
@@ -635,10 +663,10 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         [Description("XAML object elements create every parser-creatable class; simple properties parse from XAML text and malformed text fails; strict-only simple properties block non-strict APIs only while set to a non-default value; automation peers created for elements are cached and expose their own IInspectable surface.")]
         public void VerifyParserObjectElementsAndSimpleProperties()
         {
-            var parser = new SweepResult("Parser object elements");
-            var simple = new SweepResult("Simple properties");
-            var strictness = new SweepResult("Strict-only simple properties");
-            var peers = new SweepResult("Automation peers");
+            var parser = new SweepResult(SweepCategory.ParserObjectElements);
+            var simple = new SweepResult(SweepCategory.SimpleProperties);
+            var strictness = new SweepResult(SweepCategory.StrictOnlySimpleProperties);
+            var peers = new SweepResult(SweepCategory.AutomationPeers);
 
             VerifyParserObjectElements(parser);
             VerifySimplePropertiesFromXaml(simple);
@@ -795,7 +823,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
 
         #region Inspectable helpers
 
-        private static void VerifyInspectable(object instance, string expectedClassName, Type defaultInterface, SweepResult result, string label, bool verifyIidsQueryable)
+        private static void VerifyInspectable(object instance, string expectedClassName, Type defaultInterface, SweepResult result, string label, bool verifyIidsQueryable, bool failedQueryClearsOutPointer = false)
         {
             IntPtr inspectable = InspectableAbiHelper.GetInspectable(instance);
             try
@@ -835,10 +863,10 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                 }
                 if (verifyIidsQueryable)
                 {
-                    VerifyEachIidIsQueryable(inspectable, iids, result, label);
+                    VerifyEachIidIsQueryable(inspectable, iids, result, label, failedQueryClearsOutPointer: failedQueryClearsOutPointer);
                 }
 
-                int negativeHr = QueryAndRelease(inspectable, InspectableAbiHelper.IID_NotImplemented, result, label);
+                int negativeHr = QueryAndRelease(inspectable, InspectableAbiHelper.IID_NotImplemented, result, label, failedQueryClearsOutPointer);
                 result.Check(negativeHr == InspectableAbiHelper.E_NOINTERFACE, $"{label}: QI(unknown IID) returned 0x{negativeHr:X8}, expected E_NOINTERFACE");
             }
             finally
@@ -848,11 +876,11 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             }
         }
 
-        private static void VerifyEachIidIsQueryable(IntPtr comPointer, Guid[] iids, SweepResult result, string label, ISet<KnownIidDefect> evaluated = null)
+        private static void VerifyEachIidIsQueryable(IntPtr comPointer, Guid[] iids, SweepResult result, string label, ISet<KnownIidDefect> evaluated = null, bool failedQueryClearsOutPointer = false)
         {
             foreach (Guid iid in iids)
             {
-                int hr = QueryAndRelease(comPointer, iid, result, label);
+                int hr = QueryAndRelease(comPointer, iid, result, label, failedQueryClearsOutPointer);
                 if (ApiSurfaceAllowList.TryGetKnownIidDefect(label, iid, IidDefectKind.ReportedButNotQueryable, out KnownIidDefect defect))
                 {
                     evaluated?.Add(defect);
@@ -873,17 +901,37 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             }
         }
 
-        // QueryInterface that also asserts the COM out-pointer contract: a failed call must leave *ppv null. A non-null
-        // out pointer from a failed call is recorded as a failure and is never released (the caller does not own it).
-        private static int QueryAndRelease(IntPtr comPointer, Guid iid, SweepResult result, string label)
+        // QueryInterface that also asserts the COM out-pointer contract: *ppv starts as a non-null sentinel and a successful
+        // call must write a valid pointer. A failed call must set *ppv to null (failedQueryClearsOutPointer: automation
+        // peers do); the ComBase-based objects and activation factories of Microsoft.UI.Xaml.dll currently leave it unchanged
+        // (ApiSurfaceAllowList.FailedQueryInterfaceLeavesOutPointerUnchanged), which is asserted exactly. Either way a
+        // failed call that writes any other value fails. A failed call's out pointer is never released (not owned).
+        private static int QueryAndRelease(IntPtr comPointer, Guid iid, SweepResult result, string label, bool failedQueryClearsOutPointer = false)
         {
             int hr = InspectableAbiHelper.QueryInterface(comPointer, iid, out IntPtr queried, out IntPtr outPointerOnFailure);
+            bool unwritten = outPointerOnFailure == InspectableAbiHelper.QueryInterfaceOutSentinel;
             if (hr < 0)
             {
-                result.Check(outPointerOnFailure == IntPtr.Zero,
-                    $"{label}: QueryInterface({{{iid}}}) failed with 0x{hr:X8} but left a non-null out pointer (COM requires null on failure)");
+                if (failedQueryClearsOutPointer)
+                {
+                    result.Check(outPointerOnFailure == IntPtr.Zero, unwritten
+                        ? $"{label}: QueryInterface({{{iid}}}) failed with 0x{hr:X8} without clearing its out pointer (COM requires null on failure)"
+                        : $"{label}: QueryInterface({{{iid}}}) failed with 0x{hr:X8} but wrote a non-null out pointer (COM requires null on failure)");
+                }
+                else if (outPointerOnFailure == IntPtr.Zero)
+                {
+                    result.Fail($"{label}: QueryInterface({{{iid}}}) failed with 0x{hr:X8} and cleared its out pointer - known defect no longer reproduces, " +
+                                $"remove ApiSurfaceAllowList.FailedQueryInterfaceLeavesOutPointerUnchanged ({ApiSurfaceAllowList.FailedQueryInterfaceLeavesOutPointerUnchanged})");
+                }
+                else
+                {
+                    result.Check(unwritten,
+                        $"{label}: QueryInterface({{{iid}}}) failed with 0x{hr:X8} but wrote a non-null out pointer (COM requires null on failure)");
+                }
             }
-            else if (!result.Check(queried != IntPtr.Zero, $"{label}: QueryInterface({{{iid}}}) returned 0x{hr:X8} with a null pointer"))
+            else if (!result.Check(queried != IntPtr.Zero, unwritten
+                ? $"{label}: QueryInterface({{{iid}}}) returned 0x{hr:X8} without writing its out pointer"
+                : $"{label}: QueryInterface({{{iid}}}) returned 0x{hr:X8} with a null pointer"))
             {
                 return InspectableAbiHelper.E_POINTER;
             }
@@ -1062,12 +1110,16 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         }
 
         // Value equality for projected values: native identity for WinRT objects, numeric equality across
-        // enum/integer boxing differences, null and empty string equivalent (HSTRING has no null).
+        // enum/integer boxing differences, null and empty string equivalent (HSTRING has no null). The string
+        // normalization applies only when both operands are a string or null; a string never equals a non-string value.
         private static bool AreSameValue(object a, object b)
         {
             if (a is string || b is string)
             {
-                return string.Equals(a as string ?? string.Empty, b as string ?? string.Empty, StringComparison.Ordinal);
+                bool aIsStringOrNull = a == null || a is string;
+                bool bIsStringOrNull = b == null || b is string;
+                return aIsStringOrNull && bIsStringOrNull &&
+                       string.Equals((string)a ?? string.Empty, (string)b ?? string.Empty, StringComparison.Ordinal);
             }
             if (a == null || b == null)
             {
@@ -1514,7 +1566,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                     }
                     created++;
                     result.Check(AreSameValue(FrameworkElementAutomationPeer.FromElement(element), peer), $"{type.FullName}: FromElement did not return the created peer");
-                    VerifyInspectable(peer, null, null, result, type.FullName + " peer", verifyIidsQueryable: true);
+                    VerifyInspectable(peer, null, null, result, type.FullName + " peer", verifyIidsQueryable: true, failedQueryClearsOutPointer: true);
 
                     IntPtr inspectable = InspectableAbiHelper.GetInspectable(peer);
                     InspectableAbiHelper.GetRuntimeClassName(inspectable, out string peerClassName);
@@ -1558,12 +1610,14 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             return value == null ? "null" : $"{value} ({value.GetType().Name})";
         }
 
-        // Counts per-category outcomes. Expected failures must match the allow-listed HRESULT exactly; any other
-        // exception, and an allow-listed member that unexpectedly succeeds, is recorded as a failure.
+        // Counts per-category outcomes. Expected failures must match the allow-listed exception and HRESULT exactly; any
+        // other exception, an allow-listed member that unexpectedly succeeds, and an allow-listed entry owned by this
+        // sweep that the sweep never reaches are recorded as failures.
         private sealed class SweepResult
         {
             private readonly string _category;
             private readonly List<string> _failures = new List<string>();
+            private readonly HashSet<string> _visitedExpectations = new HashSet<string>(StringComparer.Ordinal);
             private int _passed;
             private int _expectedFailures;
             private int _excluded;
@@ -1604,6 +1658,10 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                 string operationKey = ApiSurfaceAllowList.OperationKey(memberKey, operation);
                 Exception error = CatchException(action);
                 bool allowListed = ApiSurfaceAllowList.TryGetExpectedFailure(memberKey, operation, out ExpectedFailure expected);
+                if (allowListed)
+                {
+                    _visitedExpectations.Add(operationKey);
+                }
                 if (error == null)
                 {
                     if (allowListed)
@@ -1627,6 +1685,15 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             public void Report(int minimumPassed, bool verify = true)
             {
                 _minimumPassed = minimumPassed;
+                // An expectation that this sweep owns but never reached (renamed/removed member, skipped operation or
+                // changed key) is stale and must not silently remain in the allow-list.
+                foreach (KeyValuePair<string, ExpectedFailure> entry in ApiSurfaceAllowList.ExpectedFailures)
+                {
+                    if (entry.Value.Sweep == _category && !_visitedExpectations.Contains(entry.Key))
+                    {
+                        _failures.Add($"{entry.Key}: allow-listed failure {entry.Value} was never exercised by this sweep - remove or update the ExpectedFailures entry");
+                    }
+                }
                 Log.Comment($"[{_category}] passed={_passed} expectedFailures={_expectedFailures} notExercised={_excluded} failures={_failures.Count}");
                 foreach (string failure in _failures)
                 {
@@ -1738,12 +1805,16 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         private static class Catalog
         {
             private const string PublicProjectionRelativePath = @"PrivateAPITests\Microsoft.WinUI.dll";
+            private const string ClassRegistrationManifestFileName = "AppXManifest.xml";
 
             private static readonly Lazy<Type[]> s_projectedTypes = new Lazy<Type[]>(LoadProjectedTypes);
             private static readonly Lazy<Dictionary<string, HashSet<string>>> s_publicSurface = new Lazy<Dictionary<string, HashSet<string>>>(LoadPublicSurface);
+            private static readonly Lazy<Dictionary<string, string>> s_classRegistrations = new Lazy<Dictionary<string, string>>(LoadClassRegistrations);
             private static readonly Dictionary<Type, HashSet<string>> s_featureGatedMembers = new Dictionary<Type, HashSet<string>>();
             private static readonly Lazy<IReadOnlyList<Type>> s_muxRuntimeClasses = new Lazy<IReadOnlyList<Type>>(LoadMuxRuntimeClasses);
             private static readonly List<KeyValuePair<string, int>> s_unservedClasses = new List<KeyValuePair<string, int>>();
+            private static readonly HashSet<string> s_probedClasses = new HashSet<string>(StringComparer.Ordinal);
+            private static readonly List<string> s_ownershipFailures = new List<string>();
 
             // Public projected classes for which Microsoft.UI.Xaml.dll!DllGetActivationFactory failed, with its HRESULT.
             public static IReadOnlyList<KeyValuePair<string, int>> UnservedClasses
@@ -1754,6 +1825,29 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                     return s_unservedClasses;
                 }
             }
+
+            // Public projected classes passed to DllGetActivationFactory (every public class except FactoryProbeExclusions).
+            public static IReadOnlyCollection<string> ProbedClasses
+            {
+                get
+                {
+                    IReadOnlyList<Type> unused = s_muxRuntimeClasses.Value;
+                    return s_probedClasses;
+                }
+            }
+
+            // Disagreements between what Microsoft.UI.Xaml.dll serves and which classes it owns (see IsOwnedByMux).
+            public static IReadOnlyList<string> OwnershipFailures
+            {
+                get
+                {
+                    IReadOnlyList<Type> unused = s_muxRuntimeClasses.Value;
+                    return s_ownershipFailures;
+                }
+            }
+
+            // Activatable class id -> InProcessServer DLL file name, from the deployed class registration manifest.
+            public static IReadOnlyDictionary<string, string> ClassRegistrations => s_classRegistrations.Value;
             private static readonly Lazy<HashSet<string>> s_ambiguousNames = new Lazy<HashSet<string>>(() =>
                 new HashSet<string>(s_projectedTypes.Value.Where(IsProjectedClass).GroupBy(t => t.Name).Where(g => g.Count() > 1).Select(g => g.Key)));
 
@@ -1951,20 +2045,88 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                             Log.Comment($"[Catalog] factory not probed: {type.FullName} - {reason}");
                             continue;
                         }
+                        s_probedClasses.Add(type.FullName);
+                        bool owned = IsOwnedByMux(type.FullName, out string ownership);
                         int hr = InspectableAbiHelper.GetMuxActivationFactory(type.FullName, out IntPtr factory);
                         if (hr == 0)
                         {
                             classes.Add(type);
+                            if (!owned)
+                            {
+                                s_ownershipFailures.Add($"{type.FullName}: served by Microsoft.UI.Xaml.dll but {ownership}; if Microsoft.UI.Xaml.dll owns this " +
+                                                        "non-activatable class, add it to ApiSurfaceAllowList.KnownUnregisteredMuxClasses");
+                            }
                         }
                         else
                         {
-                            Log.Comment($"[Catalog] not served by Microsoft.UI.Xaml.dll: {type.FullName} - DllGetActivationFactory 0x{hr:X8}");
+                            Log.Comment($"[Catalog] not served by Microsoft.UI.Xaml.dll: {type.FullName} - DllGetActivationFactory 0x{hr:X8} ({ownership})");
                             s_unservedClasses.Add(new KeyValuePair<string, int>(type.FullName, hr));
+                            if (owned)
+                            {
+                                s_ownershipFailures.Add($"{type.FullName}: {ownership} but Microsoft.UI.Xaml.dll!DllGetActivationFactory returned 0x{hr:X8}");
+                            }
                         }
                         InspectableAbiHelper.Release(factory);
                     }
                 });
                 return classes;
+            }
+
+            // A public class is owned by Microsoft.UI.Xaml.dll when the deployed manifest registers it to that DLL, or when it
+            // has no registration and is listed in ApiSurfaceAllowList.KnownUnregisteredMuxClasses. Classes registered to other
+            // DLLs, and unregistered classes that are not listed, belong to other DLLs (Controls, Phone, ...).
+            private static bool IsOwnedByMux(string className, out string ownership)
+            {
+                if (s_classRegistrations.Value.TryGetValue(className, out string server))
+                {
+                    ownership = $"registered to {server} in {ClassRegistrationManifestFileName}";
+                    return string.Equals(server, InspectableAbiHelper.MuxModuleName, StringComparison.OrdinalIgnoreCase);
+                }
+                if (ApiSurfaceAllowList.KnownUnregisteredMuxClasses.Contains(className))
+                {
+                    ownership = $"not registered in {ClassRegistrationManifestFileName} and listed in KnownUnregisteredMuxClasses";
+                    return true;
+                }
+                ownership = $"not registered in {ClassRegistrationManifestFileName} and not listed in KnownUnregisteredMuxClasses";
+                return false;
+            }
+
+            // Reads every <InProcessServer> of the class registration manifest that the test payload deploys next to the
+            // test binary (test\CreateTestPayload.ps1). It is generated by the build, independently of the runtime under test.
+            private static Dictionary<string, string> LoadClassRegistrations()
+            {
+                string directory = Path.GetDirectoryName(typeof(GeneratedApiSurfaceSweepTests).Assembly.Location);
+                string path = Path.Combine(directory, ClassRegistrationManifestFileName);
+                if (!File.Exists(path))
+                {
+                    throw new FileNotFoundException("Class registration manifest (deployed by test\\CreateTestPayload.ps1) was not found.", path);
+                }
+
+                var registrations = new Dictionary<string, string>(StringComparer.Ordinal);
+                global::System.Xml.Linq.XDocument manifest = global::System.Xml.Linq.XDocument.Load(path);
+                foreach (global::System.Xml.Linq.XElement server in manifest.Descendants().Where(e => e.Name.LocalName == "InProcessServer"))
+                {
+                    string serverPath = server.Elements().FirstOrDefault(e => e.Name.LocalName == "Path")?.Value;
+                    if (string.IsNullOrEmpty(serverPath))
+                    {
+                        continue;
+                    }
+                    foreach (global::System.Xml.Linq.XElement activatableClass in server.Elements().Where(e => e.Name.LocalName == "ActivatableClass"))
+                    {
+                        string classId = (string)activatableClass.Attribute("ActivatableClassId");
+                        if (!string.IsNullOrEmpty(classId))
+                        {
+                            registrations[classId] = Path.GetFileName(serverPath);
+                        }
+                    }
+                }
+                int muxRegistrations = registrations.Values.Count(v => string.Equals(v, InspectableAbiHelper.MuxModuleName, StringComparison.OrdinalIgnoreCase));
+                Log.Comment($"[Catalog] class registrations {path}: {registrations.Count} classes, {muxRegistrations} registered to {InspectableAbiHelper.MuxModuleName}.");
+                if (muxRegistrations == 0)
+                {
+                    throw new InvalidOperationException($"{path} registers no classes to {InspectableAbiHelper.MuxModuleName}.");
+                }
+                return registrations;
             }
         }
 

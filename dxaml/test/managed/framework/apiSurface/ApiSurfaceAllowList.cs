@@ -22,19 +22,40 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         public const string CreatePeer = "create-peer";
     }
 
+    // Sweep (SweepResult) categories. Each expected failure names the sweep that must exercise it, so every test method
+    // can verify its own expectations and stays independently runnable.
+    internal static class SweepCategory
+    {
+        public const string InstanceInspectable = "Instance IInspectable surface";
+        public const string ActivationFactories = "Activation factory IInspectable surface";
+        public const string GetIidsConsistency = "GetIids consistency";
+        public const string StaticDependencyProperties = "Static dependency property identifiers";
+        public const string AttachedProperties = "Attached property accessors";
+        public const string InstanceProperties = "Instance properties";
+        public const string Events = "Events";
+        public const string EnumTextConversion = "Enum text conversion";
+        public const string ParserObjectElements = "Parser object elements";
+        public const string SimpleProperties = "Simple properties";
+        public const string StrictOnlySimpleProperties = "Strict-only simple properties";
+        public const string AutomationPeers = "Automation peers";
+    }
+
     // A single member operation that is known to fail with one exact exception type and HRESULT in the sweep's
     // detached (not-in-tree) context. The sweep treats only an exactly matching failure as expected; a different
-    // exception type, a different HRESULT or an unexpected success is a test failure, so an entry can never hide a
-    // behavior change.
+    // exception type, a different HRESULT or an unexpected success is a test failure, and an entry that its sweep never
+    // reaches fails as stale, so an entry can never hide a behavior change.
     internal sealed class ExpectedFailure
     {
-        public ExpectedFailure(Type exceptionType, int hresult, string reason)
+        public ExpectedFailure(string sweep, Type exceptionType, int hresult, string reason)
         {
+            Sweep = sweep ?? throw new ArgumentNullException(nameof(sweep));
             ExceptionType = exceptionType ?? throw new ArgumentNullException(nameof(exceptionType));
             HResult = hresult;
             Reason = reason;
         }
 
+        // The SweepCategory that must exercise this entry.
+        public string Sweep { get; }
         public Type ExceptionType { get; }
         public int HResult { get; }
         public string Reason { get; }
@@ -147,6 +168,156 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             ["Microsoft.UI.Xaml.Hosting.DesktopWindowXamlSourceGotFocusEventArgs"] = "Factory creator fail-fasts with E_NOTIMPL (NavigationFocusEventArgs.cpp, Bug 17347047).",
             ["Microsoft.UI.Xaml.Hosting.DesktopWindowXamlSourceTakeFocusRequestedEventArgs"] = "Factory creator fail-fasts with E_NOTIMPL (NavigationFocusEventArgs.cpp, Bug 17347047).",
         };
+        // Public runtime classes that Microsoft.UI.Xaml.dll serves through DllGetActivationFactory but that have no
+        // ActivatableClass registration in the deployed AppXManifest.xml (they are not default-activatable: event args,
+        // statics-only and base classes). Together with the manifest's Microsoft.UI.Xaml.dll registrations this defines which
+        // public classes the DLL owns: an owned class that stops being served, an unowned class that starts being served, and an
+        // entry that is no longer a public unregistered class all fail the activation-factory sweep. Classes owned by other DLLs
+        // (registered to them, or unregistered and not listed here) are expected to return CLASS_E_CLASSNOTAVAILABLE.
+        public static readonly IReadOnlyCollection<string> KnownUnregisteredMuxClasses = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Microsoft.UI.Xaml.ApplicationInitializationCallbackParams",
+            "Microsoft.UI.Xaml.Automation.AutomationProperty",
+            "Microsoft.UI.Xaml.Automation.Provider.IRawElementProviderSimple",
+            "Microsoft.UI.Xaml.BindingFailedEventArgs",
+            "Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs",
+            "Microsoft.UI.Xaml.Controls.AnchorRequestedEventArgs",
+            "Microsoft.UI.Xaml.Controls.CalendarDatePickerDateChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.CalendarViewDayItemChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.CalendarViewSelectedDatesChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.CandidateWindowBoundsChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.CleanUpVirtualizedItemEventArgs",
+            "Microsoft.UI.Xaml.Controls.ColumnDefinitionCollection",
+            "Microsoft.UI.Xaml.Controls.ComboBoxTextSubmittedEventArgs",
+            "Microsoft.UI.Xaml.Controls.ContentDialogButtonClickDeferral",
+            "Microsoft.UI.Xaml.Controls.ContentDialogButtonClickEventArgs",
+            "Microsoft.UI.Xaml.Controls.ContentDialogClosedEventArgs",
+            "Microsoft.UI.Xaml.Controls.ContentDialogClosingDeferral",
+            "Microsoft.UI.Xaml.Controls.ContentDialogClosingEventArgs",
+            "Microsoft.UI.Xaml.Controls.ContentDialogOpenedEventArgs",
+            "Microsoft.UI.Xaml.Controls.ContextMenuEventArgs",
+            "Microsoft.UI.Xaml.Controls.DatePickerSelectedValueChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.DatePickerValueChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.DragItemsCompletedEventArgs",
+            "Microsoft.UI.Xaml.Controls.FocusDisengagedEventArgs",
+            "Microsoft.UI.Xaml.Controls.FocusEngagedEventArgs",
+            "Microsoft.UI.Xaml.Controls.HasValidationErrorsChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.HubSectionCollection",
+            "Microsoft.UI.Xaml.Controls.IsTextTrimmedChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.ItemCollection",
+            "Microsoft.UI.Xaml.Controls.ItemContainerGenerator",
+            "Microsoft.UI.Xaml.Controls.ListViewBaseHeaderItem",
+            "Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase",
+            "Microsoft.UI.Xaml.Controls.PasswordBoxPasswordChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.Primitives.AppBarButtonTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.AppBarTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.AppBarToggleButtonTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.CalendarViewTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.ComboBoxTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.CommandBarTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.FlyoutBaseClosingEventArgs",
+            "Microsoft.UI.Xaml.Controls.Primitives.GridViewItemTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.ItemsChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.Primitives.ListViewItemTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.MenuFlyoutItemTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.MenuFlyoutPresenterTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel",
+            "Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.Primitives.SplitViewTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.Primitives.ToolTipTemplateSettings",
+            "Microsoft.UI.Xaml.Controls.RichEditBoxSelectionChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.RichEditBoxTextChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.RowDefinitionCollection",
+            "Microsoft.UI.Xaml.Controls.ScrollViewerView",
+            "Microsoft.UI.Xaml.Controls.ScrollViewerViewChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.SectionsInViewChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.SplitViewPaneClosingEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextBoxBeforeTextChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextBoxSelectionChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextBoxTextChangingEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextCompositionChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextCompositionEndedEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextCompositionStartedEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextControlCopyingToClipboardEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextControlCuttingToClipboardEventArgs",
+            "Microsoft.UI.Xaml.Controls.TextControlPasteEventArgs",
+            "Microsoft.UI.Xaml.Controls.TimePickerSelectedValueChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.TimePickerValueChangedEventArgs",
+            "Microsoft.UI.Xaml.Controls.UIElementCollection",
+            "Microsoft.UI.Xaml.Controls.VirtualizingPanel",
+            "Microsoft.UI.Xaml.Data.BindingExpression",
+            "Microsoft.UI.Xaml.Data.BindingExpressionBase",
+            "Microsoft.UI.Xaml.DataContextChangedEventArgs",
+            "Microsoft.UI.Xaml.DebugSettings",
+            "Microsoft.UI.Xaml.DependencyPropertyChangedEventArgs",
+            "Microsoft.UI.Xaml.Documents.BlockCollection",
+            "Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs",
+            "Microsoft.UI.Xaml.Documents.InlineCollection",
+            "Microsoft.UI.Xaml.Documents.TextHighlighterBase",
+            "Microsoft.UI.Xaml.Documents.TextPointer",
+            "Microsoft.UI.Xaml.DragEventArgs",
+            "Microsoft.UI.Xaml.DragOperationDeferral",
+            "Microsoft.UI.Xaml.DragStartingEventArgs",
+            "Microsoft.UI.Xaml.DragUI",
+            "Microsoft.UI.Xaml.DragUIOverride",
+            "Microsoft.UI.Xaml.DropCompletedEventArgs",
+            "Microsoft.UI.Xaml.EffectiveViewportChangedEventArgs",
+            "Microsoft.UI.Xaml.ExceptionRoutedEventArgs",
+            "Microsoft.UI.Xaml.Hosting.XamlShutdownCompletedOnThreadEventArgs",
+            "Microsoft.UI.Xaml.Input.CanExecuteRequestedEventArgs",
+            "Microsoft.UI.Xaml.Input.CharacterReceivedRoutedEventArgs",
+            "Microsoft.UI.Xaml.Input.ExecuteRequestedEventArgs",
+            "Microsoft.UI.Xaml.Input.FocusManagerGotFocusEventArgs",
+            "Microsoft.UI.Xaml.Input.FocusManagerLostFocusEventArgs",
+            "Microsoft.UI.Xaml.Input.FocusMovementResult",
+            "Microsoft.UI.Xaml.Input.GettingFocusEventArgs",
+            "Microsoft.UI.Xaml.Input.InertiaExpansionBehavior",
+            "Microsoft.UI.Xaml.Input.InertiaRotationBehavior",
+            "Microsoft.UI.Xaml.Input.InertiaTranslationBehavior",
+            "Microsoft.UI.Xaml.Input.KeyRoutedEventArgs",
+            "Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs",
+            "Microsoft.UI.Xaml.Input.LosingFocusEventArgs",
+            "Microsoft.UI.Xaml.Input.NoFocusCandidateFoundEventArgs",
+            "Microsoft.UI.Xaml.Input.Pointer",
+            "Microsoft.UI.Xaml.Input.PointerRoutedEventArgs",
+            "Microsoft.UI.Xaml.Input.ProcessKeyboardAcceleratorEventArgs",
+            "Microsoft.UI.Xaml.LaunchActivatedEventArgs",
+            "Microsoft.UI.Xaml.Media.Animation.ConnectedAnimation",
+            "Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationConfiguration",
+            "Microsoft.UI.Xaml.Media.ImageSource",
+            "Microsoft.UI.Xaml.Media.Imaging.DownloadProgressEventArgs",
+            "Microsoft.UI.Xaml.Media.Imaging.SvgImageSourceFailedEventArgs",
+            "Microsoft.UI.Xaml.Media.Imaging.SvgImageSourceOpenedEventArgs",
+            "Microsoft.UI.Xaml.Media.LoadedImageSourceLoadCompletedEventArgs",
+            "Microsoft.UI.Xaml.Media.MediaTransportControlsThumbnailRequestedEventArgs",
+            "Microsoft.UI.Xaml.Media.PathSegment",
+            "Microsoft.UI.Xaml.Media.RenderedEventArgs",
+            "Microsoft.UI.Xaml.Media.RenderingEventArgs",
+            "Microsoft.UI.Xaml.Media.Shadow",
+            "Microsoft.UI.Xaml.Media.Transform",
+            "Microsoft.UI.Xaml.MediaFailedRoutedEventArgs",
+            "Microsoft.UI.Xaml.Navigation.NavigatingCancelEventArgs",
+            "Microsoft.UI.Xaml.Navigation.NavigationEventArgs",
+            "Microsoft.UI.Xaml.Navigation.NavigationFailedEventArgs",
+            "Microsoft.UI.Xaml.ResourceManagerRequestedEventArgs",
+            "Microsoft.UI.Xaml.RoutedEvent",
+            "Microsoft.UI.Xaml.SetterBase",
+            "Microsoft.UI.Xaml.SizeChangedEventArgs",
+            "Microsoft.UI.Xaml.TriggerAction",
+            "Microsoft.UI.Xaml.TriggerBase",
+            "Microsoft.UI.Xaml.TriggerCollection",
+            "Microsoft.UI.Xaml.UnhandledExceptionEventArgs",
+            "Microsoft.UI.Xaml.WindowActivatedEventArgs",
+            "Microsoft.UI.Xaml.WindowEventArgs",
+            "Microsoft.UI.Xaml.WindowSizeChangedEventArgs",
+            "Microsoft.UI.Xaml.WindowVisibilityChangedEventArgs",
+            "Microsoft.UI.Xaml.XamlResourceReferenceFailedEventArgs",
+            "Microsoft.UI.Xaml.XamlRoot",
+            "Microsoft.UI.Xaml.XamlRootChangedEventArgs",
+        };
+
         // Runtime classes the sweep never default-activates. These are still covered by the activation-factory sweep.
         public static readonly IReadOnlyDictionary<string, string> ActivationExclusions = new Dictionary<string, string>
         {
@@ -215,6 +386,15 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             return defect != null;
         }
 
+        // PC-21: ctl::ComBase::QueryInterfaceImpl (dxaml\xcp\components\com\inc\ComBase.h) returns E_NOINTERFACE without
+        // setting *ppObject to null, and ComObjectBase::NonDelegatingQueryInterfaceBase (ComObjectBase.cpp) does not clear
+        // it first, so a failed QueryInterface on Microsoft.UI.Xaml.dll runtime class instances and activation factories
+        // leaves the caller's *ppv unchanged (COM requires null). Automation peers returned by CreatePeerForElement do clear
+        // it. The sweep asserts each behavior exactly: instances/factories must leave the sentinel unchanged (clearing it
+        // fails with "no longer reproduces" so the pin is removed), peers must clear it, and writing any other value fails.
+        public const string FailedQueryInterfaceLeavesOutPointerUnchanged =
+            "PC-21: ComBase::QueryInterfaceImpl returns E_NOINTERFACE without setting *ppObject to null";
+
         // Member operations that fail with a specific HRESULT on a detached instance, keyed
         // "DeclaringType.Member:operation" where operation is one of the SweepOperation constants.
         public static readonly IReadOnlyDictionary<string, ExpectedFailure> ExpectedFailures = BuildExpectedFailures();
@@ -260,7 +440,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             foreach (string eventName in new[] { "AccessKeyDisplayDismissed", "AccessKeyDisplayRequested", "AccessKeyInvoked" })
             {
                 failures[OperationKey("Microsoft.UI.Xaml.Documents.TextElement." + eventName, SweepOperation.AddRemove)] = new ExpectedFailure(
-                    typeof(NotImplementedException), InspectableAbiHelper.E_NOTIMPL, "PC-5: TextElement access-key event registration is not implemented for non-Hyperlink text elements.");
+                    SweepCategory.Events, typeof(NotImplementedException), InspectableAbiHelper.E_NOTIMPL, "PC-5: TextElement access-key event registration is not implemented for non-Hyperlink text elements.");
             }
 
             // PC-6: the XAML VirtualKey value table (satVirtualKey in components\metadata\inc\EnumValueTable.g.h) ends at
@@ -275,7 +455,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                 "NavigationRight", "NavigationUp", "NavigationView", "Refresh", "Search", "Stop" })
             {
                 failures[OperationKey("Microsoft.UI.Xaml.Input.KeyboardAccelerator.Key=" + keyName, SweepOperation.Parse)] = new ExpectedFailure(
-                    typeof(Microsoft.UI.Xaml.Markup.XamlParseException), InspectableAbiHelper.E_XAMLPARSEFAILED, "PC-6: VirtualKey name missing from the XAML enum value table.");
+                    SweepCategory.EnumTextConversion, typeof(Microsoft.UI.Xaml.Markup.XamlParseException), InspectableAbiHelper.E_XAMLPARSEFAILED, "PC-6: VirtualKey name missing from the XAML enum value table.");
             }
 
             // PC-9: Typography attached properties set on the sweep's DependencyObject target cannot be cleared
@@ -290,7 +470,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                 "StylisticSet7", "StylisticSet8", "StylisticSet9", "Variants" })
             {
                 failures[OperationKey("Microsoft.UI.Xaml.Documents.Typography." + name, SweepOperation.ClearValue)] = new ExpectedFailure(
-                    typeof(ArgumentException), InspectableAbiHelper.E_INVALIDARG, "PC-9: ClearValue of a Typography attached property fails after a successful Set.");
+                    SweepCategory.AttachedProperties, typeof(ArgumentException), InspectableAbiHelper.E_INVALIDARG, "PC-9: ClearValue of a Typography attached property fails after a successful Set.");
             }
 
             // Observed, contract not established: these classes are rejected as the root of XamlReader.Load with a
@@ -298,7 +478,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             foreach (string rootType in new[] { "Microsoft.UI.Xaml.Automation.Peers.AutomationPeerAnnotation", "Microsoft.UI.Xaml.Printing.PrintDocument" })
             {
                 failures[OperationKey(rootType + " object element", SweepOperation.Parse)] = new ExpectedFailure(
-                    typeof(Microsoft.UI.Xaml.Markup.XamlParseException), InspectableAbiHelper.E_XAMLPARSEFAILED,
+                    SweepCategory.ParserObjectElements, typeof(Microsoft.UI.Xaml.Markup.XamlParseException), InspectableAbiHelper.E_XAMLPARSEFAILED,
                     "Observed: not creatable as a standalone XamlReader.Load root object.");
             }
 
@@ -309,7 +489,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
                 "Microsoft.UI.Xaml.Media.Imaging.RenderTargetBitmap", "Microsoft.UI.Xaml.Style" })
             {
                 failures[OperationKey(rootType + " object element", SweepOperation.Parse)] = new ExpectedFailure(
-                    typeof(global::System.Runtime.InteropServices.SEHException), InspectableAbiHelper.E_FAIL,
+                    SweepCategory.ParserObjectElements, typeof(global::System.Runtime.InteropServices.SEHException), InspectableAbiHelper.E_FAIL,
                     "PC-11: native SEH exception escapes XamlReader.Load for this root object.");
             }
             AddInstancePropertyFailures(failures);
@@ -321,7 +501,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         private static void AddInstancePropertyFailures(Dictionary<string, ExpectedFailure> failures)
         {
             void Add(string member, string operation, Type exceptionType, int hresult, string reason) =>
-                failures[OperationKey(member, operation)] = new ExpectedFailure(exceptionType, hresult, reason);
+                failures[OperationKey(member, operation)] = new ExpectedFailure(SweepCategory.InstanceProperties, exceptionType, hresult, reason);
 
             // Observed, contract not established: these members fail on a default-constructed or detached instance.
             foreach (string name in new[] { "Cumulative", "Delta" })

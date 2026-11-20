@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
         public static readonly Guid IID_NotImplemented = new Guid("6A1C5E2B-90F3-4C7E-B1D4-3F2A8E9C0D57");
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int QueryInterfaceFn(IntPtr self, ref Guid iid, out IntPtr ppv);
+        private delegate int QueryInterfaceFn(IntPtr self, ref Guid iid, ref IntPtr ppv);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate uint ReleaseFn(IntPtr self);
@@ -71,17 +71,25 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             return Marshal.GetDelegateForFunctionPointer(function, delegateType);
         }
 
-        // COM requires QueryInterface to set *ppv to null on failure. A failed call's out pointer is never owned by the
-        // caller, so it is reported through 'outPointerOnFailure' (for the caller to assert on) and 'result' is null:
-        // releasing it would over-release the object.
+        // Non-null value written to *ppv before every QueryInterface call, so that an implementation that does not write
+        // *ppv is observable. It is never dereferenced or released.
+        public static readonly IntPtr QueryInterfaceOutSentinel = new IntPtr(0x5EED0BAD);
+
+        // COM requires QueryInterface to set *ppv to null on failure and to a valid pointer on success. *ppv starts as
+        // QueryInterfaceOutSentinel. A failed call's out pointer is never owned by the caller, so it is reported through
+        // 'outPointerOnFailure' (null when the contract is met; the sentinel when *ppv was left unwritten) and 'result' is
+        // null: releasing it would over-release the object. A successful call that leaves the sentinel in *ppv also reports
+        // it through 'outPointerOnFailure', with a null 'result'.
         public static int QueryInterface(IntPtr comPointer, Guid iid, out IntPtr result, out IntPtr outPointerOnFailure)
         {
             var queryInterface = (QueryInterfaceFn)GetVtableFunction(comPointer, 0, typeof(QueryInterfaceFn));
-            int hr = queryInterface(comPointer, ref iid, out result);
+            IntPtr ppv = QueryInterfaceOutSentinel;
+            int hr = queryInterface(comPointer, ref iid, ref ppv);
+            result = ppv;
             outPointerOnFailure = IntPtr.Zero;
-            if (hr < 0)
+            if (hr < 0 || ppv == QueryInterfaceOutSentinel)
             {
-                outPointerOnFailure = result;
+                outPointerOnFailure = ppv;
                 result = IntPtr.Zero;
             }
             return hr;
@@ -93,7 +101,9 @@ namespace Microsoft.UI.Xaml.Tests.Framework.ApiSurface
             int hr = QueryInterface(comPointer, iid, out IntPtr result, out IntPtr outPointerOnFailure);
             if (outPointerOnFailure != IntPtr.Zero)
             {
-                throw new InvalidOperationException($"QueryInterface({{{iid}}}) failed with 0x{hr:X8} but left a non-null out pointer.");
+                throw new InvalidOperationException(outPointerOnFailure == QueryInterfaceOutSentinel
+                    ? $"QueryInterface({{{iid}}}) returned 0x{hr:X8} without writing its out pointer."
+                    : $"QueryInterface({{{iid}}}) failed with 0x{hr:X8} but left a non-null out pointer.");
             }
             Marshal.ThrowExceptionForHR(hr);
             return result;
