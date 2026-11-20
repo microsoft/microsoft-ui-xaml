@@ -476,11 +476,10 @@ IDXamlCore* DependencyObject::GetCoreForObject()
 void
 DependencyObject::OnFinalRelease()
 {
-#if DBG
-    // The framework peer is entering final release. Announce the transition through the single
-    // choke point (observability only; this does not alter the release path).
+    // The framework peer is entering final release. Drive the transition through the single choke point,
+    // which is the sole writer of the stored lifetime state. Enforced in every build; non-fatal at this
+    // call site (the choke point itself asserts in debug / opt-in fail-fasts in retail).
     IGNOREHR(TransitionPeerState(GetPeerLifetimeState(), ctl::WeakReferenceSourceNoThreadId::PeerLifetimeState::Releasing));
-#endif
 
     if (OnFinalReleaseOffThread())
     {
@@ -574,11 +573,9 @@ DependencyObject::DisconnectFrameworkPeerCore()
 {
     CDependencyObject* pDO = NULL;
 
-#if DBG
-    // Capture the lifetime state before we begin tearing down, so we can announce the terminal
+    // Capture the lifetime state before we begin tearing down, so we can drive the terminal
     // transition to TornDown once the disconnect flags are set.
     const auto peerStateBeforeDisconnect = GetPeerLifetimeState();
-#endif
 
     // Set a flag that we're shutting down
     m_bIsDisconnected = TRUE;
@@ -626,11 +623,10 @@ DependencyObject::DisconnectFrameworkPeerCore()
     // Set a flag that we're disconnected from our core object.
     m_bIsDisconnectedFromCore = TRUE;
 
-#if DBG
-    // The peer is now disconnected from its core object (terminal TornDown state). Announce the
-    // transition through the single choke point (observability only).
-    IGNOREHR(TransitionPeerState(peerStateBeforeDisconnect, GetPeerLifetimeState()));
-#endif
+    // The peer is now disconnected from its core object (terminal TornDown state). Drive the transition
+    // through the single choke point; the derived state now resolves to TornDown because the disconnect
+    // flags above are set. Enforced in every build.
+    IGNOREHR(TransitionPeerState(peerStateBeforeDisconnect, ComputeDerivedPeerLifetimeState()));
 
     return S_OK;
 }
