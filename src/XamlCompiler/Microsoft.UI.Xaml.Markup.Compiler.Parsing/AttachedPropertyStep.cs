@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
@@ -30,7 +31,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 if (Parent.ImplementsINDEI)
                 {
-                    var memberInfo = this.OwnerType.UnderlyingType.GetMember(PropertyName + "Property");
+                    var memberInfo = this.OwnerType.UnderlyingType.GetMemberLmr(PropertyName + "Property");
                     if (memberInfo != null && memberInfo.Length > 0)
                     {
                         return DirectUI.ReflectionHelper.FindAttributeByShortTypeName(memberInfo[0], KnownTypes.RequiredAttribute) != null;

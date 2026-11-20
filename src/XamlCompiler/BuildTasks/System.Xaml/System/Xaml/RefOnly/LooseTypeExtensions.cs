@@ -6,6 +6,7 @@ using System;
 using System.Text;
 using System.Reflection;
 using System.Windows.Markup;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml
 {
@@ -106,7 +107,7 @@ namespace System.Xaml
         {
             for (Type type = t; type != null; type = type.BaseType)
             {
-                Type[] interfaces = type.GetInterfaces();
+                Type[] interfaces = type.GetInterfacesLmr();
                 for (int i = 0; i < interfaces.Length; i++)
                 {
                     if (AssemblyQualifiedNameEquals(interfaces[i], interfaceType)

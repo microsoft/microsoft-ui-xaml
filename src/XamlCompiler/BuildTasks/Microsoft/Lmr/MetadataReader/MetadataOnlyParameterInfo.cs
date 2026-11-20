@@ -81,7 +81,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 // Navigate from parameter to its declaring method
                 // The parent method token can be obtained from the parameter's row context
-                return m_resolver.ResolveMethod(MetadataTokens.GetToken(m_resolver.GetDeclaringMethodForParameter(m_parameterHandle)));
+                return m_resolver.ResolveMethodLmr(MetadataTokens.GetToken(m_resolver.GetDeclaringMethodForParameter(m_parameterHandle)));
             }
         }
 

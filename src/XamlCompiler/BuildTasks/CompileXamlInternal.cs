@@ -1933,7 +1933,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             Type type;
             foreach (Assembly asm in loadedAssemblies)
             {
-                type = asm.GetType(typeName);
+                type = asm.GetTypeLmr(typeName);
                 if (type != null)
                 {
                     return type;

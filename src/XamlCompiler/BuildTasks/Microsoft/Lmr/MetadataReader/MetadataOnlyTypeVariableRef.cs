@@ -145,52 +145,52 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             get { throw new InvalidOperationException(); }
         }
 
-        public override MethodInfo[] GetMethods(BindingFlags flags)
+        internal override MethodInfo[] GetMethodsCore(BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override ConstructorInfo[] GetConstructors(BindingFlags bindingAttr)
+        internal override ConstructorInfo[] GetConstructorsCore(BindingFlags bindingAttr)
         {
             throw new InvalidOperationException();
         }
 
-        public override FieldInfo[] GetFields(BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override FieldInfo GetField(string name, BindingFlags flags)
+        internal override FieldInfo GetFieldCore(string name, BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override PropertyInfo[] GetProperties(BindingFlags flags)
+        internal override PropertyInfo[] GetPropertiesCore(BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override EventInfo[] GetEvents(System.Reflection.BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(System.Reflection.BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
             throw new InvalidOperationException();
         }
 
-        public override Type MakeGenericType(Type[] argTypes)
+        internal override Type MakeGenericTypeCore(Type[] argTypes)
         {
             throw new InvalidOperationException();
         }
 
-        public override Type GetNestedType(string name, BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, BindingFlags bindingAttr)
         {
             throw new InvalidOperationException();
         }
 
-        public override Type[] GetNestedTypes(BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(BindingFlags bindingAttr)
         {
             throw new InvalidOperationException();
         }
@@ -200,12 +200,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             throw new InvalidOperationException();
         }
 
-        protected override MethodInfo GetMethodImpl(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override MethodInfo GetMethodImplCore(string name, BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             throw new InvalidOperationException();
         }
 
-        protected override PropertyInfo GetPropertyImpl(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
+        internal override PropertyInfo GetPropertyImplCore(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
         {
             throw new InvalidOperationException();
         }
@@ -231,22 +231,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             throw new InvalidOperationException();
         }
 
-        protected override ConstructorInfo GetConstructorImpl(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
+        internal override ConstructorInfo GetConstructorImplCore(BindingFlags bindingAttr, Binder binder, CallingConventions callConvention, Type[] types, ParameterModifier[] modifiers)
         {
             throw new InvalidOperationException();
         }
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
             throw new InvalidOperationException();
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
             throw new InvalidOperationException();
         }
 
-        public override MemberInfo[] GetMembers(BindingFlags bindingAttr)
+        internal override MemberInfo[] GetMembersCore(BindingFlags bindingAttr)
         {
             throw new InvalidOperationException();
         }
@@ -261,7 +261,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             throw new InvalidOperationException();
         }
 
-        public override object InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
             throw new NotSupportedException();
         }
@@ -328,7 +328,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
                         return m_resolver.Factory.CreateMethodOrConstructor(m_resolver, (MethodDefinitionHandle)m_ownerHandle, null, null);
                     }
                     // For MemberReference owners, resolve through the module
-                    return m_resolver.ResolveMethod(MetadataTokens.GetToken(m_ownerHandle));
+                    return m_resolver.ResolveMethodLmr(MetadataTokens.GetToken(m_ownerHandle));
                 }
                 return null;
             }

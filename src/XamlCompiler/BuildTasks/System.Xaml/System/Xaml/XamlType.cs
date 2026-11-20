@@ -15,6 +15,7 @@ using System.Xaml.MS.Impl;
 using System.Xaml.Schema;
 using System.Windows.Markup;
 using MS.Internal.Xaml.Parser;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml
 {
@@ -663,7 +664,7 @@ namespace System.Xaml
             }
             if (IsPublic)
             {
-                return UnderlyingType.GetConstructors();
+                return UnderlyingType.GetConstructorsLmr();
             }
             return GetPublicAndInternalConstructors();
         }
@@ -792,7 +793,7 @@ namespace System.Xaml
                 // Value types have built-in default constructor
                 return false;
             }
-            ConstructorInfo defaultCtor = underlyingType.GetConstructor(ConstructorBindingFlags, null, Type.EmptyTypes, null);
+            ConstructorInfo defaultCtor = underlyingType.GetConstructorLmr(ConstructorBindingFlags, null, Type.EmptyTypes, null);
             return (defaultCtor == null) || !TypeReflector.IsPublicOrInternal(defaultCtor);
         }
 
@@ -1504,7 +1505,7 @@ namespace System.Xaml
 
         private IEnumerable<ConstructorInfo> GetPublicAndInternalConstructors()
         {
-            foreach (ConstructorInfo ctor in UnderlyingType.GetConstructors(ConstructorBindingFlags))
+            foreach (ConstructorInfo ctor in UnderlyingType.GetConstructorsLmr(ConstructorBindingFlags))
             {
                 if (TypeReflector.IsPublicOrInternal(ctor))
                 {

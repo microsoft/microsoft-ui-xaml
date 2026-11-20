@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Xaml;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace Microsoft.UI.Xaml.Markup.Compiler
 {
@@ -101,14 +102,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             if (declaringType.InheritsFromNamedType(dependencyObjectTypeName))
             {
                 // They are properties in CX/C++ winmds.
-                PropertyInfo pi = declaringType.GetProperty(dpName, bindingFlags);
+                PropertyInfo pi = declaringType.GetPropertyLmr(dpName, bindingFlags);
                 if (pi != null)
                 {
                     return pi.PropertyType.InheritsFromNamedType(dependencyPropertyTypeName);
                 }
 
                 // In managed they may also be fields.
-                FieldInfo fi = declaringType.GetField(dpName, bindingFlags);
+                FieldInfo fi = declaringType.GetFieldLmr(dpName, bindingFlags);
                 if (fi != null)
                 {
                     return fi.FieldType.InheritsFromNamedType(dependencyPropertyTypeName);

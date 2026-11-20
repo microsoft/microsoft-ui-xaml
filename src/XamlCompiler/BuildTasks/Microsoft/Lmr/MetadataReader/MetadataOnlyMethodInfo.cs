@@ -17,7 +17,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// This is for MethodInfos backed by real metadata with real a MethodDef token. 
     /// Use a different derived class for fabricated methodInfos.
     /// </summary>
-    internal class MetadataOnlyMethodInfo : MethodInfo 
+    internal class MetadataOnlyMethodInfo : LmrMethodInfoBase 
     {
         // !!! IMPORTANT !!!
         //
@@ -666,7 +666,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override MethodInfo MakeGenericMethod(params Type[] types)
+        internal override MethodInfo MakeGenericMethodCore(Type[] types)
         {
             // Need unresolved generic args to make a generic method.
             // This will also fully initialize this object.
@@ -742,7 +742,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         #endregion // Generics
 
         // Returns null if the method does not have any IL code (such as an ecall into the runtime or a pinvoke)
-        public override MethodBody GetMethodBody()
+        internal override MethodBody GetMethodBodyCore()
         {
             if (m_methodBody == null)
             {
@@ -783,7 +783,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             {
                 paramTypes.Add(p.ParameterType);
             }
-            var matchingMethod = baseType.GetMethod
+            var matchingMethod = baseType.GetMethodLmr
                 (
                     this.Name,
                     BindingFlags.FlattenHierarchy | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
