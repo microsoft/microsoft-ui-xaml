@@ -302,6 +302,12 @@ static class FullBackendScenesTests
         var noSteps = Run("DpiTheme", "", BackendMode.Composition);
         Equal(null, noSteps.CycleLeakPrivateMB, "no steps, no leak value");
         Expect(!GateFor(noSteps, GateNames.NoCycleLeak).Passed, "S20 must produce the cycle steps");
+
+        // A short (-Quick, --items < 100) run reaches cycle-10 but not cycle-100: the leak gate is not applicable.
+        var shortRun = Run("DpiTheme", "", BackendMode.Composition, r =>
+            r.Extra.Add(new SceneStepRecord(MiniRun.InteractionBegin + 100, MiniRun.Pid, 0, "cycle-10", 0)));
+        var shortGate = GateFor(shortRun, GateNames.NoCycleLeak);
+        Expect(shortGate.Passed && shortGate.Detail.StartsWith("n/a"), $"short run is n/a: {shortGate.Detail}");
         Expect(Run("Inbox", "", BackendMode.Composition).Gate.All(g => g.Name != GateNames.NoCycleLeak), "S20/S21 only");
     }
 

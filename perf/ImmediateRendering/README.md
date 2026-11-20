@@ -66,12 +66,12 @@ hypotheses and gate rules per scene are in the test plan, "Extended scenes" and 
 | S8 | `datagrid` | `ItemsRepeater` rows, 50 columns × 1,000 rows of bordered cells, frozen header | 2% of visible cells at 10 Hz + alternating V/H scrolls | 30 s, 10 Hz, 0.5 Hz, –, 1000 | – (`datagrid`) |
 | S9 | `multiwindow` | N windows of S1 (`--windows 1\|5\|10`, default 10) | lifecycle steps: baseline, open-1..N, minimize-all, restore-all, close-all, settled; one per `--step-seconds` (2) | 30 s | `--tabs`: one TabView of 20 S1 tabs (`multiwindow-tabs`) |
 | S10 | `form` | 3 TextBoxes, ComboBox, CheckBox, ToggleSwitch, Slider, Button+Flyout, Button+ToolTip, Submit | typing, Tab focus, hover, ComboBox/Flyout/ToolTip open/close | 30 s, –, 10 Hz | – (`form`) |
-| S11 | `interop` | `SetElementChildVisual` SpriteVisual with an expression animation, `GetElementVisual` + implicit Offset animation, `ConnectedAnimation` between two views | view swaps + card moves | 20 s, 2 Hz, 1 Hz | `--no-interop`: same layout without composition interop, must stay immediate (`interop-nointerop`) |
+| S11 | `interop` | `SetElementChildVisual` SpriteVisual with an expression animation, `GetElementVisual` + implicit Offset animation, `ConnectedAnimation` between two views | view swaps + card moves | 20 s, –, 1 Hz | `--no-interop`: same layout without composition interop, must stay immediate (`interop-nointerop`) |
 | S12 | `lottie` | ProgressRings, `AnimatedIcon` buttons, CheckBox, `AnimatedVisualPlayer` with a hand-coded `IAnimatedVisualSource` (rotating ShapeVisual) | pointer-state changes on AnimatedIcons | 20 s, –, 1 Hz | `--no-player` (`lottie-noplayer`) |
 | S13 | `materials` | Mica window backdrop, `AcrylicBrush` panes, ThemeShadow cards (Translation Z), elevation borders, `LinearGradientBrush` fills | card elevation + gradient changes | 20 s, 2 Hz, 1 Hz | – (`materials`) |
 | S14 | `popups` | 560×400 window; Flyout, MenuFlyout, ComboBox, TeachingTip, ToolTip and Popup with `ShouldConstrainToRootBounds=false` placed partly outside the window | open-1..6 / closed steps, then open/close cycles | 30 s, –, 1 Hz | – (`popups`) |
 | S15 | `independent` | 2000-item list scrolled with animated `ChangeView`, looping opacity/translate Storyboard, ProgressRing; UI thread blocked 1000 ms every 4 s | animated scroll | 20 s, –, –, 600 DIP/s, 2000 | – (`independent`) |
-| S16 | `swapchain` | `SwapChainPanel` with a raw-COM D3D11 swap chain cleared to an animated color + `MediaPlayerElement` playing a generated clip | continuous presents | 20 s | `--no-media`: SwapChainPanel only, still falls back (`swapchain-nomedia`) |
+| S16 | `swapchain` | `SwapChainPanel` with a raw-COM D3D11 swap chain cleared to an animated color + `MediaPlayerElement` playing a generated clip | continuous presents + 2 Hz XAML status text | 20 s, 2 Hz | `--no-media`: SwapChainPanel only, still falls back (`swapchain-nomedia`) |
 | S19 | `text` | RTL Arabic/Hebrew, Devanagari/Thai, color emoji, a CFF (.otf) font if installed, Segoe UI Variable weights, ClearType vs grayscale areas, RichTextBlock mixed runs, 72 pt text, 1000 TextBlocks in an ItemsRepeater | scroll | 20 s, –, –, 300 DIP/s, 1000 | – (`text`) |
 | S20 | `dpitheme` | Settings-like page; per cycle an `AppWindow.Resize`, every 5th a `RequestedTheme` toggle, every 25th a move to a monitor with another DPI (if any) | `--items` cycles | 60 s, –, –, –, 100 | – (`dpitheme`) |
 | S21 | `devicelost` | S2 dashboard with `WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST` set (`--device-lost <frames\|every:N>`, default `every:10`; immediate modes only) | 30 Hz updates | 45 s, 30 Hz | – (`devicelost`) |
@@ -164,7 +164,7 @@ frames/min; waived with "animation tax" for S6), `MemorySampled`, `NoUnsupported
 allowed; see Extended metrics), `WindowFallbackAsExpected` (immediate modes: S11/S12/S16 pass only if a
 `WindowFallback` was observed, every other scene fails if one was; n/a for composition). Scene gates: S15
 `UiBlockObserved`; S20 `RecoveryWithinLimit` (p95 change-to-frame per kind ≤ 1000 ms, no unmatched changes) and
-`NoCycleLeak` (< 2 MB); S21 immediate `DeviceLostObserved`, `RecoveryWithinLimit` (≤ 1000 ms) and `NoCycleLeak`
+`NoCycleLeak` (< 2 MB; n/a when `--items` < 100, e.g. `-Quick`); S21 immediate `DeviceLostObserved`, `RecoveryWithinLimit` (≤ 1000 ms) and `NoCycleLeak`
 (n/a below 100 losses); S22 `RenderTargetBitmapOk` (every render succeeded) and `CaptureWithinTolerance` (mean abs
 diff ≤ 8). Reports compute medians from gated runs only.
 

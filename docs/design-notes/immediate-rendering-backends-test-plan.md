@@ -407,7 +407,7 @@ part of this prototype; the plan ids stay reserved and `Run-RenderBench.ps1` rej
 - **Content:** a `SpriteVisual` attached with `ElementCompositionPreview.SetElementChildVisual` and rotated by an
   expression animation; cards whose handoff visuals (`GetElementVisual`) have an implicit `Offset` animation; a
   `ConnectedAnimation` between a thumbnail view and a detail view.
-- **Interaction:** 1 Hz view swaps (connected animation) and card reorders; 2 Hz updates.
+- **Interaction:** 1 Hz view swaps (connected animation) and card reorders.
 - **Expectation:** immediate modes emit `WindowFallback`, the window renders through Composition, frames are still
   presented and nothing crashes. `S11-nointerop` has the same layout and state changes without interop and must stay
   immediate (a `WindowFallback` there fails the gate).
@@ -460,7 +460,8 @@ part of this prototype; the plan ids stay reserved and `Run-RenderBench.ps1` rej
 ### S16 SwapChainPanel and MediaPlayerElement (`swapchain`, variant `--no-media`)
 
 - **Content:** a `SwapChainPanel` with a D3D11 composition swap chain created through raw COM (no new packages),
-  cleared to an animated color on every `CompositionTarget.Rendering`, and a `MediaPlayerElement` looping a clip
+  cleared to an animated color on every `CompositionTarget.Rendering` (next to XAML status text updated at 2 Hz, so the
+  window also draws XAML frames), and a `MediaPlayerElement` looping a clip
   generated once with `MediaComposition` (`%LOCALAPPDATA%\RenderBench\media\colors.mp4`). `SwapChainAvailable` and
   `MediaAvailable` scene values report whether each part ran; a failure skips that part only.
 - **Expectation:** `WindowFallback` in immediate modes for both variants.
@@ -484,7 +485,8 @@ part of this prototype; the plan ids stay reserved and `Run-RenderBench.ps1` rej
   precedes steps `cycle-10` and `cycle-100`.
 - **Metrics:** change-to-frame by kind (`ChangeToFrameMsByKind`: `resize`, `theme`, `dpi`), `UnmatchedChanges` (no frame
   within 5 s), `CycleLeakPrivateMB` (cycle-100 minus cycle-10).
-- **Gate:** `RecoveryWithinLimit` (p95 per kind ≤ 1000 ms, no unmatched changes), `NoCycleLeak` (< 2 MB).
+- **Gate:** `RecoveryWithinLimit` (p95 per kind ≤ 1000 ms, no unmatched changes), `NoCycleLeak` (< 2 MB; n/a for
+  runs shorter than 100 cycles, such as `-Quick`).
 
 ### S21 device lost (`devicelost`, `--device-lost <frames|every:N>`)
 

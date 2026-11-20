@@ -33,7 +33,7 @@ public static partial class MetricsCalculator
         int FallbackCount, IReadOnlyList<string>? FallbackReasons, bool ExpectsFallback,
         IReadOnlyList<UiBlockMetrics>? UiBlocks,
         IReadOnlyDictionary<string, Distribution>? ChangeToFrame, int? UnmatchedChanges,
-        double? CycleLeakMB,
+        double? CycleLeakMB, bool ShortCycleRun,
         Distribution? DeviceLostRecovery, int DeviceLosses, int Recovered, double? DeviceLostLeakMB,
         IReadOnlyDictionary<string, Distribution>? PopupOpenByKind, double? PrivateMBPerOpenPopup,
         double? RtbSuccessRate, double? CaptureMeanAbsDiff);
@@ -69,6 +69,7 @@ public static partial class MetricsCalculator
             UiBlocks(records, drawnEnds),
             changes, unmatched,
             StepPrivateMB(records, samples, $"cycle-{LeakLastCycle}") - StepPrivateMB(records, samples, $"cycle-{LeakFirstCycle}"),
+            HasStep(records, $"cycle-{LeakFirstCycle}") && !HasStep(records, $"cycle-{LeakLastCycle}"),
             Distribution.From(losses.Zip(recoveries).Where(p => p.Second is not null).Select(p => p.Second!.Value - p.First.TimeMs)),
             losses.Count, recoveries.Count(r => r is not null), deviceLeak,
             popupByKind.Count == 0 ? null : new SortedDictionary<string, Distribution>(popupByKind, StringComparer.Ordinal),
@@ -76,6 +77,8 @@ public static partial class MetricsCalculator
             Mean(values.Where(v => v.Name == SceneValueNames.RtbSuccess)),
             Mean(values.Where(v => v.Name == SceneValueNames.CaptureMeanAbsDiff)));
     }
+
+    static bool HasStep(List<TraceRecord> records, string name) => records.OfType<SceneStepRecord>().Any(s => s.Name == name);
 
     static double? Mean(IEnumerable<SceneValueRecord> values)
     {
@@ -180,9 +183,11 @@ public static partial class MetricsCalculator
                 break;
             case SceneId.DpiTheme:
                 checks.Add(EvaluateChangeRecovery(m, options));
-                checks.Add(new(GateNames.NoCycleLeak, m.CycleLeakMB is { } leak && leak < options.MaxCycleLeakMB,
-                    m.CycleLeakMB is null ? "no cycle-10/cycle-100 steps"
-                        : $"{m.CycleLeakMB:F2} MB from cycle 10 to 100 (max {options.MaxCycleLeakMB})"));
+                checks.Add(m.ShortCycleRun
+                    ? new(GateNames.NoCycleLeak, true, $"n/a: fewer than {LeakLastCycle} cycles (--items)")
+                    : new(GateNames.NoCycleLeak, m.CycleLeakMB is { } leak && leak < options.MaxCycleLeakMB,
+                        m.CycleLeakMB is null ? "no cycle-10/cycle-100 steps"
+                            : $"{m.CycleLeakMB:F2} MB from cycle 10 to 100 (max {options.MaxCycleLeakMB})"));
                 break;
             case SceneId.DeviceLost when !immediate:
                 const string na = "n/a: Composition has no device-lost hook";
