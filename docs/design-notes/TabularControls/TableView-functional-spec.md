@@ -148,8 +148,8 @@ the source publishes, so the same engine serves an app that never touches `Table
 
 The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
 header in the current column, else the first actionable one; the next `Tab` leaves the table.
-`Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
-in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
+`Down` moves into the rows (the remembered row, cell or group header if at least partly in view, else
+the selected row, else the first row in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
 header row. When no header is actionable or headers are hidden, the rows are the stop, entered in
 the same order; an empty table's `EmptyTemplate` content is the stop instead (its last control for
 `Shift+Tab`).
