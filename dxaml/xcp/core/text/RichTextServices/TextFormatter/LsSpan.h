@@ -29,6 +29,7 @@ namespace RichTextServices
                 _In_ LsSpanType::Enum type,
                 _In_opt_ LsSpan *pParent
                 );
+            virtual ~LsSpan() = default;
 
             // Returns the parent of this span.
             LsSpan * GetParent() const;
