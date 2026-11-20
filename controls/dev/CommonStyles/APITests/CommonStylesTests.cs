@@ -418,6 +418,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyAppBarButtonWidthLightweightStyling()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                            <AppBarButton x:Name='DefaultAppBarButton' Label='Default'/>
+                            <AppBarToggleButton x:Name='DefaultAppBarToggleButton' Label='Default'/>
+                            <StackPanel>
+                                <StackPanel.Resources>
+                                    <x:Double x:Key='AppBarButtonWidth'>45</x:Double>
+                                    <x:Double x:Key='AppBarToggleButtonWidth'>47</x:Double>
+                                </StackPanel.Resources>
+                                <AppBarButton x:Name='FullSizeAppBarButton' Label='Full size'/>
+                                <AppBarButton x:Name='CompactAppBarButton' Label='Compact' IsCompact='True'/>
+                                <CommandBar DefaultLabelPosition='Right'>
+                                    <AppBarButton x:Name='RightLabelAppBarButton' Label='Right'/>
+                                </CommandBar>
+                                <AppBarButton x:Name='CollapsedLabelAppBarButton' Label='Collapsed' LabelPosition='Collapsed'/>
+                                <AppBarButton x:Name='LocalWidthAppBarButton' Label='Local width' Width='90'/>
+                                <AppBarToggleButton x:Name='AppBarToggleButton' Label='Toggle'/>
+                                <AppBarButton x:Name='OverflowAppBarButton' Label='A long overflow label' Style='{StaticResource AppBarButtonOverflowStyle}'/>
+                                <AppBarToggleButton x:Name='OverflowAppBarToggleButton' Label='A long overflow label' Style='{StaticResource AppBarToggleButtonOverflowStyle}'/>
+                            </StackPanel>
+                      </StackPanel>");
+
+                Content = root;
+                Content.UpdateLayout();
+
+                var defaultAppBarButton = (AppBarButton)root.FindName("DefaultAppBarButton");
+                var defaultAppBarToggleButton = (AppBarToggleButton)root.FindName("DefaultAppBarToggleButton");
+                Verify.AreEqual(68.0, defaultAppBarButton.Width);
+                Verify.AreEqual(68.0, defaultAppBarButton.ActualWidth);
+                Verify.AreEqual(68.0, defaultAppBarToggleButton.Width);
+                Verify.AreEqual(68.0, defaultAppBarToggleButton.ActualWidth);
+
+                foreach (var name in new[] { "FullSizeAppBarButton", "CompactAppBarButton", "RightLabelAppBarButton", "CollapsedLabelAppBarButton" })
+                {
+                    var appBarButton = (AppBarButton)root.FindName(name);
+                    Verify.AreEqual(45.0, appBarButton.Width);
+                    Verify.AreEqual(45.0, appBarButton.ActualWidth);
+                }
+
+                var localWidthAppBarButton = (AppBarButton)root.FindName("LocalWidthAppBarButton");
+                Verify.AreEqual(90.0, localWidthAppBarButton.Width);
+                Verify.AreEqual(90.0, localWidthAppBarButton.ActualWidth);
+
+                var appBarToggleButton = (AppBarToggleButton)root.FindName("AppBarToggleButton");
+                Verify.AreEqual(47.0, appBarToggleButton.Width);
+                Verify.AreEqual(47.0, appBarToggleButton.ActualWidth);
+
+                Verify.IsTrue(Double.IsNaN(((AppBarButton)root.FindName("OverflowAppBarButton")).Width));
+                Verify.IsTrue(Double.IsNaN(((AppBarToggleButton)root.FindName("OverflowAppBarToggleButton")).Width));
+            });
+        }
+
+        [TestMethod]
         public void VerifyAppBarButtonChevronMarginsDoNotCollide()
         {
             StackPanel root = null;

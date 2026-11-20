@@ -277,6 +277,15 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void VerifyWidth(FrameworkElement[] frameworkElements, SimpleVerify simpleVerify, int width)
+        {
+            var expectedWidth = width.ToString();
+            foreach (var element in frameworkElements)
+            {
+                simpleVerify.IsEqual(element.ActualWidth.ToString(), expectedWidth, element.Name.ToString() + ".ActualWidth");
+            }
+        }
+
         private void AppBarButtonDensityTest_Click(object sender, RoutedEventArgs e)
         {
             SimpleVerify simpleVerify = new SimpleVerify();
@@ -291,6 +300,21 @@ namespace MUXControlsTestApp
             SimpleVerify simpleVerify = new SimpleVerify();
             FrameworkElement[] iconCollapsedElements = { AppBarToggleButton1, AppBarToggleButton3 };
             VerifyHeight(iconCollapsedElements, simpleVerify, 48);
+
+            DensityTestResult.Text = simpleVerify.ToString();
+        }
+
+        private void AppBarButtonWidthResourceTest_Click(object sender, RoutedEventArgs e)
+        {
+            SimpleVerify simpleVerify = new SimpleVerify();
+            FrameworkElement[] defaultWidthElements = { AppBarButton1, AppBarButton2, AppBarToggleButton1, AppBarToggleButton2 };
+            FrameworkElement[] appBarButtonWidthElements = { AppBarButtonWidthFullSize, AppBarButtonWidthCompact, AppBarButtonWidthRight, AppBarButtonWidthCollapsed };
+            FrameworkElement[] appBarToggleButtonWidthElements = { AppBarToggleButtonWidthFullSize, AppBarToggleButtonWidthCompact };
+
+            VerifyWidth(defaultWidthElements, simpleVerify, 68);
+            VerifyWidth(appBarButtonWidthElements, simpleVerify, 45);
+            VerifyWidth(appBarToggleButtonWidthElements, simpleVerify, 47);
+            VerifyWidth(new FrameworkElement[] { AppBarButtonLocalWidth }, simpleVerify, 90);
 
             DensityTestResult.Text = simpleVerify.ToString();
         }

@@ -120,6 +120,7 @@
   <Thickness x:Key="AppBarButtonInnerBorderMargin">2,6,2,6</Thickness>
   <Thickness x:Key="AppBarButtonInnerBorderCompactMargin">2,6,2,22</Thickness>
   <Thickness x:Key="AppBarButtonInnerBorderOverflowMargin">4,0,4,0</Thickness>
+  <x:Double x:Key="AppBarButtonWidth">68</x:Double>
   <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
   <Style x:Key="AppBarButtonOverflowStyle" TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -133,7 +134,7 @@
     <Setter Property="VerticalAlignment" Value="Top" />
     <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
     <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="Width" Value="68" />
+    <Setter Property="Width" Value="{ThemeResource AppBarButtonWidth}" />
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
     <Setter Property="FocusVisualMargin" Value="-3" />
     <Setter Property="AllowFocusOnInteraction" Value="False" />
