@@ -1116,6 +1116,175 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        public void VerifySharedGridLineBrushAppOverrideWinsAfterOppositeThemeWarmup()
+        {
+            ResourceDictionary originalResources = null;
+            TableView tableView = null;
+            SolidColorBrush expected = null;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    originalResources = Application.Current.Resources;
+                    var resources = new ResourceDictionary();
+                    resources.MergedDictionaries.Add(new XamlControlsResources());
+                    resources.MergedDictionaries.Add(new TabularControlsResources());
+                    Application.Current.Resources = resources;
+                    var opposite = Application.Current.RequestedTheme == ApplicationTheme.Light
+                        ? ElementTheme.Dark : ElementTheme.Light;
+                    tableView = CreateThemingTable();
+                    tableView.RequestedTheme = opposite;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    expected = (SolidColorBrush)Application.Current.Resources["DividerStrokeColorDefaultBrush"];
+                    Application.Current.Resources["TableViewGridLineBrush"] = expected;
+                    var opposite = tableView.RequestedTheme;
+                    tableView = CreateThemingTable();
+                    tableView.RequestedTheme = opposite;
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() => tableView.Density = TableViewDensity.Compact);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreSame(expected, row.BorderBrush, "The horizontal gridline must keep the app override.");
+                    Verify.AreSame(expected, GetRowCell(row, 0).BorderBrush,
+                        "A shared-brush app override must not be mistaken for an inherited fallback after a density change.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                    if (originalResources != null)
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        public void VerifyColdGridLineAliasUsesElementThemeWithCustomRowStyle()
+        {
+            ResourceDictionary originalResources = null;
+            TableView tableView = null;
+            Border expected = null;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    originalResources = Application.Current.Resources;
+                    var resources = new ResourceDictionary();
+                    resources.MergedDictionaries.Add(new XamlControlsResources());
+                    resources.MergedDictionaries.Add(new TabularControlsResources());
+                    Application.Current.Resources = resources;
+                    var opposite = Application.Current.RequestedTheme == ApplicationTheme.Light
+                        ? ElementTheme.Dark : ElementTheme.Light;
+                    tableView = CreateThemingTable();
+                    tableView.RequestedTheme = opposite;
+                    tableView.Resources[typeof(TableViewRow)] = (Style)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular' TargetType='tabular:TableViewRow'>" +
+                        "<Setter Property='BorderBrush' Value='Transparent' /></Style>");
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreEqual(Microsoft.UI.Colors.Transparent, ((SolidColorBrush)row.BorderBrush).Color,
+                        "The custom row style must bypass the stock XAML gridline-brush lookup.");
+                    expected = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        $"RequestedTheme='{tableView.RequestedTheme}' Background='{{ThemeResource DividerStrokeColorDefaultBrush}}' />");
+                    var host = new Grid();
+                    Content = null;
+                    host.Children.Add(tableView);
+                    host.Children.Add(expected);
+                    LoadContent(host);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.AreSame(expected.Background, GetRowCell(row, 0).BorderBrush,
+                        "The native lookup must resolve a cold cross-dictionary alias in the table's theme, not the app's.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                    if (originalResources != null)
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("IsolationLevel", "Method")]
+        public void VerifyMissingGridLineResourceKeepsCustomRowStyleFallback()
+        {
+            ResourceDictionary originalResources = null;
+            TableView tableView = null;
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    originalResources = Application.Current.Resources;
+                    var resources = new ResourceDictionary();
+                    resources.MergedDictionaries.Add(new XamlControlsResources());
+                    var tabularResources = new TabularControlsResources();
+                    foreach (var theme in new[] { "Light", "Default", "HighContrast" })
+                    {
+                        ((ResourceDictionary)tabularResources.ThemeDictionaries[theme]).Remove("TableViewGridLineBrush");
+                    }
+                    resources.MergedDictionaries.Add(tabularResources);
+                    Application.Current.Resources = resources;
+                    tableView = CreateThemingTable();
+                    tableView.Resources[typeof(TableViewRow)] = (Style)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                        "<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' " +
+                        "xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular' TargetType='tabular:TableViewRow'>" +
+                        "<Setter Property='BorderBrush' Value='Transparent' /></Style>");
+                    LoadContent(tableView);
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = FindVisualChildrenByType<TableViewRow>(tableView).First();
+                    Verify.IsNull(GetRowCell(row, 0).BorderBrush,
+                        "A missing gridline resource outside High Contrast must preserve the no-brush fallback.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Content = null;
+                    if (originalResources != null)
+                    {
+                        Application.Current.Resources = originalResources;
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyElementThemeDictionaryBeatsFartherApplicationResource()
         {
             var fartherAppColor = Color.FromArgb(0xFF, 0x66, 0x22, 0xAA);
