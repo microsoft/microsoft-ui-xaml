@@ -35,6 +35,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(FailedLoadClearsOutput)
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FailedInitializationCanBeRetried)
+        END_TEST_METHOD()
     };
 
 } } } } }
