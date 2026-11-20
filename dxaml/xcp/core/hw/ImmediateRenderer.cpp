@@ -1586,7 +1586,7 @@ static bool EmitMaterialFill(
     const CMILMatrix& m,
     _Outptr_result_maybenull_ const wchar_t** detail)
 {
-    using namespace ImmediateRenderingMaterials;
+    namespace irm = ImmediateRenderingMaterials;
     *detail = nullptr;
     if (brush == nullptr || IsEmptyRect(rect))
     {
@@ -1598,15 +1598,15 @@ static bool EmitMaterialFill(
         ImmediateRenderingPolicy::AppendRoundedRectangle(*hole, holeRadius, holeRadius, data.verbs, data.points);
         data.nonZero = false;
     };
-    GradientFill gradient;
+    irm::GradientFill gradient;
     ColorF solid;
-    switch (ResolveLinearGradient(brush, rect, 1.0f, &gradient, &solid))
+    switch (irm::ResolveLinearGradient(brush, rect, 1.0f, &gradient, &solid))
     {
-        case FillKind::NotHandled:
+        case irm::FillKind::NotHandled:
             break;
-        case FillKind::None:
+        case irm::FillKind::None:
             return true;
-        case FillKind::Solid:
+        case irm::FillKind::Solid:
             if (hole != nullptr)
             {
                 PathGeometryData data;
@@ -1618,7 +1618,7 @@ static bool EmitMaterialFill(
                 emitter.Fill(rect, rx, ry, solid, m);
             }
             return true;
-        case FillKind::Gradient:
+        case irm::FillKind::Gradient:
         {
             PathGeometryData data;
             if (hole != nullptr)
@@ -1635,8 +1635,8 @@ static bool EmitMaterialFill(
         }
     }
 
-    AcrylicFill acrylic;
-    if (hole == nullptr && ResolveAcrylic(brush, 1.0f, &acrylic))
+    irm::AcrylicFill acrylic;
+    if (hole == nullptr && irm::ResolveAcrylic(brush, 1.0f, &acrylic))
     {
         *detail = acrylic.detail;
         if (acrylic.blur)
@@ -1804,9 +1804,9 @@ void ImmediateRenderer::EmitContent(
         }
         else if (fillImage != nullptr)
         {
-            if (const wchar_t* detail = EmitImageBrush(emitter, fillImage, geometry, rx, ry, world, ctx.scale, false))
+            if (const wchar_t* imageDetail = EmitImageBrush(emitter, fillImage, geometry, rx, ry, world, ctx.scale, false))
             {
-                ReportUnsupported(element, detail);
+                ReportUnsupported(element, imageDetail);
             }
         }
         if (strokeResult == BrushResult::Color)
