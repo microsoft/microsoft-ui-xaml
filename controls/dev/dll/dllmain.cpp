@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "MUXControlsFactory.h"
 #include "RuntimeProfiler.h"
 #include "WinUIrc.ver"
 #include <winstring.h>
