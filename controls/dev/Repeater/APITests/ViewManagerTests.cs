@@ -1191,6 +1191,174 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             VerifyFocusedItem(repeater, expectedIndex: 1, expectedContent: "Item #3");
         }
 
+        // Scenario: focus an item, then reset the collection (Clear) and add new items, both synchronously and with a layout
+        //           pass running on the empty collection in between (e.g. a filter that clears results, then awaits a search).
+        // Expected: focus moves to the new item at the focused index once it is realized.
+        // A failure means: keyboard focus stays on a recycled element that ItemsRepeater arranged off-screen, so the user
+        //                  can tab/arrow to and invoke an item that is no longer in the collection (ADO 56189664).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that resetting the collection moves focus from the cleared focused element to a realized new item instead of leaving it on a recycled, off-screen element.")]
+        public void VerifyFocusMovesToRealizedItemWhenCollectionIsReset()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 5).Select(i => "Item #" + i));
+            ItemsRepeater repeater = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button Content='{Binding}' Height='30'/></DataTemplate>"),
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                Content = repeater;
+                Content.UpdateLayout();
+            });
+
+            Log.Comment("Clear and add new items in the same UI thread turn.");
+            FocusItem(repeater, 0);
+            RunOnUIThread.Execute(() =>
+            {
+                data.Clear();
+                for (int i = 0; i < 3; i++)
+                {
+                    data.Add("New #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+            VerifyFocusedItem(repeater, expectedIndex: 0, expectedContent: "New #0");
+
+            Log.Comment("Clear, let layout run on the empty collection, then add new items.");
+            FocusItem(repeater, 1);
+            RunOnUIThread.Execute(() => data.Clear());
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    data.Add("Again #" + i);
+                }
+            });
+            IdleSynchronizer.Wait();
+            VerifyFocusedItem(repeater, expectedIndex: 1, expectedContent: "Again #1");
+        }
+
+        // Scenario: focus item 0, scroll far away so its element is kept alive in the pinned pool, then remove, replace or
+        //           reset its item.
+        // Expected: the pinned element is cleared (it is no longer realized), focus moves to a realized item whose content
+        //           matches the data, and index 0 shows the current item when scrolled back.
+        // A failure means: the removed item's element stays focused and tab-navigable off-screen, and can be reused for
+        //                  index 0 with stale content (ADO 56189664).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element held in the pinned pool is cleared when its item is removed, and focus moves to a realized item.")]
+        public void VerifyPinnedFocusedElementIsClearedWhenItsItemIsRemoved()
+        {
+            VerifyPinnedFocusedElementIsClearedOnCollectionChange(
+                (repeater, data) => { data.RemoveAt(0); return data; },
+                expectedItem0: "Item #1",
+                isResetLike: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element held in the pinned pool is cleared when its item is replaced, and focus moves to a realized item.")]
+        public void VerifyPinnedFocusedElementIsClearedWhenItsItemIsReplaced()
+        {
+            VerifyPinnedFocusedElementIsClearedOnCollectionChange(
+                (repeater, data) => { data[0] = "Replaced #0"; return data; },
+                expectedItem0: "Replaced #0",
+                isResetLike: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element held in the pinned pool is cleared when the collection is reset, and focus moves to a realized item.")]
+        public void VerifyPinnedFocusedElementIsClearedWhenCollectionIsReset()
+        {
+            VerifyPinnedFocusedElementIsClearedOnCollectionChange(
+                (repeater, data) =>
+                {
+                    data.Clear();
+                    for (int i = 0; i < 100; i++)
+                    {
+                        data.Add("New #" + i);
+                    }
+                    return data;
+                },
+                expectedItem0: "New #0",
+                isResetLike: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that a focused element held in the pinned pool is cleared when ItemsSource is replaced, and focus moves to a realized item.")]
+        public void VerifyPinnedFocusedElementIsClearedWhenItemsSourceIsReplaced()
+        {
+            VerifyPinnedFocusedElementIsClearedOnCollectionChange(
+                (repeater, data) =>
+                {
+                    var newData = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "New #" + i));
+                    repeater.ItemsSource = newData;
+                    return newData;
+                },
+                expectedItem0: "New #0",
+                isResetLike: true);
+        }
+
+        // changeCollection mutates or replaces the source and returns the collection now displayed by the repeater.
+        // For reset-like changes the cleared element can be handed back by the recycle pool for a new item, so only the
+        // focused item's validity is checked, not the identity of the cleared element.
+        private void VerifyPinnedFocusedElementIsClearedOnCollectionChange(
+            Func<ItemsRepeater, ObservableCollection<string>, ObservableCollection<string>> changeCollection,
+            string expectedItem0,
+            bool isResetLike)
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 100).Select(i => "Item #" + i));
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            Button element0 = null;
+
+            StackLayout layout = null;
+            RunOnUIThread.Execute(() => layout = new StackLayout());
+            repeater = SetupRepeater(data, layout, out scrollViewer);
+            FocusItem(repeater, 0);
+            RunOnUIThread.Execute(() => element0 = (Button)repeater.TryGetElement(0));
+
+            ScrollTo(scrollViewer, 5000);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, repeater.GetElementIndex(element0), "The focused element is pinned outside the realized range.");
+                data = changeCollection(repeater, data);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (!isResetLike)
+                {
+                    Verify.AreEqual(-1, repeater.GetElementIndex(element0), "The pinned element whose item changed is no longer realized.");
+                }
+
+                var focused = FocusManager.GetFocusedElement(repeater.XamlRoot) as Button;
+                Log.Comment($"Focused element: '{focused?.Content}'");
+                Verify.IsNotNull(focused, "A Button is expected to be focused.");
+                if (!isResetLike)
+                {
+                    Verify.AreNotSame(element0, focused, "Focus moved away from the cleared element.");
+                }
+
+                int focusedIndex = repeater.GetElementIndex(focused);
+                Verify.IsTrue(focusedIndex >= 0, "Focus is on a realized item, not on a recycled element.");
+                Verify.AreEqual(data[focusedIndex], focused.Content, "The focused item shows its current data.");
+            });
+
+            ScrollTo(scrollViewer, 0);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var item0 = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(item0);
+                Verify.AreEqual(expectedItem0, item0.Content, "Index 0 does not reuse the cleared element with stale content.");
+            });
+        }
+
         // Removes an item and logs the focused element synchronously after the removal and after the UI thread idles,
         // to distinguish the ItemsRepeater focus move from later framework focus changes.
         private void RemoveAndLogFocus(ItemsRepeater repeater, ObservableCollection<string> data, int index)
