@@ -3460,17 +3460,16 @@ namespace Microsoft.UI.Xaml
         // DO NOT promote Window.Width/Height out of experimental (do not remove Feature_ExperimentalApi) until the
         // team has explicitly chosen one of:
         //   1. Ship the current design as-is and move it to stable.
-        //   2. Re-architect first. The clean target is for AppWindow to own the hard parts: a
-        //      restored-size get/set that works in any presenter, and a ResizeClient that respects
-        //      ExtendsContentIntoTitleBar (issue 9529). Window.Width/Height would then be a thin
+        //   2. Re-architect first. AppWindow placement now supplies the restored outer rect in any
+        //      presenter. The remaining clean target is a ResizeClient that respects
+        //      ExtendsContentIntoTitleBar (issue 9529), so Window.Width/Height can be a thin
         //      logical<->physical wrapper over AppWindow.
         //   3. Simplify the behavior - for example, drop the restored-size semantics in the
         //      maximized / minimized / non-default-presenter states.
         //
         // Known rough edges that should feed that decision:
-        //   - The restored-size tracking shadows state the OS/AppWindow won't expose, reverse-
-        //     engineering it from WM_SIZE messages; the Width/Height getters can return slightly
-        //     stale values as a result.
+        //   - Converting AppWindow's restored outer rect to client size relies on restored HWND
+        //     chrome state, including ExtendsContentIntoTitleBar.
         //   - Toggling ExtendsContentIntoTitleBar while the window is in a non-restored state
         //     (maximized, minimized, or a non-default presenter like FullScreen/CompactOverlay) does
         //     not preserve a set client size - on return to the restored state the client area is off

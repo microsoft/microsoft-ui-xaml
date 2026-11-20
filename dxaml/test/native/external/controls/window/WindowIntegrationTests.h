@@ -449,6 +449,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(GetWindowWidthHeightInPresenterReflectsOverlappedFrameChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that changing the Overlapped presenter frame updates the restored client size reported in FullScreen.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(RestoreFromMaximizedWithECITBIsExact)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that restoring from maximized with ExtendsContentIntoTitleBar lands at the exact requested client size, using the measured (WM_NCCALCSIZE-aware) chrome.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
