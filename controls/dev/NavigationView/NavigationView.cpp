@@ -1020,7 +1020,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                     if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
                     {
                         // Remove selection indication if we are not in the middle of an ongoing animation
-                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f, false /* forAnimation */);
                         m_activeIndicator.set(nullptr);
                     }
                     m_selectionModel.DeselectAt(indexPathFromModel);
@@ -1530,7 +1530,7 @@ void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldInd
         OnAnimationComplete(nullptr, nullptr);
     }
     m_activeIndicator.set(newIndicator);
-    ResetElementAnimationProperties(newIndicator, 1.0f);
+    ResetElementAnimationProperties(newIndicator, 1.0f, false /* forAnimation */);
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -2221,7 +2221,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         {
             if (prevIndicator && prevIndicator != m_prevIndicator.get())
             {
-                ResetElementAnimationProperties(prevIndicator, 0.0f);
+                ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
             }
             haveValidAnimation = true;
         }
@@ -2315,8 +2315,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         else if (prevIndicator != nextIndicator)
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
-            ResetElementAnimationProperties(prevIndicator, 0.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
+            ResetElementAnimationProperties(nextIndicator, 1.0f, false /* forAnimation */);
         }
 
         m_activeIndicator.set(nextIndicator);
@@ -2442,13 +2442,33 @@ void NavigationView::OnAnimationComplete(const winrt::IInspectable& /*sender*/, 
     m_nextIndicator.set(nullptr);
 }
 
-void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity)
+winrt::DependencyProperty NavigationView::GetAnimatedSelectionIndicatorProperty()
+{
+    static GlobalDependencyProperty s_AnimatedSelectionIndicatorProperty =
+        InitializeDependencyProperty(
+            L"AnimatedSelectionIndicator",
+            winrt::name_of<bool>(),
+            winrt::name_of<winrt::NavigationView>(),
+            true /* isAttached */,
+            winrt::box_value(false));
+
+    return s_AnimatedSelectionIndicatorProperty;
+}
+
+void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation)
 {
     if (element)
     {
         element.Opacity(desiredOpacity);
-        if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
+        const auto animatedIndicatorProperty = GetAnimatedSelectionIndicatorProperty();
+        const bool wasAnimated = winrt::unbox_value<bool>(element.GetValue(animatedIndicatorProperty));
+        if (forAnimation || wasAnimated)
         {
+            const auto visual = winrt::ElementCompositionPreview::GetElementVisual(element);
+            if (!wasAnimated)
+            {
+                element.SetValue(animatedIndicatorProperty, winrt::box_value(true));
+            }
             visual.Offset(winrt::float3(0.0f, 0.0f, 0.0f));
             visual.Scale(winrt::float3(1.0f, 1.0f, 1.0f));
             visual.Opacity(desiredOpacity);
