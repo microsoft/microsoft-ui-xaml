@@ -461,14 +461,27 @@ once per element type and detail as `UnsupportedContent`, and is also written as
 | S9 Multiwindow | Works | Each island root gets its own painter and swap chain, created on its first paint. D2D modes share one device per process; GDI+ shares the GDI+ runtime and its presentation device. Closing a window prunes its island state (swap chain, painter, bitmaps, previous display list). Minimized windows keep their resources until they close. With `--windows 4`, peak private bytes were 82 MB in GDI+ and 87 MB in D2D-SW, falling to about 30 MB after closing all windows; Composition stayed at 81 MB. The TabView variant works. |
 | S10 Form | Works, with approximations | The TextBox caret is painted as a filled rectangle; it blinks because its visibility changes. The caret uses `CompositeMode=DestInvert`, which is approximated with the TextBox foreground and reported as `CompositeMode DestInvert:approximated`. Focus visuals and hover states render. Open popups (ComboBox dropdown, Flyout, ToolTip) are painted from `PopupRoot`'s open-popup list on top of the island content, oldest first. Windowed popups are painted into the island's swap chain, so any part outside the window is clipped (reported as `Windowed popup:painted in island`). |
 
+**Render-loop readiness for the full-backend scenes (S11–S22).** Measured with `-Quick -Repetitions 1` in GDI+ and
+D2D-SW; all gates pass except where noted.
+
+| Scene | Status | Render-loop work and remaining gaps |
+|---|---|---|
+| S11/S16 Fallback | Works | `ImmediateRenderer.Fallback.cpp` checks each walked element (hand-in visual, touched or implicitly animated hand-off visual, ConnectedAnimation, SwapChainPanel, MediaPlayerElement/Presenter, app-source AnimatedVisualPlayer). The island falls back permanently: its swap chain, painter and display lists are released, the subtree is dirtied and `HWWalk::RenderRoot` renders it with `forceRedraw`. Other islands stay immediate. Traced as `WindowFallback` and written as `# fallback` to the stats file. The frame that detects the fallback also reports the element as unsupported. In S16 the harness's `FramesObserved` gate fails after fallback because it counts only immediate frames. |
+| S12 Lottie | Works, approximated | The built-in ProgressRing player is drawn natively (an arc). AnimatedIcon draws its `FallbackIconSource` and is reported as `AnimatedIcon:approximated` (now also seen in S1, S6 and S13). An AnimatedVisualPlayer with an app source causes a per-window fallback. |
+| S13 Materials | Works, approximated | LinearGradientBrush uses the gradient primitives (relative or absolute mapping, brush transform, opacity); gradient strokes still use the average color. ThemeShadow is drawn as an ambient plus a directional rounded shadow whose blur scales with Z, before the element, with inflated damage. AcrylicBrush is drawn as `BlurBackdrop` (30 DIP) plus luminosity and tint, with backdrop damage expansion; noise is skipped. Shadows are drawn outside the element's opacity layer. Mica shows through the transparent swap chain. |
+| S14 Windowed popups | Works | Each open windowed popup gets its own painter, swap chain and sprite visual on the popup's island visual, released on close. Time from open to first frame is written as `# popup-first-frame`. Measured open-to-frame: about 18–59 ms in GDI+ and 24–52 ms in D2D-SW, against 9–38 ms in Composition. RTL popups are mirrored. |
+| S19 Text | Works | Glyph runs use color fonts. ClearType is enabled when an earlier axis-aligned opaque fill in the same layer fully covers the run. RichTextBlockOverflow and PasswordBox (mask or revealed text) take the `DrawGlyphRun` path. RichEditBox text is still unsupported (hosted ITextServices surface). |
+| S22 RTB and focus | Works | `RenderTargetBitmap` asks the immediate renderer, through `RenderingBackend::SetCaptureElementCallback`, to paint the element subtree into an offscreen painter of the same mode and copies the pixels into the RTB texture. `RtbSuccessRate` is 1 in all modes; `CaptureMeanAbsDiff` is ≤ 0.002. Focus rects are real CBorders in a canvas that is a "secret" child of the focus target and is shown through an LTE in the host's TransitionRoot. The walk paints those LTE targets in place. Legacy dotted focus rects (`FocusVisualKind.DottedLine`) are not drawn. |
+
 **Effects policy (immediate modes).**
 
 - The swap chain is premultiplied and transparent wherever nothing is painted, so a system backdrop such as Mica still
   shows through behind the content.
-- `AcrylicBrush` and other `XamlCompositionBrushBase` brushes paint their fallback color and are reported as
-  `AcrylicBrush:fallback` or `XamlCompositionBrush:fallback`.
-- `ThemeShadow` is skipped and reported as `ThemeShadow`.
-- Projections, non-rectangular clips and hand-in Composition visuals are skipped and reported.
+- `AcrylicBrush` is drawn with a blurred backdrop. Other `XamlCompositionBrushBase` brushes paint their fallback color
+  and are reported as `XamlCompositionBrush:fallback`.
+- `ThemeShadow` is drawn as two blurred rounded-rectangle shadows.
+- Projections and non-rectangular clips are skipped and reported. Hand-in Composition visuals cause a per-window
+  fallback to Composition.
 
 **Incremental walk.** The renderer clears dirty flags (`PropagateNWClean`) after every immediate frame, so a subtree
 without render-dirty flags produces the same output as the previous frame if it is walked in the same parent context.
@@ -489,11 +502,13 @@ separately from Microsoft.ui.xaml.dll.
 
 These are traced as `UnsupportedContent`:
 
-- Hand-in Composition content (the ProgressRing Lottie).
-- ThemeShadow.
-- Composition-brush effects (only the fallback color is painted).
+- Composition-brush effects other than AcrylicBrush (only the fallback color is painted).
 - Projections.
 - Non-rectangular clips.
+- RichEditBox text.
+- Approximations, which are tagged `:approximated` (AnimatedIcon, `CompositeMode DestInvert`).
+
+Content that needs Composition interop is traced as `WindowFallback` instead.
 
 Retained boundaries (M4) remain outside the prototype.
 
