@@ -623,3 +623,53 @@ Then summarize across tests:
 - Average FPS hides stalls and idle windows should not render. Use R1 to R3 instead.
 - A full-redraw prototype does not represent the final damage-driven backend. Label such results.
 - DWM memory is shared across the desktop. M4 is approximate and requires a matched baseline in the same session.
+
+### Full-backend results S1-S23 (quick, one run, GPU-less VM)
+
+`Run-RenderBench.ps1 -Modes composition,gdiplus,d2d-sw -Scenes <all 27 entries> -InputMode programmatic -Repetitions 1
+-Quick` on the integration branch, plus `-Modes composition -CompositionEngine System -OptionalChanges All` for Comp
+(System). In-process private commit only; the Composition columns don't include DWM-side or GPU memory. Run-to-run
+noise is about ±10%. All 108 runs pass their gates. S23 passes after e143f5aef: NavigationView mirrors
+`UIElement.Opacity` on its selection indicator's hand-off visual, and before that fix this switched the window to
+Composition.
+
+| Id | Entry | Steady MB (Comp Lifted / Comp System / GDI+ / D2D-SW) | Peak MB (same order) | Immediate path |
+|---|---|---|---|---|
+| S1 | `settings` | 46 / 41 / 46 / 46 | 54 / 43 / 50 / 54 | immediate |
+| S2 | `dashboard` | 118 / 109 / 42 / 54 | 171 / 113 / 48 / 59 | immediate |
+| S3 | `inbox` | 53 / 49 / 55 / 72 | 63 / 54 / 57 / 87 | immediate |
+| S4 | `reader` | 46 / 43 / 39 / 51 | 60 / 48 / 46 / 57 | immediate |
+| S5 | `gallery` | 77 / 71 / 96 / 102 | 110 / 76 / 134 / 129 | immediate |
+| S5 | `gallery-decoded` | 76 / 72 / 96 / 103 | 80 / 75 / 131 / 124 | immediate |
+| S6 | `animated` | 33 / 29 / 43 / 44 | 44 / 30 / 46 / 47 | immediate |
+| S6 | `animated-noring` | 32 / 29 / 43 / 42 | 44 / 33 / 46 / 47 | immediate |
+| S7 | `layered` | 32 / 29 / 39 / 52 | 51 / 33 / 42 / 57 | immediate |
+| S8 | `datagrid` | 144 / 134 / 114 / 130 | 201 / 177 / 137 / 158 | immediate |
+| S9 | `multiwindow` | 46 / 41 / 33 / 46 | 77 / 67 / 84 / 94 | immediate |
+| S9 | `multiwindow-tabs` | 53 / 46 / 46 / 54 | 146 / 120 / 107 / 122 | immediate |
+| S10 | `form` | 35 / 31 / 37 / 50 | 47 / 32 / 59 / 61 | immediate |
+| S11 | `interop` | 30 / 27 / 31 / 42 | 43 / 27 / 47 / 58 | Comp fallback |
+| S11 | `interop-nointerop` | 30 / 27 / 33 / 38 | 43 / 27 / 36 / 42 | immediate |
+| S12 | `lottie` | 32 / 28 / 31 / 35 | 48 / 31 / 48 / 47 | Comp fallback |
+| S12 | `lottie-noplayer` | 32 / 28 / 34 / 36 | 48 / 28 / 40 / 40 | immediate |
+| S13 | `materials` | 33 / 30 / 35 / 53 | 52 / 30 / 38 / 85 | immediate |
+| S14 | `popups` | 35 / 31 / 36 / 50 | 43 / 32 / 39 / 64 | immediate |
+| S15 | `independent` | 147 / 135 / 92 / 94 | 159 / 143 / 97 / 113 | immediate |
+| S16 | `swapchain` | 126 / 123 / 127 / 131 | 136 / 124 / 139 / 145 | Comp fallback |
+| S16 | `swapchain-nomedia` | 25 / 22 / 26 / 29 | 32 / 25 / 38 / 41 | Comp fallback |
+| S19 | `text` | 57 / 53 / 45 / 46 | 77 / 72 / 68 / 81 | immediate |
+| S20 | `dpitheme` | 47 / 41 / 45 / 47 | 60 / 42 / 47 / 67 | immediate |
+| S21 | `devicelost` | 115 / 117 / 42 / 53 | 195 / 117 / 46 / 59 | immediate |
+| S22 | `accessibility` | 67 / 42 / 58 / 65 | 81 / 42 / 73 / 81 | immediate |
+| S23 | `appshell` | 95 / 80 / 84 / 82 | 107 / 90 / 86 / 96 | immediate |
+
+Geometric mean vs Comp (Lifted): steady Comp (System) 89%, GDI+ 92%, D2D-SW 107%; peak Comp (System) 73%, GDI+ 84%,
+D2D-SW 100%. Immediate wins where Composition keeps many visuals or surfaces alive (S2, S8, S15, S19, S21, S23).
+It loses on decoded images (S5, where the painter holds its own copy) and on small static scenes (fixed back-buffer
+and painter cost); D2D-SW adds 10-20 MB of WARP and cache overhead. S15: about 93 frames are presented across three
+1 s UI-thread blocks on both immediate backends. S21: 14 simulated losses, recovery p95 9-11 ms. S22: RTB 100%, mean
+abs diff ≤ 0.002. Leak gates (S20, S21) need non-quick runs.
+
+Open gaps: animated scroll (`ChangeView`) does not tick off the UI thread; real device-removed paths are untested
+(simulated only); RichEditBox text is not painted; gradient strokes use the average color; Mica is drawn as its
+fallback color; D2D-HW is not measured (no GPU).
