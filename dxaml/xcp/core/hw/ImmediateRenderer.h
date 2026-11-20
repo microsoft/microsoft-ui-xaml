@@ -59,6 +59,13 @@ public:
     uint32_t GetElementsVisited() const noexcept { return m_elementsVisited; }
     uint32_t GetElementsRendered() const noexcept { return m_elementsRendered; }
 
+    // S22: RenderTargetBitmap (RenderingBackend::CaptureElementFn, registered by the constructor). Paints the element
+    // into a temporary offscreen painter of the same mode and reads its pixels back.
+    static HRESULT CaptureElementCallback(_In_ void* element, _In_reads_(6) const float* transform, uint32_t width,
+        uint32_t height, _Out_writes_bytes_(stride * height) uint8_t* pixels, uint32_t stride, _Out_ bool* handled);
+    _Check_return_ HRESULT CaptureElement(_In_ CUIElement* element, _In_reads_(6) const float* transform, uint32_t width,
+        uint32_t height, _Out_writes_bytes_(stride * height) uint8_t* pixels, uint32_t stride, _Out_ bool* handled);
+
 private:
     struct IslandState;
 
@@ -73,6 +80,12 @@ private:
 
     void Walk(
         _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& parent,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+
+    // Paints LTE targets that are "secret" children (focus rect canvas) and so never reached by the normal walk.
+    void WalkSecretTransitionTargets(
+        _In_ CUIElement* transitionRoot,
         const ImmediateRenderingDetail::WalkContext& parent,
         _Inout_ ImmediateRenderingDetail::DisplayList& list);
 

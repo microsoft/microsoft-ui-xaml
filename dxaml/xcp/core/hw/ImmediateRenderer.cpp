@@ -12,6 +12,7 @@
 #include <RootScale.h>
 #include <UIThreadScheduler.h>
 #include "XamlIslandRoot.h"
+#include "VisualTree.h"
 #include "TextBlock.h"
 #include "SolidColorBrush.h"
 #include "shape.h"
@@ -21,6 +22,7 @@
 #include "RichTextBlock.h"
 #include "RichTextBlockOverflow.h"
 #include "PasswordBox.h"
+#include "LayoutTransitionElement.h"
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
@@ -577,6 +579,7 @@ struct ImmediateRenderer::IslandState
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
     : m_mode(mode)
 {
+    SetCaptureElementCallback(&ImmediateRenderer::CaptureElementCallback);
 }
 
 ImmediateRenderer::~ImmediateRenderer()
@@ -2079,6 +2082,79 @@ void ImmediateRenderer::EmitBorder(
     }
 }
 
+void ImmediateRenderer::WalkSecretTransitionTargets(
+    _In_ CUIElement* transitionRoot,
+    const WalkContext& parent,
+    _Inout_ DisplayList& list)
+{
+    // Layout transitions on ordinary elements (theme transitions) still paint the target in place, so only targets that
+    // the walk can't reach are painted here: the focus rect canvas is a "secret" child of the focus target (it isn't in
+    // the target's child collection) shown through an LTE in the focus host's TransitionRoot.
+    auto chainToIsland = [](CUIElement* from)
+    {
+        CMILMatrix m(true);
+        for (CUIElement* e = from; e != nullptr && e->GetTypeIndex() != KnownTypeIndex::XamlIslandRoot
+            && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
+        {
+            CMILMatrix local;
+            (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+            m.Append(local);
+        }
+        return m;
+    };
+
+    XUINT32 lteCount = 0;
+    CUIElement** ltes = nullptr;
+    transitionRoot->GetChildrenInRenderOrder(&ltes, &lteCount);
+    for (XUINT32 i = 0; i < lteCount; ++i)
+    {
+        if (ltes[i] == nullptr || ltes[i]->GetTypeIndex() != KnownTypeIndex::LayoutTransitionElement || !ltes[i]->IsVisible())
+        {
+            continue;
+        }
+        auto lte = static_cast<CLayoutTransitionElement*>(ltes[i]);
+        CUIElement* target = lte->GetTargetElement();
+        CUIElement* targetParent = target != nullptr ? target->GetUIElementAdjustedParentInternal(false) : nullptr;
+        if (targetParent == nullptr || !target->IsActive())
+        {
+            continue;
+        }
+        bool secret = true;
+        XUINT32 siblingCount = 0;
+        CUIElement** siblings = nullptr;
+        targetParent->GetChildrenInRenderOrder(&siblings, &siblingCount);
+        for (XUINT32 s = 0; s < siblingCount && secret; ++s)
+        {
+            secret = siblings[s] != target;
+        }
+        if (!secret)
+        {
+            continue;
+        }
+        ++list.uncacheable;
+
+        // parent.world = chain(host) * islandRoot; the target paints in its own position: chain(targetParent) * islandRoot.
+        CMILMatrix hostToIsland = chainToIsland(transitionRoot->GetUIElementAdjustedParentInternal(false));
+        if (!hostToIsland.Invert())
+        {
+            continue;
+        }
+        WalkContext ctx = parent;
+        ctx.world = chainToIsland(targetParent);
+        ctx.world.Append(hostToIsland);
+        ctx.world.Append(parent.world);
+        ctx.scroller = -1;
+        ctx.scrollerContent = false;
+        ctx.offsetX = ctx.offsetY = 0;
+
+        const float lteOpacity = lte->GetOpacityLocal();
+        if (lteOpacity > 0)
+        {
+            Walk(target, ctx, list);
+        }
+    }
+}
+
 void ImmediateRenderer::Walk(
     _In_ CUIElement* element,
     const WalkContext& parent,
@@ -2149,11 +2225,13 @@ void ImmediateRenderer::Walk(
             }
             return;
         }
+        case KnownTypeIndex::TransitionRoot:
+            WalkSecretTransitionTargets(element, parent, list);
+            return;
         case KnownTypeIndex::RenderTargetBitmapRoot:
         case KnownTypeIndex::XamlIslandRootCollection:
         case KnownTypeIndex::ConnectedAnimationRoot:
         case KnownTypeIndex::LayoutTransitionElement:
-        case KnownTypeIndex::TransitionRoot:
         case KnownTypeIndex::FullWindowMediaRoot:
             return;
         default:
@@ -3342,7 +3420,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     SaveScrollers(state, list);
     state.previousWalk = std::move(list);
 
-    if (!GetCapturePath().empty())
+    if (!GetCapturePath().empty() && state.swapChain)
     {
         const std::wstring capturePath = state.windowedPopup ? GetCapturePath() + L".popup.bmp" : GetCapturePath();
         LOG_IF_FAILED(CapturePresentedBuffer(state.swapChain.Get(), capturePath.c_str()));
@@ -3467,6 +3545,101 @@ _Check_return_ HRESULT ImmediateRenderer::RenderWindowedPopups(
             }
         }
     }
+    return S_OK;
+}
+
+HRESULT ImmediateRenderer::CaptureElementCallback(
+    _In_ void* element,
+    _In_reads_(6) const float* transform,
+    uint32_t width,
+    uint32_t height,
+    _Out_writes_bytes_(stride * height) uint8_t* pixels,
+    uint32_t stride,
+    _Out_ bool* handled)
+{
+    *handled = false;
+    auto uiElement = static_cast<CUIElement*>(element);
+    ImmediateRenderer* self = uiElement->GetContext()->m_immediateRenderer;
+    return self != nullptr ? self->CaptureElement(uiElement, transform, width, height, pixels, stride, handled) : S_OK;
+}
+
+_Check_return_ HRESULT ImmediateRenderer::CaptureElement(
+    _In_ CUIElement* element,
+    _In_reads_(6) const float* transform,
+    uint32_t width,
+    uint32_t height,
+    _Out_writes_bytes_(stride * height) uint8_t* pixels,
+    uint32_t stride,
+    _Out_ bool* handled)
+{
+    *handled = false;
+    if (width == 0 || height == 0 || stride < width * 4)
+    {
+        return S_OK;
+    }
+    CXamlIslandRoot* island = VisualTree::GetXamlIslandRootForElement(element);
+    if (island == nullptr || IsFallenBack(island))
+    {
+        // Composition renders this window (its comp nodes exist); let RenderTargetBitmap capture its visual.
+        return S_OK;
+    }
+
+    IFC_RETURN(EnsureDevice());
+    IslandState state;
+    PainterOptions options;
+    options.width = width;
+    options.height = height;
+    options.dpiScale = 1.0f;
+    if (m_mode == Mode::ImmediateGdiPlus)
+    {
+        IFC_RETURN(CreateGdiPlusPainter(options, state.painter));
+    }
+    else
+    {
+        IFC_RETURN(CreateD2DPainter(m_mode, m_device.Get(), options, state.painter));
+    }
+    state.width = width;
+    state.height = height;
+    state.scale = 1.0f;
+    state.fullDamage = true;
+
+    // The transform maps to RTB pixels (zoom included), so the walk runs at scale 1 with a pixel-sized clip.
+    const RectF bounds{ 0, 0, static_cast<float>(width), static_cast<float>(height) };
+    WalkContext root;
+    root.clip = bounds;
+    root.contentClip = bounds;
+    root.scale = 1.0f;
+    root.world.SetM11(transform[0]);
+    root.world.SetM12(transform[1]);
+    root.world.SetM21(transform[2]);
+    root.world.SetM22(transform[3]);
+    root.world.SetDx(transform[4]);
+    root.world.SetDy(transform[5]);
+
+    // Walk stats belong to the island frames; keep them out of this capture.
+    const uint32_t visited = m_elementsVisited;
+    const uint32_t rendered = m_elementsRendered;
+    const uint32_t culled = m_elementsCulled;
+    bool fellBack = false;
+    const HRESULT hr = RenderSurface(state, 0, reinterpret_cast<uint64_t>(element), root,
+        [](ImmediateRenderer* self, void* context, const WalkContext& rootContext, DisplayList& list)
+        {
+            self->Walk(static_cast<CUIElement*>(context), rootContext, list);
+        }, element, &fellBack);
+    m_elementsVisited = visited;
+    m_elementsRendered = rendered;
+    m_elementsCulled = culled;
+    IFC_RETURN(hr);
+    if (fellBack)
+    {
+        // Composition-only content: the island falls back on its next frame; until then the capture fails like
+        // Composition's would for an element without a visual (the app may retry).
+        m_pendingFallback = nullptr;
+        return S_OK;
+    }
+
+    IFC_RETURN(state.painter->ReadPixels(pixels, stride, stride * height));
+    *handled = true;
     return S_OK;
 }
 

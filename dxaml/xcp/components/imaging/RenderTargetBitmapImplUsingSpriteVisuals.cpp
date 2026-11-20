@@ -30,6 +30,7 @@
 #include "D3D11Device.h"
 #include "D3D11SharedDeviceGuard.h"
 #include <CompHelper/RenderTargetBitmapHelper.h>
+#include <RenderingBackend.h>
 
 class CaptureAsyncCompletionState
 {
@@ -107,6 +108,35 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     _In_opt_ IPALEvent* completionEvent)
 {
     IFC_RETURN(__super::PreCommit(dcompTreeHost, hwTexture, completionEvent));
+
+    // S22: under immediate rendering there are no comp nodes to capture; the renderer paints the element offscreen.
+    if (const RenderingBackend::CaptureElementFn capture = RenderingBackend::GetCaptureElementCallback())
+    {
+        CMILMatrix transform(TRUE);
+        m_renderTargetElementData->GetPrependTransformAndClip()->Get2DTransformInLeafmostProjection(&transform);
+        const float matrix[6] = { transform.GetM11(), transform.GetM12(), transform.GetM21(), transform.GetM22(),
+            transform.GetDx(), transform.GetDy() };
+        const XRECT lockRegion = { 0, 0, static_cast<XINT32>(hwTexture->GetWidth()), static_cast<XINT32>(hwTexture->GetHeight()) };
+        void* address = nullptr;
+        int32_t stride = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        IFC_RETURN(hwTexture->LockRect(lockRegion, &address, &stride, &width, &height));
+        bool handled = false;
+        const HRESULT captureHr = capture(m_uiElement.get(), matrix, width, height, static_cast<uint8_t*>(address),
+            static_cast<uint32_t>(stride), &handled);
+        IFC_RETURN(hwTexture->Unlock());
+        IFC_RETURN(captureHr);
+        if (handled)
+        {
+            // PostDraw completes the operation (no capture state: S_OK) once the manager's wait sees the event.
+            if (completionEvent != nullptr)
+            {
+                IFC_RETURN(completionEvent->Set());
+            }
+            return S_OK;
+        }
+    }
 
     // Create the property visual to use for scaling the content independent of live tree manipulation.
     auto compositor = dcompTreeHost->GetCompositor();

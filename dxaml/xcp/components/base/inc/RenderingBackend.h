@@ -61,6 +61,14 @@ namespace RenderingBackend
     using ModeProbeFn = FallbackReason (*)(Mode mode); // must not throw
     void SetImmediateModeProbe(ModeProbeFn probe) noexcept;
 
+    // S22: RenderTargetBitmap under immediate rendering. Paints `element` (a CUIElement*) with transform
+    // {m11, m12, m21, m22, dx, dy} (element's parent space -> pixels) into premultiplied BGRA `pixels`. Sets *handled to
+    // false when the element must be captured by Composition (its window fell back). Registered by the core renderer.
+    using CaptureElementFn = HRESULT (*)(_In_ void* element, _In_reads_(6) const float* transform, uint32_t width,
+        uint32_t height, _Out_writes_bytes_(stride * height) uint8_t* pixels, uint32_t stride, _Out_ bool* handled);
+    void SetCaptureElementCallback(CaptureElementFn capture) noexcept;
+    CaptureElementFn GetCaptureElementCallback() noexcept;
+
     // Composition plus every immediate mode whose probe succeeds. Probes lazily (creates devices); results are cached.
     uint32_t GetAvailableModes() noexcept;
 

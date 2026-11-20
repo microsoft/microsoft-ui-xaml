@@ -87,6 +87,21 @@ namespace RenderingBackend
         s_probe.store(probe, std::memory_order_release);
     }
 
+    namespace
+    {
+        std::atomic<CaptureElementFn> s_capture{ nullptr };
+    }
+
+    void SetCaptureElementCallback(CaptureElementFn capture) noexcept
+    {
+        s_capture.store(capture, std::memory_order_release);
+    }
+
+    CaptureElementFn GetCaptureElementCallback() noexcept
+    {
+        return s_capture.load(std::memory_order_acquire);
+    }
+
     bool TryParseMode(_In_opt_z_ const wchar_t* text, _Inout_ Mode& mode) noexcept
     {
         if (text == nullptr || *text == L'\0')
