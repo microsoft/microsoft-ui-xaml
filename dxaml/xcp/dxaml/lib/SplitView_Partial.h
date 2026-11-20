@@ -74,6 +74,8 @@ namespace DirectUI
 
         _Check_return_ HRESULT RegisterForDisplayModeStatesChangedEvent();
         _Check_return_ HRESULT OnPaneOpenedOrClosed(bool isPaneOpen);
+        _Check_return_ HRESULT GetDisplayModeStateName(_Out_ const wchar_t** stateName);
+        _Check_return_ HRESULT QueuePaneStateChange(bool isOpen);
         void DiscardObsoletePaneStateChanges();
 
         static _Check_return_ HRESULT CreatePolygonalPath(
@@ -122,6 +124,7 @@ namespace DirectUI
             uint64_t completionEventId;
             bool isOpen;
             bool completionReceived{ false };
+            bool completedInRequestedState{ false };
         };
         std::deque<PendingPaneStateChange> m_pendingPaneStateChanges;
         uint64_t m_paneStateChangeGeneration{ 0 };

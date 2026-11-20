@@ -4,11 +4,12 @@
 #include "winrt/Microsoft.UI.Composition.h"
 #include "winrt/Microsoft.UI.Xaml.h"
 #include "winrt/Microsoft.UI.Xaml.Controls.h"
+#include "winrt/Microsoft.UI.Xaml.Markup.h"
 #include "winrt/Simple.h"
 namespace winrt::Simple::implementation
 {
     template <typename D, typename B, typename... I>
-    struct WINRT_IMPL_EMPTY_BASES MainPage_base : implements<D, Simple::MainPage, B, no_module_lock, I...>,
+    struct WINRT_IMPL_EMPTY_BASES MainPage_base : implements<D, Simple::MainPage, winrt::Microsoft::UI::Xaml::Markup::IComponentConnector, B, no_module_lock, I...>,
         winrt::Microsoft::UI::Xaml::Controls::IPageOverridesT<D>, winrt::Microsoft::UI::Xaml::Controls::IControlOverridesT<D>, winrt::Microsoft::UI::Xaml::IFrameworkElementOverridesT<D>, winrt::Microsoft::UI::Xaml::IUIElementOverridesT<D>
     {
         using base_type = MainPage_base;

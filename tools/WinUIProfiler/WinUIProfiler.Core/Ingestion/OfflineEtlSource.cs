@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Diagnostics.Tracing;
 using Microsoft.Diagnostics.Tracing.Parsers.Kernel;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
@@ -109,7 +110,7 @@ public static class OfflineEtlSource
         source.Kernel.ProcessEndGroup += OnProcess;
         var tallies = new Dictionary<int, ProcessTally>();
         var order = new List<ProcessTally>();
-        XamlEventSubscription.Match(source, null, (data, provider, processId) =>
+        XamlEventSubscription.Match(source, null, [], (data, provider, _, processId) =>
         {
             var time = data.TimeStampRelativeMSec;
             if (!tallies.TryGetValue(processId, out var tally))
@@ -118,7 +119,7 @@ public static class OfflineEtlSource
                 order.Add(tally);
             }
 
-            tally.Count(provider, time);
+            tally.Count(provider, time, (int)data.ID);
         });
         var lastMilliseconds = 0.0;
         source.AllEvents += data =>
@@ -152,17 +153,23 @@ public static class OfflineEtlSource
             length < TimeSpan.MaxValue.TotalMilliseconds ? TimeSpan.FromMilliseconds(length) : TimeSpan.MaxValue);
     }
 
-    private static string? ExecutableName(ProcessTraceData data)
+    internal static string? ExecutableName(ProcessTraceData data)
     {
         var name = Path.GetFileNameWithoutExtension(data.ImageFileName);
         return string.IsNullOrEmpty(name) ? null : name;
     }
 
-    // A null processId reads every process.
-    public static EtlReadResult Read(string path, int? processId, Action<ProfilerEvent> sink,
-        CancellationToken cancellationToken = default)
+    // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
+    // processStarted gets the kernel's event for its creation, when the trace has it, and the events of the launcher
+    // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
+    // launch (LaunchWatcher); they come after the process's first event, and some after later ones. With cpuSamples, the
+    // process's CPU samples and their stacks are stored there too, with what the sampling recorded (it needs a processId).
+    public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
+        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default,
+        SessionWriter? cpuSamples = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(markers);
         ArgumentNullException.ThrowIfNull(sink);
         if (!File.Exists(path))
         {
@@ -171,21 +178,56 @@ public static class OfflineEtlSource
 
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
-        XamlEventSubscription.Subscribe(source, processId, profilerEvent =>
+        LaunchWatcher? watcher = null;
+        StackSampleCollector? stacks = null;
+        void Deliver(ProfilerEvent profilerEvent)
         {
             delivered++;
             sink(profilerEvent);
-        });
+        }
+
+        if (processId is { } id)
+        {
+            var launch = new LaunchWatcher(source, id, processStarted, Deliver);
+            watcher = launch;
+            XamlEventSubscription.Match(source, id, markers, (data, provider, marker, owner) =>
+                {
+                    Deliver(XamlEventSubscription.Capture(data, provider, marker, owner));
+                    // Not an event another process wrote about it, such as the System process's GPU memory event.
+                    if (data.ProcessID == id)
+                    {
+                        launch.ProcessEvent(data.TimeStampRelativeMSec);
+                    }
+                },
+                launch.OtherProcessEvent);
+            if (cpuSamples is not null)
+            {
+                stacks = new(source, (pid, _) => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
+            }
+        }
+        else
+        {
+            XamlEventSubscription.Subscribe(source, null, markers, Deliver);
+        }
+
         using (cancellationToken.Register(source.StopProcessing))
         {
             source.Process();
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        watcher?.Complete();
+        if (stacks is not null)
+        {
+            stacks.Flush();
+            var sampling = stacks.Summary;
+            cpuSamples!.SetCpuSampling(sampling, StackSampleCollector.TraceNote(sampling));
+        }
+
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 
-    private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
+    internal sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
     {
         public int ProcessId { get; } = processId;
         public string? Name { get; } = name;
@@ -196,7 +238,7 @@ public static class OfflineEtlSource
         public long GpuMemoryEvents { get; private set; }
 
         // Grouped as EventCounter groups them.
-        public void Count(XamlProvider provider, double milliseconds)
+        public void Count(XamlProvider provider, double milliseconds, int? eventId)
         {
             switch (provider)
             {
@@ -204,7 +246,12 @@ public static class OfflineEtlSource
                     ProfilerEvents++;
                     break;
                 case XamlProvider.DxgKrnl:
-                    GpuMemoryEvents++;
+                    if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
+                    break;
+                case XamlProvider.Win32k:
+                    return;
+                case XamlProvider.Direct3D11:
+                    // Track time without making graphics-only processes eligible for the XAML process list.
                     break;
                 default:
                     XamlEvents++;

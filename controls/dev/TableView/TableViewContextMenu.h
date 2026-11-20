@@ -43,6 +43,31 @@ namespace TableViewDetails
     // left it Unhandled.
     bool IsOwnRequestSource(winrt::DependencyObject const& source, winrt::DependencyObject const& scope);
 
+    void SuppressContextFlyoutWhileEditing(winrt::FlyoutBase const& flyout, winrt::TableView const& owner);
+
+    // Requests raised on the owner itself never pass through its template-root routing hook.
+    template <typename Control>
+    winrt::FlyoutBase::Opening_revoker HookContextFlyoutSuppression(Control& control)
+    {
+        if (auto const flyout = control.ContextFlyout())
+        {
+            return flyout.Opening(winrt::auto_revoke,
+                [weakThis = control.get_weak()](winrt::IInspectable const& sender, auto&&)
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        auto const openingFlyout = sender.as<winrt::FlyoutBase>();
+                        winrt::FrameworkElement const element = *strongThis;
+                        if (openingFlyout.Target() == element)
+                        {
+                            SuppressContextFlyoutWhileEditing(openingFlyout, strongThis->GetOwningTableView());
+                        }
+                    }
+                });
+        }
+        return {};
+    }
+
     // Hooks ContextRequested on control's template root. The framework shows the control's own
     // ContextFlyout before the control's handlers run, so suppression must sit below it.
     template <typename Handler>

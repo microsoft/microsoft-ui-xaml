@@ -41,12 +41,15 @@ still rebuilds live evidence independently.
 
 | Situation | Behavior |
 | --- | --- |
-| Clear primary area, no existing area label | Add one existing `area-*` label at HIGH confidence. |
-| One area with a configured owner, no existing team label | Derive and add its `team-*` label from the selected configured routing rule. |
+| Winning primary area at MEDIUM or HIGH confidence, no existing area label | Add one existing `area-*` label, subject to existing human-team compatibility. LOW/NONE confidence does not add an area. |
+| Newly selected area with a configured owner, no existing team label | Derive and add its `team-*` label at MEDIUM or HIGH confidence using the selected configured routing rule. LOW/NONE adds neither area nor team. |
+| Existing area with a configured owner, no existing team label | An unconditional default can supply the team independently of model confidence. Areas with conditional rules require a matching MEDIUM- or HIGH-confidence area assessment. |
 | Existing or newly selected `team-Reach`, `team-Rendering`, or `team-Markup` | Add `team-Core` if missing, without replacing the specific team label. |
 | Only `team-Core` is present | Add a specific child only when the area's routing rules identify one; never infer a child from the parent alone. |
-| Evidence clearly meets an area's conditional rule | Use that rule's configured owner rather than the default; the model cannot invent a team. |
-| Uncertain area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
+| MEDIUM- or HIGH-confidence area assessment meets an area's conditional rule with supporting evidence | Use that rule's configured owner rather than the default; the model cannot invent a team. At MEDIUM, keep or add `needs-triage`, including when the area already existed. |
+| No area fits, but evidence clearly meets a configured team-only rule | Add its configured team at HIGH routing confidence without an area; retain `needs-triage`. |
+| LOW-confidence area or an unmapped team | Comment with the suggestion; leave the uncertain routing to a maintainer. |
+| Newly selected MEDIUM-confidence area | Apply the area and its configured team, and keep or add `needs-triage` for maintainer confirmation. |
 | Low-confidence or unresolved automatic routing | Keep or add `needs-triage` for human confirmation. Already-established human routing is not reset. |
 | Existing area or team labels | Preserve them. Do not replace a human decision or add a contradictory mapped area. |
 | Multiple existing areas | Preserve all of them; do not infer one team. |
@@ -162,11 +165,29 @@ Each area entry contains:
 - Optional `overrides`: entries with a stable `id`, an evidence-based `when`
   condition, and an existing `team` label.
 
+The reserved `None` entry is not an area label. It has no default owner and
+requires explicit conditional rules for team-only routing. The initial
+`repo-contribution-guidance` rule routes maintenance defects in this repository's
+OSS contribution, feedback, or roadmap guidance to Controls. It does not cover
+generic API documentation, runtime navigation, external service failures, Gallery
+runtime bugs, or requests for future roadmap features. It follows later human
+team-only routing; it is not a blanket documentation policy.
+The model returns `area: None`, the exact configured rule ID, and a supporting
+reason; `area_confidence` describes confidence in this team-only route. Only HIGH
+can add its team. Uncertain assessments, truncated context, existing areas, or
+conflicting human teams defer this route. No area is fabricated, no label is
+created, and `needs-triage` remains required. Without a supported rule, the
+existing `None`/NONE/default abstention is unchanged.
+
 The model picks an area and either `default` or a rule ID configured for that
 area. Conditional choices require a short evidence-based explanation. The
 default rule requires a supporting explanation for HIGH area confidence.
 An unexplained HIGH suggestion is downgraded to MEDIUM for maintainer review
 without discarding the summary, reproduction assessment, or duplicate handling.
+The winning MEDIUM area and its configured team remain eligible for labeling;
+the downgrade keeps `needs-triage` for confirmation. Existing human areas and
+team compatibility continue to take precedence. LOW suggestions remain
+comment-only.
 This checks for a missing rationale, not its semantic correctness.
 First-level routing does not require independently verifying the root cause.
 A clear reporter diagnosis identifying the failing component, operation, or
@@ -174,8 +195,10 @@ boundary can support HIGH area confidence and the configured team route.
 The rationale attributes the diagnosis to the reporter rather than presenting
 it as a verified finding. Unverified root cause alone is not a reason to lower
 routing confidence; contradictory observations or unresolved competing areas
-outside the initial-investigation defaults below still require an advisory
-assessment. A bare label request or unsupported guess
+outside the initial-investigation defaults below still require a lower-confidence
+assessment: MEDIUM can label the winning area and its configured team, while
+LOW remains advisory.
+A bare label request or unsupported guess
 is not diagnostic evidence, and human labels and configured routing rules remain
 authoritative. This is model guidance, not a publisher-side confidence promotion.
 Unknown rule IDs remain errors. A cross-area rule can be normalized
@@ -194,6 +217,17 @@ confidence can express this clear initial route, not a verified root cause;
 the rationale explains the report and policy. Direct AppWindow failures and
 clearly identified control/content-layout failures retain their own areas.
 Existing human areas and teams are never replaced by this default.
+
+Chart-specific failures can start in `area-Charting`, including a secondary
+live-data chart not following Dark theme while the main chart does. Window/theme
+keywords do not alone establish a competing framework defect. An evidenced
+broader Window or theme-propagation failure still keeps its own route.
+
+Do not select an area merely because it has a configured owner, or reject an
+otherwise fitting area because its owner is unresolved. GPU memory growth and
+adapter changes do not alone establish Windowing ownership; unmatched compositor
+or XAML graphics-device reports remain for human review. These symptoms do not
+authorize a new automatic compositor owner.
 
 The AppWindow `xaml-window-facade` rule handles an evidenced XAML/WinUI Window
 size-propagation or activation-ordering failure when the corresponding direct
@@ -224,6 +258,43 @@ publisher fails visibly if a configured team has been removed rather than
 creating or guessing a replacement.
 If a pre-existing area has conditional routes but the model assessed a different
 or uncertain area, no default team is guessed: it remains for human routing.
+Existing-label policy does not distinguish who applied the label. A team removed
+by a maintainer after an earlier run can be re-derived from an unconditional
+existing area; remove or change the area as well to redirect ownership.
+
+### Learning from human triage
+
+Reviewed human routing history informs the mapping's notes and conditional
+rules; this is maintained guidance, not online model training or an automatic
+feedback-to-label loop. An explicit human team replacement is stronger ownership
+evidence than an additional area, an unchanged bot suggestion, or a reporter's
+self-classification. Multiple retained areas can indicate collaboration rather
+than a correction. Edited canonical comments are current assessment snapshots;
+their creation timestamp alone does not establish the original prediction.
+Failed, cancelled, skipped, preview, and ineligible runs are not negative
+classification examples.
+
+The configured exceptions retain their area's default owner outside the narrow
+scenario: retained ItemsControl collection/generator contracts; product-build
+ordering of this repository's controls metadata header; a specific native
+Composition interop header missing from package distribution; a diagonal exposed
+region when resizing a desktop XAML island; and the built-in media Cast command
+causing shutdown failure on a desktop island. A type, filename, or generic visual
+symptom alone is not enough to satisfy an exception.
+
+Area guidance also distinguishes XAML generation/resource layout from generic
+project or package failures, SelectorBar visual states from generic pointer/theme
+issues, editing-surface selection carets from suggestion-list failures, and
+CommandBar overflow presentation from command execution. Diagnostic evidence of a
+failing ScrollPresenter operation takes precedence over a window-resize trigger.
+These are initial-investigation boundaries, not claims of verified root cause.
+Conflicting or unresolved human ownership stays a maintainer decision; do not
+change a default owner merely to fit a sparse example.
+
+Tests exercise supplied structured assessments and publication safeguards, not
+the hosted model's ability to recognize these scenarios or their counterexamples.
+Routing accuracy requires a separately approved model evaluation; no new
+confidence promotion, label replacement, or disposition automation is implied.
 
 ## Assessment reconciliation
 
@@ -516,6 +587,13 @@ Commit the Markdown source, compiled `.lock.yml`, and `.github/aw/actions-lock.j
 together. Do not hand-edit the generated workflow. The focused CI workflow runs
 the tests and checks that the pinned compiler reproduces the committed lockfile.
 Product binaries do not need rebuilding for these automation-only changes.
+
+Runtime contract tests cover confidence guidance in the prompt source and
+compiled safe-output tool schema alongside deterministic publisher behavior.
+Routing tests supply structured assessments; they do not evaluate hosted-model
+classification accuracy. No separate routing eval/golden suite is configured
+here. Generated usage paths named `evals` or `graders` are framework artifact
+collection, not additional routing expectations.
 
 `find_duplicates.py` implements deterministic retrieval and ranking.
 `triage.py prepare EVENT_PATH CONTEXT_PATH` builds model input.

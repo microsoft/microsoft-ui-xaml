@@ -8,6 +8,9 @@
 #include "SplitView.h"
 #include "VisualStateGroup.h"
 #include "VisualStateChangedEventArgs.h"
+#include "VisualState.h"
+#include "VisualStateGroupCollection.h"
+#include "CVisualStateManager2.h"
 
 // DXaml headers
 #include "LineSegment.g.h"
@@ -281,20 +284,40 @@ _Check_return_ HRESULT
 SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::IVisualStateChangedEventArgs* args)
 {
     DiscardObsoletePaneStateChanges();
-    const auto eventId = static_cast<CVisualStateChangedEventArgs*>(
-        static_cast<VisualStateChangedEventArgs*>(args)->GetCorePeer())->GetStateChangedEventId();
+    const auto coreArgs = static_cast<CVisualStateChangedEventArgs*>(
+        static_cast<VisualStateChangedEventArgs*>(args)->GetCorePeer());
+    const auto eventId = coreArgs->GetStateChangedEventId();
     const auto completion = std::find_if(m_pendingPaneStateChanges.begin(), m_pendingPaneStateChanges.end(),
         [eventId](const auto& change) { return change.completionEventId == eventId; });
     if (completion != m_pendingPaneStateChanges.end())
     {
+        xref_ptr<CVisualState> newState;
+        IFC_RETURN(coreArgs->get_NewState(newState.ReleaseAndGetAddressOf()));
+        if (newState && !newState->m_strName.IsNull())
+        {
+            for (const auto& mode : g_visualStateTable)
+            {
+                for (const auto& placement : mode)
+                {
+                    if (wcscmp(newState->m_strName.GetBuffer(), placement[completion->isOpen]) == 0)
+                    {
+                        completion->completedInRequestedState = true;
+                    }
+                }
+            }
+        }
         completion->completionReceived = true;
 
         // A newer synchronous callback can arrive before an older queued or nested one.
         while (!m_pendingPaneStateChanges.empty() && m_pendingPaneStateChanges.front().completionReceived)
         {
             const bool isOpen = m_pendingPaneStateChanges.front().isOpen;
+            const bool completedInRequestedState = m_pendingPaneStateChanges.front().completedInRequestedState;
             m_pendingPaneStateChanges.pop_front();
-            IFC_RETURN(OnPaneOpenedOrClosed(isOpen));
+            if (completedInRequestedState)
+            {
+                IFC_RETURN(OnPaneOpenedOrClosed(isOpen));
+            }
         }
     }
 
@@ -453,23 +476,68 @@ _Check_return_ HRESULT SplitView::OnPropertyChanged2(_In_ const PropertyChangedP
 }
 
 _Check_return_ HRESULT
+SplitView::GetDisplayModeStateName(_Out_ const wchar_t** stateName)
+{
+    auto displayMode = xaml_controls::SplitViewDisplayMode_Overlay;
+    IFC_RETURN(get_DisplayMode(&displayMode));
+
+    auto placement = xaml_controls::SplitViewPanePlacement_Left;
+    IFC_RETURN(get_PanePlacement(&placement));
+
+    BOOLEAN isPaneOpen = FALSE;
+    IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
+
+    *stateName = g_visualStateTable[static_cast<size_t>(displayMode)][static_cast<size_t>(placement)][static_cast<size_t>(isPaneOpen)];
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+SplitView::QueuePaneStateChange(bool isOpen)
+{
+    const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
+    const auto eventId = group->GetCurrentStateChangedEventId() + 1;
+    if (!m_pendingPaneStateChanges.empty() && m_pendingPaneStateChanges.back().completionEventId == eventId)
+    {
+        // A request without a produced completion supersedes the interrupted animation.
+        m_pendingPaneStateChanges.pop_back();
+    }
+
+    const wchar_t* stateName = nullptr;
+    IFC_RETURN(GetDisplayModeStateName(&stateName));
+    xref_ptr<CVisualState> targetState;
+    IFC_RETURN(group->FindStateByName(stateName, targetState.ReleaseAndGetAddressOf()));
+    if (!targetState)
+    {
+        return S_OK;
+    }
+
+    if (!CVisualStateManager2::GetCustomVisualStateManager(static_cast<CControl*>(GetHandle())))
+    {
+        const auto collection = do_pointer_cast<CVisualStateGroupCollection>(group->GetParentInternal(false));
+        const int groupIndex = CVisualStateManager2::GetGroupIndexFromVisualState(static_cast<CControl*>(GetHandle()), stateName);
+        if (collection && groupIndex >= 0 &&
+            static_cast<size_t>(groupIndex) < collection->GetGroupContext().size() &&
+            CVisualStateManager2::IsActiveVisualState(targetState) &&
+            collection->GetGroupContext()[groupIndex].CurrentState() == VisualStateGroupContext::State::StateApplied)
+        {
+            // GoToState is a no-op only after this target's transition has finished.
+            return S_OK;
+        }
+    }
+
+    m_pendingPaneStateChanges.push_back({ eventId, isOpen });
+    return S_OK;
+}
+
+_Check_return_ HRESULT
 SplitView::ChangeVisualState(_In_ bool useTransitions)
 {
     BOOLEAN ignored = FALSE;
 
     // DisplayModeStates
     {
-        auto displayMode = xaml_controls::SplitViewDisplayMode_Overlay;
-        IFC_RETURN(get_DisplayMode(&displayMode));
-
-        auto placement = xaml_controls::SplitViewPanePlacement_Left;
-        IFC_RETURN(get_PanePlacement(&placement));
-
-        BOOLEAN isPaneOpen = FALSE;
-        IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
-
-        // Look up the visual state based on display mode, placement and, ispaneopen state.
-        auto visualStateName = g_visualStateTable[static_cast<size_t>(displayMode)][static_cast<size_t>(placement)][static_cast<size_t>(isPaneOpen)];
+        const wchar_t* visualStateName = nullptr;
+        IFC_RETURN(GetDisplayModeStateName(&visualStateName));
         IFC_RETURN(GoToState(useTransitions, visualStateName, &ignored));
     }
 
@@ -500,17 +568,7 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
 
     if (m_tpDisplayModeStates && m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle()->IsActive())
     {
-        const auto group = static_cast<CVisualStateGroup*>(m_tpDisplayModeStates.Cast<VisualStateGroup>()->GetHandle());
-        const auto eventId = group->GetCurrentStateChangedEventId() + 1;
-        if (!m_pendingPaneStateChanges.empty() && m_pendingPaneStateChanges.back().completionEventId == eventId)
-        {
-            // A request without a produced completion supersedes the interrupted animation.
-            m_pendingPaneStateChanges.back().isOpen = isOpen;
-        }
-        else
-        {
-            m_pendingPaneStateChanges.push_back({ eventId, isOpen });
-        }
+        IFC_RETURN(QueuePaneStateChange(isOpen));
     }
 
     IFC_RETURN(UpdateVisualState());

@@ -36,6 +36,7 @@ public:
 
         // The focus rect manager honours this on any focusable UIElement, not just on a Control.
         wrapper.UseSystemFocusVisuals(true);
+        wrapper.FocusVisualMargin(row.FocusVisualMargin());
 
         return wrapper;
     }

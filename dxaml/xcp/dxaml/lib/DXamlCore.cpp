@@ -110,6 +110,8 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include "RuntimeProfiler.h"
+#include <XamlProfilerTracing.h>
 #include "XamlOptionalChanges.g.h"
 
 #include "DXamlCoreTipTests.h"
@@ -450,6 +452,9 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     SuspendingEventHandler* pSuspendingEventHandler = NULL;
     wf::IEventHandler<IInspectable*>* pResumingEventHandler = NULL;
 
+    // Register before graphics creation.
+    (void)XamlProfilerLogging::Provider();
+
     #if DBG
     WaitForDebuggerIfNeeded();
     #endif
@@ -573,6 +578,8 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     {
         IFC(UpdateAnimationsEnabled());
     }
+
+    RuntimeProfiler::FireStartupEvent();
 
 Cleanup:
     if (FAILED(hr))
@@ -1738,7 +1745,7 @@ DXamlCore::GetPeerPrivate(
 
             // Identity lookup can enter managed code. Keep it outside peerTableLock,
             // after the creation pegs protect the newly associated peer.
-            if (XamlProfilerTracing::IsEnabled())
+            if (XamlProfilerTracing::IsProfilerEnabled())
             {
                 const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
                 if (peerHandle != 0)

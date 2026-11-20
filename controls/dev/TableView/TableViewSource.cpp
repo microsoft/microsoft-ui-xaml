@@ -98,7 +98,29 @@ void TableViewSource::SetShapingTipHandlers(
     catch (...) { OutputDebugStringW(L"TableView TiP: source observation unavailable.\n"); }
 }
 
-TableViewSource::~TableViewSource() = default;
+TableViewSource::~TableViewSource()
+{
+    // An engine pass still on the stack keeps the engine alive; it must stop and not call back here.
+    *m_obsolete = true;
+    m_engine->SetProjectionRebuiltHandler(nullptr);
+    m_engine->SetShapingChangedHandler(nullptr);
+    for (auto const& entry : m_trackedDelegates)
+    {
+        if (auto const tracked = entry.lock())
+        {
+            tracked->Release();
+        }
+    }
+}
+
+std::function<winrt::IInspectable(winrt::IInspectable const&)> TableViewSource::MakeKeySelector(winrt::TableViewKeySelector const& key)
+{
+    return [key = Track(key)](winrt::IInspectable const& item) -> winrt::IInspectable
+    {
+        auto const target = key->Get();
+        return target ? target(item) : nullptr;
+    };
+}
 
 TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     m_engine(std::make_shared<::ShapedItemsSource>(items))
@@ -110,6 +132,7 @@ TableViewSource::TableViewSource(winrt::IInspectable const& items) :
     // later one -- the control never has to special-case its own construction.
     m_engine->SetProjectionRebuiltHandler([this]() { OnProjectionRebuilt(); });
     m_engine->SetShapingChangedHandler([this](bool reorderOnly) { NotifyOwnerShapingChanged(reorderOnly); });
+    m_engine->SetObsoleteFlag(m_obsolete);
     m_engine->Start();
 }
 
@@ -132,7 +155,11 @@ winrt::TableViewSource TableViewSource::Filter(winrt::TableViewPredicate const& 
     ShapingTip tip{ *this, TableViewTip::Operation::Filter };
     tip.Apply([&]()
     {
-        m_engine->SetFilter([predicate](winrt::IInspectable const& item) { return predicate(item); });
+        m_engine->SetFilter([predicate = Track(predicate)](winrt::IInspectable const& item)
+        {
+            auto const target = predicate->Get();
+            return !target || target(item);
+        });
     });
     return *this;
 }
@@ -153,12 +180,16 @@ winrt::TableViewSource TableViewSource::GroupBy(winrt::TableViewKeySelector cons
     RowIdentity::IdentitySelector groupIdentity{ nullptr };
     if (groupIdentitySelector)
     {
-        groupIdentity = [groupIdentitySelector](winrt::IInspectable const& item) { return groupIdentitySelector(item); };
+        groupIdentity = [groupIdentitySelector = Track(groupIdentitySelector)](winrt::IInspectable const& item)
+        {
+            auto const target = groupIdentitySelector->Get();
+            return target ? target(item) : winrt::hstring{};
+        };
     }
 
     tip.Apply([&]()
     {
-        m_engine->SetGroup([key](winrt::IInspectable const& item) { return key(item); }, groupIdentity);
+        m_engine->SetGroup(MakeKeySelector(key), groupIdentity);
     });
     return *this;
 }
@@ -186,9 +217,7 @@ winrt::TableViewSource TableViewSource::ParentBy(winrt::TableViewKeySelector con
         throw winrt::hresult_invalid_argument(L"ParentBy: keySelector and parentKeySelector are required.");
     }
 
-    m_engine->SetParent(
-        [keySelector](winrt::IInspectable const& item) { return keySelector(item); },
-        [parentKeySelector](winrt::IInspectable const& item) { return parentKeySelector(item); });
+    m_engine->SetParent(MakeKeySelector(keySelector), MakeKeySelector(parentKeySelector));
     return *this;
 }
 
@@ -297,10 +326,10 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         throw winrt::hresult_invalid_argument(L"direction must be a defined SortDirection value.");
     }
 
-    // The engine stores a std::function, which cannot be compared, so the delegate itself is
-    // handed over as the axis identity. The wrapping lambda holds a strong ref to that same
-    // delegate, so the identity stays valid for as long as the axis lives.
-    auto const keyIdentity = key.as<winrt::Windows::Foundation::IUnknown>();
+    // The engine stores a std::function, which cannot be compared, so the delegate's address is
+    // handed over as the axis identity. It is not a reference; the axis's tracked key keeps the
+    // delegate reachable for as long as the axis lives.
+    void const* const keyIdentity = winrt::get_abi(key.as<winrt::Windows::Foundation::IUnknown>());
     // Removing an axis that is not there is a no-op, measured no more than a clear with nothing to clear.
     bool const meaningful = direction != winrt::SortDirection::None ||
         m_engine->HasMatchingSort(sortAxisToken, keyIdentity) ||
@@ -311,7 +340,7 @@ winrt::TableViewSource TableViewSource::SortCore(winrt::hstring const& previousS
         m_engine->SetSort(
             previousSortAxisToken,
             sortAxisToken,
-            [key](winrt::IInspectable const& item) { return key(item); },
+            MakeKeySelector(key),
             keyIdentity,
             sortMemberPath,
             direction);

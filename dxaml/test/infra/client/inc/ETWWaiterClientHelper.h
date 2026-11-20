@@ -13,6 +13,7 @@ namespace Private { namespace Infrastructure {
 
             IFACEMETHOD(Start)(GUID providerGuid, unsigned long eventId) override;
             IFACEMETHOD(StartWithTaskName)(GUID providerGuid, HSTRING taskName) override;
+            IFACEMETHOD(StartWithTaskNameAndPayload)(GUID providerGuid, HSTRING taskName, HSTRING payloadCriteria) override;
             IFACEMETHOD(StartWithPayload)(GUID providerGuid, unsigned long eventId, HSTRING payloadCriteria) override;
             IFACEMETHOD(Wait)(GUID providerGuid, unsigned long eventId, unsigned int timeoutMs) override;
             IFACEMETHOD(WaitForTaskName)(GUID providerGuid, HSTRING taskName, unsigned int timeoutMs) override;

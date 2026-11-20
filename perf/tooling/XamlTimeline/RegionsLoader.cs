@@ -170,6 +170,12 @@ namespace XamlTimeline
                 stop = ParseMatcher(stopElement);
             }
 
+            if (ParseBool(ExtAttr(element, "ExactTaskName")))
+            {
+                start = start with { ExactTaskName = true };
+                if (stop is not null) stop = stop with { ExactTaskName = true };
+            }
+
             var startPayload = ParsePayload(startElement);
             var stopPayload = stopElement is not null
                 ? ParsePayload(stopElement)

@@ -65,6 +65,18 @@ $($xmldoc.packages.package | ? {$_.id.EndsWith("WebView2")}).version = $sdkVersi
 $xmldoc.Save($filename)
 write-host "Updated $filename"
 
+$filename = "$rootPath\controls\tools\CustomTasksTool\Program.cs"
+CheckFile $filename
+$pattern = "packages\\Microsoft\.Web\.WebView2\.[^\\]+\\"
+$fileContents = [System.IO.File]::ReadAllText($filename)
+if ($fileContents -notmatch $pattern)
+{
+    write-host "WebView2 package path not found in $filename"
+    exit 1
+}
+[System.IO.File]::WriteAllText($filename, ($fileContents -replace $pattern, "packages\Microsoft.Web.WebView2.$sdkVersion\"), [System.Text.Encoding]::UTF8)
+write-host "Updated $filename"
+
 #
 # Update Browser Version
 #

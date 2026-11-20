@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingResourceDiagnostics.h>
+#include <XamlProfilerTracing.h>
 #include <GraphicsUtility.h>
 #include <DCompTreeHost.h>
 #include <MUX-ETWEvents.h>
@@ -171,6 +173,10 @@ DCompSurface::InitializeSurface(
             m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
             &m_pVirtualCompositionSurface
             ));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface);
+        }
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
     }
@@ -184,12 +190,16 @@ DCompSurface::InitializeSurface(
             !m_requestAtlas,
             &m_pCompositionSurface
             ));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+        }
 
         //NOTE: If this is a shared surface this may inflate reported memory footprint.
         UpdateMemoryFootprint(TRUE);
     }
 
-    if (XamlProfilerTracing::IsEnabled())
+    if (XamlProfilerTracing::IsProfilerEnabled())
     {
         TraceSurfaceInit(compositionSurfaceFormat);
     }
@@ -245,10 +255,14 @@ DCompSurface::InitializeSurface(
             m_fIsOpaque ? DXGI_ALPHA_MODE_IGNORE : DXGI_ALPHA_MODE_PREMULTIPLIED,
             &m_pVirtualCompositionSurface
             ));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface);
+        }
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
         }
@@ -276,10 +290,14 @@ DCompSurface::InitializeSurface(
             !m_requestAtlas,
             &m_pCompositionSurface
             ));
+        if (XamlProfilerTracing::IsProfilerEnabled())
+        {
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+        }
 
         UpdateMemoryFootprint(TRUE);
 
-        if (XamlProfilerTracing::IsEnabled())
+        if (XamlProfilerTracing::IsProfilerEnabled())
         {
             TraceSurfaceInit(DXGI_FORMAT_B8G8R8A8_UNORM);
         }
@@ -319,6 +337,10 @@ DCompSurface::DCompSurface(
     , m_isHDR(isHDR)
     , m_requestAtlas(requestAtlas)
 {
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        m_graphicsResourceTracked = RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::DCompSurfaceWrapper);
+    }
     if (!s_traceDCompSurfacesInitialized)
     {
         static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
@@ -333,6 +355,10 @@ DCompSurface::~DCompSurface()
     ReleaseLegacyDCompResources(false /* resetWucSurface */);
 
     DCompSurfaceMonitor::RemoveSurface(this);
+    if (m_graphicsResourceTracked)
+    {
+        RenderingResourceDiagnostics::LogResourceDestroyed(RenderingResourceDiagnostics::ResourceKind::DCompSurfaceWrapper);
+    }
 }
 
 // Release all D3D device-dependent resources.  This includes all "legacy" DComp resource references, but does not
@@ -1346,7 +1372,7 @@ DCompSurface::GetTextureSizeInBytes() const
 
 void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
 {
-    if (!XamlProfilerTracing::IsEnabled())
+    if (!XamlProfilerTracing::IsProfilerEnabled())
     {
         return;
     }

@@ -50,6 +50,28 @@ winrt::hstring TableViewGroupHeaderAutomationPeer::GetClassNameCore()
     return winrt::hstring{ L"TableViewGroupHeader" };
 }
 
+winrt::IVector<winrt::AutomationPeer> TableViewGroupHeaderAutomationPeer::GetChildrenCore()
+{
+    auto const children = __super::GetChildrenCore();
+    auto const header = GetHeader();
+    if (!children || !header)
+    {
+        return children;
+    }
+    // The chevron belongs to the container, not the group; ExpandCollapse already reports its state.
+    auto* const headerImpl = winrt::get_self<TableViewGroupHeader>(header);
+    auto filtered = winrt::single_threaded_vector<winrt::AutomationPeer>();
+    for (auto const& child : children)
+    {
+        auto const peer = child.try_as<winrt::FrameworkElementAutomationPeer>();
+        if (!peer || !headerImpl->IsExpanderPartInternal(peer.Owner()))
+        {
+            filtered.Append(child);
+        }
+    }
+    return filtered;
+}
+
 winrt::hstring TableViewGroupHeaderAutomationPeer::GetNameCore()
 {
     // Read from the live projection rather than the visual tree, so the name reflects current
@@ -101,6 +123,8 @@ void TableViewGroupHeaderAutomationPeer::SetFocusCore()
 
 void TableViewGroupHeaderAutomationPeer::ShowContextMenuCore()
 {
+    Row(); // Reject a pooled header before the native owner-menu path can run.
+
     // The base raises ContextRequested on the header itself, which shows the header's own
     // ContextFlyout before any TableView suppression hook can see it.
     if (auto const tableView = GetOwningTableView(); tableView && winrt::get_self<TableView>(tableView)->AreContextMenusSuppressed())
@@ -139,6 +163,7 @@ void TableViewGroupHeaderAutomationPeer::RaiseExpandCollapseAutomationEvent(
 
     try
     {
+        // Raised on this peer so the framework finds the window, then routes it to the EventsSource.
         RaisePropertyChangedEvent(
             winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
             box_value(oldState),

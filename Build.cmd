@@ -32,6 +32,7 @@ set _analyze=
 set _quiet=
 set _initFlavor=
 set _exitCode=0
+set _solutionTimingCount=0
 
 :parseArgs
 if "%1"=="/c" (
@@ -219,6 +220,7 @@ if "%_muxcIXMPChanged%"=="1" (
 goto:showDurationAndExit
 
 :buildSolution
+set _solutionStartTime=%time: =0%
 set _solution=%1
 shift
 set _args=%*
@@ -270,7 +272,8 @@ set _command=call msbuild !_options!
 
 if "%_fake%"=="1" (
     echo COMMAND: %_command%
-    goto :eof
+    call :recordSolutionDuration
+    exit /b %_exitCode%
 )
 
 rem Clear the PSModulePath environment variable. This avoids issues when the caller is a version of
@@ -291,7 +294,22 @@ if ERRORLEVEL 1  (
     echo ERROR: buildSolution for !_solution! FAILED.  Binlog is here: !_binlog!
 )
 
+call :recordSolutionDuration
 exit /b %_exitCode%
+
+:recordSolutionDuration
+set _solutionEndTime=%time: =0%
+rem Convert to hundredths of a second, accounting for leading zeroes and midnight.
+set /a _solutionDuration=(1%_solutionEndTime:~0,2%-1%_solutionStartTime:~0,2%)*360000 + (1%_solutionEndTime:~3,2%-1%_solutionStartTime:~3,2%)*6000 + (1%_solutionEndTime:~6,2%-1%_solutionStartTime:~6,2%)*100 + 1%_solutionEndTime:~9,2%-1%_solutionStartTime:~9,2%
+if %_solutionDuration% lss 0 set /a _solutionDuration+=8640000
+set /a _solutionHours=_solutionDuration/360000, _solutionMinutes=_solutionDuration/6000%%60, _solutionSeconds=_solutionDuration/100%%60, _solutionHundredths=_solutionDuration%%100
+set _solutionHours=0%_solutionHours%
+set _solutionMinutes=0%_solutionMinutes%
+set _solutionSeconds=0%_solutionSeconds%
+set _solutionHundredths=0%_solutionHundredths%
+set /a _solutionTimingCount+=1
+set "_solutionTiming[%_solutionTimingCount%]=%_solution%: %_solutionHours:~-2%:%_solutionMinutes:~-2%:%_solutionSeconds:~-2%.%_solutionHundredths:~-2%"
+exit /b 0
 
 :callScript
 
@@ -358,6 +376,13 @@ if not "%_quiet%"=="1" (
     echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
 )
 echo    Elapsed: %BUILDDURATION_HRS:~-2%:%BUILDDURATION_MIN:~-2%:%BUILDDURATION_SEC:~-2%.%BUILDDURATION_HSC:~-2%
+if not "%_quiet%"=="1" (
+    if %_solutionTimingCount% gtr 0 (
+        echo:
+        echo    Build solution timings:
+        for /l %%i in (1,1,%_solutionTimingCount%) do echo       !_solutionTiming[%%i]!
+    )
+)
 if not "%_exitCode%"=="0" (
     echo BUILD FAILED ^(exit code %_exitCode%^).
 ) else if "%_fake%"=="1" (
@@ -398,7 +423,6 @@ echo        /nomock         Skip building the mock package
 echo        /lowpri         Launch MSBuild using below normal priority (default if environment variable XAMLBUILD_LOWPRIORITY = 1)
 echo        /normalpri      Launch MSBuild using normal priority (default if environment variable XAMLBUILD_LOWPRIORITY ^^!= 1)
 echo        /version [ver]  Override WinUIVersion property (default is %_version%)
-rem echo        /local          Builds without using IncrediBuild.
 echo.
 echo    There is also a build command in the controls directory, with options specific to building controls
 echo.

@@ -77,6 +77,8 @@ public:
         bool mustKeepHardwareSurfaces = false
         );
 
+    void UsePreviousHardwareSurface(_In_ CImageSource* previous);
+
     _Ret_maybenull_ IPALSurface* GetSoftwareSurface() { return m_pImageSurfaceWrapper->GetSoftwareSurface(); }
 
     virtual _Check_return_ HRESULT GetSoftwareSurfaceForPrinting(
@@ -451,6 +453,8 @@ public:
 
     virtual XINT32 GetPixelWidth() const;
     virtual XINT32 GetPixelHeight() const;
+
+    bool HasIntrinsicSize() const;
 
     // uriChanged means we need to drop the existing image operation because the URI may have changed
     // and we need to start a fresh image operation.
