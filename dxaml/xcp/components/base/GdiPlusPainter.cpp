@@ -2041,6 +2041,22 @@ namespace RenderingBackend
                     // drawn from DirectWrite outlines.
                     const DWRITE_FONT_FACE_TYPE type = face->GetType();
                     bool outline = type != DWRITE_FONT_FACE_TYPE_TRUETYPE && type != DWRITE_FONT_FACE_TYPE_TRUETYPE_COLLECTION;
+                    if (!outline)
+                    {
+                        // Collections report OPENTYPE_COLLECTION even for PostScript (CFF/CFF2) outlines.
+                        for (const UINT32 tag : { DWRITE_MAKE_OPENTYPE_TAG('C', 'F', 'F', ' '), DWRITE_MAKE_OPENTYPE_TAG('C', 'F', 'F', '2') })
+                        {
+                            const void* data = nullptr;
+                            UINT32 size = 0;
+                            void* context = nullptr;
+                            BOOL exists = FALSE;
+                            if (SUCCEEDED(face->TryGetFontTable(tag, &data, &size, &context, &exists)) && exists)
+                            {
+                                face->ReleaseFontTable(context);
+                                outline = true;
+                            }
+                        }
+                    }
                     Microsoft::WRL::ComPtr<IDWriteFontFace5> face5;
                     if (!outline && SUCCEEDED(face->QueryInterface(IID_PPV_ARGS(&face5))) && face5->HasVariations())
                     {
