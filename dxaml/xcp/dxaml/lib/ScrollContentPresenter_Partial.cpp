@@ -1094,7 +1094,8 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
     // viewport, the return value might be smaller.
     _Out_ wf::Rect* resultRectangle,
     _Out_opt_ DOUBLE* appliedOffsetX,
-    _Out_opt_ DOUBLE* appliedOffsetY)
+    _Out_opt_ DOUBLE* appliedOffsetY,
+    _Out_opt_ bool* scrollRequested)
 {
     BOOLEAN isEmpty = FALSE;
     BOOLEAN isAncestor = FALSE;
@@ -1152,6 +1153,11 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
     if (appliedOffsetY)
     {
         *appliedOffsetY = 0.0;
+    }
+
+    if (scrollRequested)
+    {
+        *scrollRequested = false;
     }
 
     // Handle cases where we don't have to do anything
@@ -1469,6 +1475,11 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                         }
                     }
                 }
+            }
+
+            if (scrollRequested)
+            {
+                *scrollRequested = !!handled;
             }
 
             if (handled)

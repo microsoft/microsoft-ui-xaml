@@ -559,6 +559,37 @@ _Check_return_ HRESULT ModernCollectionBasePanel::GetVerticalViewportPadding(_Ou
     RRETURN(S_OK);
 }
 
+_Check_return_ HRESULT ModernCollectionBasePanel::GetStickyHeaderHeightForItem(
+    _In_ INT itemIndex,
+    _Out_ FLOAT* headerHeight,
+    _Out_opt_ bool* headerAvailable)
+{
+    *headerHeight = 0;
+    if (headerAvailable)
+    {
+        *headerAvailable = true;
+    }
+    if (m_bUseStickyHeaders)
+    {
+        INT groupIndex = 0;
+        ctl::ComPtr<IUIElement> header;
+        IFC_RETURN(m_cacheManager.GetGroupInformationFromItemIndex(itemIndex, &groupIndex, nullptr, nullptr));
+        IFC_RETURN(m_containerManager.GetHeaderAtGroupIndex(groupIndex, &header));
+        if (!header)
+        {
+            IFC_RETURN(m_containerManager.GetHeaderFromPinnedHeaders(groupIndex, &header));
+        }
+        if (!header && headerAvailable)
+        {
+            *headerAvailable = false;
+            return S_OK;
+        }
+        IFCPTR_RETURN(header);
+        *headerHeight = GetBoundsFromElement(header).Height;
+    }
+    return S_OK;
+}
+
 // Computes the offsets resulting from Sticky Headers
 // Note: we take as a prerequisite here that all sticky headers are correcly configured and we are just
 // applying the same computation than the Parametric Curve does

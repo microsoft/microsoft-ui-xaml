@@ -3939,10 +3939,12 @@ _Check_return_ HRESULT ItemsControl::GetGroupFromItem(
 }
 
 // Realizes, scrolls into view and prepares the item at the provided index so it can be tabbed into.
+// scrollOffset shifts where the scroll places the item, relative to the viewport edge it is aligned with.
 _Check_return_ HRESULT ItemsControl::GetScrolledIntoViewAndPreparedContainer(
     int index,
     _In_opt_ xaml::IDependencyObject* itemContainerCandidate,
-    _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer)
+    _Outptr_result_maybenull_ xaml::IDependencyObject** itemContainer,
+    _In_ DOUBLE scrollOffset)
 {
     ASSERT(index >= 0);
     ASSERT(itemContainer);
@@ -3980,7 +3982,8 @@ _Check_return_ HRESULT ItemsControl::GetScrolledIntoViewAndPreparedContainer(
             FALSE /*isFromPublicAPI*/,
             TRUE  /*ensureContainerRealized*/,
             FALSE /*animateIfBringIntoView*/,
-            xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default));
+            xaml_controls::ScrollIntoViewAlignment::ScrollIntoViewAlignment_Default,
+            scrollOffset));
 
         // Retrieve the item now that it was realized.
         IFC_RETURN(ContainerFromIndex(index, itemContainer));
