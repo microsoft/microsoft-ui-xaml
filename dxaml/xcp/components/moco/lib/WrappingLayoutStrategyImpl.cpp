@@ -926,16 +926,24 @@ double WrappingLayoutStrategyImpl::GetItemsPerPage(
     _In_ wf::Rect window) const
 {
     double itemsPerPage = 0.0;
+    const float virtualizingExtent = window.*SizeFromRectInVirtualizingDirection();
+    const float stackingExtent = window.*SizeFromRectInNonVirtualizingDirection();
 
     if (m_cellSizeSet &&
+        (!IsGrouping() || m_headerSizeSet) &&
+        window.Width > 0 &&
+        window.Height > 0 &&
+        !DoubleUtil::IsInfinity(virtualizingExtent) &&
+        // An unbounded stacking extent needs a real limit, not the layout safety cap.
+        (!DoubleUtil::IsInfinity(stackingExtent) || m_maxRowsOrColumns > 0) &&
         !DoubleUtil::IsNaN(m_cellSize.Width) &&
         !DoubleUtil::IsNaN(m_cellSize.Height) &&
         DoubleUtil::GreaterThan(m_cellSize.Width, 0) &&
         DoubleUtil::GreaterThan(m_cellSize.Height, 0))
     {
-        int rows = static_cast<INT>(DoubleUtil::Ceil(window.Height / m_cellSize.Height));
-        int cols = static_cast<INT>(DoubleUtil::Ceil(window.Width / m_cellSize.Width));
-        itemsPerPage = rows * cols;
+        const int stackingLines = DetermineMaxStackingLine(window);
+        const double virtualizingLines = DoubleUtil::Ceil(virtualizingExtent / (m_cellSize.*SizeInVirtualizingDirection()));
+        itemsPerPage = virtualizingLines * stackingLines;
     }
 
     return itemsPerPage;
