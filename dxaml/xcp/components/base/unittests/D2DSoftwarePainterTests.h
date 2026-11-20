@@ -28,6 +28,7 @@ namespace RenderingBackendTests
         // W5 copy accounting (contract in D2DPainter.cpp).
         TEST_METHOD(OffscreenFrameReportsNoUpload);
         TEST_METHOD(PresentedFrameUploadsDamagedPixels);
+        TEST_METHOD(AttachedSwapChainBackBufferIsTheTarget);
         TEST_METHOD(PresentedUploadIsClippedToTarget);
         // C4: removal is reported as failure, not a crash.
         TEST_METHOD(ReportsFailureAfterDeviceRemoval);

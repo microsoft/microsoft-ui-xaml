@@ -397,6 +397,38 @@ namespace RenderingBackendTests
         VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame, L"detached: offscreen-only again");
     }
 
+    void D2DSoftwarePainterTests::AttachedSwapChainBackBufferIsTheTarget()
+    {
+        auto device = CreateWarpDevice();
+        auto painter = CreateWarpPainter(device.Get());
+        const uint64_t targetBytes = static_cast<uint64_t>(c_size) * c_size * 4;
+        VERIFY_ARE_EQUAL(targetBytes, painter->GetResourceInventory().surfaceBytes, L"offscreen: painter-owned target");
+
+        auto swapChain = CreateCompositionSwapChain(device.Get(), c_size, c_size);
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(swapChain.Get()));
+        VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().surfaceBytes, L"attached: draws into the back buffer");
+
+        // Several partial presents: each frame lands in another flip buffer, so what is outside the damage must be
+        // carried forward from the previous frame.
+        PaintSolid(*painter, c_red);
+        const RectF first{ 0, 0, 16, 16 };
+        const RectF second{ 32, 32, 48, 48 };
+        PaintSolid(*painter, c_blue, &first, 1);
+        PaintSolid(*painter, c_white, &second, 1);
+        PaintSolid(*painter, c_blue, &second, 1);
+        auto bytes = ReadAll(*painter, c_size, c_size);
+        VERIFY_ARE_EQUAL(0xFF0000FFu, PixelAt(bytes, c_size, 4, 4), L"damage from three frames ago is kept");
+        VERIFY_ARE_EQUAL(0xFF0000FFu, PixelAt(bytes, c_size, 40, 40), L"ReadPixels sees the last presented frame");
+        VERIFY_ARE_EQUAL(0xFFFF0000u, PixelAt(bytes, c_size, 60, 4), L"never-damaged area keeps the first frame");
+
+        VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(nullptr));
+        VERIFY_ARE_EQUAL(targetBytes, painter->GetResourceInventory().surfaceBytes, L"detached: offscreen target again");
+        bytes = ReadAll(*painter, c_size, c_size);
+        VERIFY_ARE_EQUAL(0xFF0000FFu, PixelAt(bytes, c_size, 4, 4), L"detach keeps the last frame");
+        VERIFY_ARE_EQUAL(0xFFFF0000u, PixelAt(bytes, c_size, 60, 4));
+        VERIFY_SUCCEEDED(swapChain->ResizeBuffers(0, 32, 32, DXGI_FORMAT_UNKNOWN, 0), L"detach drops every back-buffer reference");
+    }
+
     void D2DSoftwarePainterTests::PresentedUploadIsClippedToTarget()
     {
         auto device = CreateWarpDevice();
@@ -780,10 +812,10 @@ namespace RenderingBackendTests
         VERIFY_SUCCEEDED(painter->ScrollPixels({ 0, 0, 32, 64 }, 40, 0));
         PaintSolid(*painter, c_white, &exposed, 1);
         VERIFY_ARE_EQUAL(32ull * 12 * 4, painter->GetResourceInventory().uploadBytesThisFrame);
+        VERIFY_ARE_EQUAL(1u, painter->GetResourceCounters().scratchSurfacesCreated, L"scratch texture is reused");
         VERIFY_SUCCEEDED(painter->SetPresentationSwapChain(nullptr));
         VERIFY_SUCCEEDED(painter->ScrollPixels({ 0, 0, 64, 64 }, 4, 4));
         PaintSolid(*painter, c_white, &exposed, 1);
         VERIFY_ARE_EQUAL(0ull, painter->GetResourceInventory().uploadBytesThisFrame);
-        VERIFY_ARE_EQUAL(1u, painter->GetResourceCounters().scratchSurfacesCreated, L"scratch texture is reused");
     }
 }

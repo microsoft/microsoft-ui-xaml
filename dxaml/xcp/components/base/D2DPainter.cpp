@@ -41,24 +41,28 @@
 // Copy accounting: ResourceInventory::uploadBytesThisFrame (test plan metric W5)
 //   Reset at BeginFrame; describes the frame completed by the last EndFrame.
 //   D2D-SW: WARP rasterizes on the CPU straight into the target bitmap, which lives in system memory, so drawing
-//     itself uploads nothing. Making the frame visible needs a copy of the damaged pixels from that target into the
-//     presentation surface (the attached swap chain's back buffer), which DWM then consumes. The painter counts that
-//     copy: for a presented frame, uploadBytesThisFrame == sum over damage rects (clipped to the target) of
-//     width * height * 4 == FrameStats::damagedPixels * 4 for non-overlapping damage. A frame painted with no swap
-//     chain attached (offscreen-only: tests, fidelity capture) reports 0. ReadPixels is a diagnostic readback and is
-//     never counted. Copies DWM makes on its own side are outside the process and are measured with the WPR Gpu
-//     profile instead.
+//     itself uploads nothing. With a swap chain attached the target bitmap wraps the swap chain's back buffer
+//     (GetBuffer(0), which flip-sequential keeps pointing at the current back buffer), so there is no painter-owned
+//     full-size target and no target-to-back-buffer copy. Present1 hands the damage to DWM as dirty rects. Flip model
+//     only fills the new back buffer from the front buffer at the next Present, so before the back buffer is drawn,
+//     scrolled, or read the painter copies the previous frame's dirty rects forward from the front buffer (a memcpy
+//     inside WARP, the same size as the presented damage). The painter counts the presented pixels DWM
+//     consumes from system memory: for a presented frame, uploadBytesThisFrame == sum over damage rects (clipped to
+//     the target) of width * height * 4 == FrameStats::damagedPixels * 4 for non-overlapping damage. A frame painted
+//     with no swap chain attached (offscreen-only: tests, fidelity capture) draws into a painter-owned texture and
+//     reports 0. ReadPixels is a diagnostic readback and is never counted. Copies DWM makes on its own side are
+//     outside the process and are measured with the WPR Gpu profile instead.
 //   D2D-HW: uploadBytesThisFrame counts CPU-to-GPU uploads the painter issues itself: EnsureBitmap pixel copies
 //     (width * height * 4 per creation or refresh). Other primitives (fills, rounded rects, strokes, paths, text,
 //     glyph runs) issue none the painter can see: geometry is tessellated into D2D's internal vertex buffers and glyphs
 //     into D2D's glyph atlas, neither of which is attributable from outside D2D; use the WPR Gpu profile (DMA packets)
-//     for those. The target-to-back-buffer copy is a same-adapter, GPU-local copy;
-//     it is not an upload, and is exposed separately as ID2DImmediatePainter::GetPresentCopyBytesThisFrame (which on
-//     WARP is included in uploadBytesThisFrame).
+//     for those. Presenting needs no target copy (the back buffer is the target); the presented dirty-rect bytes are
+//     exposed separately as ID2DImmediatePainter::GetPresentCopyBytesThisFrame (which on WARP is included in
+//     uploadBytesThisFrame).
 //   Both: EnsureBitmap copies count in the frame they happen in, or the next frame when made between frames (on WARP the
 //     copy is CPU to system memory, on hardware CPU to GPU). ScrollPixels moves pixels inside the target with two
 //     device copies through a scratch texture (GPU-local on hardware, a memcpy inside WARP; neither is counted as an
-//     upload itself); the moved destination rect is then copied to the back buffer and added to Present1's dirty rects
+//     upload itself); the moved destination rect is then added to Present1's dirty rects
 //     on the next presented frame, so it counts in GetPresentCopyBytesThisFrame (and on WARP in uploadBytesThisFrame)
 //     although FrameStats::damagedPixels does not include it.
 //
@@ -463,6 +467,13 @@ namespace RenderingBackend
                 if (!m_targetBitmap)
                 {
                     return E_UNEXPECTED;
+                }
+                {
+                    const HRESULT hr = CarryForwardBackBuffer();
+                    if (FAILED(hr))
+                    {
+                        IFC_RETURN(HandleFailure(hr));
+                    }
                 }
 
                 ComputeDamage(damageRects, damageRectCount);
@@ -1107,6 +1118,13 @@ namespace RenderingBackend
                 {
                     return S_OK;
                 }
+                {
+                    const HRESULT hr = CarryForwardBackBuffer();
+                    if (FAILED(hr))
+                    {
+                        IFC_RETURN(HandleFailure(hr));
+                    }
+                }
 
                 // Destination: area intersected with area moved by (dx, dy); everything else scrolls out of rect.
                 const int64_t left = (std::max)(static_cast<int64_t>(area.left), static_cast<int64_t>(area.left) + dx);
@@ -1204,7 +1222,11 @@ namespace RenderingBackend
                 }
                 IFC_RETURN(CheckDevice());
 
-                HRESULT hr = S_OK;
+                HRESULT hr = CarryForwardBackBuffer();
+                if (FAILED(hr))
+                {
+                    IFC_RETURN(HandleFailure(hr));
+                }
                 if (!m_staging)
                 {
                     D3D11_TEXTURE2D_DESC desc{};
@@ -1241,7 +1263,8 @@ namespace RenderingBackend
             {
                 ResourceInventory inventory;
                 const uint64_t targetBytes = static_cast<uint64_t>(m_width) * m_height * 4;
-                inventory.surfaceBytes = (m_targetTexture ? targetBytes : 0) + (m_staging ? targetBytes : 0) +
+                // An attached swap chain's buffers are the target; they belong to the swap chain, not the painter.
+                inventory.surfaceBytes = (m_targetTexture && !m_swapChain ? targetBytes : 0) + (m_staging ? targetBytes : 0) +
                     (m_scrollScratch ? targetBytes : 0) + static_cast<uint64_t>(m_backdropWidth) * m_backdropHeight * 4;
                 const uint32_t brushes = (m_brush ? 1 : 0) + (m_auxBrush ? 1 : 0);
                 const uint32_t bitmaps = static_cast<uint32_t>(m_bitmaps.size());
@@ -1264,9 +1287,7 @@ namespace RenderingBackend
                 }
                 if (swapChain == nullptr)
                 {
-                    m_backBuffer.Reset();
-                    m_swapChain.Reset();
-                    return S_OK;
+                    return m_swapChain ? DetachSwapChain() : S_OK;
                 }
 
                 ComPtr<ID3D11Device> swapChainDevice;
@@ -1284,35 +1305,68 @@ namespace RenderingBackend
                 }
                 IFC_RETURN(CheckDevice());
 
-                m_backBuffer.Reset();
+                // Draw straight into the swap chain's back buffer: no painter-owned full-size target.
+                ReleaseTarget();
+                m_backBufferStale = false;
                 m_swapChain = swapChain;
+                HRESULT hr = S_OK;
                 if (desc.Width != m_width || desc.Height != m_height)
                 {
-                    const HRESULT hr = ResizeSwapChain();
-                    if (FAILED(hr))
-                    {
-                        m_swapChain.Reset();
-                        IFC_RETURN(HandleFailure(hr));
-                    }
+                    hr = ResizeSwapChain();
+                }
+                if (SUCCEEDED(hr))
+                {
+                    hr = CreateTarget();
+                }
+                if (FAILED(hr))
+                {
+                    m_swapChain.Reset();
+                    ReleaseTarget();
+                    IGNOREHR(CreateTarget());
+                    IFC_RETURN(HandleFailure(hr));
                 }
                 m_forceFullDamage = true;
                 return S_OK;
             }
 
+            // Back to an offscreen target, keeping the last frame so "outside the damage keeps the previous frame" holds.
+            HRESULT DetachSwapChain() noexcept
+            {
+                IGNOREHR(CarryForwardBackBuffer());
+                m_backBufferStale = false;
+                ComPtr<ID3D11Texture2D> current = m_targetTexture;
+                ReleaseTarget();
+                m_swapChain.Reset();
+                HRESULT hr = CreateTarget();
+                if (SUCCEEDED(hr) && current)
+                {
+                    m_d3dContext->CopyResource(m_targetTexture.Get(), current.Get());
+                }
+                return FAILED(hr) ? HandleFailure(hr) : S_OK;
+            }
+
         private:
             HRESULT CreateTarget() noexcept
             {
-                D3D11_TEXTURE2D_DESC desc{};
-                desc.Width = m_width;
-                desc.Height = m_height;
-                desc.MipLevels = 1;
-                desc.ArraySize = 1;
-                desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-                desc.SampleDesc.Count = 1;
-                desc.Usage = D3D11_USAGE_DEFAULT;
-                desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-                IFC_RETURN(m_device->CreateTexture2D(&desc, nullptr, &m_targetTexture));
-                ++m_churnCreated;
+                if (m_swapChain)
+                {
+                    // Flip model on D3D11: this reference always names the current back buffer across Present calls.
+                    IFC_RETURN(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_targetTexture)));
+                }
+                else
+                {
+                    D3D11_TEXTURE2D_DESC desc{};
+                    desc.Width = m_width;
+                    desc.Height = m_height;
+                    desc.MipLevels = 1;
+                    desc.ArraySize = 1;
+                    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+                    desc.SampleDesc.Count = 1;
+                    desc.Usage = D3D11_USAGE_DEFAULT;
+                    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+                    IFC_RETURN(m_device->CreateTexture2D(&desc, nullptr, &m_targetTexture));
+                    ++m_churnCreated;
+                }
 
                 ComPtr<IDXGISurface> surface;
                 IFC_RETURN(m_targetTexture.As(&surface));
@@ -1330,7 +1384,7 @@ namespace RenderingBackend
             void ReleaseTarget() noexcept
             {
                 m_context->SetTarget(nullptr);
-                m_churnDestroyed += (m_targetBitmap ? 1 : 0) + (m_targetTexture ? 1 : 0) + (m_staging ? 1 : 0) + (m_scrollScratch ? 1 : 0);
+                m_churnDestroyed += (m_targetBitmap ? 1 : 0) + (m_targetTexture && !m_swapChain ? 1 : 0) + (m_staging ? 1 : 0) + (m_scrollScratch ? 1 : 0);
                 m_targetBitmap.Reset();
                 m_targetTexture.Reset();
                 m_staging.Reset();
@@ -1340,47 +1394,69 @@ namespace RenderingBackend
 
             HRESULT ResizeSwapChain() noexcept
             {
-                m_backBuffer.Reset();
+                m_backBufferStale = false; // contents are discarded; the next frame is fully damaged
+                m_d3dContext->Flush(); // drop deferred references to the old back buffers
                 DXGI_SWAP_CHAIN_DESC1 desc{};
                 IFC_RETURN(m_swapChain->GetDesc1(&desc));
                 IFC_RETURN(m_swapChain->ResizeBuffers(0, m_width, m_height, DXGI_FORMAT_UNKNOWN, desc.Flags));
                 return S_OK;
             }
 
-            // Copies the damage from the target into the back buffer and presents it with matching dirty rects.
+            // Flip model copies the previous frame into the back buffer only at the next Present, so before the back
+            // buffer is drawn, scrolled, or read, bring forward what the last Present changed from the front buffer.
+            HRESULT CarryForwardBackBuffer() noexcept
+            {
+                if (!m_swapChain || !m_backBufferStale)
+                {
+                    return S_OK;
+                }
+                DXGI_SWAP_CHAIN_DESC1 desc{};
+                IFC_RETURN(m_swapChain->GetDesc1(&desc));
+                ComPtr<ID3D11Texture2D> front;
+                IFC_RETURN(m_swapChain->GetBuffer(desc.BufferCount - 1, IID_PPV_ARGS(&front)));
+                if (m_staleFull)
+                {
+                    m_d3dContext->CopyResource(m_targetTexture.Get(), front.Get());
+                }
+                else
+                {
+                    for (uint32_t i = 0; i < m_staleCount; ++i)
+                    {
+                        const PixelRect& rect = m_staleRects[i];
+                        const D3D11_BOX box{ rect.left, rect.top, 0, rect.right, rect.bottom, 1 };
+                        m_d3dContext->CopySubresourceRegion(m_targetTexture.Get(), 0, rect.left, rect.top, 0, front.Get(), 0, &box);
+                    }
+                }
+                m_backBufferStale = false;
+                return S_OK;
+            }
+
+            // The frame was drawn straight into the back buffer: present it with the damage as dirty rects.
             HRESULT PresentDamage() noexcept
             {
                 if (m_damageCount == 0 && m_frameScrollCount == 0)
                 {
                     return S_OK;
                 }
-                if (!m_backBuffer)
-                {
-                    // Flip model: buffer 0 always names the current back buffer, so the reference stays valid across
-                    // Present calls until ResizeBuffers or detach.
-                    IFC_RETURN(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&m_backBuffer)));
-                }
 
                 RECT dirty[MaxDamageRects + MaxScrollRects];
                 uint32_t dirtyCount = 0;
                 uint64_t copyBytes = 0;
-                const auto copyRect = [&](const PixelRect& rect)
+                const auto addDirty = [&](const PixelRect& rect)
                 {
-                    const D3D11_BOX box{ rect.left, rect.top, 0, rect.right, rect.bottom, 1 };
-                    m_d3dContext->CopySubresourceRegion(m_backBuffer.Get(), 0, rect.left, rect.top, 0, m_targetTexture.Get(), 0, &box);
                     dirty[dirtyCount++] = RECT{ static_cast<LONG>(rect.left), static_cast<LONG>(rect.top), static_cast<LONG>(rect.right), static_cast<LONG>(rect.bottom) };
                     copyBytes += rect.Area() * 4;
                 };
                 for (uint32_t i = 0; i < m_damageCount; ++i)
                 {
-                    copyRect(m_damage[i]);
+                    addDirty(m_damage[i]);
                 }
                 // Areas moved by ScrollPixels are presented without being repainted (a full-damage frame covers them).
                 if (!m_frameFullDamage)
                 {
                     for (uint32_t i = 0; i < m_frameScrollCount; ++i)
                     {
-                        copyRect(m_frameScrollRects[i]);
+                        addDirty(m_frameScrollRects[i]);
                     }
                 }
 
@@ -1392,6 +1468,16 @@ namespace RenderingBackend
                     parameters.pDirtyRects = dirty;
                 }
                 IFC_RETURN(m_swapChain->Present1(0, 0, &parameters));
+
+                // The new back buffer holds an older frame until the next Present; remember what to bring forward.
+                m_staleFull = m_frameFullDamage;
+                m_staleCount = 0;
+                for (uint32_t i = 0; !m_staleFull && i < dirtyCount; ++i)
+                {
+                    m_staleRects[m_staleCount++] = PixelRect{ static_cast<uint32_t>(dirty[i].left), static_cast<uint32_t>(dirty[i].top),
+                        static_cast<uint32_t>(dirty[i].right), static_cast<uint32_t>(dirty[i].bottom) };
+                }
+                m_backBufferStale = true;
 
                 m_presentCopyBytes = copyBytes;
                 m_uploadBytes += m_identity.isWarp ? copyBytes : 0;
@@ -2542,7 +2628,10 @@ namespace RenderingBackend
             ComPtr<ID3D11Texture2D> m_staging;
             ComPtr<ID3D11Texture2D> m_scrollScratch;
             ComPtr<IDXGISwapChain1> m_swapChain;
-            ComPtr<ID3D11Texture2D> m_backBuffer;
+            bool m_backBufferStale = false;
+            bool m_staleFull = false;
+            uint32_t m_staleCount = 0;
+            PixelRect m_staleRects[MaxDamageRects + MaxScrollRects]{};
 
             DeviceIdentity m_identity;
             uint32_t m_width = 0;
