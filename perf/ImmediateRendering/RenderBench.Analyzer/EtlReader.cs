@@ -67,6 +67,8 @@ public static class EtlReader
                 // Added by immediate-rendering-d2d-sw
                 "DeviceLost" => new DeviceLostRecord(t, pid, (BackendMode)U32(e, "Mode"), I32(e, "Reason"), I32(e, "RemovedReason"),
                     U32(e, "FrameNumber")),
+                // Full-backend scenes: a window switched to Composition (absent on runtimes without per-window fallback).
+                "WindowFallback" => new WindowFallbackRecord(t, pid, (BackendMode)U32(e, "Mode"), U64(e, "RootId"), Str(e, "Reason")),
                 _ => null,
             };
         }
@@ -103,6 +105,9 @@ public static class EtlReader
                 "SceneStep" => new SceneStepRecord(t, pid, I32(e, "Step"), Str(e, "StepName"), I32(e, "Windows")),
                 "SceneValue" => new SceneValueRecord(t, pid, Str(e, "Name"), F64(e, "Value")),
                 "PopupOpened" => new PopupOpenedRecord(t, pid, I64(e, "InputId"), Str(e, "Popup")),
+                // Full-backend scenes S11-S23
+                "UiBlockBegin" => new UiBlockRecord(t, pid, I32(e, "BlockId"), true, F64(e, "DurationMs")),
+                "UiBlockEnd" => new UiBlockRecord(t, pid, I32(e, "BlockId"), false, F64(e, "DurationMs")),
                 _ => null,
             };
         }

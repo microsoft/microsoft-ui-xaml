@@ -12,6 +12,18 @@ public enum SceneId
     DataGrid,    // S8: ItemsRepeater grid 50x1,000 with frozen header, cell updates and 2-D scrolling
     MultiWindow, // S9: N windows (or a 20-tab TabView) of S1; open/minimize/restore/close steps
     Form,        // S10: typing, focus movement, hover, ComboBox/Flyout/ToolTip popups
+    // ---- Full-backend scenes (S17 WebView2 and S18 InkCanvas are out of scope) ----
+    CompositionInterop,   // S11: ElementCompositionPreview child visual/expression, implicit and connected animations
+    Materials,            // S13: in-app acrylic, Mica, ThemeShadow, gradients
+    WindowedPopups,       // S14: Flyout/MenuFlyout/ComboBox/TeachingTip/ToolTip outside a small window
+    IndependentAnimation, // S15: animated ChangeView, looping Storyboard, ProgressRing while the UI thread blocks
+    Lottie,               // S12: ProgressRing, AnimatedIcon, AnimatedVisualPlayer with a custom source
+    TextStress,           // S19: complex scripts, color emoji, CFF, ClearType vs grayscale, 1,000 small TextBlocks
+    SwapChainMedia,       // S16: SwapChainPanel (raw D3D11 swap chain) and MediaPlayerElement
+    DpiTheme,             // S20: theme toggles, resize storm, DPI change
+    DeviceLost,           // S21: simulated device loss (immediate modes)
+    Accessibility,        // S22: focus visuals over 50 controls, RenderTargetBitmap vs on-screen capture
+    AppShell,             // S23: NavigationView shell, settings pages, 5x2,000 details list, control gallery
 }
 
 // How scripted interactions reach the app. Auto resolves at run time (see BenchRunner.ResolveInputMode).
@@ -53,9 +65,30 @@ public static class SceneCatalog
         new(SceneId.DataGrid, "datagrid", "S8", "DataGrid", new(30, 10, 0.5, 1200, 1_000), "50x1,000 cell grid; updates and scroll"),
         new(SceneId.MultiWindow, "multiwindow", "S9", "MultiWindow", new(30, 10, 1, 0, 0), "N windows of S1, lifecycle steps"),
         new(SceneId.Form, "form", "S10", "Form", new(30, 10, 10, 0, 0), "typing, focus, hover and popups"),
+        // Full-backend scenes in execution order. Items: S15 list rows, S19 small TextBlocks, S20 cycles, S22 focus
+        // targets, S23 details rows.
+        new(SceneId.CompositionInterop, "interop", "S11", "CompositionInterop", new(20, 2, 1, 0, 0),
+            "hand-in visual with expression animation, implicit offset and connected animations"),
+        new(SceneId.Materials, "materials", "S13", "Materials", new(20, 2, 1, 0, 0), "acrylic, mica, ThemeShadow, gradients"),
+        new(SceneId.WindowedPopups, "popups", "S14", "WindowedPopups", new(30, 0, 1, 0, 0),
+            "five popup kinds outside a small window; open/close cycles"),
+        new(SceneId.IndependentAnimation, "independent", "S15", "IndependentAnimation", new(20, 0, 0, 600, 2_000),
+            "animated scroll, storyboard and ProgressRing while the UI thread blocks for 1 s"),
+        new(SceneId.Lottie, "lottie", "S12", "Lottie", new(20, 0, 1, 0, 0), "ProgressRing, AnimatedIcon, custom AnimatedVisualPlayer"),
+        new(SceneId.TextStress, "text", "S19", "TextStress", new(20, 0, 0, 300, 1_000),
+            "RTL/complex scripts, emoji, CFF, ClearType vs grayscale; scroll"),
+        new(SceneId.SwapChainMedia, "swapchain", "S16", "SwapChainMedia", new(20, 0, 0, 0, 0), "SwapChainPanel and MediaPlayerElement"),
+        new(SceneId.DpiTheme, "dpitheme", "S20", "DpiTheme", new(60, 0, 0, 0, 100), "theme toggles, resize storm, DPI change"),
+        new(SceneId.DeviceLost, "devicelost", "S21", "DeviceLost", new(45, 30, 0, 0, 0), "simulated device loss and recovery"),
+        new(SceneId.Accessibility, "accessibility", "S22", "Accessibility", new(30, 0, 4, 0, 50),
+            "focus visuals over 50 controls; RenderTargetBitmap vs capture"),
+        new(SceneId.AppShell, "appshell", "S23", "AppShell", new(30, 0, 0.5, 0, 2_000),
+            "NavigationView shell, settings, details list, gallery; 10 navigations"),
     ];
 
     public static SceneInfo Get(SceneId id) => All.First(s => s.Id == id);
+
+    public const string PlanIdRange = "s1..s23 (no s17/s18)";
 
     // Accepts the CLI name ("datagrid"), the enum name, or the test-plan id ("s8"); never a number.
     public static bool TryParse(string text, out SceneId id)

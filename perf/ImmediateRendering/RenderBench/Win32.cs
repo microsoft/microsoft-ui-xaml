@@ -6,7 +6,7 @@ namespace RenderBench;
 
 // Real OS input (SendInput) so every backend sees the same hit-test/pointer path, and screen capture for the
 // visual-parity check (C1).
-static unsafe class Win32
+static unsafe partial class Win32
 {
     public static (int X, int Y) ElementCenterOnScreen(FrameworkElement element, nint hwnd) => ElementPointOnScreen(element, hwnd, 0.5, 0.5);
 

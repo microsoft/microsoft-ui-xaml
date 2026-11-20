@@ -12,6 +12,7 @@ No harness, instrumentation event, or result described here exists yet unless st
 - [Metric catalog](#metric-catalog)
 - [Test cases](#test-cases)
 - [Extended scenes](#extended-scenes)
+- [Full-backend scenes](#full-backend-scenes)
 - [Required WinUI instrumentation](#required-winui-instrumentation)
 - [Comparative report format](#comparative-report-format)
 - [Measurement pitfalls](#measurement-pitfalls)
@@ -374,6 +375,159 @@ Observations to drive the next iteration:
 - Animations cost a full UI-thread paint per tick in immediate modes; independent-animation offload is the open
   design question.
 
+## Full-backend scenes
+
+S11-S23 cover the content a full immediate backend must handle, following the decisions in the proposal
+("Full-backend decisions"): composition interop, `SwapChainPanel`/`MediaPlayerElement` and arbitrary
+`AnimatedVisualPlayer` content switch *that window* to Composition (per-window fallback, no hybrid). The native side
+reports it with a `WindowFallback` event from the RenderingBackend provider (`Mode`, `RootId`, `Reason`); the analyzer
+matches it by name and tolerates it being absent from older runtimes. Every scene is deterministic for `--seed`, uses
+the usual phases (Warmup → Steady → Interaction → Recovery) and supports programmatic input. Window titles follow
+`RenderBench <PlanId> <label> [<backend>]`. Run them with `Run-RenderBench.ps1 -Scenes full-backend` (or `s11`..`s23`).
+
+**Out of scope:** S17 (WebView2) and S18 (InkCanvas). Both depend on content that renders outside XAML and are not
+part of this prototype; the plan ids stay reserved and `Run-RenderBench.ps1` rejects them.
+
+| Id | `--scene` (variants) | Expected in immediate modes |
+|---|---|---|
+| S11 | `interop` (`--no-interop`) | window falls back; the variant stays immediate |
+| S12 | `lottie` (`--no-player`) | window falls back because of the player; ProgressRing/AnimatedIcon (the variant) stay immediate |
+| S13 | `materials` | immediate; only Mica approximated |
+| S14 | `popups` | immediate, including windowed popups |
+| S15 | `independent` | immediate; frames during UI-thread blocks measured |
+| S16 | `swapchain` (`--no-media`) | window falls back (both variants) |
+| S19 | `text` | immediate |
+| S20 | `dpitheme` | immediate; recovery and leak gates |
+| S21 | `devicelost` | immediate; recovery and leak gates |
+| S22 | `accessibility` | immediate; RTB and capture gates |
+| S23 | `appshell` | immediate |
+
+### S11 composition interop (`interop`, variant `--no-interop`)
+
+- **Content:** a `SpriteVisual` attached with `ElementCompositionPreview.SetElementChildVisual` and rotated by an
+  expression animation; cards whose handoff visuals (`GetElementVisual`) have an implicit `Offset` animation; a
+  `ConnectedAnimation` between a thumbnail view and a detail view.
+- **Interaction:** 1 Hz view swaps (connected animation) and card reorders; 2 Hz updates.
+- **Expectation:** immediate modes emit `WindowFallback`, the window renders through Composition, frames are still
+  presented and nothing crashes. `S11-nointerop` has the same layout and state changes without interop and must stay
+  immediate (a `WindowFallback` there fails the gate).
+- **Gate:** `WindowFallbackAsExpected`, `FramesObserved`, `HarnessCompleted`.
+
+### S12 Lottie (`lottie`, variant `--no-player`)
+
+- **Content:** built-in `ProgressRing`s, `AnimatedIcon`s in buttons and a CheckBox, and an `AnimatedVisualPlayer`
+  playing a hand-coded `IAnimatedVisualSource` (a `ShapeVisual` rotated by an expression on the player's `Progress`).
+- **Expectation:** the player makes the window fall back; with `--no-player` (a static square in its place) the window
+  stays immediate and ProgressRing/AnimatedIcon render without unsupported content.
+- **Gate:** `WindowFallbackAsExpected`, `NoUnsupportedContent` (content in a window that fell back as expected is
+  allowed).
+
+### S13 materials (`materials`)
+
+- **Content:** `MicaBackdrop` window backdrop, in-app `AcrylicBrush` panes over colorful shapes, `ThemeShadow` cards and
+  a flyout-like panel (`Translation` Z), DropShadow-like elevation from stacked translucent borders, `LinearGradientBrush`
+  fills (also as text foreground).
+- **Interaction:** elevation and acrylic toggles (1 Hz) and gradient-stop moves (2 Hz).
+- **Expectation:** no `UnsupportedContent` for gradients, ThemeShadow or acrylic. Mica may be approximated by its
+  fallback color and reported with a detail ending in `:approximated`, which is allowed.
+- **Gate:** `NoUnsupportedContent`, `WindowFallbackAsExpected` (no fallback).
+
+### S14 windowed popups (`popups`)
+
+- **Content:** a 560×400 window with controls in its bottom-right corner, so every popup crosses the window edge:
+  `Flyout`, `MenuFlyout`, `ComboBox` drop-down, `TeachingTip`, `ToolTip` (`ShouldConstrainToRootBounds=false` where the
+  API has it) and plain windowed `Popup`s.
+- **Interaction:** steps `baseline`, `popups-1`..`popups-6` (cumulatively open plain popups), `closed`; then open/close
+  cycles over every popup kind at 1 Hz.
+- **Metrics:** popup open-to-first-frame by kind (`PopupOpenMsByKind`), private MB per open popup
+  (`PrivateMBPerOpenPopup`, slope over the `popups-*` steps).
+- **Gate:** `NoUnsupportedContent` (a popup painted into the island instead of its own window is a failure).
+
+### S15 independent animation and scroll (`independent`)
+
+- **Content:** a 2000-item list scrolled with animated `ScrollViewer.ChangeView`, a looping opacity/translate
+  `Storyboard` and a `ProgressRing`.
+- **Interaction:** every 4 s the UI thread is blocked for 1000 ms (`Thread.Sleep`) between harness
+  `UiBlockBegin`/`UiBlockEnd` events.
+- **Metrics:** per block (`UiBlocks`), frames drawn during the block and the longest drawn-frame gap around it
+  (`FramesDuringUiBlock`, `MaxFrameGapDuringUiBlockMs`). A background screen probe of the animated lane adds
+  `BlockScreenChanges` and `BlockMaxScreenGapMs` (valid only when `BlockScreenProbeValid` = 1, i.e. a visible desktop),
+  which also covers Composition, whose DWM-side frames have no WinUI frame events.
+- **Expectation:** Composition keeps presenting independent animations during the block; immediate modes are measured
+  (off-thread ticking is in progress). Target: no dropped frames.
+- **Gate:** `UiBlockObserved`.
+
+### S16 SwapChainPanel and MediaPlayerElement (`swapchain`, variant `--no-media`)
+
+- **Content:** a `SwapChainPanel` with a D3D11 composition swap chain created through raw COM (no new packages),
+  cleared to an animated color on every `CompositionTarget.Rendering`, and a `MediaPlayerElement` looping a clip
+  generated once with `MediaComposition` (`%LOCALAPPDATA%\RenderBench\media\colors.mp4`). `SwapChainAvailable` and
+  `MediaAvailable` scene values report whether each part ran; a failure skips that part only.
+- **Expectation:** `WindowFallback` in immediate modes for both variants.
+- **Gate:** `WindowFallbackAsExpected`, `FramesObserved`.
+
+### S19 text stress (`text`)
+
+- **Content:** RTL Arabic and Hebrew paragraphs, Devanagari and Thai, color emoji (Segoe UI Emoji), a CFF-outline
+  OpenType font if one is installed (`CffFontPresent` = 0 skips that variant), Segoe UI Variable weights, ClearType
+  (opaque background) vs grayscale (transparent or translucent background) text, a `RichTextBlock` with mixed runs,
+  72 pt text and 1000 small `TextBlock`s in an `ItemsRepeater`.
+- **Interaction:** scroll at 300 DIP/s.
+- **Gate:** `NoUnsupportedContent`; fidelity compared with Comp(Lifted) screenshots.
+
+### S20 DPI, theme and resize (`dpitheme`)
+
+- **Content:** the S1 settings page.
+- **Interaction:** 100 cycles (`--items`): an `AppWindow.Resize` from a deterministic size list each cycle, a
+  `RequestedTheme` toggle every 5th (20 toggles), and a move to a monitor with a different DPI every 25th when one exists
+  (`DpiChangeAvailable`; otherwise DPI change is a manual test). All cycles run regardless of the phase length. A full GC
+  precedes steps `cycle-10` and `cycle-100`.
+- **Metrics:** change-to-frame by kind (`ChangeToFrameMsByKind`: `resize`, `theme`, `dpi`), `UnmatchedChanges` (no frame
+  within 5 s), `CycleLeakPrivateMB` (cycle-100 minus cycle-10).
+- **Gate:** `RecoveryWithinLimit` (p95 per kind ≤ 1000 ms, no unmatched changes), `NoCycleLeak` (< 2 MB).
+
+### S21 device lost (`devicelost`, `--device-lost <frames|every:N>`)
+
+- **Content:** the S2 dashboard updated at 30 Hz.
+- **Hook:** for immediate modes RenderBench sets `WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST` (default `every:10`, or a frame
+  number list) before `Application.Start`; the native painter simulates a device loss on those frames. Composition has
+  no equivalent hook and runs the scene as a baseline (gates n/a).
+- **Metrics:** `DeviceLostRecoveryMs` (DeviceLost to the next drawn frame), `DeviceLostLeakPrivateMB` (after the 100th
+  loss minus after the 10th).
+- **Gate:** immediate modes: `DeviceLostObserved`, `RecoveryWithinLimit` (≤ 1000 ms), `NoCycleLeak` (< 2 MB; n/a with
+  fewer than 100 losses).
+
+### S22 accessibility and visual capture (`accessibility`)
+
+- **Content:** 50 focusable controls.
+- **Interaction:** keyboard focus moves across them at 4 Hz (Tab or `Focus(Keyboard)`), showing focus rectangles. Every
+  10th move, `RenderTargetBitmap.RenderAsync` renders a static subtree and is compared with the same rectangle on
+  screen: the `WINUI_IMMEDIATE_CAPTURE` BMP written by the immediate painter, or a screen/PrintWindow capture for
+  Composition.
+- **Metrics:** `RtbSuccessRate`, `CaptureMeanAbsDiff` (mean absolute BGRA difference, 0..255).
+- **Gate:** `RenderTargetBitmapOk` (every render succeeded), `CaptureWithinTolerance` (≤ 8; skipped without values).
+- **Manual:** high contrast (switch the OS theme and check focus visuals and system colors); not automated.
+
+### S23 real app shell (`appshell`)
+
+- **Content:** a `NavigationView` shell with 10 pages: settings-like pages (cards, toggles, expanders), an
+  Explorer-like details `ListView` (5 columns × 2000 rows) and a Gallery-like grid of control samples. Each page is
+  built on navigation.
+- **Interaction:** navigate to the next page at 0.5 Hz.
+- **Metrics:** change-to-frame for `navigate`, M1-M3, R2.
+- **Gate:** `NoUnsupportedContent`, `WindowFallbackAsExpected` (no fallback).
+
+### Full-backend exit criteria
+
+An immediate backend is complete for S11-S23 when, on a gated run set:
+
+1. **Content:** no unexpected `UnsupportedContent`; only details ending in `:approximated` (e.g. Mica) are allowed.
+   S11, S12 with the player and S16 fall back per window as designed; nothing else falls back.
+2. **Fidelity:** pixel parity with Comp(Lifted) screenshots within the C1 tolerance; S22 capture mean abs diff ≤ 8.
+3. **Responsiveness:** input-to-frame p95 ≤ 1.2× Composition for the same scene and input mode.
+4. **Independent animation:** S15 has no dropped frames during UI-thread blocks (target; Composition is the reference).
+5. **Memory:** steady and peak private bytes ≤ Comp(System) for the same scene.
+6. **Recovery:** S20 and S21 recover within 1 s (p95) and leak < 2 MB over 100 cycles.
 ## Required WinUI instrumentation
 
 The comparison depends on counters that do not exist today. Add them as TraceLogging/ETW events in the WinUI

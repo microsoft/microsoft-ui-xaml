@@ -65,7 +65,26 @@ public static class ComparisonReport
         new("E1 animation tax CPU, steady (ms/s)", m => m.AnimationCpuMsPerSecond, "F2"),
         new("M1 marginal private per window (MB)", m => m.MarginalPrivateMBPerWindow, "F1"),
         new("M1 private reclaimed after close (%)", m => m.PrivateMBReclaimedFraction * 100, "F0"),
+        // Full-backend scenes S11-S23
+        new("Window fallbacks", m => m.WindowFallbackCount, "F0"),
+        new("Frames during UI-thread block", m => m.FramesDuringUiBlock, "F0"),
+        new("Max frame gap during UI-thread block (ms)", m => m.MaxFrameGapDuringUiBlockMs, "F1"),
+        new("Changes without a frame", m => m.UnmatchedChanges, "F0"),
+        new("Private growth cycle 10 to 100 (MB)", m => m.CycleLeakPrivateMB, "F2"),
+        new("Device lost recovery p95 (ms)", m => m.DeviceLostRecoveryMs?.P95, "F1"),
+        new("Private growth device lost 10 to 100 (MB)", m => m.DeviceLostLeakPrivateMB, "F2"),
+        new("Private per open popup (MB)", m => m.PrivateMBPerOpenPopup, "F2"),
+        new("RenderTargetBitmap success (%)", m => m.RtbSuccessRate * 100, "F0"),
+        new("Capture mean abs diff (0-255)", m => m.CaptureMeanAbsDiff, "F2"),
     ];
+
+    // Per-kind rows for the kinds some run in the scene measured.
+    static IEnumerable<Row> KindRows(IEnumerable<RunMetrics> runs, string title, string format,
+        Func<RunMetrics, IReadOnlyDictionary<string, Distribution>?> select)
+        => runs.SelectMany(r => select(r)?.Keys ?? Enumerable.Empty<string>())
+            .Distinct()
+            .Order(StringComparer.Ordinal)
+            .Select(kind => new Row($"{title}, {kind} (ms)", m => select(m) is { } d && d.TryGetValue(kind, out var v) ? v.P95 : null, format));
 
     static Distribution? ByKind(RunMetrics m, string kind)
         => m.InputToFrameMsByKind is { } byKind && byKind.TryGetValue(kind, out var d) ? d : null;
@@ -125,7 +144,9 @@ public static class ComparisonReport
                 .Order(StringComparer.Ordinal)
                 .Select(name => new Row($"Scene {name} p50, interaction",
                     m => m.Phase(BenchPhase.Interaction)?.SceneValues is { } v && v.TryGetValue(name, out var d) ? d.P50 : null));
-            foreach (var row in s_rows.Concat(sceneValueRows))
+var kindRows = KindRows(scene.Select(r => r.Metrics), "Change to frame p95", "F2", m => m.ChangeToFrameMsByKind)
+                .Concat(KindRows(scene.Select(r => r.Metrics), "Popup open p95", "F1", m => m.PopupOpenMsByKind));
+            foreach (var row in s_rows.Concat(kindRows).Concat(sceneValueRows))
             {
                 double? baselineMedian = Median(baseline.Select(row.Select));
                 builder.Append(CultureInfo.InvariantCulture, $"| {row.Name} |");

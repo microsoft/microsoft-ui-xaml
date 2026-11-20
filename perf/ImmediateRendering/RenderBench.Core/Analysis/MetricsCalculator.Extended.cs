@@ -61,10 +61,13 @@ public static partial class MetricsCalculator
 
     // Request (InputInjected with the popup's input id) to the first drawn frame that ends after the popup's Opened event.
     static Distribution? ComputePopupOpen(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options)
+        => Distribution.From(PopupOpenTimes(records, frames, options).Select(p => p.Ms));
+
+    static List<(string Popup, double Ms)> PopupOpenTimes(List<TraceRecord> records, List<FrameSpan> frames, GateOptions options)
     {
         var drawnEnds = frames.Where(f => f.Drawn).Select(f => f.EndMs).OrderBy(t => t).ToList();
         var inputs = records.OfType<InputInjectedRecord>().ToList();
-        var times = new List<double>();
+        var times = new List<(string Popup, double Ms)>();
         foreach (var opened in records.OfType<PopupOpenedRecord>())
         {
             var request = inputs.LastOrDefault(i => i.InputId == opened.InputId && i.TimeMs <= opened.TimeMs);
@@ -75,10 +78,10 @@ public static partial class MetricsCalculator
             double frameEnd = drawnEnds.FirstOrDefault(t => t > opened.TimeMs, double.NaN);
             if (!double.IsNaN(frameEnd) && frameEnd - opened.TimeMs <= options.MaxInputToFrameMs)
             {
-                times.Add(frameEnd - request.TimeMs);
+                times.Add((opened.Popup, frameEnd - request.TimeMs));
             }
         }
-        return Distribution.From(times);
+        return times;
     }
 
     // Each step's memory is the last sample before the next step starts (the settled value), or before the end of the
@@ -109,7 +112,10 @@ public static partial class MetricsCalculator
     }
 
     // M1 per window: least-squares slope of private MB over the open window count, using the baseline and open-* steps.
-    static double? MarginalPerWindow(IReadOnlyList<StepMetrics>? steps)
+    static double? MarginalPerWindow(IReadOnlyList<StepMetrics>? steps) => Marginal(steps, "open-");
+
+    // Least-squares slope of private MB over StepMetrics.Windows for the baseline step and the steps named prefix*.
+    static double? Marginal(IReadOnlyList<StepMetrics>? steps, string prefix)
     {
         if (steps is null)
         {
@@ -117,7 +123,7 @@ public static partial class MetricsCalculator
         }
         var points = steps
             .Where(s => !double.IsNaN(s.PrivateMB) &&
-                (s.Name == "baseline" || s.Name.StartsWith("open-", StringComparison.Ordinal)))
+                (s.Name == "baseline" || s.Name.StartsWith(prefix, StringComparison.Ordinal)))
             .Select(s => ((double)s.Windows, s.PrivateMB))
             .ToList();
         if (points.Count < 2)
@@ -145,7 +151,7 @@ public static partial class MetricsCalculator
     sealed record UnsupportedCounts(IReadOnlyDictionary<string, int>? ByType, IReadOnlyDictionary<string, int>? ByDetail,
         IReadOnlyList<string> Expected, IReadOnlyList<string> Unexpected);
 
-    static UnsupportedCounts CountUnsupported(string? scene, List<TraceRecord> records)
+    static UnsupportedCounts CountUnsupported(string? scene, List<TraceRecord> records, bool fallbackObserved = false)
     {
         var events = records.OfType<UnsupportedContentRecord>().ToList();
         var byType = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -157,7 +163,7 @@ public static partial class MetricsCalculator
             string key = $"{e.TypeName}|{e.Detail}";
             byType[key] = byType.GetValueOrDefault(key) + 1;
             byDetail[e.Detail] = byDetail.GetValueOrDefault(e.Detail) + 1;
-            var list = UnsupportedContentPolicy.IsExpected(scene, e.TypeName, e.Detail) ? expected : unexpected;
+            var list = UnsupportedContentPolicy.IsExpected(scene, e.TypeName, e.Detail, fallbackObserved) ? expected : unexpected;
             if (!list.Contains(key))
             {
                 list.Add(key);
@@ -189,8 +195,14 @@ public static partial class MetricsCalculator
 // that scene's gate; any other unsupported content still does. See the test plan's "Extended scenes" gate rules.
 public static class UnsupportedContentPolicy
 {
-    public static bool IsExpected(string? sceneLabel, string typeName, string detail)
+    // Approximations (detail ends in ":approximated", e.g. Mica drawn as its fallback color) are allowed everywhere. In a
+    // scene built to make its window fall back, the content that caused the observed fallback is expected as well.
+    public static bool IsExpected(string? sceneLabel, string typeName, string detail, bool fallbackObserved = false)
     {
+        if (Contains(detail, ":approximated") || (fallbackObserved && WindowFallbackPolicy.IsExpected(sceneLabel)))
+        {
+            return true;
+        }
         switch (SceneCatalog.FromLabel(sceneLabel))
         {
             case SceneId.Animated when sceneLabel != "Animated-NoProgressRing":

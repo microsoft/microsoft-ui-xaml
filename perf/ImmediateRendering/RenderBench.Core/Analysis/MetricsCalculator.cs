@@ -12,6 +12,14 @@ public static class GateNames
     public const string SteadyStateIsIdle = "SteadyStateIsIdle";
     public const string MemorySampled = "MemorySampled";
     public const string NoUnsupportedContent = "NoUnsupportedContent";
+    // Full-backend scenes S11-S23
+    public const string WindowFallbackAsExpected = "WindowFallbackAsExpected";
+    public const string UiBlockObserved = "UiBlockObserved";
+    public const string RecoveryWithinLimit = "RecoveryWithinLimit";
+    public const string NoCycleLeak = "NoCycleLeak";
+    public const string DeviceLostObserved = "DeviceLostObserved";
+    public const string RenderTargetBitmapOk = "RenderTargetBitmapOk";
+    public const string CaptureWithinTolerance = "CaptureWithinTolerance";
 }
 
 public sealed record GateOptions
@@ -20,6 +28,12 @@ public sealed record GateOptions
     public double MaxSteadyFramesPerMinute { get; init; } = 6;
     // Input that is not followed by a drawn frame within this window is reported as unmatched.
     public double MaxInputToFrameMs { get; init; } = 1000;
+    // S20/S21: change-to-frame and device-lost recovery p95 limit.
+    public double MaxRecoveryMs { get; init; } = 1000;
+    // S20/S21: private bytes growth allowed from cycle 10 to cycle 100.
+    public double MaxCycleLeakMB { get; init; } = 2;
+    // S22: RenderTargetBitmap vs on-screen capture, mean absolute difference per channel (0..255).
+    public double MaxCaptureMeanAbsDiff { get; init; } = 8;
 }
 
 public static partial class MetricsCalculator
@@ -70,13 +84,20 @@ public static partial class MetricsCalculator
             processStart is not null && firstFrame is not null ? firstFrame.EndMs - processStart.TimeMs : null);
 
         var latency = ComputeInputLatency(records, frames, options, IsRealInput);
-        var unsupportedCounts = CountUnsupported(runStarted?.Scene ?? sceneReady?.Scene, records);
+        string? scene = runStarted?.Scene ?? sceneReady?.Scene;
+        var steps = ComputeSteps(records, phases);
+        var full = ComputeFullBackend(scene, records, frames, steps, options);
+        var unsupportedCounts = CountUnsupported(scene, records, full.FallbackCount > 0);
 
         var gate = EvaluateGate(runStarted, records, selected, device, phaseMetrics, unsupported, options,
             traits?.AnimatesWhileIdle ?? false, unsupportedCounts);
+        BackendMode requestedMode = BackendMode.Composition;
+        bool immediate = (selected?.Effective ??
+            (BackendModes.TryParse(runStarted?.RequestedBackend ?? "", out requestedMode) ? requestedMode : BackendMode.Composition))
+            != BackendMode.Composition;
+        gate.AddRange(EvaluateFullBackendGates(scene, immediate, full, options));
         var steadyMetrics = phaseMetrics.FirstOrDefault(p => p.Phase == BenchPhase.Steady);
         var inputMode = records.OfType<InputModeRecord>().LastOrDefault();
-        var steps = ComputeSteps(records, phases);
 
         return new RunMetrics(SchemaVersion, runStarted?.Scene ?? sceneReady?.Scene, pid, identity, startup, phaseMetrics,
             latency, peakPrivate, peakGpu, gate,
@@ -97,7 +118,23 @@ public static partial class MetricsCalculator
             PrivateMBReclaimedFraction: ReclaimedFraction(steps),
             UnsupportedByType: unsupportedCounts.ByType,
             UnsupportedByDetail: unsupportedCounts.ByDetail,
-            ExpectedUnsupported: unsupportedCounts.Expected);
+            ExpectedUnsupported: unsupportedCounts.Expected,
+            // Full-backend scenes S11-S23
+            WindowFallbackCount: full.FallbackCount,
+            WindowFallbackReasons: full.FallbackReasons,
+            ExpectsWindowFallback: full.ExpectsFallback,
+            UiBlocks: full.UiBlocks,
+            FramesDuringUiBlock: full.UiBlocks?.Sum(b => b.FramesDrawn),
+            MaxFrameGapDuringUiBlockMs: full.UiBlocks?.Max(b => b.MaxFrameGapMs),
+            ChangeToFrameMsByKind: full.ChangeToFrame,
+            UnmatchedChanges: full.UnmatchedChanges,
+            CycleLeakPrivateMB: full.CycleLeakMB,
+            DeviceLostRecoveryMs: full.DeviceLostRecovery,
+            DeviceLostLeakPrivateMB: full.DeviceLostLeakMB,
+            PopupOpenMsByKind: full.PopupOpenByKind,
+            PrivateMBPerOpenPopup: full.PrivateMBPerOpenPopup,
+            RtbSuccessRate: full.RtbSuccessRate,
+            CaptureMeanAbsDiff: full.CaptureMeanAbsDiff);
     }
 
     // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----
