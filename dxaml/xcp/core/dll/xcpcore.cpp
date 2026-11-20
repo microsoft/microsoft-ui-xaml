@@ -11749,8 +11749,8 @@ VisualTree* CCoreServices::GetMainVisualTree()
 template <typename Container, typename IsExpired>
 static void RemoveExpiredBeforeGrowth(Container& container, IsExpired isExpired)
 {
-    if (container.size() == container.capacity() &&
-        static_cast<std::size_t>(std::count_if(container.begin(), container.end(), isExpired)) >= container.size() / 2)
+    if (!container.empty() && container.size() == container.capacity() &&
+        static_cast<std::size_t>(std::count_if(container.begin(), container.end(), isExpired)) * 2 >= container.size())
     {
         container.erase(std::remove_if(container.begin(), container.end(), isExpired), container.end());
     }
@@ -11765,8 +11765,8 @@ void CCoreServices::AddMutableStyleValueChangedListener(
 
     if (pStyle->HasMutableSetters(false /* considerBasedOnStyle */) || shouldStoreSourceInfo)
     {
-        // Destroyed elements and Styles are not taken out of these tables unless their Style is changed later.
-        // Clean them up when a table would otherwise grow.
+        // Entries for destroyed elements and Styles are only removed when the element's Style is replaced or a
+        // mutable Setter changes. Clean them up when a table would otherwise grow.
         auto styleWeakRef = xref::get_weakref(pStyle);
         auto entry = m_appliedStyleTables.find(styleWeakRef);
         if (entry == m_appliedStyleTables.end())
