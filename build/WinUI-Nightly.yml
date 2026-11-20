@@ -89,6 +89,11 @@ extends:
         signOutput: ${{ parameters.SignOutput }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        # Release_x64 builds the product and then rebuilds it for PREfast. On the default 8-vCPU host it has used
+        # up to 418 of its 500-minute timeout, and on nights CodeQL traces it, it runs out of time. So skip CodeQL
+        # on that job, and use a 64-vCPU host as WinUI-MonoBuild-Test.yml already does for this stage.
+        buildHostSku: D64
+        skipCodeQLOnReleaseX64: true
 
     - template: AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
       parameters:
