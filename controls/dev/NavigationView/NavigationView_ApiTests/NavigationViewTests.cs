@@ -5795,13 +5795,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyAncestorRefreshPreservesExplicitItems(false);
         }
 
-        private void VerifyAncestorRefreshPreservesExplicitItems(bool changePaneMode)
+        [TestMethod]
+        public void VerifyAncestorRefreshWhileCollapsedPreservesExplicitItems()
+        {
+            VerifyAncestorRefreshPreservesExplicitItems(true, collapse: true);
+        }
+
+        [TestMethod]
+        public void VerifyPreparingDuplicateItemsPreservesSelectedContainer()
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var items = new ObservableCollection<string> { "Home", "Home", "Other" };
+                navView = new NavigationView
+                {
+                    Width = 800,
+                    Height = 600,
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Left,
+                    IsSettingsVisible = false,
+                    MenuItemsSource = items,
+                    SelectedItem = items[0]
+                };
+                Content = navView;
+            });
+
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRepeater(navView);
+                var first = (NavigationViewItem)repeater.TryGetElement(0);
+                var second = (NavigationViewItem)repeater.TryGetElement(1);
+                Verify.IsNotNull(first);
+                Verify.IsNotNull(second);
+                Verify.AreEqual("Home", navView.SelectedItem);
+                Verify.IsTrue(first.IsSelected, "Preparing an equal-valued sibling must not deselect the first item.");
+                Verify.IsFalse(second.IsSelected, "Only the container at the model's selected path may be restored.");
+            });
+        }
+
+        private void VerifyAncestorRefreshPreservesExplicitItems(bool changePaneMode, bool collapse = false)
         {
             NavigationView navView = null;
             NavigationViewItem groupA = null;
             NavigationViewItem groupB = null;
             NavigationViewItem selectedLeaf = null;
             ObservableCollection<NavigationViewItem> items = null;
+            bool unrelatedGroupWasMarked = false;
+            long callbackToken = 0;
             RunOnUIThread.Execute(() =>
             {
                 selectedLeaf = new NavigationViewItem { Content = "Selected leaf" };
@@ -5856,7 +5897,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(NavigationViewDisplayMode.Expanded, navView.DisplayMode);
                 Verify.IsTrue(groupA.IsChildSelected, "The mode change alone must preserve ancestor selection.");
                 Verify.IsFalse(groupB.IsChildSelected);
+                callbackToken = groupB.RegisterPropertyChangedCallback(
+                    NavigationViewItem.IsChildSelectedProperty, (sender, property) =>
+                    {
+                        unrelatedGroupWasMarked |= groupB.IsChildSelected;
+                    });
+                if (collapse)
+                {
+                    navView.Visibility = Visibility.Collapsed;
+                }
                 items.Insert(0, new NavigationViewItem { Content = "Inserted root" });
+                Verify.IsFalse(unrelatedGroupWasMarked, "Collection notification must not transiently mark an unrelated group.");
             });
 
             IdleSynchronizer.Wait();
@@ -5870,6 +5921,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(selectedLeaf.IsSelected);
                 Verify.IsTrue(groupA.IsChildSelected, "The selected group must remain marked after repeater indices settle.");
                 Verify.IsFalse(groupB.IsChildSelected, "The old repeater index must not mark a different group.");
+                Verify.IsFalse(unrelatedGroupWasMarked, "No callback may observe the unrelated group as child-selected.");
+                groupB.UnregisterPropertyChangedCallback(NavigationViewItem.IsChildSelectedProperty, callbackToken);
+                navView.Visibility = Visibility.Visible;
                 groupB.IsExpanded = false;
             });
 

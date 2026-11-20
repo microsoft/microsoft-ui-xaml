@@ -291,11 +291,26 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (selectedItem == SelectedItem())
     {
-        // Collection changes can move the selected item without changing its identity.
-        UpdateIsChildSelected(selectionModel.SelectedIndex());
-        // The model can receive the collection change before the repeaters remap their indices.
-        m_isAncestorRefreshPendingAfterLayout = true;
-        InvalidateMeasure();
+        // Wait for all source listeners to remap their indices, even when layout is suspended.
+        if (!m_isAncestorRefreshPendingAfterLayout)
+        {
+            m_isAncestorRefreshPendingAfterLayout = true;
+            auto weakThis{ winrt::make_weak(static_cast<winrt::NavigationView>(*this)) };
+            if (!DispatcherQueue().TryEnqueue(winrt::DispatcherQueuePriority::Normal, [weakThis]()
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    auto const rawThis = winrt::get_self<NavigationView>(strongThis);
+                    rawThis->m_isAncestorRefreshPendingAfterLayout = false;
+                    rawThis->UpdateIsChildSelected(strongThis.SelectedItem() ? rawThis->m_selectionModel.SelectedIndex() : nullptr);
+                }
+            }))
+            {
+                m_isAncestorRefreshPendingAfterLayout = false;
+                throw winrt::hresult_error(E_FAIL, L"Unable to enqueue NavigationView ancestor selection refresh.");
+            }
+            InvalidateMeasure();
+        }
         return;
     }
 
@@ -1345,7 +1360,10 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
             if (item && SelectedItem() == item)
             {
-                nvi.IsSelected(true);
+                if (IsContainerTheSelectedItemInTheSelectionModel(nvi))
+                {
+                    nvi.IsSelected(true);
+                }
                 if (IsVisible(nvi))
                 {
                     if (m_isSelectionChangedPending && m_pendingSelectionChangedItem)
