@@ -174,17 +174,19 @@ jobs:
       workingDirectory: $(Build.SourcesDirectory)
 
   - ${{ if eq(parameters.collectCodeCoverage, true) }}:
-    # Move the raw coverage data into a CodeCoverage\ folder under the job's upload root so it
-    # rides along in this job's existing test-output artifact (published below by the
-    # already-existing PublishPipelineArtifact@1 step) - no separate artifact needed. The
-    # collector logs are kept alongside so an empty or missing .coverage can be diagnosed.
+    # Move the raw coverage data into a CodeCoverage\Attempt<N>\ folder under the job's upload root
+    # so it rides along in this job's existing test-output artifact (published below by the
+    # already-existing PublishPipelineArtifact@1 step) - no separate artifact needed. The attempt
+    # folder lets MergeCodeCoverage keep only the latest attempt of a re-run slice whose status
+    # changed (both status-named artifacts then exist). The collector logs are kept alongside so
+    # an empty or missing .coverage can be diagnosed.
     - task: PowerShell@2
       displayName: Stage code coverage output
       condition: always()
       inputs:
         targetType: 'inline'
         script: |
-          $coverageStageDir = "$(uploadRootInner)\CodeCoverage"
+          $coverageStageDir = "$(uploadRootInner)\CodeCoverage\Attempt$(System.JobAttempt)"
           New-Item -ItemType Directory -Force -Path $coverageStageDir | Out-Null
           $files = @(Get-ChildItem -Path "$(uploadRootInner)" -Filter 'coverage-*.coverage' -ErrorAction SilentlyContinue) +
                    @(Get-ChildItem -Path "$(uploadRootInner)" -Filter '_coverage-collector-*.log*' -ErrorAction SilentlyContinue)

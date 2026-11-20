@@ -2,12 +2,13 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
-  # Instrument the product DLL(s) and collect coverage on this stage's Win10-RS5 test slices,
-  # then merge and publish. Default false so Nightly, PR and any other consumer of this stage
-  # are unaffected; when true, only the RS5 job runs (25H2/23H2 are skipped) and a
-  # MergeCodeCoverage job is appended.
+  # Instrument the product DLL(s) and collect coverage on this stage's test slices for
+  # coverageTestOS, then merge and publish. Default false so Nightly, PR and any other consumer of
+  # this stage are unaffected; when true, only one test job runs (on coverageTestOS; the regular
+  # 25H2/23H2/RS5 jobs are skipped) and a MergeCodeCoverage job is appended.
   collectCodeCoverage: false
-  # Which single OS the coverage pass runs on. Only used when collectCodeCoverage is true.
+  # Which single OS the coverage pass runs on (Win10-RS5, Win10-22H2, Win11-23H2 or Win11-25H2).
+  # Drives both the instrumented payload and the test job. Only used when collectCodeCoverage is true.
   coverageTestOS: 'Win10-RS5'
   # Which product DLL(s) to instrument, as a LIST (one entry per DLL) - not a space-separated
   # string. Only used when collectCodeCoverage is true. Defaults to just the framework/core DLL
@@ -55,26 +56,32 @@ stages:
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
 
-  # RunTestsRS5 runs whenever it normally would (pipelineKind != QuickPR), OR whenever coverage
-  # mode is on (coverage always targets a single RS5 leg, regardless of pipelineKind). For every
-  # existing caller collectCodeCoverage is false/omitted, so this reduces to exactly
-  # ne(pipelineKind, 'QuickPR') - unchanged from today.
-  - ${{ if or(ne(parameters.pipelineKind, 'QuickPR'), eq(parameters.collectCodeCoverage, true)) }}:
+  - ${{ if and(ne(parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTestsRS5
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
-        collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
 
-  # Coverage merge: gather RunTestsRS5's per-slice .coverage files for every module stem, merge
-  # them, and publish combined + per-DLL reports. Only runs when coverage is on.
+  # Coverage mode: a single test job on coverageTestOS, regardless of pipelineKind. The job name
+  # follows the existing RunTests<OS> convention (Win10-RS5 -> RunTestsRS5), so the default stays
+  # RunTestsRS5. The other OS jobs above are skipped in coverage mode, so the name cannot collide.
   - ${{ if eq(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTests${{ replace(replace(parameters.coverageTestOS, 'Win10-', ''), 'Win11-', '') }}
+        dependsOn: CreateTestPayload
+        testOS: ${{ parameters.coverageTestOS }}
+        testPayloadArtifactName: 'TestPayload'
+        collectCodeCoverage: true
+
+  # Coverage merge: gather the coverage test job's per-slice .coverage files for every module
+  # stem, merge them, and publish combined + per-DLL reports. Only runs when coverage is on.
     - template: WinUI-MergeCodeCoverage-Job.yml
       parameters:
         runTestJobName: MergeCodeCoverage
         dependsOn:
-          - RunTestsRS5
+          - RunTests${{ replace(replace(parameters.coverageTestOS, 'Win10-', ''), 'Win11-', '') }}
         coverageModuleStems: ${{ parameters.coverageModuleStems }}
         coverageTabLayout: ${{ parameters.coverageTabLayout }}

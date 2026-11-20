@@ -15,7 +15,9 @@ other's report. The merge step reports each DLL on its own **and** both combined
 
 **What gets exercised:** only `DevTestSuite`, on **Win10-RS5, x86, chk** - the single OS/flavor
 combination with the largest Dev test population in the nightly matrix (~6,838 unique tests /
-~6,853 executions). No `ScenarioTestSuite`, no other OS or architecture, no sample apps.
+~6,853 executions). No `ScenarioTestSuite`, no other OS or architecture, no sample apps. The OS is
+set by `coverageTestOS` on `WinUI-RunTests-Stage.yml` (default `Win10-RS5`); the payload and the
+test job both follow it.
 
 ## Run it
 
@@ -33,7 +35,10 @@ else in this repository turns that switch on. It:
    its own.
 3. Runs the Win10-RS5 Dev test slices with **one collector per instrumented module** attached
    (`RunTestPassSliceOnBuildAgent.ps1 -CollectCodeCoverage`, which auto-discovers every module's
-   session from the payload), producing one `.coverage` file **per module, per slice**.
+   session from the payload), producing one `.coverage` file **per module, per slice**. They ride
+   in each slice's test-output artifact under `CodeCoverage\Attempt<N>\`. If a re-run changes a
+   slice's status (so the build has one artifact per status), the merge uses only the latest
+   attempt that produced coverage (`Select-LatestCoverageAttempt.ps1`), so nothing is counted twice.
 4. Merges every slice's `.coverage` file for every module in one pass
    (`WinUI-MergeCodeCoverage-Job.yml` + `Merge-CodeCoverage.ps1`), corrects the merged data
    (`Repair-CodeCoverage.ps1`, see [Why the numbers are corrected](#why-the-numbers-are-corrected)),
@@ -55,7 +60,7 @@ collector per module - own named pipe (`\\.\pipe\CodeCoverage.pipe.<session-id>`
 collide across builds; `RunTestPassSliceOnBuildAgent.ps1` still probes for a pre-existing
 collector pipe before starting its own, as cheap defense against a stale collector left behind
 by a retried attempt of the *same* build. Each module's collector setup/shutdown is wrapped in
-its own try/catch, so a problem with one module's collector never prevents the other module's
+its own try/catch (shutdown tolerates native stderr under Windows PowerShell 5.1), so a problem with one module's collector never prevents the other module's
 collector from starting or being cleaned up (fail-open, per module).
 
 ## Viewing the results
@@ -140,15 +145,15 @@ behavior additively - every other pipeline that doesn't pass it sees no change a
 | File | What it does |
 |------|--------------|
 | `build\WinUI-CodeCoverage.yml` | Pipeline entry point; turns `collectCodeCoverage` on for the shared stages, exposes `CoverageModules`, `CoverageModuleStems` and `CoverageTabLayout`, and schedules the daily run of `main` |
-| `build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml` | `collectCodeCoverage: true` collapses the build matrix to a single x86 chk leg |
+| `build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml` | `collectCodeCoverage: true` collapses the build matrix to a single x86 chk leg for every `pipelineKind` |
 | `build\AzurePipelinesTemplates\WinUI-CreateTestPayload-Job.yml` | `collectCodeCoverage: true` collapses the payload matrix to a single OS leg, downloads product PDBs, and calls `CreateTestPayload.ps1 -CodeCoverage -CoverageModules ...` |
 | `test\CreateTestPayload.ps1` | `-CodeCoverage` instruments the payload after building it (calls `Instrument-CoveragePayload.ps1`) |
 | `Helix\common\pipeline\coverage\Instrument-CoveragePayload.ps1` | Instruments every copy of each configured module, one independent session id per module, and records each in its own discovery file |
-| `build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml` | `collectCodeCoverage: true` appends `-CollectCodeCoverage` to the slice runner and stages every module's raw `.coverage`/collector logs inside the job's existing artifact |
+| `build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml` | `collectCodeCoverage: true` appends `-CollectCodeCoverage` to the slice runner and stages every module's raw `.coverage`/collector logs inside the job's existing artifact, under `CodeCoverage\Attempt<N>\` |
 | `Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1` | `-CollectCodeCoverage` auto-discovers every module's session from the payload and stands up one independent collector per module around the slice's `te.exe` runs |
 | `Helix\common\pipeline\coverage\Set-CoveragePipeAcl.ps1` | Opens each collector's pipe (NULL DACL) so low-integrity `te.processhost` can connect; retries for ~15s if the pipe can't be opened yet |
-| `build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml` | `collectCodeCoverage: true` runs only the RS5 job and appends the merge job; threads `coverageModuleStems` |
-| `build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml` + `Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1` | Downloads every module's slice `.coverage` files, merges them in one pass, and publishes to the Code Coverage tab (one folder per DLL by default) |
+| `build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml` | `collectCodeCoverage: true` runs a single test job on `coverageTestOS` (default `Win10-RS5` -> `RunTestsRS5`) instead of the regular OS jobs and appends the merge job; threads `coverageModuleStems` |
+| `build\AzurePipelinesTemplates\WinUI-MergeCodeCoverage-Job.yml` + `Helix\common\pipeline\coverage\Merge-CodeCoverage.ps1` | Downloads every module's slice `.coverage` files, keeps the latest attempt of each slice (`Select-LatestCoverageAttempt.ps1`), merges them in one pass, and publishes to the Code Coverage tab (one folder per DLL by default) |
 | `Helix\common\pipeline\coverage\Repair-CodeCoverage.ps1` | Dedups the raw merge by `(file, line)` per DLL and combined; writes `published.cobertura.xml` (layout per `-PublishLayout`), per-view CSVs/summaries, and per-DLL Cobertura files |
 | `Helix\common\pipeline\coverage\New-CoverageHtmlReport.ps1` | Renders `coverage-report.html` (Combined / per-DLL drop-down, folder tree) from `Repair-CodeCoverage.ps1`'s output |
 | `Helix\common\pipeline\coverage\Build-CoverageTreeReport.ps1` | Renders one standalone folder-tree page per view (`<DLL> (build <BuildId>).html`) from that view's `corrected-per-file.csv` |
@@ -165,7 +170,8 @@ behavior additively - every other pipeline that doesn't pass it sees no change a
   positional parameter (`-CoverageSessionIds`), which instruments one module and bakes a DLL name
   in as its session id. `CreateTestPayload.ps1` and `Instrument-CoveragePayload.ps1` now both
   reject that shape up front.
-- Only `DevTestSuite` on Win10-RS5/x86/chk runs. No `ScenarioTestSuite`, no other OS/arch.
+- Only `DevTestSuite` on x86/chk runs, on one OS (`coverageTestOS`, Win10-RS5 by default). No
+  `ScenarioTestSuite`, no other arch.
 - **`Microsoft.UI.Xaml.Controls.dll` (MUXC) needs extra link options to be instrumentable.**
   Static native instrumentation requires the CV + FIXUP debug streams. MUXC's **Debug** (`chk`)
   configuration did not emit them, so the instrumenter refused the binary with:
