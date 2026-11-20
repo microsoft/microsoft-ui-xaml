@@ -10,15 +10,19 @@ class CVisualStateChangedEventArgs final : public CEventArgs
 {
 public:
     CVisualStateChangedEventArgs() = default;
-    CVisualStateChangedEventArgs(_In_opt_ CVisualState* pOldState, _In_opt_ CVisualState* pNewState, _In_opt_ CControl* pControl)
+    CVisualStateChangedEventArgs(_In_opt_ CVisualState* pOldState, _In_opt_ CVisualState* pNewState, _In_opt_ CControl* pControl, uint64_t stateChangedEventId = 0)
         : m_spOldState(pOldState)
         , m_spNewState(pNewState)
         , m_spControl(pControl)
+        , m_stateChangedEventId(stateChangedEventId)
     {
 
     }
 
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override;
+
+    uint64_t GetStateChangedEventId() const { return m_stateChangedEventId; }
+    void SetStateChangedEventId(uint64_t eventId) { m_stateChangedEventId = eventId; }
 
     // OldState property.
     _Check_return_ HRESULT get_OldState(_Outptr_result_maybenull_ CVisualState** ppValue)
@@ -60,6 +64,7 @@ private:
     xref_ptr<CVisualState> m_spOldState;
     xref_ptr<CVisualState> m_spNewState;
     xref_ptr<CControl> m_spControl;
+    uint64_t m_stateChangedEventId{ 0 };
 
 };
 
