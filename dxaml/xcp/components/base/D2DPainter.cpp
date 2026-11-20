@@ -1070,8 +1070,6 @@ namespace RenderingBackend
 
                 ComPtr<ID2D1Image> output;
                 m_backdropResult->GetOutput(&output);
-                const float originX = static_cast<float>(region.left) / m_dpiScale;
-                const float originY = static_cast<float>(region.top) / m_dpiScale;
                 // Only the shape's device bounds can change; the rest of the region is copied back unchanged.
                 const PixelRect drawn{ (std::max)(region.left, shapePixels.left), (std::max)(region.top, shapePixels.top),
                     (std::min)(region.right, shapePixels.right), (std::min)(region.bottom, shapePixels.bottom) };
@@ -1079,8 +1077,10 @@ namespace RenderingBackend
                     static_cast<float>(drawn.left - region.left) / m_dpiScale, static_cast<float>(drawn.top - region.top) / m_dpiScale,
                     static_cast<float>(drawn.right - region.left) / m_dpiScale, static_cast<float>(drawn.bottom - region.top) / m_dpiScale);
                 m_context->SetTransform(D2D1::Matrix3x2F::Identity());
-                m_context->DrawImage(output.Get(), D2D1::Point2F(originX, originY), imageRect,
-                    D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR, D2D1_COMPOSITE_MODE_SOURCE_COPY);
+                // The image rect's top-left lands at the target offset; BOUNDED copy leaves pixels outside it alone.
+                m_context->DrawImage(output.Get(),
+                    D2D1::Point2F(static_cast<float>(drawn.left) / m_dpiScale, static_cast<float>(drawn.top) / m_dpiScale), imageRect,
+                    D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR, D2D1_COMPOSITE_MODE_BOUNDED_SOURCE_COPY);
                 m_context->SetTransform(ToD2D(m_transform));
                 m_backdropMasked->SetInput(1, nullptr);
                 m_backdropHoled->SetInput(1, nullptr);
