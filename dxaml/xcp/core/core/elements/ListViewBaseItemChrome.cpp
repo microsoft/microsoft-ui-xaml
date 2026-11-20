@@ -3761,6 +3761,23 @@ _Check_return_ HRESULT CListViewBaseItemChrome::RemoveSelectionIndicator()
     return S_OK;
 }
 
+// Removes the selection indicator from the tree when present and the chrome should no longer show it.
+// Used when the hide animation, which normally removes the indicator on completion, cannot run or is interrupted.
+_Check_return_ HRESULT CListViewBaseItemChrome::RemoveSelectionIndicatorIfHidden()
+{
+    const bool selected =
+        m_visualStates.HasState(CommonStates2_Selected) ||
+        m_visualStates.HasState(CommonStates2_PressedSelected) ||
+        m_visualStates.HasState(CommonStates2_PointerOverSelected);
+
+    if (m_selectionIndicatorRectangle && !(selected && IsInSelectionIndicatorMode()))
+    {
+        IFC_RETURN(RemoveSelectionIndicator());
+    }
+
+    return S_OK;
+}
+
 // Removes the inner selection border from the tree.
 _Check_return_ HRESULT CListViewBaseItemChrome::RemoveInnerSelectionBorder()
 {
