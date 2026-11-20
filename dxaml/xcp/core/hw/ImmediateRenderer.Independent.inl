@@ -498,13 +498,14 @@ void ImmediateRenderer::StartRenderThreadIfNeeded()
 {
     IndependentState& s = *m_independent;
     s.running = true;
-    if (!s.thread.joinable())
+    if (s.thread == nullptr)
     {
-        try
+        s.thread = CreateThread(nullptr, 0, [](void* context) -> DWORD
         {
-            s.thread = std::thread([this] { RenderThreadMain(); });
-        }
-        catch (...)
+            static_cast<ImmediateRenderer*>(context)->RenderThreadMain();
+            return 0;
+        }, this, 0, nullptr);
+        if (s.thread == nullptr)
         {
             s.running = false;
             return;
@@ -521,9 +522,11 @@ void ImmediateRenderer::StopRenderThread() noexcept
         s.stop = true;
     }
     s.wake.notify_all();
-    if (s.thread.joinable())
+    if (s.thread != nullptr)
     {
-        s.thread.join();
+        WaitForSingleObject(s.thread, INFINITE);
+        CloseHandle(s.thread);
+        s.thread = nullptr;
     }
 }
 

@@ -11,7 +11,6 @@
 #include <chrono>
 #include <condition_variable>
 #include <mutex>
-#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -65,7 +64,7 @@ namespace ImmediateRenderingDetail
     {
         std::recursive_mutex mutex;   // serializes painters, island state and display lists between the two threads
         std::condition_variable_any wake;
-        std::thread thread;
+        HANDLE thread = nullptr;
         bool stop = false;
         bool running = false;         // a render-thread frame loop is wanted (some layer has a running track)
         uint32_t frameCounter = 0;
