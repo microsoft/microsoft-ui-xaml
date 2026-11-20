@@ -37,17 +37,17 @@ namespace MUXControlsTestApp
             // must not touch the UI: any layout pass makes TitleBar refresh its icon region on its own, which would
             // hide whether TitleBar reacted to WindowRectChanged.
             nonClientPointerSource = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
-            nonClientPointerSource.WindowRectChanged += OnWindowRectChanged;
+            nonClientPointerSource.WindowRectChanged += (sender, args) => windowRectChangedCount++;
 
             // Test hook: keep VisualStatesTextBlock in sync with the TitleBar visual states and the window's input
             // activation. Tests must only read it: invoking anything in a window through UI Automation activates that
             // window.
             inputActivationListener = InputActivationListener.GetForWindowId(this.AppWindow.Id);
-            inputActivationListener.InputActivationChanged += OnInputActivationChanged;
-
-            // The Input hooks must be released while the window is alive: destroying them during window teardown
-            // fail-fasts in Microsoft.UI.Input on RS5.
-            this.AppWindow.Destroying += (sender, args) => ReleaseInputTestHooks();
+            inputActivationListener.InputActivationChanged += (sender, args) =>
+            {
+                // TitleBar updates its visual states in its own handler for this event, so read them afterwards.
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateVisualStatesReadout);
+            };
             WindowingTitleBar.Loaded += (sender, args) =>
             {
                 if (GetTitleBarLayoutRoot() is FrameworkElement layoutRoot)
@@ -61,41 +61,15 @@ namespace MUXControlsTestApp
             };
         }
 
-        private InputActivationListener inputActivationListener;
+        private readonly InputActivationListener inputActivationListener;
 
-        private InputNonClientPointerSource nonClientPointerSource;
+        private readonly InputNonClientPointerSource nonClientPointerSource;
         private int windowRectChangedCount = 0;
-
-        private void OnWindowRectChanged(InputNonClientPointerSource sender, WindowRectChangedEventArgs args)
-        {
-            windowRectChangedCount++;
-        }
-
-        private void OnInputActivationChanged(InputActivationListener sender, InputActivationListenerActivationChangedEventArgs args)
-        {
-            // TitleBar updates its visual states in its own handler for this event, so read them afterwards.
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdateVisualStatesReadout);
-        }
-
-        private void ReleaseInputTestHooks()
-        {
-            if (nonClientPointerSource != null)
-            {
-                nonClientPointerSource.WindowRectChanged -= OnWindowRectChanged;
-                nonClientPointerSource = null;
-            }
-
-            if (inputActivationListener != null)
-            {
-                inputActivationListener.InputActivationChanged -= OnInputActivationChanged;
-                inputActivationListener = null;
-            }
-        }
 
         private void ReadIconRegionButton_Click(object sender, RoutedEventArgs e)
         {
             // Read the region before changing any UI so the readout reflects the state left by the last window move.
-            var rects = nonClientPointerSource?.GetRegionRects(NonClientRegionKind.Icon);
+            var rects = nonClientPointerSource.GetRegionRects(NonClientRegionKind.Icon);
             int rectChangedCount = windowRectChangedCount;
 
             IconRegionTextBlock.Text = (rects == null || rects.Length == 0)
@@ -111,7 +85,7 @@ namespace MUXControlsTestApp
             string states = layoutRoot == null
                 ? "none"
                 : string.Join(";", VisualStateManager.GetVisualStateGroups(layoutRoot).Select(g => $"{g.Name}={g.CurrentState?.Name}"));
-            VisualStatesTextBlock.Text = $"{states};InputActivation={inputActivationListener?.State}";
+            VisualStatesTextBlock.Text = $"{states};InputActivation={inputActivationListener.State}";
         }
 
         private FrameworkElement GetTitleBarLayoutRoot()

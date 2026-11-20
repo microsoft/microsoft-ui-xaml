@@ -73,20 +73,8 @@ private:
     winrt::WindowId GetAppWindowId();
     winrt::Microsoft::UI::Windowing::AppWindow TryGetAppWindow();
 
-    void EnsureAppWindowDestroyingSubscription(winrt::WindowId const& appWindowId);
-    void OnAppWindowDestroying(winrt::WindowId const& appWindowId);
-    void ReleaseInputActivationListener() noexcept;
-    void ReleaseInputNonClientPointerSource() noexcept;
-    void ReleaseWindowResources() noexcept;
-
     winrt::event_token m_inputActivationChangedToken{};
     winrt::event_token m_windowRectChangedToken{};
-    // The Input objects bound to the window must be released while the window is still alive: removing their handlers
-    // or releasing the last reference once the window is gone fail-fasts in Microsoft.UI.Input. A token, not auto_revoke:
-    // AppWindow has no weak reference support.
-    winrt::Microsoft::UI::Windowing::AppWindow m_destroyingAppWindow{ nullptr };
-    winrt::event_token m_appWindowDestroyingToken{};
-    uint64_t m_destroyedAppWindowId{ 0 };
     winrt::hstring m_defaultAppWindowTitle{};
     winrt::Button::Click_revoker m_backButtonClickRevoker{};
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};

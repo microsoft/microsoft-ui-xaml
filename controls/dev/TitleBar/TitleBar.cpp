@@ -9,7 +9,6 @@
 #include "ResourceAccessor.h"
 #include "TypeLogging.h"
 #include "RuntimeProfiler.h"
-#include <winrt\Microsoft.UI.Interop.h>
 
 bool TitleBarTrace::s_IsDebugOutputEnabled{ false };
 bool TitleBarTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -35,14 +34,18 @@ TitleBar::~TitleBar()
     m_sizeChangedRevoker.revoke();
     m_flowDirectionChangedRevoker.revoke();
 
+    if (m_inputActivationChangedToken.value)
+    {
+        m_inputActivationListener.InputActivationChanged(m_inputActivationChangedToken);
+        m_inputActivationChangedToken.value = 0;
+    }
+
     const auto appWindow = TryGetAppWindow();
     if (appWindow)
     {
         // Safely restore default if the window title still matches what we last applied
         ResetTitle(Title());
     }
-
-    ReleaseWindowResources();
 }
 
 winrt::AutomationPeer TitleBar::OnCreateAutomationPeer()
@@ -63,12 +66,10 @@ void TitleBar::OnApplyTemplate()
 
     auto appWindowId = GetAppWindowId();
 
-    ReleaseInputActivationListener();
     if (appWindowId.Value != 0)
     {
         m_inputActivationListener = winrt::Microsoft::UI::Input::InputActivationListener::GetForWindowId(appWindowId);
-        m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged({ get_weak(), &TitleBar::OnInputActivationChanged });
-        EnsureAppWindowDestroyingSubscription(appWindowId);
+        m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged({ this, &TitleBar::OnInputActivationChanged });
     }
 
     UpdateHeight();
@@ -300,11 +301,12 @@ void TitleBar::UpdateIcon()
 
         if (const auto& nonClientPointerSource = GetInputNonClientPointerSource())
         {
-            // Setting a new IconSource must not stack another registration on the same source.
-            if (!m_windowRectChangedToken.value)
-            {
-                m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ get_weak(), &TitleBar::OnWindowRectChanged });
-            }
+            m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
+        }
+        else if (m_inputNonClientPointerSource)
+        {
+            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+            m_windowRectChangedToken.value = 0;
         }
 
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
@@ -314,9 +316,10 @@ void TitleBar::UpdateIcon()
     {
         m_iconLayoutUpdatedRevoker.revoke();
 
-        if (m_inputNonClientPointerSource && m_windowRectChangedToken.value)
+        if (m_inputNonClientPointerSource)
         {
-            m_inputNonClientPointerSource.WindowRectChanged(std::exchange(m_windowRectChangedToken, {}));
+            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+            m_windowRectChangedToken.value = 0;
         }
 
         templateSettings->IconElement(nullptr);
@@ -918,112 +921,16 @@ winrt::WindowId TitleBar::GetAppWindowId()
         }
     }
 
-    // A window that raised Destroying must not hand out new Input objects while its XamlRoot is torn down.
-    if (appWindowId.Value != 0 && appWindowId.Value == m_destroyedAppWindowId)
-    {
-        appWindowId = {};
-    }
-
     if (appWindowId.Value != m_lastAppWindowId.Value)
     {
         m_lastAppWindowId = appWindowId;
 
-        // Objects bound to the previous window are stale; release them now rather than whenever this TitleBar dies.
-        ReleaseWindowResources();
+        m_inputNonClientPointerSource = nullptr;
+
+        m_appWindow = nullptr;
     }
 
     return appWindowId;
-}
-
-void TitleBar::EnsureAppWindowDestroyingSubscription(winrt::WindowId const& appWindowId)
-{
-    if (m_destroyingAppWindow || appWindowId.Value == 0)
-    {
-        return;
-    }
-
-    // Destroying is raised on the window's thread; a cross-thread host keeps the destructor-path release.
-    const auto hwnd = winrt::Microsoft::UI::GetWindowFromWindowId(appWindowId);
-    if (!hwnd || ::GetWindowThreadProcessId(hwnd, nullptr) != ::GetCurrentThreadId())
-    {
-        return;
-    }
-
-    if (auto appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId))
-    {
-        m_appWindowDestroyingToken = appWindow.Destroying(
-            [weakThis = get_weak(), appWindowId](auto const&, auto const&)
-            {
-                if (auto strongThis = weakThis.get())
-                {
-                    strongThis->OnAppWindowDestroying(appWindowId);
-                }
-            });
-        m_destroyingAppWindow = std::move(appWindow);
-    }
-}
-
-void TitleBar::OnAppWindowDestroying(winrt::WindowId const& appWindowId)
-{
-    TITLEBAR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
-
-    m_destroyedAppWindowId = appWindowId.Value;
-    m_lastAppWindowId = {};
-    ReleaseWindowResources();
-}
-
-void TitleBar::ReleaseInputActivationListener() noexcept
-{
-    const auto token = std::exchange(m_inputActivationChangedToken, {});
-    if (auto listener = std::exchange(m_inputActivationListener, nullptr))
-    {
-        if (token.value)
-        {
-            try
-            {
-                listener.InputActivationChanged(token);
-            }
-            catch (...)
-            {
-            }
-        }
-    }
-}
-
-void TitleBar::ReleaseInputNonClientPointerSource() noexcept
-{
-    const auto token = std::exchange(m_windowRectChangedToken, {});
-    if (auto source = std::exchange(m_inputNonClientPointerSource, nullptr))
-    {
-        if (token.value)
-        {
-            try
-            {
-                source.WindowRectChanged(token);
-            }
-            catch (...)
-            {
-            }
-        }
-    }
-}
-
-void TitleBar::ReleaseWindowResources() noexcept
-{
-    if (auto appWindow = std::exchange(m_destroyingAppWindow, nullptr))
-    {
-        try
-        {
-            appWindow.Destroying(std::exchange(m_appWindowDestroyingToken, {}));
-        }
-        catch (...)
-        {
-        }
-    }
-
-    ReleaseInputActivationListener();
-    ReleaseInputNonClientPointerSource();
-    m_appWindow = nullptr;
 }
 
 winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSource()
@@ -1033,7 +940,6 @@ winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSour
     if (!m_inputNonClientPointerSource && appWindowId.Value != 0)
     {
         m_inputNonClientPointerSource = winrt::InputNonClientPointerSource::GetForWindowId(appWindowId);
-        EnsureAppWindowDestroyingSubscription(appWindowId);
     }
 
     return m_inputNonClientPointerSource;
