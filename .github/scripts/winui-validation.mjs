@@ -5,10 +5,22 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import { artifactName, workflowPath, gateContext, parseCommand, revision, sameRevision,
   eligible, selection, matchesBuild, coveragePassed } from './winui-validation-policy.mjs';
 
 export class UncertainPublication extends Error {}
+
+const trustedEvents = ['issue_comment', 'schedule', 'workflow_dispatch'];
+
+export function assertTrustedExecution(env, config) {
+  const ref = `refs/heads/${config.defaultBranch}`;
+  if (!trustedEvents.includes(env.GITHUB_EVENT_NAME) || env.GITHUB_REF !== ref
+    || env.GITHUB_WORKFLOW_REF !== `${config.repository}/${workflowPath}@${ref}`
+    || !/^[a-f0-9]{40}$/.test(config.automationSha ?? '') || env.GITHUB_SHA !== config.automationSha) {
+    throw new Error('Validation must run the pinned default-branch workflow on a trusted event');
+  }
+}
 
 export function pushValidationRef(repository, token, ref, sha, execute = execFileSync) {
   const match = /^refs\/heads\/validation\/(?:quick|full)-pr\/([1-9][0-9]*)\/c[0-9]+$/.exec(ref);
@@ -84,9 +96,54 @@ export class GitHub {
       if (existing.object.sha !== sha) throw error;
     }
   }
-  async publish(sha, state, description, url) {
+}
+
+export class Publisher extends GitHub {
+  constructor(config, token) {
+    super(config, token);
+    if (!token || !Number.isSafeInteger(config.publisherAppId) || config.publisherAppId <= 0) {
+      throw new Error('A dedicated publisher App ID and token are required');
+    }
+  }
+  verify(check, sha) {
+    if (check.app?.id !== this.config.publisherAppId || check.head_sha !== sha || check.name !== gateContext
+      || !Number.isSafeInteger(check.id) || check.id <= 0) {
+      throw new Error('Gate check does not belong to the configured publisher and revision');
+    }
+  }
+  async assertCheckpoint(state, pulls) {
+    const revisions = new Set(pulls.filter(pr => eligible(pr, this.config.targets)).map(pr => pr.merge_commit_sha));
+    for (const sha of revisions) {
+      const checks = await this.list(`/commits/${sha}/check-runs?check_name=${encodeURIComponent(gateContext)}&filter=latest&app_id=${this.config.publisherAppId}`, 'check_runs');
+      const current = checks.filter(check => check.app?.id === this.config.publisherAppId)
+        .sort((a, b) => b.id - a.id)[0];
+      const saved = state.published[sha];
+      if (!current && !saved) continue;
+      if (!current || !saved) throw new Error('Gate checkpoint is missing; operator recovery required');
+      this.verify(current, sha);
+      if (current.id !== state.checks[sha] || current.external_id !== saved.request
+        || current.details_url !== saved.url || current.output?.summary !== saved.message
+        || current.status !== (saved.state === 'pending' ? 'in_progress' : 'completed')
+        || (saved.state !== 'pending' && current.conclusion !== (saved.state === 'success' ? 'success' : 'failure'))) {
+        throw new Error('Gate checkpoint is stale; refusing to replace the selected run');
+      }
+    }
+  }
+  async publish(sha, state, description, url, id, request) {
+    const body = { name: gateContext, details_url: url, output: { title: gateContext, summary: description },
+      external_id: request,
+      status: state === 'pending' ? 'in_progress' : 'completed',
+      ...(state === 'pending' ? {} : { conclusion: state === 'success' ? 'success' : 'failure' }) };
+    if (id) {
+      const current = await this.api(`/check-runs/${id}`);
+      this.verify(current, sha);
+      if (current.status === 'completed' && state === 'pending') id = undefined;
+    }
     try {
-      await this.api(`/statuses/${sha}`, { context: gateContext, state, description, target_url: url });
+      const check = id ? await this.api(`/check-runs/${id}`, body, 'PATCH')
+        : await this.api('/check-runs', { ...body, head_sha: sha });
+      this.verify(check, sha);
+      return check.id;
     } catch (error) {
       // Keep the transaction ref after an uncertain write; the next workflow must
       // not overtake a request that GitHub could still be processing.
@@ -131,20 +188,23 @@ export class Azure {
 }
 
 export function newState() {
-  return { version: 1, requests: {}, commands: {}, published: {} };
+  return { version: 2, requests: {}, commands: {}, published: {}, checks: {} };
 }
 
 export class Gate {
-  constructor(config, github, azure, state, now = () => Date.now()) {
-    Object.assign(this, { config, github, azure, state, now });
+  constructor(config, github, azure, state, publisher, now = () => Date.now()) {
+    Object.assign(this, { config, github, azure, state, publisher, now });
   }
   url(number) { return `https://github.com/${this.config.repository}/pull/${number}`; }
   async publish(request, result) {
-    const value = { ...result, request: `${request.revision.number}:${request.commandId}:${request.mode}`,
-      url: request.buildId ? this.azure.url(request.buildId) : this.url(request.revision.number) };
     const sha = request.revision.merge;
+    const selections = Object.values(this.state.requests).filter(item => item.revision.merge === sha)
+      .sort((a, b) => a.revision.number - b.revision.number);
+    const value = { ...result, request: createHash('sha256').update(JSON.stringify(selections)).digest('hex'),
+      url: request.buildId ? this.azure.url(request.buildId) : this.url(request.revision.number) };
     if (JSON.stringify(this.state.published[sha]) === JSON.stringify(value)) return;
-    await this.github.publish(sha, result.state, result.message, value.url);
+    this.state.checks[sha] = await this.publisher.publish(sha, result.state, result.message, value.url,
+      this.state.checks[sha], value.request);
     this.state.published[sha] = value;
   }
   async accept(event) {
@@ -175,7 +235,7 @@ export class Gate {
       const rules = await this.github.list(`/rules/branches/${encodeURIComponent(pr.base.ref)}`);
       const guarded = rules.some(rule => rule.type === 'required_status_checks'
         && rule.parameters.required_status_checks.some(check =>
-          check.context === gateContext && check.integration_id != null));
+          check.context === gateContext && check.integration_id === this.config.publisherAppId));
       if (!guarded) throw new Error('The target must require WinUI Validation Gate from its expected App before enabling Quick');
     }
     const merge = await this.github.commit(pr.merge_commit_sha);
@@ -199,7 +259,7 @@ export class Gate {
     await this.github.acknowledge(number,
       `${request.mode} validation selected for head \`${pr.head.sha}\`, merge \`${pr.merge_commit_sha}\`. `
       + (command.mode === 'Quick' ? 'Coverage: x86 Debug developer tests on Windows 11 25H2. ' : '')
-      + 'The WinUI Validation Gate status tracks only the selected attempt; all other merge requirements remain.');
+      + 'The WinUI Validation Gate check tracks only the selected attempt; all other merge requirements remain.');
   }
   async evaluate(request, builds) {
     if (request.source === 'ci' && !request.buildId) await this.github.ensureRef(request.branch, request.revision.merge);
@@ -290,6 +350,10 @@ export class Gate {
   }
 }
 
+export function checkpoint(state, config) {
+  return { automationSha: config.automationSha, runId: config.runId, attempt: config.attempt, state };
+}
+
 export async function restore(github, config, directory, download = (run, repo, destination) =>
   execFileSync('gh', ['run', 'download', String(run), '--repo', repo,
     '--name', artifactName, '--dir', destination], { stdio: 'pipe' })) {
@@ -297,16 +361,26 @@ export async function restore(github, config, directory, download = (run, repo, 
   for (let page = 1; page <= 100; page++) {
     const { artifacts } = await github.api(`/actions/artifacts?name=${artifactName}&per_page=100&page=${page}`);
     for (const artifact of artifacts.sort((a, b) => b.id - a.id)) {
-      if (artifact.expired) continue;
       const run = await github.api(`/actions/runs/${artifact.workflow_run.id}`);
-      if (run.workflow_id !== workflow.id || !['issue_comment', 'pull_request_target', 'status', 'check_run',
-        'schedule', 'workflow_dispatch'].includes(run.event)) continue;
-      // Never restore an artifact produced by PR-authored workflow code.
+      if (run.workflow_id !== workflow.id || !trustedEvents.includes(run.event)
+        || run.path !== workflowPath || run.head_branch !== config.defaultBranch) continue;
+      // These events run and check out the same immutable default-branch revision.
+      // A PR/status event's head_sha is not evidence of which automation executed.
+      if (artifact.expired) throw new Error('Latest trusted checkpoint expired; operator recovery required');
+      if (!/^[a-f0-9]{40}$/.test(run.head_sha ?? '')) throw new Error('Invalid workflow revision');
       const ancestry = await github.api(`/compare/${run.head_sha}...${encodeURIComponent(config.defaultBranch)}`);
-      if (!['ahead', 'identical'].includes(ancestry.status)) continue;
+      if (!['ahead', 'identical'].includes(ancestry.status)) {
+        throw new Error('Trusted automation history changed; refusing to restore older state');
+      }
       download(run.id, config.repository, directory);
-      const state = JSON.parse(readFileSync(join(directory, 'state.json'), 'utf8'));
-      if (state.version !== 1 || !state.requests || !state.commands || !state.published) throw new Error('Invalid saved gate state');
+      const saved = JSON.parse(readFileSync(join(directory, 'state.json'), 'utf8'));
+      const { state } = saved;
+      if (saved.automationSha !== run.head_sha || saved.runId !== run.id
+        || !Number.isSafeInteger(run.run_attempt) || !Number.isSafeInteger(saved.attempt)
+        || saved.attempt < 1 || saved.attempt > run.run_attempt
+        || state?.version !== 2 || !state.requests || !state.commands || !state.published || !state.checks) {
+        throw new Error('Invalid saved gate state or checkpoint provenance; refusing older state');
+      }
       return state;
     }
     if (artifacts.length < 100) return newState();
@@ -323,11 +397,13 @@ function configuration(env) {
     repository: required('GITHUB_REPOSITORY'), organization: required('WINUI_ADO_ORGANIZATION'),
     project: required('WINUI_ADO_PROJECT'), pipelineId: Number(required('WINUI_ADO_PIPELINE_ID')),
     pipelineName: required('WINUI_ADO_PIPELINE_NAME'), defaultBranch: required('WINUI_DEFAULT_BRANCH'),
+    publisherAppId: Number(required('WINUI_PUBLISHER_APP_ID')), automationSha: required('GITHUB_WORKFLOW_SHA'),
     targets: required('WINUI_VALIDATION_TARGETS').split(',').map(s => s.trim()),
     approvers: (env.WINUI_QUICK_APPROVERS ?? '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
     runId: Number(required('GITHUB_RUN_ID')), attempt: Number(required('GITHUB_RUN_ATTEMPT')),
   };
   if (!Number.isSafeInteger(config.pipelineId) || config.pipelineId <= 0) throw new Error('Invalid pipeline ID');
+  assertTrustedExecution(env, config);
   return config;
 }
 
@@ -344,18 +420,21 @@ async function main() {
   if (locks.length) throw new Error('An interrupted gate transaction needs operator recovery. See WINUI-VALIDATION.md.');
   mkdirSync(directory, { recursive: true });
   const state = await restore(github, config, directory);
+  const publisher = new Publisher(config, process.env.WINUI_PUBLISHER_TOKEN);
+  // Artifact deletion must not roll back a selection already published by the App.
+  await publisher.assertCheckpoint(state, await github.pulls());
   const before = JSON.stringify(state);
   const base = await github.api(`/git/ref/heads/${encodeURIComponent(config.defaultBranch)}`);
   await github.ensureRef(lock, base.object.sha);
   let safe = true;
   try {
     const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
-    await new Gate(config, github, new Azure(config, process.env.AZURE_DEVOPS_TOKEN), state).reconcile(event);
+    await new Gate(config, github, new Azure(config, process.env.AZURE_DEVOPS_TOKEN), state, publisher).reconcile(event);
   } catch (error) {
     safe = !(error instanceof UncertainPublication);
     throw error;
   } finally {
-    writeFileSync(join(directory, 'state.json'), JSON.stringify(state));
+    writeFileSync(join(directory, 'state.json'), JSON.stringify(checkpoint(state, config)));
     if (existsSync(join(directory, 'state.json'))) {
       const unchanged = before === JSON.stringify(state);
       writeFileSync(process.env.GITHUB_OUTPUT,

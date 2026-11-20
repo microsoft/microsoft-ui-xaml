@@ -111,18 +111,39 @@ test('Quick still builds x86 Debug and runs all twenty 25H2 developer-test shard
 
 test('privileged workflow uses trusted code, serialized publication and checkpoint-before-release', () => {
   const workflow = read('.github/workflows/winui-validation.yml');
-  assert.equal(workflow.on.pull_request, undefined);
+  assert.deepEqual(Object.keys(workflow.on).sort(), ['issue_comment', 'schedule', 'workflow_dispatch']);
+  assert.ok(workflow.jobs.reconcile.if.includes('github.sha == github.workflow_sha'));
+  assert.ok(workflow.jobs.reconcile.if.includes('github.workflow_ref =='));
+  assert.ok(workflow.jobs.reconcile.if.includes('github.ref =='));
   assert.equal(workflow.concurrency['cancel-in-progress'], false);
   assert.equal(workflow.concurrency.queue, 'max');
   const steps = workflow.jobs.reconcile.steps;
   const checkout = steps.find(s => s.uses?.startsWith('actions/checkout'));
-  assert.equal(checkout.with.ref, '${{ github.event.repository.default_branch }}');
+  assert.equal(checkout.with.ref, '${{ github.workflow_sha }}');
   assert.equal(checkout.with['persist-credentials'], false);
   const release = steps.findIndex(s => s.run?.endsWith('winui-validation.mjs release'));
   const checkpoint = steps.findIndex(s => s.id === 'checkpoint');
   assert.ok(release > checkpoint);
   assert.ok(steps[release].if.includes("steps.checkpoint.outcome == 'success'"));
   assert.ok(steps[release].if.includes("safe_release == 'true'"));
+});
+
+test('publisher credentials are scoped to gate checks and never replace the general GitHub token', () => {
+  const { jobs: { reconcile: job } } = read('.github/workflows/winui-validation.yml');
+  assert.equal(job.environment, 'winui-validation');
+  assert.equal(job.permissions.statuses, undefined);
+  assert.equal(job.permissions.checks, undefined);
+  assert.equal(job.env.GH_TOKEN, '${{ github.token }}');
+  const app = job.steps.find(s => s.id === 'publisher');
+  assert.equal(app.with['private-key'], '${{ secrets.WINUI_PUBLISHER_PRIVATE_KEY }}');
+  assert.equal(app.with['app-id'], '${{ vars.WINUI_PUBLISHER_APP_ID }}');
+  assert.deepEqual(Object.keys(app.with).filter(k => k.startsWith('permission-')), ['permission-checks']);
+  assert.equal(app.with['permission-checks'], 'write');
+  assert.equal(app.with['skip-token-revoke'], undefined);
+  assert.equal(app.with.owner, undefined);
+  assert.equal(app.with.repositories, undefined);
+  assert.equal(job.steps.find(s => s.id === 'gate').env.WINUI_PUBLISHER_TOKEN, '${{ steps.publisher.outputs.token }}');
+  assert.equal(job.steps.filter(s => s.env?.WINUI_PUBLISHER_TOKEN).length, 1);
 });
 
 test('validation workflows pin every external action to an immutable commit', () => {

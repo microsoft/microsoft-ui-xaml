@@ -6,11 +6,14 @@ import { test } from 'node:test';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Gate, GitHub, Azure, UncertainPublication, newState, restore, pushValidationRef } from '../winui-validation.mjs';
+import { Gate, GitHub, Publisher, Azure, UncertainPublication, newState, restore, checkpoint,
+  assertTrustedExecution, pushValidationRef } from '../winui-validation.mjs';
+import { workflowPath, gateContext } from '../winui-validation-policy.mjs';
 import { parseCommand, revision, selection, matchesBuild, coveragePassed } from '../winui-validation-policy.mjs';
 
 const config = { repository: 'example/widgets', pipelineId: 42, pipelineName: 'Widget PR',
-  targets: ['main'], approvers: ['maintainer'], defaultBranch: 'main', runId: 500 };
+  targets: ['main'], approvers: ['maintainer'], defaultBranch: 'main', runId: 500,
+  publisherAppId: 123, automationSha: 'b'.repeat(40), attempt: 1 };
 const sha = letter => letter.repeat(40);
 const pr = number => ({ number, state: 'open', created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-01T00:00:00Z', head: { sha: sha('a'), ref: 'feature', repo: { full_name: config.repository } },
@@ -49,11 +52,11 @@ function harness() {
       if (h.refs.has(ref) && h.refs.get(ref) !== commit) throw new Error('ref changed');
       h.refs.set(ref, commit);
     },
-    publish: async (commit, state, message, url) => h.statuses.push({ commit, state, message, url }),
     api: async (path, body, method) => {
       if (path.startsWith('/rules/branches/')) {
         return h.noGate ? [] : [{ type: 'required_status_checks',
-          parameters: { required_status_checks: [{ context: 'WinUI Validation Gate', integration_id: 123 }] } }];
+          parameters: { required_status_checks: [{ context: gateContext,
+            integration_id: h.gateAppId === undefined ? config.publisherAppId : h.gateAppId }] } }];
       }
       if (method === 'DELETE') {
         h.refs.delete(`refs/${path.slice('/git/refs/'.length)}`);
@@ -73,7 +76,11 @@ function harness() {
   github.list = path => github.api(path);
   h.github = github;
   h.azure = azure;
-  h.gate = new Gate(config, github, azure, h.state, () => h.now);
+  h.publisher = { publish: async (commit, state, message, url) => {
+    h.statuses.push({ commit, state, message, url });
+    return 17;
+  } };
+  h.gate = new Gate(config, github, azure, h.state, h.publisher, () => h.now);
   h.command = (body, login = 'maintainer') => {
     h.now += 1000;
     const event = { action: 'created', issue: { number: 1, pull_request: {} },
@@ -199,6 +206,16 @@ test('Quick cannot start before the branch requires the controller-owned gate', 
   assert.equal(h.state.requests[1].mode, 'Full');
 });
 
+test('Quick refuses an unbound gate or the same gate name owned by a different App', async () => {
+  for (const appId of [null, -1, 15368, 456]) {
+    const h = harness();
+    h.gateAppId = appId;
+    await assert.rejects(h.gate.reconcile(h.command('/winui quick')), /target must require/);
+    assert.equal(h.refs.size, 0);
+    assert.equal(h.state.requests[1].mode, 'Full');
+  }
+});
+
 test('fresh but unrelated builds never satisfy a CI selection', async () => {
   const h = harness();
   await h.gate.reconcile(h.command('/winui quick'));
@@ -273,7 +290,7 @@ test('persisted state retains the exact selected run across workflow invocations
   const saved = JSON.parse(JSON.stringify(h.state));
   const another = h.addBuild();
   another.result = 'succeeded';
-  const gate = new Gate(config, h.github, h.azure, saved);
+  const gate = new Gate(config, h.github, h.azure, saved, h.publisher);
   await gate.reconcile();
   assert.equal(saved.requests[1].buildId, first.id);
   assert.equal(h.last().state, 'pending');
@@ -305,7 +322,7 @@ test('closing a PR cleans only reserved CI refs, not refs used by another open P
 
 test('GitHub publication errors are distinguished from retryable read errors', async t => {
   t.mock.method(globalThis, 'fetch', async () => { throw new Error('timeout'); });
-  await assert.rejects(new GitHub(config, 'fake-token').publish(sha('c'), 'success', 'test', 'https://example.test'),
+  await assert.rejects(new Publisher(config, 'publisher-token').publish(sha('c'), 'success', 'test', 'https://example.test'),
     UncertainPublication);
 });
 
@@ -337,27 +354,159 @@ test('only exact commands and successful required job attempts are accepted', ()
   assert.equal(matchesBuild({ definition: { id: 99 } }, request, config), false);
 });
 
-test('state restore ignores artifacts from untrusted workflow revisions', async t => {
+function checkpointHarness(t, state = newState()) {
   const directory = mkdtempSync(join(tmpdir(), 'winui-validation-restore-'));
   t.after(() => rmSync(directory, { recursive: true }));
-  const github = {
+  const h = { directory, downloads: [], runs: [{ id: 1, workflow_id: 10, event: 'issue_comment',
+    path: workflowPath, head_branch: 'main', head_sha: config.automationSha, run_attempt: 1 }],
+  saved: checkpoint(state, { ...config, runId: 1 }), expired: false, ancestry: 'ahead' };
+  h.github = {
     api: async path => {
       if (path.startsWith('/actions/artifacts')) {
-        return { artifacts: [3, 2, 1].map(id => ({ id, expired: false, workflow_run: { id } })) };
+        return { artifacts: h.runs.map(run => ({ id: run.id, expired: h.expired, workflow_run: { id: run.id } })) };
       }
       if (path.includes('/workflows/')) return { id: 10 };
       if (path.includes('/runs/')) {
-        const id = Number(path.split('/').at(-1));
-        return { id, workflow_id: id === 3 ? 11 : 10, event: 'workflow_dispatch', head_sha: String(id) };
+        return h.runs.find(run => run.id === Number(path.split('/').at(-1)));
       }
-      return { status: path.includes('/2...') ? 'diverged' : 'ahead' };
+      assert.equal(path, `/compare/${config.automationSha}...main`);
+      return { status: h.ancestry };
     },
   };
-  const state = await restore(github, config, directory, (id, repo, dir) => {
-    assert.equal(id, 1);
-    writeFileSync(join(dir, 'state.json'), JSON.stringify({ ...newState(), commands: { 1: 25 } }));
+  h.restore = () => restore(h.github, config, directory, (id, repo, dir) => {
+    h.downloads.push(id);
+    writeFileSync(join(dir, 'state.json'), JSON.stringify(h.saved));
   });
-  assert.equal(state.commands[1], 25);
+  return h;
+}
+
+test('checkpoint retains a selected native build across command and scheduled events', async t => {
+  const h = harness();
+  await h.gate.reconcile(h.command('/azp run'));
+  const selected = h.addBuild();
+  selected.status = 'inProgress';
+  await h.gate.reconcile();
+  const saved = checkpointHarness(t, h.state);
+  const newer = h.addBuild(undefined, selected.id + 1);
+  h.builds.reverse();
+  const state = await saved.restore();
+  const gate = new Gate(config, h.github, h.azure, state, h.publisher);
+  await gate.reconcile();
+  assert.equal(state.requests[1].buildId, selected.id);
+  assert.notEqual(state.requests[1].buildId, newer.id);
+  assert.equal(h.last().state, 'pending');
+  assert.deepEqual(saved.downloads, [1]);
+});
+
+test('restore rejects PR-event and same-workflow feature-branch artifacts before download', async t => {
+  const h = checkpointHarness(t);
+  const trusted = h.runs[0];
+  h.runs.unshift(...[
+    { event: 'pull_request_target' }, { event: 'status' }, { event: 'check_run' },
+    { head_branch: 'feature', event: 'workflow_dispatch' }, { workflow_id: 11 }, { path: 'other.yml' },
+  ].map((patch, i) => ({ ...trusted, id: i + 2, ...patch })));
+  await h.restore();
+  assert.deepEqual(h.downloads, [1]);
+});
+
+test('trusted checkpoint failures stop restoration rather than rolling selection back', async t => {
+  for (const fault of ['expired', 'ancestry', 'sha', 'run', 'attempt', 'missing-attempt', 'version']) {
+    const h = checkpointHarness(t);
+    if (fault === 'expired') h.expired = true;
+    if (fault === 'ancestry') h.ancestry = 'diverged';
+    if (fault === 'sha') h.saved.automationSha = sha('c');
+    if (fault === 'run') h.saved.runId = 999;
+    if (fault === 'attempt') h.saved.attempt = 2;
+    if (fault === 'missing-attempt') delete h.runs[0].run_attempt;
+    if (fault === 'version') h.saved.state.version = 1;
+    await assert.rejects(h.restore(), /checkpoint|history|saved gate state/i, fault);
+    assert.ok(h.downloads.length <= 1);
+  }
+});
+
+test('only the pinned default-branch workflow may acquire privileged execution', () => {
+  const env = { GITHUB_EVENT_NAME: 'issue_comment', GITHUB_REF: 'refs/heads/main',
+    GITHUB_WORKFLOW_REF: `${config.repository}/${workflowPath}@refs/heads/main`, GITHUB_SHA: config.automationSha };
+  for (const event of ['issue_comment', 'schedule', 'workflow_dispatch']) {
+    assert.doesNotThrow(() => assertTrustedExecution({ ...env, GITHUB_EVENT_NAME: event }, config));
+  }
+  for (const patch of [
+    { GITHUB_EVENT_NAME: 'pull_request_target' }, { GITHUB_EVENT_NAME: 'status' }, { GITHUB_EVENT_NAME: 'check_run' },
+    { GITHUB_REF: 'refs/heads/feature' }, { GITHUB_WORKFLOW_REF: `${config.repository}/other.yml@refs/heads/main` },
+    { GITHUB_SHA: sha('f') },
+  ]) assert.throws(() => assertTrustedExecution({ ...env, ...patch }, config), /pinned default-branch/);
+});
+
+test('publisher uses only its App token and verifies check ownership on create and update', async t => {
+  const requests = [];
+  let ownedBy = config.publisherAppId;
+  let current = { id: 17, app: { id: ownedBy }, head_sha: sha('c'), name: gateContext, status: 'in_progress' };
+  t.mock.method(globalThis, 'fetch', async (url, options) => {
+    assert.equal(options.headers.authorization, 'Bearer publisher-token');
+    requests.push({ url, ...options });
+    if (options.method !== 'GET') current = { ...current, ...JSON.parse(options.body), app: { id: ownedBy } };
+    return new Response(JSON.stringify(current));
+  });
+
+  const publisher = new Publisher(config, 'publisher-token');
+  assert.equal(await publisher.publish(sha('c'), 'pending', 'waiting', 'https://example.test'), 17);
+  assert.equal(await publisher.publish(sha('c'), 'success', 'passed', 'https://example.test', 17), 17);
+  assert.deepEqual(requests.map(r => r.method), ['POST', 'GET', 'PATCH']);
+  assert.equal(JSON.parse(requests.at(-1).body).conclusion, 'success');
+  await publisher.publish(sha('c'), 'pending', 'new selection', 'https://example.test', 17);
+  assert.equal(requests.at(-1).method, 'POST');
+  assert.equal(JSON.parse(requests.at(-1).body).conclusion, undefined);
+  for (const patch of [{ app: { id: 15368 } }, { head_sha: sha('d') }, { name: 'Different check' }]) {
+    const saved = structuredClone(current);
+    Object.assign(current, patch);
+    await assert.rejects(publisher.publish(sha('c'), 'success', 'wrong identity', 'https://example.test', 17), /configured publisher/);
+    assert.equal(requests.at(-1).method, 'GET');
+    current = saved;
+  }
+  ownedBy = 15368;
+  await assert.rejects(publisher.publish(sha('c'), 'success', 'wrong token', 'https://example.test'), UncertainPublication);
+  assert.throws(() => new Publisher(config, ''), /dedicated publisher/);
+  assert.throws(() => new Publisher({ ...config, publisherAppId: undefined }, 'token'), /dedicated publisher/);
+});
+
+test('App-owned checks reject missing or rolled-back artifacts before gate writes', async () => {
+  const h = harness();
+  await h.gate.reconcile(h.command('/winui quick'));
+  const stale = structuredClone(h.state);
+  h.addBuild();
+  await h.gate.reconcile();
+  const saved = h.state.published[sha('c')];
+  const publisher = new Publisher(config, 'publisher-token');
+  const owned = { id: h.state.checks[sha('c')], app: { id: config.publisherAppId }, head_sha: sha('c'),
+    name: gateContext, external_id: saved.request, details_url: saved.url, output: { summary: saved.message },
+    status: 'completed', conclusion: 'success' };
+  publisher.list = async path => {
+    assert.ok(path.includes(`app_id=${config.publisherAppId}`));
+    return [owned, { ...owned, id: 999, app: { id: 15368 } }];
+  };
+  await publisher.assertCheckpoint(h.state, h.pulls);
+  await assert.rejects(publisher.assertCheckpoint(stale, h.pulls), /stale/);
+  await assert.rejects(publisher.assertCheckpoint(newState(), h.pulls), /missing/);
+  publisher.list = async () => [];
+  await assert.rejects(publisher.assertCheckpoint(h.state, h.pulls), /missing/);
+  await publisher.assertCheckpoint(newState(), h.pulls);
+});
+
+test('checkpoint identity includes every selection sharing a merge revision', async () => {
+  const h = harness();
+  h.pulls.push(pr(2));
+  await h.gate.reconcile();
+  h.addBuild(h.state.requests[1]).status = 'inProgress';
+  h.addBuild(h.state.requests[2]).status = 'inProgress';
+  await h.gate.reconcile();
+  const before = structuredClone(h.state.published[sha('c')]);
+  const event = h.command('/winui full');
+  event.issue.number = 2;
+  await h.gate.reconcile(event);
+  const after = h.state.published[sha('c')];
+  assert.equal(after.message, before.message);
+  assert.equal(after.url, before.url);
+  assert.notEqual(after.request, before.request);
 });
 
 test('Azure metadata uses federated bearer authentication and never queues a build', async t => {
