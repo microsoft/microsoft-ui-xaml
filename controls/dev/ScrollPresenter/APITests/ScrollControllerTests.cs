@@ -287,6 +287,85 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies attached scroll controllers refresh their CanScroll state after a non-animated zoom-to-fit that leaves the offsets unchanged.")]
+        public void ScrollControllersCanScrollUpdatedAfterZoomOnlyChange()
+        {
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
+            CompositionScrollController horizontalScrollController = null;
+            CompositionScrollController verticalScrollController = null;
+            AutoResetEvent loadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // We need the styles of the CompositionScrollController, so let's load them
+                App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
+
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
+                horizontalScrollController = new CompositionScrollController();
+                verticalScrollController = new CompositionScrollController();
+
+                horizontalScrollController.Orientation = Orientation.Horizontal;
+
+                horizontalScrollController.LogMessage += (CompositionScrollController sender, string args) =>
+                {
+                    Log.Comment(args);
+                };
+
+                verticalScrollController.LogMessage += (CompositionScrollController sender, string args) =>
+                {
+                    Log.Comment(args);
+                };
+
+                scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                scrollPresenter.VerticalScrollController = verticalScrollController;
+
+                SetupUIWithScrollControllers(
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
+                    horizontalScrollController,
+                    verticalScrollController,
+                    loadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", loadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the content is initially scrollable in both directions.");
+                Verify.IsGreaterThan(scrollPresenter.ScrollableWidth, 0.0);
+                Verify.IsGreaterThan(scrollPresenter.ScrollableHeight, 0.0);
+                Verify.IsTrue(horizontalScrollController.CanScroll);
+                Verify.IsTrue(verticalScrollController.CanScroll);
+            });
+
+            // Zoom out enough that the 1200 x 600 content fits within the 300 x 200 viewport, leaving
+            // the (0, 0) offsets unchanged. This reproduces the scenario where only the zoom factor
+            // changes during a non-animated ZoomTo.
+            Log.Comment("Jump to zoomFactor 0.25 to fit the content within the viewport.");
+            ZoomTo(
+                scrollPresenter,
+                0.25f,
+                0.0f,
+                0.0f,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verifying the content is no longer scrollable and the scroll controllers reflect it.");
+                Verify.AreEqual(0.0, scrollPresenter.ScrollableWidth);
+                Verify.AreEqual(0.0, scrollPresenter.ScrollableHeight);
+                Verify.IsFalse(horizontalScrollController.CanScroll);
+                Verify.IsFalse(verticalScrollController.CanScroll);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Change ScrollPresenter view with additional velocity via attached scroll controllers.")]
         public void ChangeOffsetsWithAdditionalVelocityAndAttachedScrollControllers()
         {
