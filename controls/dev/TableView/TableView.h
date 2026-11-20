@@ -240,6 +240,8 @@ class TableView :
     public TableViewProperties
 {
 public:
+    static void ClearResourceProperties();
+
     TableView();
     // Drops the recycle pools the row-template selector caches. Those pools close a
     // repeater -> template-wrapper -> selector -> template -> pool -> repeater cycle through plain
