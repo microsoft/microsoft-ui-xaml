@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 #
-# Runs focused and broad WPF coverage excluding known failures.
+# Runs focused WPF coverage and broad WPF coverage excluding known failures.
 
 parameters:
 - name: pipelineKind
@@ -36,7 +36,6 @@ stages:
       testPayloadArtifactName: SystemCompositionEngineTestPayload
       includeWinUIGallery: false
       compositionEngineType: System
-      wpfExcludedTestsManifestPath: 'build\PipelineScripts\SystemCompositionEngineFocusedExcludedTests-WPF.csv'
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:

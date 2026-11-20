@@ -99,6 +99,9 @@ Describe 'System composition engine pipeline review fixes' {
         $script:pipelineJobTemplate = Join-Path `
             $script:repositoryRoot `
             'build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml'
+        $script:systemCompositionStage = Join-Path `
+            $script:repositoryRoot `
+            'build\AzurePipelinesTemplates\WinUI-RunSystemCompositionEngineTests-Stage.yml'
         $script:excludedTestsManifest = Join-Path `
             $PSScriptRoot `
             'SystemCompositionEngineExcludedTests-WPF.csv'
@@ -151,6 +154,40 @@ Describe 'System composition engine pipeline review fixes' {
     }
 
     Context 'focused exclusion manifest metadata' {
+        It 'does not exclude tests from the focused system composition lane' {
+            $stageContent = Get-Content `
+                -LiteralPath $script:systemCompositionStage `
+                -Raw
+
+            $stageContent | Should Match (
+                "@Name='\*SystemCompositionEngineTests\*'")
+            $stageContent | Should Not Match (
+                'SystemCompositionEngineFocusedExcludedTests-WPF\.csv')
+            $stageContent | Should Not Match 'wpfExcludedTestsManifestPath'
+            $stageContent | Should Match (
+                'WinUI-RunSystemCompositionEngineBroadTests-Job\.yml')
+        }
+
+        It 'fails closed when focused discovery generates no work items' {
+            $harnessPath = Join-Path $TestDrive 'empty-taef.ps1'
+            '$global:LASTEXITCODE = 0' |
+                Set-Content -LiteralPath $harnessPath -Encoding UTF8
+            $outputProjFile = Join-Path $TestDrive 'empty-focused-output.proj'
+
+            {
+                & $script:helixGenerator `
+                    -TestFilePattern 'Test\Microsoft.UI.Xaml.Tests.External.*.dll' `
+                    -TestBinaryPath $script:testBinaryPath `
+                    -OutputProjFile $outputProjFile `
+                    -JobTestSuiteName DevTestSuite `
+                    -CustomTaefQuery "(@Name='*SystemCompositionEngineTests*')" `
+                    -CompositionEngineType System `
+                    -HostingMode WPF `
+                    -TargetOSVersion 26200 `
+                    -TaefExePath $harnessPath
+            } | Should Throw 'generated no test work items'
+        }
+
         It 'accepts public failure categories for focused exclusions' {
             $focusedTests = @(
                 Import-Csv -LiteralPath $script:focusedExcludedTestsManifest |
