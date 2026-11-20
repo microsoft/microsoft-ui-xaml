@@ -6,7 +6,7 @@
       <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
-      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,8</Thickness>
       <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
       <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
       <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -67,7 +67,7 @@
       <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
-      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,8</Thickness>
       <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
       <SolidColorBrush x:Key="DatePickerHeaderForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
       <SolidColorBrush x:Key="DatePickerForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
@@ -78,7 +78,7 @@
       <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeWidth">20</x:Double>
       <x:Double x:Key="DatePickerSpacingThemeHeight">20</x:Double>
-      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,4</Thickness>
+      <Thickness x:Key="DatePickerHeaderThemeMargin">0,0,0,8</Thickness>
       <FontWeight x:Key="DatePickerHeaderThemeFontWeight">Normal</FontWeight>
       <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="ControlStrokeColorDefaultBrush" />
       <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="ControlStrokeColorDefaultBrush" />
@@ -110,16 +110,16 @@
       <StaticResource x:Key="DatePickerFlyoutPresenterHighlightForegroundColor" ResourceKey="TextOnAccentAAFillColorPrimary" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
-  <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
+  <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,8</Thickness>
   <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
   <x:Double x:Key="DatePickerThemeMinWidth">296</x:Double>
   <x:Double x:Key="DatePickerThemeMaxWidth">456</x:Double>
-  <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
-  <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
-  <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
-  <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
+  <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,4,0,6</Thickness>
+  <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,4,0,6</Thickness>
+  <Thickness x:Key="DatePickerHostPadding">0,4,0,6</Thickness>
+  <Thickness x:Key="DatePickerHostMonthPadding">9,4,0,6</Thickness>
   <Thickness x:Key="DatePickerFlyoutPresenterAcceptMargin">4,4,2,4</Thickness>
   <Thickness x:Key="DatePickerFlyoutPresenterDismissMargin">2,4,4,4</Thickness>
   <Style TargetType="DatePicker" BasedOn="{StaticResource DefaultDatePickerStyle}" />
