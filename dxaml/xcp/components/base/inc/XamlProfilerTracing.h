@@ -80,6 +80,21 @@ public:
         bool,     IsAlphaMask,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
+    // Reports a transient BeginDraw update texture. Atlased surfaces may share this resource;
+    // its interface is not retained after the observation.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+        uint64_t, SurfaceId,
+        uint64_t, ResourceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, MipLevels,
+        uint32_t, ArraySize,
+        uint32_t, Format,
+        uint32_t, SampleCount,
+        int32_t,  OffsetX,
+        int32_t,  OffsetY,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
         uint32_t, ResourceKind,
         PCWSTR,   ResourceName,
