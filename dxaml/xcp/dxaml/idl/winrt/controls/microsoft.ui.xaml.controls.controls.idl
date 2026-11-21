@@ -2279,10 +2279,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass VariableSizedWrapGrid
+    unsealed runtimeclass VariableSizedWrapGrid
         : Microsoft.UI.Xaml.Controls.Panel
     {
-        VariableSizedWrapGrid();
+        [method_name("CreateInstance")] VariableSizedWrapGrid();
         Double ItemHeight;
         Double ItemWidth;
         Microsoft.UI.Xaml.Controls.Orientation Orientation;
