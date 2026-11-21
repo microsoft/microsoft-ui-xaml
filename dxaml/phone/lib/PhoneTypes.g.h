@@ -2522,11 +2522,43 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Event Sources
         Private::TrackerEventSource<ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventHandler> m_SelectionChangedEventSource;
     };
+    class LoopingSelectorItemFactory
+        :
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorItemFactory>
+    {
+
+    friend class LoopingSelectorItemGenerated;
+    friend class LoopingSelectorItem;
+
+    public:
+         _Check_return_ HRESULT RuntimeClassInitialize();
+         static _Check_return_ HRESULT EnsureProperties();
+         static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorItem** ppInstance);
+
+        // Properties.
+
+        // Dependency properties.
+
+        // Attached properties.
+
+        // Static methods.
+
+    private:
+
+        // Properties' statics.
+
+        // Properties' initializers.
+
+    };
     
     class __declspec(novtable) LoopingSelectorItemGenerated
         : public LoopingSelectorItemRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorItem;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::LoopingSelectorItem,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::ILoopingSelectorItem>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_Primitives_LoopingSelectorItem, TrustLevel::BaseTrust);
 
     public:
@@ -2655,8 +2687,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };

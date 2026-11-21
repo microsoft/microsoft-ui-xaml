@@ -105,9 +105,9 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [TypeFlags(IsCreateableFromXAML = false)]
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "2c512cfe-9f07-418d-a175-db1c13aa1920")]
-    public sealed class LoopingSelectorItem : Controls.ContentControl
+    public class LoopingSelectorItem : Controls.ContentControl
     {
-        internal LoopingSelectorItem() { }
+        public LoopingSelectorItem() { }
     }
 
     [DXamlIdlGroup("Phone")]
