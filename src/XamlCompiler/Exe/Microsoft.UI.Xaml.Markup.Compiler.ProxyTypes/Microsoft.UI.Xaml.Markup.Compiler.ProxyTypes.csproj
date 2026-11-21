@@ -1,0 +1,20 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Metadata-only description of the "proxy" types that stand in for the markup extensions that the XAML compiler understands but that
+    have no real type to bind against (e.g. {x:Bind}, {StaticResource}). The XAML compiler loads this assembly with its metadata reader
+    (never as code), and embeds it as a resource. It targets .NET Framework on purpose: its type references go to mscorlib, which every
+    metadata universe the compiler creates (C#, C++/WinRT, C++/CX, ...) can resolve, whichever runtime the compiler itself runs on.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>Microsoft.UI.Xaml.Markup.Compiler.ProxyTypes</AssemblyName>
+    <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ProxyTypes</RootNamespace>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

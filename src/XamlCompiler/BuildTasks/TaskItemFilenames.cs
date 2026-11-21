@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 string fileFullpath = item.FullPath;
                 // GetDefaultXamlLinkMetadata() will return null if the item.ItemSpec
                 // is a normal usable relative path inside the project tree.
-                linkPath = CompileXamlInternal.GetDefaultXamlLinkMetadata(fileFullpath, item.ItemSpec, _srcMgr.ProjectFolderFullpath, _srcMgr.IncludeFolderList);
+                linkPath = Utilities.XamlHelper.GetDefaultXamlLinkMetadata(fileFullpath, item.ItemSpec, _srcMgr.ProjectFolderFullpath, _srcMgr.IncludeFolderList);
             }
 
             // The Link property is not allowed to rooted or ".." up.

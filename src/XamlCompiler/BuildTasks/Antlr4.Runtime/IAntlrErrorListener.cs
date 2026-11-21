@@ -34,11 +34,7 @@ namespace Antlr4.Runtime
 {
     /// <summary>How to emit recognition errors.</summary>
     /// <remarks>How to emit recognition errors.</remarks>
-#if COMPACT
-    public interface IAntlrErrorListener<TSymbol>
-#else
     public interface IAntlrErrorListener<in TSymbol>
-#endif
     {
         /// <summary>Upon syntax error, notify any interested parties.</summary>
         /// <remarks>

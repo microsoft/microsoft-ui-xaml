@@ -237,7 +237,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             {
                 if (!this._hasValueConverter.HasValue)
                 {
-                    this._hasValueConverter = UnderlyingType.GetInterface(KnownTypes.IValueConverter) != null;
+                    this._hasValueConverter = UnderlyingType.GetInterfaceLmr(KnownTypes.IValueConverter) != null;
                 }
                 return this._hasValueConverter.Value;
             }
@@ -249,7 +249,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             {
                 if (!this._hasMetadataProvider.HasValue)
                 {
-                    this._hasMetadataProvider = UnderlyingType.GetInterface(KnownTypes.IXamlMetadataProvider) != null;
+                    this._hasMetadataProvider = UnderlyingType.GetInterfaceLmr(KnownTypes.IXamlMetadataProvider) != null;
                 }
                 return this._hasMetadataProvider.Value;
             }
@@ -299,7 +299,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             {
                 return true;
             }
-            return underlyingType.GetInterface(fullName) != null;
+            return underlyingType.GetInterfaceLmr(fullName) != null;
         }
 
         public bool ImplementsINotifyPropertyChanged
@@ -812,7 +812,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             XamlMember member = base.LookupAttachableMember(name);
             if (member != null)
             {
-                member = new DirectUIXamlMember(member.Name, member.Invoker, this.SchemaContext, this.ApiInformation);
+                member = new DirectUIXamlMember(member.Name, member.Getter, member.Setter, this.SchemaContext, this.ApiInformation);
             }
             return member;
         }
@@ -831,7 +831,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 // That was necessary for WPF backward compat.
                 // Here we find all the static GetXXX and SetXXX methods, with the correct argument signature
                 // just to collect likely names and call down into System.Xaml to resolve them (or not)
-                MethodInfo[] allMethods = this.UnderlyingType.GetMethods(AttachableProperties_BF);
+                MethodInfo[] allMethods = this.UnderlyingType.GetMethodsLmr(AttachableProperties_BF);
                 HashSet<string> attachedProperties = new HashSet<string>();
                 foreach (MethodInfo method in allMethods)
                 {
@@ -912,13 +912,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 DirectUISchemaContext directSchema = this.SchemaContext as DirectUISchemaContext;
                 BindingFlags AllProperties_BF = BindingFlags.Instance | BindingFlags.Public;
 
-                PropertyInfo[] propertyList = this.UnderlyingType.GetProperties(AllProperties_BF);
+                PropertyInfo[] propertyList = this.UnderlyingType.GetPropertiesLmr(AllProperties_BF);
                 foreach (PropertyInfo propertyInfo in propertyList)
                 {
                     DirectUIXamlMember xamlMember = new DirectUIXamlMember(propertyInfo, directSchema, this.ApiInformation);
                     allMembers.Add(xamlMember);
                 }
-                EventInfo[] eventList = this.UnderlyingType.GetEvents(AllProperties_BF);
+                EventInfo[] eventList = this.UnderlyingType.GetEventsLmr(AllProperties_BF);
                 foreach (EventInfo eventInfo in eventList)
                 {
                     DirectUIXamlMember xamlMember = new DirectUIXamlMember(eventInfo, directSchema, this.ApiInformation);
@@ -1168,7 +1168,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         private Type GetCollectionReleventInterface()
         {
             List<Type> outList = new List<Type>();
-            Type[] interfaceList = this.UnderlyingType.GetInterfaces();
+            Type[] interfaceList = this.UnderlyingType.GetInterfacesLmr();
 
             // search for Dictionaries first because Dictionaries are also Collections.
             foreach (Type type in interfaceList)
@@ -1242,7 +1242,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         {
             MethodInfo result = null;
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
-            MemberInfo[] addMembers = type.GetMember(methodName, MemberTypes.Method, flags);
+            MemberInfo[] addMembers = type.GetMemberLmr(methodName, MemberTypes.Method, flags);
             if (addMembers != null)
             {
                 foreach (MemberInfo mi in addMembers)

@@ -28,11 +28,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             }
         }
 
-        private HashAlgorithm hashProvider;
-
         private ChecksumHelper()
         {
-            this.hashProvider = new SHA256CryptoServiceProvider();
         }
 
         internal string ComputeCheckSumForXamlFile(string fullXamlFilePath)
@@ -40,7 +37,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
             byte[] hashData = null;
             using (FileStream fileStream = File.Open(fullXamlFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                hashData = this.hashProvider.ComputeHash(fileStream);
+                hashData = SHA256.HashData(fileStream);
             }
 
             StringBuilder checkSum = new StringBuilder(ChecksumHelper.ChecksumLength);

@@ -146,12 +146,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         /// </summary>
         public Module ResolveModule(Assembly containingAssembly, string moduleName)
         {
-            if ((containingAssembly == null) || string.IsNullOrEmpty(containingAssembly.Location))
+            if ((containingAssembly == null) || string.IsNullOrEmpty(containingAssembly.GetLocationLmr()))
             {
                 throw new ArgumentException("manifestModule needs to be associated with an assembly with valid location");
             }
 
-            string assemblyFolder = Path.GetDirectoryName(containingAssembly.Location);
+            string assemblyFolder = Path.GetDirectoryName(containingAssembly.GetLocationLmr());
             string moduleLocation = Path.Combine(assemblyFolder, moduleName);
 
             var peReader = new PEReader(File.OpenRead(moduleLocation));

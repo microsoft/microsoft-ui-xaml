@@ -114,6 +114,9 @@
         unpinned patch breaks fresh clones. See eng\sdkconfig.targets for the override itself.
     -->
     <Net8TargetingPackVersion>8.0.28</Net8TargetingPackVersion>
+    <!-- Same for .NET 10 (the XAML compiler, Native AOT): the SDK 10 that init installs, ILCompiler/runtime packs of this version must be on the feed -->
+    <Net10TargetingPackVersion>10.0.14</Net10TargetingPackVersion>
+    <dotNetSdkNet10Channel>10.0.1xx</dotNetSdkNet10Channel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
     <Win2DWinUIVersion>1.4.0</Win2DWinUIVersion>
     <Win2DUWPVersion>1.28.2</Win2DUWPVersion>

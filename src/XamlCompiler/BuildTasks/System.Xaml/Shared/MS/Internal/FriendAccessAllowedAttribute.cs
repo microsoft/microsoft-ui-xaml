@@ -8,24 +8,7 @@
 
 using System;
 
-#if WINDOWS_BASE
-namespace MS.Internal.WindowsBase
-#elif PRESENTATION_CORE
-namespace MS.Internal.PresentationCore 
-#elif PRESENTATIONFRAMEWORK
-namespace MS.Internal.PresentationFramework
-#elif PRESENTATION_CFF_RASTERIZER
-namespace MS.Internal.PresentationCffRasterizer
-#elif PRESENTATIONUI
-namespace MS.Internal.PresentationUI
-#elif DRT
-namespace MS.Internal.Drt
-#elif SYSTEM_XAML
 namespace MS.Internal.WindowsBase  //current copy of XmlMarkupCompatibilityReader uses this ns for FAAA.
-#else
-#error Attempt to define FriendAccessAllowedAttribute in an unknown assembly.
-namespace MS.Internal.YourAssemblyName
-#endif
 {
     [AttributeUsage(
         AttributeTargets.Class |

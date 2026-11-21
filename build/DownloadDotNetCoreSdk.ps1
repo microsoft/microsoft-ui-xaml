@@ -15,6 +15,7 @@ $versionPropsFileProject = ([xml](Get-Content -Raw "$PSScriptRoot\..\eng\version
 #dotNetSdkChannel and dotNetSdkVNextChannel refer to the current Long Term Support and Standard Term Support versions of .NET, respectively. 
 $dotNetSdkChannel = $versionPropsFileProject.SelectSingleNode('//dotNetSdkChannel').InnerText
 $dotNetSdkVNextChannel  = $versionPropsFileProject.SelectSingleNode('//dotNetSdkVNextChannel').InnerText
+$dotNetSdkNet10Channel  = $versionPropsFileProject.SelectSingleNode('//dotNetSdkNet10Channel').InnerText
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
 
@@ -89,4 +90,18 @@ else
 
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x86InstallDir -Architecture x86
     Write-Host ".NET SDK (x86), channel $backupChannel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
+}
+
+# The XAML compiler targets .NET 10 (published with Native AOT), which needs the .NET 10 SDK next to the main one
+. $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x64InstallDir -Architecture x64
+Write-Host ".NET SDK (x64), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x64InstallDir." -ForegroundColor green
+
+. $dotnetInstallScript -channel $dotNetSdkNet10Channel -InstallDir $x86InstallDir -Architecture x86
+Write-Host ".NET SDK (x86), channel $dotNetSdkNet10Channel from eng\Versions.props, is available at $x86InstallDir." -ForegroundColor green
+
+if ($env:TF_BUILD -eq 'True')
+{
+    # init.cmd's PATH changes do not persist across pipeline tasks; VS MSBuild also needs the SDK resolver override.
+    Write-Host "##vso[task.prependpath]$x64InstallDir"
+    Write-Host "##vso[task.setvariable variable=DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR]$x64InstallDir"
 }

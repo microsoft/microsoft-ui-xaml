@@ -30,17 +30,6 @@ namespace MS.Internal.Xaml.Context
         {
         }
 
-        public XamlCommonFrame(XamlCommonFrame source) : base(source)
-        {
-            XamlType = source.XamlType;
-            Member = source.Member;
-
-            if (source._namespaces != null)
-            {
-                SetNamespaces(source._namespaces);
-            }
-        }
-
         public override void Reset()
         {
             XamlType = null;

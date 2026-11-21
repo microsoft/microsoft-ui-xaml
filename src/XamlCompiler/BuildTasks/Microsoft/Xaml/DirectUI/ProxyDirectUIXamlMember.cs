@@ -20,11 +20,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             this.metadata = metadata;
         }
 
-        protected override XamlMemberInvoker LookupInvoker()
-        {
-            return this.metadata.Invoker;
-        }
-
         protected override XamlValueConverter<XamlDeferringLoader> LookupDeferringLoader()
         {
             return this.metadata.DeferringLoader;
@@ -84,11 +79,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return this.metadata.TypeConverter;
         }
 
-        protected override XamlValueConverter<ValueSerializer> LookupValueSerializer()
-        {
-            return this.metadata.ValueSerializer;
-        }
-
         protected override XamlType LookupType()
         {
             return this.metadata.Type;
@@ -116,7 +106,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
 
         protected override IReadOnlyDictionary<char, char> LookupMarkupExtensionBracketCharacters()
         {
-            if (DeclaringType.UnderlyingType.FullName == typeof(ProxyTypes.BindExtension).FullName && Name == "Path")
+            if (DeclaringType.UnderlyingType.FullName == ProxyTypeNames.BindExtension && Name == "Path")
             {
                 return new Dictionary<char, char>() { { '(', ')' }, { '[', ']' } };
             }

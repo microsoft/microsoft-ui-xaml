@@ -39,11 +39,9 @@ namespace Antlr4.Runtime.Atn
     /// <summary>"dup" of ParserInterpreter</summary>
     public class LexerATNSimulator : ATNSimulator
     {
-#if !PORTABLE
         public const bool debug = false;
 
         public const bool dfa_debug = false;
-#endif
 
         public const int MinDfaEdge = 0;
 
@@ -273,14 +271,12 @@ namespace Antlr4.Runtime.Atn
         protected internal virtual DFAState GetExistingTargetState(DFAState s, int t)
         {
             DFAState target = s.GetTarget(t);
-#if !PORTABLE
 			#pragma warning disable 162, 429
             if (debug && target != null)
             {
                 System.Console.Out.WriteLine("reuse state " + s.stateNumber + " edge to " + target.stateNumber);
             }
 			#pragma warning restore 162, 429
-#endif
             return target;
         }
 

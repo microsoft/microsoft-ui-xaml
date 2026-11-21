@@ -28,7 +28,6 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if !PORTABLE
 
 using Antlr4.Runtime;
 using Antlr4.Runtime.Sharpen;
@@ -70,4 +69,3 @@ namespace Antlr4.Runtime
     }
 }
 
-#endif

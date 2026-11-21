@@ -38,7 +38,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         protected override Type GetResolvedTypeWorker()
         {
-            return this.m_rawType.GetResolvedType().MakeGenericType(m_args);
+            return this.m_rawType.GetResolvedType().MakeGenericTypeLmr(m_args);
         }
 
         // Everything forwards except algebra operations that we can safely do.

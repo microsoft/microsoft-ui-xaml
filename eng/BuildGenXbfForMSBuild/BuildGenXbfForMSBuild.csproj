@@ -26,7 +26,7 @@
     <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj" Condition="'$(WindowsSDKBuildToolsArchFolder)'!='x64'">
       <Properties>Configuration=$(Configuration);Platform=$(WindowsSDKBuildToolsArchFolder);CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
     </ProjectReference>
-    <!-- Also ensure mock WindowsAppSDK packages for all arches can load x64 genxbf.dll via managed XamlCompiler.exe on x64 -->
+    <!-- Also ensure mock WindowsAppSDK packages for all arches can load x64 genxbf.dll via the XAML compiler on x64 -->
     <ProjectReference Include="$(XamlSourcePath)\xcp\tools\GenXbfDLL\GenXbf.vcxproj">
       <Properties>Configuration=$(Configuration);Platform=x64;CurrentSolutionConfigurationContents=;ShouldUnsetParentConfigurationAndPlatform=false</Properties>
     </ProjectReference>

@@ -63,12 +63,7 @@ namespace System.Xaml
 
         // Known property
         public XamlMember(PropertyInfo propertyInfo, XamlSchemaContext schemaContext)
-            :this(propertyInfo, schemaContext, null)
-        {
-        }
-
-        public XamlMember(PropertyInfo propertyInfo, XamlSchemaContext schemaContext, XamlMemberInvoker invoker)
-            : this(propertyInfo, schemaContext, invoker, new MemberReflector(false /*isEvent*/))
+            : this(propertyInfo, schemaContext, new MemberReflector(false /*isEvent*/))
         {
         }
 
@@ -77,7 +72,7 @@ namespace System.Xaml
         /// Safe: Constructor is single-threaded, so idempotence is assured
         /// </SecurityNote>
         [SecuritySafeCritical]
-        internal XamlMember(PropertyInfo propertyInfo, XamlSchemaContext schemaContext, XamlMemberInvoker invoker, MemberReflector reflector)
+        internal XamlMember(PropertyInfo propertyInfo, XamlSchemaContext schemaContext, MemberReflector reflector)
         {
             if (propertyInfo == null)
             {
@@ -91,18 +86,12 @@ namespace System.Xaml
             _declaringType = schemaContext.GetXamlType(propertyInfo.DeclaringType);
             _memberType = MemberType.Instance;
             _reflector = reflector;
-            _reflector.Invoker = invoker;
             _underlyingMember.Value = propertyInfo;
         }
 
         // Known event
         public XamlMember(EventInfo eventInfo, XamlSchemaContext schemaContext)
-            :this(eventInfo, schemaContext, null)
-        {
-        }
-
-        public XamlMember(EventInfo eventInfo, XamlSchemaContext schemaContext, XamlMemberInvoker invoker)
-            :this(eventInfo, schemaContext, invoker, new MemberReflector(true /*isEvent*/))
+            : this(eventInfo, schemaContext, new MemberReflector(true /*isEvent*/))
         {
         }
 
@@ -111,7 +100,7 @@ namespace System.Xaml
         /// Safe: Constructor is single-threaded, so idempotence is assured
         /// </SecurityNote>
         [SecuritySafeCritical]
-        internal XamlMember(EventInfo eventInfo, XamlSchemaContext schemaContext, XamlMemberInvoker invoker, MemberReflector reflector)
+        internal XamlMember(EventInfo eventInfo, XamlSchemaContext schemaContext, MemberReflector reflector)
         {
             if (eventInfo == null)
             {
@@ -125,20 +114,13 @@ namespace System.Xaml
             _declaringType = schemaContext.GetXamlType(eventInfo.DeclaringType);
             _memberType = MemberType.Instance;
             _reflector = reflector;
-            _reflector.Invoker = invoker;
             _underlyingMember.Value = eventInfo;
         }
 
         // Known attachable property
         public XamlMember(string attachablePropertyName, MethodInfo getter, MethodInfo setter,
             XamlSchemaContext schemaContext)
-            :this(attachablePropertyName, getter, setter, schemaContext, null)
-        {
-        }
-
-        public XamlMember(string attachablePropertyName, MethodInfo getter, MethodInfo setter,
-            XamlSchemaContext schemaContext, XamlMemberInvoker invoker)
-            :this(attachablePropertyName, getter, setter, schemaContext, invoker, new MemberReflector(getter, setter, false /*isEvent*/))
+            : this(attachablePropertyName, getter, setter, schemaContext, new MemberReflector(getter, setter, false /*isEvent*/))
         {
         }
 
@@ -148,7 +130,7 @@ namespace System.Xaml
         /// </SecurityNote>
         [SecuritySafeCritical]
         internal XamlMember(string attachablePropertyName, MethodInfo getter, MethodInfo setter,
-            XamlSchemaContext schemaContext, XamlMemberInvoker invoker, MemberReflector reflector)
+            XamlSchemaContext schemaContext, MemberReflector reflector)
         {
             if (attachablePropertyName == null)
             {
@@ -170,19 +152,12 @@ namespace System.Xaml
             _declaringType = schemaContext.GetXamlType(accessor.DeclaringType);
             _reflector = reflector;
             _memberType = MemberType.Attachable;
-            _reflector.Invoker = invoker;
             _underlyingMember.Value = getter ?? setter;
         }
 
         // Known attachable event
         public XamlMember(string attachableEventName, MethodInfo adder, XamlSchemaContext schemaContext)
-            :this(attachableEventName, adder, schemaContext, null)
-        {
-        }
-
-        public XamlMember(string attachableEventName, MethodInfo adder, XamlSchemaContext schemaContext,
-            XamlMemberInvoker invoker)
-            : this(attachableEventName, adder, schemaContext, invoker, new MemberReflector(null, adder, true /*isEvent*/))
+            : this(attachableEventName, adder, schemaContext, new MemberReflector(null, adder, true /*isEvent*/))
         {
         }
 
@@ -192,7 +167,7 @@ namespace System.Xaml
         /// </SecurityNote>
         [SecuritySafeCritical]
         internal XamlMember(string attachableEventName, MethodInfo adder, XamlSchemaContext schemaContext,
-            XamlMemberInvoker invoker, MemberReflector reflector)
+            MemberReflector reflector)
         {
             if (attachableEventName == null)
             {
@@ -212,7 +187,6 @@ namespace System.Xaml
             _declaringType = schemaContext.GetXamlType(adder.DeclaringType);
             _reflector = reflector;
             _memberType = MemberType.Attachable;
-            _reflector.Invoker = invoker;
             _underlyingMember.Value = adder;
         }
 
@@ -226,19 +200,6 @@ namespace System.Xaml
         }
 
         public XamlType DeclaringType { get { return _declaringType; } }
-
-        public XamlMemberInvoker Invoker
-        {
-            get
-            {
-                EnsureReflector();
-                if (_reflector.Invoker == null)
-                {
-                    _reflector.Invoker = LookupInvoker() ?? XamlMemberInvoker.UnknownInvoker;
-                }
-                return _reflector.Invoker;
-            }
-        }
 
         public bool IsUnknown
         {
@@ -330,19 +291,6 @@ namespace System.Xaml
                     _reflector.TypeConverter = LookupTypeConverter();
                 }
                 return _reflector.TypeConverter;
-            }
-        }
-
-        public XamlValueConverter<ValueSerializer> ValueSerializer
-        {
-            get
-            {
-                EnsureReflector();
-                if (!_reflector.ValueSerializerIsSet)
-                {
-                    _reflector.ValueSerializer = LookupValueSerializer();
-                }
-                return _reflector.ValueSerializer;
             }
         }
 
@@ -438,19 +386,6 @@ namespace System.Xaml
             get { return GetFlag(BoolMemberBits.Ambient); }
         }
 
-        public DesignerSerializationVisibility SerializationVisibility
-        {
-            get
-            {
-                EnsureReflector();
-                if (!_reflector.DesignerSerializationVisibilityIsSet)
-                {
-                    _reflector.SerializationVisibility = LookupSerializationVisibility();
-                }
-                return _reflector.SerializationVisibility ?? DesignerSerializationVisibility.Visible;
-            }
-        }
-
         /// <summary>
         /// Returns the value of the MarkupExtensionBracketCharacterAttribute set on
         /// a property of a MarkupExtension as a ReadOnlyDictionary. Opening bracket is the
@@ -485,16 +420,6 @@ namespace System.Xaml
             }
         }
 
-        // Requires live reflection - only use from XOW/XOR
-        internal object DefaultValue
-        {
-            get
-            {
-                EnsureDefaultValue();
-                return _reflector.DefaultValue;
-            }
-        }
-
         internal MethodInfo Getter
         {
             get
@@ -505,29 +430,6 @@ namespace System.Xaml
                     _reflector.Getter = LookupUnderlyingGetter();
                 }
                 return _reflector.Getter;
-            }
-        }
-
-        // Requires live reflection - only use from XOW/XOR
-        internal bool HasDefaultValue
-        {
-            get
-            {
-                EnsureDefaultValue();
-                return !_reflector.DefaultValueIsNotPresent;
-            }
-        }
-
-        internal bool HasSerializationVisibility
-        {
-            get
-            {
-                EnsureReflector();
-                if (!_reflector.DesignerSerializationVisibilityIsSet)
-                {
-                    _reflector.SerializationVisibility = LookupSerializationVisibility();
-                }
-                return _reflector.SerializationVisibility.HasValue;
             }
         }
 
@@ -587,15 +489,6 @@ namespace System.Xaml
 
         // If any new virtuals are added below, be sure to also override them in XamlDirective
 
-        protected virtual XamlMemberInvoker LookupInvoker()
-        {
-            if (UnderlyingMember != null)
-            {
-                return new XamlMemberInvoker(this);
-            }
-            return null;
-        }
-
         protected virtual ICustomAttributeProvider LookupCustomAttributeProvider()
         {
             return null;
@@ -643,17 +536,6 @@ namespace System.Xaml
                 }
             }
             return XamlType.GetReadOnly(result);
-        }
-
-        private DesignerSerializationVisibility? LookupSerializationVisibility()
-        {
-            DesignerSerializationVisibility? result = null;
-            if (AreAttributesAvailable)
-            {
-                result = _reflector.GetAttributeValue<DesignerSerializationVisibility>(
-                    typeof(DesignerSerializationVisibilityAttribute));
-            }
-            return result;
         }
 
         protected virtual bool LookupIsAmbient()
@@ -756,24 +638,6 @@ namespace System.Xaml
                 result = this.Type.TypeConverter;
             }
 
-            return result;
-        }
-
-        protected virtual XamlValueConverter<ValueSerializer> LookupValueSerializer()
-        {
-            XamlValueConverter<ValueSerializer> result = null;
-            if (AreAttributesAvailable)
-            {
-                Type converterType = _reflector.GetAttributeType(typeof(ValueSerializerAttribute));
-                if (converterType != null)
-                {
-                    result = SchemaContext.GetValueConverter<ValueSerializer>(converterType, null);
-                }
-            }
-            if (result == null && this.Type != null)
-            {
-                result = this.Type.ValueSerializer;
-            }
             return result;
         }
 
@@ -935,36 +799,6 @@ namespace System.Xaml
             bool isUnknown = LookupIsUnknown();
             MemberReflector reflector = isUnknown ? MemberReflector.UnknownReflector : new MemberReflector();
             Interlocked.CompareExchange(ref _reflector, reflector, null);
-        }
-
-        private void EnsureDefaultValue()
-        {
-            EnsureReflector();
-            if (!_reflector.DefaultValueIsSet)
-            {
-                DefaultValueAttribute defaultValueAttrib = null;
-                // Unlike other component-model attributes, DefaultValueAttribute is unsealed, and the 
-                // Value property is virtual. So we cannot reliably process DefaultValueAttribute in ROL. 
-                // The DefaultValue property is internal and is only called from XamlObjectReader, so it
-                // is safe to use live reflection.
-                if (AreAttributesAvailable)
-                {
-                    ICustomAttributeProvider attributeProvider = _reflector.CustomAttributeProvider ?? UnderlyingMember;
-                    object[] attribs = attributeProvider.GetCustomAttributes(typeof(DefaultValueAttribute), true);
-                    if (attribs.Length > 0)
-                    {
-                        defaultValueAttrib = (DefaultValueAttribute)attribs[0];
-                    }
-                }
-                if (defaultValueAttrib != null)
-                {
-                    _reflector.DefaultValue = defaultValueAttrib.Value;
-                }
-                else
-                {
-                    _reflector.DefaultValueIsNotPresent = true;
-                }
-            }
         }
 
         // We call this method a lot. Keep it really small, to make sure it inlines.

@@ -100,26 +100,26 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return this.Resolver.Policy.GetExtraArrayConstructors(this);
         }
 
-        public override FieldInfo[] GetFields(System.Reflection.BindingFlags flags)
+        internal override FieldInfo[] GetFieldsCore(System.Reflection.BindingFlags flags)
         {
             //No direct fields
             return new FieldInfo[0];
         }
 
-        public override FieldInfo GetField(string name, System.Reflection.BindingFlags bindingAttr)
+        internal override FieldInfo GetFieldCore(string name, System.Reflection.BindingFlags bindingAttr)
         {
             //No direct fields
             return null;
         }
 
  
-        public override EventInfo[] GetEvents(System.Reflection.BindingFlags flags)
+        internal override EventInfo[] GetEventsCore(System.Reflection.BindingFlags flags)
         {
             //No direct events
             return new EventInfo[0];
         }
 
-        public override EventInfo GetEvent(string name, System.Reflection.BindingFlags flags)
+        internal override EventInfo GetEventCore(string name, System.Reflection.BindingFlags flags)
         {
             //No direct events
             return null;
@@ -141,22 +141,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return result;
         }
 
-        public override Type GetNestedType(string name, System.Reflection.BindingFlags bindingAttr)
+        internal override Type GetNestedTypeCore(string name, System.Reflection.BindingFlags bindingAttr)
         {
             return null;
         }
 
-        public override Type[] GetNestedTypes(System.Reflection.BindingFlags bindingAttr)
+        internal override Type[] GetNestedTypesCore(System.Reflection.BindingFlags bindingAttr)
         {
             return new Type[0];
         }
 
               
 
-        public override Type[] GetInterfaces()
+        internal override Type[] GetInterfacesCore()
         {
             //return all the interfaces that System.Array implements
-            List<Type> l = new List<Type>(m_baseType.GetInterfaces());
+            List<Type> l = new List<Type>(m_baseType.GetInterfacesLmr());
 
             // Loader may add additional interfaces, so hook policy object to get them.
             l.AddRange(this.Resolver.Policy.GetExtraArrayInterfaces(m_elementType));
@@ -164,12 +164,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return l.ToArray();
         }
 
-        public override Type GetInterface(string name, bool ignoreCase)
+        internal override Type GetInterfaceCore(string name, bool ignoreCase)
         {
-            return MetadataOnlyModule.GetInterfaceHelper(GetInterfaces(), name, ignoreCase);
+            return MetadataOnlyModule.GetInterfaceHelper(GetInterfacesCore(), name, ignoreCase);
         }
 
-        public override Type MakeGenericType(Type[] argTypes)
+        internal override Type MakeGenericTypeCore(Type[] argTypes)
         {
             // Given a T[], can't directly instantiate it. We must decompose, instantiate the individual
             // open types, and then recompose.
@@ -226,7 +226,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             return true;
         }
 
-        public override object InvokeMember(string name, System.Reflection.BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Reflection.ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
+        internal override object InvokeMemberCore(string name, System.Reflection.BindingFlags invokeAttr, Binder binder, object target, object[] args, System.Reflection.ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
         {
             throw new NotSupportedException();
         }

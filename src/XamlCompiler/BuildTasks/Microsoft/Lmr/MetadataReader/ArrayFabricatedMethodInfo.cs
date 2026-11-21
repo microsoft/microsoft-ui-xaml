@@ -260,7 +260,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
     /// You can see this codepath by inspecting something like:
     ///    elementType.MakeArrayType(n).GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public).
     /// </summary>
-    abstract class ArrayFabricatedMethodInfo : MethodInfo    
+    abstract class ArrayFabricatedMethodInfo : LmrMethodInfoBase    
     {
         // The array type that this is declared on. We get the rank and element type from this.
         Type m_arrayType;
@@ -370,7 +370,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override MethodInfo MakeGenericMethod(params Type[] types)
+        internal override MethodInfo MakeGenericMethodCore(Type[] types)
         {
             // IsGenericMethodDefinition is false, so we can't make a generic method of it.
             Debug.Assert(!IsGenericMethodDefinition);
@@ -396,7 +396,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             }
         }
 
-        public override MethodBody GetMethodBody()
+        internal override MethodBody GetMethodBodyCore()
         {
             // Array members don't have any
             return null; 

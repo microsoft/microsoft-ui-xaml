@@ -20,10 +20,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
         }
 
         public string Name { get; private set; }
-        public XamlMemberInvoker Invoker { get; private set; }
         public XamlValueConverter<XamlDeferringLoader> DeferringLoader { get; internal set; }
         public XamlValueConverter<TypeConverter> TypeConverter { get; private set; }
-        public XamlValueConverter<ValueSerializer> ValueSerializer { get; private set; }
         public IList<XamlMember> DependsOn { get; private set; }
         public bool IsAmbient { get; private set; }
         public bool IsEvent { get; private set; }

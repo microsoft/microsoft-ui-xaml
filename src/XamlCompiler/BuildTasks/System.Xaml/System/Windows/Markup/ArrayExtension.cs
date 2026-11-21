@@ -103,37 +103,6 @@ namespace System.Windows.Markup
             get { return _arrayList; }
         }
 
-        /// <summary>
-        ///  Return an array that is sized to the number of objects added to the ArrayExtension.
-        /// </summary>
-        /// <param name="serviceProvider">Object that can provide services for the markup extension.</param>
-        /// <returns>
-        ///  The Array containing all the objects added to this extension.
-        /// </returns>
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
-            if (_arrayType == null)
-            {
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionArrayType));
-            }
-            
-            object retArray = null;
-
-            try
-            {
-                retArray = _arrayList.ToArray(_arrayType);
-            }
-            catch (System.InvalidCastException)
-            {
-                // If an element was added to the ArrayExtension that does not agree with the
-                // ArrayType, then an InvalidCastException will occur.  Generate a more
-                // meaningful error for this case.
-                throw new InvalidOperationException(SR.Get(SRID.MarkupExtensionArrayBadType, _arrayType.Name));
-            }
-
-            return retArray;
-        }
-
         private ArrayList _arrayList = new ArrayList();
         private Type      _arrayType;
 

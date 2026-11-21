@@ -89,3 +89,7 @@ The failing directory was then rebuilt using the msb.cmd wrapper to get it going
 WinDbgX then popped up and began debugging the build process which hosted GenXbf.dll.  As it ran the problem became
 obvious because an `ASSERT` statement was causing the process to failfast.  Closer inspection led to the root cause
 and _facepalms_ all around.
+
+Note that GenXbf.dll is now loaded by the XAML compiler process (`XamlCompiler.exe`), which MSBuild starts for each
+compilation pass: debug the child processes too (`windbg.exe -o MSBuild.exe ...`), or see
+[Deploying and Debugging](../design-notes/xamlcompiler.md#deploying-and-debugging) to debug the compiler directly.

@@ -62,4 +62,20 @@
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(Net8TargetingPackVersion)" />
     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" ILLinkPackVersion="$(Net8TargetingPackVersion)" />
   </ItemGroup>
+  <!--
+      The same pinning for .NET 10, which the XAML compiler targets (net10.0, published with Native AOT, so it also needs the
+      ILCompiler and runtime packs of that exact version on the feed). Scoped to .NET 10 only.
+   -->
+  <ItemGroup Condition="'$(Net10TargetingPackVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' == 'v10.0'">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App;Microsoft.AspNetCore.App;Microsoft.WindowsDesktop.App;Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms"
+                             TargetingPackVersion="$(Net10TargetingPackVersion)"
+                             LatestRuntimeFrameworkVersion="$(Net10TargetingPackVersion)"
+                             DefaultRuntimeFrameworkVersion="$(Net10TargetingPackVersion)" />
+    <KnownRuntimePack Update="Microsoft.NETCore.App;Microsoft.AspNetCore.App;Microsoft.WindowsDesktop.App"
+                      LatestRuntimeFrameworkVersion="$(Net10TargetingPackVersion)" />
+    <KnownAppHostPack Update="Microsoft.NETCore.App" AppHostPackVersion="$(Net10TargetingPackVersion)" />
+    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Crossgen2PackVersion="$(Net10TargetingPackVersion)" />
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(Net10TargetingPackVersion)" />
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" ILLinkPackVersion="$(Net10TargetingPackVersion)" />
+  </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ using System.Xaml.MS.Impl;
 using System.Xaml.Schema;
 using System.Windows.Markup;
 using MS.Internal.Xaml.Parser;
+using Microsoft.UI.Xaml.Markup.Compiler.Lmr;
 
 namespace System.Xaml
 {
@@ -84,12 +85,7 @@ namespace System.Xaml
         }        
 
         public XamlType(Type underlyingType, XamlSchemaContext schemaContext)
-            :this(underlyingType, schemaContext, null)
-        {
-        }
-
-        public XamlType(Type underlyingType, XamlSchemaContext schemaContext, XamlTypeInvoker invoker)
-            : this(null, underlyingType, schemaContext, invoker, null)
+            : this(null, underlyingType, schemaContext, null)
         {
         }
 
@@ -98,7 +94,7 @@ namespace System.Xaml
         /// Safe: Constructor is single-threaded, so idempotence is assured
         /// </SecurityNote>
         [SecuritySafeCritical]
-        internal XamlType(string alias, Type underlyingType, XamlSchemaContext schemaContext, XamlTypeInvoker invoker, TypeReflector reflector)
+        internal XamlType(string alias, Type underlyingType, XamlSchemaContext schemaContext, TypeReflector reflector)
         {
             if (underlyingType == null)
             {
@@ -113,7 +109,6 @@ namespace System.Xaml
             _schemaContext = schemaContext;
             _typeArguments = GetTypeArguments(underlyingType, schemaContext);
             _underlyingType.Value = underlyingType;
-            _reflector.Invoker = invoker;
         }
 
         public XamlType BaseType
@@ -126,19 +121,6 @@ namespace System.Xaml
                     _reflector.BaseType = LookupBaseType();
                 }
                 return _reflector.BaseType;
-            }
-        }
-
-        public XamlTypeInvoker Invoker
-        {
-            get
-            {
-                EnsureReflector();
-                if (_reflector.Invoker == null)
-                {
-                    _reflector.Invoker = LookupInvoker() ?? XamlTypeInvoker.UnknownInvoker;
-                }
-                return _reflector.Invoker;
             }
         }
 
@@ -317,19 +299,6 @@ namespace System.Xaml
                     _reflector.TypeConverter = LookupTypeConverter();
                 }
                 return _reflector.TypeConverter;
-            }
-        }
-
-        public XamlValueConverter<ValueSerializer> ValueSerializer
-        {
-            get
-            {
-                EnsureReflector();
-                if (!_reflector.ValueSerializerIsSet)
-                {
-                    _reflector.ValueSerializer = LookupValueSerializer();
-                }
-                return _reflector.ValueSerializer;
             }
         }
 
@@ -533,57 +502,6 @@ namespace System.Xaml
             }
         }
        
-        internal MethodInfo IsReadOnlyMethod
-        {
-            get
-            {
-                if (ItemType == null || UnderlyingType == null)
-                {
-                    return null;
-                }
-
-                Debug.Assert(_reflector != null, "_reflector should have been initialized by ItemType");
-                if (!_reflector.IsReadOnlyMethodIsSet)
-                {
-                    if (UnderlyingType != null && ItemType.UnderlyingType != null)
-                    {
-                        _reflector.IsReadOnlyMethod = CollectionReflector.
-                            GetIsReadOnlyMethod(UnderlyingType, ItemType.UnderlyingType);
-                    }
-                    else
-                    {
-                        _reflector.IsReadOnlyMethod = null;
-                    }
-                }
-                return _reflector.IsReadOnlyMethod;
-            }
-        }
-
-        internal EventHandler<XamlSetMarkupExtensionEventArgs> SetMarkupExtensionHandler
-        {
-            get
-            {
-                if (!_reflector.XamlSetMarkupExtensionHandlerIsSet)
-                {
-                    _reflector.XamlSetMarkupExtensionHandler = LookupSetMarkupExtensionHandler();
-                }
-                return _reflector.XamlSetMarkupExtensionHandler;
-            }
-        }
-
-        internal EventHandler<XamlSetTypeConverterEventArgs> SetTypeConverterHandler
-        {
-            get
-            {
-                EnsureReflector();
-                if (!_reflector.XamlSetTypeConverterHandlerIsSet)
-                {
-                    _reflector.XamlSetTypeConverterHandler = LookupSetTypeConverterHandler();
-                }
-                return _reflector.XamlSetTypeConverterHandler;
-            }
-        }
-
         internal MethodInfo AddMethod
         {
             get
@@ -599,23 +517,6 @@ namespace System.Xaml
                     _reflector.AddMethod = CollectionReflector.LookupAddMethod(UnderlyingType, collectionKind);
                 }
                 return _reflector.AddMethod;
-            }
-        }
-
-        internal MethodInfo GetEnumeratorMethod
-        {
-            get
-            {
-                if (GetCollectionKind() == XamlCollectionKind.None || UnderlyingType == null)
-                {
-                    return null;
-                }
-                Debug.Assert(_reflector != null, "_reflector should have been initialized by GetCollectionKind");
-                if (!_reflector.GetEnumeratorMethodIsSet)
-                {
-                    _reflector.GetEnumeratorMethod = CollectionReflector.GetEnumeratorMethod(UnderlyingType);
-                }
-                return _reflector.GetEnumeratorMethod;
             }
         }
 
@@ -663,7 +564,7 @@ namespace System.Xaml
             }
             if (IsPublic)
             {
-                return UnderlyingType.GetConstructors();
+                return UnderlyingType.GetConstructorsLmr();
             }
             return GetPublicAndInternalConstructors();
         }
@@ -792,7 +693,7 @@ namespace System.Xaml
                 // Value types have built-in default constructor
                 return false;
             }
-            ConstructorInfo defaultCtor = underlyingType.GetConstructor(ConstructorBindingFlags, null, Type.EmptyTypes, null);
+            ConstructorInfo defaultCtor = underlyingType.GetConstructorLmr(ConstructorBindingFlags, null, Type.EmptyTypes, null);
             return (defaultCtor == null) || !TypeReflector.IsPublicOrInternal(defaultCtor);
         }
 
@@ -914,11 +815,6 @@ namespace System.Xaml
                 return true;
             }
             return false;
-        }
-
-        protected virtual XamlTypeInvoker LookupInvoker()
-        {
-            return (UnderlyingType != null) ? new XamlTypeInvoker(this) : null;
         }
 
         protected virtual bool LookupIsMarkupExtension()
@@ -1249,46 +1145,6 @@ namespace System.Xaml
             return null;
         }
 
-        protected virtual XamlValueConverter<ValueSerializer> LookupValueSerializer()
-        {
-            if (AreAttributesAvailable)
-            {
-                Debug.Assert(_reflector != null, "_reflector should have been initialized by AreAttributesAvailable");
-                Type converterType = _reflector.GetAttributeType(typeof(ValueSerializerAttribute));
-                if (converterType != null)
-                {
-                    return SchemaContext.GetValueConverter<ValueSerializer>(converterType, null);
-                }
-            }
-
-           if (BaseType != null)
-            {
-                XamlValueConverter<ValueSerializer> result = BaseType.ValueSerializer;
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-
-            Type underlyingType = UnderlyingType;
-            if (underlyingType != null)
-            {
-                XamlValueConverter<ValueSerializer> result = BuiltInValueConverter.GetValueSerializer(underlyingType);
-                if (result != null)
-                {
-                    return result;
-                }
-                if (IsNullableGeneric())
-                {
-                    Type[] typeArgs = underlyingType.GetGenericArguments();
-                    Debug.Assert(typeArgs.Length == 1);
-                    XamlType innerXamlType = SchemaContext.GetXamlType(typeArgs[0]);
-                    return innerXamlType.ValueSerializer;
-                }
-            }
-            return null;
-        }
-
         #region TODO, 673231, make these publicly accessible (e.g. via APs)
 
         protected virtual bool LookupTrimSurroundingWhitespace()
@@ -1324,50 +1180,6 @@ namespace System.Xaml
                 return BaseType.IsUsableDuringInitialization;
             }
             return GetDefaultFlag(BoolTypeBits.UsableDuringInitialization);
-        }
-
-        protected virtual EventHandler<XamlSetMarkupExtensionEventArgs> LookupSetMarkupExtensionHandler()
-        {
-            if (UnderlyingType != null)
-            {
-                string methodName;
-                if (TryGetAttributeString(typeof(XamlSetMarkupExtensionAttribute), out methodName))
-                {
-                    if (string.IsNullOrEmpty(methodName))
-                    {
-                        return null;
-                    }
-                    return (EventHandler<XamlSetMarkupExtensionEventArgs>)SafeReflectionInvoker.CreateDelegate(
-                        typeof(EventHandler<XamlSetMarkupExtensionEventArgs>), UnderlyingType, methodName);
-                }
-            }
-            if (BaseType != null)
-            {
-                return BaseType.SetMarkupExtensionHandler;
-            }
-            return null;
-        }
-
-        protected virtual EventHandler<XamlSetTypeConverterEventArgs> LookupSetTypeConverterHandler()
-        {
-            if (UnderlyingType != null)
-            {
-                string methodName;
-                if (TryGetAttributeString(typeof(XamlSetTypeConverterAttribute), out methodName))
-                {
-                    if (string.IsNullOrEmpty(methodName))
-                    {
-                        return null;
-                    }
-                    return (EventHandler<XamlSetTypeConverterEventArgs>)SafeReflectionInvoker.CreateDelegate(
-                        typeof(EventHandler<XamlSetTypeConverterEventArgs>), UnderlyingType, methodName);
-                }
-            }
-            if (BaseType != null)
-            {
-                return BaseType.SetTypeConverterHandler;
-            }
-            return null;
         }
 
         #endregion
@@ -1504,7 +1316,7 @@ namespace System.Xaml
 
         private IEnumerable<ConstructorInfo> GetPublicAndInternalConstructors()
         {
-            foreach (ConstructorInfo ctor in UnderlyingType.GetConstructors(ConstructorBindingFlags))
+            foreach (ConstructorInfo ctor in UnderlyingType.GetConstructorsLmr(ConstructorBindingFlags))
             {
                 if (TypeReflector.IsPublicOrInternal(ctor))
                 {

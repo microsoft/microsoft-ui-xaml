@@ -60,7 +60,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             get
             {
-                string apiInformationHash = ApiInformation == null ? "" : "_" + ((uint)ApiInformation.UniqueName.GetHashCode()).ToString();
+                string apiInformationHash = ApiInformation == null ? "" : "_" + ((uint)StableStringHash.Compute(ApiInformation.UniqueName)).ToString();
                 if (string.IsNullOrEmpty(Parent?.CodeName))
                 {
                     return UniqueName + apiInformationHash;

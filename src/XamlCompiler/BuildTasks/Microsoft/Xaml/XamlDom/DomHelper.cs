@@ -148,22 +148,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XamlDom
             return domObject.GetMemberNode(aliasMember);
         }
 
-        static public string SaveToString(XamlDomObject rootObjectNode)
-        {
-            XamlSchemaContext schemaContext = rootObjectNode.Type.SchemaContext;
-            XamlDomReader domReader = new XamlDomReader(rootObjectNode, schemaContext);
-
-            StringWriter stringWriter = new StringWriter();
-            using (XmlTextWriter xmlWriter = new XmlTextWriter(stringWriter))
-            {
-                xmlWriter.Formatting = Formatting.Indented;
-                xmlWriter.Indentation = 2;
-
-                XamlXmlWriter xamlXmlWriter = new XamlXmlWriter(xmlWriter, schemaContext);
-                XamlServices.Transform(domReader, xamlXmlWriter);
-            }
-            return stringWriter.ToString();
-        }
 
         // This assumes we're in Pass 1 if the caller doesn't know,
         // so that we don't try to resolve types when they may not be resolvable.

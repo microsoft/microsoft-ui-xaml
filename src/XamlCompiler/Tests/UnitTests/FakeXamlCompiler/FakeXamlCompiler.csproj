@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<!--
+  A stand-in for XamlCompiler.exe, which the CompileXaml task tests (..\TaskTests.cs) run to check how the task drives the compiler
+  process: its behavior is selected by the FAKE_XAMLCOMPILER_SCENARIO environment variable, see Program.cs.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>FakeXamlCompiler</AssemblyName>
+    <RootNamespace>FakeXamlCompiler</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Only staged into the unit test payload (see ..\XamlCompilerUnitTests.csproj) -->
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

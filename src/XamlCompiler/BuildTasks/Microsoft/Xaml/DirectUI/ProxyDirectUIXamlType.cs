@@ -68,11 +68,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return _metadata.IsConstructible;
         }
 
-        protected override XamlTypeInvoker LookupInvoker()
-        {
-            return null;
-        }
-
         protected override bool LookupIsMarkupExtension()
         {
             return _metadata.IsMarkupExtension;
@@ -192,11 +187,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             return null;
         }
 
-        protected override XamlValueConverter<ValueSerializer> LookupValueSerializer()
-        {
-            return null;
-        }
-
         // Get LMR types at runtime
         // cannot use typeof().
         //
@@ -207,7 +197,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             foreach (XamlTypeUniverse typeUniverse in schema.DirectUISystem.XamlTypeUniverses)
             {
                 Assembly asm = typeUniverse.GetXamlProxyAssembly();
-                type = asm.GetType(typeName);
+                type = asm.GetTypeLmr(typeName);
                 if (type != null)
                 {
                     break;
