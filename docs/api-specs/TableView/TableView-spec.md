@@ -1214,8 +1214,9 @@ apart.
   land; it is hidden while the drop would leave the column where it is. Releasing drops the column
   there. A press that never passes the threshold is still a click, so it sorts as before.
 - **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
-  capture, unloading the table, or a change to `Columns` or to a column's `Visibility` or
-  `FrozenEdge` cancels without changing anything.
+  capture, unloading the table, a horizontal scroll or pan of the table, replacing `Columns`, or a
+  change to `Columns` or to a column's `Visibility` or `FrozenEdge` cancels without changing anything.
+  A drag does not start while the body is being panned.
 - **Coexistence.** A press on the resize gripper or on interactive header content (a `Button`, a
   `CheckBox`) is theirs and never starts a reorder, and a drag never sorts the column it moved. The
   right button and press-and-hold open the context menu as before. While reorder is on, the header
@@ -1223,7 +1224,8 @@ apart.
 - **Frozen columns.** A column never crosses the frozen boundary: a frozen column can be reordered
   only among the frozen columns, and a scrolling column only among the scrolling ones. A move that
   would change any column's frozen state (including bringing a non-prefix `FrozenEdge="Leading"`
-  column into the frozen prefix) is not offered, and the drop line stops at the boundary. Only
+  column into the frozen prefix) is not offered, and the drop line stops at the boundary. When the
+  table is scrolled, a scrolling column hidden under the frozen band is not a drop target. Only
   `Leading` columns freeze, so a `Trailing` column moves as a scrolling column.
 - **Collapsed columns** keep their place in `Columns` and are never a drop target. A moved column is
   inserted directly before the visible column it is dropped in front of, or directly after the last
@@ -1238,6 +1240,8 @@ apart.
   order is unchanged. `Sorting`/`Sorted` are not raised.
 - **Editing.** While a cell edit is open, a drag does not start and the keys move nothing; the edit
   is never committed implicitly. Commit or cancel the edit first.
+- **Focus.** A focused body cell keeps focus when its column moves, and the body's column cursor stays
+  on its column.
 - **High Contrast.** The line uses `SystemColorHighlightColor`.
 - **Events.** `ColumnReordered` is raised once, after the move and its announcement; if a handler
   throws, the move stays applied. A gesture that drops a column back where it was raises nothing.
@@ -1273,15 +1277,11 @@ The chord does not collide with existing header keys: bare arrows move between h
 
 Not in this proposal; each can be added later without changing the API above.
 
-- **`ColumnReordering`** (cancelable, before the move) and its re-entrancy rules. `ColumnReordered`
-  covers persistence; an app that must veto a position can move the column back in code.
-- **Per-column `TableViewColumn.CanReorder`.** Pinning a column is covered by freezing it.
 - **Drag visuals beyond the line:** a header snapshot following the pointer and dimming the source
   header.
 - **Auto-scroll** while dragging near the ends of a wide table. Until then a column moves within the
   visible headers per drag, and the keys reach any position.
 - **Committing an open edit** on a move. A move is refused while editing instead.
-- **Keeping the body's column cursor and focused cell** on their column across a move.
 - **Pen- and touch-specific handling** (barrel button, press-and-hold arbitration beyond the
   framework's gesture recognizer).
 - **`MoveColumn(column, newIndex)`** and **"Move left/right" menu commands** on
@@ -1300,6 +1300,9 @@ Not in this proposal; each can be added later without changing the API above.
 4. **Template part.** The drop line is an optional part, `PART_ColumnReorderIndicator`. Should it be a
    documented template part, or should the control draw it without exposing a name? A retemplated
    table without it still reorders, with no line.
+5. **Cancelability and per-column locking (API review, #12387 Q5).** Does v1 need a cancelable
+   `ColumnReordering` event (with its re-entrancy rules) or a per-column `TableViewColumn.CanReorder`?
+   Neither is in this proposal; `ColumnReordered` is raised after the move and is not a veto.
 
 ## TableViewTextColumn class
 

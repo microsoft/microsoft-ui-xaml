@@ -409,6 +409,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",
             "TableViewColumnHeaderHelpTextFormat",
+            "TableViewColumnMoveHelpText",
             "TableViewColumnMoved",
             "TableViewColumnWidthChanged",
             "TableViewGroupHeaderCountFormat",
@@ -445,6 +446,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             "TableViewCellLocalizedControlType",
             "TableViewCellNameFormat",
             "TableViewCellTextSeparator",
+            "TableViewColumnMoveHelpText",
             "TableViewColumnMoved",
             "TableViewGroupHeaderNameFormat",
         };

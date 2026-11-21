@@ -905,30 +905,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, true))
                 {
+                    Verify.Fail("The CanUserReorderColumns checkbox was not found.");
                     return;
                 }
-
-                UIObject tableView = GetTable(BasicTable);
-                if (tableView == null)
+                try
                 {
-                    return;
+                    UIObject tableView = GetTable(BasicTable);
+                    if (tableView == null)
+                    {
+                        Verify.Fail("The table was not found.");
+                        return;
+                    }
+
+                    var before = HeaderOrder(tableView);
+                    Log.Comment("Before: " + string.Join(", ", before));
+                    Verify.AreEqual("Age", before[1], "Precondition: Age is the second column.");
+                    Verify.AreEqual("ReadOnlyCity", before[2], "Precondition: ReadOnlyCity is the third column.");
+                    string firstRowBefore = FirstRowCells(tableView);
+
+                    // Drop on the trailing half of ReadOnlyCity: Age lands after it.
+                    DragHeader(tableView, "Age", "ReadOnlyCity", 0.75);
+                    var after = HeaderOrder(tableView);
+                    Log.Comment("After the drag: " + string.Join(", ", after));
+                    Verify.AreEqual("ReadOnlyCity", after[1], "The dragged column must leave its position.");
+                    Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
+                    Verify.AreEqual(firstRowBefore, FirstRowCells(tableView), "A drag must not also sort the (sortable) column it moved.");
                 }
-
-                var before = HeaderOrder(tableView);
-                Log.Comment("Before: " + string.Join(", ", before));
-                Verify.AreEqual("Age", before[1], "Precondition: Age is the second column.");
-                Verify.AreEqual("ReadOnlyCity", before[2], "Precondition: ReadOnlyCity is the third column.");
-                string firstRowBefore = FirstRowCells(tableView);
-
-                // Drop on the trailing half of ReadOnlyCity: Age lands after it.
-                DragHeader(tableView, "Age", "ReadOnlyCity", 0.75);
-                var after = HeaderOrder(tableView);
-                Log.Comment("After the drag: " + string.Join(", ", after));
-                Verify.AreEqual("ReadOnlyCity", after[1], "The dragged column must leave its position.");
-                Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
-                Verify.AreEqual(firstRowBefore, FirstRowCells(tableView), "A drag must not also sort the (sortable) column it moved.");
-
-                SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+                finally
+                {
+                    SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+                }
             }
         }
 
@@ -940,27 +946,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, true))
                 {
+                    Verify.Fail("The CanUserReorderColumns checkbox was not found.");
                     return;
                 }
-
-                UIObject tableView = GetTable(BasicTable);
-                UIObject age = tableView == null ? null : FindColumnHeader(tableView, "Age");
-                UIObject city = tableView == null ? null : FindColumnHeader(tableView, "ReadOnlyCity");
-                if (age == null || city == null)
+                try
                 {
-                    Verify.Fail("The Age or ReadOnlyCity header was not found.");
-                    return;
+                    UIObject tableView = GetTable(BasicTable);
+                    UIObject age = tableView == null ? null : FindColumnHeader(tableView, "Age");
+                    UIObject city = tableView == null ? null : FindColumnHeader(tableView, "ReadOnlyCity");
+                    if (age == null || city == null)
+                    {
+                        Verify.Fail("The Age or ReadOnlyCity header was not found.");
+                        return;
+                    }
+
+                    var target = city.BoundingRectangle;
+                    InputHelper.Pan(age, CentreOf(age), new Point(target.Left + (target.Width * 3 / 4), target.Top + (target.Height / 2)),
+                        panAcceleration: 0.0f, dragDuration: 600);
+                    var after = HeaderOrder(tableView);
+                    Log.Comment("After the touch drag: " + string.Join(", ", after));
+                    Verify.AreEqual("ReadOnlyCity", after[1], "The touch-dragged column must leave its position.");
+                    Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
                 }
-
-                var target = city.BoundingRectangle;
-                InputHelper.Pan(age, CentreOf(age), new Point(target.Left + (target.Width * 3 / 4), target.Top + (target.Height / 2)),
-                    panAcceleration: 0.0f, dragDuration: 600);
-                var after = HeaderOrder(tableView);
-                Log.Comment("After the touch drag: " + string.Join(", ", after));
-                Verify.AreEqual("ReadOnlyCity", after[1], "The touch-dragged column must leave its position.");
-                Verify.AreEqual("Age", after[2], "Age must land directly after ReadOnlyCity.");
-
-                SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+                finally
+                {
+                    SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+                }
             }
         }
 

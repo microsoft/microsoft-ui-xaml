@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -74,10 +75,14 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private const string ColumnOrderSetting = "TaskManagerColumns";
 
     // <snippet>
+    private Task _columnOrderSave = Task.CompletedTask;
+
     // Keyed by header text, which this sample does not localize; a real app keys on something stable.
     private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
     {
-        AppSettings.SaveColumnOrder(ColumnOrderSetting, sender.Columns.Select(c => c.Header as string));
+        // Read the order on the UI thread; write the file off it, one save after another.
+        var order = sender.Columns.Select(c => c.Header as string).ToList();
+        _columnOrderSave = _columnOrderSave.ContinueWith(_ => AppSettings.SaveColumnOrder(ColumnOrderSetting, order), TaskScheduler.Default);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1}; order saved", args.Column.Header, args.NewIndex + 1));
     }
 
