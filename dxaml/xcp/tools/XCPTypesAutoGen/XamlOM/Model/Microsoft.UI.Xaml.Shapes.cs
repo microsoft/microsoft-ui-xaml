@@ -168,7 +168,7 @@ namespace Microsoft.UI.Xaml.Shapes
 
     [NativeName("CLine")]
     [Guids(ClassGuid = "d0d8a3d1-7559-4055-b841-4dd9684e2438")]
-    public sealed class Line
+    public class Line
      : Microsoft.UI.Xaml.Shapes.Shape
     {
         [PropertyFlags(AffectsMeasure = true)]
