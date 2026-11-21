@@ -3004,10 +3004,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass RepeatButton
+    unsealed runtimeclass RepeatButton
         : Microsoft.UI.Xaml.Controls.Primitives.ButtonBase
     {
-        RepeatButton();
+        [method_name("CreateInstance")] RepeatButton();
         Int32 Delay;
         Int32 Interval;
         static Microsoft.UI.Xaml.DependencyProperty DelayProperty{ get; };

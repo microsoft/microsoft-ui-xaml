@@ -271,7 +271,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "bf6b7629-ce9e-436c-a3c5-7b39c238ca46")]
-    public sealed class RepeatButton
+    public class RepeatButton
      : Microsoft.UI.Xaml.Controls.Primitives.ButtonBase
     {
         public Windows.Foundation.Int32 Delay
