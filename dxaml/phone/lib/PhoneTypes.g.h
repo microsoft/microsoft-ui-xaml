@@ -3078,11 +3078,43 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Event Sources
     };
+    class PivotPanelFactory
+        :
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotPanelFactory>
+    {
+
+    friend class PivotPanelGenerated;
+    friend class PivotPanel;
+
+    public:
+         _Check_return_ HRESULT RuntimeClassInitialize();
+         static _Check_return_ HRESULT EnsureProperties();
+         static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotPanel** ppInstance);
+
+        // Properties.
+
+        // Dependency properties.
+
+        // Attached properties.
+
+        // Static methods.
+
+    private:
+
+        // Properties' statics.
+
+        // Properties' initializers.
+
+    };
     
     class __declspec(novtable) PivotPanelGenerated
         : public PivotPanelRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotPanel;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::PivotPanel,
+            ABI::Microsoft::UI::Xaml::Controls::Primitives::IPivotPanel>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_Primitives_PivotPanel, TrustLevel::BaseTrust);
 
     public:
@@ -3155,8 +3187,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT get_AreHorizontalSnapPointsRegularImpl(_Out_ BOOLEAN* pValue) = 0;
         virtual _Check_return_ HRESULT get_AreVerticalSnapPointsRegularImpl(_Out_ BOOLEAN* pValue) = 0;
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
         Private::TrackerEventSource<ABI::Windows::Foundation::IEventHandler<IInspectable*>> m_HorizontalSnapPointsChangedEventSource;
