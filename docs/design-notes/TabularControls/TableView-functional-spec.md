@@ -35,6 +35,11 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 ### Core control & data model
 - Explicit column model (no auto-generation). — **PR2**
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
+- Under a filter and/or sort (no grouping or hierarchy), a single-item `Add`, `Remove` or `Replace`
+  runs the filter and sort key for that item only and splices it into the rows (source order among
+  kept rows, or its sorted slot) without a reset. The first change after a load, any change after an
+  item edit the projection has not seen, and any change while an item cannot report edits re-filter
+  every row; a filtered table that never changes keeps no extra state. — **shipped**
 - Read-only by default (`IsReadOnly` = `true`). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**

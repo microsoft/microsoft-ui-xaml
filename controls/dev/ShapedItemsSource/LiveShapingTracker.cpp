@@ -16,23 +16,28 @@ void const* LiveShapingTracker::Identity(winrt::IInspectable const& item)
     return winrt::get_abi(unknown);
 }
 
-void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
+bool LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
 {
-    if (!item || !m_changeHandler)
+    if (!item)
     {
-        return;
+        return true;
+    }
+
+    if (!m_changeHandler)
+    {
+        return false;
     }
 
     auto const observable = item.try_as<winrt::Microsoft::UI::Xaml::Data::INotifyPropertyChanged>();
     if (!observable)
     {
-        return;
+        return false;
     }
 
     auto const identity = Identity(item);
     if (!identity)
     {
-        return;
+        return false;
     }
 
     if (auto const existing = m_subscriptions.find(identity); existing != m_subscriptions.end())
@@ -41,7 +46,7 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
         // resolving to a different object is stale. Strongly held entries cannot be recycled.
         if (!existing->second.CanResolveItem || existing->second.Item.get() == item)
         {
-            return;
+            return true;
         }
         // Out of the map before revoking: a revoke calls into the item, which is app code.
         m_subscriptions.extract(existing).mapped().Revoke();
@@ -72,6 +77,7 @@ void LiveShapingTracker::Subscribe(winrt::IInspectable const& item)
         // leaves the argument untouched when it does not insert.
         subscription.Revoke();
     }
+    return true;
 }
 
 void LiveShapingTracker::Subscription::Revoke() noexcept
