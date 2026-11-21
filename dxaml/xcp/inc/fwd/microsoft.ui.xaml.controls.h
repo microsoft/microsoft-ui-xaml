@@ -596,6 +596,7 @@ namespace Controls {
     interface IItemsPanelTemplate;
     interface IItemsPickedEventArgs;
     interface IItemsPresenter;
+    interface IItemsPresenterFactory;
     interface IItemsPresenter2;
     interface IItemsPresenterStatics;
     interface IItemsPresenterStatics2;
