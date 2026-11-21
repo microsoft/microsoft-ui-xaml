@@ -2376,14 +2376,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // A reference-type group key, used to prove the groupIdentitySelector overload.
-    internal sealed class Department
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class Department
     {
         public string Name { get; set; }
 
         public override string ToString() => Name;
     }
 
-    internal sealed class ShapedPerson : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class ShapedPerson : INotifyPropertyChanged
     {
         private string m_name;
         private string m_role;
