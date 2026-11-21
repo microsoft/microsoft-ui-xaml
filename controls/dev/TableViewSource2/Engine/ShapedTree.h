@@ -223,6 +223,16 @@ public:
     // For a bottom-level group this is the size of its header band (R3).
     uint32_t ShownDescendantCount(ShapedNode* node) const;
 
+    // Set and child-count reads (SizeOfSet, PositionInSet, a row's child count, the expander)
+    // go through these, not ShapedChildCount / IndexInParent: between the Unlink and the Link of a
+    // source move a source-owned list already holds the moving node (m_unlinked), which is not in
+    // the tree yet (drift #90). O(1).
+    // node's shaped children, not counting m_unlinked.
+    uint32_t LinkedChildCount(ShapedNode* node) const noexcept;
+    // node's 0-based position among its shaped siblings, not counting m_unlinked. Precondition:
+    // node is linked and is not m_unlinked.
+    uint32_t PositionInParent(ShapedNode* node) const noexcept;
+
     // ---- Structure (engine write phase only) ------------------------------------------------
     //
     // noexcept: the engine's write phase cannot throw. Vector capacity is reserved in its compute
@@ -251,6 +261,10 @@ public:
     // for a top-level record), because node's SourceRecord::Parent and its place in a
     // source-owned list may already be the new ones. The two-argument form calls this with
     // node->ShapedParent() and node->IndexInParent.
+    // When SourceTable has already put node into a source-owned list (a move within it, or a
+    // reparent), node is m_unlinked until its Link (drift #90): that list is renumbered and marked
+    // stale, its ChildRows counts node as 0 rows, and node and its subtree read as not shown, so
+    // every read from a listener inside OnRowsRemoved sees the tree without node.
     void Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept;
 
     // Bracket a rebuild. BeginReset raises OnRowsResetting before anything is swapped. The engine
@@ -353,7 +367,7 @@ private:
     static void Renumber(ShapedNode* parent, uint32_t index) noexcept;
 
     // node->ChildRows.Build over its shaped children, entry j = 1 + VisibleDescendantCount of
-    // child j, clearing the stale bit. O(k).
+    // child j (0 for m_unlinked), clearing the stale bit. O(k).
     void RebuildChildRows(ShapedNode* node) const;
 
     // node->ChildRows, rebuilt first if stale (P7). Every read of a list's ChildRows goes through
@@ -394,6 +408,13 @@ private:
 
     // Not owned; ShapingManager.
     IShapedRowsListener* m_listener{ nullptr };
+
+    // The record between its Unlink and its Link while a source-owned list already holds it
+    // (drift #90), else null. At most one: the engine applies one source change at a time. Cleared
+    // by Link, EndReset and Clear. Counted as 0 rows by RebuildChildRows, skipped by
+    // NextShown / PreviousShown, LinkedChildCount, PositionInParent and ExpandSubtree, and
+    // neither it nor its subtree is shown, indexed or linked.
+    ShapedNode* m_unlinked{ nullptr };
 
     // Last GetAt answer (decided, P3: a single cursor, invalidated on any tree or count change rather
     // than adjusted). Mutable: GetAt is a const read. m_cursorNode null means empty.

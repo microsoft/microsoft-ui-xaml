@@ -72,7 +72,7 @@ FenwickTree::Hit FenwickTree::Find(uint32_t r) const noexcept
 
     // Descend from the largest power of two within Size(): take a node whenever the rows it covers
     // all lie before r. pos ends as the number of children wholly before r, i.e. the 0-based child
-    // that covers r, since every entry is at least 1.
+    // that covers r. A 0 entry (ShapedTree's unlinked node) is passed over, never returned.
     uint32_t const size = Size();
     uint32_t pos = 0;
     uint32_t remaining = r;

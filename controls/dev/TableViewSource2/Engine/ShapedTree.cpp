@@ -150,7 +150,7 @@ std::optional<uint32_t> ShapedTree::IndexOf(ShapedNode* node) const
     for (auto n = node; n != &m_root;)
     {
         auto const parent = n->ShapedParent();
-        if (!parent)
+        if (n == m_unlinked || !parent)
         {
             return std::nullopt;
         }
@@ -170,12 +170,20 @@ std::optional<uint32_t> ShapedTree::IndexOf(ShapedNode* node) const
 
 bool ShapedTree::IsShown(ShapedNode* node) const
 {
-    for (auto p = node->ShapedParent(); p != &m_root; p = p->ShapedParent())
+    if (node == &m_root)
     {
-        if (!p || !IsExpanded(p))
+        return false;
+    }
+
+    for (auto n = node; n != &m_root;)
+    {
+        auto const parent = n->ShapedParent();
+        if (n == m_unlinked || !parent || (parent != &m_root && !IsExpanded(parent)))
         {
             return false;
         }
+
+        n = parent;
     }
 
     return true;
@@ -202,8 +210,30 @@ uint32_t ShapedTree::ShownDescendantCount(ShapedNode* node) const
     return node->VisibleDescendantCount;
 }
 
+uint32_t ShapedTree::LinkedChildCount(ShapedNode* node) const noexcept
+{
+    auto const count = node->ShapedChildCount();
+    return m_unlinked && m_unlinked->ShapedParent() == node ? count - 1 : count;
+}
+
+uint32_t ShapedTree::PositionInParent(ShapedNode* node) const noexcept
+{
+    MUX_ASSERT(node != m_unlinked);
+
+    // Unlink renumbered the list holding m_unlinked, so both positions are current.
+    auto const index = node->IndexInParent;
+    bool const after = m_unlinked && m_unlinked->ShapedParent() == node->ShapedParent() && m_unlinked->IndexInParent < index;
+    return after ? index - 1 : index;
+}
+
 void ShapedTree::Link(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept
 {
+    MUX_ASSERT(!m_unlinked || m_unlinked == node);
+    if (m_unlinked == node)
+    {
+        m_unlinked = nullptr;
+    }
+
     if (IsEngineOwnedList(parent))
     {
         // Capacity was reserved in the engine's compute phase (E4), so the insert cannot throw.
@@ -313,6 +343,20 @@ void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bo
     parent->ChildRows.MarkStale();
     PropagateCount(parent, -static_cast<int64_t>(span));
 
+    // Drift #90: SourceTable already put node into a source-owned list (moved within parent's, or
+    // reparented). Until its Link, node is m_unlinked: 0 rows in that list and not shown. The
+    // list is renumbered whole (a move to an earlier slot shifted siblings before index) and
+    // marked stale (its ChildRows may predate node's arrival, or was just rebuilt above with it).
+    // A group or a top-level record always sits in an engine-owned list, so only a nested record
+    // can be here; a removed record has no parent.
+    if (auto const now = node->IsGroup() ? nullptr : node->ShapedParent(); now && !IsEngineOwnedList(now))
+    {
+        MUX_ASSERT(!m_unlinked);
+        m_unlinked = node;
+        Renumber(now, 0);
+        now->ChildRows.MarkStale();
+    }
+
     // F4: a dropped group's expansion must not outlive it (its identity can be reused).
     if (!isMove)
     {
@@ -355,6 +399,9 @@ void ShapedTree::EndReset(uint16_t groupLevelCount, GroupMap const& liveGroups, 
     }
 
     m_groupLevelCount = groupLevelCount;
+
+    // Defensive: a rebuilt tree has no pending Link (#90).
+    m_unlinked = nullptr;
     ComputeSubtreeCounts(&m_root);
     InvalidateCursor();
 
@@ -377,7 +424,8 @@ bool ShapedTree::Expand(ShapedNode* node)
     ApplyCountDelta(node, count);
     InvalidateCursor();
 
-    if (IsShown(node))
+    // Count can be 0 while node's only child is m_unlinked (#90); its Link raises the row.
+    if (IsShown(node) && count > 0)
     {
         RaiseInserted(FlatIndexOf(node) + 1, count, false);
     }
@@ -542,6 +590,7 @@ void ShapedTree::Clear() noexcept
     m_groupExpansion.Clear();
     InvalidateCursor();
     m_listener = nullptr;
+    m_unlinked = nullptr;
 }
 
 void ShapedTree::SetExpanded(ShapedNode* node, bool expanded)
@@ -576,7 +625,7 @@ bool ShapedTree::IsLinked(ShapedNode* node) const noexcept
     for (auto n = node; n != &m_root;)
     {
         auto const parent = n->ShapedParent();
-        if (!parent || n->IndexInParent >= parent->ShapedChildCount() || parent->ShapedChildAt(n->IndexInParent) != n)
+        if (n == m_unlinked || !parent || n->IndexInParent >= parent->ShapedChildCount() || parent->ShapedChildAt(n->IndexInParent) != n)
         {
             return false;
         }
@@ -620,7 +669,10 @@ bool ShapedTree::ExpandSubtreeFrom(ShapedNode* node)
         {
             for (uint32_t j = top->ShapedChildCount(); j > 0; --j)
             {
-                pending.push_back(top->ShapedChildAt(j - 1));
+                if (auto const child = top->ShapedChildAt(j - 1); child != m_unlinked)
+                {
+                    pending.push_back(child);
+                }
             }
 
             continue;
@@ -634,7 +686,10 @@ bool ShapedTree::ExpandSubtreeFrom(ShapedNode* node)
             auto const n = branch[i];
             for (uint32_t j = 0, count = n->ShapedChildCount(); j < count; ++j)
             {
-                branch.push_back(n->ShapedChildAt(j));
+                if (auto const child = n->ShapedChildAt(j); child != m_unlinked)
+                {
+                    branch.push_back(child);
+                }
             }
         }
 
@@ -714,7 +769,10 @@ void ShapedTree::Renumber(ShapedNode* parent, uint32_t index) noexcept
 
 void ShapedTree::RebuildChildRows(ShapedNode* node) const
 {
-    node->ChildRows.Build(node->ShapedChildCount(), [node](uint32_t j) { return 1 + node->ShapedChildAt(j)->VisibleDescendantCount; });
+    node->ChildRows.Build(node->ShapedChildCount(), [this, node](uint32_t j) {
+        auto const child = node->ShapedChildAt(j);
+        return child == m_unlinked ? 0u : 1 + child->VisibleDescendantCount;
+    });
 }
 
 FenwickTree& ShapedTree::CurrentChildRows(ShapedNode* node) const
@@ -769,18 +827,32 @@ void ShapedTree::ComputeSubtreeCounts(ShapedNode* node) noexcept
 
 ShapedNode* ShapedTree::NextShown(ShapedNode* node) const noexcept
 {
-    if (node->ShapedChildCount() > 0 && IsExpanded(node))
+    // m_unlinked is skipped wherever it sits (#90).
+    auto const firstFrom = [this](ShapedNode* parent, uint32_t j) noexcept -> ShapedNode* {
+        for (auto const count = parent->ShapedChildCount(); j < count; ++j)
+        {
+            if (auto const child = parent->ShapedChildAt(j); child != m_unlinked)
+            {
+                return child;
+            }
+        }
+        return nullptr;
+    };
+
+    if (IsExpanded(node))
     {
-        return node->ShapedChildAt(0);
+        if (auto const child = firstFrom(node, 0))
+        {
+            return child;
+        }
     }
 
     for (auto n = node; n != &m_root;)
     {
         auto const parent = n->ShapedParent();
-        auto const next = n->IndexInParent + 1;
-        if (next < parent->ShapedChildCount())
+        if (auto const sibling = firstFrom(parent, n->IndexInParent + 1))
         {
-            return parent->ShapedChildAt(next);
+            return sibling;
         }
 
         n = parent;
@@ -791,16 +863,34 @@ ShapedNode* ShapedTree::NextShown(ShapedNode* node) const noexcept
 
 ShapedNode* ShapedTree::PreviousShown(ShapedNode* node) const noexcept
 {
+    // m_unlinked is skipped wherever it sits (#90).
+    auto const lastBefore = [this](ShapedNode* parent, uint32_t j) noexcept -> ShapedNode* {
+        for (; j > 0; --j)
+        {
+            if (auto const child = parent->ShapedChildAt(j - 1); child != m_unlinked)
+            {
+                return child;
+            }
+        }
+        return nullptr;
+    };
+
     auto const parent = node->ShapedParent();
-    if (node->IndexInParent == 0)
+    auto n = lastBefore(parent, node->IndexInParent);
+    if (!n)
     {
         return parent == &m_root ? nullptr : parent;
     }
 
-    auto n = parent->ShapedChildAt(node->IndexInParent - 1);
-    while (n->ShapedChildCount() > 0 && IsExpanded(n))
+    while (IsExpanded(n))
     {
-        n = n->ShapedChildAt(n->ShapedChildCount() - 1);
+        auto const last = lastBefore(n, n->ShapedChildCount());
+        if (!last)
+        {
+            break;
+        }
+
+        n = last;
     }
 
     return n;
