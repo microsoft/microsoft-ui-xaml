@@ -16,6 +16,33 @@
 #include <XamlSchemaContext.h>
 #include <XbfVersioning.h>
 #include <XStringBuilder.h>
+#include <XamlBinaryFormatSubReader2.h>
+
+_Check_return_ HRESULT StyleCustomRuntimeData::HasConnectionId(
+    _In_ XamlBinaryFormatSubReader2* reader,
+    _Out_ bool* hasConnectionId) const
+{
+    *hasConnectionId = false;
+    for (unsigned int index = 0; index < GetSetterCount(); ++index)
+    {
+        if (SetterHasObjectValue(index) || SetterHasTokenForSelf(index))
+        {
+            const auto token = GetSetterValueToken(index);
+            if (IsTokenForIgnoredConditionalObject(token))
+            {
+                continue;
+            }
+
+            IFC_RETURN(reader->HasConnectionId(token.GetIndex(), hasConnectionId));
+            if (*hasConnectionId)
+            {
+                break;
+            }
+        }
+    }
+
+    return S_OK;
+}
 
 CustomWriterRuntimeDataTypeIndex StyleCustomRuntimeData::GetTypeIndexForSerialization(_In_ const TargetOSVersion& targetOS) const
 {

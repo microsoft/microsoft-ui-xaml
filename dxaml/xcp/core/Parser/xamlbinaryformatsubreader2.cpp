@@ -4,6 +4,7 @@
 #include "precomp.h"
 
 #include "CustomWriterRuntimeData.h"
+#include "SubObjectWriterResult.h"
 #include "XamlBinaryFormatCommon.h"
 #include "XamlBinaryFormatReader2.h"
 #include "XamlBinaryFormatSubReader2.h"
@@ -42,6 +43,67 @@ _Check_return_ HRESULT XamlBinaryFormatSubReader2::TryReadHRESULT(
         *endOfStream = !TryRead(currentXamlNode);
     }
     CATCH_RETURN();
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlBinaryFormatSubReader2::HasConnectionId(
+    _In_ unsigned int nodeIndex,
+    _Out_ bool* hasConnectionId) const
+{
+    *hasConnectionId = false;
+    IFCEXPECT_RETURN(nodeIndex < m_nodeStreamLength);
+
+    try
+    {
+        // A separate reader preserves both the active cursor and its reusable temporary XamlQualifiedObject.
+        XamlBinaryFormatSubReader2 reader(
+            m_spXamlBinaryFormatMasterReader,
+            m_nodeStreamMasterOffset,
+            m_nodeStreamLength,
+            m_lineStreamLength,
+            m_nodeStream,
+            m_lineStream);
+        reader.set_NextIndex(nodeIndex);
+
+        ObjectWriterNode node;
+        IFCEXPECT_RETURN(reader.TryRead(node));
+        IFCEXPECT_RETURN(node.RequiresNewScope());
+
+        unsigned int scopeDepth = 1;
+        while (scopeDepth > 0)
+        {
+            IFCEXPECT_RETURN(reader.TryRead(node));
+
+            if (node.GetNodeType() == ObjectWriterNodeType::SetConnectionId)
+            {
+                *hasConnectionId = true;
+                return S_OK;
+            }
+
+            if (node.GetNodeType() == ObjectWriterNodeType::SetCustomRuntimeData)
+            {
+                // Nested styles share the containing binding scope; template bodies do not.
+                IFC_RETURN(node.GetCustomWriterData()->HasConnectionId(
+                    node.GetCustomWriterNodeStream()->GetSubReader().get(),
+                    hasConnectionId));
+                if (*hasConnectionId)
+                {
+                    return S_OK;
+                }
+            }
+
+            if (node.RequiresNewScope())
+            {
+                ++scopeDepth;
+            }
+            else if (node.RequiresScopeToEnd())
+            {
+                --scopeDepth;
+            }
+        }
+    }
+    CATCH_RETURN();
+
     return S_OK;
 }
 
