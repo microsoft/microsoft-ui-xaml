@@ -104,6 +104,9 @@ void TitleBar::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventAr
         return;
     }
 
+    // Restore the title we replaced before forgetting this window's default title.
+    ResetTitle(Title());
+
     // XamlRoot can still identify the old window after Unloaded.
     m_isUnloaded = true;
     ReleaseWindowResources();

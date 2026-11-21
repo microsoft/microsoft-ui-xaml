@@ -1204,6 +1204,58 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyReloadedTitleBarRestoresOriginalWindowTitle()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar() { Title = "Initial title" }))
+            {
+                var titleBar = host.DetachTitleBar();
+                RunOnUIThread.Execute(() => titleBar.Title = "Reloaded title");
+                host.AttachTitleBar();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Reloaded title", host.Window.AppWindow.Title);
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual(HostWindowTitle, host.Window.AppWindow.Title,
+                        "Reloading in the same window must not lose the original window title");
+                    Verify.AreEqual("TitleTextCollapsed", GetCurrentState(titleBar, "TitleTextGroup"));
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyReloadedTitleBarKeepsExternallySetWindowTitle()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar() { Title = "Control title" }))
+            {
+                RunOnUIThread.Execute(() => host.Window.AppWindow.Title = "App owned title");
+                var titleBar = host.DetachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("App owned title", host.Window.AppWindow.Title,
+                        "Unloading must not overwrite a title set directly by the app");
+                    titleBar.Title = "Reloaded title";
+                });
+                host.AttachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual("App owned title", host.Window.AppWindow.Title);
+                    titleBar.Title = "Another control title";
+                });
+
+                host.DetachTitleBar();
+                RunOnUIThread.Execute(() => host.Window.AppWindow.Title = "Title changed while detached");
+                host.AttachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual("Title changed while detached", host.Window.AppWindow.Title);
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyReparentedTitleBarUsesNewWindow()
         {
             using (var firstHost = new TitleBarWindowHost(() => new TitleBar()
@@ -1465,6 +1517,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 IdleSynchronizer.Wait();
                 return TitleBar;
+            }
+
+            public void AttachTitleBar()
+            {
+                using (var loaded = new AutoResetEvent(false))
+                {
+                    RoutedEventHandler handler = (sender, args) => loaded.Set();
+                    try
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            TitleBar.Loaded += handler;
+                            ((Grid)Window.Content).Children.Add(TitleBar);
+                            Window.SetTitleBar(TitleBar);
+                        });
+                        Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "Waiting for TitleBar.Loaded");
+                    }
+                    finally
+                    {
+                        RunOnUIThread.Execute(() => TitleBar.Loaded -= handler);
+                    }
+                }
+                WaitForLayout();
             }
 
             public void ActivateAndWait()
