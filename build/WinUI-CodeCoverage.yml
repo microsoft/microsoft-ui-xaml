@@ -2,15 +2,8 @@
 # Licensed under the MIT License.
 trigger: none
 
-# Daily coverage of main. "always: false" skips the run when main has not changed since the last
-# scheduled run.
-schedules:
-- cron: '30 18 * * *'   # 18:30 UTC daily
-  displayName: Daily code coverage of main
-  branches:
-    include:
-    - main
-  always: false
+# No YAML schedule: like WinUI-Nightly, any recurring run is configured on the pipeline
+# definition's Triggers settings in Azure DevOps.
 
 name: $(versionFinal)
 

@@ -21,8 +21,9 @@ test job both follow it.
 
 ## Run it
 
-Queue the **WinUI-CodeCoverage** pipeline (`build\WinUI-CodeCoverage.yml`); it also runs daily on
-`main` on a schedule. It extends the shared stages below with `collectCodeCoverage: true`; nothing
+Queue the **WinUI-CodeCoverage** pipeline (`build\WinUI-CodeCoverage.yml`). The YAML has no schedule;
+a recurring run (e.g. daily on `main`) is configured on the pipeline definition's Triggers
+settings, as for Nightly. It extends the shared stages below with `collectCodeCoverage: true`; nothing
 else in this repository turns that switch on. It:
 
 1. Builds x86 chk only (`WinUI-BuildWinUI-Stage.yml` with `collectCodeCoverage: true`, which
@@ -144,7 +145,7 @@ behavior additively - every other pipeline that doesn't pass it sees no change a
 
 | File | What it does |
 |------|--------------|
-| `build\WinUI-CodeCoverage.yml` | Pipeline entry point; turns `collectCodeCoverage` on for the shared stages, exposes `CoverageModules`, `CoverageModuleStems` and `CoverageTabLayout`, and schedules the daily run of `main` |
+| `build\WinUI-CodeCoverage.yml` | Pipeline entry point; turns `collectCodeCoverage` on for the shared stages and exposes `CoverageModules`, `CoverageModuleStems` and `CoverageTabLayout` |
 | `build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml` | `collectCodeCoverage: true` collapses the build matrix to a single x86 chk leg for every `pipelineKind` |
 | `build\AzurePipelinesTemplates\WinUI-CreateTestPayload-Job.yml` | `collectCodeCoverage: true` collapses the payload matrix to a single OS leg, downloads product PDBs, and calls `CreateTestPayload.ps1 -CodeCoverage -CoverageModules ...` |
 | `test\CreateTestPayload.ps1` | `-CodeCoverage` instruments the payload after building it (calls `Instrument-CoveragePayload.ps1`) |
