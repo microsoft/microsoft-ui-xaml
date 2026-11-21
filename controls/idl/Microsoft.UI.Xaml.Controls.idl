@@ -194,7 +194,7 @@ namespace MU_XC_NAMESPACE
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     [MUX_PUBLIC]
-    runtimeclass XamlControlsResources : Microsoft.UI.Xaml.ResourceDictionary
+    unsealed runtimeclass XamlControlsResources : Microsoft.UI.Xaml.ResourceDictionary
     {
         XamlControlsResources();
         static void EnsureRevealLights(Microsoft.UI.Xaml.UIElement element);
