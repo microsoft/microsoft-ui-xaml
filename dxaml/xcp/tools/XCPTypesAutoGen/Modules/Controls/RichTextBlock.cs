@@ -12,7 +12,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CRichTextBlock")]
     [ContentProperty("Blocks")]
     [ClassFlags(CanConvertFromString = true)]
-    public sealed class RichTextBlock
+    public class RichTextBlock
         : Microsoft.UI.Xaml.FrameworkElement
     {
         #region Properties

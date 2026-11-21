@@ -822,6 +822,7 @@ namespace Controls {
     interface IRichEditBoxTextChangingEventArgs;
     interface IRichEditBoxTextChangingEventArgs2;
     interface IRichTextBlock;
+    interface IRichTextBlockFactory;
     interface IRichTextBlock2;
     interface IRichTextBlock3;
     interface IRichTextBlock4;
