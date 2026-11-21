@@ -55,6 +55,10 @@ private:
 
 private:
 
+    _Check_return_ HRESULT GetProperty(
+        _In_ xaml_data::ICustomPropertyProvider *pSource,
+        _COM_Outptr_result_maybenull_ xaml_data::ICustomProperty **ppProperty);
+
     _Check_return_ HRESULT OnPropertyChanged() override;
     _Ret_notnull_ const wchar_t* GetPropertyName() override;
 
