@@ -28,6 +28,7 @@ protected:
     ~CSelector() override = default;
 
 public:
+    DECLARE_CREATE(CSelector);
 
     KnownTypeIndex GetTypeIndex() const override
     {
