@@ -1962,12 +1962,12 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass ScrollViewer
+    unsealed runtimeclass ScrollViewer
         : Microsoft.UI.Xaml.Controls.ContentControl
         , [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
         Microsoft.UI.Xaml.Controls.IScrollAnchorProvider
     {
-        ScrollViewer();
+        [method_name("CreateInstance")] ScrollViewer();
         Microsoft.UI.Xaml.Controls.ScrollBarVisibility HorizontalScrollBarVisibility;
         Microsoft.UI.Xaml.Controls.ScrollBarVisibility VerticalScrollBarVisibility;
         Boolean IsHorizontalRailEnabled;
