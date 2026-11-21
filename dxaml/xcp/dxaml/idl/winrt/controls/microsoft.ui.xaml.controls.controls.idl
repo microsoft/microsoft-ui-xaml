@@ -1219,9 +1219,9 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass SemanticZoomLocation
+    unsealed runtimeclass SemanticZoomLocation
     {
-        SemanticZoomLocation();
+        [method_name("CreateInstance")] SemanticZoomLocation();
         Object Item;
         Windows.Foundation.Rect Bounds;
     };
