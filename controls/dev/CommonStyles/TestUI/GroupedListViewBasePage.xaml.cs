@@ -1524,7 +1524,10 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class GroupedListViewBaseItem
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class GroupedListViewBaseItem
     {
         public GroupedListViewBaseItem() : this(">EmptyId<") { }
 
@@ -1540,7 +1543,10 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class GroupedListViewBaseGroupItem
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class GroupedListViewBaseGroupItem
     {
         public GroupedListViewBaseGroupItem() : this(">EmptyName<") { }
 
