@@ -65,6 +65,7 @@
         $(MSBuildThisFileDirectory)\primitives\loopingselector;
         $(MSBuildThisFileDirectory)\primitives\popup;
         $(MSBuildThisFileDirectory)\primitives\repeatbutton;
+        $(MSBuildThisFileDirectory)\primitives\thumb;
         $(MSBuildThisFileDirectory)\primitives\togglebutton;
         $(MSBuildThisFileDirectory)\radiobutton;
         $(MSBuildThisFileDirectory)\relativepanel;
@@ -179,6 +180,7 @@
     <ClInclude Include="primitives\popup\PopupAutomationIntegrationTests.h" />
     <ClInclude Include="primitives\popup\PopupIntegrationTests.h" />
     <ClInclude Include="primitives\repeatbutton\RepeatButtonIntegrationTests.h" />
+    <ClInclude Include="primitives\thumb\ThumbIntegrationTests.h" />
     <ClInclude Include="primitives\togglebutton\ToggleButtonIntegrationTests.h" />
     <ClInclude Include="radiobutton\RadioButtonIntegrationTests.h" />
     <ClInclude Include="relativepanel\RelativePanelIntegrationTests.h" />
@@ -295,6 +297,7 @@
     <ClCompile Include="primitives\popup\PopupIntegrationTests.cpp" />
     <ClCompile Include="primitives\popup\PopupAutomationIntegrationTests.cpp" />
     <ClCompile Include="primitives\repeatbutton\RepeatButtonIntegrationTests.cpp" />
+    <ClCompile Include="primitives\thumb\ThumbIntegrationTests.cpp" />
     <ClCompile Include="primitives\togglebutton\ToggleButtonIntegrationTests.cpp" />
     <ClCompile Include="radiobutton\RadioButtonIntegrationTests.cpp" />
     <ClCompile Include="relativepanel\RelativePanelIntegrationTests.cpp" />
