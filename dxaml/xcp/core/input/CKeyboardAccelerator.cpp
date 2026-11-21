@@ -106,6 +106,7 @@ _Check_return_ HRESULT CKeyboardAccelerator::Create(
 
 CKeyboardAccelerator::~CKeyboardAccelerator()
 {
+    ReleaseInterface(m_scopeOwner);
 }
 
 _Check_return_

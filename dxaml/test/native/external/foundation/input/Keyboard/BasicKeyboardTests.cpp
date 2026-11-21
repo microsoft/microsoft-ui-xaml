@@ -54,6 +54,54 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             return true;
         }
 
+        // Each accelerator with a ScopeOwner keeps a small wrapper for the owner. Destroying the accelerators must free it.
+        void BasicKeyboardTests::KeyboardAcceleratorScopeOwnerDoesNotLeak()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                constexpr unsigned int generationCount = 64;
+                const auto createAndReleaseGeneration = []()
+                {
+                    auto owner = ref new Button();
+                    for (unsigned int i = 0; i < 3; ++i)
+                    {
+                        auto accelerator = ref new KeyboardAccelerator();
+                        accelerator->ScopeOwner = owner;
+                        owner->KeyboardAccelerators->Append(accelerator);
+                    }
+                };
+                const auto createAndReleaseGenerations = [&]()
+                {
+                    for (unsigned int generation = 0; generation < generationCount; ++generation)
+                    {
+                        createAndReleaseGeneration();
+                    }
+                };
+                const auto outstanding = []()
+                {
+                    return static_cast<int64_t>(TestServices::WindowHelper->GetAllocationCount()) -
+                        static_cast<int64_t>(TestServices::WindowHelper->GetDeallocationCount());
+                };
+
+                const auto allocationsBefore = TestServices::WindowHelper->GetAllocationCount();
+                createAndReleaseGenerations();
+                if (TestServices::WindowHelper->GetAllocationCount() == allocationsBefore)
+                {
+                    LOG_OUTPUT(L"Allocation counting is off, so this configuration cannot verify the retained allocation.");
+                    return;
+                }
+
+                const auto outstandingBefore = outstanding();
+                createAndReleaseGenerations();
+                const auto growth = outstanding() - outstandingBefore;
+
+                LOG_OUTPUT(L"Outstanding allocation growth: %lld", growth);
+                VERIFY_IS_LESS_THAN(growth, static_cast<int64_t>(generationCount));
+            });
+        }
+
         //------------------------------------------------------------------------
         // Test case: Send a simple key press to a Button and confirm it gets the
         //            KeyDown and KeyUp events with the correct VirtualKey code.
