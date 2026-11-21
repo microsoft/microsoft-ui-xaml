@@ -8,7 +8,10 @@ using Microsoft.UI.Xaml.Tests.Common;
 
 namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 {
-    public class MoCoGroupedDataModel : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class MoCoGroupedDataModel : INotifyPropertyChanged
     {
         string _header = string.Empty;
         public string Header

@@ -1220,7 +1220,10 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
             public uint Index { get; set; }
         }
 
-        public class Manager : Employee
+#if CSWINRT3_0
+        [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+        public partial class Manager : Employee
         {
             public Manager()
             {
@@ -1239,7 +1242,10 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
         }
 
-        public class Employee : DependencyObject
+#if CSWINRT3_0
+        [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+        public partial class Employee : DependencyObject
         {
             public int Age
             {
@@ -2036,7 +2042,10 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
             });
         }
 
-        public class ResetCollectionGroup
+#if CSWINRT3_0
+        [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+        public partial class ResetCollectionGroup
         {
             public string Name { get; set; }
             public ResetCollection Items { get; set; }

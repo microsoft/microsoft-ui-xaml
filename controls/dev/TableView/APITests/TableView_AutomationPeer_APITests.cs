@@ -3117,7 +3117,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // A plain managed header object: CsWinRT gives it IStringable, whose ToString is the type name.
-    internal sealed class TitledColumnHeader
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class TitledColumnHeader
     {
         public string Title { get; set; }
     }

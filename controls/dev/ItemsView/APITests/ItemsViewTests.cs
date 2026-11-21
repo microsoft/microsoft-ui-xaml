@@ -26,7 +26,10 @@ using Windows.Foundation;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ItemsViewTests : ApiTestBase
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class ItemsViewTests : ApiTestBase
     {
         private const int c_MaxWaitDuration = 5000;
 
@@ -1425,8 +1428,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     itemsView.SelectionMode = ItemsViewSelectionMode.Extended;
                     Verify.IsTrue(selectionProvider.CanSelectMultiple, "CanSelectMultiple returns true when ItemsViewSelectionMode is extended");
 
-                    Verify.IsNull(selectionProvider.GetSelection());
-                    Log.Comment("GetSelection returns null as no items are selected.");
+                    Verify.AreEqual(0, selectionProvider.GetSelection()?.Length ?? 0);
+                    Log.Comment("GetSelection returns no selected peers.");
                 });
 
                 IdleSynchronizer.Wait();

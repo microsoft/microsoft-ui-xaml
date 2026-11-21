@@ -6,7 +6,10 @@ using System.ComponentModel;
 
 namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 {
-    public class MoCoFlatDataModel : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class MoCoFlatDataModel : INotifyPropertyChanged
     {
         public MoCoFlatDataModel() {}
 

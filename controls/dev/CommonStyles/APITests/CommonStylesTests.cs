@@ -597,6 +597,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             VisualTreeTestHelper.VerifyVisualTree(xaml: xaml,
                 verificationFileNamePrefix: "VerifyVisualTreeExampleWithCustomerFilter",
+                translator: new CollectionCountTranslator(),
                 filter: new CustomizedFilter());
         }
 
@@ -707,6 +708,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return (_propertyNamePostfixBlockList.Where(item => propertyName.EndsWith(item)).Count()) == 0 &&
                     !_propertyNameBlockList.Contains(propertyName);
+            }
+        }
+
+        class CollectionCountTranslator : VisualTreeDumper.DefaultPropertyValueTranslator
+        {
+            public override string PropertyValueToString(string propertyName, object value)
+            {
+                // Snapshot collection size, not projection-specific wrapper names.
+                switch (value)
+                {
+                    case ICollection<KeyboardAccelerator> accelerators:
+                        return $"Count={accelerators.Count}";
+                    case ICollection<XamlLight> lights:
+                        return $"Count={lights.Count}";
+                    case ICollection<Microsoft.UI.Xaml.Documents.TextHighlighter> highlighters:
+                        return $"Count={highlighters.Count}";
+                    default:
+                        return base.PropertyValueToString(propertyName, value);
+                }
             }
         }
 

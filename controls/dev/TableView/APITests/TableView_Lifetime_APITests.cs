@@ -124,7 +124,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    internal sealed class NotifyingPerson : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class NotifyingPerson : INotifyPropertyChanged
     {
         private string _name;
         private string _role;

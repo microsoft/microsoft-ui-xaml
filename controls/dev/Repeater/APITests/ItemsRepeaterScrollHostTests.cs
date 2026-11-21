@@ -415,10 +415,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         private static void VerifyRect(Rect expected, Rect actual, string context)
         {
             Log.Comment($"{context}: expected {expected}, actual {actual}");
-            Verify.IsLessThan(Math.Abs(expected.X - actual.X), 0.5, context + " X");
-            Verify.IsLessThan(Math.Abs(expected.Y - actual.Y), 0.5, context + " Y");
-            Verify.IsLessThan(Math.Abs(expected.Width - actual.Width), 0.5, context + " Width");
-            Verify.IsLessThan(Math.Abs(expected.Height - actual.Height), 0.5, context + " Height");
+            Verify.IsLessThan(Math.Abs((double)expected.X - actual.X), 0.5, context + " X");
+            Verify.IsLessThan(Math.Abs((double)expected.Y - actual.Y), 0.5, context + " Y");
+            Verify.IsLessThan(Math.Abs((double)expected.Width - actual.Width), 0.5, context + " Width");
+            Verify.IsLessThan(Math.Abs((double)expected.Height - actual.Height), 0.5, context + " Height");
         }
     }
 }

@@ -93,7 +93,10 @@ namespace MUXControlsTestApp
     }
 
     // Data item for the Hierarchy pivot. Flat: the tree comes from ParentBy(Id, ManagerId).
-    public sealed class HierarchyTestEmployee
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public sealed partial class HierarchyTestEmployee
     {
         public HierarchyTestEmployee(int id, int? managerId, string name, string dept, int score)
         {

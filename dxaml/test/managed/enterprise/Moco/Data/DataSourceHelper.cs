@@ -12,7 +12,10 @@ using Microsoft.UI.Xaml.Tests.Common;
 
 namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.Data
 {
-    public class Person : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class Person : INotifyPropertyChanged
     {
         #region Private Fields
 

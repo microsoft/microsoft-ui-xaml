@@ -96,7 +96,10 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class NavViewPageData
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class NavViewPageData
     {
         public string Name { get; set; }
 

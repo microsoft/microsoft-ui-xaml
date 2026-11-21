@@ -28,7 +28,10 @@ using Windows.UI.ViewManagement;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    public class Category
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class Category
     {
         public String Content { get; set; }
         public String Name { get; set; }

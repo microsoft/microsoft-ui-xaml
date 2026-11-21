@@ -2456,7 +2456,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    internal sealed class PlainShapedPerson
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class PlainShapedPerson
     {
         public string Name { get; set; }
         public string Role { get; set; }

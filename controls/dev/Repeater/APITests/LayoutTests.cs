@@ -578,8 +578,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(E_NOTIMPL, virtualizingLayout.BaseMeasureHResult, "VirtualizingLayout.MeasureOverride");
                 Log.Comment($"ArrangeOverride finalSize={virtualizingLayout.ArrangeFinalSize}, base result={virtualizingLayout.BaseArrangeResult}");
                 // The final size can be snapped to physical pixels at non-100% display scales.
-                Verify.IsLessThan(Math.Abs(virtualizingLayout.ArrangeFinalSize.Width - 120), 1.0);
-                Verify.IsLessThan(Math.Abs(virtualizingLayout.ArrangeFinalSize.Height - 48), 1.0);
+                Verify.IsLessThan(Math.Abs((double)virtualizingLayout.ArrangeFinalSize.Width - 120), 1.0);
+                Verify.IsLessThan(Math.Abs((double)virtualizingLayout.ArrangeFinalSize.Height - 48), 1.0);
                 Verify.AreEqual(virtualizingLayout.ArrangeFinalSize, virtualizingLayout.BaseArrangeResult, "VirtualizingLayout.ArrangeOverride returns the final size.");
             });
         }
@@ -622,8 +622,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         var offset = repeater.TryGetElement(i).TransformToVisual(repeater).TransformPoint(new Point());
                         Log.Comment($"Item {i}: {offset}");
-                        Verify.IsLessThan(Math.Abs(offset.X - testCase.Item4[i].X), 1.0, $"Item {i} X");
-                        Verify.IsLessThan(Math.Abs(offset.Y - testCase.Item4[i].Y), 1.0, $"Item {i} Y");
+                        Verify.IsLessThan(Math.Abs((double)offset.X - testCase.Item4[i].X), 1.0, $"Item {i} X");
+                        Verify.IsLessThan(Math.Abs((double)offset.Y - testCase.Item4[i].Y), 1.0, $"Item {i} Y");
                     }
 
                     // Switching away uninitializes the wrapped layout through the wrapper.
@@ -683,7 +683,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         var offset = repeater.TryGetElement(i).TransformToVisual(repeater).TransformPoint(new Point());
                         Log.Comment($"Item {i}: X={offset.X}, Y={offset.Y}");
                         Verify.IsLessThan(Math.Abs(offset.X - expectation.Value[i]), 1.0, $"Item {i} X");
-                        Verify.IsLessThan(Math.Abs(offset.Y), 1.0, $"Item {i} Y");
+                        Verify.IsLessThan(Math.Abs((double)offset.Y), 1.0, $"Item {i} Y");
                     }
                     Content = null;
                 });

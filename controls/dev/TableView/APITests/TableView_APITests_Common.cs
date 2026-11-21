@@ -637,7 +637,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
     // The default row item: two plain, non-notifying string properties. Tests that need change
     // notification, validation, or grouping keys use the richer items defined by their own area.
-    internal sealed class Person
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class Person
     {
         public string Name { get; set; }
 

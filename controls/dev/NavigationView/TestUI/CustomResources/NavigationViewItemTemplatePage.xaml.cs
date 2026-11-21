@@ -18,7 +18,10 @@ using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.Navig
 
 namespace MUXControlsTestApp
 {
-    public class Customer
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class Customer
     {
         public String FirstName { get; set; }
         public String LastName { get; set; }

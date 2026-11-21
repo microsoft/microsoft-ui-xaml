@@ -12,10 +12,10 @@
     FocusVisualSecondaryBrush=#B3FFFFFF
     Height=400
     IsItemsHost=False
-    KeyboardAccelerators=System.Collections.Generic.IListImpl`1[Microsoft.UI.Xaml.Input.KeyboardAccelerator]
+    KeyboardAccelerators=Count=0
     KeyTipPlacementMode=Auto
     KeyTipVerticalOffset=0
-    Lights=System.Collections.Generic.IListImpl`1[Microsoft.UI.Xaml.Media.XamlLight]
+    Lights=Count=0
     RasterizationScale=1
     RenderSize=400,400
     RenderTransform=Microsoft.UI.Xaml.Media.MatrixTransform
@@ -46,10 +46,10 @@
       IsColorFontEnabled=True
       IsTextSelectionEnabled=False
       IsTextTrimmed=False
-      KeyboardAccelerators=System.Collections.Generic.IListImpl`1[Microsoft.UI.Xaml.Input.KeyboardAccelerator]
+      KeyboardAccelerators=Count=0
       KeyTipPlacementMode=Auto
       KeyTipVerticalOffset=0
-      Lights=System.Collections.Generic.IListImpl`1[Microsoft.UI.Xaml.Media.XamlLight]
+      Lights=Count=0
       LineHeight=0
       LineStackingStrategy=MaxHeight
       MaxLines=0
@@ -63,7 +63,7 @@
       Text=Abc
       TextAlignment=Left
       TextDecorations=None
-      TextHighlighters=System.Collections.Generic.IListImpl`1[Microsoft.UI.Xaml.Documents.TextHighlighter]
+      TextHighlighters=Count=0
       TextLineBounds=Full
       TextReadingOrder=DetectFromContent
       TextTrimming=None

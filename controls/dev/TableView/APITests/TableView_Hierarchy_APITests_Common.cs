@@ -21,7 +21,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     // A non-notifying employee for hierarchy tests. ParentBy(Id, ManagerId) gives:
     //   Ada > { Ben > { Dan }, Cy }, Eve > { Fay }, Gus (ManagerId 99 matches nobody, so a root).
-    internal sealed class TreeEmployee
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class TreeEmployee
     {
         public int Id { get; set; }
         public int? ManagerId { get; set; }
@@ -36,7 +39,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // Observable row for live shaping; PropertyChanged is the only signal live shaping listens to.
-    internal sealed class LiveRow : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class LiveRow : INotifyPropertyChanged
     {
         private string _name = "";
         private int _score;
@@ -70,7 +76,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // A change to City is raised on the address, not on the row that owns it.
-    internal sealed class LiveAddress : INotifyPropertyChanged
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class LiveAddress : INotifyPropertyChanged
     {
         private string _city;
 
@@ -89,7 +98,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    internal sealed class PlainRow
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class PlainRow
     {
         public string Name { get; set; } = "";
         public int Score { get; set; }

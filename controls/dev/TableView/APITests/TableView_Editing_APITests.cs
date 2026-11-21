@@ -1995,7 +1995,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // any product-internal hook. Implements the XAML INotifyPropertyChanged so a committed value reaches
     // the OneWay display binding, and the XAML INotifyDataErrorInfo so the control's validation gate has
     // something to consult.
-    internal sealed class EditablePerson : INotifyPropertyChanged, INotifyDataErrorInfo
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    internal sealed partial class EditablePerson : INotifyPropertyChanged, INotifyDataErrorInfo
     {
         private string _name;
         private string _role;

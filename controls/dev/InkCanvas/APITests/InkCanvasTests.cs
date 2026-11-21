@@ -94,8 +94,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var bounds = peer.GetBoundingRectangle();
                 Log.Comment($"Bounding rectangle: {bounds.X},{bounds.Y} {bounds.Width}x{bounds.Height}");
 
-                Verify.IsGreaterThan(bounds.Width, 0.0, "Bounding rectangle should have a non-zero width.");
-                Verify.IsGreaterThan(bounds.Height, 0.0, "Bounding rectangle should have a non-zero height.");
+                Verify.IsGreaterThan((double)bounds.Width, 0.0, "Bounding rectangle should have a non-zero width.");
+                Verify.IsGreaterThan((double)bounds.Height, 0.0, "Bounding rectangle should have a non-zero height.");
                 Verify.IsFalse(peer.IsOffscreen(), "A visible InkCanvas should not report itself as offscreen.");
             });
         }
@@ -175,9 +175,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Both rectangles come back in the same physical units, so comparing them keeps this
                 // assertion independent of the display scale the test happens to run at.
-                Verify.IsLessThanOrEqual(canvasBounds.Height, scrollBounds.Height + 1.0, "Reported height should be clipped to the scroll viewport.");
-                Verify.IsLessThanOrEqual(canvasBounds.Width, scrollBounds.Width + 1.0, "Reported width should be clipped to the scroll viewport.");
-                Verify.IsGreaterThan(canvasBounds.Height, 0.0, "A partially visible canvas should still report bounds.");
+                Verify.IsLessThanOrEqual((double)canvasBounds.Height, scrollBounds.Height + 1.0, "Reported height should be clipped to the scroll viewport.");
+                Verify.IsLessThanOrEqual((double)canvasBounds.Width, scrollBounds.Width + 1.0, "Reported width should be clipped to the scroll viewport.");
+                Verify.IsGreaterThan((double)canvasBounds.Height, 0.0, "A partially visible canvas should still report bounds.");
                 Verify.IsFalse(canvasPeer.IsOffscreen(), "A partially visible InkCanvas should not report itself as offscreen.");
             });
         }
@@ -273,7 +273,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Comparing against the unclipped rectangle keeps this independent of display scale.
                 Verify.IsFalse(peer.IsOffscreen(), "A partially clipped InkCanvas should not report itself as offscreen.");
-                Verify.IsGreaterThan(bounds.Width, 0.0, "A partially clipped canvas should still report bounds.");
+                Verify.IsGreaterThan((double)bounds.Width, 0.0, "A partially clipped canvas should still report bounds.");
                 Verify.IsLessThan(bounds.Width, fullBounds.Width, "The reported width should be reduced by the clip.");
                 Verify.IsLessThan(bounds.Height, fullBounds.Height, "The reported height should be reduced by the clip.");
             });

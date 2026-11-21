@@ -143,7 +143,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     new Point((float)(wrapper.ActualWidth - 8.0), (float)(wrapper.ActualHeight / 2.0)));
 
                 var textBounds = text.TransformToVisual(null).TransformPoint(new Point(0.0f, 0.0f));
-                Verify.IsGreaterThan(probe.X, textBounds.X + text.ActualWidth,
+                Verify.IsGreaterThan((double)probe.X, textBounds.X + text.ActualWidth,
                     "Precondition: the probe point must lie outside the text element, or the test would pass without proving anything.");
 
                 var hits = VisualTreeHelper.FindElementsInHostCoordinates(probe, tableView).ToList();

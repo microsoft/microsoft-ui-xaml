@@ -98,11 +98,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Using Effective Viewport
                 Verify.AreEqual(0, realizationRects[1].X);
                 // 32 pixel title bar and some tolerance for borders
-                Verify.IsLessThan(Math.Abs(realizationRects[1].Y + 32), 6.0);
+                Verify.IsLessThan(Math.Abs((double)realizationRects[1].Y + 32), 6.0);
                 // Width/Height depends on the window size, so just
                 // validating something reasonable here to avoid flakiness.
-                Verify.IsLessThan(500.0, realizationRects[1].Width);
-                Verify.IsLessThan(500.0, realizationRects[1].Height);
+                Verify.IsLessThan(500.0, (double)realizationRects[1].Width);
+                Verify.IsLessThan(500.0, (double)realizationRects[1].Height);
 
                 Verify.AreEqual(realizationRects[1], visibleRects[1]);
 
@@ -649,20 +649,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Log.Comment("measureRealizationRects.Width delta: expected: 80, actual: {0}", measureRealizationRects[i].Width - measureRealizationRects[i - 1].Width);
                     Log.Comment("measureRealizationRects.Height delta: expected: 80, actual: {0}", measureRealizationRects[i].Height - measureRealizationRects[i - 1].Height);
 
-                    Verify.IsLessThan(Math.Abs(measureRealizationRects[i].X - measureRealizationRects[i - 1].X + 40), 0.001);
-                    Verify.IsLessThan(Math.Abs(measureRealizationRects[i].Y - measureRealizationRects[i - 1].Y + 40), 0.001);
-                    Verify.IsLessThan(Math.Abs(measureRealizationRects[i].Width - measureRealizationRects[i - 1].Width - 80), 0.001);
-                    Verify.IsLessThan(Math.Abs(measureRealizationRects[i].Height - measureRealizationRects[i - 1].Height - 80), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)measureRealizationRects[i].X - measureRealizationRects[i - 1].X + 40), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)measureRealizationRects[i].Y - measureRealizationRects[i - 1].Y + 40), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)measureRealizationRects[i].Width - measureRealizationRects[i - 1].Width - 80), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)measureRealizationRects[i].Height - measureRealizationRects[i - 1].Height - 80), 0.001);
 
                     Log.Comment("arrangeRealizationRects.X delta: expected: -40, actual: {0}", arrangeRealizationRects[i].X - arrangeRealizationRects[i - 1].X);
                     Log.Comment("arrangeRealizationRects.Y delta: expected: -40, actual: {0}", arrangeRealizationRects[i].Y - arrangeRealizationRects[i - 1].Y);
                     Log.Comment("arrangeRealizationRects.Width delta: expected: 80, actual: {0}", arrangeRealizationRects[i].Width - arrangeRealizationRects[i - 1].Width);
                     Log.Comment("arrangeRealizationRects.Height delta: expected: 80, actual: {0}", arrangeRealizationRects[i].Height - arrangeRealizationRects[i - 1].Height);
 
-                    Verify.IsLessThan(Math.Abs(arrangeRealizationRects[i].X - arrangeRealizationRects[i - 1].X + 40), 0.001);
-                    Verify.IsLessThan(Math.Abs(arrangeRealizationRects[i].Y - arrangeRealizationRects[i - 1].Y + 40), 0.001);
-                    Verify.IsLessThan(Math.Abs(arrangeRealizationRects[i].Width - arrangeRealizationRects[i - 1].Width - 80), 0.001);
-                    Verify.IsLessThan(Math.Abs(arrangeRealizationRects[i].Height - arrangeRealizationRects[i - 1].Height - 80), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)arrangeRealizationRects[i].X - arrangeRealizationRects[i - 1].X + 40), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)arrangeRealizationRects[i].Y - arrangeRealizationRects[i - 1].Y + 40), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)arrangeRealizationRects[i].Width - arrangeRealizationRects[i - 1].Width - 80), 0.001);
+                    Verify.IsLessThan(Math.Abs((double)arrangeRealizationRects[i].Height - arrangeRealizationRects[i - 1].Height - 80), 0.001);
                 }
 
                 // Skipping first recording measureVisibleRects[0] since both the realization and visible rects are still empty at that point.

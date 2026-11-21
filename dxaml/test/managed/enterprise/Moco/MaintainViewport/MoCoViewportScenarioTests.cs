@@ -18,7 +18,7 @@ using Microsoft.UI.Xaml.Tests.Common;
 namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
 {
     [TestClass]
-    public class MoCoViewportScenarioTests : MoCoViewportTestBase
+    public partial class MoCoViewportScenarioTests : MoCoViewportTestBase
     {
         private static string _testDeploymentDir { get; set; }
 
@@ -466,7 +466,10 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco.MaintainViewport
                 }
         }
 
-        public class ListItem : INotifyPropertyChanged
+#if CSWINRT3_0
+        [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+        public partial class ListItem : INotifyPropertyChanged
         {
             private double _width = double.NaN;
             private double _height = double.NaN;

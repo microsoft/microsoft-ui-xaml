@@ -19,7 +19,10 @@ namespace Breadcrumb_TestUI
         }
     }
 
-    public class TreeNode
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class TreeNode
     {
         private TreeNode Parent = null;
         public string Name { get; set; }
