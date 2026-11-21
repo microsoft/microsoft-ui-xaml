@@ -40,6 +40,9 @@ TitleBar::~TitleBar()
         m_inputActivationChangedToken.value = 0;
     }
 
+    // Must precede TryGetAppWindow(): a stale id would drop the cached source first.
+    RevokeWindowRectChanged();
+
     const auto appWindow = TryGetAppWindow();
     if (appWindow)
     {
@@ -299,14 +302,11 @@ void TitleBar::UpdateIcon()
             m_iconLayoutUpdatedRevoker.revoke();
         }
 
+        RevokeWindowRectChanged();
+
         if (const auto& nonClientPointerSource = GetInputNonClientPointerSource())
         {
             m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
-        }
-        else if (m_inputNonClientPointerSource)
-        {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
         }
 
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
@@ -315,12 +315,7 @@ void TitleBar::UpdateIcon()
     else
     {
         m_iconLayoutUpdatedRevoker.revoke();
-
-        if (m_inputNonClientPointerSource)
-        {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
-        }
+        RevokeWindowRectChanged();
 
         templateSettings->IconElement(nullptr);
         GoToState(s_iconCollapsedVisualStateName, false);
@@ -925,12 +920,24 @@ winrt::WindowId TitleBar::GetAppWindowId()
     {
         m_lastAppWindowId = appWindowId;
 
+        RevokeWindowRectChanged();
+
         m_inputNonClientPointerSource = nullptr;
 
         m_appWindow = nullptr;
     }
 
     return appWindowId;
+}
+
+// No auto_revoke: InputNonClientPointerSource doesn't support weak references.
+void TitleBar::RevokeWindowRectChanged()
+{
+    if (m_windowRectChangedToken.value != 0 && m_inputNonClientPointerSource)
+    {
+        m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
+        m_windowRectChangedToken.value = 0;
+    }
 }
 
 winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSource()
