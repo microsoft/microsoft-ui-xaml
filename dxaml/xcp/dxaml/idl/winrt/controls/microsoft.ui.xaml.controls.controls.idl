@@ -1684,10 +1684,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Inlines")]
-    runtimeclass TextBlock
+    unsealed runtimeclass TextBlock
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        TextBlock();
+        [method_name("CreateInstance")] TextBlock();
         Double FontSize;
         Microsoft.UI.Xaml.Media.FontFamily FontFamily;
         Windows.UI.Text.FontWeight FontWeight;
