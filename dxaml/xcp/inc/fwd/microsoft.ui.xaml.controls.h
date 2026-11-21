@@ -1042,6 +1042,7 @@ namespace Controls {
     interface IVariableSizedWrapGrid;
     interface IVariableSizedWrapGridStatics;
     interface IViewbox;
+    interface IViewboxFactory;
     interface IViewboxStatics;
     interface IVirtualizingPanel;
     interface IVirtualizingPanelFactory;
