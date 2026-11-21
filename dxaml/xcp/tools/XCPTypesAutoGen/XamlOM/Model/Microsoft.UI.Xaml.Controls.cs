@@ -4147,7 +4147,7 @@ namespace Microsoft.UI.Xaml.Controls
     [ClassFlags(IsObservable = true, HasBaseTypeInDXamlInterface = false)]
     [OldCodeGenBaseType(typeof(Microsoft.UI.Xaml.Collections.PresentationFrameworkCollection<Windows.Foundation.Object>))]
     [Guids(ClassGuid = "39c26b2c-d5be-4ba8-a808-61f166b9a63f")]
-    public sealed class ItemCollection
+    public class ItemCollection
      : Microsoft.UI.Xaml.Collections.ObservablePresentationFrameworkCollection<Windows.Foundation.Object>
     {
         [CoreType(typeof(Microsoft.UI.Xaml.DependencyObject))]
@@ -4158,7 +4158,7 @@ namespace Microsoft.UI.Xaml.Controls
             set;
         }
 
-        internal ItemCollection() { }
+        public ItemCollection() { }
     }
 
     [CodeGen(partial: true)]
