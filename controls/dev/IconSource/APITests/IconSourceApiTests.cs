@@ -261,16 +261,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual(fallback, GetAnimatedIconFallback(animatedIcon));
         }
 
-        // Scenario: Repro for a product bug. Creates an icon from an AnimatedIconSource, sets the source's
-        // MirroredWhenRightToLeft to true, then calls ClearValue(MirroredWhenRightToLeftProperty) on the source. The
-        // icon's getter is read inside a try/catch so an exception fails the test instead of crashing the process.
+        // Scenario: Creates an icon from an AnimatedIconSource, sets the source's MirroredWhenRightToLeft to true, then
+        // calls ClearValue(MirroredWhenRightToLeftProperty) on the source. The icon's getter is read inside a try/catch
+        // so an exception fails the test instead of crashing the process.
         // Expected: the icon reads true after the set and the registered default false after the clear, exactly as when
         // the value is cleared on the icon itself.
-        // Failure means: the product bug is still present: the already-created icon's MirroredWhenRightToLeft getter
-        // throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean) instead of returning false. The test
-        // is ignored until the bug is fixed; if it passes, the bug is fixed and the test should be re-enabled.
+        // Failure means: IconSource pushed a null instead of the cleared value, so the already-created icon's
+        // MirroredWhenRightToLeft getter throws InvalidCastException (E_NOINTERFACE unboxing the pushed Boolean).
         [TestMethod]
-        [TestProperty("Ignore", "True")] // Repro for the AnimatedIconSource ClearValue(MirroredWhenRightToLeftProperty) product bug. Re-enable when fixed.
         public void AnimatedIconSourceClearedMirroredWhenRightToLeftPropagatesDefaultToCreatedIcon()
         {
             var ids = ReadAnimatedIconSourcePropertyIds();
@@ -771,6 +769,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verify foreground propagates to created element");
                 Verify.IsTrue(icon.Foreground is SolidColorBrush);
                 Verify.AreEqual(Microsoft.UI.Colors.Red, (icon.Foreground as SolidColorBrush).Color);
+            });
+        }
+
+        // Scenario: Creates two FontIcons from FontIconSources with a red Foreground. The first is hosted in a ContentControl;
+        // its source's Foreground is cleared and then the ContentControl's Foreground is set to green. The second source's
+        // Foreground is set to null.
+        // Expected: the cleared icon has no local Foreground and inherits green from the ContentControl; the icon whose source
+        // was set to null keeps a local null, like any explicitly set value.
+        // Failure means: IconSource forwards a cleared value as SetValue(null), which stops the icon inheriting its brush and
+        // leaves it blank, or it clears an explicitly set null.
+        [TestMethod]
+        public void ClearedIconSourceForegroundIsInheritedByCreatedElement()
+        {
+            FontIconSource clearedSource = null;
+            FontIconSource nulledSource = null;
+            FontIcon clearedIcon = null;
+            FontIcon nulledIcon = null;
+            ContentControl host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                clearedSource = new FontIconSource { Glyph = "\uE11A", Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red) };
+                nulledSource = new FontIconSource { Glyph = "\uE11A", Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red) };
+                clearedIcon = clearedSource.CreateIconElement() as FontIcon;
+                nulledIcon = nulledSource.CreateIconElement() as FontIcon;
+                Verify.IsNotNull(clearedIcon);
+                Verify.IsNotNull(nulledIcon);
+
+                host = new ContentControl { Content = clearedIcon };
+                var panel = new StackPanel();
+                panel.Children.Add(host);
+                panel.Children.Add(nulledIcon);
+                Content = panel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Clear Foreground on the first source and set it to null on the second");
+                clearedSource.ClearValue(IconSource.ForegroundProperty);
+                nulledSource.Foreground = null;
+
+                Verify.AreEqual(DependencyProperty.UnsetValue, clearedIcon.ReadLocalValue(IconElement.ForegroundProperty));
+                Verify.IsNull(nulledIcon.ReadLocalValue(IconElement.ForegroundProperty));
+
+                Log.Comment("Change the parent's Foreground");
+                host.Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green);
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Verify the cleared icon inherits the parent's Foreground");
+                var inherited = clearedIcon.Foreground as SolidColorBrush;
+                Verify.IsNotNull(inherited);
+                Verify.AreEqual(Microsoft.UI.Colors.Green, inherited.Color);
             });
         }
 
