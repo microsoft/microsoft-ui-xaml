@@ -901,20 +901,6 @@ CUIElement::SetValue(_In_ const SetValueParams& args)
                 OnSetLocalOpacity(wasOpacityImplicitAnimationStarted);
                 break;
             }
-        case KnownPropertyIndex::UIElement_CanBeScrollAnchor:
-            {
-                bool isAnchorCandidate = args.m_value.AsBool();
-                if (isAnchorCandidate)
-                {
-                    IFC(UpdateAnchorCandidateOnParentScrollProvider(true /* add */));
-                }
-                else
-                {
-                    IFC(UpdateAnchorCandidateOnParentScrollProvider(false /* add */));
-                }
-
-                break;
-            }
         case KnownPropertyIndex::UIElement_ProtectedCursor:
             {
                 CValue newValue = args.m_value;
@@ -1021,6 +1007,16 @@ _Check_return_ HRESULT CUIElement::OnPropertyChanged(_In_ const PropertyChangedP
 
     switch (args.m_pDP->GetIndex())
     {
+        case KnownPropertyIndex::UIElement_CanBeScrollAnchor:
+        {
+            const bool canBeScrollAnchor = args.m_pNewValue->AsBool();
+            // Teardown callbacks can clear the flag after deactivation but before Leave unregisters it.
+            if (IsActive() || !canBeScrollAnchor)
+            {
+                IFC_RETURN(UpdateAnchorCandidateOnParentScrollProvider(canBeScrollAnchor));
+            }
+            break;
+        }
         case KnownPropertyIndex::RelativePanel_LeftOf:
         case KnownPropertyIndex::RelativePanel_Above:
         case KnownPropertyIndex::RelativePanel_RightOf:
