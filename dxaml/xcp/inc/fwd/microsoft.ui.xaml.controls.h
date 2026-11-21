@@ -736,6 +736,7 @@ namespace Controls {
     interface IParallaxViewFactory;
     interface IParallaxViewStatics;
     interface IPasswordBox;
+    interface IPasswordBoxFactory;
     interface IPasswordBox2;
     interface IPasswordBox3;
     interface IPasswordBox4;
