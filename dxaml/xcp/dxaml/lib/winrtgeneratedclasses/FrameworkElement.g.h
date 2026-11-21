@@ -47,7 +47,6 @@ namespace DirectUI
     class __declspec(novtable) FrameworkElementGenerated:
         public DirectUI::UIElement
         , public ABI::Microsoft::UI::Xaml::IFrameworkElement
-        , public ABI::Microsoft::UI::Xaml::IFrameworkElementProtected
         , public ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi, FrameworkElementGenerated >
@@ -59,7 +58,6 @@ namespace DirectUI
 
         BEGIN_INTERFACE_MAP(FrameworkElementGenerated, DirectUI::UIElement)
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElement)
-            INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementProtected)
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(FrameworkElementGenerated, ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi)
