@@ -2821,10 +2821,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass TickBar
+    unsealed runtimeclass TickBar
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        TickBar();
+        [method_name("CreateInstance")] TickBar();
         Microsoft.UI.Xaml.Media.Brush Fill;
         static Microsoft.UI.Xaml.DependencyProperty FillProperty{ get; };
     };

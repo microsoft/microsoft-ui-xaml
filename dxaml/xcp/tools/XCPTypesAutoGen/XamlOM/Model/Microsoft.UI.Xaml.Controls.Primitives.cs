@@ -1060,7 +1060,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [CoreBaseType(typeof(Microsoft.UI.Xaml.Controls.Panel))]
     [FrameworkTypePattern]
     [Guids(ClassGuid = "8e9eec1f-706a-4f47-be93-e78f9ae876d1")]
-    public sealed class TickBar
+    public class TickBar
      : Microsoft.UI.Xaml.FrameworkElement
     {
         [PropertyFlags(IsExcludedFromVisualTree = true)]
