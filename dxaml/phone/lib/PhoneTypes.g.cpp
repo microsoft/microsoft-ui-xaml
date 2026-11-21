@@ -4666,14 +4666,15 @@ PickerConfirmedEventArgsGenerated::InitializeImpl()
 _Check_return_ HRESULT 
 PickerFlyoutGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-PickerFlyoutGenerated::InitializeImpl()
+PickerFlyoutGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
 
+    UNREFERENCED_PARAMETER(pOuter);
 
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
@@ -4922,22 +4923,20 @@ void PickerFlyoutFactory::ClearProperties()
         s_ConfirmationButtonsVisibleProperty.Reset();
 }
 
-IFACEMETHODIMP
-PickerFlyoutFactory::ActivateInstance(
-    _Outptr_ IInspectable** ppInspectable)
+IFACEMETHODIMP PickerFlyoutFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IPickerFlyout** ppInstance)
 {
     HRESULT hr = S_OK;
-    wrl::ComPtr<ABI::Microsoft::UI::Xaml::Controls::IPickerFlyout> pickerFlyout;
 
-    IFCPTR(ppInspectable);
-    IFC(wrl::MakeAndInitialize<PickerFlyout>(&pickerFlyout));
-
-    *ppInspectable = pickerFlyout.Detach();
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::PickerFlyout,
+            ABI::Microsoft::UI::Xaml::Controls::IPickerFlyout>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
 
 Cleanup:
     RRETURN(hr);
 }
-
 // Static properties.
 
 // Dependency properties initializing functions
