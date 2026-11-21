@@ -5014,13 +5014,19 @@ Cleanup:
 _Check_return_ HRESULT 
 PickerFlyoutPresenterGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-PickerFlyoutPresenterGenerated::InitializeImpl()
+PickerFlyoutPresenterGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
+
+    UNREFERENCED_PARAMETER(pOuter);
+
+    // When types are created internally there is no guarantee that
+    // the factory has been previously instantiated. 
+    IFC_RETURN(PickerFlyoutPresenterFactory::EnsureProperties());
 
 
     RRETURN(hr);
@@ -6058,6 +6064,51 @@ _Check_return_ HRESULT PickerFlyoutPresenterGenerated::PopulatePropertyInfoOverr
 Cleanup:
     RRETURN(hr);
 }
+
+// Dependency Property references.
+
+// Initializers.
+_Check_return_ HRESULT PickerFlyoutPresenterFactory::RuntimeClassInitialize()
+{
+    HRESULT hr = S_OK;
+
+    IFC(EnsureProperties());
+
+Cleanup:
+    RRETURN(hr);
+}
+
+_Check_return_ HRESULT PickerFlyoutPresenterFactory::EnsureProperties()
+{
+
+    return S_OK;
+}
+
+void PickerFlyoutPresenterFactory::ClearProperties()
+{
+}
+
+IFACEMETHODIMP PickerFlyoutPresenterFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IPickerFlyoutPresenter** ppInstance)
+{
+    HRESULT hr = S_OK;
+
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::IPickerFlyoutPresenter>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+
+Cleanup:
+    RRETURN(hr);
+}
+// Static properties.
+
+// Dependency properties.
+
+// Attached properties.
+
+// Static methods.
 
 _Check_return_ HRESULT 
 PivotGenerated::RuntimeClassInitialize()

@@ -1132,11 +1132,43 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Event Sources
         Private::TrackerEventSource<ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::PickerFlyout*, ABI::Microsoft::UI::Xaml::Controls::PickerConfirmedEventArgs*>> m_ConfirmedEventSource;
     };
+    class PickerFlyoutPresenterFactory
+        :
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IPickerFlyoutPresenterFactory>
+    {
+
+    friend class PickerFlyoutPresenterGenerated;
+    friend class PickerFlyoutPresenter;
+
+    public:
+         _Check_return_ HRESULT RuntimeClassInitialize();
+         static _Check_return_ HRESULT EnsureProperties();
+         static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IPickerFlyoutPresenter** ppInstance);
+
+        // Properties.
+
+        // Dependency properties.
+
+        // Attached properties.
+
+        // Static methods.
+
+    private:
+
+        // Properties' statics.
+
+        // Properties' initializers.
+
+    };
     
     class __declspec(novtable) PickerFlyoutPresenterGenerated
         : public PickerFlyoutPresenterRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutPresenter;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::PickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::IPickerFlyoutPresenter>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_PickerFlyoutPresenter, TrustLevel::BaseTrust);
 
     public:
@@ -1265,8 +1297,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
