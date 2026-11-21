@@ -2383,10 +2383,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
-    runtimeclass CalendarPanel
+    unsealed runtimeclass CalendarPanel
         : Microsoft.UI.Xaml.Controls.Panel
     {
-        CalendarPanel();
+        [method_name("CreateInstance")] CalendarPanel();
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
