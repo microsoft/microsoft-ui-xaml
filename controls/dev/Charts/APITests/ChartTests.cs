@@ -952,7 +952,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(MarkerShape.Circle, (MarkerShape)markerShape.GetValue(instance), "Default MarkerShape should be Circle.");
                 Verify.AreEqual(StrokeDashStyle.Solid, (StrokeDashStyle)strokeDashStyle.GetValue(instance), "Default StrokeDashStyle should be Solid.");
-                Verify.AreEqual(1.0, (double)strokeThickness.GetValue(instance), "Default StrokeThickness should be 1.");
+                Verify.AreEqual(2.0, (double)strokeThickness.GetValue(instance), "Default StrokeThickness should be 2.");
                 Verify.IsNull(stroke.GetValue(instance), "Default Stroke should be null.");
                 Verify.IsNull(labelBrush.GetValue(instance), "Default DataLabelBrush should be null.");
                 Verify.IsNull(markerBrush.GetValue(instance), "Default DataMarkerBrush should be null.");
