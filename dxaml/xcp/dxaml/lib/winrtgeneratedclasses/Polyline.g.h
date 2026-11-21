@@ -80,15 +80,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) PolylineFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Shapes::IPolylineFactory
         , public ABI::Microsoft::UI::Xaml::Shapes::IPolylineStatics
     {
-        BEGIN_INTERFACE_MAP(PolylineFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(PolylineFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(PolylineFactory, ABI::Microsoft::UI::Xaml::Shapes::IPolylineFactory)
             INTERFACE_ENTRY(PolylineFactory, ABI::Microsoft::UI::Xaml::Shapes::IPolylineStatics)
-        END_INTERFACE_MAP(PolylineFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(PolylineFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Shapes::IPolyline** ppInstance);
 
         // Static properties.
 
