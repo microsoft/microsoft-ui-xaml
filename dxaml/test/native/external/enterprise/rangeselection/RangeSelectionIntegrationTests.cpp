@@ -56,6 +56,94 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void RangeSelectionIntegrationTests::ValidateSelectedRangesAfterUnselectedItemChanges()
+    {
+        TestCleanupWrapper cleanup;
+        auto listView = SetupEnvironment(30);
+
+        RunOnUIThread([&]()
+        {
+            auto items = safe_cast<Platform::Collections::Vector<int>^>(listView->ItemsSource);
+            for (unsigned index = 0; index < items->Size; ++index)
+            {
+                items->SetAt(index, static_cast<int>(index));
+            }
+            listView->SelectRange(ref new xaml_data::ItemIndexRange(5, 3));
+            auto selectedItem = listView->SelectedItem;
+
+            items->InsertAt(0, -1);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(6, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedRanges->GetAt(0)->Length);
+            VERIFY_ARE_EQUAL(selectedItem, listView->SelectedItem);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+
+            items->InsertAt(7, -2);
+            VERIFY_ARE_EQUAL(2u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(6, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->GetAt(0)->Length);
+            VERIFY_ARE_EQUAL(8, listView->SelectedRanges->GetAt(1)->FirstIndex);
+            VERIFY_ARE_EQUAL(2u, listView->SelectedRanges->GetAt(1)->Length);
+
+            items->RemoveAt(7);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(6, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedRanges->GetAt(0)->Length);
+
+            items->RemoveAt(0);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(5, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedRanges->GetAt(0)->Length);
+            VERIFY_ARE_EQUAL(selectedItem, listView->SelectedItem);
+            VERIFY_ARE_EQUAL(3u, listView->SelectedItems->Size);
+        });
+    }
+
+    void RangeSelectionIntegrationTests::ValidateSelectedRangesDuringReentrantSourceChange()
+    {
+        TestCleanupWrapper cleanup;
+        auto listView = SetupEnvironment(3);
+
+        RunOnUIThread([&]()
+        {
+            auto items = safe_cast<Platform::Collections::Vector<int>^>(listView->ItemsSource);
+            for (unsigned index = 0; index < items->Size; ++index)
+            {
+                items->SetAt(index, static_cast<int>(index));
+            }
+
+            listView->SelectedIndex = 0;
+            auto selectedItems = safe_cast<wfc::IObservableVector<Platform::Object^>^>(listView->SelectedItems);
+            xaml_data::ItemIndexRange^ retainedRange = nullptr;
+            bool removed = false;
+            auto token = selectedItems->VectorChanged += ref new wfc::VectorChangedEventHandler<Platform::Object^>(
+                [&](wfc::IObservableVector<Platform::Object^>^, wfc::IVectorChangedEventArgs^ args)
+            {
+                if (!removed && args->CollectionChange == wfc::CollectionChange::Reset)
+                {
+                    removed = true;
+                    items->RemoveAt(0);
+                    VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+                    retainedRange = listView->SelectedRanges->GetAt(0);
+                    VERIFY_ARE_EQUAL(0, retainedRange->FirstIndex);
+                    VERIFY_ARE_EQUAL(1u, retainedRange->Length);
+                }
+            });
+
+            listView->SelectedIndex = 1;
+            selectedItems->VectorChanged -= token;
+
+            VERIFY_IS_TRUE(removed);
+            VERIFY_ARE_EQUAL(0, listView->SelectedIndex);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->Size);
+            VERIFY_ARE_EQUAL(0, listView->SelectedRanges->GetAt(0)->FirstIndex);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedRanges->GetAt(0)->Length);
+            VERIFY_IS_NOT_NULL(retainedRange);
+            VERIFY_ARE_EQUAL(0, retainedRange->FirstIndex);
+            VERIFY_ARE_EQUAL(1u, retainedRange->Length);
+        });
+    }
+
     void RangeSelectionIntegrationTests::ValidateSelectedRangesAfterSelectedItemReorder()
     {
         TestCleanupWrapper cleanup;
