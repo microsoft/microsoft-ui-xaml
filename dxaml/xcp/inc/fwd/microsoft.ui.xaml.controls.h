@@ -688,6 +688,7 @@ namespace Controls {
     interface IMenuFlyoutSeparatorFactory;
     interface IMenuFlyoutStatics;
     interface IMenuFlyoutSubItem;
+    interface IMenuFlyoutSubItemFactory;
     interface IMenuFlyoutSubItem2;
     interface IMenuFlyoutSubItemStatics;
     interface IMenuFlyoutSubItemStatics2;
