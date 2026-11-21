@@ -21,6 +21,7 @@ class ItemsRepeater :
 {
 public:
     ItemsRepeater();
+    ~ItemsRepeater();
 
     // StackLayout measurements are shortcut when m_stackLayoutMeasureCounter reaches this value
     // to prevent a layout cycle exception.
@@ -141,6 +142,7 @@ private:
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateChildrenMeasure();
     void EnsureDefaultLayoutState();
+    void ResetItemTemplateWrapper() noexcept;
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
     bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
@@ -157,6 +159,7 @@ private:
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
     winrt::Microsoft::UI::Xaml::IElementFactory m_itemTemplateWrapper{ nullptr };
+    bool m_ownsItemTemplateWrapper{ false };
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
     tracker_ref<winrt::IInspectable> m_layoutState{ this };

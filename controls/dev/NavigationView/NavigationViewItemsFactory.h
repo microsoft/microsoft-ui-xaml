@@ -10,8 +10,11 @@ class NavigationViewItemsFactory :
     public winrt::implements<NavigationViewItemsFactory, ElementFactory>
 {
 public:
-    void UserElementFactory(winrt::IInspectable const& newValue);
+    void UserElementFactory(
+        winrt::IInspectable const& newValue,
+        const ITrackerHandleManager* owner);
     void SettingsItem(winrt::NavigationViewItemBase const& settingsItem);
+    void ResetForOwnerDestruction() noexcept;
 
 #pragma region IElementFactoryOverrides
     winrt::UIElement GetElementCore(winrt::ElementFactoryGetArgs const& args);
@@ -22,6 +25,8 @@ private:
     winrt::IElementFactory m_itemTemplateWrapper{ nullptr };
     winrt::NavigationViewItemBase m_settingsItem{ nullptr };
     std::vector<winrt::NavigationViewItem> navigationViewItemPool;
+    bool m_isTerminated{ false };
 
+    void ResetItemTemplateWrapper() noexcept;
     void UnlinkElementFromParent(winrt::ElementFactoryRecycleArgs const& args);
 };
