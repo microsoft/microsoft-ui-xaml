@@ -1908,6 +1908,1510 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_FALSE(closedEvent.HasFired());
     }
 
+    void SplitViewIntegrationTests::DoesCompleteQueuedPaneTransitions()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (auto placement : { xaml_controls::SplitViewPanePlacement::Left, xaml_controls::SplitViewPanePlacement::Right })
+        {
+            for (auto mode : {
+                xaml_controls::SplitViewDisplayMode::Overlay,
+                xaml_controls::SplitViewDisplayMode::Inline,
+                xaml_controls::SplitViewDisplayMode::CompactOverlay,
+                xaml_controls::SplitViewDisplayMode::CompactInline })
+            {
+                xaml_controls::SplitView^ splitView = nullptr;
+                unsigned int openedCount = 0;
+                unsigned int closedCount = 0;
+                unsigned int closingCount = 0;
+                std::wstring completionOrder;
+                auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+                auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+                auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+
+                RunOnUIThread([&]()
+                {
+                    splitView = ref new xaml_controls::SplitView();
+                    splitView->DisplayMode = mode;
+                    splitView->PanePlacement = placement;
+                    splitView->IsPaneOpen = true;
+                    TestServices::WindowHelper->WindowContent = splitView;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                openedRegistration.Attach(splitView, [&]() { ++openedCount; completionOrder += L"O"; });
+                closingRegistration.Attach(splitView, [&]() { ++closingCount; });
+                closedRegistration.Attach(splitView, [&]()
+                {
+                    VERIFY_IS_TRUE(closingCount > closedCount);
+                    ++closedCount;
+                    completionOrder += L"C";
+                });
+
+                RunOnUIThread([&]()
+                {
+                    // Do not pump the dispatcher between the committed visual state changes.
+                    splitView->IsPaneOpen = false;
+                    splitView->IsPaneOpen = true;
+                    splitView->IsPaneOpen = false;
+                    splitView->IsPaneOpen = true;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                VERIFY_ARE_EQUAL(2u, closedCount);
+                VERIFY_ARE_EQUAL(2u, openedCount);
+                VERIFY_IS_TRUE(completionOrder == L"COCO");
+
+                RunOnUIThread([&]()
+                {
+                    openedCount = 0;
+                    closedCount = 0;
+                    closingCount = 0;
+                    completionOrder.clear();
+                    splitView->PanePlacement = placement == xaml_controls::SplitViewPanePlacement::Left
+                        ? xaml_controls::SplitViewPanePlacement::Right
+                        : xaml_controls::SplitViewPanePlacement::Left;
+                    splitView->IsPaneOpen = false;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                VERIFY_ARE_EQUAL(1u, closedCount);
+                VERIFY_ARE_EQUAL(0u, openedCount);
+                VERIFY_IS_TRUE(completionOrder == L"C");
+            }
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesQueuePaneCompletionsWithoutDisplayModeStates()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        std::wstring completionOrder;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                        <Grid/>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+        closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = true;
+            splitView->IsPaneOpen = false;
+            splitView->IsPaneOpen = true;
+            splitView->IsPaneOpen = false;
+            VERIFY_IS_TRUE(completionOrder.empty());
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_TRUE(completionOrder == L"OCOC");
+    }
+
+    void SplitViewIntegrationTests::DoesRaisePaneOpenedWhenNotLive()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                        <Grid/>
+                    </ControlTemplate>)"));
+            openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+            splitView->IsPaneOpen = true;
+            VERIFY_ARE_EQUAL(1u, openedCount);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, openedCount);
+
+        RunOnUIThread([&]() { TestServices::WindowHelper->WindowContent = splitView; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = false;
+            TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            openedCount = 0;
+            splitView->IsPaneOpen = true;
+            VERIFY_ARE_EQUAL(1u, openedCount);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, openedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsAfterUnload()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride enableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, false);
+        xaml_controls::SplitView^ splitView = nullptr;
+        std::wstring completionOrder;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = true;
+            TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = false;
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+        closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { splitView->IsPaneOpen = false; });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_TRUE(completionOrder == L"OC");
+
+        xaml_controls::Grid^ firstParent = nullptr;
+        xaml_controls::Grid^ secondParent = nullptr;
+        RunOnUIThread([&]()
+        {
+            auto root = ref new xaml_controls::Grid();
+            firstParent = ref new xaml_controls::Grid();
+            secondParent = ref new xaml_controls::Grid();
+            root->Children->Append(firstParent);
+            root->Children->Append(secondParent);
+            TestServices::WindowHelper->WindowContent = root;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { firstParent->Children->Append(splitView); });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            completionOrder.clear();
+            firstParent->Children->RemoveAt(0);
+            secondParent->Children->Append(splitView);
+            splitView->IsPaneOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_TRUE(completionOrder == L"O");
+    }
+
+    void SplitViewIntegrationTests::DoesRestoreLightDismissAfterReopeningWithoutDisplayModeStates()
+    {
+        VerifyLightDismissReentrancyWithoutDisplayModeStates(false);
+    }
+
+    void SplitViewIntegrationTests::DoesRaiseClosingAfterNestedCloseWithoutDisplayModeStates()
+    {
+        VerifyLightDismissReentrancyWithoutDisplayModeStates(true);
+    }
+
+    void SplitViewIntegrationTests::VerifyLightDismissReentrancyWithoutDisplayModeStates(bool closeAgain)
+    {
+        TestCleanupWrapper cleanup;
+
+        for (auto mode : { xaml_controls::SplitViewDisplayMode::Overlay, xaml_controls::SplitViewDisplayMode::CompactOverlay })
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            xaml_controls::Button^ outsideButton = nullptr;
+            unsigned int closingCount = 0;
+            unsigned int initialPopupCount = 0;
+            bool reopened = false;
+            long long propertyChangedToken = 0;
+            auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+
+            RunOnUIThread([&]()
+            {
+                auto root = ref new xaml_controls::StackPanel();
+                splitView = ref new xaml_controls::SplitView();
+                splitView->Width = 500;
+                splitView->Height = 400;
+                splitView->DisplayMode = mode;
+                splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                    LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                            <Grid/>
+                        </ControlTemplate>)"));
+                outsideButton = ref new xaml_controls::Button();
+                outsideButton->Width = 500;
+                outsideButton->Height = 80;
+                root->Children->Append(splitView);
+                root->Children->Append(outsideButton);
+                TestServices::WindowHelper->WindowContent = root;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+            TestServices::WindowHelper->WaitForIdle();
+
+            if (!closeAgain)
+            {
+                TestServices::InputHelper->ClickMouseButton(MouseButton::Left, outsideButton);
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]()
+                {
+                    VERIFY_IS_FALSE(splitView->IsPaneOpen);
+                    splitView->IsPaneOpen = true;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+
+            closingRegistration.Attach(splitView,
+                ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                    [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^) { ++closingCount; }));
+            RunOnUIThread([&]()
+            {
+                initialPopupCount = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(splitView->XamlRoot)->Size;
+                VERIFY_IS_TRUE(initialPopupCount > 0);
+                propertyChangedToken = splitView->RegisterPropertyChangedCallback(
+                    xaml_controls::SplitView::IsPaneOpenProperty,
+                    ref new xaml::DependencyPropertyChangedCallback([&](xaml::DependencyObject^, xaml::DependencyProperty^)
+                    {
+                        if (!splitView->IsPaneOpen && !reopened)
+                        {
+                            reopened = true;
+                            splitView->IsPaneOpen = true;
+                            if (closeAgain)
+                            {
+                                splitView->IsPaneOpen = false;
+                            }
+                        }
+                    }));
+                splitView->Width = 480;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                splitView->UnregisterPropertyChangedCallback(xaml_controls::SplitView::IsPaneOpenProperty, propertyChangedToken);
+                VERIFY_IS_TRUE(reopened);
+                VERIFY_ARE_EQUAL(!closeAgain, splitView->IsPaneOpen);
+                VERIFY_ARE_EQUAL(closeAgain ? 2u : 1u, closingCount);
+                VERIFY_ARE_EQUAL(closeAgain ? 0u : initialPopupCount,
+                    xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(splitView->XamlRoot)->Size);
+            });
+
+            if (!closeAgain)
+            {
+                TestServices::InputHelper->ClickMouseButton(MouseButton::Left, outsideButton);
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]() { VERIFY_IS_FALSE(splitView->IsPaneOpen); });
+                VERIFY_ARE_EQUAL(2u, closingCount);
+            }
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesCompleteInterruptedPaneTransitions()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride enableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, false);
+
+        for (bool initiallyOpen : { false, true })
+        {
+            for (bool changePlacement : { false, true })
+            {
+                xaml_controls::SplitView^ splitView = nullptr;
+                unsigned int openedCount = 0;
+                unsigned int closedCount = 0;
+                auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+                auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+                RunOnUIThread([&]()
+                {
+                    splitView = ref new xaml_controls::SplitView();
+                    splitView->Width = 500;
+                    splitView->Height = 400;
+                    splitView->DisplayMode = changePlacement && !initiallyOpen
+                        ? xaml_controls::SplitViewDisplayMode::CompactOverlay
+                        : xaml_controls::SplitViewDisplayMode::Overlay;
+                    TestServices::WindowHelper->WindowContent = splitView;
+                });
+                TestServices::WindowHelper->WaitForIdle();
+                RunOnUIThread([&]() { splitView->IsPaneOpen = initiallyOpen; });
+                TestServices::WindowHelper->WaitForIdle();
+
+                openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+                closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+
+                RunOnUIThread([&]()
+                {
+                    splitView->IsPaneOpen = !initiallyOpen;
+                    splitView->IsPaneOpen = initiallyOpen;
+                    if (changePlacement)
+                    {
+                        splitView->PanePlacement = xaml_controls::SplitViewPanePlacement::Right;
+                    }
+                    else
+                    {
+                        splitView->DisplayMode = initiallyOpen
+                            ? xaml_controls::SplitViewDisplayMode::Inline
+                            : xaml_controls::SplitViewDisplayMode::CompactOverlay;
+                    }
+                });
+                TestServices::WindowHelper->WaitForIdle();
+
+                VERIFY_ARE_EQUAL(initiallyOpen ? 1u : 0u, openedCount);
+                VERIFY_ARE_EQUAL(initiallyOpen ? 0u : 1u, closedCount);
+            }
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesIgnoreQueuedDisplayModeRoundTrips()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (bool initiallyOpen : { false, true })
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            unsigned int openedCount = 0;
+            unsigned int closedCount = 0;
+            auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+            auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+            const auto initialMode = initiallyOpen
+                ? xaml_controls::SplitViewDisplayMode::Overlay
+                : xaml_controls::SplitViewDisplayMode::CompactOverlay;
+            const auto otherMode = initiallyOpen
+                ? xaml_controls::SplitViewDisplayMode::Inline
+                : xaml_controls::SplitViewDisplayMode::Overlay;
+
+            RunOnUIThread([&]()
+            {
+                splitView = ref new xaml_controls::SplitView();
+                splitView->DisplayMode = initialMode;
+                TestServices::WindowHelper->WindowContent = splitView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]() { splitView->IsPaneOpen = !initiallyOpen; });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]() { splitView->IsPaneOpen = initiallyOpen; });
+            TestServices::WindowHelper->WaitForIdle();
+
+            openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+            closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+
+            RunOnUIThread([&]()
+            {
+                // The round trip reuses the same VisualState objects, but its queued
+                // notifications precede both pane requests.
+                splitView->DisplayMode = otherMode;
+                splitView->DisplayMode = initialMode;
+                splitView->IsPaneOpen = !initiallyOpen;
+                splitView->IsPaneOpen = initiallyOpen;
+                splitView->DisplayMode = otherMode;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            VERIFY_ARE_EQUAL(1u, openedCount);
+            VERIFY_ARE_EQUAL(1u, closedCount);
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesPreservePendingPaneTransitionAfterQueuedCompletion()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride enableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, false);
+
+        for (bool initiallyOpen : { false, true })
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            unsigned int openedCount = 0;
+            unsigned int closedCount = 0;
+            auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+            auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+            RunOnUIThread([&]()
+            {
+                splitView = ref new xaml_controls::SplitView();
+                splitView->Width = 500;
+                splitView->Height = 400;
+                TestServices::WindowHelper->WindowContent = splitView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]() { splitView->IsPaneOpen = initiallyOpen; });
+            TestServices::WindowHelper->WaitForIdle();
+
+            openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+            closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+
+            RunOnUIThread([&]()
+            {
+                {
+                    RuntimeEnabledFeatureOverride disableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, true);
+                    splitView->IsPaneOpen = !initiallyOpen;
+                }
+
+                // Complete one transition without delivering its notification, then
+                // interrupt a second transition that finishes in the same category.
+                splitView->IsPaneOpen = initiallyOpen;
+                splitView->IsPaneOpen = !initiallyOpen;
+                splitView->DisplayMode = initiallyOpen
+                    ? xaml_controls::SplitViewDisplayMode::CompactOverlay
+                    : xaml_controls::SplitViewDisplayMode::Inline;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            VERIFY_ARE_EQUAL(initiallyOpen ? 0u : 2u, openedCount);
+            VERIFY_ARE_EQUAL(initiallyOpen ? 2u : 0u, closedCount);
+        }
+    }
+
+    ref class MixedSplitViewVisualStateManager sealed : public xaml::VisualStateManager
+    {
+    public:
+        MixedSplitViewVisualStateManager(Platform::String^ synchronousState)
+            : m_synchronousState(synchronousState)
+        {
+        }
+
+        void CompleteStateChange(xaml_controls::Control^ control, xaml::VisualStateGroup^ group, xaml::VisualState^ state)
+        {
+            RaiseCurrentStateChanged(group, group->CurrentState, state, control);
+        }
+
+        bool GoToStateCore(
+            xaml_controls::Control^ control,
+            xaml::FrameworkElement^ templateRoot,
+            Platform::String^ stateName,
+            xaml::VisualStateGroup^ group,
+            xaml::VisualState^ state,
+            bool useTransitions) override
+        {
+            if (group && group->Name == L"DisplayModeStates")
+            {
+                if (stateName == m_synchronousState)
+                {
+                    RaiseCurrentStateChanged(group, group->CurrentState, state, control);
+                    return true;
+                }
+
+                return xaml::VisualStateManager::GoToStateCore(
+                    control, templateRoot, stateName, group, state, false);
+            }
+
+            return xaml::VisualStateManager::GoToStateCore(
+                control, templateRoot, stateName, group, state, useTransitions);
+        }
+
+    private:
+        Platform::String^ m_synchronousState;
+    };
+
+    void SplitViewIntegrationTests::DoesOrderMixedVisualStateManagerCompletions()
+    {
+        TestCleanupWrapper cleanup;
+
+        for (bool initiallyOpen : { false, true })
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            std::wstring completionOrder;
+            auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+            auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+            RunOnUIThread([&]()
+            {
+                splitView = ref new xaml_controls::SplitView();
+                TestServices::WindowHelper->WindowContent = splitView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]() { splitView->IsPaneOpen = initiallyOpen; });
+            TestServices::WindowHelper->WaitForIdle();
+
+            openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+            closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+            RunOnUIThread([&]()
+            {
+                auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+                xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot,
+                    ref new MixedSplitViewVisualStateManager(initiallyOpen ? L"OpenOverlayLeft" : L"Closed"));
+                splitView->IsPaneOpen = !initiallyOpen;
+                splitView->IsPaneOpen = initiallyOpen;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_IS_TRUE(completionOrder == (initiallyOpen ? L"CO" : L"OC"));
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesRecoverMissingStateWithOutOfOrderNotification()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        unsigned int closedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="SplitView">
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="DisplayModeStates">
+                                    <VisualState x:Name="Closed"/>
+                                    <VisualState x:Name="OpenOverlayLeft"/>
+                                    <VisualState x:Name="OpenInlineLeft"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+
+        RunOnUIThread([&]()
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            auto group = xaml::VisualStateManager::GetVisualStateGroups(templateRoot)->GetAt(0);
+            xaml::VisualState^ closedState = nullptr;
+            for (auto state : group->States)
+            {
+                if (state->Name == L"Closed")
+                {
+                    closedState = state;
+                }
+            }
+            VERIFY_IS_NOT_NULL(closedState);
+            auto manager = ref new MixedSplitViewVisualStateManager(L"Unused");
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, manager);
+            splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactInline;
+            splitView->IsPaneOpen = false;
+            VERIFY_IS_TRUE(xaml::VisualStateManager::GoToState(splitView, L"OpenOverlayLeft", false));
+            manager->CompleteStateChange(splitView, group, closedState);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, closedCount);
+        VERIFY_ARE_EQUAL(0u, openedCount);
+
+        RunOnUIThread([&]() { splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::Overlay; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            splitView->IsPaneOpen = true;
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(2u, closedCount);
+        VERIFY_ARE_EQUAL(1u, openedCount);
+    }
+
+    ref class FailingSplitViewVisualStateManager sealed : public xaml::VisualStateManager
+    {
+    public:
+        bool GoToStateCore(
+            xaml_controls::Control^ control,
+            xaml::FrameworkElement^ templateRoot,
+            Platform::String^ stateName,
+            xaml::VisualStateGroup^ group,
+            xaml::VisualState^ state,
+            bool useTransitions) override
+        {
+            if (group && group->Name == L"DisplayModeStates" && stateName == L"Closed")
+            {
+                throw ref new Platform::FailureException();
+            }
+            return xaml::VisualStateManager::GoToStateCore(
+                control, templateRoot, stateName, group, state, false);
+        }
+    };
+
+    void SplitViewIntegrationTests::DoesPreserveCommittedCompletionAfterFailedRequest()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        RunOnUIThread([&]()
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, ref new FailingSplitViewVisualStateManager());
+            splitView->IsPaneOpen = true;
+            bool failed = false;
+            try
+            {
+                splitView->IsPaneOpen = false;
+            }
+            catch (Platform::FailureException^)
+            {
+                failed = true;
+            }
+            VERIFY_IS_TRUE(failed);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, openedCount);
+    }
+
+    ref class CompletingSplitViewVisualStateManager sealed : public xaml::VisualStateManager
+    {
+    public:
+        bool GoToStateCore(
+            xaml_controls::Control^ control,
+            xaml::FrameworkElement^ templateRoot,
+            Platform::String^ stateName,
+            xaml::VisualStateGroup^ group,
+            xaml::VisualState^ state,
+            bool useTransitions) override
+        {
+            if (group && group->Name == L"DisplayModeStates")
+            {
+                // A custom manager can report an interrupted transition that
+                // finishes in its starting state without using the core VSM.
+                RaiseCurrentStateChanged(group, state, state, control);
+                return true;
+            }
+
+            return xaml::VisualStateManager::GoToStateCore(
+                control, templateRoot, stateName, group, state, useTransitions);
+        }
+    };
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsWithCustomVisualStateManager()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        unsigned int closedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+
+        RunOnUIThread([&]()
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, ref new CompletingSplitViewVisualStateManager());
+            splitView->IsPaneOpen = true;
+            splitView->IsPaneOpen = false;
+            splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactOverlay;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(1u, openedCount);
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesNotCompletePaneTransitionInOppositeState()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride enableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, false);
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        unsigned int closedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="SplitView">
+                        <Grid x:Name="ProbeRoot">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="DisplayModeStates">
+                                    <VisualStateGroup.Transitions>
+                                        <VisualTransition From="OpenOverlayLeft" To="OpenInlineLeft">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ProbeRoot"
+                                                    Storyboard.TargetProperty="Opacity" To="0.8" Duration="0:0:0.3"/>
+                                            </Storyboard>
+                                        </VisualTransition>
+                                    </VisualStateGroup.Transitions>
+                                    <VisualState x:Name="Closed"/>
+                                    <VisualState x:Name="OpenOverlayLeft"/>
+                                    <VisualState x:Name="OpenInlineLeft"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]()
+        {
+            splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactInline;
+            // ClosedCompactLeft is absent, so the older open-to-open
+            // animation keeps running after this failed state request.
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_ARE_EQUAL(0u, openedCount);
+        VERIFY_ARE_EQUAL(0u, closedCount);
+        RunOnUIThread([&]() { splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::Overlay; });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesRaiseClosingAfterReopeningDuringLightDismiss()
+    {
+        TestCleanupWrapper cleanup;
+        RuntimeEnabledFeatureOverride enableTransitions(RuntimeFeatureBehavior::RuntimeEnabledFeature::DisableTransitionsForTest, false);
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int closingCount = 0;
+        bool reopened = false;
+        long long propertyChangedToken = 0;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        closingRegistration.Attach(splitView,
+            ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^) { ++closingCount; }));
+        RunOnUIThread([&]()
+        {
+            propertyChangedToken = splitView->RegisterPropertyChangedCallback(
+                xaml_controls::SplitView::IsPaneOpenProperty,
+                ref new xaml::DependencyPropertyChangedCallback([&](xaml::DependencyObject^, xaml::DependencyProperty^)
+                {
+                    if (!splitView->IsPaneOpen && !reopened)
+                    {
+                        reopened = true;
+                        splitView->IsPaneOpen = true;
+                    }
+                }));
+            splitView->Width = 480;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            splitView->UnregisterPropertyChangedCallback(xaml_controls::SplitView::IsPaneOpenProperty, propertyChangedToken);
+            VERIFY_IS_TRUE(reopened);
+            VERIFY_IS_TRUE(splitView->IsPaneOpen);
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(2u, closingCount);
+    }
+
+    void SplitViewIntegrationTests::DoesRaiseClosingOnceWhenClosingHandlerClosesPane()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int closingCount = 0;
+        unsigned int closedCount = 0;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The app (or a OneWay-bound view model) closes the pane before the deferred light-dismiss executor runs.
+        closingRegistration.Attach(splitView,
+            ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^)
+                {
+                    ++closingCount;
+                    splitView->IsPaneOpen = false;
+                }));
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]() { splitView->Width = 480; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]() { VERIFY_IS_FALSE(splitView->IsPaneOpen); });
+        VERIFY_ARE_EQUAL(1u, closingCount);
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesRaisePaneOpenedOffTreeWithCustomVisualStateManager()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        unsigned int openedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot, ref new CompletingSplitViewVisualStateManager());
+            TestServices::WindowHelper->WindowContent = ref new xaml_controls::Grid();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, openedCount);
+    }
+
+    ref class SynchronousSplitViewVisualStateManager sealed : public xaml::VisualStateManager
+    {
+    public:
+        SynchronousSplitViewVisualStateManager(bool catchFailures)
+            : m_catchFailures(catchFailures)
+        {
+        }
+
+        bool GoToStateCore(
+            xaml_controls::Control^ control,
+            xaml::FrameworkElement^ templateRoot,
+            Platform::String^ stateName,
+            xaml::VisualStateGroup^ group,
+            xaml::VisualState^ state,
+            bool useTransitions) override
+        {
+            if (group && group->Name == L"DisplayModeStates")
+            {
+                try
+                {
+                    RaiseCurrentStateChanged(group, state, state, control);
+                }
+                catch (Platform::Exception^)
+                {
+                    if (!m_catchFailures)
+                    {
+                        throw;
+                    }
+                }
+                return true;
+            }
+
+            return xaml::VisualStateManager::GoToStateCore(
+                control, templateRoot, stateName, group, state, useTransitions);
+        }
+
+    private:
+        bool m_catchFailures;
+    };
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsAfterUndeliveredNotification()
+    {
+        // The custom manager swallows the handler failure.
+        VerifyPaneTransitionsAfterUndeliveredNotification(true /*managerCatchesFailure*/);
+    }
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsAfterFailedNotificationSetter()
+    {
+        // The handler failure reaches the IsPaneOpen setter, where the app catches it.
+        VerifyPaneTransitionsAfterUndeliveredNotification(false /*managerCatchesFailure*/);
+    }
+
+    void SplitViewIntegrationTests::VerifyPaneTransitionsAfterUndeliveredNotification(bool managerCatchesFailure)
+    {
+        TestCleanupWrapper cleanup;
+
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            xaml::VisualStateGroup^ group = nullptr;
+            wf::EventRegistrationToken failingToken{};
+            auto hasFailed = std::make_shared<bool>(false);
+            unsigned int openedCount = 0;
+            unsigned int closedCount = 0;
+            auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+            auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+            RunOnUIThread([&]()
+            {
+                splitView = ref new xaml_controls::SplitView();
+                TestServices::WindowHelper->WindowContent = splitView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+            closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+            RunOnUIThread([&]()
+            {
+                auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+                for (auto candidate : xaml::VisualStateManager::GetVisualStateGroups(templateRoot))
+                {
+                    if (candidate->Name == L"DisplayModeStates")
+                    {
+                        group = candidate;
+                    }
+                }
+                VERIFY_IS_NOT_NULL(group);
+                xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot,
+                    ref new SynchronousSplitViewVisualStateManager(managerCatchesFailure));
+
+                // Attached before SplitView's own handler, which is attached on the first pane request.
+                failingToken = group->CurrentStateChanged += ref new xaml::VisualStateChangedEventHandler(
+                    [hasFailed](Platform::Object^, xaml::VisualStateChangedEventArgs^)
+                    {
+                        if (!*hasFailed)
+                        {
+                            *hasFailed = true;
+                            throw ref new Platform::FailureException();
+                        }
+                    });
+
+                bool setterFailed = false;
+                try
+                {
+                    splitView->IsPaneOpen = true;
+                }
+                catch (Platform::Exception^)
+                {
+                    setterFailed = true;
+                }
+                VERIFY_IS_TRUE(*hasFailed);
+                VERIFY_ARE_EQUAL(!managerCatchesFailure, setterFailed);
+                VERIFY_IS_TRUE(splitView->IsPaneOpen);
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]() { splitView->IsPaneOpen = false; });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_ARE_EQUAL(1u, closedCount);
+
+            RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_ARE_EQUAL(1u, openedCount);
+
+            RunOnUIThread([&]() { group->CurrentStateChanged -= failingToken; });
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesOrderCompletionsWhenPaneOpeningClosesWithoutDisplayModeStates()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        std::wstring completionOrder;
+        bool closedFromOpening = false;
+        auto openingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpening);
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                        <Grid/>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openingRegistration.Attach(splitView, [&]()
+        {
+            if (!closedFromOpening)
+            {
+                closedFromOpening = true;
+                splitView->IsPaneOpen = false;
+            }
+        });
+        openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+        closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        VERIFY_IS_TRUE(closedFromOpening);
+        RunOnUIThread([&]() { VERIFY_IS_FALSE(splitView->IsPaneOpen); });
+        LOG_OUTPUT(L"Completion order: %s", completionOrder.c_str());
+        VERIFY_IS_TRUE(completionOrder == L"OC");
+    }
+
+    void SplitViewIntegrationTests::DoesRaisePaneClosedWhenBindingCallbackChangesDisplayMode()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::ListViewItem^ source = nullptr;
+        long long callbackToken = 0;
+        bool hasRun = false;
+        unsigned int closingCount = 0;
+        unsigned int closedCount = 0;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            source = ref new xaml_controls::ListViewItem();
+            auto binding = ref new xaml_data::Binding();
+            binding->Mode = xaml_data::BindingMode::TwoWay;
+            binding->Source = source;
+            binding->Path = ref new xaml::PropertyPath(L"IsSelected");
+            splitView->SetBinding(xaml_controls::SplitView::IsPaneOpenProperty, binding);
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        closingRegistration.Attach(splitView,
+            ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^) { ++closingCount; }));
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(source->IsSelected);
+
+            // The binding updates its source from the base class, before SplitView handles IsPaneOpen.
+            // Changing DisplayMode there finishes the close first.
+            callbackToken = source->RegisterPropertyChangedCallback(
+                xaml_controls::ListViewItem::IsSelectedProperty,
+                ref new xaml::DependencyPropertyChangedCallback([&](xaml::DependencyObject^, xaml::DependencyProperty^)
+                {
+                    if (!hasRun)
+                    {
+                        hasRun = true;
+                        splitView->DisplayMode = xaml_controls::SplitViewDisplayMode::CompactOverlay;
+                    }
+                }));
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            source->UnregisterPropertyChangedCallback(xaml_controls::ListViewItem::IsSelectedProperty, callbackToken);
+            VERIFY_IS_TRUE(hasRun);
+            VERIFY_IS_FALSE(splitView->IsPaneOpen);
+        });
+        VERIFY_ARE_EQUAL(1u, closingCount);
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesKeepLightDismissRequestedFromBindingCallback()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::ListViewItem^ source = nullptr;
+        xaml_automation::Provider::IInvokeProvider^ invokeProvider = nullptr;
+        long long callbackToken = 0;
+        bool hasRun = false;
+        bool canInvoke = false;
+        unsigned int closingCount = 0;
+        unsigned int closedCount = 0;
+        auto closingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosing);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            source = ref new xaml_controls::ListViewItem();
+            auto binding = ref new xaml_data::Binding();
+            binding->Mode = xaml_data::BindingMode::TwoWay;
+            binding->Source = source;
+            binding->Path = ref new xaml::PropertyPath(L"IsSelected");
+            splitView->SetBinding(xaml_controls::SplitView::IsPaneOpenProperty, binding);
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The light-dismiss layer has an automation peer only while it is visible, so create
+        // it while the pane is open, then close the pane again.
+        xaml_automation_peers::AutomationPeer^ lightDismissPeer = nullptr;
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            auto lightDismissLayer = TreeHelper::GetVisualChildByName(splitView, L"LightDismissLayer");
+            VERIFY_IS_NOT_NULL(lightDismissLayer);
+            lightDismissPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(lightDismissLayer);
+            VERIFY_IS_NOT_NULL(lightDismissPeer);
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        closingRegistration.Attach(splitView,
+            ref new wf::TypedEventHandler<xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^>(
+                [&](xaml_controls::SplitView^, xaml_controls::SplitViewPaneClosingEventArgs^) { ++closingCount; }));
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(source->IsSelected);
+
+            // The binding updates its source from the base class, before SplitView handles IsPaneOpen.
+            // Requesting a light dismiss there must not be cleared by the opening that is still in progress.
+            // Nothing in this callback may throw: it is raised from inside the framework.
+            callbackToken = source->RegisterPropertyChangedCallback(
+                xaml_controls::ListViewItem::IsSelectedProperty,
+                ref new xaml::DependencyPropertyChangedCallback([&](xaml::DependencyObject^, xaml::DependencyProperty^)
+                {
+                    if (!hasRun)
+                    {
+                        hasRun = true;
+                        invokeProvider = dynamic_cast<xaml_automation::Provider::IInvokeProvider^>(
+                            lightDismissPeer->GetPattern(xaml_automation_peers::PatternInterface::Invoke));
+                        canInvoke = invokeProvider != nullptr;
+                        if (canInvoke)
+                        {
+                            invokeProvider->Invoke();
+                        }
+                    }
+                }));
+            splitView->IsPaneOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            source->UnregisterPropertyChangedCallback(xaml_controls::ListViewItem::IsSelectedProperty, callbackToken);
+            VERIFY_IS_TRUE(hasRun);
+            VERIFY_IS_TRUE(canInvoke);
+            VERIFY_IS_FALSE(splitView->IsPaneOpen);
+        });
+        VERIFY_ARE_EQUAL(1u, closingCount);
+        VERIFY_ARE_EQUAL(1u, closedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesRaisePaneOpenedWhenPaneOpeningRemovesDisplayModeStates()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::ControlTemplate^ plainTemplate = nullptr;
+        std::wstring completionOrder;
+        bool retemplated = false;
+        bool applied = false;
+        auto openingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpening);
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            plainTemplate = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                        <Grid/>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The handler is raised from inside the framework, so it only records what happened.
+        openingRegistration.Attach(splitView, [&]()
+        {
+            if (!retemplated)
+            {
+                retemplated = true;
+                splitView->Template = plainTemplate;
+                applied = splitView->ApplyTemplate();
+            }
+        });
+        openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+        closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(retemplated);
+            VERIFY_IS_TRUE(applied);
+            VERIFY_IS_NOT_NULL(dynamic_cast<xaml_controls::Grid^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0)));
+            VERIFY_IS_TRUE(splitView->IsPaneOpen);
+            splitView->IsPaneOpen = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Completion order: %s", completionOrder.c_str());
+        VERIFY_IS_TRUE(completionOrder == L"OC");
+    }
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsAfterManyUndeliveredNotifications()
+    {
+        TestCleanupWrapper cleanup;
+
+        {
+            xaml_controls::SplitView^ splitView = nullptr;
+            xaml::VisualStateGroup^ group = nullptr;
+            wf::EventRegistrationToken failingToken{};
+            auto isFailing = std::make_shared<bool>(true);
+            auto failureCount = std::make_shared<unsigned int>(0);
+            unsigned int openedCount = 0;
+            unsigned int closedCount = 0;
+            auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+            auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+            RunOnUIThread([&]()
+            {
+                splitView = ref new xaml_controls::SplitView();
+                TestServices::WindowHelper->WindowContent = splitView;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+            closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+            RunOnUIThread([&]()
+            {
+                auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+                for (auto candidate : xaml::VisualStateManager::GetVisualStateGroups(templateRoot))
+                {
+                    if (candidate->Name == L"DisplayModeStates")
+                    {
+                        group = candidate;
+                    }
+                }
+                VERIFY_IS_NOT_NULL(group);
+                xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot,
+                    ref new SynchronousSplitViewVisualStateManager(true /*catchFailures*/));
+
+                // Attached before SplitView's own handler, which is attached on the first pane request.
+                failingToken = group->CurrentStateChanged += ref new xaml::VisualStateChangedEventHandler(
+                    [isFailing, failureCount](Platform::Object^, xaml::VisualStateChangedEventArgs^)
+                    {
+                        if (*isFailing)
+                        {
+                            ++*failureCount;
+                            throw ref new Platform::FailureException();
+                        }
+                    });
+            });
+
+            // More consecutive failures than VisualStateGroup keeps individually (8), while
+            // SplitView still waits for the first of them.
+            for (int i = 0; i < 12; ++i)
+            {
+                RunOnUIThread([&]() { splitView->IsPaneOpen = !splitView->IsPaneOpen; });
+                TestServices::WindowHelper->WaitForIdle();
+            }
+            RunOnUIThread([&]()
+            {
+                *isFailing = false;
+                VERIFY_IS_FALSE(splitView->IsPaneOpen);
+            });
+            LOG_OUTPUT(L"Undelivered notifications: %u", *failureCount);
+            VERIFY_IS_GREATER_THAN(*failureCount, 8u);
+            VERIFY_ARE_EQUAL(0u, openedCount);
+            VERIFY_ARE_EQUAL(0u, closedCount);
+
+            RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_ARE_EQUAL(1u, openedCount);
+
+            RunOnUIThread([&]() { splitView->IsPaneOpen = false; });
+            TestServices::WindowHelper->WaitForIdle();
+            VERIFY_ARE_EQUAL(1u, closedCount);
+
+            RunOnUIThread([&]() { group->CurrentStateChanged -= failingToken; });
+        }
+    }
+
+    void SplitViewIntegrationTests::DoesCompletePaneTransitionsAfterUndeliveredQueuedNotification()
+    {
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml::VisualStateGroup^ group = nullptr;
+        wf::EventRegistrationToken failingToken{};
+        wf::EventRegistrationToken unhandledToken{};
+        auto hasFailed = std::make_shared<bool>(false);
+        auto handledCount = std::make_shared<unsigned int>(0);
+        unsigned int openedCount = 0;
+        unsigned int closedCount = 0;
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        TestCleanupWrapper cleanup([&]()
+        {
+            RunOnUIThread([&]()
+            {
+                if (group)
+                {
+                    group->CurrentStateChanged -= failingToken;
+                }
+                if (unhandledToken.Value != 0)
+                {
+                    xaml::Application::Current->UnhandledException -= unhandledToken;
+                }
+            });
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        openedRegistration.Attach(splitView, [&]() { ++openedCount; });
+        closedRegistration.Attach(splitView, [&]() { ++closedCount; });
+        RunOnUIThread([&]()
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            for (auto candidate : xaml::VisualStateManager::GetVisualStateGroups(templateRoot))
+            {
+                if (candidate->Name == L"DisplayModeStates")
+                {
+                    group = candidate;
+                }
+            }
+            VERIFY_IS_NOT_NULL(group);
+
+            // The built-in manager delivers the notification later; if its failure reaches the
+            // app, the app handles it.
+            unhandledToken = xaml::Application::Current->UnhandledException += ref new xaml::UnhandledExceptionEventHandler(
+                [handledCount](Platform::Object^, xaml::UnhandledExceptionEventArgs^ args)
+                {
+                    ++*handledCount;
+                    args->Handled = true;
+                });
+
+            // Attached before SplitView's own handler, which is attached on the first pane request.
+            failingToken = group->CurrentStateChanged += ref new xaml::VisualStateChangedEventHandler(
+                [hasFailed](Platform::Object^, xaml::VisualStateChangedEventArgs^)
+                {
+                    if (!*hasFailed)
+                    {
+                        *hasFailed = true;
+                        throw ref new Platform::FailureException();
+                    }
+                });
+
+            splitView->IsPaneOpen = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_TRUE(*hasFailed);
+        // The posted delivery's failure does not always reach UnhandledException (it did not in
+        // the test host), so only log it; either way SplitView must not have seen the notification.
+        LOG_OUTPUT(L"UnhandledException raised: %u", *handledCount);
+
+        RunOnUIThread([&]() { splitView->IsPaneOpen = false; });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, closedCount);
+
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_ARE_EQUAL(1u, openedCount);
+    }
+
+    void SplitViewIntegrationTests::DoesOrderCompletionsWhenPaneOpeningAddsDisplayModeStates()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::SplitView^ splitView = nullptr;
+        xaml_controls::ControlTemplate^ displayModeTemplate = nullptr;
+        std::wstring completionOrder;
+        bool closedFromOpening = false;
+        bool applied = false;
+        auto openingRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpening);
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneOpened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::SplitView, PaneClosed);
+
+        RunOnUIThread([&]()
+        {
+            splitView = ref new xaml_controls::SplitView();
+            splitView->Width = 500;
+            splitView->Height = 400;
+            splitView->Template = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="SplitView">
+                        <Grid/>
+                    </ControlTemplate>)"));
+            displayModeTemplate = safe_cast<xaml_controls::ControlTemplate^>(xaml_markup::XamlReader::Load(
+                LR"(<ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="SplitView">
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="DisplayModeStates">
+                                    <VisualState x:Name="Closed"/>
+                                    <VisualState x:Name="OpenOverlayLeft"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>)"));
+            TestServices::WindowHelper->WindowContent = splitView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The handler is raised from inside the framework, so it only records what happened.
+        openingRegistration.Attach(splitView, [&]()
+        {
+            if (!closedFromOpening)
+            {
+                closedFromOpening = true;
+                splitView->Template = displayModeTemplate;
+                applied = splitView->ApplyTemplate();
+                auto templateRoot = dynamic_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+                if (templateRoot)
+                {
+                    // The close then completes synchronously, while the opening is still running.
+                    xaml::VisualStateManager::SetCustomVisualStateManager(templateRoot,
+                        ref new SynchronousSplitViewVisualStateManager(true /*catchFailures*/));
+                }
+                splitView->IsPaneOpen = false;
+            }
+        });
+        openedRegistration.Attach(splitView, [&]() { completionOrder += L"O"; });
+        closedRegistration.Attach(splitView, [&]() { completionOrder += L"C"; });
+        RunOnUIThread([&]() { splitView->IsPaneOpen = true; });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(closedFromOpening);
+            VERIFY_IS_TRUE(applied);
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(splitView, 0));
+            VERIFY_IS_NOT_NULL(dynamic_cast<SynchronousSplitViewVisualStateManager^>(xaml::VisualStateManager::GetCustomVisualStateManager(templateRoot)));
+            VERIFY_IS_FALSE(splitView->IsPaneOpen);
+        });
+        LOG_OUTPUT(L"Completion order: %s", completionOrder.c_str());
+        VERIFY_IS_TRUE(completionOrder == L"OC");
+    }
+
     void SplitViewIntegrationTests::DoesFireOpenedAndClosedEventsWhenRetemplated()
     {
         TestCleanupWrapper cleanup;

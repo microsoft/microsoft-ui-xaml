@@ -20,6 +20,13 @@ public:
 
     _Check_return_ HRESULT CreateFrameworkPeer(_Outptr_ IInspectable** ppPeer) override;
 
+    uint64_t GetCurrentStateChangedSequence() const { return m_currentStateChangedSequence; }
+    void SetCurrentStateChangedSequence(uint64_t sequence) { m_currentStateChangedSequence = sequence; }
+
+    // Queued (built-in) notifications are delivered in the order they were raised.
+    bool IsCurrentStateChangedQueued() const { return m_isCurrentStateChangedQueued; }
+    void SetCurrentStateChangedQueued() { m_isCurrentStateChangedQueued = true; }
+
     // OldState property.
     _Check_return_ HRESULT get_OldState(_Outptr_result_maybenull_ CVisualState** ppValue)
     {
@@ -60,6 +67,7 @@ private:
     xref_ptr<CVisualState> m_spOldState;
     xref_ptr<CVisualState> m_spNewState;
     xref_ptr<CControl> m_spControl;
+    uint64_t m_currentStateChangedSequence{ 0 };
+    bool m_isCurrentStateChangedQueued{ false };
 
 };
-
