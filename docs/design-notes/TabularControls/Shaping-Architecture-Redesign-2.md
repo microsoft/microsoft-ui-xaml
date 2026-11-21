@@ -79,7 +79,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 3 | Source collection resolution: `CollectionAccessor2` | `Source/CollectionAccessor2.h/.cpp` | Implemented |
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/Hierarchy/*.h` | `SourceRecord`, `SourceTable` and both strategies implemented (`ParentBy`, `ChildrenBy`, `ClearHierarchy`); not yet wired through `ShapingManager` |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
-| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h` | `ShapedNode` and `FenwickTree` implemented; the rest declared, not implemented |
+| 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h/.cpp`, `Engine/ShapedTree.cpp` | `ShapedNode`, `ShapeState`, `GroupNode`, `FenwickTree`, `GroupExpansion` and `ShapedTree` implemented; `ShapingEngine` declared, not implemented |
 | 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
@@ -3493,8 +3493,9 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
       `ScheduleRefresh`), groups the commit fields into `CommitState m_commit`, and declares the
       gates `CanRunVerb` / `CanReshape` / `CanDrain`. The spec gains the divergence and
       coordinator state tables.
-- [ ] Implement `ShapedTree` (`Engine/ShapedTree.cpp`) and `ShapedNode` helpers
-      (`ShapedParent`, `ShapedChildCount`, `ShapedChildAt`).
+- [x] Implement `ShapedTree` (`Engine/ShapedTree.cpp`), `GroupExpansion`
+      (`Engine/GroupExpansion.cpp`) and `ShapedNode` helpers (`ShapedParent`, `ShapedChildCount`,
+      `ShapedChildAt`). Drift #52–#55, #88–#90 in `TableViewSource2-Header-Changes-2.md`.
 
 The coordinator reacts to live-shaping events but does not own subscriptions; those live in
 `SourceTable` (Phase 1).
