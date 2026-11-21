@@ -18,11 +18,6 @@
 
 namespace
 {
-    bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
-    {
-        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
-    }
-
     bool TrySetColumnOwnerForTracking(winrt::TableView const& owner, winrt::TableViewColumn const& column)
     {
         if (!column)
@@ -48,18 +43,10 @@ double TableView::ComputeLeadingFrozenWidth()
     {
         // Only a contiguous leading prefix (from column 0) is frozen. A Leading flag on a
         // non-prefix column is ignored so it cannot corrupt the pinned-band layout.
-        for (auto const& column : columns)
-        {
-            if (!IsColumnOwnedBy(*this, column))
+        ForEachLeadingFrozenColumn(*this, columns, [&width](auto const& column)
             {
-                continue;
-            }
-            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-            {
-                break;
-            }
-            width += column.Visibility() == winrt::Visibility::Visible ? std::max(0.0, column.ActualWidth()) : 0.0;
-        }
+                width += column.Visibility() == winrt::Visibility::Visible ? std::max(0.0, column.ActualWidth()) : 0.0;
+            });
     }
     return width;
 }
@@ -165,6 +152,7 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         return;
     }
 
+    CancelColumnReorderDrag();
     ExpireLockedColumnHolds();
 
     // Detach the old vector so replaced Columns do not leak subscriptions or owners.
@@ -226,11 +214,21 @@ void TableView::OnColumnsVectorChanged(
     const winrt::IObservableVector<winrt::TableViewColumn>& sender,
     const winrt::IVectorChangedEventArgs& args)
 {
-    ExpireLockedColumnHolds();
+    CancelColumnReorderDrag();
 
     // Track columns incrementally so owner back-pointers stay in sync without diffing.
     const auto change = args.CollectionChange();
     const auto index = args.Index();
+
+    // Only the moving column's own remove and insert skip hold expiry and header release.
+    auto const moving = m_movingColumn.get();
+    const bool movingChange = moving &&
+        ((change == winrt::CollectionChange::ItemRemoved && index < m_trackedColumns.size() && m_trackedColumns[index].get() == moving) ||
+         (change == winrt::CollectionChange::ItemInserted && index < sender.Size() && sender.GetAt(index) == moving));
+    if (!movingChange)
+    {
+        ExpireLockedColumnHolds();
+    }
 
     switch (change)
     {
@@ -246,9 +244,11 @@ void TableView::OnColumnsVectorChanged(
                 ownsColumn = colImpl->SetOwningTableViewInternal(*this);
                 if (ownsColumn)
                 {
-                    // A re-inserted / recycled column instance may carry a stale grow-only accumulator
-                    // from a prior position or table; clear it so it re-grows from its content here.
-                    colImpl->ResetDesiredWidthInternal();
+                    // Clear a stale grow-only accumulator; a user reorder keeps the width already grown to.
+                    if (!movingChange)
+                    {
+                        colImpl->ResetDesiredWidthInternal();
+                    }
                     RestoreSortOfMovedColumn(col);
                 }
                 else
@@ -347,9 +347,8 @@ void TableView::OnColumnsVectorChanged(
         InvalidateMeasure();
     }
 
-    // A column that left may be added to another TableView before the queued rebuild runs. Last,
-    // because releasing runs app code that can change Columns again.
-    if (change != winrt::CollectionChange::ItemInserted)
+    // Release detached columns' headers last, as it runs app code; the moving column comes straight back.
+    if (change != winrt::CollectionChange::ItemInserted && !movingChange)
     {
         ReleaseHeaderCells(m_headerHost.get(), HeaderRelease::DetachedColumns);
     }
@@ -357,6 +356,7 @@ void TableView::OnColumnsVectorChanged(
 
 void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;
@@ -399,6 +399,11 @@ void TableView::OnColumnVisibilityChanged(const winrt::TableViewColumn& column)
     InvalidateMeasure();
     RefreshFrozenColumns();
     RefreshResizeGripperAvailability();
+    // Whether a header can be reordered depends on the visibility of the others.
+    if (CanUserReorderColumns())
+    {
+        RefreshHeaderTabStopsInternal();
+    }
 
     // UIA addresses only visible columns (IsVisibleColumn), so a visibility flip shifts column
     // indices just like an add/remove.
@@ -548,6 +553,7 @@ void TableView::OnColumnHeaderToolTipChanged(const winrt::TableViewColumn& colum
 
 void TableView::OnColumnFrozenEdgeChanged(const winrt::TableViewColumn& column)
 {
+    CancelColumnReorderDrag();
     if (!column)
     {
         return;

@@ -964,6 +964,9 @@ try
         m_bodyScrollerViewChangedToken = {};
         m_bodyScrollerSizeChangedRevoker.revoke();
     }
+    m_bodyManipulationStartedRevoker.revoke();
+    m_bodyManipulationCompletedRevoker.revoke();
+    m_bodyManipulating = false;
     m_headerScrollerViewChangedRevoker.revoke();
 
     // Reset resolved-on-Loaded refs so re-templating re-resolves them against the new tree.
@@ -977,6 +980,10 @@ try
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
+    CancelColumnReorderDrag();
+    m_suppressHeaderTap = false;
+    m_columnReorderIndicator.set(nullptr);
+    HookColumnReorderInput();
     // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
     // has all three, so a missing one is the app's template.
     if (!m_rowsRepeater.get() || !m_headerRow.get() || !m_headerHost.get())
@@ -1194,10 +1201,20 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         if (scroller)
         {
             m_headerScrollerViewChangedRevoker = scroller.ViewChanged(winrt::auto_revoke,
-                [weakThis = get_weak()](winrt::IInspectable const&, winrt::ScrollViewerViewChangedEventArgs const&)
+                [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const&)
                 {
                     if (auto const strongThis = weakThis.get())
                     {
+                        // The drag's geometry is stale once the band scrolls. Layout raises this, so cancel on the next tick.
+                        if (auto& drag = strongThis->m_columnReorder; drag && drag->dragging && !drag->stale &&
+                            std::abs(sender.as<winrt::ScrollViewer>().HorizontalOffset() - drag->headerOffset) >= 0.5)
+                        {
+                            drag->stale = true;
+                            if (auto const dispatcher = strongThis->DispatcherQueue())
+                            {
+                                dispatcher.TryEnqueue([weakThis]() { if (auto const table = weakThis.get()) { table->CancelColumnReorderDrag(); } });
+                            }
+                        }
                         strongThis->UpdateHeaderScrollOffset();
                     }
                 });
@@ -1250,6 +1267,24 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                         strongThis->InvalidateMeasure();
                         strongThis->RefreshFrozenColumns();
                         strongThis->QueueTerminalGridLineRefresh();
+                    }
+                });
+
+            m_bodyManipulationStartedRevoker = bodyScroller.DirectManipulationStarted(winrt::auto_revoke,
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->m_bodyManipulating = true;
+                        strongThis->CancelColumnReorderDrag();
+                    }
+                });
+            m_bodyManipulationCompletedRevoker = bodyScroller.DirectManipulationCompleted(winrt::auto_revoke,
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->m_bodyManipulating = false;
                     }
                 });
 
@@ -1354,6 +1389,7 @@ void TableView::StartHeaderScrollAnimation()
         return;
     }
 
+    CancelColumnReorderDrag();
     SyncHeaderScroller();
     // ChangeView raises ViewChanging synchronously, and a handler can re-template or unload the TableView.
     if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
@@ -3729,7 +3765,12 @@ void TableView::RebuildHeadersCore()
                     }
                     if (auto strongThis = weakThis.get())
                     {
-                        if (strongThis->ToggleSortDirection(column))
+                        // A press that became a reorder drag is not a click.
+                        if (strongThis->ConsumeColumnReorderTap())
+                        {
+                            args.Handled(true);
+                        }
+                        else if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
                         }
@@ -4053,10 +4094,15 @@ void TableView::QueueRebuildHeaders()
 
     m_rebuildHeadersQueued = true;
     auto weakThis = get_weak();
-    if (!dispatcher.TryEnqueue([weakThis]()
+    if (!dispatcher.TryEnqueue([weakThis, generation = m_rebuildHeadersQueueGeneration]()
         {
             if (auto strongThis = weakThis.get())
             {
+                // A user reorder already ran this rebuild.
+                if (generation != strongThis->m_rebuildHeadersQueueGeneration)
+                {
+                    return;
+                }
                 strongThis->m_rebuildHeadersQueued = false;
                 try
                 {
@@ -4174,6 +4220,7 @@ void TableView::OnTableViewUnloaded()
     m_xamlRootChangedRevoker.revoke();
     m_layoutRasterizationScale = 0.0;
     CancelColumnResizeDrag();
+    CancelColumnReorderDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
@@ -4259,6 +4306,9 @@ void TableView::OnTableViewUnloaded()
         }
     }
     m_bodyScrollerSizeChangedRevoker.revoke();
+    m_bodyManipulationStartedRevoker.revoke();
+    m_bodyManipulationCompletedRevoker.revoke();
+    m_bodyManipulating = false;
     m_headerScrollerViewChangedRevoker.revoke();
     m_bodyScroller.set(nullptr);
     m_headerScroller.set(nullptr);

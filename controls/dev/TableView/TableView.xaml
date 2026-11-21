@@ -60,6 +60,13 @@
                                             BorderThickness="0,0,0,1"
                                             IsHitTestVisible="False"
                                             AutomationProperties.AccessibilityView="Raw" />
+                                    <Rectangle x:Name="PART_ColumnReorderIndicator"
+                                               x:Load="False"
+                                               Visibility="Collapsed"
+                                               HorizontalAlignment="Left"
+                                               IsHitTestVisible="False"
+                                               Width="{ThemeResource TableViewColumnReorderIndicatorWidth}"
+                                               Fill="{ThemeResource TableViewColumnReorderIndicatorBrush}" />
                                 </Grid>
                             </Border>
                             <ScrollViewer x:Name="PART_BodyScroller"

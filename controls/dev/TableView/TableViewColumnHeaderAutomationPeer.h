@@ -66,6 +66,7 @@ public:
 private:
     winrt::FrameworkElement GetHeaderElement();
     bool IsSortableColumn();
+    hstring GetSortAndToolTipHelpText();
     bool IsResizableColumn();
     int32_t GetColumnIndex();
 

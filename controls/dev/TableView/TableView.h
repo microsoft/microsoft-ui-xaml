@@ -17,6 +17,7 @@
 #include "TableView.properties.h"
 #include "TableViewRowInfo.h"
 #include "TableViewTip.h"
+#include "DragEscapeHook.h"
 
 // ThemeSettings (Microsoft.UI.System) is used below for UI-thread High Contrast change notifications.
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
@@ -1361,6 +1362,8 @@ private:
     winrt::event_token m_bodyScrollerViewChangedToken{};
     // Body-viewport resize invalidates measure so Star columns resolve during the table layout pass.
     winrt::FrameworkElement::SizeChanged_revoker m_bodyScrollerSizeChangedRevoker{};
+    winrt::ScrollViewer::DirectManipulationStarted_revoker m_bodyManipulationStartedRevoker{};
+    winrt::ScrollViewer::DirectManipulationCompleted_revoker m_bodyManipulationCompletedRevoker{};
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
@@ -1752,4 +1755,64 @@ private:
 
     int32_t GetFocusedRowIndex() const;
     int32_t GetEstimatedRowsPerPage(); // Non-const — GetDensityRowMinHeight() mutates the resource cache.
+
+    // --- Column reorder (TableView_ColumnReorder.cpp) ---
+public:
+    void OnCanUserReorderColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    // A neighbouring position is allowed, so the header is actionable.
+    bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
+    void CancelColumnReorderDrag();
+
+private:
+    // The visible owned columns other than the moving one; own is its slot among them, [min, max] the allowed slots.
+    struct ColumnReorderSlots
+    {
+        std::vector<winrt::TableViewColumn> others;
+        int32_t own{ -1 };
+        int32_t min{ 0 };
+        int32_t max{ 0 };
+    };
+
+    // A header press that becomes a reorder once its manipulation starts. Header-row coordinates.
+    struct ColumnReorderDragState
+    {
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        winrt::Pointer pointer{ nullptr };
+        double pressX{ 0.0 };
+        double pointerX{ 0.0 };
+        bool dragging{ false };
+        // The header band scrolled; the drag ends without a drop.
+        bool stale{ false };
+        double headerOffset{ 0.0 };
+        double bandEdge{ -std::numeric_limits<double>::infinity() };
+        ColumnReorderSlots slots;
+        // Leading and trailing edge of each of slots.others.
+        std::vector<std::pair<double, double>> edges;
+    };
+
+    void HookColumnReorderInput();
+    void OnHeaderHostPointerPressedForReorder(const winrt::PointerRoutedEventArgs& args);
+    winrt::TableViewColumn HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell);
+    bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
+    bool BeginColumnReorderDrag();
+    bool UpdateColumnReorderDrag(double translationX);
+    void EndColumnReorderDrag(bool commit);
+    static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state);
+    bool ConsumeColumnReorderTap();
+    ColumnReorderSlots GetColumnReorderSlots(const winrt::TableViewColumn& column, bool fullRange);
+    int32_t ColumnReorderTargetIndex(const winrt::TableViewColumn& column, const ColumnReorderSlots& slots, int32_t slot);
+    bool IsColumnMoveAllowed(uint32_t from, uint32_t to);
+    bool TryReorderColumn(const winrt::TableViewColumn& column, int32_t slot);
+
+    std::optional<ColumnReorderDragState> m_columnReorder;
+    tracker_ref<winrt::Rectangle> m_columnReorderIndicator{ this };
+    DragEscapeHook m_columnReorderEscape;
+    winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
+    bool m_suppressHeaderTap{ false };
+    bool m_bodyManipulating{ false };
+    uint32_t m_rebuildHeadersQueueGeneration{ 0 };
+    winrt::weak_ref<winrt::UIElement> m_columnReorderHookedHost{ nullptr };
+    std::vector<std::pair<winrt::RoutedEvent, winrt::IInspectable>> m_columnReorderHandlers;
+    // The host's own ManipulationMode local value, restored on unhook.
+    winrt::IInspectable m_columnReorderSavedManipulationMode{ nullptr };
 };

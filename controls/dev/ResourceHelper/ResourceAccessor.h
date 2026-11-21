@@ -158,6 +158,8 @@ public:
 #define SR_ResizeGripperName L"ResizeGripperName"
 #define SR_ResizeGripperNameFormat L"ResizeGripperNameFormat"
 #define SR_TableViewColumnWidthChanged L"TableViewColumnWidthChanged"
+#define SR_TableViewColumnMoved L"TableViewColumnMoved"
+#define SR_TableViewColumnMoveHelpText L"TableViewColumnMoveHelpText"
 #define SR_TableViewRowExpanded L"TableViewRowExpanded"
 #define SR_TableViewRowCollapsed L"TableViewRowCollapsed"
 #define SR_TableViewCellLocalizedControlType L"TableViewCellLocalizedControlType"
