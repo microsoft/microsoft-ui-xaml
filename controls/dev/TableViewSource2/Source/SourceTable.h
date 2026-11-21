@@ -198,8 +198,12 @@ public:
     //   2. Match: MatchRecords() for the root, strategy->MatchForRefresh() for each child feed.
     //      Unmatched records leave the lookups before anything is created.
     //   3. Link: CommitRecords(), ResetTreeToFlat(), strategy->Commit(). A parked strategy replaces
-    //      the current one between 2 and 3 (TakeChildRecords(), Release()).
+    //      the current one between 2 and 3 (TakeChildRecords(), Release()). Records parked in
+    //      m_zombies leave with this Reset.
     //   4. One Reset: Added = records created, Removed = records that left.
+    // Decided (D2): when a parked strategy's Prepare() throws, it is dropped, the re-read completes
+    // with the current strategy (one Reset, so changes made during the deferral show), and the
+    // error is rethrown.
     // A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion
     // flag. On success clears m_diverged and m_rereadDue after step 3, before the Reset is raised:
     // the table matches the source then, and a change made by a Reset handler is skipped (frozen)
@@ -392,18 +396,39 @@ private:
     // No table state is touched.
     static void ValidateItems(std::vector<winrt::Windows::Foundation::IInspectable> const& items);
 
-    // ValidateIncoming (host member, below): throws hresult_invalid_argument if any of `items` (an
-    // incoming item plus what m_hierarchy->CollectIncoming adds) is null, appears twice in `items`,
-    // or is already in the table outside `replacing` and its subtree (nullptr for an insert). Uses
-    // m_rawLookup then m_addressLookup; no table state is touched.
+    // ValidateIncoming (host member, below): throws hresult_invalid_argument if any of `items`
+    // (CollectIncomingItems: an incoming item plus what m_hierarchy->CollectIncoming adds) is null,
+    // appears twice in `items`, or is already in the table outside `replacing` and its leaving
+    // subtree (IsLeavingWith; nullptr for an insert). Uses m_rawLookup then m_addressLookup; no
+    // table state is touched. Not const: m_hierarchy->CollectIncoming keeps what it read as the
+    // incoming stage (decided, H1/H5).
+    std::vector<winrt::Windows::Foundation::IInspectable> CollectIncomingItems(
+        winrt::Windows::Foundation::IInspectable const& item);
 
-    // Internal source edits applied from root-collection notifications. InsertAt and ReplaceAt call
-    // ValidateIncoming() (over the item plus m_hierarchy->CollectIncoming) before mutating; on
-    // failure they set m_diverged and rethrow. Each then calls the strategy's OnInserted /
-    // OnRemoving / OnMoved (a replace is OnRemoving then OnInserted) before raising.
+    // True when existing leaves with replacing: a ChildrenBy descendant of the replaced root
+    // record. A ParentBy child is another root record, which stays.
+    bool IsLeavingWith(SourceRecord const* existing, SourceRecord const* replacing) const noexcept;
+
+    // Internal source edits applied from root-collection notifications. InsertAt and ReplaceAt
+    // validate before mutating; on failure they set m_diverged and rethrow.
+    //   Flat: the edit and its SourceChange.
+    //   Hierarchical (decided, A1): SourceTable updates m_records and the lookups; the strategy
+    //     links or unlinks the record and raises the change and what follows from it (OnInserted,
+    //     OnRemoving). A fault part way through a remove parks what is left in m_zombies and
+    //     requests a re-read. ReplaceAt (decided, D1) validates the incoming item against the
+    //     leaving record and subtree, then runs RemoveAt and InsertCollected, so the incoming
+    //     stage is read once (decided, H5). Move keeps the record's
+    //     parent; OnMoved re-places it among its siblings and a Move is raised when its sibling
+    //     index changed.
+    // InsertAt = CollectIncomingItems + ValidateIncoming + InsertCollected. Every throw between
+    // CollectIncomingItems and OnInserted calls m_hierarchy->DiscardIncoming().
     void InsertAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void RemoveAt(uint32_t index);
     void ReplaceAt(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
+
+    // InsertAt after the item (and any ChildrenBy subtree) was collected and validated: creates
+    // the record, inserts it and links and raises it (flat, or OnInserted from the stage).
+    void InsertCollected(uint32_t index, winrt::Windows::Foundation::IInspectable const& item);
     void Move(uint32_t fromIndex, uint32_t toIndex);
 
     // CreateRecord and RaiseSourceChanged are host members (below). RaiseSourceChanged raises
@@ -411,13 +436,14 @@ private:
     // queued: a re-entrant change is skipped), then destroys the records that left;
     // records in `removed` must already be out of their owner, the tree and the lookups. It fills
     // m_removedView from `removed` for SourceChange::Removed (see SourceRecord.h). When the
-    // handler throws, the caller's DrainPendingChanges is skipped, so it calls PostRereadIfOwed()
-    // before rethrowing; every raiser (the edits, Refresh(), the strategies) shares that path.
+    // handler throws, it parks `removed` in m_zombies (a consumer may still hold them) and, since
+    // the caller's DrainPendingChanges is skipped, calls PostRereadIfOwed() before rethrowing;
+    // every raiser (the edits, Refresh(), the strategies) shares that path.
 
-    // At the end of a notification handler, root or child: if the dispatch's EndFreeze returned
-    // true (re-read due, outermost, no hold), Refresh() (one Reset). This is the turn's one
-    // synchronous re-read; a change made during that Reset is posted by Refresh (PostReread).
-    void DrainPendingChanges();
+    // DrainPendingChanges is a host member (below): at the end of a notification handler, root or
+    // child, if the dispatch's EndFreeze returned true (re-read due, outermost, no hold),
+    // Refresh() (one Reset). This is the turn's one synchronous re-read; a change made during that
+    // Reset is posted by Refresh (PostReread).
 
     // PostReread() when a re-read is owed and no freeze or hold is open to report it. Refresh()'s
     // epilogue and RaiseSourceChanged's handler-fault path.
@@ -441,19 +467,29 @@ private:
 
     // SiblingsOf and Reparent are host members (below). SiblingsOf: the children list a record
     // with this parent lives in (parent->Children, or m_topLevel for nullptr); used only by tree
-    // maintenance, readers walk Parent / Children directly. Reparent: unlinks the record and links
-    // it under newParent at index, then UpdateDepths for the moved subtree.
-    void UpdateDepths(SourceRecord* record) noexcept;
+    // maintenance, readers walk Parent / Children directly. Reparent: unlinks the record (when it
+    // is linked) and links it under newParent at index (clamped), then UpdateDepths.
+    // UpdateDepths: sets record's Depth from its parent and, when it changed, its subtree's
+    // (pre-order, iterative). Not noexcept: the walk allocates.
+    void UpdateDepths(SourceRecord* record);
 
     // Makes every root record top-level with no children and Depth 0. Raises nothing; callers
     // release the old strategy first (it destroys the child feeds) and raise the Reset.
     void ResetTreeToFlat() noexcept;
 
+    // The verbs and ClearHierarchy (next null). Not held: Prepare(next) over the current root
+    // items (a throw leaves everything as it was), then TakeChildRecords() and Release() the old
+    // strategy, ResetTreeToFlat(), Commit(next) and one Reset. Held (DeferRefresh): parks next in
+    // m_pendingHierarchy. No-op when flat and next is null (and nothing is parked).
+    void ReplaceHierarchy(std::unique_ptr<SourceHierarchy> next);
+
     // Called from OnRecordPropertyChanged when m_hierarchy is set: m_hierarchy->Reevaluate, before
-    // ItemChanged is forwarded. Returns true if the tree changed.
+    // ItemChanged is forwarded. Goes through the gate of a single-item change (AdmitChange(false):
+    // frozen or held and diverged, skipped and owed; diverged, re-read now), then
+    // DrainPendingChanges. Returns true if the tree changed.
     bool ReevaluateHierarchy(SourceRecord* record, winrt::hstring const& propertyName);
 
-    // ---- ISourceHierarchyHost (private; see Source/Hierarchy/ISourceHierarchyHost.h) ------------------------
+    // ---- ISourceHierarchyHost (private; see Source/Hierarchy/ISourceHierarchyHost.h) --------
 
     ITrackerHandleManager const* TrackerOwner() const noexcept override;
     std::weak_ptr<ISourceHierarchyHost> WeakHost() noexcept override;
@@ -476,6 +512,8 @@ private:
         std::vector<SourceRecord*> const& added,
         std::vector<SourceRecordPtr>& removed) override;
     void RequestReset() noexcept override;
+    std::shared_ptr<ThreadBinding const> Binding() const noexcept override;
+    void DrainPendingChanges() override;
 
     // Null once detached (Clear()).
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
@@ -519,6 +557,13 @@ private:
     // Thread binding (see Threading and Source/ThreadBinding.h). Shared with every event lambda,
     // root, child collection and item.
     std::shared_ptr<ThreadBinding> m_binding{ std::make_shared<ThreadBinding>() };
+
+    // Records that left the table but may still be referenced downstream: a SourceChanged
+    // handler threw before it dropped them (RaiseSourceChanged parks them here), or a
+    // hierarchical remove faulted part way (RemoveAt). Kept alive until the next Refresh() reports
+    // them in its Reset's Removed; a parked record still in the table (a ParentBy exclusion raises
+    // a Remove for a record that stays) is not reported again. Clear() drops them.
+    std::vector<SourceRecordPtr> m_zombies;
 
     SourceChangedHandler m_sourceChanged;
     ItemChangedHandler m_itemChanged;

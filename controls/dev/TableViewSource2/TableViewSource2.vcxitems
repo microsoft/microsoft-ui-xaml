@@ -51,6 +51,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TableViewSource2.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TableViewSource2.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\CollectionAccessor2.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Hierarchy\ChildCollectionsHierarchy.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Hierarchy\ParentKeyHierarchy.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Source\Hierarchy\SourceHierarchy.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceRecord.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Source\SourceTable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Engine\FenwickTree.cpp" />

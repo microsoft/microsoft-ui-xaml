@@ -10,6 +10,7 @@
 #include <winrt/Windows.Foundation.h>
 
 #include "Source/SourceRecord.h"
+#include "Source/ThreadBinding.h"
 
 // The host side of the source-tree strategies (declarations only); see Source/Hierarchy/SourceHierarchy.h.
 
@@ -74,6 +75,15 @@ struct ISourceHierarchyHost
     // until one validates. Raises nothing itself. Only for rejections: a child Reset or
     // multi-item change goes through AdmitChange(true).
     virtual void RequestReset() noexcept = 0;
+
+    // The table's thread binding (decided, A2). Child-collection lambdas capture it and call
+    // ThrowIfOffBoundThread(*binding) before locking the host, as the root-collection lambdas do.
+    // Shared, not copied: ThreadBinding holds an atomic.
+    virtual std::shared_ptr<ThreadBinding const> Binding() const noexcept = 0;
+
+    // SourceTable::DrainPendingChanges (decided, A3): the end of a child notification handler
+    // that applied a change (never after AdmitChange returned false).
+    virtual void DrainPendingChanges() = 0;
 
 protected:
     ~ISourceHierarchyHost() = default;
