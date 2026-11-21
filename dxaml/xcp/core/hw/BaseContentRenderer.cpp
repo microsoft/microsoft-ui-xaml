@@ -104,14 +104,7 @@ BaseContentRenderer::MaskPartEnsureRealizationTexture(
 
     if (partHasContent)
     {
-        if (pPartBrush->GetTypeIndex() == KnownTypeIndex::ImageBrush)
-        {
-            CImageBrush *pPartImageBrush = static_cast<CImageBrush*>(pPartBrush);
-
-            partHasContent = (pPartImageBrush->GetSoftwareSurface() != nullptr);
-            IFC(pPartImageBrush->ReloadSoftwareSurfaceIfReleased());
-        }
-        else if (!hasBrushAnimation && pPartBrush->GetTypeIndex() == KnownTypeIndex::SolidColorBrush)
+        if (!hasBrushAnimation && pPartBrush->GetTypeIndex() == KnownTypeIndex::SolidColorBrush)
         {
             CSolidColorBrush *pPartSolidColorBrush = static_cast<CSolidColorBrush*>(pPartBrush);
 
