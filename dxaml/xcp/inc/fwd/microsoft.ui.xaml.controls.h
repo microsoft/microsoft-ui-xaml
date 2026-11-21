@@ -359,6 +359,7 @@ namespace Controls {
     interface IBitmapIconSourceStatics;
     interface IBitmapIconStatics;
     interface IBorder;
+    interface IBorderFactory;
     interface IBorder2;
     interface IBorderStatics;
     interface IBorderStatics2;
