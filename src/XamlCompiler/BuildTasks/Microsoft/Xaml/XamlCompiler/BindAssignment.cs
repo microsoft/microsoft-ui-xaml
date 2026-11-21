@@ -33,6 +33,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
 
         public BindPathStep BindBackStep { get; private set; }
+        internal bool NeedsDataRootForReverseAssignment =>
+            BindUniverse.NeedsStaticBindingsUpdate && ReverseAssignmentUsesDataRoot;
+        internal bool NeedsItemBindingInitialization =>
+            BindUniverse.NeedsStaticBindingsUpdate && IsTrackingTarget && UsesDataRoot(PathStep);
+
+        internal bool ReverseAssignmentUsesDataRoot => UsesDataRoot(BindBackStep ?? PathStep);
+
+        private static bool UsesDataRoot(BindPathStep step)
+        {
+            // Named elements come from the namescope, but a function on a static or named
+            // receiver can still depend on the item through its arguments.
+            if (step is RootNamedElementStep)
+            {
+                return false;
+            }
+            if (step is RootStep root)
+            {
+                return !root.IsElementRoot;
+            }
+            return (step.Parent != null && UsesDataRoot(step.Parent)) ||
+                step.Dependencies.Any(UsesDataRoot);
+        }
+
         public BindStatus BindStatus { get; set; }
         public string BindBackPath { get; }
         public String TargetNullValue { get; }

@@ -87,6 +87,7 @@ namespace winrt::");
         virtual ~IXamlBindings() {};
         virtual bool IsInitialized() = 0;
         virtual void Update() = 0;
+        virtual void UpdateStaticBindings() = 0;
         virtual bool SetDataRoot(IInspectable const& data) = 0;
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
@@ -149,21 +150,23 @@ namespace winrt::");
                     "er(pBindingsTracking);\r\n        }\r\n\r\n        virtual void StopTracking() overrid" +
                     "e\r\n        {\r\n            ReleaseAllListeners();\r\n            this->_isInitializ" +
                     "ed = false;\r\n        }\r\n\r\n        virtual bool IsInitialized() override\r\n       " +
-                    " {\r\n            return this->_isInitialized;\r\n        }\r\n\r\n        void Subscrib" +
-                    "eForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) ov" +
-                    "erride\r\n        {\r\n            this->_dataContextChangedToken = object.DataConte" +
-                    "xtChanged({ &handler, &XamlBindings::DataContextChanged });\r\n        }\r\n\r\n      " +
-                    "  virtual void Recycle() override\r\n        {\r\n            // Overridden in the b" +
-                    "inding class as needed.\r\n        }\r\n\r\n        virtual void ProcessBindings(IInsp" +
-                    "ectable const&, int, int, int32_t& nextPhase) override\r\n        {\r\n            /" +
-                    "/ Overridden in the binding class as needed.\r\n            nextPhase = -1;\r\n     " +
-                    "   }\r\n    };\r\n\r\n    struct XamlBindingTrackingBase\r\n    {\r\n        XamlBindingTr" +
-                    "ackingBase();\r\n        void SetListener(IXamlBindingTracking* pBindings);\r\n     " +
-                    "   \r\n        // Event handlers\r\n        void PropertyChanged(IInspectable const&" +
-                    " sender, PropertyChangedEventArgs const& e);\r\n        void CollectionChanged(IIn" +
-                    "spectable const& sender, NotifyCollectionChangedEventArgs const& e);\r\n        vo" +
-                    "id DependencyPropertyChanged(DependencyObject const& sender, DependencyProperty " +
-                    "const& prop);\r\n        void VectorChanged(IInspectable const& sender, ");
+                    " {\r\n            return this->_isInitialized;\r\n        }\r\n\r\n        void UpdateSt" +
+                    "aticBindings() override\r\n        {\r\n            // Only DataTemplates with forwa" +
+                    "rd static bindings override this hook.\r\n        }\r\n\r\n        void SubscribeForDa" +
+                    "taContextChanged(FrameworkElement const& object, XamlBindings& handler) override" +
+                    "\r\n        {\r\n            this->_dataContextChangedToken = object.DataContextChan" +
+                    "ged({ &handler, &XamlBindings::DataContextChanged });\r\n        }\r\n\r\n        virt" +
+                    "ual void Recycle() override\r\n        {\r\n            // Overridden in the binding" +
+                    " class as needed.\r\n        }\r\n\r\n        virtual void ProcessBindings(IInspectabl" +
+                    "e const&, int, int, int32_t& nextPhase) override\r\n        {\r\n            // Over" +
+                    "ridden in the binding class as needed.\r\n            nextPhase = -1;\r\n        }\r\n" +
+                    "    };\r\n\r\n    struct XamlBindingTrackingBase\r\n    {\r\n        XamlBindingTracking" +
+                    "Base();\r\n        void SetListener(IXamlBindingTracking* pBindings);\r\n        \r\n " +
+                    "       // Event handlers\r\n        void PropertyChanged(IInspectable const& sende" +
+                    "r, PropertyChangedEventArgs const& e);\r\n        void CollectionChanged(IInspecta" +
+                    "ble const& sender, NotifyCollectionChangedEventArgs const& e);\r\n        void Dep" +
+                    "endencyPropertyChanged(DependencyObject const& sender, DependencyProperty const&" +
+                    " prop);\r\n        void VectorChanged(IInspectable const& sender, ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.WindowsFoundationCollections)));
             this.Write("::IVectorChangedEventArgs const& e);\r\n        void MapChanged(IInspectable const&" +
                     " sender, ");
@@ -200,28 +203,30 @@ namespace winrt::");
                     "k_ref<ResolveType> const& wr)\r\n        {\r\n            return wr.get().Value();\r\n" +
                     "        }\r\n    };\r\n\r\n    template<typename T, typename TBindingsTracking> \r\n    " +
                     "struct ReferenceTypeXamlBindings : public XamlBindingsBase<TBindingsTracking>\r\n " +
-                    "   {\r\n    protected:\r\n        ReferenceTypeXamlBindings() {}\r\n\r\n        virtual " +
-                    "void Update_(T, int)\r\n        {\r\n            // Overridden in the binding class " +
-                    "as needed.\r\n        }\r\n\r\n    public:\r\n        T GetDataRoot()\r\n        {\r\n      " +
-                    "      return ResolveHelper<T>::Resolve(this->_dataRoot);\r\n        }\r\n\r\n        b" +
-                    "ool SetDataRoot(IInspectable const& data) override\r\n        {\r\n            if (d" +
-                    "ata)\r\n            {\r\n                this->_dataRoot = ::winrt::unbox_value<T>(d" +
-                    "ata);\r\n                return true;\r\n            }\r\n            return false;\r\n " +
-                    "       }\r\n\r\n        virtual void Update() override\r\n        {\r\n            this-" +
-                    ">Update_(this->GetDataRoot(), this->NOT_PHASED);\r\n            this->_isInitializ" +
-                    "ed = true;\r\n        }\r\n\r\n    private:\r\n         ::winrt::weak_ref<T> _dataRoot;\r" +
-                    "\n    };\r\n\r\n    template<typename T, typename TBindingsTracking> \r\n    struct Val" +
-                    "ueTypeXamlBindings : public XamlBindingsBase<TBindingsTracking>\r\n    {\r\n    prot" +
-                    "ected:\r\n        ValueTypeXamlBindings() {}\r\n\r\n        virtual void Update_(T, in" +
-                    "t)\r\n        {\r\n            // Overridden in the binding class as needed.\r\n      " +
-                    "  }\r\n\r\n    public:\r\n        T GetDataRoot()\r\n        {\r\n            return this-" +
-                    ">_dataRoot;\r\n        }\r\n\r\n        bool SetDataRoot(IInspectable const& data) ove" +
-                    "rride\r\n        {\r\n            if (data)\r\n            {\r\n                this->_d" +
-                    "ataRoot = ::winrt::unbox_value<T>(data);\r\n                return true;\r\n        " +
-                    "    }\r\n            return false;\r\n        }\r\n\r\n        virtual void Update() ove" +
-                    "rride\r\n        {\r\n            this->Update_(this->GetDataRoot(), this->NOT_PHASE" +
-                    "D);\r\n            this->_isInitialized = true;\r\n        }\r\n\r\n    private:\r\n      " +
-                    "  T _dataRoot;\r\n    };\r\n}");
+                    "   {\r\n    protected:\r\n        ReferenceTypeXamlBindings() {}\r\n\r\n        void Cle" +
+                    "arDataRoot()\r\n        {\r\n            this->_dataRoot = nullptr;\r\n        }\r\n\r\n  " +
+                    "      virtual void Update_(T, int)\r\n        {\r\n            // Overridden in the " +
+                    "binding class as needed.\r\n        }\r\n\r\n    public:\r\n        T GetDataRoot()\r\n   " +
+                    "     {\r\n            return ResolveHelper<T>::Resolve(this->_dataRoot);\r\n        " +
+                    "}\r\n\r\n        bool SetDataRoot(IInspectable const& data) override\r\n        {\r\n   " +
+                    "         if (data)\r\n            {\r\n                this->_dataRoot = ::winrt::un" +
+                    "box_value<T>(data);\r\n                return true;\r\n            }\r\n            re" +
+                    "turn false;\r\n        }\r\n\r\n        virtual void Update() override\r\n        {\r\n   " +
+                    "         this->Update_(this->GetDataRoot(), this->NOT_PHASED);\r\n            this" +
+                    "->_isInitialized = true;\r\n        }\r\n\r\n    private:\r\n         ::winrt::weak_ref<" +
+                    "T> _dataRoot;\r\n    };\r\n\r\n    template<typename T, typename TBindingsTracking> \r\n" +
+                    "    struct ValueTypeXamlBindings : public XamlBindingsBase<TBindingsTracking>\r\n " +
+                    "   {\r\n    protected:\r\n        ValueTypeXamlBindings() {}\r\n\r\n        void ClearDa" +
+                    "taRoot()\r\n        {\r\n            this->_dataRoot = T{};\r\n        }\r\n\r\n        vi" +
+                    "rtual void Update_(T, int)\r\n        {\r\n            // Overridden in the binding " +
+                    "class as needed.\r\n        }\r\n\r\n    public:\r\n        T GetDataRoot()\r\n        {\r\n" +
+                    "            return this->_dataRoot;\r\n        }\r\n\r\n        bool SetDataRoot(IInsp" +
+                    "ectable const& data) override\r\n        {\r\n            if (data)\r\n            {\r\n" +
+                    "                this->_dataRoot = ::winrt::unbox_value<T>(data);\r\n              " +
+                    "  return true;\r\n            }\r\n            return false;\r\n        }\r\n\r\n        v" +
+                    "irtual void Update() override\r\n        {\r\n            this->Update_(this->GetDat" +
+                    "aRoot(), this->NOT_PHASED);\r\n            this->_isInitialized = true;\r\n        }" +
+                    "\r\n\r\n    private:\r\n        T _dataRoot;\r\n    };\r\n}");
             return this.GenerationEnvironment.ToString();
         }
     }

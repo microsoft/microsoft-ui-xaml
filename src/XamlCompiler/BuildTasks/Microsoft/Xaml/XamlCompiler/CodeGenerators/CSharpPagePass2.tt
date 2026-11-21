@@ -410,6 +410,13 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             I<#=Model.CodeInfo.ClassName.ShortName#>_Bindings
         {
             private <#=bindUniverse.DataRootType#> dataRoot;
+<#+             if (bindUniverse.NeedsStaticBindingsUpdate && !bindUniverse.IsDataIndependentUntypedTemplate) {#>
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+<#+             }#>
+<#+             if (bindUniverse.NeedsItemBindingInitialization) {#>
+            private bool itemBindingsInitialized;
+<#+             }#>
 <#+             if (bindUniverse.NeededForOuterScopeElement) #>
 <#+             { #>
             #pragma warning disable 649
@@ -785,6 +792,13 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                  {
                     this.Update();
                  }
+<#+                 if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+<#+                 }#>
             }
 
             // IDataTemplateExtension
@@ -826,6 +840,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                             }
                         }
                         this.initialized = true;
+<#+                     if (bindUniverse.NeedsItemBindingInitialization) {#>
+                        this.itemBindingsInitialized |= this.hasDataRoot;
+<#+                     }#>
                         break;
 <#+                     foreach(KeyValuePair<int, List<PhaseAssignment>> kvp in bindUniverse.PhaseAssignments.Where(kvp => kvp.Key != 0).OrderBy(kvp => kvp.Key)) #>
 <#+                     { #>
@@ -847,7 +864,11 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                         break;
 <#+                     } #>
                 }
+<#+                 if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+                this.UpdateStaticBindings(1 << phase);
+<#+                 } else {#>
                 this.Update_(<#=ObjectCast(bindUniverse.RootStep.ValueType, "item")#>, 1 << phase);
+<#+                 }#>
             }
 
             public void Recycle()
@@ -904,9 +925,16 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             {
 <#+             if (bindUniverse.HasBindings)#>
 <#+             {#>
+<#+                 if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+                this.UpdateStaticBindings(NOT_PHASED);
+<#+                 } else {#>
                 this.Update_<#=bindUniverse.RootStep.CodeName#>(this.dataRoot, NOT_PHASED);
+<#+                 }#>
 <#+             }#>
                 this.initialized = true;
+<#+             if (bindUniverse.NeedsItemBindingInitialization) {#>
+                this.itemBindingsInitialized |= this.hasDataRoot;
+<#+             }#>
             }
 
             public void StopTracking()
@@ -915,6 +943,9 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             {#>
                 this.bindingsTracking.ReleaseAllListeners();
                 this.initialized = false;
+<#+                 if (bindUniverse.NeedsItemBindingInitialization) {#>
+                this.itemBindingsInitialized = false;
+<#+                 }#>
 <#+             }#>
             }
 
@@ -997,12 +1028,26 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             {#>
                 this.bindingsTracking.ReleaseAllListeners();
 <#+             }#>
-                if (newDataRoot != null)
+<#+             if (bindUniverse.IsDataIndependentUntypedTemplate) {#>
+                // Every binding path is item-independent; never convert an arbitrary item
+                // to the synthetic DataTemplate type just because it happens to be non-null.
+                this.dataRoot = default(<#=bindUniverse.DataRootType#>);
+                return true;
+<#+             } else {#>
+<#+             if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+                this.hasDataRoot = newDataRoot != null;
+<#+             }#>
+                if (<#=bindUniverse.NeedsStaticBindingsUpdate ? "this.hasDataRoot" : "newDataRoot != null"#>)
                 {
                     this.dataRoot = <#=ObjectCast(bindUniverse.DataRootType, "newDataRoot")#>;
                     return true;
                 }
+<#+             if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(<#=bindUniverse.DataRootType#>);
+<#+             }#>
                 return false;
+<#+             }#>
             }
 <#+             if (bindUniverse.RootElement.IsBindingFileRoot)#>
 <#+             {#>
@@ -1080,6 +1125,18 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
             // Update methods for each path node used in binding steps.
 <#+             }#>
+<#+             if (bindUniverse.NeedsStaticBindingsUpdate) {#>
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+<#+                 if (bindUniverse.RootStep.Children.OfType<RootNamedElementStep>().Any() || bindUniverse.ElementRootStep != null) {#>
+                <#=bindUniverse.BindingsClassName#> bindings = this;
+<#+                 }#>
+<#+                 Output_Update_Steps(false, "this", bindUniverse.RootStep.Children.OfType<RootNamedElementStep>(), true, "phase");#>
+<#+                 Output_Update_Independent_Steps(bindUniverse);#>
+                this.initialized = true;
+            }
+<#+             }#>
 <#+             foreach (BindPathStep bindStep in bindUniverse.BindPathSteps.Values.Where(bindStep => bindStep.IsIncludedInUpdate == true))#>
 <#+             {#>
             private void Update_<#=bindStep.CodeName#>(<#=GetUpdateParams(bindStep)#>)
@@ -1100,14 +1157,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                     Output_Binding_Phased_SetValue(distinctPhase, false, bindStep, false);#>
 <#+                 }#>
 <#+                 if (bindStep is RootStep) { #>
-<#+                     Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");#>
-<#+                     if (bindUniverse.ElementRootStep != null) #>
-<#+                     { #>
-<#+                         Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");#>
-<#+                     } #>
-<#+                     if (bindUniverse.NeedsCompleteUpdate) { #>
-                this.CompleteUpdate(phase);
-<#+                     }#>
+<#+                     Output_Update_Independent_Steps(bindUniverse);#>
 <#+                 }#>
             }
 <#+             }#>
@@ -1464,9 +1514,10 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
 <#+ private void Output_UpdateTwoWay(BindAssignment ba)#>
 <#+ {#>
+<#+     // Forward initialization and reverse receiver validity are separate requirements.#>
             private void UpdateTwoWay_<#=ba.ConnectionIdElement.ConnectionId#>_<#=ba.MemberName#>()
             {
-                if (this.initialized)
+                if (this.<#=ba.NeedsItemBindingInitialization ? "itemBindingsInitialized" : "initialized"#><#=ba.NeedsDataRootForReverseAssignment ? " && this.hasDataRoot" : ""#>)
                 {
 <#+             MethodStep bindBackStep = ba.BindBackStep as MethodStep; #>
 <#+             if (bindBackStep != null)#>
@@ -1992,6 +2043,18 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+     }#>
 <#+ }#>
 
+<#+ private void Output_Update_Independent_Steps(BindUniverse bindUniverse)#>
+<#+ {#>
+<#+     // Both independent root kinds must be restored before draining queued function bindings.#>
+<#+     Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent is StaticRootStep), false, "phase");#>
+<#+     if (bindUniverse.ElementRootStep != null) {#>
+<#+         Output_Update_Steps(false, "this", bindUniverse.BindPathSteps.Values.Where(s => s.Parent == bindUniverse.ElementRootStep), false, "phase");#>
+<#+     }#>
+<#+     if (bindUniverse.NeedsCompleteUpdate) {#>
+                this.CompleteUpdate(phase);
+<#+     }#>
+<#+ }#>
+
 <#+ private void Output_TryGetValueFunctions(BindUniverse bindUniverse)#>
 <#+ {#>
 <#+     foreach (BindPathStep step in bindUniverse.TryGetValueSteps)#>
@@ -1999,6 +2062,14 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 
             private bool <#=step.TryGetValueCodeName#>(out <#=step.ValueType#> val)
             {
+<#+         if (bindUniverse.NeedsStaticBindingsUpdate && step is RootStep root && !root.IsElementRoot) {#>
+                // A missing value-type item must not resolve successfully as its default value.
+                if (!this.hasDataRoot)
+                {
+                    val = default(<#=step.ValueType#>);
+                    return false;
+                }
+<#+         }#>
 <#+         if (!step.IsRetrievedThroughParent) {#>
                 val = <#=step.CodeGen().PathExpression#>;
                 return true;

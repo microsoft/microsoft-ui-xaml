@@ -42,6 +42,7 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
         virtual ~IXamlBindings() {};
         virtual bool IsInitialized() = 0;
         virtual void Update() = 0;
+        virtual void UpdateStaticBindings() = 0;
         virtual bool SetDataRoot(IInspectable const& data) = 0;
         virtual void StopTracking() = 0;
         virtual void Connect(int connectionId, IInspectable const& target) = 0;
@@ -138,6 +139,11 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
             return this->_isInitialized;
         }
 
+        void UpdateStaticBindings() override
+        {
+            // Only DataTemplates with forward static bindings override this hook.
+        }
+
         void SubscribeForDataContextChanged(FrameworkElement const& object, XamlBindings& handler) override
         {
             this->_dataContextChangedToken = object.DataContextChanged({ &handler, &XamlBindings::DataContextChanged });
@@ -203,6 +209,11 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
     protected:
         ReferenceTypeXamlBindings() {}
 
+        void ClearDataRoot()
+        {
+            this->_dataRoot = nullptr;
+        }
+
         virtual void Update_(T, int)
         {
             // Overridden in the binding class as needed.
@@ -239,6 +250,11 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
     {
     protected:
         ValueTypeXamlBindings() {}
+
+        void ClearDataRoot()
+        {
+            this->_dataRoot = T{};
+        }
 
         virtual void Update_(T, int)
         {

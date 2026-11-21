@@ -260,6 +260,22 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         internal bool NeedsIDataTemplateExtension => !IsFileRoot && !RootElement.Type.IsDerivedFromControlTemplate();
 
+        // Parsing BindBack or event handlers can add static roots that have no forward update.
+        // Only a forward-bound static path may initialize a template without a data item.
+        internal bool NeedsStaticBindingsUpdate => NeedsIDataTemplateExtension &&
+            BindPathSteps.Values.Any(step => step.IsIncludedInUpdate && step.Parent is StaticRootStep);
+
+        internal bool NeedsItemBindingInitialization =>
+            BindAssignments.Any(assignment => assignment.NeedsItemBindingInitialization);
+
+        // Omit the synthetic root conversion only when no path needs the item, not merely
+        // because a static binding exists. Root assignments/dependents include whole-item
+        // bindings/arguments; all children include reverse-only receivers and event paths.
+        internal bool IsDataIndependentUntypedTemplate => NeedsStaticBindingsUpdate &&
+            RootElement.IsUntypedDataTemplateRoot &&
+            !RootStep.BindAssignments.Any() && !RootStep.Dependents.Any() &&
+            RootStep.Children.All(step => step is RootNamedElementStep);
+
         internal bool NeedsIDataTemplateComponent => !IsFileRoot;
 
         internal IEnumerable<string> DistinctConvertersUsed

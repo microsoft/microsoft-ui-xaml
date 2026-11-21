@@ -75,6 +75,11 @@ void XamlBindings::DataContextChanged(
     {
         Update();
     }
+    else
+    {
+        // SetDataRoot detached listeners; restore only sources that do not need an item.
+        _pBindings->UpdateStaticBindings();
+    }
 }
 
 void XamlBindings::SubscribeForDataContextChanged(FrameworkElement const& object)

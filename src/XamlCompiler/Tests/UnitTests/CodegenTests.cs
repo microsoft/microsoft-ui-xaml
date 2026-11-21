@@ -427,6 +427,43 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void Runtime_StaticTemplateBindings_CSharp()
+        {
+            RunStaticTemplateBindingTests("BindTestbedCS", "BindTestbedCS", "BindTestbedCS.exe");
+        }
+
+        [TestMethod]
+        public void Runtime_StaticTemplateBindings_CppWinRT()
+        {
+            RunStaticTemplateBindingTests("BindTestbedCppWinRT", "BindTestbedCppWinRT", "BindTestbed.exe");
+        }
+
+        [TestMethod]
+        public void Runtime_StaticTemplateBindings_CppWinRTIncremental()
+        {
+            RunStaticTemplateBindingTests("BindTestbedCppWinRT", "BindTestbedCppWinRTIncremental", "BindTestbed.exe");
+        }
+
+        private static void RunStaticTemplateBindingTests(string sourceProject, string projectName, string executableName)
+        {
+            string executable = Path.Combine(CodegenRoot.Value,
+                @"CompilerTests\Features\CompiledBinding", sourceProject, projectName, executableName);
+            string output = RunRegressionApplication(executable, "--test-static-template-bindings", projectName);
+            Console.WriteLine(output);
+            // Require every runtime group, not just a successful launch or the old opt-in success marker.
+            StringAssert.Contains(output, "Initial null-content templates passed.");
+            StringAssert.Contains(output, "TwoWay binding initialization passed.");
+            StringAssert.Contains(output, "Untyped template contexts and transitions passed.");
+            StringAssert.Contains(output, "Untyped template component entry points passed.");
+            if (sourceProject == "BindTestbedCppWinRT")
+            {
+                StringAssert.Contains(output, "Unaffected template behavior passed.");
+            }
+            StringAssert.Contains(output, "ProcessBindings and recycling passed.");
+            StringAssert.Contains(output, "Static template binding tests passed.");
+        }
+
+        [TestMethod]
         public void Codegen_BindPhasingTestbedCppWinRT()
         {
             DiffCodegen(@"Features\BindPhasingTestBedCppWinRT\BindPhasingTestBedCppWinRT\generated");
@@ -476,16 +513,28 @@ namespace UnitTests
         {
             string executable = Path.Combine(CodegenRoot.Value,
                 @"CompilerTests\Features\Metadata\MetadataTestbedCppWinRT", projectName, "MetadataTestbedCppWinRT.exe");
-            Assert.IsTrue(File.Exists(executable), $"Build {projectName} before running this test: {executable}");
+            string output = RunRegressionApplication(executable, "--test-array-metadata", projectName);
+            StringAssert.Contains(output, "Array metadata tests passed.");
+        }
 
-            using (var process = Process.Start(new ProcessStartInfo(executable, "--test-array-metadata")
+        private static string RunRegressionApplication(string executable, string arguments, string projectName)
+        {
+            Assert.IsTrue(File.Exists(executable), $"Build {projectName} before running this test: {executable}");
+            var startInfo = new ProcessStartInfo(executable, arguments)
             {
                 WorkingDirectory = Path.GetDirectoryName(executable),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-            }))
+            };
+            // init pins the build SDK's DOTNET_ROOT, which may contain a different runtime major
+            // from the native app's managed component. Let its host resolve installed runtimes.
+            foreach (string variable in new[] { "DOTNET_ROOT", "DOTNET_ROOT_X64", "DOTNET_ROOT_X86", "DOTNET_ROOT_ARM64", "DOTNET_ROOT(x86)" })
+            {
+                startInfo.EnvironmentVariables.Remove(variable);
+            }
+            using (var process = Process.Start(startInfo))
             {
                 var output = process.StandardOutput.ReadToEndAsync();
                 var error = process.StandardError.ReadToEndAsync();
@@ -493,10 +542,10 @@ namespace UnitTests
                 {
                     process.Kill();
                     process.WaitForExit();
-                    Assert.Fail($"{projectName} array metadata tests timed out.\n{output.Result}\n{error.Result}");
+                    Assert.Fail($"{projectName} tests timed out.\n{output.Result}\n{error.Result}");
                 }
                 Assert.AreEqual(0, process.ExitCode, $"{projectName}\n{output.Result}\n{error.Result}");
-                StringAssert.Contains(output.Result, "Array metadata tests passed.");
+                return output.Result;
             }
         }
 
