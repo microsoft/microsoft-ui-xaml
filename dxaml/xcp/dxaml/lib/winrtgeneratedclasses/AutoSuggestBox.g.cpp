@@ -644,7 +644,11 @@ _Check_return_ HRESULT DirectUI::AutoSuggestBoxGenerated::EventRemoveHandlerByIn
 
 HRESULT DirectUI::AutoSuggestBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStatics)))
+    if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxFactory)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxFactory*>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStatics)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBoxStatics*>(this);
     }
@@ -656,7 +660,7 @@ HRESULT DirectUI::AutoSuggestBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 #endif
     else
     {
-        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -665,6 +669,29 @@ HRESULT DirectUI::AutoSuggestBoxFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 
 // Factory methods.
+IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBox** ppInstance)
+{
+
+#if DBG
+    // We play some games with reinterpret_cast and assuming that the GUID type table is accurate - which is somewhat sketchy, but
+    // really good for binary size.  This code is a sanity check that the games we play are ok.
+    const GUID uuidofGUID = __uuidof(ABI::Microsoft::UI::Xaml::Controls::IAutoSuggestBox);
+    const GUID metadataAPIGUID = MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetGuid();
+    const KnownTypeIndex typeIndex = GetTypeIndex();
+
+    if(uuidofGUID != metadataAPIGUID)
+    {
+        XAML_FAIL_FAST();
+    }
+#endif
+
+    // Can't just IFC(_RETURN) this because for some validate calls (those with multiple template parameters), the
+    // preprocessor gets confused at the "," in the template type-list before the function's opening parenthesis.
+    // So we'll use IFC_RETURN syntax with a local hr variable, kind of weirdly.
+    const HRESULT hr = ctl::ValidateFactoryCreateInstanceWithBetterAggregableCoreObjectActivationFactory(pOuter, ppInner, reinterpret_cast<IUnknown**>(ppInstance), GetTypeIndex(), false /*isFreeThreaded*/);
+    IFC_RETURN(hr);
+    return S_OK;
+}
 
 // Dependency properties.
 IFACEMETHODIMP DirectUI::AutoSuggestBoxFactory::get_MaxSuggestionListHeightProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
