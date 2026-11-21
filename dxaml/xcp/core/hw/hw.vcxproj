@@ -36,12 +36,14 @@
         <ClInclude Include="hwsurfacecache.h"/>
         <ClInclude Include="hwtexturemgr.h"/>
         <ClInclude Include="hwwalk.h"/>
+        <ClInclude Include="ImmediateRenderer.h"/>
         <ClInclude Include="ManipulationTransform.h"/>
         <ClInclude Include="precomp.h"/>
         <ClInclude Include="VisualContentRenderer.h"/>
 
         <ClCompile Include="CompositorTreeHost.cpp"/>
         <ClCompile Include="hwwalk.cpp"/>
+        <ClCompile Include="ImmediateRenderer.cpp"/>
         <ClCompile Include="hwcompnode.cpp"/>
         <ClCompile Include="DManipData.cpp"/>
         <ClCompile Include="hwtexturemgr.cpp"/>
