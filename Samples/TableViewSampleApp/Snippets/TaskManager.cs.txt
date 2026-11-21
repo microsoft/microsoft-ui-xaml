@@ -17,10 +17,14 @@ public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
 public TableViewSource Source { get; }
 
+private Task _columnOrderSave = Task.CompletedTask;
+
 // Keyed by header text, which this sample does not localize; a real app keys on something stable.
 private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
 {
-    AppSettings.SaveColumnOrder(ColumnOrderSetting, sender.Columns.Select(c => c.Header as string));
+    // Read the order on the UI thread; write the file off it, one save after another.
+    var order = sender.Columns.Select(c => c.Header as string).ToList();
+    _columnOrderSave = _columnOrderSave.ContinueWith(_ => AppSettings.SaveColumnOrder(ColumnOrderSetting, order), TaskScheduler.Default);
 }
 
 private void RestoreColumnOrder(IReadOnlyList<string> order)

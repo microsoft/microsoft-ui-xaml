@@ -361,6 +361,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, true))
                 {
+                    Verify.Fail("The CanUserReorderColumns checkbox was not found.");
                     return;
                 }
 
@@ -384,12 +385,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     age.SetFocus();
                     Wait.ForIdle();
-                    global::System.Threading.Thread.Sleep(500);
+                    recorder.WaitForQuiet();
                     recorder.Clear();
 
                     KeyboardHelper.PressKey(Key.Right, ModifierKey.Control | ModifierKey.Shift);
                     Wait.ForIdle();
-                    global::System.Threading.Thread.Sleep(1500);
+                    recorder.WaitUntil(snapshot => snapshot.Item1.Count > 0 && snapshot.Item2 > 0);
+                    recorder.WaitForQuiet();
 
                     ElementCache.Clear();
                     var order = new List<string>();
@@ -447,6 +449,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             public (List<string>, int) Snapshot()
             {
                 lock (_gate) { return (new List<string>(_notifications), _structureChanges); }
+            }
+
+            // UIA events arrive on a client thread after the action; poll instead of sleeping a fixed time.
+            public void WaitUntil(Func<(List<string>, int), bool> condition, int timeoutMs = 5000)
+            {
+                var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                while (!condition(Snapshot()) && stopwatch.ElapsedMilliseconds < timeoutMs)
+                {
+                    global::System.Threading.Thread.Sleep(50);
+                }
+            }
+
+            // Returns once no event has arrived for quietMs, or after timeoutMs.
+            public void WaitForQuiet(int quietMs = 300, int timeoutMs = 3000)
+            {
+                var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                var last = Snapshot();
+                long changedAt = 0;
+                while (stopwatch.ElapsedMilliseconds - changedAt < quietMs && stopwatch.ElapsedMilliseconds < timeoutMs)
+                {
+                    global::System.Threading.Thread.Sleep(50);
+                    var current = Snapshot();
+                    if (current.Item1.Count != last.Item1.Count || current.Item2 != last.Item2)
+                    {
+                        last = current;
+                        changedAt = stopwatch.ElapsedMilliseconds;
+                    }
+                }
             }
         }
 

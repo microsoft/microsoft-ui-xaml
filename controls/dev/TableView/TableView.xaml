@@ -65,7 +65,7 @@
                                                Visibility="Collapsed"
                                                HorizontalAlignment="Left"
                                                IsHitTestVisible="False"
-                                               Width="{StaticResource TableViewColumnReorderIndicatorWidth}"
+                                               Width="{ThemeResource TableViewColumnReorderIndicatorWidth}"
                                                Fill="{ThemeResource TableViewColumnReorderIndicatorBrush}" />
                                 </Grid>
                             </Border>

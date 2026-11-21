@@ -116,6 +116,10 @@
     <value>Column %1!s! width: %2!s! pixels.</value>
     <comment>Assistive-technology announcement raised when a TableView column is resized, by pointer or by keyboard, while its header has focus. %1!s! is the column header text; %2!s! is the whole-pixel width.</comment>
   </data>
+  <data name="TableViewColumnMoveHelpText" xml:space="preserve">
+    <value>Ctrl+Shift+Left or Right to move the column</value>
+    <comment>Help text reported by a column header the user can move with the keyboard. Ctrl, Shift, Left and Right are keyboard keys; Left and Right follow reading order.</comment>
+  </data>
   <data name="TableViewColumnMoved" xml:space="preserve">
     <value>Moved %1!s! to column %2!s! of %3!s!.</value>
     <comment>Assistive-technology announcement raised when the user moves a TableView column by dragging its header or with Ctrl+Shift+Left/Right. %1!s! is the column header text; %2!s! is the column's new 1-based position among the visible columns; %3!s! is the number of visible columns.</comment>

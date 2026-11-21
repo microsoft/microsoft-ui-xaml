@@ -12,35 +12,17 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <vector>
-
-// User column reorder: a header drag and Ctrl+Shift+Left/Right (TableView_Keyboard.cpp) both apply through TryReorderColumn.
 
 static constexpr std::wstring_view s_ColumnReorderIndicatorPartName{ L"PART_ColumnReorderIndicator"sv };
 
 namespace
 {
-    bool IsOwnedBy(const winrt::TableViewColumn& column, const winrt::TableView& owner)
-    {
-        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
-    }
-
-    // Same rule as ComputeLeadingFrozenWidth.
     std::vector<winrt::TableViewColumn> FrozenPrefix(const std::vector<winrt::TableViewColumn>& order, const winrt::TableView& owner)
     {
         std::vector<winrt::TableViewColumn> prefix;
-        for (auto const& column : order)
-        {
-            if (!IsOwnedBy(column, owner))
-            {
-                continue;
-            }
-            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-            {
-                break;
-            }
-            prefix.push_back(column);
-        }
+        ForEachLeadingFrozenColumn(owner, order, [&prefix](auto const& column) { prefix.push_back(column); });
         return prefix;
     }
 }
@@ -48,13 +30,9 @@ namespace
 void TableView::OnCanUserReorderColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     CancelColumnReorderDrag();
+    m_suppressHeaderTap = false;
     HookColumnReorderInput();
     RefreshHeaderTabStopsInternal();
-}
-
-bool TableView::IsColumnMovingInternal(const winrt::TableViewColumn& column) const
-{
-    return column && m_movingColumn.get() == column;
 }
 
 bool TableView::CanUserMoveColumnInternal(const winrt::TableViewColumn& column)
@@ -88,7 +66,7 @@ TableView::ColumnReorderSlots TableView::GetColumnReorderSlots(const winrt::Tabl
 {
     ColumnReorderSlots slots;
     auto const columns = Columns();
-    if (!CanUserReorderColumns() || !columns || !IsOwnedBy(column, *this) || !IsVisibleColumn(column))
+    if (!CanUserReorderColumns() || !columns || !IsColumnOwnedBy(*this, column) || !IsVisibleColumn(column))
     {
         return slots;
     }
@@ -98,7 +76,7 @@ TableView::ColumnReorderSlots TableView::GetColumnReorderSlots(const winrt::Tabl
         {
             slots.own = static_cast<int32_t>(slots.others.size());
         }
-        else if (IsOwnedBy(other, *this) && IsVisibleColumn(other))
+        else if (IsColumnOwnedBy(*this, other) && IsVisibleColumn(other))
         {
             slots.others.push_back(other);
         }
@@ -160,18 +138,81 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
         return false;
     }
 
+    // The column cursor and body focus are visible indexes; carry them to their column's new index.
+    auto const visibleAt = [&columns](int32_t index)
+    {
+        for (auto const& candidate : columns)
+        {
+            if (IsVisibleColumn(candidate) && index-- == 0)
+            {
+                return candidate;
+            }
+        }
+        return winrt::TableViewColumn{ nullptr };
+    };
+    int32_t focusRow = -1;
+    int32_t focusIndex = -1;
+    bool focusCell = false;
+    auto const focusColumn = TryResolveLiveBodyFocusPosition(focusRow, focusIndex, focusCell) && focusCell ? visibleAt(focusIndex) : nullptr;
+    auto const cursorColumn = m_columnCursorEstablished ? visibleAt(m_currentCellColumn) : nullptr;
+    auto const lastFocusColumn = m_lastBodyFocusValid ? visibleAt(m_lastBodyFocusColumn) : nullptr;
+
     {
         m_movingColumn = winrt::make_weak(column);
         auto const movingGuard = wil::scope_exit([this]() noexcept { m_movingColumn = nullptr; });
-        columns.RemoveAt(from);
-        columns.InsertAt(static_cast<uint32_t>(to), column);
+        try
+        {
+            columns.RemoveAt(from);
+        }
+        catch (...)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh, true);
+            return false;
+        }
+        // VectorChanged handlers run between the two calls and can change Columns.
+        uint32_t ignored = 0;
+        if (Columns() != columns || static_cast<uint32_t>(to) > columns.Size() || columns.IndexOf(column, ignored))
+        {
+            return false;
+        }
+        try
+        {
+            columns.InsertAt(static_cast<uint32_t>(to), column);
+        }
+        catch (...)
+        {
+            TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh, true);
+            try { columns.InsertAt((std::min)(from, columns.Size()), column); } catch (...) {}
+            return false;
+        }
     }
 
     // Now, not on the queued tick: focus stays on the moved header, and a repeated key reads the new order.
     m_rebuildHeadersQueued = false;
     ++m_rebuildHeadersQueueGeneration;
-    RebuildHeaders();
-    InvalidateMeasure();
+    try
+    {
+        RebuildHeaders();
+        InvalidateMeasure();
+    }
+    catch (...)
+    {
+        TableViewTelemetry::ReportError(m_telemetrySession, 0, TableViewTip::Operation::HeaderRefresh, TableViewTip::Stage::HeaderRefresh, true);
+    }
+
+    if (cursorColumn)
+    {
+        SetColumnCursorInternal(VisibleColumnIndexOf(columns, cursorColumn));
+    }
+    if (lastFocusColumn)
+    {
+        m_lastBodyFocusColumn = (std::max)(0, VisibleColumnIndexOf(columns, lastFocusColumn));
+    }
+    // Removing the focused cell's column drops its focus; restore it once the row has laid out the cell.
+    if (focusColumn)
+    {
+        BeginPendingBodyFocus(focusRow, VisibleColumnIndexOf(columns, focusColumn), true /* cellLevel */, std::nullopt, nullptr);
+    }
 
     RaiseTableViewNotification(*this, winrt::AutomationNotificationKind::ActionCompleted, [&]()
         {
@@ -198,7 +239,7 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
     return true;
 }
 
-// Pointer: driven by the header host's manipulation, as the resize gripper is; System keeps vertical pans.
+// Pointer: driven by the header host's manipulation; System keeps vertical pans.
 
 void TableView::HookColumnReorderInput()
 {
@@ -210,6 +251,7 @@ void TableView::HookColumnReorderInput()
         return;
     }
 
+    m_suppressHeaderTap = false;
     if (hooked)
     {
         for (auto const& [routedEvent, handler] : m_columnReorderHandlers)
@@ -244,7 +286,13 @@ void TableView::HookColumnReorderInput()
             {
                 // A header cell losing its own capture bubbles here too; only the host's ends the drag.
                 auto const strongThis = weakThis.get();
-                if (strongThis && (!captureLost || args.OriginalSource() == strongThis->m_columnReorderHookedHost.get()))
+                if (!strongThis || !strongThis->m_columnReorder)
+                {
+                    return;
+                }
+                auto const& pointer = strongThis->m_columnReorder->pointer;
+                if (captureLost ? args.OriginalSource() == strongThis->m_columnReorderHookedHost.get() :
+                    pointer && args.Pointer().PointerId() == pointer.PointerId())
                 {
                     strongThis->CancelColumnReorderDrag();
                 }
@@ -330,13 +378,15 @@ bool TableView::BeginColumnReorderDrag()
     {
         state.slots = GetColumnReorderSlots(column, true /* fullRange */);
     }
-    if (!row || !host || state.slots.min >= state.slots.max)
+    // A body pan moves the header band by Translation, which TransformToVisual does not see.
+    auto const translation = host ? host.Translation() : winrt::float3{};
+    if (!row || !host || state.slots.min >= state.slots.max || m_bodyManipulating || translation.x != 0.0f)
     {
         m_columnReorder.reset();
         return false;
     }
 
-    // Header-row coordinates are logical, and the row does not scroll during the drag.
+    // Header-row coordinates; any header scroll during the drag cancels it.
     for (auto const& child : host.Children())
     {
         auto const cell = child.try_as<winrt::FrameworkElement>();
@@ -352,6 +402,13 @@ bool TableView::BeginColumnReorderDrag()
         m_columnReorder.reset();
         return false;
     }
+    // A scrolling column's slots start at the frozen band's trailing edge.
+    if (state.slots.min > 0)
+    {
+        state.bandEdge = state.edges[static_cast<size_t>(state.slots.min - 1)].second;
+    }
+    auto const headerScroller = m_headerScroller.get();
+    state.headerOffset = headerScroller ? headerScroller.HorizontalOffset() : 0.0;
 
     m_suppressHeaderTap = true;
     // Set before capturing: a header cell losing its capture re-enters the pointer handlers.
@@ -383,11 +440,13 @@ bool TableView::BeginColumnReorderDrag()
 
 int32_t TableView::ColumnReorderSlotAt(const ColumnReorderDragState& state)
 {
+    // A column hidden under the frozen band is skipped; a partly hidden one splits at its visible middle.
+    const double pointerX = (std::max)(state.pointerX, state.bandEdge);
     int32_t slot = state.slots.min;
     for (int32_t k = state.slots.min; k < state.slots.max; ++k)
     {
         auto const& [left, right] = state.edges[static_cast<size_t>(k)];
-        slot += state.pointerX > (left + right) / 2.0 ? 1 : 0;
+        slot += right <= state.bandEdge || pointerX > ((std::max)(left, state.bandEdge) + right) / 2.0 ? 1 : 0;
     }
     return slot;
 }
@@ -409,7 +468,7 @@ bool TableView::UpdateColumnReorderDrag(double translationX)
         return true;
     }
     const int32_t slot = ColumnReorderSlotAt(state);
-    if (slot == state.slots.own)
+    if (slot == state.slots.own || state.stale)
     {
         indicator.Visibility(winrt::Visibility::Collapsed);
         return true;
@@ -423,6 +482,7 @@ bool TableView::UpdateColumnReorderDrag(double translationX)
     {
         x = (std::max)(x, edges[index - 1].second);
     }
+    x = (std::max)(x, state.bandEdge);
     const double width = std::isnan(indicator.Width()) ? 0.0 : indicator.Width();
     indicator.Margin(winrt::Thickness{ std::clamp(x - width / 2.0, 0.0, (std::max)(0.0, row.ActualWidth() - width)), 0.0, 0.0, 0.0 });
     indicator.Visibility(winrt::Visibility::Visible);
@@ -462,7 +522,7 @@ void TableView::EndColumnReorderDrag(bool commit)
     {
         host.ReleasePointerCapture(state.pointer);
     }
-    if (auto const column = state.column.get(); commit && column)
+    if (auto const column = state.column.get(); commit && column && !state.stale)
     {
         TryReorderColumn(column, ColumnReorderSlotAt(state));
     }

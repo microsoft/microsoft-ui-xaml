@@ -9,6 +9,14 @@
 class DragEscapeHook
 {
 public:
+    DragEscapeHook() = default;
+    DragEscapeHook(const DragEscapeHook&) = delete;
+    DragEscapeHook& operator=(const DragEscapeHook&) = delete;
+    ~DragEscapeHook()
+    {
+        try { Detach(); } catch (...) {}
+    }
+
     // onEscape returns whether it consumed the key; an Escape with no drag in flight belongs to the app.
     void Attach(const winrt::XamlRoot& xamlRoot, std::function<bool()> onEscape)
     {

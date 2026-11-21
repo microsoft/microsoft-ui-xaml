@@ -36,6 +36,26 @@ namespace
 
         throw winrt::hresult_invalid_argument();
     }
+
+    // The format supplies its own separator; a first part written as a sentence would otherwise read "..".
+    winrt::hstring JoinHelpText(const winrt::hstring& first, const winrt::hstring& second)
+    {
+        auto const format = TryGetLocalizedString(SR_TableViewColumnHeaderHelpTextFormat);
+        if (format.empty())
+        {
+            return first;
+        }
+        std::wstring_view trimmed{ first };
+        while (!trimmed.empty() && (trimmed.back() == L'.' || trimmed.back() == L'\u3002' || std::iswspace(trimmed.back())))
+        {
+            trimmed.remove_suffix(1);
+        }
+        if (trimmed.empty())
+        {
+            return second;
+        }
+        return StringUtil::FormatString(format, std::wstring{ trimmed }.c_str(), second.c_str());
+    }
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
@@ -125,6 +145,19 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
 
 hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
 {
+    auto const helpText = GetSortAndToolTipHelpText();
+    auto const table = m_table.get();
+    auto const column = m_column.get();
+    if (!table || !column || !winrt::get_self<TableView>(table)->CanUserMoveColumnInternal(column))
+    {
+        return helpText;
+    }
+    auto const moveText = TryGetLocalizedString(SR_TableViewColumnMoveHelpText);
+    return helpText.empty() ? moveText : moveText.empty() ? helpText : JoinHelpText(helpText, moveText);
+}
+
+hstring TableViewColumnHeaderAutomationPeer::GetSortAndToolTipHelpText()
+{
     auto const column = m_column.get();
     if (!column)
     {
@@ -176,25 +209,7 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
     }
 
     // A sighted user gets both at a glance, so neither is dropped.
-    auto const format = TryGetLocalizedString(SR_TableViewColumnHeaderHelpTextFormat);
-    if (format.empty())
-    {
-        return toolTipText;
-    }
-
-    // The format supplies its own separator; a tooltip written as a sentence would otherwise read "..".
-    std::wstring_view trimmedToolTip{ toolTipText };
-    while (!trimmedToolTip.empty() &&
-        (trimmedToolTip.back() == L'.' || trimmedToolTip.back() == L'\u3002' || std::iswspace(trimmedToolTip.back())))
-    {
-        trimmedToolTip.remove_suffix(1);
-    }
-    if (trimmedToolTip.empty())
-    {
-        return sortText;
-    }
-
-    return StringUtil::FormatString(format, std::wstring{ trimmedToolTip }.c_str(), sortText.c_str());
+    return JoinHelpText(toolTipText, sortText);
 }
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)

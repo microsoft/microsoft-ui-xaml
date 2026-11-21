@@ -1362,6 +1362,8 @@ private:
     winrt::event_token m_bodyScrollerViewChangedToken{};
     // Body-viewport resize invalidates measure so Star columns resolve during the table layout pass.
     winrt::FrameworkElement::SizeChanged_revoker m_bodyScrollerSizeChangedRevoker{};
+    winrt::ScrollViewer::DirectManipulationStarted_revoker m_bodyManipulationStartedRevoker{};
+    winrt::ScrollViewer::DirectManipulationCompleted_revoker m_bodyManipulationCompletedRevoker{};
     winrt::event_token m_headerHostLoadedToken{};
     // Set while a drag is in flight, so Escape can reach the gripper that owns it.
     std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
@@ -1759,8 +1761,6 @@ public:
     void OnCanUserReorderColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // A neighbouring position is allowed, so the header is actionable.
     bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
-    // True for the column a user reorder is moving between its RemoveAt and InsertAt.
-    bool IsColumnMovingInternal(const winrt::TableViewColumn& column) const;
     void CancelColumnReorderDrag();
 
 private:
@@ -1781,6 +1781,10 @@ private:
         double pressX{ 0.0 };
         double pointerX{ 0.0 };
         bool dragging{ false };
+        // The header band scrolled; the drag ends without a drop.
+        bool stale{ false };
+        double headerOffset{ 0.0 };
+        double bandEdge{ -std::numeric_limits<double>::infinity() };
         ColumnReorderSlots slots;
         // Leading and trailing edge of each of slots.others.
         std::vector<std::pair<double, double>> edges;
@@ -1805,6 +1809,7 @@ private:
     DragEscapeHook m_columnReorderEscape;
     winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
     bool m_suppressHeaderTap{ false };
+    bool m_bodyManipulating{ false };
     uint32_t m_rebuildHeadersQueueGeneration{ 0 };
     winrt::weak_ref<winrt::UIElement> m_columnReorderHookedHost{ nullptr };
     std::vector<std::pair<winrt::RoutedEvent, winrt::IInspectable>> m_columnReorderHandlers;
