@@ -24,8 +24,53 @@ param(
 
     [switch]$Clean,
 
-    [switch]$Quiet
+    [switch]$Quiet,
+
+    # Statically instrument the product DLL(s) in the payload for code coverage. Slow (several
+    # minutes). See Helix\common\pipeline\coverage\Instrument-CoveragePayload.ps1 and
+    # docs\testing\code-coverage.md.
+    [switch]$CodeCoverage,
+
+    # Session id(s) to bake into the instrumented DLL(s), matched to -CoverageModules by
+    # position. Any missing/empty entry is auto-generated. Only used with -CodeCoverage.
+    [string[]]$CoverageSessionIds = @(),
+
+    # Where to look for the product PDBs needed to instrument for coverage. Only used with
+    # -CodeCoverage. Locally the PDBs sit under $binpath\Symbols, but in the lab the drop strips
+    # PDBs into a separate Symbols artifact, so the coverage pipeline downloads them and points
+    # this at that folder. Empty falls back to $binpath (the local layout).
+    [string]$CoverageSymbolsRoot = "",
+
+    # Which product DLL(s) to instrument. Only used with -CodeCoverage. Defaults to just
+    # Microsoft.ui.xaml.dll (the framework/core, "MUX") for this focused coverage pass.
+    [string[]]$CoverageModules = @("Microsoft.ui.xaml.dll")
 )
+
+# Validate the coverage arguments before doing any of the (slow) payload work, so a malformed
+# command line fails in seconds rather than after a full payload build.
+#
+# Guard against the classic caller mistake of passing the module list space-separated
+# (-CoverageModules a.dll b.dll). PowerShell binds only the first token to the [string[]]
+# parameter and quietly hands the rest to the next unbound positional parameter, which here is
+# -CoverageSessionIds. That silently instruments a single module and bakes a DLL name in as its
+# session id, so fail loudly instead. Module lists must be comma-separated.
+if ($CodeCoverage)
+{
+    $strayModuleIds = @($CoverageSessionIds | Where-Object { $_ -like "*.dll" })
+    if ($strayModuleIds.Count -gt 0)
+    {
+        Write-Host "ERROR: -CoverageSessionIds contains what look like module names: $($strayModuleIds -join ', ')." -ForegroundColor Red
+        Write-Host "       This usually means -CoverageModules was passed space-separated. Use commas instead," -ForegroundColor Red
+        Write-Host "       e.g. -CoverageModules Microsoft.ui.xaml.dll,Microsoft.UI.Xaml.Controls.dll" -ForegroundColor Red
+        exit 1
+    }
+    if ($CoverageSessionIds.Count -gt $CoverageModules.Count)
+    {
+        Write-Host "ERROR: -CoverageSessionIds has $($CoverageSessionIds.Count) entries but -CoverageModules only has $($CoverageModules.Count)." -ForegroundColor Red
+        Write-Host "       Session ids are matched to modules by position, so extra ids are always a caller bug." -ForegroundColor Red
+        exit 1
+    }
+}
 
 if (-not $Platform)
 {
@@ -317,6 +362,31 @@ if ($Mode -eq "PGO")
 if ($ShowPayload)
 {
     Get-ChildItem *.* -Recurse
+}
+
+# Code coverage: instrument the product DLL(s) in the freshly built payload.  This finds every
+# copy (root, Test\, each unpackaged app), instruments once, and broadcasts, so the copy the
+# test app actually loads is covered.  It needs the PDB, which lives under $binpath\Symbols
+# even when the payload itself is built -SkipSymbols.
+if ($CodeCoverage)
+{
+    Write-Host
+    Write-Host "Instrumenting payload for code coverage (this can take several minutes)..."
+    Write-Host "  Modules: $($CoverageModules -join ', ')"
+    $instrumentScript = "$repoRoot\Helix\common\pipeline\coverage\Instrument-CoveragePayload.ps1"
+    $symbolsSearchRoot = if ($CoverageSymbolsRoot) { $CoverageSymbolsRoot } else { $binpath }
+    $instrumentArgs = @{ PayloadDir = $outpath; SymbolsSearchRoot = $symbolsSearchRoot; Modules = $CoverageModules }
+    if ($CoverageSessionIds.Count -gt 0) { $instrumentArgs['SessionIds'] = $CoverageSessionIds }
+    try
+    {
+        & $instrumentScript @instrumentArgs
+    }
+    catch
+    {
+        Write-Host "ERROR: Code coverage instrumentation failed: $_" -ForegroundColor Red
+        exit 1
+    }
+    $global:LASTEXITCODE = 0
 }
 
 if (-not $Quiet) {
