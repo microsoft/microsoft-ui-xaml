@@ -483,6 +483,7 @@ namespace Controls {
     interface IDatePickerFactory;
     interface IDatePickerFeature_HeaderPlacement;
     interface IDatePickerFlyout;
+    interface IDatePickerFlyoutFactory;
     interface IDatePickerFlyout2;
     interface IDatePickerFlyoutItem;
     interface IDatePickerFlyoutItemStatics;

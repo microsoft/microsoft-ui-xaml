@@ -291,7 +291,7 @@ namespace Microsoft.UI.Xaml.Controls
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "a7b89128-9a9e-4918-8046-15a4f4a659f0")]
-    public sealed class DatePickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
+    public class DatePickerFlyout : Microsoft.UI.Xaml.Controls.Primitives.PickerFlyoutBase
     {
         [PropertyInitialization(PropertyInitializationType.CallbackRetrievedValue)]
         public Windows.Foundation.String CalendarIdentifier
