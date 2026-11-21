@@ -448,7 +448,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
     };
     class DatePickerFlyoutPresenterFactory
         :
-        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutPresenterStatics>
+        public wrl::AgileActivationFactory<ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutPresenterFactory, ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutPresenterStatics>
     {
 
     friend class DatePickerFlyoutPresenterGenerated;
@@ -458,6 +458,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
          _Check_return_ HRESULT RuntimeClassInitialize();
          static _Check_return_ HRESULT EnsureProperties();
          static void ClearProperties();
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutPresenter** ppInstance);
 
         // Properties.
 
@@ -482,6 +483,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         : public DatePickerFlyoutPresenterRuntimeClass
     {
         friend class ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyoutPresenter;
+        friend class pctl::AggregableComObject< 
+            ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyoutPresenter,
+            ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutPresenter>;
         WuxpInspectableClass(RuntimeClass_Microsoft_UI_Xaml_Controls_DatePickerFlyoutPresenter, TrustLevel::BaseTrust);
 
     public:
@@ -604,8 +608,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Customized properties.
 
-        // Initialization methods
-        virtual _Check_return_ HRESULT InitializeImpl();
+        // Initialization methods required by AggregableComObject to make this an aggregable class.
+        virtual _Check_return_ HRESULT InitializeImpl(_In_opt_ IInspectable* pOuter = nullptr);
 
         // Event Sources
     };
