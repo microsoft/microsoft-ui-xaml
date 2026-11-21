@@ -86,8 +86,10 @@ extends:
     platform:
       name: 'windows_undocked' # windows undocked
     globalsdl:
+      # TSA needs .config\tsaoptions.json, which is internal-only and not in this repo
+      # (same as WinUI-GitHub-PR.yml).
       tsa:
-        enabled: true
+        enabled: false
       enableXFGCheck: false
       codeql:
         tsandjs:
