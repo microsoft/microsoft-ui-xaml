@@ -206,7 +206,7 @@ SplitView::OnLoaded(_In_ IInspectable* /*pSender*/, _In_ xaml::IRoutedEventArgs*
     BOOLEAN isPaneOpen = FALSE;
     IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
 
-    if (isPaneOpen && splitViewCore->CanLightDismiss())
+    if (isPaneOpen && splitViewCore->IsLightDismissible())
     {
         IFC_RETURN(SetupOuterDismissLayer());
     }
@@ -268,19 +268,41 @@ SplitView::OnOuterDismissElementPointerPressed(IInspectable* /*pSender*/, xaml_i
 }
 
 _Check_return_ HRESULT
-SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::IVisualStateChangedEventArgs* /*args*/)
+SplitView::OnDisplayModeStateChanged(_In_ IInspectable* /*sender*/, _In_ xaml::IVisualStateChangedEventArgs* args)
 {
-    // Only respond to visual state changes between opened and closed states.
-    // We could get state changes between opened states if display mode is changed (such as going from Compact to Overlay)
-    // while the pane is open.
-    if (m_isPaneOpeningOrClosing)
+    // The notification is queued, so IsPaneOpen may have changed since this state was reached.
+    // Use the state itself to tell whether the pane finished opening or closing.
+    ctl::ComPtr<xaml::IVisualState> newState;
+    IFC_RETURN(args->get_NewState(&newState));
+    if (!newState)
+    {
+        return S_OK;
+    }
+
+    wrl_wrappers::HString newStateName;
+    IFC_RETURN(newState->get_Name(newStateName.GetAddressOf()));
+    const bool isOpenState = !(newStateName == wrl_wrappers::HStringReference(L"Closed")
+        || newStateName == wrl_wrappers::HStringReference(L"ClosedCompactLeft")
+        || newStateName == wrl_wrappers::HStringReference(L"ClosedCompactRight"));
+
+    BOOLEAN isPaneOpen = FALSE;
+    IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
+
+    // A state in the other category than the last completion is the end of an open or close,
+    // even if a later request already reversed it. A state in the same category completes
+    // the pending request only if it matches it (an interrupted close then reopen, for
+    // example); otherwise it is a display mode or placement change.
+    const bool completesRequest = m_isPaneOpeningOrClosing && isOpenState == !!isPaneOpen;
+    if (!completesRequest && isOpenState == m_isPaneOpenCompleted)
+    {
+        return S_OK;
+    }
+
+    if (completesRequest)
     {
         m_isPaneOpeningOrClosing = false;
-
-        BOOLEAN isPaneOpen = FALSE;
-        IFC_RETURN(get_IsPaneOpen(&isPaneOpen));
-        IFC_RETURN(OnPaneOpenedOrClosed(!!isPaneOpen));
     }
+    IFC_RETURN(OnPaneOpenedOrClosed(isOpenState));
 
     return S_OK;
 }
@@ -420,12 +442,29 @@ SplitView::OnBackButtonPressedImpl(_Out_ BOOLEAN* pHandled)
 
 _Check_return_ HRESULT SplitView::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
+    // Settle the pending light dismiss before the base class raises binding and property-changed
+    // callbacks, which can reenter (reopen the pane, or request another light dismiss).
+    bool isLightDismissClose = false;
+    if (args.m_pDP->GetIndex() == KnownPropertyIndex::SplitView_IsPaneOpen)
+    {
+        auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+        if (args.m_pNewValue->AsBool())
+        {
+            // A reopened pane must not be closed by an older dismiss's deferred close.
+            splitViewCore->SupersedeLightDismiss();
+        }
+        else
+        {
+            isLightDismissClose = splitViewCore->ConsumeLightDismissClose();
+        }
+    }
+
     IFC_RETURN(SplitViewGenerated::OnPropertyChanged2(args));
 
     switch (args.m_pDP->GetIndex())
     {
         case KnownPropertyIndex::SplitView_IsPaneOpen:
-            IFC_RETURN(OnIsPaneOpenChanged(!!args.m_pNewValue->AsBool()));
+            IFC_RETURN(OnIsPaneOpenChanged(!!args.m_pNewValue->AsBool(), isLightDismissClose));
             break;
 
         case KnownPropertyIndex::SplitView_DisplayMode:
@@ -468,24 +507,47 @@ SplitView::ChangeVisualState(_In_ bool useTransitions)
 }
 
 _Check_return_ HRESULT
-SplitView::OnIsPaneOpenChanged(bool isOpen)
+SplitView::OnIsPaneOpenChanged(bool isOpen, bool isLightDismissClose)
 {
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+
     IFC_RETURN(RegisterForDisplayModeStatesChangedEvent());
 
     m_isPaneOpeningOrClosing = true;
 
     IFC_RETURN(UpdateVisualState());
 
+    // If the display modes states changing event was not registered, then do the opened/closed
+    // work here instead. This could be the case if the SplitView has been re-templated to remove
+    // the 'DisplayModeStates' state group.
+    bool isCompleted = false;
     if (isOpen)
     {
+        if (!m_displayModeStateChangedEventHandler && IsInLiveTree())
+        {
+            // Queue PaneOpened before raising PaneOpening, so a close from its handlers completes after it.
+            IFC_RETURN(OnPaneOpenedOrClosed(true));
+            isCompleted = true;
+        }
+
         // Raise the PaneOpening event.
         PaneOpeningEventSourceType* eventSource = nullptr;
         IFC_RETURN(GetPaneOpeningEventSourceNoRef(&eventSource));
         IFC_RETURN(eventSource->Raise(this, nullptr /*args*/));
 
         // Call into the core object to set focus to the pane on opening.
-        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneOpening());
+        IFC_RETURN(splitViewCore->OnPaneOpening());
+    }
+    else
+    {
+        // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
+        // This will also restore focus to whichever element had focus when the pane opened.
+        IFC_RETURN(splitViewCore->OnPaneClosing(isLightDismissClose));
+    }
 
+    // Callbacks above may have reopened or closed the pane again; follow its actual state.
+    if (splitViewCore->m_isPaneOpen)
+    {
         if (DXamlCore::GetCurrent()->GetHandle()->BackButtonSupported())
         {
             IFC_RETURN(BackButtonIntegration_RegisterListener(this));
@@ -494,19 +556,11 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
     }
     else
     {
-        // Call into the core object to raise the PaneClosing event, which is raised asynchronously.
-        // This will also restore focus to whichever element had focus when the pane opened.
-        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneClosing());
-
         IFC_RETURN(BackButtonIntegration_UnregisterListener(this));
         IFC_RETURN(TeardownOuterDismissLayer());
     }
 
-    // If the display modes states changing event was not registered, then
-    // do the opened/closed work here instead. This could be the case if
-    // the SplitView has been re-templated to remove the 'DisplayModeStates'
-    // state group.
-    if (!m_displayModeStateChangedEventHandler)
+    if (!isCompleted && !m_displayModeStateChangedEventHandler)
     {
         IFC_RETURN(OnPaneOpenedOrClosed(isOpen));
     }
@@ -517,7 +571,8 @@ SplitView::OnIsPaneOpenChanged(bool isOpen)
 _Check_return_ HRESULT
 SplitView::OnDisplayModeChanged()
 {
-    if (static_cast<CSplitView*>(GetHandle())->CanLightDismiss())
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+    if (splitViewCore->m_isPaneOpen && splitViewCore->IsLightDismissible())
     {
         IFC_RETURN(SetupOuterDismissLayer());
     }
@@ -533,8 +588,9 @@ _Check_return_ HRESULT
 SplitView::SetupOuterDismissLayer() noexcept
 {
     // If we're not in a light-dismissible state, then we can bail out of
-    // setting up this dismiss layer.
-    if (!static_cast<CSplitView*>(GetHandle())->CanLightDismiss())
+    // setting up this dismiss layer. A pending (possibly canceled) light dismiss still needs it.
+    auto splitViewCore = static_cast<CSplitView*>(GetHandle());
+    if (!splitViewCore->m_isPaneOpen || !splitViewCore->IsLightDismissible())
     {
         return S_OK;
     }
@@ -774,22 +830,23 @@ _Check_return_ HRESULT SplitView::RegisterForDisplayModeStatesChangedEvent()
 
 _Check_return_ HRESULT SplitView::OnPaneOpenedOrClosed(bool isPaneOpen)
 {
-    if (isPaneOpen)
+    m_isPaneOpenCompleted = isPaneOpen;
+
+    if (isPaneOpen && !IsInLiveTree())
     {
-        // Raise the PaneOpened event.
+        // Core event listeners are inactive off-tree, so raise PaneOpened directly as before.
         PaneOpenedEventSourceType* eventSource = nullptr;
         IFC_RETURN(GetPaneOpenedEventSourceNoRef(&eventSource));
         IFC_RETURN(eventSource->Raise(this, nullptr /*args*/));
-
-        IFC_RETURN(DirectUI::ElementSoundPlayerService::RequestInteractionSoundForElementStatic(xaml::ElementSoundKind_Show, this));
     }
     else
     {
-        // Call into the core object to raise the PaneClosed event, which is raised asynchronously.
-        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneClosed());
-
-        IFC_RETURN(DirectUI::ElementSoundPlayerService::RequestInteractionSoundForElementStatic(xaml::ElementSoundKind_Hide, this));
+        // Call into the core object to raise the PaneOpened or PaneClosed event, which is raised asynchronously.
+        IFC_RETURN(static_cast<CSplitView*>(GetHandle())->OnPaneOpenedOrClosed(isPaneOpen));
     }
+
+    IFC_RETURN(DirectUI::ElementSoundPlayerService::RequestInteractionSoundForElementStatic(
+        isPaneOpen ? xaml::ElementSoundKind_Show : xaml::ElementSoundKind_Hide, this));
 
     return S_OK;
 }

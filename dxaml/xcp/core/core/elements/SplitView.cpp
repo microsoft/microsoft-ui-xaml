@@ -26,15 +26,7 @@ public:
 
     _Check_return_ HRESULT Execute() override
     {
-        if (m_spPaneClosingEventArgs->m_cancel)
-        {
-            m_spSplitView->OnCancelClosing();
-            return S_OK;
-        }
-
-        CValue value;
-        value.SetBool(FALSE);
-        return m_spSplitView->SetValueByKnownIndex(KnownPropertyIndex::SplitView_IsPaneOpen, value);
+        return m_spSplitView->ExecuteLightDismiss(m_spPaneClosingEventArgs.get());
     }
 
 private:
@@ -46,6 +38,11 @@ private:
 //
 // CSplitView Implementation
 //
+CSplitView::CSplitView(_In_ CCoreServices *pCore)
+    : CControl(pCore)
+{
+}
+
 CSplitView::~CSplitView()
 {
     VERIFYHR(UnregisterEventHandlers());
@@ -183,7 +180,7 @@ bool CSplitView::IsLightDismissible()
 
 bool CSplitView::CanLightDismiss()
 {
-    return m_isPaneOpen && !m_isPaneClosingByLightDismiss && IsLightDismissible();
+    return m_isPaneOpen && !m_spPendingLightDismissArgs && IsLightDismissible();
 }
 
 double CSplitView::GetOpenPaneLength()
@@ -238,14 +235,52 @@ CSplitView::TryCloseLightDismissiblePane()
     IFC_RETURN(core->ExecuteOnUIThread(spSplitViewExecutor, ReentrancyBehavior::CrashOnReentrancy));
 
     // Flag that we're attempting to close so that we don't queue up multiple of these messages.
-    m_isPaneClosingByLightDismiss = true;
+    m_spPendingLightDismissArgs = spArgs;
 
     return S_OK;
 }
 
-void CSplitView::OnCancelClosing()
+_Check_return_ HRESULT CSplitView::ExecuteLightDismiss(_In_ CSplitViewPaneClosingEventArgs* args)
 {
-    m_isPaneClosingByLightDismiss = false;
+    // Reopening the pane, or closing it some other way, already ended this light dismiss.
+    if (m_spPendingLightDismissArgs.get() != args)
+    {
+        return S_OK;
+    }
+
+    if (args->m_cancel)
+    {
+        SupersedeLightDismiss();
+        return S_OK;
+    }
+
+    // The close claims the pending light dismiss (ConsumeLightDismissClose), so its
+    // PaneClosing is not raised again.
+    CValue value;
+    value.SetBool(FALSE);
+    const HRESULT hr = SetValueByKnownIndex(KnownPropertyIndex::SplitView_IsPaneOpen, value);
+    if (m_spPendingLightDismissArgs.get() == args)
+    {
+        SupersedeLightDismiss();
+    }
+    return hr;
+}
+
+bool CSplitView::ConsumeLightDismissClose()
+{
+    // A close while an uncanceled light dismiss is pending (from its executor, its PaneClosing
+    // handler or a bound view model) commits that dismiss, whose PaneClosing is already raised or queued.
+    if (m_spPendingLightDismissArgs && !m_spPendingLightDismissArgs->m_cancel)
+    {
+        SupersedeLightDismiss();
+        return true;
+    }
+    return false;
+}
+
+void CSplitView::SupersedeLightDismiss()
+{
+    m_spPendingLightDismissArgs.reset();
 }
 
 CDependencyObject*
@@ -429,14 +464,14 @@ _Check_return_ HRESULT CSplitView::OnPaneOpening()
     return S_OK;
 }
 
-_Check_return_ HRESULT CSplitView::OnPaneClosing()
+_Check_return_ HRESULT CSplitView::OnPaneClosing(bool isLightDismissClose)
 {
-    // If the closing flag isn't set, then we're not closing due to some light-dismissible
+    // If this isn't the light-dismiss close, then we're not closing due to some light-dismissible
     // action but rather are closing because the app explicitly set IsPaneOpen = false.
     // In this case, we haven't fired the PaneClosing event yet, so do it now before we
     // fire the PaneClosed event.  Note, this closing action is not cancelable, so we
     // don't care if the app sets the Cancel property on the closing event args.
-    if (!m_isPaneClosingByLightDismiss)
+    if (!isLightDismissClose)
     {
         xref_ptr<CSplitViewPaneClosingEventArgs> spArgs;
         spArgs.init(new CSplitViewPaneClosingEventArgs);
@@ -463,16 +498,14 @@ _Check_return_ HRESULT CSplitView::OnPaneClosing()
     return S_OK;
 }
 
-_Check_return_ HRESULT CSplitView::OnPaneClosed()
+_Check_return_ HRESULT CSplitView::OnPaneOpenedOrClosed(bool isPaneOpen)
 {
-    m_isPaneClosingByLightDismiss = false;
-
-    // Fire the closed event.
+    // Queue both completions so an opening cannot overtake an earlier closing.
     CEventManager *pEventManager = GetContext()->GetEventManager();
     if (pEventManager != nullptr)
     {
         pEventManager->Raise(
-            EventHandle(KnownEventIndex::SplitView_PaneClosed),
+            EventHandle(isPaneOpen ? KnownEventIndex::SplitView_PaneOpened : KnownEventIndex::SplitView_PaneClosed),
             TRUE /*bRefire*/,
             this /*pSender*/,
             nullptr /*pArgs*/,

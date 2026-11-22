@@ -51,7 +51,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnBackButtonPressedImpl(_Out_ BOOLEAN* pReturnValue);
 
     private:
-        _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen);
+        _Check_return_ HRESULT OnIsPaneOpenChanged(bool isOpen, bool isLightDismissClose);
         _Check_return_ HRESULT OnDisplayModeChanged();
 
         _Check_return_ HRESULT OnLoaded(_In_ IInspectable* pSender, _In_ xaml::IRoutedEventArgs* pArgs);
@@ -116,5 +116,7 @@ namespace DirectUI
         TrackerPtr<xaml::IVisualStateGroup> m_tpDisplayModeStates;
 
         bool m_isPaneOpeningOrClosing{ false };
+        // Whether the last PaneOpened/PaneClosed was for an open pane.
+        bool m_isPaneOpenCompleted{ false };
     };
 }
