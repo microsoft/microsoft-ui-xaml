@@ -863,7 +863,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
 
             // A Reset-driven reshape must not resurrect the selection the collapse cleared.
-            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", Microsoft.UI.Xaml.Data.ListSortDirection.Ascending)));
+            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending)));
 
             SettleLayout(tableView);
 

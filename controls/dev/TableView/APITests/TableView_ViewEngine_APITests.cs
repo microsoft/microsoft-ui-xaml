@@ -25,7 +25,6 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpe
 
 using CollectionChange = global::Windows.Foundation.Collections.CollectionChange;
 using SortDescription = Microsoft.UI.Xaml.Data.SortDescription;
-using ListSortDirection = Microsoft.UI.Xaml.Data.ListSortDirection;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -92,7 +91,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var rows = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = rows };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 var view = cvs.View;
                 var added = false;
                 view.VectorChanged += (sender, args) =>
@@ -120,7 +119,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var rows = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = rows };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 var view = cvs.View;
                 var shaping = (ICollectionViewShaping)view;
                 var handled = 0;
@@ -128,7 +127,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (handled++ == 0)
                     {
-                        shaping.SortDescriptions[0] = new SortDescription("Score", ListSortDirection.Descending);
+                        shaping.SortDescriptions[0] = new SortDescription("Score", CollectionViewSortDirection.Descending);
                     }
                 };
 
@@ -167,7 +166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     if (!changed)
                     {
                         changed = true;
-                        shaping.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                        shaping.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
                     }
                     return true;
                 });
@@ -193,7 +192,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var view = cvs.View;
                 Verify.IsTrue(view.HasMoreItems, "Precondition: the unshaped view forwards HasMoreItems.");
 
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Descending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Descending));
                 Verify.IsTrue(view.HasMoreItems, "The shaped view still forwards HasMoreItems.");
 
                 view.LoadMoreItemsAsync(2);
@@ -207,8 +206,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies FilterRequested keeps filtering after a GC when the app keeps only the View, as WPF's view keeps the CollectionViewSource through the wrapped filter.")]
-        public void VerifyFilterRequestedSurvivesGCWhenOnlyViewIsHeld()
+        [TestProperty("Description", "Verifies the Filter event keeps filtering after a GC when the app keeps only the View, as WPF's view keeps the CollectionViewSource through the wrapped filter.")]
+        public void VerifyFilterEventSurvivesGCWhenOnlyViewIsHeld()
         {
             ObservableCollection<EngineRow> rows = null;
             ICollectionView view = null;
@@ -242,7 +241,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static ICollectionView CreateViewWithFilterEvent(ObservableCollection<EngineRow> rows)
         {
             var cvs = new CollectionViewSource { Source = rows };
-            cvs.FilterRequested += (sender, args) => args.Accepted = ((EngineRow)args.Item).Score >= 20;
+            cvs.Filter += (sender, args) => args.Accepted = ((EngineRow)args.Item).Score >= 20;
             return cvs.View;
         }
 
@@ -257,7 +256,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             owner.Source = new CollectionViewSource { Source = owner.Rows, IsLiveSortingRequested = true };
-            owner.Source.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+            owner.Source.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
             owner.View = owner.Source.View;
             owner.Rows[0].Score = 500;
             tracked["Owner"] = new WeakReference(owner);
@@ -305,7 +304,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 view.MoveCurrentToPosition(-1);
                 Verify.IsTrue(view.IsCurrentBeforeFirst, "Precondition: before the first item.");
 
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Descending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Descending));
                 Verify.IsTrue(view.IsCurrentBeforeFirst, "A sort keeps it before the first item.");
                 Verify.IsNull(view.CurrentItem);
 
@@ -316,7 +315,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 view.MoveCurrentToPosition(1);
                 var current = view.CurrentItem;
-                cvs.SortDescriptions[0] = new SortDescription("Score", ListSortDirection.Ascending);
+                cvs.SortDescriptions[0] = new SortDescription("Score", CollectionViewSortDirection.Ascending);
                 Verify.AreSame(current, view.CurrentItem, "A current item is followed.");
             });
         }
@@ -339,7 +338,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 listView.SelectedIndex = -1;
                 Verify.IsTrue(cvs.View.IsCurrentBeforeFirst, "Precondition: deselecting moves currency before the first item.");
-                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
             });
             IdleSynchronizer.Wait();
 
@@ -381,10 +380,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 rows.Add(new EngineRow(9, "neg", 0, "X") { Big = long.MinValue, UBig = 0 });
 
                 var cvs = new CollectionViewSource { Source = rows };
-                cvs.SortDescriptions.Add(new SortDescription("Big", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Big", CollectionViewSortDirection.Ascending));
                 Verify.AreEqual("neg r0 r1 r2 r3", EngineNames(cvs.View), "Int64 keys in exact order.");
 
-                cvs.SortDescriptions[0] = new SortDescription("UBig", ListSortDirection.Descending);
+                cvs.SortDescriptions[0] = new SortDescription("UBig", CollectionViewSortDirection.Descending);
                 Verify.AreEqual("r3 r2 r1 r0 neg", EngineNames(cvs.View), "UInt64 keys in exact order.");
 
                 rows.Add(new EngineRow(10, "r1b", 0, "X") { Big = baseValue + 1, UBig = ulong.MaxValue - 2 });
@@ -432,7 +431,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var rows = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = rows };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 var view = cvs.View;
                 var changes = new List<CollectionChange>();
                 var properties = new List<string>();
@@ -464,7 +463,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 var first = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = first };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Descending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Descending));
                 var oldView = cvs.View;
 
                 cvs.Source = MakeEngineRows();
@@ -495,10 +494,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Source = new List<List<object>> { new List<object> { "a", "b" } },
                 };
 
-                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => cvs.SortDescriptions.Add(new SortDescription("Length", ListSortDirection.Ascending))),
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => cvs.SortDescriptions.Add(new SortDescription("Length", CollectionViewSortDirection.Ascending))),
                     "A sort the view cannot apply throws.");
                 cvs.SortDescriptions.Clear();
-                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => cvs.FilterRequested += (sender, args) => { }),
+                Verify.AreEqual("InvalidOperationException", ThrownTypeName(() => cvs.Filter += (sender, args) => { }),
                     "A filter the view cannot apply throws.");
             });
         }
@@ -513,7 +512,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 rows = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 view = cvs.View;
             });
 
@@ -551,7 +550,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 rows = MakeEngineRows();
                 var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 view = cvs.View;
                 view.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
 
@@ -579,7 +578,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, 10).Select(i => new EngineRow(i, $"r{i}", i, "X")));
                 var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 view = cvs.View;
                 view.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
                 foreach (var row in rows.Take(9))
@@ -697,7 +696,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CollectionViewSource cvs = null;
             var tableView = PlaceLive(list, s =>
             {
-                s.Filter = item => ((LiveRow)item).Score < 35;
+                ((ICollectionViewShaping)s.View).Filter = item => ((LiveRow)item).Score < 35;
                 s.IsLiveFilteringRequested = true;
                 s.LiveFilteringProperties.Add("Score");
             }, out cvs);
@@ -778,7 +777,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 EnsureTabularControlsResources();
                 cvs = new CollectionViewSource { Source = list };
-                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
                 configure(cvs);
                 tableView = CreateTreeTable(cvs.View, itemKeyPath, parentKeyPath);
                 tableView.Tag = cvs;
@@ -928,13 +927,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 if (roll < 85)
                 {
                     m_descending = !m_descending;
-                    m_cvs.SortDescriptions[0] = new SortDescription("Score", m_descending ? ListSortDirection.Descending : ListSortDirection.Ascending);
+                    m_cvs.SortDescriptions[0] = new SortDescription("Score", m_descending ? CollectionViewSortDirection.Descending : CollectionViewSortDirection.Ascending);
                     return "flip sort";
                 }
                 if (roll < 90)
                 {
                     m_threshold = m_random.Next(6);
-                    m_cvs.Filter = MakeFilter(m_threshold);
+                    ((ICollectionViewShaping)m_cvs.View).Filter = MakeFilter(m_threshold);
                     return $"filter >= {m_threshold}";
                 }
                 if (roll < 94)
@@ -966,27 +965,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             private void ApplyRules(CollectionViewSource cvs)
             {
                 AddSortDescriptions(cvs);
-                cvs.Filter = MakeFilter(m_threshold);
+                ((ICollectionViewShaping)cvs.View).Filter = MakeFilter(m_threshold);
                 if (m_levels >= 1)
                 {
                     var team = new PropertyGroupDescription("Team");
-                    team.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                    team.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
                     cvs.GroupDescriptions.Add(team);
                 }
                 if (m_levels >= 2)
                 {
                     var bucket = new PropertyGroupDescription("Bucket");
-                    bucket.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                    bucket.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
                     cvs.GroupDescriptions.Add(bucket);
                 }
             }
 
             private void AddSortDescriptions(CollectionViewSource cvs)
             {
-                cvs.SortDescriptions.Add(new SortDescription("Score", m_descending ? ListSortDirection.Descending : ListSortDirection.Ascending));
+                cvs.SortDescriptions.Add(new SortDescription("Score", m_descending ? CollectionViewSortDirection.Descending : CollectionViewSortDirection.Ascending));
                 if (m_secondKey)
                 {
-                    cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                    cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
                 }
             }
 

@@ -58,7 +58,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySelectionOn(tableView, diego, "baseline");
                 tableView.SelectionChanged += (s, e) => selectionChangedCount++;
 
-                source.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                source.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
             });
 
             SettleLayout(tableView);
@@ -68,7 +68,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new[] { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "sorted by name descending");
                 VerifySelectionOn(tableView, diego, "after the sort");
 
-                source.Filter = o => Person(o).Role == "Engineer";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Role == "Engineer";
             });
 
             SettleLayout(tableView);
@@ -78,7 +78,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifyProjection(tableView, new[] { "Rafa", "Owen", "Diego" }, "sorted and filtered to engineers");
                 VerifySelectionOn(tableView, diego, "after the filter");
 
-                source.Filter = null;
+                ((ICollectionViewShaping)source.View).Filter = null;
             });
 
             SettleLayout(tableView);
@@ -129,7 +129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 VerifySelectionOn(tableView, diego, "baseline");
                 tableView.SelectionChanged += (s, e) => events.Add((e.AddedItems.ToList(), e.RemovedItems.ToList()));
 
-                source.Filter = o => Person(o).Role == "Designer";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Role == "Designer";
             });
 
             SettleLayout(tableView);
@@ -145,7 +145,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, events[0].Removed.Count, "The clearing event must remove exactly one item.");
                 Verify.AreSame(diego, events[0].Removed[0], "The clearing event must report the filtered-out item as removed.");
 
-                source.Filter = null;
+                ((ICollectionViewShaping)source.View).Filter = null;
             });
 
             SettleLayout(tableView);
@@ -175,7 +175,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
                 source = MakeShapingView(items, sortPath: "Name");
-                source.Filter = o => Person(o).Role == "Engineer";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Role == "Engineer";
                 tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
@@ -360,7 +360,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
                 var source = MakeShapingView(items, sortPath: "Name");
-                source.Filter = o => Person(o).Role == "Engineer";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Role == "Engineer";
                 tableView = CreateShapedTable(source.View);
                 LoadContent(tableView);
             });
@@ -587,7 +587,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                source = MakeShapingView(MakeShapedPeople(), "Role", "Name", ListSortDirection.Descending);
+                source = MakeShapingView(MakeShapedPeople(), "Role", "Name", CollectionViewSortDirection.Descending);
                 tableView = CreateGroupedTable(source.View);
                 LoadContent(tableView);
             });
@@ -599,7 +599,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(3, GroupHeaderCount(tableView), "Precondition: three groups.");
                 VerifyGroupRelativeRowPositions(tableView, "1,2,3", "grouped and sorted");
 
-                source.Filter = o => Person(o).Name != "Rafa" && Person(o).Name != "Ines";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Name != "Rafa" && Person(o).Name != "Ines";
             });
 
             SettleLayout(tableView);

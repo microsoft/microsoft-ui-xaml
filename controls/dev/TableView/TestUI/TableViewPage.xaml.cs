@@ -1282,17 +1282,17 @@ namespace MUXControlsTestApp
 
         private void OnFilterSourceClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter = item => ((TableViewTestPerson)item).City != "Seattle";
+            ((ICollectionViewShaping)_groupedSource.View).Filter = item => ((TableViewTestPerson)item).City != "Seattle";
         }
 
         private void OnClearFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter = null;
+            ((ICollectionViewShaping)_groupedSource.View).Filter = null;
         }
 
         private void OnSingleGroupedRowFilterClick(object sender, RoutedEventArgs e)
         {
-            _groupedSource.Filter = item => ((TableViewTestPerson)item).Id == 0;
+            ((ICollectionViewShaping)_groupedSource.View).Filter = item => ((TableViewTestPerson)item).Id == 0;
         }
 
         private void OnSelectScrollingRow3Click(object sender, RoutedEventArgs e)

@@ -68,6 +68,12 @@ DirectUI::CollectionViewSource::OnPropertyChanged2(
     case KnownPropertyIndex::CollectionViewSource_ItemsPath:
         IFC(OnItemsPathChanged());
         break;
+
+    case KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested:
+    case KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested:
+    case KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested:
+        IFC(ApplyLiveShapingToView());
+        break;
     }
 
 Cleanup:
@@ -247,9 +253,9 @@ DirectUI::CollectionViewSource::OnReferenceTrackerWalk(INT walkType )
     if( m_pCVSViewChangedEventSource )
         m_pCVSViewChangedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
 
-    if (m_spFilterRequestedEventSource)
+    if (m_spFilterEventSource)
     {
-        m_spFilterRequestedEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
+        m_spFilterEventSource->ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
     }
 
     CollectionViewSourceGenerated::OnReferenceTrackerWalk( walkType );

@@ -1768,7 +1768,7 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
             VERIFY_IS_NOT_NULL(list->GroupHeaderContainerFromItemContainer(container));
 
             LOG_OUTPUT(L"A regroup keeps the view and the control follows the new group order.");
-            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::ListSortDirection::Descending));
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Descending));
             VERIFY_IS_TRUE(cvs->View == view);
         });
         test_infra::TestServices::WindowHelper->WaitForIdle();

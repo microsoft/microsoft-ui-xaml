@@ -440,6 +440,22 @@ extern __declspec(selectany) const XTABLE satCollectionChange[] =
     { XSTRING_PTR_STORAGE(L"ItemChanged"), 3 },
 };
 
+extern __declspec(selectany) const XTABLE satCollectionViewSortDirection[] =
+{
+    { XSTRING_PTR_STORAGE(L"Ascending"), 0 },
+    { XSTRING_PTR_STORAGE(L"Descending"), 1 },
+};
+
+extern __declspec(selectany) const XTABLE satCollectionViewStringComparison[] =
+{
+    { XSTRING_PTR_STORAGE(L"CurrentCulture"), 0 },
+    { XSTRING_PTR_STORAGE(L"CurrentCultureIgnoreCase"), 1 },
+    { XSTRING_PTR_STORAGE(L"InvariantCulture"), 2 },
+    { XSTRING_PTR_STORAGE(L"InvariantCultureIgnoreCase"), 3 },
+    { XSTRING_PTR_STORAGE(L"Ordinal"), 4 },
+    { XSTRING_PTR_STORAGE(L"OrdinalIgnoreCase"), 5 },
+};
+
 extern __declspec(selectany) const XTABLE satColorInterpolationMode[] =
 {
     { XSTRING_PTR_STORAGE(L"ScRgbLinearInterpolation"), 0 },

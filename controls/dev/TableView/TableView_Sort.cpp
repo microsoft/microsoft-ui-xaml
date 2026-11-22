@@ -516,7 +516,7 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
                 return false;
             }
             description = data::SortDescription{ sortMemberPath,
-                descending ? data::ListSortDirection::Descending : data::ListSortDirection::Ascending };
+                descending ? data::CollectionViewSortDirection::Descending : data::CollectionViewSortDirection::Ascending };
         }
     }
 
@@ -627,7 +627,7 @@ void TableView::ReconcileSortStateWithSource()
                     if (column && column.GetSortMemberPathCore() == path)
                     {
                         matchedColumn = column;
-                        direction = primary.Direction() == data::ListSortDirection::Descending
+                        direction = primary.Direction() == data::CollectionViewSortDirection::Descending
                             ? winrt::SortDirection::Descending : winrt::SortDirection::Ascending;
                         break;
                     }

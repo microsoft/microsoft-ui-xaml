@@ -445,7 +445,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyCollectionViewSortOrdersSiblings()
         {
             object view = null;
-            RunOnUIThread.Execute(() => view = MakeShapingView(MakeTree(), sortPath: "Name", direction: Microsoft.UI.Xaml.Data.ListSortDirection.Descending).View);
+            RunOnUIThread.Execute(() => view = MakeShapingView(MakeTree(), sortPath: "Name", direction: CollectionViewSortDirection.Descending).View);
             var tableView = Place(view);
 
             Toggle(tableView, "Ada", true);
@@ -460,7 +460,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var cvs = MakeShapingView(MakeTree());
-                cvs.Filter = o => ((TreeEmployee)o).Name != "Ada";
+                ((ICollectionViewShaping)cvs.View).Filter = o => ((TreeEmployee)o).Name != "Ada";
                 view = cvs.View;
             });
             var tableView = Place(view);

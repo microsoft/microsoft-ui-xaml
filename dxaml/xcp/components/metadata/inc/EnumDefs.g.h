@@ -610,6 +610,13 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(CollectionChangeType);
 
+    enum class CollectionViewSortDirection : uint8_t
+    {
+        Ascending = 0,
+        Descending = 1,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(CollectionViewSortDirection);
+
     enum class CollectionViewStringComparison : uint8_t
     {
         CurrentCulture = 0,
@@ -1289,13 +1296,6 @@ namespace DirectUI
         BaselineToBaseline = 2,
     };
     DEFINE_ENUM_FLAG_OPERATORS(LineStackingStrategy);
-
-    enum class ListSortDirection : uint8_t
-    {
-        Ascending = 0,
-        Descending = 1,
-    };
-    DEFINE_ENUM_FLAG_OPERATORS(ListSortDirection);
 
     enum class ListViewItemPresenterCheckMode : uint8_t
     {

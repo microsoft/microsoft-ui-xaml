@@ -537,9 +537,12 @@ HRESULT OnCoreCreateBinding(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPA
 HRESULT OnCoreCreateBindingBase(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCollectionViewGroup(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCollectionViewSource(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateGroupedDataCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateIterableCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreatePropertyGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateRelativeSource(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateSortDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTemplateBinding(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateVectorCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateVectorViewCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
@@ -598,6 +601,8 @@ HRESULT OnCoreCreateCharacterCasing(_Outptr_ CDependencyObject **ppObject, _In_ 
 HRESULT OnCoreCreateClickMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateClockState(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCollectionChange(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateCollectionViewSortDirection(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateCollectionViewStringComparison(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateColorInterpolationMode(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateComboBoxSelectionChangedTrigger(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateCommandBarDefaultLabelPosition(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

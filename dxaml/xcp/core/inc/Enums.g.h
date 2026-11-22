@@ -258,6 +258,18 @@ public:
     static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
 };
 
+class CCollectionViewSortDirection final : public CEnumerated
+{
+public:
+    static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
+};
+
+class CCollectionViewStringComparison final : public CEnumerated
+{
+public:
+    static _Check_return_ HRESULT Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate);
+};
+
 class CColorInterpolationMode final : public CEnumerated
 {
 public:

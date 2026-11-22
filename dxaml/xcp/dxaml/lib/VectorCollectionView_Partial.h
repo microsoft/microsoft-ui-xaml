@@ -11,12 +11,23 @@
 namespace DirectUI
 {
     class CollectionViewSource;
-    class PropertyGroupDescription;
+    class GroupDescription;
     class VectorCollectionView;
     struct ShapingSortState;
 
     // Drops a default view from CollectionViewSource.GetDefaultView's table (CollectionViewSource_Shaping.cpp).
     void UnregisterDefaultView(_In_ VectorCollectionView* pView);
+
+    // PropertyGroupDescription.NamesMatch and GroupNameFromItem, as the view evaluates them
+    // (VectorCollectionView_Shaping.cpp).
+    _Check_return_ HRESULT ShapingNamesMatch(xaml_data::CollectionViewStringComparison comparison, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch);
+    _Check_return_ HRESULT ShapingGroupNameFromProperty(
+        _In_opt_ HSTRING propertyName,
+        _In_opt_ xaml_data::IValueConverter* pConverter,
+        _In_opt_ IInspectable* pItem,
+        INT level,
+        _In_opt_ HSTRING culture,
+        _Outptr_result_maybenull_ IInspectable** ppName);
 
     // Plays WPF's ListCollectionView: a view a CollectionViewSource creates over a vector owns the shaping
     // engine (VectorCollectionView_Shaping.cpp) and answers ICollectionViewShaping. A dedicated class would be a
@@ -36,7 +47,7 @@ namespace DirectUI
 
         // ICollectionViewShaping
         IFACEMETHOD(get_SortDescriptions)(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue) override;
-        IFACEMETHOD(get_GroupDescriptions)(_Outptr_ wfc::IObservableVector<xaml_data::PropertyGroupDescription*>** ppValue) override;
+        IFACEMETHOD(get_GroupDescriptions)(_Outptr_ wfc::IObservableVector<xaml_data::GroupDescription*>** ppValue) override;
         IFACEMETHOD(get_Filter)(_Outptr_result_maybenull_ xaml_data::ICollectionViewFilter** ppValue) override;
         IFACEMETHOD(put_Filter)(_In_opt_ xaml_data::ICollectionViewFilter* pValue) override;
         IFACEMETHOD(Refresh)() override;
@@ -89,7 +100,7 @@ namespace DirectUI
         // WPF: CollectionViewSource.ApplyPropertiesToView. The collections are shared with the host.
         _Check_return_ HRESULT ApplyShapingRules(
             _In_ wfc::IVector<xaml_data::SortDescription*>* pSortDescriptions,
-            _In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pGroupDescriptions,
+            _In_ wfc::IVector<xaml_data::GroupDescription*>* pGroupDescriptions,
             _In_opt_ xaml_data::ICollectionViewFilter* pFilter,
             _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort,
             _In_opt_ HSTRING culture);
@@ -98,7 +109,7 @@ namespace DirectUI
         // keeps following its source with its own copy of the rules; nothing it is told reaches the host.
         _Check_return_ HRESULT DetachFromHost();
 
-        // While the host has FilterRequested handlers the view holds it, as WPF's view holds the CVS through
+        // While the host has Filter event handlers the view holds it, as WPF's view holds the CVS through
         // the wrapped filter; else only weakly.
         void SetFilterHost(_In_opt_ CollectionViewSource* pHost);
 
@@ -106,8 +117,9 @@ namespace DirectUI
         _Check_return_ HRESULT OnShapingRulesChanged();
         _Check_return_ HRESULT EndDeferRefresh();
 
-        // A group description's SortDescriptions or CustomSort changed.
-        _Check_return_ HRESULT OnGroupDescriptionChanged(_In_ PropertyGroupDescription* pDescription);
+        // A group description changed (its SortDescriptions, CustomSort, GroupNames or, for a PropertyGroupDescription,
+        // a property).
+        _Check_return_ HRESULT OnGroupDescriptionChanged(_In_ GroupDescription* pDescription);
 
         // IVector<IInspectable *>
         IFACEMETHOD(GetAt)(unsigned index, _Out_  IInspectable **item) override;
@@ -174,7 +186,7 @@ namespace DirectUI
         _Check_return_ HRESULT PassesFilter(_In_opt_ IInspectable* pItem, _In_opt_ CollectionViewSource* pFilterHost, _Out_ bool* pIsAccepted);
         _Check_return_ HRESULT CreateShapingDescriptions(
             _Outptr_ wfc::IVector<xaml_data::SortDescription*>** ppSortDescriptions,
-            _Outptr_ wfc::IVector<xaml_data::PropertyGroupDescription*>** ppGroupDescriptions);
+            _Outptr_ wfc::IVector<xaml_data::GroupDescription*>** ppGroupDescriptions);
         void DetachSourceList();
 
         // Live shaping (VectorCollectionView_Shaping.cpp; WPF: LiveShapingList / LiveShapingItem).
@@ -215,7 +227,7 @@ namespace DirectUI
         TrackerPtr<xaml_data::ICollectionViewSource> m_tpFilterHost;
 
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
-        TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
+        TrackerPtr<wfc::IVector<xaml_data::GroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
         TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
         wrl_wrappers::HString m_culture;

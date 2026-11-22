@@ -1022,6 +1022,11 @@ HRESULT OnCoreCreateCollectionViewGroup(_Outptr_ CDependencyObject **ppObject, _
     RRETURN(CCollectionViewGroup::Create(ppObject, pCreate));
 }
 
+HRESULT OnCoreCreateGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CGroupDescription::Create(ppObject, pCreate));
+}
+
 HRESULT OnCoreCreateGroupedDataCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CGroupedDataCollectionView::Create(ppObject, pCreate));
@@ -1030,6 +1035,16 @@ HRESULT OnCoreCreateGroupedDataCollectionView(_Outptr_ CDependencyObject **ppObj
 HRESULT OnCoreCreateIterableCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CIterableCollectionView::Create(ppObject, pCreate));
+}
+
+HRESULT OnCoreCreatePropertyGroupDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CPropertyGroupDescription::Create(ppObject, pCreate));
+}
+
+HRESULT OnCoreCreateSortDescription(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CSortDescription::Create(ppObject, pCreate));
 }
 
 HRESULT OnCoreCreateVectorCollectionView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)

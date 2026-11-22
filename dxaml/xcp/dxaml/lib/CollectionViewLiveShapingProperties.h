@@ -10,13 +10,15 @@
 namespace DirectUI
 {
     // The property paths of ICollectionViewLiveShaping.Live*Properties and CollectionViewSource.Live*Properties
-    // (WPF: ObservableCollection<string>). The owner hears every change through the callback.
+    // (WPF: ObservableCollection<string>). The owner hears every change through the callback. IUntypedVector is how
+    // markup fills it (<x:String> items).
     class LiveShapingPropertyCollection final :
         public wrl::RuntimeClass<
             wrl::RuntimeClassFlags<wrl::RuntimeClassType::WinRt>,
             wfc::IIterable<HSTRING>,
             wfc::IVector<HSTRING>,
-            wfc::IObservableVector<HSTRING>>
+            wfc::IObservableVector<HSTRING>,
+            IUntypedVector>
     {
         InspectableClass(nullptr /*internal*/, BaseTrust);
 
@@ -249,6 +251,43 @@ namespace DirectUI
             return Raise(wfc::CollectionChange_Reset, 0);
         }
 
+        // IUntypedVector
+        IFACEMETHODIMP UntypedAppend(_In_ IInspectable* pItem) override
+        {
+            wrl_wrappers::HString value;
+            IFC_RETURN(Unbox(pItem, value.GetAddressOf()));
+            return Append(value.Get());
+        }
+
+        IFACEMETHODIMP UntypedGetSize(_Out_ unsigned int* pSize) override
+        {
+            return get_Size(pSize);
+        }
+
+        IFACEMETHODIMP UntypedGetAt(_In_ unsigned int index, _COM_Outptr_ IInspectable** ppItem) override
+        {
+            *ppItem = nullptr;
+            IFCEXPECTRC_RETURN(index < m_strings->size(), E_BOUNDS);
+            return DirectUI::PropertyValue::CreateFromString((*m_strings)[index].Get(), ppItem);
+        }
+
+        IFACEMETHODIMP UntypedInsertAt(_In_ unsigned int index, _In_ IInspectable* pItem) override
+        {
+            wrl_wrappers::HString value;
+            IFC_RETURN(Unbox(pItem, value.GetAddressOf()));
+            return InsertAt(index, value.Get());
+        }
+
+        IFACEMETHODIMP UntypedRemoveAt(_In_ unsigned int index) override
+        {
+            return RemoveAt(index);
+        }
+
+        IFACEMETHODIMP UntypedClear() override
+        {
+            return Clear();
+        }
+
         // IObservableVector<HSTRING>
         IFACEMETHODIMP add_VectorChanged(_In_ wfc::VectorChangedEventHandler<HSTRING>* pHandler, _Out_ EventRegistrationToken* pToken) override
         {
@@ -261,6 +300,15 @@ namespace DirectUI
         }
 
     private:
+        static HRESULT Unbox(_In_ IInspectable* pItem, _Out_ HSTRING* pValue)
+        {
+            ctl::ComPtr<wf::IPropertyValue> spValue;
+            *pValue = nullptr;
+            IFC_RETURN(ctl::do_query_interface(spValue, pItem));
+            IFC_RETURN(spValue->GetString(pValue));
+            return S_OK;
+        }
+
         static HRESULT Find(const Strings& strings, _In_opt_ HSTRING value, _Out_ unsigned int* pIndex, _Out_ boolean* pFound)
         {
             *pIndex = 0;

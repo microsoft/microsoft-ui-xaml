@@ -52,6 +52,8 @@ REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::CharacterCasing,
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::ClickMode, L"Microsoft.UI.Xaml.Controls.ClickMode");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Media::Animation::ClockState, L"Microsoft.UI.Xaml.Media.Animation.ClockState");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Windows::Foundation::Collections::CollectionChange, L"Windows.Foundation.Collections.CollectionChange");
+REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection, L"Microsoft.UI.Xaml.Data.CollectionViewSortDirection");
+REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison, L"Microsoft.UI.Xaml.Data.CollectionViewStringComparison");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode, L"Microsoft.UI.Xaml.Media.ColorInterpolationMode");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger, L"Microsoft.UI.Xaml.Controls.ComboBoxSelectionChangedTrigger");
 REFERENCE_ELEMENT_NAME_IMPL(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition, L"Microsoft.UI.Xaml.Controls.CommandBarDefaultLabelPosition");
@@ -728,6 +730,32 @@ __declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_CollectionChange(_In_ II
     ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Collections::CollectionChange>* ptr = nullptr;
     IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
     ABI::Windows::Foundation::Collections::CollectionChange value;
+    IFC(ptr->get_Value(&value));
+    *pnValue = static_cast<uint32_t>(value);
+Cleanup:
+    ReleaseInterfaceNoNULL(ptr);
+    return hr;
+}
+
+__declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_CollectionViewSortDirection(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
+{
+    HRESULT hr = S_OK;
+    ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection>* ptr = nullptr;
+    IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
+    ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection value;
+    IFC(ptr->get_Value(&value));
+    *pnValue = static_cast<uint32_t>(value);
+Cleanup:
+    ReleaseInterfaceNoNULL(ptr);
+    return hr;
+}
+
+__declspec(noinline) HRESULT GetValueFor_KnownTypeIndex_CollectionViewStringComparison(_In_ IInspectable* pBox, REFIID guid, _Out_ UINT* pnValue)
+{
+    HRESULT hr = S_OK;
+    ABI::Windows::Foundation::IReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison>* ptr = nullptr;
+    IFC(pBox->QueryInterface(guid, reinterpret_cast<void**>(&ptr)));
+    ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value;
     IFC(ptr->get_Value(&value));
     *pnValue = static_cast<uint32_t>(value);
 Cleanup:
@@ -2670,6 +2698,10 @@ _Check_return_ HRESULT GetEnumValueFromKnownWinRTBox(_In_ IInspectable* pBox, _I
             return GetValueFor_KnownTypeIndex_ClockState(pBox, typeGuid, pnValue);
         case KnownTypeIndex::CollectionChange:
             return GetValueFor_KnownTypeIndex_CollectionChange(pBox, typeGuid, pnValue);
+        case KnownTypeIndex::CollectionViewSortDirection:
+            return GetValueFor_KnownTypeIndex_CollectionViewSortDirection(pBox, typeGuid, pnValue);
+        case KnownTypeIndex::CollectionViewStringComparison:
+            return GetValueFor_KnownTypeIndex_CollectionViewStringComparison(pBox, typeGuid, pnValue);
         case KnownTypeIndex::ColorInterpolationMode:
             return GetValueFor_KnownTypeIndex_ColorInterpolationMode(pBox, typeGuid, pnValue);
         case KnownTypeIndex::ComboBoxSelectionChangedTrigger:
@@ -3049,6 +3081,10 @@ _Check_return_ HRESULT GetKnownWinRTBoxFromEnumValue(_In_ UINT nValue, _In_ cons
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Media::Animation::ClockState>(static_cast<ABI::Microsoft::UI::Xaml::Media::Animation::ClockState>(nValue), ppBox);
         case KnownTypeIndex::CollectionChange:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Windows::Foundation::Collections::CollectionChange>(static_cast<ABI::Windows::Foundation::Collections::CollectionChange>(nValue), ppBox);
+        case KnownTypeIndex::CollectionViewSortDirection:
+            return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection>(static_cast<ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection>(nValue), ppBox);
+        case KnownTypeIndex::CollectionViewStringComparison:
+            return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison>(static_cast<ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison>(nValue), ppBox);
         case KnownTypeIndex::ColorInterpolationMode:
             return DirectUI::PropertyValue::CreateEnumReference<ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode>(static_cast<ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode>(nValue), ppBox);
         case KnownTypeIndex::ComboBoxSelectionChangedTrigger:

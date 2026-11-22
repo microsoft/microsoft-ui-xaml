@@ -217,6 +217,16 @@ _Check_return_ HRESULT CCollectionChange::Create(_Outptr_ CDependencyObject** pp
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satCollectionChange), satCollectionChange, KnownTypeIndex::CollectionChange, /* IsFlagsEnumeration */ false);
 }
 
+_Check_return_ HRESULT CCollectionViewSortDirection::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satCollectionViewSortDirection), satCollectionViewSortDirection, KnownTypeIndex::CollectionViewSortDirection, /* IsFlagsEnumeration */ false);
+}
+
+_Check_return_ HRESULT CCollectionViewStringComparison::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
+{
+    return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satCollectionViewStringComparison), satCollectionViewStringComparison, KnownTypeIndex::CollectionViewStringComparison, /* IsFlagsEnumeration */ false);
+}
+
 _Check_return_ HRESULT CColorInterpolationMode::Create(_Outptr_ CDependencyObject** ppObject, _In_ CREATEPARAMETERS* pCreate)
 {
     return CreateEnumerateHelper(ppObject, pCreate, ARRAY_SIZE(satColorInterpolationMode), satColorInterpolationMode, KnownTypeIndex::ColorInterpolationMode, /* IsFlagsEnumeration */ false);

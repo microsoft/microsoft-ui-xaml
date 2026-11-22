@@ -7,31 +7,15 @@
 
 namespace DirectUI
 {
-    class VectorCollectionView;
-
+    // WPF's PropertyGroupDescription. The view reads PropertyName, Converter and StringComparison directly instead of
+    // calling the overridables; a change to any of them regroups the views that use it.
     PARTIAL_CLASS(PropertyGroupDescription)
     {
+    protected:
+        _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
+
     public:
-        _Check_return_ HRESULT get_SortDescriptionsImpl(_Outptr_ wfc::IObservableVector<xaml_data::SortDescription*>** ppValue);
-        _Check_return_ HRESULT get_CustomSortImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue);
-        _Check_return_ HRESULT put_CustomSortImpl(_In_opt_ xaml_data::ICollectionViewComparer* pValue);
-
-        // Null until SortDescriptions is first read.
-        wfc::IVector<xaml_data::SortDescription*>* GetSortDescriptionsNoRef() const
-        {
-            return m_tpSortDescriptions.Get();
-        }
-
-        // A view grouping by this description regroups when the group order changes (WPF: GroupDescription.PropertyChanged).
-        _Check_return_ HRESULT AddOwner(_In_ VectorCollectionView* pView);
-        _Check_return_ HRESULT OnSortDescriptionsChanged();
-
-    private:
-        _Check_return_ HRESULT NotifyOwners();
-
-        TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
-        TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
-        std::vector<ctl::WeakRefPtr> m_owners;
-        bool m_isApplyingCustomSort = false;
+        _Check_return_ HRESULT GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult) override;
+        _Check_return_ HRESULT NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override;
     };
 }

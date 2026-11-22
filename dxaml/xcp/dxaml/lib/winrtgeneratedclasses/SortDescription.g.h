@@ -28,8 +28,10 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::ISortDescription, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue) override { return This()->get_Direction(pValue); }
+        IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection* pValue) override { return This()->get_Direction(pValue); }
+        IFACEMETHOD(put_Direction)(ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection value) override { return This()->put_Direction(value); }
         IFACEMETHOD(get_PropertyName)(_Out_ HSTRING* pValue) override { return This()->get_PropertyName(pValue); }
+        IFACEMETHOD(put_PropertyName)(_In_opt_ HSTRING value) override { return This()->put_PropertyName(value); }
     };
 }
 #endif
@@ -39,35 +41,45 @@ namespace DirectUI
 {
     class SortDescription;
 
-    class __declspec(novtable) __declspec(uuid(__SortDescription_GUID)) SortDescription:
-        public ctl::WeakReferenceSource
+    class __declspec(novtable) SortDescriptionGenerated:
+        public DirectUI::DependencyObject
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::ISortDescription, SortDescription >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::ISortDescription, SortDescriptionGenerated >
 #endif
     {
+        friend class DirectUI::SortDescription;
 
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.Data.SortDescription");
 
-        BEGIN_INTERFACE_MAP(SortDescription, ctl::WeakReferenceSource)
+        BEGIN_INTERFACE_MAP(SortDescriptionGenerated, DirectUI::DependencyObject)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-            INTERFACE_ENTRY(SortDescription, ABI::Microsoft::UI::Xaml::Data::ISortDescription)
+            INTERFACE_ENTRY(SortDescriptionGenerated, ABI::Microsoft::UI::Xaml::Data::ISortDescription)
 #else
             INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
 #endif
-        END_INTERFACE_MAP(SortDescription, ctl::WeakReferenceSource)
+        END_INTERFACE_MAP(SortDescriptionGenerated, DirectUI::DependencyObject)
 
     public:
-        SortDescription();
-        ~SortDescription() override;
+        SortDescriptionGenerated();
+        ~SortDescriptionGenerated() override;
 
         // Event source typedefs.
 
+        KnownTypeIndex GetTypeIndex() const override
+        {
+            return KnownTypeIndex::SortDescription;
+        }
+
+        static XCP_FORCEINLINE KnownTypeIndex GetTypeIndexStatic()
+        {
+            return KnownTypeIndex::SortDescription;
+        }
 
         // Properties.
-        _Check_return_ HRESULT STDMETHODCALLTYPE get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue);
-        _Check_return_ HRESULT put_Direction(ABI::Microsoft::UI::Xaml::Data::ListSortDirection value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Direction(ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PropertyName(_Out_ HSTRING* pValue);
-        _Check_return_ HRESULT put_PropertyName(_In_opt_ HSTRING value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_PropertyName(_In_opt_ HSTRING value);
 
         // Events.
 
@@ -78,16 +90,12 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
     private:
-        // Customized properties.
-
-        // Customized methods.
 
         // Fields.
-        ABI::Microsoft::UI::Xaml::Data::ListSortDirection m_direction;
-        Microsoft::WRL::Wrappers::HString m_propertyName;
     };
 }
 
+#include "SortDescription_Partial.h"
 
 namespace DirectUI
 {
@@ -98,26 +106,28 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) SortDescriptionFactory:
-       public ctl::AbstractActivationFactory
+       public ctl::BetterCoreObjectActivationFactory
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ABI::Microsoft::UI::Xaml::Data::ISortDescriptionFactory
 #endif
     {
-        BEGIN_INTERFACE_MAP(SortDescriptionFactory, ctl::AbstractActivationFactory)
+        BEGIN_INTERFACE_MAP(SortDescriptionFactory, ctl::BetterCoreObjectActivationFactory)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(SortDescriptionFactory, ABI::Microsoft::UI::Xaml::Data::ISortDescriptionFactory)
 #else
             INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
 #endif
-        END_INTERFACE_MAP(SortDescriptionFactory, ctl::AbstractActivationFactory)
+        END_INTERFACE_MAP(SortDescriptionFactory, ctl::BetterCoreObjectActivationFactory)
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::ListSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance);
+        IFACEMETHOD(CreateInstanceWithPropertyNameAndDirection)(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance);
 
         // Static properties.
 
         // Dependency properties.
+        
+        
 
         // Attached properties.
 
@@ -128,11 +138,14 @@ namespace DirectUI
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
+        KnownTypeIndex GetTypeIndex() const override
+        {
+            return KnownTypeIndex::SortDescription;
+        }
 
-        _Check_return_ HRESULT CheckActivationAllowed() override;
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::ListSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithPropertyNameAndDirectionImpl(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance);
 
         // Customized static properties.
 
