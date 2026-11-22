@@ -312,19 +312,28 @@ void SourceTable::Refresh()
     bool const swapping = m_pendingHierarchy.has_value();
     SourceHierarchy* const strategy = swapping ? m_pendingHierarchy->get() : m_hierarchy.get();
 
-    // 1. Read: every app call and check. A throw leaves the table untouched, and the flags as
-    // they were unless validation failed.
-    auto const items = m_sourceAccessor->Enumerate(true /* throwIfUnsupported */);
+    // 1. Read: every app call and check. A throw leaves the records untouched (decided, M18):
+    // the table is marked diverged with no re-read owed, so the error reaches the app once and
+    // the next source notification or Refresh() re-reads (WPF: a Refresh that throws is not
+    // retried). A parked verb (DeferRefresh) is dropped, as a hierarchy verb that throws outside
+    // a DeferRefresh leaves the old hierarchy; otherwise it would be reported, and re-read, at
+    // every report point.
+    std::vector<winrt::IInspectable> items;
     try
     {
+        items = m_sourceAccessor->Enumerate(true /* throwIfUnsupported */);
         ValidateItems(items);
+        if (strategy && !swapping)
+        {
+            // The committed strategy is tolerant: only a selector throw gets here.
+            strategy->Prepare(*this, items);
+        }
     }
     catch (...)
     {
-        // The source is now in the state a rejected change leaves: the next notification
-        // recovers it, not every report point.
         m_diverged = true;
         m_rereadDue = false;
+        m_pendingHierarchy.reset();
         throw;
     }
 
@@ -343,11 +352,6 @@ void SourceTable::Refresh()
             Refresh();
             std::rethrow_exception(error);
         }
-    }
-    else if (strategy)
-    {
-        // The committed strategy is tolerant: only a selector throw gets here.
-        strategy->Prepare(*this, items);
     }
 
     // 2. Match and 3. link. Nothing below calls app code.

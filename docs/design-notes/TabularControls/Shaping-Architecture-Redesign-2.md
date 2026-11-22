@@ -80,7 +80,7 @@ table serves as both the shared identity store and the cached full set that shap
 | 4 | Source tracking and source tree: `SourceRecord`, `SourceTable`, `SourceChange`; hierarchy strategies `SourceHierarchy`, `ParentKeyHierarchy`, `ChildCollectionsHierarchy` | `Source/SourceRecord.h/.cpp`, `Source/SourceTable.h`, `Source/Hierarchy/*.h` | `SourceRecord`, `SourceTable` and both strategies implemented (`ParentBy`, `ChildrenBy`, `ClearHierarchy`); not yet wired through `ShapingManager` |
 | 5 | Shape spec: `ShapeSpec`, `ShapeDelegates`, `PathEvaluator` | `Spec/ShapeSpec.h`, `Spec/ShapeDelegates.h`, `Spec/PathEvaluator.h` | Implemented; ownership decided (desired in `ShapingManager`, applied in engine) |
 | 6 | Shaping engine and shaped tree: `ShapingEngine`; node types `ShapedNode` (base), `GroupNode`; per-record `ShapeState`; `ShapedTree` (root, counts, reads, expansion) and its `IShapedRowsListener`; `FenwickTree`; `GroupExpansion` | `Engine/ShapingEngine.h`, `Engine/ShapedTree.h`, `Engine/ShapeState.h/.cpp`, `Engine/FenwickTree.h/.cpp`, `Engine/GroupExpansion.h/.cpp`, `Engine/ShapedTree.cpp` | `ShapedNode`, `ShapeState`, `GroupNode`, `FenwickTree`, `GroupExpansion` and `ShapedTree` implemented; `ShapingEngine` declared, not implemented |
-| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (an `ItemsSourceView` subclass that `ShapingManager::View()` returns) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | Declared, not implemented |
+| 7 | Visible list: the WinRT visible list `ShapedCollectionView` (implements `IItemsSourceView` natively; `ShapingManager::View()` returns it, M16) and its header token (the shared v1 `GroupedEntry`, `GroupedSourceAdapter/GroupedEntry.h`); row metadata `ShapedRowMetadata`; their read-only queries `ShapedRowQueries` | `View/ShapedCollectionView.h`, `View/ShapedRowMetadata.h`, `View/ShapedRowQueries.h` | `ShapedCollectionView` implemented (not yet in the project); the others declared |
 | 8 | Coordinator: `ShapingManager` (also the tree's `IShapedRowsListener` and the adapters' `IShapedExpansion`); owner channel `IShapingOwner` | `Shaping/ShapingManager.h`, `Shaping/IShapedExpansion.h`, `Shaping/IShapingOwner.h` | Ownership decided; verbs, handlers, `View()`, `RowMetadata()`, the expansion actions, owner notifications (#18), the commit scope, group expansion and engine declared; not implemented |
 
 ## Class diagram
@@ -120,8 +120,8 @@ classDiagram
         +ReleaseOwner(owner)
         +AddOwnerReleasedWaiter(waiter, handler)
         +RemoveOwnerReleasedWaiter(waiter)
-        +BeginLiveShapingHold() noexcept
-        +EndLiveShapingHold()
+        +BeginLiveShapingHold() uint64 noexcept
+        +EndLiveShapingHold(generation) noexcept
     }
 
     class DeferRefreshHandle {
@@ -189,12 +189,14 @@ classDiagram
         -ShapingEngine m_engine
         -ShapedRowQueries m_rows
         -IShapingOwner* m_owner
-        -unordered_map~SourceRecord*, hstring~ m_liveDirty
+        -vector~LiveChange~ m_liveDirty
+        -unordered_map~SourceRecord*, uint32~ m_liveDirtyIndex
+        -shared_ptr~ShapingManager*~ m_liveDrainToken
+        -uint64 m_ownerGeneration
         -bool m_liveDrainPosted
         -uint32 m_liveHoldCount
         -uint32 m_deferDepth
         -bool m_isApplying
-        -bool m_resyncPosted
         -CommitState m_commit
         -uint32 c_bulkThreshold$
         -uint32 c_liveBulkThreshold$
@@ -205,9 +207,12 @@ classDiagram
         +IsRefreshDeferred() bool
         +IsLiveShaping : bool
         +AppliedSpec() ShapeSpec
-        +BeginLiveShapingHold() noexcept
-        +EndLiveShapingHold()
+        +BeginLiveShapingHold() uint64 noexcept
+        +EndLiveShapingHold(generation) noexcept
         +SetOwner(sink)
+        +SetCommitEndedHandler(handler) noexcept
+        +SetWeakOwnerResolver(resolver) noexcept
+        +IsApplying() bool
         +View() ItemsSourceView
         +RowMetadata() shared_ptr~ITableViewRowMetadataProvider~
         +IsItemInShapedTree(item) bool
@@ -515,7 +520,10 @@ classDiagram
     class ShapingManager {
         <<native coordinator>>
         -ShapingEngine m_engine
-        -unordered_map~SourceRecord*, hstring~ m_liveDirty
+        -vector~LiveChange~ m_liveDirty
+        -unordered_map~SourceRecord*, uint32~ m_liveDirtyIndex
+        -shared_ptr~ShapingManager*~ m_liveDrainToken
+        -uint64 m_ownerGeneration
         -DrainLiveChanges()
     }
 
@@ -1838,16 +1846,22 @@ private:
 **WinRT visible list (decided, V1: a virtual read-only collection over the shaped tree).** The
 collection the repeater binds to, `ShapedCollectionView`, is a small WinRT class that reads
 through `ShapedTree`'s walk (P1); it holds no copy.
-- **Base (decided, D1: derives from `ItemsSourceView`).** `ShapedCollectionView` subclasses
-  `ItemsSourceView` inside the controls DLL, as `InspectingDataSource` does
-  (`winrt::implements<ShapedCollectionView, ItemsSourceView>`), and `View()` returns it as is;
-  `ItemsRepeater` uses an `ItemsSourceView` it is given without wrapping it. Overrides:
-  `GetSizeCore()` is `ShapedTree::Size()`; `GetAtCore(i)` maps `ShapedTree::GetAt(i)` to its row
-  value (V2);
-  `HasKeyIndexMappingCore()` is true; `KeyFromIndexCore` / `IndexFromKeyCore` use the row key (V3)
-  and `ShapedTree::IndexOf`; `IndexOfCore(item)` resolves the item through `SourceTable` (D4), then
-    `IndexOf` (O(depth × log k), not a scan). Events are raised through the base
-  `OnItemsSourceChanged(args)`, which also refreshes the cached `Count`.
+- **Base (decided, D1 revised by M16: implements `IItemsSourceView` natively).**
+  `ShapedCollectionView` is `winrt::implements<ShapedCollectionView, IItemsSourceView,
+  INotifyCollectionChanged>`, and `View()` returns it as is; `ItemsRepeater` uses an
+  `ItemsSourceView` it is given without wrapping it, and no consumer of a TableView source calls
+  `get_self<ItemsSourceView>` (only `NavigationView.cpp`, on its own sources). Members: `Count()` is
+  `ShapedRowQueries::RowCount()`; `GetAt(i)` maps `RowAt(i)` to its row value (V2: a record's item,
+  or the group's cached `GroupedEntry`); `HasKeyIndexMapping()` is true; `KeyFromIndex(i)` is the
+  group or record identity (V3); `IndexFromKey` / `IndexOf` use `IndexOfKey` / `IndexOfItem`
+  (`IndexOf` resolves the item through `SourceTable`, D4, then O(depth × log k), not a scan) and
+  return -1 when not found. Events are raised on its own `CollectionChanged`, with placeholder item
+  lists (`count` nullptrs) and indices, as `InspectingDataSource` raises them. `Detach()` drops
+  every handler and nulls the back-reference.
+  - Rejected: subclassing `ItemsSourceView` (`ItemsSourceView.h` is not on the Tabular DLL's
+    include path, C1083), and the first implementation's `IBindableVector` wrapped by
+    `TableViewSource2` (two objects, two event hops). Depends on `IItemsSourceView` not being
+    `exclusiveto`; fallback is the wrapper.
   - Rejected: the earlier V1 shape, a standalone class implementing `IVectorView<IInspectable>`,
     `IIterable`, `INotifyCollectionChanged` and `IKeyIndexMapping`, wrapped by
     `winrt::ItemsSourceView{ list }`: two objects and two event hops per source, the mapping found
@@ -2594,9 +2608,10 @@ Decisions and open questions:
   repeater binds to. That collection is `ShapedCollectionView`, which reads through the
   coordinator's read-only row queries (`m_rows`, a `ShapedRowQueries`: `RowCount`, `RowAt`,
   `IndexOfKey`, `IndexOfItem`).
-- **`View()` returns the `ShapedCollectionView`** (an `ItemsSourceView` subclass, D1), as v1
+- **`View()` returns the `ShapedCollectionView`** (native `IItemsSourceView`, D1/M16), as v1
   `TableViewSource::GetItemsSourceView()` returns its view. It is created on first call and cached in
-  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, detached and reset by `Clear()`), and stays the same
+  `m_view` (`std::optional<tracker_ref<ItemsSourceView>>`, with a non-owning `m_viewImpl` the listener
+  notifies; detached and reset by `Clear()`), and stays the same
   object for the coordinator's lifetime: reshapes raise `CollectionChanged` on it rather than
   replacing it. Returns `nullptr` after `Clear()`.
 - **Row metadata and selection.** `TableView` talks only to `TableViewSource2`, and through it to
@@ -2623,14 +2638,15 @@ Decisions and open questions:
     `ReleaseRetired`; `EndFreeze`) and records whether a resync is due (`m_commit.resyncDue`). On unwind
     it posts the resync instead. The verb or handler that opened the scope then calls
     `AfterCommit()` after the scope object is gone: it runs the synchronous `ResyncSource` (posted
-    instead when a handler faulted), then rethrows the listener fault. If that `Refresh()` throws, the
-    exception is caught: the table stays as it was and diverged, one
-    retry is posted (`m_resyncPosted`), and nothing reaches the app, whose verb already succeeded.
-    The posted retry does nothing if no re-read is owed by then (`IsRereadDue()` false). If it
-    throws too, it is swallowed. After a validation failure the table is diverged with no re-read
-    owed: the next source notification (handled as a re-read while diverged) or `Refresh` retries.
-    After any other failure the re-read stays owed, so the next commit's `EndFreeze` reports it
-    again.
+    instead when a handler faulted), then rethrows the listener fault. If that `Refresh()` throws (M14),
+    the exception propagates out of `AfterCommit` after the commit: the verb's own work stands,
+    the table is diverged, and `SourceTable` owes no re-read (M18: a failed re-read is treated
+    like a validation failure and a parked hierarchy is dropped), so the next source notification
+    (handled as a re-read while diverged) or `Refresh` retries. A posted resync uses
+    `SourceTable::PostReread()`; its throw reaches `UnhandledException`. With both a listener
+    fault and a due resync, the resync is posted and only the listener fault is rethrown.
+    `AfterCommit(true)` (a source change or surgical drain that threw) posts the resync, runs the
+    commit-ended handler, swallows their errors, and the caller rethrows its own.
   - A failed apply is still consistent: nothing was written, cached keys and the replayed source
     are shaped with `Applied()`, and `Diff(applied, desired)` catches up on the next verb.
   - `ItemChanged` needs no freeze: E7 only adds to the dirty set and posts a drain.
@@ -2652,8 +2668,8 @@ Decisions and open questions:
   `DeferRefresh`, no live hold; else stay pending). The current commit's fields are one
   `CommitState m_commit` (`changes`, `moveNet`, `listenerFault`, `resyncDue`), reset by
   `BeginCommit` with one assignment and taken by `AfterCommit`. `m_isApplying` stays: it guards
-  verbs, while `SourceTable`'s freeze guards source notifications. The live-shaping members and
-  `m_resyncPosted` are unchanged (rejected: grouping them into a struct and merging the two posted
+  verbs, while `SourceTable`'s freeze guards source notifications. The live-shaping members are
+  unchanged (`m_resyncPosted` was later removed, M14) (rejected: grouping them into a struct and merging the two posted
   callbacks into one pump; separate posts stay simpler to reason about).
 
   | State | Verb | `Refresh` | Live drain | Source change |
@@ -2914,8 +2930,8 @@ bool TrySetOwner(IShapingOwner* owner);    // single owner; false if another is 
 void ReleaseOwner(IShapingOwner* owner);   // no-op unless owner; then runs the waiters
 void AddOwnerReleasedWaiter(winrt::IInspectable const& waiter, std::function<void()> handler);
 void RemoveOwnerReleasedWaiter(winrt::IInspectable const& waiter);
-void BeginLiveShapingHold() noexcept;      // counted; forwards to ShapingManager
-void EndLiveShapingHold();                 // count 0: post a drain if changes are pending
+uint64_t BeginLiveShapingHold() noexcept;              // counted; returns the owner generation (M8)
+void EndLiveShapingHold(uint64_t generation) noexcept; // older generation ignored; count 0: post a drain
 
 // ShapingManager: the outcome only.
 void SetOwner(IShapingOwner* sink);        // notification target; a new sink drops the holds
@@ -3415,7 +3431,7 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
   placed per record after the verb, a `ChildrenBy` item already in the tree rejected with
   per-feed out-of-sync recovery).
 - [x] Add the desired spec to the coordinator (`ShapingManager::m_desired`, declared).
-- [ ] Wire `TableViewSource2` verb methods to forward to `ShapingManager`, which updates `m_desired`.
+- [x] Wire `TableViewSource2` verb methods to forward to `ShapingManager`, which updates `m_desired`.
 
 ### Phase 4 — Shaping engine (`Engine/ShapingEngine.h/.cpp`)
 - [x] Declare `ShapingEngine` (`Engine/ShapingEngine.h`): references, applied spec, stable root,
@@ -3528,19 +3544,24 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 The coordinator reacts to live-shaping events but does not own subscriptions; those live in
 `SourceTable` (Phase 1).
 
-- [ ] Handle `SourceTable::SourceChanged` (the coordinator is its only subscriber): incremental
+- [x] Handle `SourceTable::SourceChanged` (the coordinator is its only subscriber): incremental
       projection splices (when eligible) or cached reshapes over `SourceTable::Records()` on `Reset`.
-- [x] Declare the apply scope and resync after a source change during an apply: `ResyncSource`,
-      `m_resyncPosted`, `SourceTable::BeginFreeze` / `EndFreeze` (#19).
+- [x] Declare the apply scope and resync after a source change during an apply: `ResyncSource`
+      (`m_resyncPosted` later removed, M14), `SourceTable::BeginFreeze` / `EndFreeze` (#19).
 - [x] Declare live-shaping coalescing: `m_liveDirty`, `PostLiveDrain`,
       `DrainLiveChanges` (E7).
-- [ ] Handle `SourceTable::ItemChanged` (`(SourceRecord*, propertyName)`): filter by active
+- [x] Handle `SourceTable::ItemChanged` (`(SourceRecord*, propertyName)`): filter by active
       `ShapeSpec` property dependencies, coalesce per dispatcher turn, and re-evaluate affected
       records without managing `INotifyPropertyChanged` subscriptions in the coordinator.
-- [ ] Implement the listener and the commit scope (`OnRows*`, `BeginCommit` / `EndCommit`): the
+- [x] Implement the listener and the commit scope (`OnRows*`, `BeginCommit` / `EndCommit`): the
       owner calls (`OnResetting`, `OnShapingApplied` with the retired records of the
       `SourceChange` being handled), the listener-fault Reset and rethrow, and the counted hold
       (#18).
+- [x] Implement `ShapingManager` (`Shaping/ShapingManager.cpp`) and `ShapedCollectionView`
+      (`View/ShapedCollectionView.cpp`) under decisions M1–M18; now in `TableViewSource2.vcxitems`. Drift #103–#121 in `TableViewSource2-Header-Changes-2.md`.
+- [x] Implement `ShapedRowQueries` and `ShapedRowMetadata`; add the four files to the project;
+      wire `TableViewSource2` (`SetWeakOwnerResolver`, `SetCommitEndedHandler`, the hold
+      generation, `GetItemsSourceView()`). Tabular DLL builds. Drift #122–#127.
 
 ### Phase 6 — `TableView` integration & validation
 - [ ] Switch `TableView` to accept `TableViewSource2` alongside `TableViewSource`.
@@ -3567,7 +3588,8 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
   a no-op, and `Close` after the source is gone or torn down does nothing.
   `ShapingManager::BeginDeferRefresh` / `EndDeferRefresh` keep a depth counter (`m_deferDepth`):
   every verb is gated (unlike the Community Toolkit's `Filter`), inner ends never refresh.
-  `BeginDeferRefresh` throws while an apply runs (#19). Rejected: a `BeginDeferRefresh` /
+  `BeginDeferRefresh` and `EndDeferRefresh` both throw while an apply runs (#19, M12), before any
+  change; the handle marks itself closed before calling `EndDeferRefresh`. Rejected: a `BeginDeferRefresh` /
   `EndDeferRefresh` pair in the IDL (an exception inside the block leaves the deferral open unless
   the app writes `try` / `finally`).
 - **Source changes while open (decided: WPF model, incremental changes show).** WPF's
@@ -3605,13 +3627,14 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
 - **Outermost end.** `EndHoldResets`; then, if it reported a pending change (a held `Reset`, a
   `Refresh()` while open, or a parked hierarchy), `SourceTable::Refresh()`, whose Reset runs
   `Reapply()` with the desired spec; otherwise
-  `ApplyDesiredSpec()` (nothing when the spec did not change). Then `PostLiveDrain` if live
-  changes are pending: the drain is skipped while a handle is open (as under a hold), and a
+  `ApplyDesiredSpec()` (nothing when the spec did not change and the engine is not stale). Then
+  `PostLiveDrain` (also when the re-read or apply throws) if live changes are pending: the drain is skipped while a handle is open (as under a hold), and a
   `Reapply` empties the dirty set anyway.
 - **Errors.** An apply exception from app code surfaces from the outermost `Close`, with the same
   rules as a verb (see *Misbehaving records*: desired not reverted, applied stays old). A failed
-  re-read leaves the table diverged, so the next notification or `Refresh` retries. The depth is
-  0 either way.
+  re-read propagates and `ApplyDesiredSpec` does not run (M11, all or nothing): the applied spec
+  stays old, `m_desired` is kept, and the table is diverged with no re-read owed (M18), so the next
+  notification, verb or `Refresh` catches up. The depth is 0 either way.
 - **Checklist.**
   - [x] Declare `DeferRefresh()` in the IDL and `TableViewSource2`, and `DeferRefreshHandle`.
   - [x] Declare `BeginDeferRefresh` / `EndDeferRefresh` / `IsRefreshDeferred`, `m_deferDepth`,

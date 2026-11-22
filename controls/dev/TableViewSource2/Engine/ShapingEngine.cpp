@@ -7,6 +7,7 @@
 #include "ShapingHelpers.h"
 
 #include <algorithm>
+#include <exception>
 #include <string>
 #include <unordered_set>
 
@@ -1197,6 +1198,27 @@ namespace
             CollectSubtree(child, out);
         }
     }
+
+    // Live shaping (decided, M3): a throw leaves the record's item changed but its cached
+    // ShapeState old, so the engine is marked stale and the next change rebuilds everything.
+    class StaleOnThrow
+    {
+    public:
+        explicit StaleOnThrow(bool& stale) noexcept : m_stale(stale), m_exceptions(std::uncaught_exceptions()) {}
+        ~StaleOnThrow()
+        {
+            if (std::uncaught_exceptions() > m_exceptions)
+            {
+                m_stale = true;
+            }
+        }
+        StaleOnThrow(StaleOnThrow const&) = delete;
+        StaleOnThrow& operator=(StaleOnThrow const&) = delete;
+
+    private:
+        bool& m_stale;
+        int const m_exceptions;
+    };
 }
 
 void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName)
@@ -1215,6 +1237,7 @@ void ShapingEngine::ApplyItemChanged(SourceRecord* record, winrt::hstring const&
         return;
     }
 
+    StaleOnThrow const staleOnThrow{ m_stale };
     bool const filterActive = !spec.Filters.empty();
     bool const sortActive = !spec.Sorts.empty();
     bool const childrenShaped = filterActive || sortActive;
@@ -1383,6 +1406,7 @@ void ShapingEngine::ApplyItemsChanged(std::span<LiveChange const> changes)
     }
 
     ShapeSpec const applied{ m_applied };
+    StaleOnThrow const staleOnThrow{ m_stale };
     Rebuild(applied, ShapeDelta::Filter | ShapeDelta::GroupKey | ShapeDelta::Sort, false /* clearOverlay */, changes);
 }
 

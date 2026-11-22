@@ -13,10 +13,9 @@
 #include "TableViewSource2.g.h"
 #include "Shaping/ShapingManager.h"
 
-// Scaffold for the shaping redesign. Exposes the same fluent verb surface as TableViewSource;
-// From() constructs a working instance, and every shaping verb throws hresult_not_implemented
-// until the new engine is wired in. Shaping state lives in ShapingManager (the coordinator);
-// this class validates arguments and forwards.
+// The WinRT shell over the shaping pipeline. Exposes the same fluent verb surface as
+// TableViewSource; it validates arguments and forwards to ShapingManager (the coordinator), which
+// owns every shaping part. Owner arbitration (single owner, waiters, handoff) lives here (B2).
 //
 // Reference-tracked for the same reasons as TableViewSource: tracker_ref members let the GC walk
 // references to app-supplied objects. final_release (ReferenceTracker) posts the delete to the
@@ -56,6 +55,10 @@ public:
     // ShapingManager::EndDeferRefresh; no-op after teardown.
     void EndDeferRefresh();
 
+    // Internal (not in IDL): ShapingManager::IsApplying(). DeferRefreshHandle::Close reads it to
+    // refuse a close mid-apply (M12). False after teardown.
+    bool IsApplying() const noexcept;
+
     // Forwards to ShapingManager, which forwards to SourceTable (owner of the flag and the
     // per-item subscriptions). The setter throws while an apply runs (#19).
     bool IsLiveShaping() const;
@@ -64,6 +67,12 @@ public:
     // Internal (not in IDL): the applied spec, read-only, for column sort indicators (replaces v1
     // ActiveSortAxisInfos). Forwards to ShapingManager::AppliedSpec(). nullptr after teardown.
     ShapeSpec const* AppliedSpec() const noexcept;
+
+    // Internal (not in IDL): the visible list TableView binds to, as v1
+    // TableViewSource::GetItemsSourceView(). Forwards to ShapingManager::View() (the
+    // ShapedCollectionView itself, M16; same object for this source's lifetime). nullptr after
+    // teardown.
+    winrt::ItemsSourceView GetItemsSourceView();
 
     // Internal (not in IDL): the row metadata provider for TableView, as v1
     // TableViewSource::GetRowMetadata(). Forwards to ShapingManager::RowMetadata(). nullptr after
@@ -89,16 +98,18 @@ public:
     // loads the new page before it unloads the old one), so the caller renders empty and waits
     // with AddOwnerReleasedWaiter. The same owner again is an idempotent true. A successful claim
     // calls m_shapingManager->SetOwner(owner) first (it throws while an apply runs, #19, before
-    // anything here changes), then sets m_owner and removes that owner's waiter. Raw pointer: the
+    // anything here changes), then sets m_owner. Waiters are not touched: the caller removes its
+    // own waiter (RemoveOwnerReleasedWaiter) before it claims. Raw pointer: the
     // owner calls ReleaseOwner before it is destroyed.
     bool TrySetOwner(IShapingOwner* owner);
 
     // Releases ownership. A no-op unless owner is m_owner, so a refused table cannot detach the
     // real one. Calls m_shapingManager->SetOwner(nullptr) (drops the owner's live-shaping holds;
     // throws while an apply runs), then clears m_owner. Last, runs the waiters FIFO while no owner
-    // is registered: each is popped before it runs (it re-enters TrySetOwner, and one that does
-    // not claim is not retried), and collected waiters are skipped. A waiter may claim
-    // synchronously; the remaining ones stay queued.
+    // is registered (RunOwnerReleasedWaiters); during a commit they are deferred to its end (the
+    // commit-ended handler), since a claim would throw there. Each is popped before it runs (it
+    // re-enters TrySetOwner, and one that does not claim is not retried), and collected waiters
+    // are skipped. A waiter may claim synchronously; the remaining ones stay queued.
     void ReleaseOwner(IShapingOwner* owner);
 
     // A refused owner registers to hear when the owner lets go. One entry per waiter (re-adding
@@ -110,14 +121,21 @@ public:
 
     // Counted live-shaping hold (O4). Forward to ShapingManager, which owns the drain; replaces v1
     // SetLiveShapingHold and ResumeHeldLiveShaping. Holds are dropped when the owner is released.
-    void BeginLiveShapingHold() noexcept;
-    void EndLiveShapingHold();
+    // Begin returns the owner generation the hold belongs to (M8); pass it to End, which ignores a
+    // stale generation, so a released owner cannot end the next owner's hold. Begin returns 0 and
+    // End is a no-op after teardown.
+    uint64_t BeginLiveShapingHold() noexcept;
+    void EndLiveShapingHold(uint64_t generation) noexcept;
 
 private:
-    [[noreturn]] static void ThrowNotImplemented(wchar_t const* verb);
+    // Runs the waiters FIFO while no owner is registered (see ReleaseOwner). Called by
+    // ReleaseOwner outside a commit, and by ShapingManager's commit-ended handler for a release
+    // made inside one (a waiter's claim would throw mid-apply, M1).
+    void RunOwnerReleasedWaiters();
 
     // The coordinator: owns SourceTable (which holds the app's source collection), the desired
-    // spec, the delegate registry, and later the engine (with its ShapedTree) and View. Its
+    // spec, the delegate registry, the engine (with its ShapedTree) and the View. Created by the
+    // constructor; null after teardown. Its
     // tracker_refs are bound to this, so ~TableViewSource2() calls m_shapingManager->Clear() while
     // this object is still alive. Before that, the destructor nulls m_owner and clears
     // m_ownerReleasedWaiters without running them (no callbacks during teardown).

@@ -8,6 +8,7 @@
 #include "TableViewRowInfo.h"
 
 class ShapedRowQueries;
+class ShapedCollectionView;
 struct IShapedExpansion;
 
 // TableViewSource2's row metadata provider (declarations only). See
@@ -37,7 +38,12 @@ struct IShapedExpansion;
 class ShapedRowMetadata final : public ITableViewRowMetadataProvider
 {
 public:
-    ShapedRowMetadata(ShapedRowQueries const& rows, IShapedExpansion& expansion) noexcept;
+    // view: this source's visible list, which ShapingManager::RowMetadata() materializes first so
+    // TryGetGroupMembership can compare rows by identity.
+    ShapedRowMetadata(
+        ShapedRowQueries const& rows,
+        IShapedExpansion& expansion,
+        ShapedCollectionView& view) noexcept;
 
     // ---- Per row ----------------------------------------------------------------------------
 
@@ -45,7 +51,8 @@ public:
     // table in the spec). Out of range or detached: a default TableViewRowInfo.
     TableViewRowInfo GetRowInfo(int32_t index) override;
 
-    // The row key of ShapedRowQueries::RowAt(index) (V3). Empty when out of range or detached.
+    // The row key of the row at index (ShapedRowQueries::KeyAt, V3). Empty when out of range or
+    // detached.
     winrt::hstring GetIdentity(int32_t index) override;
 
     // ShapedRowQueries::IndexOfKey (V3/D4). False when unknown, hidden or detached.
@@ -84,8 +91,8 @@ public:
     // v1 meaning kept (decided, R3): 1-based position among the data rows between two adjacent
     // header bands, and that band's size. Computed, not scanned:
     // ShapedRowQueries::TryGetGroupMembership.
-    // False when rows is not this source's ShapedCollectionView (compared by identity), the source
-    // is not grouped, index is a header or out of range, or detached.
+    // False when rows is not this source's ShapedCollectionView (compared by IUnknown identity), the
+    // source is not grouped, index is a header or out of range, or detached.
     bool TryGetGroupMembership(
         winrt::Windows::Foundation::IInspectable const& rows,
         int32_t index,
@@ -94,12 +101,13 @@ public:
 
     // ---- Lifetime ---------------------------------------------------------------------------
 
-    // Nulls m_rows and m_expansion. Called by ShapingManager::Clear() right after
+    // Nulls m_rows, m_expansion and m_view. Called by ShapingManager::Clear() right after
     // ShapedCollectionView::Detach(). Idempotent.
     void Detach() noexcept;
 
 private:
-    // Non-owning (R4). Both null after Detach(); both point into the same ShapingManager.
+    // Non-owning (R4). All null after Detach(); all point into the same ShapingManager.
     ShapedRowQueries const* m_rows{ nullptr };
     IShapedExpansion* m_expansion{ nullptr };
+    ShapedCollectionView* m_view{ nullptr };
 };

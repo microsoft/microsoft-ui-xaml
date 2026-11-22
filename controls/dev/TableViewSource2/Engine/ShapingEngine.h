@@ -117,8 +117,9 @@ public:
     // (SourceChange::Added), hidden by that fallback.
     void ReapplyForSource(ShapeSpec const& desired, std::span<SourceRecord* const> arrivals);
 
-    // True after UnlinkOnly: cached filter results, keys and placements may be stale, so the next
-    // Rebuild re-reads everything (ShapeDelta::All) even when Diff(Applied(), desired) is empty.
+    // True after UnlinkOnly or a live-shaping throw (M3): cached filter results, keys and
+    // placements may be stale, so the next Rebuild re-reads everything (ShapeDelta::All) even
+    // when Diff(Applied(), desired) is empty.
     bool IsStale() const noexcept;
 
     // One single-item source change (any subtree size): places, removes, moves (including a
@@ -143,7 +144,8 @@ public:
     // a filter flip walks up while a ShapedChildren list changes between empty and non-empty
     // under an ancestor failing the filter (E8); a group change may prune and create groups (E9).
     // App code that throws (predicate, key, group key selector or comparer) propagates with
-    // nothing written and the engine not stale (decided, D11).
+    // nothing written (D11); the engine is then stale (decided, M3: the item changed but its
+    // cached ShapeState did not), so the next call rebuilds with ShapeDelta::All.
     void ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
     // Live shaping for more than ShapingManager::c_liveBulkThreshold coalesced records (decided,
@@ -151,7 +153,8 @@ public:
     // per entry as in ApplyItemChanged, D10) run app code only for `changes`; every other record
     // reuses its cached ShapeState. The re-sorts then run over cached keys. One reset (a stable
     // Reset the owner re-anchors). App code runs O(k) times, not O(n). Every entry's record is
-    // live (the manager erases removed records).
+    // live (the manager erases removed records). A throw propagates with nothing written and the
+    // engine stale (decided, M3), as in ApplyItemChanged.
     void ApplyItemsChanged(std::span<LiveChange const> changes);
 
     // ---- Lifetime ---------------------------------------------------------------------------
@@ -374,7 +377,8 @@ private:
 
     ShapeSpec m_applied;
 
-    // Set by UnlinkOnly, cleared by CommitStaged (see IsStale).
+    // Set by UnlinkOnly and a live-shaping throw (StaleOnThrow), cleared by CommitStaged (see
+    // IsStale).
     bool m_stale{ false };
 
     // Owns the shaped root (no other group). Stable for the engine's lifetime.

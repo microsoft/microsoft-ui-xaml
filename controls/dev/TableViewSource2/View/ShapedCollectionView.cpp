@@ -1,0 +1,226 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
+#include "common.h"
+#include "View/ShapedCollectionView.h"
+#include "View/ShapedRowQueries.h"
+#include "GroupedEntry.h"
+
+namespace
+{
+    using winrt::Microsoft::UI::Xaml::Interop::IBindableIterable;
+    using winrt::Microsoft::UI::Xaml::Interop::IBindableIterator;
+    using winrt::Microsoft::UI::Xaml::Interop::IBindableVector;
+    using winrt::Microsoft::UI::Xaml::Interop::IBindableVectorView;
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction;
+    using winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventArgs;
+
+    // Forward-only iterator over a read-only bindable vector, by index (Size / GetAt per step).
+    struct BindableIndexIterator :
+        winrt::implements<BindableIndexIterator, IBindableIterator>
+    {
+        explicit BindableIndexIterator(IBindableVector const& vector) : m_vector(vector) {}
+
+        winrt::Windows::Foundation::IInspectable Current() { return m_vector.GetAt(m_index); }
+        bool HasCurrent() { return m_index < m_vector.Size(); }
+        bool MoveNext()
+        {
+            if (HasCurrent())
+            {
+                ++m_index;
+            }
+            return HasCurrent();
+        }
+
+    private:
+        IBindableVector m_vector;
+        uint32_t m_index{ 0 };
+    };
+
+    // D3 item list: count nullptrs, the shape InspectingDataSource::OnVectorChanged raises. Stores
+    // only the count (O(1) per event); the Collections Vector is not on the Tabular DLL's include
+    // path. Read-only: mutators throw E_ILLEGAL_METHOD_CALL.
+    struct PlaceholderItems :
+        winrt::implements<PlaceholderItems, IBindableVector, IBindableIterable>
+    {
+        explicit PlaceholderItems(uint32_t count) noexcept : m_count(count) {}
+
+        uint32_t Size() const noexcept { return m_count; }
+        winrt::Windows::Foundation::IInspectable GetAt(uint32_t index) const
+        {
+            if (index >= m_count)
+            {
+                throw winrt::hresult_out_of_bounds();
+            }
+            return nullptr;
+        }
+        bool IndexOf(winrt::Windows::Foundation::IInspectable const& value, uint32_t& index) const noexcept
+        {
+            index = 0;
+            return !value && m_count > 0;
+        }
+        IBindableVectorView GetView() { throw winrt::hresult_not_implemented(); }
+        void SetAt(uint32_t, winrt::Windows::Foundation::IInspectable const&) { throw winrt::hresult_illegal_method_call(); }
+        void InsertAt(uint32_t, winrt::Windows::Foundation::IInspectable const&) { throw winrt::hresult_illegal_method_call(); }
+        void RemoveAt(uint32_t) { throw winrt::hresult_illegal_method_call(); }
+        void Append(winrt::Windows::Foundation::IInspectable const&) { throw winrt::hresult_illegal_method_call(); }
+        void RemoveAtEnd() { throw winrt::hresult_illegal_method_call(); }
+        void Clear() { throw winrt::hresult_illegal_method_call(); }
+        IBindableIterator First() { return winrt::make<BindableIndexIterator>(*this); }
+
+    private:
+        uint32_t const m_count;
+    };
+
+    IBindableVector MakePlaceholderItems(uint32_t count)
+    {
+        return winrt::make<PlaceholderItems>(count);
+    }
+}
+
+ShapedCollectionView::ShapedCollectionView(ShapedRowQueries const& rows) noexcept
+    : m_rows(&rows)
+{
+}
+
+int32_t ShapedCollectionView::Count()
+{
+    return m_rows ? static_cast<int32_t>(m_rows->RowCount()) : 0;
+}
+
+winrt::Windows::Foundation::IInspectable ShapedCollectionView::GetAt(int32_t index)
+{
+    if (!m_rows || index < 0)
+    {
+        throw winrt::hresult_out_of_bounds();
+    }
+
+    // RowAt range-checks (ShapedTree::GetAt only asserts).
+    ShapedNode* const node = m_rows->RowAt(static_cast<uint32_t>(index));
+    if (GroupNode const* const group = node->AsGroup())
+    {
+        // V2: one shared GroupedEntry per group, made on first read, so the header's DataContext
+        // is stable. Its count and expansion are creation-time snapshots (fallback only).
+        if (!group->HeaderRow)
+        {
+            // Group() reads the key through the GroupNode's tracker_ref on each call (weak to this
+            // view), so the header holds no strong reference to the app's key object (#34).
+            group->HeaderRow = winrt::make<GroupedEntry>(
+                std::function<winrt::Windows::Foundation::IInspectable()>{
+                    [weakView = get_weak(), identity = group->Identity]() -> winrt::Windows::Foundation::IInspectable
+                    {
+                        auto const view = weakView.get();
+                        return view ? view->GroupKeyOf(identity) : nullptr;
+                    } },
+                static_cast<int32_t>(group->ItemCount),
+                m_rows->RowInfo(static_cast<uint32_t>(index)).IsExpanded,
+                group->Identity);
+        }
+        return group->HeaderRow;
+    }
+
+    return node->AsRecord()->Item.get();
+}
+
+winrt::Windows::Foundation::IInspectable ShapedCollectionView::GroupKeyOf(winrt::hstring const& identity) const
+{
+    if (!m_rows)
+    {
+        return nullptr;
+    }
+
+    ShapedNode* const node = m_rows->TryResolveKey(identity);
+    GroupNode const* const group = node ? node->AsGroup() : nullptr;
+    return group && group->Key ? group->Key->get() : nullptr;
+}
+
+bool ShapedCollectionView::HasKeyIndexMapping()
+{
+    return true;
+}
+
+winrt::hstring ShapedCollectionView::KeyFromIndex(int32_t index)
+{
+    if (!m_rows || index < 0)
+    {
+        throw winrt::hresult_out_of_bounds();
+    }
+
+    return m_rows->KeyAt(static_cast<uint32_t>(index));
+}
+
+int32_t ShapedCollectionView::IndexFromKey(winrt::hstring const& key)
+{
+    if (!m_rows)
+    {
+        return -1;
+    }
+
+    auto const index = m_rows->IndexOfKey(key);
+    return index ? static_cast<int32_t>(*index) : -1;
+}
+
+int32_t ShapedCollectionView::IndexOf(winrt::Windows::Foundation::IInspectable const& value)
+{
+    if (!m_rows)
+    {
+        return -1;
+    }
+
+    auto const index = m_rows->IndexOfItem(value);
+    return index ? static_cast<int32_t>(*index) : -1;
+}
+
+winrt::event_token ShapedCollectionView::CollectionChanged(
+    winrt::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedEventHandler const& handler)
+{
+    return m_collectionChanged.add(handler);
+}
+
+void ShapedCollectionView::CollectionChanged(winrt::event_token const& token) noexcept
+{
+    m_collectionChanged.remove(token);
+}
+
+void ShapedCollectionView::NotifyRemoved(uint32_t index, uint32_t count)
+{
+    Raise(NotifyCollectionChangedEventArgs(
+        NotifyCollectionChangedAction::Remove,
+        MakePlaceholderItems(0),
+        MakePlaceholderItems(count),
+        -1,
+        static_cast<int32_t>(index)));
+}
+
+void ShapedCollectionView::NotifyAdded(uint32_t index, uint32_t count)
+{
+    Raise(NotifyCollectionChangedEventArgs(
+        NotifyCollectionChangedAction::Add,
+        MakePlaceholderItems(count),
+        MakePlaceholderItems(0),
+        static_cast<int32_t>(index),
+        -1));
+}
+
+void ShapedCollectionView::NotifyReset()
+{
+    Raise(NotifyCollectionChangedEventArgs(
+        NotifyCollectionChangedAction::Reset,
+        MakePlaceholderItems(0),
+        MakePlaceholderItems(0),
+        -1,
+        -1));
+}
+
+void ShapedCollectionView::Detach() noexcept
+{
+    // A subscriber may fail to unsubscribe during teardown; drop every handler here.
+    m_collectionChanged.clear();
+    m_rows = nullptr;
+}
+
+void ShapedCollectionView::Raise(NotifyCollectionChangedEventArgs const& args)
+{
+    m_collectionChanged(*this, args);
+}

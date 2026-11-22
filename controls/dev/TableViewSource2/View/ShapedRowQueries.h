@@ -50,6 +50,14 @@ public:
     // m_engine.Tree().GetAt(index); the caller maps it to the row value and key. Throws E_BOUNDS.
     ShapedNode* RowAt(uint32_t index) const;
 
+    // KeyOf(*RowAt(index)): the row key (V3) of the row at index. Throws E_BOUNDS. Shared by
+    // ShapedCollectionView::KeyFromIndex and ShapedRowMetadata::GetIdentity.
+    winrt::hstring KeyAt(uint32_t index) const;
+
+    // The row key (V3) of a node: GroupNode::Identity ("g|" ...) for a group, otherwise
+    // SourceRecord::Identity() ("0x" + address).
+    static winrt::hstring KeyOf(ShapedNode const& node);
+
     // Row key -> flat index (V3): TryResolveKey, then ShapedTree::IndexOf. nullopt when unknown or
     // hidden.
     std::optional<uint32_t> IndexOfKey(winrt::hstring const& key) const;
@@ -61,10 +69,16 @@ public:
 
     // ---- Row metadata reads (ShapedRowMetadata) --------------------------------------------
 
-    // TableViewRowInfo for RowAt(index), built on demand from the node (spec field table):
-    // Kind, Level (ShapedDepth), IsExpandable, IsExpanded (ShapedTree::IsExpanded), ChildCount,
-    // ParentIdentity, PositionInSet (IndexInParent + 1, O(1), P2), SizeOfSet. Never stored.
-    // Throws E_BOUNDS.
+    // TableViewRowInfo for RowAt(index), built on demand from the node; never stored. Throws
+    // E_BOUNDS.
+    //   - Group: Kind GroupHeader, Level = GroupLevel, IsExpandable true, IsExpanded
+    //     (ShapedTree::IsExpanded), ChildCount = ItemCount.
+    //   - Data: Kind Data, Level = GroupLevelCount() + Depth, plus 1 when IsHierarchical() (v1's
+    //     1-based tree levels: TableView treats Level 0 as "not a tree row"), IsExpandable =
+    //     ShapedChildCount() > 0, IsExpanded when expandable and expanded.
+    //   - Hierarchical data rows only (TableViewRowInfo contract): ChildCount, ParentIdentity
+    //     (SourceRecord::Parent's Identity(), empty for a root), PositionInSet (IndexInParent + 1,
+    //     O(1), P2), SizeOfSet (the shaped parent's ShapedChildCount()).
     TableViewRowInfo RowInfo(uint32_t index) const;
 
     // Row key -> node (V3/D4 dispatch). A "g|" key: m_engine.GroupsByIdentity(). Otherwise a

@@ -207,11 +207,11 @@ public:
     // A reused record keeps its pointer, Identity(), PropertyChanged subscription and expansion
     // flag. On success clears m_diverged and m_rereadDue after step 3, before the Reset is raised:
     // the table matches the source then, and a change made by a Reset handler is skipped (frozen)
-    // and owed again rather than lost. On a validation failure (null or
-    // duplicate item) sets m_diverged and clears m_rereadDue: the source is in the state a rejected
-    // change leaves, so the next notification recovers it, not every commit. On any other throw
-    // (app enumerator, selector) both flags are left as they were, so an owed re-read is retried
-    // at the next report point.
+    // and owed again rather than lost. Decided (M18): any other throw from step 1 (validation of a
+    // null or duplicate item, the app's enumerator, a selector) sets m_diverged, clears
+    // m_rereadDue and drops a parked strategy, then propagates: the source is in the state a
+    // rejected change leaves, so the error reaches the app once and the next notification or
+    // Refresh() re-reads, not every report point (WPF: a Refresh that throws is not retried).
     // Anti-loop (decided: one synchronous re-read per turn): Refresh never re-reads again
     // synchronously. When its own Reset dispatch ends with a re-read owed (an app that changes the
     // source in a Reset handler, directly or through shaping callbacks), it calls PostReread()
@@ -243,8 +243,8 @@ public:
     // flag) and ShapingManager's commit scope (every engine call and its events). EndFreeze returns
     // true when the outermost freeze ends with m_rereadDue set and no reset hold open (an open hold
     // leaves it for EndHoldResets); the caller then calls Refresh() (re-read, one Reset), now or
-    // posted. Reporting does not clear m_rereadDue: only Refresh() does, so a re-read that throws
-    // for a reason other than validation is reported again at the next outermost EndFreeze. A
+    // posted. Reporting does not clear m_rereadDue: only Refresh() does, on success or on any
+    // failure (M18), so a failed re-read is not reported again. A
     // table diverged only by a rejected change does not report true: re-reading it would fail
     // validation again on every commit; the next notification re-reads instead. Item
     // PropertyChanged is not affected (it never mutates the table). EndFreeze also reports a
@@ -274,11 +274,12 @@ public:
 
     // ---- Divergence (decided) ---------------------------------------------------------------
     // m_diverged: the table no longer matches the source (see the table in the header comment).
-    // Set by a skipped notification, a rejected incremental change or a Refresh() that fails
-    // validation, and RequestReset (the ISourceHierarchyHost member a strategy calls for a
-    // rejected child change). m_rereadDue: a re-read is owed (see the members). Both are cleared
-    // only by a successful Refresh(). IsRereadDue is read by the posted resync, which does nothing
-    // once the re-read has happened (a notification already re-read) or is no longer owed.
+    // Set by a skipped notification, a rejected incremental change or a Refresh() that throws
+    // (M18), and RequestReset (the ISourceHierarchyHost member a strategy calls for a
+    // rejected child change). m_rereadDue: a re-read is owed (see the members). m_diverged is
+    // cleared only by a successful Refresh(); m_rereadDue by any Refresh(). IsRereadDue is read by
+    // the posted resync, which does nothing once the re-read has happened (a notification already
+    // re-read) or is no longer owed.
     bool IsRereadDue() const noexcept;
 
     // Posts one re-read to the current thread's DispatcherQueue (as ShapingManager::PostLiveDrain
@@ -290,9 +291,9 @@ public:
     // Decided (#7, revised): a throw from that Refresh() is not swallowed; it propagates out of
     // the callback to the dispatcher (Application.UnhandledException), as WPF does for its posted
     // work, so an app fault is visible instead of leaving the rows silently stale. The flags
-    // follow Refresh()'s failure rules and the callback does not re-post: a non-validation
-    // failure stays owed until the next report point. No queue (headless or test): nothing is
-    // posted and the re-read stays owed until the next report point or Refresh().
+    // follow Refresh()'s failure rules (M18: diverged, nothing owed) and the callback does not
+    // re-post: the next notification or Refresh() re-reads. No queue (headless or test): nothing
+    // is posted and the re-read stays owed until the next report point or Refresh().
     void PostReread() noexcept;
 
     // ---- Source tree (hierarchy) ------------------------------------------------------------
@@ -586,9 +587,8 @@ private:
     // A re-read is owed: reported at each report point (outermost EndFreeze with no hold, or
     // outermost EndHoldResets) until a Refresh() clears it. Set by a skipped notification and by
     // ScheduleRefresh; not by a rejected change, so a table diverged only by rejection is re-read
-    // by the next notification rather than by every commit. Cleared by a successful Refresh() and
-    // by one that fails validation (which turns it into a rejection); kept when Refresh() throws
-    // for any other reason, so the next report point retries.
+    // by the next notification rather than by every commit. Cleared by Refresh() whether it
+    // succeeds or throws (M18: a failure turns it into a rejection).
     bool m_rereadDue{ false };
 
     // A PostReread() callback is queued and has not run yet.

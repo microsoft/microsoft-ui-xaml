@@ -64,6 +64,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Spec\PathEvaluator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeDelegates.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Spec\ShapeSpec.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Shaping\ShapingManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedCollectionView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowQueries.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)View\ShapedRowMetadata.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)TableViewSource2.idl" />

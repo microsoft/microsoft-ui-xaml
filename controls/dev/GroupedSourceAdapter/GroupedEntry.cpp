@@ -17,9 +17,21 @@ GroupedEntry::GroupedEntry(
 {
 }
 
+GroupedEntry::GroupedEntry(
+    std::function<winrt::IInspectable()> groupResolver,
+    int32_t groupItemCount,
+    bool isExpanded,
+    winrt::hstring const& identity)
+    : m_groupResolver(std::move(groupResolver))
+    , m_identity(identity)
+    , m_groupItemCount(groupItemCount)
+    , m_isExpanded(isExpanded)
+{
+}
+
 winrt::IInspectable GroupedEntry::Group() const
 {
-    return m_group;
+    return m_groupResolver ? m_groupResolver() : m_group;
 }
 
 int32_t GroupedEntry::GroupItemCount() const
