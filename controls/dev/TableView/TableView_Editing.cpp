@@ -8,6 +8,7 @@
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 #include "TableViewBeginningEditEventArgs.h"
 #include "TableViewCellEditEndingEventArgs.h"
 #include "TVDiag.h"
@@ -1065,8 +1066,11 @@ bool TableView::TerminateEditForReset(bool force, bool sourceReplaced)
         // Asked of the active source, not the repeater: a projection swap is reported before the
         // repeater re-binds, and an item under a collapsed group or node is still present.
         auto const source = m_activeSource.get();
-        const bool itemLeftSource = sourceReplaced || !source ||
-            !winrt::get_self<::TableViewSource>(source)->ContainsShapedItem(UnwrapEditingDataItem(m_currentEditItem.get()));
+        auto const source2 = source ? nullptr : m_activeSource2.get();
+        const bool itemLeftSource = sourceReplaced ||
+            (source ? !winrt::get_self<::TableViewSource>(source)->ContainsShapedItem(UnwrapEditingDataItem(m_currentEditItem.get())) :
+             source2 ? !winrt::get_self<::TableViewSource2>(source2)->IsItemInShapedTree(UnwrapEditingDataItem(m_currentEditItem.get())) :
+             true);
 
         // Transfer the pending editor value to the source BEFORE validating. The editing
         // bindings use UpdateSourceTrigger::Explicit, so until this runs the typed value is
@@ -1161,6 +1165,7 @@ void TableView::DrainCoalescedEditReshape()
         {
             winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();
         }
+        ReleaseSource2EditHold();
     }
 
     // Never replay inside a layout pass. The queued operations are app-supplied callables that
@@ -1189,6 +1194,51 @@ void TableView::DrainCoalescedEditReshape()
         if (operation)
         {
             operation();
+        }
+    }
+}
+
+void TableView::AcquireSource2EditHold()
+{
+    // One hold per edit: moving between cells of the same item keeps the one already taken.
+    if (m_source2EditHeld)
+    {
+        return;
+    }
+    auto const source = m_activeSource2.get();
+    if (!source || m_activeSource2Released)
+    {
+        return;
+    }
+
+    // Live re-evaluation of the edited row (its sort key, filter or group) waits until the edit
+    // closes, as v1 holds it while the owner reports an edit.
+    m_source2EditHoldGeneration = winrt::get_self<::TableViewSource2>(source)->BeginLiveShapingHold();
+    m_source2EditHoldSource = winrt::make_weak(source);
+    m_source2EditHeld = true;
+}
+
+void TableView::ReleaseSource2EditHold()
+{
+    if (!m_source2EditHeld)
+    {
+        return;
+    }
+    m_source2EditHeld = false;
+    auto const generation = std::exchange(m_source2EditHoldGeneration, 0);
+    auto const source = std::exchange(m_source2EditHoldSource, nullptr).get();
+    if (source)
+    {
+        // A stale generation (the owner changed since) is ignored by the source; the drain it
+        // releases is posted, so this is safe inside a layout pass.
+        try
+        {
+            winrt::get_self<::TableViewSource2>(source)->EndLiveShapingHold(generation);
+        }
+        catch (...)
+        {
+            // Every edit close lands here; a failed drain post must not fail the close.
+            TVDiag::LogRetailF(L"[TableView] Releasing the TableViewSource2 live-shaping hold failed.");
         }
     }
 }
@@ -1247,6 +1297,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
     m_editState = EditState::Beginning;
     m_abandonPendingBeginEdit = false;
     m_editSourceWritten = false;
+    AcquireSource2EditHold();
 
     // Everything from here to the promotion below runs app code - a BeginningEdit handler, the
     // editing binding's getter, ITableViewEditableItem.BeginEdit - any of which can mutate the

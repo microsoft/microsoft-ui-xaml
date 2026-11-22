@@ -3564,11 +3564,14 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
       generation, `GetItemsSourceView()`). Tabular DLL builds. Drift #122–#127.
 
 ### Phase 6 — `TableView` integration & validation
-- [ ] Switch `TableView` to accept `TableViewSource2` alongside `TableViewSource`.
-- [ ] v1 parity queries and hooks with no v2 declaration yet: `CanApplySort`, the
-      live-item-changed hook (`RepositionCustomSortItem` for frozen custom-sort ranks) and the
-      TiP shaping handlers. Decide each as a narrow `ShapingManager` query or an `IShapingOwner`
-      member when `TableView` is ported.
+- [x] Switch `TableView` to accept `TableViewSource2` alongside `TableViewSource`: adoption and
+      owner arbitration, `SourceOwnerSink` (`IShapingOwner`), rows pipeline, control sort and
+      chevron, edit live-shaping hold, grouped state, drained guards. Tabular DLL builds. Drift
+      #128–#135.
+- [x] v1 parity hooks: `CanApplySort` and `RepositionCustomSortItem` are not used for v2 (#134).
+- [ ] TiP for verbs the app calls on a `TableViewSource2` (#128: no verb observer yet).
+- [ ] Port the v2 API tests (old branch `TableViewSource2_*_APITests`, #135), adapted to the new
+      surface (no verb observer).
 - [ ] `TableView` API review (#20, decided: deferred, no public surface in this redesign): a
       public reveal (e.g. inside `ScrollIntoView(item)`) and a public per-item expand / collapse,
       both over the internal `Reveal` / `SetExpanded`. v1 exposes neither (only

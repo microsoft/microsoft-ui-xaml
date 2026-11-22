@@ -11,6 +11,7 @@
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
 #include "TableViewSource.h"
+#include "TableViewSource2.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
 #include "SortIndicator.h"
@@ -564,6 +565,19 @@ TableView::~TableView()
     if (auto const selector = m_rowTemplateSelector.safe_get())
     {
         winrt::get_self<::TableViewRowTemplateSelector>(selector)->Detach();
+    }
+
+    // The source holds m_sourceOwnerSink as a raw pointer. ReleaseOwner is a no-op if Unloaded
+    // already released it.
+    if (auto const activeSource2 = m_activeSource2.safe_get())
+    {
+        try
+        {
+            winrt::get_self<::TableViewSource2>(activeSource2)->ReleaseOwner(&m_sourceOwnerSink);
+        }
+        catch (...)
+        {
+        }
     }
 
     // Unloaded may not have run; release ThemeSettings and drop the Destroying subscription.
@@ -1768,6 +1782,20 @@ void TableView::RefreshRealizedRowsAfterGroupExpansion()
 void TableView::AdoptItemsSource(bool reclaimActiveSource)
 {
     auto const itemsSource = ItemsSource();
+
+    // A TableViewSource2 has its own adoption path. Reclaiming prefers the active one; otherwise
+    // ItemsSource decides, unless a reclaim keeps an active v1 source.
+    winrt::TableViewSource2 tableViewSource2 = reclaimActiveSource ? m_activeSource2.get() : winrt::TableViewSource2{ nullptr };
+    if (!tableViewSource2 && !(reclaimActiveSource && m_activeSource.get()))
+    {
+        tableViewSource2 = itemsSource.try_as<winrt::TableViewSource2>();
+    }
+    if (tableViewSource2)
+    {
+        AdoptTableViewSource2(tableViewSource2);
+        return;
+    }
+
     // Reclaiming keeps the projection this table already minted, and with it the shaping state.
     winrt::TableViewSource tableViewSource = reclaimActiveSource ? m_activeSource.get() : winrt::TableViewSource{ nullptr };
     if (!tableViewSource)
@@ -1793,6 +1821,7 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     }
 
     StopAwaitingSource();
+    StopAwaitingSource2();
     if (tableViewSource && !winrt::get_self<::TableViewSource>(tableViewSource)->SetOwningTableView(*this))
     {
         TVDiag::LogRetailF(L"[TableView] ItemsSource is a TableViewSource already bound to another TableView; ignored.");
@@ -1815,6 +1844,11 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     auto const previouslyOwned = m_activeSource.get();
     m_activeSource.set(tableViewSource);
     m_activeSourceReleased = false;
+
+    // A v1 source (or none) replaces any TableViewSource2; it is released last, below.
+    auto const previouslyOwned2 = m_activeSource2.get();
+    m_activeSource2.set(nullptr);
+    m_activeSource2Released = false;
 
     // A remembered body position names a row of the old source.
     ForgetBodyFocusPosition();
@@ -1887,6 +1921,73 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
     {
         winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
     }
+
+    // ReleaseOwner is a no-op when this table no longer owns it (released on Unloaded, or refused).
+    // A nested adoption may have made it active again.
+    if (previouslyOwned2 && previouslyOwned2 != m_activeSource2.get())
+    {
+        winrt::get_self<::TableViewSource2>(previouslyOwned2)->ReleaseOwner(&m_sourceOwnerSink);
+    }
+}
+
+void TableView::AdoptTableViewSource2(winrt::TableViewSource2 source)
+{
+    // Stop awaiting first: TrySetOwner does not remove this table's waiter.
+    StopAwaitingSource();
+    StopAwaitingSource2();
+
+    if (!winrt::get_self<::TableViewSource2>(source)->TrySetOwner(&m_sourceOwnerSink))
+    {
+        TVDiag::LogRetailF(L"[TableView] ItemsSource is a TableViewSource2 already bound to another TableView; ignored.");
+        // Retry when the owner lets go; OnTableViewLoaded retries too.
+        auto weakThis = get_weak();
+        winrt::get_self<::TableViewSource2>(source)->AddOwnerReleasedWaiter(*this, [weakThis]()
+        {
+            if (auto strongThis = weakThis.get(); strongThis && strongThis->IsLoaded())
+            {
+                strongThis->ReclaimItemsSource();
+            }
+        });
+        m_awaitedSource2 = winrt::make_weak(source);
+        source = nullptr;
+    }
+
+    // Publish the new state before releasing the previous sources: a release runs other tables'
+    // waiters synchronously, and a nested adoption reached from there must see coherent state.
+    auto const previouslyOwned = m_activeSource.get();
+    auto const previouslyOwned2 = m_activeSource2.get();
+    m_activeSource.set(nullptr);
+    m_activeSourceReleased = false;
+    m_activeSource2.set(source);
+    m_activeSource2Released = false;
+
+    // A remembered body position names a row of the old source.
+    ForgetBodyFocusPosition();
+    m_reshapeFocusValid = false;
+    m_reshapeFocusRow = -1;
+    CancelReshapeFocusRestore();
+
+    if (source && !IsLoaded())
+    {
+        // No Unloaded will come to release it; OnTableViewLoaded reclaims it.
+        m_activeSource2Released = true;
+        winrt::get_self<::TableViewSource2>(source)->ReleaseOwner(&m_sourceOwnerSink);
+    }
+    else if (source)
+    {
+        // The source may have been sorted before this table owned it.
+        QueueReconcileSortStateWithSource();
+    }
+
+    if (previouslyOwned && previouslyOwned != m_activeSource.get())
+    {
+        winrt::get_self<::TableViewSource>(previouslyOwned)->ReleaseOwningTableView(*this);
+    }
+
+    if (previouslyOwned2 && previouslyOwned2 != source && previouslyOwned2 != m_activeSource2.get())
+    {
+        winrt::get_self<::TableViewSource2>(previouslyOwned2)->ReleaseOwner(&m_sourceOwnerSink);
+    }
 }
 
 void TableView::RefreshRowsPipeline()
@@ -1905,6 +2006,15 @@ void TableView::RefreshRowsPipeline()
     {
         auto* const sourceImpl = winrt::get_self<::TableViewSource>(activeSource);
         // Straight through: for a TableViewSource the row view IS the projection's view.
+        m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
+        m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
+        rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
+    }
+    else if (auto const activeSource2 = m_activeSource2.get())
+    {
+        auto* const sourceImpl = winrt::get_self<::TableViewSource2>(activeSource2);
+        // As for v1: a cached ItemsSourceView over the ShapedCollectionView, which stays the same
+        // object for the source's lifetime.
         m_rowsItemsSourceView = sourceImpl->GetItemsSourceView();
         m_tableViewSourceRowMetadata = sourceImpl->GetRowMetadata();
         rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
@@ -2010,7 +2120,8 @@ void TableView::OnRowsSourceResetForHierarchy(
 {
     // Reset only: splices restamp via ElementIndexChanged or the toggling verb. A Reset may
     // republish metadata for the same rows (e.g. a collapsed node losing its last child).
-    if (!args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // Unloaded (drained): the reload re-reads everything.
+    if (m_rowsSourceDrained || !args || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }
@@ -2036,6 +2147,108 @@ void TableView::QueueRefreshRealizedRowHierarchyState()
             strongThis->RefreshRealizedRowHierarchyState();
         }
     });
+}
+
+void TableView::SourceOwnerSink::OnResetting()
+{
+    m_owner->OnTableViewSource2Resetting();
+}
+
+void TableView::SourceOwnerSink::OnShapingApplied(ShapingAppliedArgs const& args)
+{
+    m_owner->OnTableViewSource2ShapingApplied(args);
+}
+
+void TableView::OnTableViewSource2Resetting()
+{
+    // Rows must not be read through the view here: they still describe the previous projection.
+    // The view's Reset event that follows captures focus and closes the edit
+    // (OnRowsSourceResetForFocus), as for any rows source.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
+    SupersedeTipOperation();
+    SuppressBodyFocusTrackingForThisTurn();
+}
+
+void TableView::OnTableViewSource2ShapingApplied(ShapingAppliedArgs const& args)
+{
+    // A drained table has no realized rows and re-reads everything on reload.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
+    bool const reset = (args.Changes & ShapingChangeFlags::Reset) == ShapingChangeFlags::Reset;
+    bool const membership = (args.Changes & ShapingChangeFlags::Membership) == ShapingChangeFlags::Membership;
+    bool const order = (args.Changes & ShapingChangeFlags::Order) == ShapingChangeFlags::Order;
+
+    if (!reset && !membership && !order)
+    {
+        // Only levels or expanders may have changed (P9). Deferred and coalesced: the repeater has
+        // not laid out the commit's row events yet, and a verb called back from here would throw
+        // (the apply scope is still open).
+        QueueRefreshRealizedRowHierarchyState();
+        return;
+    }
+
+    SupersedeTipOperation();
+
+    // Order only is a pure re-sort: same rows, so the group headers' expansion state stands.
+    bool const reorderOnly = order && !membership;
+    if (!reorderOnly)
+    {
+        QueueGroupExpansionRowRefresh();
+    }
+
+    // The new shape is in place by now; a no-op unless the Reset captured a focus position.
+    RestoreBodyFocusAfterReshape();
+
+    // A Reset re-realizes every row and OnRowsSourceResetForHierarchy already queues the restamp.
+    if (!reset)
+    {
+        QueueRefreshRealizedRowHierarchyState();
+    }
+
+    // The app may have declared or cleared a sort on the source; the chevron follows the applied
+    // spec. The control's own sort publishes its chevron itself.
+    if (!m_isApplyingControlInitiatedSort)
+    {
+        QueueReconcileSortStateWithSource();
+    }
+
+    // A Reset or a reorder rewrites the rows wholesale with no input event behind it. Surgical
+    // membership changes reach UIA through the repeater's own add/remove notifications.
+    if (!reset && !order)
+    {
+        return;
+    }
+
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
+
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    if (!peer)
+    {
+        return;
+    }
+
+    if (auto const tableViewPeer = peer.try_as<winrt::TableViewAutomationPeer>())
+    {
+        auto* const impl = winrt::get_self<TableViewAutomationPeer>(tableViewPeer);
+        if (reorderOnly)
+        {
+            impl->RaiseStructureChangedForSortChange();
+        }
+        else
+        {
+            impl->RaiseStructureChangedForVirtualizationReset();
+        }
+    }
 }
 
 void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
@@ -2114,6 +2327,13 @@ void TableView::UpdateItemsSourceCollectionChangedSubscription()
 
 void TableView::OnItemsSourceCollectionChanged(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
 {
+    // An unloaded table keeps its subscriptions to the source's shared view (so the reload keeps
+    // the handler order), but must not react to it: the reload re-reads everything.
+    if (m_rowsSourceDrained)
+    {
+        return;
+    }
+
     SupersedeTipOperation();
     UpdateEmptyState();
     QueueTerminalGridLineRefresh();
@@ -2143,7 +2363,8 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
-    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
+    // Unloaded (drained): the reload re-reads everything.
+    if (m_rowsSourceDrained || args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
     }
@@ -3360,9 +3581,22 @@ void TableView::StopAwaitingSource()
     m_awaitedSource = nullptr;
 }
 
+void TableView::StopAwaitingSource2()
+{
+    if (auto const awaitedSource = m_awaitedSource2.get())
+    {
+        winrt::get_self<::TableViewSource2>(awaitedSource)->RemoveOwnerReleasedWaiter(*this);
+    }
+    m_awaitedSource2 = nullptr;
+}
+
 void TableView::ReclaimItemsSource()
 {
-    if (m_activeSource.get() ? !m_activeSourceReleased : !ItemsSource().try_as<winrt::TableViewSource>())
+    // Reclaim a released active source, or claim an ItemsSource source this table was refused.
+    bool const needsClaim = m_activeSource.get() ? m_activeSourceReleased
+        : m_activeSource2.get() ? m_activeSource2Released
+        : (ItemsSource().try_as<winrt::TableViewSource>() || ItemsSource().try_as<winrt::TableViewSource2>());
+    if (!needsClaim)
     {
         return;
     }
@@ -3451,7 +3685,13 @@ void TableView::OnTableViewUnloaded()
         m_activeSourceReleased = true;
         winrt::get_self<::TableViewSource>(activeSource)->ReleaseOwningTableView(*this);
     }
+    if (auto const activeSource2 = m_activeSource2.get(); activeSource2 && !m_activeSource2Released)
+    {
+        m_activeSource2Released = true;
+        winrt::get_self<::TableViewSource2>(activeSource2)->ReleaseOwner(&m_sourceOwnerSink);
+    }
     StopAwaitingSource();
+    StopAwaitingSource2();
 
     // Detach ViewChanged so deferred scroll callbacks do not run after unload.
     if (auto bodyScroller = m_bodyScroller.get())
