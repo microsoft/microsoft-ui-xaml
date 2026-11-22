@@ -87,7 +87,7 @@ runtimeclass CollectionViewSource : DependencyObject
 };
 
 // Optional capability of an ICollectionView, like ICollectionViewFactory or ISupportIncrementalLoading.
-// A View that a CollectionViewSource shapes implements it and forwards every member to that CVS.
+// A View that a CollectionViewSource creates over a vector implements it; it owns the rules (see "Architecture").
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
 interface ICollectionViewShaping
 {
@@ -289,6 +289,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - The observation follows the source: an added item is observed, a removed or replaced one is no longer, a recompute
     rebuilds it, and turning the features off or the view's destruction ends it. A property change raised from inside
     a restore is restored at the next turn.
+  - A source change made while a live sort edit waits for its restore is applied by a recompute (the output is out
+    of order, so a binary search cannot place the new item).
   - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
     observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
     `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` raises `PropertyChanged` for it.
@@ -779,6 +781,13 @@ Grouping keeps the view (phase C):
 - `VerifySelectionFollowsItemAcrossHeaderSort`: the selection follows its item through a sort and a clear.
 - `TableView_Hierarchy_APITests`: `VerifyHeaderSortOnPlainListTreeKeepsListOrder` and
   `VerifyHeaderSortOnCollectionViewTreeSortsTheView` sort a tree over a plain list and over `cvs.View`.
+- `TableView_ViewEngine_APITests` (`TableViewViewEngineTests`): random source operations, rule changes and refreshes
+  (and, live, property edits) on flat, grouped and two-level views compared with a fresh view after each step;
+  re-entrant changes from `VectorChanged` handlers and a `Filter`; incremental loading through a shaped view;
+  `FilterRequested` after a GC with only `View` held; no leak through live listeners; group `ItemCount`
+  notifications; currency before first / after last; exact `Int64` / `UInt64` keys; turning live sorting on;
+  replaced views; rules on an `IsSourceGrouped` CVS; off-thread live changes; and TableView live sort, filter,
+  group and tree, including at most a couple of tree rebuilds per live tick.
 
 ## Effort to productize
 
