@@ -47,8 +47,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private int? _parentId;
         private LiveAddress _addr = new LiveAddress("");
         private LiveRow _parentRow;
+        private int _id;
 
-        public int Id { get; set; }
+        // Reads of Id (the tree key), so a test can tell how often a tree was rebuilt.
+        public static int IdReads;
+
+        public int Id { get { IdReads++; return _id; } set => _id = value; }
         public string Name { get => _name; set => Set(ref _name, value); }
         public int Score { get => _score; set => Set(ref _score, value); }
         public string Team { get => _team; set => Set(ref _team, value); }
