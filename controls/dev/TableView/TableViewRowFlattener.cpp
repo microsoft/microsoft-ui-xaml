@@ -110,7 +110,10 @@ namespace
         case PropertyType::Guid:
         {
             wchar_t buffer[40]{};
-            ::StringFromGUID2(scalar.GetGuid(), buffer, ARRAYSIZE(buffer));
+            if (::StringFromGUID2(scalar.GetGuid(), buffer, ARRAYSIZE(buffer)) == 0)
+            {
+                return std::nullopt;
+            }
             text = buffer;
             break;
         }
