@@ -89,7 +89,9 @@ namespace
             m_pParent = pParent;
             if (!isBottomLevel)
             {
-                IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(m_spSubgroupList.ReleaseAndGetAddressOf()));
+                ctl::ComPtr<InternalList> spSubgroupList;
+                IFC_RETURN(ctl::ComObject<InternalList>::CreateInstance(spSubgroupList.ReleaseAndGetAddressOf()));
+                SetPtrValue(m_tpSubgroupList, spSubgroupList.Get());
             }
             return S_OK;
         }
@@ -111,7 +113,7 @@ namespace
 
         bool IsBottomLevel() const
         {
-            return !m_spSubgroupList;
+            return !m_tpSubgroupList.Get();
         }
 
         virtual bool IsRoot() const
@@ -178,11 +180,11 @@ namespace
             auto pSubgroupItem = ctl::as_iinspectable(pSubgroup);
             if (isRaised)
             {
-                IFC_RETURN(m_spSubgroupList->InternalInsertAt(index, pSubgroupItem));
+                IFC_RETURN(m_tpSubgroupList->InternalInsertAt(index, pSubgroupItem));
             }
             else
             {
-                IFC_RETURN(m_spSubgroupList->TrackerCollection<IInspectable*>::InsertAt(index, pSubgroupItem));
+                IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::InsertAt(index, pSubgroupItem));
             }
             return S_OK;
         }
@@ -191,7 +193,7 @@ namespace
         {
             m_subgroups[index]->ClearParent();
             m_subgroups.erase(m_subgroups.begin() + index);
-            IFC_RETURN(m_spSubgroupList->InternalRemoveAt(index));
+            IFC_RETURN(m_tpSubgroupList->InternalRemoveAt(index));
             return S_OK;
         }
 
@@ -247,7 +249,7 @@ namespace
 
         IFACEMETHODIMP get_GroupItems(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override
         {
-            ctl::ComPtr<IInspectable> spItems = m_spSubgroupList ? ctl::as_iinspectable(m_spSubgroupList.Get()) : ctl::as_iinspectable(this);
+            ctl::ComPtr<IInspectable> spItems = m_tpSubgroupList ? ctl::as_iinspectable(m_tpSubgroupList.Get()) : ctl::as_iinspectable(this);
             ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spVector;
             IFC_RETURN(spItems.As(&spVector));
             *ppValue = spVector.Detach();
@@ -341,8 +343,9 @@ namespace
         }
 
         // The subgroups, typed, and as the observable list GroupItems presents (the root's is the InternalList).
+        // A tracked reference, so the reference tracker walk reaches nested groups (their keys and handlers).
         std::vector<ctl::ComPtr<CollectionViewGroupInternal>> m_subgroups;
-        ctl::ComPtr<InternalList> m_spSubgroupList;
+        TrackerPtr<InternalList> m_tpSubgroupList;
 
     private:
         static CollectionViewGroupInternal* FromTarget(_In_ IInspectable* pTarget)
@@ -839,7 +842,7 @@ namespace
         // After a recompute: the subgroups are presented through pList, which already holds them.
         void PresentSubgroups(_In_ InternalList* pList)
         {
-            m_spSubgroupList = pList;
+            SetPtrValue(m_tpSubgroupList, pList);
         }
 
         _Check_return_ HRESULT GetGroupNames(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pNames)
@@ -2116,7 +2119,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         IFC_RETURN(pArgs->get_Index(&index));
     }
 
-    if (m_areSourceIndicesValid && change != wfc::CollectionChange_Reset)
+    if (m_areSourceIndicesValid && change != wfc::CollectionChange_Reset && !HasSortDirtyLiveItems())
     {
         IFC_RETURN(ProcessCollectionChangedWithAdjustedIndex(change, index, &isApplied));
     }
@@ -2560,6 +2563,19 @@ struct VectorCollectionView::LiveShapingState
 bool VectorCollectionView::IsLiveShaping() const
 {
     return m_isLiveSorting || m_isLiveFiltering || m_isLiveGrouping;
+}
+
+// An item whose sort keys changed is out of place until the next restore, so a binary search over the output
+// cannot place a new item; the source change is applied by a recompute instead.
+bool VectorCollectionView::HasSortDirtyLiveItems() const
+{
+    if (!m_spLiveShaping || !m_isLiveSorting)
+    {
+        return false;
+    }
+
+    return std::any_of(m_spLiveShaping->items.begin(), m_spLiveShaping->items.end(),
+        [](const std::unique_ptr<LiveShapingItem>& spItem) { return (spItem->dirtyFlags & LiveShapingFlag_Sorting) != 0; });
 }
 
 IFACEMETHODIMP VectorCollectionView::get_CanChangeLiveSorting(_Out_ BOOLEAN* pValue)
