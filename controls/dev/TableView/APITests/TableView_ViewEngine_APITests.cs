@@ -392,6 +392,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies hashed group lookup matches exactly the names NamesMatch matches: each StringComparison for strings, value equality for scalars (-0 and 0 are one group, NaNs are not), and a value's type.")]
+        public void VerifyGroupNamesMatchUnderEachComparison()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                string Groups(CollectionViewStringComparison comparison, params object[] names)
+                {
+                    var rows = new ObservableCollection<EngineRow>(names.Select((name, i) => new EngineRow(i, $"r{i}", i, "X") { Owner = name }));
+                    var cvs = new CollectionViewSource { Source = rows };
+                    cvs.GroupDescriptions.Add(new PropertyGroupDescription("Owner", null, comparison));
+                    var before = string.Join(" ", cvs.View.CollectionGroups.Select(g => GroupProperty(((ICollectionViewGroup)g).Group, "ItemCount")));
+                    rows.Add(new EngineRow(99, "late", 99, "X") { Owner = names[0] });
+                    return before + " | " + string.Join(" ", cvs.View.CollectionGroups.Select(g => GroupProperty(((ICollectionViewGroup)g).Group, "ItemCount")));
+                }
+
+                var composed = "\u00e1";
+                var decomposed = "a\u0301";
+                Verify.AreEqual("1 1 1 1 | 2 1 1 1", Groups(CollectionViewStringComparison.Ordinal, "x", "X", composed, decomposed));
+                Verify.AreEqual("2 1 1 | 3 1 1", Groups(CollectionViewStringComparison.OrdinalIgnoreCase, "x", "X", composed, decomposed));
+                Verify.AreEqual("1 1 2 | 2 1 2", Groups(CollectionViewStringComparison.InvariantCulture, "x", "X", composed, decomposed));
+                Verify.AreEqual("2 2 | 3 2", Groups(CollectionViewStringComparison.CurrentCultureIgnoreCase, "x", "X", composed, decomposed));
+                Verify.AreEqual("2 1 1 1 1 | 3 1 1 1 1", Groups(CollectionViewStringComparison.Ordinal, 0.0, -0.0, double.NaN, double.NaN, 1, 1L),
+                    "-0 joins 0; each NaN is its own group; Int32 1 and Int64 1 differ.");
+                Verify.AreEqual("2 1 | 3 1", Groups(CollectionViewStringComparison.Ordinal, null, null, "1"), "Null names share a group.");
+            });
+        }
+
         #endregion
 
         #region Live shaping on/off, stale views, unsupported rules, threads
@@ -511,6 +539,98 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source insert made while a live sort edit waits for its restore is applied as an insert, not a Reset, and the restore then settles the order a fresh view shows.")]
+        public void VerifySourceChangeWhileLiveSortPendingIsIncremental()
+        {
+            ObservableCollection<EngineRow> rows = null;
+            ICollectionView view = null;
+            var changes = new List<CollectionChange>();
+            RunOnUIThread.Execute(() =>
+            {
+                rows = MakeEngineRows();
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
+                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                view = cvs.View;
+                view.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
+
+                rows[0].Score = 5;
+                rows.Insert(2, new EngineRow(50, "New", 25, "X"));
+                Verify.AreEqual("ItemInserted", string.Join(",", changes), "The insert is applied at once, as an insert.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(changes.Contains(CollectionChange.Reset), "No Reset.");
+                Verify.AreEqual(string.Join(" ", rows.Select((r, i) => (r, i)).OrderBy(p => p.r.Score).ThenBy(p => p.i).Select(p => p.r.Name)), EngineNames(view),
+                    "The restore placed the edited row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live tick in which most rows changed their sort key is restored by one Reset, as WPF re-sorts the whole list then, and a tick with few changes by moves.")]
+        public void VerifyMassLiveSortChangeIsOneReset()
+        {
+            ObservableCollection<EngineRow> rows = null;
+            ICollectionView view = null;
+            var changes = new List<CollectionChange>();
+            RunOnUIThread.Execute(() =>
+            {
+                rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, 10).Select(i => new EngineRow(i, $"r{i}", i, "X")));
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
+                cvs.SortDescriptions.Add(new SortDescription("Score", ListSortDirection.Ascending));
+                view = cvs.View;
+                view.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
+                foreach (var row in rows.Take(9))
+                {
+                    row.Score = 100 - row.Score;
+                }
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Reset", string.Join(",", changes), "Nine of ten rows changed: one Reset.");
+                Verify.AreEqual(string.Join(" ", rows.OrderBy(r => r.Score).Select(r => r.Name)), EngineNames(view));
+                changes.Clear();
+                rows[9].Score = -1;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("ItemRemoved,ItemInserted", string.Join(",", changes), "One row changed: one move.");
+                Verify.AreEqual("r9", ((EngineRow)view[0]).Name);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a row inserted into an expanded tree reaches the rows as an insert, not a Reset, and the tree shows it under its parent.")]
+        public void VerifyTreeInsertIsSplicedIntoRows()
+        {
+            var list = MakeLiveTree();
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => { }, out cvs, IdPath, ParentIdPath);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Bob2", TreeLabelsOf(tableView), "Precondition: siblings by Score.");
+
+            var actions = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (sender, args) => actions.Add(args.Action.ToString());
+                list.Add(new LiveRow { Id = 6, Name = "Fay", Score = 20, Team = "X", ParentId = 1 });
+            });
+            SettleLayout(tableView);
+
+            Verify.AreEqual("Add", string.Join(",", actions), "One row inserted, no Reset.");
+            Verify.AreEqual("Dee1- Eli2 Ann1- Cat2 Fay2 Bob2", TreeLabelsOf(tableView), "Fay is among Ann's children by Score.");
+
+            actions.Clear();
+            RunOnUIThread.Execute(() => list.Remove(Named(list, "Eli")));
+            SettleLayout(tableView);
+            Verify.AreEqual("Remove", string.Join(",", actions), "One row removed, no Reset.");
+            Verify.AreEqual("Dee1 Ann1- Cat2 Fay2 Bob2", TreeLabelsOf(tableView), "Dee lost its only child.");
+        }
 
         #region TableView over a live view
 
