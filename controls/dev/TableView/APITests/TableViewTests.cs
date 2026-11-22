@@ -486,6 +486,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies DisplayMemberBinding='{Binding Name}' parses from XAML on a TableViewColumn and a TableViewTemplateColumn and renders the bound text.")]
+        public void VerifyXamlActivationWithDisplayMemberBinding()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+
+                tableView = (TableView)XamlReader.Load(
+                    @"<tabular:TableView
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:tabular='using:Microsoft.UI.Xaml.Controls.Tabular'
+                        Width='400' Height='300'>
+                        <tabular:TableViewColumn Header='Name' DisplayMemberBinding='{Binding Name}' />
+                        <tabular:TableViewTemplateColumn Header='Template' DisplayMemberBinding='{Binding Name}' />
+                    </tabular:TableView>");
+
+                Verify.AreEqual(2, tableView.Columns.Count);
+                foreach (var column in tableView.Columns)
+                {
+                    Verify.IsNotNull(column.DisplayMemberBinding, "The markup extension must be stored as a Binding, not evaluated.");
+                    Verify.AreEqual("Name", column.DisplayMemberBinding.Path.Path);
+                }
+
+                tableView.ItemsSource = new List<Person> { new Person { Name = "Ada" } };
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Ada", GetCellText(tableView, 0, 0), "The TableViewColumn cell must render the bound text.");
+                Verify.AreEqual("Ada", GetCellText(tableView, 0, 1), "The TableViewTemplateColumn cell must render the bound text.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies TableView survives being unloaded, reloaded, and reparented, and restores its rows and selection.")]
         public void ValidateLoadUnload()
         {

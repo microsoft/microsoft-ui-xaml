@@ -29,13 +29,7 @@
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
                 <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
-                <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" HeaderToolTip="Read-only text column. Takes the width the other columns leave." SortMemberPath="FullName">
-                    <tv:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
-                        </DataTemplate>
-                    </tv:TableViewTemplateColumn.CellTemplate>
-                </tv:TableViewTemplateColumn>
+                <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" HeaderToolTip="Read-only text column. Takes the width the other columns leave." DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department" HeaderToolTip="Read-only chip template: a tinted badge with a colour dot and the department name."/>
                 <!-- Edit on demand: the app owns the edit state (IsEditingRole, PendingRole) on the item,
                      so a recycled row realizes the TextBox only for the person being edited. -->

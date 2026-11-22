@@ -3,28 +3,22 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Tabular;
-using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Data;
 
 namespace TableViewSampleApp.Helpers;
 
-// Column factory for pages that build their columns in code (Hierarchy), so a column is just
-// header, bound property and width. A text column is a TableViewTemplateColumn whose cell is a
-// TextBlock bound to the property; SortMemberPath names the same property.
+// Column factory for pages that build their columns in code (KeyboardNav), so a column is just
+// header, bound property and width. The cell is a DisplayMemberBinding text cell, whose path is
+// also the sort key.
 internal static class SampleColumns
 {
-    public static TableViewTemplateColumn Text(string header, string propertyPath, GridLength width) =>
-        new TableViewTemplateColumn
+    public static TableViewColumn Text(string header, string propertyPath, GridLength width) =>
+        new TableViewColumn
         {
             Header = header,
-            CellTemplate = TextCellTemplate(propertyPath),
-            SortMemberPath = propertyPath,
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(propertyPath) },
             Width = width,
         };
-
-    public static DataTemplate TextCellTemplate(string propertyPath) => (DataTemplate)XamlReader.Load(
-        "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
-        $"<TextBlock Text='{{Binding {propertyPath}}}' VerticalAlignment='Center' Padding='8,4,8,4' TextTrimming='CharacterEllipsis'/>" +
-        "</DataTemplate>");
 
     public static GridLength Star(double factor = 1) => new GridLength(factor, GridUnitType.Star);
     public static GridLength Pixels(double px) => new GridLength(px, GridUnitType.Pixel);

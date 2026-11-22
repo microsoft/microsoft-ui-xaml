@@ -188,7 +188,7 @@ public sealed partial class KeyboardNavPage : SamplePageBase
         }
         else
         {
-            // Text template columns sort by their SortMemberPath, set to the bound property.
+            // DisplayMemberBinding text columns sort by their binding path.
             var record = SampleColumns.Text("Record", nameof(AccessibilityRow.DisplayText), new GridLength(2, GridUnitType.Star));
             record.MinWidth = 240;
             AssessmentTable.Columns.Add(record);

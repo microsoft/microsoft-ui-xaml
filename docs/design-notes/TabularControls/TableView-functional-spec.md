@@ -37,7 +37,8 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
 - Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
-- Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
+- Text cells through `TableViewColumn.DisplayMemberBinding`: a read-only `TextBlock` per cell, padded for `Density`, with the binding's `Path` as the default sort key. — **PR2**
+- Editable text column (`TableViewTextColumn`). — *deferred to V2*
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities

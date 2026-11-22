@@ -115,8 +115,11 @@ internal static class SampleShape
         return perType.GetOrAdd(path, p => BuildSelector(rootType, p));
     }
 
+    // Matches the control: SortMemberPath, else a DisplayMemberBinding path that reads the row item.
     private static string? ResolveSortMemberPath(TableViewColumn col) =>
-        string.IsNullOrEmpty(col.SortMemberPath) ? null : col.SortMemberPath;
+        col.SortMemberPath is { Length: > 0 } path ? path
+        : col.DisplayMemberBinding is { Source: null, RelativeSource: null, ElementName: null or "", Path.Path: { Length: > 0 } bindingPath } ? bindingPath
+        : null;
 
     private static Func<object, IComparable?>? BuildSelector(Type rootType, string path)
     {

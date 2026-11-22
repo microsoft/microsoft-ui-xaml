@@ -24,7 +24,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **`TableViewRow` is public and unsealed** although its properties are read-only. It is the realized row container (like `ListViewItem`), and the public row and cell automation peer constructors take it.
 
-**One built-in column type.** `TableViewTemplateColumn` hosts any visual through `CellTemplate`; a text cell is a template whose root is a bound `TextBlock`. A built-in text column is deferred to V2 (API spec, TableViewTextColumn (deferred)). Without a `CellTemplate` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
+**Text cells and template cells.** A plain text cell is `TableViewColumn.DisplayMemberBinding` (WPF `GridViewColumn` shape): the column generates a read-only, density-padded, ellipsis-trimmed `TextBlock` bound against the row item, and the binding's `Path` is the default sort key. `TableViewTemplateColumn` hosts any other visual through `CellTemplate`; `DisplayMemberBinding` takes precedence when both are set. An editable `TableViewTextColumn` is deferred to V2 (API spec, TableViewTextColumn (deferred)). A column with neither renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
 
 # Functional spec link
 
@@ -231,7 +231,7 @@ Selection is single, row-scoped, and follows keyboard focus. Pointer selection a
 
 ## Editing
 
-Deferred to V2 / a future DataGrid. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `TableViewEditAction`, `CellEditingTemplate`) and no built-in `TextBox` editor; `TableViewTextColumn` is display-only. The removed implementation (edit state machine, gesture layer, menu suppression while editing, and the settable cell `IValueProvider`) is recoverable from history when V2 revisits editing. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); deferred editing features are listed under [Deferred to V2 / future DataGrid](../../api-specs/TableView/TableView-spec.md#deferred-to-v2--future-datagrid).
+Deferred to V2 / a future DataGrid. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `TableViewEditAction`, `CellEditingTemplate`) and no built-in `TextBox` editor; `DisplayMemberBinding` text cells are read-only. The removed implementation (edit state machine, gesture layer, menu suppression while editing, and the settable cell `IValueProvider`) is recoverable from history when V2 revisits editing. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); deferred editing features are listed under [Deferred to V2 / future DataGrid](../../api-specs/TableView/TableView-spec.md#deferred-to-v2--future-datagrid).
 
 ## Keyboard navigation
 
