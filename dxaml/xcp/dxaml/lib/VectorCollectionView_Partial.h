@@ -192,6 +192,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnLiveShapingRestoreCallback();
         _Check_return_ HRESULT RestoreLiveShaping();
         bool IsLiveShaping() const;
+        bool HasSortDirtyLiveItems() const;
         _Check_return_ HRESULT OnIsLiveChanged(UINT turnedOn, UINT turnedOff);
 
     protected:
