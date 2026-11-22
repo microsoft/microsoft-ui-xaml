@@ -56,13 +56,14 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    if (!m_table.get() || !m_column.get())
+    auto const table = m_table.get();
+    auto const column = m_column.get();
+    if (!table || !column)
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(
-        get_strong().as<winrt::TableViewColumnHeader>());
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(*this, table, column);
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }
@@ -125,7 +126,7 @@ void TableViewColumnHeader::OnApplyTemplate()
 void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorReserve)
 {
     m_isSortable = sortable;
-    m_indicatorReserve = indicatorReserve;
+    m_indicatorReserve = sortable ? indicatorReserve : 0.0;
     UpdateContentReserve();
     HostSortIndicator();
     UpdateVisualStates(false /* useTransitions */);
@@ -133,13 +134,7 @@ void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorR
 
 void TableViewColumnHeader::SetSortDirectionInternal(winrt::SortDirection direction)
 {
-    const bool wasShown = ShowsSortIndicator();
     m_sortDirection = direction;
-    if (wasShown != ShowsSortIndicator())
-    {
-        UpdateContentReserve();
-        HostSortIndicator();
-    }
     UpdateVisualStates(true /* useTransitions */);
 }
 
@@ -214,7 +209,7 @@ void TableViewColumnHeader::UpdateContentReserve()
     if (auto const presenter = m_contentPresenter.get())
     {
         auto margin = m_templateContentMargin;
-        if (ShowsSortIndicator())
+        if (m_isSortable)
         {
             margin.Right += m_indicatorReserve;
             if (auto const host = m_sortIndicatorHost.get())
@@ -238,7 +233,7 @@ void TableViewColumnHeader::HostSortIndicator()
         return;
     }
 
-    if (!ShowsSortIndicator())
+    if (!m_isSortable)
     {
         host.Child(nullptr);
         return;

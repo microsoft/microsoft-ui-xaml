@@ -4,7 +4,7 @@
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single">
     <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
         <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>
@@ -57,7 +57,7 @@
             </DataTemplate>
         </tv:TableViewTemplateColumn.CellTemplate>
     </tv:TableViewTemplateColumn>
-    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False"/>
+    <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False"/>
 </tv:TableView>
 
 <!-- From Templates\PersonCellTemplates.xaml -->

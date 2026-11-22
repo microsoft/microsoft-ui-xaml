@@ -100,9 +100,8 @@ the source publishes, so the same engine serves an app that never touches `Table
 ### Editing
 
 Deferred to V2 / future DataGrid. TableView V1 has no editing API and no edit mode: no
-`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/
-`CellEditEnded` (and their args and `TableViewEditAction`), `CellEditingTemplate` or
-`CommitCellEditCore`, and no built-in text column or `TextBox` editor. The named
+`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`
+(and their args and `TableViewEditAction`) or `CellEditingTemplate`, and no built-in text column or `TextBox` editor. The named
 scenarios need at most an app-owned rename of one field, which composes from a
 `TableViewTemplateColumn` and app code; see
 [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).

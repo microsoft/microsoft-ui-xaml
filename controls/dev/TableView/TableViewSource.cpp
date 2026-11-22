@@ -417,26 +417,6 @@ bool TableViewSource::ContainsShapedItem(winrt::IInspectable const& item) const
     return false;
 }
 
-std::optional<winrt::hstring> TableViewSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key) const
-{
-    winrt::hstring identity;
-    if (m_engine->TryGetGroupIdentityForKey(key, identity))
-    {
-        return identity;
-    }
-    return std::nullopt;
-}
-
-std::vector<TableViewSource::GroupInfo> TableViewSource::CurrentGroups() const
-{
-    std::vector<GroupInfo> groups;
-    for (auto const& group : m_engine->CurrentGroups())
-    {
-        groups.push_back({ group.Identity, group.Group });
-    }
-    return groups;
-}
-
 winrt::ItemsSourceView TableViewSource::GetItemsSourceView()
 {
     return m_itemsSourceView.get();

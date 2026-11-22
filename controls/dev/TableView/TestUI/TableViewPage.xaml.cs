@@ -375,7 +375,7 @@ namespace MUXControlsTestApp
             RowStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // Hooks the grouped table's GroupExpanding/GroupCollapsed, and the FIRST header's CommonStates group.
+        // Hooks every realized group header's ToggleRequested, and the FIRST header's CommonStates group.
         // Same in-process visual-tree walk as OnHookRowStatesClick: it creates no automation peers, so it does
         // not trip finding #13.
         private void OnHookGroupHeadersClick(object sender, RoutedEventArgs e)
@@ -392,10 +392,11 @@ namespace MUXControlsTestApp
                 return;
             }
 
-            GroupedTableView.GroupExpanding -= OnGroupExpanding;
-            GroupedTableView.GroupExpanding += OnGroupExpanding;
-            GroupedTableView.GroupCollapsed -= OnGroupCollapsed;
-            GroupedTableView.GroupCollapsed += OnGroupCollapsed;
+            foreach (var header in headers)
+            {
+                header.ToggleRequested -= OnGroupHeaderToggleRequested;
+                header.ToggleRequested += OnGroupHeaderToggleRequested;
+            }
             GroupToggleReportTextBlock.Text = "hooked;";
 
             var first = headers[0];
@@ -429,15 +430,15 @@ namespace MUXControlsTestApp
             GroupHeaderStateLogTextBlock.Text += (e.NewState?.Name ?? "null") + ";";
         }
 
-        // One entry per raise: "E:<key>;" for GroupExpanding, "C:<key>;" for GroupCollapsed.
-        private void OnGroupExpanding(TableView sender, TableViewGroupExpandingEventArgs args)
+        // One entry per raise, "<key>|<key>;". The key is read on entry, then the handler MUTATES the header
+        // and reads the key again: TableView.idl:350-355 says the key rides on the args precisely so a
+        // re-entrant handler still sees the key that was actually activated, and that is only observable if
+        // the handler does re-enter.
+        private void OnGroupHeaderToggleRequested(TableViewGroupHeader sender, TableViewGroupHeaderToggleRequestedEventArgs args)
         {
-            GroupToggleReportTextBlock.Text += "E:" + (args.GroupKey?.ToString() ?? "null") + ";";
-        }
-
-        private void OnGroupCollapsed(TableView sender, TableViewGroupCollapsedEventArgs args)
-        {
-            GroupToggleReportTextBlock.Text += "C:" + (args.GroupKey?.ToString() ?? "null") + ";";
+            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + "|";
+            sender.IsExpanded = !sender.IsExpanded;
+            GroupToggleReportTextBlock.Text += (args.GroupKey?.ToString() ?? "null") + ";";
         }
 
         private static void CollectDescendants<T>(DependencyObject root, List<T> results) where T : class
@@ -1222,7 +1223,7 @@ namespace MUXControlsTestApp
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
         private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
         {
-            NameColumn.CanUserResize = !NameColumn.CanUserResize;
+            NameColumn.CanResize = !NameColumn.CanResize;
         }
 
         // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.

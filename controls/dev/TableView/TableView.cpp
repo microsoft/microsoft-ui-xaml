@@ -12,7 +12,6 @@
 #include "TableViewCellsPanel.h"
 #include "TableViewToolTipHelpers.h"
 #include "TableViewAutomationPeer.h"
-#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewSource.h"
 #include "TableViewRowTemplateSelector.h"
 #include "TableViewGroupHeader.h"
@@ -729,13 +728,6 @@ void TableView::OnTableViewLoaded(const winrt::IInspectable& /*sender*/, const w
     // The first of the session's two samples; a session that ends without Unloaded carries this one alone.
     SampleInstanceTelemetry();
 
-    // A StartBringItemIntoView made before Loaded; posted so the rows have their first layout.
-    if (m_pendingBringIntoViewIndex >= 0)
-    {
-        ArmPendingBringIntoView();
-        PostPendingBringIntoViewAttempt();
-    }
-
     auto xamlRoot = XamlRoot();
     if (!xamlRoot)
     {
@@ -1393,9 +1385,6 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     {
         return;
     }
-
-    // A pending StartBringItemIntoView index names a row of the data set being replaced.
-    CancelPendingBringItemIntoView();
 
     // Until Initialize has its verdict, attaching a source is part of initialization rather than a tracked swap.
     auto const initializing = !m_tip.initializationDone;
@@ -2208,7 +2197,6 @@ void TableView::RefreshRowsPipeline()
 void TableView::OnTableViewSourceProjectionChanged()
 {
     SupersedeTipOperation();
-    CancelPendingBringItemIntoView();
 
     // The repeater's focus rescue during recycling must not be mistaken for the user's position.
     SuppressBodyFocusTrackingForThisTurn();
@@ -2848,7 +2836,6 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
@@ -2884,7 +2871,6 @@ void TableView::OnRowElementClearing(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -2932,7 +2918,6 @@ void TableView::OnRowElementIndexChanged(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
@@ -3507,8 +3492,8 @@ void TableView::RebuildHeadersCore()
                 header.Style(headerStyle);
             }
 
-            const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
-            const bool headerIsSortable = canUserSortColumns && column.CanUserSort();
+            const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
+            const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (!styleSetsCornerRadius)
             {
                 AttachFocusCornerRadius(header);
@@ -3611,7 +3596,7 @@ void TableView::RebuildHeadersCore()
                     }
                     if (auto strongThis = weakThis.get())
                     {
-                        if (strongThis->ToggleSortDirectionFromUserInput(column))
+                        if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
                         }
@@ -3823,34 +3808,6 @@ void TableView::RefreshSortIndicators()
     }
 }
 
-void TableView::RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection)
-{
-    if (!column || !winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
-    {
-        return;
-    }
-    auto const header = TableViewCellsPanel::CellForColumn(m_headerHost.get(), column);
-    if (!header)
-    {
-        return;
-    }
-    if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(header))
-    {
-        // The header peer reports the sort state through its help text.
-        winrt::hstring oldText;
-        if (auto const headerPeer = peer.try_as<winrt::TableViewColumnHeaderAutomationPeer>())
-        {
-            oldText = winrt::get_self<TableViewColumnHeaderAutomationPeer>(headerPeer)->HelpTextForSortDirection(oldDirection);
-        }
-        auto const newText = peer.GetHelpText();
-        if (oldText != newText)
-        {
-            peer.RaisePropertyChangedEvent(
-                winrt::AutomationElementIdentifiers::HelpTextProperty(), winrt::box_value(oldText), winrt::box_value(newText));
-        }
-    }
-}
-
 void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     // Rebuild, not restyle in place: the style also decides whether density sets MinHeight/Padding.
@@ -3859,16 +3816,32 @@ void TableView::OnColumnHeaderStylePropertyChanged(const winrt::DependencyProper
 
 void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    // The chevron and the click handler are stamped at header-build time. Like WPF's
-    // DataGrid.CanUserSortColumns this gates user input only, so an applied sort is left in place.
+    // The chevron and the click handler are stamped at header-build time. Queued first so it still
+    // runs when a Sorting or Sorted handler throws.
     QueueRebuildHeaders();
+
+    // The gate turning off must also drop any sort it was responsible for; leaving the rows in a
+    // sorted order with no affordance to change it would strand the user.
+    if (!CanUserSortColumns())
+    {
+        CancelPendingSortRestore();
+        ClearSortInternal(false);
+    }
 }
 
-void TableView::OnColumnCanUserSortChanged(const winrt::TableViewColumn& /*column*/)
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column)
 {
-    // The chevron and the click handler are stamped at header-build time. CanUserSort gates user
-    // input only, so an applied sort is left in place.
+    // The chevron and the click handler are stamped at header-build time. Queued first so it still
+    // runs when a Sorting or Sorted handler throws.
     QueueRebuildHeaders();
+
+    // A column that just opted out must not keep an active sort applied to it. One lit only by the
+    // app's source sort keeps it: the app owns that axis.
+    if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None && !IsSortLitOnlyByApp())
+    {
+        // Bypasses the CanSort gate that just closed; the public methods keep refusing.
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
+    }
 }
 
 double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const{
@@ -4041,7 +4014,6 @@ void TableView::OnTableViewUnloaded()
     // A static FocusManager subscription; don't leave it to the destructor, which can run after XAML shutdown.
     m_headerCollapseFocusRevoker.revoke();
     RevokeTipInitializationLayout();
-    CancelPendingBringItemIntoView();
 
     if (m_pendingGroupFocusLayoutToken.value)
     {
@@ -4593,7 +4565,7 @@ bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
 {
     return column &&
         CanUserResizeColumns() &&
-        column.CanUserResize() &&
+        column.CanResize() &&
         column.Visibility() == winrt::Visibility::Visible &&
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
 }

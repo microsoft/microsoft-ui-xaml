@@ -21,6 +21,11 @@ public:
     static GlobalDependencyProperty s_IsExpandableProperty;
     static GlobalDependencyProperty s_IsExpandedProperty;
 
+    winrt::event_token ToggleRequested(winrt::TypedEventHandler<winrt::TableViewGroupHeader, winrt::TableViewGroupHeaderToggleRequestedEventArgs> const& value);
+    void ToggleRequested(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::TableViewGroupHeader, winrt::TableViewGroupHeaderToggleRequestedEventArgs>> m_toggleRequestedEventSource;
+
     static void EnsureProperties();
     static void ClearProperties();
 

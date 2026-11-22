@@ -59,8 +59,6 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
-    // A direction set on a column the user cannot sort is still displayed.
-    bool ShowsSortIndicator() const noexcept { return m_isSortable || m_sortDirection != winrt::SortDirection::None; }
     void UpdateContentReserve();
     void UpdateContentPadding();
     void HostSortIndicator();

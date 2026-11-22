@@ -66,7 +66,7 @@
     </tv:TableView.ContextFlyout>
     <!-- Each header gets its own HeaderContextFlyout in code, so its items know the column. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                 CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+                                 CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="160"
                              CellContextFlyout="{StaticResource NameCellMenu}"
                              SortMemberPath="FullName">

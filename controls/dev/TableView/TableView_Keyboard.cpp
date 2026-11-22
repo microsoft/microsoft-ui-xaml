@@ -289,7 +289,7 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanUserResize())
+    if (!column || !column.CanResize())
     {
         return false;
     }
@@ -1116,7 +1116,7 @@ winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRou
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanUserSort())
+    if (!column || !column.CanSort())
     {
         return nullptr;
     }
@@ -1171,7 +1171,7 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
         return true;
     }
 
-    if (!ToggleSortDirectionFromUserInput(column))
+    if (!ToggleSortDirection(column))
     {
         return false;
     }
@@ -1205,7 +1205,7 @@ bool TableView::TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args)
         return false;
     }
 
-    if (!ToggleSortDirectionFromUserInput(armed))
+    if (!ToggleSortDirection(armed))
     {
         return false;
     }
@@ -2070,7 +2070,11 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
+    if (m_reshapeFocusArmedThisTurn)
+    {
+        return;
+    }
+    if (m_pendingReshapeFocusRow >= 0)
     {
         CancelReshapeFocusRestore();
     }
@@ -2793,7 +2797,7 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         // the request arrives for a container focus has already left, whose position may now be
         // a recycled or estimated one; honoring it scrolled the body back to the top.
         const auto requested = args.TargetRect();
-        const bool focusPadded = requested.Y < -0.5f || requested.Y + requested.Height > target.ActualHeight() + 0.5;
+        const bool focusPadded = requested.Y < 0.0f || requested.Y + requested.Height > target.ActualHeight();
         if (focusPadded && !IsBodyFocusInContainer(bodyItem))
         {
             args.Handled(true);

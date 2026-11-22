@@ -17,6 +17,7 @@ GlobalDependencyProperty TableViewGroupHeaderProperties::s_IsExpandableProperty{
 GlobalDependencyProperty TableViewGroupHeaderProperties::s_IsExpandedProperty{ nullptr };
 
 TableViewGroupHeaderProperties::TableViewGroupHeaderProperties()
+    : m_toggleRequestedEventSource{static_cast<TableViewGroupHeader*>(this)}
 {
     EnsureProperties();
 }
@@ -31,7 +32,7 @@ void TableViewGroupHeaderProperties::EnsureProperties()
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TableViewGroupHeader>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
+                ValueHelper<bool>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIsExpandablePropertyChanged));
     }
     if (!s_IsExpandedProperty)
@@ -42,7 +43,7 @@ void TableViewGroupHeaderProperties::EnsureProperties()
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TableViewGroupHeader>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
+                ValueHelper<bool>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
 }
@@ -93,4 +94,14 @@ void TableViewGroupHeaderProperties::IsExpanded(bool value)
 bool TableViewGroupHeaderProperties::IsExpanded()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewGroupHeader*>(this)->GetValue(s_IsExpandedProperty));
+}
+
+winrt::event_token TableViewGroupHeaderProperties::ToggleRequested(winrt::TypedEventHandler<winrt::TableViewGroupHeader, winrt::TableViewGroupHeaderToggleRequestedEventArgs> const& value)
+{
+    return m_toggleRequestedEventSource.add(value);
+}
+
+void TableViewGroupHeaderProperties::ToggleRequested(winrt::event_token const& token)
+{
+    m_toggleRequestedEventSource.remove(token);
 }

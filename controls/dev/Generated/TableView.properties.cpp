@@ -30,9 +30,7 @@ GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
 
 TableViewProperties::TableViewProperties()
-    : m_groupCollapsedEventSource{static_cast<TableView*>(this)}
-    , m_groupExpandingEventSource{static_cast<TableView*>(this)}
-    , m_selectionChangedEventSource{static_cast<TableView*>(this)}
+    : m_selectionChangedEventSource{static_cast<TableView*>(this)}
     , m_sortedEventSource{static_cast<TableView*>(this)}
     , m_sortingEventSource{static_cast<TableView*>(this)}
 {
@@ -524,26 +522,6 @@ void TableViewProperties::SelectionMode(winrt::TableViewSelectionMode const& val
 winrt::TableViewSelectionMode TableViewProperties::SelectionMode()
 {
     return ValueHelper<winrt::TableViewSelectionMode>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_SelectionModeProperty));
-}
-
-winrt::event_token TableViewProperties::GroupCollapsed(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupCollapsedEventArgs> const& value)
-{
-    return m_groupCollapsedEventSource.add(value);
-}
-
-void TableViewProperties::GroupCollapsed(winrt::event_token const& token)
-{
-    m_groupCollapsedEventSource.remove(token);
-}
-
-winrt::event_token TableViewProperties::GroupExpanding(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewGroupExpandingEventArgs> const& value)
-{
-    return m_groupExpandingEventSource.add(value);
-}
-
-void TableViewProperties::GroupExpanding(winrt::event_token const& token)
-{
-    m_groupExpandingEventSource.remove(token);
 }
 
 winrt::event_token TableViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value)

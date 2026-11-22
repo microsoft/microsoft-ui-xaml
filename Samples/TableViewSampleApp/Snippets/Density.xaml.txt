@@ -5,7 +5,7 @@
     ItemsSource="{x:Bind Source}"
     Style="{StaticResource DefaultTableViewStyle}"
     SelectionMode="Single">
-    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
         <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>

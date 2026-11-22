@@ -69,7 +69,7 @@
             </DataTemplate>
         </tv:TableViewTemplateColumn.CellTemplate>
     </tv:TableViewTemplateColumn>
-    <tv:TableViewTemplateColumn x:Name="PlayedColumn" Header="P" Width="48" CanUserSort="False" SortMemberPath="Played">
+    <tv:TableViewTemplateColumn x:Name="PlayedColumn" Header="P" Width="48" CanSort="False" SortMemberPath="Played">
         <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>
                 <TextBlock Text="{Binding Played}" Style="{StaticResource CellTextStyle}" />

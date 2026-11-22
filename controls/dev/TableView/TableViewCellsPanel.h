@@ -82,6 +82,7 @@ private:
     // columns measured this pass, so entries for removed/collapsed columns are pruned automatically
     // (bounding growth and limiting the void*-reuse window the per-pass cache note describes).
     std::unordered_map<void*, double> m_lastMeasuredWidthsByColumn;
+    bool m_editingWidthInvalidated{ false };
 
     // The row that owns this panel, or null for the header host. Weak: the row owns the panel.
     winrt::weak_ref<winrt::TableViewRow> m_owningRow{ nullptr };

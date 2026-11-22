@@ -169,16 +169,6 @@ public:
     winrt::hstring const& DiagnosticName() const noexcept { return m_diagnosticName; }
     ProjectionKind Kind() const noexcept { return m_kind; }
     bool IsProjectedAsGrouped() const noexcept { return m_projectedAsGrouped; }
-    // The group identity `key` maps to under the current GroupBy, exactly as bucketing computes it.
-    // False without GroupBy or when the key has no identity.
-    bool TryGetGroupIdentityForKey(winrt::IInspectable const& key, winrt::hstring& identity) const;
-    // The groups of the current grouped projection, in display order; empty when not grouped.
-    struct GroupSnapshot
-    {
-        winrt::hstring Identity;
-        winrt::IInspectable Group{ nullptr };
-    };
-    std::vector<GroupSnapshot> CurrentGroups() const;
     // The flat shaped row vector: the presented row axis for flat and unshaped projections. Under
     // a Grouped projection the presented row axis is the GroupedSourceAdapter's computed
     // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection

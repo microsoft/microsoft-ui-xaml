@@ -26,46 +26,35 @@ namespace
         return column ? winrt::get_self<TableViewColumn>(column)->AutomationIdentity() : 0;
     }
 
-    winrt::TableViewColumnHeader HeaderForPublicConstructor(winrt::TableViewColumnHeader const& header)
+    winrt::TableView OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
     {
-        if (!header)
+        if (table && column &&
+            winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == table)
         {
-            throw winrt::hresult_invalid_argument();
+            return table;
         }
-        return header;
-    }
 
-    winrt::TableViewColumn ColumnOfHeader(winrt::TableViewColumnHeader const& header)
-    {
-        return header ? winrt::get_self<TableViewColumnHeader>(header)->Column() : nullptr;
+        throw winrt::hresult_invalid_argument();
     }
-
-    winrt::TableView TableOfHeader(winrt::TableViewColumnHeader const& header)
-    {
-        return header ? winrt::get_self<TableViewColumnHeader>(header)->GetOwningTableView() : nullptr;
-    }
-
-    template <typename T>
-    winrt::weak_ref<T> WeakOrNull(T const& value)
-    {
-        return value ? winrt::make_weak(value) : winrt::weak_ref<T>{ nullptr };
-    }
-}
-
-TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(winrt::TableViewColumnHeader const& owner)
-    : ReferenceTracker(HeaderForPublicConstructor(owner))
-    , m_column(WeakOrNull(ColumnOfHeader(owner)))
-    , m_table(WeakOrNull(TableOfHeader(owner)))
-    , m_columnAutomationIdentity(AutomationIdentityForColumn(ColumnOfHeader(owner)))
-{
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
-    : ReferenceTracker(owner)
-    , m_column(WeakOrNull(column))
-    , m_table(WeakOrNull(owner))
+    : ReferenceTracker(OwnerForPublicConstructor(owner, column))
+    , m_column(winrt::make_weak(column))
+    , m_table(winrt::make_weak(owner))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
+{
+}
+
+TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
+    winrt::FrameworkElement const& header,
+    winrt::TableView const& table,
+    winrt::TableViewColumn const& column)
+    : ReferenceTracker(header)
+    , m_column(winrt::make_weak(column))
+    , m_table(winrt::make_weak(table))
     , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
 }
@@ -141,22 +130,13 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
     {
         return __super::GetHelpTextCore();
     }
-    return HelpTextForSortDirection(column.SortDirection());
-}
 
-hstring TableViewColumnHeaderAutomationPeer::HelpTextForSortDirection(winrt::SortDirection direction)
-{
-    auto const column = m_column.get();
-    if (!column)
-    {
-        return __super::GetHelpTextCore();
-    }
-
-    // A column the user can sort always reports its state; any other only while a direction is shown.
+    // Only a column the control will actually sort reports a sort state; on any other column the
+    // absence of a sort state is the honest answer.
     winrt::hstring sortText{};
-    if (IsSortableColumn() || direction != winrt::SortDirection::None)
+    if (IsSortableColumn())
     {
-        switch (direction)
+        switch (column.SortDirection())
         {
         case winrt::SortDirection::Ascending:
             sortText = TryGetLocalizedString(SR_TableViewSortAscendingHelpText);
@@ -296,7 +276,7 @@ void TableViewColumnHeaderAutomationPeer::Invoke()
     {
         if (auto const owner = m_table.get())
         {
-            winrt::get_self<TableView>(owner)->ToggleSortDirectionFromUserInput(column);
+            winrt::get_self<TableView>(owner)->ToggleSortDirection(column);
             return;
         }
     }
@@ -424,21 +404,14 @@ bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
 
 void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
 {
-    // A collapsed column's header has no menu, whichever peer is asked: raising the request on the
-    // collapsed header element would bubble to the table and open its menu instead.
-    auto const column = m_column.get();
-    if (column && !IsVisibleColumn(column))
-    {
-        return;
-    }
-
     if (!IsTableViewOwned())
     {
         __super::ShowContextMenuCore();
         return;
     }
 
-    if (!column)
+    auto const column = m_column.get();
+    if (!column || !IsVisibleColumn(column))
     {
         return;
     }
@@ -474,7 +447,7 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 bool TableViewColumnHeaderAutomationPeer::IsResizableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanUserResize() || !IsVisibleColumn(column))
+    if (!column || !column.CanResize() || !IsVisibleColumn(column))
     {
         return false;
     }

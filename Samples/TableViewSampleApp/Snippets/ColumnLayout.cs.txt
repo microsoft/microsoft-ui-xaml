@@ -7,7 +7,7 @@ private static TableViewTemplateColumn Text(string header, string path, GridLeng
         Header = header,
         CellTemplate = SampleColumns.TextCellTemplate(path),
         Width = width,
-        CanUserSort = false,
+        CanSort = false,
     };
 
 // Template columns use the shared cells from Templates\PersonCellTemplates.xaml.
@@ -17,14 +17,14 @@ private static TableViewTemplateColumn Templated(string header, string templateK
         Header = header,
         CellTemplate = (DataTemplate)Application.Current.Resources[templateKey],
         Width = width,
-        CanUserSort = false,
+        CanSort = false,
     };
 
 private static TableViewTemplateColumn LockedRole(GridLength width)
 {
     var column = Text(LockedRoleHeader, nameof(Person.Role), width);
     // Per-column opt-out of the resize gripper. Setting Width from code still applies.
-    column.CanUserResize = false;
+    column.CanResize = false;
     return column;
 }
 

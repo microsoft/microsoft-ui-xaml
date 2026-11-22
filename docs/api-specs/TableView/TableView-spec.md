@@ -6,8 +6,6 @@ Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row 
 
 This API is intentionally small: **single row selection** and **single-level grouping** on top of the read-only data presentation. Additional interactive features — multiple/extended selection, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort, column virtualization, and row headers remain out of scope for v1.
 
-The API proposed for stabilization, with its behavioural contracts, parity analysis and open questions, is reviewed in [TableView API review](../../design-notes/TabularControls/TableView-API-Review.md). Where this spec and the review differ, the review and the IDLs are current.
-
 TableView types are in the preview namespace:
 
 ```xaml
@@ -168,14 +166,15 @@ Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that 
 section-header heights. Larger text or custom content can grow them. Built-in text is 14px
 at every density; Standard is the default. App metric overrides and column-header font styles take precedence.
 `TableViewCellFontSizeSmall` and `TableViewHeaderFontSizeSmall` customize the
-Compact fonts. Density restamps preserve app-set fonts and bindings on `DisplayMemberBinding` text.
+Compact fonts. Density restamps preserve custom text-column fonts and bindings,
+including the display element saved during editing.
 
 Cell/header control padding is `12,2,12,2`, `12,6,12,6`, or `12,10,12,10`, respectively.
 Generated text uses the literal asymmetric [text-padding resources](#tableviewcolumnheader-class).
 Section-host padding is `4,2,12,2`, `4,6,12,6`, or `4,10,12,10`; its 12px chevron gutter
 and 4px gap put the title 20px from the leading edge.
 Gridlines are overlays within the row slot. Selection and native focus have separate chrome;
-neither changes content layout.
+neither changes content layout. Built-in editors account for their border thickness.
 
 `TabularControlsResources` exposes `DefaultTableViewStyle` (Standard), `CompactTableViewStyle`,
 and `ComfortableTableViewStyle`. These styles select only `Density`, retaining the shared default
@@ -340,7 +339,7 @@ at full opacity, since the disabled brush already dims it.
 
 ### Frozen (pinned) leading columns
 
-Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored.
+Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
 
 ```xaml
 <tabular:TableView ItemsSource="{x:Bind Orders}">
@@ -583,20 +582,16 @@ var source = TableViewSource.From(People)
 
 A filter always runs first, so a group whose last remaining row is filtered out disappears entirely. `ClearGroupBy()` removes grouping; a second `GroupBy` replaces the first rather than nesting, since v1 is single-level.
 
-Every group can be expanded and collapsed by clicking or tapping the header band, or through its UI Automation `ExpandCollapse` pattern. From code, expand or collapse one group by key, or every group at once:
+Every group can be expanded and collapsed by clicking or tapping the header band, or through its UI Automation `ExpandCollapse` pattern. Expand or collapse everything at once with:
 
 ```csharp
-PeopleTable.ExpandGroup("Sales");
-PeopleTable.CollapseGroup("Sales");
 PeopleTable.ExpandAllGroups();
 PeopleTable.CollapseAllGroups();
 ```
 
-`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, whatever caused it.
-
 Expansion is remembered as intent about a **group identity**, not as state on a group object, so collapsing a group and then re-sorting, re-filtering or regrouping keeps that group collapsed — and a group that appears later inherits whatever `ExpandAllGroups`/`CollapseAllGroups` last established, rather than an intent nobody expressed about it.
 
-One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Use `IndexOf(item)` to get an item's index in that space. Headers themselves are never selectable — `Select(index)` on a header index is a no-op that keeps the current selection, `IsSelected` on it is `false`, and keyboard selection-follows-focus leaves the selection alone while focus is on a header. `StartBringItemIntoView` does accept a header index and brings the band into view.
+One thing to know when combining grouping with selection: group headers occupy the same index space as data rows, so under grouping `SelectedIndex` is **not** an index into `ItemsSource`. Headers themselves are never selectable — `Select(index)` on a header index is rejected, and keyboard selection-follows-focus leaves the selection alone while focus is on a header.
 
 ### Editing cells
 
@@ -693,11 +688,7 @@ The current cell is the navigation position. It is set by keyboard navigation an
 
 All mutators resolve immediately when selection is on and a source exists; otherwise they are a no-op — `Select` never clears an existing selection to signal rejection. The only state carried across time is the live selection stashed over an unload/reload cycle, which `DeselectAll` and `SelectionMode = None` both discard.
 
-Named to match `ItemsView`, which ships `Select` / `Deselect` / `IsSelected` over an item index. Identity-based `Select` overloads are deliberately absent, matching `ItemsView`; use `IndexOf(item)` to map an item to an index.
-
-All index members (`Select`, `Deselect`, `IsSelected`, `SelectedIndex`, `IndexOf`, `StartBringItemIntoView`) use **display-projection indexes**: group headers take slots and rows under a collapsed group or parent are absent. Indexes shift whenever a group or row is expanded or collapsed and whenever the data is sorted, filtered, regrouped or changed, so call `IndexOf` immediately before `Select` or `StartBringItemIntoView` instead of caching an index. Data-index APIs (for example `GetItemFromDisplayIndex`, or item-based overloads) are deferred.
-
-Group-header slots: `Select(headerIndex)` is a silent no-op that keeps the current selection (it neither selects the header nor clears); `IsSelected(headerIndex)` is always `false`, so `Deselect(headerIndex)` does nothing; `StartBringItemIntoView(headerIndex)` is valid and brings the group header band into view; `IndexOf` never returns a header slot (a `TableViewGroupInfo` or other header object returns `-1`). An out-of-range `Select` is also a no-op, while an out-of-range `StartBringItemIntoView` throws `E_INVALIDARG`.
+Named to match `ItemsView`, which ships `Select` / `Deselect` / `IsSelected` over an item index. Identity-based overloads are deliberately absent, matching `ItemsView`.
 
 | Method | Returns | Description |
 |---|---|---|
@@ -705,8 +696,6 @@ Group-header slots: `Select(headerIndex)` is a silent no-op that keeps the curre
 | `Deselect(Int32 index)` | `void` | Clears the selection only when `index` is the selected index, so a stale call cannot clobber a newer selection. |
 | `IsSelected(Int32 index)` | `Boolean` | Whether `index` is the selected index. |
 | `DeselectAll()` | `void` | Clears the selection. Works regardless of `SelectionMode`, so turning selection off can always be made to stick. |
-| `IndexOf(Object item)` | `Int32` | The item's index in the displayed projection (the same space as `Select` and `SelectedIndex`, where group headers take slots). `-1` for null, or when the item is not displayed (absent, filtered out, or under a collapsed group or parent). Value-typed items (boxed numbers, strings) match by value, reference items by identity; duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded`. |
-| `StartBringItemIntoView(Int32 index, BringIntoViewOptions options)` | `void` | Asynchronously realizes the row at `index`, lays it out, and brings its real bounds into view, accounting for the sticky header and frozen columns. Same shape as `ItemsView`. `options` may be null; an out-of-range index throws `E_INVALIDARG`. Safe before `Loaded`. A pending request is cancelled when `ItemsSource` changes or the table unloads. |
 
 ## TableView selection events
 
@@ -734,31 +723,27 @@ Selection is raised only for real changes: a re-select of the already-selected r
 These are understood and deliberately not addressed by single selection:
 
 - **The selection indicator scrolls with the row.** `PART_SelectionIndicator` outlines the horizontally scrolling row content, so the outline's leading and trailing edges can scroll out of view. Pinning the outline to the viewport would require a separate non-scrolling selection layer.
-- **A template's explicit `Foreground` overrides inherited state foregrounds.** Leave it unset, as `DisplayMemberBinding` text does, or provide contrasting colors for every state. HC outline states retain the resting foreground and normal text-backplate policy.
+- **A template's explicit `Foreground` overrides inherited state foregrounds.** Leave it unset, as a generated text cell does, or provide contrasting colors for every state. HC outline states retain the resting foreground and normal text-backplate policy.
 - **Reconciliation order is load-bearing.** Row chrome is restamped from `ItemsSourceView.CollectionChanged`, which is correct only because `SelectionModel` is handed the repeater's *shared* `ItemsSourceView` and is subscribed ahead of the control. Handing the model a raw source, or reordering those two calls in `ResolveSelectionAfterSourceChange`, silently reintroduces stale-index stamping — and an insert above the selection raises no event to correct it. This is deliberately different from `ItemsView`, which hands the model a raw source and repairs the resulting race afterwards with a dispatcher hop; the ordering here is structural instead.
 - **Adding `Multiple`/`Extended` is not purely additive.** The enum values are appended and the event args already carry both vectors, so the shapes that are expensive to reverse are settled. But `SelectedItems` is deliberately **not** exposed in this release — it would be redundant with `SelectedItem` while at most one row can be selected, and `SelectionModel`'s view leaves `IndexOf` and `GetMany` unimplemented, so `Contains`, `ToList` and `ToArray` throw. It should be added with `Multiple`, where it becomes the only way to read the whole selection and those sharp edges are worth the capability. The gesture layer also routes through `SelectRowIndexFromInteraction(index, toggle)`, which carries no anchor or range state, and `ApplySelection` encodes single-selection semantics; multi-selection needs modifier state threaded through those entry points and an anchor model, closer to `ItemsView`'s `SelectorBase` strategy split.
 
 ## TableView grouping members
 
-Grouping itself is declared on the data source (`TableViewSource.GroupBy`); the control contributes presentation, expand/collapse commands and expansion events.
+Grouping itself is declared on the data source (`TableViewSource.GroupBy`); the control contributes only presentation and the bulk expand/collapse commands.
 
 | Member | Kind | Description |
 |---|---|---|
 | `GroupHeaderTemplate` | `DataTemplate` DP | Content template for the group-header band. The data context is a `TableViewGroupInfo`. |
-| `ExpandGroup(Object groupKey)` | method | Expands the group whose key matches. The key is resolved to a group identity exactly as `GroupBy` does (the built-in identity, or the identity selector passed to `GroupBy`), so a null key and `""` never match each other. An unknown key, or a group already expanded, is a no-op and raises no event. |
-| `CollapseGroup(Object groupKey)` | method | Collapses the matching group, on the same terms. |
 | `ExpandAllGroups()` | method | Expands every group, including groups that do not exist yet — it moves the default rather than looping over the realized headers. No-op when the source is not grouped. |
 | `CollapseAllGroups()` | method | Collapses every group, on the same terms. No-op when the source is not grouped. |
-| `GroupExpanding` | event (`TableViewGroupExpandingEventArgs`: `GroupKey`) | Raised synchronously before a group expands. Not cancellable. Once raised, the direction is pinned: a handler that calls `ExpandGroup` on the same group is a no-op. |
-| `GroupCollapsed` | event (`TableViewGroupCollapsedEventArgs`: `GroupKey`) | Raised after a group collapses. |
 
-`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily); the control then finds the group again by identity in the reshaped source and still expands it. A handler that replaces `ItemsSource` ends the request. An exception thrown by a group-event handler is contained and logged.
+There is no per-group programmatic expand/collapse in this release: an individual group is toggled by the user through its header, or by an automation client through the header's `ExpandCollapse` pattern.
 
 Expansion is stored as intent keyed by a group's **identity**, so it survives a reshape (sort, filter, or regroup) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
 
 ## TableViewSource grouping verbs
 
-`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs return the same source, so they chain. `TableViewSource` is unchanged by the TableView API review; data shaping is handled in PR #12654.
+`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs return the same source, so they chain.
 
 | Member | Returns | Description |
 |---|---|---|
@@ -783,6 +768,7 @@ The read-only projection a `GroupHeaderTemplate` binds against. It implements `I
 |---|---|---|
 | `Key` | `Object` | The `GroupBy` key for this group. |
 | `ItemCount` | `Int32` | Number of members in the group. |
+| `Level` | `Int32` | Nesting level. Always `0` in v1 (single-level grouping). |
 | `IsExpandable` | `Boolean` | `false` when the group cannot expand (for example, it has no members). |
 | `IsExpanded` | `Boolean` | Current expansion state. |
 | `KeyText` | `String` | Culture-formatted display text for `Key`, computed lazily. |
@@ -796,10 +782,9 @@ replacing that template gives the app responsibility for those parts.
 
 | Member | Kind | Description |
 |---|---|---|
-| `IsExpanded` | `Boolean` DP (read-only) | Expansion state of this header. Written by the control; change it with `TableView.ExpandGroup`/`CollapseGroup`. |
-| `IsExpandable` | `Boolean` DP (read-only) | Whether this header can expand. |
-
-The header forwards activation to its owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`; the header itself raises no events. Both DPs revert an external `SetValue` rather than throwing (WinUI has no `DependencyPropertyKey`), so observers can see a transient change notification; bind them `OneWay` only.
+| `IsExpanded` | `Boolean` DP | Expansion state of this header. |
+| `IsExpandable` | `Boolean` DP | Whether this header can expand. |
+| `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
 
 Template parts. Code looks up `PART_ContentPresenter`, `PART_ExpanderGutter` and `PART_GridLineBorder`, and degrades without any of them. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 
@@ -876,7 +861,7 @@ Header `Foreground` is independent of body text. A style's `ContentTemplate` or
 `ContentTemplateSelector` can render string headers, but the column's header template/selector
 takes precedence. Styles targeting types other than `TableViewColumnHeader` or its base types are ignored.
 
-Generated plain-string header labels and `DisplayMemberBinding` cell text use
+Generated plain-string header labels and `TableViewTextColumn` display labels use
 asymmetric padding authored directly in the `TableViewHeaderTextPadding` and
 `TableViewCellTextPadding` resource families, with `Small` / `Medium` / `Large` suffixes.
 These shared values apply in Light, Default/Dark and High Contrast:
@@ -951,36 +936,28 @@ Base class for TableView columns.
 | `HeaderTemplate` | `DataTemplate` | `null` | Template used to display the header. |
 | `HeaderTemplateSelector` | `DataTemplateSelector` | `null` | Template selector used to display the header; takes precedence over `HeaderTemplate` when both are set. |
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
-| `HeaderToolTip` | `Object` | `null` | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
+| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 | `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
-| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanUserResize="False"`). |
+| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanResize="False"`). |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |
-| `CanUserResize` | `Boolean` | `true` | Whether the user can resize this column (pointer, keyboard, UI Automation); also requires `TableView.CanUserResizeColumns`. |
-| `CanUserSort` | `Boolean` | `true` | Whether the user can sort by this column's header. Gates user input only: `SortByColumn` and `ToggleSortDirection` ignore it, and turning it off does not clear an active sort. The table-level `CanUserSortColumns` and `CanUserResizeColumns` follow the same rule. |
-| `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. |
-| `SortMemberPath` | `String` | Empty string | Property path the column sorts by. When empty, the column sorts by `DisplayMemberBinding`'s `Path` (unless that binding names its own `Source`, `RelativeSource` or `ElementName`), and an app-derived column's `GetSortMemberPathCore()` override can supply it; otherwise the column sorts only through `CustomSortComparer`. |
-| `SortCycle` | `TableViewSortCycle` | `AscendingDescending` | Order of directions a header click or `ToggleSortDirection` steps through; the `*None` values add a step back to the unsorted order. |
-| `CustomSortComparer` | `ITableViewSortComparer` | `null` | Comparer for this column's sort; wins over `SortMemberPath`. Must be pure. |
-| `Visibility` | `Visibility` | `Visible` | Column visibility. |
-| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
+| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored; `Trailing` is reserved. |
 | `DisplayMemberBinding` | `Binding` | `null` | Read-only text for each cell without a template, as WPF's `GridViewColumn.DisplayMemberBinding`. Each cell is a `TextBlock` whose `Text` takes this binding against its row's item; it is vertically centred, padded for `Density`, and trimmed with an ellipsis. Its `Path` is the sort key when `SortMemberPath` is empty. Takes precedence over a `TableViewTemplateColumn`'s `CellTemplate`, which is ignored while this is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, then `CellTemplate`). Display-only: V1 has no cell editing. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column; changing it regenerates realized cells. |
-| `CellToolTipBinding` | `Binding` | `null` | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column. |
-| `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
-
-More sorting detail, including `GetSortMemberPathCore`, is in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#23-sorting).
+| `Visibility` | `Visibility` | `Visible` | Column visibility. |
 
 Methods:
 
 | Method | Description |
 |---|---|
+| `GenerateElement(Object dataItem)` | Generates the cell element for a data item. |
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. The base implementation returns the `DisplayMemberBinding` text cell, or `null` (an empty cell) when it is not set. |
-| `NotifyCellContentChanged()` | Protected. Regenerates this column's realized cells and resets its `Auto` width; call it when a derived column's own property changes what it generates. Queued if called during layout. |
+| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Resizing columns
 
-A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanUserResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
+A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
 
 | Gesture | Behaviour |
 |---|---|
@@ -991,9 +968,9 @@ A column has a gripper while `TableView.CanUserResizeColumns` and the column's `
 
 #### Locked Star columns
 
-While `CanUserResizeColumns` is true, a Star column with `CanUserResize="False"` keeps its **authored share**: the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops keeping the authored share when that no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the authored share, crossing between the two states can move it by the difference.
+While `CanUserResizeColumns` is true, a Star column with `CanResize="False"` keeps its **authored share**: the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops keeping the authored share when that no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the authored share, crossing between the two states can move it by the difference.
 
-Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it gets a **resize hold** at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. A resize hold overrides the authored share. It ends when something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanUserResize`, the `Columns` collection, `CanUserResizeColumns`, `ItemsSource` or the viewport width), or when an `Auto` column grows so that the held layout no longer fits. A canceled resize puts back the resize holds that were in place before it. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
+Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it gets a **resize hold** at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. A resize hold overrides the authored share. It ends when something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns`, `ItemsSource` or the viewport width), or when an `Auto` column grows so that the held layout no longer fits. A canceled resize puts back the resize holds that were in place before it. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
 
 ### Cell tooltips
 
@@ -1258,9 +1235,8 @@ Outside a `TableView` the panel has no columns to read. Untagged children are me
 | Value | Numeric value | Description |
 |---|---:|---|
 | `None` | 0 | Column is not frozen. |
-| `Leading` | 1 | Column is pinned to the leading edge. |
-
-Out-of-range values behave as `None`. Trailing-edge pinning, when implemented, will append a value.
+| `Leading` | 1 | Column is pinned to the leading edge. Implemented in v1. |
+| `Trailing` | 2 | Reserved for future trailing-edge pinning. |
 
 ### TableViewHeadersVisibility
 
@@ -1284,15 +1260,14 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisi
 
 ### TableViewDensity
 
-The zero value is the default, `Standard`. Persist and compare by name; the numeric values changed in this preview.
-
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Standard` | 0 | 32px minimum row/header height; **the default**; Medium metrics. |
-| `Compact` | 1 | 24px minimum row/header height; Small metrics. |
+| `Compact` | 0 | 24px minimum row/header height; Small metrics. |
+| `Standard` | 1 | 32px minimum row/header height; default; Medium metrics. |
 | `Comfortable` | 2 | 40px minimum row/header height; Large metrics. |
 
-The minimum heights change from 32/40/48px to 24/32/40px, including the default Standard preset changing
+The original density names and numeric values are retained. The minimum heights
+change from 32/40/48px to 24/32/40px, including the default Standard preset changing
 from 40px to 32px. Override the size metric resources for custom spacing.
 
 ### TableViewSelectionMode
@@ -1331,10 +1306,10 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | Peer | Base type | Provider interfaces |
 |---|---|---|
 | `TableViewAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionProvider`, `IGridProvider`, `ITableProvider`, `IItemContainerProvider` |
-| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider`, `IExpandCollapseProvider` (tree rows) |
-| `TableViewColumnHeaderAutomationPeer` (constructor takes the `TableViewColumnHeader` owner) | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
+| `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
+| `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
-| `TableViewCellAutomationPeer` (constructor takes the cell `FrameworkElement` owner) | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
+| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
 These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named from the item's values at the visible columns' `SortMemberPath`s, joined like realized cell text; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
 
@@ -1353,20 +1328,19 @@ Row and group names honor explicit `AutomationProperties.Name` and `LabeledBy`. 
 
 A cell visual owns its peer through normal `OnCreateAutomationPeer` discovery; the row peer caches that same instance. Both tree enumeration and `IGridProvider.GetItem` connect it to its row before returning it. Child-parent queries and framework automation walks therefore cannot replace the visual's native peer association behind a retained provider. The implementation-only single-child Grid keeps the cell's border chrome and inherited data binding while allowing peer creation to be overridden (`Border` is sealed). Grid-only clients do not need a preliminary tree walk to establish the parent relationship.
 
-Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The public constructor takes the realized `TableViewColumnHeader` as its owner and derives the table and column from it.
+Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.GetColumnHeaders`, `ITableItemProvider.GetColumnHeaderItems`, tree navigation, focus, and hit-testing use that same peer. Names and set metadata honor overrides on the header itself. The existing Grid layout and mouse handlers are unchanged; sortable headers expose Invoke and sort on Enter or Space on the actual keyboard target. Surviving header visuals retain identity, while a header rebuild creates new visuals and identities; a retained old header cannot invoke sorting on its replacement. No provider is fabricated before header realization. Cell names still include the semantic column name when the header strip is hidden. The preview peer constructor requires a realized header for its column and returns `E_INVALIDARG` before realization or when that column has no header in the table.
 
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
-`TableViewCellAutomationPeer(FrameworkElement owner)` takes the realized cell element (typed `FrameworkElement` because the cell element type is internal, and therefore validated at run time) and derives the row, column and column index from it; an owner that is not a prepared TableView cell (with a row, column and column index) throws `E_INVALIDARG` (`ArgumentException` in .NET). Like every WinUI peer it is unsealed. The control creates the peers for its own cells; `FrameworkElementAutomationPeer.CreatePeerForElement` on a realized cell, or `IGridProvider.GetItem`, returns that peer.
-A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanUserResize` are both true. The pattern's `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
+The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
+A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
 `ScrollItem` is not implemented explicitly on cells — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a cell into view after reaching it through `IGridProvider.GetItem`. A row's UIA element (below) is not a `FrameworkElementAutomationPeer`, so it implements `ScrollItem` itself.
 
 A realized row's UIA element is the element of one binding of that row to an item, not the row's own peer. Rows are recycled, so each time a row is bound to an item (prepared, recycled to another item, or moved to another table) it gets a new element, installed as its peer's `EventsSource`; an `EventsSource` the app installed on the row's peer is left in place. A client that holds the element across a scroll, sort, filter, collapse or source change never sees it start describing a different item: once the row is cleared or rebound, every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`, and the client re-queries to reach the row's current element. While the binding is current, the element forwards to the row's peer its name, bounds, focus, enabled state, culture, children (the row's cells), tree navigation, `PositionInSet`, `SizeOfSet`, `Level` and the `AutomationProperties` set on the row (such as `ItemStatus`, `FullDescription` and `HelpText`); it serves `SelectionItem`, `ExpandCollapse` and `ScrollItem` itself, so a held pattern object goes stale with it. `IItemContainerProvider.FindItemByProperty` accepts a current row element as `startAfter` and returns null for a stale one rather than restarting from the first item.
 
 A realized group header's UIA element is likewise not the header's own peer, but it belongs to the **group** rather than to one binding: the table keeps one element per group and installs it as the `EventsSource` of whichever header shows that group, so a client that holds it keeps the same element when the group's header is toggled, recycled away and later shown again, even by another pooled header. The table keeps these elements for up to 256 groups: once it holds that many, it drops the elements of groups no header shows, so a held element of an off-screen group can stay unavailable and the group gets a new element when it is shown again. While no header shows the group (scrolled out, filtered, or the group is gone), every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`; it never describes or toggles a different group. While its group is shown, the element forwards to the header's peer its name, bounds, focus, enabled state, culture, children, tree navigation and the `AutomationProperties` set on the header, and serves `ExpandCollapse`, `GridItem` and `ScrollItem` itself. Replacing the source, or reshaping it into a new projection, starts a new set of group elements; elements held from the old projection stay unavailable. `FindItemByProperty` accepts a group's current element as `startAfter`, as it does a row's.
-
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's current UIA element when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from the item's values at the visible columns' `SortMemberPath`s, else from the item (a name the app gives the row, or the text of columns with no `SortMemberPath`, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
+`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's current UIA element when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from the item's values at the visible columns' `SortMemberPath`s, else from the item (a name the app gives the row, or the text of columns with no `SortMemberPath`, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's current UIA element, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
 
 Selected null source entries also receive index-based data-item providers; repeated reads preserve
 provider identity without realizing the row, and deselection makes the provider unavailable.
@@ -1377,84 +1351,24 @@ row with `UIA_E_INVALIDOPERATION`; `Select()` may replace it.
 # API Details
 
 ```idl
-// Generated from TabularShaping/SortDirection.idl, TableView/TableViewSource.idl, TableView/TableView.idl and
-// dll-tabular/Microsoft.UI.Xaml.Controls.Tabular.idl (TabularControlsResources). Property-changed-callback
-// attributes and the [MUX_INTERNAL] TableViewRowTemplateSelector are omitted. XamlControlsTabularXamlMetaDataProvider
-// (IXamlMetadataProvider) is declared in the Microsoft.UI.Xaml.XamlTypeInfo namespace.
 namespace Microsoft.UI.Xaml.Controls.Tabular
 {
-    [MUX_PREVIEW]
-    [webhosthidden]
-    enum SortDirection
-    {
-        None = 0,
-        Ascending = 1,
-        Descending = 2,
-    };
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate Boolean TableViewPredicate(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate Object TableViewKeySelector(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    delegate String TableViewIdentitySelector(Object item);
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewSource
-    {
-        Boolean IsLiveShaping { get; set; };
-
-        TableViewSource Filter(TableViewPredicate predicate);
-        [default_overload] [method_name("GroupBy")]
-        TableViewSource GroupBy(TableViewKeySelector keySelector);
-        [method_name("GroupByWithIdentity")]
-        TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
-        [method_name("SortByPath")]
-        TableViewSource Sort(String sortMemberPath, SortDirection direction);
-        [default_overload] [method_name("Sort")]
-        TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-        TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
-        TableViewSource ClearFilter();
-        TableViewSource ClearGroupBy();
-        TableViewSource ClearSort();
-        TableViewSource ClearParentBy();
-
-        static TableViewSource From(Object items);
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
+    [MUX_PREVIEW, webhosthidden]
     enum TableViewFrozenEdge
     {
         None = 0,
         Leading = 1,
+        Trailing = 2,
     };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    enum TableViewSelectionMode
-    {
-        None = 0,
-        Single = 1,
-    };
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    [flags]
+    [MUX_PREVIEW, webhosthidden, flags]
     enum TableViewHeadersVisibility
     {
         None = 0,
         Column = 1,
     };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
+    [MUX_PREVIEW, webhosthidden]
     enum TableViewGridLinesVisibility
     {
         All = 0,
@@ -1463,363 +1377,264 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Vertical = 3,
     };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
+    [MUX_PREVIEW, webhosthidden]
     enum TableViewDensity
     {
-        Standard = 0,
-        Compact = 1,
+        Compact = 0,
+        Standard = 1,
         Comfortable = 2,
     };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    enum TableViewSortCycle
+    [MUX_PREVIEW, webhosthidden]
+    enum TableViewSelectionMode
     {
-        AscendingDescending = 0,
-        AscendingDescendingNone = 1,
-        DescendingAscending = 2,
-        DescendingAscendingNone = 3,
+        None = 0,
+        Single = 1,
     };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    interface ITableViewSortComparer
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewBeginningEditEventArgs
     {
-        Int32 Compare(Object left, Object right);
-    };
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    [contentproperty("Header")]
-    unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
-    {
-        TableViewColumn();
-
-        Object Header { get; set; };
-
-        Microsoft.UI.Xaml.DataTemplate HeaderTemplate { get; set; };
-
-        Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector { get; set; };
-
-        Microsoft.UI.Xaml.Style HeaderStyle { get; set; };
-
-        Object HeaderToolTip { get; set; };
-
-        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
-
-        [MUX_DEFAULT_VALUE("c_widthDefault")]
-        Microsoft.UI.Xaml.GridLength Width { get; set; };
-
-        [MUX_DEFAULT_VALUE("20.0")]
-        Double MinWidth { get; set; };
-
-        [MUX_DEFAULT_VALUE("std::numeric_limits<double>::infinity()")]
-        Double MaxWidth { get; set; };
-
-        [MUX_DEFAULT_VALUE("120.0")]
-        Double ActualWidth { get; };
-
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean CanUserResize { get; set; };
-
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean CanUserSort { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::SortDirection::None")]
-        SortDirection SortDirection { get; set; };
-
-        String SortMemberPath { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::TableViewSortCycle::AscendingDescending")]
-        TableViewSortCycle SortCycle { get; set; };
-
-        ITableViewSortComparer CustomSortComparer { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::Visibility::Visible")]
-        Microsoft.UI.Xaml.Visibility Visibility { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::TableViewFrozenEdge::None")]
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge { get; set; };
-
-        Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
-        Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
-        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout { get; set; };
-
-        overridable String GetSortMemberPathCore();
-        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
-        protected void NotifyCellContentChanged();
-
-        static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderStyleProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CanUserSortProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewTemplateColumn : TableViewColumn
-    {
-        TableViewTemplateColumn();
-
-        Microsoft.UI.Xaml.DataTemplate CellTemplate { get; set; };
-
-        static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewSortingEventArgs
-    {
+        Object Item { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
-        SortDirection Direction { get; };
         Boolean Cancel;
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewSortedEventArgs
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewCellEditEndingEventArgs
     {
+        Object Item { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
-        SortDirection Direction { get; };
-    }
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction EditAction { get; };
+        Boolean Cancel;
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewGroupExpandingEventArgs
+    [MUX_PREVIEW, webhosthidden]
+    delegate Object TableViewKeySelector(Object item);
+
+    // Stable string identity for a group key (GroupBy overload). Row identity is not
+    // app-supplied: the projection derives it from each item's object identity.
+    [MUX_PREVIEW, webhosthidden]
+    delegate String TableViewIdentitySelector(Object item);
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewSource
     {
-        Object GroupKey { get; };
-    }
+        static Microsoft.UI.Xaml.Controls.Tabular.TableViewSource From(Object items);
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewGroupCollapsedEventArgs
-    {
-        Object GroupKey { get; };
-    }
+        [default_overload] [method_name("GroupBy")]
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource GroupBy(
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector keySelector);
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
-    {
-        TableViewCellsPanel();
-    }
+        [method_name("GroupByWithIdentity")]
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource GroupBy(
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewKeySelector keySelector,
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewIdentitySelector groupIdentitySelector);
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
-    {
-        TableViewColumn Column { get; };
-    }
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSource ClearGroupBy();
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
-    {
-        TableViewRow();
+        // Filter and Sort verbs are omitted here; see the shaping section of the dev spec.
+    };
 
-        [MUX_DEFAULT_VALUE("false")]
-        Boolean IsSelected { get; };
-
-        [MUX_DEFAULT_VALUE("0")]
-        Int32 Level { get; };
-
-        [MUX_DEFAULT_VALUE("false")]
-        Boolean IsExpandable { get; };
-
-        [MUX_DEFAULT_VALUE("false")]
-        Boolean IsExpanded { get; };
-
-        static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
+    [MUX_PREVIEW, webhosthidden]
     runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         Object Key { get; };
         Int32 ItemCount { get; };
+        Int32 Level { get; };
         Boolean IsExpandable { get; };
         Boolean IsExpanded { get; };
         String KeyText { get; };
         String ItemCountText { get; };
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewGroupHeaderToggleRequestedEventArgs
+    {
+        Object GroupKey { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewGroupHeader : Microsoft.UI.Xaml.Controls.ContentControl
     {
         TableViewGroupHeader();
 
-        [MUX_DEFAULT_VALUE("false")]
-        Boolean IsExpanded { get; };
+        Boolean IsExpanded;
+        Boolean IsExpandable;
 
-        [MUX_DEFAULT_VALUE("false")]
-        Boolean IsExpandable { get; };
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeaderToggleRequestedEventArgs> ToggleRequested;
 
         static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    [contentproperty("Columns")]
+    [MUX_PREVIEW, webhosthidden, contentproperty("Header")]
+    unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
+    {
+        TableViewColumn();
+
+        Object Header;
+        Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
+        Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
+        Object HeaderToolTip;
+        Microsoft.UI.Xaml.GridLength Width;
+        Double MinWidth;
+        Double MaxWidth;
+        Double ActualWidth { get; };
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge;
+        Microsoft.UI.Xaml.Visibility Visibility;
+
+        Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
+        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+
+        Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
+        Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout;
+        Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout;
+
+        static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewTemplateColumn : Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn
+    {
+        TableViewTemplateColumn();
+
+        Microsoft.UI.Xaml.DataTemplate CellTemplate;
+
+        static Microsoft.UI.Xaml.DependencyProperty CellTemplateProperty { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
+    {
+        TableViewCellsPanel();
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewRow : Microsoft.UI.Xaml.Controls.Control
+    {
+        TableViewRow();
+
+        Boolean IsSelected { get; };
+
+        static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden, contentproperty("Columns")]
     unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     {
         TableView();
 
-        Object ItemsSource { get; set; };
+        Object ItemsSource;
+        Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
+        Microsoft.UI.Xaml.Media.Brush RowBackground;
+        Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
+        Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
+        Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
+        Boolean IsReadOnly;
 
-        Windows.Foundation.Collections.IVector<TableViewColumn> Columns { get; };
+        // ----- Editing -----
 
-        [MUX_DEFAULT_VALUE("winrt::TableViewHeadersVisibility::Column")]
-        TableViewHeadersVisibility HeadersVisibility { get; set; };
+        Boolean IsEditing { get; };
 
-        [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
-        TableViewGridLinesVisibility GridLinesVisibility { get; set; };
+        // ----- Selection -----
 
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean CanUserResizeColumns { get; set; };
-
-        Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
-
-        Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground { get; set; };
-
-        Microsoft.UI.Xaml.DataTemplate EmptyTemplate { get; set; };
-
-        Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate { get; set; };
-
-        Microsoft.UI.Xaml.Style ColumnHeaderStyle { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::TableViewDensity::Standard")]
-        TableViewDensity Density { get; set; };
-
-        [MUX_DEFAULT_VALUE("winrt::TableViewSelectionMode::Single")]
-        TableViewSelectionMode SelectionMode { get; set; };
-
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSelectionMode SelectionMode;
         Object SelectedItem { get; };
-
-        [MUX_DEFAULT_VALUE("-1")]
         Int32 SelectedIndex { get; };
-
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean CanUserSortColumns { get; set; };
 
         void Select(Int32 index);
         void Deselect(Int32 index);
         Boolean IsSelected(Int32 index);
         void DeselectAll();
-        Int32 IndexOf(Object item);
-        void StartBringItemIntoView(Int32 index, Microsoft.UI.Xaml.BringIntoViewOptions options);
-        void ExpandGroup(Object groupKey);
-        void CollapseGroup(Object groupKey);
-        void ExpandAllGroups();
-        void CollapseAllGroups();
-        void ExpandAllRows();
-        void CollapseAllRows();
-        Boolean SortByColumn(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column, SortDirection direction);
-        Boolean ToggleSortDirection(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
-        Boolean ClearSort();
 
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewSortingEventArgs> Sorting;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs> Sorted;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupExpandingEventArgs> GroupExpanding;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupCollapsedEventArgs> GroupCollapsed;
+
+        // ----- Grouping -----
+
+        void ExpandAllGroups();
+        void CollapseAllGroups();
 
         static Microsoft.UI.Xaml.DependencyProperty ItemsSourceProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty ColumnHeaderStyleProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
-        static Microsoft.UI.Xaml.DependencyProperty CanUserSortColumnsProperty { get; };
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewAutomationPeer
-        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-          Microsoft.UI.Xaml.Automation.Provider.ISelectionProvider,
-          Microsoft.UI.Xaml.Automation.Provider.IGridProvider,
-          Microsoft.UI.Xaml.Automation.Provider.ITableProvider,
-          Microsoft.UI.Xaml.Automation.Provider.IItemContainerProvider
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IGridProvider,
+        Microsoft.UI.Xaml.Automation.Provider.ITableProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IItemContainerProvider
     {
         TableViewAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableView owner);
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewCellAutomationPeer
-        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-          Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
-          Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
-          Microsoft.UI.Xaml.Automation.Provider.IValueProvider
-    {
-        TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement owner);
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewColumnHeaderAutomationPeer
-        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-          Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
-    {
-        TableViewColumnHeaderAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader owner);
-    }
-
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewRowAutomationPeer
-        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-          Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider,
-          Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewRowAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.ISelectionItemProvider
     {
         TableViewRowAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewRow owner);
-    }
+    };
 
-    [MUX_PREVIEW]
-    [webhosthidden]
-    unsealed runtimeclass TableViewGroupHeaderAutomationPeer
-        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
-          Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
-          Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewColumnHeaderAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+    {
+        TableViewColumnHeaderAutomationPeer(
+            Microsoft.UI.Xaml.Controls.Tabular.TableView owner,
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewGroupHeaderAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider
     {
         TableViewGroupHeaderAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader owner);
-    }
+    };
 
-    [webhosthidden]
-    [default_interface]
-    [MUX_PREVIEW]
-    runtimeclass TabularControlsResources : Microsoft.UI.Xaml.ResourceDictionary
+    [MUX_PREVIEW, webhosthidden]
+    unsealed runtimeclass TableViewCellAutomationPeer :
+        Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
+        Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
+        Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
+        Microsoft.UI.Xaml.Automation.Provider.IValueProvider
     {
-        TabularControlsResources();
-    }
+        TableViewCellAutomationPeer(
+            Microsoft.UI.Xaml.FrameworkElement cell,
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewRow row,
+            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column,
+            Int32 columnIndex);
+    };
 }
 ```
 
@@ -1838,14 +1653,13 @@ Removed from V1, to be revisited there:
 - `TableView.IsReadOnly` and `TableViewColumn.IsReadOnly` (and their dependency properties).
   Without an edit mode they have no meaning; V1 behaves as the previous default, `IsReadOnly = true`.
 - `TableView.IsEditing` (read-only dependency property), `CommitEdit()` and `CancelEdit()`.
-- Events `BeginningEdit`, `CellEditEnding` and `CellEditEnded`, with
-  `TableViewBeginningEditEventArgs`, `TableViewCellEditEndingEventArgs`,
-  `TableViewCellEditEndedEventArgs` and the `TableViewEditAction` enum.
-- `TableViewColumn.CellEditingTemplate` and the overridable `TableViewColumn.CommitCellEditCore`.
+- Events `BeginningEdit` and `CellEditEnding`, with `TableViewBeginningEditEventArgs`,
+  `TableViewCellEditEndingEventArgs` and the `TableViewEditAction` enum.
+- `TableViewColumn.CellEditingTemplate`.
 - The built-in `TextBox` editor of `TableViewTextColumn`; the column itself is also deferred (see
   [TableViewTextColumn (deferred)](#tableviewtextcolumn-deferred)).
 - Edit gestures (double-click/double-tap, `F2`, `Enter`, `Esc`, focus-loss commit), menu
-  suppression while editing, the live-shaping hold during an edit, and the settable
+  suppression while editing, and the settable
   `IValueProvider` path on cells (the provider stays, read-only).
 
 Design input carried forward for V2: a public `BeginEdit` (so a context menu or "New folder" can
@@ -1888,6 +1702,8 @@ starts the rename from `F2`, a context-menu command or "New folder".
 // TableView does not handle F2, so a handledEventsToo handler on the table sees it.
 FileTable.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 
+private IDisposable? _renameHold;
+
 private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 {
     if (e.Key == VirtualKey.F2 && FileTable.SelectedItem is FileSystemEntry entry && !entry.IsRenaming)
@@ -1899,6 +1715,7 @@ private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 
 private void BeginRename(FileSystemEntry entry)
 {
+    _renameHold = Source.DeferRefresh();   // optional: keep the row in place while the user types
     entry.PendingName = entry.Name;
     entry.IsRenaming = true;               // x:Load realizes the TextBox
 }
@@ -1932,6 +1749,8 @@ private async Task CommitRenameAsync(FileSystemEntry entry)
 private void EndRename(FileSystemEntry entry)
 {
     entry.IsRenaming = false;
+    _renameHold?.Dispose();                // the deferred re-sort runs once, here
+    _renameHold = null;
     int index = FileTable.IndexOf(entry);
     if (index >= 0) { FileTable.Select(index); FileTable.StartBringItemIntoView(index, null); }
 }

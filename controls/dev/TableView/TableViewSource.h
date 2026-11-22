@@ -107,16 +107,6 @@ public:
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
     bool ContainsShapedItem(winrt::IInspectable const& item) const;
-    // Internal, for TableView.ExpandGroup/CollapseGroup: the group identity key maps to under the
-    // current GroupBy (nullopt without GroupBy or when the key has none), and the projected groups
-    // with their identities, in display order.
-    std::optional<winrt::hstring> TryGetGroupIdentityForKey(winrt::IInspectable const& key) const;
-    struct GroupInfo
-    {
-        winrt::hstring Identity;
-        winrt::IInspectable Group{ nullptr };
-    };
-    std::vector<GroupInfo> CurrentGroups() const;
 
     // Internal: the owning TableView caches the projection (ItemsSourceView, row metadata and
     // grouped-ness) when it binds, so it must be told when a shaping verb swaps that projection

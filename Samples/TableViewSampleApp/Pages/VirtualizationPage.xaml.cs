@@ -94,7 +94,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
             Header = "Department",
             Width = new GridLength((double)Application.Current.Resources["ColWidthChip"]),
             CellTemplate = SampleColumns.TextCellTemplate(nameof(Person.Department)),
-            CanUserSort = false,
+            CanSort = false,
         };
 
         var columns = PeopleTable.Columns;

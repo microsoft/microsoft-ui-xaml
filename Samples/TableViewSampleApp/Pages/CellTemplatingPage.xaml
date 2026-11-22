@@ -28,7 +28,7 @@
                 VerticalAlignment="Stretch"
                 MinHeight="320">
                 <!-- Template columns have no Binding: SortMemberPath names the value that orders the rows. -->
-                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False" HeaderToolTip="PersonPicture: the photo when the person has one, otherwise their initials."/>
                 <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" HeaderToolTip="Read-only text column. Takes the width the other columns leave." SortMemberPath="FullName">
                     <tv:TableViewTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -82,7 +82,7 @@
                         </DataTemplate>
                     </tv:TableViewTemplateColumn.CellTemplate>
                 </tv:TableViewTemplateColumn>
-                <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
+                <tv:TableViewTemplateColumn Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" HeaderToolTip="Opens a Flyout anchored to the invoking cell."/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

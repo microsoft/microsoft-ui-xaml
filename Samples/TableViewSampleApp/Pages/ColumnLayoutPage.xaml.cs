@@ -23,7 +23,7 @@ namespace TableViewSampleApp.Pages;
 ///   * Width: the intent, as Pixel, Auto, Star, or a Mixed layout.
 ///   * MinWidth / MaxWidth: clamp bounds driven live from sliders.
 ///   * ActualWidth (read-only): the rendered, clamped value.
-///   * CanUserResize: one column opts out of the per-header resize gripper.
+///   * CanResize: one column opts out of the per-header resize gripper.
 ///   * CanUserResizeColumns: the table-level gate for every gripper at once.
 ///
 /// Dragging a header edge and moving the sliders both change ActualWidth; the readout follows
@@ -59,7 +59,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Header = header,
             CellTemplate = SampleColumns.TextCellTemplate(path),
             Width = width,
-            CanUserSort = false,
+            CanSort = false,
         };
     // </snippet>
 
@@ -71,7 +71,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Header = header,
             CellTemplate = (DataTemplate)Application.Current.Resources[templateKey],
             Width = width,
-            CanUserSort = false,
+            CanSort = false,
         };
     // </snippet>
 
@@ -80,7 +80,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     {
         var column = Text(LockedRoleHeader, nameof(Person.Role), width);
         // Per-column opt-out of the resize gripper. Setting Width from code still applies.
-        column.CanUserResize = false;
+        column.CanResize = false;
         return column;
     }
     // </snippet>

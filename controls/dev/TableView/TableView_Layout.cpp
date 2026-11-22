@@ -154,7 +154,6 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     auto desired = __super::MeasureOverride(availableSize);
     ResolveColumnWidths();
     QueueTerminalGridLineRefresh();
@@ -360,7 +359,7 @@ void TableView::ResolveColumnWidths()
         {
             // A locked column the authored pass below sizes from its Star share must not also be
             // booked as fixed here, or it lands in fixedTotal twice and starves the real donors.
-            if (!column.CanUserResize() &&
+            if (CanUserResizeColumns() && !column.CanResize() &&
                 winrt::get_self<TableViewColumn>(column)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
             {
                 starColumns.push_back(column);
@@ -405,15 +404,16 @@ void TableView::ResolveColumnWidths()
         return;
     }
 
+    const bool resizeEnabled = CanUserResizeColumns();
     auto authoredOf = [](winrt::TableViewColumn const& c)
     {
         return winrt::get_self<TableViewColumn>(c)->AuthoredWidthInternal();
     };
-    // Independent of CanUserResizeColumns, which gates user input only: toggling it must not move
-    // a column. Without a prior resize the authored and ordinary pools resolve alike.
-    auto isLocked = [](winrt::TableViewColumn const& c)
+    // Only while a resize can actually happen; otherwise no column's width is at risk and the
+    // ordinary pool already clamps correctly.
+    auto isLocked = [resizeEnabled](winrt::TableViewColumn const& c)
     {
-        return !c.CanUserResize();
+        return resizeEnabled && !c.CanResize();
     };
 
     if (std::any_of(starColumns.begin(), starColumns.end(), isLocked))
@@ -640,13 +640,13 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
         {
             continue;
         }
-        if (CanUserResizeColumns() && !other.CanUserResize() &&
+        if (CanUserResizeColumns() && !other.CanResize() &&
             winrt::get_self<TableViewColumn>(other)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
         {
             holds.push_back({ winrt::make_weak(other), other.ActualWidth() });
             continue;
         }
-        if (other.Width().GridUnitType != winrt::GridUnitType::Star || !other.CanUserResize())
+        if (other.Width().GridUnitType != winrt::GridUnitType::Star || !other.CanResize())
         {
             continue;
         }
@@ -736,7 +736,7 @@ size_t TableView::LockedColumnHoldsSignature()
                 mix(c.ReadLocalValue(winrt::TableViewColumn::MinWidthProperty()) != winrt::DependencyProperty::UnsetValue());
                 mix(std::hash<double>{}(c.MaxWidth()));
                 mix(static_cast<size_t>(c.Visibility()));
-                mix(c.CanUserResize());
+                mix(c.CanResize());
             }
         }
     }
@@ -811,7 +811,7 @@ ColumnResizeBounds TableView::ResizeBoundsForColumn(const winrt::TableViewColumn
         const bool participates =
             i > draggedIndex &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            resizeEnabled && other.CanUserResize() &&
+            resizeEnabled && other.CanResize() &&
             !IsFixedWidthColumn(other);
 
         if (!participates)
@@ -882,7 +882,7 @@ bool TableView::IsColumnResizePinned(const winrt::TableViewColumn& column)
             winrt::get_self<TableViewColumn>(other)->GetOwningTableView() == *this &&
             other.Visibility() == winrt::Visibility::Visible &&
             other.Width().GridUnitType == winrt::GridUnitType::Star &&
-            other.CanUserResize() &&
+            other.CanResize() &&
             !IsFixedWidthColumn(other))
         {
             return false;

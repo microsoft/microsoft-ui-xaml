@@ -36,7 +36,7 @@ void TableView::SampleInstanceTelemetry() noexcept
             {
                 if (!column) { continue; }
                 sample.columnKinds |= ColumnKindOf(column);
-                anySortable = anySortable || column.CanUserSort();
+                anySortable = anySortable || column.CanSort();
             }
         }
         if (CanUserSortColumns() && anySortable) { sample.enabledFeatures |= TableViewTelemetry::Feature::Sorting; }

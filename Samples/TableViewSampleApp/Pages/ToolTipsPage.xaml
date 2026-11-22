@@ -44,7 +44,7 @@
                 MinHeight="320">
                 <!-- CellToolTipBinding is set in code (AttachCellToolTips) so it can be detached. -->
                 <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56"
-                                             CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+                                             CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
                 <tv:TableViewTemplateColumn x:Name="NameColumn" Header="Name" Width="160"
                                          HeaderToolTip="Full name, as entered"
                                          SortMemberPath="FullName">
@@ -54,7 +54,7 @@
                         </DataTemplate>
                     </tv:TableViewTemplateColumn.CellTemplate>
                 </tv:TableViewTemplateColumn>
-                <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanUserSort="False" SortMemberPath="Bio">
+                <tv:TableViewTemplateColumn x:Name="BioColumn" Header="Bio" Width="*" MinWidth="140" CanSort="False" SortMemberPath="Bio">
                     <tv:TableViewTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <TextBlock Text="{Binding Bio}" Style="{StaticResource CellTextStyle}" />
@@ -75,7 +75,7 @@
                     </tv:TableViewTemplateColumn.CellTemplate>
                 </tv:TableViewTemplateColumn>
                 <tv:TableViewTemplateColumn x:Name="EmailColumn" Header="Email" Width="74"
-                                             CellTemplate="{StaticResource EmailIconCellTemplate}" CanUserSort="False"/>
+                                             CellTemplate="{StaticResource EmailIconCellTemplate}" CanSort="False"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

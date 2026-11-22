@@ -12,11 +12,11 @@ public:
     void ActualWidth(double value);
     double ActualWidth();
 
-    void CanUserResize(bool value);
-    bool CanUserResize();
+    void CanResize(bool value);
+    bool CanResize();
 
-    void CanUserSort(bool value);
-    bool CanUserSort();
+    void CanSort(bool value);
+    bool CanSort();
 
     void CellContextFlyout(winrt::FlyoutBase const& value);
     winrt::FlyoutBase CellContextFlyout();
@@ -64,8 +64,8 @@ public:
     winrt::GridLength Width();
 
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
-    static winrt::DependencyProperty CanUserResizeProperty() { return s_CanUserResizeProperty; }
-    static winrt::DependencyProperty CanUserSortProperty() { return s_CanUserSortProperty; }
+    static winrt::DependencyProperty CanResizeProperty() { return s_CanResizeProperty; }
+    static winrt::DependencyProperty CanSortProperty() { return s_CanSortProperty; }
     static winrt::DependencyProperty CellContextFlyoutProperty() { return s_CellContextFlyoutProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
@@ -83,8 +83,8 @@ public:
     static winrt::DependencyProperty WidthProperty() { return s_WidthProperty; }
 
     static GlobalDependencyProperty s_ActualWidthProperty;
-    static GlobalDependencyProperty s_CanUserResizeProperty;
-    static GlobalDependencyProperty s_CanUserSortProperty;
+    static GlobalDependencyProperty s_CanResizeProperty;
+    static GlobalDependencyProperty s_CanSortProperty;
     static GlobalDependencyProperty s_CellContextFlyoutProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
@@ -104,11 +104,11 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnCanUserResizePropertyChanged(
+    static void OnCanResizePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnCanUserSortPropertyChanged(
+    static void OnCanSortPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -141,10 +141,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnMinWidthPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnSortDirectionPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

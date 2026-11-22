@@ -49,8 +49,8 @@ class TableViewColumn :
 public:
     TableViewColumn();
 
-    // Internal: the display cell, through the overridable GenerateElementCore.
-    winrt::FrameworkElement GenerateDisplayElement(const winrt::IInspectable& dataItem);
+    // Public ABI
+    winrt::FrameworkElement GenerateElement(const winrt::IInspectable& dataItem);
 
     // Typed accessor for the owning TableView.
     winrt::TableView GetOwningTableView();
@@ -73,22 +73,8 @@ public:
     winrt::ITableViewSortComparer CustomSortComparer() const { return m_customSortComparer; }
     void CustomSortComparer(winrt::ITableViewSortComparer const& value);
 
-    // Protected ABI: derived columns call this when one of their own properties invalidates
-    // realized cell content. Regenerates realized cells and resets the Auto width.
-    void NotifyCellContentChanged();
-    void NotifyCellContentChangedInternal(bool resetAutoWidth);
-
-    // Internal: one posted regeneration per column. Queue returns true when a post is already pending.
-    bool QueueCellContentChangeInternal(bool resetAutoWidth) noexcept
-    {
-        m_queuedCellContentResetAutoWidth = m_queuedCellContentResetAutoWidth || resetAutoWidth;
-        return std::exchange(m_cellContentChangeQueued, true);
-    }
-    bool TakeQueuedCellContentChangeInternal() noexcept
-    {
-        m_cellContentChangeQueued = false;
-        return std::exchange(m_queuedCellContentResetAutoWidth, false);
-    }
+    // Derived columns call this when one of their own properties invalidates realized cell content.
+    void NotifyCellContentChanged(bool resetAutoWidth = true);
 
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
     bool SetOwningTableViewInternal(winrt::TableView const& owner);
@@ -116,7 +102,7 @@ public:
     void SetResolvedActualWidthInternal(double width);
 
     // Internal - sorting: the owning TableView owns sort policy and pushes the resulting direction
-    // into the DP; OnPropertyChanged republishes it to the realized header chevrons. The push is
+    // into this read-only DP, then republishes it to the realized header chevrons. The push is
     // required rather than a binding: SortIndicatorDirection and SortDirection are distinct WinRT
     // enums, so a {Binding} between them silently does nothing.
     void SetSortStateInternal(winrt::SortDirection direction);
@@ -151,9 +137,6 @@ private:
     double m_headerDesiredWidth{ 0.0 };
     winrt::GridLength m_authoredWidth{ c_widthDefault };
     bool m_inUserResize{ false };
-    bool m_isSettingSortStateInternal{ false };
-    bool m_cellContentChangeQueued{ false };
-    bool m_queuedCellContentResetAutoWidth{ false };
 
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_displayMemberBinding{ this };
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };

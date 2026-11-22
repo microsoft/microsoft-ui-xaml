@@ -1631,31 +1631,6 @@ bool ShapedItemsSource::TryGetGroupIdentity(
     return RowIdentity::TryGetGroupIdentity(key, m_groupIdentitySelector, identity, reason);
 }
 
-bool ShapedItemsSource::TryGetGroupIdentityForKey(winrt::IInspectable const& key, winrt::hstring& identity) const
-{
-    wchar_t const* reason = nullptr;
-    return m_groupSelector && TryGetGroupIdentity(key, identity, reason);
-}
-
-std::vector<ShapedItemsSource::GroupSnapshot> ShapedItemsSource::CurrentGroups() const
-{
-    std::vector<GroupSnapshot> groups;
-    if (!m_projectedAsGrouped || !m_groupSource)
-    {
-        return groups;
-    }
-
-    groups.reserve(m_groupSource.Size());
-    for (auto const& group : m_groupSource)
-    {
-        if (auto const identity = group.try_as<ShapingHelpers::IGroupIdentity>())
-        {
-            groups.push_back({ identity->StableGroupIdentity(), group });
-        }
-    }
-    return groups;
-}
-
 std::vector<ShapingHelpers::KeyedBucket> ShapedItemsSource::BucketizeGroupsOrThrow(std::vector<winrt::IInspectable> const& items)
 {
     std::vector<ShapingHelpers::KeyedBucket> keyedBuckets;

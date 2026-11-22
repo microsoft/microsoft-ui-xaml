@@ -71,7 +71,7 @@ TableViewColumn::TableViewColumn()
     // Defaults let initial ActualWidth equal Width without clamping.
 }
 
-winrt::FrameworkElement TableViewColumn::GenerateDisplayElement(const winrt::IInspectable& dataItem)
+winrt::FrameworkElement TableViewColumn::GenerateElement(const winrt::IInspectable& dataItem)
 {
     // Forward to the overridable display-cell factory.
     return overridable().GenerateElementCore(dataItem);
@@ -207,7 +207,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnFrozenEdgeChanged(*this);
         }
     }
-    else if (property == s_CanUserResizeProperty)
+    else if (property == s_CanResizeProperty)
     {
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
@@ -224,27 +224,13 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
-    else if (property == s_CanUserSortProperty)
+    else if (property == s_CanSortProperty)
     {
         // The sort affordance is stamped at header-build time, so opting a column in or out at
         // runtime has to rebuild the headers for the chevron to appear or disappear.
         if (auto owner = GetOwningTableView())
         {
-            winrt::get_self<TableView>(owner)->OnColumnCanUserSortChanged(*this);
-        }
-    }
-    else if (property == s_SortDirectionProperty)
-    {
-        if (auto owner = GetOwningTableView())
-        {
-            auto const ownerImpl = winrt::get_self<TableView>(owner);
-            if (!m_isSettingSortStateInternal)
-            {
-                ownerImpl->OnColumnSortDirectionSetByApp(*this, SortDirection());
-            }
-            ownerImpl->RefreshSortIndicators();
-            ownerImpl->RaiseColumnSortStateAutomationChanged(
-                *this, winrt::unbox_value_or<winrt::SortDirection>(args.OldValue(), winrt::SortDirection::None));
+            winrt::get_self<TableView>(owner)->OnColumnCanSortChanged(*this);
         }
     }
 }
@@ -264,13 +250,13 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
     // the active direction rather than leaving the rows in the old comparer's order.
-    // A direction the app set, or the app's own source sort, is not this table's to re-sort.
-    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None &&
-        !winrt::get_self<TableView>(owner)->IsSortLitOnlyByAppInternal())
+    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None)
     {
-        // One request, no intermediate clear: a comparer that throws while ranking leaves the
-        // previous order and arrow in place.
-        winrt::get_self<TableView>(owner)->ResortColumnInternal(*this);
+        auto const direction = SortDirection();
+        auto ownerImpl = winrt::get_self<TableView>(owner);
+        // Force a re-sort: SortByColumn no-ops when the column already carries this direction.
+        ownerImpl->SortByColumn(*this, winrt::SortDirection::None);
+        ownerImpl->SortByColumn(*this, direction);
     }
 }
 
@@ -304,10 +290,13 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
         return;
     }
 
-    // The control's own write must not read as the app setting the displayed direction.
-    m_isSettingSortStateInternal = true;
-    auto const resetGuard = gsl::finally([this]() { m_isSettingSortStateInternal = false; });
+    // Read-only DP: same SetValue-via-key convention as ActualWidth.
     SetValue(s_SortDirectionProperty, winrt::box_value(direction));
+
+    if (auto owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshSortIndicators();
+    }
 }
 
 // Lets a derived column refresh its realized cells when one of ITS OWN properties changes.
@@ -316,12 +305,7 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 // column would then have no way to invalidate its cells without editing this file. This mirrors
 // WPF, where DataGridColumn owns the notification and each derived column routes its own property
 // callbacks into it.
-void TableViewColumn::NotifyCellContentChanged()
-{
-    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
-}
-
-void TableViewColumn::NotifyCellContentChangedInternal(bool resetAutoWidth)
+void TableViewColumn::NotifyCellContentChanged(bool resetAutoWidth)
 {
     if (auto owner = GetOwningTableView())
     {
@@ -338,7 +322,7 @@ void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Dat
 {
     m_displayMemberBinding.set(value);
 
-    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
+    NotifyCellContentChanged(true /* resetAutoWidth */);
     // The binding path can make the column sortable, which makes its header actionable.
     if (auto const owner = GetOwningTableView())
     {
@@ -357,7 +341,7 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 
     // Realized cells carry the previous binding. A tooltip does not change what the cell displays,
     // so the Auto width keeps its history.
-    NotifyCellContentChangedInternal(false /* resetAutoWidth */);
+    NotifyCellContentChanged(false /* resetAutoWidth */);
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)

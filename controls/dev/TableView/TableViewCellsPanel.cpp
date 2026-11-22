@@ -109,12 +109,12 @@ void TableViewCellsPanel::InvalidateMeasuredWidths()
 {
     m_measuredWidthsByColumn.clear();
     m_lastMeasuredWidthsByColumn.clear();
+    m_editingWidthInvalidated = true;
     InvalidateMeasure();
 }
 
 winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSize)
 {
-    TableView::ElementLayoutScope const layoutScope;
     const float infinity = std::numeric_limits<float>::infinity();
     float width = 0.0f;
     float height = 0.0f;
@@ -211,6 +211,7 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
     // Adopt this pass's measured widths as the baseline for the next pass (prunes removed/collapsed
     // columns since only columns measured above were recorded).
     m_lastMeasuredWidthsByColumn = std::move(newLastMeasured);
+    m_editingWidthInvalidated = false;
 
     // Deferred (not during this measure) so it runs after the current layout pass; TableView debounces
     // so repeated change signals collapse to a single re-resolve.
@@ -224,7 +225,6 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
 
 winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
-    TableView::ElementLayoutScope const layoutScope;
     float x = 0.0f;
     float leadLeft = 0.0f;
     float leadWidth = -1.0f;

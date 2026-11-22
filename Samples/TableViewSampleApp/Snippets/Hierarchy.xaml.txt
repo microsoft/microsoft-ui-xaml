@@ -15,7 +15,7 @@
         </tv:TableViewTemplateColumn.CellTemplate>
     </tv:TableViewTemplateColumn>
     <!-- Auto: when Photo is the first column, it widens to fit the indent and the expander chevron. -->
-    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
+    <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="Auto" MinWidth="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
     <tv:TableViewTemplateColumn Header="Role" Width="200" SortMemberPath="Role">
         <tv:TableViewTemplateColumn.CellTemplate>
             <DataTemplate>
