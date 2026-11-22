@@ -878,7 +878,7 @@ Header `Foreground` is independent of body text. A style's `ContentTemplate` or
 `ContentTemplateSelector` can render string headers, but the column's header template/selector
 takes precedence. Styles targeting types other than `TableViewColumnHeader` or its base types are ignored.
 
-Generated plain-string header labels and `TableViewTextColumn` display labels use
+Generated plain-string header labels and `DisplayMemberBinding` cell text use
 asymmetric padding authored directly in the `TableViewHeaderTextPadding` and
 `TableViewCellTextPadding` resource families, with `Small` / `Medium` / `Large` suffixes.
 These shared values apply in Light, Default/Dark and High Contrast:

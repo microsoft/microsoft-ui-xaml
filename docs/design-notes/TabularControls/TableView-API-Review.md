@@ -166,9 +166,7 @@ Engine fixes that come with the contract (no shape change): `GroupBy`/`Sort` on 
 
 ### 2.5 Editing (deferred to V2 / future DataGrid)
 
-TableView V1 has no editing API and no edit mode. Removed from this review and deferred to TableView V2 or a future DataGrid: `TableView.IsReadOnly`/`IsReadOnlyProperty`, `IsEditing`/`IsEditingProperty`, `CommitEdit()`, `CancelEdit()`, the `BeginningEdit`, `CellEditEnding` and `CellEditEnded` events with `TableViewBeginningEditEventArgs`, `TableViewCellEditEndingEventArgs` and `TableViewCellEditEndedEventArgs`, `TableViewEditAction`, `TableViewColumn.IsReadOnly`/`IsReadOnlyProperty`, `CellEditingTemplate`/`CellEditingTemplateProperty`, the overridable `CommitCellEditCore`, and the built-in `TableViewTextColumn` editor. The edit gestures (double-click/tap, F2, Enter, Esc, focus-loss commit) go with them.
-
-Rationale: the V1 scenarios (Task Manager, File Explorer details view, File properties) need at most a one-field rename, and the edit-transaction model fit them poorly (no public `BeginEdit`, a synchronous `CellEditEnding` that cannot await a shell prompt, per-column rather than per-row editors). Live controls in a `TableViewTemplateColumn.CellTemplate` are unaffected, and the cell peer keeps a read-only `IValueProvider`. Re-adding editing later is additive. The rename-in-place pattern (an app-owned template swap started by F2 through a `handledEventsToo` key handler) is documented as guidance in the [API spec](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).
+V1 has no editing API, edit mode or edit gestures, and no `TableViewTextColumn`; both are deferred to V2 / a future DataGrid (removed members: §1.1, §5). The V1 scenarios (Task Manager, File Explorer details view, File properties) need at most a one-field rename, which an app owns by swapping the cell template (for example from F2 through a `handledEventsToo` key handler); see [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance). Live controls in a `TableViewTemplateColumn.CellTemplate` are unaffected, and the cell peer's `IValueProvider` is read-only. Re-adding editing later is additive.
 
 ### 2.6 Grouping and hierarchy
 
@@ -194,7 +192,7 @@ Rationale: the V1 scenarios (Task Manager, File Explorer details view, File prop
 |---|---|---|
 | `HeadersVisibility` | `[flags] TableViewHeadersVisibility` (`None`, `Column`), `Column` | No row headers. |
 | `GridLinesVisibility` | `TableViewGridLinesVisibility` (`All = 0`, `Horizontal`, `None`, `Vertical`), `All` | WPF names and values; body lines only. |
-| `Density` | `TableViewDensity` (`Standard = 0`, `Compact = 1`, `Comfortable = 2`), `Standard` | Row min height 40/30/48 and padding. |
+| `Density` | `TableViewDensity` (`Standard = 0`, `Compact = 1`, `Comfortable = 2`), `Standard` | Row min height 32/24/40 and padding. |
 | `RowBackground`, `AlternatingRowBackground` | `Brush`, null | Opt-in banding. |
 | `EmptyTemplate` | `DataTemplate` | Shown when no rows. |
 | `ColumnHeaderStyle` | `Style` | Layered over the default; no `BasedOn` needed; wrong `TargetType` ignored. |
