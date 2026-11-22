@@ -4830,16 +4830,21 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"abd", LiveNamesOf(view)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
 
-            LOG_OUTPUT(L"With Value observed, an item the filter now rejects leaves the view.");
+            LOG_OUTPUT(L"Observing Value catches up on b, changed while it was not observed (WPF: RebuildLocalArray).");
             cvs->LiveFilteringProperties->Append(L"Value");
+            VERIFY_ARE_STRINGS_EQUAL(L"ad", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"R", counts->log.c_str());
+            counts->log.clear();
+
+            LOG_OUTPUT(L"With Value observed, an item the filter now rejects leaves the view.");
             LiveItem(source, L"d")->Value = 0;
         });
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_STRINGS_EQUAL(L"ab", LiveNamesOf(view)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"-2", counts->log.c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"a", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"-1", counts->log.c_str());
             counts->log.clear();
 
             LOG_OUTPUT(L"An item the filter now accepts joins the view at its sorted position.");
@@ -4849,8 +4854,8 @@ namespace Framework { namespace DataBinding {
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_STRINGS_EQUAL(L"abc", LiveNamesOf(view)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"+2", counts->log.c_str());
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"+1", counts->log.c_str());
             counts->log.clear();
 
             LOG_OUTPUT(L"A change that does not affect the filter raises nothing.");
@@ -4860,10 +4865,8 @@ namespace Framework { namespace DataBinding {
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_STRINGS_EQUAL(L"abc", LiveNamesOf(view)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"", counts->log.c_str());
-
-            LOG_OUTPUT(L"b changed before Value was observed, so only a recompute filters it out.");
             cvs->Refresh();
             VERIFY_ARE_STRINGS_EQUAL(L"ac", LiveNamesOf(view)->Data());
         });
@@ -4915,15 +4918,16 @@ namespace Framework { namespace DataBinding {
         {
             VERIFY_ARE_STRINGS_EQUAL(L"w:a x:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
 
-            LOG_OUTPUT(L"Explicit LiveGroupingProperties replace the GroupDescriptions' properties.");
+            LOG_OUTPUT(L"Explicit LiveGroupingProperties replace the GroupDescriptions' properties; the change regroups, so groups follow their first item.");
             cvs->LiveGroupingProperties->Append(L"Name");
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:bd x:c", LiveGroupsOf(view->CollectionGroups)->Data());
             LiveItem(source, L"d")->Group = L"x";
         });
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_STRINGS_EQUAL(L"w:a x:c y:bd", LiveGroupsOf(view->CollectionGroups)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"w:a y:bd x:c", LiveGroupsOf(view->CollectionGroups)->Data());
             cvs->Refresh();
             VERIFY_ARE_STRINGS_EQUAL(L"w:a y:b x:cd", LiveGroupsOf(view->CollectionGroups)->Data());
         });
@@ -4979,10 +4983,12 @@ namespace Framework { namespace DataBinding {
             source->Clear();
             VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(items)->Data());
 
-            LOG_OUTPUT(L"A view the CollectionViewSource lets go of stops observing.");
+            LOG_OUTPUT(L"A view the CollectionViewSource lets go of keeps its own rules, as a WPF view does, until they are turned off.");
             source->Append(items->GetAt(0));
             VERIFY_ARE_EQUAL(1, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
             cvs->Source = nullptr;
+            VERIFY_ARE_EQUAL(1, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
+            safe_cast<ICollectionViewLiveShaping^>(view)->IsLiveSorting = false;
             VERIFY_ARE_EQUAL(0, safe_cast<LiveShapingTestItem^>(items->GetAt(0))->HandlerCount);
         });
     }
