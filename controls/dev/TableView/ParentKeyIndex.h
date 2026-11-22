@@ -56,14 +56,25 @@ using ParentKeyFilter = std::function<bool(winrt::IInspectable const&)>;
 // Sorts one sibling list in place, stably. Called only for lists of two or more rows.
 using SiblingSorter = std::function<void(std::vector<winrt::IInspectable>&)>;
 
-// Runs key/parent selectors once per row. False with `error` on duplicate/null key, self-parent
-// or cycle.
+// A row's node key and parent node key as the selectors returned them, so a later build can skip them.
+struct CachedNodeKeys
+{
+    std::wstring Key;
+    std::wstring ParentKey;
+};
+// By the row's ABI pointer. The caller drops the entry of a row whose keys may have changed. Rows with object
+// keys are never cached.
+using NodeKeyCache = std::unordered_map<void*, CachedNodeKeys>;
+
+// Runs key/parent selectors once per row, or reads a row's keys from `cache`. False with `error` on
+// duplicate/null key, self-parent or cycle. On success `cache` (when given) holds exactly the rows' keys.
 bool BuildParentStructure(
     std::vector<winrt::IInspectable> const& rows,
     KeySelector const& keySelector,
     KeySelector const& parentKeySelector,
     ParentStructure& out,
-    winrt::hstring& error);
+    winrt::hstring& error,
+    NodeKeyCache* cache = nullptr);
 
 // True when re-running the selectors over `structure.Rows` yields the same keys and parents.
 // Object keys always fail: a freed key's address can be reused, so they cannot be proven unchanged.
