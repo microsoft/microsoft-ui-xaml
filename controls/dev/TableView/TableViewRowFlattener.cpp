@@ -335,6 +335,8 @@ void TableViewRowFlattener::Update()
         do
         {
             m_updatePending = false;
+            // A rebuild reads every item, so it covers any tree change still waiting for the next turn.
+            m_treeUpdatePending = false;
             UpdateCore();
         } while (m_updatePending);
     }
@@ -635,16 +637,33 @@ void TableViewRowFlattener::ReleaseTree()
 
 void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
 {
-    // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items.
+    using winrt::Windows::Foundation::Collections::CollectionChange;
+
+    // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items, and at
+    // most once per dispatcher turn: a live tick moves many rows, each as a Remove and an Insert. The first
+    // Insert, Replace or Reset of a turn rebuilds at once; a Remove (the first half of a move) and anything
+    // later in the turn wait for the next turn, which rebuilds once.
     if (m_kind == Kind::Tree)
     {
-        Update();
+        if (!m_treeUpdatedThisTurn && change != CollectionChange::ItemRemoved)
+        {
+            m_treeUpdatedThisTurn = QueueTreeTurnEnd();
+            Update();
+        }
+        else
+        {
+            m_treeUpdatePending = true;
+            if (!QueueTreeTurnEnd())
+            {
+                Update();
+            }
+        }
     }
     else if (m_kind == Kind::GroupedTree)
     {
         // A shaping view's Reset comes after its groups are complete; any other change may arrive while
         // the view is still moving items between its groups.
-        if (m_isShapingView && change == winrt::Windows::Foundation::Collections::CollectionChange::Reset)
+        if (m_isShapingView && change == CollectionChange::Reset)
         {
             Update();
         }
@@ -652,6 +671,48 @@ void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collection
         {
             ScheduleUpdate();
         }
+    }
+}
+
+bool TableViewRowFlattener::QueueTreeTurnEnd()
+{
+    if (m_treeTurnQueued)
+    {
+        return true;
+    }
+
+    std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
+    if (auto const queue = winrt::Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread())
+    {
+        m_treeTurnQueued = queue.TryEnqueue([weakThis]()
+        {
+            if (auto const strongThis = weakThis.lock())
+            {
+                strongThis->OnTreeTurnEnd();
+            }
+        });
+    }
+    return m_treeTurnQueued;
+}
+
+void TableViewRowFlattener::OnTreeTurnEnd()
+{
+    m_treeTurnQueued = false;
+    m_treeUpdatedThisTurn = false;
+    if (!std::exchange(m_treeUpdatePending, false) || m_kind != Kind::Tree)
+    {
+        return;
+    }
+
+    m_treeUpdatedThisTurn = QueueTreeTurnEnd();
+    try
+    {
+        Update();
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Rebuilding the tree after a view change failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
     }
 }
 
