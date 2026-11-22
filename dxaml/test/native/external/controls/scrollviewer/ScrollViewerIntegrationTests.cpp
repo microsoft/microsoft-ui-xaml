@@ -7802,4 +7802,235 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_ARE_EQUAL(1, textBox3FocusCount);
         });
     }
+
+    namespace
+    {
+        // Hosts a 200x200 ScrollViewer over 1000x1000 content that contains a 100x50 Border, and waits for it to load.
+        xaml_controls::ScrollViewer^ SetupSecondaryContentScrollViewer(xaml_controls::Border^& secondaryContent)
+        {
+            xaml_controls::ScrollViewer^ scrollViewer = nullptr;
+            xaml_controls::Border^ border = nullptr;
+
+            auto loadedEvent = std::make_shared<Event>();
+            auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, Loaded);
+
+            RunOnUIThread([&]()
+            {
+                scrollViewer = ref new xaml_controls::ScrollViewer();
+                scrollViewer->Width = 200;
+                scrollViewer->Height = 200;
+                scrollViewer->HorizontalAlignment = xaml::HorizontalAlignment::Left;
+                scrollViewer->VerticalAlignment = xaml::VerticalAlignment::Top;
+                scrollViewer->HorizontalScrollBarVisibility = xaml_controls::ScrollBarVisibility::Auto;
+                scrollViewer->VerticalScrollBarVisibility = xaml_controls::ScrollBarVisibility::Auto;
+
+                auto content = ref new xaml_controls::Grid();
+                content->Width = 1000;
+                content->Height = 1000;
+                content->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::LightBlue);
+
+                border = ref new xaml_controls::Border();
+                border->Width = 100;
+                border->Height = 50;
+                border->HorizontalAlignment = xaml::HorizontalAlignment::Left;
+                border->VerticalAlignment = xaml::VerticalAlignment::Top;
+                border->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Orange);
+
+                content->Children->Append(border);
+                scrollViewer->Content = content;
+
+                loadedRegistration.Attach(scrollViewer, [loadedEvent]() { loadedEvent->Set(); });
+                TestServices::WindowHelper->WindowContent = scrollViewer;
+            });
+
+            loadedEvent->WaitForDefault();
+            TestServices::WindowHelper->WaitForIdle();
+
+            secondaryContent = border;
+            return scrollViewer;
+        }
+
+        // Scrolls without animation to an offset that differs from the current one and waits for the final ViewChanged.
+        void ChangeViewToOffsetsAndWait(xaml_controls::ScrollViewer^ scrollViewer, double horizontalOffset, double verticalOffset)
+        {
+            auto viewChangedEvent = std::make_shared<Event>();
+            auto viewChangedRegistration = CreateSafeEventRegistration(xaml_controls::ScrollViewer, ViewChanged);
+            viewChangedRegistration.Attach(scrollViewer, ref new wf::EventHandler<xaml_controls::ScrollViewerViewChangedEventArgs^>(
+                [viewChangedEvent](Platform::Object^, xaml_controls::ScrollViewerViewChangedEventArgs^ args)
+            {
+                if (!args->IsIntermediate)
+                {
+                    viewChangedEvent->Set();
+                }
+            }));
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(scrollViewer->ChangeView(horizontalOffset, verticalOffset, nullptr, true /*disableAnimation*/));
+            });
+            viewChangedEvent->WaitForDefault();
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"ScrollViewer offsets = (%f, %f).", scrollViewer->HorizontalOffset, scrollViewer->VerticalOffset);
+                VERIFY_ARE_EQUAL(horizontalOffset, scrollViewer->HorizontalOffset);
+                VERIFY_ARE_EQUAL(verticalOffset, scrollViewer->VerticalOffset);
+            });
+        }
+    }
+
+    void ScrollViewerIntegrationTests::ValidateStaticElementRelationshipFollowsScrollOffsets()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Border^ staticElement = nullptr;
+        auto scrollViewer = SetupSecondaryContentScrollViewer(staticElement);
+
+        struct TestCase
+        {
+            bool isHorizontallyStatic;
+            bool isInverted;
+        };
+        const TestCase testCases[] =
+        {
+            { false /*isHorizontallyStatic*/, false /*isInverted*/ },
+            { false /*isHorizontallyStatic*/, true /*isInverted*/ },
+            { true /*isHorizontallyStatic*/, false /*isInverted*/ },
+            { true /*isHorizontallyStatic*/, true /*isInverted*/ },
+        };
+
+        const double horizontalOffset = 30;
+        const double verticalOffset = 60;
+
+        for (const auto& testCase : testCases)
+        {
+            LOG_OUTPUT(L"Static element relationship: isHorizontallyStatic=%d, isInverted=%d.", testCase.isHorizontallyStatic, testCase.isInverted);
+
+            ::Microsoft::UI::Xaml::Internal::SecondaryContentRelationship^ relationship = nullptr;
+            xaml_media::CompositeTransform^ elementTransform = nullptr;
+            xaml_media::CompositeTransform^ auxiliaryTransform = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                elementTransform = ref new xaml_media::CompositeTransform();
+                staticElement->RenderTransform = elementTransform;
+                auxiliaryTransform = ref new xaml_media::CompositeTransform();
+
+                relationship = ::Microsoft::UI::Xaml::Internal::SecondaryContentRelationship::CreateStaticElementRelationship(
+                    scrollViewer, staticElement, elementTransform, testCase.isHorizontallyStatic, testCase.isInverted);
+                VERIFY_IS_NOT_NULL(relationship);
+                relationship->SetAuxiliaryDependencyPropertyHolder(auxiliaryTransform);
+                relationship->Apply();
+            });
+
+            ChangeViewToOffsetsAndWait(scrollViewer, horizontalOffset, verticalOffset);
+
+            RunOnUIThread([&]()
+            {
+                // Sentinel values make the update below observable.
+                auxiliaryTransform->TranslateX = 77;
+                auxiliaryTransform->TranslateY = 77;
+
+                relationship->UpdateDependencyProperties();
+                LOG_OUTPUT(L"Auxiliary transform = (%f, %f).", auxiliaryTransform->TranslateX, auxiliaryTransform->TranslateY);
+
+                const double scrolledOffset = testCase.isHorizontallyStatic ? horizontalOffset : verticalOffset;
+                const double expectedTranslation = testCase.isInverted ? -scrolledOffset : scrolledOffset;
+
+                if (testCase.isHorizontallyStatic)
+                {
+                    VERIFY_ARE_EQUAL(expectedTranslation, auxiliaryTransform->TranslateX);
+                    VERIFY_ARE_EQUAL(0.0, auxiliaryTransform->TranslateY);
+                }
+                else
+                {
+                    VERIFY_ARE_EQUAL(0.0, auxiliaryTransform->TranslateX);
+                    VERIFY_ARE_EQUAL(expectedTranslation, auxiliaryTransform->TranslateY);
+                }
+
+                LOG_OUTPUT(L"The relationship does not target a clip, so its main transform is not updated.");
+                VERIFY_ARE_EQUAL(0.0, elementTransform->TranslateX);
+                VERIFY_ARE_EQUAL(0.0, elementTransform->TranslateY);
+
+                relationship->Remove();
+                staticElement->RenderTransform = nullptr;
+                relationship = nullptr;
+                elementTransform = nullptr;
+                auxiliaryTransform = nullptr;
+            });
+
+            ChangeViewToOffsetsAndWait(scrollViewer, 0, 0);
+        }
+    }
+
+    void ScrollViewerIntegrationTests::ValidateClipTransformRelationshipClampsToScrollableHeight()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Border^ clipOwner = nullptr;
+        auto scrollViewer = SetupSecondaryContentScrollViewer(clipOwner);
+
+        // The list is 500 tall in a 200 tall viewport, so the clip may move by at most 300.
+        const double listExtentHeight = 500;
+        const double listViewportHeight = 200;
+
+        ::Microsoft::UI::Xaml::Internal::SecondaryContentRelationship^ relationship = nullptr;
+        xaml_media::CompositeTransform^ clipTransform = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            clipTransform = ref new xaml_media::CompositeTransform();
+            auto clip = ref new xaml_media::RectangleGeometry();
+            clip->Rect = wf::Rect(0, 0, 100, 50);
+            clip->Transform = clipTransform;
+            clipOwner->Clip = clip;
+
+            relationship = ::Microsoft::UI::Xaml::Internal::SecondaryContentRelationship::CreateClipTransformRelationship(
+                scrollViewer, clipOwner, clipTransform, listExtentHeight, listViewportHeight);
+            VERIFY_IS_NOT_NULL(relationship);
+            relationship->Apply();
+        });
+
+        struct Step
+        {
+            double horizontalOffset;
+            double verticalOffset;
+            double expectedTranslateY;
+        };
+        const Step steps[] =
+        {
+            { 0, 120, 120 },    // Inside the scrollable range, the clip follows the vertical offset.
+            { 40, 300, 300 },   // Exactly at the scrollable height.
+            { 40, 450, 300 },   // Past the scrollable height, the clip stays at the scrollable height.
+            { 0, 0, 0 },        // Back at the origin.
+        };
+
+        for (const auto& step : steps)
+        {
+            ChangeViewToOffsetsAndWait(scrollViewer, step.horizontalOffset, step.verticalOffset);
+
+            RunOnUIThread([&]()
+            {
+                // Sentinel values make the update below observable.
+                clipTransform->TranslateX = 55;
+                clipTransform->TranslateY = -1;
+
+                relationship->UpdateDependencyProperties();
+                LOG_OUTPUT(L"Offsets (%f, %f): clip transform = (%f, %f).",
+                    step.horizontalOffset, step.verticalOffset, clipTransform->TranslateX, clipTransform->TranslateY);
+
+                VERIFY_ARE_EQUAL(step.expectedTranslateY, clipTransform->TranslateY);
+                VERIFY_ARE_EQUAL(0.0, clipTransform->TranslateX);
+            });
+        }
+
+        RunOnUIThread([&]()
+        {
+            relationship->Remove();
+            clipOwner->Clip = nullptr;
+            relationship = nullptr;
+            clipTransform = nullptr;
+        });
+    }
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::ScrollViewer

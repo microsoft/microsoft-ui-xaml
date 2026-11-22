@@ -11,7 +11,10 @@
 #include <AutomationClient\AutomationClientManager.h>
 #include "TestCleanupWrapper.h"
 #include <FlyoutHelper.h>
+#include <TreeHelper.h>
 #include <UIAutomationHelper.h>
+
+#undef GetClassName // Conflicts with automation peer method of the same name
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Automation;
@@ -926,6 +929,273 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
 
         FlyoutHelper::HideFlyout(menuFlyout);
+    }
+
+    namespace
+    {
+        // UIA_E_ELEMENTNOTENABLED from UIAutomationCoreApi.h.
+        const int c_splitItemElementNotEnabled = static_cast<int>(0x80040200);
+
+        bool AreSameSplitItemObject(Platform::Object^ first, Platform::Object^ second)
+        {
+            if (first == nullptr || second == nullptr)
+            {
+                return first == nullptr && second == nullptr;
+            }
+            wrl::ComPtr<IUnknown> firstUnknown;
+            wrl::ComPtr<IUnknown> secondUnknown;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(first)->QueryInterface(IID_PPV_ARGS(&firstUnknown)));
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(second)->QueryInterface(IID_PPV_ARGS(&secondUnknown)));
+            return firstUnknown.Get() == secondUnknown.Get();
+        }
+
+        xaml_controls::MenuFlyout^ CreateMenuFlyoutWithSplitItem()
+        {
+            xaml_controls::MenuFlyout^ menuFlyout = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(xaml_markup::XamlReader::Load(
+                    L"<MenuFlyout xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' >"
+                    L"    <MenuFlyoutItem Text='Menu item 1'/>"
+                    L"    <SplitMenuFlyoutItem x:Name='splitItem' Text='Split item' KeyboardAcceleratorTextOverride='Ctrl+K'>"
+                    L"        <MenuFlyoutItem Text='Split child 1'/>"
+                    L"        <MenuFlyoutItem Text='Split child 2'/>"
+                    L"    </SplitMenuFlyoutItem>"
+                    L"    <MenuFlyoutItem Text='Menu item 3'/>"
+                    L"</MenuFlyout>"));
+            });
+
+            return menuFlyout;
+        }
+    }
+
+    void MenuFlyoutAutomationIntegrationTests::VerifySplitMenuItemPeerInvokeAndExpandCollapseProviders()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Canvas^ rootPanel = SetupRootPanelForSubMenuTest();
+        xaml_controls::MenuFlyout^ menuFlyout = CreateMenuFlyoutWithSplitItem();
+        xaml_controls::Button^ button1 = nullptr;
+        xaml_controls::SplitMenuFlyoutItem^ splitItem = nullptr;
+
+        auto clickCount = std::make_shared<int>(0);
+        auto clickEvent = std::make_shared<Event>();
+        auto clickRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyoutItem, Click);
+        auto closedEvent = std::make_shared<Event>();
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyout, Closed);
+
+        RunOnUIThread([&]()
+        {
+            button1 = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+            splitItem = safe_cast<xaml_controls::SplitMenuFlyoutItem^>(menuFlyout->Items->GetAt(1));
+
+            clickRegistration.Attach(splitItem, ref new xaml::RoutedEventHandler([clickCount, clickEvent](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                ++(*clickCount);
+                clickEvent->Set();
+            }));
+            closedRegistration.Attach(menuFlyout, ref new wf::EventHandler<Platform::Object^>([closedEvent](Platform::Object^, Platform::Object^)
+            {
+                closedEvent->Set();
+            }));
+        });
+
+        ShowMenuFlyout(menuFlyout, button1, DefaultHorizontalOffset, DefaultVerticalOffset);
+
+        xaml_automation_peers::AutomationPeer^ peer = nullptr;
+        xaml_automation::Provider::IExpandCollapseProvider^ expandCollapseProvider = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(splitItem);
+            VERIFY_IS_NOT_NULL(peer);
+
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"SplitMenuFlyoutItem"), peer->GetClassName());
+            VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::MenuItem, peer->GetAutomationControlType());
+
+            LOG_OUTPUT(L"The peer itself provides the Invoke and ExpandCollapse patterns.");
+            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke)));
+            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse)));
+
+            LOG_OUTPUT(L"Other patterns come from the base peer, which has no Toggle pattern.");
+            VERIFY_IS_NULL(peer->GetPattern(xaml_automation_peers::PatternInterface::Toggle));
+
+            expandCollapseProvider = safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::ExpandCollapse));
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+
+            LOG_OUTPUT(L"Expand() opens the sub menu.");
+            expandCollapseProvider->Expand();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Expanded, expandCollapseProvider->ExpandCollapseState);
+
+            LOG_OUTPUT(L"Collapse() closes the sub menu.");
+            expandCollapseProvider->Collapse();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, expandCollapseProvider->ExpandCollapseState);
+            VERIFY_ARE_EQUAL(0, *clickCount);
+
+            LOG_OUTPUT(L"Invoke() clicks the item, which closes the menu.");
+            safe_cast<xaml_automation::Provider::IInvokeProvider^>(peer->GetPattern(xaml_automation_peers::PatternInterface::Invoke))->Invoke();
+        });
+        clickEvent->WaitForDefault();
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *clickCount);
+            peer = nullptr;
+            expandCollapseProvider = nullptr;
+        });
+    }
+
+    void MenuFlyoutAutomationIntegrationTests::VerifySplitMenuItemPeerForwardsToPrimaryButtonPeer()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Canvas^ rootPanel = SetupRootPanelForSubMenuTest();
+        xaml_controls::MenuFlyout^ menuFlyout = CreateMenuFlyoutWithSplitItem();
+        xaml_controls::Button^ button1 = nullptr;
+        xaml_controls::SplitMenuFlyoutItem^ splitItem = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            button1 = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+            splitItem = safe_cast<xaml_controls::SplitMenuFlyoutItem^>(menuFlyout->Items->GetAt(1));
+        });
+
+        ShowMenuFlyout(menuFlyout, button1, DefaultHorizontalOffset, DefaultVerticalOffset);
+
+        // GetPeerFromPoint focuses the primary button with FocusState::Programmatic. CFocusManager::CoerceFocusState
+        // (focusmgr.cpp) turns a Programmatic request into Keyboard only when the last input device is Keyboard or
+        // GamepadOrRemote, and into Pointer otherwise; explicit Keyboard requests are not coerced. Make the last input
+        // device Mouse so a Programmatic request is observable as Pointer and distinguishable from a Keyboard request.
+        xaml::XamlRoot^ xamlRoot = nullptr;
+        RunOnUIThread([&]()
+        {
+            xamlRoot = splitItem->XamlRoot;
+        });
+        TestServices::WindowHelper->SetLastInputMethod(test_infra::LastInputDeviceType::Mouse, xamlRoot);
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(splitItem);
+            auto primaryButton = safe_cast<xaml_controls::Control^>(TreeHelper::GetVisualChildByName(splitItem, L"PrimaryButton"));
+            auto secondaryButton = safe_cast<xaml_controls::Control^>(TreeHelper::GetVisualChildByName(splitItem, L"SecondaryButton"));
+            VERIFY_IS_NOT_NULL(primaryButton);
+            VERIFY_IS_NOT_NULL(secondaryButton);
+            auto primaryPeer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(primaryButton);
+            VERIFY_IS_NOT_NULL(primaryPeer);
+
+            LOG_OUTPUT(L"The bounding rectangle is the primary button's, which is narrower than the whole item.");
+            VERIFY_IS_LESS_THAN(primaryButton->ActualWidth, splitItem->ActualWidth);
+            auto itemRect = peer->GetBoundingRectangle();
+            auto primaryRect = primaryPeer->GetBoundingRectangle();
+            LOG_OUTPUT(L"Item peer rect = (%f, %f, %f, %f), primary button peer rect = (%f, %f, %f, %f)",
+                itemRect.X, itemRect.Y, itemRect.Width, itemRect.Height,
+                primaryRect.X, primaryRect.Y, primaryRect.Width, primaryRect.Height);
+            VERIFY_IS_GREATER_THAN(primaryRect.Width, 0.0f);
+            VERIFY_ARE_EQUAL(primaryRect.X, itemRect.X);
+            VERIFY_ARE_EQUAL(primaryRect.Y, itemRect.Y);
+            VERIFY_ARE_EQUAL(primaryRect.Width, itemRect.Width);
+            VERIFY_ARE_EQUAL(primaryRect.Height, itemRect.Height);
+
+            LOG_OUTPUT(L"Keyboard focusability is the primary button's.");
+            VERIFY_IS_TRUE(primaryPeer->IsKeyboardFocusable());
+            VERIFY_IS_TRUE(peer->IsKeyboardFocusable());
+
+            LOG_OUTPUT(L"Keyboard focus is reported only while the primary button has focus.");
+            VERIFY_IS_TRUE(secondaryButton->Focus(xaml::FocusState::Keyboard));
+            VERIFY_IS_FALSE(primaryPeer->HasKeyboardFocus());
+            VERIFY_IS_FALSE(peer->HasKeyboardFocus());
+            VERIFY_IS_TRUE(primaryButton->Focus(xaml::FocusState::Keyboard));
+            VERIFY_IS_TRUE(peer->HasKeyboardFocus());
+
+            LOG_OUTPUT(L"Hit-testing returns the primary button's peer and moves focus to the primary button.");
+            VERIFY_IS_TRUE(secondaryButton->Focus(xaml::FocusState::Keyboard));
+            VERIFY_ARE_EQUAL(xaml::FocusState::Keyboard, secondaryButton->FocusState);
+            VERIFY_ARE_EQUAL(xaml::FocusState::Unfocused, primaryButton->FocusState);
+            auto peerFromPoint = peer->GetPeerFromPoint(wf::Point(itemRect.X + 1, itemRect.Y + 1));
+            VERIFY_IS_TRUE(AreSameSplitItemObject(primaryPeer, peerFromPoint));
+            VERIFY_IS_TRUE(AreSameSplitItemObject(primaryButton, xaml_input::FocusManager::GetFocusedElement(splitItem->XamlRoot)));
+            VERIFY_IS_TRUE(peer->HasKeyboardFocus());
+            LOG_OUTPUT(L"The primary button was focused programmatically: with Mouse as the last input device the Programmatic request is coerced to Pointer, unlike a Keyboard request.");
+            VERIFY_ARE_EQUAL(xaml::FocusState::Pointer, primaryButton->FocusState);
+
+            LOG_OUTPUT(L"Without AcceleratorKey, the KeyboardAcceleratorTextOverride is reported, with trailing spaces removed.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Ctrl+K"), peer->GetAcceleratorKey());
+            splitItem->KeyboardAcceleratorTextOverride = L"Ctrl+J   ";
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Ctrl+J"), peer->GetAcceleratorKey());
+            splitItem->KeyboardAcceleratorTextOverride = L"  ";
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(ref new Platform::String(L""), peer->GetAcceleratorKey()));
+
+            LOG_OUTPUT(L"AutomationProperties.AcceleratorKey takes precedence over KeyboardAcceleratorTextOverride.");
+            splitItem->KeyboardAcceleratorTextOverride = L"Ctrl+K";
+            xaml_automation::AutomationProperties::SetAcceleratorKey(splitItem, L"Alt+K");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Alt+K"), peer->GetAcceleratorKey());
+            splitItem->ClearValue(xaml_automation::AutomationProperties::AcceleratorKeyProperty);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"Ctrl+K"), peer->GetAcceleratorKey());
+        });
+
+        FlyoutHelper::HideFlyout(menuFlyout);
+    }
+
+    void MenuFlyoutAutomationIntegrationTests::VerifySplitMenuItemPeerWithoutTemplateAndWhenDisabled()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto splitItem = ref new xaml_controls::SplitMenuFlyoutItem();
+            splitItem->Text = L"Detached split item";
+
+            auto clickCount = std::make_shared<int>(0);
+            auto clickToken = splitItem->Click += ref new xaml::RoutedEventHandler([clickCount](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                ++(*clickCount);
+            });
+
+            LOG_OUTPUT(L"Create the peer with the public SplitMenuFlyoutItemAutomationPeer constructor.");
+            auto peer = ref new xaml_automation_peers::SplitMenuFlyoutItemAutomationPeer(splitItem);
+            VERIFY_IS_TRUE(AreSameSplitItemObject(splitItem, peer->Owner));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"SplitMenuFlyoutItem"), peer->GetClassName());
+
+            LOG_OUTPUT(L"Without a template there is no primary button, so the peer falls back to its own behavior.");
+            VERIFY_IS_FALSE(peer->HasKeyboardFocus());
+            VERIFY_IS_FALSE(peer->IsKeyboardFocusable());
+            auto rect = peer->GetBoundingRectangle();
+            VERIFY_ARE_EQUAL(0.0f, rect.Width);
+            VERIFY_ARE_EQUAL(0.0f, rect.Height);
+            VERIFY_IS_TRUE(AreSameSplitItemObject(peer, peer->GetPeerFromPoint(wf::Point(1, 1))));
+            VERIFY_ARE_EQUAL(xaml_automation::ExpandCollapseState::Collapsed, safe_cast<xaml_automation::Provider::IExpandCollapseProvider^>(peer)->ExpandCollapseState);
+
+            LOG_OUTPUT(L"Invoke() on a disabled item fails with UIA_E_ELEMENTNOTENABLED and does not click it.");
+            splitItem->IsEnabled = false;
+            VERIFY_IS_FALSE(peer->IsEnabled());
+            bool threw = false;
+            try
+            {
+                safe_cast<xaml_automation::Provider::IInvokeProvider^>(peer)->Invoke();
+            }
+            catch (Platform::Exception^ e)
+            {
+                threw = true;
+                VERIFY_ARE_EQUAL(c_splitItemElementNotEnabled, e->HResult);
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_EQUAL(0, *clickCount);
+
+            splitItem->Click -= clickToken;
+        });
     }
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::MenuFlyout

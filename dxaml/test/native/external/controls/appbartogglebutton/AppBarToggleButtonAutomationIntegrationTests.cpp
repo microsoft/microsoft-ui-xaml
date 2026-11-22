@@ -9,6 +9,8 @@
 #include <AutomationClient\AutomationGenericTests.h>
 #include <UIAutomationHelper.h>
 
+#undef GetClassName // Conflicts with automation peer method of the same name
+
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Automation;
 using namespace test_infra;
@@ -217,6 +219,113 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(commandExecutedEvent->HasFired());
             VERIFY_IS_TRUE(toggledEvent->HasFired());
             VERIFY_ARE_EQUAL(Microsoft::UI::Xaml::Automation::ToggleState::On, toggleButtonPeer->ToggleState);
+        });
+    }
+
+    namespace
+    {
+        void VerifyPeerAcceleratorKey(xaml_automation_peers::AutomationPeer^ peer, const wchar_t* expected)
+        {
+            auto actual = peer->GetAcceleratorKey();
+            LOG_OUTPUT(L"AcceleratorKey: expected '%s', actual '%s'.", expected, actual == nullptr ? L"" : actual->Data());
+            VERIFY_ARE_EQUAL(0, Platform::String::CompareOrdinal(ref new Platform::String(expected), actual));
+        }
+
+        xaml_controls::AppBarToggleButton^ SetupStandaloneAppBarToggleButton()
+        {
+            xaml_controls::AppBarToggleButton^ button = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                button = ref new xaml_controls::AppBarToggleButton();
+                button->Label = L"Bold";
+                button->Icon = ref new xaml_controls::SymbolIcon(xaml_controls::Symbol::Bold);
+
+                auto rootPanel = ref new xaml_controls::Grid();
+                rootPanel->Children->Append(button);
+                TestServices::WindowHelper->WindowContent = rootPanel;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            return button;
+        }
+    }
+
+    void AppBarToggleButtonAutomationIntegrationTests::VerifyAcceleratorKeyFallsBackToKeyboardAcceleratorTextOverride()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto button = SetupStandaloneAppBarToggleButton();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(button);
+            VERIFY_IS_NOT_NULL(peer);
+
+            LOG_OUTPUT(L"Without AcceleratorKey or KeyboardAcceleratorTextOverride, the accelerator key is empty.");
+            VerifyPeerAcceleratorKey(peer, L"");
+
+            LOG_OUTPUT(L"Without AcceleratorKey, the KeyboardAcceleratorTextOverride is reported.");
+            button->KeyboardAcceleratorTextOverride = L"Ctrl+B";
+            VerifyPeerAcceleratorKey(peer, L"Ctrl+B");
+
+            LOG_OUTPUT(L"Trailing spaces are removed and inner spaces are preserved.");
+            button->KeyboardAcceleratorTextOverride = L"Ctrl + Shift + B   ";
+            VerifyPeerAcceleratorKey(peer, L"Ctrl + Shift + B");
+
+            LOG_OUTPUT(L"An override made only of spaces is reported as empty.");
+            button->KeyboardAcceleratorTextOverride = L"   ";
+            VerifyPeerAcceleratorKey(peer, L"");
+
+            LOG_OUTPUT(L"AutomationProperties.AcceleratorKey takes precedence over KeyboardAcceleratorTextOverride.");
+            button->KeyboardAcceleratorTextOverride = L"Ctrl+B";
+            xaml_automation::AutomationProperties::SetAcceleratorKey(button, L"Alt+B");
+            VerifyPeerAcceleratorKey(peer, L"Alt+B");
+
+            LOG_OUTPUT(L"Clearing AutomationProperties.AcceleratorKey restores the KeyboardAcceleratorTextOverride fallback.");
+            button->ClearValue(xaml_automation::AutomationProperties::AcceleratorKeyProperty);
+            VerifyPeerAcceleratorKey(peer, L"Ctrl+B");
+        });
+    }
+
+    void AppBarToggleButtonAutomationIntegrationTests::VerifyIsKeyboardFocusableOutsideCommandBar()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto button = SetupStandaloneAppBarToggleButton();
+
+        RunOnUIThread([&]()
+        {
+            auto peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(button);
+            VERIFY_IS_NOT_NULL(peer);
+
+            LOG_OUTPUT(L"An enabled, visible tab stop is keyboard focusable.");
+            VERIFY_IS_TRUE(peer->IsKeyboardFocusable());
+
+            LOG_OUTPUT(L"A disabled button is not keyboard focusable.");
+            button->IsEnabled = false;
+            VERIFY_IS_FALSE(peer->IsKeyboardFocusable());
+            button->IsEnabled = true;
+            VERIFY_IS_TRUE(peer->IsKeyboardFocusable());
+
+            LOG_OUTPUT(L"A button that is not a tab stop is not keyboard focusable.");
+            button->IsTabStop = false;
+            VERIFY_IS_FALSE(peer->IsKeyboardFocusable());
+            button->IsTabStop = true;
+
+            LOG_OUTPUT(L"A collapsed button is not keyboard focusable.");
+            button->Visibility = xaml::Visibility::Collapsed;
+            VERIFY_IS_FALSE(peer->IsKeyboardFocusable());
+            button->Visibility = xaml::Visibility::Visible;
+            VERIFY_IS_TRUE(peer->IsKeyboardFocusable());
+
+            LOG_OUTPUT(L"A peer created with the public AppBarToggleButtonAutomationPeer constructor behaves the same way.");
+            auto constructedPeer = ref new xaml_automation_peers::AppBarToggleButtonAutomationPeer(button);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"AppBarToggleButton"), constructedPeer->GetClassName());
+            VERIFY_IS_TRUE(constructedPeer->IsKeyboardFocusable());
+            button->IsEnabled = false;
+            VERIFY_IS_FALSE(constructedPeer->IsKeyboardFocusable());
+            button->IsEnabled = true;
         });
     }
 

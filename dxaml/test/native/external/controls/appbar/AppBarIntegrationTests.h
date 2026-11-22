@@ -206,6 +206,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that AutomationPeer.IsOffScreen returns false for items in an open appbar")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanToggleAppBarsByRightClickingOpenAppBar)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a mouse right-click on an open top AppBar toggles the page AppBars: it opens all of them while any is closed, and closes all of them once all are open.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateClosingHandlerRemovalAndPropertyIdentifiers)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the AppBar IsSticky, ClosedDisplayMode and LightDismissOverlayMode dependency property identifiers and that a removed Closing handler is no longer raised.")
+        END_TEST_METHOD()
+
     private:
         xaml_controls::Page^ SetupClosedDisplayModeTestEnvironment(bool setClosedDisplayModeValues);
         xaml_controls::Page^ SetupFocusShiftTestPage();

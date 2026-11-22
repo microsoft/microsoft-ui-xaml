@@ -484,6 +484,22 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Validates that the Loaded and Unloaded events arrive in the correct order and at the correct time when a ContentDialog is opened and closed.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CanCancelClosingAndRemoveClosingHandler)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that canceling Closing keeps the dialog open, that Closing reports the closing result, and that a removed Closing handler is no longer raised.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePopupAutomationIdFollowsDialogWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that changing AutomationProperties.AutomationId on an open ContentDialog updates the AutomationId of its popup.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePositionIsKeptWhenFlowDirectionChangesWhileOpen)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that an open ContentDialog stays at the same position when its FlowDirection changes between LeftToRight and RightToLeft.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateDependencyPropertyIdentifiers)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that the ContentDialog dependency property identifiers refer to their matching typed properties and to distinct properties.")
+    END_TEST_METHOD()
+
 private:
     enum class ContentDialogContent
     {

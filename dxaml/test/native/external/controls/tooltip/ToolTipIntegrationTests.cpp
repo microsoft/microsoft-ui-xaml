@@ -3262,4 +3262,103 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_FALSE(toolTip->IsOpen);
         });
     }
+
+    namespace
+    {
+        bool AreSameToolTipObject(Platform::Object^ first, Platform::Object^ second)
+        {
+            if (first == nullptr || second == nullptr)
+            {
+                return first == nullptr && second == nullptr;
+            }
+            wrl::ComPtr<IUnknown> firstUnknown;
+            wrl::ComPtr<IUnknown> secondUnknown;
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(first)->QueryInterface(IID_PPV_ARGS(&firstUnknown)));
+            VERIFY_SUCCEEDED(reinterpret_cast<IUnknown*>(second)->QueryInterface(IID_PPV_ARGS(&secondUnknown)));
+            return firstUnknown.Get() == secondUnknown.Get();
+        }
+    }
+
+    void ToolTipIntegrationTests::ValidateToolTipPropertyIdentifiersAndTemplateSettings()
+    {
+        TestCleanupWrapper cleanup;
+
+        auto button = SetupToolTipTest();
+        auto toolTip = CreateToolTip();
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::ToolTip, Closed);
+
+        RunOnUIThread([&]()
+        {
+            auto otherTarget = ref new xaml_controls::Button();
+
+            LOG_OUTPUT(L"PlacementTarget accessors and PlacementTargetProperty refer to the same value.");
+            VERIFY_IS_NULL(toolTip->PlacementTarget);
+            toolTip->PlacementTarget = otherTarget;
+            VERIFY_IS_TRUE(AreSameToolTipObject(otherTarget, toolTip->PlacementTarget));
+            VERIFY_IS_TRUE(AreSameToolTipObject(otherTarget, toolTip->GetValue(xaml_controls::ToolTip::PlacementTargetProperty)));
+            toolTip->SetValue(xaml_controls::ToolTip::PlacementTargetProperty, nullptr);
+            VERIFY_IS_NULL(toolTip->PlacementTarget);
+
+            LOG_OUTPUT(L"HorizontalOffsetProperty and VerticalOffsetProperty refer to distinct properties.");
+            toolTip->SetValue(xaml_controls::ToolTip::HorizontalOffsetProperty, 12.0);
+            VERIFY_ARE_EQUAL(12.0, toolTip->HorizontalOffset);
+            VERIFY_ARE_EQUAL(0.0, toolTip->VerticalOffset);
+            toolTip->SetValue(xaml_controls::ToolTip::VerticalOffsetProperty, 5.0);
+            VERIFY_ARE_EQUAL(5.0, toolTip->VerticalOffset);
+            VERIFY_ARE_EQUAL(12.0, toolTip->HorizontalOffset);
+            toolTip->HorizontalOffset = -7;
+            toolTip->VerticalOffset = -3;
+            VERIFY_ARE_EQUAL(-7.0, safe_cast<double>(toolTip->GetValue(xaml_controls::ToolTip::HorizontalOffsetProperty)));
+            VERIFY_ARE_EQUAL(-3.0, safe_cast<double>(toolTip->GetValue(xaml_controls::ToolTip::VerticalOffsetProperty)));
+            toolTip->HorizontalOffset = 0;
+            toolTip->VerticalOffset = 0;
+
+            LOG_OUTPUT(L"PlacementProperty refers to ToolTip.Placement.");
+            VERIFY_ARE_EQUAL(xaml_primitives::PlacementMode::Top, toolTip->Placement);
+            toolTip->SetValue(xaml_controls::ToolTip::PlacementProperty, xaml_primitives::PlacementMode::Left);
+            VERIFY_ARE_EQUAL(xaml_primitives::PlacementMode::Left, toolTip->Placement);
+            toolTip->Placement = xaml_primitives::PlacementMode::Bottom;
+            VERIFY_ARE_EQUAL(xaml_primitives::PlacementMode::Bottom, safe_cast<xaml_primitives::PlacementMode>(toolTip->GetValue(xaml_controls::ToolTip::PlacementProperty)));
+
+            LOG_OUTPUT(L"TemplateSettings is created by the ToolTip and is stable.");
+            auto templateSettings = toolTip->TemplateSettings;
+            VERIFY_IS_NOT_NULL(templateSettings);
+            VERIFY_IS_TRUE(AreSameToolTipObject(templateSettings, toolTip->TemplateSettings));
+            VERIFY_ARE_EQUAL(0.0, templateSettings->FromHorizontalOffset);
+            VERIFY_ARE_EQUAL(0.0, templateSettings->FromVerticalOffset);
+
+            VERIFY_IS_FALSE(safe_cast<bool>(toolTip->GetValue(xaml_controls::ToolTip::IsOpenProperty)));
+
+            openedRegistration.Attach(toolTip, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(toolTip, [closedEvent]() { closedEvent->Set(); });
+            xaml_controls::ToolTipService::SetToolTip(button, toolTip);
+
+            LOG_OUTPUT(L"Setting IsOpenProperty opens the ToolTip.");
+            toolTip->SetValue(xaml_controls::ToolTip::IsOpenProperty, true);
+            VERIFY_IS_TRUE(toolTip->IsOpen);
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"The ToolTip is placed below its owner, as requested through PlacementProperty.");
+            auto buttonBounds = ControlHelper::GetBounds(button);
+            auto toolTipBounds = ControlHelper::GetBounds(toolTip);
+            LOG_OUTPUT(L"Button bounds = (%f, %f, %f, %f), ToolTip bounds = (%f, %f, %f, %f)",
+                buttonBounds.X, buttonBounds.Y, buttonBounds.Width, buttonBounds.Height,
+                toolTipBounds.X, toolTipBounds.Y, toolTipBounds.Width, toolTipBounds.Height);
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(toolTipBounds.Y, buttonBounds.Y + buttonBounds.Height);
+
+            LOG_OUTPUT(L"Clearing IsOpen closes the ToolTip and is reflected by IsOpenProperty.");
+            toolTip->IsOpen = false;
+            VERIFY_IS_FALSE(safe_cast<bool>(toolTip->GetValue(xaml_controls::ToolTip::IsOpenProperty)));
+        });
+        closedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+    }
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::ToolTip

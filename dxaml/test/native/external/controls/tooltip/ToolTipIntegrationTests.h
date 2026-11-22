@@ -305,6 +305,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateToolTipPropertyIdentifiersAndTemplateSettings)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the ToolTip dependency property identifiers, the PlacementTarget accessors, and that IsOpenProperty opens and closes an owned ToolTip.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
     private:
         enum class InputMode
         {

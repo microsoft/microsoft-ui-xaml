@@ -673,4 +673,149 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         return keyboardAccelerator;
     }
 
+    void AppBarToggleButtonIntegrationTests::ValidateLabeledElementReportsLabelOnlyAtEffectivePosition()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto button = ref new xaml_controls::AppBarToggleButton();
+            button->Label = L"Bold";
+            auto labeledElement = safe_cast<xaml_controls::ICommandBarLabeledElement^>(button);
+
+            LOG_OUTPUT(L"The default label position is Bottom.");
+            VERIFY_IS_TRUE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+
+            LOG_OUTPUT(L"With the Right default label position, only the right label is reported.");
+            labeledElement->SetDefaultLabelPosition(xaml_controls::CommandBarDefaultLabelPosition::Right);
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_TRUE(labeledElement->GetHasRightLabel());
+
+            LOG_OUTPUT(L"With the Collapsed default label position, no label is reported.");
+            labeledElement->SetDefaultLabelPosition(xaml_controls::CommandBarDefaultLabelPosition::Collapsed);
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+
+            LOG_OUTPUT(L"LabelPosition=Collapsed overrides the Bottom and Right default label positions.");
+            button->LabelPosition = xaml_controls::CommandBarLabelPosition::Collapsed;
+            labeledElement->SetDefaultLabelPosition(xaml_controls::CommandBarDefaultLabelPosition::Bottom);
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+            labeledElement->SetDefaultLabelPosition(xaml_controls::CommandBarDefaultLabelPosition::Right);
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+
+            LOG_OUTPUT(L"LabelPosition=Default restores the Right label.");
+            button->LabelPosition = xaml_controls::CommandBarLabelPosition::Default;
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_TRUE(labeledElement->GetHasRightLabel());
+
+            LOG_OUTPUT(L"An empty label is never reported, even at the effective position.");
+            button->Label = L"";
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+            labeledElement->SetDefaultLabelPosition(xaml_controls::CommandBarDefaultLabelPosition::Bottom);
+            VERIFY_IS_FALSE(labeledElement->GetHasBottomLabel());
+            VERIFY_IS_FALSE(labeledElement->GetHasRightLabel());
+        });
+    }
+
+    void AppBarToggleButtonIntegrationTests::ValidateOverflowCheckedPointerOverVisualState()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Grid^ rootPanel = nullptr;
+        xaml_controls::CommandBar^ cmdBar = nullptr;
+        xaml_controls::AppBarToggleButton^ checkedButton = nullptr;
+        xaml_controls::AppBarToggleButton^ uncheckedButton = nullptr;
+
+        auto openedEvent = std::make_shared<Event>();
+        auto closedEvent = std::make_shared<Event>();
+        auto openedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Opened);
+        auto closedRegistration = CreateSafeEventRegistration(xaml_controls::AppBar, Closed);
+
+        RunOnUIThread([&]()
+        {
+            cmdBar = ref new xaml_controls::CommandBar();
+            cmdBar->VerticalAlignment = xaml::VerticalAlignment::Top;
+            cmdBar->IsDynamicOverflowEnabled = false;
+
+            checkedButton = ref new xaml_controls::AppBarToggleButton();
+            checkedButton->Label = L"Checked overflow item";
+            checkedButton->IsChecked = true;
+            cmdBar->SecondaryCommands->Append(checkedButton);
+
+            uncheckedButton = ref new xaml_controls::AppBarToggleButton();
+            uncheckedButton->Label = L"Unchecked overflow item";
+            cmdBar->SecondaryCommands->Append(uncheckedButton);
+
+            openedRegistration.Attach(cmdBar, [openedEvent]() { openedEvent->Set(); });
+            closedRegistration.Attach(cmdBar, [closedEvent]() { closedEvent->Set(); });
+
+            rootPanel = ref new xaml_controls::Grid();
+            rootPanel->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::White);
+            rootPanel->Children->Append(cmdBar);
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Move the mouse away from the CommandBar and open its overflow menu.");
+        TestServices::InputHelper->MoveMouse(wf::Point(10, 250));
+        RunOnUIThread([&]()
+        {
+            cmdBar->IsOpen = true;
+        });
+        openedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto getCommonState = [](xaml_controls::AppBarToggleButton^ button) -> Platform::String^
+        {
+            auto templateRoot = safe_cast<xaml::FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(button, 0));
+            auto groups = xaml::VisualStateManager::GetVisualStateGroups(templateRoot);
+            for (unsigned int i = 0; i < groups->Size; ++i)
+            {
+                auto group = groups->GetAt(i);
+                if (Platform::String::CompareOrdinal(group->Name, L"CommonStates") == 0)
+                {
+                    return group->CurrentState == nullptr ? nullptr : group->CurrentState->Name;
+                }
+            }
+            return nullptr;
+        };
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(safe_cast<xaml_controls::ICommandBarOverflowElement^>(checkedButton)->UseOverflowStyle);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowChecked"), getCommonState(checkedButton));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowNormal"), getCommonState(uncheckedButton));
+        });
+
+        LOG_OUTPUT(L"Hover the checked overflow item.");
+        TestServices::InputHelper->MoveMouse(checkedButton);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(checkedButton->IsPointerOver);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowCheckedPointerOver"), getCommonState(checkedButton));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowNormal"), getCommonState(uncheckedButton));
+        });
+
+        LOG_OUTPUT(L"Hover the unchecked overflow item.");
+        TestServices::InputHelper->MoveMouse(uncheckedButton);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(checkedButton->IsPointerOver);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowChecked"), getCommonState(checkedButton));
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"OverflowPointerOver"), getCommonState(uncheckedButton));
+
+            cmdBar->IsOpen = false;
+        });
+        closedEvent->WaitForDefault();
+        TestServices::InputHelper->MoveMouse(wf::Point(10, 250));
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::AppBarToggleButton
