@@ -48,5 +48,5 @@ private void OnFilterToZeroClick(object sender, RoutedEventArgs e)
     // Nobody joins in the future, so the filter matches nothing while the collection keeps
     // every row. Filter reshapes the view in place, like grouping.
     var today = DateTimeOffset.Now;
-    Source.Filter = new CollectionViewFilter(item => item is Person p && p.JoinDate > today);
+    ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is Person p && p.JoinDate > today);
 }

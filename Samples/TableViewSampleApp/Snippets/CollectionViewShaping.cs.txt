@@ -1,22 +1,22 @@
-Shaped = new CollectionViewSource { Source = Processes };
-Shaped.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessItem.Category)));
+// The CollectionViewSource, its GroupDescriptions and its Filter handler are declared in the page's markup.
 InitializeComponent();
+Shaped.Source = Processes;
 // A view the CollectionViewSource shapes implements ICollectionViewShaping, so a header
 // click writes the view's SortDescriptions.
 ProcessTable.ItemsSource = Shaped.View;
 
 public ObservableCollection<ProcessItem> Processes { get; } = ProcessData.All();
 
-public CollectionViewSource Shaped { get; }
-
 private string Query => FilterBox?.Text?.Trim() ?? string.Empty;
+
+// WPF's CollectionViewSource.Filter event: the handler decides, item by item, what the view shows.
+private void OnShapedFilter(object sender, FilterEventArgs e) =>
+    e.Accepted = Query.Length == 0 || ((ProcessItem)e.Item).Name.Contains(Query, StringComparison.CurrentCultureIgnoreCase);
 
 private void OnFilterChanged(object sender, TextChangedEventArgs e)
 {
-    var query = Query;
-    Shaped.Filter = query.Length == 0
-        ? null
-        : new CollectionViewFilter(item => ((ProcessItem)item).Name.Contains(query, StringComparison.CurrentCultureIgnoreCase));
+    // The handler reads the query again on Refresh.
+    Shaped.Refresh();
 }
 
 private void OnGroupToggled(object sender, RoutedEventArgs e)
@@ -37,7 +37,7 @@ private void OnGroupToggled(object sender, RoutedEventArgs e)
 private void OnSortByMemoryClick(object sender, RoutedEventArgs e)
 {
     Shaped.SortDescriptions.Clear();
-    Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), ListSortDirection.Descending));
+    Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), CollectionViewSortDirection.Descending));
 }
 
 private void OnRefreshClick(object sender, RoutedEventArgs e)

@@ -269,7 +269,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         _ = NavigateAsync(path, addToHistory: true, verb: "Opened");
     }
 
-    // ---- Filter (CollectionViewSource.Filter) ---------------------------------------------
+    // ---- Filter (the view's Filter) ---------------------------------------------
 
     // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
@@ -283,16 +283,16 @@ public sealed partial class FileExplorerPage : SamplePageBase
         switch (filter)
         {
             case "folders":
-                Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
                 break;
             case "files":
-                Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
                 break;
             case "none":
-                Source.Filter = new CollectionViewFilter(_ => false);
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(_ => false);
                 break;
             default:
-                Source.Filter = null;
+                ((ICollectionViewShaping)Source.View).Filter = null;
                 break;
         }
 

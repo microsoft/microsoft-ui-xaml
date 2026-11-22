@@ -10,12 +10,12 @@ private void OnFilterChanged(object sender, TextChangedEventArgs e)
     var text = ((TextBox)sender).Text.Trim();
     if (text.Length == 0)
     {
-        Source.Filter = null;
+        ((ICollectionViewShaping)Source.View).Filter = null;
     }
     else
     {
         // The view filters before the rows are nested: a match whose parent is filtered out is a root.
-        Source.Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+        ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
     }
 }
 
@@ -26,13 +26,13 @@ private void OnSortChanged(object sender, SelectionChangedEventArgs e)
     switch (((ComboBox)sender).SelectedIndex)
     {
         case 1:
-            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), CollectionViewSortDirection.Ascending));
             break;
         case 2:
-            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Descending));
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), CollectionViewSortDirection.Descending));
             break;
         case 3:
-            Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), ListSortDirection.Ascending));
+            Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), CollectionViewSortDirection.Ascending));
             break;
     }
 }

@@ -30,9 +30,9 @@ public sealed partial class CollectionViewShapingPage : SamplePageBase
         }
 
         // <snippet>
-        Shaped = new CollectionViewSource { Source = Processes };
-        Shaped.GroupDescriptions.Add(new PropertyGroupDescription(nameof(ProcessItem.Category)));
+        // The CollectionViewSource, its GroupDescriptions and its Filter handler are declared in the page's markup.
         InitializeComponent();
+        Shaped.Source = Processes;
         // A view the CollectionViewSource shapes implements ICollectionViewShaping, so a header
         // click writes the view's SortDescriptions.
         ProcessTable.ItemsSource = Shaped.View;
@@ -46,14 +46,14 @@ public sealed partial class CollectionViewShapingPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    public CollectionViewSource Shaped { get; }
-    // </snippet>
-
-    // <snippet>
     private string Query => FilterBox?.Text?.Trim() ?? string.Empty;
     // </snippet>
 
     // <snippet>
+    // WPF's CollectionViewSource.Filter event: the handler decides, item by item, what the view shows.
+    private void OnShapedFilter(object sender, FilterEventArgs e) =>
+        e.Accepted = Query.Length == 0 || ((ProcessItem)e.Item).Name.Contains(Query, StringComparison.CurrentCultureIgnoreCase);
+
     private void OnFilterChanged(object sender, TextChangedEventArgs e)
     {
         if (!IsLoaded) // snippet:skip
@@ -61,11 +61,9 @@ public sealed partial class CollectionViewShapingPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        var query = Query;
-        Shaped.Filter = query.Length == 0
-            ? null
-            : new CollectionViewFilter(item => ((ProcessItem)item).Name.Contains(query, StringComparison.CurrentCultureIgnoreCase));
-        SetLastAction(query.Length == 0 ? "Filter cleared: " + ShownSummary() : "Filter set: " + ShownSummary());
+        // The handler reads the query again on Refresh.
+        Shaped.Refresh();
+        SetLastAction(Query.Length == 0 ? "Filter cleared: " + ShownSummary() : "Filter set: " + ShownSummary());
     }
     // </snippet>
 
@@ -96,7 +94,7 @@ public sealed partial class CollectionViewShapingPage : SamplePageBase
     private void OnSortByMemoryClick(object sender, RoutedEventArgs e)
     {
         Shaped.SortDescriptions.Clear();
-        Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), ListSortDirection.Descending));
+        Shaped.SortDescriptions.Add(new SortDescription(nameof(ProcessItem.MemoryMB), CollectionViewSortDirection.Descending));
         SetLastAction("SortDescriptions: MemoryMB descending");
     }
     // </snippet>
