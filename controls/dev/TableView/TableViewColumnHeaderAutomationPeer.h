@@ -15,9 +15,9 @@ class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT, winrt::ITransformProvider>
 {
 public:
+    explicit TableViewColumnHeaderAutomationPeer(winrt::TableViewColumnHeader const& owner);
+    // Internal: the TableView-owned peer for a column whose header is not realized.
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
-    TableViewColumnHeaderAutomationPeer(winrt::FrameworkElement const& header,
-        winrt::TableView const& table, winrt::TableViewColumn const& column);
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();

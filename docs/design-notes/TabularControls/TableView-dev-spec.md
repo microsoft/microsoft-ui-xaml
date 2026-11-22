@@ -18,7 +18,7 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 - `TableViewGridLinesVisibility` keeps WPF's names and values, so persisted casts round-trip.
 - `Width` is a `GridLength`, so XAML can express `Pixel`, `Auto` and `*`.
 
-**Frozen columns** are a contiguous leading prefix. `TableViewFrozenEdge.Trailing` is reserved.
+**Frozen columns** are a contiguous leading prefix.
 
 **Groups are a separate container kind.** A group header is a `TableViewGroupHeader` interleaved into the flat row list, not a nesting level, so `TableViewRow` never needs an "am I a header?" branch. Hierarchical rows also stay a flat list: each row carries its level and expansion state, and its lead cell is indented.
 
@@ -109,7 +109,7 @@ TableViewRow
       └─ Border PART_SelectionIndicator           rounded whole-row outline, Opacity 0 unless Selected*
 ```
 
-`RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from `TableViewColumn.GenerateElement(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
+`RebuildHeaders` and `RebuildCells` create one header or cell per non-null column, in `Columns` order. A cell hosts the element from the column's `GenerateElementCore(dataItem)`. `TableView` sets `PART_RowsRepeater.ItemTemplate` (the selector needs an owner XAML cannot supply) and owns its `ItemsSource`.
 
 **Header focus survives a rebuild.** `RebuildHeaders` restores header focus by column identity through `RestoreHeaderFocus`. If the focused column was removed, focus falls back to the first visible header, else to the body. Separately, hiding the focused column is handled by `OnColumnVisibilityChanged`, which moves focus to the next visible header, or to the previous one when it was last.
 # Performance considerations
@@ -152,7 +152,7 @@ Cells only measure and cache; they never push a width. Every panel reads the sam
 
 ## Column resize
 
-Resize is split between a primitive and the table. **The primitive owns** the gesture: hit target, cursor, visual states, `IsDragging`, a 0.5 DIP deadband, rejection of non-finite deltas, re-entrancy guards and cancel. It reports a logical delta (positive grows in reading order; only the horizontal axis mirrors under RTL). **The table owns** every policy: whether a column gets a gripper (`CanUserResizeColumns` and `CanResize`, both default `true`), its width (`TableViewResizeGripperWidth`, 8), the anchor, clamping, writing `Width`, reverting on cancel and the UIA announcement. The gripper owns no width state, because `TableViewColumn` already does.
+Resize is split between a primitive and the table. **The primitive owns** the gesture: hit target, cursor, visual states, `IsDragging`, a 0.5 DIP deadband, rejection of non-finite deltas, re-entrancy guards and cancel. It reports a logical delta (positive grows in reading order; only the horizontal axis mirrors under RTL). **The table owns** every policy: whether a column gets a gripper (`CanUserResizeColumns` and `CanUserResize`, both default `true`), its width (`TableViewResizeGripperWidth`, 8), the anchor, clamping, writing `Width`, reverting on cancel and the UIA announcement. The gripper owns no width state, because `TableViewColumn` already does.
 
 **Protocol.** `BeginDrag()`, `DragDelta` (`Delta`, `TotalDelta`), then `EndDrag(canceled)`. `DragCompleted.Canceled` marks a torn-down gesture (Escape, lost capture, disabled, unloaded); the table then restores the authored `GridLength`, so a canceled drag never pins an `Auto` or `*` column. The drag methods are public so keyboard resize raises the same events.
 
@@ -175,12 +175,12 @@ Resize is split between a primitive and the table. **The primitive owns** the ge
 | No donor, dragged column is `*` | Pinned: no gripper |
 | No donor, dragged column is `Pixel`/`Auto` | Shrink-only |
 
-A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanResize` changes; size changes apply on `DragCompleted`, not mid-drag.
+A column with `MinWidth` ≥ `MaxWidth` is also pinned. `IsColumnResizePinned` is shared by the bounds and gripper visibility. It is re-evaluated when `Width`, `MinWidth`, `MaxWidth`, `Visibility` or `CanUserResize` changes; size changes apply on `DragCompleted`, not mid-drag.
 
-**Locked `*` columns.** A `*` column with `CanResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
+**Locked `*` columns.** A `*` column with `CanUserResize="False"` is sized from its *authored share* (its factor in the layout with every column at its authored `Width`) while that fits. It cannot take a `Pixel` `Width` without being counted twice, so rule 2 gives it a *resize hold* (`m_lockedColumnHolds`) instead:
 
 - **Start.** The first write of a resize (pointer, keyboard, UIA or double-click fit) holds every locked `*` column before the resized one at its `ActualWidth`, recording the `Auto` columns' total width and `LockedColumnHoldsSignature()`. Resizing an `Auto` column drops its width from the recorded `Auto` total, because it turns `Pixel`.
-- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
+- **End.** `ExpireLockedColumnHolds` runs when a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanUserResize`, the `Columns` collection, `CanUserResizeColumns` or `ItemsSource` changes. `ResolveColumnWidths` also drops the holds when the signature (viewport width plus those inputs) no longer matches, or when the `Auto` columns have grown past the recorded total and the held layout no longer fits.
 - **Cancel.** A canceled drag puts back the holds that were in place before its first write.
 
 ## Row virtualization and recycling

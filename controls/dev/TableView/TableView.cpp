@@ -2836,6 +2836,7 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
@@ -2871,6 +2872,7 @@ void TableView::OnRowElementClearing(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -2918,6 +2920,7 @@ void TableView::OnRowElementIndexChanged(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
+    auto const layoutScope = BeginLayoutCallbackScope();
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {
@@ -3492,7 +3495,7 @@ void TableView::RebuildHeadersCore()
                 header.Style(headerStyle);
             }
 
-            const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
+            const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (!styleSetsCornerRadius)
             {
@@ -4565,7 +4568,7 @@ bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
 {
     return column &&
         CanUserResizeColumns() &&
-        column.CanResize() &&
+        column.CanUserResize() &&
         column.Visibility() == winrt::Visibility::Visible &&
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
 }

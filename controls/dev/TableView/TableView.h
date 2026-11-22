@@ -480,6 +480,24 @@ public:
 
     void SetCurrentCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
 
+    // Measure, arrange and the repeater's element callbacks. App-visible work is posted from here.
+    [[nodiscard]] auto BeginLayoutCallbackScope()
+    {
+        ++m_layoutCallbackDepth;
+        return gsl::finally([this]() { --m_layoutCallbackDepth; });
+    }
+    bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || s_elementLayoutDepth > 0; }
+
+    // Measure/arrange of the control's own elements (cells panels, group headers). Per thread, not
+    // per table: any of them can run app code that reaches a table.
+    static inline thread_local uint32_t s_elementLayoutDepth{ 0 };
+    struct ElementLayoutScope
+    {
+        ElementLayoutScope() noexcept { ++s_elementLayoutDepth; }
+        ~ElementLayoutScope() { --s_elementLayoutDepth; }
+        ElementLayoutScope(ElementLayoutScope const&) = delete;
+        ElementLayoutScope& operator=(ElementLayoutScope const&) = delete;
+    };
 
     // Turns a row's container-level item into the data item. Identity today; the seam a wrapping
     // layer (grouping) changes in one place.
@@ -732,6 +750,8 @@ private:
     // Keyboard/focus position.
     tracker_ref<winrt::IInspectable> m_currentItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentColumn{ this };
+
+    uint32_t m_layoutCallbackDepth{ 0 };
 
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);
@@ -1347,7 +1367,7 @@ private:
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
     // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
     // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Visibility and CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);

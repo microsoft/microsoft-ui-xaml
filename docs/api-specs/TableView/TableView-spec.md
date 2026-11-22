@@ -339,7 +339,7 @@ at full opacity, since the disabled brush already dims it.
 
 ### Frozen (pinned) leading columns
 
-Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored. `Trailing` is reserved.
+Set `FrozenEdge="Leading"` on a contiguous prefix starting at column 0 to pin those columns to the leading edge. A later `Leading` column is ignored.
 
 ```xaml
 <tabular:TableView ItemsSource="{x:Bind Orders}">
@@ -938,11 +938,11 @@ Base class for TableView columns.
 | `HeaderStyle` | `Style` | `null` | `Style` for this column's `TableViewColumnHeader`; wins over `TableView.ColumnHeaderStyle`. |
 | `CellContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Shared context flyout for this column's data cells. Opens at the requested cell; menu items inherit that cell's row data item unless the app supplies a different binding source. Does not apply to column or group headers. |
 | `HeaderContextFlyout` | `Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase` | `null` | Context flyout for this column's header. Opens at the header cell; it does not receive a row data item. |
-| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanResize="False"`). |
+| `Width` | `GridLength` | Default column width | `Pixel` = exact; `Auto` = widest realized cell (grows within a data set) or the current header; `*` = a proportional share of the body viewport after fixed columns (see [Locked Star columns](#locked-star-columns) for a `*` column with `CanUserResize="False"`). |
 | `MinWidth` | `Double` | `20` | Minimum column width. |
 | `MaxWidth` | `Double` | Infinity | Maximum column width. |
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |
-| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored; `Trailing` is reserved. |
+| `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
 | `DisplayMemberBinding` | `Binding` | `null` | Read-only text for each cell without a template, as WPF's `GridViewColumn.DisplayMemberBinding`. Each cell is a `TextBlock` whose `Text` takes this binding against its row's item; it is vertically centred, padded for `Density`, and trimmed with an ellipsis. Its `Path` is the sort key when `SortMemberPath` is empty. Takes precedence over a `TableViewTemplateColumn`'s `CellTemplate`, which is ignored while this is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, then `CellTemplate`). Display-only: V1 has no cell editing. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column; changing it regenerates realized cells. |
 | `Visibility` | `Visibility` | `Visible` | Column visibility. |
 
@@ -950,14 +950,14 @@ Methods:
 
 | Method | Description |
 |---|---|
-| `GenerateElement(Object dataItem)` | Generates the cell element for a data item. |
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. The base implementation returns the `DisplayMemberBinding` text cell, or `null` (an empty cell) when it is not set. |
+| `NotifyCellContentChanged()` | Protected. Regenerates this column's realized cells and resets its `Auto` width; call it when a derived column's own property changes what it generates. Queued if called during layout. |
 | `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
 | `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Resizing columns
 
-A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
+A column has a gripper while `TableView.CanUserResizeColumns` and the column's `CanUserResize` are both `true`, its `MinWidth` is less than its `MaxWidth`, and, for a `*` column, a resizable `*` column follows it to trade width with. A gesture that changes the width writes a `Pixel` `Width` and announces the new width, so an `Auto` or `*` column becomes `Pixel`, as in File Explorer; a double-click fit always does, even when the size is unchanged. The width is clamped to `MinWidth`/`MaxWidth` and to the resize bounds: when the table has `*` columns, a column can grow only by taking width from a resizable `*` column after it (up to the viewport less the other columns), and with no such column a `Pixel` or `Auto` column can only shrink.
 
 | Gesture | Behaviour |
 |---|---|
@@ -968,9 +968,9 @@ A column has a gripper while `TableView.CanUserResizeColumns` and the column's `
 
 #### Locked Star columns
 
-While `CanUserResizeColumns` is true, a Star column with `CanResize="False"` keeps its **authored share**: the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops keeping the authored share when that no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the authored share, crossing between the two states can move it by the difference.
+While `CanUserResizeColumns` is true, a Star column with `CanUserResize="False"` keeps its **authored share**: the width its Star factor gives it in the authored layout (every column at its authored `Width`), so resizing other columns does not move it. It stops keeping the authored share when that no longer fits beside the fixed and resized columns plus the other Star columns' `MinWidth`, for example after a `MinWidth` / `MaxWidth` change or a narrower viewport. It is then divided together with the other Star columns by factor, so a `MaxWidth` clamp on one of them hands the excess to the rest. Because that share can be smaller than the authored share, crossing between the two states can move it by the difference.
 
-Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it gets a **resize hold** at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. A resize hold overrides the authored share. It ends when something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanResize`, the `Columns` collection, `CanUserResizeColumns`, `ItemsSource` or the viewport width), or when an `Auto` column grows so that the held layout no longer fits. A canceled resize puts back the resize holds that were in place before it. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
+Resizing a later column (by pointer, keyboard or UI Automation) never moves it: like an unlocked Star column before the resized one, it gets a **resize hold** at the width it rendered, during the resize and after it, so the resize gives width to or takes it from the columns after the resized one only, leaving empty space when they cannot grow. A resize hold overrides the authored share. It ends when something other than a user resize changes the column layout (a column's `MinWidth`, `MaxWidth`, authored `Width`, `Visibility` or `CanUserResize`, the `Columns` collection, `CanUserResizeColumns`, `ItemsSource` or the viewport width), or when an `Auto` column grows so that the held layout no longer fits. A canceled resize puts back the resize holds that were in place before it. Trimming a locked column to fit never makes it narrower than its `MinWidth`; when the minimums do not fit, the columns overflow the viewport.
 
 ### Cell tooltips
 
@@ -1236,7 +1236,8 @@ Outside a `TableView` the panel has no columns to read. Untagged children are me
 |---|---:|---|
 | `None` | 0 | Column is not frozen. |
 | `Leading` | 1 | Column is pinned to the leading edge. Implemented in v1. |
-| `Trailing` | 2 | Reserved for future trailing-edge pinning. |
+
+Out-of-range values behave as `None`. Trailing-edge pinning, when implemented, will append a value.
 
 ### TableViewHeadersVisibility
 
@@ -1262,8 +1263,8 @@ Mirrors WPF `DataGridGridLinesVisibility` values exactly. Used by `GridLinesVisi
 
 | Value | Numeric value | Description |
 |---|---:|---|
-| `Compact` | 0 | 24px minimum row/header height; Small metrics. |
-| `Standard` | 1 | 32px minimum row/header height; default; Medium metrics. |
+| `Standard` | 0 | 32px minimum row/header height; **the default**; Medium metrics. |
+| `Compact` | 1 | 24px minimum row/header height; Small metrics. |
 | `Comfortable` | 2 | 40px minimum row/header height; Large metrics. |
 
 The original density names and numeric values are retained. The minimum heights
@@ -1332,8 +1333,8 @@ Each realized column-header visual owns its `HeaderItem` peer. `ITableProvider.G
 
 Header `IsEnabled` reflects the owning table's effective state and disabled control ancestors between the header visual and the table (including template controls); Invoke rejects a disabled header without changing sort state. Cell header lookup resolves the realized visual independently of the table's peer type, so application-supplied table peers preserve canonical header identity. A cell with no reachable header (including a collapsed or removed column) returns an empty header array.
 
-The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
-A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
+`TableViewCellAutomationPeer(FrameworkElement owner)` takes the realized cell element (typed `FrameworkElement` because the cell element type is internal, and therefore validated at run time) and derives the row, column and column index from it; an owner that is not a prepared TableView cell (with a row, column and column index) throws `E_INVALIDARG` (`ArgumentException` in .NET). Like every WinUI peer it is unsealed. The control creates the peers for its own cells; `FrameworkElementAutomationPeer.CreatePeerForElement` on a realized cell, or `IGridProvider.GetItem`, returns that peer.
+A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanUserResize` are both true. The pattern's `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
 `ScrollItem` is not implemented explicitly on cells — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a cell into view after reaching it through `IGridProvider.GetItem`. A row's UIA element (below) is not a `FrameworkElementAutomationPeer`, so it implements `ScrollItem` itself.
 
@@ -1358,7 +1359,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     {
         None = 0,
         Leading = 1,
-        Trailing = 2,
     };
 
     [MUX_PREVIEW, webhosthidden, flags]
@@ -1380,8 +1380,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     [MUX_PREVIEW, webhosthidden]
     enum TableViewDensity
     {
-        Compact = 0,
-        Standard = 1,
+        Standard = 0,
+        Compact = 1,
         Comfortable = 2,
     };
 
@@ -1484,8 +1484,8 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge;
         Microsoft.UI.Xaml.Visibility Visibility;
 
-        Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
         overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+        protected void NotifyCellContentChanged();
 
         Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
@@ -1608,9 +1608,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
         Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
     {
-        TableViewColumnHeaderAutomationPeer(
-            Microsoft.UI.Xaml.Controls.Tabular.TableView owner,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
+        TableViewColumnHeaderAutomationPeer(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeader owner);
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1629,11 +1627,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
         Microsoft.UI.Xaml.Automation.Provider.IValueProvider
     {
-        TableViewCellAutomationPeer(
-            Microsoft.UI.Xaml.FrameworkElement cell,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewRow row,
-            Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column,
-            Int32 columnIndex);
+        TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement owner);
     };
 }
 ```

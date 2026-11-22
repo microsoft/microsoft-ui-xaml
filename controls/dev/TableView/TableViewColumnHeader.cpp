@@ -56,14 +56,13 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    auto const table = m_table.get();
-    auto const column = m_column.get();
-    if (!table || !column)
+    if (!m_table.get() || !m_column.get())
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(*this, table, column);
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(
+        get_strong().as<winrt::TableViewColumnHeader>());
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }

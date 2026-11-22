@@ -232,6 +232,7 @@ bool TableViewGroupHeader::IsExpanderPartInternal(winrt::DependencyObject elemen
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    TableView::ElementLayoutScope const layoutScope;
     RefreshDensity();
     auto const desired = MeasureBand(availableSize);
 

@@ -227,6 +227,18 @@ void TableViewRow::OnIsEnabledChanged(
     UpdateVisualState(true /* useTransitions */);
 }
 
+winrt::Size TableViewRow::MeasureOverride(winrt::Size const& availableSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::MeasureOverride(availableSize);
+}
+
+winrt::Size TableViewRow::ArrangeOverride(winrt::Size const& finalSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::ArrangeOverride(finalSize);
+}
+
 void TableViewRow::OnApplyTemplate()
 {
     m_cellsHostContextRequestedRevoker.revoke();
@@ -2183,7 +2195,7 @@ bool TableViewRow::RebuildCellsCore(bool updateExistingCellPeerItems)
         // No local DataContext anywhere on the cell path: cells inherit the row item so recycled
         // rows update reactively. Custom columns must also bind to inherited DataContext, not bake
         // in the initial dataItem.
-        if (auto cellElement = column.GenerateElement(dataItem))
+        if (auto cellElement = winrt::get_self<TableViewColumn>(column)->GenerateDisplayElement(dataItem))
         {
             AttachCellContent(cellWrapper, cellElement);
         }
@@ -2302,7 +2314,7 @@ void TableViewRow::ClearOwnedCellToolTips(const winrt::Panel& host)
 
 // Installs a generated display element as a cell's content, including the ContentPresenter wiring a
 // template column needs. Shared by the cell rebuild and by the post-commit refresh, because
-// GenerateElement alone is NOT a complete cell - forgetting the second half leaves a template
+// GenerateDisplayElement alone is NOT a complete cell - forgetting the second half leaves a template
 // column's Content unbound and the cell blank.
 void TableViewRow::AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement)
 {
