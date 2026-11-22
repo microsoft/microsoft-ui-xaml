@@ -118,7 +118,7 @@
   </data>
   <data name="TableViewColumnMoveHelpText" xml:space="preserve">
     <value>Ctrl+Shift+Left or Right to move the column</value>
-    <comment>Help text reported by a column header the user can move with the keyboard. Ctrl, Shift, Left and Right are keyboard keys; Left and Right follow reading order.</comment>
+    <comment>Help text reported by a column header the user can move with the keyboard. Use the key names printed on keyboards in the target language. Left and Right are the arrow keys; do not swap them for right-to-left languages.</comment>
   </data>
   <data name="TableViewColumnMoved" xml:space="preserve">
     <value>Moved %1!s! to column %2!s! of %3!s!.</value>

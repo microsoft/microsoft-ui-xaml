@@ -43,7 +43,7 @@ double TableView::ComputeLeadingFrozenWidth()
     {
         // Only a contiguous leading prefix (from column 0) is frozen. A Leading flag on a
         // non-prefix column is ignored so it cannot corrupt the pinned-band layout.
-        ForEachLeadingFrozenColumn(*this, columns, [&width](auto const& column)
+        TableViewDetails::ForEachLeadingFrozenColumn(*this, columns, [&width](auto const& column)
             {
                 width += column.Visibility() == winrt::Visibility::Visible ? std::max(0.0, column.ActualWidth()) : 0.0;
             });

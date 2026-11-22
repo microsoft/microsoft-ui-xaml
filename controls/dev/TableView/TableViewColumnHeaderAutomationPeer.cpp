@@ -145,10 +145,15 @@ hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
 
 hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
 {
-    auto const helpText = GetSortAndToolTipHelpText();
     auto const table = m_table.get();
     auto const column = m_column.get();
-    if (!table || !column || !winrt::get_self<TableView>(table)->CanUserMoveColumnInternal(column))
+    return HelpTextForInternal(table && column && winrt::get_self<TableView>(table)->CanUserMoveColumnInternal(column));
+}
+
+hstring TableViewColumnHeaderAutomationPeer::HelpTextForInternal(bool movable)
+{
+    auto const helpText = GetSortAndToolTipHelpText();
+    if (!movable)
     {
         return helpText;
     }

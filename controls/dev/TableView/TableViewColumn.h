@@ -144,25 +144,28 @@ private:
     uint32_t m_automationIdentity{ 0 };
 };
 
-inline bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
+namespace TableViewDetails
 {
-    return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
-}
-
-// The leading-frozen prefix: unowned columns are skipped and the first owned non-Leading column ends it.
-template <typename Columns, typename Fn>
-void ForEachLeadingFrozenColumn(winrt::TableView const& owner, Columns const& columns, Fn&& fn)
-{
-    for (auto const& column : columns)
+    inline bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
     {
-        if (!IsColumnOwnedBy(owner, column))
+        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
+    }
+
+    // The leading-frozen prefix: unowned columns are skipped and the first owned non-Leading column ends it.
+    template <typename Columns, typename Fn>
+    void ForEachLeadingFrozenColumn(winrt::TableView const& owner, Columns const& columns, Fn&& fn)
+    {
+        for (auto const& column : columns)
         {
-            continue;
+            if (!IsColumnOwnedBy(owner, column))
+            {
+                continue;
+            }
+            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
+            {
+                break;
+            }
+            fn(column);
         }
-        if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
-        {
-            break;
-        }
-        fn(column);
     }
 }

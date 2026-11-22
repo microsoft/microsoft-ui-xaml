@@ -9,6 +9,7 @@
 #include "TableViewGroupHeader.h"
 #include "TableViewColumn.h"
 #include "TableViewColumnHeader.h"
+#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewToolTipHelpers.h"
 #include "GridCoordinateHelper.h"
 #include "ResourceAccessor.h"
@@ -723,6 +724,20 @@ void TableView::RefreshHeaderTabStopsInternal()
         if (!actionable && header.FocusState() != winrt::FocusState::Unfocused)
         {
             focusedInactive = header;
+        }
+
+        // Movability is part of HelpText; only a peer a client already holds is notified.
+        auto const column = cell.Tag().try_as<winrt::TableViewColumn>();
+        const bool movable = column && CanUserMoveColumnInternal(column);
+        if (winrt::get_self<TableViewColumnHeader>(header)->ExchangeMovableInternal(movable) != movable &&
+            winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+        {
+            if (auto const peer = winrt::get_self<TableViewColumnHeader>(header)->GetExistingAutomationPeerInternal().try_as<winrt::TableViewColumnHeaderAutomationPeer>())
+            {
+                auto const peerImpl = winrt::get_self<TableViewColumnHeaderAutomationPeer>(peer);
+                peer.RaisePropertyChangedEvent(winrt::AutomationElementIdentifiers::HelpTextProperty(),
+                    winrt::box_value(peerImpl->HelpTextForInternal(!movable)), winrt::box_value(peerImpl->HelpTextForInternal(movable)));
+            }
         }
     }
 

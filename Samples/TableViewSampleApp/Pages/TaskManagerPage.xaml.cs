@@ -77,12 +77,23 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // <snippet>
     private Task _columnOrderSave = Task.CompletedTask;
 
+    // The order is read on the UI thread; the file is written off it, one save after another.
+    private void QueueColumnOrderSave(IReadOnlyList<string> order)
+    {
+        _columnOrderSave = _columnOrderSave.ContinueWith(previous =>
+        {
+            if (previous.Exception is { } error)
+            {
+                System.Diagnostics.Debug.WriteLine($"Saving the column order failed: {error.InnerException?.Message}");
+            }
+            AppSettings.SaveColumnOrder(ColumnOrderSetting, order);
+        }, TaskScheduler.Default);
+    }
+
     // Keyed by header text, which this sample does not localize; a real app keys on something stable.
     private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
     {
-        // Read the order on the UI thread; write the file off it, one save after another.
-        var order = sender.Columns.Select(c => c.Header as string).ToList();
-        _columnOrderSave = _columnOrderSave.ContinueWith(_ => AppSettings.SaveColumnOrder(ColumnOrderSetting, order), TaskScheduler.Default);
+        QueueColumnOrderSave(sender.Columns.Select(c => c.Header as string).ToList());
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1}; order saved", args.Column.Header, args.NewIndex + 1));
     }
 
@@ -108,7 +119,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
     private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
     {
         RestoreColumnOrder(DefaultColumnOrder);
-        AppSettings.SaveColumnOrder(ColumnOrderSetting, DefaultColumnOrder);
+        QueueColumnOrderSave(DefaultColumnOrder);
         SetLastAction("Column order -> reset");
     }
 

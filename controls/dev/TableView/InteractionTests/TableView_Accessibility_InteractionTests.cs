@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -390,7 +391,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     KeyboardHelper.PressKey(Key.Right, ModifierKey.Control | ModifierKey.Shift);
                     Wait.ForIdle();
-                    recorder.WaitUntil(snapshot => snapshot.Item1.Count > 0 && snapshot.Item2 > 0);
+                    Verify.IsTrue(recorder.WaitUntil(snapshot => snapshot.Item1.Count > 0 && snapshot.Item2 > 0),
+                        "Timed out after 5 s waiting for the move's Notification and StructureChanged.");
                     recorder.WaitForQuiet();
 
                     ElementCache.Clear();
@@ -416,6 +418,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     automation.RemoveAllEventHandlers();
                     SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies turning CanUserReorderColumns on raises a HelpText property change on a header a client holds.")]
+        public void ReorderToggleRaisesHeaderHelpTextChanged()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SetPageCheckBox(CanUserReorderColumnsCheckBox, false))
+                {
+                    Verify.Fail("The CanUserReorderColumns checkbox was not found.");
+                    return;
+                }
+
+                var automation = (UIAutomationClient.IUIAutomation5)new UIAutomationClient.CUIAutomation8Class();
+                // 30011 AutomationId, 30005 Name, 30003 ControlType, 50035 HeaderItem, 30013 HelpText.
+                var table = automation.GetRootElement().FindFirst(UIAutomationClient.TreeScope.TreeScope_Descendants,
+                    automation.CreatePropertyCondition(30011, BasicTable));
+                var age = table?.FindFirst(UIAutomationClient.TreeScope.TreeScope_Descendants, automation.CreateAndCondition(
+                    automation.CreatePropertyCondition(30005, "Age"), automation.CreatePropertyCondition(30003, 50035)));
+                Verify.IsNotNull(age, "The Age header must be reachable from a UIA client.");
+                string before = age.CurrentHelpText;
+                var recorder = new HelpTextRecorder();
+                automation.AddPropertyChangedEventHandler(age, UIAutomationClient.TreeScope.TreeScope_Element, null, recorder, new[] { 30013 });
+                try
+                {
+                    SetPageCheckBox(CanUserReorderColumnsCheckBox, true);
+                    Wait.ForIdle();
+                    Verify.IsTrue(recorder.WaitForChange(), "Timed out after 5 s waiting for the Age header's HelpText change.");
+                    Log.Comment("HelpText changes: [{0}].", string.Join(" | ", recorder.Values()));
+                    Verify.AreNotEqual(before, recorder.Values().Last(), "The HelpText must change when the header becomes movable.");
+                    Verify.AreEqual(age.CurrentHelpText, recorder.Values().Last(), "The event's new value is the header's HelpText.");
+                }
+                finally
+                {
+                    automation.RemoveAllEventHandlers();
+                    SetPageCheckBox(CanUserReorderColumnsCheckBox, false);
+                }
+            }
+        }
+
+        private sealed class HelpTextRecorder : UIAutomationClient.IUIAutomationPropertyChangedEventHandler
+        {
+            private readonly object _gate = new object();
+            private readonly List<string> _values = new List<string>();
+
+            public void HandlePropertyChangedEvent(UIAutomationClient.IUIAutomationElement sender, int propertyId, object newValue)
+            {
+                lock (_gate) { _values.Add(newValue as string ?? string.Empty); }
+            }
+
+            public List<string> Values()
+            {
+                lock (_gate) { return new List<string>(_values); }
+            }
+
+            public bool WaitForChange(int timeoutMs = 5000)
+            {
+                var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                while (Values().Count == 0)
+                {
+                    if (stopwatch.ElapsedMilliseconds >= timeoutMs)
+                    {
+                        return false;
+                    }
+                    global::System.Threading.Thread.Sleep(50);
+                }
+                return true;
             }
         }
 
@@ -451,14 +522,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 lock (_gate) { return (new List<string>(_notifications), _structureChanges); }
             }
 
-            // UIA events arrive on a client thread after the action; poll instead of sleeping a fixed time.
-            public void WaitUntil(Func<(List<string>, int), bool> condition, int timeoutMs = 5000)
+            // UIA events arrive on a client thread after the action; poll instead of sleeping a fixed time. False on timeout.
+            public bool WaitUntil(Func<(List<string>, int), bool> condition, int timeoutMs = 5000)
             {
                 var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
-                while (!condition(Snapshot()) && stopwatch.ElapsedMilliseconds < timeoutMs)
+                while (!condition(Snapshot()))
                 {
+                    if (stopwatch.ElapsedMilliseconds >= timeoutMs)
+                    {
+                        return false;
+                    }
                     global::System.Threading.Thread.Sleep(50);
                 }
+                return true;
             }
 
             // Returns once no event has arrived for quietMs, or after timeoutMs.

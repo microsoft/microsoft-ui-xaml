@@ -56,6 +56,8 @@ public:
     // True while the local IsTabStop=false is the TableView's inactive-header stamp, not the app's.
     void SetOwnsTabStopStampInternal(bool ownsStamp) { m_ownsTabStopStamp = ownsStamp; }
     bool OwnsTabStopStampInternal() const { return m_ownsTabStopStamp; }
+    // Returns the previous value: whether the header's HelpText last offered the move keys.
+    bool ExchangeMovableInternal(bool movable) { return std::exchange(m_movable, movable); }
 
 private:
     void UpdateVisualStates(bool useTransitions);
@@ -92,4 +94,5 @@ private:
     tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
     bool m_hasTextPadding{ false };
     bool m_ownsTabStopStamp{ false };
+    bool m_movable{ false };
 };

@@ -62,6 +62,7 @@ public:
     void ShowContextMenuCore();
 
     bool IsTableViewOwned();
+    hstring HelpTextForInternal(bool movable);
 
 private:
     winrt::FrameworkElement GetHeaderElement();

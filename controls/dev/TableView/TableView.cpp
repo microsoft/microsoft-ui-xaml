@@ -1205,15 +1205,11 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
                 {
                     if (auto const strongThis = weakThis.get())
                     {
-                        // The drag's geometry is stale once the band scrolls. Layout raises this, so cancel on the next tick.
-                        if (auto& drag = strongThis->m_columnReorder; drag && drag->dragging && !drag->stale &&
-                            std::abs(sender.as<winrt::ScrollViewer>().HorizontalOffset() - drag->headerOffset) >= 0.5)
+                        // The drag's geometry is stale once the band scrolls.
+                        if (auto const& drag = strongThis->m_columnReorder;
+                            drag && drag->dragging && std::abs(sender.as<winrt::ScrollViewer>().HorizontalOffset() - drag->headerOffset) >= 0.5)
                         {
-                            drag->stale = true;
-                            if (auto const dispatcher = strongThis->DispatcherQueue())
-                            {
-                                dispatcher.TryEnqueue([weakThis]() { if (auto const table = weakThis.get()) { table->CancelColumnReorderDrag(); } });
-                            }
+                            strongThis->QueueCancelColumnReorderDrag();
                         }
                         strongThis->UpdateHeaderScrollOffset();
                     }
@@ -1276,7 +1272,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                     if (auto strongThis = weakThis.get())
                     {
                         strongThis->m_bodyManipulating = true;
-                        strongThis->CancelColumnReorderDrag();
+                        strongThis->QueueCancelColumnReorderDrag();
                     }
                 });
             m_bodyManipulationCompletedRevoker = bodyScroller.DirectManipulationCompleted(winrt::auto_revoke,

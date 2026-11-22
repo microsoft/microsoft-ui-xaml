@@ -1214,7 +1214,7 @@ apart.
   land; it is hidden while the drop would leave the column where it is. Releasing drops the column
   there. A press that never passes the threshold is still a click, so it sorts as before.
 - **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
-  capture, unloading the table, a horizontal scroll or pan of the table, replacing `Columns`, or a
+  capture, unloading the table, a pan of the table body or a horizontal scroll, replacing `Columns`, or a
   change to `Columns` or to a column's `Visibility` or `FrozenEdge` cancels without changing anything.
   A drag does not start while the body is being panned.
 - **Coexistence.** A press on the resize gripper or on interactive header content (a `Button`, a

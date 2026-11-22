@@ -1648,8 +1648,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("True,True,True", HeaderTabStops(tableView), "Every header that can move is actionable.");
                 Verify.AreEqual(ManipulationModes.System | ManipulationModes.TranslateX, GetHeaderHost(tableView).ManipulationMode,
                     "The header row takes horizontal manipulations and leaves vertical pans to the system.");
-                Verify.IsTrue(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText().Contains("Ctrl+Shift"),
-                    "A movable header's help text names the move keys.");
+                var moveText = TableViewLocalizationTestHelpers.TryResolve(TableViewLocalizationTestHelpers.RequireTableViewResourceMap(), "TableViewColumnMoveHelpText");
+                Verify.IsFalse(string.IsNullOrEmpty(moveText), "TableViewColumnMoveHelpText must resolve.");
+                Verify.AreEqual(moveText, FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText(),
+                    "A movable header's help text is the move keys.");
                 tableView.CanUserReorderColumns = false;
             });
 
@@ -1659,7 +1661,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(baseline, HeaderTabStops(tableView), "Turning reorder off must restore the original tab stops.");
                 Verify.AreEqual(DependencyProperty.UnsetValue, GetHeaderHost(tableView).ReadLocalValue(UIElement.ManipulationModeProperty),
                     "Turning reorder off must restore the header row's ManipulationMode.");
-                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText().Contains("Ctrl+Shift"),
+                var moveText = TableViewLocalizationTestHelpers.TryResolve(TableViewLocalizationTestHelpers.RequireTableViewResourceMap(), "TableViewColumnMoveHelpText");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText().Contains(moveText),
                     "Without reorder the help text does not mention the move keys.");
                 tableView.CanUserReorderColumns = true;
                 tableView.Columns[1].Visibility = Visibility.Collapsed;
@@ -1996,10 +1999,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a VectorChanged subscriber that changes Columns between the move's RemoveAt and InsertAt is safe: a cleared vector or a column put back stops the move with no ColumnReordered, and an unrelated insert still lets it complete.")]
+        [TestProperty("Description", "Verifies a VectorChanged subscriber that changes Columns between the move's RemoveAt and InsertAt is safe: a column put back stops the move with no ColumnReordered, and the moving column is never lost: after an unrelated insert, removal or a clear it is still inserted.")]
         public void VerifyColumnsChangedDuringMoveIsSafe()
         {
-            foreach (var (mode, expected, events) in new[] { ("clear", "", 0), ("put back", "Name,Role,City", 0), ("add", "Role,Name,City,Team", 1) })
+            foreach (var (mode, focus, expected, events) in new[]
+                {
+                    // The emptied vector is still Columns, so Name goes back in.
+                    ("clear", 0, "Name", 1),
+                    ("put back", 0, "Name,Role,City", 0),
+                    ("add", 0, "Role,Name,City,Team", 1),
+                    // Role's target index is now past the end; it lands last instead of being lost.
+                    ("remove another", 1, "Name,Role", 1),
+                })
             {
                 Log.Comment($"The subscriber does: {mode}.");
                 TableView tableView = null;
@@ -2009,7 +2020,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView = CreateReorderTable("Name", "Role", "City");
                     tableView.ColumnReordered += (s, e) => reordered++;
                     LoadContent(tableView);
-                    var name = tableView.Columns[0];
+                    var moving = tableView.Columns[focus];
                     bool acted = false;
                     ((IObservableVector<TableViewColumn>)tableView.Columns).VectorChanged += (s, e) =>
                     {
@@ -2021,7 +2032,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         switch (mode)
                         {
                             case "clear": s.Clear(); break;
-                            case "put back": s.Insert(0, name); break;
+                            case "put back": s.Insert(0, moving); break;
+                            case "remove another": s.RemoveAt(s.IndexOf(s.First(c => (string)c.Header == "City"))); break;
                             default: s.Add(MakeTextColumn("Team", bound: false)); break;
                         }
                     };
@@ -2031,7 +2043,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     return;
                 }
-                FocusHeader(tableView, 0);
+                FocusHeader(tableView, focus);
                 ReorderInput.Send(right: true);
                 SettleLayout(tableView);
                 RunOnUIThread.Execute(() =>
@@ -2103,7 +2115,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
             try
             {
-                ReorderInput.PressAndDrag(HeaderPoint(tableView, 4, 0.5), HeaderPoint(tableView, 0, 0.5));
+                // Over the band, left of A's midpoint: without the clamp this drops before the hidden A.
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 4, 0.5), HeaderPoint(tableView, 0, 0.1));
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.UpdateLayout();
+                    var indicator = (Rectangle)tableView.FindVisualChildByName("PART_ColumnReorderIndicator");
+                    var line = VisualBounds(indicator);
+                    var band = VisualBounds(GetHeaderCell(tableView, 0));
+                    Log.Comment($"Band {band}, indicator {line}.");
+                    Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - band.Right), 2.0, "The indicator sits at the frozen band's edge.");
+                });
             }
             finally
             {
@@ -2203,8 +2225,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             SettleLayout(tableView);
             RunOnUIThread.Execute(() => VerifyOrder(tableView, "Role,Name,Team", "after the drag"));
             Verify.AreEqual("Role", FocusedCell(), "The moved column's cell keeps focus.");
-            ReorderInput.SendChord(ReorderInput.VkRight);
-            Verify.AreEqual("Name", FocusedCell(), "Right moves to the next column in the new order.");
+
+            object focusedBefore = null;
+            var stateBefore = FocusState.Unfocused;
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = (UIElement)FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Verify.AreNotEqual(FocusState.Keyboard, focused.FocusState, "A mouse drag must not restore focus as keyboard focus.");
+                focusedBefore = focused;
+                stateBefore = focused.FocusState;
+            });
+            try
+            {
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
+            }
+            finally
+            {
+                ReorderInput.LeftUp();
+            }
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,Role,Team", "after dragging another column");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as UIElement;
+                Log.Comment($"Focused after moving Name: {((focused as FrameworkElement)?.Tag as TableViewColumn)?.Header}, same element {ReferenceEquals(focusedBefore, focused)}, {focused?.FocusState}.");
+                Verify.AreEqual(stateBefore, focused?.FocusState ?? FocusState.Unfocused, "Moving another column keeps the focus state.");
+            });
+            Verify.AreEqual("Role", FocusedCell(), "Moving another column keeps focus on the Role cell.");
+
+            ReorderInput.SendChord(ReorderInput.VkLeft);
+            Verify.AreEqual("Name", FocusedCell(), "Left moves to the previous column in the new order.");
             ReorderInput.SendChord(0x71 /* F2 */);
             Verify.AreEqual("Name", string.Join(",", edited), "F2 edits the focused column.");
         }

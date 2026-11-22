@@ -1762,6 +1762,7 @@ public:
     // A neighbouring position is allowed, so the header is actionable.
     bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
     void CancelColumnReorderDrag();
+    void QueueCancelColumnReorderDrag();
 
 private:
     // The visible owned columns other than the moving one; own is its slot among them, [min, max] the allowed slots.
@@ -1810,6 +1811,7 @@ private:
     winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
     bool m_suppressHeaderTap{ false };
     bool m_bodyManipulating{ false };
+    uint32_t m_columnReorderGeneration{ 0 };
     uint32_t m_rebuildHeadersQueueGeneration{ 0 };
     winrt::weak_ref<winrt::UIElement> m_columnReorderHookedHost{ nullptr };
     std::vector<std::pair<winrt::RoutedEvent, winrt::IInspectable>> m_columnReorderHandlers;
