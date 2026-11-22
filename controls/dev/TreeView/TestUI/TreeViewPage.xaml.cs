@@ -23,6 +23,9 @@ using Windows.Foundation;   // CsWinRT 3.0 async extensions
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "TreeView", Icon = "TreeView.png")]
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
     public sealed partial class TreeViewPage : TestPage
     {
         bool _disableClickToExpand;

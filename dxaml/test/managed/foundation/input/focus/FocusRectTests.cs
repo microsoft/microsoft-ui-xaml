@@ -1456,7 +1456,10 @@ namespace Microsoft.UI.Xaml.Tests.Focus
             TestServices.Utilities.VerifyMockDCompOutput(MockDComp.SurfaceComparison.NoComparison, compareLabel);
         }
 
-        public class Group : List<string>
+#if CSWINRT3_0
+        [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+        public partial class Group : List<string>
         {
             public string Name { get; }
 

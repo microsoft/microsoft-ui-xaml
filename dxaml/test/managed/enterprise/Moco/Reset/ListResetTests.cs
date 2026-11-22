@@ -1273,7 +1273,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                 {
                     foreach (ObservableVector<object> grp in m_groups)
                     {
-                        if (index > grp.Count())
+                        if (index >= grp.Count())
                         {
                             index -= grp.Count();
                         }

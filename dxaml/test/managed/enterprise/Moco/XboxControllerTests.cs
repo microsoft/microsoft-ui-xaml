@@ -2864,7 +2864,10 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
     }
 
-    public class MyGroup : ObservableCollection<int>
+#if CSWINRT3_0
+    [global::WindowsRuntime.Xaml.GeneratedCustomPropertyProvider]
+#endif
+    public partial class MyGroup : ObservableCollection<int>
     {
         public string GroupName { get; set; }
         public override String ToString()
