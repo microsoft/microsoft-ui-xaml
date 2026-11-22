@@ -19,6 +19,8 @@ public static class TreeSnapshotCodec
     internal static Task WriteAsync(Stream destination, TreeSnapshotDocument snapshot, CancellationToken token) =>
         JsonSerializer.SerializeAsync(destination, snapshot, Options, token);
 
+    internal static byte[] Encode(TreeSnapshotDocument snapshot) => JsonSerializer.SerializeToUtf8Bytes(snapshot, Options);
+
     public static TreeSnapshotDocument Decode(ReadOnlyMemory<byte> bytes, ProcessInstanceKey target, Guid captureId)
         => Decode(bytes, (ProcessInstanceKey?)target, captureId);
 

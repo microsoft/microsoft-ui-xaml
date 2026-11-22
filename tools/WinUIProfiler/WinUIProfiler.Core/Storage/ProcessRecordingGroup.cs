@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
@@ -123,6 +124,9 @@ internal sealed class ProcessRecordingGroup : IDisposable
             recording.Writer?.PostSample(sample, wait: false);
         }
     }
+
+    internal Task SaveSnapshotAsync(TreeSnapshotDocument snapshot, string jsonPath, CancellationToken token) =>
+        recordings[primaryProcessId].Writer?.SaveSnapshotAsync(snapshot, jsonPath, token) ?? Task.CompletedTask;
 
     // What the CPU sampling recorded, or why there is none (summary null), for every session file. Call before Close.
     internal void SetCpuSampling(CpuSamplingSummary? summary, string? note)

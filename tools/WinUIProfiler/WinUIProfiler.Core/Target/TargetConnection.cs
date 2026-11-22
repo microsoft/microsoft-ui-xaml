@@ -619,6 +619,18 @@ History);
             token.ThrowIfCancellationRequested();
             File.Move(temporary, path);
             committed = true;
+            if (recordings is { } group)
+            {
+                try
+                {
+                    await group.SaveSnapshotAsync(snapshot, path, token).ConfigureAwait(false);
+                }
+                catch (Exception error) when (error is IOException or ObjectDisposedException or
+                    Microsoft.Data.Sqlite.SqliteException)
+                {
+                    throw new IOException($"The snapshot JSON was saved to '{path}', but storing it in the session failed: {error.Message}", error);
+                }
+            }
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
                 snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);
         }
