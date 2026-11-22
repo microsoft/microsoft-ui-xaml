@@ -28,6 +28,22 @@ public:
 
     TEST_METHOD(MultiplicationTest)
 
+    BEGIN_TEST_METHOD(AffineInverseTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Inverts an affine Matrix3D (M14=M24=M34=0, M44=1) and verifies every element of the inverse.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(NonAffineInverseTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Inverts non-affine Matrix3Ds (M14/M24/M34 != 0 or M44 != 1) and verifies every element of the inverse.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(SingularMatrixInvertFails)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies that Invert fails for singular affine and singular non-affine matrices.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(IsIdentityTest)
+        TEST_METHOD_PROPERTY(L"Description", L"Verifies Matrix3DHelper.GetIsIdentity for the identity matrix and for every single-element deviation from it.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(VerifyComplexMatrix3DProjection)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()

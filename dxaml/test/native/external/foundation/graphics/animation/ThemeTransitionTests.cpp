@@ -122,6 +122,204 @@ namespace
         return timing.latestEnd;
     }
 
+    Platform::String^ TranslateXProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateX"; }
+    Platform::String^ TranslateYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).TranslateY"; }
+    Platform::String^ ScaleYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).ScaleY"; }
+    Platform::String^ CenterYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.CompositeTransform).CenterY"; }
+    Platform::String^ ClipScaleYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.ClipTransform).(CompositeTransform.ScaleY)"; }
+    Platform::String^ ClipTranslateYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.ClipTransform).(CompositeTransform.TranslateY)"; }
+    Platform::String^ OpacityProperty() { return L"(UIElement.TransitionTarget).Opacity"; }
+
+    StoryboardVector^ CreateTransitionStoryboardsWithParent(
+        xaml_animation::Transition^ transition,
+        xaml::UIElement^ target,
+        xaml::TransitionTrigger trigger,
+        wf::Rect start,
+        wf::Rect destination,
+        xaml::TransitionParent& parent)
+    {
+        auto storyboards = ref new StoryboardVector();
+        safe_cast<xaml_animation::ITransitionPrivate^>(transition)->CreateStoryboard(
+            target, start, destination, trigger, storyboards, &parent);
+        return storyboards;
+    }
+
+    // Creates a framework transition (including ones that are only reachable through markup) from XAML.
+    xaml_animation::Transition^ LoadTransition(Platform::String^ markup)
+    {
+        return safe_cast<xaml_animation::Transition^>(xaml_markup::XamlReader::Load(markup));
+    }
+
+    std::vector<double> GetKeyFrameValues(StoryboardVector^ storyboards, Platform::String^ targetProperty);
+
+    void VerifyKeyFrameValues(StoryboardVector^ storyboards, Platform::String^ targetProperty, std::initializer_list<double> expected)
+    {
+        const std::vector<double> actual = GetKeyFrameValues(storyboards, targetProperty);
+        LOG_OUTPUT(L"%s: %u key frames (expected %u)", targetProperty->Data(), static_cast<unsigned int>(actual.size()), static_cast<unsigned int>(expected.size()));
+        VERIFY_ARE_EQUAL(expected.size(), actual.size());
+
+        size_t i = 0;
+        for (double value : expected)
+        {
+            if (i < actual.size())
+            {
+                LOG_OUTPUT(L"  key frame %u: expected %f, actual %f", static_cast<unsigned int>(i), value, actual[i]);
+                VERIFY_IS_LESS_THAN(std::abs(value - actual[i]), 0.000001);
+            }
+            ++i;
+        }
+    }
+
+    // Returns the values of all key frames, in key frame order, of the key frame animations in the storyboards
+    // that target the given property.
+    std::vector<double> GetKeyFrameValues(StoryboardVector^ storyboards, Platform::String^ targetProperty)
+    {
+        std::vector<double> values;
+
+        for (xaml_animation::Storyboard^ storyboard : storyboards)
+        {
+            for (xaml_animation::Timeline^ timeline : storyboard->Children)
+            {
+                auto animation = dynamic_cast<xaml_animation::DoubleAnimationUsingKeyFrames^>(timeline);
+                if (animation != nullptr && xaml_animation::Storyboard::GetTargetProperty(animation) == targetProperty)
+                {
+                    for (unsigned int i = 0; i < animation->KeyFrames->Size; ++i)
+                    {
+                        values.push_back(animation->KeyFrames->GetAt(i)->Value);
+                    }
+                }
+            }
+        }
+
+        return values;
+    }
+
+    // Verifies that the storyboards translate the target from (fromX, fromY) to (toX, toY).
+    void VerifyTranslation(StoryboardVector^ storyboards, double fromX, double fromY, double toX, double toY)
+    {
+        const auto xValues = GetKeyFrameValues(storyboards, TranslateXProperty());
+        const auto yValues = GetKeyFrameValues(storyboards, TranslateYProperty());
+
+        VERIFY_IS_FALSE(xValues.empty());
+        VERIFY_IS_FALSE(yValues.empty());
+
+        LOG_OUTPUT(L"TranslateX: %f -> %f (expected %f -> %f), TranslateY: %f -> %f (expected %f -> %f)",
+            xValues.front(), xValues.back(), fromX, toX,
+            yValues.front(), yValues.back(), fromY, toY);
+
+        VERIFY_ARE_EQUAL(fromX, xValues.front());
+        VERIFY_ARE_EQUAL(toX, xValues.back());
+        VERIFY_ARE_EQUAL(fromY, yValues.front());
+        VERIFY_ARE_EQUAL(toY, yValues.back());
+    }
+
+    struct EdgeTranslation
+    {
+        xaml_primitives::EdgeTransitionLocation edge;
+        double offsetX;
+        double offsetY;
+    };
+
+    // Load/Unload offsets for a destination of 120x80: Top/Bottom use the height, Left/Right use the width.
+    const EdgeTranslation c_edgeTranslations[] =
+    {
+        { xaml_primitives::EdgeTransitionLocation::Top, 0.0, -80.0 },
+        { xaml_primitives::EdgeTransitionLocation::Bottom, 0.0, 80.0 },
+        { xaml_primitives::EdgeTransitionLocation::Left, -120.0, 0.0 },
+        { xaml_primitives::EdgeTransitionLocation::Right, 120.0, 0.0 },
+    };
+
+    Platform::String^ PaneClipTranslateXProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.ClipTransform).TranslateX"; }
+    Platform::String^ PaneClipTranslateYProperty() { return L"(UIElement.TransitionTarget).(TransitionTarget.ClipTransform).TranslateY"; }
+
+    // Verifies that the storyboards translate the target's clip from (fromX, fromY) to (toX, toY).
+    void VerifyClipTranslation(StoryboardVector^ storyboards, double fromX, double fromY, double toX, double toY)
+    {
+        const auto xValues = GetKeyFrameValues(storyboards, PaneClipTranslateXProperty());
+        const auto yValues = GetKeyFrameValues(storyboards, PaneClipTranslateYProperty());
+
+        VERIFY_IS_FALSE(xValues.empty());
+        VERIFY_IS_FALSE(yValues.empty());
+
+        LOG_OUTPUT(L"Clip TranslateX: %f -> %f (expected %f -> %f), Clip TranslateY: %f -> %f (expected %f -> %f)",
+            xValues.front(), xValues.back(), fromX, toX,
+            yValues.front(), yValues.back(), fromY, toY);
+
+        VERIFY_ARE_EQUAL(fromX, xValues.front());
+        VERIFY_ARE_EQUAL(toX, xValues.back());
+        VERIFY_ARE_EQUAL(fromY, yValues.front());
+        VERIFY_ARE_EQUAL(toY, yValues.back());
+    }
+
+    void VerifyNoClipTranslation(StoryboardVector^ storyboards)
+    {
+        VERIFY_IS_TRUE(GetKeyFrameValues(storyboards, PaneClipTranslateXProperty()).empty());
+        VERIFY_IS_TRUE(GetKeyFrameValues(storyboards, PaneClipTranslateYProperty()).empty());
+    }
+
+    // Verifies the storyboards of an Edge-based transition (EdgeUIThemeTransition or PaneThemeTransition).
+    // PaneThemeTransition additionally slides a clip in the opposite direction on Load/Unload (so the pane appears to
+    // slide out from behind its edge) and animates relative to the common parent.
+    void VerifyEdgeBasedTransitionStoryboards(
+        std::function<xaml_animation::Transition^(xaml_primitives::EdgeTransitionLocation)> createTransition,
+        xaml::UIElement^ target,
+        bool isPane = false)
+    {
+        const wf::Rect start(40, 70, 120, 80);
+        const wf::Rect destination(10, 20, 120, 80);
+
+        for (const auto& edgeTranslation : c_edgeTranslations)
+        {
+            LOG_OUTPUT(L"Edge = %d", static_cast<int>(edgeTranslation.edge));
+            auto transition = createTransition(edgeTranslation.edge);
+
+            // Load slides in from the edge, by the destination size, to the final position.
+            xaml::TransitionParent parent = xaml::TransitionParent::ParentToRoot;
+            auto load = CreateTransitionStoryboardsWithParent(transition, target, xaml::TransitionTrigger::Load, start, destination, parent);
+            VERIFY_ARE_EQUAL(1u, load->Size);
+            VerifyTranslation(load, edgeTranslation.offsetX, edgeTranslation.offsetY, 0.0, 0.0);
+            if (isPane)
+            {
+                VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToCommonParent, parent);
+                VerifyClipTranslation(load, -edgeTranslation.offsetX, -edgeTranslation.offsetY, 0.0, 0.0);
+            }
+            else
+            {
+                VerifyNoClipTranslation(load);
+            }
+
+            // Unload slides out from the current position to the edge.
+            parent = xaml::TransitionParent::ParentToRoot;
+            auto unload = CreateTransitionStoryboardsWithParent(transition, target, xaml::TransitionTrigger::Unload, start, destination, parent);
+            VERIFY_ARE_EQUAL(1u, unload->Size);
+            VerifyTranslation(unload, 0.0, 0.0, edgeTranslation.offsetX, edgeTranslation.offsetY);
+            if (isPane)
+            {
+                VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToCommonParent, parent);
+                VerifyClipTranslation(unload, 0.0, 0.0, -edgeTranslation.offsetX, -edgeTranslation.offsetY);
+            }
+            else
+            {
+                VerifyNoClipTranslation(unload);
+            }
+
+            // Layout moves from the old position to the new one, regardless of the edge, without a clip.
+            parent = xaml::TransitionParent::ParentToRoot;
+            auto layout = CreateTransitionStoryboardsWithParent(transition, target, xaml::TransitionTrigger::Layout, start, destination, parent);
+            VERIFY_ARE_EQUAL(1u, layout->Size);
+            VerifyTranslation(layout, start.X - destination.X, start.Y - destination.Y, 0.0, 0.0);
+            VerifyNoClipTranslation(layout);
+            if (isPane)
+            {
+                VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToCommonParent, parent);
+            }
+
+            // Reparent is not supported by these transitions.
+            auto reparent = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Reparent, start, destination);
+            VERIFY_ARE_EQUAL(0u, reparent->Size);
+        }
+    }
+
     void VerifyItemsControlTransitionStoryboards(
         ItemsControlTransitionBatch batch,
         bool hasAddDelete = true,
@@ -1599,5 +1797,357 @@ void ThemeTransitionTests::ValidateContentOverride()
     TestServices::WindowHelper->WaitForIdle();
 
     VERIFY_ARE_EQUAL(0, storyboardStartedCounter);
+}
+
+void ThemeTransitionTests::ValidateEdgeUIThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 80;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        VerifyEdgeBasedTransitionStoryboards(
+            [](xaml_primitives::EdgeTransitionLocation edge) -> xaml_animation::Transition^
+            {
+                auto transition = ref new xaml_animation::EdgeUIThemeTransition();
+                transition->Edge = edge;
+                VERIFY_ARE_EQUAL(edge, transition->Edge);
+                return transition;
+            },
+            target);
+    });
+}
+
+void ThemeTransitionTests::ValidatePaneThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 80;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        VerifyEdgeBasedTransitionStoryboards(
+            [](xaml_primitives::EdgeTransitionLocation edge) -> xaml_animation::Transition^
+            {
+                auto transition = ref new xaml_animation::PaneThemeTransition();
+                transition->Edge = edge;
+                VERIFY_ARE_EQUAL(edge, transition->Edge);
+                return transition;
+            },
+            target,
+            true /* isPane */);
+    });
+}
+
+void ThemeTransitionTests::ValidatePopupThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 80;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        const wf::Rect start(40, 70, 120, 80);
+        const wf::Rect destination(10, 20, 120, 80);
+
+        auto transition = ref new xaml_animation::PopupThemeTransition();
+        transition->FromHorizontalOffset = 30;
+        transition->FromVerticalOffset = -45;
+
+        // Load slides in from the "From" offsets to the final position.
+        auto load = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Load, start, destination);
+        VERIFY_ARE_EQUAL(1u, load->Size);
+        VerifyTranslation(load, 30.0, -45.0, 0.0, 0.0);
+
+        // Unload hides the popup in place: the "From" offsets are not used.
+        auto unload = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Unload, start, destination);
+        VERIFY_ARE_EQUAL(1u, unload->Size);
+        VERIFY_IS_GREATER_THAN(unload->GetAt(0)->Children->Size, 0u);
+        for (double value : GetKeyFrameValues(unload, TranslateXProperty()))
+        {
+            VERIFY_ARE_EQUAL(0.0, value);
+        }
+        for (double value : GetKeyFrameValues(unload, TranslateYProperty()))
+        {
+            VERIFY_ARE_EQUAL(0.0, value);
+        }
+
+        // Layout and Reparent are not supported by PopupThemeTransition.
+        VERIFY_ARE_EQUAL(0u, CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Layout, start, destination)->Size);
+        VERIFY_ARE_EQUAL(0u, CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Reparent, start, destination)->Size);
+    });
+}
+
+void ThemeTransitionTests::ValidateMenuPopupThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::MenuFlyoutPresenter^ presenter = nullptr;
+    xaml_controls::Border^ plainTarget = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        // An app-supplied MenuFlyoutPresenter template with a "MenuFlyoutPresenterBorder" part, whose scale is animated
+        // together with the presenter when the menu opens.
+        presenter = safe_cast<xaml_controls::MenuFlyoutPresenter^>(xaml_markup::XamlReader::Load(
+            L"<MenuFlyoutPresenter xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Width='100' Height='120'>"
+            L"  <MenuFlyoutPresenter.Template>"
+            L"    <ControlTemplate TargetType='MenuFlyoutPresenter'>"
+            L"      <Border x:Name='MenuFlyoutPresenterBorder' Background='Red'/>"
+            L"    </ControlTemplate>"
+            L"  </MenuFlyoutPresenter.Template>"
+            L"</MenuFlyoutPresenter>"));
+
+        plainTarget = ref new xaml_controls::Border();
+        plainTarget->Width = 100;
+        plainTarget->Height = 120;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(presenter);
+        root->Children->Append(plainTarget);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        const wf::Rect bounds(0, 0, 100, 120);
+
+        // Direction=Top: the presenter slides down from above (TranslateY -OpenedLength*ClosedRatio) while its clip
+        // moves the opposite way, and the border part scales up from (1 - ClosedRatio) around its bottom (CenterY = OpenedLength).
+        auto top = LoadTransition(L"<MenuPopupThemeTransition xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' OpenedLength='120' Direction='Top' ClosedRatio='0.25'/>");
+        auto topLoad = CreateTransitionStoryboards(top, presenter, xaml::TransitionTrigger::Load, bounds, bounds);
+        VERIFY_ARE_EQUAL(1u, topLoad->Size);
+        VerifyKeyFrameValues(topLoad, ClipTranslateYProperty(), { 30.0, 0.0 });
+        VerifyKeyFrameValues(topLoad, TranslateYProperty(), { -30.0, 0.0 });
+        VerifyKeyFrameValues(topLoad, ScaleYProperty(), { 0.75, 1.0 });
+        VerifyKeyFrameValues(topLoad, CenterYProperty(), { 120.0 });
+
+        // Direction=Bottom: the presenter slides up from below; the border scales around its top (no CenterY).
+        auto bottom = LoadTransition(L"<MenuPopupThemeTransition xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' OpenedLength='120' Direction='Bottom' ClosedRatio='0.25'/>");
+        auto bottomLoad = CreateTransitionStoryboards(bottom, presenter, xaml::TransitionTrigger::Load, bounds, bounds);
+        VERIFY_ARE_EQUAL(1u, bottomLoad->Size);
+        VerifyKeyFrameValues(bottomLoad, ClipTranslateYProperty(), { -30.0, 0.0 });
+        VerifyKeyFrameValues(bottomLoad, TranslateYProperty(), { 30.0, 0.0 });
+        VerifyKeyFrameValues(bottomLoad, ScaleYProperty(), { 0.75, 1.0 });
+        VerifyKeyFrameValues(bottomLoad, CenterYProperty(), {});
+
+        // A target that isn't a MenuFlyoutPresenter (and isn't hosted in one) gets no border animation.
+        auto plainLoad = CreateTransitionStoryboards(top, plainTarget, xaml::TransitionTrigger::Load, bounds, bounds);
+        VERIFY_ARE_EQUAL(1u, plainLoad->Size);
+        VerifyKeyFrameValues(plainLoad, TranslateYProperty(), { -30.0, 0.0 });
+        VerifyKeyFrameValues(plainLoad, ScaleYProperty(), {});
+        VerifyKeyFrameValues(plainLoad, CenterYProperty(), {});
+
+        // Unload fades the presenter out without moving it.
+        auto unload = CreateTransitionStoryboards(top, presenter, xaml::TransitionTrigger::Unload, bounds, bounds);
+        VERIFY_ARE_EQUAL(1u, unload->Size);
+        VerifyKeyFrameValues(unload, OpacityProperty(), { 1.0, 0.0 });
+        VerifyKeyFrameValues(unload, TranslateYProperty(), {});
+        VerifyKeyFrameValues(unload, ScaleYProperty(), {});
+
+        presenter = nullptr;
+        plainTarget = nullptr;
+    });
+}
+
+void ThemeTransitionTests::ValidatePickerFlyoutThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 200;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        const wf::Rect bounds(0, 0, 120, 200);
+        auto createTransition = [](Platform::String^ openedLength, Platform::String^ offsetFromCenter)
+        {
+            return LoadTransition(
+                L"<PickerFlyoutThemeTransition xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' OpenedLength='" + openedLength +
+                L"' OffsetFromCenter='" + offsetFromCenter + L"'/>");
+        };
+
+        // With OpenedLength = 200, the opening clip starts at ClosedRatio 0.5 (100 px) and the closing clip ends at
+        // ClosedRatio 0.15 (30 px) unless the selected item is so far from the center that the clip would leave the
+        // element: |offset| > 50 when opening and |offset| > 85 when closing. The clip always ends/starts at
+        // (0.5 + |offset| / OpenedLength) * 2.
+        struct PickerCase
+        {
+            const wchar_t* offset;
+            double offsetValue;
+            double loadInitialScale;
+            double loadFinalScale;
+            double unloadInitialScale;
+            double unloadFinalScale;
+        };
+        const PickerCase cases[] =
+        {
+            { L"90", 90.0, 0.9, 1.9, 1.9, 0.2 },        // beyond both maximum offsets
+            { L"-90", -90.0, 0.9, 1.9, 1.9, 0.2 },      // the absolute offset is used
+            { L"-10", -10.0, 0.5, 1.1, 1.1, 0.15 },     // within both maximum offsets
+            { L"50", 50.0, 0.5, 1.5, 1.5, 0.15 },       // exactly the opening maximum offset
+            { L"85", 85.0, 0.85, 1.85, 1.85, 0.15 },    // exactly the closing maximum offset
+            { L"30", 30.0, 0.5, 1.3, 1.3, 0.15 },       // within the opening maximum offset of OpenedLength * (1 - 0.5) / 2 = 50
+        };
+
+        for (const auto& pickerCase : cases)
+        {
+            LOG_OUTPUT(L"OffsetFromCenter = %s", pickerCase.offset);
+            auto transition = createTransition(L"200", ref new Platform::String(pickerCase.offset));
+
+            auto load = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Load, bounds, bounds);
+            VERIFY_ARE_EQUAL(1u, load->Size);
+            VerifyKeyFrameValues(load, ClipScaleYProperty(), { pickerCase.loadInitialScale, pickerCase.loadFinalScale });
+            VerifyKeyFrameValues(load, ClipTranslateYProperty(), { pickerCase.offsetValue });
+            VerifyKeyFrameValues(load, OpacityProperty(), { 1.0 });
+
+            auto unload = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Unload, bounds, bounds);
+            VERIFY_ARE_EQUAL(1u, unload->Size);
+            VerifyKeyFrameValues(unload, ClipScaleYProperty(), { pickerCase.unloadInitialScale, pickerCase.unloadFinalScale });
+            VerifyKeyFrameValues(unload, ClipTranslateYProperty(), { pickerCase.offsetValue });
+            VerifyKeyFrameValues(unload, OpacityProperty(), { 1.0, 1.0, 0.0 });
+
+            // Other triggers produce an empty storyboard.
+            auto layout = CreateTransitionStoryboards(transition, target, xaml::TransitionTrigger::Layout, bounds, bounds);
+            VERIFY_ARE_EQUAL(1u, layout->Size);
+            VERIFY_ARE_EQUAL(0u, layout->GetAt(0)->Children->Size);
+        }
+
+        // Without an opened length there is nothing to animate.
+        auto empty = createTransition(L"0", L"10");
+        VERIFY_ARE_EQUAL(0u, CreateTransitionStoryboards(empty, target, xaml::TransitionTrigger::Load, bounds, bounds)->Size);
+        VERIFY_ARE_EQUAL(0u, CreateTransitionStoryboards(empty, target, xaml::TransitionTrigger::Unload, bounds, bounds)->Size);
+
+        target = nullptr;
+    });
+}
+
+void ThemeTransitionTests::ValidateInputPaneThemeTransitionStoryboards()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 80;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        const wf::Rect start(40, 70, 120, 80);
+        const wf::Rect destination(10, 20, 120, 80);
+
+        auto transition = LoadTransition(L"<InputPaneThemeTransition xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>");
+
+        // Without a showing input pane, the element moves (hide-panel animation) from its old position to its new one,
+        // relative to the root.
+        xaml::TransitionParent parent = xaml::TransitionParent::ParentToCommonParent;
+        auto layout = CreateTransitionStoryboardsWithParent(transition, target, xaml::TransitionTrigger::Layout, start, destination, parent);
+        VERIFY_ARE_EQUAL(1u, layout->Size);
+        VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToRoot, parent);
+        VerifyTranslation(layout, start.X - destination.X, start.Y - destination.Y, 0.0, 0.0);
+
+        target = nullptr;
+    });
+}
+
+void ThemeTransitionTests::ValidateAddDeleteThemeTransitionOutsideItemsControl()
+{
+    TestCleanupWrapper cleanup;
+    xaml_controls::Border^ target = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        target = ref new xaml_controls::Border();
+        target->Width = 120;
+        target->Height = 40;
+
+        auto root = ref new xaml_controls::StackPanel();
+        root->Children->Append(target);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        const wf::Rect start(0, 40, 120, 40);
+        const wf::Rect destination(0, 0, 120, 40);
+        auto addDelete = ref new xaml_animation::AddDeleteThemeTransition();
+
+        // Outside of an ItemsControl there is no collection context: deleted elements fade out only after the
+        // affected elements had time to move (300 ms).
+        xaml::TransitionParent parent = xaml::TransitionParent::ParentToRoot;
+        auto unload = CreateTransitionStoryboardsWithParent(addDelete, target, xaml::TransitionTrigger::Unload, destination, destination, parent);
+        VERIFY_ARE_EQUAL(1u, unload->Size);
+        VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToCommonParent, parent);
+        TransitionAnimationTiming timing;
+        VERIFY_IS_TRUE(TryGetTransitionAnimationTiming(unload, OpacityProperty(), 1.0, timing));
+        LOG_OUTPUT(L"Delete fade starts at %lld (100ns units)", timing.earliestStart);
+        VERIFY_IS_GREATER_THAN_OR_EQUAL(timing.earliestStart, 300 * 10000LL);
+
+        // Reparenting is animated relative to the root, layout changes relative to the common parent.
+        parent = xaml::TransitionParent::ParentToCommonParent;
+        auto reparent = CreateTransitionStoryboardsWithParent(addDelete, target, xaml::TransitionTrigger::Reparent, start, destination, parent);
+        VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToRoot, parent);
+        VERIFY_IS_GREATER_THAN_OR_EQUAL(reparent->Size, 1u);
+
+        parent = xaml::TransitionParent::ParentToRoot;
+        auto layout = CreateTransitionStoryboardsWithParent(addDelete, target, xaml::TransitionTrigger::Layout, start, destination, parent);
+        VERIFY_ARE_EQUAL(xaml::TransitionParent::ParentToCommonParent, parent);
+        VerifyTranslation(layout, start.X - destination.X, start.Y - destination.Y, 0.0, 0.0);
+
+        target = nullptr;
+    });
 }
 } } } } } }

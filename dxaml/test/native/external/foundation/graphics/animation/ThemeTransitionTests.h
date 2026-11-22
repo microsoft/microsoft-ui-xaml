@@ -97,6 +97,34 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Validate Frame's content theme will override the page default")
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateEdgeUIThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the EdgeUIThemeTransition storyboards for every Edge and for the Load, Unload, Layout and Reparent triggers.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePaneThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the PaneThemeTransition storyboards for every Edge and for the Load, Unload, Layout and Reparent triggers.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePopupThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the PopupThemeTransition storyboards for the Load, Unload, Layout and Reparent triggers.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateMenuPopupThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the MenuPopupThemeTransition (created from markup) storyboards for both directions, with a templated MenuFlyoutPresenterBorder part and without one.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidatePickerFlyoutThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the PickerFlyoutThemeTransition (created from markup) clip storyboards for offsets inside, at and beyond the maximum offsets.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateInputPaneThemeTransitionStoryboards)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates the InputPaneThemeTransition (created from markup) layout storyboard and transition parent.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(ValidateAddDeleteThemeTransitionOutsideItemsControl)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates AddDeleteThemeTransition storyboards and transition parents for an element that isn't in an ItemsControl.")
+    END_TEST_METHOD()
 private:
     void TestThemeTransitionXaml(Platform::String^ path);
 

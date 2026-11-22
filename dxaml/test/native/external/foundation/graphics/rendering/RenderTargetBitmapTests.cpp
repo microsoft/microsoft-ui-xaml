@@ -1894,4 +1894,262 @@ void RenderTargetBitmapTests::BitmapIconLargerThanIconInternal()
     IconElementTestHelper(L"RTBTests-BitmapIcon-LargerThanIcon.xaml", L"bitmapIcon", 150, 150);
 }
 
+namespace
+{
+    // Pixels captured with RenderTargetBitmap, as little-endian BGRA uint32 values, with lookup in logical coordinates.
+    struct CapturedPixels
+    {
+        int pixelWidth = 0;
+        int pixelHeight = 0;
+        double scale = 1.0;
+        std::vector<uint32_t> pixels;
+
+        uint32_t At(int x, int y) const
+        {
+            const int px = static_cast<int>(x * scale);
+            const int py = static_cast<int>(y * scale);
+            const uint32_t value = pixels[py * pixelWidth + px];
+            LOG_OUTPUT(L"Pixel (%d, %d) = %08x", x, y, value);
+            return value;
+        }
+    };
+
+    const uint32_t c_redPixel = 0xFFFF0000;
+    const uint32_t c_greenPixel = 0xFF00FF00;
+
+    // Renders element (of the given logical width) with RenderTargetBitmap and reads its pixels back.
+    // Completion handlers only capture shared state by value.
+    CapturedPixels CaptureElementPixels(UIElement^ element, double logicalWidth)
+    {
+        struct RenderState
+        {
+            std::shared_ptr<Event> renderedEvent = std::make_shared<Event>();
+            std::shared_ptr<Event> getPixelsEvent = std::make_shared<Event>();
+            IBuffer^ buffer = nullptr;
+        };
+        auto state = std::make_shared<RenderState>();
+        RenderTargetBitmap^ rtb = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            rtb = ref new RenderTargetBitmap();
+            auto renderedEvent = state->renderedEvent;
+            create_task(rtb->RenderAsync(element)).then([renderedEvent]()
+            {
+                LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
+                renderedEvent->Set();
+            });
+        });
+        state->renderedEvent->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            auto getPixelsAsyncOperation = rtb->GetPixelsAsync();
+            getPixelsAsyncOperation->Completed = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
+                [state](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus)
+            {
+                LOG_OUTPUT(L"GetPixelsAsync operation completed.");
+                state->buffer = operation->GetResults();
+                state->getPixelsEvent->Set();
+            });
+        });
+        state->getPixelsEvent->WaitForDefault();
+
+        CapturedPixels result;
+        RunOnUIThread([&]()
+        {
+            result.pixelWidth = rtb->PixelWidth;
+            result.pixelHeight = rtb->PixelHeight;
+            result.scale = result.pixelWidth / logicalWidth;
+            LOG_OUTPUT(L"RenderTargetBitmap size: %d x %d", result.pixelWidth, result.pixelHeight);
+            VERIFY_IS_GREATER_THAN(result.pixelWidth, 0);
+
+            IBuffer^ buffer = state->buffer;
+            VERIFY_IS_NOT_NULL(buffer);
+            VERIFY_ARE_EQUAL(static_cast<unsigned int>(result.pixelWidth * result.pixelHeight * 4), buffer->Length);
+
+            Platform::Array<byte>^ bytes = ref new Platform::Array<byte>(buffer->Length);
+            DataReader::FromBuffer(buffer)->ReadBytes(bytes);
+            result.pixels.resize(buffer->Length / 4);
+            memcpy(result.pixels.data(), bytes->Data, buffer->Length);
+            rtb = nullptr;
+        });
+
+        return result;
+    }
+}
+
+//------------------------------------------------------------------------
+//
+// Captures a 200x200 green Grid containing a Grid rotated by 30 degrees around its center, which has a clip,
+// and inside it a red Border with a smaller clip. The red square (the inner clip) must appear rotated in the
+// bitmap, i.e. the clips are transformed together with the content.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::RotatedNestedClipsRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    Grid^ host = nullptr;
+    RunOnUIThread([&]()
+    {
+        host = safe_cast<Grid^>(XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <Grid Width='200' Height='200' RenderTransformOrigin='0.5,0.5'>"
+            L"    <Grid.RenderTransform><RotateTransform Angle='30'/></Grid.RenderTransform>"
+            L"    <Grid.Clip><RectangleGeometry Rect='20,20,160,160'/></Grid.Clip>"
+            L"    <Border Width='200' Height='200' Background='#FFFF0000'>"
+            L"      <Border.Clip><RectangleGeometry Rect='60,60,80,80'/></Border.Clip>"
+            L"    </Border>"
+            L"  </Grid>"
+            L"</Grid>"));
+        TestServices::WindowHelper->WindowContent = host;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+    VERIFY_ARE_EQUAL(captured.pixelWidth, captured.pixelHeight);
+
+    // The center is inside both clips.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(100, 100));
+
+    // Inside the rotated inner clip, but outside the unrotated square 60..140.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(147, 87));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(53, 113));
+
+    // Inside the unrotated square 60..140, but outside the rotated inner clip.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(62, 62));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(138, 138));
+
+    // Corners of the host are outside every clip.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(3, 3));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(196, 196));
+
+    RunOnUIThread([&]()
+    {
+        host = nullptr;
+    });
+}
+
+//------------------------------------------------------------------------
+//
+// Captures a 200x200 green Grid containing a red Border that is clipped to its left half (0..100) and moved
+// 50 px to the right by a Matrix3DProjection. The clip is in the Border's local space, so the red band must
+// appear at 50..150 in the bitmap.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::ProjectedClippedRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    Grid^ host = nullptr;
+    RunOnUIThread([&]()
+    {
+        host = safe_cast<Grid^>(XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <Border x:Name='projected' Width='200' Height='200' Background='#FFFF0000'>"
+            L"    <Border.Clip><RectangleGeometry Rect='0,0,100,200'/></Border.Clip>"
+            L"  </Border>"
+            L"</Grid>"));
+
+        auto projection = ref new Matrix3DProjection();
+        projection->ProjectionMatrix = Media3D::Matrix3DHelper::FromElements(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            50, 0, 0, 1);
+        safe_cast<Border^>(host->FindName(L"projected"))->Projection = projection;
+
+        TestServices::WindowHelper->WindowContent = host;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+
+    // The clipped band (0..100) is translated to 50..150.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(54, 100));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(100, 20));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(146, 180));
+
+    // Left of the band: the original position of the clipped content, now uncovered.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(20, 100));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(46, 100));
+
+    // Right of the band: the Border's own right half is clipped away.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(154, 100));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(190, 100));
+
+    RunOnUIThread([&]()
+    {
+        host = nullptr;
+    });
+}
+
+//------------------------------------------------------------------------
+//
+// Captures a 200x200 green Grid containing a Grid scaled by (2, 1) with a clip, and inside it a red Border with
+// another clip. Neither element needs its own composition node (the scale is axis aligned), so both clips are
+// accumulated and intersected in the same transform-and-clip frame. In host coordinates:
+//   outer clip  Rect(10,20,70,120) * scale (2,1)  ->  x 20..160, y 20..140
+//   inner clip  Rect(40,60,50,120) * scale (2,1)  ->  x 80..180, y 60..180
+//   intersection                                  ->  x 80..160, y 60..140
+// Only the intersection is red.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::NestedAxisAlignedClipsRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    TestCleanupWrapper cleanup;
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    Grid^ host = nullptr;
+    RunOnUIThread([&]()
+    {
+        host = safe_cast<Grid^>(XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"      Width='200' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top' Background='#FF00FF00'>"
+            L"  <Grid Width='100' Height='200' HorizontalAlignment='Left' VerticalAlignment='Top'>"
+            L"    <Grid.RenderTransform><ScaleTransform ScaleX='2' ScaleY='1'/></Grid.RenderTransform>"
+            L"    <Grid.Clip><RectangleGeometry Rect='10,20,70,120'/></Grid.Clip>"
+            L"    <Border Width='100' Height='200' Background='#FFFF0000'>"
+            L"      <Border.Clip><RectangleGeometry Rect='40,60,50,120'/></Border.Clip>"
+            L"    </Border>"
+            L"  </Grid>"
+            L"</Grid>"));
+        TestServices::WindowHelper->WindowContent = host;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    const CapturedPixels captured = CaptureElementPixels(host, 200.0);
+
+    // Inside both clips.
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(120, 100));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(84, 64));
+    VERIFY_ARE_EQUAL(c_redPixel, captured.At(156, 136));
+
+    // Inside the outer clip only.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(40, 100));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(76, 100));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(120, 30));
+
+    // Inside the inner clip only.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(170, 100));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(120, 160));
+
+    // Outside both clips.
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(5, 5));
+    VERIFY_ARE_EQUAL(c_greenPixel, captured.At(190, 190));
+
+    RunOnUIThread([&]()
+    {
+        host = nullptr;
+    });
+}
+
 } } } } } }

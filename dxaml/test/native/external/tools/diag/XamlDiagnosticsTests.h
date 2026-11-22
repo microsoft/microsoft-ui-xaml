@@ -393,6 +393,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(TestColorValuesUseKnownColorNames)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify that Color property values are reported with their known color name, or as #AARRGGBB when the color has no name")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(TestCanUseIPropertyValueTypes)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify we can get and set types used by IPropertyValue")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")

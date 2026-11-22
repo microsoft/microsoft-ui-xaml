@@ -88,6 +88,198 @@ void Matrix3DProjectionTests::MultiplicationTest()
     });
 }
 
+void Matrix3DProjectionTests::AffineInverseTest()
+{
+    TestCleanupWrapper cleanup;
+
+    RunOnUIThread([this]()
+    {
+        // An affine matrix (M14 = M24 = M34 = 0, M44 = 1) with a non-symmetric 3x3 part (det = -11)
+        // and a non-zero translation.
+        const Matrix3D affine = Matrix3DHelper::FromElements(
+            2, 1, 3, 0,
+            0, 4, 1, 0,
+            5, 2, 6, 0,
+            5, -7, 11, 1);
+
+        VERIFY_IS_TRUE(Matrix3DHelper::GetHasInverse(affine));
+
+        const Matrix3D inverse = Matrix3DHelper::Invert(affine);
+
+        // The affine inverse is the inverse of the 3x3 part, with the translation mapped through it.
+        const double epsilon = 0.000001;
+        const double expected[16] = {
+            -2.0,          0.0,          1.0,          0.0,
+            -5.0 / 11.0,   3.0 / 11.0,   2.0 / 11.0,   0.0,
+            20.0 / 11.0,  -1.0 / 11.0,  -8.0 / 11.0,   0.0,
+            -145.0 / 11.0, 32.0 / 11.0,  47.0 / 11.0,  1.0 };
+        const double actual[16] = {
+            inverse.M11, inverse.M12, inverse.M13, inverse.M14,
+            inverse.M21, inverse.M22, inverse.M23, inverse.M24,
+            inverse.M31, inverse.M32, inverse.M33, inverse.M34,
+            inverse.OffsetX, inverse.OffsetY, inverse.OffsetZ, inverse.M44 };
+
+        for (int i = 0; i < 16; ++i)
+        {
+            LOG_OUTPUT(L"Element %d: expected %f, actual %f", i, expected[i], actual[i]);
+            VERIFY_IS_TRUE(CompareDoublesWithEpsilon(expected[i], actual[i], epsilon));
+        }
+
+        // The inverse of an affine matrix is affine.
+        VERIFY_ARE_EQUAL(0.0, inverse.M14);
+        VERIFY_ARE_EQUAL(0.0, inverse.M24);
+        VERIFY_ARE_EQUAL(0.0, inverse.M34);
+        VERIFY_ARE_EQUAL(1.0, inverse.M44);
+
+        // M x M^(-1) = I, in both orders.
+        Matrix3D identity = Matrix3DHelper::Identity;
+        Matrix3D product = Matrix3DHelper::Multiply(affine, inverse);
+        VERIFY_IS_TRUE(CompareMatrices(&product, &identity));
+        product = Matrix3DHelper::Multiply(inverse, affine);
+        VERIFY_IS_TRUE(CompareMatrices(&product, &identity));
+
+        // Inverting the inverse returns the original matrix.
+        Matrix3D roundTrip = Matrix3DHelper::Invert(inverse);
+        Matrix3D original = affine;
+        VERIFY_IS_TRUE(CompareMatrices(&roundTrip, &original));
+    });
+}
+
+void Matrix3DProjectionTests::NonAffineInverseTest()
+{
+    TestCleanupWrapper cleanup;
+
+    RunOnUIThread([this]()
+    {
+        struct InverseCase
+        {
+            const wchar_t* description;
+            Matrix3D matrix;
+            double expected[16];
+        };
+
+        const InverseCase cases[] =
+        {
+            // Only M14 is non-affine: the inverse negates it and keeps the identity elsewhere.
+            { L"M14 = 0.5", Matrix3DHelper::FromElements(
+                1, 0, 0, 0.5,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1),
+              { 1, 0, 0, -0.5,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1 } },
+            // A dense non-affine matrix (M14, M24, M34 != 0 and M44 = 2) with an exact rational inverse (det = 2).
+            { L"dense", Matrix3DHelper::FromElements(
+                2, 0, 1, 0.5,
+                0, 3, 0, -1,
+                1, 0, 1, 0.25,
+                4, -2, 0, 2),
+              { 4, -0.5, -4, -0.75,
+                -4, 1, 4, 1,
+                -1, 0, 2, 0,
+                -12, 2, 12, 3 } },
+        };
+
+        for (const auto& inverseCase : cases)
+        {
+            LOG_OUTPUT(L"Inverting %s", inverseCase.description);
+            VERIFY_IS_TRUE(Matrix3DHelper::GetHasInverse(inverseCase.matrix));
+
+            const Matrix3D inverse = Matrix3DHelper::Invert(inverseCase.matrix);
+            const double actual[16] = {
+                inverse.M11, inverse.M12, inverse.M13, inverse.M14,
+                inverse.M21, inverse.M22, inverse.M23, inverse.M24,
+                inverse.M31, inverse.M32, inverse.M33, inverse.M34,
+                inverse.OffsetX, inverse.OffsetY, inverse.OffsetZ, inverse.M44 };
+
+            for (int i = 0; i < 16; ++i)
+            {
+                LOG_OUTPUT(L"Element %d: expected %f, actual %f", i, inverseCase.expected[i], actual[i]);
+                VERIFY_IS_TRUE(CompareDoublesWithEpsilon(inverseCase.expected[i], actual[i], 0.000001));
+            }
+
+            // M x M^(-1) = I, in both orders.
+            Matrix3D identity = Matrix3DHelper::Identity;
+            Matrix3D product = Matrix3DHelper::Multiply(inverseCase.matrix, inverse);
+            VERIFY_IS_TRUE(CompareMatrices(&product, &identity));
+            product = Matrix3DHelper::Multiply(inverse, inverseCase.matrix);
+            VERIFY_IS_TRUE(CompareMatrices(&product, &identity));
+        }
+    });
+}
+
+void Matrix3DProjectionTests::SingularMatrixInvertFails()
+{
+    TestCleanupWrapper cleanup;
+
+    RunOnUIThread([]()
+    {
+        auto verifyInvertFails = [](const Matrix3D& matrix, const wchar_t* description)
+        {
+            LOG_OUTPUT(L"Inverting singular matrix: %s", description);
+            VERIFY_IS_FALSE(Matrix3DHelper::GetHasInverse(matrix));
+
+            bool threw = false;
+            try
+            {
+                Matrix3DHelper::Invert(matrix);
+            }
+            catch (Platform::Exception^ e)
+            {
+                threw = true;
+                VERIFY_ARE_EQUAL(E_FAIL, e->HResult);
+            }
+            VERIFY_IS_TRUE(threw);
+        };
+
+        // Affine, but the second row is twice the first row, so the 3x3 part is singular.
+        verifyInvertFails(Matrix3DHelper::FromElements(
+            1, 2, 3, 0,
+            2, 4, 6, 0,
+            0, 1, 5, 0,
+            1, 2, 3, 1), L"affine");
+
+        // Non-affine (M14 != 0), with the last row equal to the first row.
+        verifyInvertFails(Matrix3DHelper::FromElements(
+            1, 2, 3, 1,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            1, 2, 3, 1), L"non-affine");
+    });
+}
+
+void Matrix3DProjectionTests::IsIdentityTest()
+{
+    TestCleanupWrapper cleanup;
+
+    RunOnUIThread([]()
+    {
+        VERIFY_IS_TRUE(Matrix3DHelper::GetIsIdentity(Matrix3DHelper::Identity));
+        VERIFY_IS_TRUE(Matrix3DHelper::GetIsIdentity(Matrix3DHelper::FromElements(
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1)));
+
+        // Changing any single element of the identity matrix makes it a non-identity matrix.
+        double Matrix3D::* const elements[16] = {
+            &Matrix3D::M11, &Matrix3D::M12, &Matrix3D::M13, &Matrix3D::M14,
+            &Matrix3D::M21, &Matrix3D::M22, &Matrix3D::M23, &Matrix3D::M24,
+            &Matrix3D::M31, &Matrix3D::M32, &Matrix3D::M33, &Matrix3D::M34,
+            &Matrix3D::OffsetX, &Matrix3D::OffsetY, &Matrix3D::OffsetZ, &Matrix3D::M44 };
+
+        for (int i = 0; i < 16; ++i)
+        {
+            Matrix3D matrix = Matrix3DHelper::Identity;
+            matrix.*(elements[i]) += 0.5;
+            LOG_OUTPUT(L"Element %d changed to %f", i, matrix.*(elements[i]));
+            VERIFY_IS_FALSE(Matrix3DHelper::GetIsIdentity(matrix));
+        }
+    });
+}
+
 void Matrix3DProjectionTests::VerifyComplexMatrix3DProjection()
 {
     RunOnUIThread([&]()

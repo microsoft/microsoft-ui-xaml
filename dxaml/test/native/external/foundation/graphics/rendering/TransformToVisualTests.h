@@ -27,6 +27,22 @@ public:
 
     TEST_METHOD(BasicTestOnHighDPI)
 
+    BEGIN_TEST_METHOD(ProjectedElementTransformInverse)
+        TEST_METHOD_PROPERTY(L"Description", L"TransformToVisual through a PlaneProjection returns a non-matrix transform whose Inverse maps transformed points back.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(TransformFromStringAndInverse)
+        TEST_METHOD_PROPERTY(L"Description", L"A Transform-typed property set from a matrix string in markup creates a MatrixTransform; Transform.Inverse inverts it and fails for a singular transform.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(PopupInProjectedParentHitTest)
+        TEST_METHOD_PROPERTY(L"Description", L"The child of an open Popup whose parent has a PlaneProjection is hit-testable at its projected position.")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(NearPlaneClippedProjectionVisibleBounds)
+        TEST_METHOD_PROPERTY(L"Description", L"The visible bounds of a VirtualSurfaceImageSource on an element with a Matrix3DProjection exclude the parts behind the near plane, and are empty for non-positive w.")
+    END_TEST_METHOD()
+
 private:
     inline Platform::String^ GetResourcesPath() const;
 };
