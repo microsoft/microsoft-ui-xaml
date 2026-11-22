@@ -101,8 +101,8 @@
 //       free, diverged       | re-read            | re-read
 //     Under ParentBy one source change can produce several tree changes (an insert adopts
 //     existing orphans, each a Move from top level to the new item). Decided: adopting one orphan
-//     is surgical (the insert plus one Move); adopting more goes to Reapply() through
-//     ShapingManager::c_bulkThreshold.
+//     is surgical (the insert plus one Move); adopting more is one Reset
+//     (ParentKeyHierarchy::c_bulkThreshold), which the coordinator handles with Reapply().
 //   - ItemChanged: forwards (SourceRecord*, propertyName) when a subscribed record raises
 //     PropertyChanged. The record is never null; an empty propertyName means all properties
 //     changed.

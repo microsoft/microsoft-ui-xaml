@@ -334,15 +334,10 @@ private:
     // and by Clear().
     uint32_t m_liveHoldCount{ 0 };
 
-    // A source notification with more than this many items (a range event, or an insert adopting
-    // several orphans under ParentBy) goes through Reapply() and one stable Reset instead of
-    // surgical Link / Unlink. Descendants carried by an item do not count. 1 matches v1 ShapedItemsSource.
-    static constexpr uint32_t c_bulkThreshold = 1;
-
     // Live-shaping drain (DrainLiveChanges): more than this many dirty records in one turn go
     // through ApplyItemsChanged (one rebuild, one stable Reset); this many or fewer are applied
-    // surgically, one ApplyItemChanged each, in the same commit. Higher than c_bulkThreshold: the
-    // dirty set is what an editing app touched in one turn (usually a few records), and a handful
+    // surgically, one ApplyItemChanged each, in the same commit. Higher than the source-side bulk
+    // threshold (ParentKeyHierarchy::c_bulkThreshold, 1): the dirty set is what an editing app touched in one turn (usually a few records), and a handful
     // of surgical remove / insert pairs is cheaper than a rebuild plus a scroll re-anchor.
     static constexpr uint32_t c_liveBulkThreshold = 16;
 

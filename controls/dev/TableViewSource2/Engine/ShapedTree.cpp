@@ -275,7 +275,7 @@ void ShapedTree::Unlink(ShapedNode* node, bool isMove) noexcept
     Unlink(node, node->ShapedParent(), node->IndexInParent, isMove);
 }
 
-void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept
+void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove, ShapedNode* moved) noexcept
 {
     auto const span = 1 + node->VisibleDescendantCount;
 
@@ -348,11 +348,13 @@ void ShapedTree::Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bo
     // list is renumbered whole (a move to an earlier slot shifted siblings before index) and
     // marked stale (its ChildRows may predate node's arrival, or was just rebuilt above with it).
     // A group or a top-level record always sits in an engine-owned list, so only a nested record
-    // can be here; a removed record has no parent.
-    if (auto const now = node->IsGroup() ? nullptr : node->ShapedParent(); now && !IsEngineOwnedList(now))
+    // can be here; a removed record has no parent. When a group leaves with the moved record (its
+    // last member reparented under a record, GroupBy only), the caller names that record.
+    ShapedNode* const pending = moved ? moved : (node->IsGroup() ? nullptr : node);
+    if (auto const now = pending ? pending->ShapedParent() : nullptr; now && !IsEngineOwnedList(now))
     {
         MUX_ASSERT(!m_unlinked);
-        m_unlinked = node;
+        m_unlinked = pending;
         Renumber(now, 0);
         now->ChildRows.MarkStale();
     }

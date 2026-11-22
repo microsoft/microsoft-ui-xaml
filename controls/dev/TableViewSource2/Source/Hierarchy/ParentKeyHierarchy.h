@@ -64,6 +64,12 @@ public:
     void Release(ISourceHierarchyHost& host) noexcept override;
 
 private:
+    // Spec Bulk threshold: adopting more than this many orphans in one change reparents them all
+    // and raises one Reset instead of one Move each. 1 matches v1 ShapedItemsSource. SourceTable
+    // applies the same rule to collection notifications (a multi-item change is one Reset), so the
+    // engine only ever sees single-item changes.
+    static constexpr size_t c_bulkThreshold = 1;
+
     // Each record's cached keys. Object keys are held while the tree is current so their addresses
     // cannot be reused (v1 section 3.1).
     struct NodeKeys

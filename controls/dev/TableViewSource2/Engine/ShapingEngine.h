@@ -18,7 +18,7 @@
 #include "Spec/ShapeSpec.h"
 
 // Source tree + applied spec -> shaped tree (declarations only). See
-// docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Shaping engine".
+// docs/design-notes/TabularControls/Shaping-Architecture-Redesign-2.md, "Shaping engine".
 //
 // Owns the applied ShapeSpec, the ShapedTree (and through it the shaped root and every GroupNode),
 // and writes the engine-owned ShapeState slot on each record. Reads SourceTable (TopLevel(),
@@ -37,8 +37,13 @@
 // topmost node once; removal mirrors it. A commit either resets or links, never both: Reset vs
 // surgical is decided before the write phase.
 //
-// Routing stays in ShapingManager: the engine never sees a range event (k > c_bulkThreshold); the
-// manager calls Reapply for those.
+// Routing stays in ShapingManager: the engine sees only single-item source changes (SourceTable
+// splits or resets a multi-item change, and ParentKeyHierarchy resets above its c_bulkThreshold);
+// the manager calls ReapplyForSource for a Reset.
+//
+// Ordering (decided, D8): keys compare by the sign of ValueComparer::Compare; Descending flips the
+// sign, never negates the value. A comparer that is not a strict weak ordering gives an
+// unspecified order, never memory-unsafe behaviour. A comparer throw propagates.
 //
 // Reference tracking: GroupNode::Key and ShapeState::SortKeys are tracker_refs bound to
 // trackerOwner (the owning TableViewSource2). Clear() must run while that owner is alive.
@@ -90,43 +95,63 @@ public:
     // ---- Entry points -----------------------------------------------------------------------
     // Each is one unit of work. Called inside a commit scope opened by ShapingManager.
 
-    // A spec verb: Rebuild(desired, delta) (decided, E6): only the parts `delta`
+    // A spec verb: Rebuild(desired, delta, clearOverlay) (decided, E6): only the parts `delta`
     // (Diff(Applied(), desired)) names re-run app code; the others reuse ShapeState and the
     // groups. Always one reset (a stable Reset), never surgical edits. On success
-    // Applied() == desired.
-    void Apply(ShapeSpec const& desired, ShapeDelta delta);
+    // Applied() == desired. `clearOverlay` (decided, D6): the caller's filter verb ran (a filter
+    // added, changed, removed or refreshed), so every record's OverlayCollapsed is cleared (F5);
+    // otherwise it is kept.
+    void Apply(ShapeSpec const& desired, ShapeDelta delta, bool clearOverlay);
 
-    // Full rebuild from SourceTable with `desired`: Rebuild(desired, ShapeDelta::All). Evaluates
-    // every record into a staging buffer, builds new ShapedChildren and groups aside, then moves
-    // them in under the same root between Tree().BeginReset and EndReset. Used for a SourceTable
-    // Reset, a range event and a failed-apply retry.
-    void Reapply(ShapeSpec const& desired);
+    // Full rebuild from SourceTable with `desired`: Rebuild(desired, ShapeDelta::All,
+    // clearOverlay). Evaluates every record into a staging buffer, builds new ShapedChildren and
+    // groups aside, then moves them in under the same root between Tree().BeginReset and
+    // EndReset. Used for Refresh() and a failed-apply retry.
+    void Reapply(ShapeSpec const& desired, bool clearOverlay);
 
-    // One source notification with k <= c_bulkThreshold items (any subtree size): places, removes,
-    // moves or replaces the record and its subtree with Tree().Unlink / Link. While grouped it
-    // also creates missing groups and prunes emptied ones (E9; see StageGroupChain and
-    // PruneEmptyGroups).
+    // Reapply for a source change that has already happened (a SourceTable Reset, a nested
+    // Replace, or any change while IsStale()); never clears OverlayCollapsed. Departed records
+    // always leave the tree: when the compute phase throws, UnlinkOnly rebuilds the tree from the
+    // current records without app code (one
+    // Reset), then the exception is rethrown. `arrivals` are the change's new records
+    // (SourceChange::Added), hidden by that fallback.
+    void ReapplyForSource(ShapeSpec const& desired, std::span<SourceRecord* const> arrivals);
+
+    // True after UnlinkOnly: cached filter results, keys and placements may be stale, so the next
+    // Rebuild re-reads everything (ShapeDelta::All) even when Diff(Applied(), desired) is empty.
+    bool IsStale() const noexcept;
+
+    // One single-item source change (any subtree size): places, removes, moves (including a
+    // reparent) or replaces the record and its subtree with Tree().Unlink / Link, under any
+    // applied spec (decided, D2, D3). While grouped it also creates missing groups and prunes
+    // emptied ones (E9; see StageGroupChain and PruneEmptyGroups). A Reset, a nested Replace (not
+    // raised by SourceTable) and a stale engine rebuild instead (ReapplyForSource). A compute
+    // failure falls back to UnlinkOnly and rethrows (D4, drift #33).
     void ApplySourceChange(SourceChange const& change);
 
-    // Live shaping for one record (k == 1 after coalescing, E7). Routing (decided: re-evaluate and
-    // diff): re-reads what `propertyName` may affect and diffs against the cached ShapeState:
+    // Live shaping for one record (k == 1 after coalescing, E7). Routing (decided, D10:
+    // re-evaluate and diff; RereadsSortLevel): re-reads what `propertyName` may affect and diffs
+    // against the cached ShapeState:
     //   - filter: a delegate predicate is opaque, so it is always re-run;
-    //   - a path sort key or group level: re-read only when the path's first segment equals
-    //     `propertyName` (a nested object's change is not reported by the row item); delegate
-    //     keys are always re-read;
+    //   - a path sort level: re-read only when the path's first segment equals `propertyName` (a
+    //     nested object's change is not reported by the row item); Key levels are always re-read;
+    //     Comparer levels hold no key (the record is re-placed);
+    //   - group levels (Key selectors) are always re-read;
     //   - an empty `propertyName` re-reads everything.
     // No change in PassesFilter, SortKeys or group Identity: nothing is emitted (the row's
     // bindings update on their own). Otherwise the record is removed and re-inserted surgically:
     // a filter flip walks up while a ShapedChildren list changes between empty and non-empty
     // under an ancestor failing the filter (E8); a group change may prune and create groups (E9).
+    // App code that throws (predicate, key, group key selector or comparer) propagates with
+    // nothing written and the engine not stale (decided, D11).
     void ApplyItemChanged(SourceRecord* record, winrt::hstring const& propertyName);
 
     // Live shaping for more than ShapingManager::c_liveBulkThreshold coalesced records (decided,
-    // E7 Y2): Rebuild(Applied(), Filter | GroupKey | Sort, changes). The re-reads (routed per entry
-    // as in ApplyItemChanged) run app code only for `changes`; every other record reuses its cached
-    // ShapeState. The re-sorts then run over cached keys. One reset (a stable Reset the owner
-    // re-anchors). App code runs O(k) times, not O(n). Every entry's record is live (the manager
-    // erases removed records).
+    // E7 Y2): Rebuild(Applied(), Filter | GroupKey | Sort, false, changes). The re-reads (routed
+    // per entry as in ApplyItemChanged, D10) run app code only for `changes`; every other record
+    // reuses its cached ShapeState. The re-sorts then run over cached keys. One reset (a stable
+    // Reset the owner re-anchors). App code runs O(k) times, not O(n). Every entry's record is
+    // live (the manager erases removed records).
     void ApplyItemsChanged(std::span<LiveChange const> changes);
 
     // ---- Lifetime ---------------------------------------------------------------------------
@@ -146,15 +171,17 @@ private:
     // Staging types (E4), defined at the end of the class.
     struct StagedRecord;
     struct StagedEdit;
+    struct StagedLeave;
     struct StagedReapply;
 
     // Rebuild runs these parts in order (decided, E6), driven by a ShapeDelta (see its comment for
     // which flags imply which re-sort):
     //   1. Filter      (Filter)                    predicates -> PassesFilter; ancestors of matches
-    //                                              follow from ShapedChildren; a full pass (`only`
-    //                                              empty) also clears OverlayCollapsed (F5)
+    //                                              follow from ShapedChildren; `clearOverlay` also
+    //                                              clears OverlayCollapsed (F5, D6)
     //   2. Group keys  (GroupKey)                  key per top-level record and level -> segments
-    //   3. Sort keys   (Sort)                      keys of changed levels; unchanged levels keep theirs
+    //   3. Sort keys   (Sort)                      keys of levels with no matching applied level
+    //                                              (SortSpec::Matches); matched levels keep theirs (D5)
     //   4. Sort rows   (Sort | GroupKey | Filter)  comparer over rows in each parent / bottom group
     //   5. Sort groups (GroupOrder | GroupKey | Filter) group comparer over each group's subgroups
     // A clear part reuses the cached result. Structural work (bucketing, building ShapedChildren
@@ -172,52 +199,130 @@ private:
     // Tree().Unlink of the topmost node that leaves, then take the chain apart (plain writes).
     static bool InShapedParent(SourceRecord const& record) noexcept;
 
-    // Group lifecycle in surgical edits (decided, E9). Compute: walks `segments` (one
-    // ValueKey::ToObjectLookupKey segment per level, computed locally with `keys`, the key objects)
-    // down from the root through m_groupsByIdentity, allocates the missing tail of the chain into
-    // edit.NewGroupEntries (top-down; keys tracked, each new group's Parent set, every vector's
-    // capacity reserved, m_groupsByIdentity reserved for the new entries), and sets
-    // edit.Staged.Shape.Group to the bottom-level group, so the write phase cannot throw. Write:
-    // links the record into the detached chain, then the topmost new group under its Parent at
-    // edit.ShapedIndex (one Tree().Link for its subtree), inserts the map nodes, and adds 1 to
-    // ItemCount up the chain. Placement of the new group among its siblings (computed by
-    // PlacementIndex): by key comparison for Ascending / Descending; appended for None (sticky:
-    // existing groups never move on a surgical edit, the next rebuild restores exact
-    // first-appearance order).
-    void StageGroupChain(
+    // Surgical source edits (Milestone 5). Each edit computes everything first (every app call,
+    // every allocation) into a StagedEdit / StagedLeave, then a noexcept write phase commits it
+    // with one Tree().Link and / or one Tree().Unlink of the topmost node that enters or leaves
+    // (F1). ApplySourceChange catches a compute failure and falls back to UnlinkOnly (drift #33).
+
+    // ApplySourceChange under the empty spec for an Add, Remove or Move (including a reparent):
+    // the source position is the shaped position, so it links or unlinks that one node (drift #20).
+    // Only the root list's reservation can throw, before any write. A Replace takes the shaped
+    // path (StageInsert / StageLeave), as under any other spec.
+    void ApplyUnshapedSourceChange(SourceChange const& change);
+
+    // ApplySourceChange for a reparenting Move under a non-empty spec (decided, D3): surgical. The
+    // moved record keeps its cached shape (flags, sort keys, shaped children) and its subtree is
+    // not re-evaluated; only the E8 chain and group chain at the new parent run app code
+    // (StageEntry). A record not in the shaped tree stays out. The record leaves its old place
+    // (StageLeave, never taking the new parent's ancestors or kept groups) and enters at the new
+    // one; when both tops are the record itself, the pair is one Move (isMove).
+    void ApplyReparent(SourceChange const& change);
+
+    // Insert compute, part 1 (evaluate): stages `added` (a subtree in pre-order; filter, sort
+    // keys, shaped children, flags) into edit.Staged / edit.Descendants. Returns true when the root
+    // enters its shaped parent (passes, or is an ancestor of a staged match). Runs app code.
+    bool StageRecords(StagedEdit& edit, std::span<SourceRecord* const> added);
+
+    // Insert compute, part 2 (entry), shared by inserts and a reparent: for edit.Staged entering
+    // under `parent` (null for top-level), stages the E8 chain of `parent`'s ancestors that enter
+    // with it (edit.Chain, bottom-up; their sort keys are read), sets edit.Parent to the shaped
+    // parent the topmost staged record links under and, when that record is top-level while
+    // grouped, reads its group keys and stages its group chain (StageGroupChain). Returns the
+    // deepest existing group on the topmost record's group chain (the root while ungrouped), or
+    // null when the topmost record is nested.
+    GroupNode* StageEntry(StagedEdit& edit, SourceRecord* parent);
+
+    // StageRecords, then StageEntry when the root enters. edit.Parent stays null when it does not.
+    // Returns StageEntry's result, or null when nothing enters.
+    GroupNode* StageInsert(StagedEdit& edit, std::span<SourceRecord* const> added, SourceRecord* parent);
+
+    // Reads every Path / Key level's sort key of `item` under Applied() into shape.SortKeys
+    // (Comparer slots stay empty). A key selector's exception propagates.
+    void ReadSortKeys(winrt::Windows::Foundation::IInspectable const& item, ShapeState& shape);
+
+    // Insert compute, part 2: places the topmost node that enters (PlacementIndex /
+    // GroupPlacementIndex) into edit.ShapedIndex, as if `skip` (a node about to leave the same
+    // list, or null) were not in edit.Parent's list, and reserves the slot the write phase takes.
+    // `sourceIndex` is the root's SourceChange::NewIndex; a chain ancestor finds its own.
+    void StagePlacement(StagedEdit& edit, std::optional<uint32_t> sourceIndex, ShapedNode const* skip);
+
+    // Insert write phase: commits every staged record, links the detached chain (new groups, chain
+    // ancestors) under its topmost node, inserts the new map nodes, adds 1 to ItemCount up the
+    // existing group chain, then one Tree().Link at edit.ShapedIndex (`isMove`: the second half of
+    // a one-node move, so the node's counts are kept and a Move is raised). OverlayCollapsed (D6):
+    // cleared on chain records and on evaluated records, kept on a reused one (edit.Reused).
+    void CommitInsert(StagedEdit& edit, bool isMove = false) noexcept;
+
+    // Leave compute (runs no app code): finds the topmost node that leaves with `record` (the record,
+    // the E8 chain of its failing ancestors whose only shaped child it is, then the highest group
+    // with no other member, never one on `keep`'s chain) and its place. `oldParent` and `oldIndex`
+    // are the record's place before the source change (a removed record's Parent is already null).
+    // The E8 walk stops at `stayUnder` and its ancestors (a reparent's new parent: the record
+    // re-enters below them). Reserves m_retired for the pruned groups.
+    StagedLeave StageLeave(
+        SourceRecord* record,
+        SourceRecord* oldParent,
+        uint32_t oldIndex,
+        GroupNode const* keep,
+        SourceRecord const* stayUnder = nullptr);
+
+    // Leave write phase: subtracts 1 from ItemCount up the old group chain, one Tree().Unlink of
+    // the topmost node that leaves (`isMove`: the first half of a one-node move), takes the leaving
+    // chain apart and prunes the emptied groups.
+    void CommitLeave(StagedLeave& leave, bool isMove = false) noexcept;
+
+    // Group lifecycle in surgical edits (decided, E9). Compute: walks the identities built from
+    // `keys` (one key object per level) down from the root through m_groupsByIdentity, allocates
+    // the missing tail of the chain into edit.NewGroupEntries (top-down; keys tracked, each new
+    // group's Parent set, every vector's capacity reserved, m_groupsByIdentity reserved for the new
+    // entries), sets the topmost staged record's Shape.Group to the bottom-level group and
+    // edit.Parent to the deepest existing group, so the write phase cannot throw. Returns that
+    // deepest existing group. Placement of a new group among its siblings (GroupPlacementIndex):
+    // by key comparison for Ascending / Descending; appended for None (sticky: existing groups
+    // never move on a surgical edit, the next rebuild restores exact first-appearance order).
+    GroupNode* StageGroupChain(
         StagedEdit& edit,
-        std::vector<winrt::hstring> const& segments,
         std::vector<winrt::Windows::Foundation::IInspectable> const& keys);
 
     // Surgical placement (decided, E5 option B: no stored source order). Compute phase: returns the
-    // index of the topmost node the edit links, in its shaped parent list, so the result equals
-    // what a rebuild's stable sort gives: equal keys end in source order.
-    //   - edit.NewGroupEntries non-empty: the topmost new group, among its Parent's Children, by
-    //     group key comparison (Ascending / Descending; may call app code) or appended (None).
-    //   - Otherwise the record, in its source parent's ShapedChildren, its bottom-level group's
-    //     Children, or the root's Children. The list is taken without the record itself (a move
-    //     or key change computes before the write phase removes it):
-    //     - Sort active: binary-search the run of siblings whose keys tie with the staged keys
-    //       (the only app code, through Comparer levels). Empty run: its start. Otherwise set
-    //       ShapeFlags::PlacementMark on the run, walk the record's source siblings backwards
-    //       from its source position to the first marked one and return the index after it (the
-    //       run start if none), then clear the marks.
-    //     - Filter or GroupBy only (shaped order is source order): walk back to the first source
-    //       sibling in the same shaped list (InShapedParent, and the same ShapeState::Group when
-    //       top-level), then return its index in the list plus one (0 if none).
-    //     - Neither (ChildrenShaped clear): the source position.
-    // `sourceIndex` is SourceChange::NewIndex; empty for live shaping, which finds the record in
-    // its source sibling list. Reads only, besides the marks. O(log n + t + walk), worst case O(n).
-    uint32_t PlacementIndex(StagedEdit const& edit, std::optional<uint32_t> sourceIndex);
+    // index `record` takes in `parent`'s shaped list, taken without `skip` (the record itself for a
+    // move, a leaving node for a replace), so the result equals what a rebuild's stable sort gives:
+    // equal keys end in source order. `shape` holds the record's (staged) flags and sort keys.
+    //   - Sort active: binary-search the run of siblings whose keys tie with the staged keys
+    //     (the only app code, through Comparer levels). Empty run: its start. Otherwise set
+    //     ShapeFlags::PlacementMark on the run, walk the record's source siblings backwards
+    //     from its source position to the first marked one and return the index after it (the
+    //     run start if none), then clear the marks.
+    //   - Filter or GroupBy only (shaped order is source order): walk back to the first source
+    //     sibling in the same shaped list (InShapedParent, and the same ShapedParent), then return
+    //     its index in the list plus one (0 if none).
+    //   - Neither (a source-owned list, ChildrenShaped clear): the source position.
+    // `sourceIndex` is SourceChange::NewIndex; empty to find the record in its source sibling list.
+    // Reads only, besides the marks. O(log n + t + walk), worst case O(n).
+    uint32_t PlacementIndex(
+        SourceRecord* record,
+        ShapeState const& shape,
+        ShapedNode* parent,
+        ShapedNode const* skip,
+        std::optional<uint32_t> sourceIndex);
 
-    // Write phase, when a top-level record leaves bottom-level group `group`: finds the topmost
-    // node that leaves (the highest ancestor group with no other member, else the record) and
-    // calls Tree().Unlink once for it (F1; this also erases the expansion entries of the groups
-    // it drops, F4). Then takes the detached chain apart, subtracts 1 from ItemCount up the
-    // remaining chain, and extracts each emptied group from m_groupsByIdentity into m_retired
-    // (O(1) each; it has no live subgroups, since they emptied and were pruned first: debug-asserted).
-    // Stops at the shaped root.
-    void PruneEmptyGroups(GroupNode* group) noexcept;
+    // The index new group `group` takes among `parent`'s Children (taken without `skip`): upper
+    // bound by key for Ascending / Descending, appended for None.
+    uint32_t GroupPlacementIndex(GroupNode const* group, ShapedNode* parent, ShapedNode const* skip) const;
+
+    // Row order under the applied sort: < 0 when (a, aShape) sorts before (b, bShape). Keys come
+    // from the shapes' SortKeys; Comparer levels call the app's comparer (may throw).
+    int32_t CompareRows(
+        winrt::Windows::Foundation::IInspectable const& a,
+        ShapeState const& aShape,
+        winrt::Windows::Foundation::IInspectable const& b,
+        ShapeState const& bShape) const;
+
+    // Write phase, after Tree().Unlink of the topmost leaving node: extracts every group from
+    // `bottom` up to and including `top` (all emptied; null `top` prunes nothing) from
+    // m_groupsByIdentity into m_retired (capacity reserved by StageLeave). Unlinking `top` already
+    // erased their expansion entries (F4). Stops at the shaped root.
+    void PruneEmptyGroups(GroupNode* bottom, GroupNode* top) noexcept;
 
     // The one rebuild routine behind Apply, Reapply and ApplyItemsChanged: compute into a
     // StagedReapply, then the noexcept write phase calls Tree().BeginReset, swaps it in under the
@@ -226,9 +331,41 @@ private:
     // newGroupSelector is true when a group level present in both Applied() and `desired` has a
     // different Key (a level only appended or removed keeps the other identities' meaning).
     // `only` empty: the re-reads `delta` names (Filter, GroupKey, Sort) cover every record.
-    // `only` non-empty (live shaping, E7): they cover only those records, routed by PropertyName,
-    // re-reading every sort level; the re-sorts still run over all cached keys.
-    void Rebuild(ShapeSpec const& desired, ShapeDelta delta, std::span<LiveChange const> only = {});
+    // `only` non-empty (live shaping, E7): they cover only those records; the filter and group
+    // levels are always re-run for them, sort levels routed by PropertyName (D10); the re-sorts
+    // still run over all cached keys. Sort keys of a level matching an applied level are reused
+    // per level (D5). IsStale() forces ShapeDelta::All over every record.
+    void Rebuild(
+        ShapeSpec const& desired,
+        ShapeDelta delta,
+        bool clearOverlay,
+        std::span<LiveChange const> only = {});
+
+    // Rebuild's write phase, shared with UnlinkOnly: Tree().BeginReset, moves `staged` into every
+    // record in `records` (breadth-first; the first topCount are top-level) and under the root,
+    // swaps the group map, sets Applied() to `applied`, Tree().EndReset. Records keep the `kept`
+    // bits of their flags; keysRead marks the records whose SortKeys were written into `staged`.
+    // Before any write, when OverlayCollapsed is kept: a record shown before and after whose
+    // PassesFilter flips keeps what IsExpanded reports (D12), and a record that becomes a context
+    // row without having been in its shaped parent starts with the overlay clear (D6).
+    // Clears m_stale.
+    void CommitStaged(
+        std::vector<SourceRecord*> const& records,
+        uint32_t topCount,
+        StagedReapply& staged,
+        std::vector<uint8_t> const& keysRead,
+        ShapeSpec&& applied,
+        uint16_t levels,
+        bool newGroupSelector,
+        ShapeFlags kept) noexcept;
+
+    // Fallback after a failed compute in ReapplyForSource. Runs no app code: rebuilds the tree
+    // for the current records with the applied spec from cached state only. Records keep their
+    // cached PassesFilter and their previous relative order; records that left the source are
+    // dropped; `arrivals`, and records with no cached place (a top-level record with no group
+    // while grouped), are hidden; emptied groups are dropped. One Reset. Sets m_stale.
+    // noexcept: an allocation failure fails fast rather than leaving freed records linked.
+    void UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;
 
     ITrackerHandleManager const* m_trackerOwner{ nullptr };
     SourceTable const& m_source;
@@ -236,6 +373,9 @@ private:
     PathEvaluator& m_paths;
 
     ShapeSpec m_applied;
+
+    // Set by UnlinkOnly, cleared by CommitStaged (see IsStale).
+    bool m_stale{ false };
 
     // Owns the shaped root (no other group). Stable for the engine's lifetime.
     ShapedTree m_tree;
@@ -265,8 +405,8 @@ private:
     // grow.
     //   - StagedRecord: one record's new shape. The only per-record type a rebuild stages.
     //   - StagedEdit: one surgical edit (ApplySourceChange insert / replace / move,
-    //     ApplyItemChanged): a StagedRecord plus the edit-only fields. A remove stages nothing (no
-    //     app code runs).
+    //     ApplyItemChanged): a StagedRecord plus the edit-only fields.
+    //   - StagedLeave: one record leaving (ApplySourceChange remove / replace); no app code runs.
     //   - StagedReapply: a whole rebuild (Apply, Reapply, ApplyItemsChanged).
 
     // One record's compute results.
@@ -285,7 +425,8 @@ private:
         //     objects used to find or create it are compute-local and not staged.
         // Committed field by field, never by whole assignment (`Shape = std::move(...)`):
         //   - Flags: compute bits from here; Expanded and PlacementMark kept from the record;
-        //     OverlayCollapsed kept unless the delta runs the full Filter stage (then cleared, F5).
+        //     OverlayCollapsed kept unless the caller clears it (clearOverlay, F5, D6) or the
+        //     record newly enters as a context row.
         //   - SortKeys: moved only when the delta re-reads them; otherwise the record's are kept.
         //   - ShapedChildren and Group: moved and stored.
         ShapeState Shape;
@@ -300,16 +441,45 @@ private:
         // Subtree insert only: the inserted record's descendants in pre-order (they enter inside
         // its subtree, so they need no group fields and no placement). Empty otherwise.
         std::vector<StagedRecord> Descendants;
+        // E8: the inserted record's ancestors that enter the shaped tree with it (failing the
+        // filter, no shaped child before), bottom-up; each one's staged ShapedChildren holds only
+        // the node below it. The back is the topmost record that enters. Empty otherwise.
+        std::vector<StagedRecord> Chain;
+        // The shaped parent the topmost node that enters links under (a record, a group or the
+        // root). Null when nothing enters (the record stays out of the shaped tree).
+        ShapedNode* Parent{ nullptr };
         // Grouped insert or group-key change (E9): the owning map nodes of the missing tail of the
         // record's group chain, top-down (front is the topmost new group; its Parent is the
         // existing group it links under, the root for a new top-level group). Inserted into
         // m_groupsByIdentity by the write phase. Empty when every level already exists.
         std::vector<GroupMap::node_type> NewGroupEntries;
-        // From PlacementIndex (E5): the index of the topmost node that enters, in its shaped parent
+        // From StagePlacement (E5): the index of the topmost node that enters, in edit.Parent's
         // list. The topmost new group among its Parent's Children when NewGroupEntries is non-empty
-        // (the record then goes at 0 in its new bottom-level group); otherwise the record, in its
-        // shaped parent list taken without the record.
+        // (the record then goes at 0 in its new bottom-level group); otherwise the topmost record,
+        // in its shaped parent list taken without the node that leaves it.
         uint32_t ShapedIndex{ 0 };
+        // Staged holds a record already in the tree whose cached shape was copied, not evaluated
+        // (a reparent, a group-key change): CommitInsert keeps its OverlayCollapsed (D6).
+        bool Reused{ false };
+    };
+
+    // One record leaving the shaped tree (a remove, or the old record of a replace). Computed
+    // without app code by StageLeave, committed by CommitLeave.
+    struct StagedLeave
+    {
+        // The leaving record.
+        SourceRecord* Record{ nullptr };
+        // The topmost node that leaves (the record, a chain ancestor or a group) and its place in
+        // its shaped parent list. Top is null when the record is not in the shaped tree.
+        ShapedNode* Top{ nullptr };
+        ShapedNode* Parent{ nullptr };
+        uint32_t Index{ 0 };
+        // E8: the record's ancestors that leave with it, bottom-up.
+        std::vector<SourceRecord*> Chain;
+        // The leaving top-level record's bottom-level group while grouped (null otherwise), and the
+        // topmost group pruned with it (null when none empties).
+        GroupNode* Group{ nullptr };
+        GroupNode* TopGroup{ nullptr };
     };
 
     // Everything Reapply builds aside: per-record results in pre-order (each carrying its new

@@ -3023,9 +3023,12 @@ public:
     ShapedTree& Tree() noexcept;                               // root, counts, reads, expansion (P10)
     GroupMap const& GroupsByIdentity() const noexcept;        // V3 key lookup
 
-    void Apply(ShapeSpec const& desired, ShapeDelta delta);    // Rebuild(desired, delta)
-    void Reapply(ShapeSpec const& desired);                    // Rebuild(desired, All)
-    void ApplySourceChange(SourceChange const&);               // one notification, k <= c_bulkThreshold items (any subtree size)
+    void Apply(ShapeSpec const& desired, ShapeDelta delta, bool clearOverlay);  // Rebuild(desired, delta, clearOverlay)
+    void Reapply(ShapeSpec const& desired, bool clearOverlay); // Rebuild(desired, All, clearOverlay)
+    void ReapplyForSource(ShapeSpec const& desired,
+                          std::span<SourceRecord* const> arrivals);  // source Reset, nested Replace, stale; keeps the overlay
+    bool IsStale() const noexcept;                             // a source compute threw; next Rebuild is All
+    void ApplySourceChange(SourceChange const&);               // one source notification, one item (any subtree size)
     void ApplyItemChanged(SourceRecord*, winrt::hstring const& propertyName);  // live shaping, one record
     void ApplyItemsChanged(std::span<LiveChange const>);       // live shaping, k > c_liveBulkThreshold coalesced records (E7 Y2)
     void Clear();                                              // groups, keys; applied = empty
@@ -3040,12 +3043,25 @@ private:
     struct StagedEdit;                                         // one surgical edit: StagedRecord + group chain, index
     struct StagedReapply;                                      // Reapply's whole new tree, aside
     static bool InShapedParent(SourceRecord const&) noexcept;  // PassesFilter || !ShapedChildren.empty() (E8)
-    void StageGroupChain(StagedEdit&, std::vector<winrt::hstring> const& segments,
+    struct StagedLeave;                                        // one record's departure: chain, groups to prune
+    bool m_stale;                                              // set by a source compute throw (drift #94)
+    void ApplyUnshapedSourceChange(SourceChange const&);       // empty spec: link / unlink one node, no app code
+    void ApplyReparent(SourceChange const&);                   // nested Move to a new parent: surgical leave + insert
+    GroupNode* StageInsert(StagedEdit&, std::span<SourceRecord* const> added,
+                           SourceRecord* parent);              // StageRecords (read shape) + StageEntry (group chain, E8 chain)
+    void StagePlacement(StagedEdit&, std::optional<uint32_t> sourceIndex, ShapedNode const* skip);
+    void CommitInsert(StagedEdit&, bool isMove = false) noexcept;
+    StagedLeave StageLeave(SourceRecord*, SourceRecord* oldParent, uint32_t oldIndex,
+                           GroupNode const* keep, SourceRecord const* stayUnder = nullptr);
+    void CommitLeave(StagedLeave&, bool isMove = false) noexcept;
+    GroupNode* StageGroupChain(StagedEdit&,
         std::vector<IInspectable> const& keys);                // compute: allocate missing groups, set Group (E9)
-    void PruneEmptyGroups(GroupNode*) noexcept;                // write: Unlink, ItemCount, retire empty groups (E9)
-    uint32_t PlacementIndex(StagedEdit const&, std::optional<uint32_t> sourceIndex);  // surgical placement (E5)
-    void Rebuild(ShapeSpec const&, ShapeDelta,
+    void PruneEmptyGroups(GroupNode* bottom, GroupNode* top) noexcept;  // write: Unlink, ItemCount, retire empty groups (E9)
+    uint32_t PlacementIndex(SourceRecord*, ShapeState const&, ShapedNode* parent,
+                            ShapedNode const* skip, std::optional<uint32_t> sourceIndex);  // surgical placement (E5)
+    void Rebuild(ShapeSpec const&, ShapeDelta, bool clearOverlay,
                  std::span<LiveChange const> only = {});       // behind Apply, Reapply, ApplyItemsChanged (E6, E7)
+    void UnlinkOnly(std::span<SourceRecord* const> arrivals) noexcept;  // compute-throw fallback (drift #94)
 };
 ```
 
@@ -3056,8 +3072,15 @@ private:
   The manager sets itself as the tree's listener on the first `View()` call. It never reads the app collection.
 - **Entry points (decided).** One per kind of work: `Apply` (a verb, with its `ShapeDelta`),
   `Reapply` (full rebuild), `ApplySourceChange` (one item), `ApplyItemChanged` (live shaping),
-  plus `Clear`. Range events never reach the engine as such: routing (`c_bulkThreshold`) stays
-  in `ShapingManager`, which calls `Reapply`.
+  plus `ReapplyForSource` and `Clear`. Range events never reach the engine as such: SourceTable
+  splits or resets a multi-item change, and `ParentKeyHierarchy` resets above its
+  `c_bulkThreshold`; the manager calls `ReapplyForSource` for a reset.
+- **Engine drift (implemented).** The implementation's choices against this section are recorded
+  in `TableViewSource2-Header-Changes-2.md` #91–#102: the stage/commit split, the empty-spec fast
+  path, surgical reparent, the compute-throw fallback (`UnlinkOnly`, `m_stale`), sort-level reuse
+  by `SortSpec::Matches`, caller-driven `clearOverlay`, `newGroupSelector` by `Key.Id`, the
+  bounds-checked stable merge sort, per-entry live routing, key-throw rules and expansion across a
+  filter flip.
 - **Commit bracketing (decided: the caller brackets; revised by P8).** `ShapingManager` opens a
   commit scope around every entry point: `BeginCommit`, the engine call, `EndCommit`, through an
   RAII scope that also runs `EndCommit` on unwind. The engine keeps the compute-then-commit rule
@@ -3422,6 +3445,11 @@ Each phase is designed (headers first) and agreed before its `.cpp` implementati
 - [x] Replace the tagged `ShapedRef` / `ShapedRefHash` with a non-polymorphic `ShapedNode` base
       shared by `SourceRecord` and `GroupNode` (counts, position, `ChildRows`; no parent field).
       The `SourceRecord` constructor must pass `ShapedNodeKind::Record` to the base.
+- [x] Implement `ShapingEngine` (`Engine/ShapingEngine.cpp`): `Rebuild`, surgical source,
+      reparent and live paths, compute-throw fallback; drift #91–#102 in
+      `TableViewSource2-Header-Changes-2.md`.
+- [ ] Engine tests: comparer that is not a strict weak ordering (no crash, every row present);
+      stability with all keys equal; surgical reparent; compute-throw fallback.
 - [ ] Run filter, sort, group, and hierarchy over `SourceTable::TopLevel()` and
       `SourceRecord::Children` without re-enumerating the underlying collection.
 - [ ] Map shaped output back to `SourceRecord*` in O(1) via `SourceTable::TryFindByRawPointer`.

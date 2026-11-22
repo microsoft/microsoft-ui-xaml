@@ -265,7 +265,9 @@ public:
     // reparent), node is m_unlinked until its Link (drift #90): that list is renumbered and marked
     // stale, its ChildRows counts node as 0 rows, and node and its subtree read as not shown, so
     // every read from a listener inside OnRowsRemoved sees the tree without node.
-    void Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove) noexcept;
+    // `moved` names the record SourceTable moved when node is not that record: a group (or a
+    // failing ancestor, E8) that leaves with it. The check above then applies to `moved` instead.
+    void Unlink(ShapedNode* node, ShapedNode* parent, uint32_t index, bool isMove, ShapedNode* moved = nullptr) noexcept;
 
     // Bracket a rebuild. BeginReset raises OnRowsResetting before anything is swapped. The engine
     // then swaps the new root Children and GroupMap in (writing IndexInParent as it

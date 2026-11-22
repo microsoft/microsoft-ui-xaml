@@ -490,7 +490,7 @@ void ParentKeyHierarchy::LinkAndAdopt(ISourceHierarchyHost& host, SourceRecord* 
         host.Reparent(record, parent, index);
 
         std::vector<SourceRecordPtr> removed;
-        if (orphans.size() > 1)
+        if (orphans.size() > c_bulkThreshold)
         {
             // Spec Bulk threshold: one Reset, with no Add first.
             for (SourceRecord* const orphan : orphans)
@@ -502,9 +502,9 @@ void ParentKeyHierarchy::LinkAndAdopt(ISourceHierarchyHost& host, SourceRecord* 
         else
         {
             host.RaiseSourceChanged(SourceChangeKind::Add, nullptr, parent, 0, index, { record }, removed);
-            if (!orphans.empty())
+            for (SourceRecord* const orphan : orphans)
             {
-                MoveTo(host, orphans.front(), record);
+                MoveTo(host, orphan, record);
             }
         }
 
@@ -519,14 +519,11 @@ void ParentKeyHierarchy::LinkAndAdopt(ISourceHierarchyHost& host, SourceRecord* 
 
 void ParentKeyHierarchy::Adopt(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecord*> const& orphans)
 {
-    // Spec Orphan adoption and Bulk threshold: one orphan is a Move; more than one is one Reset.
+    // Spec Orphan adoption and Bulk threshold: up to c_bulkThreshold orphans are one Move each;
+    // more are one Reset.
     try
     {
-        if (orphans.size() == 1)
-        {
-            MoveTo(host, orphans.front(), record);
-        }
-        else if (orphans.size() > 1)
+        if (orphans.size() > c_bulkThreshold)
         {
             for (SourceRecord* const orphan : orphans)
             {
@@ -535,6 +532,13 @@ void ParentKeyHierarchy::Adopt(ISourceHierarchyHost& host, SourceRecord* record,
 
             std::vector<SourceRecordPtr> removed;
             host.RaiseSourceChanged(SourceChangeKind::Reset, nullptr, nullptr, 0, 0, {}, removed);
+        }
+        else
+        {
+            for (SourceRecord* const orphan : orphans)
+            {
+                MoveTo(host, orphan, record);
+            }
         }
     }
     catch (...)

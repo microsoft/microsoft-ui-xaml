@@ -138,11 +138,12 @@ struct ShapeSpec
 enum class ShapeDelta : uint8_t
 {
     None = 0x0,
-    Sort = 0x1,         // re-read every sort level's keys, re-sort rows
+    Sort = 0x1,         // re-read the keys of sort levels with no matching applied level
+                        // (SortSpec::Matches; matched levels keep their keys), re-sort rows
     GroupOrder = 0x2,   // re-sort groups only
     GroupKey = 0x4,     // re-read group keys, re-bucket; row order within groups reuses SortKeys
     Filter = 0x8,       // re-test every record (no source re-read); reuse cached keys where valid;
-                        // a full pass also clears OverlayCollapsed (F5)
+                        // OverlayCollapsed is cleared by the caller's clearOverlay, not by this flag
     All = 0xF,          // Reapply: re-run everything
 };
 DEFINE_ENUM_FLAG_OPERATORS(ShapeDelta);
