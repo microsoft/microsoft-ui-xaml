@@ -152,10 +152,16 @@ bool BuildParentStructure(
     KeySelector const& keySelector,
     KeySelector const& parentKeySelector,
     ParentStructure& out,
-    winrt::hstring& error)
+    winrt::hstring& error,
+    NodeKeyCache* cache)
 {
     constexpr size_t c_root = ParentStructure::Root;
     const size_t n = rows.size();
+    NodeKeyCache nextCache;
+    if (cache)
+    {
+        nextCache.reserve(n);
+    }
 
     ParentStructure result;
     result.Rows = rows;
@@ -172,15 +178,40 @@ bool BuildParentStructure(
     std::vector<winrt::IInspectable> keepAlive;
     keepAlive.reserve(n * 2);
 
+    std::vector<std::wstring> parentKeys(n);
+
     // Pass 1: keys, duplicates, null keys.
     for (size_t i = 0; i < n; ++i)
     {
-        auto key = SafeSelect(keySelector, rows[i]);
-        auto nodeKey = MakeNodeKey(key);
+        winrt::IInspectable key{ nullptr };
+        std::wstring nodeKey;
+        bool isCached = false;
+        if (cache)
+        {
+            if (auto const found = cache->find(winrt::get_abi(rows[i])); found != cache->end())
+            {
+                nodeKey = found->second.Key;
+                parentKeys[i] = found->second.ParentKey;
+                isCached = true;
+            }
+        }
+        if (!isCached)
+        {
+            key = SafeSelect(keySelector, rows[i]);
+            nodeKey = MakeNodeKey(key);
+            auto parentKeyValue = SafeSelect(parentKeySelector, rows[i]);
+            parentKeys[i] = MakeNodeKey(parentKeyValue);
+            keepAlive.push_back(std::move(parentKeyValue));
+        }
         if (IsObjectNodeKey(nodeKey))
         {
             // Outlives the build: the address is also expansion intent and selection identity.
             result.KeyObjects.push_back(key);
+        }
+        // Object keys are read again each time: an address cannot be proven to still name the same key.
+        if (cache && !nodeKey.empty() && !IsObjectNodeKey(nodeKey) && !IsObjectNodeKey(parentKeys[i]))
+        {
+            nextCache.insert_or_assign(winrt::get_abi(rows[i]), CachedNodeKeys{ nodeKey, parentKeys[i] });
         }
         keepAlive.push_back(std::move(key));
         if (nodeKey.empty())
@@ -210,9 +241,7 @@ bool BuildParentStructure(
     // Pass 2: resolve parents; self-parent is an error, unknown parent = orphan root.
     for (size_t i = 0; i < n; ++i)
     {
-        auto parentKeyValue = SafeSelect(parentKeySelector, rows[i]);
-        auto parentKey = MakeNodeKey(parentKeyValue);
-        keepAlive.push_back(std::move(parentKeyValue));
+        auto const& parentKey = parentKeys[i];
         if (parentKey.empty()) continue;
         if (parentKey == *result.NodeKeys[i])
         {
@@ -266,6 +295,10 @@ bool BuildParentStructure(
     }
 
     out = std::move(result);
+    if (cache)
+    {
+        *cache = std::move(nextCache);
+    }
     return true;
 }
 

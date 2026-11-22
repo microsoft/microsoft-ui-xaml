@@ -230,7 +230,7 @@ void TableViewRowFlattener::Start()
         {
             if (auto strongThis = weakThis.lock())
             {
-                strongThis->OnViewChanged(args.CollectionChange());
+                strongThis->OnViewChanged(args.CollectionChange(), args.CollectionChange() == winrt::Windows::Foundation::Collections::CollectionChange::Reset ? 0 : args.Index());
             }
         });
 
@@ -300,6 +300,7 @@ void TableViewRowFlattener::SetHierarchy(ShapingHelpers::KeySelector const& keyS
     m_keySelector = keySelector;
     m_parentKeySelector = parentKeySelector;
     ++m_declarationGeneration;
+    m_treeKeyCache.clear();
     // A different relation is a different tree: its rows start collapsed.
     m_resetTreeIntent = true;
     Update();
@@ -314,6 +315,7 @@ void TableViewRowFlattener::ClearHierarchy()
     m_keySelector = nullptr;
     m_parentKeySelector = nullptr;
     ++m_declarationGeneration;
+    m_treeKeyCache.clear();
     Update();
 }
 
@@ -464,9 +466,10 @@ void TableViewRowFlattener::UpdateTree(Kind kind)
 
     auto structure = std::make_shared<ShapingHelpers::ParentStructure>();
     winrt::hstring error;
-    const bool valid = ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, *structure, error);
+    const bool valid = ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, *structure, error, &m_treeKeyCache);
     if (generation != m_declarationGeneration)
     {
+        m_treeKeyCache.clear();
         m_updatePending = true;
         return;
     }
@@ -496,7 +499,12 @@ void TableViewRowFlattener::UpdateTree(Kind kind)
         m_treeGroups.clear();
         m_rootBucket.clear();
 
-        SetTreeIndex(std::move(index), {});
+        {
+            // Update raises RowsChanged once this returns, which restamps the rows a splice kept in place.
+            m_isRebuildingTreeForView = true;
+            auto const done = wil::scope_exit([this]() noexcept { m_isRebuildingTreeForView = false; });
+            SetTreeIndex(std::move(index), {});
+        }
         SetKind(Kind::Tree, m_treeRowsView);
         return;
     }
@@ -617,6 +625,7 @@ void TableViewRowFlattener::ReleaseTree()
     ClearTreeIndex();
     ResetNodeIntentQuietly();
     m_prunedForStructure.reset();
+    m_treeKeyCache.clear();
     if (m_kind == Kind::GroupedTree)
     {
         DetachGroupRows();
@@ -635,9 +644,29 @@ void TableViewRowFlattener::ReleaseTree()
     }
 }
 
-void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change)
+void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index)
 {
     using winrt::Windows::Foundation::Collections::CollectionChange;
+
+    // The rows a change brings in are read again at the next rebuild; a Reset reads every row.
+    if (m_kind == Kind::Tree || m_kind == Kind::GroupedTree)
+    {
+        if (change == CollectionChange::ItemInserted || change == CollectionChange::ItemChanged)
+        {
+            try
+            {
+                m_treeKeyCache.erase(winrt::get_abi(m_view.GetAt(index)));
+            }
+            catch (...)
+            {
+                m_treeKeyCache.clear();
+            }
+        }
+        else if (change != CollectionChange::ItemRemoved)
+        {
+            m_treeKeyCache.clear();
+        }
+    }
 
     // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items, and at
     // most once per dispatcher turn: a live tick moves many rows, each as a Remove and an Insert. The first
@@ -1611,6 +1640,12 @@ void TableViewRowFlattener::RebuildTreeRows()
             }
         }
 
+        // A rebuild after one view change usually differs from the rows by a row or a short run.
+        if (TryPublishTreeRowsAsSplice(built, nodeRows))
+        {
+            continue;
+        }
+
         // Built into a local so a failure cannot publish a partial map.
         std::unordered_map<winrt::hstring, int32_t> indexByNodeKey;
         indexByNodeKey.reserve(nodeRows.size());
@@ -1945,6 +1980,105 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
     {
         OnTreeRowsPublished();
     }
+    return true;
+}
+
+bool TableViewRowFlattener::TryPublishTreeRowsAsSplice(std::vector<winrt::IInspectable> const& built, std::vector<NodeRow>& nodeRows)
+{
+    const size_t oldCount = m_nodeRows.size();
+    const size_t newCount = built.size();
+    if (!m_isRebuildingTreeForView || oldCount == 0 || newCount == 0 || m_treeRows.Size() != oldCount)
+    {
+        return false;
+    }
+
+    auto const same = [](winrt::IInspectable const& left, winrt::IInspectable const& right) { return winrt::get_abi(left) == winrt::get_abi(right); };
+    size_t prefix = 0;
+    while (prefix < oldCount && prefix < newCount && same(m_nodeRows[prefix].Item, built[prefix]))
+    {
+        ++prefix;
+    }
+    size_t suffix = 0;
+    while (suffix < oldCount - prefix && suffix < newCount - prefix && same(m_nodeRows[oldCount - 1 - suffix].Item, built[newCount - 1 - suffix]))
+    {
+        ++suffix;
+    }
+
+    // Each step removes rows at a position, then inserts the new rows [InsertFrom, InsertFrom + InsertCount).
+    struct Step
+    {
+        size_t At;
+        size_t RemoveCount;
+        size_t InsertFrom;
+        size_t InsertCount;
+    };
+    std::vector<Step> steps;
+    const size_t removed = oldCount - prefix - suffix;
+    const size_t inserted = newCount - prefix - suffix;
+    const size_t maxRows = static_cast<size_t>(c_maxSpliceRows);
+    if (removed <= maxRows && inserted <= maxRows)
+    {
+        steps.push_back({ prefix, removed, prefix, inserted });
+    }
+    else if (removed == inserted)
+    {
+        // A short run moved across the rest (a live move of a subtree): the middle is rotated.
+        const size_t middle = removed;
+        auto const isRotatedBy = [&](size_t shift)
+        {
+            for (size_t i = 0; i < middle; ++i)
+            {
+                if (!same(m_nodeRows[prefix + (i + shift) % middle].Item, built[prefix + i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        };
+        for (size_t run = 1; run <= maxRows && run < middle && steps.empty(); ++run)
+        {
+            if (same(m_nodeRows[prefix + run].Item, built[prefix]) && isRotatedBy(run))
+            {
+                steps.push_back({ prefix, run, 0, 0 });
+                steps.push_back({ prefix + middle - run, 0, prefix + middle - run, run });
+            }
+            else if (same(m_nodeRows[prefix + middle - run].Item, built[prefix]) && isRotatedBy(middle - run))
+            {
+                steps.push_back({ prefix + middle - run, run, 0, 0 });
+                steps.push_back({ prefix, 0, prefix, run });
+            }
+        }
+    }
+
+    if (steps.empty())
+    {
+        return false;
+    }
+
+    for (auto const& step : steps)
+    {
+        if (step.RemoveCount > 0)
+        {
+            RemoveTreeRows(static_cast<int32_t>(step.At), static_cast<int32_t>(step.RemoveCount));
+        }
+        if (step.InsertCount > 0 && !m_treeDetached)
+        {
+            const std::vector<winrt::IInspectable> items(built.begin() + step.InsertFrom, built.begin() + step.InsertFrom + step.InsertCount);
+            const std::vector<NodeRow> rows(nodeRows.begin() + step.InsertFrom, nodeRows.begin() + step.InsertFrom + step.InsertCount);
+            InsertTreeRows(static_cast<int32_t>(step.At), items, rows);
+        }
+        if (m_treeDetached)
+        {
+            return true;
+        }
+    }
+
+    // The rows match; rows that kept their place take their new depth, sibling and expansion state, which the
+    // realized rows are restamped from.
+    MUX_ASSERT(m_nodeRows.size() == nodeRows.size());
+    m_nodeRows = std::move(nodeRows);
+    m_indexByNodeKeyValid = false;
+    m_indexByItemValid = false;
     return true;
 }
 

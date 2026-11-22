@@ -142,7 +142,7 @@ private:
     void UpdateTree(Kind kind);
     std::vector<winrt::IInspectable> ReadViewItems() const;
     void ReleaseTree();
-    void OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
+    void OnViewChanged(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index);
     void RaiseRowsChanged() const;
     void AssertOnUiThread() const;
     void SetKind(Kind kind, winrt::ItemsSourceView const& rows);
@@ -221,6 +221,9 @@ private:
     // Splices one node's visible subtree in or out; false (Rebuild then) when the key does not resolve,
     // the rows and node rows disagree, or the run is long.
     bool TryApplyNodeExpansionSplice(winrt::hstring const& nodeKey, bool expand);
+    // Publishes rebuilt rows as the few removals and insertions that turn the current rows into them; false
+    // when that would be many (a Reset then).
+    bool TryPublishTreeRowsAsSplice(std::vector<winrt::IInspectable> const& built, std::vector<NodeRow>& nodeRows);
     // Tree rows, node rows and index maps are only correct as a set; mutate only through these.
     void InsertTreeRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& nodeRows);
     void RemoveTreeRows(int32_t index, int32_t count);
@@ -296,6 +299,9 @@ private:
     bool m_groupRowsProfiled{ false };
 
     std::shared_ptr<const ShapingHelpers::ParentKeyIndex> m_treeIndex;
+    // Each row's keys as last read, so a rebuild after an Insert, Remove or Replace reads only the rows that
+    // change brought in. Emptied by a Reset, a new declaration and a released tree.
+    ShapingHelpers::NodeKeyCache m_treeKeyCache;
     // Structure intent was last pruned against (see SetTreeIndex).
     std::weak_ptr<const ShapingHelpers::ParentStructure> m_prunedForStructure;
     std::vector<size_t> m_rootSegments;
@@ -316,6 +322,8 @@ private:
     bool m_suppressNodeExpansionChanged{ false };
     bool m_nodeExpansionChangedWhileSuppressed{ false };
     bool m_treeRowsInFlight{ false };
+    // A tree rebuild for a view change may publish a splice instead of a Reset (see UpdateTree).
+    bool m_isRebuildingTreeForView{ false };
     bool m_treeRowsPending{ false };
     // Set by ClearTreeIndex; notifying loops check it after each mutation (a handler may retract the tree).
     bool m_treeDetached{ false };
