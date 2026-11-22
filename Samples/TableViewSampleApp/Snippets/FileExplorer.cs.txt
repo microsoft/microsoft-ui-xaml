@@ -32,16 +32,16 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     switch (filter)
     {
         case "folders":
-            Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: true });
             break;
         case "files":
-            Source.Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FileSystemEntry { IsFolder: false });
             break;
         case "none":
-            Source.Filter = new CollectionViewFilter(_ => false);
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(_ => false);
             break;
         default:
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
             break;
     }
 }

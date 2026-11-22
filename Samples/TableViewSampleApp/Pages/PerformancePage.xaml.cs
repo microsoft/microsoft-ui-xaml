@@ -214,7 +214,7 @@ public sealed partial class PerformancePage : SamplePageBase
         try
         {
             var source = _source;
-            var ms = Timed(() => source.Filter = new CollectionViewFilter(item => item is Person { Department: FilterDepartment }));
+            var ms = Timed(() => ((ICollectionViewShaping)source.View).Filter = new CollectionViewFilter(item => item is Person { Department: FilterDepartment }));
             var matches = _people.Count(p => p.Department == FilterDepartment);   // off the clock
             FilterText.Text = string.Format(CultureInfo.CurrentCulture, "{0:N0} ms, {1:N0} of {2:N0} rows match", ms, matches, _people.Count);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to {0}: {1:N0} of {2:N0} rows in {3:N0} ms", FilterDepartment, matches, _people.Count, ms));
@@ -235,7 +235,7 @@ public sealed partial class PerformancePage : SamplePageBase
         try
         {
             var source = _source;
-            var ms = Timed(() => source.Filter = null);
+            var ms = Timed(() => ((ICollectionViewShaping)source.View).Filter = null);
             FilterText.Text = string.Format(CultureInfo.CurrentCulture, "Cleared in {0:N0} ms, {1:N0} rows", ms, _people.Count);
             SetLastAction(string.Format(CultureInfo.CurrentCulture, "Cleared the filter: {0:N0} rows in {1:N0} ms", _people.Count, ms));
         }

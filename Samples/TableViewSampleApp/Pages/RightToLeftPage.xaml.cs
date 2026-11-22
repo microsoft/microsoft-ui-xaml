@@ -81,13 +81,13 @@ public sealed partial class RightToLeftPage : SamplePageBase
         var term = FilterBox.Text.Trim();
         if (term.Length == 0)
         {
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
         }
         else
         {
             // Filter composes with the grouping and the sort. It evaluates the predicate on a
             // refresh only, so an edit to a matched value re-applies it.
-            Source.Filter = new CollectionViewFilter(item => item is Person person && Matches(person, term));
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is Person person && Matches(person, term));
         }
 
         return term;

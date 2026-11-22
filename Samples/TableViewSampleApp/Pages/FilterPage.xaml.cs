@@ -108,11 +108,11 @@ public sealed partial class FilterPage : SamplePageBase
         var activeOnly = ActiveOnly;
         if (query.Length > 0 || activeOnly)
         {
-            Source.Filter = new CollectionViewFilter(item => Matches((Person)item, query, activeOnly));
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => Matches((Person)item, query, activeOnly));
         }
         else
         {
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
         }
 
         RefreshReadouts();

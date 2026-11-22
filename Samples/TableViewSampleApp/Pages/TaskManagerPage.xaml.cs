@@ -130,7 +130,7 @@ public sealed partial class TaskManagerPage : SamplePageBase
             : string.Format(CultureInfo.CurrentCulture, "Sorted by {0}, {1}", args.Column.Header, args.Direction == SortDirection.Descending ? "descending" : "ascending"));
     }
 
-    // ---- Search (CollectionViewSource.Filter) ------------------------------------------
+    // ---- Search (the view's Filter) ------------------------------------------
 
     // <snippet>
     private void OnSearchBoxTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -156,11 +156,11 @@ public sealed partial class TaskManagerPage : SamplePageBase
     {
         if (_searchText is not { } text)
         {
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
             return;
         }
 
-        Source.Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
+        ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
     }
     // </snippet>
 

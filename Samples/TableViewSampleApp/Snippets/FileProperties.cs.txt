@@ -25,16 +25,16 @@ private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
     switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
     {
         case "dates":
-            Source.Filter = new CollectionViewFilter(item => item is FilePropertyEntry { IsDate: true });
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { IsDate: true });
             break;
         case "version":
-            Source.Filter = new CollectionViewFilter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
             break;
         case "none":
-            Source.Filter = new CollectionViewFilter(_ => false);
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(_ => false);
             break;
         default:
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
             break;
     }
 }

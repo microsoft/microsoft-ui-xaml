@@ -81,12 +81,12 @@ public sealed partial class HierarchyPage : SamplePageBase
         var text = ((TextBox)sender).Text.Trim();
         if (text.Length == 0)
         {
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
         }
         else
         {
             // The view filters before the rows are nested: a match whose parent is filtered out is a root.
-            Source.Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
+            ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => ((Person)item).FullName.Contains(text, StringComparison.CurrentCultureIgnoreCase));
         }
 
         SetLastAction(text.Length == 0
@@ -108,13 +108,13 @@ public sealed partial class HierarchyPage : SamplePageBase
         switch (((ComboBox)sender).SelectedIndex)
         {
             case 1:
-                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), CollectionViewSortDirection.Ascending));
                 break;
             case 2:
-                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Descending));
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), CollectionViewSortDirection.Descending));
                 break;
             case 3:
-                Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), ListSortDirection.Ascending));
+                Source.SortDescriptions.Add(new SortDescription(nameof(Person.Role), CollectionViewSortDirection.Ascending));
                 break;
         }
 
@@ -361,7 +361,7 @@ public sealed partial class HierarchyPage : SamplePageBase
         times[0] = stopwatch.Elapsed.TotalMilliseconds;
 
         stopwatch.Restart();
-        source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), ListSortDirection.Ascending));
+        source.SortDescriptions.Add(new SortDescription(nameof(Person.FullName), CollectionViewSortDirection.Ascending));
         table.UpdateLayout();
         times[1] = stopwatch.Elapsed.TotalMilliseconds;
 

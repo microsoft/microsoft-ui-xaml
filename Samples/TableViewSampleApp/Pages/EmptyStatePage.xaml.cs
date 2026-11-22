@@ -170,7 +170,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
         // Nobody joins in the future, so the filter matches nothing while the collection keeps
         // every row. Filter reshapes the view in place, like grouping.
         var today = DateTimeOffset.Now;
-        Source.Filter = new CollectionViewFilter(item => item is Person p && p.JoinDate > today);
+        ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is Person p && p.JoinDate > today);
         _filteredToZero = true; // snippet:skip
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Filtered to people who joined after today: 0 of {0:N0} match", People.Count));
     }
@@ -218,7 +218,7 @@ public sealed partial class EmptyStatePage : SamplePageBase
     {
         if (_filteredToZero)
         {
-            Source.Filter = null;
+            ((ICollectionViewShaping)Source.View).Filter = null;
             _filteredToZero = false;
         }
     }

@@ -43,11 +43,11 @@ private void ApplySearch()
 {
     if (_searchText is not { } text)
     {
-        Source.Filter = null;
+        ((ICollectionViewShaping)Source.View).Filter = null;
         return;
     }
 
-    Source.Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
+    ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is ProcessItem process && MatchesSearch(process, text));
 }
 
 private static bool MatchesSearch(ProcessItem process, string query) =>

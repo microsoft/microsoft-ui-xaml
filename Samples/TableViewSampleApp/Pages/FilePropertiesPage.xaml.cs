@@ -189,7 +189,7 @@ public sealed partial class FilePropertiesPage : SamplePageBase
     private static string SizeText(long bytes) =>
         string.Format(CultureInfo.CurrentCulture, "{0} ({1:N0} bytes)", FileSystemEntry.FormatSize(bytes), bytes);
 
-    // ---- Filter (CollectionViewSource.Filter) ---------------------------------------------
+    // ---- Filter (the view's Filter) ---------------------------------------------
 
     // <snippet>
     private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
@@ -202,16 +202,16 @@ public sealed partial class FilePropertiesPage : SamplePageBase
         switch ((string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag)
         {
             case "dates":
-                Source.Filter = new CollectionViewFilter(item => item is FilePropertyEntry { IsDate: true });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { IsDate: true });
                 break;
             case "version":
-                Source.Filter = new CollectionViewFilter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(item => item is FilePropertyEntry { Source: FilePropertyEntry.VersionResource });
                 break;
             case "none":
-                Source.Filter = new CollectionViewFilter(_ => false);
+                ((ICollectionViewShaping)Source.View).Filter = new CollectionViewFilter(_ => false);
                 break;
             default:
-                Source.Filter = null;
+                ((ICollectionViewShaping)Source.View).Filter = null;
                 break;
         }
 

@@ -1,3 +1,9 @@
+<!-- WPF's markup: the rules are declared on the CollectionViewSource; the page sets Source. -->
+<CollectionViewSource x:Name="Shaped" Filter="OnShapedFilter">
+    <CollectionViewSource.GroupDescriptions>
+        <PropertyGroupDescription PropertyName="Category"/>
+    </CollectionViewSource.GroupDescriptions>
+</CollectionViewSource>
 <DataTemplate x:Key="CvsProcessNameTemplate" x:DataType="models:ProcessItem">
     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="12,0,8,0">
         <FontIcon Glyph="{x:Bind IconGlyph}" FontSize="14" AutomationProperties.AccessibilityView="Raw"/>
