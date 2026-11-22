@@ -13,6 +13,7 @@ namespace DirectUI
     class CollectionViewSource;
     class PropertyGroupDescription;
     class VectorCollectionView;
+    struct ShapingSortState;
 
     // Drops a default view from CollectionViewSource.GetDefaultView's table (CollectionViewSource_Shaping.cpp).
     void UnregisterDefaultView(_In_ VectorCollectionView* pView);
@@ -193,6 +194,7 @@ namespace DirectUI
         _Check_return_ HRESULT RestoreLiveShaping();
         bool IsLiveShaping() const;
         bool HasSortDirtyLiveItems() const;
+        bool IsSortDirtyAfterSourceChange(wfc::CollectionChange change, UINT index, UINT sourceIndex) const;
         _Check_return_ HRESULT OnIsLiveChanged(UINT turnedOn, UINT turnedOff);
 
     protected:
@@ -244,6 +246,8 @@ namespace DirectUI
         // The source index of each output item (flat output; grouped output keeps them per group), so a
         // source Add, Remove or Replace updates the view incrementally. Invalid after a change that was not applied.
         std::vector<UINT> m_sourceIndices;
+        // The sort the output was computed with and its items' decoded keys, kept for the incremental paths.
+        std::shared_ptr<ShapingSortState> m_spSortState;
         bool m_areSourceIndicesValid = false;
         UINT m_sourceListSize = 0;
         UINT m_sourceListChangeCount = 0;
