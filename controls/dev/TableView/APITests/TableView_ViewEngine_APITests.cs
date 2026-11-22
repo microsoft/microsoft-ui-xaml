@@ -593,13 +593,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Reset", string.Join(",", changes), "Nine of ten rows changed: one Reset.");
                 Verify.AreEqual(string.Join(" ", rows.OrderBy(r => r.Score).Select(r => r.Name)), EngineNames(view));
                 changes.Clear();
-                rows[9].Score = -1;
+                rows[0].Score = -1;
             });
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual("ItemRemoved,ItemInserted", string.Join(",", changes), "One row changed: one move.");
-                Verify.AreEqual("r9", ((EngineRow)view[0]).Name);
+                Verify.AreEqual("r0", ((EngineRow)view[0]).Name);
             });
         }
 
