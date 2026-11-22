@@ -648,6 +648,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestSuite", L"B")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyTypedPropertiesMapToDependencyProperties)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify every CalendarView property round-trips through its typed accessors and is exposed by its own, distinct DependencyProperty identifier.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDayOfWeekFormatControlsWeekDayNames)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify DayOfWeekFormat formats the week day names, and an empty format falls back to the shortest day names.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyRoundedChromeFallbackPropertiesWhenForced)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that forcing the rounded CalendarViewBaseItem chrome fills unset brushes and zero margins with fallback values (debug builds only).")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(KeyboardNavigationTestPageUpAtCalendarMinDate)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify PageUp in the first month the calendar system supports moves focus to the first date.")
+        END_TEST_METHOD()
+
 #define VerifyAllTimeZonesPartDecl(i) \
         BEGIN_TEST_METHOD(VerifyAllTimeZonesPart##i)\
             TEST_METHOD_PROPERTY(L"Description", L"CalendarView days and selected dates are in incorrect offset when timezone is on half hour.")\
