@@ -262,6 +262,13 @@ HRESULT VectorCollectionView::RetargetSource(_In_ wfc::IVector<IInspectable *> *
 
     IFC_RETURN(SetSource(pSource));
 
+    // The view presents its shaped list but loads more of the collection it shapes: new items arrive as
+    // source changes.
+    if (m_tpSourceList)
+    {
+        SetPtrValueWithQIOrNull(m_tpSupportIncrementalLoading, m_tpSourceList.Get());
+    }
+
     // Consumers react to CollectionGroups before the Reset, so they read the new items with the new groups.
     if (isGroupingChanged)
     {

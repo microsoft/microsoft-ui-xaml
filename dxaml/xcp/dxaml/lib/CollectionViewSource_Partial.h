@@ -86,7 +86,11 @@ namespace DirectUI
         static bool IsSourceValid(_In_ IInspectable *pSource);
 
         // Implemented in CollectionViewSource_Shaping.cpp.
+        _Check_return_ HRESULT HasShapingRules(_Out_ bool* pHasRules);
+        _Check_return_ HRESULT IsShapeableSource(_In_ IInspectable *pSource, _Out_ bool *pIsShapeable);
         _Check_return_ HRESULT IsShapingRequested(_In_ IInspectable *pSource, _Out_ bool *pIsRequested);
+        _Check_return_ HRESULT CheckShapingSupported(_In_ IInspectable *pSource);
+        _Check_return_ HRESULT OnFilterRequestedHandlersChanged();
         _Check_return_ HRESULT EnsureShapingDescriptions();
         _Check_return_ HRESULT ApplyPropertiesToView(_In_ VectorCollectionView* pView);
         _Check_return_ HRESULT DetachShapingView();

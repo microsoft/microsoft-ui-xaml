@@ -755,7 +755,7 @@ namespace DirectUI
 
     protected:
 
-        void OnReferenceTrackerWalk(INT walkType) final
+        void OnReferenceTrackerWalk(INT walkType) override
         {
             m_handlers.ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
 
