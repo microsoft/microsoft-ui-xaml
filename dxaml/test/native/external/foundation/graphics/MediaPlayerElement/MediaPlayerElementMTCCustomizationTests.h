@@ -137,6 +137,62 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO: Port Full Screen work to WinAppSDK 1.x master
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(SeekSliderAutomationPeerExposesReadOnlyPositionValue)
+                TEST_METHOD_PROPERTY(L"Description", L"The MediaTransportControls seek bar automation peer exposes the playback position as a read-only UIA Value.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SeekSliderValueIncludesHoursForLongMedia)
+                TEST_METHOD_PROPERTY(L"Description", L"The seek bar automation value includes hours for positions past one hour.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(PlayPauseButtonTogglesPlaybackState)
+                TEST_METHOD_PROPERTY(L"Description", L"Invoking the MediaTransportControls play/pause button plays and pauses the MediaPlayer and updates the button name.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(FastForwardTrickModeRatesUpdateButtonNameAndPlayResets)
+                TEST_METHOD_PROPERTY(L"Description", L"Fast forward enters trick play with increasing rates named on the button; play/pause returns to the normal rate.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(RewindTrickModeOrSkipBackFallback)
+                TEST_METHOD_PROPERTY(L"Description", L"Rewind enters reverse trick play when the rate is supported, otherwise it skips back.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CommandManagerBehaviorsGateSkipRateAndRepeatButtons)
+                TEST_METHOD_PROPERTY(L"Description", L"MediaPlaybackCommandManager behaviors and the MediaTransportControls APIs together decide whether skip, playback rate and repeat buttons are enabled.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(MediaFailedShowsLocalizedError)
+                TEST_METHOD_PROPERTY(L"Description", L"A media failure shows the localized error message for the reported error in the transport controls.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(PlaybackListNextPreviousAndItemFailure)
+                TEST_METHOD_PROPERTY(L"Description", L"A failing MediaPlaybackList item is reported by the transport controls, and the next/previous track buttons move through a playlist.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CCSelectionFlyoutListsTracksAndSwitchesPresentationMode)
+                TEST_METHOD_PROPERTY(L"Description", L"The closed caption menu lists the caption tracks, marks the visible one and switches the presented track.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(AudioTrackFlyoutNamesTracksAndSwitchesSelection)
+                TEST_METHOD_PROPERTY(L"Description", L"The audio track menu names each audio track, marks the selected one and switches the selected track.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ThumbnailRequestedRaisedWhenSeekBarMoves)
+                TEST_METHOD_PROPERTY(L"Description", L"Each move of the seek bar seeks the player and raises ThumbnailRequested from the transport controls.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ClosedMediaPlayerDoesNotBreakTransportControlsTeardown)
+                TEST_METHOD_PROPERTY(L"Description", L"Closing the MediaPlayer before the element unloads does not break the transport controls, which keep working with a new player.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(TransportControlsMovedToAnotherElementFollowNewPlayer)
+                TEST_METHOD_PROPERTY(L"Description", L"Transport controls moved to another MediaPlayerElement control that element's MediaPlayer.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(MediaBreakDisablesSeekBarWhileBreakPlays)
+                TEST_METHOD_PROPERTY(L"Description", L"The seek bar is disabled while a media break plays and re-enabled afterwards.")
+            END_TEST_METHOD()
+
         private:
             xaml_controls::MediaPlayerElement^ SetupMediaPlayerElementUI();
             
