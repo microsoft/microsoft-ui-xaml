@@ -1441,22 +1441,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var repeater = GetRowsRepeater(tableView);
-                var probe = new ProviderPeerProbe();
-                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
-                var start = probe.ToProvider(RowPeerOf(repeater.GetOrCreateElement(149)));
-                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the failing candidate must not be realized.");
-                Verify.IsNull(repeater.TryGetElement(151), "Precondition: the later match must not be realized.");
-                Verify.AreEqual(0, factory.FailureCount, "Precondition: the fault must not fire before the lookup.");
-
-                var found = container.FindItemByProperty(start, null, null);
-                Verify.AreEqual(1, factory.FailureCount, "The lookup must exercise the injected candidate failure.");
-                Verify.IsNotNull(found, "An unavailable candidate must not terminate the scan.");
-                Verify.AreSame(RowPeerOf(repeater.TryGetElement(151)), probe.ToPeer(found), "The next available item must be returned.");
-                if (!throwOnRealization)
+                try
                 {
-                    Verify.IsNull(FrameworkElementAutomationPeer.CreatePeerForElement(repeater.TryGetElement(150)),
-                        "Precondition: the skipped element really has no automation peer.");
+                    var repeater = GetRowsRepeater(tableView);
+                    var probe = new ProviderPeerProbe();
+                    var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                    var start = probe.ToProvider(RowPeerOf(repeater.GetOrCreateElement(149)));
+                    Verify.IsNull(repeater.TryGetElement(150), "Precondition: the failing candidate must not be realized.");
+                    Verify.IsNull(repeater.TryGetElement(151), "Precondition: the later match must not be realized.");
+                    Verify.AreEqual(0, factory.FailureCount, "Precondition: the fault must not fire before the lookup.");
+
+                    var found = container.FindItemByProperty(start, null, null);
+                    Verify.AreEqual(1, factory.FailureCount, "The lookup must exercise the injected candidate failure.");
+                    Verify.IsNotNull(found, "An unavailable candidate must not terminate the scan.");
+                    Verify.AreSame(RowPeerOf(repeater.TryGetElement(151)), probe.ToPeer(found), "The next available item must be returned.");
+                    if (!throwOnRealization)
+                    {
+                        Verify.IsNull(FrameworkElementAutomationPeer.CreatePeerForElement(repeater.TryGetElement(150)),
+                            "Precondition: the skipped element really has no automation peer.");
+                    }
+                }
+                finally
+                {
+                    // A fault-injection fixture must not participate in a later queued layout pass.
+                    Content = null;
                 }
             });
         }
