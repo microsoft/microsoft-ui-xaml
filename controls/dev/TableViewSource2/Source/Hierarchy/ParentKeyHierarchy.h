@@ -76,8 +76,8 @@ private:
     {
         winrt::hstring Key;
         winrt::hstring ParentKey;
-        // Object keys only (value keys need only Key); tracked like Item.
-        std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>> KeyObject;
+        // Object keys only (value keys need only Key); held strongly like Item.
+        std::optional<StrongRef> KeyObject;
     };
 
     // Prepare(), strict: throws when a prepared record is not reachable from the top level (it is

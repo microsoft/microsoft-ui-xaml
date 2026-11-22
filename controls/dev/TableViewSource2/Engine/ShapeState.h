@@ -15,6 +15,25 @@
 struct GroupNode;
 struct SourceRecord;
 
+// A plain strong reference with the construction and accessor shape of tracker_ref, used for
+// per-record and per-key storage. tracker_ref registers a handle in the owner's tracker list, and
+// each set/destroy scans that list (O(N)), which makes per-record tracking O(N^2) on whole-tree
+// operations. The owner argument is accepted and ignored so call sites match tracker_ref.
+class StrongRef
+{
+public:
+    StrongRef() = default;
+    explicit StrongRef(ITrackerHandleManager const*) noexcept {}
+    StrongRef(ITrackerHandleManager const*, winrt::Windows::Foundation::IInspectable const& value) : m_value(value) {}
+
+    void set(winrt::Windows::Foundation::IInspectable const& value) { m_value = value; }
+    winrt::Windows::Foundation::IInspectable const& get() const noexcept { return m_value; }
+    winrt::Windows::Foundation::IInspectable const& safe_get() const noexcept { return m_value; }
+
+private:
+    winrt::Windows::Foundation::IInspectable m_value{ nullptr };
+};
+
 // The shaped-node base and the engine state stored inline on every SourceRecord (declarations
 // only). See docs/design-notes/TabularControls/Shaping-Architecture-Redesign.md, "Shaped tree
 // representation" and "Engine state storage".
@@ -163,10 +182,10 @@ struct ShapeState
 
     // One cached key per SortSpec of the applied spec, in level order. Path and Key levels hold the
     // value read once per record (PathEvaluator / ShapeDelegates); Comparer levels hold nothing (the
-    // comparer is called with the items). Optional so the engine can destroy keys while the owner
-    // is alive; tracked like SourceRecord::Item because a key can reference the app's objects.
+    // comparer is called with the items). Optional so the engine can drop keys individually. Held
+    // strongly (StrongRef), not through tracker_ref, to keep per-record cost O(1).
     // Valid only while SortKeysValid is set.
-    std::vector<std::optional<tracker_ref<winrt::Windows::Foundation::IInspectable>>> SortKeys;
+    std::vector<std::optional<StrongRef>> SortKeys;
 
     // Source children after filter and sort, in shaped order. Non-owning. Valid only while
     // ChildrenShaped is set. Built eagerly for every parent whenever a filter or sort is active,

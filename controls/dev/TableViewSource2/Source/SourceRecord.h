@@ -59,12 +59,11 @@ struct SourceRecord : ShapedNode
     SourceRecord(SourceRecord const&) = delete;
     SourceRecord& operator=(SourceRecord const&) = delete;
 
-    // Reference-tracked through the owning TableViewSource2 (like Vector<IInspectable>) so the .NET
-    // GC can collect cycles when an item references its owner. Kept alive until ~SourceRecord() so
-    // COM addresses are not reused while the record is in the table. get_abi(Item.get()) is the
-    // raw-pointer lookup key. Item.get() is valid only on live paths (incremental changes, Refresh,
-    // PropertyChanged handling); teardown paths use Item.safe_get().
-    tracker_ref<winrt::Windows::Foundation::IInspectable> Item;
+    // Held strongly (StrongRef), not through tracker_ref: per-record tracker handles cost O(N) per
+    // set/destroy in the owner's tracker list. Kept alive until ~SourceRecord() so COM addresses
+    // are not reused while the record is in the table. get_abi(Item.get()) is the raw-pointer
+    // lookup key.
+    StrongRef Item;
 
     // One QI at creation.
     ObjectAddress Address{ 0 };
