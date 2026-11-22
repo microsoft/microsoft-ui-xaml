@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //     client is attached. An API test cannot attach one, so such a test would pass identically if
     //     the events were deleted. See section 12.6 of the plan.
     [TestClass]
-    public class TableViewAutomationPeerTests : TableViewApiTestBase
+    public partial class TableViewAutomationPeerTests : TableViewApiTestBase
     {
         // ---------- 12.1 TableView peer patterns and identity ----------
 
@@ -1342,6 +1342,158 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(peer, "The removed column's header must still get a peer.");
                 Verify.IsFalse(peer is TableViewColumnHeaderAutomationPeer, "The header no longer describes a column of its table.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ControlType.Group lookup realizes off-screen group headers and advances past a returned group.")]
+        public void VerifyFindItemByPropertyFindsUnrealizedGroupByControlType() =>
+            VerifyFindItemByPropertyAcrossUnrealizedGroup(byClassName: false, findGroup: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ClassName lookup finds off-screen group headers rather than treating them as TableViewRow.")]
+        public void VerifyFindItemByPropertyFindsUnrealizedGroupByClassName() =>
+            VerifyFindItemByPropertyAcrossUnrealizedGroup(byClassName: true, findGroup: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ControlType.DataItem lookup skips an off-screen group header and returns the following data row.")]
+        public void VerifyFindItemByPropertySkipsUnrealizedGroupForDataItem() =>
+            VerifyFindItemByPropertyAcrossUnrealizedGroup(byClassName: false, findGroup: false);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies row ClassName lookup cannot return an off-screen group header.")]
+        public void VerifyFindItemByPropertySkipsUnrealizedGroupForRowClassName() =>
+            VerifyFindItemByPropertyAcrossUnrealizedGroup(byClassName: true, findGroup: false);
+
+        private void VerifyFindItemByPropertyAcrossUnrealizedGroup(bool byClassName, bool findGroup)
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var probe = new ProviderPeerProbe();
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var expectedType = findGroup ? AutomationControlType.Group : AutomationControlType.DataItem;
+                var expectedClass = RowPeerOf(repeater.TryGetElement(findGroup ? 0 : 1)).GetClassName();
+                var property = byClassName ? AutomationElementIdentifiers.ClassNameProperty : AutomationElementIdentifiers.ControlTypeProperty;
+                object value = byClassName ? (object)expectedClass : (int)expectedType;
+
+                // Each group has a header and ten data rows. G6's header follows G5's last row.
+                var start = probe.ToProvider(RowPeerOf(repeater.GetOrCreateElement(65)));
+                Verify.IsNull(repeater.TryGetElement(66), "Precondition: G6's header must not be realized.");
+                Verify.IsNull(repeater.TryGetElement(67), "Precondition: G6's first data row must not be realized.");
+
+                var found = container.FindItemByProperty(start, property, value);
+                Verify.IsNotNull(found, "Lookup must find a matching item beyond the realized viewport.");
+                var peer = probe.ToPeer(found);
+                Verify.AreEqual(expectedType, peer.GetAutomationControlType(), "The returned element must have the requested kind.");
+                Verify.AreEqual(expectedClass, peer.GetClassName(), "The returned element must have the requested class.");
+                int expectedIndex = findGroup ? 66 : 67;
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(expectedIndex)), peer, "Lookup must return the first matching source item.");
+
+                var next = probe.ToPeer(container.FindItemByProperty(found, null, null));
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(expectedIndex + 1)), next,
+                    "A newly realized group's or row's provider must be a valid exclusive startAfter anchor.");
+
+                if (findGroup)
+                {
+                    var last = container.FindItemByProperty(found, property, value);
+                    Verify.IsNotNull(last, "The search must advance to G7 rather than return G6 again.");
+                    Verify.AreSame(RowPeerOf(repeater.TryGetElement(77)), probe.ToPeer(last), "The next matching header must be G7.");
+                    Verify.IsNull(container.FindItemByProperty(last, property, value), "Enumeration must end after the last group.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a failed candidate realization does not hide a later matching item.")]
+        public void VerifyFindItemByPropertyContinuesAfterRealizationFailure() =>
+            VerifyFindItemByPropertyContinuesAfterUnavailableCandidate(throwOnRealization: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a candidate with no automation peer does not hide a later matching item.")]
+        public void VerifyFindItemByPropertyContinuesAfterMissingPeer() =>
+            VerifyFindItemByPropertyContinuesAfterUnavailableCandidate(throwOnRealization: false);
+
+        private void VerifyFindItemByPropertyContinuesAfterUnavailableCandidate(bool throwOnRealization)
+        {
+            TableView tableView = null;
+            FindItemElementFactory factory = null;
+            var items = MakeNamedPeople(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+                // Inject a single inaccessible candidate without changing the table's source or lookup path.
+                factory = new FindItemElementFactory(items[150], throwOnRealization);
+                GetRowsRepeater(tableView).ItemTemplate = factory;
+                tableView.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var probe = new ProviderPeerProbe();
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var start = probe.ToProvider(RowPeerOf(repeater.GetOrCreateElement(149)));
+                Verify.IsNull(repeater.TryGetElement(150), "Precondition: the failing candidate must not be realized.");
+                Verify.IsNull(repeater.TryGetElement(151), "Precondition: the later match must not be realized.");
+                Verify.AreEqual(0, factory.FailureCount, "Precondition: the fault must not fire before the lookup.");
+
+                var found = container.FindItemByProperty(start, null, null);
+                Verify.AreEqual(1, factory.FailureCount, "The lookup must exercise the injected candidate failure.");
+                Verify.IsNotNull(found, "An unavailable candidate must not terminate the scan.");
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(151)), probe.ToPeer(found), "The next available item must be returned.");
+                if (!throwOnRealization)
+                {
+                    Verify.IsNull(FrameworkElementAutomationPeer.CreatePeerForElement(repeater.TryGetElement(150)),
+                        "Precondition: the skipped element really has no automation peer.");
+                }
+            });
+        }
+
+        private sealed partial class FindItemElementFactory : ElementFactory
+        {
+            private readonly object _unavailableItem;
+            private readonly bool _throwOnRealization;
+
+            public FindItemElementFactory(object unavailableItem, bool throwOnRealization)
+            {
+                _unavailableItem = unavailableItem;
+                _throwOnRealization = throwOnRealization;
+            }
+
+            public int FailureCount { get; private set; }
+
+            protected override UIElement GetElementCore(ElementFactoryGetArgs args)
+            {
+                if (ReferenceEquals(args.Data, _unavailableItem) && FailureCount == 0)
+                {
+                    FailureCount++;
+                    if (_throwOnRealization)
+                    {
+                        throw new InvalidOperationException("Injected candidate realization failure.");
+                    }
+                    return new PeerlessTableViewRow();
+                }
+                return new TableViewRow();
+            }
+
+            protected override void RecycleElementCore(ElementFactoryRecycleArgs args) { }
+        }
+
+        private sealed partial class PeerlessTableViewRow : TableViewRow
+        {
+            protected override AutomationPeer OnCreateAutomationPeer() => null;
         }
 
         [TestMethod]

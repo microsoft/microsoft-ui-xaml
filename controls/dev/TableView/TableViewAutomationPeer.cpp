@@ -1269,8 +1269,8 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
     winrt::AutomationProperty const& property,
     winrt::IInspectable const& value)
 {
-    // Name can match virtualized rows from item data; AutomationId/ClassName/ControlType
-    // only inspect realized row peers. Full support needs VirtualizedItemPattern.
+    // Name, ClassName and ControlType can identify virtualized candidates from item data.
+    // Realize a matching candidate before returning its provider.
     if (property == winrt::TogglePatternIdentifiers::ToggleStateProperty())
     {
         return nullptr;
@@ -1396,7 +1396,9 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             else if (property == winrt::AutomationElementIdentifiers::ClassNameProperty())
             {
                 hstring requested = StringPropertyValue(value);
-                hstring candidate = winrt::hstring_name_of<winrt::TableViewRow>();
+                hstring candidate = TryGetGroupedEntry(item)
+                    ? winrt::hstring{ L"TableViewGroupHeader" }
+                    : winrt::hstring_name_of<winrt::TableViewRow>();
                 if (auto rowElement = repeater.TryGetElement(i))
                 {
                     if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
@@ -1412,7 +1414,9 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 winrt::AutomationControlType requested{};
                 if (TryGetControlTypePropertyValue(value, requested))
                 {
-                    auto candidate = winrt::AutomationControlType::DataItem;
+                    auto candidate = TryGetGroupedEntry(item)
+                        ? winrt::AutomationControlType::Group
+                        : winrt::AutomationControlType::DataItem;
                     if (auto rowElement = repeater.TryGetElement(i))
                     {
                         if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
@@ -1459,7 +1463,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             }
             catch (...)
             {
-                return nullptr;
+                continue;
             }
         }
 
@@ -1476,7 +1480,6 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                 return ProviderFromPeer(rowPeer);
             }
         }
-        return nullptr;
     }
 
     return nullptr;
