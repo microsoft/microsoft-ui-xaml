@@ -28,6 +28,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_METHOD_PROPERTY(L"Description", L"Validates vector operations and bounds exceptions.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ItemCollectionIndexOfComparesBoxedValuesByValue)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that ItemCollection.IndexOf finds boxed Char16, UInt8, Int16, UInt16, UInt32, Int64, UInt64, Single, Size, Guid and TimeSpan items by value and type.")
+            END_TEST_METHOD()
+
     };
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Framework::Layout

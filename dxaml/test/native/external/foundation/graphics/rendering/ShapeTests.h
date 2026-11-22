@@ -141,6 +141,10 @@ public:
         TEST_METHOD_PROPERTY(L"Description", L"Shape.StrokeDashArray is marked as created on-demand. We hit an assert if we try to create it during the render walk, because it marks the element dirty.")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(NegativeStrokeDashOffsetMatchesWrappedOffset)
+        TEST_METHOD_PROPERTY(L"Description", L"A negative StrokeDashOffset is wrapped into the dash period: a dashed line with offset -1 renders exactly like the same line with offset (period - 1), and differently from offset 0.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(PathWithLineTest)
         TEST_METHOD_PROPERTY(L"Description", L"Renders an path using old rendering code.")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")

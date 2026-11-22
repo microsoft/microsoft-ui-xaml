@@ -22,6 +22,10 @@
 #include "CustomInterfaceObject.h"
 #include "CustomTypes.XamlTypeInfo.g.h"
 
+#undef GetCurrentTime
+#include <Microsoft.UI.Xaml.h>
+#include <microsoft.ui.xaml.private.h>
+
 #undef max
 #define VERIFY_THROWS_WRONG_THREAD(Expression) VERIFY_THROWS_SPECIFIC_WINRT(Expression, Platform::Exception^, [&](Platform::Exception^ e) { return e->HResult == RPC_E_WRONG_THREAD; });
 
@@ -1789,6 +1793,504 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 VERIFY_NO_THROW(safe_cast<HorizontalAlignment>(setter->Value));
                 VERIFY_ARE_EQUAL(HorizontalAlignment::Right, safe_cast<HorizontalAlignment>(setter->Value));
+            });
+        }
+
+        namespace
+        {
+            using AbiRect = ABI::Windows::Foundation::Rect;
+            using AbiPoint = ABI::Windows::Foundation::Point;
+            using AbiSize = ABI::Windows::Foundation::Size;
+
+            const float c_positiveInfinity = std::numeric_limits<float>::infinity();
+            const float c_negativeInfinity = -std::numeric_limits<float>::infinity();
+
+            Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Xaml::IRectHelperStatics> GetRectHelperStatics()
+            {
+                Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Xaml::IRectHelperStatics> statics;
+                VERIFY_SUCCEEDED(RoGetActivationFactory(
+                    Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_RectHelper).Get(),
+                    IID_PPV_ARGS(&statics)));
+                VERIFY_IS_NOT_NULL(statics.Get());
+                return statics;
+            }
+
+            AbiRect MakeAbiRect(float x, float y, float width, float height)
+            {
+                AbiRect rect = {};
+                rect.X = x;
+                rect.Y = y;
+                rect.Width = width;
+                rect.Height = height;
+                return rect;
+            }
+
+            AbiPoint MakeAbiPoint(float x, float y)
+            {
+                AbiPoint point = {};
+                point.X = x;
+                point.Y = y;
+                return point;
+            }
+
+            AbiSize MakeAbiSize(float width, float height)
+            {
+                AbiSize size = {};
+                size.Width = width;
+                size.Height = height;
+                return size;
+            }
+
+            void VerifyAbiRect(const AbiRect& actual, float x, float y, float width, float height)
+            {
+                VERIFY_ARE_EQUAL(x, actual.X);
+                VERIFY_ARE_EQUAL(y, actual.Y);
+                VERIFY_ARE_EQUAL(width, actual.Width);
+                VERIFY_ARE_EQUAL(height, actual.Height);
+            }
+
+            void VerifyIsEmptyRect(const AbiRect& actual)
+            {
+                VerifyAbiRect(actual, c_positiveInfinity, c_positiveInfinity, c_negativeInfinity, c_negativeInfinity);
+            }
+
+            Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValue> AsAbiPropertyValue(Platform::Object^ value)
+            {
+                VERIFY_IS_NOT_NULL(value);
+                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::IPropertyValue> propertyValue;
+                VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(value)->QueryInterface(IID_PPV_ARGS(&propertyValue)));
+                return propertyValue;
+            }
+
+            // Calls every scalar and array getter of IPropertyValue and verifies that each one is rejected with E_NOTIMPL.
+            void VerifyAllPropertyValueGettersAreNotImplemented(ABI::Windows::Foundation::IPropertyValue* propertyValue)
+            {
+                BYTE uint8Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt8(&uint8Value));
+                INT16 int16Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt16(&int16Value));
+                UINT16 uint16Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt16(&uint16Value));
+                INT32 int32Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt32(&int32Value));
+                UINT32 uint32Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt32(&uint32Value));
+                INT64 int64Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt64(&int64Value));
+                UINT64 uint64Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt64(&uint64Value));
+                FLOAT singleValue = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetSingle(&singleValue));
+                DOUBLE doubleValue = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetDouble(&doubleValue));
+                WCHAR char16Value = 0;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetChar16(&char16Value));
+                BOOLEAN booleanValue = FALSE;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetBoolean(&booleanValue));
+                HSTRING stringValue = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetString(&stringValue));
+                VERIFY_IS_NULL(stringValue);
+                GUID guidValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetGuid(&guidValue));
+                ABI::Windows::Foundation::DateTime dateTimeValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetDateTime(&dateTimeValue));
+                ABI::Windows::Foundation::TimeSpan timeSpanValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetTimeSpan(&timeSpanValue));
+                AbiPoint pointValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetPoint(&pointValue));
+                AbiSize sizeValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetSize(&sizeValue));
+                AbiRect rectValue = {};
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetRect(&rectValue));
+
+                UINT32 length = 0;
+                BYTE* uint8Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt8Array(&length, &uint8Array));
+                INT16* int16Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt16Array(&length, &int16Array));
+                UINT16* uint16Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt16Array(&length, &uint16Array));
+                INT32* int32Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt32Array(&length, &int32Array));
+                UINT32* uint32Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt32Array(&length, &uint32Array));
+                INT64* int64Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInt64Array(&length, &int64Array));
+                UINT64* uint64Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt64Array(&length, &uint64Array));
+                FLOAT* singleArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetSingleArray(&length, &singleArray));
+                DOUBLE* doubleArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetDoubleArray(&length, &doubleArray));
+                WCHAR* char16Array = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetChar16Array(&length, &char16Array));
+                BOOLEAN* booleanArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetBooleanArray(&length, &booleanArray));
+                HSTRING* stringArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetStringArray(&length, &stringArray));
+                IInspectable** inspectableArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetInspectableArray(&length, &inspectableArray));
+                GUID* guidArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetGuidArray(&length, &guidArray));
+                ABI::Windows::Foundation::DateTime* dateTimeArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetDateTimeArray(&length, &dateTimeArray));
+                ABI::Windows::Foundation::TimeSpan* timeSpanArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetTimeSpanArray(&length, &timeSpanArray));
+                AbiPoint* pointArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetPointArray(&length, &pointArray));
+                AbiSize* sizeArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetSizeArray(&length, &sizeArray));
+                AbiRect* rectArray = nullptr;
+                VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetRectArray(&length, &rectArray));
+            }
+        }
+
+        void PropertySystemIntegrationTests::RectHelperFactoryMethodsValidateAndNormalize()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto statics = GetRectHelperStatics();
+                AbiRect result = {};
+
+                LOG_OUTPUT(L"FromCoordinatesAndDimensions copies every field.");
+                VERIFY_SUCCEEDED(statics->FromCoordinatesAndDimensions(1.5f, -2.25f, 3.0f, 4.5f, &result));
+                VerifyAbiRect(result, 1.5f, -2.25f, 3.0f, 4.5f);
+
+                LOG_OUTPUT(L"FromCoordinatesAndDimensions accepts a zero width and height.");
+                VERIFY_SUCCEEDED(statics->FromCoordinatesAndDimensions(5.0f, 6.0f, 0.0f, 0.0f, &result));
+                VerifyAbiRect(result, 5.0f, 6.0f, 0.0f, 0.0f);
+
+                LOG_OUTPUT(L"FromCoordinatesAndDimensions rejects a negative width or a negative height and resets the result.");
+                result = MakeAbiRect(9.0f, 9.0f, 9.0f, 9.0f);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->FromCoordinatesAndDimensions(1.0f, 2.0f, -0.5f, 3.0f, &result));
+                VerifyAbiRect(result, 0.0f, 0.0f, 0.0f, 0.0f);
+                result = MakeAbiRect(9.0f, 9.0f, 9.0f, 9.0f);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->FromCoordinatesAndDimensions(1.0f, 2.0f, 3.0f, -0.5f, &result));
+                VerifyAbiRect(result, 0.0f, 0.0f, 0.0f, 0.0f);
+                // A null result pointer is rejected as an invalid argument.
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->FromCoordinatesAndDimensions(1.0f, 2.0f, 3.0f, 4.0f, nullptr));
+
+                LOG_OUTPUT(L"FromPoints normalizes the points independently on each axis.");
+                VERIFY_SUCCEEDED(statics->FromPoints(MakeAbiPoint(10.0f, 2.0f), MakeAbiPoint(4.0f, 9.0f), &result));
+                VerifyAbiRect(result, 4.0f, 2.0f, 6.0f, 7.0f);
+                VERIFY_SUCCEEDED(statics->FromPoints(MakeAbiPoint(1.0f, 9.0f), MakeAbiPoint(5.0f, 3.0f), &result));
+                VerifyAbiRect(result, 1.0f, 3.0f, 4.0f, 6.0f);
+                VERIFY_SUCCEEDED(statics->FromPoints(MakeAbiPoint(8.0f, 7.0f), MakeAbiPoint(-2.0f, -3.0f), &result));
+                VerifyAbiRect(result, -2.0f, -3.0f, 10.0f, 10.0f);
+                VERIFY_SUCCEEDED(statics->FromPoints(MakeAbiPoint(3.0f, 3.0f), MakeAbiPoint(3.0f, 3.0f), &result));
+                VerifyAbiRect(result, 3.0f, 3.0f, 0.0f, 0.0f);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->FromPoints(MakeAbiPoint(0.0f, 0.0f), MakeAbiPoint(1.0f, 1.0f), nullptr));
+
+                LOG_OUTPUT(L"FromLocationAndSize copies location and size, including a zero size.");
+                VERIFY_SUCCEEDED(statics->FromLocationAndSize(MakeAbiPoint(7.0f, -8.0f), MakeAbiSize(2.0f, 3.0f), &result));
+                VerifyAbiRect(result, 7.0f, -8.0f, 2.0f, 3.0f);
+                VERIFY_SUCCEEDED(statics->FromLocationAndSize(MakeAbiPoint(7.0f, 8.0f), MakeAbiSize(0.0f, 0.0f), &result));
+                VerifyAbiRect(result, 7.0f, 8.0f, 0.0f, 0.0f);
+
+                LOG_OUTPUT(L"FromLocationAndSize returns the Empty rect when either dimension of the size is negative.");
+                VERIFY_SUCCEEDED(statics->FromLocationAndSize(MakeAbiPoint(7.0f, 8.0f), MakeAbiSize(-1.0f, 3.0f), &result));
+                VerifyIsEmptyRect(result);
+                VERIFY_SUCCEEDED(statics->FromLocationAndSize(MakeAbiPoint(7.0f, 8.0f), MakeAbiSize(2.0f, -1.0f), &result));
+                VerifyIsEmptyRect(result);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->FromLocationAndSize(MakeAbiPoint(0.0f, 0.0f), MakeAbiSize(1.0f, 1.0f), nullptr));
+            });
+        }
+
+        void PropertySystemIntegrationTests::RectHelperEdgeAccessorsHandleEmptyAndZeroSizedRects()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto statics = GetRectHelperStatics();
+                float left = 0.0f;
+                float top = 0.0f;
+                float right = 0.0f;
+                float bottom = 0.0f;
+
+                auto verifyEdges = [&statics, &left, &top, &right, &bottom](const AbiRect& rect, float expectedLeft, float expectedTop, float expectedRight, float expectedBottom)
+                {
+                    VERIFY_SUCCEEDED(statics->GetLeft(rect, &left));
+                    VERIFY_SUCCEEDED(statics->GetTop(rect, &top));
+                    VERIFY_SUCCEEDED(statics->GetRight(rect, &right));
+                    VERIFY_SUCCEEDED(statics->GetBottom(rect, &bottom));
+                    VERIFY_ARE_EQUAL(expectedLeft, left);
+                    VERIFY_ARE_EQUAL(expectedTop, top);
+                    VERIFY_ARE_EQUAL(expectedRight, right);
+                    VERIFY_ARE_EQUAL(expectedBottom, bottom);
+                };
+
+                LOG_OUTPUT(L"Regular rect with a negative origin.");
+                verifyEdges(MakeAbiRect(-3.0f, 5.0f, 7.0f, 11.0f), -3.0f, 5.0f, 4.0f, 16.0f);
+
+                LOG_OUTPUT(L"Zero-sized rect: right/bottom equal left/top.");
+                verifyEdges(MakeAbiRect(2.5f, -1.5f, 0.0f, 0.0f), 2.5f, -1.5f, 2.5f, -1.5f);
+
+                LOG_OUTPUT(L"A negative height alone does not make the rect empty.");
+                verifyEdges(MakeAbiRect(1.0f, 2.0f, 3.0f, -4.0f), 1.0f, 2.0f, 4.0f, -2.0f);
+
+                LOG_OUTPUT(L"A negative width makes the rect empty: right and bottom are negative infinity.");
+                verifyEdges(MakeAbiRect(1.0f, 2.0f, -1.0f, 5.0f), 1.0f, 2.0f, c_negativeInfinity, c_negativeInfinity);
+
+                LOG_OUTPUT(L"The Empty rect: left/top are positive infinity, right/bottom are negative infinity.");
+                AbiRect empty = {};
+                VERIFY_SUCCEEDED(statics->get_Empty(&empty));
+                verifyEdges(empty, c_positiveInfinity, c_positiveInfinity, c_negativeInfinity, c_negativeInfinity);
+
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->GetLeft(empty, nullptr));
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->GetTop(empty, nullptr));
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->GetRight(empty, nullptr));
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->GetBottom(empty, nullptr));
+            });
+        }
+
+        void PropertySystemIntegrationTests::RectHelperEqualsAndUnionWithPoint()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto statics = GetRectHelperStatics();
+                AbiRect empty = {};
+                VERIFY_SUCCEEDED(statics->get_Empty(&empty));
+
+                auto verifyEquals = [&statics](const AbiRect& target, const AbiRect& value, bool expected)
+                {
+                    BOOLEAN areEqual = !expected;
+                    VERIFY_SUCCEEDED(statics->Equals(target, value, &areEqual));
+                    VERIFY_ARE_EQUAL(expected, !!areEqual);
+                };
+
+                const AbiRect baseRect = MakeAbiRect(1.0f, 2.0f, 3.0f, 4.0f);
+
+                LOG_OUTPUT(L"Equals compares every field.");
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 2.0f, 3.0f, 4.0f), true);
+                verifyEquals(baseRect, MakeAbiRect(9.0f, 2.0f, 3.0f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 9.0f, 3.0f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 2.0f, 9.0f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 2.0f, 3.0f, 9.0f), false);
+
+                LOG_OUTPUT(L"A field that is smaller than the target's field is also a difference.");
+                verifyEquals(baseRect, MakeAbiRect(0.5f, 2.0f, 3.0f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 1.5f, 3.0f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 2.0f, 2.5f, 4.0f), false);
+                verifyEquals(baseRect, MakeAbiRect(1.0f, 2.0f, 3.0f, 3.5f), false);
+
+                LOG_OUTPUT(L"Equals treats any rect with a negative width as the Empty rect.");
+                verifyEquals(empty, empty, true);
+                verifyEquals(MakeAbiRect(1.0f, 2.0f, -1.0f, 4.0f), empty, true);
+                verifyEquals(empty, MakeAbiRect(1.0f, 2.0f, -1.0f, 4.0f), true);
+                verifyEquals(empty, baseRect, false);
+                verifyEquals(baseRect, empty, false);
+                verifyEquals(MakeAbiRect(0.0f, 0.0f, 0.0f, 0.0f), empty, false);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->Equals(baseRect, baseRect, nullptr));
+
+                AbiRect result = {};
+                const AbiRect target = MakeAbiRect(10.0f, 20.0f, 30.0f, 40.0f);
+
+                LOG_OUTPUT(L"UnionWithPoint leaves the rect unchanged for points inside it or on its edge.");
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(15.0f, 25.0f), &result));
+                VerifyAbiRect(result, 10.0f, 20.0f, 30.0f, 40.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(40.0f, 60.0f), &result));
+                VerifyAbiRect(result, 10.0f, 20.0f, 30.0f, 40.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(10.0f, 20.0f), &result));
+                VerifyAbiRect(result, 10.0f, 20.0f, 30.0f, 40.0f);
+
+                LOG_OUTPUT(L"UnionWithPoint grows the rect toward a point on each side.");
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(4.0f, 25.0f), &result));
+                VerifyAbiRect(result, 4.0f, 20.0f, 36.0f, 40.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(50.0f, 25.0f), &result));
+                VerifyAbiRect(result, 10.0f, 20.0f, 40.0f, 40.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(15.0f, 8.0f), &result));
+                VerifyAbiRect(result, 10.0f, 8.0f, 30.0f, 52.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(15.0f, 70.0f), &result));
+                VerifyAbiRect(result, 10.0f, 20.0f, 30.0f, 50.0f);
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(target, MakeAbiPoint(0.0f, 0.0f), &result));
+                VerifyAbiRect(result, 0.0f, 0.0f, 40.0f, 60.0f);
+
+                LOG_OUTPUT(L"UnionWithPoint on the Empty rect produces a zero-sized rect at the point.");
+                VERIFY_SUCCEEDED(statics->UnionWithPoint(empty, MakeAbiPoint(3.0f, 4.0f), &result));
+                VerifyAbiRect(result, 3.0f, 4.0f, 0.0f, 0.0f);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, statics->UnionWithPoint(target, MakeAbiPoint(0.0f, 0.0f), nullptr));
+            });
+        }
+
+        void PropertySystemIntegrationTests::RectHelperDipsRectToPhysicalRectScalesEveryField()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto statics = GetRectHelperStatics();
+                Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Xaml::IRectHelperStaticsPrivate> privateStatics;
+                VERIFY_SUCCEEDED(statics.As(&privateStatics));
+
+                // A unit width makes the resulting width equal to the scale that is applied to every field.
+                const AbiRect dips = MakeAbiRect(3.0f, -5.0f, 1.0f, 7.0f);
+                AbiRect physical = MakeAbiRect(0.0f, 0.0f, 0.0f, 0.0f);
+                VERIFY_SUCCEEDED(privateStatics->DipsRectToPhysicalRect(dips, &physical));
+
+                const float scale = physical.Width;
+                LOG_OUTPUT(L"DipsRectToPhysicalRect scale = %f", scale);
+                VERIFY_IS_GREATER_THAN(scale, 0.0f);
+                VerifyAbiRect(physical, dips.X * scale, dips.Y * scale, dips.Width * scale, dips.Height * scale);
+
+                LOG_OUTPUT(L"A zero rect stays a zero rect.");
+                VERIFY_SUCCEEDED(privateStatics->DipsRectToPhysicalRect(MakeAbiRect(0.0f, 0.0f, 0.0f, 0.0f), &physical));
+                VerifyAbiRect(physical, 0.0f, 0.0f, 0.0f, 0.0f);
+                VERIFY_ARE_EQUAL(E_INVALIDARG, privateStatics->DipsRectToPhysicalRect(dips, nullptr));
+
+                TestServices::WindowHelper->WindowContent = ref new Border();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // The test scale override is applied to every content root and is removed again by the cleanup wrapper.
+            LOG_OUTPUT(L"With a known rasterization scale of 1.5 every field is multiplied by 1.5.");
+            TestServices::WindowHelper->SetWindowSizeOverrideWithScale(::Windows::Foundation::Size(400, 300), 1.5f);
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([]()
+            {
+                auto statics = GetRectHelperStatics();
+                Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Xaml::IRectHelperStaticsPrivate> privateStatics;
+                VERIFY_SUCCEEDED(statics.As(&privateStatics));
+
+                AbiRect physical = MakeAbiRect(0.0f, 0.0f, 0.0f, 0.0f);
+                VERIFY_SUCCEEDED(privateStatics->DipsRectToPhysicalRect(MakeAbiRect(3.0f, -5.0f, 1.0f, 7.0f), &physical));
+                VerifyAbiRect(physical, 4.5f, -7.5f, 1.5f, 10.5f);
+            });
+        }
+
+        void PropertySystemIntegrationTests::XamlBoxedStructRejectsScalarAndArrayPropertyValueGetters()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto border = ref new Border();
+                Thickness margin = { 1, 2, 3, 4 };
+                border->Margin = margin;
+                CornerRadius cornerRadius = { 5, 6, 7, 8 };
+                border->CornerRadius = cornerRadius;
+
+                Platform::Object^ boxedMargin = border->GetValue(FrameworkElement::MarginProperty);
+                Platform::Object^ boxedCornerRadius = border->GetValue(Border::CornerRadiusProperty);
+
+                std::vector<Platform::Object^> boxedValues = { boxedMargin, boxedCornerRadius };
+                for (Platform::Object^ boxed : boxedValues)
+                {
+                    auto propertyValue = AsAbiPropertyValue(boxed);
+
+                    ABI::Windows::Foundation::PropertyType type = ABI::Windows::Foundation::PropertyType_Empty;
+                    VERIFY_SUCCEEDED(propertyValue->get_Type(&type));
+                    VERIFY_ARE_EQUAL(ABI::Windows::Foundation::PropertyType_OtherType, type);
+
+                    BOOLEAN isNumericScalar = TRUE;
+                    VERIFY_SUCCEEDED(propertyValue->get_IsNumericScalar(&isNumericScalar));
+                    VERIFY_IS_FALSE(!!isNumericScalar);
+
+                    VerifyAllPropertyValueGettersAreNotImplemented(propertyValue.Get());
+                }
+
+                LOG_OUTPUT(L"The failed getters leave the boxed values intact.");
+                VERIFY_ARE_EQUAL(margin, safe_cast<Thickness>(boxedMargin));
+                auto unboxedCornerRadius = safe_cast<CornerRadius>(boxedCornerRadius);
+                VERIFY_ARE_EQUAL(cornerRadius.TopLeft, unboxedCornerRadius.TopLeft);
+                VERIFY_ARE_EQUAL(cornerRadius.TopRight, unboxedCornerRadius.TopRight);
+                VERIFY_ARE_EQUAL(cornerRadius.BottomRight, unboxedCornerRadius.BottomRight);
+                VERIFY_ARE_EQUAL(cornerRadius.BottomLeft, unboxedCornerRadius.BottomLeft);
+            });
+        }
+
+        void PropertySystemIntegrationTests::XamlBoxedEnumReportsNumericScalarAndUInt32Value()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto border = ref new Border();
+
+                auto verifyEnumBox = [](Platform::Object^ boxed, UINT32 expectedValue)
+                {
+                    auto propertyValue = AsAbiPropertyValue(boxed);
+
+                    ABI::Windows::Foundation::PropertyType type = ABI::Windows::Foundation::PropertyType_Empty;
+                    VERIFY_SUCCEEDED(propertyValue->get_Type(&type));
+                    VERIFY_ARE_EQUAL(ABI::Windows::Foundation::PropertyType_OtherType, type);
+
+                    BOOLEAN isNumericScalar = FALSE;
+                    VERIFY_SUCCEEDED(propertyValue->get_IsNumericScalar(&isNumericScalar));
+                    VERIFY_IS_TRUE(!!isNumericScalar);
+
+                    UINT32 uint32Value = 0xFFFFFFFF;
+                    VERIFY_SUCCEEDED(propertyValue->GetUInt32(&uint32Value));
+                    VERIFY_ARE_EQUAL(expectedValue, uint32Value);
+
+                    INT32 int32Value = -1;
+                    VERIFY_SUCCEEDED(propertyValue->GetInt32(&int32Value));
+                    VERIFY_ARE_EQUAL(static_cast<INT32>(expectedValue), int32Value);
+
+                    BYTE uint8Value = 0;
+                    VERIFY_ARE_EQUAL(E_NOTIMPL, propertyValue->GetUInt8(&uint8Value));
+                };
+
+                LOG_OUTPUT(L"Visibility.Visible (0)");
+                verifyEnumBox(border->GetValue(UIElement::VisibilityProperty), 0u);
+
+                LOG_OUTPUT(L"Visibility.Collapsed (1)");
+                border->Visibility = Visibility::Collapsed;
+                verifyEnumBox(border->GetValue(UIElement::VisibilityProperty), 1u);
+
+                LOG_OUTPUT(L"HorizontalAlignment.Right (2) and HorizontalAlignment.Stretch (3)");
+                border->HorizontalAlignment = HorizontalAlignment::Right;
+                verifyEnumBox(border->GetValue(FrameworkElement::HorizontalAlignmentProperty), 2u);
+                border->HorizontalAlignment = HorizontalAlignment::Stretch;
+                verifyEnumBox(border->GetValue(FrameworkElement::HorizontalAlignmentProperty), 3u);
+            });
+        }
+
+        void PropertySystemIntegrationTests::EnumPropertyAcceptsInt32AndUInt32Boxes()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([]()
+            {
+                auto border = ref new Border();
+                VERIFY_ARE_EQUAL(Visibility::Visible, border->Visibility);
+
+                LOG_OUTPUT(L"A boxed Int32 sets the enum value.");
+                border->SetValue(UIElement::VisibilityProperty, PropertyValue::CreateInt32(1));
+                VERIFY_ARE_EQUAL(Visibility::Collapsed, border->Visibility);
+                border->SetValue(UIElement::VisibilityProperty, PropertyValue::CreateInt32(0));
+                VERIFY_ARE_EQUAL(Visibility::Visible, border->Visibility);
+
+                LOG_OUTPUT(L"A boxed UInt32 sets the enum value.");
+                border->SetValue(UIElement::VisibilityProperty, PropertyValue::CreateUInt32(1u));
+                VERIFY_ARE_EQUAL(Visibility::Collapsed, border->Visibility);
+                border->SetValue(UIElement::VisibilityProperty, PropertyValue::CreateUInt32(0u));
+                VERIFY_ARE_EQUAL(Visibility::Visible, border->Visibility);
+
+                LOG_OUTPUT(L"The boxed integer is mapped to the matching member of a multi-valued enum.");
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateInt32(2));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Right, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateUInt32(1u));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Center, border->HorizontalAlignment);
+
+                LOG_OUTPUT(L"Every member of the enum is reachable from both a boxed UInt32 and a boxed Int32.");
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateUInt32(2u));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Right, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateUInt32(3u));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Stretch, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateUInt32(0u));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Left, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateInt32(3));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Stretch, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateInt32(1));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Center, border->HorizontalAlignment);
+                border->SetValue(FrameworkElement::HorizontalAlignmentProperty, PropertyValue::CreateInt32(0));
+                VERIFY_ARE_EQUAL(HorizontalAlignment::Left, border->HorizontalAlignment);
             });
         }
 

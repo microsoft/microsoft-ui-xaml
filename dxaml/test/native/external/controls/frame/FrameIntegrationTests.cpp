@@ -542,6 +542,66 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         ValidateNavigateBehaviorWhenCurrentIsNull(frame, navigation2);
     }
 
+    void FrameIntegrationTests::NavigationStateRoundTripsUInt8Char16AndBooleanParameters()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::Frame^ frame = nullptr;
+
+        // Serialized entries are <type name length>,<type name>,<parameter property type>,<value length>,<value>,<transition info>.
+        // Property types: 1 = UInt8, 10 = Char16, 11 = Boolean.
+        Platform::String^ navigation1 = L"1,3,2,31,Microsoft.UI.Xaml.Controls.Page,1,3,200,0,31,Microsoft.UI.Xaml.Controls.Page,10,1,x,0,31,Microsoft.UI.Xaml.Controls.Page,11,1,1,0";
+        Platform::String^ navigation2 = L"1,3,2,31,Microsoft.UI.Xaml.Controls.Page,1,1,0,0,31,Microsoft.UI.Xaml.Controls.Page,1,3,255,0,31,Microsoft.UI.Xaml.Controls.Page,11,1,0,0";
+
+        RunOnUIThread([&]()
+        {
+            frame = ref new xaml_controls::Frame();
+            TestServices::WindowHelper->WindowContent = frame;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"UInt8 200, Char16 'x' and Boolean true parameters.");
+            frame->SetNavigationState(navigation1, true);
+            // With no current page, every restored entry is on the back stack.
+            VERIFY_ARE_EQUAL(3u, frame->BackStack->Size);
+
+            auto parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(0)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::UInt8, parameter->Type);
+            VERIFY_ARE_EQUAL(static_cast<uint8>(200), parameter->GetUInt8());
+
+            parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(1)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::Char16, parameter->Type);
+            VERIFY_ARE_EQUAL(L'x', parameter->GetChar16());
+
+            parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(2)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::Boolean, parameter->Type);
+            VERIFY_IS_TRUE(parameter->GetBoolean());
+
+            VERIFY_ARE_EQUAL(navigation1, frame->GetNavigationState());
+
+            LOG_OUTPUT(L"UInt8 boundaries 0 and 255 and a Boolean false parameter.");
+            frame->SetNavigationState(navigation2, true);
+            VERIFY_ARE_EQUAL(3u, frame->BackStack->Size);
+
+            parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(0)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::UInt8, parameter->Type);
+            VERIFY_ARE_EQUAL(static_cast<uint8>(0), parameter->GetUInt8());
+
+            parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(1)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::UInt8, parameter->Type);
+            VERIFY_ARE_EQUAL(static_cast<uint8>(255), parameter->GetUInt8());
+
+            parameter = safe_cast<wf::IPropertyValue^>(frame->BackStack->GetAt(2)->Parameter);
+            VERIFY_ARE_EQUAL(wf::PropertyType::Boolean, parameter->Type);
+            VERIFY_IS_FALSE(parameter->GetBoolean());
+
+            VERIFY_ARE_EQUAL(navigation2, frame->GetNavigationState());
+        });
+    }
+
     void FrameIntegrationTests::ValidateGoBackBehaviorWhenCurrentIsNull(xaml_controls::Frame^ frame, Platform::String^ navigationHistory)
     {
         // Validate GoBack doesn't add items to the forward stack when current page is NULL

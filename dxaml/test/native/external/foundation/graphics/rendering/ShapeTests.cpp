@@ -1351,6 +1351,112 @@ void ShapeTests::StrokeDashArrayAssert()
 
 ////////////////////////////////////////////////////////////////////////////
 
+static std::vector<BYTE> RenderElementToPixels(UIElement^ element)
+{
+    auto renderedEvent = std::make_shared<Event>();
+    auto pixelsEvent = std::make_shared<Event>();
+    auto pixels = std::make_shared<std::vector<BYTE>>();
+    RenderTargetBitmap^ rtb = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        rtb = ref new RenderTargetBitmap();
+        create_task(rtb->RenderAsync(element)).then([renderedEvent]()
+        {
+            renderedEvent->Set();
+        });
+    });
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        auto getPixelsOperation = rtb->GetPixelsAsync();
+        getPixelsOperation->Completed = ref new AsyncOperationCompletedHandler<IBuffer^>(
+            [pixels, pixelsEvent](IAsyncOperation<IBuffer^>^ operation, AsyncStatus status)
+        {
+            if (status == AsyncStatus::Completed)
+            {
+                IBuffer^ buffer = operation->GetResults();
+                pixels->resize(buffer->Length);
+                if (!pixels->empty())
+                {
+                    DataReader::FromBuffer(buffer)->ReadBytes(Platform::ArrayReference<BYTE>(pixels->data(), static_cast<unsigned int>(pixels->size())));
+                }
+            }
+            pixelsEvent->Set();
+        });
+    });
+    pixelsEvent->WaitForDefault();
+
+    return *pixels;
+}
+
+void ShapeTests::NegativeStrokeDashOffsetMatchesWrappedOffset()
+{
+    TestCleanupWrapper cleanup;
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+
+    auto windowHelper = TestServices::WindowHelper;
+    xaml_shapes::Line^ negativeOffsetLine = nullptr;
+    xaml_shapes::Line^ wrappedOffsetLine = nullptr;
+    xaml_shapes::Line^ zeroOffsetLine = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        // The dash pattern {2, 2} is expressed in multiples of the stroke thickness, so its period is 4.
+        // An offset of -1 must be wrapped into [0, 4) by the dasher, i.e. it must behave like an offset of 3.
+        auto createDashedLine = [](double dashOffset)
+        {
+            auto line = ref new xaml_shapes::Line();
+            line->X1 = 0;
+            line->Y1 = 6;
+            line->X2 = 96;
+            line->Y2 = 6;
+            line->Width = 100;
+            line->Height = 12;
+            line->StrokeThickness = 4;
+            line->Stroke = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Black);
+            line->StrokeDashArray = ref new DoubleCollection();
+            line->StrokeDashArray->Append(2);
+            line->StrokeDashArray->Append(2);
+            line->StrokeDashOffset = dashOffset;
+            return line;
+        };
+
+        negativeOffsetLine = createDashedLine(-1);
+        wrappedOffsetLine = createDashedLine(3);
+        zeroOffsetLine = createDashedLine(0);
+
+        StackPanel^ root = ref new StackPanel();
+        root->Background = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::White);
+        root->Children->Append(negativeOffsetLine);
+        root->Children->Append(wrappedOffsetLine);
+        root->Children->Append(zeroOffsetLine);
+        windowHelper->WindowContent = root;
+    });
+    windowHelper->WaitForIdle();
+
+    auto negativeOffsetPixels = RenderElementToPixels(negativeOffsetLine);
+    auto wrappedOffsetPixels = RenderElementToPixels(wrappedOffsetLine);
+    auto zeroOffsetPixels = RenderElementToPixels(zeroOffsetLine);
+
+    LOG_OUTPUT(L"> Rendered %u, %u and %u bytes.",
+        static_cast<unsigned int>(negativeOffsetPixels.size()),
+        static_cast<unsigned int>(wrappedOffsetPixels.size()),
+        static_cast<unsigned int>(zeroOffsetPixels.size()));
+    VERIFY_IS_FALSE(negativeOffsetPixels.empty());
+    VERIFY_ARE_EQUAL(negativeOffsetPixels.size(), wrappedOffsetPixels.size());
+
+    LOG_OUTPUT(L"> Offset -1 renders exactly like the wrapped offset 3.");
+    VERIFY_IS_TRUE(negativeOffsetPixels == wrappedOffsetPixels);
+
+    LOG_OUTPUT(L"> Offset 0 renders differently, so the comparison above is meaningful.");
+    // RenderTargetBitmap captures the dashes' ink bounds, so the zero-offset bitmap may also differ in size.
+    VERIFY_IS_FALSE(negativeOffsetPixels == zeroOffsetPixels);
+}
+
+////////////////////////////////////////////////////////////////////////////
+
 void ShapeTests::ShapeWithLinearGradientBrushAbsolute()
 {
     ShapeWithLinearGradientBrushAbsoluteInternal(DCompRendering::WUCCompleteSynchronousCompTree);

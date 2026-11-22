@@ -50,6 +50,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the Color property using SetPropertyFromColor works correctly.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ValidateSetPropertyFromTypedValuesOnObjectProperty)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that the typed SetPropertyFrom* setters (Int64, UInt64, Int32, UInt32, Boolean, Single, TimeSpan, DateTime, Point, Size, Rect, Uri) store values on an Object-typed property that read back unchanged; a Uri keeps its absolute URI and round-trips on a Uri-typed property.")
+            END_TEST_METHOD()
+
         private:
             void SetupTests();
 
