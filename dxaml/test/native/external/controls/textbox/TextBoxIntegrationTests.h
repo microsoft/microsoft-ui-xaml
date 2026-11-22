@@ -66,6 +66,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(InputValidationCommandCanValidateFollowsErrorsAndModes)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates InputValidationCommand's default properties and that CanValidate reflects the validation control's errors and the command and control InputValidationMode values.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InputValidationCommandRejectsNullControl)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that InputValidationCommand.CanValidate and Validate reject a null validation control with E_INVALIDARG.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(DerivedInputValidationCommandOverridesRunOnTextChange)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that changing TextBox.Text calls the ValidationCommand's CanValidateCore override and only calls ValidateCore when CanValidateCore returns true.")
+        END_TEST_METHOD()
+
     private:
         void ClearButtonHelper(bool clearButtonExpected) const;
     };

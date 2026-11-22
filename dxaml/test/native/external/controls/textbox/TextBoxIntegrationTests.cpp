@@ -12,10 +12,140 @@
 #include <ControlHelper.h>
 #include <FlyoutHelper.h>
 #include <TextControlHelper.h>
+#include <collection.h>
 
 using namespace Platform;
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
+
+namespace TextBoxIntegrationTestTypes {
+
+    // Returns the COM identity of an object without keeping a reference to it.
+    inline uintptr_t GetIdentity(Platform::Object^ object)
+    {
+        if (object == nullptr)
+        {
+            return 0;
+        }
+
+        Microsoft::WRL::ComPtr<IUnknown> identity;
+        if (FAILED(reinterpret_cast<IUnknown*>(object)->QueryInterface(IID_PPV_ARGS(&identity))))
+        {
+            return 0;
+        }
+        return reinterpret_cast<uintptr_t>(identity.Get());
+    }
+
+    // An InputValidationCommand subclass that records calls to its overrides. CanValidateCore either
+    // returns a fixed answer or defers to the base implementation; ValidateCore always calls the base.
+    // Only identities are recorded so the command never holds the control it is attached to.
+    ref class RecordingValidationCommand sealed : public xaml_controls::InputValidationCommand
+    {
+    internal:
+        RecordingValidationCommand(bool canValidateResult, bool useBaseCanValidateCore)
+            : m_canValidateResult(canValidateResult)
+            , m_useBaseCanValidateCore(useBaseCanValidateCore)
+            , m_canValidateCoreCallCount(0)
+            , m_validateCoreCallCount(0)
+            , m_lastCanValidateCoreControl(0)
+            , m_lastValidateCoreControl(0)
+        {}
+
+        int CanValidateCoreCallCount() const { return m_canValidateCoreCallCount; }
+        int ValidateCoreCallCount() const { return m_validateCoreCallCount; }
+        uintptr_t LastCanValidateCoreControl() const { return m_lastCanValidateCoreControl; }
+        uintptr_t LastValidateCoreControl() const { return m_lastValidateCoreControl; }
+
+    public:
+        virtual bool CanValidateCore(xaml_controls::IInputValidationControl^ validationControl) override
+        {
+            ++m_canValidateCoreCallCount;
+            m_lastCanValidateCoreControl = GetIdentity(validationControl);
+            if (m_useBaseCanValidateCore)
+            {
+                return xaml_controls::InputValidationCommand::CanValidateCore(validationControl);
+            }
+            return m_canValidateResult;
+        }
+
+        virtual void ValidateCore(xaml_controls::IInputValidationControl^ validationControl) override
+        {
+            ++m_validateCoreCallCount;
+            m_lastValidateCoreControl = GetIdentity(validationControl);
+            xaml_controls::InputValidationCommand::ValidateCore(validationControl);
+        }
+
+    private:
+        bool m_canValidateResult;
+        bool m_useBaseCanValidateCore;
+        int m_canValidateCoreCallCount;
+        int m_validateCoreCallCount;
+        uintptr_t m_lastCanValidateCoreControl;
+        uintptr_t m_lastValidateCoreControl;
+    };
+
+    // A minimal validation control whose error state and InputValidationMode the test controls directly.
+    // It lets the tests exercise InputValidationCommand with a control that has errors without going through
+    // TextBox.ValidationErrors: appending an InputValidationError to that collection terminates the test host
+    // on amd64chk.
+    ref class FakeInputValidationControl sealed : public xaml_controls::IInputValidationControl
+    {
+    internal:
+        FakeInputValidationControl(bool hasValidationErrors, xaml_controls::InputValidationMode mode)
+            : m_hasValidationErrors(hasValidationErrors)
+            , m_inputValidationMode(mode)
+            , m_inputValidationKind(xaml_controls::InputValidationKind::Auto)
+            , m_validationErrors(ref new Platform::Collections::Vector<xaml_controls::InputValidationError^>())
+        {}
+
+    public:
+        property wfc::IObservableVector<xaml_controls::InputValidationError^>^ ValidationErrors
+        {
+            virtual wfc::IObservableVector<xaml_controls::InputValidationError^>^ get() { return m_validationErrors; }
+        }
+
+        property bool HasValidationErrors
+        {
+            virtual bool get() { return m_hasValidationErrors; }
+        }
+
+        property xaml_controls::InputValidationContext^ ValidationContext
+        {
+            virtual xaml_controls::InputValidationContext^ get() { return m_validationContext; }
+            virtual void set(xaml_controls::InputValidationContext^ value) { m_validationContext = value; }
+        }
+
+        property xaml::DataTemplate^ ErrorTemplate
+        {
+            virtual xaml::DataTemplate^ get() { return m_errorTemplate; }
+            virtual void set(xaml::DataTemplate^ value) { m_errorTemplate = value; }
+        }
+
+        property xaml_controls::InputValidationMode InputValidationMode
+        {
+            virtual xaml_controls::InputValidationMode get() { return m_inputValidationMode; }
+            virtual void set(xaml_controls::InputValidationMode value) { m_inputValidationMode = value; }
+        }
+
+        property xaml_controls::InputValidationKind InputValidationKind
+        {
+            virtual xaml_controls::InputValidationKind get() { return m_inputValidationKind; }
+            virtual void set(xaml_controls::InputValidationKind value) { m_inputValidationKind = value; }
+        }
+
+        virtual event wf::TypedEventHandler<xaml_controls::IInputValidationControl^, xaml_controls::HasValidationErrorsChangedEventArgs^>^ HasValidationErrorsChanged;
+        virtual event wf::TypedEventHandler<xaml_controls::IInputValidationControl^, xaml_controls::InputValidationErrorEventArgs^>^ ValidationError;
+
+    private:
+        bool m_hasValidationErrors;
+        xaml_controls::InputValidationMode m_inputValidationMode;
+        xaml_controls::InputValidationKind m_inputValidationKind;
+        wfc::IObservableVector<xaml_controls::InputValidationError^>^ m_validationErrors;
+        xaml_controls::InputValidationContext^ m_validationContext;
+        xaml::DataTemplate^ m_errorTemplate;
+    };
+
+} // namespace TextBoxIntegrationTestTypes
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace TextBox {
 
@@ -663,6 +793,166 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             HWND focusedWindow = GetFocus();
             HWND hwnd = reinterpret_cast<HWND>(TestServices::WindowHelper->GetElementInputWindow(textBox));
             VERIFY_ARE_EQUAL(hwnd, focusedWindow);
+        });
+    }
+
+    void TextBoxIntegrationTests::InputValidationCommandCanValidateFollowsErrorsAndModes()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::TextBox^ textBox = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            textBox = ref new xaml_controls::TextBox();
+            TestServices::WindowHelper->WindowContent = textBox;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto command = ref new xaml_controls::InputValidationCommand();
+
+            // The core object starts in InputValidationMode::Default and InputValidationKind::Auto.
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationMode::Default), static_cast<int>(command->InputValidationMode));
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationKind::Auto), static_cast<int>(command->InputValidationKind));
+
+            command->InputValidationKind = xaml_controls::InputValidationKind::Inline;
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationKind::Inline), static_cast<int>(command->InputValidationKind));
+            command->InputValidationKind = xaml_controls::InputValidationKind::Compact;
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationKind::Compact), static_cast<int>(command->InputValidationKind));
+
+            auto control = safe_cast<xaml_controls::IInputValidationControl^>(textBox);
+            control->InputValidationMode = xaml_controls::InputValidationMode::Auto;
+
+            LOG_OUTPUT(L"Without validation errors there is nothing to re-validate.");
+            VERIFY_IS_FALSE(control->HasValidationErrors);
+            VERIFY_IS_FALSE(command->CanValidate(control));
+
+            LOG_OUTPUT(L"With validation errors the command can validate.");
+            auto controlWithErrors = ref new TextBoxIntegrationTestTypes::FakeInputValidationControl(true /*hasValidationErrors*/, xaml_controls::InputValidationMode::Auto);
+            VERIFY_IS_TRUE(command->CanValidate(controlWithErrors));
+
+            LOG_OUTPUT(L"A command in Default mode does not look at the control's InputValidationMode.");
+            controlWithErrors->InputValidationMode = xaml_controls::InputValidationMode::Disabled;
+            VERIFY_IS_TRUE(command->CanValidate(controlWithErrors));
+
+            LOG_OUTPUT(L"A command in Auto mode does not validate a control whose validation is Disabled.");
+            command->InputValidationMode = xaml_controls::InputValidationMode::Auto;
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationMode::Auto), static_cast<int>(command->InputValidationMode));
+            VERIFY_IS_FALSE(command->CanValidate(controlWithErrors));
+
+            controlWithErrors->InputValidationMode = xaml_controls::InputValidationMode::Default;
+            VERIFY_IS_TRUE(command->CanValidate(controlWithErrors));
+
+            LOG_OUTPUT(L"A command in Auto mode still has nothing to re-validate on a control without errors.");
+            VERIFY_IS_FALSE(command->CanValidate(control));
+            auto controlWithoutErrors = ref new TextBoxIntegrationTestTypes::FakeInputValidationControl(false /*hasValidationErrors*/, xaml_controls::InputValidationMode::Default);
+            VERIFY_IS_FALSE(command->CanValidate(controlWithoutErrors));
+
+            LOG_OUTPUT(L"The default Validate implementation leaves the controls unchanged.");
+            command->Validate(controlWithErrors);
+            command->Validate(control);
+            VERIFY_IS_TRUE(controlWithErrors->HasValidationErrors);
+            VERIFY_ARE_EQUAL(0u, controlWithErrors->ValidationErrors->Size);
+            VERIFY_IS_FALSE(control->HasValidationErrors);
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationMode::Auto), static_cast<int>(control->InputValidationMode));
+        });
+    }
+
+    void TextBoxIntegrationTests::InputValidationCommandRejectsNullControl()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            auto command = ref new xaml_controls::InputValidationCommand();
+
+            VERIFY_THROWS_SPECIFIC_WINRT(command->CanValidate(nullptr), Platform::Exception^,
+                [](Platform::Exception^ e) { return e->HResult == E_INVALIDARG; });
+            VERIFY_THROWS_SPECIFIC_WINRT(command->Validate(nullptr), Platform::Exception^,
+                [](Platform::Exception^ e) { return e->HResult == E_INVALIDARG; });
+
+            // The rejected calls leave the command unchanged.
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationMode::Default), static_cast<int>(command->InputValidationMode));
+            VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationKind::Auto), static_cast<int>(command->InputValidationKind));
+        });
+    }
+
+    void TextBoxIntegrationTests::DerivedInputValidationCommandOverridesRunOnTextChange()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::TextBox^ textBox = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            textBox = ref new xaml_controls::TextBox();
+            TestServices::WindowHelper->WindowContent = textBox;
+        });
+        // Text changes only reach the ValidationCommand once the TextBox has applied its template.
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            using TextBoxIntegrationTestTypes::GetIdentity;
+            using TextBoxIntegrationTestTypes::RecordingValidationCommand;
+
+            auto control = safe_cast<xaml_controls::IInputValidationControl^>(textBox);
+            auto commandOwner = safe_cast<xaml_controls::IInputValidationControl2^>(textBox);
+            const uintptr_t textBoxIdentity = GetIdentity(textBox);
+
+            LOG_OUTPUT(L"A command whose CanValidateCore returns true is asked to validate the TextBox.");
+            auto approvingCommand = ref new RecordingValidationCommand(true /*canValidateResult*/, false /*useBaseCanValidateCore*/);
+            commandOwner->ValidationCommand = approvingCommand;
+            VERIFY_ARE_EQUAL(GetIdentity(approvingCommand), GetIdentity(commandOwner->ValidationCommand));
+            VERIFY_ARE_EQUAL(0, approvingCommand->CanValidateCoreCallCount());
+
+            textBox->Text = L"first";
+
+            VERIFY_ARE_EQUAL(1, approvingCommand->CanValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(textBoxIdentity, approvingCommand->LastCanValidateCoreControl());
+            VERIFY_ARE_EQUAL(1, approvingCommand->ValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(textBoxIdentity, approvingCommand->LastValidateCoreControl());
+
+            LOG_OUTPUT(L"A command whose CanValidateCore returns false is not asked to validate.");
+            auto vetoingCommand = ref new RecordingValidationCommand(false /*canValidateResult*/, false /*useBaseCanValidateCore*/);
+            commandOwner->ValidationCommand = vetoingCommand;
+
+            textBox->Text = L"second";
+
+            VERIFY_ARE_EQUAL(1, vetoingCommand->CanValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(textBoxIdentity, vetoingCommand->LastCanValidateCoreControl());
+            VERIFY_ARE_EQUAL(0, vetoingCommand->ValidateCoreCallCount());
+            // The replaced command is no longer consulted.
+            VERIFY_ARE_EQUAL(1, approvingCommand->CanValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(1, approvingCommand->ValidateCoreCallCount());
+
+            LOG_OUTPUT(L"A command that defers to the base CanValidateCore only validates a TextBox with errors.");
+            auto deferringCommand = ref new RecordingValidationCommand(false /*canValidateResult*/, true /*useBaseCanValidateCore*/);
+            commandOwner->ValidationCommand = deferringCommand;
+
+            textBox->Text = L"third";
+
+            VERIFY_ARE_EQUAL(1, deferringCommand->CanValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(0, deferringCommand->ValidateCoreCallCount());
+
+            LOG_OUTPUT(L"Calling CanValidate and Validate directly also reaches the overrides; the base CanValidateCore approves a control with errors.");
+            auto controlWithErrors = ref new TextBoxIntegrationTestTypes::FakeInputValidationControl(true /*hasValidationErrors*/, xaml_controls::InputValidationMode::Auto);
+            const uintptr_t controlWithErrorsIdentity = GetIdentity(controlWithErrors);
+
+            VERIFY_IS_TRUE(deferringCommand->CanValidate(controlWithErrors));
+            VERIFY_ARE_EQUAL(2, deferringCommand->CanValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(controlWithErrorsIdentity, deferringCommand->LastCanValidateCoreControl());
+
+            VERIFY_IS_FALSE(deferringCommand->CanValidate(control));
+            VERIFY_ARE_EQUAL(3, deferringCommand->CanValidateCoreCallCount());
+
+            deferringCommand->Validate(controlWithErrors);
+            VERIFY_ARE_EQUAL(1, deferringCommand->ValidateCoreCallCount());
+            VERIFY_ARE_EQUAL(controlWithErrorsIdentity, deferringCommand->LastValidateCoreControl());
+
+            commandOwner->ValidationCommand = nullptr;
         });
     }
 

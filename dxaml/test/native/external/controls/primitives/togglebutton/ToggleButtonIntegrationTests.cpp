@@ -17,6 +17,39 @@
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
 
+namespace ToggleButtonIntegrationTestTypes {
+
+    // A ToggleButton subclass that records calls to its OnToggle override and optionally
+    // forwards them to the base implementation.
+    ref class OnToggleRecordingToggleButton sealed : public xaml_primitives::ToggleButton
+    {
+    public:
+        OnToggleRecordingToggleButton(bool callBaseOnToggle)
+            : m_callBaseOnToggle(callBaseOnToggle)
+            , m_onToggleCallCount(0)
+        {}
+
+        property int OnToggleCallCount
+        {
+            int get() { return m_onToggleCallCount; }
+        }
+
+        virtual void OnToggle() override
+        {
+            ++m_onToggleCallCount;
+            if (m_callBaseOnToggle)
+            {
+                xaml_primitives::ToggleButton::OnToggle();
+            }
+        }
+
+    private:
+        bool m_callBaseOnToggle;
+        int m_onToggleCallCount;
+    };
+
+} // namespace ToggleButtonIntegrationTestTypes
+
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Primitives { namespace ToggleButton {
 
     bool ToggleButtonIntegrationTests::ClassSetup()
@@ -327,6 +360,192 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             VERIFY_IS_FALSE(toggleButton->IsChecked->Value);
+        });
+    }
+
+    void ToggleButtonIntegrationTests::DerivedToggleButtonOnToggleOverrideIsInvoked()
+    {
+        TestCleanupWrapper cleanup;
+
+        ToggleButtonIntegrationTestTypes::OnToggleRecordingToggleButton^ callingButton = nullptr;
+        ToggleButtonIntegrationTestTypes::OnToggleRecordingToggleButton^ replacingButton = nullptr;
+
+        auto callingClickEvent = std::make_shared<Event>();
+        auto replacingClickEvent = std::make_shared<Event>();
+        auto callingCheckedCount = std::make_shared<int>(0);
+        auto replacingCheckedCount = std::make_shared<int>(0);
+
+        auto callingClickRegistration = CreateSafeEventRegistration(xaml_primitives::ToggleButton, Click);
+        auto replacingClickRegistration = CreateSafeEventRegistration(xaml_primitives::ToggleButton, Click);
+        auto callingCheckedRegistration = CreateSafeEventRegistration(xaml_primitives::ToggleButton, Checked);
+        auto replacingCheckedRegistration = CreateSafeEventRegistration(xaml_primitives::ToggleButton, Checked);
+
+        RunOnUIThread([&]()
+        {
+            callingButton = ref new ToggleButtonIntegrationTestTypes::OnToggleRecordingToggleButton(true /*callBaseOnToggle*/);
+            callingButton->Content = "Calls base OnToggle";
+
+            replacingButton = ref new ToggleButtonIntegrationTestTypes::OnToggleRecordingToggleButton(false /*callBaseOnToggle*/);
+            replacingButton->Content = "Replaces OnToggle";
+
+            callingClickRegistration.Attach(callingButton, [callingClickEvent]() { callingClickEvent->Set(); });
+            replacingClickRegistration.Attach(replacingButton, [replacingClickEvent]() { replacingClickEvent->Set(); });
+            callingCheckedRegistration.Attach(callingButton, [callingCheckedCount]() { ++*callingCheckedCount; });
+            replacingCheckedRegistration.Attach(replacingButton, [replacingCheckedCount]() { ++*replacingCheckedCount; });
+
+            auto rootPanel = ref new xaml_controls::StackPanel();
+            rootPanel->Children->Append(callingButton);
+            rootPanel->Children->Append(replacingButton);
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(callingButton->IsChecked->Value);
+            VERIFY_IS_FALSE(replacingButton->IsChecked->Value);
+        });
+
+        LOG_OUTPUT(L"Click the ToggleButton whose override calls the base OnToggle.");
+        TestServices::InputHelper->LeftMouseClick(callingButton);
+        callingClickEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, callingButton->OnToggleCallCount);
+            VERIFY_IS_TRUE(callingButton->IsChecked->Value);
+            VERIFY_ARE_EQUAL(1, *callingCheckedCount);
+        });
+
+        LOG_OUTPUT(L"Click the ToggleButton whose override does not call the base OnToggle.");
+        TestServices::InputHelper->LeftMouseClick(replacingButton);
+        replacingClickEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // The click was routed to the override, which chose not to toggle.
+            VERIFY_ARE_EQUAL(1, replacingButton->OnToggleCallCount);
+            VERIFY_IS_FALSE(replacingButton->IsChecked->Value);
+            VERIFY_ARE_EQUAL(0, *replacingCheckedCount);
+
+            VERIFY_ARE_EQUAL(1, callingButton->OnToggleCallCount);
+            VERIFY_IS_TRUE(callingButton->IsChecked->Value);
+        });
+    }
+
+    void ToggleButtonIntegrationTests::IsThreeStatePropertyEnablesIndeterminateState()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_primitives::ToggleButton^ toggleButton = nullptr;
+        auto clickEvent = std::make_shared<Event>();
+        auto clickRegistration = CreateSafeEventRegistration(xaml_primitives::ToggleButton, Click);
+
+        RunOnUIThread([&]()
+        {
+            toggleButton = ref new xaml_primitives::ToggleButton();
+            toggleButton->Content = "Toggle Button";
+            toggleButton->IsChecked = true;
+
+            clickRegistration.Attach(toggleButton, [clickEvent]() { clickEvent->Set(); });
+
+            TestServices::WindowHelper->WindowContent = toggleButton;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            auto isThreeStateProperty = xaml_primitives::ToggleButton::IsThreeStateProperty;
+            VERIFY_IS_NOT_NULL(isThreeStateProperty);
+            VERIFY_IS_FALSE(toggleButton->IsThreeState);
+            VERIFY_IS_FALSE(safe_cast<bool>(toggleButton->GetValue(isThreeStateProperty)));
+
+            toggleButton->SetValue(isThreeStateProperty, wf::PropertyValue::CreateBoolean(true));
+
+            VERIFY_IS_TRUE(toggleButton->IsThreeState);
+            VERIFY_IS_TRUE(toggleButton->IsChecked->Value);
+        });
+
+        LOG_OUTPUT(L"Click the checked three-state ToggleButton.");
+        TestServices::InputHelper->LeftMouseClick(toggleButton);
+        clickEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // A three-state ToggleButton goes from checked to indeterminate.
+            VERIFY_IS_NULL(toggleButton->IsChecked);
+
+            toggleButton->ClearValue(xaml_primitives::ToggleButton::IsThreeStateProperty);
+            VERIFY_IS_FALSE(toggleButton->IsThreeState);
+            VERIFY_IS_FALSE(safe_cast<bool>(toggleButton->GetValue(xaml_primitives::ToggleButton::IsThreeStateProperty)));
+
+            toggleButton->IsChecked = true;
+        });
+
+        LOG_OUTPUT(L"Click the checked ToggleButton after clearing IsThreeState.");
+        TestServices::InputHelper->LeftMouseClick(toggleButton);
+        clickEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // A two-state ToggleButton goes from checked to unchecked.
+            VERIFY_IS_NOT_NULL(toggleButton->IsChecked);
+            VERIFY_IS_FALSE(toggleButton->IsChecked->Value);
+        });
+    }
+
+    void ToggleButtonIntegrationTests::DisabledIndeterminateToggleButtonUsesIndeterminateDisabledState()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_primitives::ToggleButton^ toggleButton = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto rootPanel = ref new xaml_controls::StackPanel();
+            // Keep the mouse from putting the ToggleButton into a PointerOver state.
+            rootPanel->IsHitTestVisible = false;
+
+            toggleButton = ref new xaml_primitives::ToggleButton();
+            toggleButton->Content = "Toggle Button";
+            toggleButton->IsThreeState = true;
+            toggleButton->IsChecked = nullptr;
+            toggleButton->IsEnabled = false;
+
+            rootPanel->Children->Append(toggleButton);
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto commonStates = ControlHelper::GetVisualStateGroup(toggleButton, L"CommonStates");
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(commonStates);
+            VERIFY_IS_NULL(toggleButton->IsChecked);
+            VERIFY_IS_NOT_NULL(commonStates->CurrentState);
+            VERIFY_ARE_EQUAL(Platform::StringReference(L"IndeterminateDisabled"), commonStates->CurrentState->Name);
+
+            toggleButton->IsEnabled = true;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(Platform::StringReference(L"Indeterminate"), commonStates->CurrentState->Name);
+
+            // Disabling a checked ToggleButton picks the checked variant instead.
+            toggleButton->IsChecked = true;
+            toggleButton->IsEnabled = false;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(Platform::StringReference(L"CheckedDisabled"), commonStates->CurrentState->Name);
         });
     }
 
