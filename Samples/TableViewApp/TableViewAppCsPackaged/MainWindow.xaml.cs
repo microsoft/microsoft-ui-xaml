@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls.Tabular;
-using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Data;
 
 namespace TableViewAppCsPackaged
 {
@@ -34,15 +34,10 @@ namespace TableViewAppCsPackaged
             StatusText.Text = $"Both tables are bound to the same {People.Count} items.";
         }
 
-        // A text column is a TableViewTemplateColumn whose cell is a TextBlock bound to the property.
-        private static TableViewTemplateColumn MakeColumn(string header, string path) => new TableViewTemplateColumn
+        private static TableViewColumn MakeColumn(string header, string path) => new TableViewColumn
         {
             Header = header,
-            SortMemberPath = path,
-            CellTemplate = (DataTemplate)XamlReader.Load(
-                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
-                $"<TextBlock Text='{{Binding {path}}}' VerticalAlignment='Center' Padding='8,4,8,4' TextTrimming='CharacterEllipsis' />" +
-                "</DataTemplate>"),
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
         };
 
         private void ToggleTheme_Click(object sender, RoutedEventArgs e)

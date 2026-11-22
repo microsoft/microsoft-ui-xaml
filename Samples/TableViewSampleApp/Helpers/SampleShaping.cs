@@ -187,9 +187,14 @@ public static class SampleShaping
     public static TableViewColumn? ActiveSortColumn(TableView? table) =>
         table?.Columns.FirstOrDefault(c => c.SortDirection != TableViewSortDirection.None);
 
-    /// <summary>The sort key path of a column: its SortMemberPath, or null when unset.</summary>
+    /// <summary>
+    /// The sort key path of a column, by the control's rule: its SortMemberPath, else its
+    /// DisplayMemberBinding's Path when that binding reads the row item; null when neither applies.
+    /// </summary>
     public static string? SortPathOf(TableViewColumn column) =>
-        column.SortMemberPath is { Length: > 0 } path ? path : null;
+        column.SortMemberPath is { Length: > 0 } path ? path
+        : column.DisplayMemberBinding is { Source: null, RelativeSource: null, ElementName: null or "", Path.Path: { Length: > 0 } bindingPath } ? bindingPath
+        : null;
 
     // Approximates the table's row order for the readouts only: TableView v1 does not expose its
     // projection. A sort declared before GroupBy orders the groups; one declared after sorts within them.

@@ -76,22 +76,18 @@ ships in the Tabular DLL rather than in MUXC. Without the merge the app throws
 `XamlParseException 0x802B000A` during its first layout pass, which surfaces as a `0xC000027B`
 stowed exception a few seconds after launch.
 
-Declare columns, or the table renders rows with no header row and no cells. A text column is a
-`TableViewTemplateColumn` whose cell template is a bound `TextBlock`; set `SortMemberPath` so it sorts:
+Declare columns, or the table renders rows with no header row and no cells. A plain text column
+sets `DisplayMemberBinding`; the binding's path is also its sort key:
 
 ```xml
 <tabular:TableView x:Name="Table">
-  <tabular:TableViewTemplateColumn Header="Name" SortMemberPath="Name">
-    <tabular:TableViewTemplateColumn.CellTemplate>
-      <DataTemplate>
-        <TextBlock Text="{Binding Name}" Style="{StaticResource CellTextStyle}" />
-      </DataTemplate>
-    </tabular:TableViewTemplateColumn.CellTemplate>
-  </tabular:TableViewTemplateColumn>
+  <tabular:TableViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" />
 </tabular:TableView>
 ```
 
-`CellTextStyle` (in `App.xaml`) centres the text, pads it and trims it with an ellipsis.
+The generated cell is a read-only `TextBlock` that is centred, trimmed with an ellipsis and padded
+for the table's `Density`. Use a `TableViewTemplateColumn` with a `CellTemplate` for anything else;
+`CellTextStyle` (in `App.xaml`) styles a `TextBlock` inside such a template.
 
 `TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
 ("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left

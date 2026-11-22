@@ -107,7 +107,7 @@
                 Keep these flat (no BasedOn) so they resolve before the merged
                 theme resource dictionary in any code path.
             -->
-            <!-- The text cell of a TableViewTemplateColumn: TableView has no built-in text column in V1. -->
+            <!-- A TextBlock inside a CellTemplate. Plain text columns use DisplayMemberBinding instead, whose cells follow Density. -->
             <Style x:Key="CellTextStyle" TargetType="TextBlock">
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="Padding" Value="8,4,8,4"/>

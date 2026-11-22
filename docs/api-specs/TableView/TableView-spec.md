@@ -595,7 +595,7 @@ One thing to know when combining grouping with selection: group headers occupy t
 
 ### Editing cells
 
-TableView has no edit mode in this release: no `IsReadOnly`, edit gestures, edit events, or `CellEditingTemplate`. Controls inside a `TableViewTemplateColumn.CellTemplate` are always live and two-way bound by the app. For rename-in-place and similar single-field edits, see [Rename-in-place guidance](#rename-in-place-guidance); full editing is [deferred to V2 / a future DataGrid](#deferred-to-v2--future-datagrid).
+TableView has no edit mode in this release: no `IsReadOnly`, edit gestures, edit events, or `CellEditingTemplate`. Controls inside a `TableViewTemplateColumn.CellTemplate` are always live and two-way bound by the app. Row navigation handles <kbd>Up</kbd>, <kbd>Down</kbd>, <kbd>PageUp</kbd> and <kbd>PageDown</kbd>, so an app-owned editor in a template cell that needs those keys (a multi-line `TextBox`, a `ComboBox`) should mark them handled in its own `KeyDown`. For rename-in-place and similar single-field edits, see [Rename-in-place guidance](#rename-in-place-guidance); full editing is [deferred to V2 / a future DataGrid](#deferred-to-v2--future-datagrid).
 
 # API Pages
 
@@ -861,7 +861,7 @@ Header `Foreground` is independent of body text. A style's `ContentTemplate` or
 `ContentTemplateSelector` can render string headers, but the column's header template/selector
 takes precedence. Styles targeting types other than `TableViewColumnHeader` or its base types are ignored.
 
-Generated plain-string header labels and `TableViewTextColumn` display labels use
+Generated plain-string header labels and `DisplayMemberBinding` text cells use
 asymmetric padding authored directly in the `TableViewHeaderTextPadding` and
 `TableViewCellTextPadding` resource families, with `Small` / `Medium` / `Large` suffixes.
 These shared values apply in Light, Default/Dark and High Contrast:
@@ -952,7 +952,7 @@ Methods:
 |---|---|
 | `GenerateElement(Object dataItem)` | Generates the cell element for a data item. |
 | `GenerateElementCore(Object dataItem)` | Overridable method used by derived column types to create cell content. The base implementation returns the `DisplayMemberBinding` text cell, or `null` (an empty cell) when it is not set. |
-| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `TableViewTextColumn.Binding`). |
+| `CellToolTipBinding` (`Binding`, default `null`) | Opt-in per-cell tooltip. The binding is evaluated against each row's data item; its value becomes the cell's tooltip content — a string, or anything a `ToolTip` can host. `null` or an empty string means no tooltip for that cell. Use an `IValueConverter` for computed content. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column (same shape as `DisplayMemberBinding`). |
 | `HeaderToolTip` (`Object`, default `null`) | Opt-in tooltip for this column's header. The value is the tooltip's content — a string, or anything a `ToolTip` can host, but *not* a `ToolTip` itself: the control owns the `ToolTip` and its placement, so a `ToolTip` value is rejected and the header gets none. `null` or an empty string means no header tooltip. A `UIElement` is parented by that header's `ToolTip`, so each column needs its own instance. A dependency property, not a `Binding`: a header is not bound against a row, so there is nothing to defer. |
 
 ### Resizing columns
@@ -1311,7 +1311,7 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
 | `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
 
-These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named from the item's values at the visible columns' `SortMemberPath`s, joined like realized cell text; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
+These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named by evaluating the visible columns' `DisplayMemberBinding`s (with their converters) against the item, joined like realized cell text; columns without `DisplayMemberBinding` contribute nothing; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
 
 Migration notes:
 
@@ -1392,22 +1392,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Single = 1,
     };
 
-    [MUX_PREVIEW, webhosthidden]
-    runtimeclass TableViewBeginningEditEventArgs
-    {
-        Object Item { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
-        Boolean Cancel;
-    };
-
-    [MUX_PREVIEW, webhosthidden]
-    runtimeclass TableViewCellEditEndingEventArgs
-    {
-        Object Item { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
-        Microsoft.UI.Xaml.Controls.Tabular.TableViewEditAction EditAction { get; };
-        Boolean Cancel;
-    };
 
     [MUX_PREVIEW, webhosthidden]
     delegate Object TableViewKeySelector(Object item);
@@ -1546,11 +1530,6 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
         Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
-        Boolean IsReadOnly;
-
-        // ----- Editing -----
-
-        Boolean IsEditing { get; };
 
         // ----- Selection -----
 

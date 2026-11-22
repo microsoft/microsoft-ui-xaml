@@ -22,16 +22,13 @@ namespace winrt::TableViewAppCppPackaged::implementation
         }
 
         // Person is [bindable], so classic {Binding} resolves without an IXamlType.
-        // A text column is a TableViewTemplateColumn whose cell is a TextBlock bound to the property.
-        TableViewTemplateColumn MakeColumn(hstring const& header, hstring const& path)
+        TableViewColumn MakeColumn(hstring const& header, hstring const& path)
         {
-            TableViewTemplateColumn column;
+            TableViewColumn column;
             column.Header(box_value(header));
-            column.SortMemberPath(path);
-            column.CellTemplate(Markup::XamlReader::Load(
-                L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
-                L"<TextBlock Text='{Binding " + path + L"}' VerticalAlignment='Center' Padding='8,4,8,4' TextTrimming='CharacterEllipsis' />"
-                L"</DataTemplate>").as<DataTemplate>());
+            Data::Binding binding;
+            binding.Path(PropertyPath{ path });
+            column.DisplayMemberBinding(binding);
             return column;
         }
     }

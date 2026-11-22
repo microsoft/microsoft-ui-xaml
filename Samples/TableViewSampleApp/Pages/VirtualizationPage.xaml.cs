@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
@@ -29,7 +30,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
     private readonly DispatcherTimer _sampler = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private ObservableCollection<Person> _people;
     private TableViewSource _source;           // one per dataset; reshaped in place, never per shaping change
-    private TableViewTemplateColumn? _departmentTextColumn;
+    private TableViewColumn? _departmentTextColumn;
 
     public VirtualizationPage()
     {
@@ -89,11 +90,11 @@ public sealed partial class VirtualizationPage : SamplePageBase
             return;
         }
 
-        _departmentTextColumn ??= new TableViewTemplateColumn
+        _departmentTextColumn ??= new TableViewColumn
         {
             Header = "Department",
             Width = new GridLength((double)Application.Current.Resources["ColWidthChip"]),
-            CellTemplate = SampleColumns.TextCellTemplate(nameof(Person.Department)),
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(nameof(Person.Department)) },
             CanSort = false,
         };
 

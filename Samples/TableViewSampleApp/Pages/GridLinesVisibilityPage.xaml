@@ -137,23 +137,11 @@
                 </tv:TableView.Resources>
                 -->
                 <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" SortMemberPath="FullName">
-                    <tv:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding FullName}" Style="{StaticResource CellTextStyle}" />
-                        </DataTemplate>
-                    </tv:TableViewTemplateColumn.CellTemplate>
-                </tv:TableViewTemplateColumn>
+                <tv:TableViewColumn Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
                 <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
-                <tv:TableViewTemplateColumn Header="Salary" Width="100" SortMemberPath="Salary">
-                    <tv:TableViewTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding Salary, Converter={StaticResource SalaryTextConverter}}" Style="{StaticResource CellTextStyle}" />
-                        </DataTemplate>
-                    </tv:TableViewTemplateColumn.CellTemplate>
-                </tv:TableViewTemplateColumn>
+                <tv:TableViewColumn Header="Salary" Width="100" DisplayMemberBinding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

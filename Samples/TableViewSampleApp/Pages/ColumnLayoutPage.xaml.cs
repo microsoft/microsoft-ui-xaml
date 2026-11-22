@@ -52,12 +52,12 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     // ---- Column factories ---------------------------------------------------------------
 
     // <snippet>
-    // A text column is a template column whose cell is a TextBlock bound to the property.
-    private static TableViewTemplateColumn Text(string header, string path, GridLength width) =>
+    // A text column shows the property through DisplayMemberBinding.
+    private static TableViewColumn Text(string header, string path, GridLength width) =>
         new()
         {
             Header = header,
-            CellTemplate = SampleColumns.TextCellTemplate(path),
+            DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
             Width = width,
             CanSort = false,
         };
@@ -76,7 +76,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
     // </snippet>
 
     // <snippet>
-    private static TableViewTemplateColumn LockedRole(GridLength width)
+    private static TableViewColumn LockedRole(GridLength width)
     {
         var column = Text(LockedRoleHeader, nameof(Person.Role), width);
         // Per-column opt-out of the resize gripper. Setting Width from code still applies.

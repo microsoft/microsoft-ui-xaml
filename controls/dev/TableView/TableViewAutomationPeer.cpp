@@ -23,9 +23,9 @@ TableViewAutomationPeer::TableViewAutomationPeer(winrt::TableView const& owner)
 
 namespace
 {
-    // An unrealized row's name, composed from the visible columns' SortMemberPath values so it does not
-    // fall back to the item's type name. Read from the item without realizing the row.
-    winrt::hstring ComposeSortMemberPathValues(TableView& table, winrt::IInspectable const& item)
+    // An unrealized row's name as composed from its DisplayMemberBinding cells, read from the item
+    // without realizing the row.
+    winrt::hstring ComposeDisplayMemberValues(TableView& table, winrt::IInspectable const& item)
     {
         std::wstring composed;
         if (!item)
@@ -36,41 +36,28 @@ namespace
         winrt::TextBlock probe{ nullptr };
         for (auto const& column : table.Columns())
         {
-            if (!IsVisibleColumn(column))
-            {
-                continue;
-            }
-            winrt::hstring path;
-            try
-            {
-                // Projected dispatch: GetSortMemberPathCore is overridable.
-                path = column.GetSortMemberPathCore();
-            }
-            catch (...)
-            {
-            }
-            if (path.empty())
+            auto const binding = IsVisibleColumn(column) ? column.DisplayMemberBinding() : nullptr;
+            // A detached probe cannot resolve element-relative sources.
+            if (!binding || !binding.ElementName().empty() || binding.RelativeSource())
             {
                 continue;
             }
             if (!probe)
             {
                 probe = winrt::TextBlock{};
+                // Converters format for the target's language, which a cell inherits.
                 probe.Language(table.Language());
             }
             winrt::hstring text;
             try
             {
-                winrt::Binding binding;
-                binding.Path(winrt::PropertyPath{ path });
-                binding.Mode(winrt::BindingMode::OneTime);
                 winrt::BindingOperations::SetBinding(probe, winrt::TextBlock::TextProperty(), binding);
                 probe.DataContext(item);
                 text = probe.Text();
             }
             catch (winrt::hresult_error const&)
             {
-                // A getter that throws only costs that column's text.
+                // An app converter that throws only costs that column's text.
             }
             try
             {
@@ -265,7 +252,7 @@ namespace
             // Read from the source: m_item may be a weak reference to a box nothing else keeps alive.
             auto const tableImpl = winrt::get_self<TableView>(m_table.get());
             auto const item = tableImpl->UnwrapDataItem(tableImpl->GetRowsRepeaterInternal().ItemsSourceView().GetAt(index));
-            if (auto const composed = ComposeSortMemberPathValues(*tableImpl, item); !composed.empty())
+            if (auto const composed = ComposeDisplayMemberValues(*tableImpl, item); !composed.empty())
             {
                 return composed;
             }

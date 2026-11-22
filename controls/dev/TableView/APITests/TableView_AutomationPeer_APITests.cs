@@ -585,6 +585,76 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an unrealized row is named through each DisplayMemberBinding's Converter, ConverterParameter and TargetNullValue, as its realized row is.")]
+        public void VerifyUnrealizedRowNameAppliesDisplayMemberBindingConverter()
+        {
+            var items = Enumerable.Range(0, 200).Select(i => new PlainPerson { Name = $"Person {i}", Role = i == 150 ? null : $"Role {i}" }).ToList();
+            var name = VerifyUnrealizedRowNamedAsRealized(items, tableView =>
+            {
+                tableView.Columns.Add(new TableViewColumn { Header = "Name", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name"), Converter = new TagConverter(), ConverterParameter = "p" } });
+                tableView.Columns.Add(new TableViewColumn { Header = "Role", DisplayMemberBinding = new Binding { Path = new PropertyPath("Role"), TargetNullValue = "No role" } });
+            });
+            Verify.IsTrue(name.Contains("[Person 150|p]") && name.Contains("No role"), $"The unrealized name must apply the converter and TargetNullValue (got '{name}').");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an unrealized row is named from DisplayMemberBinding, not SortMemberPath, when they differ; columns without DisplayMemberBinding contribute nothing.")]
+        public void VerifyUnrealizedRowNameIgnoresSortMemberPath()
+        {
+            var items = Enumerable.Range(0, 200).Select(i => new PlainPerson { Name = $"Person {i}", Role = $"Role {i}" }).ToList();
+            var name = VerifyUnrealizedRowNamedAsRealized(items, tableView =>
+            {
+                tableView.Columns.Add(new TableViewColumn { Header = "Name", SortMemberPath = "Role", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                tableView.Columns.Add(new TableViewColumn { Header = "Sort only", SortMemberPath = "Role" });
+            });
+            Verify.AreEqual("Person 150", name, "Only the DisplayMemberBinding value may name the unrealized row.");
+        }
+
+        private string VerifyUnrealizedRowNamedAsRealized(List<PlainPerson> items, Action<TableView> addColumns)
+        {
+            TableView tableView = null;
+            AutomationPeer itemPeer = null;
+            string unrealizedName = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(items, 600, 300);
+                addColumns(tableView);
+                tableView.SelectionMode = TableViewSelectionMode.Single;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.Select(150);
+                tableView.UpdateLayout();
+                Verify.IsNull(GetRowsRepeater(tableView).TryGetElement(150), "Precondition: the selected row must not be realized.");
+                itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
+                unrealizedName = itemPeer.GetName();
+                ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetRowsRepeater(tableView).TryGetElement(150) as TableViewRow;
+                Verify.IsNotNull(row, "Realize must create the selected row.");
+                Verify.AreEqual(FrameworkElementAutomationPeer.CreatePeerForElement(row).GetName(), unrealizedName,
+                    "An unrealized row must be named as it is once realized.");
+            });
+            return unrealizedName;
+        }
+
+        private sealed class TagConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language) => $"[{value}|{parameter}]";
+            public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotSupportedException();
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a held data-item peer keeps its name when its row is realized, then forwards the row's enabled state, culture and ScrollItem.")]
         public void VerifyRealizedDataItemPeerForwardsRowState()
         {
@@ -611,7 +681,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 itemPeer = new ProviderPeerProbe().ToPeer(RequireSelectionProvider(tableView).GetSelection()[0]);
                 unrealizedName = itemPeer.GetName();
                 Verify.IsFalse(unrealizedName.Contains(nameof(PlainPerson)),
-                    $"An unrealized row of template columns must not be named after its item's type (got '{unrealizedName}').");
+                    $"An unrealized row must not be named after its item's type (got '{unrealizedName}').");
                 Verify.IsNull(itemPeer.GetPattern(PatternInterface.ScrollItem), "An unrealized row has no element to scroll into view.");
                 ((IVirtualizedItemProvider)itemPeer.GetPattern(PatternInterface.VirtualizedItem)).Realize();
             });
@@ -1851,8 +1921,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static TableView CreateNamedPeopleTable(object items)
         {
             var tableView = CreateTableViewShell(items, 600, 300);
-            tableView.Columns.Add(MakeTextTemplateColumn("Name"));
-            tableView.Columns.Add(MakeTextTemplateColumn("Role"));
+            tableView.Columns.Add(new TableViewColumn { Header = "Name", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+            tableView.Columns.Add(new TableViewColumn { Header = "Role", DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") } });
             tableView.SelectionMode = TableViewSelectionMode.Single;
             return tableView;
         }
