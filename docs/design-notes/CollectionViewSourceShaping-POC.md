@@ -22,8 +22,13 @@ all WPF scenarios") asks for.
 All new API is in `Microsoft.UI.Xaml.Data`, in `Microsoft.UI.Xaml.dll`, and is `[feature(Feature_ExperimentalApi)]`.
 
 ```idl
+// WPF's ListSortDirection and System.StringComparison, renamed (see "Naming").
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-enum ListSortDirection { Ascending, Descending };
+enum CollectionViewSortDirection { Ascending, Descending };
+
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+enum CollectionViewStringComparison
+{ CurrentCulture, CurrentCultureIgnoreCase, InvariantCulture, InvariantCultureIgnoreCase, Ordinal, OrdinalIgnoreCase };
 
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
 delegate Boolean CollectionViewFilter(Object item);
@@ -32,29 +37,38 @@ delegate Boolean CollectionViewFilter(Object item);
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
 delegate Int32 CollectionViewComparer(Object x, Object y);
 
+// WPF's SortDescription (a struct there). Settable until a SortDescriptions collection holds it; then a change throws.
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-runtimeclass SortDescription
+runtimeclass SortDescription : Microsoft.UI.Xaml.DependencyObject
 {
-    SortDescription(String propertyName, ListSortDirection direction);
-    String PropertyName { get; };
-    ListSortDirection Direction { get; };
+    SortDescription();
+    SortDescription(String propertyName, CollectionViewSortDirection direction);
+    String PropertyName;
+    CollectionViewSortDirection Direction;
+};
+
+// WPF's System.ComponentModel.GroupDescription. Derive from it for custom grouping.
+[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
+unsealed runtimeclass GroupDescription : Microsoft.UI.Xaml.DependencyObject
+{
+    protected GroupDescription();
+    IObservableVector<Object> GroupNames { get; };                     // explicit groups: first, in order, kept when empty
+    IObservableVector<SortDescription> SortDescriptions { get; };      // group order (Name/Key, ItemCount)
+    CollectionViewComparer CustomSort;                                 // compares two group names
+    overridable Object GroupNameFromItem(Object item, Int32 level, String culture);   // protected; culture = view's Culture
+    overridable Boolean NamesMatch(Object groupName, Object itemName);              // protected; default Object.Equals
 };
 
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-enum CollectionViewStringComparison   // System.StringComparison's names and values
-{ CurrentCulture, CurrentCultureIgnoreCase, InvariantCulture, InvariantCultureIgnoreCase, Ordinal, OrdinalIgnoreCase };
-
-[contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-runtimeclass PropertyGroupDescription
+runtimeclass PropertyGroupDescription : GroupDescription
 {
+    PropertyGroupDescription();
     PropertyGroupDescription(String propertyName);
     PropertyGroupDescription(String propertyName, IValueConverter converter);
     PropertyGroupDescription(String propertyName, IValueConverter converter, CollectionViewStringComparison stringComparison);
-    String PropertyName { get; };
-    IValueConverter Converter { get; };
-    CollectionViewStringComparison StringComparison { get; };            // Ordinal unless set
-    IObservableVector<SortDescription> SortDescriptions { get; };        // group order (WPF GroupDescription)
-    CollectionViewComparer CustomSort;                                   // compares two group names
+    String PropertyName;
+    IValueConverter Converter;                                         // Convert(value, Object, level, culture), as in WPF
+    CollectionViewStringComparison StringComparison;                   // Ordinal unless set
 };
 
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
@@ -74,26 +88,34 @@ runtimeclass CollectionViewSource : DependencyObject
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
     [interface_name("Microsoft.UI.Xaml.Data.ICollectionViewSourceFeature_ExperimentalApi")]
     {
-        IObservableVector<SortDescription> SortDescriptions { get; };
-        IObservableVector<PropertyGroupDescription> GroupDescriptions { get; };
-        CollectionViewFilter Filter;
+        IObservableVector<SortDescription> SortDescriptions { get; };     // read-only DependencyProperty: markup fills it
+        IObservableVector<GroupDescription> GroupDescriptions { get; };   // read-only DependencyProperty
         CollectionViewComparer CustomSort;
         String Culture;                                    // BCP-47 tag; empty = user locale
-        event FilterEventHandler FilterRequested;          // WPF's CollectionViewSource.Filter event
+        Boolean IsLiveSortingRequested;                    // DependencyProperties, as in WPF
+        Boolean IsLiveFilteringRequested;
+        Boolean IsLiveGroupingRequested;
+        IObservableVector<String> LiveSortingProperties { get; };          // read-only DependencyProperties
+        IObservableVector<String> LiveFilteringProperties { get; };
+        IObservableVector<String> LiveGroupingProperties { get; };
+        event FilterEventHandler Filter;                   // WPF's CollectionViewSource.Filter event
         void Refresh();
         Windows.Foundation.IClosable DeferRefresh();
+        static DependencyProperty IsLiveSortingRequestedProperty { get; };
+        static DependencyProperty IsLiveFilteringRequestedProperty { get; };
+        static DependencyProperty IsLiveGroupingRequestedProperty { get; };
         static ICollectionView GetDefaultView(Object source);
     }
 };
 
-// Optional capability of an ICollectionView, like ICollectionViewFactory or ISupportIncrementalLoading.
-// A View that a CollectionViewSource creates over a vector implements it; it owns the rules (see "Architecture").
+// Optional capability of an ICollectionView, like ICollectionViewFactory or ISupportIncrementalLoading. The view a
+// CollectionViewSource creates over a vector implements it, and so can an app's own view (see "Extensibility").
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
 interface ICollectionViewShaping
 {
     IObservableVector<SortDescription> SortDescriptions { get; };
-    IObservableVector<PropertyGroupDescription> GroupDescriptions { get; };
-    CollectionViewFilter Filter;
+    IObservableVector<GroupDescription> GroupDescriptions { get; };
+    CollectionViewFilter Filter;                           // WPF ICollectionView.Filter
     void Refresh();
     Windows.Foundation.IClosable DeferRefresh();
     CollectionViewComparer CustomSort;
@@ -113,42 +135,46 @@ interface ICollectionViewLiveShaping
     Windows.Foundation.IReference<Boolean> IsLiveGrouping;
     Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties { get; };   // empty: SortDescriptions'
     Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties { get; }; // empty: none
-    Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties { get; };  // empty: GroupDescriptions'
-};
-
-runtimeclass CollectionViewSource
-{
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-    {
-    // ...the members above, and, applied to View as WPF's ApplyPropertiesToView does:
-    Boolean IsLiveSortingRequested;
-    Boolean IsLiveFilteringRequested;
-    Boolean IsLiveGroupingRequested;
-    Windows.Foundation.Collections.IObservableVector<String> LiveSortingProperties { get; };
-    Windows.Foundation.Collections.IObservableVector<String> LiveFilteringProperties { get; };
-    Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties { get; };
-    }
+    Windows.Foundation.Collections.IObservableVector<String> LiveGroupingProperties { get; };  // empty: PropertyGroupDescriptions'
 };
 ```
 
+### Changes in batch 3 (API review follow-up)
+
+All of these change the experimental API only; the shipped `CollectionViewSource`, `ICollectionView`,
+`ICollectionViewFactory` and `ICollectionViewGroup` are unchanged.
+
+| Before | After | Why |
+|---|---|---|
+| `enum ListSortDirection` | `enum CollectionViewSortDirection` (same values) | Naming rule shared with `CollectionViewStringComparison` (see "Naming"). |
+| `runtimeclass SortDescription` (immutable, `(String, ListSortDirection)` constructor only, not creatable from XAML) | `SortDescription : DependencyObject` with a default constructor, settable `PropertyName` / `Direction`, sealed once a `SortDescriptions` collection holds it | WPF's markup idiom. A change after sealing throws `InvalidOperationException`, as WPF's `SortDescription` does. |
+| `PropertyGroupDescription` sealed, read-only, no base | `GroupDescription` (unsealed, protected constructor, `GroupNames`, `SortDescriptions`, `CustomSort`, overridable `GroupNameFromItem` / `NamesMatch`); `PropertyGroupDescription : GroupDescription` with a default constructor and settable `PropertyName`, `Converter`, `StringComparison` | WPF's base class, before leaving experimental (adding a base later is breaking). A property change regroups the views that use it, as WPF's `PropertyChanged` does. |
+| `GroupDescriptions : IObservableVector<PropertyGroupDescription>` (CVS and `ICollectionViewShaping`) | `IObservableVector<GroupDescription>` | Follows the base class. |
+| `CollectionViewSource.Filter` (delegate) + `event FilterRequested` | `event Filter` only; the delegate is the view's `ICollectionViewShaping.Filter` | WPF's names: the CVS has the event, the view has the predicate. The event name was taken only because the CVS also had the delegate. |
+| `SortDescriptions`, `GroupDescriptions`, `Live*Properties` plain properties | read-only `DependencyProperty`s whose values are created on first use | `<CollectionViewSource.SortDescriptions>` etc. in markup. |
+| `IsLive*Requested` plain properties | `DependencyProperty`s with `Is*RequestedProperty` statics | Settable in markup and bindable, as in WPF. |
+| Group `Converter.Convert(value, Object, null, culture)` | `Convert(value, Object, level, culture)` | WPF passes the level as the converter parameter. |
+
 | WPF | This POC | Note |
 |---|---|---|
-| `CollectionViewSource.SortDescriptions` (`SortDescriptionCollection` of `SortDescription` structs) | `IObservableVector<SortDescription>`, immutable runtime class | WinRT has no struct-with-string collections that XAML can fill; an immutable class keeps WPF's value semantics. |
-| `ListSortDirection` | `ListSortDirection` | Same names and values. |
-| `CollectionViewSource.GroupDescriptions` (`GroupDescription` base) | `IObservableVector<PropertyGroupDescription>` | Only property grouping. See risks for the base-class decision. Several descriptions nest groups (below). |
-| `ICollectionView.Filter` (`Predicate<object>`) | `Filter` property of type `CollectionViewFilter` on CVS and `ICollectionViewShaping` | See decision 3. |
-| `CollectionViewSource.Filter` **event** (`FilterEventHandler`, `FilterEventArgs.Item` / `Accepted`) | `CollectionViewSource.FilterRequested` event (`FilterEventHandler`, `FilterEventArgs`) | Implemented. Named `FilterRequested` because `Filter` is already the delegate property and WinRT (C# projection) cannot have a property and an event of one name. As in WPF, `Accepted` starts `true`, each handler may change it, and adding or removing a handler refilters. **While it has handlers the event wins** and the `Filter` delegate is ignored (WPF replaces `view.Filter` with the event's wrapper); removing the last handler hands filtering back to the delegate. A CVS whose only rule is a handler shapes its view. |
+| `CollectionViewSource.SortDescriptions` (`SortDescriptionCollection` of `SortDescription` structs) | `IObservableVector<SortDescription>` of `SortDescription : DependencyObject`, a read-only `DependencyProperty` | Filled in markup (`<CollectionViewSource.SortDescriptions><SortDescription PropertyName="Name"/>`) or code. WinRT structs cannot be created and filled in markup, so the description is a `DependencyObject` (as WinUI's `Setter` and `Binding` are); like WPF's struct it is sealed once a `SortDescriptions` collection holds it, after which a change throws. It has no value equality: find one by its `PropertyName`. |
+| `ListSortDirection` | `CollectionViewSortDirection` | Same values. Renamed with `CollectionViewStringComparison` (see "Naming"). |
+| `CollectionViewSource.GroupDescriptions` (`ObservableCollection<GroupDescription>`) | `IObservableVector<GroupDescription>`, a read-only `DependencyProperty` | Markup or code. Several descriptions nest groups (below). |
+| `ICollectionView.Filter` (`Predicate<object>`) | `ICollectionViewShaping.Filter` (`CollectionViewFilter`) | On the view, as in WPF; the CVS has no `Filter` property (WPF's does not either). Set on `cvs.View`, it is kept when the CVS replaces its view (a new `Source`). |
+| `CollectionViewSource.Filter` **event** (`FilterEventHandler`, `FilterEventArgs.Item` / `Accepted`) | `CollectionViewSource.Filter` event (`FilterEventHandler`, `FilterEventArgs`) | Same name (it was `FilterRequested` while the CVS also had a `Filter` delegate property). As in WPF, `Accepted` starts `true`, each handler may change it, and adding or removing a handler refilters. **While it has handlers the event wins** over the view's `Filter` delegate (WPF replaces `view.Filter` with the event's wrapper); removing the last handler hands filtering back to the delegate. A CVS whose only rule is a handler shapes its view. It can be hooked in markup (`<CollectionViewSource Filter="OnFilter">`). |
 | `ICollectionView.Refresh()` | `CollectionViewSource.Refresh()` and `ICollectionViewShaping.Refresh()` | `ICollectionView` is frozen, so the verb lives on CVS and on the opt-in view interface. |
-| `ICollectionView.SortDescriptions` / `GroupDescriptions` / `Filter` | `ICollectionViewShaping` on the shaped `View` | Same objects as the CVS's: one set of descriptors, reachable from `ItemsSource` alone. |
+| `ICollectionView.SortDescriptions` / `GroupDescriptions` / `Filter` | `ICollectionViewShaping` on the shaped `View` | `SortDescriptions` and `GroupDescriptions` are the CVS's objects: one set of descriptors, reachable from `ItemsSource` alone. |
 | `CollectionViewGroup.Name` | `Key` and `Name` on the group object | `Key` matches the `IGrouping<K,T>` idiom WinUI samples already use. |
 | `ICollectionView.DeferRefresh()` → `IDisposable` | `DeferRefresh()` → `IClosable` on CVS and `ICollectionViewShaping` | Implemented. Nested deferrals count; changes made while one is open (descriptors, `Filter`, `CustomSort`, `Refresh`, source changes) recompute once, when the last closes. C# `using` and C++/CX `delete` close it. An unclosed deferral defers forever, as in WPF. |
 | `ListCollectionView.CustomSort` (`IComparer`) | `CustomSort` property of type `CollectionViewComparer` on CVS and `ICollectionViewShaping` | Implemented. A delegate, not an interface, so a C++/WinRT lambda or a C# method group works and nothing needs reflection (AOT-safe). As in WPF, setting it clears `SortDescriptions`, and adding a `SortDescription` clears it. Ties keep source order. A comparer that fails fails the change and leaves the view's rows. |
-| `PropertyGroupDescription.Converter` (`IValueConverter`) | `PropertyGroupDescription(propertyName, converter)` and read-only `Converter` | Implemented. `Convert(value, Object, null, culture)` maps the property value to the group key (the language argument is the view's `Culture`), so a computed bucket (for example a date range) needs no model property. Read-only, like the rest of the descriptor. Custom `GroupDescription.GroupNameFromItem` is not added. |
-| `PropertyGroupDescription.StringComparison` (`System.StringComparison`, default `Ordinal`) | `PropertyGroupDescription(propertyName, converter, stringComparison)` and read-only `StringComparison` of type `CollectionViewStringComparison` | Implemented. How string group names match (`String.Equals(name, name, comparison)`); other names use value equality. The group keeps the name of its first item. The enum mirrors `System.StringComparison` (names and values) under another name, because a `Microsoft.UI.Xaml.Data.StringComparison` would make `StringComparison` ambiguous in every C# file that also uses `System`. Set through the constructor, like `Converter` (WPF also has that constructor). |
-| `GroupDescription.SortDescriptions` / `CustomSort` (WPF 4.5 group sorting) | `PropertyGroupDescription.SortDescriptions` and `CustomSort` | Implemented. Orders the groups at that level: `SortDescriptions` by a group property (`Name`/`Key`, `ItemCount`), `CustomSort` by comparing **two group names** (WPF passes `CollectionViewGroup`s; WinUI has no public group class, so the names are what an app can use). As in WPF they replace each other, a change regroups the views that use the description, groups are placed when created (a group whose `ItemCount` later changes does not move until `Refresh()`), and without a group order groups follow their first item. On `PropertyGroupDescription`, not a `GroupDescription` base (see risks). |
+| `PropertyGroupDescription.Converter` (`IValueConverter`) | `Converter` (settable; also a constructor parameter) | As in WPF, `Convert(value, typeof(object), level, culture)`: the parameter is the boxed level (0 for the first description) and the language is the view's `Culture` (empty when unset, where WPF passes a null `CultureInfo`). A computed bucket (for example a date range) needs no model property. |
+| `PropertyGroupDescription.StringComparison` (`System.StringComparison`, default `Ordinal`) | `StringComparison` of type `CollectionViewStringComparison` (settable; also a constructor parameter) | How string group names match (`String.Equals(name, name, comparison)`); other names use value equality. The group keeps the name of its first item. Default `Ordinal`. |
+| `GroupDescription.SortDescriptions` / `CustomSort` (WPF 4.5 group sorting) | `GroupDescription.SortDescriptions` and `CustomSort` | Orders the groups at that level: `SortDescriptions` by a group property (`Name`/`Key`, `ItemCount`), `CustomSort` by comparing **two group names** (WPF passes `CollectionViewGroup`s; WinUI has no public group class, so the names are what an app can use). As in WPF they replace each other, a change regroups the views that use the description, groups are placed when created (a group whose `ItemCount` later changes does not move until `Refresh()`), and without a group order groups follow their first item. |
+| `GroupDescription` (abstract), `GroupNameFromItem(item, level, culture)`, `NamesMatch(groupName, itemName)` | `GroupDescription` (unsealed, protected constructor), overridable `GroupNameFromItem(Object, Int32, String culture)` and `NamesMatch` | WinRT overridables are protected, so an app overrides them (`protected override object GroupNameFromItem(...)`) but does not call them on another description. The view calls them through the overrides interface, so a derived class decides each item's group at each level; its group names have no hash key, so they are matched with its `NamesMatch` (WPF looks them up in its name map first). A base `GroupDescription` that does not override `GroupNameFromItem` puts every item in a group named null (WPF's is abstract). `PropertyGroupDescription` is read natively, without a call through the ABI. A change in a derived class's own logic is picked up by `Refresh()` (WPF raises `PropertyChanged`). |
+| `GroupDescription.GroupNames` (`ObservableCollection<object>`) | `GroupDescription.GroupNames` (`IObservableVector<Object>`) | Explicit groups: at each level they come first, in `GroupNames` order, exist when empty and stay when they empty; other groups follow. A change regroups. Code only (WPF can also set it in markup). |
 | `CollectionView.Culture` / `CollectionViewSource.Culture` (`CultureInfo`) | `Culture` (`String`, a BCP-47 language tag) on CVS and `ICollectionViewShaping` | Implemented. Strings sort with `CompareStringEx` in that locale; empty means the user's locale (WPF falls back to the element's `xml:lang`). A `String` because `CultureInfo` is not a WinRT type; an invalid tag throws `ArgumentException`. Changing it re-sorts. Group-name matching with `CurrentCulture*` uses the user's locale, as WPF uses `CultureInfo.CurrentCulture`. |
 | `ICollectionView.SourceCollection` (`IEnumerable`) | `ICollectionViewShaping.SourceCollection` (`Object`) | Implemented: the collection the view was created over (the CVS's `Source`, not a wrapper). `ICollectionView` is frozen, so it is on the shaping interface. |
-| `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | static `CollectionViewSource.GetDefaultView(Object)` | Implemented. One shared, shapeable view per list source (`IVector` / `IBindableVector`), created by `CollectionViewManager` and owned by no CVS, so it starts and stops grouping in place. The table holds it **weakly**: while anything holds the view, every call returns it; once nothing does, the next call creates a new one (its rules are gone). An `ICollectionView` source returns itself (WPF wraps it in a proxy), `null` returns `null`, and a non-list source (`IIterable`, `IVectorView`, `ICollectionViewFactory`) gets a new, unshared view on each call. Views are per UI thread. |
+| `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | static `CollectionViewSource.GetDefaultView(Object)` | One shared, shapeable view per list source (`IVector` / `IBindableVector`), created by `CollectionViewManager` and owned by no CVS, so it starts and stops grouping in place. **Lifetime differs from WPF** (see "Default view lifetime"): the table holds the view weakly, so while anything holds the view every call returns it, and once nothing does the next call creates a new one without the old rules. Keep the view (or use a `CollectionViewSource`). An `ICollectionView` source returns itself (WPF wraps it in a proxy), `null` returns `null`, and a non-list source (`IIterable`, `IVectorView`, `ICollectionViewFactory`) gets a new, unshared view on each call. Views are per UI thread. `ItemsControl` does not show a list through its default view (WPF's does), so rules set on it reach only consumers given the view. |
 | `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
 | `ICollectionView.Groups` (null while not grouping), the view kept when grouping starts or stops, `ItemsControl.IsGrouping` following it | `ICollectionView.CollectionGroups` of a shaping view: null while flat, else **one** `IObservableVector` for the view's lifetime; the view raises `PropertyChanged("CollectionGroups")` and then a `Reset` when grouping starts or stops; ListView, GridView, `ItemsControl` and TableView regroup the same `ItemsSource` | Implemented. A regroup is one `Reset` of `CollectionGroups`, raised once the groups are complete, then one `Reset` of the view (WPF raises `Reset` on `Groups`). WinRT `ICollectionView` has no `GroupDescriptions`, so the null/non-null switch plus `PropertyChanged` is the signal (see "Grouping keeps the view"). |
 | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
@@ -157,16 +183,25 @@ runtimeclass CollectionViewSource
 | `CanChangeLiveSorting` / `CanChangeLiveFiltering` / `CanChangeLiveGrouping` | Same names | Always `true`, as on `ListCollectionView`. |
 | `IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` (`bool?`) | Same names, `IReference<Boolean>` | WPF's `bool?` is WinRT's `IReference<Boolean>` (C# sees `bool?`). As on `ListCollectionView` the value is never null and setting null throws (`ArgumentNullException` in WPF, `E_INVALIDARG` here); the nullable type is kept so a view that cannot tell (WPF's `null`) can implement the interface. Default `false`. |
 | `LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` (`ObservableCollection<string>`) | Same names, `IObservableVector<String>` | Property paths. Empty sorting or grouping lists mean the `SortDescriptions`' or the `PropertyGroupDescription`s' properties (none with a `CustomSort`); filtering observes only the listed paths, as in WPF. A change rebuilds what is observed. |
-| `CollectionViewSource.IsLiveSortingRequested` / `IsLiveFilteringRequested` / `IsLiveGroupingRequested` | Same names | Plain properties (WPF: DPs). Applied to `View` when it is created and whenever they change, as WPF's `ApplyPropertiesToView` copies them; the CVS's own `Live*Properties` are copied into the view only while their feature is requested. |
-| `CollectionViewSource.LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` | Same names | A change is applied to `View` (WPF `OnForwardedCollectionChanged`). |
-| `CollectionViewSource.CanChangeLive*` / `IsLive*` (read-only DPs mirroring the view) | Not added | Read them from `View` through `ICollectionViewLiveShaping`. |
+| `CollectionViewSource.IsLiveSortingRequested` / `IsLiveFilteringRequested` / `IsLiveGroupingRequested` | Same names, `DependencyProperty`s | Settable in markup and bindable, as in WPF. Applied to `View` when it is created and whenever they change, as WPF's `ApplyPropertiesToView` copies them; the CVS's own `Live*Properties` are copied into the view only while their feature is requested. |
+| `CollectionViewSource.LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` | Same names, read-only `DependencyProperty`s | Filled in markup (`<x:String>`) or code. A change is applied to `View` (WPF `OnForwardedCollectionChanged`). |
+| `CollectionViewSource.CanChangeLive*` / `IsLive*` (read-only DPs mirroring the view) | Not added | Kept out after review: they only mirror `View`'s values (`ICollectionViewLiveShaping` on `View`, which is always the CVS's own view here and always `true` for `CanChangeLive*`), and WPF uses them mostly for triggers, which WinUI does not have. Six more read-only properties (and DPs) for no new state; read them from `View`. |
 | `LiveShapingList` / `LiveShapingItem` (a binding per item and live property) | `VectorCollectionView::LiveShapingState` / `LiveShapingItem` / `LivePropertyObserver` | Each observer is a property path listener of the binding engine (a `{Binding}`'s), so `INotifyPropertyChanged` items (C# and C++), `ICustomPropertyProvider` items, `DependencyObject` properties and nested paths all work. |
 
 ## Usage
 
 ```xml
 <Page.Resources>
-    <CollectionViewSource x:Name="PeopleSource" />
+    <!-- WPF's markup: the rules on the CollectionViewSource, Source set by code (or a binding). -->
+    <CollectionViewSource x:Name="PeopleSource" Filter="OnPeopleFilter" IsLiveSortingRequested="True">
+        <CollectionViewSource.SortDescriptions>
+            <SortDescription PropertyName="LastName" />
+            <SortDescription PropertyName="FirstName" />
+        </CollectionViewSource.SortDescriptions>
+        <CollectionViewSource.GroupDescriptions>
+            <PropertyGroupDescription PropertyName="Department" />
+        </CollectionViewSource.GroupDescriptions>
+    </CollectionViewSource>
 </Page.Resources>
 
 <ListView ItemsSource="{Binding Source={StaticResource PeopleSource}}">
@@ -185,16 +220,27 @@ runtimeclass CollectionViewSource
 
 ```csharp
 PeopleSource.Source = people;   // e.g. ObservableCollection<Person>
-PeopleSource.Filter = item => ((Person)item).IsActive;
-PeopleSource.SortDescriptions.Add(new SortDescription("LastName", ListSortDirection.Ascending));
-PeopleSource.SortDescriptions.Add(new SortDescription("FirstName", ListSortDirection.Ascending));
+
+void OnPeopleFilter(object sender, FilterEventArgs e) => e.Accepted = ((Person)e.Item).IsActive;
+
+// The same rules in code:
+PeopleSource.SortDescriptions.Add(new SortDescription("LastName", CollectionViewSortDirection.Ascending));
 PeopleSource.GroupDescriptions.Add(new PropertyGroupDescription("Department"));
+((ICollectionViewShaping)PeopleSource.View).Filter = item => ((Person)item).IsActive;   // the view's predicate
 
 people.Add(new Person { /* ... */ });   // View refreshes automatically
-person.LastName = "Smith";              // without live shaping: call PeopleSource.Refresh()
+person.LastName = "Adams";              // moves the row: live sorting is on (LastName is a sort property)
+```
 
-PeopleSource.IsLiveSortingRequested = true;   // now the edit moves the row (LastName is a sort property)
-person.LastName = "Adams";
+A custom grouping derives from `GroupDescription`, as in WPF:
+
+```csharp
+sealed class InitialGroupDescription : GroupDescription
+{
+    protected override object GroupNameFromItem(object item, int level, string culture) => ((Person)item).LastName[..1];
+    protected override bool NamesMatch(object groupName, object itemName) =>
+        string.Equals((string)groupName, (string)itemName, StringComparison.CurrentCultureIgnoreCase);
+}
 ```
 
 Property names use the same path syntax and resolution as `{Binding Path=...}`, including nested paths
@@ -210,11 +256,11 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   `new CollectionViewSource { Source = items }.View` (for example a control's `ItemsSource`) can start shaping it.
 - **Precedence.** `IsSourceGrouped = true` and sources that implement `ICollectionViewFactory` keep their existing
   behavior; their view cannot shape. As in WPF (`CannotSortView` / `CannotGroupView` / `CannotFilterView`), a rule
-  set on such a CVS (a description, `Filter`, `CustomSort` or a `FilterRequested` handler) throws
+  set on such a CVS (a description, `CustomSort` or a `Filter` event handler) throws
   `InvalidOperationException` (`E_ILLEGAL_METHOD_CALL`) instead of being ignored, when the rule is added or when the
   view is created with it. CVSs without rules are unaffected.
 - **Pipeline.** Filter, then stable multi-key sort, then group, level by level. Without a group order
-  (`PropertyGroupDescription.SortDescriptions` / `CustomSort`), groups appear in first-appearance order of the sorted
+  (`GroupDescription.SortDescriptions` / `CustomSort`), groups appear in first-appearance order of the sorted
   items (WPF behavior).
 - **Comparison.** Strings use `CompareStringEx` with the view's `Culture`, else the user locale. Numeric types compare as
   numbers: two integers (including `Int64` and `UInt64`) exactly, otherwise as `double`; and
@@ -260,7 +306,7 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   or after the last stays there; a current item is followed if it is still in the view, otherwise currency moves to
   the first item. So a sort with nothing current (a synchronized ListView with nothing selected) selects nothing. A
   rebuilt `View` starts at the first item, as today.
-- **Reentrancy.** App code runs inside the engine (filters, `FilterRequested` handlers, property getters, converters,
+- **Reentrancy.** App code runs inside the engine (filters, `Filter` event handlers, property getters, converters, `GroupDescription` overrides,
   comparers) and while it raises its changes (every `VectorChanged` / `PropertyChanged` handler). A rule change,
   `Refresh()` or source change made from there is not dropped: it is recorded and the view recomputes once that work
   unwinds, then raises its own `Reset` (WPF refreshes re-entrantly; neither throws). A handler that changes the view
@@ -318,23 +364,33 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
      (`coretypes2.idl:883-894`, Window).
    - The generated class adds a `forwarder_holder` and a QI that checks `Feature_ExperimentalApi::IsEnabled()`
      (`dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Window.g.h:22-84`, `Window.g.cpp:48-53`).
-3. **`Filter` is a delegate property, not WPF's `Filter` event.**
-   - It matches WPF's `ICollectionView.Filter` and the Toolkit's `AdvancedCollectionView.Filter`.
-   - It has one well-defined result instead of multicast "any handler can reject" semantics.
-   - Framework events need a `KnownEventIndex` and an args runtime class (`Popup.g.cpp:290-300`), so an event means
-     more type-table churn.
+3. **WPF's split: the view has the `Filter` predicate, the CVS has the `Filter` event.**
+   - `ICollectionViewShaping.Filter` is a `CollectionViewFilter` delegate (WPF's `ICollectionView.Filter`, the
+     Toolkit's `AdvancedCollectionView.Filter`): one well-defined result, no reflection, AOT-safe.
+   - `CollectionViewSource.Filter` is the event (`FilterEventHandler`, `FilterEventArgs`), as in WPF; markup can hook
+     it. An earlier version also had a `Filter` delegate on the CVS and so named the event `FilterRequested`; the
+     delegate was dropped so the event could take WPF's name (WinRT, and the C# projection, cannot have a property
+     and an event of one name on a class).
    - Precedent for an experimental framework delegate with a return value: `DataTemplateElementFactory`
      (`Microsoft.UI.Xaml.cs:3788-3792`, `microsoft.ui.xaml.controls.controls.idl:452-455`), stored in a `TrackerPtr`
      (`DataTemplate_Partial.h:30`).
-   - A WPF-style event can be added later as XAML-friendly sugar.
-4. **`PropertyKind.PropertyOnly`, no new dependency properties.** PropertyOnly members are not in the type tables:
-   `Indexes.g.h:1549` has `Window_Width` (a DP) but there is no `Window_ExtendsContentIntoTitleBar` (PropertyOnly).
-   That keeps the hand-edited generated surface small. The cost is that descriptors cannot be set in markup yet.
-5. **Descriptor classes copy `ItemIndexRange`** (`Microsoft.UI.Xaml.Data.cs:707-715`): plain, free-threaded,
-   `IsCreateableFromXAML = false`, factory constructor. Whole-class feature gating copies the generated
+4. **Markup-settable members are `DependencyProperty`s; the rest stay `PropertyKind.PropertyOnly`.** The XAML parser
+   sets only properties in the type tables. `SortDescriptions`, `GroupDescriptions` and `Live*Properties` are
+   read-only, DXaml-only `DependencyProperty`s whose collection is created on first read (the default-value path
+   `Hub.SectionHeaders` uses, `DependencyProperty.cpp`), so `<CollectionViewSource.SortDescriptions>` fills them as
+   `<ItemsControl.GroupStyle>` fills `GroupStyle`; the string collections take `<x:String>` items through
+   `IUntypedVector`. `IsLive*Requested` are ordinary `DependencyProperty`s with public identifiers, as in WPF.
+   `CustomSort` and `Culture` stay `PropertyOnly` (a delegate is not set in markup; see "Naming" for `Culture`). The
+   XBF type, property and event tables were appended to by `runcodegen` (no reordering); `CollectionViewSource_FilterRequested`
+   (340) became `CollectionViewSource_FilterRequested_Deleted0`, and `CollectionViewSource_Filter` is 341.
+5. **Descriptors are `DependencyObject`s, like `AutomationAnnotation` and `Setter`.** A default constructor plus a
+   convenience constructor, settable properties, creatable from markup. They are UI-thread objects (the free-threaded
+   immutable classes they replace could not be created in markup). `GroupDescription` copies `NavigationTransitionInfo`
+   (an abstract `DependencyObject` with a protected constructor and protected overridables, called through the
+   generated `...Protected` helpers). Whole-class feature gating copies the generated
    `InputValidationContext.g.h:14-41` / `.g.cpp:24-37` pattern. `[Optional]` string constructor parameters follow
-   `PropertyChangedEventArgs` (`Microsoft.UI.Xaml.Data.cs:57`). The enum follows `XamlChangeId`
-   (`Microsoft.UI.Xaml.Settings.cs:11-16`): experimental, excluded from the type tables.
+   `PropertyChangedEventArgs` (`Microsoft.UI.Xaml.Data.cs:57`). The enums are in the type tables (markup parses
+   `Direction="Descending"`), experimental.
 6. **Reuse the existing view classes; no new internal view type.**
    - `VectorCollectionView`, the view a CVS already creates over a vector, carries the engine and plays WPF's
      `ListCollectionView` (see "Architecture" below).
@@ -351,6 +407,72 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
    view to shape (`EnableShaping`): every view a CVS creates over a vector source (shaped or not), and the view it
    creates over a snapshot of any other source once a rule is set. An `IsSourceGrouped` view, a factory view, or a
    view created any other way does not offer it. The view and the CVS share one set of descriptor collections.
+
+### Naming
+
+- **Enums.** WPF's names would be `ListSortDirection` and `StringComparison`. Both collide with .NET types an app's
+  C# files import anyway: `System.StringComparison` (every file has `using System;`) and
+  `System.ComponentModel.ListSortDirection` (in the base library, not WPF-only; every view model with
+  `INotifyPropertyChanged` has `using System.ComponentModel;`). A same-named WinUI enum makes the simple name
+  ambiguous (CS0104) in exactly the files that shape data. So both take the `CollectionView` prefix the other new
+  Data types already use (`CollectionViewFilter`, `CollectionViewComparer`): `CollectionViewSortDirection`,
+  `CollectionViewStringComparison`. Values match WPF's. The type names WPF has only in WPF assemblies
+  (`SortDescription`, `GroupDescription`, `PropertyGroupDescription`, `FilterEventArgs`) keep WPF's names: a WinUI
+  app does not reference them.
+- **TableView's `SortDirection`** (`None`, `Ascending`, `Descending`; `MUX_PREVIEW`) stays separate. It is a column's
+  sort *state*, which needs a "not sorted" value; a `SortDescription` always has a direction. WPF models the state as
+  `ListSortDirection?`; the WinRT equivalent, an `IReference<CollectionViewSortDirection>` dependency property, has
+  no precedent in the controls, whose metadata provider would have to parse a nullable enum from markup, and
+  `TableViewColumn.SortDirection` is set in markup today. TableView maps between the two in one place
+  (`TableView_Sort.cpp`).
+- **`ICollectionViewShaping`, not `ICollectionView2`.** The `2` suffix in WinUI names the next version of the same
+  contract, which every implementer is expected to take on (`IUIElement2`-style; for an app-implemented interface,
+  the next version a caller may require). `ICollectionView` is implemented by apps and toolkits; shaping is an
+  optional capability that a paged or virtualized view may not have, like `ISupportIncrementalLoading` and
+  `ICollectionViewFactory`, which are named for what they add. A consumer asks for it with a QI and falls back
+  (TableView raises `Sorting` only). So the capability name stays; it needs an API-council naming sign-off.
+  `ICollectionViewLiveShaping` keeps WPF's name.
+- **`Culture`** stays a `String` (`CultureInfo` is not a WinRT type) and a plain property: invalid tags throw on set,
+  which a `DependencyProperty` set from markup or a binding cannot report at the setter.
+
+### Extensibility: views other than the framework's
+
+- **Implementing the interfaces.** `ICollectionViewShaping` and `ICollectionViewLiveShaping` are not `exclusiveto`;
+  an app or toolkit view can implement them next to `ICollectionView`. Consumers use only the interfaces: TableView
+  sorts any `ItemsSource` that answers `ICollectionViewShaping` by writing its `SortDescriptions` (or `CustomSort`)
+  under one `DeferRefresh`, and lights the arrow for a sort the view's owner writes there; `ItemsControl` regroups when
+  such a view raises `PropertyChanged("CollectionGroups")`. `TableView_DataBinding_APITests`
+  `VerifyHeaderSortOnAppShapingViewWritesItsSortDescriptions` runs TableView over a C# view that sorts itself.
+- **The contract a third-party view follows**: changes as `IObservableVector` changes (a move is a remove and an
+  insert, a recompute a `Reset`); `CollectionGroups` null while flat, and `PropertyChanged("CollectionGroups")` then a
+  `Reset` when grouping starts or stops; nested groups as `ICollectionViewGroup`s whose `GroupItems` are subgroups
+  above the bottom level; `DeferRefresh` deferrals that tolerate `Close` from an error path.
+- **Custom grouping** derives from `GroupDescription`; **custom filtering and sorting** use the `Filter` delegate or
+  event and `CustomSort`. These cover WPF's `ListCollectionView` overrides of `PassesFilter` and `Compare`.
+- **Future:** a public, composable `ListCollectionView`-like class (overriding `RefreshOverride`,
+  `ProcessCollectionChanged`) needs a new framework view type, per-item ABI calls for every override, and a review of
+  composability; it is not in this change. Neither is `CanSort` / `CanFilter` / `CanGroup` (a view that implements the
+  interface today is assumed to support all three) or a typed `ICollectionViewGroup2`.
+
+### Default view lifetime
+
+WPF keeps a default view, and the rules set on it, alive as long as its collection: the view is subscribed to the
+collection's `CollectionChanged`, so the collection roots the view, and the view roots the collection; both are in
+one managed heap, so the GC collects them together. The WinUI equivalent was considered and is not GC-safe:
+
+- A native table that holds the view strongly roots it, and with it the source it holds and any app delegate in its
+  rules (`Filter`, `CustomSort`, a `GroupDescription` subclass). A filter lambda that captures the page that owns
+  the list then keeps the page alive forever.
+- Making the source hold the view (a strong `VectorChanged` handler, as WPF's event does) relies on the C#
+  projection reporting that reference to the GC through the reference tracker. Delegates the framework hands to a
+  managed event are not tracker-walked, so the cycle source → handler → view → source is invisible to the GC and
+  leaks; for a native source it is a plain reference-count cycle. The framework subscribes weakly for this reason.
+- An ephemeron (a `ConditionalWeakTable`: the view lives as long as the source) needs the garbage collector, which
+  native code does not have.
+
+So the table stays weak: `GetDefaultView` returns the same view while anything holds it, and a new one once nothing
+does. Apps keep the view they shape (or use a `CollectionViewSource`). Because `ItemsControl` never shows a list
+through its default view, a default view's rules reach only the controls it is given to, unlike WPF's.
 
 ### Architecture: the view owns the engine
 
@@ -369,7 +491,7 @@ As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over 
   next view. A view the CVS has replaced keeps a copy of the rules it had and keeps following its own source, as
   each WPF view keeps the rules copied into it; nothing set on it reaches the CVS or its new `View`.
 - **Lifetime.** The CVS holds its view (`View`); the view holds the CVS weakly, except while the CVS has
-  `FilterRequested` handlers, when it holds it with a tracked reference (WPF's view holds the CVS through the
+  `Filter` event handlers, when it holds it with a tracked reference (WPF's view holds the CVS through the
   wrapped filter delegate). A consumer that holds only `cvs.View` (for example TableView's `ItemsSource`) keeps a
   working, shapeable and still filtered view after the app drops the CVS.
 - **Release builds.** Shaping is an experimental API: in a build without `MUX_PRERELEASE`, `EnsureView` takes the
@@ -402,7 +524,7 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 | `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | The top of the group tree: the group descriptions per level (`GetGroupNames` = `GroupNameFromItem`, `NamesMatch`, the group order), `AddLoading` (`AddToSubgroups` while loading), `FindLeaf`. |
 | `PlanGroupedInsertion` / `ApplyGroupedInsertion` / `ApplyGroupedRemoval` | `CollectionViewGroupRoot.AddToSubgroups` / `RemoveFromSubgroups` | An item joins or leaves the group tree incrementally. |
 | `VectorCollectionView::ProcessGroupedCollectionChanged` | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | A source change on a grouped view. |
-| `VectorCollectionView::PassesFilter` | `CollectionView.PassesFilter` | The `FilterRequested` handlers, else the `Filter` delegate. |
+| `VectorCollectionView::PassesFilter` | `CollectionView.PassesFilter` | The CVS's `Filter` event handlers, else the view's `Filter` delegate. |
 | `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison in the view's `Culture`, used by the full sort, the incremental placement and the group order. |
 | `GetDefaultViewImpl` (default-view table) | `CollectionViewSource.GetDefaultView` / `ViewManager` | The shared per-source view. |
 | `VectorCollectionView::LiveShapingState` | `MS.Internal.Data.LiveShapingList` | The live paths (`SetLiveShapingProperties`) and one `LiveShapingItem` per source item, in source order. The view keeps its `InternalList`; WPF swaps in a `LiveShapingList`. |
@@ -438,8 +560,8 @@ var cvs = new CollectionViewSource { Source = processes };
 cvs.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
 table.ItemsSource = cvs.View;                       // grouped, shapeable view
 
-cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow the view
-((ICollectionViewShaping)cvs.View).Refresh();                    // after property edits
+cvs.Filter += (s, e) => e.Accepted = ((ProcessItem)e.Item).Name.Contains(query);   // rows follow the view
+cvs.Refresh();                                                                    // after edits or a new query
 ```
 
 - **Rows and groups.** TableView projects the view read-only. `CollectionGroups` become group rows, read directly
@@ -480,8 +602,8 @@ cvs.Filter = item => ((ProcessItem)item).Name.Contains(query);   // rows follow 
   and value), not by the group object's address. Expansion state therefore survives a recompute: a collapsed group
   stays collapsed after a source change or `Refresh()`.
 - **Sample.** `Samples\TableViewSampleApp`, page "CollectionViewSource shaping" (`CollectionViewShapingPage`):
-  Task Manager-style flat data, grouped by `GroupDescriptions`, a filter box using `Filter`, `Refresh()` after a
-  value update, and header sort through the view. The "Task Manager" page (`TaskManagerPage`) sets
+  Task Manager-style flat data; the `CollectionViewSource`, its `PropertyGroupDescription` and its `Filter` handler
+  are declared in the page's markup, the filter box calls `Refresh()`, and a header click sorts through the view. The "Task Manager" page (`TaskManagerPage`) sets
   `IsLiveSortingRequested`, `IsLiveGroupingRequested` and `IsLiveFilteringRequested` (with `LiveFilteringProperties`
   for the searched properties) instead, so its timer only writes values and the sorted rows move by themselves.
 
@@ -661,10 +783,10 @@ What is still O(n) per change, and why it stays for now:
 ## Out of scope for the POC
 
 - Key-selector delegates. The `CustomSort` comparer covers C++ and AOT callers.
-- `GroupDescription` subclasses and `GroupNames` (explicit groups), an item in several groups (a name that is a
-  collection), and nested groups in ListView / GridView (they show the first level).
-- XAML-declared descriptors (needs DP-backed collection properties and type-table entries).
-- `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`.
+- An item in several groups (a group name that is a collection), `GroupNames` in markup, and nested groups in
+  ListView / GridView (they show the first level).
+- `CanSort` / `CanFilter` / `CanGroup` on `ICollectionViewShaping`, a typed `ICollectionViewGroup2`, and a public
+  composable `ListCollectionView` (see "Extensibility").
 - Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
 - `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
   property changes are coalesced per dispatcher turn, as in WPF).
@@ -691,17 +813,16 @@ What is still O(n) per change, and why it stays for now:
   `CustomSort` gets the names. A public `CollectionViewGroup` class would be an API-review decision.
 - **Default-view table.** `GetDefaultView` keeps a per-thread table of weak references; a view removes its own entry
   when it is destroyed.
-- **Default-view lifetime.** WPF keeps a default view (and its rules) alive as long as its collection, because the
-  collection's change event roots the view in one managed heap. Here the source can be native or managed and the
-  rules can hold app delegates, so a native table holding the view or its rules while the source lives would form a
-  cycle no GC can see. The table stays weak until the `GetDefaultView` API decision (drop it for V1, or redefine it).
+- **Default-view lifetime.** Weaker than WPF's (see "Default view lifetime"); a WPF port that sets rules on
+  `GetDefaultView(list)` without keeping the view loses them after a GC.
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
   It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
-- **API shape.** Decide `GroupDescription` (abstract base) vs. `PropertyGroupDescription` before leaving experimental.
-  Adding a base class later is breaking in WinRT; group `SortDescriptions` / `CustomSort` would move to it.
-  `FilterRequested` vs. renaming the `Filter` delegate property so the event can take WPF's name is the other naming
-  decision. `SortDescription` and `ListSortDirection` share simple names with
-  WPF and the Toolkit, so apps that use both namespaces need aliases.
+- **API shape.** The `GroupDescription` base, the CVS `Filter` event and the enum names were settled in the
+  batch 3 follow-up (see "Changes in batch 3" and "Naming"). `SortDescription` shares its simple name with WPF and the
+  Toolkit's `AdvancedCollectionView` (`Microsoft.Toolkit.Uwp.UI.SortDescription`), so an app that uses both
+  namespaces needs an alias. The council still has to sign off on `ICollectionViewShaping` as a capability name.
+- **Descriptors are UI-thread objects.** `SortDescription` and `GroupDescription` are `DependencyObject`s now (they were
+  free-threaded immutable classes), so they are created and changed on the UI thread.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
 - **Live shaping cost and lifetime.** One property path listener per source item and live property. A full
@@ -722,12 +843,12 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | File | Change | Must regenerate / verify |
 |---|---|---|
 | `dxaml/xcp/tools/XCPTypesAutoGen/XamlOM/Model/Microsoft.UI.Xaml.Data.cs` | Source of truth (hand-authored) | — |
-| `dxaml/xcp/dxaml/idl/winrt/core/microsoft.ui.xaml.coretypes2.idl` | Enum, delegate, two classes, CVS experimental block | Yes. Also expect `IReference<ListSortDirection>` in the enum `declare` block if the generator emits it. |
+| `dxaml/xcp/dxaml/idl/winrt/core/microsoft.ui.xaml.coretypes2.idl` | Enum, delegate, two classes, CVS experimental block | Yes. Also expect `IReference<CollectionViewSortDirection>` in the enum `declare` block if the generator emits it. |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/CollectionViewSource.g.h/.g.cpp` | Forwarder, QI, accessors, `Refresh` | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/SortDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/PropertyGroupDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/FilterEventArgs.g.h/.g.cpp` (new) | Event args class | Yes |
-| `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_FilterRequested` event index, `GetDefaultView` method index, the enum | Yes (appended entries only) |
+| `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_Filter` event index (341; 340 is the deleted `FilterRequested`), `GetDefaultView` method index, the enum | Yes (appended entries only) |
 | `dxaml/xcp/dxaml/lib/Factories.g.cpp` | 2 forward declarations + 2 activation entries | Yes (ordering) |
 | `dxaml/xcp/dxaml/lib/synonyms.g.h` | 5 typedefs (with `ICollectionViewShaping` and `ICollectionViewLiveShaping`) | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Aggregate.g.cpp` | 2 includes | Yes |
@@ -767,7 +888,19 @@ The capabilities added after the first POC each have a test in the same class:
 - `CollectionViewSourceCustomSort`: `CustomSort` alone shapes the view with ties in source order; adding a
   `SortDescription` clears it; setting it clears `SortDescriptions` with one `Reset`; a throwing comparer fails and
   leaves the rows.
-- `CollectionViewSourceGroupConverter`: `Converter` maps values to group keys.
+- `CollectionViewSourceGroupConverter`: `Converter` maps values to group keys and gets the level as its parameter and
+  the view's `Culture` as its language; a default-constructed `PropertyGroupDescription` (`Ordinal`) regroups when
+  its `PropertyName` or `Converter` is set.
+- `CollectionViewSourceCustomGroupDescription`: a C++/CX `GroupDescription` subclass groups through its
+  `GroupNameFromItem` and `NamesMatch` overrides (case-insensitive initials), incrementally too, and its
+  `SortDescriptions` order its groups.
+- `CollectionViewSourceGroupNames`: `GroupNames` groups come first, in order, even when empty; an item joins its
+  explicit group; an explicit group stays when it empties while another group goes; a new group goes after the
+  explicit ones; a `GroupNames` change regroups.
+- `CollectionViewSourceMarkup`: `XamlReader.Load` of a `CollectionViewSource` with `IsLiveSortingRequested`,
+  `<SortDescription PropertyName Direction>`, `<PropertyGroupDescription PropertyName StringComparison>` and
+  `<x:String>` live properties shapes the view once `Source` is set; a held `SortDescription` throws on change, a new
+  one is settable; `ClearValue(IsLiveSortingRequestedProperty)` turns live sorting off.
 - `CollectionViewSourceIncrementalUpdates`: `Add`, filtered `Insert`, `Remove` (currency kept), a moving `Replace`
   (`Remove` + `Insert`), an in-place `Replace` (`ItemChanged`) and a filter-accepted `Replace` (`Insert`) raise exactly
   those changes, the result matches `Refresh()`, a source `Reset` and a grouped view recompute fully.
@@ -784,8 +917,8 @@ WPF-parity additions, one test each in the same class:
   group is inserted in order, and they replace each other.
 - `CollectionViewSourceCultureAndStringComparison`: `Culture` re-sorts (`sv-SE` vs `en-US`), an invalid tag throws;
   `Ordinal` vs `OrdinalIgnoreCase` group names.
-- `CollectionViewShapingSourceCollection`, `CollectionViewSourceFilterEvent` (event alone, event over delegate,
-  back to the delegate), `CollectionViewSourceGetDefaultView` (shared per source, shapes in place, not the CVS's view).
+- `CollectionViewShapingSourceCollection`, `CollectionViewSourceFilterEvent` (the `Filter` event alone, over the
+  view's `Filter` delegate, back to the delegate), `CollectionViewSourceGetDefaultView` (shared per source, shapes in place, not the CVS's view).
 
 Live shaping (phase B), one test each in the same class. Each change is made, the dispatcher runs, and the view is
 checked:
@@ -849,7 +982,7 @@ Grouping keeps the view (phase C):
 - `TableView_ViewEngine_APITests` (`TableViewViewEngineTests`): random source operations, rule changes and refreshes
   (and, live, property edits) on flat, grouped and two-level views compared with a fresh view after each step;
   re-entrant changes from `VectorChanged` handlers and a `Filter`; incremental loading through a shaped view;
-  `FilterRequested` after a GC with only `View` held; no leak through live listeners; group `ItemCount`
+  the `Filter` event after a GC with only `View` held; no leak through live listeners; group `ItemCount`
   notifications; currency before first / after last; exact `Int64` / `UInt64` keys; turning live sorting on;
   replaced views; rules on an `IsSourceGrouped` CVS; off-thread live changes; and TableView live sort, filter,
   group and tree, including at most a couple of tree rebuilds per live tick.
