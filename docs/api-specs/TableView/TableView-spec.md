@@ -4,7 +4,7 @@ TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource`
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
 
-This API is intentionally small: **single row selection** and **single-level grouping** on top of the read-only data presentation. Additional interactive features — multiple/extended selection, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort from the column headers, column virtualization, and row headers remain out of scope for v1 (`TableViewSource.ThenSort` provides multi-level sort from code).
+This API is intentionally small: **single row selection** and **single-level grouping** on top of the read-only data presentation. Additional interactive features — multiple/extended selection, two-level hierarchy, and column resize/reorder — are planned separately. Marquee selection, multi-column sort, column virtualization, and row headers remain out of scope for v1.
 
 The API proposed for stabilization, with its behavioural contracts, parity analysis and open questions, is reviewed in [TableView API review](../../design-notes/TabularControls/TableView-API-Review.md). Where this spec and the review differ, the review and the IDLs are current.
 
@@ -571,18 +571,17 @@ This includes a key that is `null` or the **empty string**, even though `String`
 .GroupBy(item => ((Person)item).Department is string d && d.Length > 0 ? d : "(none)")
 ```
 
-Grouping composes with filtering and sorting, and the order of the calls never matters. By default (`SortGroups(None)`) each group appears where its first item falls in the filtered, sorted sequence, as in WPF, so sorting the rows can also reorder the groups. To keep groups in key order regardless of the row sort, pin it with `SortGroups`:
+Grouping composes with filtering and sorting, and the order in which the verbs are declared is meaningful:
 
 ```csharp
 var source = TableViewSource.From(People)
-                            .Filter(item => item is Person p && p.IsActive)
+                            .Filter(item => ((Person)item).IsActive)
+                            .Sort("Department", SortDirection.Ascending)   // orders the GROUPS
                             .GroupBy(item => ((Person)item).Department)
-                            .SortGroups(SortDirection.Ascending)           // pins the GROUPS to key order
-                            .Sort("Name", SortDirection.Ascending)         // orders rows WITHIN each group
-                            .ThenSort("Id", SortDirection.Ascending);      // tie-breaker
+                            .Sort("Name", SortDirection.Ascending);        // orders rows WITHIN each group
 ```
 
-`Sort` replaces every item sort level; `ThenSort` appends one. A column-header sort also replaces the item sort levels and keeps `SortGroups`: with `SortGroups(None)` it can reorder the groups, with `Ascending`/`Descending` it only reorders rows within each group. A filter always runs first, so a group whose last remaining row is filtered out disappears entirely. `ClearGroupBy()` removes grouping; a second `GroupBy` replaces the first rather than nesting, since v1 is single-level.
+A filter always runs first, so a group whose last remaining row is filtered out disappears entirely. `ClearGroupBy()` removes grouping; a second `GroupBy` replaces the first rather than nesting, since v1 is single-level.
 
 Every group can be expanded and collapsed by clicking or tapping the header band, or through its UI Automation `ExpandCollapse` pattern. From code, expand or collapse one group by key, or every group at once:
 
@@ -746,34 +745,33 @@ Grouping itself is declared on the data source (`TableViewSource.GroupBy`); the 
 | Member | Kind | Description |
 |---|---|---|
 | `GroupHeaderTemplate` | `DataTemplate` DP | Content template for the group-header band. The data context is a `TableViewGroupInfo`. |
-| `ExpandGroup(Object groupKey)` | method | Expands the group whose key matches. The key is resolved to a group identity exactly as `GroupBy` does (the built-in identity, or the source's `TableViewGroupIdentitySelector`), so a null key and `""` never match each other. An unknown key, or a group already expanded, is a no-op and raises no event. |
+| `ExpandGroup(Object groupKey)` | method | Expands the group whose key matches. The key is resolved to a group identity exactly as `GroupBy` does (the built-in identity, or the identity selector passed to `GroupBy`), so a null key and `""` never match each other. An unknown key, or a group already expanded, is a no-op and raises no event. |
 | `CollapseGroup(Object groupKey)` | method | Collapses the matching group, on the same terms. |
 | `ExpandAllGroups()` | method | Expands every group, including groups that do not exist yet — it moves the default rather than looping over the realized headers. No-op when the source is not grouped. |
 | `CollapseAllGroups()` | method | Collapses every group, on the same terms. No-op when the source is not grouped. |
 | `GroupExpanding` | event (`TableViewGroupExpandingEventArgs`: `GroupKey`) | Raised synchronously before a group expands. Not cancellable. Once raised, the direction is pinned: a handler that calls `ExpandGroup` on the same group is a no-op. |
 | `GroupCollapsed` | event (`TableViewGroupCollapsedEventArgs`: `GroupKey`) | Raised after a group collapses. |
 
-`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily); the control defers the source's refresh while `GroupExpanding` runs, so the change is coalesced into one reshape and the expansion is kept. An exception thrown by a group-event handler is contained and logged.
+`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily); the control then finds the group again by identity in the reshaped source and still expands it. A handler that replaces `ItemsSource` ends the request. An exception thrown by a group-event handler is contained and logged.
 
 Expansion is stored as intent keyed by a group's **identity**, so it survives a reshape (sort, filter, or regroup) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
 
 ## TableViewSource grouping verbs
 
-`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs change this source and return it, so they chain. The full member list (`Filter`, `Sort`, `ThenSort`, `SortGroups`, `ParentBy`, `Refresh`, `DeferRefresh`, `Source`, `IsLiveShaping`) and its contracts are in the [API review](../../design-notes/TabularControls/TableView-API-Review.md#21-data-and-shaping-tableviewsource).
+`TableViewSource` wraps an app collection and declares the shape the control should render. It accepts the same collection interfaces as `ItemsSourceView`; anything else throws `E_INVALIDARG`. The verbs return the same source, so they chain. `TableViewSource` is unchanged by the TableView API review; data shaping is handled in PR #12654.
 
 | Member | Returns | Description |
 |---|---|---|
-| `TableViewSource.From(Object items)` | `TableViewSource` | Wraps a collection. The projection is populated by the time `From` returns. `Source` returns `items`. |
+| `TableViewSource.From(Object items)` | `TableViewSource` | Wraps a collection. The projection is populated by the time `From` returns. |
 | `GroupBy(TableViewKeySelector keySelector)` | `TableViewSource` | Groups rows by the key the selector returns. The key's identity must be resolvable by the built-in value-type identity (`String`, `Int32`, `Int64`, `Guid`, `Boolean`, enum). A null `keySelector` throws `E_INVALIDARG`; use `ClearGroupBy()` to remove grouping. |
-| `GroupBy(TableViewKeySelector keySelector, TableViewGroupIdentitySelector groupIdentitySelector)` | `TableViewSource` | Same, with the group's stable string identity supplied explicitly. Required for reference-typed keys. Supplying an identity selector is also the opt-in that makes two distinct key instances sharing one identity intentional rather than a collision. A null `groupIdentitySelector` selects the built-in identity. |
-| `SortGroups(SortDirection direction)` | `TableViewSource` | `Ascending`/`Descending` orders groups by key, and item sorts then order rows only within groups. `None` (the default) orders groups by the position of each group's first item in the filtered, item-sorted sequence (source order when there is no item sort), matching WPF `ListCollectionView`. Survives `GroupBy` replacement, `ClearGroupBy`, `ClearSort`, `Sort` and column-header sorts. |
+| `GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector)` | `TableViewSource` | Same, with the group's stable string identity supplied explicitly. Required for reference-typed keys. Supplying an identity selector is also the opt-in that makes two distinct key instances sharing one identity intentional rather than a collision. A null `groupIdentitySelector` selects the built-in identity. |
 | `ClearGroupBy()` | `TableViewSource` | Removes grouping. |
 
 Contract notes:
 
 - **Single level.** A second `GroupBy` replaces the first; grouping axes do not nest or stack.
 - **Fail fast.** An identity that is empty, non-string, produced by a throwing selector, or shared by two genuinely different keys without the identity overload throws `hresult_invalid_argument` at the point the projection is built. The projection does not silently fall back to ungrouped. A `null` key and an empty-string key are both rejected on these terms, so a group key derived from a nullable or possibly-blank property must be coalesced to a real label by the app.
-- **Ordering.** Group order never depends on call order. `Sort`/`ThenSort` order rows within each group, whether declared before or after `GroupBy`; under `SortGroups(None)` they also determine group order through each group's first item. A filter applies before either, and a group whose last member is filtered out disappears.
+- **Ordering.** A sort declared before `GroupBy` orders the groups; a sort declared after it orders rows within each group. A filter applies before either, and a group whose last member is filtered out disappears.
 - **Rows are identified by object identity.** There is no app-supplied row key, so selection and focus re-anchor across a reshape, but not across an item being re-created; the same object appearing in two rows fails fast.
 - **UI-thread affine**, like any XAML items source. The wrapped collection must also raise its change notifications on that thread.
 
@@ -1404,36 +1402,28 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
     [MUX_PREVIEW]
     [webhosthidden]
-    delegate String TableViewGroupIdentitySelector(Object item);
+    delegate String TableViewIdentitySelector(Object item);
 
     [MUX_PREVIEW]
     [webhosthidden]
     runtimeclass TableViewSource
     {
         Boolean IsLiveShaping { get; set; };
-        Object Source { get; };
 
         TableViewSource Filter(TableViewPredicate predicate);
         [default_overload] [method_name("GroupBy")]
         TableViewSource GroupBy(TableViewKeySelector keySelector);
         [method_name("GroupByWithIdentity")]
-        TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewGroupIdentitySelector groupIdentitySelector);
-        TableViewSource SortGroups(SortDirection direction);
+        TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
         [method_name("SortByPath")]
         TableViewSource Sort(String sortMemberPath, SortDirection direction);
         [default_overload] [method_name("Sort")]
         TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
-        [method_name("ThenSortByPath")]
-        TableViewSource ThenSort(String sortMemberPath, SortDirection direction);
-        [default_overload] [method_name("ThenSort")]
-        TableViewSource ThenSort(TableViewKeySelector keySelector, SortDirection direction);
         TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
         TableViewSource ClearFilter();
         TableViewSource ClearGroupBy();
         TableViewSource ClearSort();
         TableViewSource ClearParentBy();
-        void Refresh();
-        Windows.Foundation.IClosable DeferRefresh();
 
         static TableViewSource From(Object items);
     }
@@ -1898,8 +1888,6 @@ starts the rename from `F2`, a context-menu command or "New folder".
 // TableView does not handle F2, so a handledEventsToo handler on the table sees it.
 FileTable.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(OnTableKeyDown), handledEventsToo: true);
 
-private IDisposable? _renameHold;
-
 private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 {
     if (e.Key == VirtualKey.F2 && FileTable.SelectedItem is FileSystemEntry entry && !entry.IsRenaming)
@@ -1911,7 +1899,6 @@ private void OnTableKeyDown(object sender, KeyRoutedEventArgs e)
 
 private void BeginRename(FileSystemEntry entry)
 {
-    _renameHold = Source.DeferRefresh();   // optional: keep the row in place while the user types
     entry.PendingName = entry.Name;
     entry.IsRenaming = true;               // x:Load realizes the TextBox
 }
@@ -1945,8 +1932,6 @@ private async Task CommitRenameAsync(FileSystemEntry entry)
 private void EndRename(FileSystemEntry entry)
 {
     entry.IsRenaming = false;
-    _renameHold?.Dispose();                // the deferred re-sort runs once, here
-    _renameHold = null;
     int index = FileTable.IndexOf(entry);
     if (index >= 0) { FileTable.Select(index); FileTable.StartBringItemIntoView(index, null); }
 }
@@ -2009,7 +1994,7 @@ Cut from V1 and deferred to V2; it can return additively:
 
 - Replacing DataGrid.
 - Marquee selection.
-- Multi-column sort from the column headers (TableViewSource.ThenSort provides multi-level sort from code).
+- Multi-column sort.
 - Column virtualization.
 - Row headers.
 - Hierarchy deeper than two levels; row drag-drop.

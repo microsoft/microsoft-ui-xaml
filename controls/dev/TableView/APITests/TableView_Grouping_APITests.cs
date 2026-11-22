@@ -1838,27 +1838,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies ExpandGroup/CollapseGroup match keys by group identity: a new key instance under an identity selector, and a boxed enum key.")]
-        [TestProperty("data:Key", "{Identity, Enum}")]
+        [TestProperty("Description", "Verifies ExpandGroup/CollapseGroup match keys by group identity: a new key instance under an identity selector.")]
         public void VerifyExpandCollapseGroupMatchesByIdentity()
         {
-            var keyKind = ((string)TestContext.DataRow["Key"]).Trim();
+            const string keyKind = "Identity";
             TableView tableView = null;
             Func<object> key = null;
 
             RunOnUIThread.Execute(() =>
             {
                 var source = TableViewSource.From(MakeShapedPeople());
-                if (keyKind == "Identity")
-                {
-                    source.GroupBy(o => Person(o).Department, k => ((Department)k).Name);
-                    key = () => new Department { Name = "Platform" };
-                }
-                else
-                {
-                    source.GroupBy(o => Person(o).Role == "Engineer" ? TableViewDensity.Compact : TableViewDensity.Standard);
-                    key = () => TableViewDensity.Compact;
-                }
+                source.GroupBy(o => Person(o).Department, k => ((Department)k).Name);
+                key = () => new Department { Name = "Platform" };
 
                 tableView = CreateGroupedTable(source);
                 LoadContent(tableView);

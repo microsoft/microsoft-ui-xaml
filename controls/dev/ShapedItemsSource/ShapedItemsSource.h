@@ -5,7 +5,6 @@
 
 #include <atomic>
 #include <memory>
-#include <optional>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -125,61 +124,11 @@ public:
         void const* keyIdentity,
         winrt::hstring const& sortMemberPath,
         winrt::SortDirection direction);
-    // Makes this the only sort axis; None clears every axis. Group order (SetGroupSortDirection) is unaffected.
-    void ReplaceSorts(
-        winrt::hstring const& axisToken,
-        ShapingHelpers::KeySelector const& key,
-        winrt::hstring const& sortMemberPath,
-        winrt::SortDirection direction);
-    // Appends a lower-precedence axis, or re-directs the axis with the same token or path in place
-    // (see ShapingPipeline::ThenSort). direction must not be None.
-    void ThenSort(
-        winrt::hstring const& axisToken,
-        ShapingHelpers::KeySelector const& key,
-        winrt::hstring const& sortMemberPath,
-        winrt::SortDirection direction);
     void ClearSorts();
     void ClearSort(winrt::hstring const& axisToken);
     // Drops every sort axis except axisToken. Lets a consumer that owns ONE axis assert itself as
     // the only sort without having to know the tokens of axes it did not declare.
     void ClearSortsExcept(winrt::hstring const& axisToken);
-    // Orders groups by group key; None orders them by their first item in the sorted rows. Independent of the verb order and of
-    // the group verb: it is retained across GroupBy replacement, ClearGroup and every sort verb.
-    void SetGroupSortDirection(winrt::SortDirection direction);
-    winrt::SortDirection GroupSortDirection() const noexcept { return m_pipeline.GroupSortDirection(); }
-
-    // Re-applies every verb now as one rebuild, or, while deferred, when the outermost deferral ends.
-    void RefreshShaping();
-    // Ref-counted. While deferred, verbs record their declaration without reshaping and source
-    // changes are held; EndDeferRefresh on the outermost deferral reshapes once if anything changed.
-    void BeginDeferRefresh();
-    void EndDeferRefresh();
-    bool IsRefreshDeferred() const noexcept { return m_deferDepth != 0; }
-    // Throws E_ILLEGAL_METHOD_CALL when called from inside an app predicate, key or identity
-    // selector this engine is running: a verb there would replace the delegate that is running and
-    // the state the running reshape is reading.
-    void ThrowIfReentrant() const;
-    // As ThrowIfReentrant, for an EndDeferRefresh that would reshape.
-    void ThrowIfEndDeferRefreshReentrant() const;
-    winrt::IInspectable const& Source() const noexcept { return m_source; }
-    // The queue of the thread that created this engine; null when that thread had none.
-    winrt::Microsoft::UI::Dispatching::DispatcherQueue const& OwnerQueue() const noexcept { return m_ownerQueue; }
-    // True on the thread that created this engine.
-    bool HasOwnerThreadAccess() const
-    {
-        return m_ownerQueue ? m_ownerQueue.HasThreadAccess() : ::GetCurrentThreadId() == m_ownerThreadId;
-    }
-    // The group identity `key` maps to under the current GroupBy (its identity selector, or the
-    // built-in value identity), exactly as bucketing computes it. False when it has none.
-    bool TryGetGroupIdentityForKey(winrt::IInspectable const& key, winrt::hstring& identity) const;
-    // The groups of the current grouped projection, in display order; empty when not grouped.
-    struct GroupSnapshot
-    {
-        winrt::hstring Identity;
-        winrt::IInspectable Key{ nullptr };
-        winrt::IInspectable Group{ nullptr };
-    };
-    std::vector<GroupSnapshot> CurrentGroups() const;
 
     // What an active sort axis looks like from outside the engine. Enough for a consumer to tell
     // an axis it declared from one it did not, and to say which property a foreign axis sorts on.
@@ -220,6 +169,16 @@ public:
     winrt::hstring const& DiagnosticName() const noexcept { return m_diagnosticName; }
     ProjectionKind Kind() const noexcept { return m_kind; }
     bool IsProjectedAsGrouped() const noexcept { return m_projectedAsGrouped; }
+    // The group identity `key` maps to under the current GroupBy, exactly as bucketing computes it.
+    // False without GroupBy or when the key has no identity.
+    bool TryGetGroupIdentityForKey(winrt::IInspectable const& key, winrt::hstring& identity) const;
+    // The groups of the current grouped projection, in display order; empty when not grouped.
+    struct GroupSnapshot
+    {
+        winrt::hstring Identity;
+        winrt::IInspectable Group{ nullptr };
+    };
+    std::vector<GroupSnapshot> CurrentGroups() const;
     // The flat shaped row vector: the presented row axis for flat and unshaped projections. Under
     // a Grouped projection the presented row axis is the GroupedSourceAdapter's computed
     // ItemsSourceView instead, but this vector is still maintained as the flat shaped projection
@@ -243,6 +202,11 @@ public:
     // One switch for sort keys, group key, filter result and hierarchy edge together.
     void SetLiveShaping(bool enabled);
     bool IsLiveShapingEnabled() const noexcept { return m_liveShapingEnabled; }
+
+    // Lets the owner hold live restores (e.g. while a cell editor is open). A held restore stays
+    // dirty and runs the turn after ResumeHeldLiveShaping.
+    void SetLiveShapingHold(std::function<bool()> isHeld) { m_liveShapingHold = std::move(isHeld); }
+    void ResumeHeldLiveShaping();
 
     // Runs per live item change before snapshot comparison, so the owner can refresh state the
     // selectors read (comparer ranks). Arg: restore already posted. True forces a reshape. Also
@@ -281,48 +245,13 @@ private:
     void ClearSortDirtyRows();
     void OnFlatItemPropertyChanged(uintptr_t itemAddress, winrt::hstring const& propertyName);
     void UpdateSortKeyPropertyFilter();
-    // Reshapes for a declaration change (diffing the committed spec), or rebuilds in full when
-    // forceRefresh. While deferred, only records that a reshape is owed. Sets *reshaped once the
-    // projection is up to date, before ShapingChanged is raised.
-    void ApplyShapingChange(bool forceRefresh = false, bool* reshaped = nullptr);
-
-    // What a verb can change, so a verb whose reshape throws can put it back (strong guarantee).
-    struct DeclarationSnapshot
-    {
-        ShapingHelpers::ShapingPipeline Pipeline;
-        ShapingHelpers::KeySelector GroupSelector{ nullptr };
-        RowIdentity::IdentitySelector GroupIdentitySelector{ nullptr };
-        ShapingHelpers::KeySelector NodeKeySelector{ nullptr };
-        ShapingHelpers::KeySelector ParentKeySelector{ nullptr };
-        bool ParentRelationRedeclared{ false };
-        bool HierarchyAxisDirty{ false };
-    };
-    DeclarationSnapshot SaveDeclaration() const;
-    void RestoreDeclaration(DeclarationSnapshot const& snapshot);
-    // Runs `declare` and the reshape it requires, restoring the declaration if either throws.
-    template<class Declare>
-    void ApplyVerb(Declare&& declare);
-    // Wraps an app delegate so the engine knows it is running app code (see ThrowIfReentrant).
-    template<class Result>
-    std::function<Result(winrt::IInspectable const&)> GuardAppCallback(std::function<Result(winrt::IInspectable const&)> const& callback);
-    uint32_t m_appCallbackDepth{ 0 };
-
-    uint32_t m_deferDepth{ 0 };
-    // A verb changed the declaration while deferred.
-    bool m_deferredShapingChange{ false };
-    // A full rebuild was owed while deferred: Refresh, a source change or a live restore.
-    bool m_deferredRefresh{ false };
-    // The declaration when the outermost deferral began, restored if the closing reshape throws.
-    std::optional<DeclarationSnapshot> m_deferredDeclaration;
-    // Set when a rolled-back verb may have left a projection that its restored spec does not
-    // describe, so the next shaping change rebuilds instead of diffing.
-    bool m_forceFullReshape{ false };
+    void ApplyShapingChange();
     bool TryApplyShapingDeltaInPlace(ShapingHelpers::ShapingDelta const& delta, bool allowDuringIncrementalChange = false);
     void InvalidateShapingState();
     // Reads the caller's source (CollectionOwner::Caller). Only ever given m_source.
     static std::vector<winrt::IInspectable> Materialize(winrt::IInspectable const& source);
     void ApplyFilter(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplyFilter(rows); }
-    void ApplySort(std::vector<winrt::IInspectable>& rows) const { m_pipeline.ApplySort(rows); }
+    void ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder = -1, int32_t beforeOrder = -1) const { m_pipeline.ApplySort(rows, afterOrder, beforeOrder); }
     void RebuildFlat(std::vector<winrt::IInspectable>& rows);
     void RebuildGrouped(std::vector<winrt::IInspectable>& rows);
     void RebuildHierarchical(std::vector<winrt::IInspectable>& rows, std::shared_ptr<const ShapingHelpers::ParentStructure> structure);
@@ -555,6 +484,10 @@ private:
     // so a refused post or a failed restore is retried by the next change instead of stranding the
     // dirty flag.
     bool m_liveShapingRestorePosted{ false };
+    std::function<bool()> m_liveShapingHold{};
+    // A restore found the hold on and parked; ResumeHeldLiveShaping re-posts it if still dirty.
+    // Set only while dirty, but a refresh may clear dirty first, so it alone does not imply dirty.
+    bool m_liveShapingHeld{ false };
     std::function<bool(winrt::IInspectable const&, bool)> m_liveItemChangedHook{};
     std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> m_rowsReleasedHook{};
     std::function<void()> m_liveItemReshape{};

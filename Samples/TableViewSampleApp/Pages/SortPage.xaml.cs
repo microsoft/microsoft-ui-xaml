@@ -20,8 +20,7 @@ using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
 namespace TableViewSampleApp.Pages;
 
 // Template columns sort through SortMemberPath, by the value behind the control. Grouped, a sort
-// orders the rows within each group and the groups follow their first rows; TableViewSource.SortGroups
-// orders the groups by key instead.
+// declared after GroupBy sorts within each group; one declared before it orders the groups too.
 public sealed partial class SortPage : SamplePageBase
 {
     private bool _isResorting;
@@ -149,11 +148,12 @@ public sealed partial class SortPage : SamplePageBase
         }
 
         // SortByColumn ignores a request for the sort already applied; re-declaring the same path on the
-        // source re-reads every key.
+        // source re-reads every key. That is a new declaration after any GroupBy, hence OnSortRedeclared.
         _isResorting = true;
         try
         {
             Source.Sort(SampleShaping.SortPathOf(column)!, column.SortDirection);
+            OnSortRedeclared();
         }
         finally
         {

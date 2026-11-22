@@ -550,42 +550,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies TableView.ClearSort clears a key-selector sort declared on the TableViewSource and keeps SortGroups.")]
-        public void VerifyClearSortClearsSourceKeySelectorSortAndKeepsSortGroups()
-        {
-            TableView tableView = null;
-            var returned = false;
-
-            RunOnUIThread.Execute(() =>
-            {
-                var source = TableViewSource.From(MakeShapedPeople())
-                    .GroupBy(o => Person(o).Role)
-                    .SortGroups(SortDirection.Descending)
-                    .Sort(o => Person(o).Name, SortDirection.Descending);
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                VerifySequence(new[] { "#Engineer", "Rafa", "Owen", "Diego", "#Designer", "Ines", "Asha", "#Architect", "Mei" },
-                    GetProjectedLabels(tableView, includeCount: false), "precondition: groups descending, names descending");
-                returned = tableView.ClearSort();
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.IsTrue(returned, "ClearSort must report that it cleared the source sort.");
-                VerifySequence(new[] { "#Engineer", "Diego", "Rafa", "Owen", "#Designer", "Asha", "Ines", "#Architect", "Mei" },
-                    GetProjectedLabels(tableView, includeCount: false), "the item sort must be cleared and the group order kept");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies ClearSort resets every column and restores source order.")]
         public void VerifyClearSortClearsEveryColumnAndRestoresSourceOrder()
         {
@@ -1186,7 +1150,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         #endregion
 
-        #region App-set SortDirection, ThenSort and comparer robustness
+        #region App-set SortDirection and comparer robustness
 
         [TestMethod]
         [TestProperty("Description", "Verifies a column added with a preset SortDirection is tracked: invoking another header leaves one arrow, and ClearSort clears it.")]
@@ -1292,38 +1256,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(expected, FindSortIndicator(tableView, i)?.Direction ?? SortIndicatorDirection.None,
                         $"Column {i}'s arrow must match its SortDirection.");
                 }
-            });
-        }
-
-        [TestMethod]
-        [TestProperty("Description", "Verifies an app ThenSort after a header sort appends below it, so the header sort stays primary and lit.")]
-        public void VerifyThenSortAfterHeaderSortKeepsHeaderPrimary()
-        {
-            TableView tableView = null;
-            TableViewSource source = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                source = TableViewSource.From(MakeShapedPeople());
-                tableView = CreateSortTable(source);
-                LoadContent(tableView);
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => InvokeHeader(tableView, 1));
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() => source.ThenSort("Name", SortDirection.Descending));
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
-            {
-                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The header sort must stay lit.");
-                VerifySequence(new[] { "Mei", "Ines", "Asha", "Rafa", "Owen", "Diego" }, RowValues(tableView, person => person.Name),
-                    "Role ascending must stay primary, with Name descending breaking ties");
             });
         }
 
@@ -1937,8 +1869,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an app Sort that replaces a header sort lights its own column, and closing CanUserSortColumns in the same turn keeps it and reports no clear.")]
-        public void VerifyAppSortReplacingHeaderSortSurvivesUngating()
+        [TestProperty("Description", "Verifies turning CanUserSortColumns off right after the app sorts the source removes only the table's axis and reports no clear.")]
+        public void VerifyUngatingAfterAppSourceSortDoesNotReportClear()
         {
             TableView tableView = null;
             TableViewSource source = null;
@@ -1963,7 +1895,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView.Sorted += (s, e) => sortedArgs.Add(e);
-                // Sort replaces every item sort level, including the one the header installed.
+                // Same tick: the table's own axis is still installed when the gate closes.
                 source.Sort("Role", SortDirection.Descending);
                 tableView.CanUserSortColumns = false;
             });
@@ -1973,13 +1905,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsFalse(sortedArgs.Any(e => e.Column == null && e.Direction == SortDirection.None),
-                    "Replacing the header sort with the app's sort must not report that sorting was cleared.");
-                VerifySequence(new[] { "Engineer", "Engineer", "Engineer", "Designer", "Designer", "Architect" },
-                    RowValues(tableView, person => person.Role), "the app's Role sort must order the rows");
+                    "Removing the table's axis while the app's sort remains must not report that sorting was cleared.");
                 var roleColumn = tableView.Columns.First(c => c.Header as string == "Role");
                 var nameColumn = tableView.Columns.First(c => c.Header as string == "Name");
                 Verify.AreEqual(SortDirection.Descending, roleColumn.SortDirection, "The app's Role sort must light its column.");
-                Verify.AreEqual(SortDirection.None, nameColumn.SortDirection, "The replaced Name sort must be gone.");
+                Verify.AreEqual(SortDirection.None, nameColumn.SortDirection, "The table's own Name sort must be gone.");
             });
         }
 

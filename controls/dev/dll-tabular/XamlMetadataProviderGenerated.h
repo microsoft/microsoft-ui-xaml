@@ -599,14 +599,6 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
-                    xamlType.AddMember(
-                        L"Source", /* propertyName */
-                        L"Object", /* propertyType */
-                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewSource>().Source(); },
-                        nullptr, /* setter */
-                        false, /* isContent */
-                        false, /* isDependencyProperty */
-                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);

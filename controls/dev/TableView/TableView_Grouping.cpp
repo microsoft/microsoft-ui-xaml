@@ -23,61 +23,6 @@
 
 namespace
 {
-    // Holds a refresh deferral on the active source across GroupExpanding and the state change.
-    class GroupExpansionDeferral
-    {
-    public:
-        explicit GroupExpansionDeferral(winrt::TableViewSource const& source) noexcept
-        {
-            if (source)
-            {
-                try
-                {
-                    winrt::get_self<::TableViewSource>(source)->BeginDeferRefresh();
-                    m_source = source;
-                }
-                catch (...)
-                {
-                }
-            }
-        }
-        ~GroupExpansionDeferral() { End(); }
-        GroupExpansionDeferral(GroupExpansionDeferral const&) = delete;
-        GroupExpansionDeferral& operator=(GroupExpansionDeferral const&) = delete;
-
-        // Ends the deferral; the coalesced reshape runs here and a failure in it is contained.
-        void End() noexcept
-        {
-            if (auto const source = std::exchange(m_source, nullptr))
-            {
-                auto* const sourceImpl = winrt::get_self<::TableViewSource>(source);
-                // Refused while re-entrant, before the deferral is consumed: end it on a later turn.
-                try
-                {
-                    sourceImpl->ThrowIfEndDeferRefreshReentrant();
-                }
-                catch (...)
-                {
-                    try { sourceImpl->EndDeferRefreshLater(); } catch (...) {}
-                    return;
-                }
-                // Past the check the deferral is consumed even if the reshape throws; never retried.
-                try
-                {
-                    sourceImpl->EndDeferRefresh();
-                }
-                catch (...)
-                {
-                    TVDiag::LogRetailF(L"[TableView] The reshape deferred across a group expansion threw (HRESULT 0x%08X).",
-                        static_cast<unsigned int>(winrt::to_hresult()));
-                }
-            }
-        }
-
-    private:
-        winrt::TableViewSource m_source{ nullptr };
-    };
-
     void LogGroupHandlerThrow(wchar_t const* eventName)
     {
         TVDiag::LogRetailF(L"[TableView] Consumer %ls handler threw (HRESULT 0x%08X); the expansion continues.",
@@ -591,9 +536,6 @@ void TableView::ApplyGroupExpansionByIdentity(
         groupStateBefore = TryGetGroupExpandCollapseState(identity);
     }
 
-    // A GroupExpanding handler that changes the source (a lazy load, a Filter) is coalesced into one
-    // reshape after the state change, so the expansion is not lost to it.
-    GroupExpansionDeferral deferral{ axis == BulkExpansionAxis::Groups && !subtree ? m_activeSource.get() : nullptr };
     if (targetResolves && axis == BulkExpansionAxis::Groups && !subtree)
     {
         TableViewGroupExpansionInfo info{};
@@ -604,9 +546,11 @@ void TableView::ApplyGroupExpansionByIdentity(
             {
                 // Pinned: once GroupExpanding is raised this request expands, never toggles.
                 desired = true;
+                auto const source = m_activeSource.get();
                 RaiseGroupExpandingFor(identity, info.Key);
 
-                // The handler may have replaced the source or expanded the group itself.
+                // The handler may have changed or replaced the source, or expanded the group itself.
+                FollowReshapeOfSameSource(source, generation);
                 provider = m_tableViewSourceRowMetadata;
                 TableViewGroupExpansionInfo current{};
                 targetResolves = provider && generation == m_rowMetadataGeneration &&
@@ -663,8 +607,6 @@ void TableView::ApplyGroupExpansionByIdentity(
             else { tip.Fail(fault.error); }
         }
     }
-
-    deferral.End();
 
     // Announce only once the tree has actually moved. Raising while the mutation was still queued
     // told clients to re-read a structure that had not changed yet.
@@ -1031,7 +973,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     {
         return;
     }
-    const uint64_t generation = m_rowMetadataGeneration;
+    uint64_t generation = m_rowMetadataGeneration;
 
     // Both axes: row expansion under groups also recycles focused header containers.
     auto const focusedGroupIdentity = CaptureFocusedContainerForRestore();
@@ -1042,9 +984,6 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         if (finished) { return; }
         try { RestoreContainerFocusIfPending(focusedGroupIdentity); } catch (...) {}
     });
-
-    // GroupExpanding handlers that change the source are coalesced into one reshape after the change.
-    GroupExpansionDeferral deferral{ axis == BulkExpansionAxis::Groups ? m_activeSource.get() : nullptr };
 
     // The groups this command changes, for GroupExpanding before it and GroupCollapsed after.
     std::vector<TableViewGroupExpansionInfo> changingGroups;
@@ -1070,9 +1009,11 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
         if (expand)
         {
             // Each group is checked again after the previous handler, which may have changed it.
+            auto const source = m_activeSource.get();
             std::vector<TableViewGroupExpansionInfo> raised;
             for (auto const& info : changingGroups)
             {
+                FollowReshapeOfSameSource(source, generation);
                 auto const provider = m_tableViewSourceRowMetadata;
                 TableViewGroupExpansionInfo current{};
                 if (!provider || generation != m_rowMetadataGeneration ||
@@ -1083,6 +1024,7 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
                 RaiseGroupExpandingFor(info.Identity, current.Key);
                 raised.push_back(current);
             }
+            FollowReshapeOfSameSource(source, generation);
             changingGroups = std::move(raised);
         }
     }
@@ -1116,8 +1058,6 @@ void TableView::ApplyBulkExpansion(bool expand, BulkExpansionAxis axis)
     catch (...)
     {
     }
-
-    deferral.End();
 
     if (changed)
     {
@@ -1207,19 +1147,31 @@ void TableView::CollapseGroup(winrt::IInspectable const& groupKey)
     SetGroupExpansionByKey(groupKey, false);
 }
 
-// Keyed with the metadata generation: the same identity in a source swapped in by the handler is
-// another group, and a request for it goes ahead.
+// Keyed with the source: the same identity in a source swapped in by the handler is another group, and a request for
+// it goes ahead.
 bool TableView::IsRaisingGroupExpanding(winrt::hstring const& identity) const
 {
-    return std::find(m_groupsRaisingExpanding.begin(), m_groupsRaisingExpanding.end(),
-        std::make_pair(identity, m_rowMetadataGeneration)) != m_groupsRaisingExpanding.end();
+    auto const source = m_activeSource.get();
+    return std::any_of(m_groupsRaisingExpanding.begin(), m_groupsRaisingExpanding.end(),
+        [&](auto const& raising) { return raising.first == identity && raising.second == source; });
 }
 
 void TableView::RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::IInspectable const& groupKey)
 {
-    m_groupsRaisingExpanding.emplace_back(identity, m_rowMetadataGeneration);
+    m_groupsRaisingExpanding.emplace_back(identity, m_activeSource.get());
     auto const pop = wil::scope_exit([this]() noexcept { m_groupsRaisingExpanding.pop_back(); });
     RaiseGroupExpanding(groupKey);
+}
+
+// A GroupExpanding handler that changed the source (a lazy load, a Filter) reshaped it and replaced the row metadata.
+// Group identities are stable within one source, so a request carries on against the new projection; one whose
+// source the handler replaced is left stale.
+void TableView::FollowReshapeOfSameSource(winrt::TableViewSource const& source, uint64_t& generation) const
+{
+    if (source && generation != m_rowMetadataGeneration && m_activeSource.get() == source)
+    {
+        generation = m_rowMetadataGeneration;
+    }
 }
 
 // A throwing handler is contained and logged; the expansion goes ahead.

@@ -65,29 +65,18 @@ namespace ShapingHelpers
             m_filters.end());
     }
 
-    void ShapingPipeline::MarkGroupVerb(KeySelector const& key)
+    int32_t ShapingPipeline::MarkGroupVerb(KeySelector const& key)
     {
         m_groupKey = key;
         m_groupDescriptionId = MintDescriptionId(L'g');
-        m_hasGroup = true;
+        return m_groupOrder = NextVerbOrder();
     }
 
     void ShapingPipeline::ClearGroupVerb() noexcept
     {
-        m_hasGroup = false;
+        m_groupOrder = -1;
         m_groupKey = nullptr;
         m_groupDescriptionId = {};
-    }
-
-    void ShapingPipeline::RestoreDeclaration(ShapingPipeline const& snapshot)
-    {
-        auto const faults = m_swallowedFaults;
-        auto const nextDescriptionId = m_nextDescriptionId;
-        auto const nextVerbOrder = m_nextVerbOrder;
-        *this = snapshot;
-        m_swallowedFaults = faults;
-        m_nextDescriptionId = nextDescriptionId;
-        m_nextVerbOrder = nextVerbOrder;
     }
 
     ShapingSpec ShapingPipeline::BuildSpec() const
@@ -106,15 +95,15 @@ namespace ShapingHelpers
                 axis.Predicate });
         }
 
-        if (m_hasGroup)
+        if (m_groupOrder >= 0)
         {
-            spec.Groups.push_back(GroupDescription{ m_groupDescriptionId, m_groupKey, m_groupSortDirection });
+            spec.Groups.push_back(GroupDescription{ m_groupDescriptionId, m_groupKey });
         }
 
         // ActiveSortAxes, not m_sorts: it applies exactly the filtering (live key, live direction)
         // and yields exactly the order that ApplySort uses, so the spec cannot describe a
         // different projection than the pipeline produces.
-        for (auto const& axis : ActiveSortAxes())
+        for (auto const& axis : ActiveSortAxes(-1, -1))
         {
             // Named by the minted id, NOT by the AxisToken. A column can re-declare the same
             // token at the same direction while supplying a DIFFERENT key delegate — a custom
@@ -239,44 +228,6 @@ namespace ShapingHelpers
         }
     }
 
-    void ShapingPipeline::ReplaceSorts(
-        winrt::hstring const& axisToken,
-        KeySelector const& key,
-        winrt::hstring const& sortMemberPath,
-        SortDirection direction)
-    {
-        m_sorts.clear();
-        if (direction != SortDirection::None)
-        {
-            m_sorts.push_back({ axisToken, key, nullptr, sortMemberPath, direction, NextVerbOrder(), MintDescriptionId(L's') });
-        }
-    }
-
-    void ShapingPipeline::ThenSort(
-        winrt::hstring const& axisToken,
-        KeySelector const& key,
-        winrt::hstring const& sortMemberPath,
-        SortDirection direction)
-    {
-        auto const existing = std::find_if(
-            m_sorts.begin(),
-            m_sorts.end(),
-            [&](SortAxis const& axis)
-            {
-                return (!axisToken.empty() && axis.AxisToken == axisToken) ||
-                    (!sortMemberPath.empty() && axis.SortMemberPath == sortMemberPath);
-            });
-        if (existing != m_sorts.end())
-        {
-            existing->Direction = direction;
-            existing->DescriptionId = MintDescriptionId(L's');
-            return;
-        }
-
-        // No key identity: a key-selector level always appends, even when the same delegate is passed again.
-        m_sorts.push_back({ axisToken, key, nullptr, sortMemberPath, direction, NextVerbOrder(), MintDescriptionId(L's') });
-    }
-
     void ShapingPipeline::ClearSort(winrt::hstring const& axisToken)
     {
         if (axisToken.empty())
@@ -353,12 +304,14 @@ namespace ShapingHelpers
             });
     }
 
-    std::vector<SortAxis> ShapingPipeline::ActiveSortAxes() const
+    std::vector<SortAxis> ShapingPipeline::ActiveSortAxes(int32_t afterOrder, int32_t beforeOrder) const
     {
         std::vector<SortAxis> active;
         for (auto const& axis : m_sorts)
         {
-            if (axis.Key && axis.Direction != SortDirection::None)
+            const bool afterMatches = afterOrder < 0 || axis.Order > afterOrder;
+            const bool beforeMatches = beforeOrder < 0 || axis.Order < beforeOrder;
+            if (axis.Key && axis.Direction != SortDirection::None && afterMatches && beforeMatches)
             {
                 active.push_back(axis);
             }
@@ -381,9 +334,9 @@ namespace ShapingHelpers
         return active;
     }
 
-    void ShapingPipeline::ApplySort(std::vector<winrt::IInspectable>& rows) const
+    void ShapingPipeline::ApplySort(std::vector<winrt::IInspectable>& rows, int32_t afterOrder, int32_t beforeOrder) const
     {
-        auto const active = ActiveSortAxes();
+        auto const active = ActiveSortAxes(afterOrder, beforeOrder);
         if (active.empty())
         {
             return;
@@ -431,7 +384,7 @@ namespace ShapingHelpers
 
     int ShapingPipeline::CompareItemToRow(winrt::IInspectable const& item, winrt::IInspectable const& row) const
     {
-        auto const active = ActiveSortAxes();
+        auto const active = ActiveSortAxes(-1, -1);
         std::vector<winrt::IInspectable> itemKeys;
         itemKeys.reserve(active.size());
         for (auto const& axis : active)
@@ -452,7 +405,7 @@ namespace ShapingHelpers
         // Hoist the active axes and the incoming item's keys out of the binary-search loop:
         // otherwise every step re-filters m_sorts (allocating a vector) and re-evaluates the
         // item's key selectors. The row's keys still must be evaluated per step.
-        auto const active = ActiveSortAxes();
+        auto const active = ActiveSortAxes(-1, -1);
         std::vector<winrt::IInspectable> itemKeys;
         itemKeys.reserve(active.size());
         for (auto const& axis : active)

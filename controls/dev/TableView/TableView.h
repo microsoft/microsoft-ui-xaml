@@ -1081,8 +1081,10 @@ private:
     void RaiseGroupExpanding(winrt::IInspectable const& groupKey);
     void RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::IInspectable const& groupKey);
     bool IsRaisingGroupExpanding(winrt::hstring const& identity) const;
-    // Identities whose GroupExpanding is being raised; a nested request for one of them is a no-op.
-    std::vector<std::pair<winrt::hstring, uint64_t>> m_groupsRaisingExpanding;
+    void FollowReshapeOfSameSource(winrt::TableViewSource const& source, uint64_t& generation) const;
+    // Identities whose GroupExpanding is being raised, with the source they belong to; a nested request for one of
+    // them is a no-op.
+    std::vector<std::pair<winrt::hstring, winrt::TableViewSource>> m_groupsRaisingExpanding;
     void RaiseGroupCollapsed(winrt::IInspectable const& groupKey);
 
     void ForEachRealizedGroupHeader(std::function<void(winrt::TableViewGroupHeader const&, int32_t)> const& fn);
@@ -1129,8 +1131,7 @@ private:
     // requireCanSort=false skips the sort-key check; only for clearing a column's own sort.
     bool IsSortRequestStillValid(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // explicitClear also counts item sorts declared on the source.
-    bool IsSortClearStillValid(bool explicitClear = false) const;
-    bool HasClearableSourceSort() const;
+    bool IsSortClearStillValid() const;
     bool CanSortColumnNow(const winrt::TableViewColumn& column, bool requireCanSort = true) const;
     // False when the active source cannot order its rows (a null item or one object twice).
     bool CanApplySortTo(winrt::SortDirection direction) const;

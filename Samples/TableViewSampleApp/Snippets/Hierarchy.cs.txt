@@ -27,7 +27,7 @@ private void OnFilterChanged(object sender, TextChangedEventArgs e)
 
 private void OnSortChanged(object sender, SelectionChangedEventArgs e)
 {
-    // Sort replaces every item sort level, so ClearSort only matters for the unsorted choice.
+    // A key-selector sort adds an axis rather than replacing one, so clear the previous axis first.
     Source.ClearSort();
     switch (((ComboBox)sender).SelectedIndex)
     {
