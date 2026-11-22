@@ -230,8 +230,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   placed by binary search on its sort keys (or `CustomSort`), ties broken by source index, which is exactly the
   position a full recompute gives it. The view raises the matching `ItemInserted`, `ItemRemoved` or `ItemChanged`
   (a replacement that moves is `ItemRemoved` + `ItemInserted`; one rejected by the filter raises nothing), so
-  currency, realized containers, selection and the UIA tree survive. The view keeps one source index per output
-  item, so `Remove` is O(n) and `Add` is O(n) plus O(log n) key reads. On a **grouped** view the same changes are
+  currency, realized containers, selection and the UIA tree survive. The view keeps one source index and the
+  decoded sort keys per output item, so `Remove` is O(n) and `Add` is O(n) plus O(log n) key compares (no reads). On a **grouped** view the same changes are
   applied to the group tree (see "`ListCollectionView.AddItemToGroups`" above): the item's bottom-level group raises
   the change at the item's position, every group above it raises it at the item's leaf index, a new or emptied group
   is inserted into or removed from its parent's `GroupItems` (`CollectionGroups` at the top level), and the view's
@@ -289,8 +289,12 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - The observation follows the source: an added item is observed, a removed or replaced one is no longer, a recompute
     rebuilds it, and turning the features off or the view's destruction ends it. A property change raised from inside
     a restore is restored at the next turn.
-  - A source change made while a live sort edit waits for its restore is applied by a recompute (the output is out
-    of order, so a binary search cannot place the new item).
+  - A source change made while a live sort edit waits for its restore is applied incrementally: the binary search
+    skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
+  - When most items changed their sort keys in one turn (WPF's `LiveSortingDensityThreshold`, 80%; in a view of
+    1024 items or more also an eighth of them, and on a flat one 256, since each move shifts the output), the restore
+    is one `Reset` instead of a move per item: a flat view re-sorts on its cached keys, reading only the changed
+    items, and a grouped view recomputes. WPF insertion-sorts and raises moves instead.
   - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
     observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
     `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` raises `PropertyChanged` for it.
@@ -502,11 +506,14 @@ collection, or the app's CVS `View`. The view's filter, sort and grouping run fi
 - The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
   `TableViewSource` kept the ancestors of a match).
 - With a grouped view, each root is placed in its group and keeps its subtree.
-- Live shaping moves an item in the view; the tree is rebuilt from the view's new order. A rebuild reads every item,
-  so it is coalesced: the first `ItemInserted`, `ItemChanged` or `Reset` of a dispatcher turn rebuilds at once, and an
-  `ItemRemoved` (the first half of a move) or any later change in the turn rebuilds once at the next turn. A live
-  tick that moves k rows costs at most two rebuilds, not 2k. Applying single changes to the tree without a rebuild is
-  a follow-up.
+- Live shaping moves an item in the view; the tree is rebuilt from the view's new order. A rebuild is coalesced: the
+  first `ItemInserted`, `ItemChanged` or `Reset` of a dispatcher turn rebuilds at once, and an `ItemRemoved` (the first
+  half of a move) or any later change in the turn rebuilds once at the next turn. A live tick that moves k rows costs
+  at most two rebuilds, not 2k. A rebuild reads the key and parent key only of the rows a view `ItemInserted` or
+  `ItemChanged` brought in since the last one (a `Reset`, a new `ItemKeyPath`/`ParentKeyPath` and object keys read
+  every row), and the rebuilt rows reach the repeater as the inserts and removals that turn the old rows into them
+  (up to 64 rows, or a moved run of up to 64 rows) instead of a `Reset`, so realized rows, scroll position and focus
+  stay. The rebuild itself is still O(n) native work (see "Performance").
 
 Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
 moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
@@ -592,6 +599,65 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   for this).
 - Keep keyboard focus on a row a live view moves.
 
+## Performance
+
+n = source items, m = items shown, f = sort fields, G = groups at a level, L = levels, g = items in one bottom
+group, k = items a live tick changed.
+
+| Path | Before (batch 1) | Now |
+|---|---|---|
+| Full recompute (sort) | O(n·f) reads + O(m log m) compares, each re-decoding both keys (2 QIs, 2 `HSTRING` copies, `CompareStringEx`) | O(n·f) reads, each decoded once into a typed key (`LCMAP_SORTKEY` bytes for a string, exact integer, double, ticks) + O(m log m) `memcmp` or integer compares |
+| Full recompute (grouping) | O(m·L·G) `NamesMatch` + every ancestor inserts each leaf mid-vector | O(m·L) hashed group lookups (a key per `StringComparison`: ordinal, invariant uppercase or the culture's sort key; a scalar's value; an object's identity), leaves appended to bottom groups, then each ancestor collects its leaves once |
+| New group with group `SortDescriptions` on `Key`/`Name` | O(G) compares, 2 property reads each | O(log G) compares on keys read when the group was created (other paths, such as `ItemCount`, are still read at each compare, as in WPF) |
+| Flat `Add` / `Remove` / `Replace` | O(n) scans + O(log m) compares reading the other item's keys + the vector shifts | the same scans and shifts, O(log m) compares on cached keys, no comparer rebuilt per change, no scan for an `Add` |
+| Grouped `Add` / `Remove` / `Replace` | O(n) leaf search + O(L·G) `NamesMatch` | O(1) bottom group by source index + O(g) in it, O(L) hashed lookups; O(n) source-index shift |
+| Live tick, k sort-dirty items | O(n + k·(m + log m reads)), two changes per move; a source change while an edit waits recomputes | O(n + k·(m + log m compares)), two changes per move; when k ≥ 80% of n (WPF), or n ≥ 1024 and k ≥ n/8 (flat: or k ≥ 256), one `Reset`: a flat view re-sorts on cached keys (only the k items are read), a grouped view recomputes; a source change while an edit waits is applied incrementally |
+| `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
+| TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | only the rows the change brought in are read + O(n) native rebuild, published as a splice (≤ 64 rows, or a moved run) |
+
+Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`; run them with `te.exe ...
+/select:"@Name='*CollectionViewPerfBenchmarks*'" /runIgnoredTests`): amd64**fre**, Hyper-V test VM, C# rows with
+`INotifyPropertyChanged`, string keys of 8 random mixed-case letters, milliseconds.
+
+| Scenario | 10k before | 10k now | 100k before | 100k now |
+|---|---:|---:|---:|---:|
+| `Refresh`, sort by a string | 160 | 42.7 | 1,714 | 493 |
+| `Refresh`, filter + string sort | 67.9 | 22.9 | 860 | 253 |
+| Group into 1,000 groups (`Ordinal`) | 2,232 | 81.2 | 21,749 | 828 |
+| Group into 1,000 groups (`CurrentCultureIgnoreCase`) | 2,637 | 84.9 | 35,423 | 757 |
+| Group into 3 levels | 346 | 134 | 10,067 | 1,590 |
+| Flat `Add`, each | 0.21 | 0.17 | 1.7 | 1.4 |
+| Grouped `Replace` (100 groups), each | 0.13 | 0.06 | 0.18 | 0.07 |
+| `Refresh` with live sorting on | 1,781 | 52.0 | 3,131 | 533 |
+| Live tick, 1,000 edits, flat | 284 | 16.5 | 2,450 | 143 |
+| Live tick, 0.9·n edits (≈59% of rows), flat | 1,694 | 53.7 | 230,143 | 726 |
+| Live tick, 1,000 edits, 100 groups | 49.7 | 33.8 | 104 | 63 (one run: 1,424) |
+| Live tick, 0.9·n edits, 100 groups | 322 | 105 | 6,005 | 1,275 |
+| TableView tree, insert one row | 411 | 43.2 | 4,298 | 540 |
+| TableView tree, expand all | 19.8 | 16.3 | 156 | 127 |
+
+Each number is one run (the sorts are the median of three); the 100k live ticks vary with garbage collection of the
+earlier scenarios' rows (the grouped 1,000-edit tick took 63 ms in two runs and 1,424 ms in a third, on the same
+code path). The chk build is not a reference: its tracker-pointer registry (`ReferenceTrackerManager::m_allTrackerPtrs`, DBG
+only) makes every tracker pointer release O(all tracker pointers), so 100k live listeners took 20 minutes there.
+
+What is still O(n) per change, and why it stays for now:
+
+- **The presented vector shifts.** The view's output (`InternalList`) is a `TrackerCollection`; inserting or
+  removing an item moves every later element, and each `TrackerPtr` move takes the reference lock
+  (`TrackerTargetReference::Assign`), about 1 ms per change at 100k items (fre). That, not the position lookup,
+  is what a live move costs on a large flat view, so an order-statistic index (WPF's `LiveShapingTree`) alone would
+  not help. The fix is a presented list whose storage does not move tracker pointers (a node-based or
+  relocation-aware `TrackerPtrVector`); it touches the shared collection base, so it is a follow-up. Until then a
+  large tick re-sorts once instead of moving items one by one.
+- **Source index shifts.** A source insert or remove renumbers the later source indices (a scan of n integers).
+- **TableView's tree** is rebuilt natively on each change (no app code for the unchanged rows): about 0.5 s at
+  100k rows, 40 ms at 10k. An incremental tree (per-sibling counts, ranged changes) is a follow-up; a node
+  expand or collapse already splices up to 64 rows per toggle (WinRT vector changes have no ranges) and otherwise
+  raises one `Reset`.
+- Each item still costs one property read per sort field, group level and live property on a full recompute, and
+  one listener per live property and item, as in WPF.
+
 ## Out of scope for the POC
 
 - Key-selector delegates. The `CustomSort` comparer covers C++ and AOT callers.
@@ -602,11 +668,9 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
 - `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
   property changes are coalesced per dispatcher turn, as in WPF).
-- WPF's insertion-sort path for a restore where most items are marked (`LiveSortingDensityThreshold`): every marked
-  item is placed one by one, which is O(marked × log n) comparisons.
-- Performance work: virtualization, hashed group lookup (WPF's name-to-group map). A full recompute is O(n log n),
-  plus O(n × groups × levels) for grouping; an incremental grouped change is O(n) to find the item plus O(groups) per
-  level.
+- WPF's insertion-sort path for a restore where most items are marked: a recompute and one `Reset` replace it
+  (see "Live shaping").
+- The remaining O(n) costs listed in "Performance".
 
 ## Known risks
 
@@ -640,12 +704,13 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   WPF and the Toolkit, so apps that use both namespaces need aliases.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
-- **Live shaping cost and lifetime.** One property path listener per source item and live property, rebuilt on each
-  full recompute (a header sort, `Refresh()`, a source `Reset`). The view walks them (and a group walks its key and
+- **Live shaping cost and lifetime.** One property path listener per source item and live property. A full
+  recompute (a header sort, `Refresh()`) keeps them when the live properties and the source items are unchanged; a
+  source `Reset` or a new live property list rebuilds them. The view walks them (and a group walks its key and
   its `PropertyChanged` handlers) in its reference tracker walk; they unsubscribe when an item leaves the source,
   when the features are turned off and when the view is destroyed. A restore after a turn in which most items
-  changed costs one remove and one insert per moved item; TableView's tree mode rebuilds its tree at most twice for
-  it.
+  changed costs one remove and one insert per moved item (one `Reset` when most items changed); TableView's tree mode
+  rebuilds its tree at most twice for it.
 - **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
   container, so selection and focus on it follow their remove semantics; TableView keeps the selection (see "Live
   shaping" in the TableView section) but not keyboard focus.
