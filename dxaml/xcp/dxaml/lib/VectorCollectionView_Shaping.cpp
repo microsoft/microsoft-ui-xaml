@@ -3687,15 +3687,16 @@ _Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
 // WPF: ListCollectionView.RestoreLiveShaping. Each changed item is moved to where it now belongs, filtered in
 // or out, or moved to its new group, with an ItemRemoved and an ItemInserted (WinRT vectors have no Move); an
 // item still in order raises nothing. Like WPF's FindPosition, placing one item ignores the changed items not
-// yet placed, whose positions are stale. When most items changed their sort keys, one recompute (a Reset)
-// replaces the moves (WPF re-sorts the whole list then, too).
+// yet placed, whose positions are stale. When many items changed their sort keys, the output is re-sorted once
+// on the cached keys and announced as one Reset (WPF re-sorts the whole list then, too).
 _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 {
     // WPF: ListCollectionView.LiveSortingDensityThreshold.
     constexpr DOUBLE c_liveSortingDensityThreshold = 0.8;
-    // Each move shifts the output (O(n)) and raises two changes, so a large view recomputes sooner than WPF.
+    // Each move shifts the output (O(n)) and raises two changes, so a large view re-sorts sooner than WPF.
     constexpr UINT c_largeViewSize = 1024;
     constexpr UINT c_largeViewMoveDivisor = 8;
+    constexpr UINT c_largeViewMaxMoves = 256;
 
     auto spState = m_spLiveShaping;
     auto spSort = m_spSortState;
@@ -3740,9 +3741,10 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 
     const bool isSorting = m_isLiveSorting && !spSort->comparer.IsEmpty();
     const UINT itemCount = static_cast<UINT>(spState->items.size());
-    if (isSorting &&
+    const bool isResorted = isSorting &&
         (spState->sortDirtyCount >= c_liveSortingDensityThreshold * (itemCount + 1) ||
-         (itemCount >= c_largeViewSize && spState->sortDirtyCount >= itemCount / c_largeViewMoveDivisor)))
+         (itemCount >= c_largeViewSize && (spState->sortDirtyCount >= itemCount / c_largeViewMoveDivisor || spState->sortDirtyCount >= c_largeViewMaxMoves)));
+    if (isResorted && m_isGrouping)
     {
         IFC_RETURN(RefreshOrDefer());
         return S_OK;
@@ -3752,6 +3754,140 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
 
     const bool hasFilter = !!spFilterHost || !!m_tpFilter;
+
+    // A flat view where many items moved: the changed items' keys (and filter) are read again, the others' are
+    // cached, and the output is re-sorted once.
+    auto resortFlat = [&](_Out_ bool* pIsResortApplied) -> HRESULT
+    {
+        struct Entry
+        {
+            ctl::ComPtr<IInspectable> item;
+            UINT sourceIndex = 0;
+            UINT slot = 0;
+        };
+
+        auto pOutput = static_cast<InternalList*>(m_tpInternalList.Get());
+        auto& slots = spSort->flatSlots;
+        const bool isFiltering = m_isLiveFiltering && hasFilter;
+        std::vector<Entry> entries;
+        std::vector<UINT> freedSlots;
+        std::vector<bool> isInView(itemCount, false);
+        HRESULT hr = S_OK;
+
+        *pIsResortApplied = true;
+        entries.reserve(m_sourceIndices.size());
+        ++m_shapeBusyDepth;
+        hr = [&]() -> HRESULT
+        {
+            for (UINT position = 0; position < m_sourceIndices.size(); ++position)
+            {
+                Entry entry;
+                entry.sourceIndex = m_sourceIndices[position];
+                entry.slot = slots[position];
+                IFC_RETURN(pOutput->GetAt(position, entry.item.ReleaseAndGetAddressOf()));
+                isInView[entry.sourceIndex] = true;
+
+                const UINT flags = spState->items[entry.sourceIndex]->dirtyFlags;
+                bool isAccepted = true;
+                if ((flags & LiveShapingFlag_Filtering) && isFiltering)
+                {
+                    IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
+                }
+                if (!isAccepted)
+                {
+                    freedSlots.push_back(entry.slot);
+                    continue;
+                }
+                if (flags & LiveShapingFlag_Sorting)
+                {
+                    SortKeys keys;
+                    IFC_RETURN(spSort->comparer.EvaluateKeys(entry.item.Get(), &keys));
+                    spSort->keys.Set(entry.slot, keys);
+                }
+                entries.push_back(std::move(entry));
+            }
+
+            // Items the filter rejected before and may accept now.
+            for (UINT sourceIndex = 0; isFiltering && sourceIndex < itemCount; ++sourceIndex)
+            {
+                if (isInView[sourceIndex] || !(spState->items[sourceIndex]->dirtyFlags & LiveShapingFlag_Filtering))
+                {
+                    continue;
+                }
+
+                Entry entry;
+                bool isAccepted = false;
+                entry.sourceIndex = sourceIndex;
+                IFC_RETURN(m_tpSourceList->GetAt(sourceIndex, entry.item.ReleaseAndGetAddressOf()));
+                IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
+                if (isAccepted)
+                {
+                    SortKeys keys;
+                    IFC_RETURN(spSort->comparer.EvaluateKeys(entry.item.Get(), &keys));
+                    entry.slot = spSort->keys.Allocate(std::move(keys));
+                    entries.push_back(std::move(entry));
+                }
+            }
+
+            HRESULT hrCompare = S_OK;
+            const auto& sort = *spSort;
+            std::stable_sort(entries.begin(), entries.end(), [&sort, &hrCompare](const Entry& left, const Entry& right)
+            {
+                int result = 0;
+                if (SUCCEEDED(hrCompare))
+                {
+                    hrCompare = sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result);
+                }
+                return SUCCEEDED(hrCompare) && result < 0;
+            });
+            IFC_RETURN(hrCompare);
+            return S_OK;
+        }();
+        --m_shapeBusyDepth;
+        IFC_RETURN(hr);
+
+        if (sourceChangeCount != m_sourceListChangeCount || m_spLiveShaping != spState)
+        {
+            *pIsResortApplied = false;
+            return S_OK;
+        }
+
+        for (auto& spItem : spState->items)
+        {
+            spItem->dirtyFlags = 0;
+        }
+        spState->sortDirtyCount = 0;
+        for (const UINT slot : freedSlots)
+        {
+            spSort->keys.Free(slot);
+        }
+
+        bool isUnchanged = entries.size() == m_sourceIndices.size();
+        std::vector<UINT> sourceIndices;
+        std::vector<UINT> newSlots;
+        std::vector<ctl::ComPtr<IInspectable>> items;
+        sourceIndices.reserve(entries.size());
+        newSlots.reserve(entries.size());
+        items.reserve(entries.size());
+        for (size_t i = 0; i < entries.size(); ++i)
+        {
+            isUnchanged = isUnchanged && entries[i].sourceIndex == m_sourceIndices[i];
+            sourceIndices.push_back(entries[i].sourceIndex);
+            newSlots.push_back(entries[i].slot);
+            items.push_back(std::move(entries[i].item));
+        }
+
+        m_sourceIndices = std::move(sourceIndices);
+        slots = std::move(newSlots);
+        if (!isUnchanged)
+        {
+            ++m_shapeBusyDepth;
+            hr = pOutput->ReplaceAll(items);
+            --m_shapeBusyDepth;
+            IFC_RETURN(hr);
+        }
+        return S_OK;
+    };
     isSortDirty.resize(spState->items.size());
     for (size_t i = 0; i < spState->items.size(); ++i)
     {
@@ -3969,7 +4105,13 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         return S_OK;
     };
 
-    for (UINT i = 0; i < isSortDirty.size() && isApplied; ++i)
+    if (isResorted)
+    {
+        IFC_RETURN(resortFlat(&isApplied));
+        isApplied = isApplied && (sourceChangeCount == m_sourceListChangeCount);
+    }
+
+    for (UINT i = 0; !isResorted && i < isSortDirty.size() && isApplied; ++i)
     {
         // A handler of a change raised here may have refreshed the view, which observes the items afresh.
         if (m_spLiveShaping != spState || spState->items.size() != isSortDirty.size())
