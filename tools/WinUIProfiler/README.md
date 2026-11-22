@@ -332,18 +332,26 @@ unknown/nested properties and explicit nulls. For example, compare opacity on
 objects present in both captures from the same database:
 
 ```sql
+WITH Nodes AS MATERIALIZED (
+    SELECT * FROM SnapshotNodes WHERE CaptureId IN (:before, :after)),
+Roots AS MATERIALIZED (
+    SELECT * FROM SnapshotRoots WHERE CaptureId IN (:before, :after))
 SELECT b.Tree, b.ObjectAddress, b.Type,
        b.Properties -> '$.opacity' AS BeforeOpacity,
        a.Properties -> '$.opacity' AS AfterOpacity
-FROM SnapshotNodes b
-JOIN SnapshotRoots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
-JOIN SnapshotNodes a ON a.Tree = b.Tree
+FROM Nodes b
+JOIN Roots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
+JOIN Nodes a ON a.Tree = b.Tree
     AND a.ObjectAddress = b.ObjectAddress AND a.Type = b.Type
-JOIN SnapshotRoots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
+JOIN Roots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
     AND ar.ThreadId = br.ThreadId AND ar.XamlRootAddress = br.XamlRootAddress
 WHERE b.CaptureId = :before AND a.CaptureId = :after
     AND (b.Properties -> '$.opacity') IS NOT (a.Properties -> '$.opacity');
 ```
+
+The views expand snapshot JSON on demand. When joining them, materialize the
+capture-filtered rows once as above; otherwise SQLite can repeatedly parse the
+documents for each candidate node, making comparisons of real trees very slow.
 
 Node/root IDs are capture-local, not cross-capture identities. The example
 matches root thread/address and object address/type, as the tree comparison

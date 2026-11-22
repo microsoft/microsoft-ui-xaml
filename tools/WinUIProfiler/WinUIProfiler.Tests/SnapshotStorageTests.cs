@@ -99,10 +99,14 @@ internal static class SnapshotStorageTests
                 null, ("$id", before.CaptureId.ToString("D"))) == -1,
                 "Unavailable signed allocator values must remain -1, not invented zeros.");
             Require(Sql.Scalar(connection, """
-                SELECT COUNT(*) FROM SnapshotNodes b
-                JOIN SnapshotRoots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
-                JOIN SnapshotNodes a ON a.Tree = b.Tree AND a.ObjectAddress = b.ObjectAddress AND a.Type = b.Type
-                JOIN SnapshotRoots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
+                WITH Nodes AS MATERIALIZED (
+                    SELECT * FROM SnapshotNodes WHERE CaptureId IN ($before, $after)),
+                Roots AS MATERIALIZED (
+                    SELECT * FROM SnapshotRoots WHERE CaptureId IN ($before, $after))
+                SELECT COUNT(*) FROM Nodes b
+                JOIN Roots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
+                JOIN Nodes a ON a.Tree = b.Tree AND a.ObjectAddress = b.ObjectAddress AND a.Type = b.Type
+                JOIN Roots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
                     AND ar.ThreadId = br.ThreadId AND ar.XamlRootAddress = br.XamlRootAddress
                 WHERE b.CaptureId = $before AND a.CaptureId = $after
                     AND (b.Properties -> '$.opacity') IS NOT (a.Properties -> '$.opacity')
