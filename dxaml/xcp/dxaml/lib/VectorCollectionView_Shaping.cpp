@@ -3693,11 +3693,11 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 {
     // WPF: ListCollectionView.LiveSortingDensityThreshold.
     constexpr DOUBLE c_liveSortingDensityThreshold = 0.8;
-    // Each move shifts the flat output (O(n)) and raises two changes, so a large flat view re-sorts sooner than WPF.
-    // A grouped move shifts only the item's groups; a grouped re-sort is a full recompute.
+    // Each move shifts the output (O(n)) and raises two changes, so a large view re-sorts sooner than WPF. A flat
+    // re-sort reads only the changed items, so a flat view re-sorts sooner still; a grouped re-sort recomputes.
     constexpr UINT c_largeViewSize = 1024;
     constexpr UINT c_largeViewMoveDivisor = 8;
-    constexpr UINT c_largeViewMaxMoves = 256;
+    constexpr UINT c_largeFlatViewMaxMoves = 256;
 
     auto spState = m_spLiveShaping;
     auto spSort = m_spSortState;
@@ -3744,7 +3744,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     const UINT itemCount = static_cast<UINT>(spState->items.size());
     const bool isResorted = isSorting &&
         (spState->sortDirtyCount >= c_liveSortingDensityThreshold * (itemCount + 1) ||
-         (!m_isGrouping && itemCount >= c_largeViewSize && (spState->sortDirtyCount >= itemCount / c_largeViewMoveDivisor || spState->sortDirtyCount >= c_largeViewMaxMoves)));
+         (itemCount >= c_largeViewSize && (spState->sortDirtyCount >= itemCount / c_largeViewMoveDivisor || (!m_isGrouping && spState->sortDirtyCount >= c_largeFlatViewMaxMoves))));
     if (isResorted && m_isGrouping)
     {
         IFC_RETURN(RefreshOrDefer());
