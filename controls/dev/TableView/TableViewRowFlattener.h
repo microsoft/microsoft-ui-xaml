@@ -135,6 +135,9 @@ private:
     void Update();
     // Under a grouped view: rebuilds on a later dispatcher turn, once the view has finished moving items.
     void ScheduleUpdate();
+    // A tree rebuilds at most once per dispatcher turn; false when no dispatcher can run the next turn.
+    bool QueueTreeTurnEnd();
+    void OnTreeTurnEnd();
     void UpdateCore();
     void UpdateTree(Kind kind);
     std::vector<winrt::IInspectable> ReadViewItems() const;
@@ -257,6 +260,10 @@ private:
     bool m_updating{ false };
     bool m_updatePending{ false };
     bool m_updateQueued{ false };
+    // Tree mode: rebuilt this turn / a view change waits for the next turn / the turn end is queued.
+    bool m_treeUpdatedThisTurn{ false };
+    bool m_treeUpdatePending{ false };
+    bool m_treeTurnQueued{ false };
     uint64_t m_updateCount{ 0 };
     std::function<void()> m_rowsChanged{};
 
