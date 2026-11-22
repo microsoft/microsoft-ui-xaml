@@ -1218,7 +1218,7 @@ namespace
     }
 
     // WPF: PropertyGroupDescription.GroupNameFromItem applies Converter.Convert(value, typeof(object), level, culture).
-    _Check_return_ HRESULT ConvertGroupName(_In_opt_ xaml_data::IValueConverter* pConverter, INT level, _In_opt_ HSTRING culture, _Inout_ ctl::ComPtr<IInspectable>* pspName)
+    _Check_return_ HRESULT ConvertGroupName(_In_opt_ xaml_data::IValueConverter* pConverter, INT level, _In_opt_ HSTRING culture, _Inout_ ctl::ComPtr<IInspectable>& spName)
     {
         if (!pConverter)
         {
@@ -1230,8 +1230,8 @@ namespace
         ctl::ComPtr<IInspectable> spLevel;
         ctl::ComPtr<IInspectable> spConverted;
         IFC_RETURN(DirectUI::PropertyValue::CreateFromInt32(level, spLevel.ReleaseAndGetAddressOf()));
-        IFC_RETURN(pConverter->Convert(pspName->Get(), objectType, spLevel.Get(), culture, spConverted.ReleaseAndGetAddressOf()));
-        *pspName = std::move(spConverted);
+        IFC_RETURN(pConverter->Convert(spName.Get(), objectType, spLevel.Get(), culture, spConverted.ReleaseAndGetAddressOf()));
+        spName = std::move(spConverted);
         return S_OK;
     }
 
@@ -1391,7 +1391,7 @@ namespace
                 }
 
                 IFC_RETURN(EvaluateKey(groupLevel.selector, pItem, (*pNames)[level].ReleaseAndGetAddressOf()));
-                IFC_RETURN(ConvertGroupName(groupLevel.spConverter.Get(), static_cast<INT>(level), m_culture.Get(), &(*pNames)[level]));
+                IFC_RETURN(ConvertGroupName(groupLevel.spConverter.Get(), static_cast<INT>(level), m_culture.Get(), (*pNames)[level]));
             }
 
             return S_OK;
@@ -4330,7 +4330,7 @@ _Check_return_ HRESULT DirectUI::ShapingGroupNameFromProperty(
     *ppName = nullptr;
     IFC_RETURN(CreateKeySelector(propertyName, &selector));
     IFC_RETURN(EvaluateKey(selector, pItem, spName.ReleaseAndGetAddressOf()));
-    IFC_RETURN(ConvertGroupName(pConverter, level, culture, &spName));
+    IFC_RETURN(ConvertGroupName(pConverter, level, culture, spName));
     *ppName = spName.Detach();
     return S_OK;
 }
