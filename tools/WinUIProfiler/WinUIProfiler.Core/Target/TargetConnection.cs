@@ -27,7 +27,8 @@ bool TrustLocalBinaries,
 long? ExpectedCreationTimeFileTime = null,
     string? SessionDirectory = null,
     IReadOnlyList<MarkerProviderSettings>? MarkerProviders = null,
-    PrivateRuntimeLaunch? PrivateRuntime = null);
+    PrivateRuntimeLaunch? PrivateRuntime = null,
+    bool IsolateLaunchedStandardHandles = false);
 public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
@@ -52,6 +53,9 @@ public sealed class TargetConnection : IAsyncDisposable
     private long etwListeningSinceFileTime;
     private long etwListeningSinceQpc;
     private string? etwStartError;
+    // Samples the recorded processes' call stacks; null when the session isn't recorded or sampling couldn't start.
+    private KernelSampleSession? cpu;
+    private string? cpuSamplingError;
     private string? startupCatalogError;
     private Task? lifetime;
     private Task? disposal;
@@ -96,7 +100,11 @@ public sealed class TargetConnection : IAsyncDisposable
     }
     // The session file the events are saved to; null when this connection does not record. Kept after cleanup.
     public RecordingStatus? Recording => recordings?.Primary.Recording;
+    // Every session file this connection records, the target's first: a startup handoff records each of its processes.
+    public IReadOnlyList<string> RecordingPaths => recordings?.RecordingPaths ?? [];
     public string? RecordingError => recordings?.RecordingError ?? startupCatalogError;
+    // Why a recorded session has no CPU samples, or why some are missing; the events are recorded either way.
+    public string? CpuSamplingError => cpuSamplingError ?? cpu?.Note;
     private TargetConnection(IProgress<ConnectionProgress>? progress) => this.progress = progress;
 
     public static void ValidateOptions(TargetConnectionOptions options)
@@ -177,10 +185,15 @@ public sealed class TargetConnection : IAsyncDisposable
                 ? new TimeoutException("Connecting to the target exceeded the 45-second deadline.", error) : error;
             connection.Failure = failure;
             await connection.CleanupAsync().ConfigureAwait(false);
+            if (connection.Recording is { } recording) failure.Data["RecordingPath"] = recording.Path;
+            if (connection.EtwError is { } etwError) failure.Data["EtwError"] = etwError;
+            if (connection.RecordingError is { } recordingError) failure.Data["RecordingError"] = recordingError;
             connection.stop.Dispose();
             if (connection.Failure != failure)
             {
-                throw new AggregateException("Connection failed and cleanup reported an error.", failure, connection.Failure!);
+                var combined = new AggregateException("Connection failed and cleanup reported an error.", failure, connection.Failure!);
+                foreach (var key in failure.Data.Keys) combined.Data[key] = failure.Data[key];
+                throw combined;
             }
 
             if (failure != error)
@@ -203,12 +216,19 @@ public sealed class TargetConnection : IAsyncDisposable
         var markers = options.MarkerProviders ?? [];
         if (launchExecutables.Count > 0)
         {
-            PrepareEtw(launchExecutables, markers);
+            PrepareEtw(launchExecutables, GetLauncherExecutables(options), markers);
+        }
+
+        // Before the launch too, so the startup's samples are kept until the recordings exist.
+        if (options.SessionDirectory is not null && etwStartError is null)
+        {
+            PrepareCpuSampling();
         }
 
         if (options.PrivateRuntime is { } privateRuntime)
         {
-            nativeLaunch = await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token)
+            nativeLaunch = await NativeLauncher.LaunchAsync(options.Kind, options.Target, options.Arguments, privateRuntime, token,
+                options.IsolateLaunchedStandardHandles)
                 .ConfigureAwait(false);
             target = nativeLaunch.Process;
         }
@@ -216,7 +236,8 @@ public sealed class TargetConnection : IAsyncDisposable
         {
             target = options.Kind switch
             {
-                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory),
+                TargetLaunchKind.Unpackaged => TargetLauncher.LaunchUnpackaged(options.Target, options.Arguments, options.WorkingDirectory,
+                    options.IsolateLaunchedStandardHandles),
                 TargetLaunchKind.Packaged => TargetLauncher.LaunchPackaged(options.Target, options.Arguments),
                 TargetLaunchKind.Attach => Process.GetProcessById(int.Parse(options.Target, CultureInfo.InvariantCulture)),
                 _ => throw new ArgumentOutOfRangeException(nameof(options))
@@ -327,13 +348,20 @@ History);
         }
     }
 
-    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<MarkerProviderSettings> markers)
+    // The executables, other than the profiler's, of a process that can create the launched one, so ETW has its launcher
+    // events. With private WinUI DLLs, ProfilerLauncher.exe activates a packaged app through a COM surrogate,
+    // dllhost.exe, which creates the app's process.
+    private static IReadOnlyList<string> GetLauncherExecutables(TargetConnectionOptions options) =>
+        options is { PrivateRuntime: not null, Kind: TargetLaunchKind.Packaged } ? ["dllhost.exe"] : [];
+
+    private void PrepareEtw(IReadOnlyList<string> launchExecutables, IReadOnlyList<string> launcherExecutables,
+        IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             etwListeningSinceFileTime = DateTime.UtcNow.ToFileTimeUtc();
             etwListeningSinceQpc = Stopwatch.GetTimestamp();
-            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, markers);
+            etw = LiveEtwSource.StartBeforeLaunch(launchExecutables, launcherExecutables, markers);
         }
         catch (Exception error)
         {
@@ -346,9 +374,13 @@ History);
     {
         if (etwStartError is not null)
         {
+            // Without the events there are no recordings to store the samples in.
+            cpu?.Dispose();
+            cpu = null;
             return;
         }
 
+        (int ProcessId, string? Name)? launcher = null;
         try
         {
             if (etw is not null)
@@ -366,12 +398,21 @@ History);
                         ? $"Launched {process.ProcessName}, expected {string.Join(", ", launchExecutables)}; ETW starts now."
                         : "The activated application was already running; ETW starts now.");
                 }
+                else
+                {
+                    // The launcher is the process that created the launch, which is not always the profiler.
+                    launcher = FindLauncher(process);
+                    if (launcher is null)
+                    {
+                        Trace.TraceWarning("The process that created the target is unknown, so the launch has no launcher events.");
+                    }
+                }
             }
 
             IReadOnlyList<SessionStart> sources = nativeLaunch?.Result.Processes is { Count: > 0 } group
-                ? group.Select(entry => CreateSessionStart(entry.ProcessId, process.ProcessName, entry.CreationTimeFileTime)).ToArray()
-                : [CreateSessionStart(process.Id, process.ProcessName, creationTimeFileTime)];
-            recordings = new(sources, process.Id, etwFromProcessStart ? Environment.ProcessId : null, sessionDirectory);
+                ? group.Select(entry => CreateSessionStart(entry.ProcessId, process.ProcessName, entry.CreationTimeFileTime, launcher)).ToArray()
+                : [CreateSessionStart(process.Id, process.ProcessName, creationTimeFileTime, launcher)];
+            recordings = new(sources, process.Id, launcher?.ProcessId, sessionDirectory);
             var identities = sources.ToDictionary(source => source.ProcessId, source => source.ProcessCreatedUtc?.ToFileTimeUtc());
             if (etw is null)
             {
@@ -380,19 +421,87 @@ History);
             }
             else
             {
-                // The profiler launched the process, so its launcher providers' events are the launch's too.
-                etw.StartReading(identities, etwFromProcessStart ? Environment.ProcessId : null, recordings.Post);
+                // The launcher's events from the launcher providers are the launch's too.
+                etw.StartReading(identities, launcher?.ProcessId, recordings.Post);
             }
+            StartCpuSampling(recordings);
             SaveStartupRecordings("Recording");
         }
         catch (Exception error)
         {
             etw?.Dispose();
             etw = null;
+            cpu?.Dispose();
+            cpu = null;
             recordings?.Close("ETW could not start");
             etwFromProcessStart = false;
             SetEtwStartError(error);
             SaveStartupRecordings("ETW could not start");
+        }
+    }
+
+    // The process that created the launch. In a startup handoff, the target's parent is the bootstrap, another process of
+    // the launch, so the launcher is the parent of the launch's first process. A process of the launch is never the
+    // launcher, which ProcessRecordingGroup would otherwise route the launcher's events to.
+    private (int ProcessId, string? Name)? FindLauncher(Process process)
+    {
+        if (nativeLaunch?.Result is not { ActivationProcessId: { } root } result)
+        {
+            return ProcessParent.Find(process);
+        }
+
+        var launcher = result.Processes.FirstOrDefault(entry => entry.ProcessId == root) is { } activation
+            ? ProcessParent.Find(activation.ProcessId, activation.CreationTimeFileTime) : null;
+        return launcher is { } found && result.Processes.All(entry => entry.ProcessId != found.ProcessId) ? launcher : null;
+    }
+
+    // Starts sampling the processors' call stacks for a recorded session, as WPR's CPU profile does. The kernel's
+    // sampled profile needs an elevated profiler; otherwise the session records events only.
+    private void PrepareCpuSampling()
+    {
+        try
+        {
+            cpu = KernelSampleSession.Start();
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            cpuSamplingError = error is UnauthorizedAccessException
+                ? "CPU sampling needs an elevated (administrator) profiler; only events are recorded."
+                : $"CPU sampling could not start: {error.Message}";
+            Trace.TraceWarning(error.ToString());
+        }
+    }
+
+    // Gives each recording its process's CPU samples, from those the session kept since it started.
+    private void StartCpuSampling(ProcessRecordingGroup group)
+    {
+        if (!group.IsWriting)
+        {
+            cpu?.Dispose();
+            cpu = null;
+            return;
+        }
+
+        if (cpu is null && cpuSamplingError is null)
+        {
+            PrepareCpuSampling();
+        }
+
+        if (cpu is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cpu.StartReading(group.IsRecorded, group.PostSample);
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            cpuSamplingError = $"CPU sampling could not start: {error.Message}";
+            Trace.TraceWarning(error.ToString());
+            cpu.Dispose();
+            cpu = null;
         }
     }
 
@@ -434,13 +543,14 @@ History);
         }
     }
 
-    private SessionStart CreateSessionStart(int processId, string processName, long? creationTimeFileTime) =>
+    // Time zero of the recording is when ETW started listening. For a launch, launcher is the process that created it.
+    private SessionStart CreateSessionStart(int processId, string processName, long? creationTimeFileTime,
+        (int ProcessId, string? Name)? launcher) =>
         new(processId, processName, creationTimeFileTime is { } created ? DateTime.FromFileTimeUtc(created) : null,
             Stopwatch.Frequency, etwListeningSinceQpc == 0 ? Stopwatch.GetTimestamp() : etwListeningSinceQpc,
             etwFromProcessStart && creationTimeFileTime >= etwListeningSinceFileTime
                 ? SessionCoverage.ProcessStart : SessionCoverage.Connection,
-            LauncherProcessId: etwFromProcessStart ? Environment.ProcessId : null,
-            LauncherName: etwFromProcessStart ? Path.GetFileNameWithoutExtension(Environment.ProcessPath) : null);
+            LauncherProcessId: launcher?.ProcessId, LauncherName: launcher?.Name);
 
     private void SetEtwStartError(Exception error)
     {
@@ -453,7 +563,18 @@ History);
     public static ProcessInstanceKey Identify(Process process) =>
         new(checked((uint)process.Id), process.StartTime.ToFileTimeUtc(), Guid.NewGuid());
 
-    public async Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default)
+    public Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken cancellationToken = default) =>
+        TakeSnapshotCoreAsync(directory, null, cancellationToken);
+
+    public Task<SavedTreeSnapshot> TakeSnapshotToFileAsync(string path, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (!Path.IsPathFullyQualified(path)) throw new ArgumentException("Snapshot output path must be absolute.", nameof(path));
+        if (File.Exists(path) || Directory.Exists(path)) throw new IOException($"Snapshot output already exists: {path}");
+        return TakeSnapshotCoreAsync(Path.GetDirectoryName(path)!, path, cancellationToken);
+    }
+
+    private async Task<SavedTreeSnapshot> TakeSnapshotCoreAsync(string directory, string? outputPath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
@@ -469,6 +590,7 @@ History);
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
         var token = cancellation.Token;
+        var sessionPath = Recording?.Path;
         TreeSnapshotDocument snapshot;
         await targetCommands.WaitAsync(token).ConfigureAwait(false);
         try
@@ -482,8 +604,8 @@ History);
 
         token.ThrowIfCancellationRequested();
         Directory.CreateDirectory(directory);
-        var path = Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
-        var temporary = path + ".partial";
+        var path = outputPath ?? Path.Combine(directory, $"tree-{snapshot.ProcessId}-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{snapshot.CaptureId:N}.json");
+        var temporary = path + "." + Guid.NewGuid().ToString("N") + ".partial";
         var created = false;
         var committed = false;
         try
@@ -498,7 +620,7 @@ History);
             File.Move(temporary, path);
             committed = true;
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
-                snapshot.CompositionNodes.Count, snapshot.Correlations.Count);
+                snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);
         }
         finally
         {
@@ -580,6 +702,20 @@ History);
             // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
             // recorder so every processed event is stored.
             etw?.Dispose();
+        }
+        catch (Exception error)
+        {
+            errors.Add(error);
+        }
+
+        try
+        {
+            // The samples still waiting are given to the recordings before they close and store what was sampled.
+            var summary = cpu?.Stop();
+            if (cpu is not null || cpuSamplingError is not null)
+            {
+                recordings?.SetCpuSampling(summary, CpuSamplingError);
+            }
         }
         catch (Exception error)
         {

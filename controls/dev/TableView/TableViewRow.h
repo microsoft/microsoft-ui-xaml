@@ -49,6 +49,7 @@ public:
     bool SetOwningTableViewInternal(winrt::TableView const& owner, bool rebuildCells = true);
     // skipIfCellsCurrent: skip when the DataContext change that just re-bound this row rebuilt the cells.
     bool EnsureOwningTableViewInternal(winrt::TableView const& owner, bool skipIfCellsCurrent = false);
+    void SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding);
 
     // Rewire realized rows when the owner keeps the same identity but Columns changes.
     void RefreshColumnsSubscriptionInternal();
@@ -63,6 +64,7 @@ public:
     void RefreshGridLines();
     void SetTerminalGridLineSuppression(TerminalGridLineSuppressionState state, bool refresh = true);
     void RefreshRowBackground();
+    void RefreshVisualState();
 
     // Owner-only writer for the read-only IsSelected DP. Selection is owned by the TableView, so
     // this is the main entry point that both publishes the DP and re-enters the CommonStates VSM
@@ -120,6 +122,7 @@ public:
     void SyncExpanderGutterWithLeadCell(winrt::Panel const& host);
     // Cells panel reports the lead cell's arranged slot to confine the chevron. leadWidth < 0: none.
     void OnCellsArrangedInternal(double leadLeft, double leadWidth, double height);
+    double GetContentVerticalOffset() const { return m_contentVerticalOffset; }
     void RefreshDensity();
     void RefreshCells();
 
@@ -139,7 +142,7 @@ public:
 private:
     void ResetCellAutomationNames();
     void UpdateCellPeerItems(winrt::IInspectable const& dataItem);
-    bool HasCellAutomationPeers() const;
+    bool HasCellAutomationPeers(winrt::IInspectable const& otherThanItem = nullptr) const;
 
     // Restamps the current level after rebuilds because new/recycled cells arrive as tab stops.
     void ApplyFocusLevelInternal();
@@ -210,6 +213,7 @@ private:
 
     // Returns true when the rebuild reached the row-chrome refresh (grid lines and row background).
     bool RebuildCells(bool updateExistingCellPeerItems = true);
+    bool RebuildCellsCore(bool updateExistingCellPeerItems);
     void ClearOwnedCellToolTips(const winrt::Panel& host);
 
     // Coalesces a burst of Columns-collection changes into a single cell rebuild on the next
@@ -218,9 +222,19 @@ private:
     void QueueRebuildCells();
     void InvalidateCellsCurrent();
     void UpdateVisualState(bool useTransitions);
+    void RefreshCellVisualGeometry();
+    double m_contentVerticalOffset{ 0.0 };
+    struct CellVisualGeometry
+    {
+        winrt::Thickness focusMargin;
+        winrt::Thickness padding;
+        winrt::Thickness displayPadding;
+    };
+    std::optional<CellVisualGeometry> m_cellVisualGeometry;
 
     tracker_ref<winrt::Panel> m_cellsHost{ this };
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
     // Chevron hit target. Null if a re-template drops the part (indent still applies).
     tracker_ref<winrt::FrameworkElement> m_rowExpanderGutter{ this };
     // Transparent cell wrapper fill, created on first use and shared by this row's cells.
@@ -261,6 +275,7 @@ private:
 
     // False = row-level focus; true = cell-level focus. Recycled rows return at row level.
     bool m_isCellLevel{ false };
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
 
     // originalLocalValue: raw local value (UnsetValue, boxed bool, or BindingExpression).
     struct SuppressedContentTabStop
@@ -273,8 +288,10 @@ private:
 
     // Prevent DataContextChanged re-entry while RebuildCells updates child DCs.
     bool m_isRebuildingCells{ false };
+    bool m_densityRefreshPending{ false };
 
     bool m_rebuildCellsQueued{ false };
+    double m_cellFontSize{ 0.0 };
 
     // One-shot: set by the DataContext rebuild, consumed by the next ElementPrepared, cleared by any other rebuild.
     bool m_cellsRebuiltForDataContext{ false };
@@ -282,5 +299,6 @@ private:
     bool m_cellsInvalidated{ false };
     // Between ElementClearing (SetOwningTableViewInternal without rebuild) and the next prepare.
     bool m_inRecyclePool{ false };
+    winrt::weak_ref<winrt::AutomationPeer> m_itemAutomationPeer{ nullptr };
 
 };

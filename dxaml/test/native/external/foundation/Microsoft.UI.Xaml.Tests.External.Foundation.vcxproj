@@ -128,6 +128,7 @@
     <ClInclude Include="graphics\rendering\ShutdownTests.h" />
     <ClInclude Include="graphics\rendering\SISTests.h" />
     <ClInclude Include="graphics\rendering\SuspendResumeTests.h" />
+    <ClInclude Include="graphics\rendering\SystemCompositionEngineTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockClippingTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockTests.h" />
     <ClInclude Include="graphics\rendering\TextBoxTests.h" />
@@ -154,6 +155,8 @@
     <ClInclude Include="input\DManip\Redirection.h" />
     <ClInclude Include="input\DManip\RichEditBox.h" />
     <ClInclude Include="input\DManip\ScrollContentPresenter.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterHeaderFocusTests.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterPublicApiTests.h" />
     <ClInclude Include="input\DManip\ScrollViewerHeaders.h" />
     <ClInclude Include="input\DManip\SetContact.h" />
     <ClInclude Include="input\DManip\StickyHeaders.h" />
@@ -266,6 +269,7 @@
     <ClCompile Include="graphics\rendering\ShapeTests.cpp" />
     <ClCompile Include="graphics\rendering\Matrix3DProjectionTests.cpp" />
     <ClCompile Include="graphics\rendering\SuspendResumeTests.cpp" />
+    <ClCompile Include="graphics\rendering\SystemCompositionEngineTests.cpp" />
     <ClCompile Include="graphics\rendering\CompositionTargetTests.cpp" />
     <ClCompile Include="graphics\rendering\DebugCounterTests.cpp" />
     <ClCompile Include="graphics\rendering\ShutdownTests.cpp" />
@@ -294,6 +298,8 @@
     <ClCompile Include="input\DManip\AutoScrollBehaviorTests.cpp" />
     <ClCompile Include="input\DManip\BasicScrollViewerManipulationTests.cpp" />
     <ClCompile Include="input\DManip\ScrollContentPresenter.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterHeaderFocusTests.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterPublicApiTests.cpp" />
     <ClCompile Include="input\DManip\ScrollViewerHeaders.cpp" />
     <ClCompile Include="input\DManip\Redirection.cpp" />
     <ClCompile Include="input\DManip\StickyHeaders.cpp" />

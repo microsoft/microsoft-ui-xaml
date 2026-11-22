@@ -85,6 +85,8 @@ public:
     // this peer reported and raises only for the ones that moved.
     void RaiseHierarchyPositionChanged();
 
+    void ResetReportedHierarchyState();
+
 private:
     int32_t ComputeLevel();
     int32_t ComputePositionInSet();

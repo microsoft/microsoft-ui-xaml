@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using MUXControlsTestApp.Utilities;
 using System;
@@ -24,6 +27,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TableViewLifetimeTests : TableViewApiTestBase
     {
+        [TestMethod]
+        [TestProperty("Description", "Verifies rebuilt text headers avoid self-referencing padding bindings and are collected while their TableView remains loaded.")]
+        public void VerifyRebuiltTextHeadersAreCollected()
+        {
+            TableView tableView = null;
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(MakeManyItems(40), headers: new[] { "Name", "Role" }, width: 400, height: 300);
+                LoadContent(tableView);
+            });
+            SettleAfterLoad();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var headers = FindVisualChildrenByType<TableViewColumnHeader>(tableView);
+                Verify.AreEqual(2, headers.Count);
+                foreach (var header in headers)
+                {
+                    Verify.IsNotNull(header.Content as TextBlock);
+                    var presenter = header.FindVisualChildByName("PART_ContentPresenter");
+                    Verify.IsNotNull(presenter);
+                    var name = $"Header {tracked.Count / 2}";
+                    tracked[name] = new WeakReference(header);
+                    tracked[name + " presenter"] = new WeakReference(presenter);
+                }
+                tableView.Density = TableViewDensity.Compact;
+                tableView.UpdateLayout();
+                foreach (var header in headers)
+                {
+                    Verify.IsNull(header.Content, "Rebuilding must release the old generated header content.");
+                    var presenter = (ContentPresenter)header.FindVisualChildByName("PART_ContentPresenter");
+                    var binding = presenter.GetBindingExpression(ContentPresenter.PaddingProperty);
+                    Verify.IsNotNull(binding, "Releasing generated content must restore the padding binding.");
+                    Verify.IsNull(binding.ParentBinding.Source,
+                        "A restored padding binding must not strongly root its owning header through Source.");
+                }
+            });
+            SettleAfterLoad();
+
+            AssertCollected(tracked);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsLoaded, "The table must outlive the released headers.");
+                Verify.AreEqual(2, FindVisualChildrenByType<TableViewColumnHeader>(tableView).Count);
+            });
+            GC.KeepAlive(tableView);
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a TableView is collected after it is unloaded, while the items source it was bound to stays alive.")]
         public void VerifyTableViewIsCollectedWhileItsItemsSourceOutlivesIt()
@@ -273,6 +327,61 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             AssertCollected(tracked);
 
             Verify.AreEqual(40, items.Count, "The items source must still be alive after the table was collected.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a grouped TableView, its group headers and their group elements are collected after unload, once scrolling and a collapse have rebound the headers (#12443).")]
+        public void VerifyGroupHeaderPeersDoNotKeepTheTableAlive()
+        {
+            var items = Enumerable.Range(0, 80).Select(i => new Person { Name = $"Person {i}", Role = $"G{i / 10}" }).ToList();
+            TableViewSource source = null;
+            var tracked = new Dictionary<string, WeakReference>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = TableViewSource.From(items);
+                source.GroupBy(item => (object)((Person)item).Role);
+                CreateAndLoadTable(source, tracked);
+            });
+            SettleAfterLoad();
+
+            foreach (var step in new object[] { "Collapse", "Expand", 100000.0, 0.0 })
+            {
+                RunOnUIThread.Execute(() => WalkAndDriveGroupHeaders(tracked, step));
+                SettleAfterLoad();
+            }
+
+            RunOnUIThread.Execute(() => Content = null);
+
+            AssertCollected(tracked);
+
+            Verify.IsTrue(tracked.Keys.Any(key => key.StartsWith("Group element")), "Precondition: group elements were tracked.");
+            Verify.AreEqual(80, items.Count, "The items must still be alive after the table was collected.");
+            GC.KeepAlive(source);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WalkAndDriveGroupHeaders(Dictionary<string, WeakReference> tracked, object step)
+        {
+            var tableView = (TableView)tracked["TableView"].Target;
+            AutomationPeer first = null;
+            foreach (var header in GetProjectedElements(tableView, false).OfType<TableViewGroupHeader>())
+            {
+                var own = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                var peer = own.EventsSource ?? own;
+                peer.GetName();
+                first ??= peer;
+                tracked[$"Header {tracked.Count}"] = new WeakReference(header);
+                tracked[$"Group element {tracked.Count}"] = new WeakReference(peer);
+            }
+
+            if (step is double offset)
+            {
+                GetBodyScroller(tableView).ChangeView(null, offset, null, true);
+                return;
+            }
+            var provider = (IExpandCollapseProvider)first.GetPattern(PatternInterface.ExpandCollapse);
+            if ((string)step == "Collapse") { provider.Collapse(); } else { provider.Expand(); }
         }
 
         [TestMethod]

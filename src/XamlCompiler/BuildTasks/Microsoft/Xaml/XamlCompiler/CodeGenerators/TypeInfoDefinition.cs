@@ -348,7 +348,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     {
                         return value;
                     }
-                }).ToList();
+                }, StringComparer.Ordinal).ToList();
         }
 
         public String GetterName(int i)

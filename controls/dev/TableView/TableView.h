@@ -165,10 +165,29 @@ struct TableViewResourceCache
         double rowMinHeight{ 0.0 };
         bool hasCellPadding{ false };
         winrt::Thickness cellPadding{};
+        bool hasCellTextPadding{ false };
+        winrt::Thickness cellTextPadding{};
+        bool hasHeaderTextPadding{ false };
+        winrt::Thickness headerTextPadding{};
+        bool hasGroupHeaderTextPadding{ false };
+        winrt::Thickness groupHeaderTextPadding{};
         bool hasHeaderCellPadding{ false };
         winrt::Thickness headerCellPadding{};
+        bool hasGroupHeaderMinHeight{ false };
+        double groupHeaderMinHeight{};
+        bool hasGroupHeaderPadding{ false };
+        winrt::Thickness groupHeaderPadding{};
     };
     DensityInfo density{};
+
+    // Built-in text defaults to 14px at every density. Density/theme changes clear
+    // this cache alongside the other resolved resources.
+    struct FontInfo
+    {
+        bool hasCellFontSize{ false };
+        double cellFontSize{ 0.0 };
+    };
+    FontInfo font{};
 
     // Cached hierarchy geometry. Runtime resource swaps raise no notification, so they apply only
     // after cache invalidation (density/theme/HC/re-template) and row re-prepare.
@@ -242,10 +261,20 @@ public:
     void OnGroupHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnDensityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // Density resources fall back to Standard defaults; rows and columns call these via get_self.
+    // Density resources fall back to the selected preset; rows and columns call these via get_self.
     double GetDensityRowMinHeight();
     winrt::Thickness GetDensityCellPadding();
     winrt::Thickness GetDensityHeaderCellPadding();
+    double GetDensityGroupHeaderMinHeight();
+    winrt::Thickness GetDensityGroupHeaderPadding();
+    winrt::Style GetGroupHeaderStyle(winrt::TableViewGroupHeader const& header);
+    static bool IsDefaultGroupHeaderContentTemplate(winrt::TableViewGroupHeader const& header);
+    static bool StyleSetsProperty(const winrt::Style& style, const winrt::DependencyProperty& property);
+    double GetCellFontSize();
+    winrt::Thickness GetDensityCellTextPadding();
+    winrt::Thickness GetDensityHeaderTextPadding();
+    winrt::Thickness GetDensityGroupHeaderTextPadding();
+    winrt::Thickness GetDisplayCellPadding(double contentVerticalOffset = 0.0);
     void AttachFocusCornerRadius(winrt::FrameworkElement const& target);
 
     // Per-level indent from the TableViewRowIndentSize resource, cached for rows.
@@ -404,6 +433,13 @@ public:
     {
         return TryGetContainerIdentity(container);
     }
+
+    winrt::AutomationPeer GetGroupAutomationElementInternal(winrt::hstring const& identity)
+    {
+        auto const it = m_groupAutomationElements.find(identity);
+        return it != m_groupAutomationElements.end() ? it->second : nullptr;
+    }
+    void SetGroupAutomationElementInternal(winrt::hstring const& identity, winrt::AutomationPeer const& element);
 
     // Two-level cursor state. False = ROW level, true = CELL level. Owned here rather than on the
     // row because it has to survive row recycling and follow the cursor from row to row.
@@ -879,6 +915,10 @@ private:
     void OnBodyScrollerViewChanged(
         const winrt::IInspectable& sender,
         const winrt::ScrollViewerViewChangedEventArgs& args);
+    void SyncHeaderScroller();
+    void StartHeaderScrollAnimation();
+    void UpdateHeaderScrollOffset();
+    void StopHeaderScrollAnimation();
 
     // Defer ScrollViewer ancestor lookup until Loaded because ScrollViewer template names are shadowed.
     void OnHeaderHostLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -887,6 +927,7 @@ private:
     // ThemeSettings must be created once a XamlRoot/WindowId is available (Loaded); its Changed handler
     // refreshes HC-dependent resources directly on the UI thread (Changed is raised there).
     void OnTableViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnXamlRootChanged(const winrt::XamlRoot& sender, const winrt::XamlRootChangedEventArgs& args);
     void OnThemeSettingsChanged(const winrt::Microsoft::UI::System::ThemeSettings& sender, const winrt::IInspectable& args);
 
     void UpdateHeaderVisibility();
@@ -894,6 +935,7 @@ private:
     void RefreshGridLinesOnRealizedRows();
     void QueueTerminalGridLineRefresh(bool isGeometryRetry = false);
     void RefreshTerminalGridLines();
+    std::optional<winrt::Rect> GetInnerBorderBounds();
     std::optional<bool> ShouldSuppressTrailingGridLine();
     std::optional<bool> ShouldSuppressBottomGridLine(
         const winrt::FrameworkElement& element,
@@ -1025,6 +1067,12 @@ private:
         bool subtree = false);
     void RaiseGroupStructureChanged();
     void AnnounceRowExpansionChange(winrt::hstring const& identity);
+    std::optional<winrt::ExpandCollapseState> TryGetGroupExpandCollapseState(winrt::hstring const& identity);
+
+    // Group identity -> ExpandCollapseState before a toggle that has not reached its header yet.
+    std::unordered_map<winrt::hstring, winrt::ExpandCollapseState> m_pendingGroupExpansionStates;
+    // Cleared with m_rowMetadataGeneration: identities are only meaningful within one projection.
+    std::unordered_map<winrt::hstring, winrt::AutomationPeer> m_groupAutomationElements;
 
     void SetBulkExpansion(bool expand, BulkExpansionAxis axis);
     void ApplyBulkExpansion(bool expand, BulkExpansionAxis axis);
@@ -1165,6 +1213,7 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    winrt::ScrollViewer::ViewChanged_revoker m_headerScrollerViewChangedRevoker{};
     winrt::UIElement::ContextRequested_revoker m_headerContextRequestedRevoker{};
     // Keeps the header band locked to the body when focus moves to an off-screen header.
     winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
@@ -1172,6 +1221,11 @@ private:
     // Targets of the requests ReleaseRowsRepeaterAnchor raised; OnBodyBringIntoViewRequested swallows them.
     std::vector<winrt::weak_ref<winrt::UIElement>> m_anchorReleaseTargets;
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
+    double m_headerRequestedOffset{ std::numeric_limits<double>::quiet_NaN() };
+    // The expression doesn't keep the property sets it reads alive.
+    winrt::ExpressionAnimation m_headerScrollAnimation{ nullptr };
+    winrt::CompositionPropertySet m_headerScrollOffset{ nullptr };
+    winrt::CompositionPropertySet m_bodyManipulationProperties{ nullptr };
 
     winrt::event_token m_rowElementPreparedToken{};
     winrt::event_token m_rowElementClearingToken{};
@@ -1326,6 +1380,8 @@ private:
     // Only touched on the UI thread now, so no atomic is required.
     bool m_isHighContrast{ false };
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    double m_layoutRasterizationScale{ 0.0 };
 
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     void OnTableViewUnloaded();

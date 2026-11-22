@@ -25,9 +25,18 @@
 class TableViewTrackedItemIdentity
 {
 public:
+    void Reset() noexcept
+    {
+        m_hasItem = false;
+        m_isNull = false;
+        m_weakItem = nullptr;
+        m_strongItem = nullptr;
+    }
+
     void Track(winrt::IInspectable const& item)
     {
-        m_hasItem = static_cast<bool>(item);
+        m_hasItem = true;
+        m_isNull = !item;
         m_weakItem = winrt::weak_ref<winrt::IInspectable>{ nullptr };
         m_strongItem = nullptr;
 
@@ -61,12 +70,17 @@ public:
 
     bool SameIdentityAs(winrt::IInspectable const& candidate) const
     {
+        if (m_hasItem && m_isNull)
+        {
+            return !candidate;
+        }
         auto const item = Resolve();
         return candidate && item && TableView::SameInspectableIdentity(candidate, item);
     }
 
 private:
     bool m_hasItem{ false };
+    bool m_isNull{ false };
     winrt::weak_ref<winrt::IInspectable> m_weakItem{ nullptr };
     winrt::IInspectable m_strongItem{ nullptr };
 };
@@ -76,6 +90,140 @@ private:
 {
     throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
 }
+
+inline void EnsureCanAddRowToSelection(TableView& table, int32_t index)
+{
+    // The selection model is authoritative while selection observers are running.
+    if (!table.CanSelectMultipleRows() && table.SelectedIndexInternal() >= 0 &&
+        !table.IsSelected(index))
+    {
+        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+    }
+}
+
+// Marked composable like the IDL-generated peer bases, which ReferenceTracker relies on.
+template <typename D, typename... I>
+using TableViewComposableAutomationPeerT = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerT<D, winrt::composable, I...>;
+
+struct __declspec(uuid("6B1E52C4-3D7A-4F0B-9E21-8C5A0D47F3B6")) __declspec(novtable)
+    ITableViewBindingAutomationPeerAccess : ::IUnknown
+{
+    virtual HRESULT __stdcall GetBoundContainer(_Outptr_result_maybenull_ ::IInspectable** container) noexcept = 0;
+};
+
+inline winrt::UIElement TryGetBoundContainer(winrt::AutomationPeer const& peer)
+{
+    winrt::com_ptr<::IInspectable> container;
+    if (auto const access = peer ? peer.try_as<ITableViewBindingAutomationPeerAccess>() : nullptr)
+    {
+        access->GetBoundContainer(container.put());
+    }
+    return container ? container.as<winrt::UIElement>() : nullptr;
+}
+
+template <typename D, typename... I>
+struct TableViewBindingAutomationPeerT :
+    ReferenceTracker<D, TableViewComposableAutomationPeerT, I..., ITableViewBindingAutomationPeerAccess>
+{
+    using AutomationPeerAnnotation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationPeerAnnotation;
+    using AutomationOrientation = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation;
+    using AutomationLiveSetting = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting;
+    using AutomationLandmarkType = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationLandmarkType;
+    using AutomationHeadingLevel = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationHeadingLevel;
+
+    winrt::hstring GetAutomationIdCore() { return Forward([](auto const& p) { return p.GetAutomationId(); }, winrt::hstring{}); }
+    winrt::hstring GetHelpTextCore() { return Forward([](auto const& p) { return p.GetHelpText(); }, winrt::hstring{}); }
+    bool IsContentElementCore() { return Forward([](auto const& p) { return p.IsContentElement(); }, true); }
+    bool IsControlElementCore() { return Forward([](auto const& p) { return p.IsControlElement(); }, true); }
+    bool IsOffscreenCore() { return Forward([](auto const& p) { return p.IsOffscreen(); }, true); }
+    winrt::Rect GetBoundingRectangleCore() { return Forward([](auto const& p) { return p.GetBoundingRectangle(); }, winrt::Rect{}); }
+    winrt::Point GetClickablePointCore() { return Forward([](auto const& p) { return p.GetClickablePoint(); }, winrt::Point{}); }
+    bool HasKeyboardFocusCore() { return Forward([](auto const& p) { return p.HasKeyboardFocus(); }, false); }
+    bool IsKeyboardFocusableCore() { return Forward([](auto const& p) { return p.IsKeyboardFocusable(); }, false); }
+    int32_t GetPositionInSetCore() { return Forward([](auto const& p) { return p.GetPositionInSet(); }, -1); }
+    int32_t GetSizeOfSetCore() { return Forward([](auto const& p) { return p.GetSizeOfSet(); }, -1); }
+    int32_t GetLevelCore() { return Forward([](auto const& p) { return p.GetLevel(); }, -1); }
+    winrt::hstring GetAcceleratorKeyCore() { return Forward([](auto const& p) { return p.GetAcceleratorKey(); }, winrt::hstring{}); }
+    winrt::hstring GetAccessKeyCore() { return Forward([](auto const& p) { return p.GetAccessKey(); }, winrt::hstring{}); }
+    winrt::hstring GetItemStatusCore() { return Forward([](auto const& p) { return p.GetItemStatus(); }, winrt::hstring{}); }
+    winrt::hstring GetItemTypeCore() { return Forward([](auto const& p) { return p.GetItemType(); }, winrt::hstring{}); }
+    winrt::hstring GetFullDescriptionCore() { return Forward([](auto const& p) { return p.GetFullDescription(); }, winrt::hstring{}); }
+    winrt::hstring GetLocalizedLandmarkTypeCore() { return Forward([](auto const& p) { return p.GetLocalizedLandmarkType(); }, winrt::hstring{}); }
+    winrt::AutomationPeer GetLabeledByCore() { return Forward([](auto const& p) { return p.GetLabeledBy(); }, winrt::AutomationPeer{ nullptr }); }
+    winrt::IVectorView<winrt::AutomationPeer> GetControlledPeersCore() { return Forward([](auto const& p) { return p.GetControlledPeers(); }, winrt::IVectorView<winrt::AutomationPeer>{ nullptr }); }
+    winrt::IIterable<winrt::AutomationPeer> GetDescribedByCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetDescribedBy); }
+    winrt::IIterable<winrt::AutomationPeer> GetFlowsToCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetFlowsTo); }
+    winrt::IIterable<winrt::AutomationPeer> GetFlowsFromCore() { return ForwardPeerCollection(&winrt::AutomationProperties::GetFlowsFrom); }
+    winrt::IVector<AutomationPeerAnnotation> GetAnnotationsCore() { return Forward([](auto const& p) { return p.GetAnnotations(); }, winrt::IVector<AutomationPeerAnnotation>{ nullptr }); }
+    AutomationOrientation GetOrientationCore() { return Forward([](auto const& p) { return p.GetOrientation(); }, AutomationOrientation::None); }
+    AutomationLiveSetting GetLiveSettingCore() { return Forward([](auto const& p) { return p.GetLiveSetting(); }, AutomationLiveSetting::Off); }
+    AutomationLandmarkType GetLandmarkTypeCore() { return Forward([](auto const& p) { return p.GetLandmarkType(); }, AutomationLandmarkType::None); }
+    AutomationHeadingLevel GetHeadingLevelCore() { return Forward([](auto const& p) { return p.GetHeadingLevel(); }, AutomationHeadingLevel::None); }
+    bool IsPasswordCore() { return Forward([](auto const& p) { return p.IsPassword(); }, false); }
+    bool IsRequiredForFormCore() { return Forward([](auto const& p) { return p.IsRequiredForForm(); }, false); }
+    bool IsPeripheralCore() { return Forward([](auto const& p) { return p.IsPeripheral(); }, false); }
+    bool IsDataValidForFormCore() { return Forward([](auto const& p) { return p.IsDataValidForForm(); }, true); }
+    bool IsDialogCore() { return Forward([](auto const& p) { return p.IsDialog(); }, false); }
+
+    HRESULT __stdcall GetBoundContainer(::IInspectable** container) noexcept override
+    {
+        *container = nullptr;
+        try
+        {
+            if (auto const element = static_cast<D*>(this)->TryBoundContainer())
+            {
+                winrt::copy_to_abi(element, *reinterpret_cast<void**>(container));
+            }
+            return S_OK;
+        }
+        catch (...)
+        {
+            return winrt::to_hresult();
+        }
+    }
+
+protected:
+    // Current while the container's peer still has this as EventsSource (compared by COM identity).
+    bool IsEventsSourceOf(winrt::AutomationPeer const& containerPeer)
+    {
+        auto const source = containerPeer ? containerPeer.EventsSource() : nullptr;
+        return source && source == this->get_strong().template as<winrt::AutomationPeer>();
+    }
+
+private:
+    template <typename Fn, typename T>
+    T Forward(Fn&& forward, T fallback)
+    {
+        return static_cast<D*>(this)->ForwardToContainerPeer(std::forward<Fn>(forward), std::move(fallback));
+    }
+
+    // No peer getter exists for these, so read the container's AutomationProperties directly.
+    using ElementsGetter = winrt::IVector<winrt::DependencyObject>(*)(winrt::DependencyObject const&);
+    winrt::IIterable<winrt::AutomationPeer> ForwardPeerCollection(ElementsGetter getElements)
+    {
+        return Forward([getElements](auto const& p) -> winrt::IIterable<winrt::AutomationPeer>
+        {
+            auto const owner = p.template try_as<winrt::FrameworkElementAutomationPeer>();
+            auto const elements = owner ? getElements(owner.Owner()) : nullptr;
+            if (!elements || elements.Size() == 0)
+            {
+                return nullptr;
+            }
+            auto peers = winrt::single_threaded_vector<winrt::AutomationPeer>();
+            for (auto const& element : elements)
+            {
+                if (auto const uiElement = element.try_as<winrt::UIElement>())
+                {
+                    if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(uiElement))
+                    {
+                        peers.Append(peer);
+                    }
+                }
+            }
+            return peers;
+        }, winrt::IIterable<winrt::AutomationPeer>{ nullptr });
+    }
+};
 
 // Resource lookups feeding UIA are supplementary: degrade instead of letting a missing PRI (a host
 // app that does not merge the control's resources) escape into a UIA call.
@@ -251,6 +399,28 @@ inline int32_t CountVisibleColumns(winrt::IVector<winrt::TableViewColumn> const&
         }
     }
     return count;
+}
+
+// Position among visible columns in logical order, or -1 when `target` is missing or not visible.
+inline int32_t VisibleColumnIndexOf(winrt::IVector<winrt::TableViewColumn> const& columns, winrt::TableViewColumn const& target)
+{
+    if (!columns || !IsVisibleColumn(target))
+    {
+        return -1;
+    }
+    int32_t visible = 0;
+    for (auto const& column : columns)
+    {
+        if (column == target)
+        {
+            return visible;
+        }
+        if (IsVisibleColumn(column))
+        {
+            ++visible;
+        }
+    }
+    return -1;
 }
 
 constexpr int32_t c_maxCellContentChildrenPerLevel = 32;

@@ -1599,8 +1599,7 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
             {
                 if (!m_backdropLink)
                 {
-                    auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-                    auto compositor = visual.Compositor();
+                    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
                     m_backdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
                     m_overflowPopupBackdropLink = ContentExternalLinkHelper::BackdropLink::Create(compositor);
                 }

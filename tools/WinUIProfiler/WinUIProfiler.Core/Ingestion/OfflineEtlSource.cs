@@ -119,7 +119,7 @@ public static class OfflineEtlSource
                 order.Add(tally);
             }
 
-            tally.Count(provider, time);
+            tally.Count(provider, time, (int)data.ID);
         });
         var lastMilliseconds = 0.0;
         source.AllEvents += data =>
@@ -162,9 +162,11 @@ public static class OfflineEtlSource
     // A null processId reads every process. Markers are the marker providers whose events are read too. For one process,
     // processStarted gets the kernel's event for its creation, when the trace has it, and the events of the launcher
     // providers (MarkerProviderSettings.Launcher) of the process that created it are read too, those that are part of the
-    // launch (LaunchWatcher); they come after the process's first event, and some after later ones.
+    // launch (LaunchWatcher); they come after the process's first event, and some after later ones. With cpuSamples, the
+    // process's CPU samples and their stacks are stored there too, with what the sampling recorded (it needs a processId).
     public static EtlReadResult Read(string path, int? processId, IReadOnlyCollection<MarkerProviderSettings> markers,
-        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default)
+        Action<ProfilerEvent> sink, Action<TraceProcessStart>? processStarted = null, CancellationToken cancellationToken = default,
+        SessionWriter? cpuSamples = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentNullException.ThrowIfNull(markers);
@@ -177,6 +179,7 @@ public static class OfflineEtlSource
         using var source = new ETWTraceEventSource(path);
         long delivered = 0;
         LaunchWatcher? watcher = null;
+        StackSampleCollector? stacks = null;
         void Deliver(ProfilerEvent profilerEvent)
         {
             delivered++;
@@ -197,6 +200,10 @@ public static class OfflineEtlSource
                     }
                 },
                 launch.OtherProcessEvent);
+            if (cpuSamples is not null)
+            {
+                stacks = new(source, (pid, _) => pid == id, sample => cpuSamples.PostSample(sample, wait: true));
+            }
         }
         else
         {
@@ -210,10 +217,17 @@ public static class OfflineEtlSource
 
         cancellationToken.ThrowIfCancellationRequested();
         watcher?.Complete();
+        if (stacks is not null)
+        {
+            stacks.Flush();
+            var sampling = stacks.Summary;
+            cpuSamples!.SetCpuSampling(sampling, StackSampleCollector.TraceNote(sampling));
+        }
+
         return new(delivered, source.EventsLost, source.SessionDuration);
     }
 
-    private sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
+    internal sealed class ProcessTally(int processId, string? name, double firstMilliseconds)
     {
         public int ProcessId { get; } = processId;
         public string? Name { get; } = name;
@@ -224,7 +238,7 @@ public static class OfflineEtlSource
         public long GpuMemoryEvents { get; private set; }
 
         // Grouped as EventCounter groups them.
-        public void Count(XamlProvider provider, double milliseconds)
+        public void Count(XamlProvider provider, double milliseconds, int? eventId)
         {
             switch (provider)
             {
@@ -232,11 +246,13 @@ public static class OfflineEtlSource
                     ProfilerEvents++;
                     break;
                 case XamlProvider.DxgKrnl:
-                    GpuMemoryEvents++;
+                    if (eventId is not (>= 33 and <= 38)) GpuMemoryEvents++;
                     break;
                 case XamlProvider.Win32k:
-                    // Every process with windows has focus events; they don't make it a XAML process.
                     return;
+                case XamlProvider.Direct3D11:
+                    // Track time without making graphics-only processes eligible for the XAML process list.
+                    break;
                 default:
                     XamlEvents++;
                     break;

@@ -190,7 +190,7 @@ internal static class StartupIntegration
         var options = runtime with { LaunchDirectory = Path.Combine(directory, "launch") };
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         var startQpc = Stopwatch.GetTimestamp();
-        using var source = LiveEtwSource.StartBeforeLaunch(["Fixture.exe"], [new(Marker)]);
+        using var source = LiveEtwSource.StartBeforeLaunch(["Fixture.exe"], [], [new(Marker)]);
         var unrelatedStart = new ProcessStartInfo(fixture) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(fixture)! };
         unrelatedStart.ArgumentList.Add(Path.Combine(directory, "unrelated.json"));
         unrelatedStart.ArgumentList.Add("etw-unrelated");

@@ -99,6 +99,13 @@ public:
 
     // Internal: the read-only text cell for DisplayMemberBinding, or null when it is not set.
     winrt::FrameworkElement GenerateDisplayMemberElementInternal();
+    static bool UsesDisplayMemberText(winrt::TableViewColumn const& column)
+    {
+        return column && column.DisplayMemberBinding();
+    }
+    // Restamps the density font size on a generated text cell unless the app has taken it over.
+    static void RefreshGeneratedFontSize(winrt::TextBlock const& text, double fontSize);
+    static void ClearDisplayMemberProperties();
 
     winrt::Microsoft::UI::Xaml::Data::Binding CellToolTipBinding();
     void CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value);

@@ -67,6 +67,10 @@ public:
 
     void ResetNameState();
     void UpdateNameItem(winrt::IInspectable const& item);
+    bool IsTrackingOtherItem(winrt::IInspectable const& item) const
+    {
+        return m_item.IsTracking() && !m_item.SameIdentityAs(item);
+    }
     // Row() without the ElementNotAvailable throw: -1 when the row is gone.
     int32_t GetRowIndexInternal();
 

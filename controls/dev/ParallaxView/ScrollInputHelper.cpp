@@ -850,8 +850,7 @@ void ScrollInputHelper::EnsureInternalSourcePropertySetAndExpressionAnimations()
     auto targetElement = m_targetElement.get();
     if (!m_internalSourcePropertySet && targetElement)
     {
-        winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(targetElement);
-        winrt::Compositor compositor = visual.Compositor();
+        winrt::Compositor compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
         m_internalSourcePropertySet = compositor.CreatePropertySet();
         m_internalSourcePropertySet.InsertScalar(s_horizontalOffsetPropertyName, 0.0f);

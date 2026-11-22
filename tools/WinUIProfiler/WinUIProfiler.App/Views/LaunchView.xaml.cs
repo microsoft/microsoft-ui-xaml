@@ -287,8 +287,8 @@ public sealed partial class LaunchView : UserControl
 
     private void Reload_Click(object sender, RoutedEventArgs args) => Reload();
 
-    // Opens the user's configuration, created from the default the first time, in the app that opens JSON files, or in
-    // Notepad when there is none. Reload reads it again once it is saved.
+    // Opens the user's configuration, created from the default the first time, in Notepad, or when Notepad can't start,
+    // in the app that opens JSON files. Reload reads it again once it is saved.
     private void Edit_Click(object sender, RoutedEventArgs args)
     {
         string file;
@@ -307,13 +307,13 @@ public sealed partial class LaunchView : UserControl
         {
             try
             {
-                Process.Start(new ProcessStartInfo(file) { UseShellExecute = true })?.Dispose();
-            }
-            catch (Win32Exception)
-            {
                 // System32's, not one found first on the search path.
                 Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "notepad.exe")) { ArgumentList = { file } })
                     ?.Dispose();
+            }
+            catch (Win32Exception)
+            {
+                Process.Start(new ProcessStartInfo(file) { UseShellExecute = true })?.Dispose();
             }
         }
         catch (Exception error) when (error is not OutOfMemoryException)

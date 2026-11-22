@@ -6,7 +6,11 @@
 #include "TableViewColumn.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewFallbackMetrics.h"
+#include "GlobalDependencyProperty.h"
 #include "TVDiag.h"
+
+#include <winrt/Windows.UI.Xaml.Interop.h>
 
 #include <algorithm>
 #include <atomic>
@@ -16,6 +20,50 @@
 namespace
 {
     std::atomic<uint32_t> s_nextAutomationIdentity{ 1 };
+
+    GlobalDependencyProperty s_generatedFontSizeProperty{ nullptr };
+
+    winrt::DependencyProperty GeneratedFontSizeProperty()
+    {
+        if (!s_generatedFontSizeProperty)
+        {
+            s_generatedFontSizeProperty = InitializeDependencyProperty(
+                L"TableViewGeneratedFontSize",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                true /* isAttached */,
+                winrt::box_value(0.0),
+                nullptr /* propertyChangedCallback */);
+        }
+        return s_generatedFontSizeProperty;
+    }
+}
+
+void TableViewColumn::ClearDisplayMemberProperties()
+{
+    s_generatedFontSizeProperty = nullptr;
+}
+
+void TableViewColumn::RefreshGeneratedFontSize(winrt::TextBlock const& text, double fontSize)
+{
+    auto const property = GeneratedFontSizeProperty();
+    auto const stamp = text.ReadLocalValue(property).try_as<winrt::IReference<double>>();
+    if (!stamp)
+    {
+        return;
+    }
+    auto const localFont = text.ReadLocalValue(winrt::TextBlock::FontSizeProperty()).try_as<winrt::IReference<double>>();
+    if (!localFont || localFont.Value() != stamp.Value() || text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()))
+    {
+        text.ClearValue(property);
+        return;
+    }
+    if (text.FontSize() != fontSize)
+    {
+        // Update ownership before FontSize so our own callback does not mistake the restamp for an app override.
+        text.SetValue(property, winrt::box_value(fontSize));
+        text.FontSize(fontSize);
+    }
 }
 
 TableViewColumn::TableViewColumn()
@@ -46,11 +94,25 @@ winrt::FrameworkElement TableViewColumn::GenerateDisplayMemberElementInternal()
     winrt::TextBlock textBlock;
     textBlock.VerticalAlignment(winrt::VerticalAlignment::Center);
     textBlock.TextTrimming(winrt::TextTrimming::CharacterEllipsis);
-    // TableViewRow::RebuildCells restamps this padding when Density changes.
+    // FontWeight stays unset so a TableView/app value inherits. TableViewRow restamps the font size
+    // and padding when Density changes.
     auto const owner = GetOwningTableView();
+    const auto fontSize = owner ? winrt::get_self<TableView>(owner)->GetCellFontSize() : TableViewDetails::c_cellFontSizeFallback;
+    textBlock.FontSize(fontSize);
+    textBlock.SetValue(GeneratedFontSizeProperty(), winrt::box_value(fontSize));
+    textBlock.RegisterPropertyChangedCallback(winrt::TextBlock::FontSizeProperty(),
+        [](winrt::DependencyObject const& sender, winrt::DependencyProperty const&)
+        {
+            auto const text = sender.as<winrt::TextBlock>();
+            auto const stamp = text.ReadLocalValue(GeneratedFontSizeProperty()).try_as<winrt::IReference<double>>();
+            if (stamp && (text.GetBindingExpression(winrt::TextBlock::FontSizeProperty()) || text.FontSize() != stamp.Value()))
+            {
+                text.ClearValue(GeneratedFontSizeProperty());
+            }
+        });
     textBlock.Padding(owner
-        ? winrt::get_self<TableView>(owner)->GetDensityCellPadding()
-        : winrt::ThicknessHelper::FromLengths(8, 4, 8, 4));
+        ? winrt::get_self<TableView>(owner)->GetDisplayCellPadding()
+        : TableViewDetails::GetDensityFallbackMetrics().textPadding);
     winrt::BindingOperations::SetBinding(textBlock, winrt::TextBlock::TextProperty(), binding);
     return textBlock;
 }

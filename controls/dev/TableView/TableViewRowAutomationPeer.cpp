@@ -361,7 +361,7 @@ int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
     winrt::IInspectable const& item,
     int32_t targetIndex)
 {
-    if (!tableView || !item || targetIndex < 0)
+    if (!tableView || targetIndex < 0)
     {
         return -1;
     }
@@ -378,7 +378,7 @@ int32_t TableViewRowAutomationPeer::GetItemOccurrenceAtIndex(
     for (int32_t index = 0; index <= targetIndex; ++index)
     {
         if (auto const candidate = tableImpl->UnwrapDataItem(view.GetAt(index));
-            candidate && TableView::SameInspectableIdentity(candidate, item))
+            TableView::SameInspectableIdentity(candidate, item))
         {
             if (index == targetIndex)
             {
@@ -401,7 +401,14 @@ bool TableViewRowAutomationPeer::IsTrackedRow(winrt::TableViewRow const& row, wi
     auto const rowItem = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
     if (!rowItem)
     {
-        return false;
+        auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal();
+        const auto index = repeater ? repeater.GetElementIndex(row) : -1;
+        auto const view = repeater ? repeater.ItemsSourceView() : nullptr;
+        if (!view || index < 0 || index >= view.Count() ||
+            winrt::get_self<TableView>(tableView)->UnwrapDataItem(view.GetAt(index)))
+        {
+            return false;
+        }
     }
 
     if (!m_item.IsTracking())
@@ -436,17 +443,15 @@ void TableViewRowAutomationPeer::TrackRowItem(winrt::TableViewRow const& row, wi
 {
     if (row && tableView)
     {
-        if (auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext()))
+        auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
+        m_item.Track(item);
+        m_trackedItemOccurrence = -1;
+        if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
         {
-            m_item.Track(item);
-            m_trackedItemOccurrence = -1;
-            if (auto const repeater = winrt::get_self<TableView>(tableView)->GetRowsRepeaterInternal())
+            if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
             {
-                if (const auto rowIndex = repeater.GetElementIndex(row); rowIndex >= 0)
-                {
-                    m_lastKnownRowIndex = rowIndex;
-                    m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
-                }
+                m_lastKnownRowIndex = rowIndex;
+                m_trackedItemOccurrence = GetItemOccurrenceAtIndex(tableView, item, rowIndex);
             }
         }
     }
@@ -467,6 +472,10 @@ bool TableViewRowAutomationPeer::CanReuseForRowItem(
     }
 
     auto const item = winrt::get_self<TableView>(tableView)->UnwrapDataItem(row.DataContext());
+    if (!item)
+    {
+        return IsTrackedRow(row, tableView);
+    }
     return m_item.SameIdentityAs(item);
 }
 
@@ -689,7 +698,12 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     }
     // GetChildren normally establishes this relationship, but Grid.GetItem can be
     // the first and only acquisition route. Connect that same peer before publishing it.
-    peer.SetParent(*this);
+    winrt::AutomationPeer parent = EventsSource();
+    if (!parent)
+    {
+        parent = *this;
+    }
+    peer.SetParent(parent);
     m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
 }
@@ -768,10 +782,9 @@ void TableViewRowAutomationPeer::ApplySelectionItemActionAt(
     auto const impl = winrt::get_self<TableView>(tableView);
     // Per the UIA SelectionItem spec, single-select fails rather than replacing another row's selection.
     // Ask the model: SelectedIndex and the row's IsSelected lag it while selection observers run.
-    if (action == SelectionItemAction::Add &&
-        !impl->CanSelectMultipleRows() && impl->SelectedIndexInternal() >= 0 && !impl->IsSelected(rowIndex))
+    if (action == SelectionItemAction::Add)
     {
-        throw winrt::hresult_error(UIA_E_INVALIDOPERATION);
+        EnsureCanAddRowToSelection(*impl, rowIndex);
     }
     if (rowIndex < 0)
     {
@@ -890,6 +903,13 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
     {
         // best-effort: the tree may be tearing down.
     }
+}
+
+void TableViewRowAutomationPeer::ResetReportedHierarchyState()
+{
+    m_lastReportedLevel = -1;
+    m_lastReportedPositionInSet = -1;
+    m_lastReportedSizeOfSet = -1;
 }
 
 // ----- IAutomationPeerOverrides3 -----

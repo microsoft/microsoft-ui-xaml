@@ -5,10 +5,18 @@ parameters:
   targetPath: ''
   itemPattern: ''
   enableUseOutputFromPreviousBuild: false
+  # Optional bounds for callers whose download is small and predictable. 0 keeps the task defaults
+  # (no step timeout, no retry). A step that times out is not retried.
+  timeoutInMinutes: 0
+  retryCountOnTaskFailure: 0
 
 steps:
 - ${{ if eq(parameters.enableUseOutputFromPreviousBuild, 'true') }}:
   - task: DownloadPipelineArtifact@2
+    ${{ if ne(parameters.timeoutInMinutes, 0) }}:
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    ${{ if ne(parameters.retryCountOnTaskFailure, 0) }}:
+      retryCountOnTaskFailure: ${{ parameters.retryCountOnTaskFailure }}
     inputs:
       source: specific
       runVersion: specific
@@ -21,6 +29,10 @@ steps:
 
 - ${{ if ne(parameters.enableUseOutputFromPreviousBuild, 'true') }}:
     - task: DownloadPipelineArtifact@2
+      ${{ if ne(parameters.timeoutInMinutes, 0) }}:
+        timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+      ${{ if ne(parameters.retryCountOnTaskFailure, 0) }}:
+        retryCountOnTaskFailure: ${{ parameters.retryCountOnTaskFailure }}
       inputs:
         artifactName: ${{ parameters.artifactName }}
         targetPath: ${{ parameters.targetPath }}

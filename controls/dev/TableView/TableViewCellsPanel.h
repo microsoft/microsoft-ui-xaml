@@ -30,6 +30,7 @@ public:
 
     // Measured (unconstrained) width for this column from the last MeasureOverride pass (0 if absent).
     double MeasuredWidthForColumn(winrt::TableViewColumn const& column) const;
+    void InvalidateMeasuredWidths();
 
     // Pins the contiguous leading-frozen prefix of a cell host (header or row) against the horizontal
     // scroll offset and clips the scrolled cells beneath it. Shared by the header host and every row's

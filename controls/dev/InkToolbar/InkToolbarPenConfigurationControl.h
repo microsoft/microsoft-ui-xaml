@@ -62,6 +62,7 @@ private:
     void OnHighContrastChanged(winrt::Windows::UI::ViewManagement::AccessibilitySettings const& sender, winrt::IInspectable const& args);
 
     void OnSelectedItemChanged(winrt::IInspectable const& sender, winrt::SelectionChangedEventArgs const& args);
+    void OnColorPickerItemsChanged();
     void OnContainerContentChanging(winrt::ListViewBase const& sender, winrt::ContainerContentChangingEventArgs const& args);
     void OnColorPickerGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnStrokeWidthSliderGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -91,6 +92,7 @@ private:
     winrt::event_token m_widthSliderGotFocusToken{};
     winrt::event_token m_widthSliderValueChangedToken{};
     winrt::event_token m_selectionChangedToken{};
+    winrt::event_token m_itemsChangedToken{};
     winrt::event_token m_containerContentChangingToken{};
 
     winrt::IInspectable m_colorPickerPointerPressedEventHandler{ nullptr };

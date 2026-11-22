@@ -105,6 +105,13 @@ bool TableViewCellsPanel::RecordAndDetectMeasuredWidthChange(
     return hadPrevious && std::abs(measuredWidth - previous) > c_columnMeasureChangeThreshold;
 }
 
+void TableViewCellsPanel::InvalidateMeasuredWidths()
+{
+    m_measuredWidthsByColumn.clear();
+    m_lastMeasuredWidthsByColumn.clear();
+    InvalidateMeasure();
+}
+
 winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSize)
 {
     TableView::ElementLayoutScope const layoutScope;

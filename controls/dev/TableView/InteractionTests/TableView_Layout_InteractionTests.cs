@@ -1056,7 +1056,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-                string offsetsAfter = ReadScrollOffsets();
+                string offsetsAfter = ReadSettledScrollOffsets();
                 double bodyAfter = ReadScrollOffsetComponent(offsetsAfter, "H");
                 double headerAfter = ReadScrollOffsetComponent(offsetsAfter, "HeaderH");
 
@@ -1196,7 +1196,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Wait.ForIdle();
 
-                string offsetsAfter = ReadScrollOffsets();
+                string offsetsAfter = ReadSettledScrollOffsets();
                 double hAfter = ReadScrollOffsetComponent(offsetsAfter, "H");
                 double frozenXAfter = ReadScrollOffsetComponent(offsetsAfter, "FrozenX");
                 double scrollXAfter = ReadScrollOffsetComponent(offsetsAfter, "ScrollX");
@@ -1257,6 +1257,115 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                         "The 'FrozenName' header cell must stay pinned with its body cells (dev-spec:185); its rendered x went {0} -> {1}.",
                         frozenXBefore,
                         frozenXAfter));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies header cells, frozen and scrolling, stay over their body cells after a horizontal mouse-wheel scroll (ADO 64513223).")]
+        public void HorizontalWheelKeepsHeaderCellsOverBodyCells()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem))
+                {
+                    Verify.Fail("Could not select the 'Scrolling' pivot item.");
+                    return;
+                }
+
+                UIObject tableView = FindElement.ById(ScrollingTable);
+                if (tableView == null)
+                {
+                    Verify.Fail("ScrollingTableView was not found on the test page.");
+                    return;
+                }
+
+                UIObject header = FindColumnHeader(tableView, "ScrollAge");
+                if (header == null)
+                {
+                    Verify.Fail("The 'ScrollAge' column header peer was not found on the header host.");
+                    return;
+                }
+                int headerLeftBefore = header.BoundingRectangle.Left;
+
+                HorizontalWheelAtPoint(CentreOf(tableView), mouseWheelDelta);
+                string offsets = ReadSettledScrollOffsets();
+                Log.Comment("Offsets after the wheel: '{0}'.", offsets);
+
+                double h = ReadScrollOffsetComponent(offsets, "H");
+                Verify.IsGreaterThan(h, 0.0, "Precondition: the horizontal wheel must scroll PART_BodyScroller.");
+                // ScrollAge starts 220 DIPs right of the frozen band; past that its peer rectangle is clipped.
+                Verify.IsLessThan(h, 220.0, "Precondition: 'ScrollAge' must stay clear of the frozen band.");
+                VerifyHeaderCellsOverBodyCells(offsets, "after a horizontal wheel");
+
+                // UIA must report the header where it is drawn: shifted left by the scroll.
+                int headerLeftAfter = FindColumnHeader(tableView, "ScrollAge").BoundingRectangle.Left;
+                double expectedShift = h * GetAppWindowScale();
+                Log.Comment("'ScrollAge' header peer Left {0} -> {1}; expected shift {2:F1}.", headerLeftBefore, headerLeftAfter, expectedShift);
+                Verify.IsLessThanOrEqual(Math.Abs((headerLeftBefore - headerLeftAfter) - expectedShift), 2.0,
+                    "The header peer's BoundingRectangle must move with the drawn header.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies keyboard navigation to an off-screen column, in the body and in the header row, keeps header cells over body cells (ADO 64513223).")]
+        public void KeyboardNavigationToOffscreenColumnKeepsHeaderAligned()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                if (!SelectPivotItem(ScrollingPivotItem))
+                {
+                    Verify.Fail("Could not select the 'Scrolling' pivot item.");
+                    return;
+                }
+
+                UIObject rowsHost = GetRowsHost(ScrollingTable);
+                if (rowsHost == null || rowsHost.Children.Count == 0)
+                {
+                    Verify.Fail("ScrollingTableView exposed no realized rows.");
+                    return;
+                }
+
+                rowsHost.Children[0].SetFocus();
+                Wait.ForIdle();
+                // In a row, End moves to the last row, so walk the cells to the off-screen last column instead.
+                for (int i = 0; i < 4; i++)
+                {
+                    KeyboardHelper.PressKey(Key.Right);
+                }
+                string offsets = ReadSettledScrollOffsets();
+                Log.Comment("Offsets after Right to the last cell: '{0}'.", offsets);
+                Verify.IsGreaterThan(ReadScrollOffsetComponent(offsets, "H"), 0.0,
+                    "Precondition: Right must scroll the body to the off-screen last column.");
+                VerifyHeaderCellsOverBodyCells(offsets, "after Right to the last cell");
+
+                // Up from row 0 enters the header row at the same column; Home and End then walk the header row.
+                KeyboardHelper.PressKey(Key.Up);
+                KeyboardHelper.PressKey(Key.Home);
+                offsets = ReadSettledScrollOffsets();
+                Log.Comment("Offsets after Home in the header row: '{0}'.", offsets);
+                Verify.IsNotNull(FindFocusedHeader(ScrollingTable), "Precondition: focus must be in the header row.");
+                VerifyHeaderCellsOverBodyCells(offsets, "after Home in the header row");
+
+                KeyboardHelper.PressKey(Key.End);
+                offsets = ReadSettledScrollOffsets();
+                Log.Comment("Offsets after End in the header row: '{0}'.", offsets);
+                Verify.IsGreaterThan(ReadScrollOffsetComponent(offsets, "H"), 0.0,
+                    "Focusing the off-screen last header must scroll the body to it.");
+                VerifyHeaderCellsOverBodyCells(offsets, "after End in the header row");
+            }
+        }
+
+        // Frozen and first scrolling header cell against the first row's cells of the same columns.
+        private static void VerifyHeaderCellsOverBodyCells(string offsets, string context)
+        {
+            foreach (var (headerKey, bodyKey) in new[] { ("FrozenX", "BodyFrozenX"), ("ScrollX", "BodyScrollX") })
+            {
+                double headerX = ReadScrollOffsetComponent(offsets, headerKey);
+                double bodyX = ReadScrollOffsetComponent(offsets, bodyKey);
+                Verify.IsFalse(double.IsNaN(headerX) || double.IsNaN(bodyX),
+                    string.Format("The page must publish {0} and {1} ({2}); got '{3}'.", headerKey, bodyKey, context, offsets));
+                Verify.IsLessThanOrEqual(Math.Abs(headerX - bodyX), 0.5,
+                    string.Format("{0}={1} must match {2}={3} ({4}).", headerKey, headerX, bodyKey, bodyX, context));
             }
         }
 
