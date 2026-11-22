@@ -209,11 +209,15 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   `ICollectionViewFactory`) already answers `ICollectionViewShaping`, so a consumer given only
   `new CollectionViewSource { Source = items }.View` (for example a control's `ItemsSource`) can start shaping it.
 - **Precedence.** `IsSourceGrouped = true` and sources that implement `ICollectionViewFactory` keep their existing
-  behavior. Descriptors are ignored for them in the POC.
+  behavior; their view cannot shape. As in WPF (`CannotSortView` / `CannotGroupView` / `CannotFilterView`), a rule
+  set on such a CVS (a description, `Filter`, `CustomSort` or a `FilterRequested` handler) throws
+  `InvalidOperationException` (`E_ILLEGAL_METHOD_CALL`) instead of being ignored, when the rule is added or when the
+  view is created with it. CVSs without rules are unaffected.
 - **Pipeline.** Filter, then stable multi-key sort, then group, level by level. Without a group order
   (`PropertyGroupDescription.SortDescriptions` / `CustomSort`), groups appear in first-appearance order of the sorted
   items (WPF behavior).
-- **Comparison.** Strings use `CompareStringEx` with the view's `Culture`, else the user locale. Numeric types compare as numbers, and
+- **Comparison.** Strings use `CompareStringEx` with the view's `Culture`, else the user locale. Numeric types compare as
+  numbers: two integers (including `Int64` and `UInt64`) exactly, otherwise as `double`; and
   `DateTime`, `TimeSpan` and `Boolean` are also ordered. `null` sorts first. Anything else compares equal, so source
   order is kept.
 - **Output.** The view is read-only and never writes to the source. Both flat and grouped output are presented by
@@ -233,8 +237,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   is inserted into or removed from its parent's `GroupItems` (`CollectionGroups` at the top level), and the view's
   items raise one change. A `Replace` that keeps the item's place is one `ItemChanged`, otherwise a remove and an
   insert. As in WPF, groups that exist do not move when their first item changes; `Refresh()` reorders them. A source
-  `Reset`, a change under `DeferRefresh`, a change raised while the view is computing, or a size/index mismatch still
-  triggers a **full recompute** and one `Reset`. `Refresh()` always recomputes fully. Plain `IVector` sources need
+  `Reset`, a change under `DeferRefresh`, a change made while the view runs app code or raises its changes (see
+  "Reentrancy"), or a size/index mismatch still triggers a **full recompute** and one `Reset`. `Refresh()` always recomputes fully. Plain `IVector` sources need
   `Refresh()`. `IIterable`-only sources are snapshotted, so re-set `Source`.
 - **Descriptor changes.** A change to `SortDescriptions`, `GroupDescriptions` or `Filter` reshapes an already
   shaped `View` **in place** (one `Reset`), so a consumer holding `View` keeps a live view. When shaping first
@@ -252,8 +256,21 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   When grouping stops, the group collection is emptied (one `Reset`) after the view's `Reset`, so it holds no items.
   Views that do not shape (`IsSourceGrouped`, factory and app views) keep their behavior: an `IsSourceGrouped`
   change still gives the CVS a new `View`, and their `CollectionGroups` changes are raised as before.
-- **Currency.** After a source-driven refresh, the previous `CurrentItem` is restored if it is still in the view.
-  Otherwise the view moves to the first item. A rebuilt `View` starts at the first item, as today.
+- **Currency** (WPF `ListCollectionView.RefreshOverride`). After a refresh, currency that was before the first item
+  or after the last stays there; a current item is followed if it is still in the view, otherwise currency moves to
+  the first item. So a sort with nothing current (a synchronized ListView with nothing selected) selects nothing. A
+  rebuilt `View` starts at the first item, as today.
+- **Reentrancy.** App code runs inside the engine (filters, `FilterRequested` handlers, property getters, converters,
+  comparers) and while it raises its changes (every `VectorChanged` / `PropertyChanged` handler). A rule change,
+  `Refresh()` or source change made from there is not dropped: it is recorded and the view recomputes once that work
+  unwinds, then raises its own `Reset` (WPF refreshes re-entrantly; neither throws). A handler that changes the view
+  on every change of it would never finish; after 64 rounds the view fails with `E_ILLEGAL_METHOD_CALL` (WPF
+  overflows the stack).
+- **Incremental loading.** A shaped view forwards `HasMoreItems` and `LoadMoreItemsAsync` to the collection it shapes
+  when that implements `ISupportIncrementalLoading`; the loaded items arrive as source changes and are placed by the
+  rules like any other.
+- **Group notifications.** A computed group raises `PropertyChanged("ItemCount")` when an item joins or leaves it, as
+  WPF's `CollectionViewGroup` does, so `{Binding ItemCount}` in a group header stays current.
 - **Live shaping** (WPF `ICollectionViewLiveShaping`, `ListCollectionView.RestoreLiveShaping`). With `IsLiveSorting`,
   `IsLiveFiltering` or `IsLiveGrouping` on, the view observes each source item's live properties (see the table
   above for which). A change marks the item, and at the next dispatcher turn the view restores every marked item, as
@@ -270,8 +287,15 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     rule change is pending, whose recompute observes the items afresh. A source change the view cannot follow
     incrementally makes the next restore a full recompute.
   - The observation follows the source: an added item is observed, a removed or replaced one is no longer, a recompute
-    rebuilds it, and turning the features off, a view the CVS replaces, or the view's destruction ends it. A property
-    change raised from inside a restore is restored at the next turn.
+    rebuilds it, and turning the features off or the view's destruction ends it. A property change raised from inside
+    a restore is restored at the next turn.
+  - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
+    observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
+    `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` raises `PropertyChanged` for it.
+  - As for `{Binding}`, a live property must change on the view's thread: a `PropertyChanged` raised on another
+    thread fails (`RPC_E_WRONG_THREAD`, an exception at the app's raise) rather than being silently missed.
+  - The listeners are walked by the view's reference tracker walk, so items whose objects point back at the owner
+    of the CVS do not form an uncollectable cycle.
 
 ## Design decisions and precedents
 
@@ -336,11 +360,14 @@ As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over 
   and `((ICollectionViewShaping)cvs.View).SortDescriptions` are the same collection, and a change to it is reported
   to the view (or, while there is no shaping view, to the CVS). `cvs.Filter` / `cvs.CustomSort` / `cvs.Refresh()`
   forward to the view; when `Source` changes, the CVS takes `Filter` and `CustomSort` back and applies them to the
-  next view. A view the CVS has replaced keeps answering `ICollectionViewShaping` through that CVS, so it still
-  shapes the CVS's current `View`.
-- **Lifetime.** The CVS holds its view (`View`); the view holds the CVS only weakly. A consumer that holds only
-  `cvs.View` (for example TableView's `ItemsSource`) keeps a working, shapeable view after the app drops the CVS,
-  because the engine is the view. (Before, the view held its CVS strongly because the engine lived there.)
+  next view. A view the CVS has replaced keeps a copy of the rules it had and keeps following its own source, as
+  each WPF view keeps the rules copied into it; nothing set on it reaches the CVS or its new `View`.
+- **Lifetime.** The CVS holds its view (`View`); the view holds the CVS weakly, except while the CVS has
+  `FilterRequested` handlers, when it holds it with a tracked reference (WPF's view holds the CVS through the
+  wrapped filter delegate). A consumer that holds only `cvs.View` (for example TableView's `ItemsSource`) keeps a
+  working, shapeable and still filtered view after the app drops the CVS.
+- **Release builds.** Shaping is an experimental API: in a build without `MUX_PRERELEASE`, `EnsureView` takes the
+  pre-shaping path, so the view never answers `ICollectionViewShaping` and `ItemsControl` attaches nothing.
 - **`DeferRefresh`.** The level lives on the view. A deferral taken on the CVS takes one on its view while any CVS
   deferral is open (also on a view created while one is open), so deferrals from either side batch together.
 - **Flat and grouped in one class.** A shaping view presents flat output directly and grouped output through an
@@ -473,7 +500,11 @@ collection, or the app's CVS `View`. The view's filter, sort and grouping run fi
 - The CVS filter runs before nesting: a match whose parent is filtered out is shown as an orphan root (the former
   `TableViewSource` kept the ancestors of a match).
 - With a grouped view, each root is placed in its group and keeps its subtree.
-- Live shaping moves an item in the view; the tree is rebuilt from the view's new order.
+- Live shaping moves an item in the view; the tree is rebuilt from the view's new order. A rebuild reads every item,
+  so it is coalesced: the first `ItemInserted`, `ItemChanged` or `Reset` of a dispatcher turn rebuilds at once, and an
+  `ItemRemoved` (the first half of a move) or any later change in the turn rebuilds once at the next turn. A live
+  tick that moves k rows costs at most two rebuilds, not 2k. Applying single changes to the tree without a rebuild is
+  a follow-up.
 
 Hierarchy on CVS itself (a `HierarchyDescription`, or option (b)) is future work; if it is approved, the relation
 moves from TableView into the view and `ItemKeyPath` / `ParentKeyPath` become a shorthand for it.
@@ -586,8 +617,6 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - **Reorder.** `ListViewBase` drag-reorder calls `RemoveAt` / `InsertAt` on the items source
   (`ListViewBase_Partial_Reorder.cpp:1498-1499`). Shaped views are read-only, the same as `IsSourceGrouped` views
   today, so set `CanReorderItems="False"`. WPF also blocks reorder on sorted views.
-- **Incremental loading.** `ISupportIncrementalLoading` sources lose `HasMoreItems` because the full source is
-  materialized. WPF and ACV have the same limitation.
 - **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
   selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat
   and grouped views.
@@ -596,13 +625,12 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
   `CustomSort` gets the names. A public `CollectionViewGroup` class would be an API-review decision.
 - **Default-view table.** `GetDefaultView` keeps a per-thread table of weak references; a view removes its own entry
   when it is destroyed.
-- **Reentrancy.** Changes raised while computing (for example from inside `Filter`, `CustomSort` or a property
-  getter) are not applied; the view's incremental bookkeeping is invalidated, so the next source change or
-  `Refresh()` recomputes fully.
+- **Default-view lifetime.** WPF keeps a default view (and its rules) alive as long as its collection, because the
+  collection's change event roots the view in one managed heap. Here the source can be native or managed and the
+  rules can hold app delegates, so a native table holding the view or its rules while the source lives would form a
+  cycle no GC can see. The table stays weak until the `GetDefaultView` API decision (drop it for V1, or redefine it).
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
   It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
-- **Lifetime.** The group key is held with a `ComPtr`, not a `TrackerPtr`: `ObservableTrackerCollection`'s reference
-  tracker walk is `final`. A managed key object is kept alive by its group until the next refresh.
 - **API shape.** Decide `GroupDescription` (abstract base) vs. `PropertyGroupDescription` before leaving experimental.
   Adding a base class later is breaking in WinRT; group `SortDescriptions` / `CustomSort` would move to it.
   `FilterRequested` vs. renaming the `Filter` delegate property so the event can take WPF's name is the other naming
@@ -611,11 +639,11 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
 - **Live shaping cost and lifetime.** One property path listener per source item and live property, rebuilt on each
-  full recompute (a header sort, `Refresh()`, a source `Reset`). The listeners are held by the view with `ComPtr`s
-  (the view's tracker walk is `final` in `CollectionView`), so they root the observed items while the view lives,
-  like WPF's bindings; they unsubscribe when an item leaves the source, when the features are turned off, when the
-  CVS replaces the view and when the view is destroyed. A restore after a turn in which most items changed costs one
-  remove and one insert per moved item; TableView's tree mode rebuilds its tree on each of them.
+  full recompute (a header sort, `Refresh()`, a source `Reset`). The view walks them (and a group walks its key and
+  its `PropertyChanged` handlers) in its reference tracker walk; they unsubscribe when an item leaves the source,
+  when the features are turned off and when the view is destroyed. A restore after a turn in which most items
+  changed costs one remove and one insert per moved item; TableView's tree mode rebuilds its tree at most twice for
+  it.
 - **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
   container, so selection and focus on it follow their remove semantics; TableView keeps the selection (see "Live
   shaping" in the TableView section) but not keyboard focus.
