@@ -488,12 +488,12 @@ namespace DirectUI
     MIDL_INTERFACE("d1141e8a-d8e1-4c81-849b-35f0c231464e")
     IUntypedVector: public IInspectable
     {
-        IFACEMETHOD(UntypedAppend)(_In_ IInspectable* pItem);
-        IFACEMETHOD(UntypedGetSize)(_Out_ unsigned int* pSize);
-        IFACEMETHOD(UntypedGetAt)(_In_ unsigned int index, _COM_Outptr_ IInspectable** ppItem);
-        IFACEMETHOD(UntypedInsertAt)(_In_ unsigned int index, _In_ IInspectable* pItem);
-        IFACEMETHOD(UntypedRemoveAt)(_In_ unsigned int index);
-        IFACEMETHOD(UntypedClear)();
+        STDMETHOD(UntypedAppend)(_In_ IInspectable* pItem) PURE;
+        STDMETHOD(UntypedGetSize)(_Out_ unsigned int* pSize) PURE;
+        STDMETHOD(UntypedGetAt)(_In_ unsigned int index, _COM_Outptr_ IInspectable** ppItem) PURE;
+        STDMETHOD(UntypedInsertAt)(_In_ unsigned int index, _In_ IInspectable* pItem) PURE;
+        STDMETHOD(UntypedRemoveAt)(_In_ unsigned int index) PURE;
+        STDMETHOD(UntypedClear)() PURE;
     };
 
     bool UntypedTryGetIndexOf(_In_ IUntypedVector* vector, _In_ IInspectable* item, _Out_ unsigned int* index);

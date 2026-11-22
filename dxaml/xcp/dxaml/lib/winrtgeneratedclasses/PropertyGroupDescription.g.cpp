@@ -13,7 +13,7 @@
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
-DirectUI::PropertyGroupDescriptionGenerated::PropertyGroupDescriptionGenerated(): m_stringComparison()
+DirectUI::PropertyGroupDescriptionGenerated::PropertyGroupDescriptionGenerated()
 {
 }
 
@@ -35,7 +35,7 @@ HRESULT DirectUI::PropertyGroupDescriptionGenerated::QueryInterfaceImpl(_In_ REF
 #endif
     else
     {
-        RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(DirectUI::GroupDescription::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -45,82 +45,30 @@ HRESULT DirectUI::PropertyGroupDescriptionGenerated::QueryInterfaceImpl(_In_ REF
 // Properties.
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_Converter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue)
 {
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(ppValue);
-    
-    IFC(m_pConverter.CopyTo(ppValue));
-Cleanup:
-    RRETURN(hr);
+    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_Converter, ppValue));
 }
-_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_Converter(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue)
 {
-    HRESULT hr = S_OK;
-    
-    m_pConverter = pValue;
-    RRETURN(hr);
-}
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_CustomSort(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer** ppValue)
-{
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(ppValue);
-    *ppValue={};
-    
-    IFC(static_cast<PropertyGroupDescription*>(this)->get_CustomSortImpl(ppValue));
-Cleanup:
-    RRETURN(hr);
-}
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_CustomSort(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue)
-{
-    HRESULT hr = S_OK;
-    
-    
-    IFC(static_cast<PropertyGroupDescription*>(this)->put_CustomSortImpl(pValue));
-Cleanup:
-    RRETURN(hr);
+    IFC_RETURN(DefaultStrictApiCheck(this));
+    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_Converter, pValue));
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_PropertyName(_Out_ HSTRING* pValue)
 {
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(pValue);
-    
-    IFC(m_propertyName.CopyTo(pValue));
-Cleanup:
-    RRETURN(hr);
+    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_PropertyName, pValue));
 }
-_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_PropertyName(_In_opt_ HSTRING value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_PropertyName(_In_opt_ HSTRING value)
 {
-    HRESULT hr = S_OK;
-    
-    IFC(m_propertyName.Set(value));
-Cleanup:
-    RRETURN(hr);
-}
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_SortDescriptions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue)
-{
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(ppValue);
-    *ppValue={};
-    
-    IFC(static_cast<PropertyGroupDescription*>(this)->get_SortDescriptionsImpl(ppValue));
-Cleanup:
-    RRETURN(hr);
+    IFC_RETURN(DefaultStrictApiCheck(this));
+    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_PropertyName, value));
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_StringComparison(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison* pValue)
 {
-    HRESULT hr = S_OK;
-    ARG_VALIDRETURNPOINTER(pValue);
-    
-    IFC(CValueBoxer::CopyValue(m_stringComparison, pValue));
-Cleanup:
-    RRETURN(hr);
+    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, pValue));
 }
-_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionGenerated::put_StringComparison(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_StringComparison(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value)
 {
-    HRESULT hr = S_OK;
-    
-    IFC(CValueBoxer::CopyValue(value, &m_stringComparison));
-Cleanup:
-    RRETURN(hr);
+    IFC_RETURN(DefaultStrictApiCheck(this));
+    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, value));
 }
 
 // Events.
@@ -137,7 +85,7 @@ HRESULT DirectUI::PropertyGroupDescriptionFactory::QueryInterfaceImpl(_In_ REFII
     else
 #endif
     {
-        RRETURN(ctl::AbstractActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
@@ -146,18 +94,14 @@ HRESULT DirectUI::PropertyGroupDescriptionFactory::QueryInterfaceImpl(_In_ REFII
 #endif
 }
 
-_Check_return_ HRESULT DirectUI::PropertyGroupDescriptionFactory::CheckActivationAllowed()
-{
-    RRETURN(S_OK);
-}
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstance(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance)
+IFACEMETHODIMP DirectUI::PropertyGroupDescriptionFactory::CreateInstanceWithPropertyName(_In_opt_ HSTRING propertyName, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IPropertyGroupDescription** ppInstance)
 {
     HRESULT hr = S_OK;
     
     ARG_VALIDRETURNPOINTER(ppInstance);
-    IFC(CreateInstanceImpl(propertyName, ppInstance));
+    IFC(CreateInstanceWithPropertyNameImpl(propertyName, ppInstance));
 Cleanup:
     return hr;
 }
@@ -181,6 +125,9 @@ Cleanup:
 }
 
 // Dependency properties.
+
+
+
 
 // Attached properties.
 

@@ -1062,7 +1062,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             items = new ObservableCollection<ShapedPerson>(MakeShapedPeople());
             var cvs = new CollectionViewSource { Source = items };
-            cvs.Filter = item => true;
+            ((ICollectionViewShaping)cvs.View).Filter = item => true;
             return cvs;
         }
 
@@ -1097,7 +1097,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(1, shaping.SortDescriptions.Count, "The header click wrote one SortDescription.");
                 Verify.AreEqual("Name", shaping.SortDescriptions[0].PropertyName);
-                Verify.AreEqual(ListSortDirection.Ascending, shaping.SortDescriptions[0].Direction);
+                Verify.AreEqual(CollectionViewSortDirection.Ascending, shaping.SortDescriptions[0].Direction);
                 Verify.AreEqual(1, cvs.SortDescriptions.Count, "The view and its CollectionViewSource share the descriptors.");
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The arrow follows the view's sort.");
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "after the header click");
@@ -1110,7 +1110,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(ListSortDirection.Descending, shaping.SortDescriptions[0].Direction);
+                Verify.AreEqual(CollectionViewSortDirection.Descending, shaping.SortDescriptions[0].Direction);
                 VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "after the toggle");
 
                 Verify.IsTrue(tableView.SortByColumn(tableView.Columns[1], SortDirection.Ascending), "SortByColumn sorts the view.");
@@ -1129,7 +1129,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // A sort applied to the view by someone else moves the arrow.
                 shaping.SortDescriptions.Clear();
-                shaping.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                shaping.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
             });
             SettleLayout(tableView);
 
@@ -1239,8 +1239,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var cvs = MakeShapingSource(out items);
-                cvs.Filter = item => ((ShapedPerson)item).Role != "Architect";
-                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
+                ((ICollectionViewShaping)cvs.View).Filter = item => ((ShapedPerson)item).Role != "Architect";
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
                 cvs.View.VectorChanged += (sender, args) => changes.Add(args.CollectionChange);
                 tableView = CreateBindingTable(cvs.View);
                 LoadContent(tableView);
@@ -1433,6 +1433,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, sorted, "Nothing was sorted, so Sorted is not raised.");
                 Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
                 VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "the view's order stands");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies TableView sorts an app's own view that implements ICollectionViewShaping through that view's SortDescriptions, and lights the arrow for a sort the app writes there: the contract is the interface, not the framework's view.")]
+        public void VerifyHeaderSortOnAppShapingViewWritesItsSortDescriptions()
+        {
+            TableView tableView = null;
+            AppShapingView view = null;
+            int sorted = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                view = new AppShapingView(MakeShapedPeople());
+                Verify.IsNotNull((object)view as ICollectionViewShaping, "Precondition: the app's view implements ICollectionViewShaping.");
+                tableView = CreateBindingTable(view);
+                tableView.Sorted += (sender, args) => sorted++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "The view can be sorted through ICollectionViewShaping.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, view.SortDescriptions.Count, "TableView wrote the column's sort to the app's view.");
+                Verify.AreEqual("Name", view.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(CollectionViewSortDirection.Descending, view.SortDescriptions[0].Direction);
+                Verify.AreEqual(1, view.DeferredRefreshCount, "TableView wrote the sort under one DeferRefresh.");
+                Verify.AreEqual(1, sorted);
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection);
+                VerifyProjection(tableView, new List<string> { "Rafa", "Owen", "Mei", "Ines", "Diego", "Asha" }, "the app's view sorted itself");
+
+                view.SortDescriptions.Clear();
+                view.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "A sort the app writes to its view lights the matching column.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Ines", "Mei", "Owen", "Rafa" }, "the app's own sort");
             });
         }
 
@@ -1710,7 +1759,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.IsFalse(GetGroupInfo(tableView, 1).IsExpanded, "Precondition: Platform is collapsed.");
                 var groups = view.CollectionGroups;
-                cvs.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending));
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
                 Verify.AreSame(view, cvs.View, "A regroup keeps the View.");
                 Verify.AreSame(groups, view.CollectionGroups, "A regroup keeps the CollectionGroups object.");
 
@@ -1819,6 +1868,189 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    // An app's own view that implements ICollectionViewShaping (like a toolkit view): it sorts and filters a fixed list
+    // itself, by reflection, and announces each recompute as a Reset. No groups.
+    internal sealed partial class AppShapingView : ICollectionView, ICollectionViewShaping
+    {
+        private readonly List<object> m_source;
+        private List<object> m_items;
+        private int m_current;
+        private int m_deferLevel;
+        private CollectionViewFilter m_filter;
+        private CollectionViewComparer m_customSort;
+
+        public AppShapingView(IEnumerable<object> items)
+        {
+            m_source = items.ToList();
+            m_items = m_source.ToList();
+            SortDescriptions.VectorChanged += (sender, args) => RefreshOrDefer();
+        }
+
+        public int DeferredRefreshCount { get; private set; }
+
+        public event EventHandler<object> CurrentChanged { add { } remove { } }
+        public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged;
+
+        // ICollectionViewShaping
+        public global::Windows.Foundation.Collections.IObservableVector<SortDescription> SortDescriptions { get; } = new AppObservableVector<SortDescription>();
+        public global::Windows.Foundation.Collections.IObservableVector<GroupDescription> GroupDescriptions { get; } = new AppObservableVector<GroupDescription>();
+        public CollectionViewFilter Filter { get => m_filter; set { m_filter = value; RefreshOrDefer(); } }
+        public CollectionViewComparer CustomSort { get => m_customSort; set { m_customSort = value; RefreshOrDefer(); } }
+        public object SourceCollection => m_source;
+        public string Culture { get; set; } = string.Empty;
+
+        public void Refresh()
+        {
+            IEnumerable<object> items = m_source.Where(item => m_filter == null || m_filter(item));
+            if (SortDescriptions.Count > 0)
+            {
+                var descriptions = SortDescriptions.ToList();
+                var ordered = items.ToList();
+                ordered.Sort((x, y) =>
+                {
+                    foreach (var description in descriptions)
+                    {
+                        var result = Comparer<object>.Default.Compare(ValueOf(x, description.PropertyName), ValueOf(y, description.PropertyName));
+                        if (result != 0)
+                        {
+                            return description.Direction == CollectionViewSortDirection.Descending ? -result : result;
+                        }
+                    }
+                    return m_source.IndexOf(x) - m_source.IndexOf(y);
+                });
+                items = ordered;
+            }
+
+            m_items = items.ToList();
+            VectorChanged?.Invoke(this, new AppVectorChangedEventArgs(global::Windows.Foundation.Collections.CollectionChange.Reset, 0));
+        }
+
+        public IDisposable DeferRefresh()
+        {
+            m_deferLevel++;
+            return new Deferral(this);
+        }
+
+        private void RefreshOrDefer()
+        {
+            if (m_deferLevel == 0)
+            {
+                Refresh();
+            }
+        }
+
+        private static object ValueOf(object item, string path) => item?.GetType().GetProperty(path)?.GetValue(item);
+
+        private sealed class Deferral : IDisposable
+        {
+            private AppShapingView m_owner;
+
+            public Deferral(AppShapingView owner)
+            {
+                m_owner = owner;
+            }
+
+            public void Dispose()
+            {
+                if (m_owner != null && --m_owner.m_deferLevel == 0)
+                {
+                    m_owner.DeferredRefreshCount++;
+                    m_owner.Refresh();
+                }
+                m_owner = null;
+            }
+        }
+
+        // ICollectionView
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => null;
+        public object CurrentItem => m_current >= 0 && m_current < m_items.Count ? m_items[m_current] : null;
+        public int CurrentPosition => m_current;
+        public bool HasMoreItems => false;
+        public bool IsCurrentAfterLast => m_current >= m_items.Count;
+        public bool IsCurrentBeforeFirst => m_current < 0;
+        public int Count => m_items.Count;
+        public bool IsReadOnly => true;
+
+        public object this[int index]
+        {
+            get => m_items[index];
+            set => throw new NotSupportedException();
+        }
+
+        public bool MoveCurrentTo(object item) => MoveCurrentToPosition(m_items.IndexOf(item));
+        public bool MoveCurrentToFirst() => MoveCurrentToPosition(0);
+        public bool MoveCurrentToLast() => MoveCurrentToPosition(m_items.Count - 1);
+        public bool MoveCurrentToNext() => MoveCurrentToPosition(m_current + 1);
+        public bool MoveCurrentToPrevious() => MoveCurrentToPosition(m_current - 1);
+
+        public bool MoveCurrentToPosition(int index)
+        {
+            if (index < 0 || index >= m_items.Count)
+            {
+                return false;
+            }
+            m_current = index;
+            return true;
+        }
+
+        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count) => throw new NotSupportedException();
+
+        public int IndexOf(object item) => m_items.IndexOf(item);
+        public bool Contains(object item) => m_items.Contains(item);
+        public void CopyTo(object[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+        public IEnumerator<object> GetEnumerator() => m_items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public void Insert(int index, object item) => throw new NotSupportedException();
+        public void RemoveAt(int index) => throw new NotSupportedException();
+        public void Add(object item) => throw new NotSupportedException();
+        public void Clear() => throw new NotSupportedException();
+        public bool Remove(object item) => throw new NotSupportedException();
+    }
+
+    internal sealed partial class AppObservableVector<T> : global::Windows.Foundation.Collections.IObservableVector<T>
+    {
+        private readonly List<T> m_items = new List<T>();
+
+        public event global::Windows.Foundation.Collections.VectorChangedEventHandler<T> VectorChanged;
+
+        public T this[int index]
+        {
+            get => m_items[index];
+            set { m_items[index] = value; Raise(global::Windows.Foundation.Collections.CollectionChange.ItemChanged, index); }
+        }
+
+        public int Count => m_items.Count;
+        public bool IsReadOnly => false;
+
+        public void Add(T item) => Insert(m_items.Count, item);
+        public void Insert(int index, T item) { m_items.Insert(index, item); Raise(global::Windows.Foundation.Collections.CollectionChange.ItemInserted, index); }
+        public void RemoveAt(int index) { m_items.RemoveAt(index); Raise(global::Windows.Foundation.Collections.CollectionChange.ItemRemoved, index); }
+        public bool Remove(T item) { var index = m_items.IndexOf(item); if (index < 0) { return false; } RemoveAt(index); return true; }
+        public void Clear() { m_items.Clear(); Raise(global::Windows.Foundation.Collections.CollectionChange.Reset, 0); }
+        public bool Contains(T item) => m_items.Contains(item);
+        public int IndexOf(T item) => m_items.IndexOf(item);
+        public void CopyTo(T[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+        public IEnumerator<T> GetEnumerator() => m_items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private void Raise(global::Windows.Foundation.Collections.CollectionChange change, int index)
+            => VectorChanged?.Invoke(this, new AppVectorChangedEventArgs(change, (uint)index));
+    }
+
+    internal sealed partial class AppVectorChangedEventArgs : global::Windows.Foundation.Collections.IVectorChangedEventArgs
+    {
+        public AppVectorChangedEventArgs(global::Windows.Foundation.Collections.CollectionChange change, uint index)
+        {
+            CollectionChange = change;
+            Index = index;
+        }
+
+        public global::Windows.Foundation.Collections.CollectionChange CollectionChange { get; }
+        public uint Index { get; }
     }
 
     // An app's own read-only ICollectionView over a fixed list (like a toolkit view): no

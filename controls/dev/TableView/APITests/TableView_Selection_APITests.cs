@@ -508,7 +508,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(-1, tableView.IndexOf(items.First(p => p.Name == "Diego")), "An item under a collapsed group is not displayed.");
                 Verify.AreEqual(5, tableView.IndexOf(items.First(p => p.Name == "Mei")), "Collapsed members no longer take slots.");
-                source.Filter = o => Person(o).Role != "Architect";
+                ((ICollectionViewShaping)source.View).Filter = o => Person(o).Role != "Architect";
             });
 
             SettleLayout(tableView);

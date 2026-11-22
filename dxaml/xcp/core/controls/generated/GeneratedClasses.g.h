@@ -215,8 +215,11 @@
 #include <CIRawElementProviderSimple.g.h>
 #include <CCollectionView.g.h>
 #include <CCollectionViewGroup.g.h>
+#include <CGroupDescription.g.h>
 #include <CGroupedDataCollectionView.g.h>
 #include <CIterableCollectionView.g.h>
+#include <CPropertyGroupDescription.g.h>
+#include <CSortDescription.g.h>
 #include <CVectorCollectionView.g.h>
 #include <CVectorViewCollectionView.g.h>
 #include <CPageStackEntry.g.h>

@@ -313,6 +313,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify PropertyGroupDescription.Converter maps property values to group keys")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceCustomGroupDescription)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a GroupDescription subclass groups through its GroupNameFromItem and NamesMatch overrides, as in WPF")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceGroupNames)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify GroupDescription.GroupNames groups come first, in order, and stay when empty, as in WPF")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceMarkup)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource descriptors, IsLive*Requested and Live*Properties can be declared in XAML, and a held SortDescription is sealed")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CollectionViewSourceIncrementalUpdates)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify a flat shaped view applies source Add, Remove and Replace as matching vector changes at sorted positions instead of a Reset")
             END_TEST_METHOD()
@@ -338,7 +350,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CollectionViewSourceFilterEvent)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource FilterRequested event filters the view and replaces the Filter delegate while it has handlers, as WPF's Filter event does")
+                TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource Filter event filters the view and replaces the view's Filter delegate while it has handlers, as WPF's does")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CollectionViewSourceGetDefaultView)

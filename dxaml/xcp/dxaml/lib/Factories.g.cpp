@@ -204,6 +204,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_ScrollViewer();
     _Check_return_ IActivationFactory* CreateActivationFactory_SemanticZoom();
     _Check_return_ IActivationFactory* CreateActivationFactory_ToggleSwitch();
+    _Check_return_ IActivationFactory* CreateActivationFactory_GroupDescription();
     _Check_return_ IActivationFactory* CreateActivationFactory_BindingFailedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorDisplayNameHelper();
     _Check_return_ IActivationFactory* CreateActivationFactory_DropCompletedEventArgs();
@@ -864,6 +865,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.ScrollViewer"), &DirectUI::CreateActivationFactory_ScrollViewer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SemanticZoom"), &DirectUI::CreateActivationFactory_SemanticZoom)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.ToggleSwitch"), &DirectUI::CreateActivationFactory_ToggleSwitch)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Data.GroupDescription"), &DirectUI::CreateActivationFactory_GroupDescription)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.BindingFailedEventArgs"), &DirectUI::CreateActivationFactory_BindingFailedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.ColorDisplayNameHelper"), &DirectUI::CreateActivationFactory_ColorDisplayNameHelper)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.DropCompletedEventArgs"), &DirectUI::CreateActivationFactory_DropCompletedEventArgs)

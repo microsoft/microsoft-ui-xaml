@@ -3647,7 +3647,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_NULL(cvs->View->CollectionGroups);
 
             LOG_OUTPUT(L"Filter removes items without touching the source.");
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
             {
                 return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
             });
@@ -3655,7 +3655,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"bdac", namesOf(source)->Data());
 
             LOG_OUTPUT(L"SortDescriptions order the view by property path.");
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
             VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(cvs->View)->Data());
 
             LOG_OUTPUT(L"Source changes refresh the view and keep the current item.");
@@ -3679,7 +3679,7 @@ namespace Framework { namespace DataBinding {
             LOG_OUTPUT(L"Removing all descriptors restores the source order and drops the groups.");
             cvs->GroupDescriptions->Clear();
             cvs->SortDescriptions->Clear();
-            cvs->Filter = nullptr;
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = nullptr;
             VERIFY_ARE_STRINGS_EQUAL(L"bdace", namesOf(cvs->View)->Data());
             VERIFY_IS_NULL(cvs->View->CollectionGroups);
         });
@@ -3748,19 +3748,18 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"bda", namesOf(view)->Data());
 
             LOG_OUTPUT(L"Sorting through the view reshapes the same view in place.");
-            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"abd", namesOf(view)->Data());
             VERIFY_ARE_EQUAL(1u, cvs->SortDescriptions->Size);
 
             shaping->SortDescriptions->Clear();
-            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"dba", namesOf(view)->Data());
 
-            LOG_OUTPUT(L"Filter set through the view applies to the CollectionViewSource.");
+            LOG_OUTPUT(L"Filter is the view's (WPF: ICollectionView.Filter); the CollectionViewSource has only the Filter event.");
             shaping->Filter = nullptr;
-            VERIFY_IS_NULL(cvs->Filter);
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"dcba", namesOf(view)->Data());
 
@@ -3806,11 +3805,11 @@ namespace Framework { namespace DataBinding {
 
             LOG_OUTPUT(L"Descriptors set under a deferral shape View only when the deferral closes.");
             auto deferral = cvs->DeferRefresh();
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
             {
                 return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
             });
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
             auto view = cvs->View;
             VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
             delete deferral;
@@ -3826,7 +3825,7 @@ namespace Framework { namespace DataBinding {
             auto outer = shaping->DeferRefresh();
             auto inner = cvs->DeferRefresh();
             cvs->SortDescriptions->Clear();
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             shaping->Filter = nullptr;
             source->Append(MakeShapingItem(L"e", 2));
             shaping->Refresh();
@@ -3870,7 +3869,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
 
             LOG_OUTPUT(L"Adding a SortDescription drops the CustomSort.");
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Descending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Descending));
             VERIFY_IS_NULL(cvs->CustomSort);
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"dcba", ShapingNamesOf(view)->Data());
@@ -3910,10 +3909,15 @@ namespace Framework { namespace DataBinding {
     ref class ParityGroupKeyConverter sealed : public IValueConverter
     {
     public:
-        virtual Object^ Convert(Object^ value, wxaml_interop::TypeName, Object^, String^)
+        virtual Object^ Convert(Object^ value, wxaml_interop::TypeName, Object^ parameter, String^ language)
         {
+            LastParameter = parameter;
+            LastLanguage = language;
             return (safe_cast<int32>(value) % 2 == 0) ? ref new String(L"even") : ref new String(L"odd");
         }
+
+        property Object^ LastParameter;
+        property String^ LastLanguage;
 
         virtual Object^ ConvertBack(Object^, wxaml_interop::TypeName, Object^, String^)
         {
@@ -3953,6 +3957,216 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(odd->GroupItems)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"even", groupKeyOf(even->Group)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"dc", ShapingNamesOf(even->GroupItems)->Data());
+
+            LOG_OUTPUT(L"As in WPF, Convert gets the level as its parameter and the view's Culture as its language.");
+            VERIFY_ARE_EQUAL(0, safe_cast<int32>(converter->LastParameter));
+            VERIFY_IS_TRUE(converter->LastLanguage == nullptr || converter->LastLanguage->Length() == 0);
+            auto innerConverter = ref new ParityGroupKeyConverter();
+            cvs->Culture = L"de-DE";
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property", innerConverter));
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(innerConverter->LastParameter));
+            VERIFY_ARE_STRINGS_EQUAL(L"de-DE", innerConverter->LastLanguage->Data());
+            VERIFY_ARE_EQUAL(0, safe_cast<int32>(converter->LastParameter));
+            VERIFY_ARE_STRINGS_EQUAL(L"de-DE", converter->LastLanguage->Data());
+
+            LOG_OUTPUT(L"PropertyGroupDescription is settable, as in WPF: a change regroups the views that use it.");
+            auto settable = ref new PropertyGroupDescription();
+            VERIFY_IS_NULL(settable->PropertyName);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, settable->StringComparison);
+            auto other = ref new CollectionViewSource();
+            other->Source = MakeShapingSource(); // b1 d2 a1 c0
+            other->GroupDescriptions->Append(settable);
+            VERIFY_ARE_EQUAL(4u, other->View->CollectionGroups->Size);
+            settable->PropertyName = L"Int32Property";
+            VERIFY_ARE_EQUAL(3u, other->View->CollectionGroups->Size);
+            settable->Converter = converter;
+            VERIFY_ARE_EQUAL(2u, other->View->CollectionGroups->Size);
+        });
+    }
+
+    // WPF's GroupDescription subclass pattern: groups by the first letter, matched case-insensitively.
+    ref class FirstLetterGroupDescription sealed : public GroupDescription
+    {
+    public:
+        property int Calls;
+
+    protected:
+        virtual Object^ GroupNameFromItem(Object^ item, int level, String^ culture) override
+        {
+            Calls++;
+            auto name = safe_cast<InpcDataSource^>(item)->StringProperty;
+            return ref new String(name->Data(), 1);
+        }
+
+        virtual bool NamesMatch(Object^ groupName, Object^ itemName) override
+        {
+            return _wcsicmp(safe_cast<String^>(groupName)->Data(), safe_cast<String^>(itemName)->Data()) == 0;
+        }
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceCustomGroupDescription()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto source = ref new Platform::Collections::Vector<Object^>();
+            source->Append(MakeShapingItem(L"apple", 1));
+            source->Append(MakeShapingItem(L"Bean", 2));
+            source->Append(MakeShapingItem(L"Avocado", 3));
+            source->Append(MakeShapingItem(L"banana", 4));
+
+            auto description = ref new FirstLetterGroupDescription();
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+
+            LOG_OUTPUT(L"The view groups by the derived class's GroupNameFromItem and NamesMatch.");
+            VERIFY_IS_TRUE(description->Calls >= 4);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(2u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"appleAvocado", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"Beanbanana", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"An added item joins the group its name matches; a new name starts a group.");
+            source->Append(MakeShapingItem(L"Cherry", 5));
+            source->Append(MakeShapingItem(L"bramble", 6));
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"Beanbananabramble", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"GroupDescription's SortDescriptions order its groups, as on PropertyGroupDescription.");
+            description->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Descending));
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"Cherry", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceGroupNames()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto keyOf = [](Object^ group)
+            {
+                auto provider = safe_cast<ICustomPropertyProvider^>(safe_cast<ICollectionViewGroup^>(group)->Group);
+                return safe_cast<int32>(provider->GetCustomProperty(L"Key")->GetValue(safe_cast<ICollectionViewGroup^>(group)->Group));
+            };
+            auto namesAt = [](::Windows::Foundation::Collections::IObservableVector<Object^>^ groups, unsigned int index)
+            {
+                return ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(index))->GroupItems);
+            };
+
+            auto source = MakeShapingSource(); // b1 d2 a1 c0
+            auto description = ref new PropertyGroupDescription(L"Int32Property");
+            description->GroupNames->Append(3);
+            description->GroupNames->Append(1);
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = source;
+            cvs->GroupDescriptions->Append(description);
+
+            LOG_OUTPUT(L"As in WPF, the GroupNames groups come first, in order, even when empty; the others follow their first item.");
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(3, keyOf(groups->GetAt(0)));
+            VERIFY_ARE_EQUAL(1, keyOf(groups->GetAt(1)));
+            VERIFY_ARE_EQUAL(2, keyOf(groups->GetAt(2)));
+            VERIFY_ARE_EQUAL(0, keyOf(groups->GetAt(3)));
+            VERIFY_ARE_STRINGS_EQUAL(L"", namesAt(groups, 0)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", namesAt(groups, 1)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"badc", ShapingNamesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"An item joins its explicit group; the group stays when it empties, other groups go.");
+            source->Append(MakeShapingItem(L"e", 3));
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"e", namesAt(groups, 0)->Data());
+            source->RemoveAt(4);
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"", namesAt(groups, 0)->Data());
+            source->RemoveAt(1); // d, the only item of group 2
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_EQUAL(0, keyOf(groups->GetAt(2)));
+
+            LOG_OUTPUT(L"A new non-explicit group goes after the explicit ones.");
+            source->InsertAt(0, MakeShapingItem(L"f", 7));
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(3, keyOf(groups->GetAt(0)));
+            VERIFY_ARE_EQUAL(1, keyOf(groups->GetAt(1)));
+            VERIFY_ARE_EQUAL(7, keyOf(groups->GetAt(2)));
+
+            LOG_OUTPUT(L"Changing GroupNames regroups.");
+            description->GroupNames->Clear();
+            VERIFY_ARE_EQUAL(3u, groups->Size);
+            VERIFY_ARE_EQUAL(7, keyOf(groups->GetAt(0)));
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceMarkup()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto panel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel.Resources>"
+                L"    <CollectionViewSource x:Key='People' IsLiveSortingRequested='True'>"
+                L"      <CollectionViewSource.SortDescriptions>"
+                L"        <SortDescription PropertyName='StringProperty' Direction='Descending'/>"
+                L"      </CollectionViewSource.SortDescriptions>"
+                L"      <CollectionViewSource.GroupDescriptions>"
+                L"        <PropertyGroupDescription PropertyName='Int32Property' StringComparison='OrdinalIgnoreCase'/>"
+                L"      </CollectionViewSource.GroupDescriptions>"
+                L"      <CollectionViewSource.LiveSortingProperties>"
+                L"        <x:String>StringProperty</x:String>"
+                L"      </CollectionViewSource.LiveSortingProperties>"
+                L"    </CollectionViewSource>"
+                L"  </StackPanel.Resources>"
+                L"</StackPanel>"));
+            auto cvs = safe_cast<CollectionViewSource^>(panel->Resources->Lookup(L"People"));
+
+            LOG_OUTPUT(L"Markup fills the descriptor collections and sets IsLive*Requested, as WPF's idiom does.");
+            VERIFY_IS_TRUE(cvs->IsLiveSortingRequested);
+            VERIFY_ARE_EQUAL(1u, cvs->SortDescriptions->Size);
+            auto sort = cvs->SortDescriptions->GetAt(0);
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            VERIFY_ARE_EQUAL(CollectionViewSortDirection::Descending, sort->Direction);
+            VERIFY_ARE_EQUAL(1u, cvs->GroupDescriptions->Size);
+            auto group = safe_cast<PropertyGroupDescription^>(cvs->GroupDescriptions->GetAt(0));
+            VERIFY_ARE_STRINGS_EQUAL(L"Int32Property", group->PropertyName->Data());
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, group->StringComparison);
+            VERIFY_ARE_EQUAL(1u, cvs->LiveSortingProperties->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", cvs->LiveSortingProperties->GetAt(0)->Data());
+
+            LOG_OUTPUT(L"The rules shape the view once Source is set.");
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            VERIFY_ARE_STRINGS_EQUAL(L"dcba", ShapingNamesOf(cvs->View)->Data());
+            VERIFY_ARE_EQUAL(3u, cvs->View->CollectionGroups->Size);
+            auto live = safe_cast<ICollectionViewLiveShaping^>(cvs->View);
+            VERIFY_IS_TRUE(live->IsLiveSorting->Value);
+            VERIFY_ARE_EQUAL(1u, live->LiveSortingProperties->Size);
+
+            LOG_OUTPUT(L"As in WPF, a SortDescription a collection holds is sealed.");
+            bool threw = false;
+            try
+            {
+                sort->Direction = CollectionViewSortDirection::Ascending;
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_EQUAL(CollectionViewSortDirection::Descending, sort->Direction);
+
+            auto ascending = ref new SortDescription();
+            ascending->PropertyName = L"StringProperty";
+            ascending->Direction = CollectionViewSortDirection::Ascending;
+            cvs->SortDescriptions->SetAt(0, ascending);
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"IsLiveSortingRequested is a DependencyProperty, so it can be bound.");
+            VERIFY_IS_NOT_NULL(CollectionViewSource::IsLiveSortingRequestedProperty);
+            cvs->ClearValue(CollectionViewSource::IsLiveSortingRequestedProperty);
+            VERIFY_IS_FALSE(cvs->IsLiveSortingRequested);
+            VERIFY_IS_FALSE(live->IsLiveSorting->Value);
         });
     }
 
@@ -3964,11 +4178,11 @@ namespace Framework { namespace DataBinding {
             auto source = MakeShapingSource(); // b1 d2 a1 c0
             auto cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item)
             {
                 return safe_cast<InpcDataSource^>(item)->Int32Property != 0;
             });
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             auto view = cvs->View;
             VERIFY_ARE_STRINGS_EQUAL(L"abd", ShapingNamesOf(view)->Data());
 
@@ -4076,7 +4290,7 @@ namespace Framework { namespace DataBinding {
 
             auto cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             auto view = cvs->View;
             auto groups = view->CollectionGroups;
@@ -4242,13 +4456,13 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"1:ba 2:d 0:c", DescribeGroups(groups).c_str());
 
             LOG_OUTPUT(L"Group SortDescriptions order the groups by a group property, in the same view.");
-            description->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            description->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d", DescribeGroups(groups).c_str());
             VERIFY_ARE_STRINGS_EQUAL(L"cbad", ShapingNamesOf(view)->Data());
 
             description->SortDescriptions->Clear();
-            description->SortDescriptions->Append(ref new SortDescription(L"Key", ListSortDirection::Descending));
+            description->SortDescriptions->Append(ref new SortDescription(L"Key", CollectionViewSortDirection::Descending));
             VERIFY_ARE_STRINGS_EQUAL(L"2:d 1:ba 0:c", DescribeGroups(groups).c_str());
 
             LOG_OUTPUT(L"A new group is inserted at its place in the group order.");
@@ -4268,7 +4482,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"0:c 1:ba 2:d 3:e", DescribeGroups(groups).c_str());
 
             LOG_OUTPUT(L"Adding a group SortDescription drops the CustomSort.");
-            description->SortDescriptions->Append(ref new SortDescription(L"ItemCount", ListSortDirection::Descending));
+            description->SortDescriptions->Append(ref new SortDescription(L"ItemCount", CollectionViewSortDirection::Descending));
             VERIFY_IS_NULL(description->CustomSort);
             VERIFY_ARE_STRINGS_EQUAL(L"1:ba", DescribeGroups(groups).substr(0, 4).c_str());
         });
@@ -4289,7 +4503,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_NULL(cvs->Culture);
             cvs->Culture = L"en-US";
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             auto view = cvs->View;
             VERIFY_ARE_STRINGS_EQUAL(L"a\u00E4z", ShapingNamesOf(view)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"en-US", safe_cast<ICollectionViewShaping^>(view)->Culture->Data());
@@ -4349,7 +4563,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_TRUE(shaping->SourceCollection == source);
 
             LOG_OUTPUT(L"Shaping does not change it.");
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             VERIFY_IS_TRUE(safe_cast<ICollectionViewShaping^>(cvs->View)->SourceCollection == source);
 
@@ -4373,7 +4587,7 @@ namespace Framework { namespace DataBinding {
             LOG_OUTPUT(L"A handler alone shapes the view: Accepted starts true and the handler decides.");
             int raised = 0;
             bool sawAcceptedByDefault = true;
-            auto token = cvs->FilterRequested += ref new FilterEventHandler([&](Object^ sender, FilterEventArgs^ e)
+            auto token = cvs->Filter += ref new FilterEventHandler([&](Object^ sender, FilterEventArgs^ e)
             {
                 raised++;
                 sawAcceptedByDefault = sawAcceptedByDefault && e->Accepted;
@@ -4384,8 +4598,8 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(view)->Data());
 
-            LOG_OUTPUT(L"While the event has handlers it replaces the Filter delegate.");
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item)
+            LOG_OUTPUT(L"While the event has handlers it replaces the view's Filter delegate.");
+            safe_cast<ICollectionViewShaping^>(view)->Filter = ref new CollectionViewFilter([](Object^ item)
             {
                 return safe_cast<InpcDataSource^>(item)->Int32Property == 2;
             });
@@ -4394,7 +4608,7 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"bae", ShapingNamesOf(view)->Data());
 
             LOG_OUTPUT(L"Removing the last handler hands filtering back to the delegate.");
-            cvs->FilterRequested -= token;
+            cvs->Filter -= token;
             VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(view)->Data());
         });
     }
@@ -4418,7 +4632,7 @@ namespace Framework { namespace DataBinding {
             LOG_OUTPUT(L"It shapes with its own rules, and starts and stops grouping in place.");
             auto shaping = safe_cast<ICollectionViewShaping^>(view);
             VERIFY_IS_TRUE(shaping->SourceCollection == source);
-            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(view)->Data());
             shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(source) == view);
@@ -4478,7 +4692,7 @@ namespace Framework { namespace DataBinding {
 
             LOG_OUTPUT(L"A regroup keeps the view and its CollectionGroups: one Reset of complete groups, then one of the view.");
             log->clear();
-            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             VERIFY_IS_TRUE(cvs->View == view);
             VERIFY_IS_TRUE(view->CollectionGroups == groups);
             VERIFY_ARE_STRINGS_EQUAL(L"gR", log->c_str());
@@ -4709,7 +4923,7 @@ namespace Framework { namespace DataBinding {
             source = MakeLiveShapingSource();
             cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
             view = cvs->View;
             CountVectorChanges(view, counts);
             VERIFY_ARE_STRINGS_EQUAL(L"cbad", LiveNamesOf(view)->Data());
@@ -4813,8 +5027,8 @@ namespace Framework { namespace DataBinding {
             source = MakeLiveShapingSource();
             cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->Filter = ref new CollectionViewFilter([](Object^ item) { return safe_cast<LiveShapingTestItem^>(item)->Value != 0; });
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            safe_cast<ICollectionViewShaping^>(cvs->View)->Filter = ref new CollectionViewFilter([](Object^ item) { return safe_cast<LiveShapingTestItem^>(item)->Value != 0; });
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
             cvs->IsLiveFilteringRequested = true;
             view = cvs->View;
             CountVectorChanges(view, counts);
@@ -4884,7 +5098,7 @@ namespace Framework { namespace DataBinding {
             source = MakeLiveShapingSource();
             cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Name", CollectionViewSortDirection::Ascending));
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Group"));
             cvs->IsLiveGroupingRequested = true;
             view = cvs->View;
@@ -4941,7 +5155,7 @@ namespace Framework { namespace DataBinding {
             auto source = MakeLiveShapingSource();
             auto cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
             auto view = cvs->View;
             VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
 
@@ -5007,7 +5221,7 @@ namespace Framework { namespace DataBinding {
             source = MakeLiveShapingSource();
             cvs = ref new CollectionViewSource();
             cvs->Source = source;
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Ascending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Ascending));
             cvs->IsLiveSortingRequested = true;
             view = cvs->View;
             CountVectorChanges(view, counts);
@@ -5039,7 +5253,7 @@ namespace Framework { namespace DataBinding {
             auto deferral = cvs->DeferRefresh();
             LiveItem(source, L"d")->Value = 50;
             cvs->SortDescriptions->Clear();
-            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", ListSortDirection::Descending));
+            cvs->SortDescriptions->Append(ref new SortDescription(L"Value", CollectionViewSortDirection::Descending));
             delete deferral;
             VERIFY_ARE_STRINGS_EQUAL(L"dacb", LiveNamesOf(view)->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"R", counts->log.c_str());

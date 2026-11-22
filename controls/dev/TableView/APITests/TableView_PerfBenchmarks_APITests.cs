@@ -21,7 +21,6 @@ using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTreeTestHelpers;
 
 using SortDescription = Microsoft.UI.Xaml.Data.SortDescription;
-using ListSortDirection = Microsoft.UI.Xaml.Data.ListSortDirection;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -44,19 +43,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var rows = MakeRows(n, seed: 1);
                     var cvs = new CollectionViewSource { Source = rows };
-                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), ListSortDirection.Ascending));
+                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), CollectionViewSortDirection.Ascending));
                     var view = cvs.View;
                     Verify.AreEqual(n, view.Count);
                     Report("SortString.Refresh", n, Median(() => ((ICollectionViewShaping)view).Refresh()));
 
                     var intSorted = new CollectionViewSource { Source = rows };
-                    intSorted.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), ListSortDirection.Ascending));
-                    intSorted.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Id), ListSortDirection.Descending));
+                    intSorted.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), CollectionViewSortDirection.Ascending));
+                    intSorted.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Id), CollectionViewSortDirection.Descending));
                     var intView = intSorted.View;
                     Report("SortInt2.Refresh", n, Median(() => ((ICollectionViewShaping)intView).Refresh()));
 
-                    var filtered = new CollectionViewSource { Source = rows, Filter = item => ((BenchRow)item).Score % 2 == 0 };
-                    filtered.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), ListSortDirection.Ascending));
+                    var filtered = new CollectionViewSource { Source = rows };
+                    ((ICollectionViewShaping)filtered.View).Filter = item => ((BenchRow)item).Score % 2 == 0;
+                    filtered.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), CollectionViewSortDirection.Ascending));
                     var filteredView = filtered.View;
                     Report("FilterSortString.Refresh", n, Median(() => ((ICollectionViewShaping)filteredView).Refresh()));
                 });
@@ -76,7 +76,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         var rows = MakeRows(n, seed: 2);
                         var cvs = new CollectionViewSource { Source = rows };
-                        cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), ListSortDirection.Ascending));
+                        cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), CollectionViewSortDirection.Ascending));
                         if (grouped)
                         {
                             cvs.GroupDescriptions.Add(new PropertyGroupDescription(nameof(BenchRow.Team100)));
@@ -127,7 +127,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var rows = MakeRows(n, seed: 4);
                     var cvs = new CollectionViewSource { Source = rows };
-                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), ListSortDirection.Ascending));
+                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), CollectionViewSortDirection.Ascending));
                     var view = cvs.View;
                     Verify.AreEqual(n, view.Count);
 
@@ -166,7 +166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         var rows = MakeRows(n, seed: 5);
                         var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
-                        cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), ListSortDirection.Ascending));
+                        cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), CollectionViewSortDirection.Ascending));
                         if (grouped)
                         {
                             cvs.GroupDescriptions.Add(new PropertyGroupDescription(nameof(BenchRow.Team100)));
@@ -220,7 +220,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     rows = MakeTreeRows(n);
                     var cvs = new CollectionViewSource { Source = rows };
-                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), ListSortDirection.Ascending));
+                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), CollectionViewSortDirection.Ascending));
                     var ms = Time(() =>
                     {
                         tableView = CreateTreeTable(cvs.View, nameof(BenchRow.Id), nameof(BenchRow.ParentId));

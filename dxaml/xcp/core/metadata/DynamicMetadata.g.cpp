@@ -885,6 +885,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "GetPreviewPageEventArgs.g.h"
 #include "GradientStop.g.h"
 #include "GridLength.g.h"
+#include "GroupDescription_Partial.h"
 #include "GroupStyle_Partial.h"
 #include "HasValidationErrorsChangedEventArgs.g.h"
 #include "HubSectionHeaderClickEventArgs.g.h"
@@ -960,6 +961,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "SemanticZoomViewChangedEventArgs.g.h"
 #include "SetterBase.g.h"
 #include "Shadow.g.h"
+#include "SortDescription_Partial.h"
 #include "SplitViewPaneClosingEventArgs.g.h"
 #include "SplitViewTemplateSettings.g.h"
 #include "StaggerFunctionBase_Partial.h"
@@ -1128,6 +1130,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "PolyQuadraticBezierSegment.g.h"
 #include "PopupThemeTransition_Partial.h"
 #include "PowerEase.g.h"
+#include "PropertyGroupDescription_Partial.h"
 #include "PVLStaggerFunction_Partial.h"
 #include "QuadraticBezierSegment.g.h"
 #include "QuadraticEase.g.h"
@@ -1496,6 +1499,21 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         nullptr, // Framework constructor
     },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.SortDescription]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Data.GroupDescription]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.String]
     {
         nullptr, // Core constructor
         nullptr, // Framework constructor
@@ -2255,6 +2273,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateGridLength, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Data.GroupDescription
+    {
+        &OnCoreCreateGroupDescription, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::GroupDescription>, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Controls.GroupStyle
     {
         &OnCoreCreateGroupStyle, // Core constructor
@@ -2654,6 +2677,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         &OnCoreCreateSize, // Core constructor
         nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription
+    {
+        &OnCoreCreateSortDescription, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::SortDescription>, // Framework constructor
     },
     // Microsoft.UI.Xaml.Controls.SplitViewPaneClosingEventArgs
     {
@@ -3724,6 +3752,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         &OnCoreCreatePowerEase, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::PowerEase>, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription
+    {
+        &OnCoreCreatePropertyGroupDescription, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::PropertyGroupDescription>, // Framework constructor
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -5760,6 +5793,16 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateCollectionChange, // Core constructor
         nullptr, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSortDirection
+    {
+        &OnCoreCreateCollectionViewSortDirection, // Core constructor
+        nullptr, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewStringComparison
+    {
+        &OnCoreCreateCollectionViewStringComparison, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Media.ColorInterpolationMode
     {
         &OnCoreCreateColorInterpolationMode, // Core constructor
@@ -7504,6 +7547,34 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveFilteringRequested
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveGroupingRequested
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveSortingRequested
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.IsSourceGrouped
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
@@ -7512,6 +7583,34 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.ItemsPath
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveFilteringProperties
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveGroupingProperties
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.LiveSortingProperties
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.SortDescriptions
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
@@ -7955,6 +8054,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     // Microsoft.UI.Xaml.GridLength.Value
     {
         (METHODPFN)OFFSET(CGridLength, m_gridLength.value), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription.SortDescriptions
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -8662,6 +8768,20 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     // Windows.Foundation.Size.Width
     {
         (METHODPFN)OFFSET(CSize, m_size.width), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription.Direction
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.SortDescription.PropertyName
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset
@@ -11392,6 +11512,27 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     // Microsoft.UI.Xaml.Media.Animation.PowerEase.Power
     {
         (METHODPFN)OFFSET(CPowerInterpolator, m_fPower), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.Converter
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.PropertyName
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.PropertyGroupDescription.StringComparison
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset

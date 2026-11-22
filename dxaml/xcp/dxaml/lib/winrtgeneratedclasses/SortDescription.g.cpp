@@ -13,15 +13,15 @@
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
-DirectUI::SortDescription::SortDescription(): m_direction()
+DirectUI::SortDescriptionGenerated::SortDescriptionGenerated()
 {
 }
 
-DirectUI::SortDescription::~SortDescription()
+DirectUI::SortDescriptionGenerated::~SortDescriptionGenerated()
 {
 }
 
-HRESULT DirectUI::SortDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+HRESULT DirectUI::SortDescriptionGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
     if (InlineIsEqualGUID(iid, __uuidof(DirectUI::SortDescription)))
     {
@@ -35,7 +35,7 @@ HRESULT DirectUI::SortDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
 #endif
     else
     {
-        RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(DirectUI::DependencyObject::QueryInterfaceImpl(iid, ppObject));
     }
 
     AddRefOuter();
@@ -43,37 +43,43 @@ HRESULT DirectUI::SortDescription::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
 }
 
 // Properties.
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescription::get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::ListSortDirection* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescriptionGenerated::get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
-    
-    IFC(CValueBoxer::CopyValue(m_direction, pValue));
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<SortDescription*>(this)->get_DirectionImpl(pValue));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SortDescription::put_Direction(ABI::Microsoft::UI::Xaml::Data::ListSortDirection value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescriptionGenerated::put_Direction(ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection value)
 {
     HRESULT hr = S_OK;
     
-    IFC(CValueBoxer::CopyValue(value, &m_direction));
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<SortDescription*>(this)->put_DirectionImpl(value));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescription::get_PropertyName(_Out_ HSTRING* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescriptionGenerated::get_PropertyName(_Out_ HSTRING* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
-    
-    IFC(m_propertyName.CopyTo(pValue));
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<SortDescription*>(this)->get_PropertyNameImpl(pValue));
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SortDescription::put_PropertyName(_In_opt_ HSTRING value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SortDescriptionGenerated::put_PropertyName(_In_opt_ HSTRING value)
 {
     HRESULT hr = S_OK;
     
-    IFC(m_propertyName.Set(value));
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<SortDescription*>(this)->put_PropertyNameImpl(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -92,7 +98,7 @@ HRESULT DirectUI::SortDescriptionFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
     else
 #endif
     {
-        RRETURN(ctl::AbstractActivationFactory::QueryInterfaceImpl(iid, ppObject));
+        RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
@@ -101,23 +107,21 @@ HRESULT DirectUI::SortDescriptionFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
 #endif
 }
 
-_Check_return_ HRESULT DirectUI::SortDescriptionFactory::CheckActivationAllowed()
-{
-    RRETURN(S_OK);
-}
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::SortDescriptionFactory::CreateInstance(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::ListSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance)
+IFACEMETHODIMP DirectUI::SortDescriptionFactory::CreateInstanceWithPropertyNameAndDirection(_In_opt_ HSTRING propertyName, ABI::Microsoft::UI::Xaml::Data::CollectionViewSortDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ISortDescription** ppInstance)
 {
     HRESULT hr = S_OK;
     
     ARG_VALIDRETURNPOINTER(ppInstance);
-    IFC(CreateInstanceImpl(propertyName, direction, ppInstance));
+    IFC(CreateInstanceWithPropertyNameAndDirectionImpl(propertyName, direction, ppInstance));
 Cleanup:
     return hr;
 }
 
 // Dependency properties.
+
+
 
 // Attached properties.
 

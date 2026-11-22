@@ -736,6 +736,7 @@ using namespace DirectUI;
 #include "CurrentChangingEventArgs.g.cpp"
 #include "DataErrorsChangedEventArgs.g.cpp"
 #include "FilterEventArgs.g.cpp"
+#include "GroupDescription.g.cpp"
 #include "GroupedDataCollectionView.g.cpp"
 #include "ItemIndexRange.g.cpp"
 #include "IterableCollectionView.g.cpp"

@@ -1279,7 +1279,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Descending)));
+            RunOnUIThread.Execute(() => source.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending)));
 
             SettleLayout(tableView);
 
@@ -1437,7 +1437,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => SetAppSort(source, "Name", ListSortDirection.Ascending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Name", CollectionViewSortDirection.Ascending));
 
             SettleLayout(tableView);
 
@@ -1754,7 +1754,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "the column sort is the last writer so far"));
 
             // The source now writes the other axis. Exactly one axis is ever in force.
-            RunOnUIThread.Execute(() => SetAppSort(source, "Role", ListSortDirection.Descending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Role", CollectionViewSortDirection.Descending));
 
             SettleLayout(tableView);
 
@@ -1805,7 +1805,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => SetAppSort(source, "Name", ListSortDirection.Descending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "Name", CollectionViewSortDirection.Descending));
 
             SettleLayout(tableView);
 
@@ -1856,7 +1856,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() => SetAppSort(source, "DepartmentName", ListSortDirection.Ascending));
+            RunOnUIThread.Execute(() => SetAppSort(source, "DepartmentName", CollectionViewSortDirection.Ascending));
 
             SettleLayout(tableView);
 
@@ -1868,7 +1868,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         tableView.Sorted += (s, e) => sortedCount++;
                     }
-                    source.Filter = _ => true;
+                    ((ICollectionViewShaping)source.View).Filter = _ => true;
                 });
                 SettleLayout(tableView);
             }
@@ -1940,7 +1940,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView.Columns.RemoveAt(1);
                 var next = MakeShapingView(MakeShapedPeople());
-                SetAppSort(next, "Name", ListSortDirection.Descending);
+                SetAppSort(next, "Name", CollectionViewSortDirection.Descending);
                 tableView.ItemsSource = next.View;
             });
 
@@ -2255,7 +2255,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         internal static TableView CreateSortTable() => CreateSortTable(MakeShapedPeople());
 
         // Replaces the app's sort on a CollectionViewSource with one SortDescription.
-        internal static void SetAppSort(CollectionViewSource source, string path, ListSortDirection direction)
+        internal static void SetAppSort(CollectionViewSource source, string path, CollectionViewSortDirection direction)
         {
             source.SortDescriptions.Clear();
             source.SortDescriptions.Add(new SortDescription(path, direction));
