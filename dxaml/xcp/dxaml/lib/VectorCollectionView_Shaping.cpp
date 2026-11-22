@@ -8,6 +8,8 @@
 
 #include "precomp.h"
 #include <algorithm>
+#include <string>
+#include <unordered_map>
 #include <vector>
 #include "CollectionViewSource.g.h"
 #include "PropertyGroupDescription.g.h"
@@ -62,6 +64,45 @@ namespace
 
     protected:
         InternalList() = default;
+    };
+
+    // A sort key decoded once from a property value (WPF: SortFieldComparer's cached values), so a compare
+    // queries no interface and copies no string. Values that cannot be ordered compare equal, so the stable
+    // sort keeps their source order. Strings compare in the view's culture (WPF: CollectionView.Culture),
+    // else the user's; integral values compare exactly (a double holds only 53 bits).
+    struct SortKey
+    {
+        enum class Kind : UINT8 { Null, Unordered, String, Number, Boolean, DateTime, TimeSpan };
+
+        Kind kind = Kind::Null;
+        bool isInteger = false;
+        bool isNegative = false;
+        UINT64 magnitude = 0;
+        DOUBLE number = 0;
+        INT64 ticks = 0;
+        std::string sortKey;
+    };
+
+    using SortKeys = std::vector<SortKey>;
+
+    // A group name normalized so names that match (PropertyGroupDescription.NamesMatch) have equal keys.
+    struct GroupNameKey
+    {
+        UINT8 kind = 0;
+        std::string bytes;
+
+        bool operator==(const GroupNameKey& other) const
+        {
+            return kind == other.kind && bytes == other.bytes;
+        }
+    };
+
+    struct GroupNameKeyHash
+    {
+        size_t operator()(const GroupNameKey& key) const
+        {
+            return std::hash<std::string>()(key.bytes) * 31 + key.kind;
+        }
     };
 
     // A computed group (WPF: MS.Internal.Data.CollectionViewGroupInternal). As a vector it holds the group's
@@ -137,16 +178,6 @@ namespace
             return m_sourceIndices;
         }
 
-        UINT FirstSourceIndex() const
-        {
-            const CollectionViewGroupInternal* pGroup = this;
-            while (!pGroup->IsBottomLevel() && !pGroup->m_subgroups.empty())
-            {
-                pGroup = pGroup->m_subgroups.front().Get();
-            }
-            return pGroup->m_sourceIndices.empty() ? 0 : pGroup->m_sourceIndices.front();
-        }
-
         UINT IndexOfSubgroup(_In_ const CollectionViewGroupInternal* pSubgroup) const
         {
             for (size_t i = 0; i < m_subgroups.size(); ++i)
@@ -174,8 +205,96 @@ namespace
             return count;
         }
 
+        // Bottom level: each item's sort key slot (SortKeyStore), parallel to SourceIndices.
+        std::vector<UINT>& KeySlots()
+        {
+            return m_keySlots;
+        }
+
+        // The keys of the group's own SortDescriptions order, read when it was created.
+        SortKeys& GroupSortKeys()
+        {
+            return m_groupSortKeys;
+        }
+
+        void SetNameKey(GroupNameKey&& key, bool isHashed)
+        {
+            m_nameKey = std::move(key);
+            m_isNameHashed = isHashed;
+        }
+
+        // The subgroup with this name key (WPF: CollectionViewGroupInternal.GetSubgroupFromMap), or null.
+        CollectionViewGroupInternal* FindSubgroupByKey(const GroupNameKey& key) const
+        {
+            auto found = m_subgroupsByName.find(key);
+            return (found != m_subgroupsByName.end()) ? found->second : nullptr;
+        }
+
+        // The subgroups whose names have no key, found by NamesMatch.
+        const std::vector<CollectionViewGroupInternal*>& UnhashedSubgroups() const
+        {
+            return m_unhashedSubgroups;
+        }
+
+        // The bottom-level group that holds this group's first leaf, or null.
+        CollectionViewGroupInternal* FirstBottomGroup()
+        {
+            CollectionViewGroupInternal* pGroup = this;
+            while (!pGroup->IsBottomLevel())
+            {
+                if (pGroup->m_subgroups.empty())
+                {
+                    return nullptr;
+                }
+                pGroup = pGroup->m_subgroups.front().Get();
+            }
+            return pGroup->m_sourceIndices.empty() ? nullptr : pGroup;
+        }
+
+        // Loading: after the bottom-level groups have their items, each group above them gets its leaves once.
+        _Check_return_ HRESULT CollectLeaves()
+        {
+            if (IsBottomLevel())
+            {
+                return S_OK;
+            }
+
+            UINT count = 0;
+            for (const auto& spSubgroup : m_subgroups)
+            {
+                IFC_RETURN(spSubgroup->CollectLeaves());
+                count += spSubgroup->LeafCount();
+            }
+
+            if (IsRoot())
+            {
+                return S_OK;
+            }
+
+            Reserve(count);
+            for (const auto& spSubgroup : m_subgroups)
+            {
+                const UINT size = spSubgroup->LeafCount();
+                for (UINT i = 0; i < size; ++i)
+                {
+                    ctl::ComPtr<IInspectable> spItem;
+                    IFC_RETURN(spSubgroup->GetAt(i, spItem.ReleaseAndGetAddressOf()));
+                    IFC_RETURN(TrackerCollection<IInspectable*>::Append(spItem.Get()));
+                }
+            }
+            return S_OK;
+        }
+
         _Check_return_ HRESULT InsertSubgroup(UINT index, _In_ CollectionViewGroupInternal* pSubgroup, bool isRaised)
         {
+            if (pSubgroup->m_isNameHashed)
+            {
+                m_subgroupsByName[pSubgroup->m_nameKey] = pSubgroup;
+            }
+            else
+            {
+                m_unhashedSubgroups.push_back(pSubgroup);
+            }
             m_subgroups.insert(m_subgroups.begin() + index, ctl::ComPtr<CollectionViewGroupInternal>(pSubgroup));
             auto pSubgroupItem = ctl::as_iinspectable(pSubgroup);
             if (isRaised)
@@ -191,7 +310,16 @@ namespace
 
         _Check_return_ HRESULT RemoveSubgroup(UINT index)
         {
-            m_subgroups[index]->ClearParent();
+            auto pSubgroup = m_subgroups[index].Get();
+            if (pSubgroup->m_isNameHashed)
+            {
+                m_subgroupsByName.erase(pSubgroup->m_nameKey);
+            }
+            else
+            {
+                m_unhashedSubgroups.erase(std::remove(m_unhashedSubgroups.begin(), m_unhashedSubgroups.end(), pSubgroup), m_unhashedSubgroups.end());
+            }
+            pSubgroup->ClearParent();
             m_subgroups.erase(m_subgroups.begin() + index);
             IFC_RETURN(m_tpSubgroupList->InternalRemoveAt(index));
             return S_OK;
@@ -381,6 +509,12 @@ namespace
         TrackerEventSource<xaml_data::IPropertyChangedEventHandler, IInspectable, xaml_data::IPropertyChangedEventArgs> m_propertyChangedHandlers;
         CollectionViewGroupInternal* m_pParent = nullptr;
         std::vector<UINT> m_sourceIndices;
+        std::vector<UINT> m_keySlots;
+        SortKeys m_groupSortKeys;
+        GroupNameKey m_nameKey;
+        bool m_isNameHashed = false;
+        std::unordered_map<GroupNameKey, CollectionViewGroupInternal*, GroupNameKeyHash> m_subgroupsByName;
+        std::vector<CollectionViewGroupInternal*> m_unhashedSubgroups;
     };
 
     struct ShapingKeySelector
@@ -478,114 +612,138 @@ namespace
         return true;
     }
 
-    // Values that cannot be ordered compare equal, so the stable sort keeps their source order. Strings compare
-    // in the view's culture (WPF: CollectionView.Culture), else the user's.
-    int CompareKeys(_In_opt_ IInspectable* pLeft, _In_opt_ IInspectable* pRight, _In_z_ LPCWSTR localeName)
+    // LCMapStringEx rejects an empty string; this is the key of a string of ignorable characters, which
+    // CompareStringEx finds equal to it.
+    constexpr char c_emptySortKey[] = { 1, 1, 1, 1, 0 };
+
+    // The LCMAP_SORTKEY bytes of a string: memcmp of two keys orders as CompareStringEx with the same locale
+    // and flags.
+    bool TryMakeStringSortKey(_In_opt_z_ LPCWSTR localeName, DWORD flags, _In_reads_(length) LPCWSTR szValue, UINT32 length, _Out_ std::string* pKey)
     {
-        if (!pLeft || !pRight)
+        if (length == 0)
         {
-            return (pLeft ? 1 : 0) - (pRight ? 1 : 0);
+            pKey->assign(c_emptySortKey, sizeof(c_emptySortKey));
+            return true;
         }
 
-        auto spLeft = ctl::query_interface_cast<wf::IPropertyValue>(pLeft);
-        auto spRight = ctl::query_interface_cast<wf::IPropertyValue>(pRight);
-        wf::PropertyType leftType = wf::PropertyType_Empty;
-        wf::PropertyType rightType = wf::PropertyType_Empty;
+        const int size = LCMapStringEx(localeName, LCMAP_SORTKEY | flags, szValue, static_cast<int>(length), nullptr, 0, nullptr, nullptr, 0);
+        if (size <= 0)
+        {
+            return false;
+        }
 
-        if (!spLeft || !spRight || FAILED(spLeft->get_Type(&leftType)) || FAILED(spRight->get_Type(&rightType)))
+        pKey->resize(static_cast<size_t>(size));
+        return LCMapStringEx(localeName, LCMAP_SORTKEY | flags, szValue, static_cast<int>(length), reinterpret_cast<LPWSTR>(pKey->data()), size, nullptr, nullptr, 0) == size;
+    }
+
+    _Check_return_ HRESULT MakeSortKey(_In_opt_ IInspectable* pValue, _In_z_ LPCWSTR localeName, _Out_ SortKey* pKey)
+    {
+        *pKey = SortKey();
+        if (!pValue)
+        {
+            return S_OK;
+        }
+
+        pKey->kind = SortKey::Kind::Unordered;
+        auto spValue = ctl::query_interface_cast<wf::IPropertyValue>(pValue);
+        wf::PropertyType type = wf::PropertyType_Empty;
+        if (!spValue || FAILED(spValue->get_Type(&type)))
+        {
+            return S_OK;
+        }
+
+        if (type == wf::PropertyType_String)
+        {
+            wrl_wrappers::HString value;
+            UINT32 length = 0;
+            if (SUCCEEDED(spValue->GetString(value.GetAddressOf())))
+            {
+                LPCWSTR szValue = value.GetRawBuffer(&length);
+                if (TryMakeStringSortKey(localeName, 0, szValue, length, &pKey->sortKey))
+                {
+                    pKey->kind = SortKey::Kind::String;
+                }
+            }
+        }
+        else if (DirectUI::PropertyValue::IsNumericPropertyType(type))
+        {
+            if (TryGetIntegerValue(spValue.Get(), type, &pKey->isNegative, &pKey->magnitude))
+            {
+                pKey->isInteger = true;
+                pKey->number = pKey->isNegative ? -static_cast<DOUBLE>(pKey->magnitude) : static_cast<DOUBLE>(pKey->magnitude);
+                pKey->kind = SortKey::Kind::Number;
+            }
+            else if (SUCCEEDED(GetNumericValue(spValue.Get(), type, &pKey->number)))
+            {
+                pKey->kind = SortKey::Kind::Number;
+            }
+        }
+        else if (type == wf::PropertyType_Boolean)
+        {
+            BOOLEAN value = FALSE;
+            if (SUCCEEDED(spValue->GetBoolean(&value)))
+            {
+                pKey->ticks = !!value;
+                pKey->kind = SortKey::Kind::Boolean;
+            }
+        }
+        else if (type == wf::PropertyType_DateTime)
+        {
+            wf::DateTime value = {};
+            if (SUCCEEDED(spValue->GetDateTime(&value)))
+            {
+                pKey->ticks = value.UniversalTime;
+                pKey->kind = SortKey::Kind::DateTime;
+            }
+        }
+        else if (type == wf::PropertyType_TimeSpan)
+        {
+            wf::TimeSpan value = {};
+            if (SUCCEEDED(spValue->GetTimeSpan(&value)))
+            {
+                pKey->ticks = value.Duration;
+                pKey->kind = SortKey::Kind::TimeSpan;
+            }
+        }
+
+        return S_OK;
+    }
+
+    int CompareSortKeys(const SortKey& left, const SortKey& right)
+    {
+        if (left.kind == SortKey::Kind::Null || right.kind == SortKey::Kind::Null)
+        {
+            return (left.kind != SortKey::Kind::Null ? 1 : 0) - (right.kind != SortKey::Kind::Null ? 1 : 0);
+        }
+
+        if (left.kind != right.kind || left.kind == SortKey::Kind::Unordered)
         {
             return 0;
         }
 
-        if (leftType == wf::PropertyType_String && rightType == wf::PropertyType_String)
+        switch (left.kind)
         {
-            wrl_wrappers::HString left;
-            wrl_wrappers::HString right;
-            UINT32 leftLength = 0;
-            UINT32 rightLength = 0;
-
-            if (FAILED(spLeft->GetString(left.GetAddressOf())) || FAILED(spRight->GetString(right.GetAddressOf())))
-            {
-                return 0;
-            }
-
-            LPCWSTR szLeft = left.GetRawBuffer(&leftLength);
-            LPCWSTR szRight = right.GetRawBuffer(&rightLength);
-            const int result = CompareStringEx(localeName, 0, szLeft, static_cast<int>(leftLength), szRight, static_cast<int>(rightLength), nullptr, nullptr, 0);
-            return (result == 0) ? 0 : result - CSTR_EQUAL;
+        case SortKey::Kind::String:
+        {
+            const int result = left.sortKey.compare(right.sortKey);
+            return (result > 0) - (result < 0);
         }
 
-        if (DirectUI::PropertyValue::IsNumericPropertyType(leftType) && DirectUI::PropertyValue::IsNumericPropertyType(rightType))
-        {
-            bool isLeftNegative = false;
-            bool isRightNegative = false;
-            UINT64 leftMagnitude = 0;
-            UINT64 rightMagnitude = 0;
-            if (TryGetIntegerValue(spLeft.Get(), leftType, &isLeftNegative, &leftMagnitude) &&
-                TryGetIntegerValue(spRight.Get(), rightType, &isRightNegative, &rightMagnitude))
+        case SortKey::Kind::Number:
+            if (left.isInteger && right.isInteger)
             {
-                if (isLeftNegative != isRightNegative)
+                if (left.isNegative != right.isNegative)
                 {
-                    return isLeftNegative ? -1 : 1;
+                    return left.isNegative ? -1 : 1;
                 }
-                const int magnitudeOrder = (leftMagnitude < rightMagnitude) ? -1 : ((leftMagnitude > rightMagnitude) ? 1 : 0);
-                return isLeftNegative ? -magnitudeOrder : magnitudeOrder;
+                const int magnitudeOrder = (left.magnitude < right.magnitude) ? -1 : ((left.magnitude > right.magnitude) ? 1 : 0);
+                return left.isNegative ? -magnitudeOrder : magnitudeOrder;
             }
+            return (left.number < right.number) ? -1 : ((left.number > right.number) ? 1 : 0);
 
-            DOUBLE left = 0;
-            DOUBLE right = 0;
-
-            if (FAILED(GetNumericValue(spLeft.Get(), leftType, &left)) || FAILED(GetNumericValue(spRight.Get(), rightType, &right)))
-            {
-                return 0;
-            }
-
-            return (left < right) ? -1 : ((left > right) ? 1 : 0);
+        default:
+            return (left.ticks < right.ticks) ? -1 : ((left.ticks > right.ticks) ? 1 : 0);
         }
-
-        if (leftType == rightType)
-        {
-            switch (leftType)
-            {
-            case wf::PropertyType_Boolean:
-            {
-                BOOLEAN left = FALSE;
-                BOOLEAN right = FALSE;
-                if (SUCCEEDED(spLeft->GetBoolean(&left)) && SUCCEEDED(spRight->GetBoolean(&right)))
-                {
-                    return static_cast<int>(!!left) - static_cast<int>(!!right);
-                }
-                break;
-            }
-
-            case wf::PropertyType_DateTime:
-            {
-                wf::DateTime left = {};
-                wf::DateTime right = {};
-                if (SUCCEEDED(spLeft->GetDateTime(&left)) && SUCCEEDED(spRight->GetDateTime(&right)))
-                {
-                    return (left.UniversalTime < right.UniversalTime) ? -1 : ((left.UniversalTime > right.UniversalTime) ? 1 : 0);
-                }
-                break;
-            }
-
-            case wf::PropertyType_TimeSpan:
-            {
-                wf::TimeSpan left = {};
-                wf::TimeSpan right = {};
-                if (SUCCEEDED(spLeft->GetTimeSpan(&left)) && SUCCEEDED(spRight->GetTimeSpan(&right)))
-                {
-                    return (left.Duration < right.Duration) ? -1 : ((left.Duration > right.Duration) ? 1 : 0);
-                }
-                break;
-            }
-
-            default:
-                break;
-            }
-        }
-
-        return 0;
     }
 
     // Orders items by the SortDescriptions, or by the CustomSort when set (WPF: MS.Internal.Data.SortFieldComparer).
@@ -639,28 +797,39 @@ namespace
             return !m_spCustomSort && m_fields.empty();
         }
 
-        // The sort keys Compare reads for an item; none with a CustomSort.
-        _Check_return_ HRESULT EvaluateKeys(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pKeys) const
+        bool HasCustomSort() const
         {
+            return !!m_spCustomSort;
+        }
+
+        // The keys Compare reads per item; none with a CustomSort, which compares the items.
+        UINT FieldCount() const
+        {
+            return m_spCustomSort ? 0 : static_cast<UINT>(m_fields.size());
+        }
+
+        _Check_return_ HRESULT EvaluateKeys(_In_opt_ IInspectable* pItem, _Out_ SortKeys* pKeys) const
+        {
+            LPCWSTR localeName = m_localeName.empty() ? LOCALE_NAME_USER_DEFAULT : m_localeName.c_str();
             pKeys->clear();
-            pKeys->reserve(m_fields.size());
-            for (const auto& field : m_fields)
+            pKeys->resize(FieldCount());
+            for (UINT i = 0; i < FieldCount(); ++i)
             {
-                ctl::ComPtr<IInspectable> spKey;
-                IFC_RETURN(EvaluateKey(field, pItem, spKey.ReleaseAndGetAddressOf()));
-                pKeys->push_back(std::move(spKey));
+                ctl::ComPtr<IInspectable> spValue;
+                IFC_RETURN(EvaluateKey(m_fields[i], pItem, spValue.ReleaseAndGetAddressOf()));
+                IFC_RETURN(MakeSortKey(spValue.Get(), localeName, &(*pKeys)[i]));
             }
 
             return S_OK;
         }
 
-        // pRightKeys null: the right item's keys are evaluated as needed.
+        // The items are read only by a CustomSort; the keys (FieldCount each) only by the SortDescriptions.
         _Check_return_ HRESULT Compare(
             _In_opt_ IInspectable* pLeft,
-            const std::vector<ctl::ComPtr<IInspectable>>& leftKeys,
+            _In_opt_ const SortKey* pLeftKeys,
             UINT leftSourceIndex,
             _In_opt_ IInspectable* pRight,
-            _In_opt_ const std::vector<ctl::ComPtr<IInspectable>>* pRightKeys,
+            _In_opt_ const SortKey* pRightKeys,
             UINT rightSourceIndex,
             _Out_ int* pResult) const
         {
@@ -676,17 +845,7 @@ namespace
             {
                 for (size_t i = 0; i < m_fields.size() && *pResult == 0; ++i)
                 {
-                    ctl::ComPtr<IInspectable> spRightKey;
-                    if (pRightKeys)
-                    {
-                        spRightKey = (*pRightKeys)[i];
-                    }
-                    else
-                    {
-                        IFC_RETURN(EvaluateKey(m_fields[i], pRight, spRightKey.ReleaseAndGetAddressOf()));
-                    }
-
-                    const int result = CompareKeys(leftKeys[i].Get(), spRightKey.Get(), m_localeName.empty() ? LOCALE_NAME_USER_DEFAULT : m_localeName.c_str());
+                    const int result = CompareSortKeys(pLeftKeys[i], pRightKeys[i]);
                     *pResult = m_fields[i].isDescending ? -result : result;
                 }
             }
@@ -703,6 +862,95 @@ namespace
         std::vector<ShapingKeySelector> m_fields;
         ctl::ComPtr<xaml_data::ICollectionViewComparer> m_spCustomSort;
         std::wstring m_localeName;
+    };
+
+    // The decoded sort keys of the presented items, FieldCount per slot. An item keeps its slot while it moves,
+    // so the incremental and live paths compare against cached keys and only the slot numbers move.
+    class SortKeyStore
+    {
+    public:
+        static constexpr UINT c_noSlot = UINT_MAX;
+
+        void Reset(UINT fieldCount)
+        {
+            m_fieldCount = fieldCount;
+            m_keys.clear();
+            m_freeSlots.clear();
+        }
+
+        UINT FieldCount() const
+        {
+            return m_fieldCount;
+        }
+
+        UINT Allocate(const SortKeys& keys)
+        {
+            const UINT slot = AllocateSlot();
+            Set(slot, keys);
+            return slot;
+        }
+
+        UINT Allocate(SortKeys&& keys)
+        {
+            const UINT slot = AllocateSlot();
+            for (UINT i = 0; i < m_fieldCount && i < keys.size(); ++i)
+            {
+                m_keys[static_cast<size_t>(slot) * m_fieldCount + i] = std::move(keys[i]);
+            }
+            return slot;
+        }
+
+        void Set(UINT slot, const SortKeys& keys)
+        {
+            for (UINT i = 0; i < m_fieldCount; ++i)
+            {
+                m_keys[static_cast<size_t>(slot) * m_fieldCount + i] = (i < keys.size()) ? keys[i] : SortKey();
+            }
+        }
+
+        void Free(UINT slot)
+        {
+            if (m_fieldCount == 0 || slot == c_noSlot)
+            {
+                return;
+            }
+
+            for (UINT i = 0; i < m_fieldCount; ++i)
+            {
+                m_keys[static_cast<size_t>(slot) * m_fieldCount + i] = SortKey();
+            }
+            m_freeSlots.push_back(slot);
+        }
+
+        // Valid until the next Allocate.
+        const SortKey* At(UINT slot) const
+        {
+            return (m_fieldCount == 0) ? nullptr : m_keys.data() + static_cast<size_t>(slot) * m_fieldCount;
+        }
+
+    private:
+        UINT AllocateSlot()
+        {
+            if (m_fieldCount == 0)
+            {
+                return 0;
+            }
+
+            if (!m_freeSlots.empty())
+            {
+                const UINT slot = m_freeSlots.back();
+                m_freeSlots.pop_back();
+                return slot;
+            }
+
+            const UINT slot = static_cast<UINT>(m_keys.size() / m_fieldCount);
+            m_keys.resize(m_keys.size() + m_fieldCount);
+            return slot;
+        }
+
+        UINT m_fieldCount = 0;
+        std::vector<SortKey> m_keys;
+        std::vector<UINT> m_freeSlots;
     };
 
     _Check_return_ HRESULT TryGetString(_In_opt_ IInspectable* pValue, _Out_ wrl_wrappers::HString* pString, _Out_ bool* pIsString)
@@ -762,6 +1010,140 @@ namespace
         return S_OK;
     }
 
+    // The key under which a parent maps a group name (WPF: CollectionViewGroupInternal._nameToGroupMap), equal for
+    // exactly the names GroupNamesMatch matches: a string as compared (ordinal, ordinal uppercase, or its sort
+    // key), a scalar by its value (AreEqual), another object by identity. *pIsHashed is false for a name only
+    // NamesMatch can match (a NaN, an enum box, an array).
+    _Check_return_ HRESULT MakeGroupNameKey(xaml_data::CollectionViewStringComparison comparison, _In_opt_ IInspectable* pName, _Out_ GroupNameKey* pKey, _Out_ bool* pIsHashed)
+    {
+        constexpr UINT8 c_identityKind = 0xFF;
+        auto setBytes = [pKey](const void* pData, size_t size)
+        {
+            if (size == 0)
+            {
+                pKey->bytes.clear();
+                return;
+            }
+            pKey->bytes.assign(static_cast<const char*>(pData), size);
+        };
+        auto normalize = [](FLOAT value, bool* pIsNaN) { *pIsNaN = *pIsNaN || value != value; return (value == 0) ? 0.0f : value; };
+
+        *pKey = GroupNameKey();
+        *pIsHashed = true;
+        if (!pName)
+        {
+            return S_OK;
+        }
+
+        auto spValue = ctl::query_interface_cast<wf::IPropertyValue>(pName);
+        if (!spValue)
+        {
+            ctl::ComPtr<IUnknown> spIdentity;
+            IFC_RETURN(pName->QueryInterface(IID_PPV_ARGS(&spIdentity)));
+            IUnknown* pIdentity = spIdentity.Get();
+            pKey->kind = c_identityKind;
+            setBytes(&pIdentity, sizeof(pIdentity));
+            return S_OK;
+        }
+
+        wf::PropertyType type = wf::PropertyType_Empty;
+        IFC_RETURN(spValue->get_Type(&type));
+        pKey->kind = static_cast<UINT8>(1 + type);
+        bool isNaN = false;
+
+        switch (type)
+        {
+        case wf::PropertyType_String:
+        {
+            wrl_wrappers::HString name;
+            UINT32 length = 0;
+            IFC_RETURN(spValue->GetString(name.GetAddressOf()));
+            LPCWSTR szName = name.GetRawBuffer(&length);
+            switch (comparison)
+            {
+            case xaml_data::CollectionViewStringComparison_Ordinal:
+                setBytes(szName, length * sizeof(WCHAR));
+                break;
+
+            // CompareStringOrdinal ignoring case matches what the invariant uppercase mapping makes equal.
+            case xaml_data::CollectionViewStringComparison_OrdinalIgnoreCase:
+            {
+                std::wstring upper(szName, length);
+                if (length > 0 && LCMapStringEx(LOCALE_NAME_INVARIANT, LCMAP_UPPERCASE, szName, static_cast<int>(length), upper.data(), static_cast<int>(length), nullptr, nullptr, 0) != static_cast<int>(length))
+                {
+                    *pIsHashed = false;
+                }
+                setBytes(upper.data(), length * sizeof(WCHAR));
+                break;
+            }
+
+            default:
+            {
+                const bool isInvariant = comparison == xaml_data::CollectionViewStringComparison_InvariantCulture || comparison == xaml_data::CollectionViewStringComparison_InvariantCultureIgnoreCase;
+                const bool isIgnoreCase = comparison == xaml_data::CollectionViewStringComparison_CurrentCultureIgnoreCase || comparison == xaml_data::CollectionViewStringComparison_InvariantCultureIgnoreCase;
+                *pIsHashed = TryMakeStringSortKey(isInvariant ? LOCALE_NAME_INVARIANT : LOCALE_NAME_USER_DEFAULT, isIgnoreCase ? NORM_IGNORECASE : 0, szName, length, &pKey->bytes);
+                break;
+            }
+            }
+            break;
+        }
+
+        case wf::PropertyType_Boolean: { BOOLEAN v = FALSE; IFC_RETURN(spValue->GetBoolean(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Char16: { WCHAR v = 0; IFC_RETURN(spValue->GetChar16(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_UInt8: { BYTE v = 0; IFC_RETURN(spValue->GetUInt8(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Int16: { INT16 v = 0; IFC_RETURN(spValue->GetInt16(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_UInt16: { UINT16 v = 0; IFC_RETURN(spValue->GetUInt16(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Int32: { INT32 v = 0; IFC_RETURN(spValue->GetInt32(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_UInt32: { UINT32 v = 0; IFC_RETURN(spValue->GetUInt32(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Int64: { INT64 v = 0; IFC_RETURN(spValue->GetInt64(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_UInt64: { UINT64 v = 0; IFC_RETURN(spValue->GetUInt64(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Guid: { GUID v = {}; IFC_RETURN(spValue->GetGuid(&v)); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_DateTime: { wf::DateTime v = {}; IFC_RETURN(spValue->GetDateTime(&v)); setBytes(&v.UniversalTime, sizeof(v.UniversalTime)); break; }
+        case wf::PropertyType_TimeSpan: { wf::TimeSpan v = {}; IFC_RETURN(spValue->GetTimeSpan(&v)); setBytes(&v.Duration, sizeof(v.Duration)); break; }
+        case wf::PropertyType_Single: { FLOAT v = 0; IFC_RETURN(spValue->GetSingle(&v)); v = normalize(v, &isNaN); setBytes(&v, sizeof(v)); break; }
+        case wf::PropertyType_Double:
+        {
+            DOUBLE v = 0;
+            IFC_RETURN(spValue->GetDouble(&v));
+            isNaN = v != v;
+            v = (v == 0) ? 0.0 : v;
+            setBytes(&v, sizeof(v));
+            break;
+        }
+        case wf::PropertyType_Point:
+        {
+            wf::Point v = {};
+            IFC_RETURN(spValue->GetPoint(&v));
+            const FLOAT values[] = { normalize(v.X, &isNaN), normalize(v.Y, &isNaN) };
+            setBytes(values, sizeof(values));
+            break;
+        }
+        case wf::PropertyType_Size:
+        {
+            wf::Size v = {};
+            IFC_RETURN(spValue->GetSize(&v));
+            const FLOAT values[] = { normalize(v.Width, &isNaN), normalize(v.Height, &isNaN) };
+            setBytes(values, sizeof(values));
+            break;
+        }
+        case wf::PropertyType_Rect:
+        {
+            wf::Rect v = {};
+            IFC_RETURN(spValue->GetRect(&v));
+            const FLOAT values[] = { normalize(v.X, &isNaN), normalize(v.Y, &isNaN), normalize(v.Width, &isNaN), normalize(v.Height, &isNaN) };
+            setBytes(values, sizeof(values));
+            break;
+        }
+
+        default:
+            *pIsHashed = false;
+            break;
+        }
+
+        *pIsHashed = *pIsHashed && !isNaN;
+        return S_OK;
+    }
+
     // Each group above pChild, up to the root, gets the change at the item's index among its leaves.
     template <typename TChange>
     _Check_return_ HRESULT ChangeAncestorLeaves(_In_ CollectionViewGroupInternal* pChild, UINT offset, const TChange& changeLeaf)
@@ -770,6 +1152,29 @@ namespace
         {
             offset += pGroup->LeafCountBefore(pChild);
             IFC_RETURN(changeLeaf(pGroup, offset));
+        }
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT AreGroupSortKeysFixed(_In_opt_ wfc::IVector<xaml_data::SortDescription*>* pDescriptions, _Out_ bool* pAreFixed)
+    {
+        UINT count = 0;
+        *pAreFixed = true;
+        if (pDescriptions)
+        {
+            IFC_RETURN(pDescriptions->get_Size(&count));
+        }
+
+        for (UINT i = 0; i < count && *pAreFixed; ++i)
+        {
+            ctl::ComPtr<xaml_data::ISortDescription> spDescription;
+            wrl_wrappers::HString path;
+            IFC_RETURN(pDescriptions->GetAt(i, spDescription.ReleaseAndGetAddressOf()));
+            if (spDescription)
+            {
+                IFC_RETURN(spDescription->get_PropertyName(path.GetAddressOf()));
+                *pAreFixed = wrl_wrappers::HStringReference(L"Key") == path.Get() || wrl_wrappers::HStringReference(L"Name") == path.Get();
+            }
         }
         return S_OK;
     }
@@ -783,21 +1188,40 @@ namespace
         xaml_data::CollectionViewStringComparison stringComparison = xaml_data::CollectionViewStringComparison_Ordinal;
         // Group order (WPF: GroupDescription.SortDescriptions / CustomSort); else first appearance.
         bool hasGroupOrder = false;
+        // The group SortDescriptions read only Key and Name, which a group keeps for its life, so each group
+        // reads its sort keys once and siblings are found by binary search. Else (ItemCount) they are read
+        // at each compare.
+        bool areGroupSortKeysFixed = false;
         SortFieldComparer groupSort;
         ctl::ComPtr<xaml_data::ICollectionViewComparer> spGroupCustomSort;
     };
+}
+
+// The comparer the view sorts with and the decoded keys of the items it presents (flat output: one slot per
+// output position, parallel to m_sourceIndices; grouped output: per bottom-level group).
+struct DirectUI::ShapingSortState
+{
+    SortFieldComparer comparer;
+    SortKeyStore keys;
+    std::vector<UINT> flatSlots;
+};
+
+namespace
+{
+    using SortState = DirectUI::ShapingSortState;
 
     // The top of the group tree (WPF: MS.Internal.Data.CollectionViewGroupRoot). Its subgroups are the view's
     // InternalList; its own leaves are not kept.
     class __declspec(novtable) CollectionViewGroupRoot : public CollectionViewGroupInternal
     {
     public:
-        _Check_return_ HRESULT InitializeRoot(_In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pDescriptions, _In_ VectorCollectionView* pOwner, _In_opt_ HSTRING culture)
+        _Check_return_ HRESULT InitializeRoot(_In_ wfc::IVector<xaml_data::PropertyGroupDescription*>* pDescriptions, _In_ VectorCollectionView* pOwner, _In_opt_ HSTRING culture, UINT sourceSize)
         {
             UINT count = 0;
 
             IFC_RETURN(InitializeGroup(nullptr, nullptr, false /* isBottomLevel */));
             IFC_RETURN(m_culture.Set(culture));
+            m_leafGroups.assign(sourceSize, nullptr);
             IFC_RETURN(pDescriptions->get_Size(&count));
             m_levels.clear();
             m_levels.resize(count);
@@ -823,6 +1247,7 @@ namespace
                 IFC_RETURN(spImpl->get_CustomSortImpl(level.spGroupCustomSort.ReleaseAndGetAddressOf()));
                 IFC_RETURN(level.groupSort.Initialize(spImpl->GetSortDescriptionsNoRef(), nullptr /* pCustomSort */, culture));
                 level.hasGroupOrder = level.spGroupCustomSort || !level.groupSort.IsEmpty();
+                IFC_RETURN(AreGroupSortKeysFixed(spImpl->GetSortDescriptionsNoRef(), &level.areGroupSortKeysFixed));
                 IFC_RETURN(spImpl->AddOwner(pOwner));
             }
 
@@ -884,7 +1309,8 @@ namespace
         }
 
         // Negative, zero or positive as group x sorts before, with or after group y (WPF: the group comparer
-        // CollectionViewGroupInternal.FindIndex uses). CustomSort compares the group names.
+        // CollectionViewGroupInternal.FindIndex uses). CustomSort compares the group names; SortDescriptions compare
+        // the keys each group read when it was created.
         _Check_return_ HRESULT CompareGroups(UINT level, _In_ CollectionViewGroupInternal* pLeft, _In_ CollectionViewGroupInternal* pRight, _Out_ int* pResult) const
         {
             const auto& groupLevel = m_levels[level];
@@ -898,41 +1324,85 @@ namespace
                 return S_OK;
             }
 
-            std::vector<ctl::ComPtr<IInspectable>> leftKeys;
+            if (groupLevel.areGroupSortKeysFixed)
+            {
+                IFC_RETURN(groupLevel.groupSort.Compare(ctl::as_iinspectable(pLeft), pLeft->GroupSortKeys().data(), 0, ctl::as_iinspectable(pRight), pRight->GroupSortKeys().data(), 0, pResult));
+                return S_OK;
+            }
+
+            SortKeys leftKeys;
+            SortKeys rightKeys;
             IFC_RETURN(groupLevel.groupSort.EvaluateKeys(ctl::as_iinspectable(pLeft), &leftKeys));
-            IFC_RETURN(groupLevel.groupSort.Compare(ctl::as_iinspectable(pLeft), leftKeys, 0, ctl::as_iinspectable(pRight), nullptr /* pRightKeys */, 0, pResult));
+            IFC_RETURN(groupLevel.groupSort.EvaluateKeys(ctl::as_iinspectable(pRight), &rightKeys));
+            IFC_RETURN(groupLevel.groupSort.Compare(ctl::as_iinspectable(pLeft), leftKeys.data(), 0, ctl::as_iinspectable(pRight), rightKeys.data(), 0, pResult));
             return S_OK;
         }
 
-        // With a group order, the index of the first sibling that sorts after the new group; ties go after.
+        // With a group order, the index of the first sibling that sorts after the new group; ties go after. The
+        // siblings are in that order unless they are compared by what changes (ItemCount), so this is a binary
+        // search, else a scan (WPF: CollectionViewGroupInternal.FindIndex).
         _Check_return_ HRESULT FindOrderedSubgroupPosition(_In_ CollectionViewGroupInternal* pParent, UINT level, _In_ CollectionViewGroupInternal* pSubgroup, _Out_ UINT* pPosition) const
         {
             const auto& subgroups = pParent->Subgroups();
-            UINT position = 0;
-            for (; position < subgroups.size(); ++position)
+            const auto& groupLevel = m_levels[level];
+            if (!groupLevel.spGroupCustomSort && !groupLevel.areGroupSortKeysFixed)
             {
+                UINT position = 0;
+                for (; position < subgroups.size(); ++position)
+                {
+                    int result = 0;
+                    IFC_RETURN(CompareGroups(level, pSubgroup, subgroups[position].Get(), &result));
+                    if (result < 0)
+                    {
+                        break;
+                    }
+                }
+                *pPosition = position;
+                return S_OK;
+            }
+
+            UINT low = 0;
+            UINT high = static_cast<UINT>(subgroups.size());
+            while (low < high)
+            {
+                const UINT middle = low + (high - low) / 2;
                 int result = 0;
-                IFC_RETURN(CompareGroups(level, pSubgroup, subgroups[position].Get(), &result));
+                IFC_RETURN(CompareGroups(level, pSubgroup, subgroups[middle].Get(), &result));
                 if (result < 0)
                 {
-                    break;
+                    high = middle;
+                }
+                else
+                {
+                    low = middle + 1;
                 }
             }
-            *pPosition = position;
+            *pPosition = low;
             return S_OK;
         }
 
-        // The subgroup of pGroup named pName, or null.
+        // The subgroup of pGroup named pName, or null: by its name key (WPF: the name-to-group map), else by
+        // NamesMatch among the subgroups whose names have no key.
         _Check_return_ HRESULT FindSubgroup(_In_ CollectionViewGroupInternal* pGroup, UINT level, _In_opt_ IInspectable* pName, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppSubgroup) const
         {
+            GroupNameKey key;
+            bool isHashed = false;
+
             *ppSubgroup = nullptr;
-            for (const auto& spSubgroup : pGroup->Subgroups())
+            IFC_RETURN(MakeGroupNameKey(m_levels[level].stringComparison, pName, &key, &isHashed));
+            if (isHashed)
+            {
+                *ppSubgroup = pGroup->FindSubgroupByKey(key);
+                return S_OK;
+            }
+
+            for (auto pSubgroup : pGroup->UnhashedSubgroups())
             {
                 bool isMatch = false;
-                IFC_RETURN(NamesMatch(level, spSubgroup->GetKeyNoRef(), pName, &isMatch));
+                IFC_RETURN(NamesMatch(level, pSubgroup->GetKeyNoRef(), pName, &isMatch));
                 if (isMatch)
                 {
-                    *ppSubgroup = spSubgroup.Get();
+                    *ppSubgroup = pSubgroup;
                     break;
                 }
             }
@@ -960,7 +1430,8 @@ namespace
         }
 
         // A recompute adds the items in sorted order; a new group goes after the existing ones (WPF: loading).
-        _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex)
+        // Only the bottom-level groups get the item now; FinishLoading gives the groups above them their leaves.
+        _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex, UINT slot)
         {
             CollectionViewGroupInternal* pGroup = this;
             for (UINT level = 0; level < LevelCount(); ++level)
@@ -982,67 +1453,88 @@ namespace
                 pGroup = pSubgroup;
             }
 
-            const UINT position = pGroup->LeafCount();
-            auto insertLeaf = [pItem](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->InsertLeaf(index, pItem, false /* isRaised */); };
             pGroup->SourceIndices().push_back(sourceIndex);
-            IFC_RETURN(insertLeaf(pGroup, position));
-            IFC_RETURN(ChangeAncestorLeaves(pGroup, position, insertLeaf));
-
+            pGroup->KeySlots().push_back(slot);
+            IFC_RETURN(pGroup->InsertLeaf(pGroup->LeafCount(), pItem, false /* isRaised */));
+            SetLeafGroup(sourceIndex, pGroup);
             return S_OK;
         }
 
+        _Check_return_ HRESULT FinishLoading()
+        {
+            IFC_RETURN(CollectLeaves());
+            return S_OK;
+        }
+
+        // A group reads its name key and, with group SortDescriptions, its sort keys once, when it is created.
         _Check_return_ HRESULT CreateGroup(_In_opt_ IInspectable* pName, _In_ CollectionViewGroupInternal* pParent, UINT level, _Outptr_ CollectionViewGroupInternal** ppGroup) const
         {
             ctl::ComPtr<CollectionViewGroupInternal> spGroup;
+            GroupNameKey key;
+            bool isHashed = false;
+            const auto& groupLevel = m_levels[level];
+
             IFC_RETURN(ctl::ComObject<CollectionViewGroupInternal>::CreateInstance(spGroup.ReleaseAndGetAddressOf()));
             IFC_RETURN(spGroup->InitializeGroup(pName, pParent, level + 1 == LevelCount()));
+            IFC_RETURN(MakeGroupNameKey(groupLevel.stringComparison, pName, &key, &isHashed));
+            spGroup->SetNameKey(std::move(key), isHashed);
+            if (groupLevel.areGroupSortKeysFixed && !groupLevel.spGroupCustomSort)
+            {
+                IFC_RETURN(groupLevel.groupSort.EvaluateKeys(ctl::as_iinspectable(spGroup.Get()), &spGroup->GroupSortKeys()));
+            }
             *ppGroup = spGroup.Detach();
             return S_OK;
         }
 
         // The bottom-level group and position that hold the item at sourceIndex.
-        bool FindLeaf(UINT sourceIndex, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppGroup, _Out_ UINT* pPosition)
+        bool FindLeaf(UINT sourceIndex, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppGroup, _Out_ UINT* pPosition) const
         {
-            return FindLeafIn(this, sourceIndex, ppGroup, pPosition);
+            *ppGroup = nullptr;
+            *pPosition = 0;
+            if (sourceIndex >= m_leafGroups.size() || !m_leafGroups[sourceIndex])
+            {
+                return false;
+            }
+
+            auto pGroup = m_leafGroups[sourceIndex];
+            auto& sourceIndices = pGroup->SourceIndices();
+            auto found = std::find(sourceIndices.begin(), sourceIndices.end(), sourceIndex);
+            if (found == sourceIndices.end())
+            {
+                return false;
+            }
+
+            *ppGroup = pGroup;
+            *pPosition = static_cast<UINT>(found - sourceIndices.begin());
+            return true;
+        }
+
+        void SetLeafGroup(UINT sourceIndex, _In_opt_ CollectionViewGroupInternal* pGroup)
+        {
+            if (sourceIndex < m_leafGroups.size())
+            {
+                m_leafGroups[sourceIndex] = pGroup;
+            }
         }
 
         // A source insert (delta 1) or remove (delta -1) at sourceIndex shifts the later source indices.
         void ShiftSourceIndices(UINT sourceIndex, int delta)
         {
             ShiftSourceIndicesIn(this, sourceIndex, delta);
+            if (delta > 0 && sourceIndex <= m_leafGroups.size())
+            {
+                m_leafGroups.insert(m_leafGroups.begin() + sourceIndex, nullptr);
+            }
+            else if (delta < 0 && sourceIndex < m_leafGroups.size())
+            {
+                m_leafGroups.erase(m_leafGroups.begin() + sourceIndex);
+            }
         }
 
     protected:
         CollectionViewGroupRoot() = default;
 
     private:
-        static bool FindLeafIn(_In_ CollectionViewGroupInternal* pGroup, UINT sourceIndex, _Outptr_result_maybenull_ CollectionViewGroupInternal** ppGroup, _Out_ UINT* pPosition)
-        {
-            *ppGroup = nullptr;
-            *pPosition = 0;
-            if (pGroup->IsBottomLevel())
-            {
-                auto& sourceIndices = pGroup->SourceIndices();
-                auto found = std::find(sourceIndices.begin(), sourceIndices.end(), sourceIndex);
-                if (found != sourceIndices.end())
-                {
-                    *ppGroup = pGroup;
-                    *pPosition = static_cast<UINT>(found - sourceIndices.begin());
-                    return true;
-                }
-                return false;
-            }
-
-            for (const auto& spSubgroup : pGroup->Subgroups())
-            {
-                if (FindLeafIn(spSubgroup.Get(), sourceIndex, ppGroup, pPosition))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         static void ShiftSourceIndicesIn(_In_ CollectionViewGroupInternal* pGroup, UINT sourceIndex, int delta)
         {
             if (pGroup->IsBottomLevel())
@@ -1069,6 +1561,8 @@ namespace
 
         std::vector<GroupLevel> m_levels;
         wrl_wrappers::HString m_culture;
+        // The bottom-level group of each source item the view shows, by source index (null: filtered out).
+        std::vector<CollectionViewGroupInternal*> m_leafGroups;
     };
 
     // Where an item joins the group tree (WPF: CollectionViewGroupRoot.AddToSubgroups).
@@ -1083,21 +1577,41 @@ namespace
         UINT position = 0;
     };
 
+    // Compares an item (its keys) with the item at a position of a sorted output, reading the other item's
+    // cached keys; only a CustomSort reads the other item itself.
+    template <typename TItemAt>
+    _Check_return_ HRESULT CompareWithSlot(
+        const SortState& sort,
+        _In_opt_ IInspectable* pItem,
+        const SortKeys& keys,
+        UINT sourceIndex,
+        const TItemAt& itemAt,
+        UINT position,
+        UINT otherSlot,
+        UINT otherSourceIndex,
+        _Out_ int* pResult)
+    {
+        ctl::ComPtr<IInspectable> spOther;
+        if (sort.comparer.HasCustomSort())
+        {
+            IFC_RETURN(itemAt(position, spOther.ReleaseAndGetAddressOf()));
+        }
+        IFC_RETURN(sort.comparer.Compare(pItem, keys.data(), sourceIndex, spOther.Get(), sort.keys.At(otherSlot), otherSourceIndex, pResult));
+        return S_OK;
+    }
+
     // Where an item belongs in a sorted list of size items, without the item's own slot (excludedPosition, or
     // UINT_MAX). Items isSkipped marks are not compared (WPF: LiveShapingBlock.FindPosition ignores IsSortDirty
     // items, whose place is stale). The item is in order anywhere in [*pFirst, *pLast]; *pPosition is the upper
-    // bound, the place a full recompute gives it when nothing is skipped.
-    template <typename TItemAt, typename TSourceIndexAt, typename TIsSkipped>
+    // bound, the place a full recompute gives it when nothing is skipped. compareAt(position, &result) compares
+    // the item with the one at an actual position.
+    template <typename TCompareAt, typename TSourceIndexAt, typename TIsSkipped>
     _Check_return_ HRESULT FindSortedRange(
         UINT size,
         UINT excludedPosition,
-        const TItemAt& itemAt,
+        const TCompareAt& compareAt,
         const TSourceIndexAt& sourceIndexAt,
         const TIsSkipped& isSkipped,
-        const SortFieldComparer& comparer,
-        _In_opt_ IInspectable* pItem,
-        const std::vector<ctl::ComPtr<IInspectable>>& keys,
-        UINT sourceIndex,
         _Out_ UINT* pPosition,
         _Out_opt_ UINT* pFirst = nullptr,
         _Out_opt_ UINT* pLast = nullptr)
@@ -1123,10 +1637,8 @@ namespace
                 continue;
             }
 
-            ctl::ComPtr<IInspectable> spOther;
             int result = 0;
-            IFC_RETURN(itemAt(actual(probe), spOther.ReleaseAndGetAddressOf()));
-            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spOther.Get(), nullptr /* pRightKeys */, sourceIndexAt(actual(probe)), &result));
+            IFC_RETURN(compareAt(actual(probe), &result));
             if (result < 0)
             {
                 high = middle;
@@ -1160,27 +1672,30 @@ namespace
     }
 
     // The item's index in a bottom-level group: after the items that sort before or with it. excludedPosition is
-    // a replaced item still in the group, or UINT_MAX. pIsSkipped marks (by source index) items not to compare.
+    // a replaced item still in the group, or UINT_MAX. isSkipped marks (by source index) items not to compare.
+    template <typename TIsSkipped>
     _Check_return_ HRESULT FindLeafPosition(
         _In_ CollectionViewGroupInternal* pGroup,
-        const SortFieldComparer& comparer,
+        const SortState& sort,
         _In_opt_ IInspectable* pItem,
-        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        const SortKeys& keys,
         UINT sourceIndex,
         UINT excludedPosition,
+        const TIsSkipped& isSkipped,
         _Out_ UINT* pPosition,
-        _In_opt_ const std::vector<bool>* pIsSkipped = nullptr,
         _Out_opt_ UINT* pFirst = nullptr,
         _Out_opt_ UINT* pLast = nullptr)
     {
         const auto& sourceIndices = pGroup->SourceIndices();
+        const auto& slots = pGroup->KeySlots();
+        auto itemAt = [pGroup](UINT position, IInspectable** ppItem) { return pGroup->GetAt(position, ppItem); };
         IFC_RETURN(FindSortedRange(
             pGroup->LeafCount(),
             excludedPosition,
-            [pGroup](UINT position, IInspectable** ppItem) { return pGroup->GetAt(position, ppItem); },
+            [&](UINT position, int* pResult) { return CompareWithSlot(sort, pItem, keys, sourceIndex, itemAt, position, slots[position], sourceIndices[position], pResult); },
             [&sourceIndices](UINT position) { return sourceIndices[position]; },
-            [pIsSkipped](UINT index) { return pIsSkipped && index < pIsSkipped->size() && (*pIsSkipped)[index]; },
-            comparer, pItem, keys, sourceIndex, pPosition, pFirst, pLast));
+            isSkipped,
+            pPosition, pFirst, pLast));
         return S_OK;
     }
 
@@ -1191,9 +1706,9 @@ namespace
         _In_ CollectionViewGroupInternal* pParent,
         UINT level,
         _In_ CollectionViewGroupInternal* pSubgroup,
-        const SortFieldComparer& comparer,
+        const SortState& sort,
         _In_opt_ IInspectable* pItem,
-        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        const SortKeys& keys,
         UINT sourceIndex,
         _Out_ UINT* pPosition)
     {
@@ -1208,14 +1723,16 @@ namespace
 
         for (; position < subgroups.size(); ++position)
         {
-            ctl::ComPtr<IInspectable> spSeed;
-            int result = 0;
-            if (subgroups[position]->LeafCount() == 0)
+            auto pSeedGroup = subgroups[position]->FirstBottomGroup();
+            if (!pSeedGroup)
             {
                 continue;
             }
-            IFC_RETURN(subgroups[position]->GetAt(0, spSeed.ReleaseAndGetAddressOf()));
-            IFC_RETURN(comparer.Compare(pItem, keys, sourceIndex, spSeed.Get(), nullptr /* pRightKeys */, subgroups[position]->FirstSourceIndex(), &result));
+
+            int result = 0;
+            IFC_RETURN(CompareWithSlot(sort, pItem, keys, sourceIndex,
+                [pSeedGroup](UINT seedPosition, IInspectable** ppSeed) { return pSeedGroup->GetAt(seedPosition, ppSeed); },
+                0, pSeedGroup->KeySlots().front(), pSeedGroup->SourceIndices().front(), &result));
             if (result < 0)
             {
                 break;
@@ -1227,16 +1744,17 @@ namespace
     }
 
     // Runs app code (property getters, converters, comparers) and changes nothing that is presented.
+    template <typename TIsSkipped>
     _Check_return_ HRESULT PlanGroupedInsertion(
         _In_ CollectionViewGroupRoot* pRoot,
-        const SortFieldComparer& comparer,
+        const SortState& sort,
         _In_opt_ IInspectable* pItem,
-        const std::vector<ctl::ComPtr<IInspectable>>& keys,
+        const SortKeys& keys,
         UINT sourceIndex,
         _In_opt_ CollectionViewGroupInternal* pExcludedGroup,
         UINT excludedPosition,
-        _Out_ GroupedInsertion* pInsertion,
-        _In_opt_ const std::vector<bool>* pIsSkipped = nullptr)
+        const TIsSkipped& isSkipped,
+        _Out_ GroupedInsertion* pInsertion)
     {
         std::vector<ctl::ComPtr<IInspectable>> names;
         CollectionViewGroupInternal* pGroup = pRoot;
@@ -1254,7 +1772,8 @@ namespace
                 continue;
             }
 
-            // The item starts a branch: build it, holding the item, before it is presented.
+            // The item starts a branch: build it, holding the item, before it is presented. Its key slot is
+            // assigned when the branch is applied.
             CollectionViewGroupInternal* pParent = pGroup;
             for (UINT newLevel = level; newLevel < pRoot->LevelCount(); ++newLevel)
             {
@@ -1272,43 +1791,53 @@ namespace
                 if (newLevel + 1 == pRoot->LevelCount())
                 {
                     spNewGroup->SourceIndices().push_back(sourceIndex);
+                    spNewGroup->KeySlots().push_back(SortKeyStore::c_noSlot);
                 }
                 pParent = spNewGroup.Get();
             }
 
             pInsertion->pGroup = pGroup;
-            IFC_RETURN(FindSubgroupPosition(pRoot, pGroup, level, pInsertion->spNewGroup.Get(), comparer, pItem, keys, sourceIndex, &pInsertion->position));
+            IFC_RETURN(FindSubgroupPosition(pRoot, pGroup, level, pInsertion->spNewGroup.Get(), sort, pItem, keys, sourceIndex, &pInsertion->position));
             return S_OK;
         }
 
         pInsertion->pGroup = pGroup;
-        IFC_RETURN(FindLeafPosition(pGroup, comparer, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, &pInsertion->position, pIsSkipped));
+        IFC_RETURN(FindLeafPosition(pGroup, sort, pItem, keys, sourceIndex, (pGroup == pExcludedGroup) ? excludedPosition : UINT_MAX, isSkipped, &pInsertion->position));
         return S_OK;
     }
 
-    _Check_return_ HRESULT ApplyGroupedInsertion(const GroupedInsertion& insertion, _In_opt_ IInspectable* pItem, UINT sourceIndex)
+    _Check_return_ HRESULT ApplyGroupedInsertion(_In_ CollectionViewGroupRoot* pRoot, _Inout_ SortState& sort, const GroupedInsertion& insertion, _In_opt_ IInspectable* pItem, const SortKeys& keys, UINT sourceIndex)
     {
         auto insertLeaf = [pItem](CollectionViewGroupInternal* pGroup, UINT index) { return pGroup->InsertLeaf(index, pItem, true /* isRaised */); };
 
         if (insertion.spNewGroup)
         {
+            auto pBottom = insertion.spNewGroup->FirstBottomGroup();
+            pBottom->KeySlots().front() = sort.keys.Allocate(keys);
+            pRoot->SetLeafGroup(sourceIndex, pBottom);
             IFC_RETURN(insertion.pGroup->InsertSubgroup(insertion.position, insertion.spNewGroup.Get(), true /* isRaised */));
             IFC_RETURN(ChangeAncestorLeaves(insertion.spNewGroup.Get(), 0, insertLeaf));
             return S_OK;
         }
 
         auto& sourceIndices = insertion.pGroup->SourceIndices();
+        auto& slots = insertion.pGroup->KeySlots();
         sourceIndices.insert(sourceIndices.begin() + insertion.position, sourceIndex);
+        slots.insert(slots.begin() + insertion.position, sort.keys.Allocate(keys));
+        pRoot->SetLeafGroup(sourceIndex, insertion.pGroup);
         IFC_RETURN(insertLeaf(insertion.pGroup, insertion.position));
         IFC_RETURN(ChangeAncestorLeaves(insertion.pGroup, insertion.position, insertLeaf));
         return S_OK;
     }
 
     // An item leaves its group (WPF: RemoveFromSubgroups); the groups it was the last item of go with it.
-    _Check_return_ HRESULT ApplyGroupedRemoval(_In_ CollectionViewGroupInternal* pGroup, UINT position)
+    _Check_return_ HRESULT ApplyGroupedRemoval(_In_ CollectionViewGroupRoot* pRoot, _Inout_ SortState& sort, _In_ CollectionViewGroupInternal* pGroup, UINT position)
     {
         auto removeLeaf = [](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->RemoveLeaf(index); };
         CollectionViewGroupInternal* pEmptied = nullptr;
+
+        pRoot->SetLeafGroup(pGroup->SourceIndices()[position], nullptr);
+        sort.keys.Free(pGroup->KeySlots()[position]);
 
         if (pGroup->LeafCount() == 1)
         {
@@ -1334,15 +1863,18 @@ namespace
         }
 
         auto& sourceIndices = pGroup->SourceIndices();
+        auto& slots = pGroup->KeySlots();
         sourceIndices.erase(sourceIndices.begin() + position);
+        slots.erase(slots.begin() + position);
         IFC_RETURN(pGroup->RemoveLeaf(position));
         IFC_RETURN(ChangeAncestorLeaves(pGroup, position, removeLeaf));
         return S_OK;
     }
 
-    _Check_return_ HRESULT ApplyGroupedReplace(_In_ CollectionViewGroupInternal* pGroup, UINT position, _In_opt_ IInspectable* pItem)
+    _Check_return_ HRESULT ApplyGroupedReplace(_Inout_ SortState& sort, _In_ CollectionViewGroupInternal* pGroup, UINT position, _In_opt_ IInspectable* pItem, const SortKeys& keys)
     {
         auto setLeaf = [pItem](CollectionViewGroupInternal* pAncestor, UINT index) { return pAncestor->SetLeaf(index, pItem); };
+        sort.keys.Set(pGroup->KeySlots()[position], keys);
         IFC_RETURN(setLeaf(pGroup, position));
         IFC_RETURN(ChangeAncestorLeaves(pGroup, position, setLeaf));
         return S_OK;
@@ -1847,12 +2379,12 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     struct Entry
     {
         ctl::ComPtr<IInspectable> item;
-        std::vector<ctl::ComPtr<IInspectable>> sortKeys;
         std::vector<ctl::ComPtr<IInspectable>> groupNames;
         UINT sourceIndex = 0;
+        UINT slot = 0;
     };
 
-    SortFieldComparer sortComparer;
+    auto spSort = std::make_shared<ShapingSortState>();
     ctl::ComPtr<CollectionViewGroupRoot> spRoot;
     ctl::ComPtr<CollectionViewSource> spFilterHost;
     std::vector<Entry> entries;
@@ -1861,21 +2393,23 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     const UINT sourceChangeCount = m_sourceListChangeCount;
     UINT size = 0;
 
-    IFC_RETURN(sortComparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
+    IFC_RETURN(spSort->comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
+    spSort->keys.Reset(spSort->comparer.FieldCount());
+    IFC_RETURN(m_tpSourceList->get_Size(&size));
 
     if (m_isGrouping)
     {
         IFC_RETURN(ctl::ComObject<CollectionViewGroupRoot>::CreateInstance(spRoot.ReleaseAndGetAddressOf()));
-        IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get(), this, m_culture.Get()));
+        IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get(), this, m_culture.Get(), size));
     }
 
     IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
-    IFC_RETURN(m_tpSourceList->get_Size(&size));
     entries.reserve(size);
 
     for (UINT i = 0; i < size; ++i)
     {
         Entry entry;
+        SortKeys keys;
         bool isAccepted = true;
         entry.sourceIndex = i;
         IFC_RETURN(m_tpSourceList->GetAt(i, entry.item.ReleaseAndGetAddressOf()));
@@ -1886,7 +2420,8 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
             continue;
         }
 
-        IFC_RETURN(sortComparer.EvaluateKeys(entry.item.Get(), &entry.sortKeys));
+        IFC_RETURN(spSort->comparer.EvaluateKeys(entry.item.Get(), &keys));
+        entry.slot = spSort->keys.Allocate(std::move(keys));
 
         if (spRoot)
         {
@@ -1896,16 +2431,17 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         entries.push_back(std::move(entry));
     }
 
-    if (!sortComparer.IsEmpty())
+    if (!spSort->comparer.IsEmpty())
     {
         // A CustomSort that fails ends the sort and the recompute; the previous output stays.
         HRESULT hrCompare = S_OK;
-        std::stable_sort(entries.begin(), entries.end(), [&sortComparer, &hrCompare](const Entry& left, const Entry& right)
+        const auto& sort = *spSort;
+        std::stable_sort(entries.begin(), entries.end(), [&sort, &hrCompare](const Entry& left, const Entry& right)
         {
             int result = 0;
             if (SUCCEEDED(hrCompare))
             {
-                hrCompare = sortComparer.Compare(left.item.Get(), left.sortKeys, left.sourceIndex, right.item.Get(), &right.sortKeys, right.sourceIndex, &result);
+                hrCompare = sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result);
             }
             return SUCCEEDED(hrCompare) && result < 0;
         });
@@ -1916,18 +2452,21 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     {
         outputItems.reserve(entries.size());
         outputSourceIndices.reserve(entries.size());
+        spSort->flatSlots.reserve(entries.size());
         for (auto& entry : entries)
         {
             outputItems.push_back(std::move(entry.item));
             outputSourceIndices.push_back(entry.sourceIndex);
+            spSort->flatSlots.push_back(entry.slot);
         }
     }
     else
     {
         for (const auto& entry : entries)
         {
-            IFC_RETURN(spRoot->AddLoading(entry.item.Get(), entry.groupNames, entry.sourceIndex));
+            IFC_RETURN(spRoot->AddLoading(entry.item.Get(), entry.groupNames, entry.sourceIndex, entry.slot));
         }
+        IFC_RETURN(spRoot->FinishLoading());
 
         outputItems.reserve(spRoot->Subgroups().size());
         for (const auto& spGroup : spRoot->Subgroups())
@@ -1949,6 +2488,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
     // Recorded before ReplaceAll raises, so a handler that changes the source sees consistent state.
     m_sourceIndices = std::move(outputSourceIndices);
+    m_spSortState = std::move(spSort);
     m_spGroupRoot = spRoot ? static_cast<xaml_data::ICollectionViewGroup*>(spRoot.Get()) : nullptr;
     m_sourceListSize = size;
     m_areSourceIndicesValid = (sourceChangeCount == m_sourceListChangeCount);
@@ -2119,7 +2659,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         IFC_RETURN(pArgs->get_Index(&index));
     }
 
-    if (m_areSourceIndicesValid && change != wfc::CollectionChange_Reset && !HasSortDirtyLiveItems())
+    if (m_areSourceIndicesValid && change != wfc::CollectionChange_Reset)
     {
         IFC_RETURN(ProcessCollectionChangedWithAdjustedIndex(change, index, &isApplied));
     }
@@ -2163,7 +2703,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
     const UINT expectedSize = m_sourceListSize
         + ((change == wfc::CollectionChange_ItemInserted) ? 1 : 0)
         - ((change == wfc::CollectionChange_ItemRemoved) ? 1 : 0);
-    if (sourceSize != expectedSize || index >= ((sourceSize > m_sourceListSize) ? sourceSize : m_sourceListSize))
+    if (!m_spSortState || sourceSize != expectedSize || index >= ((sourceSize > m_sourceListSize) ? sourceSize : m_sourceListSize))
     {
         return S_OK;
     }
@@ -2175,10 +2715,15 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         return S_OK;
     }
 
-    auto found = std::find(m_sourceIndices.begin(), m_sourceIndices.end(), index);
-    if (change != wfc::CollectionChange_ItemInserted && found != m_sourceIndices.end())
+    auto spSort = m_spSortState;
+    auto& slots = spSort->flatSlots;
+    if (change != wfc::CollectionChange_ItemInserted)
     {
-        oldPosition = static_cast<UINT>(found - m_sourceIndices.begin());
+        auto found = std::find(m_sourceIndices.begin(), m_sourceIndices.end(), index);
+        if (found != m_sourceIndices.end())
+        {
+            oldPosition = static_cast<UINT>(found - m_sourceIndices.begin());
+        }
     }
 
     if (change == wfc::CollectionChange_ItemInserted)
@@ -2193,6 +2738,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
     }
 
     // App code (Filter, property getters, CustomSort) runs only here.
+    SortKeys keys;
     if (change != wfc::CollectionChange_ItemRemoved)
     {
         IFC_RETURN(m_tpSourceList->GetAt(index, spItem.ReleaseAndGetAddressOf()));
@@ -2200,8 +2746,6 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         ++m_shapeBusyDepth;
         hr = [&]() -> HRESULT
         {
-            SortFieldComparer comparer;
-            std::vector<ctl::ComPtr<IInspectable>> keys;
             bool isAccepted = true;
 
             ctl::ComPtr<CollectionViewSource> spFilterHost;
@@ -2212,32 +2756,20 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
                 return S_OK;
             }
 
-            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
-            IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
-
-            // Upper bound over the output without the replaced item.
-            const UINT count = static_cast<UINT>(m_sourceIndices.size()) - ((oldPosition != notFound) ? 1 : 0);
-            UINT low = 0;
-            UINT high = count;
-            while (low < high)
-            {
-                const UINT middle = low + (high - low) / 2;
-                const UINT position = (oldPosition != notFound && middle >= oldPosition) ? middle + 1 : middle;
-                ctl::ComPtr<IInspectable> spOther;
-                int result = 0;
-                IFC_RETURN(pOutput->GetAt(position, spOther.ReleaseAndGetAddressOf()));
-                IFC_RETURN(comparer.Compare(spItem.Get(), keys, index, spOther.Get(), nullptr /* pRightKeys */, m_sourceIndices[position], &result));
-                if (result < 0)
+            // The output without the replaced item; items whose live sort keys changed are not compared.
+            IFC_RETURN(spSort->comparer.EvaluateKeys(spItem.Get(), &keys));
+            IFC_RETURN(FindSortedRange(
+                static_cast<UINT>(m_sourceIndices.size()),
+                oldPosition,
+                [&](UINT position, int* pResult)
                 {
-                    high = middle;
-                }
-                else
-                {
-                    low = middle + 1;
-                }
-            }
-
-            newPosition = low;
+                    return CompareWithSlot(*spSort, spItem.Get(), keys, index,
+                        [pOutput](UINT outputPosition, IInspectable** ppOther) { return pOutput->GetAt(outputPosition, ppOther); },
+                        position, slots[position], m_sourceIndices[position], pResult);
+                },
+                [this](UINT position) { return m_sourceIndices[position]; },
+                [this, change, index](UINT sourceIndex) { return IsSortDirtyAfterSourceChange(change, index, sourceIndex); },
+                &newPosition));
             return S_OK;
         }();
         --m_shapeBusyDepth;
@@ -2255,6 +2787,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
     {
         if (oldPosition != notFound && oldPosition == newPosition)
         {
+            spSort->keys.Set(slots[oldPosition], keys);
             IFC_RETURN(pOutput->InternalSetAt(oldPosition, spItem.Get()));
             return S_OK;
         }
@@ -2262,6 +2795,8 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         if (oldPosition != notFound)
         {
             m_sourceIndices.erase(m_sourceIndices.begin() + oldPosition);
+            spSort->keys.Free(slots[oldPosition]);
+            slots.erase(slots.begin() + oldPosition);
         }
 
         if (change == wfc::CollectionChange_ItemRemoved)
@@ -2283,6 +2818,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
         if (newPosition != notFound)
         {
             m_sourceIndices.insert(m_sourceIndices.begin() + newPosition, index);
+            slots.insert(slots.begin() + newPosition, spSort->keys.Allocate(keys));
             IFC_RETURN(pOutput->InternalInsertAt(newPosition, spItem.Get()));
         }
 
@@ -2302,14 +2838,15 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
 _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied)
 {
     auto pRoot = static_cast<CollectionViewGroupRoot*>(static_cast<CollectionViewGroupInternal*>(m_spGroupRoot.Get()));
+    auto spSort = m_spSortState;
     const UINT sourceChangeCount = m_sourceListChangeCount;
     CollectionViewGroupInternal* pOldGroup = nullptr;
     UINT oldPosition = 0;
     GroupedInsertion insertion;
     ctl::ComPtr<IInspectable> spItem;
-    SortFieldComparer comparer;
-    std::vector<ctl::ComPtr<IInspectable>> keys;
+    SortKeys keys;
     HRESULT hr = S_OK;
+    auto isSkipped = [this, change, index](UINT sourceIndex) { return IsSortDirtyAfterSourceChange(change, index, sourceIndex); };
 
     *pIsApplied = false;
     if (!pRoot)
@@ -2340,9 +2877,8 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
                 return S_OK;
             }
 
-            IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
-            IFC_RETURN(comparer.EvaluateKeys(spItem.Get(), &keys));
-            IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, spItem.Get(), keys, index, hasOld ? pOldGroup : nullptr, oldPosition, &insertion));
+            IFC_RETURN(spSort->comparer.EvaluateKeys(spItem.Get(), &keys));
+            IFC_RETURN(PlanGroupedInsertion(pRoot, *spSort, spItem.Get(), keys, index, hasOld ? pOldGroup : nullptr, oldPosition, isSkipped, &insertion));
             return S_OK;
         }();
         --m_shapeBusyDepth;
@@ -2359,13 +2895,13 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
     {
         if (hasOld && insertion.isAccepted && !insertion.spNewGroup && insertion.pGroup == pOldGroup && insertion.position == oldPosition)
         {
-            IFC_RETURN(ApplyGroupedReplace(pOldGroup, oldPosition, spItem.Get()));
+            IFC_RETURN(ApplyGroupedReplace(*spSort, pOldGroup, oldPosition, spItem.Get(), keys));
             return S_OK;
         }
 
         if (hasOld)
         {
-            IFC_RETURN(ApplyGroupedRemoval(pOldGroup, oldPosition));
+            IFC_RETURN(ApplyGroupedRemoval(pRoot, *spSort, pOldGroup, oldPosition));
         }
 
         if (change == wfc::CollectionChange_ItemRemoved)
@@ -2379,9 +2915,9 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
             if (hasOld)
             {
                 insertion = GroupedInsertion();
-                IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, spItem.Get(), keys, index, nullptr /* pExcludedGroup */, UINT_MAX, &insertion));
+                IFC_RETURN(PlanGroupedInsertion(pRoot, *spSort, spItem.Get(), keys, index, nullptr /* pExcludedGroup */, UINT_MAX, isSkipped, &insertion));
             }
-            IFC_RETURN(ApplyGroupedInsertion(insertion, spItem.Get(), index));
+            IFC_RETURN(ApplyGroupedInsertion(pRoot, *spSort, insertion, spItem.Get(), keys, index));
         }
 
         return S_OK;
@@ -2551,12 +3087,16 @@ struct VectorCollectionView::LiveShapingItem
 {
     std::vector<std::unique_ptr<LivePropertyObserver>> observers;
     UINT dirtyFlags = 0;
+    // The source item's identity, kept alive by the observers' listeners (none: the item is not compared).
+    IUnknown* pIdentity = nullptr;
 };
 
 struct VectorCollectionView::LiveShapingState
 {
     std::vector<LivePath> paths;
     std::vector<std::unique_ptr<LiveShapingItem>> items;
+    // Items whose dirty flags include sorting.
+    UINT sortDirtyCount = 0;
     bool isRestoreQueued = false;
 };
 
@@ -2569,13 +3109,31 @@ bool VectorCollectionView::IsLiveShaping() const
 // cannot place a new item; the source change is applied by a recompute instead.
 bool VectorCollectionView::HasSortDirtyLiveItems() const
 {
-    if (!m_spLiveShaping || !m_isLiveSorting)
+    return m_spLiveShaping && m_isLiveSorting && m_spLiveShaping->sortDirtyCount > 0;
+}
+
+// Whether the item at sourceIndex (after a source change at index the live items do not follow yet) has a
+// sort key that changed since it was placed. Such an item is out of place, so a binary search skips it
+// (WPF: LiveShapingBlock.FindPosition ignores IsSortDirty items).
+bool VectorCollectionView::IsSortDirtyAfterSourceChange(wfc::CollectionChange change, UINT index, UINT sourceIndex) const
+{
+    if (!HasSortDirtyLiveItems())
     {
         return false;
     }
 
-    return std::any_of(m_spLiveShaping->items.begin(), m_spLiveShaping->items.end(),
-        [](const std::unique_ptr<LiveShapingItem>& spItem) { return (spItem->dirtyFlags & LiveShapingFlag_Sorting) != 0; });
+    UINT itemIndex = sourceIndex;
+    if (change == wfc::CollectionChange_ItemInserted)
+    {
+        if (sourceIndex == index)
+        {
+            return false;
+        }
+        itemIndex = (sourceIndex > index) ? sourceIndex - 1 : sourceIndex;
+    }
+
+    const auto& items = m_spLiveShaping->items;
+    return itemIndex < items.size() && (items[itemIndex]->dirtyFlags & LiveShapingFlag_Sorting) != 0;
 }
 
 IFACEMETHODIMP VectorCollectionView::get_CanChangeLiveSorting(_Out_ BOOLEAN* pValue)
@@ -2836,10 +3394,9 @@ _Check_return_ HRESULT VectorCollectionView::RebuildLiveShapingItems()
     UINT size = 0;
     bool hasAny = false;
 
-    ClearLiveShapingItems();
-
     if (!IsLiveShaping() || !m_tpInternalList || !m_tpSourceList)
     {
+        ClearLiveShapingItems();
         return S_OK;
     }
 
@@ -2892,6 +3449,61 @@ _Check_return_ HRESULT VectorCollectionView::RebuildLiveShapingItems()
         }
     }
 
+    IFC_RETURN(m_tpSourceList->get_Size(&size));
+
+    auto canReuse = [&](_Out_ bool* pIsReused) -> HRESULT
+    {
+        *pIsReused = false;
+        auto spState = m_spLiveShaping;
+        if (!spState || spState->items.size() != size || spState->paths.size() != paths.size())
+        {
+            return S_OK;
+        }
+
+        for (size_t i = 0; i < paths.size(); ++i)
+        {
+            INT32 result = 1;
+            IFC_RETURN(WindowsCompareStringOrdinal(spState->paths[i].path.Get(), paths[i].path.Get(), &result));
+            if (result != 0 || spState->paths[i].flags != paths[i].flags)
+            {
+                return S_OK;
+            }
+        }
+
+        for (UINT i = 0; i < size; ++i)
+        {
+            ctl::ComPtr<IInspectable> spSourceItem;
+            ctl::ComPtr<IUnknown> spIdentity;
+            const auto& spItem = spState->items[i];
+            IFC_RETURN(m_tpSourceList->GetAt(i, spSourceItem.ReleaseAndGetAddressOf()));
+            if (spSourceItem)
+            {
+                IFC_RETURN(spSourceItem.As(&spIdentity));
+            }
+            if (spItem->observers.empty() || spItem->pIdentity != spIdentity.Get())
+            {
+                return S_OK;
+            }
+        }
+
+        *pIsReused = (m_spLiveShaping == spState);
+        return S_OK;
+    };
+
+    // The same paths over the same items: the observers stay, and the refresh this follows placed every item.
+    bool isReused = false;
+    IFC_RETURN(canReuse(&isReused));
+    if (isReused)
+    {
+        for (auto& spItem : m_spLiveShaping->items)
+        {
+            spItem->dirtyFlags = 0;
+        }
+        m_spLiveShaping->sortDirtyCount = 0;
+        return S_OK;
+    }
+
+    ClearLiveShapingItems();
     if (paths.empty())
     {
         return S_OK;
@@ -2899,8 +3511,6 @@ _Check_return_ HRESULT VectorCollectionView::RebuildLiveShapingItems()
 
     auto spState = std::make_shared<LiveShapingState>();
     spState->paths = std::move(paths);
-
-    IFC_RETURN(m_tpSourceList->get_Size(&size));
     spState->items.reserve(size);
     for (UINT i = 0; i < size; ++i)
     {
@@ -2928,6 +3538,12 @@ _Check_return_ HRESULT VectorCollectionView::CreateLiveShapingItem(_In_ const Li
     auto spItem = std::make_unique<LiveShapingItem>();
 
     IFC_RETURN(m_tpSourceList->GetAt(sourceIndex, spSourceItem.ReleaseAndGetAddressOf()));
+    if (spSourceItem)
+    {
+        ctl::ComPtr<IUnknown> spIdentity;
+        IFC_RETURN(spSourceItem.As(&spIdentity));
+        spItem->pIdentity = spIdentity.Get();
+    }
     for (const auto& livePath : state.paths)
     {
         auto spObserver = std::make_unique<LivePropertyObserver>(this, spItem.get(), livePath.flags);
@@ -2994,6 +3610,10 @@ _Check_return_ HRESULT VectorCollectionView::UpdateLiveShapingItems(wfc::Collect
             AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
             spRemoved = std::move(items[index]);
             items.erase(items.begin() + index);
+            if (spRemoved->dirtyFlags & LiveShapingFlag_Sorting)
+            {
+                --spState->sortDirtyCount;
+            }
         }
         for (auto& spObserver : spRemoved->observers)
         {
@@ -3032,7 +3652,12 @@ _Check_return_ HRESULT VectorCollectionView::OnLivePropertyChanged(_In_ LiveProp
         return S_OK;
     }
 
-    pObserver->Item()->dirtyFlags |= pObserver->Flags();
+    auto pItem = pObserver->Item();
+    if (!(pItem->dirtyFlags & LiveShapingFlag_Sorting) && (pObserver->Flags() & LiveShapingFlag_Sorting))
+    {
+        ++spState->sortDirtyCount;
+    }
+    pItem->dirtyFlags |= pObserver->Flags();
 
     if (!spState->isRestoreQueued && m_deferRefreshLevel == 0)
     {
@@ -3062,13 +3687,20 @@ _Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
 // WPF: ListCollectionView.RestoreLiveShaping. Each changed item is moved to where it now belongs, filtered in
 // or out, or moved to its new group, with an ItemRemoved and an ItemInserted (WinRT vectors have no Move); an
 // item still in order raises nothing. Like WPF's FindPosition, placing one item ignores the changed items not
-// yet placed, whose positions are stale.
+// yet placed, whose positions are stale. When most items changed their sort keys, one recompute (a Reset)
+// replaces the moves (WPF re-sorts the whole list then, too).
 _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 {
+    // WPF: ListCollectionView.LiveSortingDensityThreshold.
+    constexpr DOUBLE c_liveSortingDensityThreshold = 0.8;
+    // Each move shifts the output (O(n)) and raises two changes, so a large view recomputes sooner than WPF.
+    constexpr UINT c_largeViewSize = 1024;
+    constexpr UINT c_largeViewMoveDivisor = 8;
+
     auto spState = m_spLiveShaping;
+    auto spSort = m_spSortState;
     ctl::ComPtr<IInspectable> spCurrentItem;
     ctl::ComPtr<CollectionViewSource> spFilterHost;
-    SortFieldComparer comparer;
     std::vector<bool> isSortDirty;
     const UINT sourceChangeCount = m_sourceListChangeCount;
     bool hasDirty = false;
@@ -3087,7 +3719,11 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 
     for (const auto& spItem : spState->items)
     {
-        hasDirty = hasDirty || spItem->dirtyFlags != 0;
+        if (spItem->dirtyFlags != 0)
+        {
+            hasDirty = true;
+            break;
+        }
     }
 
     if (!hasDirty)
@@ -3096,18 +3732,26 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     }
 
     // A source change that could not be followed is pending: recompute, which observes the items afresh.
-    if (!m_areSourceIndicesValid || spState->items.size() != m_sourceListSize)
+    if (!m_areSourceIndicesValid || !spSort || spState->items.size() != m_sourceListSize)
+    {
+        IFC_RETURN(RefreshOrDefer());
+        return S_OK;
+    }
+
+    const bool isSorting = m_isLiveSorting && !spSort->comparer.IsEmpty();
+    const UINT itemCount = static_cast<UINT>(spState->items.size());
+    if (isSorting &&
+        (spState->sortDirtyCount >= c_liveSortingDensityThreshold * (itemCount + 1) ||
+         (itemCount >= c_largeViewSize && spState->sortDirtyCount >= itemCount / c_largeViewMoveDivisor)))
     {
         IFC_RETURN(RefreshOrDefer());
         return S_OK;
     }
 
     IFC_RETURN(get_CurrentItemImpl(spCurrentItem.ReleaseAndGetAddressOf()));
-    IFC_RETURN(comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get()));
     IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
 
     const bool hasFilter = !!spFilterHost || !!m_tpFilter;
-    const bool isSorting = m_isLiveSorting && !comparer.IsEmpty();
     isSortDirty.resize(spState->items.size());
     for (size_t i = 0; i < spState->items.size(); ++i)
     {
@@ -3120,6 +3764,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     auto restoreFlat = [&](UINT sourceIndex, UINT flags, _In_opt_ IInspectable* pItem, _Out_ bool* pIsItemApplied) -> HRESULT
     {
         auto pOutput = static_cast<InternalList*>(m_tpInternalList.Get());
+        auto& slots = spSort->flatSlots;
         auto found = std::find(m_sourceIndices.begin(), m_sourceIndices.end(), sourceIndex);
         const bool isInView = found != m_sourceIndices.end();
         const UINT oldPosition = isInView ? static_cast<UINT>(found - m_sourceIndices.begin()) : UINT_MAX;
@@ -3128,6 +3773,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         bool isAccepted = isInView;
         bool isMoving = false;
         UINT newPosition = 0;
+        SortKeys keys;
         HRESULT hr = S_OK;
 
         *pIsItemApplied = true;
@@ -3144,17 +3790,21 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 return S_OK;
             }
 
-            std::vector<ctl::ComPtr<IInspectable>> keys;
             UINT first = 0;
             UINT last = 0;
-            IFC_RETURN(comparer.EvaluateKeys(pItem, &keys));
+            IFC_RETURN(spSort->comparer.EvaluateKeys(pItem, &keys));
             IFC_RETURN(FindSortedRange(
                 static_cast<UINT>(m_sourceIndices.size()),
                 oldPosition,
-                [pOutput](UINT position, IInspectable** ppOther) { return pOutput->GetAt(position, ppOther); },
+                [&](UINT position, int* pResult)
+                {
+                    return CompareWithSlot(*spSort, pItem, keys, sourceIndex,
+                        [pOutput](UINT outputPosition, IInspectable** ppOther) { return pOutput->GetAt(outputPosition, ppOther); },
+                        position, slots[position], m_sourceIndices[position], pResult);
+                },
                 [this](UINT position) { return m_sourceIndices[position]; },
                 isSkipped,
-                comparer, pItem, keys, sourceIndex, &newPosition, &first, &last));
+                &newPosition, &first, &last));
             isMoving = isInView && (oldPosition < first || oldPosition > last);
             return S_OK;
         }();
@@ -3171,6 +3821,11 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         const bool isInserted = isAccepted && (!isInView || isMoving);
         if (!isRemoved && !isInserted)
         {
+            // Still in order: its new keys are the ones later placements compare with.
+            if (isInView && isResorting)
+            {
+                spSort->keys.Set(slots[oldPosition], keys);
+            }
             return S_OK;
         }
 
@@ -3180,12 +3835,15 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
             if (isRemoved)
             {
                 m_sourceIndices.erase(m_sourceIndices.begin() + oldPosition);
+                spSort->keys.Free(slots[oldPosition]);
+                slots.erase(slots.begin() + oldPosition);
                 IFC_RETURN(pOutput->InternalRemoveAt(oldPosition));
             }
 
             if (isInserted)
             {
                 m_sourceIndices.insert(m_sourceIndices.begin() + newPosition, sourceIndex);
+                slots.insert(slots.begin() + newPosition, spSort->keys.Allocate(keys));
                 IFC_RETURN(pOutput->InternalInsertAt(newPosition, pItem));
             }
             return S_OK;
@@ -3205,7 +3863,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         const bool isFiltering = (flags & LiveShapingFlag_Filtering) && m_isLiveFiltering && hasFilter;
         const bool isResorting = (flags & LiveShapingFlag_Sorting) && isSorting;
         const bool isRegrouping = (flags & LiveShapingFlag_Grouping) && m_isLiveGrouping;
-        std::vector<ctl::ComPtr<IInspectable>> keys;
+        SortKeys keys;
         GroupedInsertion insertion;
         bool isAccepted = isInView;
         bool isMoving = false;
@@ -3230,10 +3888,10 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 return S_OK;
             }
 
-            IFC_RETURN(comparer.EvaluateKeys(pItem, &keys));
+            IFC_RETURN(spSort->comparer.EvaluateKeys(pItem, &keys));
             if (!isInView)
             {
-                IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, &insertion, &isSortDirty));
+                IFC_RETURN(PlanGroupedInsertion(pRoot, *spSort, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, isSkipped, &insertion));
                 return S_OK;
             }
 
@@ -3257,7 +3915,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 UINT position = 0;
                 UINT first = 0;
                 UINT last = 0;
-                IFC_RETURN(FindLeafPosition(pOldGroup, comparer, pItem, keys, sourceIndex, oldPosition, &position, &isSortDirty, &first, &last));
+                IFC_RETURN(FindLeafPosition(pOldGroup, *spSort, pItem, keys, sourceIndex, oldPosition, isSkipped, &position, &first, &last));
                 if (oldPosition < first || oldPosition > last)
                 {
                     isMoving = true;
@@ -3281,6 +3939,10 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         const bool isInserted = isAccepted && (!isInView || isMoving);
         if (!isRemoved && !isInserted)
         {
+            if (isInView && isResorting)
+            {
+                spSort->keys.Set(pOldGroup->KeySlots()[oldPosition], keys);
+            }
             return S_OK;
         }
 
@@ -3289,16 +3951,16 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         {
             if (isRemoved)
             {
-                IFC_RETURN(ApplyGroupedRemoval(pOldGroup, oldPosition));
+                IFC_RETURN(ApplyGroupedRemoval(pRoot, *spSort, pOldGroup, oldPosition));
             }
 
             if (isInserted)
             {
                 if (!insertion.pGroup)
                 {
-                    IFC_RETURN(PlanGroupedInsertion(pRoot, comparer, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, &insertion, &isSortDirty));
+                    IFC_RETURN(PlanGroupedInsertion(pRoot, *spSort, pItem, keys, sourceIndex, nullptr /* pExcludedGroup */, UINT_MAX, isSkipped, &insertion));
                 }
-                IFC_RETURN(ApplyGroupedInsertion(insertion, pItem, sourceIndex));
+                IFC_RETURN(ApplyGroupedInsertion(pRoot, *spSort, insertion, pItem, keys, sourceIndex));
             }
             return S_OK;
         }();
@@ -3316,6 +3978,10 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         }
 
         const UINT flags = std::exchange(spState->items[i]->dirtyFlags, 0u);
+        if (flags & LiveShapingFlag_Sorting)
+        {
+            --spState->sortDirtyCount;
+        }
         if (flags != 0)
         {
             ctl::ComPtr<IInspectable> spItem;
