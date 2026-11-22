@@ -93,8 +93,13 @@ namespace DirectUI
             _In_opt_ xaml_data::ICollectionViewComparer* pCustomSort,
             _In_opt_ HSTRING culture);
 
-        // The host replaced this view: stop following the source; ICollectionViewShaping goes to the host.
-        void DetachShaping();
+        // The host replaced this view. As in WPF, where each view keeps the rules copied into it, the view
+        // keeps following its source with its own copy of the rules; nothing it is told reaches the host.
+        _Check_return_ HRESULT DetachFromHost();
+
+        // While the host has FilterRequested handlers the view holds it, as WPF's view holds the CVS through
+        // the wrapped filter; else only weakly.
+        void SetFilterHost(_In_opt_ CollectionViewSource* pHost);
 
         _Check_return_ HRESULT OnSortDescriptionsChanged();
         _Check_return_ HRESULT OnShapingRulesChanged();
@@ -154,11 +159,13 @@ namespace DirectUI
             _In_ wfc::IObservableVector<IInspectable *> *pSender,
             _In_ IInspectable *pArgs);
 
-        _Check_return_ HRESULT GetDetachedHost(_Outptr_result_maybenull_ CollectionViewSource** ppHost);
         _Check_return_ HRESULT HasShapingRules(_Out_ bool* pHasRules);
         _Check_return_ HRESULT StartShaping(bool isGrouping);
-        _Check_return_ HRESULT RefreshOverride();
-        _Check_return_ HRESULT RefreshOrDefer();
+        _Check_return_ HRESULT RefreshOverride(bool isSkippedWhenUnchanged = false);
+        _Check_return_ HRESULT RefreshOrDefer(bool isSkippedWhenUnchanged = false);
+        // A rule change, Refresh or source change made while app code ran or while the view raised its
+        // changes was recorded in m_isRecomputePending; this runs it once that work has unwound.
+        _Check_return_ HRESULT RunPendingRecompute();
         _Check_return_ HRESULT ProcessCollectionChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);
         _Check_return_ HRESULT ProcessCollectionChangedWithAdjustedIndex(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
         _Check_return_ HRESULT ProcessGroupedCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
@@ -177,13 +184,19 @@ namespace DirectUI
         _Check_return_ HRESULT EnsureLiveShapingProperties();
         _Check_return_ HRESULT OnLiveShapingChanged();
         _Check_return_ HRESULT RebuildLiveShapingItems();
-        _Check_return_ HRESULT CreateLiveShapingItem(UINT sourceIndex, _Out_ std::unique_ptr<LiveShapingItem>* pItem);
+        _Check_return_ HRESULT CreateLiveShapingItem(_In_ const LiveShapingState& state, UINT sourceIndex, _Out_ std::unique_ptr<LiveShapingItem>* pItem);
         _Check_return_ HRESULT UpdateLiveShapingItems(wfc::CollectionChange change, UINT index);
+        static void DisconnectLiveShapingItems(_In_ LiveShapingState& state);
         void ClearLiveShapingItems();
         _Check_return_ HRESULT OnLivePropertyChanged(_In_ LivePropertyObserver* pObserver);
         _Check_return_ HRESULT OnLiveShapingRestoreCallback();
         _Check_return_ HRESULT RestoreLiveShaping();
         bool IsLiveShaping() const;
+        _Check_return_ HRESULT OnIsLiveChanged(UINT turnedOn, UINT turnedOff);
+
+    protected:
+        // Walks the live shaping listeners, which hold the source items.
+        void OnReferenceTrackerWalk(INT walkType) override;
 
     private:
 
@@ -194,9 +207,9 @@ namespace DirectUI
         ctl::EventPtr<VectorChangedEventCallback> m_epVectorChangedHandler;
 
         bool m_isShapingEnabled = false;
-        bool m_isShapingDetached = false;
         bool m_isDefaultView = false;
         ctl::WeakRefPtr m_hostRef;
+        TrackerPtr<xaml_data::ICollectionViewSource> m_tpFilterHost;
 
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::PropertyGroupDescription*>> m_tpGroupDescriptions;
@@ -219,7 +232,13 @@ namespace DirectUI
         // Grouped output: the group tree (WPF: CollectionViewGroupRoot); its top-level groups are the InternalList.
         ctl::ComPtr<xaml_data::ICollectionViewGroup> m_spGroupRoot;
         bool m_isGrouping = false;
-        bool m_isComputingShape = false;
+
+        // Nonzero while the engine runs app code (filters, property getters, converters, comparers) or raises
+        // its changes. A rule change, Refresh or source change made meanwhile sets m_isRecomputePending and
+        // runs, once, after the work unwinds (WPF: a refresh the view needs is done, not dropped).
+        UINT m_shapeBusyDepth = 0;
+        bool m_isRecomputePending = false;
+        bool m_isRunningPendingRecompute = false;
 
         // The source index of each output item (flat output; grouped output keeps them per group), so a
         // source Add, Remove or Replace updates the view incrementally. Invalid after a change that was not applied.

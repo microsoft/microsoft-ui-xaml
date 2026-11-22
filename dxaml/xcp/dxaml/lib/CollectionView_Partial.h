@@ -83,7 +83,7 @@ namespace DirectUI
         _Check_return_ HRESULT ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs);
         _Check_return_ HRESULT RaisePropertyChanged(_In_reads_(nLength) const WCHAR* name, _In_ const XUINT32 nLength);
 
-        void OnReferenceTrackerWalk(INT walkType) final;
+        void OnReferenceTrackerWalk(INT walkType) override;
 
     private:
         _Check_return_ HRESULT GetCurrentChangedEventSource(_Outptr_ CurrentChangedEventSourceType** ppEventSource);

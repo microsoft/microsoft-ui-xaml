@@ -164,19 +164,25 @@ DirectUI::CollectionViewSource::EnsureView(_In_ IInspectable *pNewSource)
     // otherwise we will just set the value to NULL
     if (pNewSource != NULL)
     {
+#ifdef MUX_PRERELEASE
+        IFC(CheckShapingSupported(pNewSource));
         IFC(IsShapingRequested(pNewSource, &isShapingRequested));
+#endif
         IFC(CollectionViewManager::GetViewRecord(pNewSource, this, isShapingRequested, &pView, &isShapeable));
 
         // A view should have been created by now, or we would have failed
         // if the source is not supported
         IFCEXPECT(pView);
 
+#ifdef MUX_PRERELEASE
+        // Shaping (an experimental API) changes nothing for a CollectionViewSource in a release build.
         if (isShapeable)
         {
             auto pShapingView = static_cast<VectorCollectionView*>(static_cast<CollectionView*>(pView));
             pShapingView->SetSourceCollection(pNewSource);
             IFC(ApplyPropertiesToView(pShapingView));
         }
+#endif
 
         // Move the item to the first position on the newly created collection
         // if we have one

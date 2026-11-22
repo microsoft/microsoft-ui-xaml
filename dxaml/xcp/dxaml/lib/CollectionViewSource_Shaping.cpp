@@ -358,7 +358,7 @@ _Check_return_ HRESULT CollectionViewSource::DetachShapingView()
     IFC_RETURN(pView->get_CustomSort(spCustomSort.ReleaseAndGetAddressOf()));
     m_culture.Release();
     IFC_RETURN(pView->get_Culture(m_culture.GetAddressOf()));
-    pView->DetachShaping();
+    IFC_RETURN(pView->DetachFromHost());
 
     m_tpShapingView.Clear();
     SetPtrValue(m_tpFilter, spFilter.Get());
@@ -613,7 +613,7 @@ _Check_return_ HRESULT CollectionViewSource::AddFilterRequestedHandler(_In_ xaml
 
     IFC_RETURN(m_spFilterRequestedEventSource->AddHandler(pHandler));
     pToken->value = reinterpret_cast<INT64>(pHandler);
-    IFC_RETURN(OnShapingDescriptionsChanged());
+    IFC_RETURN(OnFilterRequestedHandlersChanged());
     return S_OK;
 }
 
@@ -627,6 +627,19 @@ _Check_return_ HRESULT CollectionViewSource::RemoveFilterRequestedHandler(EventR
     }
 
     IFC_RETURN(m_spFilterRequestedEventSource->RemoveHandler(pHandler));
+    IFC_RETURN(OnFilterRequestedHandlersChanged());
+    return S_OK;
+}
+
+// WPF wraps the event in a filter delegate set on the view, so the view keeps the CollectionViewSource alive
+// while the event has handlers; an app that keeps only View keeps filtering.
+_Check_return_ HRESULT CollectionViewSource::OnFilterRequestedHandlersChanged()
+{
+    if (m_tpShapingView)
+    {
+        AsShapingView(m_tpShapingView.Get())->SetFilterHost(HasFilterRequestedHandlers() ? this : nullptr);
+    }
+
     IFC_RETURN(OnShapingDescriptionsChanged());
     return S_OK;
 }
@@ -852,6 +865,7 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
         return S_OK;
     }
 
+    IFC_RETURN(CheckShapingSupported(spSource.Get()));
     IFC_RETURN(IsShapingRequested(spSource.Get(), &isShapingRequested));
     if (!isShapingRequested)
     {
@@ -862,13 +876,10 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
     return S_OK;
 }
 
-_Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectable* pSource, _Out_ bool* pIsRequested)
+_Check_return_ HRESULT CollectionViewSource::HasShapingRules(_Out_ bool* pHasRules)
 {
-    BOOLEAN isSourceGrouped = FALSE;
     UINT sortCount = 0;
     UINT groupCount = 0;
-
-    *pIsRequested = false;
 
     if (m_tpSortDescriptions)
     {
@@ -880,13 +891,49 @@ _Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectabl
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    if (sortCount == 0 && groupCount == 0 && !m_tpFilter && !m_tpCustomSort && !HasFilterRequestedHandlers())
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || HasFilterRequestedHandlers();
+    return S_OK;
+}
+
+// IsSourceGrouped and ICollectionViewFactory sources keep their existing behavior: their view cannot shape.
+_Check_return_ HRESULT CollectionViewSource::IsShapeableSource(_In_ IInspectable* pSource, _Out_ bool* pIsShapeable)
+{
+    BOOLEAN isSourceGrouped = FALSE;
+    IFC_RETURN(get_IsSourceGrouped(&isSourceGrouped));
+    *pIsShapeable = !isSourceGrouped && !ctl::is<xaml_data::ICollectionViewFactory>(pSource);
+    return S_OK;
+}
+
+_Check_return_ HRESULT CollectionViewSource::IsShapingRequested(_In_ IInspectable* pSource, _Out_ bool* pIsRequested)
+{
+    bool hasRules = false;
+
+    *pIsRequested = false;
+    IFC_RETURN(HasShapingRules(&hasRules));
+    if (hasRules)
     {
-        return S_OK;
+        IFC_RETURN(IsShapeableSource(pSource, pIsRequested));
+    }
+    return S_OK;
+}
+
+// As in WPF (CollectionViewSource.ApplyPropertiesToView: CannotSortView, CannotGroupView, CannotFilterView), a
+// rule the view cannot apply is an error rather than ignored.
+_Check_return_ HRESULT CollectionViewSource::CheckShapingSupported(_In_ IInspectable* pSource)
+{
+    bool hasRules = false;
+    bool isShapeable = true;
+
+    IFC_RETURN(HasShapingRules(&hasRules));
+    if (hasRules)
+    {
+        IFC_RETURN(IsShapeableSource(pSource, &isShapeable));
     }
 
-    // IsSourceGrouped and ICollectionViewFactory sources keep their existing behavior.
-    IFC_RETURN(get_IsSourceGrouped(&isSourceGrouped));
-    *pIsRequested = !isSourceGrouped && !ctl::is<xaml_data::ICollectionViewFactory>(pSource);
+    if (!isShapeable)
+    {
+        static constexpr WCHAR c_message[] = L"A CollectionViewSource with IsSourceGrouped set, or over an ICollectionViewFactory, cannot sort, filter or group its View.";
+        IFC_RETURN(ErrorHelper::OriginateError(E_ILLEGAL_METHOD_CALL, ARRAYSIZE(c_message) - 1, c_message));
+    }
     return S_OK;
 }
