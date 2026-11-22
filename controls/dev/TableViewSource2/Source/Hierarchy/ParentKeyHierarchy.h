@@ -56,7 +56,7 @@ public:
         std::vector<winrt::Windows::Foundation::IInspectable>& items) override;
     void DiscardIncoming() noexcept override {}
     void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
-    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) override;
+    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, uint32_t index, std::vector<SourceRecordPtr>& removed) override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     void ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
@@ -128,7 +128,7 @@ private:
 
     // record's source-order index among parent's linked children (excluded records are in no
     // list). While OnRemoving runs, the leaving record is still linked but no longer in
-    // RootRecords(); it is counted when it comes before the position.
+    // RootRecords(); it is counted when its former root index (m_leavingIndex) comes before record.
     uint32_t SourceOrderPosition(ISourceHierarchyHost& host, SourceRecord const* record, SourceRecord* parent) const;
 
     // App delegates, tracked (see SourceTable Reference tracking). Optional so Release() can
@@ -151,8 +151,10 @@ private:
     // tolerant re-read). Preferred as the break point at the next Commit.
     std::unordered_set<SourceRecord*> m_forcedTop;
 
-    // OnRemoving: the record leaving, still linked while its children are orphaned.
+    // OnRemoving: the record leaving, still linked while its children are orphaned, and its former
+    // root position.
     SourceRecord const* m_leaving{ nullptr };
+    uint32_t m_leavingIndex{ 0 };
 
     // False until the first Commit(): Prepare() is strict before it, tolerant after.
     bool m_committed{ false };

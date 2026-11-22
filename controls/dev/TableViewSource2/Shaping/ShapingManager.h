@@ -252,8 +252,9 @@ private:
     // SetOwner and the outermost EndDeferRefresh post again; M9). The callback holds a weak
     // reference to the owning TableViewSource2 (m_weakOwnerResolver) and m_liveDrainToken weakly
     // (M5): it returns if either expired, and otherwise keeps the owner alive until the drain
-    // returns. The drain's exception is not swallowed: it propagates to the dispatcher
-    // (Application.UnhandledException), as WPF's posted live-shaping work does (M3). No queue on
+    // returns. The drain's exception is not swallowed: the callback reports it through
+    // ReportPostedError (Application.UnhandledException), as WPF's posted live-shaping work
+    // surfaces it (M3). No queue on
     // this thread (headless or test): nothing is posted, and the changes wait for the next post
     // or a reshape.
     void PostLiveDrain() noexcept;
@@ -458,8 +459,8 @@ private:
     // propagates out of AfterCommit after the commit closed (the verb that opened the scope has
     // already applied). A failed re-read leaves the table diverged with nothing owed (M18): the
     // next source notification or Refresh re-reads. post = true calls SourceTable::PostReread()
-    // (it guards against a second post); the posted re-read's exception reaches the dispatcher
-    // (Application.UnhandledException).
+    // (it guards against a second post); the posted re-read's exception is reported through
+    // ReportPostedError (Application.UnhandledException).
     void ResyncSource(bool post);
 
     // Live-shaping changes pending for the next DrainLiveChanges (E7; decided, M6). An arrival-

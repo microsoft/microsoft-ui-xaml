@@ -1165,9 +1165,10 @@ table's state ("skip" = not applied; sets both bits):
   - `PostReread()` posts one callback (`m_rereadPosted`) to the current thread's `DispatcherQueue`
     (as `PostLiveDrain` does, so it does not depend on `m_binding`). It runs `Refresh()`
     only if `IsRereadDue()` and the table is neither frozen nor held (otherwise that freeze's or
-    hold's report point takes it). It does not catch: a throw propagates to the dispatcher
-    (`Application.UnhandledException`), the flags follow `Refresh()`'s failure rules above, and
-    nothing is re-posted.
+    hold's report point takes it). A throw is caught and reported through `ReportPostedError`
+    (`RoReportUnhandledError`, so `Application.UnhandledException` is raised; a throw escaping a
+    `DispatcherQueue` callback would fail-fast without it), the flags follow `Refresh()`'s failure
+    rules above, and nothing is re-posted.
   - No queue (headless or test): nothing is posted; the re-read stays owed until the next report
     point or `Refresh()`.
   - An app that mutates on every `Reset` still gets one re-read per turn, but the dispatcher keeps
@@ -3570,8 +3571,8 @@ The coordinator reacts to live-shaping events but does not own subscriptions; th
       #128–#135.
 - [x] v1 parity hooks: `CanApplySort` and `RepositionCustomSortItem` are not used for v2 (#134).
 - [ ] TiP for verbs the app calls on a `TableViewSource2` (#128: no verb observer yet).
-- [ ] Port the v2 API tests (old branch `TableViewSource2_*_APITests`, #135), adapted to the new
-      surface (no verb observer).
+- [x] Port the v2 API tests (old branch `TableViewSource2_*_APITests`, #135), adapted to the new
+      surface (no verb observer). 170/170 pass.
 - [ ] `TableView` API review (#20, decided: deferred, no public surface in this redesign): a
       public reveal (e.g. inside `ScrollIntoView(item)`) and a public per-item expand / collapse,
       both over the internal `Reveal` / `SetExpanded`. v1 exposes neither (only

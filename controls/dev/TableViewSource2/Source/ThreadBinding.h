@@ -5,6 +5,8 @@
 
 #include <atomic>
 
+#include <roerrorapi.h>
+
 #include <winrt/Microsoft.UI.Dispatching.h>
 
 // The UI thread a SourceTable is bound to (see SourceTable.h, Threading). Written once: at
@@ -28,5 +30,28 @@ inline void ThrowIfOffBoundThread(ThreadBinding const& binding)
     {
         MUX_ASSERT_MSG(false, "A source collection change was raised off the thread TableViewSource2 is bound to.");
         throw winrt::hresult_wrong_thread();
+    }
+}
+
+// Called from the catch (...) of a posted DispatcherQueue callback. A throw escaping such a
+// callback fail-fasts the process in DispatcherQueue without raising Application.UnhandledException,
+// so posted work catches and reports here instead: RoReportUnhandledError raises the last-chance
+// events (Application.UnhandledException) as XAML's own ErrorHelper::ReportUnhandledError does, and
+// XAML fail-fasts if no handler marks the error handled. Returns only when it was handled.
+inline void ReportPostedError() noexcept
+{
+    // Restores the exception's IRestrictedErrorInfo on the thread (originating one if it had none).
+    HRESULT const hr = winrt::to_hresult();
+
+    winrt::com_ptr<IRestrictedErrorInfo> info;
+    if (FAILED(::GetRestrictedErrorInfo(info.put())) || !info)
+    {
+        (void)::RoOriginateError(hr, nullptr);
+        (void)::GetRestrictedErrorInfo(info.put());
+    }
+
+    if (!info || FAILED(::RoReportUnhandledError(info.get())))
+    {
+        ::RoFailFastWithErrorContext(hr);
     }
 }

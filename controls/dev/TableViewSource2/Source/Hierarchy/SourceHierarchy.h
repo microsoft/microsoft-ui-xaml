@@ -126,8 +126,9 @@ public:
     //     Add for an excluded record) and adopts the top-level orphans waiting for its key.
     //     ChildrenBy links it at the top level, builds its feed and subtree from the incoming
     //     stage (which must be for record->Item) and raises the Add.
-    //   OnRemoving: record has left RootRecords() and the lookups but is still linked; removed
-    //     holds it. ParentBy unkeys it, moves each child to the top level (one Move each, while
+    //   OnRemoving: record has left RootRecords() and the lookups but is still linked; index is
+    //     its former root position (so a strategy can still place against it in source order);
+    //     removed holds it. ParentBy unkeys it, moves each child to the top level (one Move each, while
     //     record is still in the shaped tree), unlinks it and raises the Remove (nothing for an
     //     excluded record: its Remove was raised when it was excluded). ChildrenBy appends its
     //     subtree to removed (pre-order), unlinks it and raises the Remove.
@@ -136,7 +137,7 @@ public:
     //     changed. An unlinked (excluded) record is left alone.
     // A Replace under a hierarchy is RemoveAt then InsertAt (decided, D1), so no hook covers it.
     virtual void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) = 0;
-    virtual void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) = 0;
+    virtual void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, uint32_t index, std::vector<SourceRecordPtr>& removed) = 0;
     virtual void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) = 0;
 
     // Visits every record the strategy owns outside RootRecords() (ChildrenBy child records), for

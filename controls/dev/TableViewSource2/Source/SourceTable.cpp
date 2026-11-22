@@ -245,7 +245,7 @@ void SourceTable::OnSourceVectorChanged(wfc::IVectorChangedEventArgs const& args
 
     // Vector args carry only an index; the incoming item is read from the source. Index() is not
     // read for a Reset: some implementations throw from it.
-    uint32_t index = args.Index();
+    uint32_t const index = change == Change::Reset ? 0u : args.Index();
     Inspectable item{ nullptr };
     bool applicable = false;
     switch (change)
@@ -699,9 +699,17 @@ void SourceTable::PostReread() noexcept
             // Frozen or held: that freeze's or hold's report point takes the owed re-read.
             if (self->IsRereadDue() && !self->IsFrozen() && self->m_resetHoldDepth == 0)
             {
-                // Decided (#7, revised): a throw propagates to the dispatcher, as WPF lets its
-                // posted work fail. The flags follow Refresh()'s failure rules; nothing re-posts.
-                self->Refresh();
+                // Decided (#7, revised): a throw is reported through Application.UnhandledException
+                // (ReportPostedError), as WPF lets its posted work fail. The flags follow
+                // Refresh()'s failure rules; nothing re-posts.
+                try
+                {
+                    self->Refresh();
+                }
+                catch (...)
+                {
+                    ReportPostedError();
+                }
             }
         });
     }
@@ -816,7 +824,7 @@ void SourceTable::RemoveAt(uint32_t index)
         // The strategy unlinks the record and raises the Remove and what precedes it (decided, A1).
         try
         {
-            m_hierarchy->OnRemoving(*this, raw, removed);
+            m_hierarchy->OnRemoving(*this, raw, index, removed);
         }
         catch (...)
         {
@@ -1191,9 +1199,16 @@ void SourceTable::SubscribeRecordPropertyChanged(SourceRecordPtr const& record) 
                     // bound thread. A failed post means the queue is shutting down: ignored.
                     (void)binding->queue.TryEnqueue([weakTable, weakRecord, propertyName]()
                     {
-                        if (auto const table = weakTable.lock(); table && !table->IsDetached())
+                        try
                         {
-                            table->OnRecordPropertyChanged(weakRecord, propertyName);
+                            if (auto const table = weakTable.lock(); table && !table->IsDetached())
+                            {
+                                table->OnRecordPropertyChanged(weakRecord, propertyName);
+                            }
+                        }
+                        catch (...)
+                        {
+                            ReportPostedError();
                         }
                     });
                     return;

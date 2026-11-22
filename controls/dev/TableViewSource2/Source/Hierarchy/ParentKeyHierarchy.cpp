@@ -454,6 +454,7 @@ uint32_t ParentKeyHierarchy::SourceOrderPosition(
     SourceRecord* parent) const
 {
     uint32_t position = 0;
+    uint32_t rootIndex = 0;
     for (auto const& root : host.RootRecords())
     {
         if (root.get() == record)
@@ -465,16 +466,13 @@ uint32_t ParentKeyHierarchy::SourceOrderPosition(
         {
             ++position;
         }
+        ++rootIndex;
     }
 
-    if (m_leaving && m_leaving->Parent == parent)
+    // In source order the leaving record sat at m_leavingIndex, before what now sits there.
+    if (m_leaving && m_leaving->Parent == parent && m_leavingIndex <= rootIndex)
     {
-        auto const& siblings = host.SiblingsOf(parent);
-        uint32_t const leavingIndex = IndexInSourceSiblings(siblings, m_leaving);
-        if (leavingIndex < siblings.size() && leavingIndex <= position)
-        {
-            ++position;
-        }
+        ++position;
     }
 
     return position;
@@ -676,7 +674,7 @@ void ParentKeyHierarchy::OnInserted(ISourceHierarchyHost& host, SourceRecord* re
     }
 }
 
-void ParentKeyHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed)
+void ParentKeyHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, uint32_t index, std::vector<SourceRecordPtr>& removed)
 {
     if (m_excluded.erase(record))
     {
@@ -689,6 +687,7 @@ void ParentKeyHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* re
     // Children move out while record is still in the shaped tree, so a consumer never removes them
     // with it.
     m_leaving = record;
+    m_leavingIndex = index;
     try
     {
         OrphanChildren(host, record);

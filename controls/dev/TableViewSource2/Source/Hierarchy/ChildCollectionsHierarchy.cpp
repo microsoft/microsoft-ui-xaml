@@ -527,7 +527,7 @@ void ChildCollectionsHierarchy::OnInserted(ISourceHierarchyHost& host, SourceRec
     }
 }
 
-void ChildCollectionsHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed)
+void ChildCollectionsHierarchy::OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, uint32_t /*index*/, std::vector<SourceRecordPtr>& removed)
 {
     // record has left RootRecords() and the lookups; its subtree follows it into removed.
     auto& topLevel = host.SiblingsOf(nullptr);

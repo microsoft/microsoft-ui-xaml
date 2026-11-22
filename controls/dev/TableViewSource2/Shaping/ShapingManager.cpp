@@ -648,9 +648,18 @@ void ShapingManager::PostLiveDrain() noexcept
                 return;
             }
 
-            // Not caught (M3): nothing on the stack can receive the error, so it reaches the
-            // dispatcher (Application.UnhandledException), as WPF's posted live-shaping work does.
-            (*alive)->DrainLiveChanges();
+            // M3 (revised): nothing on the stack can receive the error, and a throw escaping a
+            // posted callback fail-fasts without Application.UnhandledException, so it is
+            // reported there (as WPF's posted live-shaping work surfaces it) and, if handled, the
+            // drain stops where it failed (#105).
+            try
+            {
+                (*alive)->DrainLiveChanges();
+            }
+            catch (...)
+            {
+                ReportPostedError();
+            }
         });
     }
     catch (...)

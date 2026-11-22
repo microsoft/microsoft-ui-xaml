@@ -62,7 +62,7 @@ public:
         std::vector<winrt::Windows::Foundation::IInspectable>& items) override;
     void DiscardIncoming() noexcept override;
     void OnInserted(ISourceHierarchyHost& host, SourceRecord* record) override;
-    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, std::vector<SourceRecordPtr>& removed) override;
+    void OnRemoving(ISourceHierarchyHost& host, SourceRecord* record, uint32_t index, std::vector<SourceRecordPtr>& removed) override;
     void OnMoved(ISourceHierarchyHost& host, SourceRecord* record, uint32_t fromIndex, uint32_t toIndex) override;
     void ForEachChildRecord(std::function<void(SourceRecordPtr const&)> const& visit) const override;
     bool Reevaluate(ISourceHierarchyHost& host, SourceRecord* record, winrt::hstring const& propertyName) override;
