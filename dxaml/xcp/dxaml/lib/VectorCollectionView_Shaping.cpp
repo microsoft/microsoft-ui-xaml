@@ -122,6 +122,14 @@ namespace
         TrackerPtrVector<IUnknown> m_references;
     };
 
+    // A failure of app code no caller waits for (a source change, a live restore) is originated with a message, so
+    // a debugger and error reporting see it; the view recomputed.
+    void ReportContainedFailure(HRESULT hr)
+    {
+        static constexpr WCHAR c_message[] = L"App code the collection view ran while it followed a change failed; the view recomputed.";
+        IGNOREHR(ErrorHelper::OriginateError(hr, ARRAYSIZE(c_message) - 1, c_message));
+    }
+
     // Nonzero while the engine runs app code or raises its changes (VectorCollectionView::m_shapeBusyDepth).
     class BusyScope
     {
@@ -2728,7 +2736,7 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
                         const HRESULT hr = ProcessCollectionChanged(pArgs);
                         if (FAILED(hr))
                         {
-                            IGNOREHR(ErrorHelper::OriginateError(hr));
+                            ReportContainedFailure(hr);
                         }
                     }
                     return S_OK;
@@ -4201,7 +4209,7 @@ _Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
     const HRESULT hr = RestoreLiveShaping();
     if (FAILED(hr))
     {
-        IGNOREHR(ErrorHelper::OriginateError(hr));
+        ReportContainedFailure(hr);
     }
     return S_OK;
 }
