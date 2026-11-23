@@ -115,6 +115,7 @@ private:
     void OnBottomItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>& sender, const winrt::IVectorChangedEventArgs args);
 
     void TryGetSwipeVisuals();
+    void UpdateImmediateSwipeTransforms();
     void UpdateIsOpen(bool isOpen);
     void UpdateThresholdReached(float value);
 
@@ -181,6 +182,7 @@ private:
     bool m_blockNearContent{ false };
     bool m_blockFarContent{ false };
     bool m_isHorizontal{ true };
+    bool m_immediateInertiaConfigured{ false };
     CreatedContent m_createdContent{ CreatedContent::None };
 
     static bool IsTranslationFacadeAvailableForSwipeControl(const winrt::UIElement& element);

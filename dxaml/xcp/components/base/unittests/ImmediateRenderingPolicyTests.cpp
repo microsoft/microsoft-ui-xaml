@@ -342,4 +342,39 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(4u, static_cast<uint32_t>(verbs.size()));
         VERIFY_IS_TRUE(Near(points.back().x, -7.0711f) && Near(points.back().y, -7.0711f));
     }
+
+    // ---- scrolling ----
+
+    void PolicyTests::ScrollBlitNeedsWholePixelTranslation()
+    {
+        int32_t dx = 99, dy = 99;
+        // Whole-pixel move inside the viewport: blit by the rounded delta (float noise tolerated).
+        VERIFY_IS_TRUE(TryGetScrollBlitDelta({ 10, 100, 1 }, { 10, 63.004f, 1 }, 200, 300, &dx, &dy));
+        VERIFY_ARE_EQUAL(0, dx);
+        VERIFY_ARE_EQUAL(-37, dy);
+        VERIFY_IS_TRUE(TryGetScrollBlitDelta({ 0, 0, 2 }, { -199, 5, 2 }, 200, 300, &dx, &dy));
+        VERIFY_ARE_EQUAL(-199, dx);
+        VERIFY_ARE_EQUAL(5, dy);
+
+        // No move, sub-pixel move (animated ChangeView frame before snapping), or a move of a full viewport: repaint.
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { 0, 0, 1 }, 200, 300, &dx, &dy));
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { 0, -12.5f, 1 }, 200, 300, &dx, &dy));
+        VERIFY_ARE_EQUAL(0, dx);
+        VERIFY_ARE_EQUAL(0, dy);
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { 0, -300, 1 }, 200, 300, &dx, &dy));
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { 200, 0, 1 }, 200, 300, &dx, &dy));
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { 0, NAN, 1 }, 200, 300, &dx, &dy));
+    }
+
+    void PolicyTests::ScrollBlitRefusesZoomChange()
+    {
+        int32_t dx = 0, dy = 0;
+        // Pinch / ZoomToFactor frames: even a whole-pixel origin move is not a translation of the old pixels.
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 1 }, { -20, -20, 1.25f }, 400, 400, &dx, &dy));
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 2 }, { -20, 0, 1.99f }, 400, 400, &dx, &dy));
+        VERIFY_IS_FALSE(TryGetScrollBlitDelta({ 0, 0, 0 }, { -20, 0, 0 }, 400, 400, &dx, &dy));
+        // Same zoom (rounding noise only): a pan at 2x still blits.
+        VERIFY_IS_TRUE(TryGetScrollBlitDelta({ 0, 0, 2 }, { -20, 0, 2.00001f }, 400, 400, &dx, &dy));
+        VERIFY_ARE_EQUAL(-20, dx);
+    }
 }

@@ -22,6 +22,11 @@ public:
     double GetMaxOverpanOffset(winrt::Orientation orientation) const;
     double GetContentSize(winrt::Orientation orientation) const;
     double GetViewportSize(winrt::Orientation orientation) const;
+
+    // Immediate rendering (see ImmediateRenderingHelpers.h): UI-thread values of the source property set's offset
+    // and scale, and view change notifications through the info changed function.
+    double GetImmediateSourceOffset(winrt::Orientation orientation) const;
+    double GetImmediateSourceScale() const;
     void SetSourceElement(const winrt::UIElement& sourceElement);
     void SetTargetElement(const winrt::UIElement& targetElement);
 
@@ -149,6 +154,8 @@ private:
     winrt::event_token m_scrollViewerDirectManipulationCompletedToken{ 0 };
     winrt::event_token m_richEditBoxTextChangedToken{ 0 };
     winrt::event_token m_renderingToken{ 0 };
+    winrt::FxScrollViewer::ViewChanged_revoker m_immediateScrollViewerViewChangedRevoker{};
+    winrt::ScrollPresenter::ViewChanged_revoker m_immediateScrollPresenterViewChangedRevoker{};
 
     // Property names inside the composition property set returned by get_SourcePropertySet.
     static PCWSTR s_horizontalOffsetPropertyName;

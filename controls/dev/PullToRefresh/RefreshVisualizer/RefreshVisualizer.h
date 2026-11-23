@@ -70,6 +70,12 @@ private:
     bool IsPullDirectionVertical();
     bool IsPullDirectionFar();
 
+    // Immediate rendering (see ImmediateRenderingHelpers.h): content animations evaluated on the UI thread.
+    void UpdateContentImmediate();
+    void ApplyImmediateInteractionRatio();
+    void OnImmediateRendering(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void UpdateImmediateRenderingSubscription();
+
     //////////////////////////////////////////////////////
     ////             DependencyPropertyBackers      //////
     //////////////////////////////////////////////////////
@@ -95,4 +101,10 @@ private:
     tracker_ref<winrt::Panel> m_root{ this };
     float m_startingRotationAngle{ 0.0f };
     winrt::RefreshPullDirection m_pullDirection{ winrt::RefreshPullDirection::TopToBottom };
+
+    std::chrono::steady_clock::time_point m_immediateScaleStart{};
+    std::chrono::steady_clock::time_point m_immediateRotationStart{};
+    bool m_immediateScaling{ false };
+    bool m_immediateRotating{ false };
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_immediateRenderingRevoker{};
 };

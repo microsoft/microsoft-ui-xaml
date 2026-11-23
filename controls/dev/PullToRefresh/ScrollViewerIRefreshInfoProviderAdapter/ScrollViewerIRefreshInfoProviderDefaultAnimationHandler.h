@@ -27,6 +27,14 @@ private:
 
     bool IsOrientationVertical();
 
+    // Immediate rendering (see ImmediateRenderingHelpers.h): the offset animations become UIElement.Translation values
+    // evaluated on the UI thread; the 100ms key frame animations are ticked by CompositionTarget.Rendering.
+    winrt::float2 ImmediateRefreshVisualizerSize();
+    void SetImmediateTranslation(const winrt::UIElement& element, float value);
+    float GetImmediateTranslation(const winrt::UIElement& element);
+    void StartImmediateAnimation(float refreshVisualizerTo, float infoProviderTo, bool isRefreshCompleted);
+    void OnImmediateRendering(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+
     winrt::RefreshPullDirection m_refreshPullDirection;
 
     tracker_ref<winrt::UIElement> m_refreshVisualizer{ this };
@@ -51,4 +59,12 @@ private:
     winrt::CompositionScopedBatch m_refreshCompletedScopedBatch{ nullptr };
 
     winrt::event_token m_compositionScopedBatchCompletedEventToken{ 0 };
+
+    float m_immediateRefreshVisualizerFrom{ 0.0f };
+    float m_immediateRefreshVisualizerTo{ 0.0f };
+    float m_immediateInfoProviderFrom{ 0.0f };
+    float m_immediateInfoProviderTo{ 0.0f };
+    bool m_immediateIsRefreshCompleted{ false };
+    std::chrono::steady_clock::time_point m_immediateAnimationStart{};
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_immediateRenderingRevoker{};
 };

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -410,6 +410,22 @@ private:
         const winrt::UIElement& content);
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content);
+    void ApplyImmediateContentTransform(
+        const winrt::UIElement& content,
+        const winrt::float3& position,
+        float scale);
+    // ---- scrolling ----
+    void StartImmediateViewTween(
+        const winrt::CompositionAnimation& animation,
+        bool isZoom,
+        const winrt::float3& toPosition,
+        float toScale,
+        const winrt::float3& centerPoint);
+    int32_t IssueImmediateViewTweenStep(double progress);
+    void OnImmediateViewTweenRendering(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void CompleteImmediateViewTween(ScrollPresenterViewChangeResult result);
+    void InterruptImmediateViewTween();
+    void StopImmediateViewTween();
     bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
     void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
@@ -863,6 +879,28 @@ private:
     winrt::ExpressionAnimation m_transformMatrixTranslateYExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_zoomFactorExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_transformMatrixZoomFactorExpressionAnimation{ nullptr };
+    // Immediate rendering: the content transform is applied on the UI thread (ApplyImmediateContentTransform).
+    bool m_isImmediateContentTransformActive{ false };
+    // ---- scrolling ----
+    // Immediate rendering: animated offsets/zoom changes are stepped on the UI thread with non-animated tracker requests
+    // because the compositor does not tick InteractionTracker animations to completion without a Composition frame loop.
+    struct ImmediateViewTween
+    {
+        bool active{ false };
+        bool isZoom{ false };
+        bool finalIssued{ false };
+        int ticksSinceFinal{ 0 };
+        int32_t requestId{ 0 }; // Latest tracker request issued for the animated operation (its current request id).
+        int64_t startTicks{ 0 };    // QueryPerformanceCounter units.
+        int64_t durationTicks{ 0 };
+        winrt::float3 fromPosition{};
+        winrt::float3 toPosition{};
+        float fromScale{ 1.0f };
+        float toScale{ 1.0f };
+        winrt::float3 centerPoint{};
+    };
+    ImmediateViewTween m_immediateViewTween{};
+    winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_immediateViewTweenRenderingRevoker{};
 
     winrt::ExpressionAnimation m_positionSourceExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_minPositionSourceExpressionAnimation{ nullptr };

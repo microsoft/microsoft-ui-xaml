@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -38,6 +38,8 @@
 #include "GeneralTransform.g.h"
 #include "RootScale.h"
 #include <XamlOneCoreTransforms.h>
+#include "DispatcherTimer.g.h"
+#include <RenderingBackend.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -250,6 +252,16 @@ ScrollViewer::~ScrollViewer()
 {
     // Releasing and unhooking of template parts and events
     IGNOREHR(UnhookTemplate());
+
+    // ---- scrolling ----
+    {
+        auto spTweenTimer = m_tpImmediateViewTweenTimer.GetSafeReference();
+        if (spTweenTimer)
+        {
+            IGNOREHR(spTweenTimer->Stop());
+        }
+    }
+    VERIFYHR(DetachHandler(m_epImmediateViewTweenTimerTick, m_tpImmediateViewTweenTimer));
 
     m_trManipulatableElement.Clear();
 
@@ -3374,6 +3386,17 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewImpl(
     }
 #endif // DM_DEBUG
 
+    // ---- scrolling ----
+    {
+        bool tweenStarted = false;
+        IFC_RETURN(TryStartImmediateViewTween(pHorizontalOffset, pVerticalOffset, pZoomFactor, &tweenStarted));
+        if (tweenStarted)
+        {
+            *pReturnValue = TRUE;
+            return S_OK;
+        }
+    }
+
     RRETURN(ChangeViewInternal(
         pHorizontalOffset,
         pVerticalOffset,
@@ -3413,6 +3436,22 @@ _Check_return_ HRESULT ScrollViewer::ChangeViewWithOptionalAnimationImpl(
         IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_SCROLLVIEWER | DMSV_DBG) /*traceType*/, L"DMSV[0x%p]:  ChangeViewWithOptionalAnimationImpl - entry.", this));
     }
 #endif // DM_DEBUG
+
+    // ---- scrolling ----
+    if (disableAnimation)
+    {
+        IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+    }
+    else
+    {
+        bool tweenStarted = false;
+        IFC_RETURN(TryStartImmediateViewTween(pHorizontalOffset, pVerticalOffset, pZoomFactor, &tweenStarted));
+        if (tweenStarted)
+        {
+            *pReturnValue = TRUE;
+            return S_OK;
+        }
+    }
 
     RRETURN(ChangeViewInternal(
         pHorizontalOffset,
@@ -13125,6 +13164,17 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulationStateChanged(
     switch (state)
     {
     case DMManipulationStarted:
+        // ---- scrolling ----
+        if (m_immediateViewTween.active &&
+            (m_immediateViewTween.inStep || (m_immediateViewTween.hasZoom && IsRecentImmediateViewTweenStep())))
+        {
+            m_immediateViewTween.zoomStepOutstanding = true;
+        }
+        else if (m_immediateViewTween.active && !m_immediateViewTween.zoomStepOutstanding)
+        {
+            // A user manipulation takes over; it raises its own final ViewChanged.
+            IFC(StopImmediateViewTween(false /*raiseFinalViewChanged*/));
+        }
         IFC(RaiseDirectManipulationStarted());
         break;
     case DMManipulationCompleted:
@@ -14209,6 +14259,18 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationCompleted(
             this, m_xPixelOffsetRequested == -1 && m_yPixelOffsetRequested == -1, m_xPixelOffsetRequested, m_yPixelOffsetRequested));
     }
 #endif // DM_DEBUG
+
+    // ---- scrolling ----
+    // A zoom step of the immediate-mode ChangeView tween completed; stay in the tween's intermediate section.
+    if (m_immediateViewTween.active)
+    {
+        m_immediateViewTween.zoomStepOutstanding = false;
+        if (m_immediateViewTween.finishing)
+        {
+            IFC(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
+        goto Cleanup;
+    }
 
     IFC(LeaveIntermediateViewChangedMode(m_xPixelOffsetRequested == -1 &&
         m_yPixelOffsetRequested == -1 /*raiseFinalViewChanged*/));
@@ -16879,4 +16941,265 @@ _Check_return_ HRESULT ScrollViewer::EnsureAnchorCandidateVector()
     }
 
     return S_OK;
+}
+
+// ---- scrolling ----
+// Immediate rendering backends do not feed the DComp manipulation compositor that ticks DManip animations, so an
+// animated ChangeView would jump to its target in one frame. Animate it on the UI thread instead: each tick issues a
+// non-animated ChangeView step (which the immediate walk paints, blitting pure translations) inside an intermediate
+// ViewChanged section, and the last tick applies the requested view with mandatory snap point adjustments.
+static constexpr LONGLONG c_immediateViewTweenDurationMs = 400;
+
+_Check_return_ HRESULT ScrollViewer::TryStartImmediateViewTween(
+    _In_opt_ wf::IReference<DOUBLE>* pHorizontalOffset,
+    _In_opt_ wf::IReference<DOUBLE>* pVerticalOffset,
+    _In_opt_ wf::IReference<FLOAT>* pZoomFactor,
+    _Out_ bool* pStarted)
+{
+    *pStarted = false;
+
+    if (!RenderingBackend::IsImmediateModeActive() || (!pHorizontalOffset && !pVerticalOffset && !pZoomFactor))
+    {
+        return S_OK;
+    }
+
+    if (!m_canManipulateElementsWithAsyncBringIntoViewport || !IsAnimationEnabled() || IsInDirectManipulation())
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IManipulationDataProvider> spProvider;
+    IFC_RETURN(GetInnerManipulationDataProvider(&spProvider));
+    if (spProvider)
+    {
+        // ChangeViewInternal never animates for IManipulationDataProvider implementations.
+        return S_OK;
+    }
+
+    DOUBLE currentX = 0.0, currentY = 0.0, scrollableWidth = 0.0, scrollableHeight = 0.0, viewportWidth = 0.0, viewportHeight = 0.0;
+    FLOAT currentZoom = 1.0f, minZoom = 1.0f, maxZoom = 1.0f;
+    IFC_RETURN(get_HorizontalOffset(&currentX));
+    IFC_RETURN(get_VerticalOffset(&currentY));
+    IFC_RETURN(get_ZoomFactor(&currentZoom));
+    IFC_RETURN(get_MinZoomFactor(&minZoom));
+    IFC_RETURN(get_MaxZoomFactor(&maxZoom));
+    IFC_RETURN(get_ScrollableWidth(&scrollableWidth));
+    IFC_RETURN(get_ScrollableHeight(&scrollableHeight));
+    IFC_RETURN(get_ViewportWidth(&viewportWidth));
+    IFC_RETURN(get_ViewportHeight(&viewportHeight));
+
+    ImmediateViewTween tween;
+    tween.fromX = tween.toX = currentX;
+    tween.fromY = tween.toY = currentY;
+    tween.fromZoom = tween.toZoom = currentZoom;
+
+    if (pZoomFactor)
+    {
+        IFC_RETURN(pZoomFactor->get_Value(&tween.requestedZoom));
+        if (_isnan(tween.requestedZoom) || !_finite(tween.requestedZoom))
+        {
+            return S_OK; // ChangeViewInternal reports the error.
+        }
+        tween.hasZoom = true;
+        tween.toZoom = std::min(std::max(tween.requestedZoom, minZoom), maxZoom);
+    }
+
+    // Scrollable + viewport is the zoomed extent; rescale it to the target zoom factor to clamp the target offsets.
+    const DOUBLE zoomRatio = currentZoom > 0.0f ? static_cast<DOUBLE>(tween.toZoom) / currentZoom : 1.0;
+    const DOUBLE maxX = std::max(0.0, (scrollableWidth + viewportWidth) * zoomRatio - viewportWidth);
+    const DOUBLE maxY = std::max(0.0, (scrollableHeight + viewportHeight) * zoomRatio - viewportHeight);
+
+    if (pHorizontalOffset)
+    {
+        IFC_RETURN(pHorizontalOffset->get_Value(&tween.requestedX));
+        if (_isnan(tween.requestedX) || !_finite(tween.requestedX))
+        {
+            return S_OK;
+        }
+        tween.hasX = true;
+        tween.toX = std::min(std::max(tween.requestedX, 0.0), maxX);
+    }
+    if (pVerticalOffset)
+    {
+        IFC_RETURN(pVerticalOffset->get_Value(&tween.requestedY));
+        if (_isnan(tween.requestedY) || !_finite(tween.requestedY))
+        {
+            return S_OK;
+        }
+        tween.hasY = true;
+        tween.toY = std::min(std::max(tween.requestedY, 0.0), maxY);
+    }
+
+    if (DoubleUtil::AreClose(tween.fromX, tween.toX) && DoubleUtil::AreClose(tween.fromY, tween.toY) && DoubleUtil::AreClose(tween.fromZoom, tween.toZoom))
+    {
+        // Nothing to animate; let ChangeViewInternal apply (and snap) the request.
+        return S_OK;
+    }
+
+    LARGE_INTEGER now = {}, frequency = {};
+    QueryPerformanceCounter(&now);
+    QueryPerformanceFrequency(&frequency);
+    tween.startTicks = now.QuadPart;
+    tween.durationTicks = frequency.QuadPart * c_immediateViewTweenDurationMs / 1000;
+    tween.active = true;
+
+    if (!m_tpImmediateViewTweenTimer)
+    {
+        ctl::ComPtr<DispatcherTimer> spTimer;
+        IFC_RETURN(ctl::make<DispatcherTimer>(&spTimer));
+        IFC_RETURN(m_epImmediateViewTweenTimerTick.AttachEventHandler(
+            spTimer.Get(),
+            [this](_In_opt_ IInspectable*, _In_opt_ IInspectable*)
+            {
+                return OnImmediateViewTweenTick();
+            }));
+        wf::TimeSpan interval = { 160000 }; // 16ms
+        IFC_RETURN(spTimer->put_Interval(interval));
+        SetPtrValue(m_tpImmediateViewTweenTimer, spTimer.Get());
+    }
+
+    // A tween already in flight is retargeted from the current view; the intermediate section stays open.
+    const bool wasActive = m_immediateViewTween.active;
+    tween.zoomStepOutstanding = wasActive && m_immediateViewTween.zoomStepOutstanding;
+    tween.lastStepTicks = wasActive ? m_immediateViewTween.lastStepTicks : 0;
+    m_immediateViewTween = tween;
+    if (!wasActive)
+    {
+        IFC_RETURN(EnterIntermediateViewChangedMode());
+    }
+    IFC_RETURN(m_tpImmediateViewTweenTimer->Start());
+
+    *pStarted = true;
+    return S_OK;
+}
+
+_Check_return_ HRESULT ScrollViewer::OnImmediateViewTweenTick()
+{
+    if (!m_immediateViewTween.active)
+    {
+        return StopImmediateViewTween(false /*raiseFinalViewChanged*/);
+    }
+
+    LARGE_INTEGER now = {};
+    QueryPerformanceCounter(&now);
+    const ImmediateViewTween& tween = m_immediateViewTween;
+    // Watchdog for DManip completions that never arrive (e.g. a zoom step that DManip coalesced away).
+    const LONGLONG watchdogTicks = tween.durationTicks / 2;
+    if (tween.finishing)
+    {
+        if (now.QuadPart - tween.lastStepTicks > watchdogTicks)
+        {
+            IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
+        return S_OK;
+    }
+    if (tween.zoomStepOutstanding)
+    {
+        if (now.QuadPart - tween.lastStepTicks <= watchdogTicks)
+        {
+            return S_OK; // Wait for the previous zoom step to be applied.
+        }
+        m_immediateViewTween.zoomStepOutstanding = false;
+    }
+
+    const double progress = tween.durationTicks > 0
+        ? std::min(1.0, static_cast<double>(now.QuadPart - tween.startTicks) / static_cast<double>(tween.durationTicks))
+        : 1.0;
+
+    ctl::ComPtr<wf::IReference<DOUBLE>> spX;
+    ctl::ComPtr<wf::IReference<DOUBLE>> spY;
+    ctl::ComPtr<wf::IReference<FLOAT>> spZoom;
+    const auto makeDouble = [](DOUBLE value, ctl::ComPtr<wf::IReference<DOUBLE>>& reference) -> HRESULT
+    {
+        ctl::ComPtr<IInspectable> spValue;
+        IFC_RETURN(PropertyValue::CreateFromDouble(value, &spValue));
+        return spValue.As(&reference);
+    };
+    const auto makeFloat = [](FLOAT value, ctl::ComPtr<wf::IReference<FLOAT>>& reference) -> HRESULT
+    {
+        ctl::ComPtr<IInspectable> spValue;
+        IFC_RETURN(PropertyValue::CreateFromSingle(value, &spValue));
+        return spValue.As(&reference);
+    };
+    BOOLEAN accepted = FALSE;
+    const bool isLast = progress >= 1.0;
+
+    if (isLast)
+    {
+        // Apply the original request so snap points and clamping match the non-immediate path.
+        if (tween.hasX) { IFC_RETURN(makeDouble(tween.requestedX, spX)); }
+        if (tween.hasY) { IFC_RETURN(makeDouble(tween.requestedY, spY)); }
+        if (tween.hasZoom) { IFC_RETURN(makeFloat(tween.requestedZoom, spZoom)); }
+    }
+    else
+    {
+        // Cubic ease-out, close to DManip's decelerating bring-into-viewport curve.
+        const double eased = 1.0 - (1.0 - progress) * (1.0 - progress) * (1.0 - progress);
+        const DOUBLE x = tween.fromX + (tween.toX - tween.fromX) * eased;
+        const DOUBLE y = tween.fromY + (tween.toY - tween.fromY) * eased;
+        const FLOAT zoom = static_cast<FLOAT>(tween.fromZoom + (tween.toZoom - tween.fromZoom) * eased);
+        IFC_RETURN(makeDouble(x, spX));
+        IFC_RETURN(makeDouble(y, spY));
+        if (tween.hasZoom) { IFC_RETURN(makeFloat(zoom, spZoom)); }
+    }
+
+    m_immediateViewTween.inStep = true;
+    const HRESULT hr = ChangeViewInternal(
+        spX.Get(),
+        spY.Get(),
+        spZoom.Get(),
+        nullptr /*pOldZoomFactor*/,
+        FALSE /*forceChangeToCurrentView*/,
+        isLast /*adjustWithMandatorySnapPoints*/,
+        FALSE /*skipDuringTouchContact*/,
+        FALSE /*skipAnimationWhileRunning*/,
+        TRUE  /*disableAnimation*/,
+        TRUE  /*applyAsManip*/,
+        FALSE /*transformIsInertiaEnd*/,
+        FALSE /*isForMakeVisible*/,
+        &accepted);
+    m_immediateViewTween.inStep = false;
+    m_immediateViewTween.lastStepTicks = now.QuadPart;
+
+    if (FAILED(hr) || !accepted)
+    {
+        IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+    }
+    else if (isLast)
+    {
+        if (m_immediateViewTween.zoomStepOutstanding)
+        {
+            // Raise the final ViewChanged once DManip has applied the last zoom step.
+            m_immediateViewTween.finishing = true;
+        }
+        else
+        {
+            IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
+    }
+    return hr;
+}
+
+_Check_return_ HRESULT ScrollViewer::StopImmediateViewTween(_In_ bool raiseFinalViewChanged)
+{
+    const bool wasActive = m_immediateViewTween.active;
+    m_immediateViewTween.active = false;
+    m_immediateViewTween.zoomStepOutstanding = false;
+    m_immediateViewTween.finishing = false;
+    if (m_tpImmediateViewTweenTimer)
+    {
+        IFC_RETURN(m_tpImmediateViewTweenTimer->Stop());
+    }
+    if (wasActive && raiseFinalViewChanged)
+    {
+        IFC_RETURN(LeaveIntermediateViewChangedMode(TRUE /*raiseFinalViewChanged*/));
+    }
+    return S_OK;
+}
+
+bool ScrollViewer::IsRecentImmediateViewTweenStep() const
+{
+    LARGE_INTEGER now = {};
+    QueryPerformanceCounter(&now);
+    return now.QuadPart - m_immediateViewTween.lastStepTicks <= m_immediateViewTween.durationTicks / 2;
 }

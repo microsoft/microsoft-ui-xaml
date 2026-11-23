@@ -5,6 +5,7 @@
 #include "common.h"
 #include "ParallaxView.h"
 #include "RuntimeProfiler.h"
+#include "ImmediateRenderingHelpers.h"
 
 using namespace std;
 
@@ -246,6 +247,12 @@ void ParallaxView::OnScrollInputHelperInfoChanged(bool horizontalInfoChanged, bo
 
 void ParallaxView::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
+    if (ImmediateRendering::IsRequested())
+    {
+        UpdateImmediateParallax();
+        return;
+    }
+
     // Characteristics influencing the source start and end offsets are ready now.
     if (HorizontalShift() != 0.0)
     {
@@ -262,6 +269,12 @@ void ParallaxView::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::
 
 void ParallaxView::OnSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& /*args*/)
 {
+    if (ImmediateRendering::IsRequested())
+    {
+        UpdateImmediateParallax();
+        return;
+    }
+
     // ParallaxView sizes influence the source end offset.
     if (HorizontalShift() != 0.0)
     {
@@ -547,6 +560,13 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
 // Updates the parallaxing composition animation.
 void ParallaxView::UpdateExpressionAnimation(winrt::Orientation orientation)
 {
+    if (ImmediateRendering::IsRequested())
+    {
+        // Immediate rendering paints XAML properties only: evaluate the parallax function on the UI thread.
+        UpdateImmediateParallax();
+        return;
+    }
+
     if (m_scrollInputHelper && m_scrollInputHelper->TargetElement() && m_scrollInputHelper->SourcePropertySet())
     {
         winrt::Visual targetVisual = winrt::ElementCompositionPreview::GetElementVisual(m_scrollInputHelper->TargetElement());
@@ -759,5 +779,111 @@ void ParallaxView::UnhookChildPropertyChanged(bool isInDestructor)
             m_childVerticalAlignmentChangedToken.value = 0;
         }
         m_currentListeningChild.set(nullptr);
+    }
+}
+
+// Immediate rendering: UI-thread evaluation of the start/end offset and parallax expressions built by
+// UpdateStartOffsetExpression, UpdateEndOffsetExpression and UpdateExpressionAnimation, applied to the
+// target element's Translation facade (re-evaluated on every source view change).
+float ParallaxView::ComputeImmediateParallax(winrt::Orientation orientation)
+{
+    const bool isHorizontal = orientation == winrt::Orientation::Horizontal;
+    const double shift = isHorizontal ? HorizontalShift() : VerticalShift();
+    if (shift == 0.0)
+    {
+        return 0.0f;
+    }
+
+    auto& helper = *m_scrollInputHelper;
+    const double zoom = helper.GetImmediateSourceScale();
+    const double viewportSize = helper.GetViewportSize(orientation);
+    const double contentSize = helper.GetContentSize(orientation);
+    const bool isRelative = (isHorizontal ? HorizontalSourceOffsetKind() : VerticalSourceOffsetKind()) == winrt::ParallaxSourceOffsetKind::Relative;
+    const double startOffsetProperty = isHorizontal ? HorizontalSourceStartOffset() : VerticalSourceStartOffset();
+    const double endOffsetProperty = isHorizontal ? HorizontalSourceEndOffset() : VerticalSourceEndOffset();
+
+    double startOffset = 0.0;
+    double endOffset = 0.0;
+    if (isRelative)
+    {
+        if (helper.IsTargetElementInSource())
+        {
+            const double parallaxViewOffset = helper.GetOffsetFromScrollContentElement(*this, orientation);
+            const double parallaxViewSize = isHorizontal ? ActualWidth() : ActualHeight();
+            startOffset = (parallaxViewOffset + startOffsetProperty) * zoom - viewportSize - helper.GetMaxUnderpanOffset(orientation);
+            endOffset = (parallaxViewOffset + parallaxViewSize + endOffsetProperty) * zoom + helper.GetMaxOverpanOffset(orientation);
+        }
+        else
+        {
+            startOffset = startOffsetProperty * zoom - helper.GetMaxUnderpanOffset(orientation);
+            endOffset = std::max(0.0, (contentSize + endOffsetProperty) * zoom - viewportSize) + helper.GetMaxOverpanOffset(orientation);
+        }
+    }
+    else
+    {
+        startOffset = startOffsetProperty > 0.0 ? startOffsetProperty * zoom : startOffsetProperty;
+        if (contentSize > viewportSize)
+        {
+            endOffset = endOffsetProperty <= contentSize - viewportSize ?
+                std::max(0.0, endOffsetProperty * zoom) :
+                std::max(0.0, (contentSize - viewportSize) * zoom) + endOffsetProperty - contentSize + viewportSize;
+        }
+        else
+        {
+            endOffset = endOffsetProperty <= 0.0 ?
+                std::max(0.0, (contentSize + endOffsetProperty) * zoom - viewportSize) :
+                std::max(0.0, contentSize * zoom - viewportSize) + endOffsetProperty;
+        }
+    }
+
+    const double x = -helper.GetImmediateSourceOffset(orientation);
+    const double maxRatio = std::max(0.0, isHorizontal ? MaxHorizontalShiftRatio() : MaxVerticalShiftRatio());
+    double parallax = 0.0;
+    if (isHorizontal ? IsHorizontalShiftClamped() : IsVerticalShiftClamped())
+    {
+        if (shift > 0.0)
+        {
+            parallax = x <= startOffset ? 0.0 :
+                (x < endOffset ? -std::min(maxRatio, shift / (endOffset - startOffset)) * (x - startOffset) :
+                 -std::min(maxRatio * std::max(0.0, endOffset - startOffset), shift));
+        }
+        else
+        {
+            parallax = x <= startOffset ? -std::min(maxRatio * std::max(0.0, endOffset - startOffset), -shift) :
+                (x < endOffset ? std::min(maxRatio, shift / (startOffset - endOffset)) * (x - endOffset) : 0.0);
+        }
+    }
+    else if (startOffset != endOffset)
+    {
+        parallax = shift > 0.0 ?
+            -std::min(maxRatio, shift / (endOffset - startOffset)) * (x - startOffset) :
+            std::min(maxRatio, shift / (startOffset - endOffset)) * (x - endOffset);
+    }
+    return std::isfinite(parallax) ? static_cast<float>(parallax) : 0.0f;
+}
+
+void ParallaxView::UpdateImmediateParallax()
+{
+    winrt::UIElement target = m_scrollInputHelper ? m_scrollInputHelper->TargetElement() : nullptr;
+    if (auto previous = m_immediateTargetElement.get(); previous && previous != target)
+    {
+        previous.Translation({ 0.0f, 0.0f, 0.0f });
+    }
+    m_immediateTargetElement = target ? winrt::make_weak(target) : winrt::weak_ref<winrt::UIElement>{ nullptr };
+    if (!target)
+    {
+        return;
+    }
+
+    const auto current = target.Translation();
+    winrt::float3 translation{ 0.0f, 0.0f, current.z };
+    if (m_scrollInputHelper->SourcePropertySet())
+    {
+        translation.x = ComputeImmediateParallax(winrt::Orientation::Horizontal);
+        translation.y = ComputeImmediateParallax(winrt::Orientation::Vertical);
+    }
+    if (translation.x != current.x || translation.y != current.y)
+    {
+        target.Translation(translation);
     }
 }

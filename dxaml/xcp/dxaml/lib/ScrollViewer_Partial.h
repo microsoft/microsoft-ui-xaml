@@ -450,6 +450,29 @@ namespace DirectUI
         // m_isInIntermediateViewChangedMode switches back to False.
         BOOLEAN m_isViewChangedRaisedInIntermediateMode;
 
+        // ---- scrolling ----
+        // Immediate rendering backends: DManip animations are ticked by the DComp manipulation compositor, which the
+        // immediate walk never feeds, so an animated ChangeView would jump. Instead the view is tweened on the UI
+        // thread with non-animated ChangeView steps (see StartImmediateViewTween).
+        struct ImmediateViewTween
+        {
+            bool active = false;
+            bool inStep = false;
+            // Zoom steps go through an (unanimated) DManip bring-into-viewport that completes asynchronously.
+            bool zoomStepOutstanding = false;
+            bool finishing = false;
+            LONGLONG lastStepTicks = 0;
+            LONGLONG startTicks = 0;
+            LONGLONG durationTicks = 0;
+            DOUBLE fromX = 0, fromY = 0, toX = 0, toY = 0;
+            FLOAT fromZoom = 1, toZoom = 1;
+            bool hasX = false, hasY = false, hasZoom = false;
+            DOUBLE requestedX = 0, requestedY = 0;
+            FLOAT requestedZoom = 1;
+        } m_immediateViewTween;
+        TrackerPtr<xaml::IDispatcherTimer> m_tpImmediateViewTweenTimer;
+        ctl::EventPtr<DispatcherTimerTickEventCallback> m_epImmediateViewTweenTimerTick;
+
         // When strictly positive, it prevents the ViewChanging event from being raised. It is delayed and raised
         // when m_iViewChangingDelay reaches 0.
         INT m_iViewChangingDelay;
@@ -2119,6 +2142,16 @@ namespace DirectUI
 
         // Called at the end of an operation that may have caused several ViewChanged events, like a DM manip.
         _Check_return_ HRESULT LeaveIntermediateViewChangedMode(_In_ BOOLEAN raiseFinalViewChanged);
+
+        // ---- scrolling ----
+        _Check_return_ HRESULT TryStartImmediateViewTween(
+            _In_opt_ wf::IReference<DOUBLE>* pHorizontalOffset,
+            _In_opt_ wf::IReference<DOUBLE>* pVerticalOffset,
+            _In_opt_ wf::IReference<FLOAT>* pZoomFactor,
+            _Out_ bool* pStarted);
+        _Check_return_ HRESULT OnImmediateViewTweenTick();
+        _Check_return_ HRESULT StopImmediateViewTween(_In_ bool raiseFinalViewChanged);
+        bool IsRecentImmediateViewTweenStep() const;
 
         // Indicates whether we're at our highest zoom factor (as defined by MaxZoomFactor).
         _Check_return_ HRESULT get_IsAtMaxZoom(_Out_ BOOLEAN& isAtMaxZoom);

@@ -8,6 +8,7 @@
 #include "RefreshVisualizerEventArgs.h"
 #include "RuntimeProfiler.h"
 #include "PTRTracing.h"
+#include "ImmediateRenderingHelpers.h"
 
 
 //The Opacity of the progress indicator in the non-pending non-executing states
@@ -245,7 +246,10 @@ void RefreshVisualizer::OnContentChangedImpl()
         }
         else
         {
-            winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_content.get(), true);
+            if (!ImmediateRendering::IsRequested())
+            {
+                winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_content.get(), true);
+            }
             contentAsFrameworkElement.VerticalAlignment(winrt::VerticalAlignment::Center);
             contentAsFrameworkElement.HorizontalAlignment(winrt::HorizontalAlignment::Center);
         }
@@ -257,6 +261,11 @@ void RefreshVisualizer::OnContentChangedImpl()
 void RefreshVisualizer::UpdateContent()
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    if (ImmediateRendering::IsRequested())
+    {
+        UpdateContentImmediate();
+        return;
+    }
     if (m_content)
     {
         const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(m_content.get());
@@ -567,6 +576,10 @@ void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(const winrt:
             }
         }
         //If we are in Refreshing or Peeking we want to stay in those states.
+        if (ImmediateRendering::IsRequested() && m_state == winrt::RefreshVisualizerState::Interacting)
+        {
+            ApplyImmediateInteractionRatio();
+        }
     }
     else
     {
@@ -599,4 +612,162 @@ bool RefreshVisualizer::IsPullDirectionVertical()
 bool RefreshVisualizer::IsPullDirectionFar()
 {
     return m_pullDirection == winrt::RefreshPullDirection::BottomToTop || m_pullDirection == winrt::RefreshPullDirection::RightToLeft;
+}
+
+// Immediate rendering equivalent of UpdateContent: the content visual properties and animations become XAML facade
+// properties (UIElement.Opacity/Rotation/Translation/Scale) evaluated on the UI thread, with CompositionTarget.Rendering
+// driving the time-based scale-up and spinning animations while they run.
+void RefreshVisualizer::UpdateContentImmediate()
+{
+    if (!m_content)
+    {
+        return;
+    }
+
+    const auto content = m_content.get();
+    const winrt::Size contentSize = content.RenderSize();
+    content.CenterPoint({ (float)(contentSize.Height / 2), (float)(contentSize.Width / 2), 0.0f });
+    const float startingDegrees = m_startingRotationAngle * 180.0f / (float)M_PI;
+
+    try
+    {
+        switch (m_state)
+        {
+        case winrt::RefreshVisualizerState::Idle:
+            content.Opacity(MINIMUM_INDICATOR_OPACITY);
+            content.Rotation(startingDegrees);
+            content.Translation({ 0.0f, 0.0f, 0.0f });
+            m_immediateScaling = false;
+            m_immediateRotating = false;
+            content.Scale({ 1.0f, 1.0f, 1.0f });
+            break;
+        case winrt::RefreshVisualizerState::Peeking:
+            content.Opacity(1.0f);
+            content.Rotation(startingDegrees);
+            m_immediateRotating = false;
+            break;
+        case winrt::RefreshVisualizerState::Interacting:
+            content.Opacity(MINIMUM_INDICATOR_OPACITY);
+            m_immediateRotating = false;
+            ApplyImmediateInteractionRatio();
+            break;
+        case winrt::RefreshVisualizerState::Pending:
+            m_immediateScaleStart = std::chrono::steady_clock::now();
+            m_immediateScaling = true;
+            m_immediateRotating = false;
+            content.Opacity(1.0f);
+            content.Rotation(startingDegrees);
+            break;
+        case winrt::RefreshVisualizerState::Refreshing:
+            m_immediateRotationStart = std::chrono::steady_clock::now();
+            m_immediateRotating = true;
+            content.Opacity(1.0f);
+            if (m_root)
+            {
+                float translationRatio = [this]() {
+                    if (auto&& refreshInfoProvider = m_refreshInfoProvider.get())
+                    {
+                        return (1.0f - (float)(refreshInfoProvider.ExecutionRatio())) * PARALLAX_POSITION_RATIO;
+                    }
+                    return 1.0f;
+                }();
+                translationRatio = IsPullDirectionFar() ? -1.0f * translationRatio : translationRatio;
+                content.Translation(IsPullDirectionVertical() ?
+                    winrt::float3{ 0.0f, translationRatio * (float)m_root.get().ActualHeight(), 0.0f } :
+                    winrt::float3{ translationRatio * (float)m_root.get().ActualWidth(), 0.0f, 0.0f });
+            }
+            break;
+        default:
+            MUX_ASSERT(false);
+        }
+    }
+    catch (const winrt::hresult_error&)
+    {
+        // Facade properties are refused when the app content uses RenderTransform/Projection (non-strict mode).
+    }
+
+    UpdateImmediateRenderingSubscription();
+}
+
+void RefreshVisualizer::ApplyImmediateInteractionRatio()
+{
+    if (!m_content)
+    {
+        return;
+    }
+
+    const auto content = m_content.get();
+    const float executionRatio = static_cast<float>(m_executionRatio);
+    const float ratio = static_cast<float>(m_interactionRatio);
+    const float rotation = m_startingRotationAngle + (float)M_PI * (std::clamp(ratio, 0.0f, executionRatio) / executionRatio) * 2.0f;
+    const float rootSize = m_root ? (float)(IsPullDirectionVertical() ? m_root.get().ActualHeight() : m_root.get().ActualWidth()) : 0.0f;
+    const float parallax = (1.0f - executionRatio) * rootSize * 0.5f * (IsPullDirectionFar() ? -1.0f : 1.0f) * std::min(ratio / executionRatio, 1.0f);
+
+    try
+    {
+        content.Rotation(rotation * 180.0f / (float)M_PI);
+        winrt::float3 translation = content.Translation();
+        (IsPullDirectionVertical() ? translation.y : translation.x) = parallax;
+        content.Translation(translation);
+    }
+    catch (const winrt::hresult_error&)
+    {
+    }
+}
+
+void RefreshVisualizer::UpdateImmediateRenderingSubscription()
+{
+    if (m_immediateScaling || m_immediateRotating)
+    {
+        if (!m_immediateRenderingRevoker)
+        {
+            m_immediateRenderingRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &RefreshVisualizer::OnImmediateRendering });
+        }
+    }
+    else
+    {
+        m_immediateRenderingRevoker.revoke();
+    }
+}
+
+void RefreshVisualizer::OnImmediateRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    if (!m_content)
+    {
+        m_immediateScaling = m_immediateRotating = false;
+        UpdateImmediateRenderingSubscription();
+        return;
+    }
+
+    const auto content = m_content.get();
+    const auto now = std::chrono::steady_clock::now();
+    try
+    {
+        if (m_immediateScaling)
+        {
+            // ExecuteScaleUpAnimation: 1 -> 1.5 (at 50%) -> 1 over 300ms.
+            const float progress = std::chrono::duration<float, std::milli>(now - m_immediateScaleStart).count() / 300.0f;
+            float scale = 1.0f;
+            if (progress >= 1.0f)
+            {
+                m_immediateScaling = false;
+            }
+            else
+            {
+                scale = progress < 0.5f ? 1.0f + progress : 2.0f - progress;
+            }
+            content.Scale({ scale, scale, 1.0f });
+        }
+        if (m_immediateRotating)
+        {
+            // ExecuteExecutingRotationAnimation: one linear revolution every 500ms, forever.
+            const float cycles = std::chrono::duration<float, std::milli>(now - m_immediateRotationStart).count() / 500.0f;
+            content.Rotation(m_startingRotationAngle * 180.0f / (float)M_PI + (cycles - std::floor(cycles)) * 360.0f);
+        }
+    }
+    catch (const winrt::hresult_error&)
+    {
+        m_immediateScaling = m_immediateRotating = false;
+    }
+    UpdateImmediateRenderingSubscription();
 }

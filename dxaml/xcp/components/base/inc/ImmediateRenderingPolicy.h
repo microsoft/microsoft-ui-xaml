@@ -142,4 +142,20 @@ namespace ImmediateRenderingPolicy
     };
 
     ArcSpan GetProgressRingArc(bool indeterminate, double value, double minimum, double maximum, double timeSeconds) noexcept;
+
+    // ---- scrolling ----
+
+    // A scroller's content origin (physical pixels, island space) and world scale in one frame.
+    struct ScrollerFrame
+    {
+        float offsetX = 0;
+        float offsetY = 0;
+        float zoom = 1;
+    };
+
+    // Whether the scroller's previous pixels can be reused by moving them (ScrollPixels): the zoom is unchanged, the
+    // content moved by a non-zero whole number of pixels and by less than the viewport. Returns the integer delta.
+    // A zoom change (DManip pinch / ZoomToFactor / ScrollPresenter ZoomTo) repaints the viewport instead.
+    bool TryGetScrollBlitDelta(const ScrollerFrame& previous, const ScrollerFrame& current, float viewportWidth,
+        float viewportHeight, _Out_ int32_t* dx, _Out_ int32_t* dy) noexcept;
 }

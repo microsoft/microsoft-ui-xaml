@@ -485,6 +485,8 @@ namespace ImmediateRenderingDetail
         float offsetX = 0;       // physical pixels: content origin in island space
         float offsetY = 0;
         bool hasContent = false;
+        // ---- scrolling ----
+        float zoom = 1;          // content world scale (DManip ZoomFactor x ancestors); blits need it unchanged
     };
 
     struct PathGeometryData
@@ -2934,6 +2936,7 @@ void ImmediateRenderer::Walk(
             scroller.viewport = ScaleRect(ctx.clip, ctx.scale);
             scroller.offsetX = ctx.world.GetDx() * ctx.scale;
             scroller.offsetY = ctx.world.GetDy() * ctx.scale;
+            scroller.zoom = ctx.world.GetM11();
         }
         ctx.offsetX = ctx.world.GetDx();
         ctx.offsetY = ctx.world.GetDy();
@@ -3801,18 +3804,17 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             {
                 continue;
             }
-            const float rdx = std::round(dx);
-            const float rdy = std::round(dy);
-            if ((rdx == 0 && rdy == 0) || std::fabs(dx - rdx) > 0.01f || std::fabs(dy - rdy) > 0.01f)
-            {
-                continue;
-            }
             const RectF v = IntersectRect({ std::ceil(s.viewport.left), std::ceil(s.viewport.top),
                 std::floor(s.viewport.right), std::floor(s.viewport.bottom) }, surface);
-            if (IsEmptyRect(v) || std::fabs(rdx) >= v.right - v.left || std::fabs(rdy) >= v.bottom - v.top)
+            int32_t idx = 0, idy = 0;
+            if (IsEmptyRect(v) || !ImmediateRenderingPolicy::TryGetScrollBlitDelta(
+                    { prev->second.offsetX, prev->second.offsetY, prev->second.zoom }, { s.offsetX, s.offsetY, s.zoom },
+                    v.right - v.left, v.bottom - v.top, &idx, &idy))
             {
                 continue;
             }
+            const float rdx = static_cast<float>(idx);
+            const float rdy = static_cast<float>(idy);
             if (std::any_of(blits.begin(), blits.end(), [&](const Blit& b) { return RectsIntersect(b.rect, v); }))
             {
                 continue;

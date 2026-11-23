@@ -41,6 +41,8 @@ private:
     void UpdateStartOffsetExpression(winrt::Orientation orientation);
     void UpdateEndOffsetExpression(winrt::Orientation orientation);
     void UpdateExpressionAnimation(winrt::Orientation orientation);
+    void UpdateImmediateParallax();
+    float ComputeImmediateParallax(winrt::Orientation orientation);
     void UpdateChild(const winrt::UIElement& oldChild, const winrt::UIElement& newChild);
 
     void HookLoaded();
@@ -65,6 +67,7 @@ private:
     winrt::ExpressionAnimation m_verticalParallaxExpressionInternal{ nullptr };
     bool m_isHorizontalAnimationStarted{ false };
     bool m_isVerticalAnimationStarted{ false };
+    winrt::weak_ref<winrt::UIElement> m_immediateTargetElement{ nullptr };
 
     // Event Tokens
     winrt::event_token m_loadedToken{ 0 };

@@ -47,6 +47,7 @@
 
 #include <ReentrancyGuard.h>
 #include <Windowing.h>
+#include <RenderingBackend.h>
 
 #undef max
 #undef min
@@ -8591,6 +8592,16 @@ Cleanup:
     RRETURN(hr);
 }
 
+// ---- scrolling ----
+// DManip value updates (pan, zoom, inertia, overpan, animated ChangeView) are marked Independent so Composition applies
+// them without a UI-thread render walk. Immediate rendering backends have no Composition content tree: the walk reads
+// the live DManip transform (CUIElement::GetLocalTransform), so each update must schedule a render walk.
+static DirtyFlags DirectManipulationValuesDirtyFlags()
+{
+    return RenderingBackend::IsImmediateModeActive()
+        ? DirtyFlags::Render | DirtyFlags::Bounds
+        : DirtyFlags::Render | DirtyFlags::Bounds | DirtyFlags::Independent;
+}
 //------------------------------------------------------------------------
 //
 //  Method:   ProcessDirectManipulationViewportValuesUpdate
@@ -8729,7 +8740,7 @@ CInputServices::ProcessDirectManipulationViewportValuesUpdate(
             // then those will also mark an element dirty and that will cause a render walk to occur.
             CUIElement::NWSetTransformDirty(
                 pManipulatedElement,
-                DirtyFlags::Render | DirtyFlags::Bounds | DirtyFlags::Independent
+                DirectManipulationValuesDirtyFlags()
                 );
 
             IFC(ProcessDirectManipulationSecondaryContentsUpdate(
@@ -8917,7 +8928,7 @@ CInputServices::ProcessDirectManipulationSecondaryContentsUpdate(
                     newTranslationX, newTranslationY, newUncompressedZoomFactor, newZoomFactorX, newZoomFactorY);
 
                 // Using the DirtyFlags::Independent flag to prevent an unnecessary render walk.
-                CUIElement::NWSetTransformDirty(pContent->GetContentElementNoRef(), DirtyFlags::Render | DirtyFlags::Bounds | DirtyFlags::Independent);
+                CUIElement::NWSetTransformDirty(pContent->GetContentElementNoRef(), DirectManipulationValuesDirtyFlags());
             }
 
             ReleaseInterface(pContent);
@@ -8989,7 +9000,7 @@ CInputServices::ProcessDirectManipulationSecondaryContentsUpdate(
                     newTranslationX, newTranslationY, newUncompressedZoomFactor, newZoomFactorX, newZoomFactorY);
 
                 // Using the DirtyFlags::Independent flag to prevent an unnecessary render walk.
-                CUIElement::NWSetTransformDirty(pContent->GetContentElementNoRef(), DirtyFlags::Render | DirtyFlags::Bounds | DirtyFlags::Independent);
+                CUIElement::NWSetTransformDirty(pContent->GetContentElementNoRef(), DirectManipulationValuesDirtyFlags());
             }
 
             ReleaseInterface(pContent);

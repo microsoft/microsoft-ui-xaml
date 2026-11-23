@@ -499,4 +499,33 @@ namespace ImmediateRenderingPolicy
         arc.sweepDegrees = static_cast<float>(sweep);
         return arc;
     }
+
+    // ---- scrolling ----
+
+    bool TryGetScrollBlitDelta(const ScrollerFrame& previous, const ScrollerFrame& current, float viewportWidth,
+        float viewportHeight, _Out_ int32_t* dx, _Out_ int32_t* dy) noexcept
+    {
+        *dx = 0;
+        *dy = 0;
+        if (!(previous.zoom > 0) || std::fabs(current.zoom - previous.zoom) > 1e-4f * previous.zoom)
+        {
+            return false;
+        }
+        const float fx = current.offsetX - previous.offsetX;
+        const float fy = current.offsetY - previous.offsetY;
+        if (!std::isfinite(fx) || !std::isfinite(fy))
+        {
+            return false;
+        }
+        const float rx = std::round(fx);
+        const float ry = std::round(fy);
+        if ((rx == 0 && ry == 0) || std::fabs(fx - rx) > 0.01f || std::fabs(fy - ry) > 0.01f
+            || std::fabs(rx) >= viewportWidth || std::fabs(ry) >= viewportHeight)
+        {
+            return false;
+        }
+        *dx = static_cast<int32_t>(rx);
+        *dy = static_cast<int32_t>(ry);
+        return true;
+    }
 }

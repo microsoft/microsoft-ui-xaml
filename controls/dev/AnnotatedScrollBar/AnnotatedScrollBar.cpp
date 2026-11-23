@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -16,6 +16,7 @@
 #include "AnnotatedScrollBarScrollingEventArgs.h"
 #include "AnnotatedScrollBarDetailLabelRequestedEventArgs.h"
 #include "Vector.h"
+#include "ImmediateRenderingHelpers.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool AnnotatedScrollBarTrace::s_IsDebugOutputEnabled{ false };
@@ -1162,6 +1163,11 @@ void AnnotatedScrollBar::SetValues(
     offset = std::max(minOffset, offset);
     offset = std::min(maxOffset, offset);
     m_lastOffset = offset;
+
+    if (m_panningInfo && ImmediateRendering::IsRequested())
+    {
+        m_panningInfo.get()->UpdateImmediateThumbOffset(offset);
+    }
 
     Minimum(minOffset);
     Maximum(maxOffset);
