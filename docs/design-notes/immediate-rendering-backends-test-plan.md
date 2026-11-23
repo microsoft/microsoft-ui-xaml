@@ -704,3 +704,48 @@ DWrite caches and per-popup painters.
 Sharing XAML's D3D device is deliberately not done. The second WARP device costs about 0.4 MB (1.7 MB with its D2D
 context), while sharing it would need the shared-device lock on both the UI thread and the independent-animation render
 thread, plus a new device-loss path.
+
+## XAML coverage (full backends)
+
+Goal: GDI+ and D2D (SW and HW) render every XAML feature that doesn't need Composition interop, with no per-window
+fallback. Interop content (SwapChainPanel, MediaPlayerElement, app Composition visuals and animations, app
+AnimatedVisualPlayer sources) keeps the per-window fallback decided for S11/S16; there is no hybrid. WebView2 and
+InkCanvas stay out of scope.
+
+The corpus is a set of small coverage pages in RenderBench (`RenderBench\Coverage\Coverage.<Family>.cs`, one file per
+family, contract in `CoverageContract.cs`). Each page is rendered in Comp (Lifted), GDI+ and D2D-SW. A page passes in an
+immediate mode when all of these hold:
+
+1. **No unexpected unsupported content:** the only `UnsupportedContent` details are ones the page declares (documented
+   approximations).
+2. **Fallback as declared:** no `WindowFallback` unless the page declares `ExpectFallback`.
+3. **Fidelity:** mean absolute per-channel difference against the Comp rendering of the same page is at most the
+   page's threshold (default 0.01).
+4. **Stability:** no crash, no failed paint, and the page's exercise step completes.
+
+| Family | Content | Owner branch |
+|---|---|---|
+| F1 Shapes and strokes | Path, Line, Polyline, Polygon; dash arrays, dash caps, line caps, joins, miter limit; Stretch | shapes |
+| F2 Brushes | Linear and radial gradients on fills, strokes and text; spread and interpolation modes; ImageBrush stretch and alignment; brush transforms; Glyphs element | shapes |
+| F3 Clips and transforms | Geometry clips (ellipse, path, rotated rectangle); clips under rotation and skew; UIElement Rotation, Scale, TransformMatrix, CenterPoint; static hand-off visual properties | clips3d |
+| F4 3D | PlaneProjection, Matrix3DProjection, PerspectiveTransform3D, CompositeTransform3D | clips3d |
+| F5 Text | TextBlock and RichTextBlock features (highlighters, decorations, typography, character spacing, line stacking, trimming, IsTextScaleFactorEnabled), Glyphs | text |
+| F6 Text editing | TextBox (selection, IME composition, scrolling, placeholder, multi-line), PasswordBox, RichEditBox, AutoSuggestBox, NumberBox; exact caret invert | text |
+| F7 Images and icons | Bitmap stretch modes, nine-grid, SVG, animated GIF, BitmapIcon (monochrome), FontIcon, PathIcon, ImageIcon, LoadedImageSurface | imaging |
+| F8 Controls | Every MUX and MUXC control in default, hover-like and disabled states, light and dark | coverage |
+| F9 Scrolling, zoom, input | Animated ChangeView, DManip panning and zoom, ZoomFactor, ScrollView/ScrollPresenter, ItemsView, SwipeControl, RefreshContainer, ParallaxView | scrolling |
+| F10 XAML animations | Storyboards, theme transitions, Scalar/Vector3/Brush transitions, ConnectedAnimation, NavigationView indicator, TeachingTip, ItemsRepeater animator | transitions |
+| F11 Interop | Every interop kind falls back cleanly and then matches Comp | imaging |
+| F12 Popups and dialogs | ContentDialog, Flyout, MenuFlyout, CommandBarFlyout, ToolTip, TeachingTip, ComboBox, CalendarDatePicker; windowed and not | coverage |
+| F13 Windowing and hosting | Multiple windows, AppWindow title bar, SystemBackdrop (Mica, DesktopAcrylic), DesktopWindowXamlSource in a Win32 host, printing audit | imaging |
+| F14 Theming and accessibility | High contrast, RTL, DPI changes, theme changes, legacy dotted focus visuals, RequestedTheme per subtree | coverage |
+
+**Success measures**
+
+| Measure | Target |
+|---|---|
+| Non-interop coverage pages that pass in both GDI+ and D2D-SW | ≥ 95%, every failure listed with an owner |
+| Interop pages (F11) that fall back and then match Comp | 100% |
+| Documented `UnsupportedContent` details outside F11 | Only `:approximated` entries listed in the proposal doc |
+| Perf matrix (27 entries) | All gates pass; steady geometric mean vs Comp (Lifted) no more than 3 points worse than GDI+ 92% and D2D-SW 101% |
+| Native and kit tests | RenderingBackendTests and RenderBench.Tests pass |
