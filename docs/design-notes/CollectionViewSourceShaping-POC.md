@@ -545,7 +545,8 @@ As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over 
 
 ### Internal names follow WPF
 
-The engine (`VectorCollectionView_Shaping.cpp`) and the CVS proxy (`CollectionViewSource_Shaping.cpp`) use the names
+The engine (`VectorCollectionView_Shaping.cpp` with `_SourceChanges.cpp`, `_LiveShaping.cpp` and the private header
+`VectorCollectionView_ShapingInternal.h`) and the CVS proxy (`CollectionViewSource_Shaping.cpp`) use the names
 of their WPF counterparts so the logic can be read side by side with dotnet/wpf. Public API names are unaffected.
 
 | WinUI internal | WPF counterpart | Role |
@@ -625,7 +626,10 @@ cvs.Refresh();                                                                  
   through `CustomSort`, which names no property: list the column's properties in `LiveSortingProperties` to keep it
   live. A live move arrives as a remove and an insert of the row; when the selected row moves, TableView re-selects it
   at its new index without raising `SelectionChanged` (the item is still in the view's `SourceCollection`, so it was
-  moved, not deleted). Keyboard focus on a moved row is not carried along.
+  moved, not deleted). Keyboard focus follows the item too: when the focused row is removed and its item is still in
+  the source, or the view raises a `Reset` on its own (a mass live restore, an app's rule change), focus is put back
+  on the item's new row at the end of the turn (scrolled into view when needed). TableView's own header sort keeps
+  focus at the same row index, as before.
 - **Plain collection.** TableView wraps it in an internal `CollectionViewSource` and shows that `View` (see "One
   engine" below), so a header click on a plain collection takes exactly the path above.
 - **`ICollectionView` without `ICollectionViewShaping`.** An app's own view (for example the Toolkit's
@@ -705,7 +709,10 @@ filters or groups; the view never flattens, because expansion state is per contr
   value, so a collapsed group stays collapsed across a regroup and across grouping off and on.
 - **Tree** (`ItemKeyPath` / `ParentKeyPath`): the view's items, in the view's order, are indexed by key and parent key
   (`ParentKeyIndex`) and nested by the flattener; under a grouped view each root is placed in the group that holds
-  it. The tree is rebuilt when the view changes.
+  it. A view `Insert`, `Remove` or `Replace` of a plain tree is applied to the index in place: only the changed row's
+  keys are read, it joins or leaves its sibling list at its place in the view's order, and its row is spliced in or out
+  of the visible rows. What that cannot localize (a row with children leaving, a row whose key orphaned rows name,
+  object keys, a duplicate, a tree under a grouped view, a `Reset`) rebuilds the tree, at most once per dispatcher turn.
 
 Row identity is the item's COM identity. A header sort keeps the selection on its item (the selected item is found
 again after the view reorders) and restores body focus; `Sorting` / `Sorted`, the arrow reconcile and
@@ -756,7 +763,6 @@ only. TableView and the CVS shaping API therefore have to leave experimental tog
 - Hierarchy plus filter: keep the ancestors of a match (the view filters before the tree is built, so a match whose
   parent is filtered out is shown as a root; `ParentKeyIndex` and `TableViewRowFlattener` keep their filter overlay
   for this).
-- Keep keyboard focus on a row a live view moves.
 
 ## Performance
 
@@ -773,7 +779,7 @@ group, k = items a live tick changed.
 | Group lookup, custom `GroupDescription` (batch 4) | O(G) `NamesMatch` calls per item and level (the ABI hop each time) | the name hashed as the default `NamesMatch` compares it (ordinal) and one `NamesMatch` call to confirm; a miss (a new group, or an override that matches more names than the default) scans the subgroups with `NamesMatch`, as WPF always does: O(m + G²) calls for a load instead of O(m·G) |
 | Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than twice a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
 | `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
-| TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | only the rows the change brought in are read + O(n) native rebuild, published as a splice (≤ 64 rows, or a moved run) |
+| TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | batch 3: only the rows the change brought in are read + O(n) native rebuild, published as a splice; batch 5: an `Insert`, `Remove` or `Replace` reads the one row's keys and updates the index and rows in place: O(siblings) to place it plus O(rows) scans of native pointers to find its row, no rebuild |
 
 Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`; run them with `te.exe ...
 /select:"@Name='*CollectionViewPerfBenchmarks*'" /runIgnoredTests`): amd64**fre**, Hyper-V test VM, C# rows with
@@ -828,12 +834,29 @@ What is still O(n) per change, and why it stays for now:
   relocation-aware `TrackerPtrVector`); it touches the shared collection base, so it is a follow-up. Until then a
   large tick that moves many items is one `Reset` (see "Live shaping" for the cost model).
 - **Source index shifts.** A source insert or remove renumbers the later source indices (a scan of n integers).
-- **TableView's tree** is rebuilt natively on each change (no app code for the unchanged rows): about 0.5 s at
-  100k rows, 40 ms at 10k. An incremental tree (per-sibling counts, ranged changes) is a follow-up; a node
-  expand or collapse already splices up to 64 rows per toggle (WinRT vector changes have no ranges) and otherwise
-  raises one `Reset`.
+- **TableView's tree** applies a single row's change in place (batch 5) but still finds the row with a linear scan of
+  its visible rows and renumbers the sibling positions it shows (a few ms at 100k rows). Per-sibling visible-subtree
+  counts (a Fenwick tree) would make that logarithmic; not needed at these sizes. A row with children leaving, a
+  `Reset` and the other cases in "Tree" above still rebuild (about 0.5 s at 100k rows). A node expand or collapse
+  splices up to 64 rows per toggle (WinRT vector changes have no ranges) and otherwise raises one `Reset`.
 - Each item still costs one property read per sort field, group level and live property on a full recompute, and
   one listener per live property and item, as in WPF.
+
+Batch 5 (TableView tree, `38c2a7b` vs the incremental index, same harness; n/10 roots with nine children each,
+sorted view, every row expanded; "through the turn" includes work deferred to the end of the dispatcher turn):
+
+| Scenario | 10k before | 10k now | 100k before | 100k now |
+|---|---:|---:|---:|---:|
+| Insert one row, through the turn | 50.6 | 3.9 | 614 | 7.3 |
+| Remove one leaf, through the turn | 51.8 | 3.8 | 624 | 5.2 |
+| Reparent one row (`Replace`), through the turn | 57.0 | 3.7 | 700 | 5.8 |
+| Insert one row, synchronous part | 53.8 | 1.1 | 624 | 4.8 |
+| Load (create, bind, first layout) | 924 | 927 | 8,375 | 8,633 |
+| Expand all | 19.4 | 18.5 | 152 | 147 |
+| Collapse all | 7.7 | 7.9 | 51 | 50 |
+
+Load and expand-all build the index once and are unchanged; where their time goes (the sort, the first key reads,
+the rows' layout) has not been profiled yet.
 
 ## Out of scope for the POC
 
@@ -887,8 +910,8 @@ What is still O(n) per change, and why it stays for now:
   to `Application.UnhandledException` (and ends an app that does not handle it) and the view recomputes.
 - **TableView tree and `Id` / `ParentId` edits.** The tree reads the keys of the rows a change brings in and caches
   the others, so re-parenting a row by editing its `ParentId` (no Insert, Replace or Reset) is not seen until the
-  next `Refresh()` or source `Reset`. A tree `Remove` is published at the end of the dispatcher turn, so for that
-  turn the rows, selection and UIA may still show the removed item.
+  next `Refresh()` or source `Reset`. A tree `Remove` that cannot be applied in place (the row has children) is
+  published at the end of the dispatcher turn, so for that turn the rows, selection and UIA may still show it.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
 - **Live shaping cost and lifetime.** One property path listener per source item and live property. A full
@@ -899,8 +922,9 @@ What is still O(n) per change, and why it stays for now:
   changed costs one remove and one insert per moved item (one `Reset` when the moves would cost more, see "Live
   shaping"); TableView's tree mode rebuilds its tree at most twice for it.
 - **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
-  container, so selection and focus on it follow their remove semantics; TableView keeps the selection (see "Live
-  shaping" in the TableView section) but not keyboard focus.
+  container, so selection and focus on it follow their remove semantics (focus stays in the list, on the row that
+  took the removed one's place); TableView keeps the selection and keyboard focus on the item (see "Live shaping"
+  in the TableView section).
 
 ## Regeneration
 
@@ -924,7 +948,10 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 
 Hand-written files: `CollectionViewSource_Partial.h/.cpp` (`EnsureView`), `CollectionViewSource_Shaping.cpp`
 (the CVS proxy: rule properties, `ApplyPropertiesToView`, `DeferRefresh`, descriptor factories),
-`VectorCollectionView_Partial.h` and `VectorCollectionView_Shaping.cpp` (the engine and `ICollectionViewShaping`),
+`VectorCollectionView_Partial.h` and the engine: `VectorCollectionView_ShapingInternal.h` (sort keys, the group tree,
+failure containment, in the named namespace `DirectUI::ShapingEngine`), `VectorCollectionView_Shaping.cpp` (rules,
+`ICollectionViewShaping`, recompute), `VectorCollectionView_SourceChanges.cpp` (incremental source changes) and
+`VectorCollectionView_LiveShaping.cpp` (live shaping),
 `PropertyGroupDescription_Partial.h` (group order), `CollectionViewLiveShapingProperties.h` (the `Live*Properties`
 collections),
 `CollectionViewManager.h/.cpp` (`GetViewRecord`), `CollectionViewRefreshDeferral.h`, and `wrtdxamlfoundation.vcxproj`.
