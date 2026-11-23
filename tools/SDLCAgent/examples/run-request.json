@@ -1,0 +1,33 @@
+{
+  "repository": "C:\\work\\YourRepository",
+  "branch": "user/neeverma/sdlc-delivery",
+  "problem": "Replace this with the observable behavior to implement, constraints, edge cases, and non-goals. SpecCreator must inspect this repository, ask necessary questions, and propose measurable success criteria before human approval.",
+  "trustRepository": true,
+  "model": null,
+  "checks": [
+    {
+      "name": "restore",
+      "kind": "restore",
+      "fileName": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "arguments": ["restore", "--verbosity", "quiet"]
+    },
+    {
+      "name": "build",
+      "kind": "build",
+      "fileName": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "arguments": ["build", "--no-restore", "--verbosity", "quiet"]
+    },
+    {
+      "name": "test",
+      "kind": "test",
+      "fileName": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "arguments": ["test", "--no-build", "--no-restore", "--verbosity", "quiet"]
+    },
+    {
+      "name": "format",
+      "kind": "format",
+      "fileName": "C:\\Program Files\\dotnet\\dotnet.exe",
+      "arguments": ["format", "--verify-no-changes", "--no-restore"]
+    }
+  ]
+}

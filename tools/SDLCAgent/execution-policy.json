@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "defaultDecision": "deny",
+  "onDeniedAction": "blockTask",
+  "isolation": {
+    "mode": "native",
+    "requireNonElevated": true,
+    "trustedRepositoriesOnly": true,
+    "workspaceMode": "gitWorktree",
+    "securityNotice": "Native workers are not an OS sandbox. Repository scripts and tools run with the worker account's access to files, credentials, and network."
+  },
+  "policyManagement": {
+    "allowWorkerPolicyChanges": false,
+    "snapshotPolicyPerRun": true,
+    "auditPolicyChanges": true
+  },
+  "repository": {
+    "allowReadTargetRepository": true,
+    "allowWriteAssignedWorkspace": true,
+    "allowAccessUnrelatedPaths": false,
+    "requireSpecificationApprovalForImplementation": true
+  },
+  "commands": {
+    "allowBuild": true,
+    "allowTest": true,
+    "allowFormat": true,
+    "allowValidationScripts": true,
+    "allowUnclassifiedCommands": false,
+    "allowElevation": false,
+    "allowMachineConfigurationChanges": false
+  },
+  "dependencies": {
+    "allowRestoreDeclaredDependencies": true,
+    "allowAddProjectDependencies": true,
+    "requireJustificationForNewDependencies": true,
+    "auditDependencyChanges": true,
+    "allowGlobalInstallation": false
+  },
+  "git": {
+    "allowCreateTaskBranches": true,
+    "allowCommitTaskChanges": true,
+    "requireLogicalCommitUnits": true,
+    "integrationBranchWriters": [
+      "orchestrator"
+    ],
+    "requirePassingGatesForIntegration": true,
+    "requireTestedCandidateAndUnchangedBase": true,
+    "allowPushRemoteBranches": false,
+    "allowMergeIntoOtherBranches": false,
+    "allowForcePush": false
+  },
+  "deployment": {
+    "allow": false
+  },
+  "externalAccess": {
+    "requireExplicitServiceAuthorization": true,
+    "authorizedServices": [
+      "githubCopilot"
+    ],
+    "allowRepositoryConfiguredDependencySourcesForRestore": true,
+    "requireExplicitCredentialAuthorization": true,
+    "authorizedCredentialReferences": [],
+    "allowSecretsInAuditTrail": false
+  },
+  "audit": {
+    "recordPermissionDecisions": true,
+    "recordToolInvocations": true,
+    "recordCommandsAndExitCodes": true
+  }
+}

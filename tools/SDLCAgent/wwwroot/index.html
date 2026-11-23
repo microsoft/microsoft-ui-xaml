@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SDLCAgent - execution audit</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header><h1>SDLCAgent</h1><span>Execution and human interaction</span><span id="freshness" role="status"></span></header>
+  <p id="error" role="alert" hidden></p>
+  <p id="action-status" role="status" hidden></p>
+  <div class="layout">
+    <aside><h2>Runs</h2><button id="refresh">Refresh</button><div id="runs"></div><button id="more-runs">More runs</button><hr><button id="settings">Effective configuration</button></aside>
+    <main>
+      <section id="overview"><h2>Select a run</h2><p>Open the authenticated viewer link printed by <code>SDLCAgent viewer</code>.</p></section>
+      <section id="unblock" aria-label="Instructions to unblock this run" hidden></section>
+      <section id="execution"><h2>Execution</h2><h3>Commits made during this run</h3><div id="execution-commits"></div>
+        <h3>Branches and commit history</h3><div id="branches"></div>
+      </section>
+      <details id="logs" class="panel">
+        <summary>Execution and decision timeline</summary><p id="event-context"></p>
+        <label>Filter event kind/message <input id="event-filter" type="search"></label>
+        <button id="latest-events">Latest events</button><button id="expand-history">Expand complete structured history</button>
+        <button id="older-events" hidden>Stop loading history</button><div id="events"></div>
+        <h3>Structured detail</h3><div id="detail"><p>Select a log's evidence or plan to drill down.</p></div>
+      </details>
+      <section id="plans"><h2>Implementation and test plans</h2><p>Active work first, followed by finished/historical plans in most-recent order.</p>
+        <div id="documents"></div>
+      </section>
+      <section id="approved-spec"><h2>Overall specification approved by you</h2><div id="approved-content">No run selected.</div></section>
+      <section id="interaction" aria-label="Specification review and feedback" hidden></section>
+    </main>
+  </div>
+</body>
+</html>
