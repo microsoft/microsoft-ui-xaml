@@ -1292,6 +1292,7 @@ private:
     int32_t m_lastBodyFocusColumn{ 0 };
     bool m_lastBodyFocusCellLevel{ false };
     winrt::FocusState m_lastBodyFocusState{ winrt::FocusState::Keyboard };
+    tracker_ref<winrt::IInspectable> m_lastBodyFocusItem{ this };
     bool m_suppressBodyFocusTracking{ false };
     winrt::UIElement::GotFocus_revoker m_bodyFocusTrackerGotFocusRevoker{};
     winrt::UIElement::LosingFocus_revoker m_bodyFocusTrackerLosingFocusRevoker{};
@@ -1324,12 +1325,17 @@ private:
     void OnRowsSourceResetForFocus(
         const winrt::IInspectable& sender,
         const winrt::NotifyCollectionChangedEventArgs& args);
+    // A live move (Remove + Insert) or a Reset the view raised on its own: focus follows the row's item.
+    void CaptureBodyFocusForMove(int32_t removedIndex);
+    bool RestoreBodyFocusToCapturedItem();
     bool m_reshapeFocusValid{ false };
     bool m_reshapeFocusDisarmQueued{ false };
     int32_t m_reshapeFocusRow{ -1 };
     int32_t m_reshapeFocusColumn{ 0 };
     bool m_reshapeFocusCellLevel{ false };
     winrt::FocusState m_reshapeFocusState{ winrt::FocusState::Keyboard };
+    tracker_ref<winrt::IInspectable> m_reshapeFocusItem{ this };
+    bool m_reshapeFocusFollowsItem{ false };
     // The consumed capture, replayed until it sticks.
     int32_t m_pendingReshapeFocusRow{ -1 };
     int32_t m_pendingReshapeFocusColumn{ 0 };

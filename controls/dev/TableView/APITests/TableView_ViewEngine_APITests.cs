@@ -965,6 +965,85 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies keyboard focus stays on a row's item when live sorting moves the row (Remove + Insert) and when a large tick re-sorts the rows with one Reset.")]
+        public void VerifyLiveMoveKeepsKeyboardFocusOnTheItem()
+        {
+            foreach (var count in new[] { 30, 3000 })
+            {
+                var list = new ObservableCollection<LiveRow>(Enumerable.Range(1, count).Select(i => new LiveRow { Id = i, Name = $"R{i:0000}", Score = i, Team = "X" }));
+                var tableView = PlaceLive(list, s => s.IsLiveSortingRequested = true, out _);
+                LiveRow focusedItem = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    focusedItem = list[2];
+                    Verify.IsTrue(GetRowForItem(tableView, focusedItem).Focus(FocusState.Keyboard), "Precondition: the row takes focus.");
+                });
+                SettleLayout(tableView);
+
+                var actions = new List<string>();
+                RunOnUIThread.Execute(() =>
+                {
+                    GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (sender, args) => actions.Add(args.Action.ToString());
+                    if (count == 30)
+                    {
+                        focusedItem.Score = 25;
+                    }
+                    else
+                    {
+                        foreach (var row in list)
+                        {
+                            row.Score = (row.Id * 7919) % count;
+                        }
+                        focusedItem.Score = 5;
+                    }
+                });
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"{count} rows: {string.Join(",", actions.Distinct())}");
+                    Verify.AreEqual(count == 3000, actions.Contains("Reset"), "Precondition: a move for a small tick, one Reset for a large one.");
+                    DependencyObject node = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                    while (node != null && !(node is TableViewRow))
+                    {
+                        node = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(node);
+                    }
+                    Verify.IsNotNull(node, $"{count} rows: focus is on a row.");
+                    Verify.AreSame(focusedItem, ((TableViewRow)node).DataContext, $"{count} rows: focus followed the item to its new row.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Records where keyboard focus goes in a ListView when live sorting moves the focused item: ListView keeps focus inside the list (on the container that takes the removed one's place), it does not follow the item.")]
+        public void VerifyListViewLiveMoveKeepsFocusInList()
+        {
+            ListView listView = null;
+            ObservableCollection<LiveRow> list = null;
+            RunOnUIThread.Execute(() =>
+            {
+                list = new ObservableCollection<LiveRow>(Enumerable.Range(1, 30).Select(i => new LiveRow { Id = i, Name = $"R{i:0000}", Score = i }));
+                var cvs = new CollectionViewSource { Source = list, IsLiveSortingRequested = true };
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
+                listView = new ListView { ItemsSource = cvs.View, DisplayMemberPath = "Name", Width = 300, Height = 400 };
+                LoadContent(listView);
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.IsTrue(((Control)listView.ContainerFromIndex(2)).Focus(FocusState.Keyboard), "Precondition: the item takes focus."));
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => list[2].Score = 25);
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(listView.XamlRoot) as DependencyObject;
+                var container = focused as ListViewItem;
+                Log.Comment($"Focus after the move: {(container == null ? focused?.GetType().Name ?? "(none)" : ((LiveRow)listView.ItemFromContainer(container)).Name)}; the moved item is at {listView.Items.IndexOf(list[2])}.");
+                Verify.IsNotNull(focused, "Focus stays in the window.");
+                Content = null;
+            });
+        }
+
         #endregion
 
         #region Live shaping on/off, stale views, unsupported rules, threads
