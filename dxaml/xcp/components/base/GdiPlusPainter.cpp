@@ -1558,6 +1558,12 @@ namespace RenderingBackend
                         (m_shadowScratch.bitmap ? 1 : 0);
                     inventory.cacheBytes += m_gradientBrushBytes + m_shadowMaskBytes + m_glyphOutlineBytes +
                         m_shadowScratch.pixels.size() + m_blurPixels.capacity() + m_blurLine.capacity() * sizeof(uint32_t);
+                    // ---- shapes: styled pen, outline/flatten/dash paths, scratch mask Graphics and matrix, ramp ----
+                    const uint32_t shapeObjects = (m_stylePen ? 1 : 0) + (m_outlinePath ? 6 : 0) + (m_scratchMatrix ? 1 : 0) +
+                        (m_shadowScratch.graphics ? 1 : 0);
+                    inventory.cachedObjectCount += shapeObjects;
+                    inventory.cacheBytes += (m_stylePen ? c_penBytes : 0) + (m_outlinePath ? 6 * c_pathBytes : 0) + (m_scratchMatrix ? c_matrixBytes : 0) +
+                        m_ramp.capacity() * sizeof(uint32_t) + (m_flatPoints.capacity() + m_figurePoints.capacity() + m_dashPoints.capacity()) * sizeof(Gdiplus::PointF);
                     inventory.uploadBytesThisFrame = m_uploadBytes;
                     return inventory;
                 }
@@ -1594,6 +1600,725 @@ namespace RenderingBackend
                     m_context = std::move(context);
                     m_forceFullFrame = true;
                     return S_OK;
+                }
+
+                // ---- shapes (F1 shapes and strokes, F2 brushes) ----
+                // Solid brushes draw directly. Gradient brushes (linear and radial, every spread and interpolation mode,
+                // any brush transform) are "mask and shade": the primitive is drawn in white into the scratch surface
+                // (device pixels of its bounds under the clip and damage), and each covered pixel is replaced by the
+                // gradient evaluated at its center (1024-entry ramp) times its coverage, then composited 1:1.
+                // Dashed strokes are dashed here (flattened outline walked by the dash pattern) so every dash cap,
+                // including square, and zero-length dashes match D2D; undashed strokes use one reusable styled pen.
+
+                void FillRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, const BrushDesc& brush) noexcept override
+                {
+                    if (brush.kind == BrushKind::Solid)
+                    {
+                        FillRoundedRectangle(rect, radiusX, radiusY, SolidColor(brush));
+                        return;
+                    }
+                    if (!BeginPrimitive() || !PrepareRamp(brush))
+                    {
+                        return;
+                    }
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(rect, 0));
+                    ShadeBrush(DeviceBounds(rect, 1), brush, [&](Gdiplus::Graphics& graphics, const Gdiplus::Color& white)
+                    {
+                        Gdiplus::SolidBrush* mask = GetBrush(c_maskWhite);
+                        (void)white;
+                        if (!mask)
+                        {
+                            return;
+                        }
+                        FineAntialiasing fine(graphics);
+                        if (BuildRoundedPath(rect, radiusX, radiusY))
+                        {
+                            Record(graphics.FillPath(mask, m_path.get()));
+                        }
+                        else
+                        {
+                            Record(graphics.FillRectangle(mask, ToGdiRect(rect)));
+                        }
+                    });
+                }
+
+                void FillPathBrush(const PathData& data, const BrushDesc& brush) noexcept override
+                {
+                    if (brush.kind == BrushKind::Solid)
+                    {
+                        FillPath(data, SolidColor(brush));
+                        return;
+                    }
+                    if (!BeginPrimitive() || !PrepareRamp(brush))
+                    {
+                        return;
+                    }
+                    RectF bounds{};
+                    Gdiplus::GraphicsPath* path = GetPath(data, bounds);
+                    if (!path)
+                    {
+                        return;
+                    }
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(bounds, 0));
+                    ShadeBrush(DeviceBounds(bounds, 1), brush, [&](Gdiplus::Graphics& graphics, const Gdiplus::Color&)
+                    {
+                        if (Gdiplus::SolidBrush* mask = GetBrush(c_maskWhite))
+                        {
+                            FineAntialiasing fine(graphics);
+                            Record(graphics.FillPath(mask, path));
+                        }
+                    });
+                }
+
+                void StrokeRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, float thickness, const BrushDesc& brush,
+                    const StrokeStyleDesc* style) noexcept override
+                {
+                    if (!BeginPrimitive() || !(thickness > 0) || !EnsureShapePaths())
+                    {
+                        return;
+                    }
+                    BuildOutline(rect, radiusX, radiusY, *m_outlinePath);
+                    StrokeWithBrush(*m_outlinePath, rect, thickness, brush, style);
+                }
+
+                void StrokePathBrush(const PathData& data, float thickness, const BrushDesc& brush, const StrokeStyleDesc* style) noexcept override
+                {
+                    if (!BeginPrimitive() || !(thickness > 0) || !EnsureShapePaths())
+                    {
+                        return;
+                    }
+                    RectF bounds{};
+                    Gdiplus::GraphicsPath* path = GetPath(data, bounds);
+                    if (path)
+                    {
+                        StrokeWithBrush(*path, bounds, thickness, brush, style);
+                    }
+                }
+
+                void DrawGlyphRunBrush(const GlyphRunDesc& run, const BrushDesc& brush) noexcept override
+                {
+                    GlyphRunDesc plain = run;
+                    plain.useColorFont = false;
+                    plain.clearType = false;
+                    if (brush.kind == BrushKind::Solid)
+                    {
+                        DrawGlyphRun(plain, SolidColor(brush));
+                        return;
+                    }
+                    if (run.fontFace == nullptr || run.glyphIndices == nullptr || run.glyphAdvances == nullptr || run.glyphCount == 0 ||
+                        !(run.fontEmSize > 0) || !std::isfinite(run.fontEmSize))
+                    {
+                        return;
+                    }
+                    if (!BeginPrimitive() || !PrepareRamp(brush))
+                    {
+                        return;
+                    }
+                    const FontFaceEntry* entry = GetFontFace(run.fontFace);
+                    if (!entry)
+                    {
+                        return;
+                    }
+                    const bool outline = entry->outline;
+                    float minX, maxX, minY, maxY;
+                    LayoutGlyphs(run, minX, maxX, minY, maxY);
+                    const float em = run.fontEmSize;
+                    const RectF ink{ minX - em * 0.5f, minY - em * 1.5f, maxX + em * 0.5f, maxY + em * 0.75f };
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(ink, 0));
+                    ShadeBrush(DeviceBounds(ink, 1), brush, [&](Gdiplus::Graphics& graphics, const Gdiplus::Color&)
+                    {
+                        // DrawGlyphs draws on Current() under m_transform: point both at the scratch for the mask.
+                        m_redirect = &graphics;
+                        Gdiplus::REAL elements[6];
+                        m_scratchMatrix->GetElements(elements);
+                        m_transform->SetElements(elements[0], elements[1], elements[2], elements[3], elements[4], elements[5]);
+                        DrawGlyphs(plain, c_maskWhite, outline, false);
+                        m_redirect = nullptr;
+                        UpdateDeviceTransform();
+                    });
+                }
+
+            private:
+                static constexpr ColorF c_maskWhite{ 1, 1, 1, 1 };
+                static constexpr uint32_t c_rampSize = 1024;
+                static constexpr size_t c_maxDashes = 1 << 17; // dashes per stroke; finer patterns draw solid
+
+                static ColorF SolidColor(const BrushDesc& brush) noexcept
+                {
+                    ColorF color = brush.color;
+                    color.a *= brush.opacity >= 0 ? std::min(brush.opacity, 1.0f) : 0.0f;
+                    return color;
+                }
+
+                static Gdiplus::LineCap ToGdiCap(LineCap cap) noexcept
+                {
+                    switch (cap)
+                    {
+                        case LineCap::Square: return Gdiplus::LineCapSquare;
+                        case LineCap::Round: return Gdiplus::LineCapRound;
+                        case LineCap::Triangle: return Gdiplus::LineCapTriangle;
+                        default: return Gdiplus::LineCapFlat;
+                    }
+                }
+
+                static bool IsDashed(const StrokeStyleDesc* style) noexcept
+                {
+                    if (style == nullptr || style->dashes == nullptr || style->dashCount == 0 || !std::isfinite(style->dashOffset))
+                    {
+                        return false;
+                    }
+                    float total = 0;
+                    for (uint32_t i = 0; i < style->dashCount; ++i)
+                    {
+                        if (!std::isfinite(style->dashes[i]) || style->dashes[i] < 0)
+                        {
+                            return false;
+                        }
+                        total += style->dashes[i];
+                    }
+                    return total > 0 && std::isfinite(total);
+                }
+
+                // How far (DIPs) the stroke can reach beyond the outline: miter tips, square and triangle caps.
+                static float StrokeReach(float thickness, const StrokeStyleDesc* style) noexcept
+                {
+                    const float miter = style ? (std::isfinite(style->miterLimit) ? std::max(style->miterLimit, 1.0f) : 10.0f) : 10.0f;
+                    const bool mitered = style == nullptr || style->lineJoin == LineJoin::Miter;
+                    return thickness / 2 * std::max(mitered ? miter : 1.0f, 1.5f);
+                }
+
+                bool EnsureShapePaths() noexcept
+                {
+                    const auto create = [&](std::unique_ptr<Gdiplus::GraphicsPath>& path)
+                    {
+                        if (!path)
+                        {
+                            path.reset(new Gdiplus::GraphicsPath());
+                            const HRESULT hr = CheckCreated(path);
+                            if (FAILED(hr))
+                            {
+                                path.reset();
+                                Fail(hr);
+                                return false;
+                            }
+                            ++m_frameCreated;
+                        }
+                        return true;
+                    };
+                    bool ok = create(m_outlinePath) && create(m_flatPath);
+                    for (auto& group : m_dashGroups)
+                    {
+                        ok = ok && create(group);
+                    }
+                    if (ok && !m_stylePen)
+                    {
+                        m_stylePen.reset(new Gdiplus::Pen(Gdiplus::Color(), 1.0f));
+                        const HRESULT hr = CheckCreated(m_stylePen);
+                        if (FAILED(hr))
+                        {
+                            m_stylePen.reset();
+                            Fail(hr);
+                            return false;
+                        }
+                        ++m_frameCreated;
+                    }
+                    return ok;
+                }
+
+                // Rect / rounded rect / ellipse outline, starting and running like D2D's geometries (for dashes).
+                void BuildOutline(const RectF& rect, float radiusX, float radiusY, Gdiplus::GraphicsPath& path) noexcept
+                {
+                    Record(path.Reset());
+                    const float width = rect.right - rect.left, height = rect.bottom - rect.top;
+                    if (!(width >= 0) || !(height >= 0))
+                    {
+                        return;
+                    }
+                    if (radiusX > 0 && radiusY > 0 && radiusX * 2 >= width && radiusY * 2 >= height)
+                    {
+                        // AddEllipse starts at the rightmost point and runs clockwise (y down), like D2D's ellipse.
+                        Record(path.AddEllipse(ToGdiRect(rect)));
+                        return;
+                    }
+                    if (!(radiusX > 0 && radiusY > 0))
+                    {
+                        Record(path.AddRectangle(ToGdiRect(rect)));
+                        return;
+                    }
+                    const float rx = std::min(radiusX, width / 2), ry = std::min(radiusY, height / 2);
+                    const float dx = 2 * rx, dy = 2 * ry;
+                    Record(path.StartFigure());
+                    Record(path.AddLine(rect.left + rx, rect.top, rect.right - rx, rect.top));
+                    Record(path.AddArc(rect.right - dx, rect.top, dx, dy, 270, 90));
+                    Record(path.AddLine(rect.right, rect.top + ry, rect.right, rect.bottom - ry));
+                    Record(path.AddArc(rect.right - dx, rect.bottom - dy, dx, dy, 0, 90));
+                    Record(path.AddLine(rect.right - rx, rect.bottom, rect.left + rx, rect.bottom));
+                    Record(path.AddArc(rect.left, rect.bottom - dy, dx, dy, 90, 90));
+                    Record(path.AddLine(rect.left, rect.bottom - ry, rect.left, rect.top + ry));
+                    Record(path.AddArc(rect.left, rect.top, dx, dy, 180, 90));
+                    Record(path.CloseFigure());
+                }
+
+                void StrokeWithBrush(Gdiplus::GraphicsPath& path, const RectF& bounds, float thickness, const BrushDesc& brush, const StrokeStyleDesc* style) noexcept
+                {
+                    m_stats.paintedPixels += VisibleArea(DeviceBounds(bounds, thickness / 2));
+                    if (brush.kind == BrushKind::Solid)
+                    {
+                        DrawStyled(Current(), path, thickness, ToGdiColor(SolidColor(brush)), style);
+                        return;
+                    }
+                    if (!PrepareRamp(brush))
+                    {
+                        return;
+                    }
+                    ShadeBrush(DeviceBounds(bounds, StrokeReach(thickness, style) + 1), brush, [&](Gdiplus::Graphics& graphics, const Gdiplus::Color& white)
+                    {
+                        DrawStyled(graphics, path, thickness, white, style);
+                    });
+                }
+
+                void DrawStyled(Gdiplus::Graphics& graphics, Gdiplus::GraphicsPath& path, float thickness, const Gdiplus::Color& color, const StrokeStyleDesc* style) noexcept
+                {
+                    Gdiplus::Pen& pen = *m_stylePen;
+                    Record(pen.SetColor(color));
+                    Record(pen.SetWidth(thickness));
+                    Record(pen.SetDashStyle(Gdiplus::DashStyleSolid));
+                    // GDI+'s LineJoinMiter clips the miter at the limit, like D2D1_LINE_JOIN_MITER (LineJoinMiterClipped
+                    // bevels instead). GDI+ measures the miter from the inner corner against the full width, D2D from the
+                    // vertex against half the width: the same ratio, so the limit passes through unchanged.
+                    Record(pen.SetLineJoin(style == nullptr || style->lineJoin == LineJoin::Miter ? Gdiplus::LineJoinMiter :
+                        style->lineJoin == LineJoin::Round ? Gdiplus::LineJoinRound : Gdiplus::LineJoinBevel));
+                    Record(pen.SetMiterLimit(style ? (std::isfinite(style->miterLimit) ? std::max(style->miterLimit, 1.0f) : 10.0f) : 10.0f));
+                    const LineCap startCap = style ? style->startCap : LineCap::Flat;
+                    const LineCap endCap = style ? style->endCap : LineCap::Flat;
+                    if (!IsDashed(style) || !BuildDashes(path, *style))
+                    {
+                        Record(pen.SetStartCap(ToGdiCap(startCap)));
+                        Record(pen.SetEndCap(ToGdiCap(endCap)));
+                        Record(graphics.DrawPath(&pen, &path));
+                        return;
+                    }
+                    // Groups: bit 0 = the dash starts the open figure (start cap), bit 1 = it ends it (end cap).
+                    for (uint32_t group = 0; group < 4; ++group)
+                    {
+                        Gdiplus::GraphicsPath& dashes = *m_dashGroups[group];
+                        if (dashes.GetPointCount() == 0)
+                        {
+                            continue;
+                        }
+                        Record(pen.SetStartCap(ToGdiCap((group & 1) ? startCap : style->dashCap)));
+                        Record(pen.SetEndCap(ToGdiCap((group & 2) ? endCap : style->dashCap)));
+                        Record(graphics.DrawPath(&pen, &dashes));
+                    }
+                }
+
+                // Splits the flattened outline into dashes (m_dashGroups). The pattern restarts at every figure at
+                // dashOffset; an odd-length pattern is repeated (SVG/D2D). false: draw undashed.
+                bool BuildDashes(Gdiplus::GraphicsPath& source, const StrokeStyleDesc& style) noexcept
+                {
+                    for (auto& group : m_dashGroups)
+                    {
+                        Record(group->Reset());
+                    }
+                    Gdiplus::GraphicsPath& flat = *m_flatPath;
+                    Record(flat.Reset());
+                    Record(flat.AddPath(&source, FALSE));
+                    Gdiplus::REAL elements[6];
+                    m_transform->GetElements(elements);
+                    const float scale = std::sqrt(std::abs(elements[0] * elements[3] - elements[1] * elements[2]));
+                    Record(flat.Flatten(nullptr, 0.1f / std::max(scale, 1e-3f)));
+                    const INT count = flat.GetPointCount();
+                    if (count <= 0 || FAILED(m_frameHr))
+                    {
+                        return count == 0;
+                    }
+                    m_flatPoints.resize(static_cast<size_t>(count));
+                    m_flatTypes.resize(static_cast<size_t>(count));
+                    Record(flat.GetPathPoints(m_flatPoints.data(), count));
+                    Record(flat.GetPathTypes(m_flatTypes.data(), count));
+                    if (FAILED(m_frameHr))
+                    {
+                        return false;
+                    }
+
+                    m_dashPattern.assign(style.dashes, style.dashes + style.dashCount);
+                    if (m_dashPattern.size() % 2 != 0)
+                    {
+                        m_dashPattern.insert(m_dashPattern.end(), style.dashes, style.dashes + style.dashCount);
+                    }
+                    float period = 0;
+                    for (float length : m_dashPattern)
+                    {
+                        period += length;
+                    }
+                    // Too many dashes for the outline (or a pattern far below a device pixel): solid is indistinguishable.
+                    const float zeroLength = 0.01f / std::max(scale, 1e-3f);
+
+                    size_t produced = 0;
+                    INT figureStart = 0;
+                    while (figureStart < count)
+                    {
+                        INT figureEnd = figureStart + 1;
+                        while (figureEnd < count && (m_flatTypes[figureEnd] & Gdiplus::PathPointTypePathTypeMask) != Gdiplus::PathPointTypeStart)
+                        {
+                            ++figureEnd;
+                        }
+                        const bool closed = (m_flatTypes[figureEnd - 1] & Gdiplus::PathPointTypeCloseSubpath) != 0;
+                        m_figurePoints.assign(m_flatPoints.begin() + figureStart, m_flatPoints.begin() + figureEnd);
+                        if (closed)
+                        {
+                            m_figurePoints.push_back(m_flatPoints[figureStart]);
+                        }
+                        figureStart = figureEnd;
+                        if (m_figurePoints.size() < 2)
+                        {
+                            continue;
+                        }
+
+                        // Phase: position dashOffset into the pattern.
+                        float phase = std::fmod(style.dashOffset, period);
+                        if (phase < 0)
+                        {
+                            phase += period;
+                        }
+                        size_t index = 0;
+                        for (size_t guard = 0; phase > 0 && phase >= m_dashPattern[index] && guard < 2 * m_dashPattern.size(); ++guard)
+                        {
+                            phase -= m_dashPattern[index];
+                            index = (index + 1) % m_dashPattern.size();
+                        }
+                        float remaining = std::max(m_dashPattern[index] - phase, 0.0f);
+                        bool on = index % 2 == 0;
+                        bool dashAtStart = on;
+                        m_dashPoints.clear();
+                        if (on)
+                        {
+                            m_dashPoints.push_back(m_figurePoints[0]);
+                        }
+
+                        const auto emit = [&](bool atStart, bool atEnd, const Gdiplus::PointF& direction)
+                        {
+                            if (m_dashPoints.empty())
+                            {
+                                return;
+                            }
+                            if (m_dashPoints.size() == 1)
+                            {
+                                // Zero-length dash: a tiny segment along the outline so caps still draw (like D2D).
+                                const Gdiplus::PointF p = m_dashPoints[0];
+                                m_dashPoints.push_back(Gdiplus::PointF(p.X + direction.X * zeroLength, p.Y + direction.Y * zeroLength));
+                            }
+                            const uint32_t group = (closed ? 0u : (atStart ? 1u : 0u) | (atEnd ? 2u : 0u));
+                            Gdiplus::GraphicsPath& target = *m_dashGroups[group];
+                            Record(target.StartFigure());
+                            Record(target.AddLines(m_dashPoints.data(), static_cast<INT>(m_dashPoints.size())));
+                            m_dashPoints.clear();
+                            ++produced;
+                        };
+
+                        Gdiplus::PointF direction(1, 0);
+                        for (size_t segment = 0; segment + 1 < m_figurePoints.size() && produced < c_maxDashes; ++segment)
+                        {
+                            const Gdiplus::PointF a = m_figurePoints[segment], b = m_figurePoints[segment + 1];
+                            const float length = std::hypot(b.X - a.X, b.Y - a.Y);
+                            if (!(length > 0))
+                            {
+                                continue;
+                            }
+                            direction = Gdiplus::PointF((b.X - a.X) / length, (b.Y - a.Y) / length);
+                            float position = 0;
+                            while (produced < c_maxDashes)
+                            {
+                                const float step = std::min(remaining, length - position);
+                                position += step;
+                                remaining -= step;
+                                const Gdiplus::PointF point(a.X + direction.X * position, a.Y + direction.Y * position);
+                                const auto addPoint = [&](const Gdiplus::PointF& p)
+                                {
+                                    if (m_dashPoints.empty() || m_dashPoints.back().X != p.X || m_dashPoints.back().Y != p.Y)
+                                    {
+                                        m_dashPoints.push_back(p);
+                                    }
+                                };
+                                if (remaining > 0)
+                                {
+                                    if (on)
+                                    {
+                                        addPoint(point); // segment end inside a dash: a join
+                                    }
+                                    break;
+                                }
+                                // Pattern element boundary at point.
+                                if (on)
+                                {
+                                    addPoint(point);
+                                    emit(dashAtStart, false, direction);
+                                    dashAtStart = false;
+                                }
+                                index = (index + 1) % m_dashPattern.size();
+                                remaining = m_dashPattern[index];
+                                on = index % 2 == 0;
+                                if (on)
+                                {
+                                    addPoint(point);
+                                }
+                                if (position >= length && remaining > 0)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        if (on)
+                        {
+                            emit(dashAtStart, true, direction);
+                        }
+                    }
+                    if (produced >= c_maxDashes)
+                    {
+                        return false;
+                    }
+                    return SUCCEEDED(m_frameHr);
+                }
+
+                bool EnsureScratchGraphics() noexcept
+                {
+                    if (!m_scratchMatrix)
+                    {
+                        m_scratchMatrix.reset(new Gdiplus::Matrix());
+                        const HRESULT hr = CheckCreated(m_scratchMatrix);
+                        if (FAILED(hr))
+                        {
+                            m_scratchMatrix.reset();
+                            Fail(hr);
+                            return false;
+                        }
+                        ++m_frameCreated;
+                    }
+                    if (m_shadowScratch.graphics)
+                    {
+                        return true;
+                    }
+                    m_shadowScratch.graphics.reset(new Gdiplus::Graphics(m_shadowScratch.bitmap.get()));
+                    HRESULT hr = CheckCreated(m_shadowScratch.graphics);
+                    if (SUCCEEDED(hr))
+                    {
+                        Gdiplus::Graphics& graphics = *m_shadowScratch.graphics;
+                        hr = HResultFromStatus(graphics.SetPageUnit(Gdiplus::UnitPixel));
+                        hr = SUCCEEDED(hr) ? HResultFromStatus(graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias)) : hr;
+                        hr = SUCCEEDED(hr) ? HResultFromStatus(graphics.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf)) : hr;
+                        hr = SUCCEEDED(hr) ? HResultFromStatus(graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias)) : hr;
+                        hr = SUCCEEDED(hr) ? HResultFromStatus(graphics.SetCompositingMode(Gdiplus::CompositingModeSourceOver)) : hr;
+                    }
+                    if (FAILED(hr))
+                    {
+                        m_shadowScratch.graphics.reset();
+                        Fail(hr);
+                        return false;
+                    }
+                    ++m_frameCreated;
+                    return true;
+                }
+
+                // Builds m_ramp: c_rampSize premultiplied BGRA samples of the brush's stops over [0, 1], interpolated
+                // with premultiplied alpha in sRGB or linear light, scaled by the brush opacity. false: draw nothing.
+                bool PrepareRamp(const BrushDesc& brush) noexcept
+                {
+                    if (brush.stops == nullptr || brush.stopCount == 0 || !(brush.opacity > 0))
+                    {
+                        return false;
+                    }
+                    m_sortedStops.assign(brush.stops, brush.stops + brush.stopCount);
+                    for (GradientStop& stop : m_sortedStops)
+                    {
+                        stop.offset = std::isfinite(stop.offset) ? std::clamp(stop.offset, 0.0f, 1.0f) : 0.0f;
+                        stop.color.a = std::clamp(stop.color.a, 0.0f, 1.0f);
+                    }
+                    std::stable_sort(m_sortedStops.begin(), m_sortedStops.end(), [](const GradientStop& a, const GradientStop& b) { return a.offset < b.offset; });
+                    const bool linear = brush.interpolation == GradientInterpolation::Linear;
+                    const auto toLinear = [](float c) { return c <= 0.04045f ? c / 12.92f : std::pow((c + 0.055f) / 1.055f, 2.4f); };
+                    const auto toSRgb = [](float c) { return c <= 0.0031308f ? c * 12.92f : 1.055f * std::pow(c, 1 / 2.4f) - 0.055f; };
+                    const float opacity = std::min(brush.opacity, 1.0f);
+                    m_ramp.resize(c_rampSize);
+                    size_t next = 0;
+                    for (uint32_t i = 0; i < c_rampSize; ++i)
+                    {
+                        const float t = static_cast<float>(i) / (c_rampSize - 1);
+                        while (next < m_sortedStops.size() && m_sortedStops[next].offset <= t)
+                        {
+                            ++next;
+                        }
+                        const GradientStop& s0 = m_sortedStops[next == 0 ? 0 : next - 1];
+                        const GradientStop& s1 = m_sortedStops[next == m_sortedStops.size() ? m_sortedStops.size() - 1 : next];
+                        const float span = s1.offset - s0.offset;
+                        const float f = span > 0 ? std::clamp((t - s0.offset) / span, 0.0f, 1.0f) : (next == 0 ? 1.0f : 0.0f);
+                        const float a = s0.color.a + (s1.color.a - s0.color.a) * f;
+                        const auto channel = [&](float c0, float c1)
+                        {
+                            if (!linear)
+                            {
+                                return c0 * s0.color.a + (c1 * s1.color.a - c0 * s0.color.a) * f;
+                            }
+                            const float l = toLinear(c0) * s0.color.a + (toLinear(c1) * s1.color.a - toLinear(c0) * s0.color.a) * f;
+                            return a > 0 ? toSRgb(std::clamp(l / a, 0.0f, 1.0f)) * a : 0.0f;
+                        };
+                        m_ramp[i] = (static_cast<uint32_t>(ToByte(a * opacity)) << 24) | (static_cast<uint32_t>(ToByte(channel(s0.color.r, s1.color.r) * opacity)) << 16) |
+                            (static_cast<uint32_t>(ToByte(channel(s0.color.g, s1.color.g) * opacity)) << 8) | ToByte(channel(s0.color.b, s1.color.b) * opacity);
+                    }
+                    return true;
+                }
+
+                // Draws the primitive's coverage mask with drawMask (white, onto the scratch under the device transform
+                // shifted to the area), shades it with the brush (m_ramp from PrepareRamp) and composites it 1:1.
+                template <typename DrawMask>
+                void ShadeBrush(const PixelRect& bounds, const BrushDesc& brush, DrawMask&& drawMask) noexcept
+                {
+                    const PixelRect area = Intersect(Intersect(bounds, CurrentClip()), m_damageBounds);
+                    if (area.IsEmpty() || m_ramp.size() != c_rampSize)
+                    {
+                        return;
+                    }
+                    const uint32_t width = static_cast<uint32_t>(area.right - area.left), height = static_cast<uint32_t>(area.bottom - area.top);
+                    if (static_cast<uint64_t>(width) * height > c_maxShadowPixels || !EnsureShadowScratch(width, height) || !EnsureScratchGraphics())
+                    {
+                        return;
+                    }
+                    const uint32_t stride = m_shadowScratchWidth;
+                    uint32_t* pixels = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
+                    for (uint32_t y = 0; y < height; ++y)
+                    {
+                        memset(pixels + static_cast<size_t>(y) * stride, 0, static_cast<size_t>(width) * 4);
+                    }
+                    Gdiplus::Graphics& scratch = *m_shadowScratch.graphics;
+                    Record(scratch.ResetTransform());
+                    Record(scratch.SetClip(Gdiplus::Rect(0, 0, static_cast<INT>(width), static_cast<INT>(height)), Gdiplus::CombineModeReplace));
+                    Gdiplus::REAL e[6];
+                    m_transform->GetElements(e);
+                    Record(m_scratchMatrix->SetElements(e[0], e[1], e[2], e[3], e[4] - area.left, e[5] - area.top));
+                    Record(scratch.SetTransform(m_scratchMatrix.get()));
+                    drawMask(scratch, Gdiplus::Color(255, 255, 255, 255));
+                    scratch.Flush(Gdiplus::FlushIntentionSync);
+                    if (FAILED(m_frameHr))
+                    {
+                        return;
+                    }
+
+                    // Device pixel -> brush space: inverse of (brush transform * user transform * DPI scale).
+                    const Matrix3x2F& b = brush.transform;
+                    const Matrix3x2F& u = m_userTransform;
+                    const float s = m_dpiScale;
+                    const float m11 = (b.m11 * u.m11 + b.m12 * u.m21) * s, m12 = (b.m11 * u.m12 + b.m12 * u.m22) * s;
+                    const float m21 = (b.m21 * u.m11 + b.m22 * u.m21) * s, m22 = (b.m21 * u.m12 + b.m22 * u.m22) * s;
+                    const float dx = (b.dx * u.m11 + b.dy * u.m21 + u.dx) * s, dy = (b.dx * u.m12 + b.dy * u.m22 + u.dy) * s;
+                    const float det = m11 * m22 - m12 * m21;
+                    if (!(std::abs(det) > 1e-12f) || !std::isfinite(det))
+                    {
+                        return;
+                    }
+                    const float i11 = m22 / det, i12 = -m12 / det, i21 = -m21 / det, i22 = m11 / det;
+                    const float idx = -(dx * i11 + dy * i21), idy = -(dx * i12 + dy * i22);
+
+                    // t(p): linear projection, or the focal radial solution on the unit circle (offset 0 at the origin,
+                    // 1 on the ellipse): q = f + t (u - f) with |u| = 1.
+                    const bool radial = brush.kind == BrushKind::Radial;
+                    float ax = 0, ay = 0, a0 = 0;
+                    float cx = 0, cy = 0, rx = 1, ry = 1, fx = 0, fy = 0, fa = 1;
+                    bool degenerate = false;
+                    if (!radial)
+                    {
+                        const float ddx = brush.end.x - brush.start.x, ddy = brush.end.y - brush.start.y;
+                        const float length2 = ddx * ddx + ddy * ddy;
+                        degenerate = !(length2 > 1e-12f) || !std::isfinite(length2);
+                        if (!degenerate)
+                        {
+                            ax = ddx / length2;
+                            ay = ddy / length2;
+                            a0 = -(brush.start.x * ax + brush.start.y * ay);
+                        }
+                    }
+                    else
+                    {
+                        rx = brush.radiusX;
+                        ry = brush.radiusY;
+                        degenerate = !(rx > 0) || !(ry > 0);
+                        cx = brush.center.x;
+                        cy = brush.center.y;
+                        if (!degenerate)
+                        {
+                            fx = (brush.origin.x - cx) / rx;
+                            fy = (brush.origin.y - cy) / ry;
+                            const float f2 = fx * fx + fy * fy;
+                            constexpr float c_maxFocal = 0.999f;
+                            if (!(f2 < c_maxFocal * c_maxFocal))
+                            {
+                                const float k = std::isfinite(f2) && f2 > 0 ? c_maxFocal / std::sqrt(f2) : 0.0f;
+                                fx *= k;
+                                fy *= k;
+                            }
+                            fa = 1 - (fx * fx + fy * fy);
+                        }
+                    }
+                    const GradientSpread spread = brush.spread;
+                    const auto index = [&](float t) -> uint32_t
+                    {
+                        if (spread == GradientSpread::Repeat)
+                        {
+                            t -= std::floor(t);
+                        }
+                        else if (spread == GradientSpread::Reflect)
+                        {
+                            t = std::fmod(std::abs(t), 2.0f);
+                            t = t > 1 ? 2 - t : t;
+                        }
+                        t = std::isfinite(t) ? std::clamp(t, 0.0f, 1.0f) : 1.0f;
+                        return static_cast<uint32_t>(t * (c_rampSize - 1) + 0.5f);
+                    };
+
+                    for (uint32_t y = 0; y < height; ++y)
+                    {
+                        uint32_t* row = pixels + static_cast<size_t>(y) * stride;
+                        const float py = area.top + y + 0.5f;
+                        for (uint32_t x = 0; x < width; ++x)
+                        {
+                            const uint32_t coverage = row[x] >> 24;
+                            if (coverage == 0)
+                            {
+                                continue;
+                            }
+                            const float px = area.left + x + 0.5f;
+                            const float bx = px * i11 + py * i21 + idx;
+                            const float by = px * i12 + py * i22 + idy;
+                            float t = 1;
+                            if (!degenerate)
+                            {
+                                if (!radial)
+                                {
+                                    t = bx * ax + by * ay + a0;
+                                }
+                                else
+                                {
+                                    const float qx = (bx - cx) / rx - fx, qy = (by - cy) / ry - fy;
+                                    const float fd = fx * qx + fy * qy;
+                                    const float dd = qx * qx + qy * qy;
+                                    t = (fd + std::sqrt(std::max(fd * fd + fa * dd, 0.0f))) / fa;
+                                }
+                            }
+                            const uint32_t color = m_ramp[index(t)];
+                            if (coverage == 255)
+                            {
+                                row[x] = color;
+                                continue;
+                            }
+                            const auto scaleChannel = [&](uint32_t shift) { return (((color >> shift) & 0xFF) * coverage + 127) / 255 << shift; };
+                            row[x] = scaleChannel(24) | scaleChannel(16) | scaleChannel(8) | scaleChannel(0);
+                        }
+                    }
+
+                    Gdiplus::Graphics& graphics = Current();
+                    Record(graphics.ResetTransform());
+                    Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(area.left, area.top, static_cast<INT>(width), static_cast<INT>(height)),
+                        0, 0, static_cast<INT>(width), static_cast<INT>(height), Gdiplus::UnitPixel, nullptr));
+                    graphics.Flush(Gdiplus::FlushIntentionSync);
+                    Record(graphics.SetTransform(m_transform.get()));
                 }
 
             private:
@@ -2772,6 +3497,10 @@ namespace RenderingBackend
 
                 Gdiplus::Graphics& Current() noexcept
                 {
+                    if (m_redirect)
+                    {
+                        return *m_redirect;
+                    }
                     const size_t depth = m_layerStack.size();
                     if (depth > 0 && m_layerStack.back().active)
                     {
@@ -3151,6 +3880,20 @@ namespace RenderingBackend
                 uint32_t m_frameCreated = 0;
                 uint32_t m_frameDestroyed = 0;
                 ResourceChurn m_lastChurn{};
+
+                // ---- shapes ----
+                Gdiplus::Graphics* m_redirect = nullptr;              // Current() while drawing a gradient glyph mask
+                std::unique_ptr<Gdiplus::Matrix> m_scratchMatrix;     // device transform shifted to the mask area
+                std::unique_ptr<Gdiplus::Pen> m_stylePen;             // reconfigured per styled stroke
+                std::unique_ptr<Gdiplus::GraphicsPath> m_outlinePath; // rect / rounded rect / ellipse stroke outline
+                std::unique_ptr<Gdiplus::GraphicsPath> m_flatPath;    // flattened copy walked by the dasher
+                std::unique_ptr<Gdiplus::GraphicsPath> m_dashGroups[4];
+                std::vector<Gdiplus::PointF> m_flatPoints;
+                std::vector<BYTE> m_flatTypes;
+                std::vector<Gdiplus::PointF> m_figurePoints;
+                std::vector<Gdiplus::PointF> m_dashPoints;
+                std::vector<float> m_dashPattern;
+                std::vector<uint32_t> m_ramp;
             };
         }
 
