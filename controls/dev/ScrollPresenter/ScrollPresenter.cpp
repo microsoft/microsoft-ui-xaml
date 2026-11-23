@@ -1231,6 +1231,17 @@ void ScrollPresenter::ValuesChanged(
         TraceLoggingFloat32(oldZoomFactor, "OldZoomFactor"),
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
+    // ---- scrolling ----
+    if (m_immediateViewTween.active && m_immediateViewTween.finalIssued && requestId == m_immediateViewTween.requestId)
+    {
+        CompleteImmediateViewTween(ScrollPresenterViewChangeResult::Completed);
+    }
+    else if (!m_immediateViewTween.active && m_state == winrt::ScrollingInteractionState::Animation && ImmediateRendering::IsRequested())
+    {
+        // A non-animated change ended an immediate-mode tween; the tracker never enters its custom animation state.
+        UpdateState(winrt::ScrollingInteractionState::Idle);
+    }
+
     if (requestId != 0 && !m_interactionTrackerAsyncOperations.empty())
     {
         CompleteInteractionTrackerOperations(
@@ -3518,6 +3529,152 @@ void ScrollPresenter::ApplyImmediateContentTransform(
     {
         content.Scale(scale3);
     }
+}
+
+// ---- scrolling ----
+// Immediate rendering: an animated ScrollTo/ScrollBy/ZoomTo/ZoomBy is stepped on the UI thread with non-animated
+// TryUpdatePosition/TryUpdateScale requests, one per CompositionTarget.Rendering tick. The animated operation is
+// re-keyed to the latest step's request id so ValuesChanged does not complete it early, and is completed once the
+// tracker reports the final step. The ScrollAnimationStarting/ZoomAnimationStarting animation is only used for its
+// duration; custom key frames and easing are approximated with a cubic ease-out.
+void ScrollPresenter::StartImmediateViewTween(
+    const winrt::CompositionAnimation& animation,
+    bool isZoom,
+    const winrt::float3& toPosition,
+    float toScale,
+    const winrt::float3& centerPoint)
+{
+    InterruptImmediateViewTween();
+
+    LARGE_INTEGER now{}, frequency{};
+    QueryPerformanceCounter(&now);
+    QueryPerformanceFrequency(&frequency);
+
+    int64_t durationMs = isZoom ? s_zoomFactorChangeMinMs : s_offsetsChangeMinMs;
+    if (const auto keyFrameAnimation = animation.try_as<winrt::KeyFrameAnimation>())
+    {
+        durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(keyFrameAnimation.Duration()).count();
+    }
+
+    ImmediateViewTween tween{};
+    tween.active = true;
+    tween.isZoom = isZoom;
+    tween.startTicks = now.QuadPart;
+    tween.durationTicks = std::max<int64_t>(0, durationMs) * frequency.QuadPart / 1000;
+    tween.fromPosition = winrt::float3(ComputePositionFromOffsets(m_zoomedHorizontalOffset, m_zoomedVerticalOffset), 0.0f);
+    tween.toPosition = isZoom ? tween.fromPosition : toPosition;
+    tween.fromScale = m_zoomFactor;
+    tween.toScale = isZoom ? toScale : m_zoomFactor;
+    tween.centerPoint = centerPoint;
+    m_immediateViewTween = tween;
+
+    // The caller assigns m_latestInteractionTrackerRequest to the animated operation.
+    m_immediateViewTween.requestId = IssueImmediateViewTweenStep(0.0);
+    m_latestInteractionTrackerRequest = m_immediateViewTween.requestId;
+
+    UpdateState(winrt::ScrollingInteractionState::Animation);
+
+    if (!m_immediateViewTweenRenderingRevoker)
+    {
+        winrt::Microsoft::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
+        m_immediateViewTweenRenderingRevoker = compositionTarget.Rendering(winrt::auto_revoke, { this, &ScrollPresenter::OnImmediateViewTweenRendering });
+    }
+}
+
+int32_t ScrollPresenter::IssueImmediateViewTweenStep(double progress)
+{
+    const ImmediateViewTween& tween = m_immediateViewTween;
+    const double clamped = std::clamp(progress, 0.0, 1.0);
+    const float eased = static_cast<float>(1.0 - (1.0 - clamped) * (1.0 - clamped) * (1.0 - clamped));
+
+    if (tween.isZoom)
+    {
+        const float scale = clamped >= 1.0 ? tween.toScale : tween.fromScale + (tween.toScale - tween.fromScale) * eased;
+        return m_interactionTracker.TryUpdateScale(scale, tween.centerPoint);
+    }
+
+    const winrt::float3 position = clamped >= 1.0 ? tween.toPosition : tween.fromPosition + (tween.toPosition - tween.fromPosition) * eased;
+    return m_interactionTracker.TryUpdatePosition(position);
+}
+
+void ScrollPresenter::OnImmediateViewTweenRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    if (!m_immediateViewTween.active || !m_interactionTracker)
+    {
+        StopImmediateViewTween();
+        return;
+    }
+
+    if (m_immediateViewTween.finalIssued)
+    {
+        // ValuesChanged is not raised when the last step does not move the view: complete after a few ticks.
+        if (++m_immediateViewTween.ticksSinceFinal > 8)
+        {
+            CompleteImmediateViewTween(ScrollPresenterViewChangeResult::Completed);
+        }
+        return;
+    }
+
+    const std::shared_ptr<InteractionTrackerAsyncOperation> operation = GetInteractionTrackerOperationFromRequestId(m_immediateViewTween.requestId);
+    if (!operation)
+    {
+        // The operation was completed or interrupted elsewhere (e.g. user interaction).
+        StopImmediateViewTween();
+        return;
+    }
+
+    LARGE_INTEGER now{};
+    QueryPerformanceCounter(&now);
+    const double progress = m_immediateViewTween.durationTicks > 0
+        ? static_cast<double>(now.QuadPart - m_immediateViewTween.startTicks) / static_cast<double>(m_immediateViewTween.durationTicks)
+        : 1.0;
+
+    const int32_t requestId = IssueImmediateViewTweenStep(progress);
+    operation->SetRequestId(requestId);
+    m_immediateViewTween.requestId = requestId;
+    m_latestInteractionTrackerRequest = requestId;
+    m_immediateViewTween.finalIssued = progress >= 1.0;
+}
+
+void ScrollPresenter::CompleteImmediateViewTween(ScrollPresenterViewChangeResult result)
+{
+    const int32_t requestId = m_immediateViewTween.requestId;
+    StopImmediateViewTween();
+
+    if (requestId != 0)
+    {
+        CompleteInteractionTrackerOperations(
+            requestId,
+            result /*operationResult*/,
+            ScrollPresenterViewChangeResult::Completed   /*priorNonAnimatedOperationsResult*/,
+            ScrollPresenterViewChangeResult::Interrupted /*priorAnimatedOperationsResult*/,
+            false /*completeNonAnimatedOperation*/,
+            true  /*completeAnimatedOperation*/,
+            false /*completePriorNonAnimatedOperations*/,
+            false /*completePriorAnimatedOperations*/);
+    }
+
+    if (result == ScrollPresenterViewChangeResult::Completed)
+    {
+        UpdateState(winrt::ScrollingInteractionState::Idle);
+        UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedHorizontalSnapPoints, ScrollPresenterDimension::HorizontalScroll);
+        UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedVerticalSnapPoints, ScrollPresenterDimension::VerticalScroll);
+        UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedZoomSnapPoints, ScrollPresenterDimension::ZoomFactor);
+    }
+}
+
+void ScrollPresenter::InterruptImmediateViewTween()
+{
+    if (m_immediateViewTween.active)
+    {
+        CompleteImmediateViewTween(ScrollPresenterViewChangeResult::Interrupted);
+    }
+}
+
+void ScrollPresenter::StopImmediateViewTween()
+{
+    m_immediateViewTween.active = false;
+    m_immediateViewTweenRenderingRevoker.revoke();
 }
 
 // Returns True when ScrollPresenter::OnCompositionTargetRendering calls are not needed for restarting the Translation and Scale animations.
@@ -6380,6 +6537,7 @@ void ScrollPresenter::ProcessOffsetsChange(
 {
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(offsetsChange);
+    InterruptImmediateViewTween();
 
     SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         L"operationTrigger", TypeLogging::InteractionTrackerAsyncOperationTriggerToString(operationTrigger).c_str());
@@ -6580,12 +6738,23 @@ void ScrollPresenter::ProcessOffsetsChange(
             TraceLoggingFloat64(zoomedVerticalOffset, "VerticalOffset"),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-        m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionWithAnimation(
-            GetPositionAnimation(
-                zoomedHorizontalOffset,
-                zoomedVerticalOffset,
-                operationTrigger,
-                offsetsChangeCorrelationId));
+        const winrt::CompositionAnimation positionAnimation = GetPositionAnimation(
+            zoomedHorizontalOffset,
+            zoomedVerticalOffset,
+            operationTrigger,
+            offsetsChangeCorrelationId);
+
+        if (ImmediateRendering::IsRequested())
+        {
+            const winrt::float2 targetPosition = ComputePositionFromOffsets(
+                std::clamp(zoomedHorizontalOffset, 0.0, ScrollableWidth()),
+                std::clamp(zoomedVerticalOffset, 0.0, ScrollableHeight()));
+            StartImmediateViewTween(positionAnimation, false /*isZoom*/, winrt::float3(targetPosition, 0.0f), m_zoomFactor, winrt::float3{});
+        }
+        else
+        {
+            m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionWithAnimation(positionAnimation);
+        }
         m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation;
 
         ResetAnticipatedView();
@@ -6601,6 +6770,7 @@ void ScrollPresenter::ProcessOffsetsChange(
 {
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(offsetsChangeWithAdditionalVelocity);
+    InterruptImmediateViewTween();
 
     winrt::float2 offsetsVelocity = offsetsChangeWithAdditionalVelocity->OffsetsVelocity();
     const winrt::IReference<winrt::float2> inertiaDecayRate = offsetsChangeWithAdditionalVelocity->InertiaDecayRate();
@@ -6698,6 +6868,7 @@ void ScrollPresenter::ProcessZoomFactorChange(
 {
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(zoomFactorChange);
+    InterruptImmediateViewTween();
 
     float zoomFactor = zoomFactorChange->ZoomFactor();
     const winrt::IReference<winrt::float2> nullableCenterPoint = zoomFactorChange->CenterPoint();
@@ -6793,9 +6964,21 @@ void ScrollPresenter::ProcessZoomFactorChange(
             TraceLoggingFloat32(centerPoint.y, "Center.Y"),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-        m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdateScaleWithAnimation(
-            GetZoomFactorAnimation(zoomFactor, centerPoint2D, zoomFactorChangeCorrelationId),
-            centerPoint);
+        const winrt::CompositionAnimation zoomFactorAnimation = GetZoomFactorAnimation(zoomFactor, centerPoint2D, zoomFactorChangeCorrelationId);
+
+        if (ImmediateRendering::IsRequested())
+        {
+            StartImmediateViewTween(
+                zoomFactorAnimation,
+                true /*isZoom*/,
+                m_interactionTracker.Position(),
+                std::clamp(zoomFactor, MinZoomFactor(), MaxZoomFactor()),
+                centerPoint);
+        }
+        else
+        {
+            m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdateScaleWithAnimation(zoomFactorAnimation, centerPoint);
+        }
         m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation;
 
         ResetAnticipatedView();
@@ -6811,6 +6994,7 @@ void ScrollPresenter::ProcessZoomFactorChange(
 {
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(zoomFactorChangeWithAdditionalVelocity);
+    InterruptImmediateViewTween();
 
     float zoomFactorVelocity = zoomFactorChangeWithAdditionalVelocity->ZoomFactorVelocity();
     winrt::IReference<float> inertiaDecayRate = zoomFactorChangeWithAdditionalVelocity->InertiaDecayRate();

@@ -13165,7 +13165,12 @@ _Check_return_ HRESULT ScrollViewer::NotifyManipulationStateChanged(
     {
     case DMManipulationStarted:
         // ---- scrolling ----
-        if (m_immediateViewTween.active && !m_immediateViewTween.inStep)
+        if (m_immediateViewTween.active &&
+            (m_immediateViewTween.inStep || (m_immediateViewTween.hasZoom && IsRecentImmediateViewTweenStep())))
+        {
+            m_immediateViewTween.zoomStepOutstanding = true;
+        }
+        else if (m_immediateViewTween.active && !m_immediateViewTween.zoomStepOutstanding)
         {
             // A user manipulation takes over; it raises its own final ViewChanged.
             IFC(StopImmediateViewTween(false /*raiseFinalViewChanged*/));
@@ -14254,6 +14259,18 @@ _Check_return_ HRESULT ScrollViewer::HandleManipulationCompleted(
             this, m_xPixelOffsetRequested == -1 && m_yPixelOffsetRequested == -1, m_xPixelOffsetRequested, m_yPixelOffsetRequested));
     }
 #endif // DM_DEBUG
+
+    // ---- scrolling ----
+    // A zoom step of the immediate-mode ChangeView tween completed; stay in the tween's intermediate section.
+    if (m_immediateViewTween.active)
+    {
+        m_immediateViewTween.zoomStepOutstanding = false;
+        if (m_immediateViewTween.finishing)
+        {
+            IFC(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
+        goto Cleanup;
+    }
 
     IFC(LeaveIntermediateViewChangedMode(m_xPixelOffsetRequested == -1 &&
         m_yPixelOffsetRequested == -1 /*raiseFinalViewChanged*/));
@@ -17043,6 +17060,8 @@ _Check_return_ HRESULT ScrollViewer::TryStartImmediateViewTween(
 
     // A tween already in flight is retargeted from the current view; the intermediate section stays open.
     const bool wasActive = m_immediateViewTween.active;
+    tween.zoomStepOutstanding = wasActive && m_immediateViewTween.zoomStepOutstanding;
+    tween.lastStepTicks = wasActive ? m_immediateViewTween.lastStepTicks : 0;
     m_immediateViewTween = tween;
     if (!wasActive)
     {
@@ -17064,6 +17083,25 @@ _Check_return_ HRESULT ScrollViewer::OnImmediateViewTweenTick()
     LARGE_INTEGER now = {};
     QueryPerformanceCounter(&now);
     const ImmediateViewTween& tween = m_immediateViewTween;
+    // Watchdog for DManip completions that never arrive (e.g. a zoom step that DManip coalesced away).
+    const LONGLONG watchdogTicks = tween.durationTicks / 2;
+    if (tween.finishing)
+    {
+        if (now.QuadPart - tween.lastStepTicks > watchdogTicks)
+        {
+            IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
+        return S_OK;
+    }
+    if (tween.zoomStepOutstanding)
+    {
+        if (now.QuadPart - tween.lastStepTicks <= watchdogTicks)
+        {
+            return S_OK; // Wait for the previous zoom step to be applied.
+        }
+        m_immediateViewTween.zoomStepOutstanding = false;
+    }
+
     const double progress = tween.durationTicks > 0
         ? std::min(1.0, static_cast<double>(now.QuadPart - tween.startTicks) / static_cast<double>(tween.durationTicks))
         : 1.0;
@@ -17121,10 +17159,23 @@ _Check_return_ HRESULT ScrollViewer::OnImmediateViewTweenTick()
         FALSE /*isForMakeVisible*/,
         &accepted);
     m_immediateViewTween.inStep = false;
+    m_immediateViewTween.lastStepTicks = now.QuadPart;
 
-    if (FAILED(hr) || isLast || !accepted)
+    if (FAILED(hr) || !accepted)
     {
         IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+    }
+    else if (isLast)
+    {
+        if (m_immediateViewTween.zoomStepOutstanding)
+        {
+            // Raise the final ViewChanged once DManip has applied the last zoom step.
+            m_immediateViewTween.finishing = true;
+        }
+        else
+        {
+            IFC_RETURN(StopImmediateViewTween(true /*raiseFinalViewChanged*/));
+        }
     }
     return hr;
 }
@@ -17133,6 +17184,8 @@ _Check_return_ HRESULT ScrollViewer::StopImmediateViewTween(_In_ bool raiseFinal
 {
     const bool wasActive = m_immediateViewTween.active;
     m_immediateViewTween.active = false;
+    m_immediateViewTween.zoomStepOutstanding = false;
+    m_immediateViewTween.finishing = false;
     if (m_tpImmediateViewTweenTimer)
     {
         IFC_RETURN(m_tpImmediateViewTweenTimer->Stop());
@@ -17142,4 +17195,11 @@ _Check_return_ HRESULT ScrollViewer::StopImmediateViewTween(_In_ bool raiseFinal
         IFC_RETURN(LeaveIntermediateViewChangedMode(TRUE /*raiseFinalViewChanged*/));
     }
     return S_OK;
+}
+
+bool ScrollViewer::IsRecentImmediateViewTweenStep() const
+{
+    LARGE_INTEGER now = {};
+    QueryPerformanceCounter(&now);
+    return now.QuadPart - m_immediateViewTween.lastStepTicks <= m_immediateViewTween.durationTicks / 2;
 }

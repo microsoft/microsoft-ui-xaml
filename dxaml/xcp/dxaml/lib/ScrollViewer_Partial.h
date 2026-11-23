@@ -458,6 +458,10 @@ namespace DirectUI
         {
             bool active = false;
             bool inStep = false;
+            // Zoom steps go through an (unanimated) DManip bring-into-viewport that completes asynchronously.
+            bool zoomStepOutstanding = false;
+            bool finishing = false;
+            LONGLONG lastStepTicks = 0;
             LONGLONG startTicks = 0;
             LONGLONG durationTicks = 0;
             DOUBLE fromX = 0, fromY = 0, toX = 0, toY = 0;
@@ -2147,6 +2151,7 @@ namespace DirectUI
             _Out_ bool* pStarted);
         _Check_return_ HRESULT OnImmediateViewTweenTick();
         _Check_return_ HRESULT StopImmediateViewTween(_In_ bool raiseFinalViewChanged);
+        bool IsRecentImmediateViewTweenStep() const;
 
         // Indicates whether we're at our highest zoom factor (as defined by MaxZoomFactor).
         _Check_return_ HRESULT get_IsAtMaxZoom(_Out_ BOOLEAN& isAtMaxZoom);
