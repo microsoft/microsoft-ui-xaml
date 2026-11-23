@@ -41,8 +41,8 @@ namespace NavigationViewTip
 
     // One run per selection change (NavigationView::ChangeSelection). Passes when, after NavigationView has
     // applied the selection and raised its events, SelectedItem and the realized containers' IsSelected agree.
-    // TODO(TiP): 0 is a placeholder. Replace it with the test case id allocated in the TiP portal before shipping.
-    TIP_declare_test(NavigationViewSelectionTest, 0)
+    // Measure: https://microsoft.visualstudio.com/OS/_workitems/edit/65470603
+    TIP_declare_test(NavigationViewSelectionTest, 65470603)
     {
         TIP_set_data_version(1);
         TIP_set_metrics_enabled();
