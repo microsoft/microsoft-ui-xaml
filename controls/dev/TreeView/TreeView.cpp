@@ -323,7 +323,10 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
                     SelectedNode(newSelectedNode);
                 }
 
-                const auto newSelectedItem = newSelectedNode ? viewModel->ItemFromNode(newSelectedNode) : nullptr;
+                // Re-read SelectedNode() so a SelectedNodes/SelectedItems VectorChanged callback that cleared or
+                // redirected selection does not get overwritten when updating SelectedItem.
+                const auto currentSelectedNode = SelectedNode();
+                const auto newSelectedItem = currentSelectedNode ? viewModel->ItemFromNode(currentSelectedNode) : nullptr;
                 if (SelectedItem() != newSelectedItem)
                 {
                     SelectedItem(newSelectedItem);

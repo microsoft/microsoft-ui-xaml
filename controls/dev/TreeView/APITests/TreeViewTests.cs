@@ -815,6 +815,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, observedSelectedNodes.Length);
                 Verify.IsNull(observedSelectedItem);
                 Verify.AreEqual(0, observedSelectedItems.Length);
+
+                // Reentrant SelectedItems.VectorChanged callback on first Ctrl + Left Click clearing or redirecting
+                // selection must not crash on an unpopulated token vector or have its choice overwritten by SelectedItem.
+                var reentrantTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var reentrantItems = CreateTreeViewItemsSource();
+                reentrantTreeView.ItemsSource = reentrantItems;
+                Content = reentrantTreeView;
+                Content.UpdateLayout();
+
+                var reentrantNode0 = reentrantTreeView.RootNodes[0];
+                var reentrantNode1 = reentrantTreeView.RootNodes[1];
+                var reentrantTvi0 = (TreeViewItem)reentrantTreeView.ContainerFromNode(reentrantNode0);
+                var reentrantTvi1 = (TreeViewItem)reentrantTreeView.ContainerFromNode(reentrantNode1);
+
+                int vectorCallbackMode = 1; // 1 = clear on first insert, 2 = redirect to node1 on node0 insert
+                var observableSelectedItems = (IObservableVector<object>)reentrantTreeView.SelectedItems;
+                observableSelectedItems.VectorChanged += (s, e) =>
+                {
+                    if (e.CollectionChange == CollectionChange.ItemInserted)
+                    {
+                        if (vectorCallbackMode == 1)
+                        {
+                            vectorCallbackMode = 0;
+                            reentrantTreeView.SelectedNode = null;
+                        }
+                        else if (vectorCallbackMode == 2 && ReferenceEquals(reentrantTreeView.SelectedNode, reentrantNode0))
+                        {
+                            vectorCallbackMode = 0;
+                            reentrantTreeView.SelectedNode = reentrantNode1;
+                        }
+                    }
+                };
+
+                reentrantTvi0.IsSelected = true;
+                Verify.IsNull(reentrantTreeView.SelectedNode);
+                Verify.AreEqual(0, reentrantTreeView.SelectedNodes.Count);
+                Verify.IsNull(reentrantTreeView.SelectedItem);
+                Verify.AreEqual(0, reentrantTreeView.SelectedItems.Count);
+                Verify.IsFalse(reentrantTvi0.IsSelected);
+
+                vectorCallbackMode = 2;
+                reentrantTvi0.IsSelected = true;
+                Verify.AreEqual(reentrantNode1, reentrantTreeView.SelectedNode);
+                Verify.AreEqual(1, reentrantTreeView.SelectedNodes.Count);
+                Verify.AreEqual(reentrantItems[1], reentrantTreeView.SelectedItem);
+                Verify.AreEqual(1, reentrantTreeView.SelectedItems.Count);
+                Verify.IsFalse(reentrantTvi0.IsSelected);
+                Verify.IsTrue(reentrantTvi1.IsSelected);
             });
         }
 

@@ -27,7 +27,7 @@ void SelectedTreeNodeVector::UpdateSelection(winrt::TreeViewNode const& node, Tr
         if (auto viewModel = m_viewModel.get())
         {
             viewModel->UpdateSelection(node, state);
-            viewModel->NotifyContainerOfSelectionChange(node, state);
+            viewModel->NotifyContainerOfSelectionChange(node, winrt::get_self<TreeViewNode>(node)->SelectionState());
         }
     }
 }
@@ -99,16 +99,25 @@ void SelectedTreeNodeVector::InsertAtCore_NoContainsCheck(unsigned int index, wi
 
     GetVectorInnerImpl()->InsertAt(index, node);
 
-    // Keep SelectedItems and SelectedNodes in sync
+    // Keep SelectedItems and SelectedNodes in sync if a SelectedNodes.VectorChanged callback kept node selected.
     if (auto viewModel = m_viewModel.get())
     {
+        uint32_t currentIndex = index;
         auto selectedItems = viewModel->GetSelectedItems();
-        if (selectedItems.Size() != Size())
+        if (((currentIndex < Size() && GetVectorInnerImpl()->GetAt(currentIndex) == node) ||
+            GetVectorInnerImpl()->IndexOf(node, currentIndex)) &&
+            selectedItems.Size() != Size())
         {
             if (auto item = viewModel->ItemFromNode(node))
             {
-                winrt::get_self<SelectedItemsVector>(selectedItems)->InsertAt_NoContainsCheck(index, item);
-                viewModel->TrackItemSelected(item);
+                auto selectedItemsImpl = winrt::get_self<SelectedItemsVector>(selectedItems);
+                const uint32_t insertIndex = std::min(currentIndex, selectedItemsImpl->Size());
+                selectedItemsImpl->InsertAt_NoContainsCheck(insertIndex, item);
+                if ((insertIndex < selectedItemsImpl->Size() && selectedItemsImpl->GetAt(insertIndex) == item) ||
+                    selectedItemsImpl->Contains(item))
+                {
+                    viewModel->TrackItemSelected(item);
+                }
             }
         }
     }
@@ -122,7 +131,7 @@ void SelectedTreeNodeVector::RemoveAtCore(unsigned int index)
     if (auto viewModel = m_viewModel.get())
     {
         auto selectedItems = viewModel->GetSelectedItems();
-        if (selectedItems.Size() != Size())
+        if (index < selectedItems.Size() && selectedItems.Size() != Size())
         {
             const auto item = selectedItems.GetAt(index);
             selectedItems.RemoveAt(index);
@@ -165,15 +174,18 @@ void SelectedItemsVector::InsertAt_NoContainsCheck(unsigned int index, winrt::II
     MUX_ASSERT(!Contains(item));
     GetVectorInnerImpl()->InsertAt(index, item);
 
-    // Keep SelectedNodes and SelectedItems in sync
+    // Keep SelectedNodes and SelectedItems in sync if a SelectedItems.VectorChanged callback kept item selected.
     if (auto viewModel = m_viewModel.get())
     {
+        uint32_t currentIndex = index;
         auto selectedNodes = viewModel->GetSelectedNodes();
-        if (selectedNodes.Size() != Size())
+        if (((currentIndex < Size() && GetVectorInnerImpl()->GetAt(currentIndex) == item) ||
+            GetVectorInnerImpl()->IndexOf(item, currentIndex)) &&
+            selectedNodes.Size() != Size())
         {
             if (auto node = viewModel->NodeFromItem(item))
             {
-                selectedNodes.InsertAt(index, node);
+                selectedNodes.InsertAt(std::min(currentIndex, selectedNodes.Size()), node);
             }
         }
     }
@@ -193,7 +205,7 @@ void SelectedItemsVector::RemoveAt(unsigned int index)
     if (auto viewModel = m_viewModel.get())
     {
         auto selectedNodes = viewModel->GetSelectedNodes();
-        if (Size() != selectedNodes.Size())
+        if (index < selectedNodes.Size() && Size() != selectedNodes.Size())
         {
             selectedNodes.RemoveAt(index);
         }
@@ -826,8 +838,9 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
         switch (selectionState)
         {
         case TreeNodeSelectionState::Selected:
+            // Store the ChildrenChanged token before raising VectorChanged so a re-entrant removal finds its token.
+            m_selectedNodeChildrenChangedEventTokenVector.push_back(node->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             selectedNodes->InsertAtCore_NoContainsCheck(selectedNodes->Size(), selectNode);
-            m_selectedNodeChildrenChangedEventTokenVector.push_back(winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged({ this, &ViewModel::SelectedNodeChildrenChanged }));
             break;
 
         case TreeNodeSelectionState::PartialSelected:
@@ -835,9 +848,10 @@ void ViewModel::UpdateNodeSelection(winrt::TreeViewNode const& selectNode, TreeN
             unsigned int index;
             if (selectedNodes->IndexOf(selectNode, index))
             {
-                selectedNodes->RemoveAtCore(index);
-                winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged(m_selectedNodeChildrenChangedEventTokenVector[index]);
+                const auto token = m_selectedNodeChildrenChangedEventTokenVector[index];
                 m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + index);
+                node->ChildrenChanged(token);
+                selectedNodes->RemoveAtCore(index);
             }
             break;
         }
@@ -1119,8 +1133,10 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
 
             if (ancestorNode != m_originNode.get())
             {
-                selectedNodes->RemoveAtCore(i);
+                const auto token = m_selectedNodeChildrenChangedEventTokenVector[i];
                 m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + i);
+                winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged(token);
+                selectedNodes->RemoveAtCore(i);
             }
         }
         break;
@@ -1150,8 +1166,10 @@ void ViewModel::SelectedNodeChildrenChanged(winrt::TreeViewNode const& sender, w
 
             if (ancestorNode != m_originNode.get())
             {
-                selectedNodes->RemoveAtCore(i);
+                const auto token = m_selectedNodeChildrenChangedEventTokenVector[i];
                 m_selectedNodeChildrenChangedEventTokenVector.erase(m_selectedNodeChildrenChangedEventTokenVector.begin() + i);
+                winrt::get_self<TreeViewNode>(selectNode)->ChildrenChanged(token);
+                selectedNodes->RemoveAtCore(i);
 
                 // We've removed the node at position i, so we should keep i at the same position
                 // because the new node at position i is a different one.
