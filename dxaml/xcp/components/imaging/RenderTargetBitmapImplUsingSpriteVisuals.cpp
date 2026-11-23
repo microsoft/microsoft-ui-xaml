@@ -125,6 +125,19 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
         bool handled = false;
         const HRESULT captureHr = capture(m_uiElement.get(), matrix, width, height, static_cast<uint8_t*>(address),
             static_cast<uint32_t>(stride), &handled);
+        if (SUCCEEDED(captureHr) && handled)
+        {
+            // Immediate backends draw images from software surfaces and the staging bits are not readable once
+            // uploaded, so keep a CPU copy for CRenderTargetBitmap to expose as its software surface.
+            m_immediatePixels.resize(static_cast<size_t>(width) * height);
+            for (uint32_t y = 0; y < height; ++y)
+            {
+                memcpy(m_immediatePixels.data() + static_cast<size_t>(y) * width,
+                    static_cast<const uint8_t*>(address) + static_cast<size_t>(y) * stride, static_cast<size_t>(width) * 4);
+            }
+            m_immediateWidth = width;
+            m_immediateHeight = height;
+        }
         IFC_RETURN(hwTexture->Unlock());
         IFC_RETURN(captureHr);
         if (handled)

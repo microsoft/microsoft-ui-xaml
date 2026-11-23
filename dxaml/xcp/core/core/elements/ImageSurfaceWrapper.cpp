@@ -62,6 +62,7 @@ ImageSurfaceWrapper::ImageSurfaceWrapper(
     , m_forceRecreateHardwareResources(false)
 {
     XCP_WEAK(&m_pCoreNoRef);
+    BumpContentGeneration();
 }
 
 ImageSurfaceWrapper::~ImageSurfaceWrapper()
@@ -276,6 +277,13 @@ void ImageSurfaceWrapper::SetSoftwareSurface(_In_opt_ IPALSurface *pSoftwareSurf
     //ASSERT(((m_pImageSurfaceHardware == NULL) && (m_pD2DBitmap == NULL)) || m_mustKeepSystemMemory);
 
     ReplaceInterface(m_pImageSurfaceSoftware, pSoftwareSurface);
+    BumpContentGeneration();
+}
+
+void ImageSurfaceWrapper::BumpContentGeneration()
+{
+    static std::atomic<uint64_t> s_contentGeneration{ 0 };
+    m_contentGeneration = ++s_contentGeneration;
 }
 
 //------------------------------------------------------------------------

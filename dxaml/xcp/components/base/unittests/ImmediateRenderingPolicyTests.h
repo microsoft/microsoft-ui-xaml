@@ -33,5 +33,9 @@ namespace ImmediateRenderingPolicyTests
         // ---- scrolling ----
         TEST_METHOD(ScrollBlitNeedsWholePixelTranslation);
         TEST_METHOD(ScrollBlitRefusesZoomChange);
+        // ---- imaging ----
+        TEST_METHOD(AppCompositionBrushFallsBack);
+        TEST_METHOD(NineGridCellsMapInsets);
+        TEST_METHOD(NineGridOverlappingInsetsShrink);
     };
 }

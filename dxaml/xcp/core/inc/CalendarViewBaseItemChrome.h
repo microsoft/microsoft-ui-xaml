@@ -27,6 +27,8 @@ enum class CalendarViewBaseItemChromeLayerPosition
 
 class CCalendarViewBaseItemChrome : public CControl
 {
+    // ---- imaging ----
+    friend class ImmediateRenderer; // draws the chrome layers without an IContentRenderer
 
 protected:
     CCalendarViewBaseItemChrome(

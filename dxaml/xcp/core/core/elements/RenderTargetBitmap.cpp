@@ -312,6 +312,24 @@ CRenderTargetBitmap::PostDraw()
         m_rtbTexture.reset();
     }
 
+    // ---- imaging ----
+    // Immediate rendering draws images from software surfaces: expose the captured pixels as one. Painters copy kept
+    // system-memory surfaces, so the previous buffer can be released once the new surface replaces it.
+    {
+        uint32_t width = 0;
+        uint32_t height = 0;
+        std::vector<uint32_t> pixels = static_cast<RenderTargetBitmapImplUsingSpriteVisuals*>(m_impl.get())->TakeImmediatePixels(&width, &height);
+        if (!pixels.empty())
+        {
+            xref_ptr<CMemorySurface> memorySurface;
+            IFC(CMemorySurface::Create(pixelColor32bpp_A8R8G8B8, width, height, width * sizeof(uint32_t),
+                static_cast<XUINT32>(pixels.size() * sizeof(uint32_t)), pixels.data(), memorySurface.ReleaseAndGetAddressOf()));
+            m_pImageSurfaceWrapper->SetKeepSystemMemory();
+            m_pImageSurfaceWrapper->SetSoftwareSurface(memorySurface.get());
+            m_immediatePixels.swap(pixels);
+        }
+    }
+
     // Flush any pending texture updates since the update may have been queued but it requires a flush to guarantee
     // that GetPixels can get the surface bits.
     IFC(GetContext()->GetHWTextureManagerNoRef()->SubmitTextureUpdates());

@@ -445,6 +445,8 @@ namespace ImmediateRenderingDetail
         const CUIElement* owner = nullptr;
         uint32_t foldedFrom = UINT32_MAX; // index of the opacity group folded into this command (subtree reuse)
         bool pinned = false;   // PushLayer of an independent layer: never folded (the render thread re-evaluates it)
+        // ---- imaging ----
+        uint64_t generation = 0; // Bitmap: pixel generation of `key` (ImageSurfaceWrapper::GetContentGeneration)
     };
 
     struct GlyphRunData
@@ -523,13 +525,23 @@ namespace ImmediateRenderingDetail
         uint32_t spanBegin = 0;
     };
 
+    // A Bitmap command's pixels. key is the image's stable identity (its ImageSurfaceWrapper, so an animated GIF or a
+    // WriteableBitmap keeps one painter bitmap) and generation identifies the current pixels (unique process-wide).
+    struct BitmapRef
+    {
+        xref_ptr<IPALSurface> surface;
+        uint64_t key = 0;
+        uint64_t generation = 0;
+        bool borrow = false; // decoded surface XAML never writes again: a CPU painter may draw from it in place
+    };
+
     struct DisplayList
     {
         std::vector<Command> commands;
         std::vector<std::wstring> strings;
         std::vector<GlyphRunData> glyphRuns;
         std::vector<PathGeometryData> paths; // FillPath/StrokePath: index
-        std::vector<xref_ptr<IPALSurface>> bitmaps; // Bitmap commands: decoded software surfaces (key = pointer)
+        std::vector<BitmapRef> bitmaps; // Bitmap commands: decoded software surfaces
         std::unordered_map<const CUIElement*, ElementRecord> records;
         std::vector<const CUIElement*> recordOrder; // records in creation order (subtree spans index this)
         std::vector<ScrollerInfo> scrollers;
@@ -591,12 +603,14 @@ struct ImmediateRenderer::IslandState
     // Present1 dirty rects already carry the rest of the previous buffer forward, so this is off by default).
     std::vector<RectF> presentedDamage;
     bool presentedFull = true;
-    // Decoded image surfaces uploaded to the painter (EnsureBitmap). The reference keeps the key (surface pointer) from
-    // being reused while the painter holds the bitmap; entries unused for c_bitmapIdleFrames are released.
+    // Decoded image surfaces uploaded to the painter (EnsureBitmap), keyed by BitmapRef::key. The surface reference keeps
+    // the uploaded (possibly borrowed) pixels alive while the painter holds the bitmap; entries unused for
+    // c_bitmapIdleFrames are released.
     struct BitmapEntry
     {
         xref_ptr<IPALSurface> surface;
         uint64_t lastUsed = 0;
+        uint64_t generation = 0;
     };
     std::unordered_map<uint64_t, BitmapEntry> bitmaps;
     uint64_t frames = 0;
@@ -817,6 +831,14 @@ void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const
     std::wstring key(className.IsNullOrEmpty() ? L"" : className.GetBuffer());
     key += L'|';
     key += detail;
+    if (m_deferredUnsupported != nullptr)
+    {
+        if (m_reportedUnsupported.find(key) == m_reportedUnsupported.end())
+        {
+            m_deferredUnsupported->emplace_back(className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
+        }
+        return;
+    }
     if (m_reportedUnsupported.insert(key).second)
     {
         TraceUnsupportedContent(m_mode, className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
@@ -1118,6 +1140,7 @@ namespace
             fnv.AddValue(command.fontWeight);
             fnv.AddValue(command.opacity);
             fnv.AddValue(command.key);
+            fnv.AddValue(command.generation);
             fnv.AddValue(command.sourceRect);
             if (command.type == CommandType::Text)
             {
@@ -1428,7 +1451,7 @@ namespace
 
         // Draws the source rect (bitmap pixels) of a decoded surface into dest (element space). rx/ry > 0 clips the
         // image to a rounded rect (ImageBrush on an Ellipse or rounded Border).
-        void Bitmap(_In_ IPALSurface* surface, const RectF& dest, const RectF& source, float opacity, const CMILMatrix& m,
+        void Bitmap(const BitmapRef& bitmap, const RectF& dest, const RectF& source, float opacity, const CMILMatrix& m,
             const RectF& clipRect, float rx, float ry, _In_opt_ const CMILMatrix* clipTransform = nullptr)
         {
             if (IsEmptyRect(dest) || !(opacity > 0))
@@ -1456,9 +1479,10 @@ namespace
             c.opacity = opacity;
             c.radiusX = rx;
             c.radiusY = ry;
-            c.key = reinterpret_cast<uint64_t>(surface);
+            c.key = bitmap.key;
+            c.generation = bitmap.generation;
             c.index = static_cast<uint32_t>(list.bitmaps.size());
-            list.bitmaps.emplace_back(surface);
+            list.bitmaps.push_back(bitmap);
             const size_t before = list.commands.size();
             Push(c, dest, m, ctx.clip, nullptr);
             if (pushIndex != SIZE_MAX)
@@ -1702,7 +1726,7 @@ namespace
         float ry,
         const CMILMatrix& world,
         float scale,
-        bool nineGrid)
+        _In_opt_ const XTHICKNESS* nineGrid)
     {
         if (!(brush->m_eOpacity > 0) || IsEmptyRect(bounds) || brush->m_pImageSource == nullptr)
         {
@@ -1728,6 +1752,15 @@ namespace
         IPALSurface* surface = brush->GetSoftwareSurface();
         if (surface == nullptr)
         {
+            // ---- imaging ----
+            // SoftwareBitmapSource uploads straight to a hardware surface; ask for a kept software copy (async, the
+            // source redraws when it arrives).
+            if (brush->m_pImageSource->HasHardwareSurfaces() &&
+                brush->m_pImageSource->OfTypeByIndex<KnownTypeIndex::SoftwareBitmapSource>())
+            {
+                IGNOREHR(brush->m_pImageSource->ReloadReleasedSoftwareImage());
+                return nullptr;
+            }
             // Still loading/decoding, or decoded to a hardware surface (SVG, SurfaceImageSource, ...).
             return brush->m_pImageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
         }
@@ -1742,6 +1775,35 @@ namespace
         {
             return nullptr;
         }
+
+        BitmapRef bitmap;
+        bitmap.surface = surface;
+        ImageSurfaceWrapper* wrapper = brush->m_pImageSource->GetImageSurfaceWrapperNoRef();
+        bitmap.key = reinterpret_cast<uint64_t>(wrapper);
+        bitmap.generation = wrapper->GetContentGeneration();
+        // Decoded images are immutable once delivered (a new frame or decode replaces the surface); WriteableBitmap and
+        // other kept surfaces may change in place, so painters copy those.
+        bitmap.borrow = !wrapper->MustKeepSystemMemory();
+        const float opacity = std::min(1.0f, brush->m_eOpacity);
+
+        if (nineGrid != nullptr)
+        {
+            // Image.NineGrid (Composition: CompositionNineGridBrush over the whole surface stretched to the element, see
+            // WUCBrushManager::GetNineGridBrush): source insets are the NineGrid in DIPs times the realization scale,
+            // destination insets are the NineGrid in element DIPs.
+            const float realizeX = std::sqrt(world.GetM11() * world.GetM11() + world.GetM12() * world.GetM12()) * scale;
+            const float realizeY = std::sqrt(world.GetM21() * world.GetM21() + world.GetM22() * world.GetM22()) * scale;
+            const ImmediateRenderingPolicy::NineGridInsets insets{ nineGrid->left, nineGrid->top, nineGrid->right, nineGrid->bottom };
+            ImmediateRenderingPolicy::NineGridCell cells[9];
+            const uint32_t count = ImmediateRenderingPolicy::ComputeNineGridCells(bounds,
+                static_cast<float>(surface->GetWidth()), static_cast<float>(surface->GetHeight()), insets, realizeX, realizeY, cells);
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                emitter.Bitmap(bitmap, cells[i].dest, cells[i].source, opacity, world, bounds, rx, ry);
+            }
+            return nullptr;
+        }
+
         CMILMatrix identity(true);
         CMILMatrix brushToElement(true);
         if (FAILED(brush->ComputeDeviceToSource(&identity, &xbounds, &brushToElement)))
@@ -1756,9 +1818,9 @@ namespace
             imageToWorld.Append(world);
             const float rsx = surface->GetWidth() / natural.Width;
             const float rsy = surface->GetHeight() / natural.Height;
-            emitter.Bitmap(surface, { 0, 0, natural.Width, natural.Height }, { 0, 0, natural.Width * rsx, natural.Height * rsy },
-                std::min(1.0f, brush->m_eOpacity), imageToWorld, bounds, rx, ry, &world);
-            return nineGrid ? L"Image NineGrid" : nullptr;
+            emitter.Bitmap(bitmap, { 0, 0, natural.Width, natural.Height }, { 0, 0, natural.Width * rsx, natural.Height * rsy },
+                opacity, imageToWorld, bounds, rx, ry, &world);
+            return nullptr;
         }
 
         const RectF dest = TransformRectBounds(brushToElement, { 0, 0, natural.Width, natural.Height });
@@ -1771,8 +1833,8 @@ namespace
         const float sy = surface->GetHeight() / (dest.bottom - dest.top);
         const RectF source{ (visible.left - dest.left) * sx, (visible.top - dest.top) * sy,
             (visible.right - dest.left) * sx, (visible.bottom - dest.top) * sy };
-        emitter.Bitmap(surface, visible, source, std::min(1.0f, brush->m_eOpacity), world, bounds, rx, ry);
-        return nineGrid ? L"Image NineGrid" : nullptr;
+        emitter.Bitmap(bitmap, visible, source, opacity, world, bounds, rx, ry);
+        return nullptr;
     }
 
     // ---- text ----
@@ -1780,7 +1842,7 @@ namespace
     {
         CMILMatrix m = transform;
         m.Append(m_world);
-        if (const wchar_t* detail = EmitImageBrush(m_emitter, brush, { rect.left, rect.top, rect.right, rect.bottom }, 0, 0, m, m_emitter.ctx.scale, false))
+        if (const wchar_t* detail = EmitImageBrush(m_emitter, brush, { rect.left, rect.top, rect.right, rect.bottom }, 0, 0, m, m_emitter.ctx.scale, nullptr))
         {
             imageDetail = detail;
         }
@@ -1891,6 +1953,8 @@ namespace
         list.commands.push_back(pop);
     }
 }
+
+#include "ImmediateRenderer.Imaging.inl" // ---- imaging ----
 
 // S13: LinearGradientBrush / AcrylicBrush fill of a rounded rect, or of the ring between `rect` and `hole` (gradient
 // borders). Returns true when the brush was handled here (callers skip their solid-color approximation).
@@ -2068,11 +2132,24 @@ void ImmediateRenderer::EmitContent(
         {
             TryGetTransitionColor(element, &backgroundColor); // ---- transitions: BrushTransition
         }
+        // ---- imaging ----
+        // Like BaseContentRenderer: a window with a SystemBackdrop (Mica/DesktopAcrylic) or a XamlIsland has a
+        // transparent island root, so the system-drawn backdrop shows through the premultiplied swap chain.
+        if (type == KnownTypeIndex::XamlIslandRoot && static_cast<CXamlIslandRoot*>(element)->HasTransparentBackground())
+        {
+            backgroundResult = BrushResult::None;
+            // The backdrop itself is system-drawn, but it does not show through the transparent composition swap
+            // chain (the area behind the content composes white; a colour sprite in the same place blends correctly).
+            if (IslandHasSystemBackdrop(static_cast<CXamlIslandRoot*>(element)))
+            {
+                ReportUnsupported(element, L"SystemBackdrop:approximated");
+            }
+        }
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
         if (auto imageBrush = do_pointer_cast<CImageBrush>(background.get()))
         {
-            if (const wchar_t* detail = EmitImageBrush(emitter, imageBrush, { 0, 0, width, height }, radius, radius, world, ctx.scale, false))
+            if (const wchar_t* detail = EmitImageBrush(emitter, imageBrush, { 0, 0, width, height }, radius, radius, world, ctx.scale, nullptr))
             {
                 ReportUnsupported(element, detail);
             }
@@ -2187,7 +2264,7 @@ void ImmediateRenderer::EmitContent(
         }
         else if (fillImage != nullptr)
         {
-            if (const wchar_t* imageDetail = EmitImageBrush(emitter, fillImage, geometry, rx, ry, world, ctx.scale, false))
+            if (const wchar_t* imageDetail = EmitImageBrush(emitter, fillImage, geometry, rx, ry, world, ctx.scale, nullptr))
             {
                 ReportUnsupported(element, imageDetail);
             }
@@ -2360,7 +2437,19 @@ void ImmediateRenderer::EmitContent(
         auto image = static_cast<CImageBase*>(element);
         if (CImageBrush* brush = image->GetBackgroundBrush())
         {
-            if (const wchar_t* detail = EmitImageBrush(emitter, brush, { 0, 0, width, height }, 0, 0, world, ctx.scale, image->HasNinegrid()))
+            // HWWalk::ShouldImageUseNineGrid: Stretch=None in a Canvas draws at source size without the nine-grid.
+            XTHICKNESS grid{};
+            const XTHICKNESS* nineGrid = nullptr;
+            if (image->HasNinegrid())
+            {
+                const CUIElement* parent = image->GetUIElementAdjustedParentInternal(FALSE);
+                if (!(image->m_Stretch == DirectUI::Stretch::None && parent != nullptr && parent->GetTypeIndex() == KnownTypeIndex::Canvas))
+                {
+                    grid = image->GetNinegrid();
+                    nineGrid = &grid;
+                }
+            }
+            if (const wchar_t* detail = EmitImageBrush(emitter, brush, { 0, 0, width, height }, 0, 0, world, ctx.scale, nineGrid))
             {
                 ReportUnsupported(element, detail);
             }
@@ -2370,25 +2459,6 @@ void ImmediateRenderer::EmitContent(
         || type == KnownTypeIndex::MediaPlayerPresenter)
     {
         ReportUnsupported(element, L"Element content");
-    }
-    else if (element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
-    {
-        // Rounded chrome (the default) draws only density bars itself; backgrounds, borders and text are children.
-        auto chrome = static_cast<CCalendarViewBaseItemChrome*>(element);
-        if (!chrome->IsRoundedCalendarViewBaseItemChromeEnabled())
-        {
-            ReportUnsupported(element, L"CalendarView square item chrome");
-        }
-        XRECTF bars[10];
-        wu::Color colors[10];
-        float barOpacity = 1.0f;
-        const uint32_t barCount = chrome->GetDensityBars(bars, colors, &barOpacity);
-        for (uint32_t i = 0; i < barCount; ++i)
-        {
-            const wu::Color c = colors[i];
-            const uint32_t argb = (static_cast<uint32_t>(c.A) << 24) | (c.R << 16) | (c.G << 8) | c.B;
-            emitter.Fill(FromXRect(bars[i]), 0, 0, ToColor(argb, barOpacity), world);
-        }
     }
 }
 
@@ -3172,13 +3242,20 @@ void ImmediateRenderer::Walk(
     XUINT32 childCount = 0;
     if (!IsEmptyRect(childCtx.clip))
     {
-        CUIElement** children = nullptr;
-        element->GetChildrenInRenderOrder(&children, &childCount);
-        for (XUINT32 i = 0; i < childCount; ++i)
+        if (element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>()) // ---- imaging ----
         {
-            if (children[i] != nullptr)
+            childCount = WalkCalendarViewItem(element, ctx, childCtx, list);
+        }
+        else
+        {
+            CUIElement** children = nullptr;
+            element->GetChildrenInRenderOrder(&children, &childCount);
+            for (XUINT32 i = 0; i < childCount; ++i)
             {
-                Walk(children[i], childCtx, list);
+                if (children[i] != nullptr)
+                {
+                    Walk(children[i], childCtx, list);
+                }
             }
         }
         // Like HWWalk::Render: GetChildrenInRenderOrder omits a local transition root (the focus rect host's LTE).
@@ -3790,6 +3867,27 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
         auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
         m_pendingFallback = nullptr;
+        std::vector<std::pair<std::wstring, std::wstring>> deferredUnsupported;
+        m_deferredUnsupported = &deferredUnsupported;
+        auto flushUnsupported = wil::scope_exit([&]
+        {
+            m_deferredUnsupported = nullptr;
+            if (m_pendingFallback != nullptr)
+            {
+                return; // the window falls back; Composition renders that content
+            }
+            for (const auto& [className, detail] : deferredUnsupported)
+            {
+                if (m_reportedUnsupported.insert(className + L'|' + detail).second)
+                {
+                    TraceUnsupportedContent(m_mode, className.c_str(), detail.c_str());
+                    if (FILE* stats = GetStatsFile())
+                    {
+                        fwprintf(stats, L"# unsupported %s %s\n", className.c_str(), detail.c_str());
+                    }
+                }
+            }
+        });
         walkSurface(this, walkContext, root, list);
         list.snapshotQpc = QpcMicroseconds();
     }
@@ -4159,34 +4257,43 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     // Upload decoded images the painter has not seen, and release ones no longer drawn.
     constexpr uint64_t c_bitmapIdleFrames = 120;
     ++state.frames;
-    for (const auto& decoded : list.bitmaps)
+    for (const BitmapRef& decoded : list.bitmaps)
     {
-        const uint64_t key = reinterpret_cast<uint64_t>(decoded.get());
+        const uint64_t key = decoded.key;
         auto found = state.bitmaps.find(key);
-        if (found == state.bitmaps.end())
+        // Generations are unique and increasing; a newer one replaces the uploaded pixels (animated GIF frame,
+        // WriteableBitmap.Invalidate, re-decode at another size). Within a frame all commands of a key share the pixels.
+        if (found == state.bitmaps.end() || found->second.generation < decoded.generation)
         {
             void* pixels = nullptr;
             XINT32 stride = 0;
             XUINT32 w = 0;
             XUINT32 h = 0;
-            if (FAILED(decoded->Lock(&pixels, &stride, &w, &h)))
+            if (FAILED(decoded.surface->Lock(&pixels, &stride, &w, &h)))
             {
                 continue;
             }
             BitmapSource source;
             source.key = key;
-            source.generation = 1;
+            source.generation = decoded.generation;
             source.width = w;
             source.height = h;
             source.stride = static_cast<uint32_t>(stride);
             source.pixels = static_cast<const uint8_t*>(pixels);
+            source.borrowPixels = decoded.borrow;
             const HRESULT ensureHr = state.painter->EnsureBitmap(source);
-            IGNOREHR(decoded->Unlock());
+            IGNOREHR(decoded.surface->Unlock());
             if (FAILED(ensureHr))
             {
                 continue;
             }
-            found = state.bitmaps.emplace(key, IslandState::BitmapEntry{ decoded, 0 }).first;
+            if (found == state.bitmaps.end())
+            {
+                found = state.bitmaps.emplace(key, IslandState::BitmapEntry{}).first;
+            }
+            // Replaced after the upload so borrowed pixels of the previous generation outlive the painter's use.
+            found->second.surface = decoded.surface;
+            found->second.generation = decoded.generation;
         }
         found->second.lastUsed = state.frames;
     }

@@ -150,7 +150,12 @@ void ImmediateRenderer::EmitConnectedAnimations(
         {
             const RectF content = FromXRect(state.sourceContent);
             const RectF crop = FromXRect(state.sourceCrop);
-            emitter.Bitmap(state.snapshot.get(), content, crop, sourceOpacity, host, ctx.clip, 0, 0);
+            // Captured once per animation and never written again; the island's bitmap cache keeps it alive while cached,
+            // so its address is a stable key.
+            BitmapRef snapshot;
+            snapshot.surface = state.snapshot.get();
+            snapshot.key = reinterpret_cast<uint64_t>(state.snapshot.get());
+            emitter.Bitmap(snapshot, content, crop, sourceOpacity, host, ctx.clip, 0, 0);
         }
         if (drawDestination && destinationOpacity > 0 && state.destRect.Width > 0 && state.destRect.Height > 0)
         {

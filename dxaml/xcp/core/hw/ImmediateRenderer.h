@@ -220,4 +220,15 @@ private:
     // The destination being drawn through its connected animation host (walked although hidden in place).
     const CUIElement* m_connectedOverlayElement = nullptr;
     float m_connectedOverlayOpacity = 1;
+    // ---- imaging (ImmediateRenderer.Imaging.inl) ----
+    // CalendarViewBaseItem: walks the children in HWWalk::CalendarViewBaseItemRenderChildren order with the chrome the item
+    // draws itself (density bars; legacy chrome backgrounds, borders and focus). Returns the child count.
+    uint32_t WalkCalendarViewItem(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& context,
+        const ImmediateRenderingDetail::WalkContext& childContext,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+    // F11: unsupported content found while walking a surface is reported only once the walk is known not to fall the
+    // window back (a fallen-back window renders that content in Composition). Null outside RenderSurface's walk.
+    std::vector<std::pair<std::wstring, std::wstring>>* m_deferredUnsupported = nullptr;
 };

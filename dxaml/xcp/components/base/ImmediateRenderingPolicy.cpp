@@ -41,6 +41,14 @@ namespace ImmediateRenderingPolicy
         {
             return L"Hand-off Composition visual";
         }
+        if (interop.appCompositionBrush)
+        {
+            return L"XamlCompositionBrushBase";
+        }
+        if (interop.appXamlLight)
+        {
+            return L"XamlLight";
+        }
         return nullptr;
     }
 
@@ -527,5 +535,57 @@ namespace ImmediateRenderingPolicy
         *dx = static_cast<int32_t>(rx);
         *dy = static_cast<int32_t>(ry);
         return true;
+    }
+
+    // ---- imaging ----
+
+    uint32_t ComputeNineGridCells(const RectF& dest, float sourceWidth, float sourceHeight, const NineGridInsets& insets,
+        float realizationScaleX, float realizationScaleY, _Out_writes_(9) NineGridCell* cells) noexcept
+    {
+        const float destWidth = dest.right - dest.left;
+        const float destHeight = dest.bottom - dest.top;
+        if (!(destWidth > 0 && destHeight > 0 && sourceWidth > 0 && sourceHeight > 0))
+        {
+            return 0;
+        }
+
+        // Fits a pair of insets into `size`, shrinking both proportionally when they overlap.
+        auto fit = [](float a, float b, float size, float* outA, float* outB)
+        {
+            a = std::max(a, 0.0f);
+            b = std::max(b, 0.0f);
+            const float sum = a + b;
+            const float k = sum > size && sum > 0 ? size / sum : 1.0f;
+            *outA = a * k;
+            *outB = b * k;
+        };
+
+        const float sx = realizationScaleX > 0 ? realizationScaleX : 1.0f;
+        const float sy = realizationScaleY > 0 ? realizationScaleY : 1.0f;
+        float sl, sr, st, sb, dl, dr, dt, db;
+        fit(insets.left * sx, insets.right * sx, sourceWidth, &sl, &sr);
+        fit(insets.top * sy, insets.bottom * sy, sourceHeight, &st, &sb);
+        fit(insets.left, insets.right, destWidth, &dl, &dr);
+        fit(insets.top, insets.bottom, destHeight, &dt, &db);
+
+        const float sxs[4] = { 0, sl, sourceWidth - sr, sourceWidth };
+        const float sys[4] = { 0, st, sourceHeight - sb, sourceHeight };
+        const float dxs[4] = { dest.left, dest.left + dl, dest.right - dr, dest.right };
+        const float dys[4] = { dest.top, dest.top + dt, dest.bottom - db, dest.bottom };
+
+        uint32_t count = 0;
+        for (int row = 0; row < 3; ++row)
+        {
+            for (int column = 0; column < 3; ++column)
+            {
+                const RectF source{ sxs[column], sys[row], sxs[column + 1], sys[row + 1] };
+                const RectF target{ dxs[column], dys[row], dxs[column + 1], dys[row + 1] };
+                if (source.right > source.left && source.bottom > source.top && target.right > target.left && target.bottom > target.top)
+                {
+                    cells[count++] = { target, source };
+                }
+            }
+        }
+        return count;
     }
 }

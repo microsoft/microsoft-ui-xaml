@@ -41,6 +41,7 @@
         <None Include="ImmediateRenderer.Independent.inl"/>
         <None Include="ImmediateRenderer.Clips3D.inl"/>
         <ClInclude Include="ImmediateRenderer.HandOff.h"/>
+        <None Include="ImmediateRenderer.Imaging.inl"/>
         <ClInclude Include="ManipulationTransform.h"/>
         <ClInclude Include="precomp.h"/>
         <ClInclude Include="VisualContentRenderer.h"/>

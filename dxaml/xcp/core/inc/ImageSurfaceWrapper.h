@@ -185,7 +185,20 @@ public:
 
     bool IsHardwareLocked() { return m_hardwareMutex; }
 
-    void SetUpdateRequired(bool requiresUpdate) { m_isUpdateRequired = requiresUpdate; }
+    void SetUpdateRequired(bool requiresUpdate)
+    {
+        m_isUpdateRequired = requiresUpdate;
+        if (requiresUpdate)
+        {
+            BumpContentGeneration();
+        }
+    }
+
+    // Immediate rendering: identifies the software surface's current pixels. Bumped when the surface is replaced (decode,
+    // animated GIF frame) or its pixels change in place (WriteableBitmap.Invalidate). Values are unique process-wide, so
+    // (wrapper, generation) never repeats even when a wrapper's address is reused.
+    uint64_t GetContentGeneration() const { return m_contentGeneration; }
+    void BumpContentGeneration();
 
     bool IsUpdateRequired() { return m_isUpdateRequired; }
 
@@ -305,6 +318,8 @@ private:
     // If the SW rasterizer ever needs to use the bitmap, then this bit is set
     // which indicates that the system memory copy should not be released
     //
+    uint64_t m_contentGeneration = 0;
+
     bool m_mustKeepSystemMemory : 1;
     bool m_lostHardwareResources : 1;
 

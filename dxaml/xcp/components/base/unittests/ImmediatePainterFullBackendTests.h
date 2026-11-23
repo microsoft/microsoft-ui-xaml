@@ -61,5 +61,10 @@ namespace RenderingBackendTests
         TEST_METHOD(InvertRectangleAntialiasesFractionalEdges);
         TEST_METHOD(InvertRectangleRespectsTransformClipAndDamage);
         TEST_METHOD(InvertRectangleCountsInStats);
+        // ---- imaging ----
+        // Borrowed (zero-copy) bitmaps: drawn from caller memory with padded strides and sub-rects, refreshed per generation.
+        TEST_METHOD(BorrowedBitmapDrawsLikeCopiedBitmap);
+        TEST_METHOD(BorrowedBitmapSourceRectHonorsStride);
+        TEST_METHOD(BitmapNewGenerationRereadsPixels);
     };
 }
