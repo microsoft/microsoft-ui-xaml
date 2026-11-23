@@ -622,7 +622,7 @@ Policy unit tests cover static properties (no fallback), an animated property (f
 
 Every page measured at most 0.0005 in GDI+ and D2D-SW. The differences are antialiasing at edges, so the pages gate at 0.005. `handoff-path-clip` falls back as expected (`# fallback Grid Hand-off Composition visual`).
 
-**Memory.** No per-element retained surfaces were added. The extra memory is the D2D perspective slots described above, which are bounded and released after any frame that doesn't use them, and transient GDI+ layer surfaces for antialiased geometry clips and perspective layers.
+**Memory.** No per-element retained surfaces were added. The extra memory is the D2D perspective slots described above, which are bounded and released after any frame that doesn't use them, and transient GDI+ layer surfaces for antialiased geometry clips and perspective layers. A quick `form` run (programmatic input, 1 repetition) measured peak private bytes of 47.0 MB for Composition, 44.9 MB for GDI+ and 61.7 MB for D2D-SW. Earlier main-line runs of the same scene measured 45.5 MB (GDI+) and 60.6-66.3 MB (D2D-SW), so these numbers are within run-to-run noise.
 
 ## Source references
 
