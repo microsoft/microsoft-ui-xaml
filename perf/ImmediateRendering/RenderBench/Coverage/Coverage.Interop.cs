@@ -109,7 +109,8 @@ static class InteropCoverage
         };
     }
 
-    // App property change on the element's hand-off visual (ElementCompositionPreview.GetElementVisual).
+    // App Composition animation on the element's hand-off visual (ElementCompositionPreview.GetElementVisual), short enough
+    // to finish before the capture. Static hand-off properties are painted immediately (F4 handoff-* pages, clips3d).
     [CoveragePage(Family, "hand-off-visual", ExpectFallback = true)]
     public static CoveragePage HandOff(CoverageContext context)
     {
@@ -121,8 +122,11 @@ static class InteropCoverage
             {
                 var visual = ElementCompositionPreview.GetElementVisual(target);
                 visual.CenterPoint = new Vector3(60, 30, 0);
-                visual.RotationAngleInDegrees = 12;
-                await Task.Delay(300);
+                var animation = visual.Compositor.CreateScalarKeyFrameAnimation();
+                animation.InsertKeyFrame(1, 12);
+                animation.Duration = TimeSpan.FromMilliseconds(50);
+                visual.StartAnimation("RotationAngleInDegrees", animation);
+                await Task.Delay(400);
             },
         };
     }
