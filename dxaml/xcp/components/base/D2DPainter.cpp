@@ -1410,6 +1410,25 @@ namespace RenderingBackend
                 CountPrimitive(bounds);
             }
 
+            ComPtr<ID2D1PathGeometry> CreateBezierEllipse(const D2D1_ELLIPSE& e) noexcept
+            {
+                constexpr float k = 0.5522847498f;
+                const float cx = e.point.x, cy = e.point.y, rx = e.radiusX, ry = e.radiusY;
+                ComPtr<ID2D1PathGeometry> geometry;
+                ComPtr<ID2D1GeometrySink> sink;
+                if (FAILED(m_factory->CreatePathGeometry(&geometry)) || FAILED(geometry->Open(&sink)))
+                {
+                    return nullptr;
+                }
+                sink->BeginFigure(D2D1::Point2F(cx + rx, cy), D2D1_FIGURE_BEGIN_FILLED);
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx + rx, cy + k * ry), D2D1::Point2F(cx + k * rx, cy + ry), D2D1::Point2F(cx, cy + ry)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx - k * rx, cy + ry), D2D1::Point2F(cx - rx, cy + k * ry), D2D1::Point2F(cx - rx, cy)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx - rx, cy - k * ry), D2D1::Point2F(cx - k * rx, cy - ry), D2D1::Point2F(cx, cy - ry)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx + k * rx, cy - ry), D2D1::Point2F(cx + rx, cy - k * ry), D2D1::Point2F(cx + rx, cy)));
+                sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+                return SUCCEEDED(sink->Close()) ? geometry : nullptr;
+            }
+
             void StrokeRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, float thickness, const BrushDesc& brush,
                 _In_opt_ const StrokeStyleDesc* style) noexcept override
             {
@@ -1426,9 +1445,19 @@ namespace RenderingBackend
                 const float width = rect.right - rect.left, height = rect.bottom - rect.top;
                 if (radiusX > 0 && radiusY > 0 && radiusX * 2 >= width && radiusY * 2 >= height)
                 {
-                    // An ellipse geometry (like Composition's ellipse), so a dash pattern starts at the rightmost point.
-                    m_context->DrawEllipse(D2D1::Ellipse(D2D1::Point2F((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2),
-                        width / 2, height / 2), d2dBrush.Get(), thickness, strokeStyle);
+                    const D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2), width / 2, height / 2);
+                    ComPtr<ID2D1PathGeometry> bezierEllipse = style != nullptr && style->dashCount > 0 ? CreateBezierEllipse(ellipse) : nullptr;
+                    if (bezierEllipse)
+                    {
+                        // Dashes follow the four-Bezier outline Composition strokes (from the rightmost point,
+                        // clockwise): D2D's analytic ellipse distributes dash lengths slightly differently.
+                        m_context->DrawGeometry(bezierEllipse.Get(), d2dBrush.Get(), thickness, strokeStyle);
+                    }
+                    else
+                    {
+                        // An ellipse geometry (like Composition's ellipse), so a dash pattern starts at the rightmost point.
+                        m_context->DrawEllipse(ellipse, d2dBrush.Get(), thickness, strokeStyle);
+                    }
                 }
                 else if (radiusX > 0 && radiusY > 0)
                 {

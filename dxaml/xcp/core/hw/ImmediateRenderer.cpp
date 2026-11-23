@@ -1431,6 +1431,20 @@ namespace
         {
             const bool hasBrushBounds = m_hasBrushBounds;
             m_hasBrushBounds = false;
+            if (!hasBrushBounds && ImmediateRenderingShapes::IsGradientBrush(brush))
+            {
+                // No line bounds (Glyphs): Composition maps the brush to the glyph run's realization (ink) bounds.
+                XRECTF_RB ink;
+                if (GlyphRunInkBounds(run, &ink))
+                {
+                    transform.TransformBounds(&ink, &ink);
+                    m_brushBounds = { ink.left, ink.top, ink.right, ink.bottom };
+                    if (GradientGlyphRun(run, transform, brush, clipLeft, clipRight))
+                    {
+                        return;
+                    }
+                }
+            }
             if (hasBrushBounds && ImmediateRenderingShapes::IsGradientBrush(brush) && GradientGlyphRun(run, transform, brush, clipLeft, clipRight))
             {
                 return;
@@ -1465,6 +1479,52 @@ namespace
         bool unsupportedBrush = false;
 
     private:
+        // Black box of a (horizontal, left-to-right or right-to-left) glyph run in glyph-run space, from design metrics.
+        static bool GlyphRunInkBounds(const DWRITE_GLYPH_RUN& run, _Out_ XRECTF_RB* bounds)
+        {
+            *bounds = {};
+            if (run.fontFace == nullptr || run.glyphCount == 0 || run.glyphIndices == nullptr)
+            {
+                return false;
+            }
+            DWRITE_FONT_METRICS font{};
+            run.fontFace->GetMetrics(&font);
+            std::vector<DWRITE_GLYPH_METRICS> metrics(run.glyphCount);
+            if (font.designUnitsPerEm == 0 || FAILED(run.fontFace->GetDesignGlyphMetrics(run.glyphIndices, run.glyphCount, metrics.data(), run.isSideways)))
+            {
+                return false;
+            }
+            const float scale = run.fontEmSize / font.designUnitsPerEm;
+            const float direction = (run.bidiLevel & 1) ? -1.0f : 1.0f;
+            float left = FLT_MAX, top = FLT_MAX, right = -FLT_MAX, bottom = -FLT_MAX;
+            float pen = 0;
+            for (UINT32 i = 0; i < run.glyphCount; ++i)
+            {
+                const DWRITE_GLYPH_METRICS& m = metrics[i];
+                const float advance = run.glyphAdvances != nullptr ? run.glyphAdvances[i] : m.advanceWidth * scale;
+                const float ox = run.glyphOffsets != nullptr ? run.glyphOffsets[i].advanceOffset : 0;
+                const float oy = run.glyphOffsets != nullptr ? run.glyphOffsets[i].ascenderOffset : 0;
+                const float x0 = m.leftSideBearing * scale, x1 = (static_cast<float>(m.advanceWidth) - m.rightSideBearing) * scale;
+                const float y0 = (m.topSideBearing - m.verticalOriginY) * scale;
+                const float y1 = (static_cast<float>(m.advanceHeight) - m.bottomSideBearing - m.verticalOriginY) * scale;
+                const float origin = direction > 0 ? pen + ox : pen - advance - ox;
+                if (x1 > x0 && y1 > y0)
+                {
+                    left = std::min(left, origin + x0);
+                    right = std::max(right, origin + x1);
+                    top = std::min(top, y0 - oy);
+                    bottom = std::max(bottom, y1 - oy);
+                }
+                pen += direction * advance;
+            }
+            if (!(right > left) || !(bottom > top))
+            {
+                return false;
+            }
+            *bounds = { left, top, right, bottom };
+            return true;
+        }
+
         // Gradient foreground: the brush maps to the line's bounds (like D2DTextDrawingContext's brush bounds) and is
         // drawn in glyph-run space. false: draw the average color instead.
         bool GradientGlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_ CBrush* brush, float clipLeft, float clipRight)

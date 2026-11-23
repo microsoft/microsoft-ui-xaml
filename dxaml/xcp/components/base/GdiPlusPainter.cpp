@@ -2256,7 +2256,7 @@ namespace RenderingBackend
                 }
 
                 // Builds m_ramp: c_rampSize premultiplied BGRA samples of the brush's stops over [0, 1], interpolated
-                // with premultiplied alpha in sRGB or linear light, scaled by the brush opacity. false: draw nothing.
+                // with straight alpha (as D2D and Composition do) in sRGB or linear light, scaled by the brush opacity. false: draw nothing.
                 bool PrepareRamp(const BrushDesc& brush) noexcept
                 {
                     if (brush.stops == nullptr || brush.stopCount == 0 || !(brush.opacity > 0))
@@ -2292,10 +2292,10 @@ namespace RenderingBackend
                         {
                             if (!linear)
                             {
-                                return c0 * s0.color.a + (c1 * s1.color.a - c0 * s0.color.a) * f;
+                                return (c0 + (c1 - c0) * f) * a;
                             }
-                            const float l = toLinear(c0) * s0.color.a + (toLinear(c1) * s1.color.a - toLinear(c0) * s0.color.a) * f;
-                            return a > 0 ? toSRgb(std::clamp(l / a, 0.0f, 1.0f)) * a : 0.0f;
+                            const float l = toLinear(c0) + (toLinear(c1) - toLinear(c0)) * f;
+                            return toSRgb(std::clamp(l, 0.0f, 1.0f)) * a;
                         };
                         m_ramp[i] = (static_cast<uint32_t>(ToByte(a * opacity)) << 24) | (static_cast<uint32_t>(ToByte(channel(s0.color.r, s1.color.r) * opacity)) << 16) |
                             (static_cast<uint32_t>(ToByte(channel(s0.color.g, s1.color.g) * opacity)) << 8) | ToByte(channel(s0.color.b, s1.color.b) * opacity);

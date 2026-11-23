@@ -35,6 +35,7 @@ namespace RenderingBackendTests
         TEST_METHOD(SolidBrushMatchesColorPrimitives);
         TEST_METHOD(LinearGradientSpreadModes);
         TEST_METHOD(LinearGradientInterpolationModes);
+        TEST_METHOD(LinearGradientInterpolatesStraightAlpha);
         TEST_METHOD(LinearGradientBrushTransform);
         TEST_METHOD(RadialGradientCenterAndEdge);
         TEST_METHOD(RadialGradientSpreadModes);

@@ -688,6 +688,22 @@ namespace RenderingBackendTests
         }
     }
 
+    void ShapeBrushPainterConformanceTests::LinearGradientInterpolatesStraightAlpha()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        // Transparent red to opaque blue, like XAML/Composition: the color is interpolated straight, so the transparent
+        // stop still tints the ramp (premultiplied interpolation would give pure blue fading in).
+        LinearBrush brush({ 0, 0 }, { 64, 0 }, { { 0, { 1, 0, 0, 0 } }, { 1, { 0, 0, 1, 1 } } });
+        const Image image = PaintFill(*painter, brush.desc);
+        for (uint32_t x : { 16u, 31u, 48u })
+        {
+            const float t = (x + 0.5f) / 64;
+            const float r = (1 - t) * t + (1 - t), g = 1 - t, b = t * t + (1 - t);
+            ExpectColor(image, x, 20, { r, g, b, 1 }, Tolerance(5), L"straight alpha over white");
+        }
+    }
+
     void ShapeBrushPainterConformanceTests::LinearGradientBrushTransform()
     {
         auto painter = CreatePainter();
@@ -943,6 +959,18 @@ namespace RenderingBackendTests
             p.StrokeRoundedRectangleBrush({ 10, 20, 118, 108 }, 54, 44, 4, c_blackBrush, &style);
         }, 1.0, 20);
 
+        CompareBackends(L"dashed eccentric ellipse", [&](IImmediatePainter& p)
+        {
+            // Dash positions follow the four-Bezier outline on both backends (like Composition).
+            const float longDashes[] = { 12, 12 };
+            StrokeStyleDesc style{};
+            style.dashes = longDashes;
+            style.dashCount = 2;
+            style.dashOffset = 6;
+            p.Clear(c_white);
+            p.StrokeRoundedRectangleBrush({ 4, 34, 124, 94 }, 60, 30, 4, c_blackBrush, &style);
+        }, 1.0, 20);
+
         CompareBackends(L"dashed closed triangle", [&](IImmediatePainter& p)
         {
             p.Clear(c_white);
@@ -993,7 +1021,7 @@ namespace RenderingBackendTests
             p.FillRoundedRectangleBrush({ 8, 8, 120, 120 }, 16, 16, brush.desc);
         }, 1.5, 40);
 
-        CompareBackends(L"gradient dashed stroke and text", [&](IImmediatePainter& p)
+        CompareBackends(L"gradient dashed rounded stroke", [&](IImmediatePainter& p)
         {
             LinearBrush brush({ 0, 0 }, { 128, 128 }, Brush::RedBlue(), GradientSpread::Pad);
             brush.desc.opacity = 0.8f;
@@ -1004,11 +1032,8 @@ namespace RenderingBackendTests
             style.dashCap = LineCap::Round;
             p.Clear(c_white);
             p.StrokeRoundedRectangleBrush({ 8, 8, 120, 120 }, 12, 12, 5, brush.desc, &style);
-            GlyphFixture glyphs;
-            if (glyphs.Create(L"Gradient", 24))
-            {
-                p.DrawGlyphRunBrush(glyphs.Run({ 16, 72 }), brush.desc);
-            }
-        }, 2.0, 160);
+            // Gradient glyph runs are not compared across backends: GDI+ and D2D rasterize glyph outlines differently
+            // (hinting and antialiasing); the per-mode glyph tests check gradient text colors instead.
+        }, 1.0, 20);
     }
 }
