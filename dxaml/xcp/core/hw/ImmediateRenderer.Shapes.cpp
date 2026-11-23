@@ -20,6 +20,7 @@
 #include <cmath>
 
 using namespace RenderingBackend;
+using namespace ImmediateRenderingShapes;
 
 namespace
 {
@@ -296,24 +297,24 @@ namespace
         return PaintKind::Paint;
     }
 
-    LineCap ToCap(XcpPenCap cap) noexcept
+    RenderingBackend::LineCap ToCap(XcpPenCap cap) noexcept
     {
         switch (cap)
         {
-            case XcpPenCapSquare: return LineCap::Square;
-            case XcpPenCapRound: return LineCap::Round;
-            case XcpPenCapTriangle: return LineCap::Triangle;
-            default: return LineCap::Flat;
+            case XcpPenCapSquare: return RenderingBackend::LineCap::Square;
+            case XcpPenCapRound: return RenderingBackend::LineCap::Round;
+            case XcpPenCapTriangle: return RenderingBackend::LineCap::Triangle;
+            default: return RenderingBackend::LineCap::Flat;
         }
     }
 
-    LineJoin ToJoin(XcpLineJoin join) noexcept
+    RenderingBackend::LineJoin ToJoin(XcpLineJoin join) noexcept
     {
         switch (join)
         {
-            case XcpLineJoinBevel: return LineJoin::Bevel;
-            case XcpLineJoinRound: return LineJoin::Round;
-            default: return LineJoin::Miter;
+            case XcpLineJoinBevel: return RenderingBackend::LineJoin::Bevel;
+            case XcpLineJoinRound: return RenderingBackend::LineJoin::Round;
+            default: return RenderingBackend::LineJoin::Miter;
         }
     }
 
@@ -452,13 +453,13 @@ namespace ImmediateRenderingShapes
         const float half = thickness / 2;
         const StrokeStyleDesc& style = paint.style;
         float reach = half;
-        if (!paint.hasStyle || style.lineJoin == LineJoin::Miter)
+        if (!paint.hasStyle || style.lineJoin == RenderingBackend::LineJoin::Miter)
         {
             reach = std::max(reach, half * std::max(1.0f, paint.hasStyle ? style.miterLimit : StrokeStyleDesc{}.miterLimit));
         }
-        for (LineCap cap : { style.startCap, style.endCap, style.dashCap })
+        for (RenderingBackend::LineCap cap : { style.startCap, style.endCap, style.dashCap })
         {
-            if (cap == LineCap::Square)
+            if (cap == RenderingBackend::LineCap::Square)
             {
                 reach = std::max(reach, half * 1.4143f);
             }
