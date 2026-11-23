@@ -760,16 +760,6 @@ _Check_return_ HRESULT ImmediateRenderer::EnsureIslandResources(
         }
         ComPtr<WUComp::ICompositionBrush> brush;
         IFC_RETURN(state.surfaceBrush.As(&brush));
-        // TEMP diagnostic (imaging): WINUI_IMMEDIATE_DIAG_ROOT=1 leaves the sprite out, =2 paints it 50% red.
-        wchar_t diag[4] = {};
-        const DWORD diagLength = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_DIAG_ROOT", diag, ARRAYSIZE(diag));
-        if (diagLength > 0 && diag[0] == L'2')
-        {
-            ComPtr<WUComp::ICompositionColorBrush> red;
-            IFC_RETURN(compositor->CreateColorBrush(&red));
-            IFC_RETURN(red->put_Color({ 0x80, 0xFF, 0, 0 }));
-            IFC_RETURN(red.As(&brush));
-        }
         IFC_RETURN(state.sprite->put_Brush(brush.Get()));
 
         IFC_RETURN(compositor->CreateContainerVisual(&state.root));
@@ -777,10 +767,7 @@ _Check_return_ HRESULT ImmediateRenderer::EnsureIslandResources(
         IFC_RETURN(state.root->get_Children(&children));
         ComPtr<WUComp::IVisual> spriteVisual;
         IFC_RETURN(state.sprite.As(&spriteVisual));
-        if (!(diagLength > 0 && diag[0] == L'1'))
-        {
-            IFC_RETURN(children->InsertAtTop(spriteVisual.Get()));
-        }
+        IFC_RETURN(children->InsertAtTop(spriteVisual.Get()));
     }
 
     ComPtr<WUComp::IVisual> spriteVisual;
