@@ -1235,18 +1235,22 @@ Cleanup:
 }
 
 // Whether ItemsSource is a collection view that sorts or filters: a shaped VectorCollectionView that does not present
-// its source in order, or an app view
-// (ICollectionViewShaping) with SortDescriptions, a CustomSort or a Filter.
-_Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped)
+// its source in order, or (includeAppViews) an app view (ICollectionViewShaping) with SortDescriptions, a CustomSort or
+// a Filter. Views shape only with the experimental shaping API, so other builds never ask.
+_Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped, bool includeAppViews)
 {
-    ctl::ComPtr<IInspectable> spItemsSource;
     *pIsShaped = false;
-
+#ifdef MUX_PRERELEASE
+    ctl::ComPtr<IInspectable> spItemsSource;
     IFC_RETURN(get_ItemsSource(&spItemsSource));
     auto spVectorView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get());
     if (spVectorView)
     {
         *pIsShaped = spVectorView->IsShaped() && !spVectorView->PresentsSourceOrder();
+        return S_OK;
+    }
+    if (!includeAppViews)
+    {
         return S_OK;
     }
 
@@ -1270,17 +1274,34 @@ _Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* p
     IFC_RETURN(spShaping->get_Filter(&spFilter));
     IFC_RETURN(spShaping->get_CustomSort(&spCustomSort));
     *pIsShaped = sortCount > 0 || spFilter || spCustomSort;
+#else
+    UNREFERENCED_PARAMETER(includeAppViews);
+#endif
     return S_OK;
 }
 
-// CanReorderItems, unless ItemsSource is a view that sorts or filters (the order is the view's).
-_Check_return_ HRESULT ListViewBase::GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder)
+// CanReorderItems, unless ItemsSource is a view that sorts or filters (the order is the view's). The visual state of
+// every container asks too: it reads a value cached per ItemsSource and items change, and leaves app views (app code)
+// to the drag itself.
+_Check_return_ HRESULT ListViewBase::GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder, bool isForVisualState)
 {
     IFC_RETURN(get_CanReorderItems(pCanReorder));
     if (*pCanReorder)
     {
         bool isSortedOrFiltered = false;
-        IFC_RETURN(IsItemsSourceSortedOrFiltered(&isSortedOrFiltered));
+        if (isForVisualState)
+        {
+            if (!m_isReorderBlockedByViewValid)
+            {
+                IFC_RETURN(IsItemsSourceSortedOrFiltered(&m_isReorderBlockedByView, false /* includeAppViews */));
+                m_isReorderBlockedByViewValid = true;
+            }
+            isSortedOrFiltered = m_isReorderBlockedByView;
+        }
+        else
+        {
+            IFC_RETURN(IsItemsSourceSortedOrFiltered(&isSortedOrFiltered));
+        }
         *pCanReorder = !isSortedOrFiltered;
     }
     return S_OK;
@@ -1492,6 +1513,15 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
         spItemSourceVector = spItems.AsOrNull<wfc::IVector<IInspectable*>>();
     }
 
+#ifdef MUX_PRERELEASE
+    // A collection view's move goes to one collection for both halves, chosen once (see GetReorderTarget); a view that
+    // sorts or filters is not reordered.
+    if (auto spVectorView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get()))
+    {
+        spItemSourceVector = spVectorView->GetReorderTarget();
+    }
+#endif
+
     if (spItemSourceVector != NULL)
     {
         // We need to move the dragged items to where the user dropped,
@@ -1557,7 +1587,13 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 {
                     auto peggedCurrentItem = ctl::make_autopeg(spCurrentItem.Get());
                     IFC(spItemSourceVector->RemoveAt(realItemIndex));
-                    IFC(spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get()));
+                    hr = spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get());
+                    if (FAILED(hr))
+                    {
+                        // The item is not lost from the app's collection.
+                        IGNOREHR(spItemSourceVector->InsertAt(realItemIndex, spCurrentItem.Get()));
+                        IFC(hr);
+                    }
                 }
 
                 // This remove-then-insert step will clear any selection on the current item.
@@ -1643,7 +1679,6 @@ _Check_return_ HRESULT ListViewBase::GetIsDragEnabled(
     IFC(get_IsGrouping(&isGrouping));
 
     IFC(get_CanDragItems(&canDragItems));
-    IFC(get_CanReorderItems(&canReorderItems));
 
     // Ignore canReorderItems if we're grouping, or if the view sorts or filters.
     IFC(GetCanReorderItemsOverItemsSource(&canReorderItems));
