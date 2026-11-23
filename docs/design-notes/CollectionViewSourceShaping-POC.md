@@ -263,9 +263,12 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   (`GroupDescription.SortDescriptions` / `CustomSort`), groups appear in first-appearance order of the sorted
   items (WPF behavior).
 - **Comparison.** Strings use `CompareStringEx` with the view's `Culture`, else the user locale. Numeric types compare as
-  numbers: two integers (including `Int64` and `UInt64`) exactly, otherwise as `double`; and
-  `DateTime`, `TimeSpan` and `Boolean` are also ordered. `null` sorts first. Anything else compares equal, so source
-  order is kept.
+  numbers: two integers (including `Int64` and `UInt64`) exactly, otherwise as `double`, with NaN before every other
+  number (as `Double.CompareTo`); `DateTime`, `TimeSpan` and `Boolean` are also ordered. Keys of different kinds
+  keep one total order, so a full sort and an incremental insert agree: `null`, then `Boolean`, numbers, `DateTime`,
+  `TimeSpan`, strings, and last the values that cannot be ordered (custom objects, `Guid`, ...), which compare equal
+  and so keep their source order. WPF's `Comparer.Default` throws `ArgumentException` on keys of different types
+  instead (deviation: WinRT values have no `IComparable`, and a view that throws on a mixed column is not useful).
 - **Output.** The view is read-only and never writes to the source. Both flat and grouped output are presented by
   the same view class (`VectorCollectionView`, WinUI's `ListCollectionView`); grouped output's `CollectionGroups`
   contain `ICollectionViewGroup` entries. `Group` is the computed group object (`Key`, `Name`), and `GroupItems` are
@@ -310,8 +313,20 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   comparers) and while it raises its changes (every `VectorChanged` / `PropertyChanged` handler). A rule change,
   `Refresh()` or source change made from there is not dropped: it is recorded and the view recomputes once that work
   unwinds, then raises its own `Reset` (WPF refreshes re-entrantly; neither throws). A handler that changes the view
-  on every change of it would never finish; after 64 rounds the view fails with `E_ILLEGAL_METHOD_CALL` (WPF
-  overflows the stack).
+  on every change of it would never finish; after 8 rounds the view stops with `E_ILLEGAL_METHOD_CALL` and a message
+  (WPF overflows the stack), and recomputes on the next change or `Refresh()`.
+- **Exceptions in app code.** All the app code a change needs (filter, `Filter` event, getters, converters,
+  comparers, `GroupDescription` overrides) runs before the view raises anything for it, so a failure never leaves a
+  removal without its insertion; a grouped change plans the insertion for the tree as the removal will leave it. A
+  handler of a change the view (or a group's `ItemCount`) raises that throws does not stop the view either: the change
+  is finished and the failure is returned afterwards.
+  - Called by the app (`Refresh()`, a rule change, closing `DeferRefresh`, `IsLive*`): the exception propagates to
+    the caller, as in WPF. A recompute that fails keeps the previous output, which recomputes on the next change.
+  - A source change: the view is one of the source's listeners, so the failure is not returned to the source (that
+    would stop its other listeners and throw from the app's `Add`): the change the app code failed on is applied by a
+    recompute (one `Reset`); if that fails too, the view keeps its output and recomputes on the next change. The
+    error is originated (`RoOriginateError`), not thrown. WPF lets it propagate from `CollectionChanged`.
+  - A live restore (a dispatcher callback): the same; the items placed before the failure stay placed.
 - **Incremental loading.** A shaped view forwards `HasMoreItems` and `LoadMoreItemsAsync` to the collection it shapes
   when that implements `ISupportIncrementalLoading`; the loaded items arrive as source changes and are placed by the
   rules like any other.
@@ -337,10 +352,15 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     a restore is restored at the next turn.
   - A source change made while a live sort edit waits for its restore is applied incrementally: the binary search
     skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
-  - When most items changed their sort keys in one turn (WPF's `LiveSortingDensityThreshold`, 80%; in a view of
-    1024 items or more also an eighth of them, and on a flat one 256, since each move shifts the output), the restore
-    is one `Reset` instead of a move per item: a flat view re-sorts on its cached keys, reading only the changed
-    items, and a grouped view recomputes. WPF insertion-sorts and raises moves instead.
+  - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
+    `Reset` by cost: a move costs two vector shifts (about 14 ns a row each at 100k items, fre) and two raised changes
+    (about 10 µs); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
+    changed items' moves cost less than a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat view
+    re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the new
+    order (the items outside the longest run still in order; none when the order did not change), or one `Reset` if
+    those still cost more; a grouped view recomputes. At 100k rows that is about 50 moves before a `Reset`, at 10k
+    about 170, at 2k about 650, so a Task Manager-size view moves rows and never resets for a live tick. WPF
+    re-sorts with a `Reset` once 80% of the items changed (`LiveSortingDensityThreshold`) and insertion-sorts below.
   - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
     observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
     `IsLiveSorting`, `IsLiveFiltering` or `IsLiveGrouping` raises `PropertyChanged` for it.
@@ -486,14 +506,19 @@ As in WPF, the view does the shaping and `CollectionViewSource` is a proxy over 
 
 - **The view owns the rules while it is `View`.** The descriptor collections are shared objects: `cvs.SortDescriptions`
   and `((ICollectionViewShaping)cvs.View).SortDescriptions` are the same collection, and a change to it is reported
-  to the view (or, while there is no shaping view, to the CVS). `cvs.Filter` / `cvs.CustomSort` / `cvs.Refresh()`
-  forward to the view; when `Source` changes, the CVS takes `Filter` and `CustomSort` back and applies them to the
-  next view. A view the CVS has replaced keeps a copy of the rules it had and keeps following its own source, as
-  each WPF view keeps the rules copied into it; nothing set on it reaches the CVS or its new `View`.
+  to the view (or, while there is no shaping view, to the CVS). `cvs.CustomSort`, `cvs.Culture` and `cvs.Refresh()`
+  forward to the view; when `Source` changes, the CVS takes `CustomSort` and `Culture` back and applies them to the
+  next view. The view's `Filter` delegate is the view's own, as WPF's `ICollectionView.Filter`: it stays with the
+  view and does not move to the next one (the CVS filters through its `Filter` event). A view the CVS has replaced
+  keeps a copy of the rules it had and keeps following its own source, as each WPF view keeps the rules copied into
+  it; nothing set on it reaches the CVS or its new `View`.
 - **Lifetime.** The CVS holds its view (`View`); the view holds the CVS weakly, except while the CVS has
   `Filter` event handlers, when it holds it with a tracked reference (WPF's view holds the CVS through the
   wrapped filter delegate). A consumer that holds only `cvs.View` (for example TableView's `ItemsSource`) keeps a
-  working, shapeable and still filtered view after the app drops the CVS.
+  working, shapeable and still filtered view after the app drops the CVS. The app objects the view keeps between
+  changes (the `CustomSort` comparer, a group description's `Converter` and `CustomSort`, a `GroupDescription`
+  subclass, `GroupNames`) are held through tracked references its reference tracker walk reports, so a delegate that
+  captures its page does not root the page.
 - **Release builds.** Shaping is an experimental API: in a build without `MUX_PRERELEASE`, `EnsureView` takes the
   pre-shaping path, so the view never answers `ICollectionViewShaping` and `ItemsControl` attaches nothing.
 - **`DeferRefresh`.** The level lives on the view. A deferral taken on the CVS takes one on its view while any CVS
@@ -733,7 +758,8 @@ group, k = items a live tick changed.
 | New group with group `SortDescriptions` on `Key`/`Name` | O(G) compares, 2 property reads each | O(log G) compares on keys read when the group was created (other paths, such as `ItemCount`, are still read at each compare, as in WPF) |
 | Flat `Add` / `Remove` / `Replace` | O(n) scans + O(log m) compares reading the other item's keys + the vector shifts | the same scans and shifts, O(log m) compares on cached keys, no comparer rebuilt per change, no scan for an `Add` |
 | Grouped `Add` / `Remove` / `Replace` | O(n) leaf search + O(L·G) `NamesMatch` | O(1) bottom group by source index + O(g) in it, O(L) hashed lookups; O(n) source-index shift |
-| Live tick, k sort-dirty items | O(n + k·(m + log m reads)), two changes per move; a source change while an edit waits recomputes | O(n + k·(m + log m compares)), two changes per move; when k ≥ 80% of n (WPF), or n ≥ 1024 and k ≥ n/8 (flat: or k ≥ 256), one `Reset`: a flat view re-sorts on cached keys (only the k items are read), a grouped view recomputes; a source change while an edit waits is applied incrementally |
+| Group lookup, custom `GroupDescription` (batch 4) | O(G) `NamesMatch` calls per item and level (the ABI hop each time) | the name hashed as the default `NamesMatch` compares it (ordinal) and one `NamesMatch` call to confirm; a miss (a new group, or an override that matches more names than the default) scans the subgroups with `NamesMatch`, as WPF always does: O(m + G²) calls for a load instead of O(m·G) |
+| Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
 | `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
 | TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | only the rows the change brought in are read + O(n) native rebuild, published as a splice (≤ 64 rows, or a moved run) |
 
@@ -771,7 +797,7 @@ What is still O(n) per change, and why it stays for now:
   is what a live move costs on a large flat view, so an order-statistic index (WPF's `LiveShapingTree`) alone would
   not help. The fix is a presented list whose storage does not move tracker pointers (a node-based or
   relocation-aware `TrackerPtrVector`); it touches the shared collection base, so it is a follow-up. Until then a
-  large tick re-sorts once instead of moving items one by one.
+  large tick that moves many items is one `Reset` (see "Live shaping" for the cost model).
 - **Source index shifts.** A source insert or remove renumbers the later source indices (a scan of n integers).
 - **TableView's tree** is rebuilt natively on each change (no app code for the unchanged rows): about 0.5 s at
   100k rows, 40 ms at 10k. An incremental tree (per-sibling counts, ranged changes) is a follow-up; a node
@@ -790,8 +816,8 @@ What is still O(n) per change, and why it stays for now:
 - Hierarchy on CVS (see "Hierarchy: TableView.ItemKeyPath / ParentKeyPath (V1)").
 - `Move` as a single change (a live move is a remove and an insert), and coalescing a burst of source changes (live
   property changes are coalesced per dispatcher turn, as in WPF).
-- WPF's insertion-sort path for a restore where most items are marked: a recompute and one `Reset` replace it
-  (see "Live shaping").
+- WPF's insertion-sort path for a restore where most items are marked: the cost-based restore replaces it (see
+  "Live shaping").
 - The remaining O(n) costs listed in "Performance".
 
 ## Known risks
@@ -822,7 +848,17 @@ What is still O(n) per change, and why it stays for now:
   Toolkit's `AdvancedCollectionView` (`Microsoft.Toolkit.Uwp.UI.SortDescription`), so an app that uses both
   namespaces needs an alias. The council still has to sign off on `ICollectionViewShaping` as a capability name.
 - **Descriptors are UI-thread objects.** `SortDescription` and `GroupDescription` are `DependencyObject`s now (they were
-  free-threaded immutable classes), so they are created and changed on the UI thread.
+  free-threaded immutable classes, as WPF's `SortDescription` struct is), so they are created and changed on the UI
+  thread (a view model built on a worker thread cannot create them), each has a core peer, and two
+  `SortDescription`s with the same values are not equal. The price of setting them in markup; a free-threaded
+  immutable `SortDescription` would need another way to be created from XAML.
+- **Errors in app code are reported, not thrown, for source changes and live restores** (see "Exceptions in app
+  code"). An app that relies on `Add` throwing when its filter throws (WPF) sees no exception; the error is
+  originated (visible to a debugger and to error reporting) and the view recomputes.
+- **TableView tree and `Id` / `ParentId` edits.** The tree reads the keys of the rows a change brings in and caches
+  the others, so re-parenting a row by editing its `ParentId` (no Insert, Replace or Reset) is not seen until the
+  next `Refresh()` or source `Reset`. A tree `Remove` is published at the end of the dispatcher turn, so for that
+  turn the rows, selection and UIA may still show the removed item.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
 - **Live shaping cost and lifetime.** One property path listener per source item and live property. A full
@@ -830,8 +866,8 @@ What is still O(n) per change, and why it stays for now:
   source `Reset` or a new live property list rebuilds them. The view walks them (and a group walks its key and
   its `PropertyChanged` handlers) in its reference tracker walk; they unsubscribe when an item leaves the source,
   when the features are turned off and when the view is destroyed. A restore after a turn in which most items
-  changed costs one remove and one insert per moved item (one `Reset` when most items changed); TableView's tree mode
-  rebuilds its tree at most twice for it.
+  changed costs one remove and one insert per moved item (one `Reset` when the moves would cost more, see "Live
+  shaping"); TableView's tree mode rebuilds its tree at most twice for it.
 - **Live moves and consumers.** A move is `ItemRemoved` + `ItemInserted`. ListView and GridView recycle the moved
   container, so selection and focus on it follow their remove semantics; TableView keeps the selection (see "Live
   shaping" in the TableView section) but not keyboard focus.
@@ -985,7 +1021,15 @@ Grouping keeps the view (phase C):
   the `Filter` event after a GC with only `View` held; no leak through live listeners; group `ItemCount`
   notifications; currency before first / after last; exact `Int64` / `UInt64` keys; turning live sorting on;
   replaced views; rules on an `IsSourceGrouped` CVS; off-thread live changes; and TableView live sort, filter,
-  group and tree, including at most a couple of tree rebuilds per live tick.
+  group and tree, including at most a couple of tree rebuilds per live tick. Batch 4 adds: a total order over mixed
+  key types and NaN; a C# `GroupDescription` subclass (with and without `NamesMatch`) against a fresh view; no leak
+  through a `CustomSort`, a group `CustomSort`, a `Converter` or a `GroupDescription` subclass that captures its
+  owner; app code that throws (filter, `CustomSort`, converter, `GroupDescription` overrides, the `Filter` event, a
+  view or group change handler) on insert, replace, remove and move leaves the source's other listeners informed and
+  the view equal to a fresh view; a throwing comparer in a live restore and a throwing filter in `Refresh()`; a
+  handler that refreshes on every change stops; a view's `Filter` stays with it; live ticks that move, raise
+  nothing, raise only the few moves, or one `Reset`; and a large TableView live tick that keeps its rows and
+  selection.
 
 ## Effort to productize
 
