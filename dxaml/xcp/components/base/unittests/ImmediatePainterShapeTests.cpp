@@ -965,7 +965,8 @@ namespace RenderingBackendTests
             style.miterLimit = 2;
             p.StrokePathBrush(zigzag.Data(), 10, c_blackBrush, &style);
             PathBuilder line;
-            line.Move(20, 116).Line(108, 116);
+            // Ends between dots: a zero-length dash exactly at an open end is backend-defined.
+            line.Move(20, 116).Line(106, 116);
             StrokeStyleDesc dotStyle{};
             dotStyle.dashes = dots;
             dotStyle.dashCount = 2;

@@ -16,6 +16,7 @@
 #include "LinearGradientBrush.h"
 #include "SolidColorBrush.h"
 #include "Transform.h"
+#include <BrushTypeUtils.h>
 #include <algorithm>
 #include <cmath>
 
@@ -29,17 +30,6 @@ namespace
     ColorF FromArgb(uint32_t argb) noexcept
     {
         return { ((argb >> 16) & 0xff) / 255.0f, ((argb >> 8) & 0xff) / 255.0f, (argb & 0xff) / 255.0f, ((argb >> 24) & 0xff) / 255.0f };
-    }
-
-    Matrix3x2F TransformOf(const xref_ptr<CTransform>& transform) noexcept
-    {
-        if (transform == nullptr)
-        {
-            return {};
-        }
-        CMILMatrix m(true);
-        transform->GetTransform(&m);
-        return { m.GetM11(), m.GetM12(), m.GetM21(), m.GetM22(), m.GetDx(), m.GetDy() };
     }
 
     void SortStops(std::vector<GradientStop>& stops)
@@ -274,22 +264,39 @@ namespace
         }
         SortStops(paint->stops);
 
-        ImmediateRenderingPolicy::LinearGradientInput input;
-        input.start = { linear->m_ptStart.x, linear->m_ptStart.y };
-        input.end = { linear->m_ptEnd.x, linear->m_ptEnd.y };
-        input.relativeToBoundingBox = linear->m_nMapping == XcpRelative;
-        input.bounds = bounds;
-        input.relativeTransform = TransformOf(linear->GetRelativeTransform());
-        input.transform = TransformOf(linear->GetTransform());
-        PointF start, end;
-        if (paint->stops.size() == 1 || !ImmediateRenderingPolicy::MapLinearGradient(input, &start, &end))
+        // Like XAML (CLinearGradientBrush::D2DEnsureDeviceIndependentResources / GetWUCBrush): the gradient is
+        // perpendicular to start-end in DIP space, and the combined brush transform (which may skew) maps it.
+        const float width = bounds.right - bounds.left, height = bounds.bottom - bounds.top;
+        PointF start{ linear->m_ptStart.x, linear->m_ptStart.y };
+        PointF end{ linear->m_ptEnd.x, linear->m_ptEnd.y };
+        if (linear->m_nMapping == XcpRelative)
+        {
+            start = { start.x * width + bounds.left, start.y * height + bounds.top };
+            end = { end.x * width + bounds.left, end.y * height + bounds.top };
+        }
+        CMILMatrix relative(true), absolute(true), combined(true);
+        const auto relativeTransform = linear->GetRelativeTransform();
+        const auto transform = linear->GetTransform();
+        if (relativeTransform != nullptr)
+        {
+            relativeTransform->GetTransform(&relative);
+        }
+        if (transform != nullptr)
+        {
+            transform->GetTransform(&absolute);
+        }
+        const XRECTF box{ bounds.left, bounds.top, width, height };
+        CBrushTypeUtils::GetBrushTransform(relativeTransform != nullptr ? &relative : nullptr, transform != nullptr ? &absolute : nullptr, &box, &combined);
+        const float dx = end.x - start.x, dy = end.y - start.y;
+        const float det = combined.GetM11() * combined.GetM22() - combined.GetM12() * combined.GetM21();
+        if (paint->stops.size() == 1 || !(dx * dx + dy * dy > 1e-12f) || !(std::abs(det) > 1e-12f) || !std::isfinite(det))
         {
             return Solid(paint->stops.back().color, paint->brush.opacity, paint);
         }
-        // Any affine transform of a linear gradient is a linear gradient: the mapped axis is exact for every spread.
         paint->brush.kind = BrushKind::Linear;
         paint->brush.start = start;
         paint->brush.end = end;
+        paint->brush.transform = { combined.GetM11(), combined.GetM12(), combined.GetM21(), combined.GetM22(), combined.GetDx(), combined.GetDy() };
         paint->brush.spread = linear->m_nSpread == XcpGradientWrapModeFlip ? GradientSpread::Reflect
             : linear->m_nSpread == XcpGradientWrapModeTile ? GradientSpread::Repeat : GradientSpread::Pad;
         paint->brush.interpolation = linear->m_nInterpolate == XcpColorInterpolationModeScRgbLinearInterpolation
@@ -441,7 +448,8 @@ namespace ImmediateRenderingShapes
         }
         if (!paint->dashes.empty())
         {
-            paint->style.dashOffset = shape->GetStrokeDashOffset();
+            // Like the dash array, the offset is in units of the stroke thickness.
+            paint->style.dashOffset = shape->GetStrokeDashOffset() * thickness;
         }
         const StrokeStyleDesc defaults;
         paint->hasStyle = !paint->dashes.empty() || paint->style.startCap != defaults.startCap || paint->style.endCap != defaults.endCap

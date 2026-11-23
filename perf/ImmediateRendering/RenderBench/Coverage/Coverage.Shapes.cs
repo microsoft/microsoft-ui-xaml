@@ -166,7 +166,14 @@ public static class ShapesCoverage
     public static CoveragePage GlyphsElement(CoverageContext context)
     {
         var root = Surface();
-        string font = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "arial.ttf");
+        // Glyphs.FontUri resolves through the app resource manager (ms-appx, physical-file fallback), so use a copy of a
+        // system font next to the app instead of shipping a font file.
+        string font = "ms-appx:///CoverageGlyphs.ttf";
+        string copy = System.IO.Path.Combine(AppContext.BaseDirectory, "CoverageGlyphs.ttf");
+        if (!System.IO.File.Exists(copy))
+        {
+            System.IO.File.Copy(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "arial.ttf"), copy);
+        }
         root.Children.Add(At(new Glyphs
         {
             FontUri = new Uri(font), FontRenderingEmSize = 28, UnicodeString = "Glyphs element", Fill = Ink, OriginX = 0, OriginY = 30,

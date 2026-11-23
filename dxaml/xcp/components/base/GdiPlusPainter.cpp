@@ -2409,6 +2409,14 @@ namespace RenderingBackend
                         return static_cast<uint32_t>(t * (c_rampSize - 1) + 0.5f);
                     };
 
+                    // Half the pixel footprint in t for a repeating linear gradient (0: no seam filtering).
+                    float seamHalf = 0;
+                    if (!radial && !degenerate && spread == GradientSpread::Repeat)
+                    {
+                        seamHalf = (std::abs(i11 * ax + i12 * ay) + std::abs(i21 * ax + i22 * ay)) / 2;
+                        seamHalf = std::isfinite(seamHalf) ? std::min(seamHalf, 0.5f) : 0.0f;
+                    }
+
                     for (uint32_t y = 0; y < height; ++y)
                     {
                         uint32_t* row = pixels + static_cast<size_t>(y) * stride;
@@ -2438,7 +2446,34 @@ namespace RenderingBackend
                                     t = (fd + std::sqrt(std::max(fd * fd + fa * dd, 0.0f))) / fa;
                                 }
                             }
-                            const uint32_t color = m_ramp[index(t)];
+                            uint32_t color = m_ramp[index(t)];
+                            if (seamHalf > 0)
+                            {
+                                // Repeat wraps from the last stop to the first: area-weight the pixel across the seam
+                                // like D2D's filtered sampling instead of a hard step.
+                                const float f = t - std::floor(t);
+                                float weight = 0;
+                                uint32_t other = 0;
+                                if (f < seamHalf)
+                                {
+                                    weight = (seamHalf - f) / (2 * seamHalf);
+                                    other = m_ramp.back();
+                                }
+                                else if (f > 1 - seamHalf)
+                                {
+                                    weight = (f + seamHalf - 1) / (2 * seamHalf);
+                                    other = m_ramp.front();
+                                }
+                                if (weight > 0)
+                                {
+                                    const uint32_t w = static_cast<uint32_t>(std::clamp(weight, 0.0f, 1.0f) * 256);
+                                    const auto mixChannel = [&](uint32_t shift)
+                                    {
+                                        return ((((color >> shift) & 0xFF) * (256 - w) + ((other >> shift) & 0xFF) * w + 128) >> 8) << shift;
+                                    };
+                                    color = mixChannel(24) | mixChannel(16) | mixChannel(8) | mixChannel(0);
+                                }
+                            }
                             if (coverage == 255)
                             {
                                 row[x] = color;

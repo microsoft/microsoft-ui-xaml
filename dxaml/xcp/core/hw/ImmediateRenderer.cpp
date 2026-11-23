@@ -1786,8 +1786,22 @@ static bool EmitMaterialFill(
     return false;
 }
 
+// ---- shapes ---- Brush bounds of a shape part, as Composition uses them (hwwalk ShapeFillPart/ShapeStrokePart):
+// fill = CShape::GetFillBounds, stroke = CShape::GetStrokeBounds (widened). Falls back to `fallback` when empty.
+static RectF ShapeBrushBounds(_In_ CShape* shape, bool stroke, const RectF& fallback)
+{
+    XRECTF_RB rb{};
+    if (FAILED(stroke ? shape->GetStrokeBounds(&rb) : shape->GetFillBounds(&rb))
+        || !(rb.right > rb.left || rb.bottom > rb.top) || !std::isfinite(rb.left) || !std::isfinite(rb.right)
+        || !std::isfinite(rb.top) || !std::isfinite(rb.bottom))
+    {
+        return fallback;
+    }
+    return { rb.left, rb.top, rb.right, rb.bottom };
+}
+
 // ---- shapes ---- Shape stroke with its brush (gradients exact) and style (dashes, caps, join, miter limit). `path`
-// without verbs strokes the rounded rect `rect`. `bounds` is the geometry's local bounds (RelativeToBoundingBox).
+// without verbs strokes the rounded rect `rect`. `bounds` is the brush bounds (RelativeToBoundingBox).
 // Returns an unsupported-content detail, or nullptr.
 static const wchar_t* EmitShapeStroke(
     Emitter& emitter,
@@ -1994,7 +2008,7 @@ void ImmediateRenderer::EmitContent(
         }
         if (strokeResult == BrushResult::Color)
         {
-            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), {}, geometry, rx, ry, t, strokeColor, world, geometry))
+            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), {}, geometry, rx, ry, t, strokeColor, world, ShapeBrushBounds(shape, true, geometry)))
             {
                 ReportUnsupported(element, strokeDetail);
             }
@@ -2163,7 +2177,7 @@ void ImmediateRenderer::EmitContent(
         if (fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
         {
             auto paint = std::make_shared<ImmediateRenderingShapes::Paint>();
-            const auto kind = ImmediateRenderingShapes::ResolvePaint(shape->m_pFill, b, 1.0f, paint.get(), &fillDetail);
+            const auto kind = ImmediateRenderingShapes::ResolvePaint(shape->m_pFill, ShapeBrushBounds(shape, false, b), 1.0f, paint.get(), &fillDetail);
             if (kind == ImmediateRenderingShapes::PaintKind::Paint && paint->IsGradient())
             {
                 emitter.BrushPath(std::move(flattener->fill), std::move(paint), 0, b, 0, 0, world, b);
@@ -2183,7 +2197,7 @@ void ImmediateRenderer::EmitContent(
         }
         if (strokeResult == BrushResult::Color)
         {
-            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), std::move(flattener->stroke), b, 0, 0, t, strokeColor, world, b))
+            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), std::move(flattener->stroke), b, 0, 0, t, strokeColor, world, ShapeBrushBounds(shape, true, b)))
             {
                 ReportUnsupported(element, strokeDetail);
             }

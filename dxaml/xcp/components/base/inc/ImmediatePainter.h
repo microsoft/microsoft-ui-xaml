@@ -131,7 +131,7 @@ namespace RenderingBackend
     };
 
     // Shape stroke style, like Composition's sprite shape stroke. Lengths are in DIPs: the walk scales
-    // Shape.StrokeDashArray by StrokeThickness and passes StrokeDashOffset unscaled, as XAML does for Composition.
+    // Shape.StrokeDashArray and StrokeDashOffset by StrokeThickness, as XAML does for Composition.
     struct StrokeStyleDesc
     {
         LineCap startCap = LineCap::Flat;

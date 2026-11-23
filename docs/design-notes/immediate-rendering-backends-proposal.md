@@ -257,7 +257,7 @@ accessibility, selection, and text semantics must not be changed merely to obtai
 Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
 
 - **Painter contract.** `StrokeStyleDesc` holds the following:
-  - dash array and offset in DIPs (the walk multiplies `StrokeDashArray` by the thickness, as XAML does)
+  - dash array and offset in DIPs (the walk multiplies `StrokeDashArray` and `StrokeDashOffset` by the thickness, as XAML does)
   - dash, start and end caps, including Triangle
   - line join and miter limit (as a multiple of half the thickness)
 
@@ -270,7 +270,7 @@ Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
   New `*Brush` fill, stroke and glyph-run methods take both descriptions. The older solid and average-color methods are unchanged.
 - **D2D.** Uses `ID2D1StrokeStyle` with custom dashes, `D2D1_CAP_STYLE_TRIANGLE`, and `D2D1_LINE_JOIN_MITER`, which clips at the limit as XAML does. Linear and radial gradient brushes use `D2D1_EXTEND_MODE` (clamp, mirror or wrap) for spread and `D2D1_GAMMA_1_0` for linear-light interpolation. The brush transform maps the unit space of relative brushes. Text gradients are drawn with the brush in glyph-run space.
 - **GDI+.** GDI+ has no exact equivalents, so it emulates them:
-  - The pen uses DashPattern, DashOffset, DashCap, line caps and a custom triangle cap.
+  - Dashes are split from the flattened outline by the painter (GDI+ dash patterns cannot express zero-length dashes, odd-length patterns, or per-dash caps that differ from the end caps). Each dash is stroked with the pen's line caps, including `LineCapTriangle`.
   - Rounded-rectangle outlines start at the top-left arc, matching D2D's dash phase.
   - GDI+ bevels a join once its miter limit is exceeded, while XAML clips the miter at the limit. GDI+ also measures the limit against the full stroke width, while XAML measures it against half. The painter passes half the XAML limit and fills the clipped miter quads itself.
   - Gradients are not mapped onto GDI+ gradient brushes, because `PathGradientBrush` cannot express focal or elliptic radial gradients and GDI+ interpolates straight rather than premultiplied colors. Instead, the painter builds a premultiplied 1D ramp in sRGB or linear light. It then computes t per device pixel (a linear projection, or the focal solution for radial) with spread applied, and shades a white coverage mask drawn into the bounded shadow scratch bitmap, then composites it 1:1. This makes radial origin/center/radii, Reflect/Repeat and linear-light interpolation exact up to ramp quantization.
@@ -280,7 +280,8 @@ Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
     - `LinearGradientBrush`, including Transform and RelativeTransform, spread and interpolation
     - the MUXC `RadialGradientBrush`. Its properties are read as custom dependency properties, and `GradientStops` through the peer's `IXamlMember`.
   - `ResolveStrokeStyle` maps the Shape stroke properties.
-  - Gradient fills and strokes on Rectangle, Ellipse, Path, Line, Polyline, Polygon and Border, and gradient foregrounds on TextBlock and RichTextBlock glyph runs, render natively. The brush bounds match Composition: geometry bounds for shapes, and the glyph-run line bounds for text.
+  - Gradient fills and strokes on Rectangle, Ellipse, Path, Line, Polyline, Polygon and Border, and gradient foregrounds on TextBlock and RichTextBlock glyph runs, render natively. The brush bounds match Composition (hwwalk `GetBrushBounds` per part): `CShape::GetFillBounds` for shape fills, the widened `CShape::GetStrokeBounds` for shape strokes (so a horizontal dashed Line still gets a gradient), the content bounds for Border, and the glyph-run line bounds for text.
+  - Linear gradients follow `CLinearGradientBrush`: relative start and end points are mapped into the bounds first, the gradient is perpendicular to start-end in DIP space (not in the unit square, as in WPF), and the combined Transform/RelativeTransform (`CBrushTypeUtils::GetBrushTransform`) is then applied as the brush transform, which may skew it.
   - The `Glyphs` element renders through `CGlyphs::VisitImmediate`, which reuses its text drawing context.
   - An ImageBrush whose transform includes rotation or skew draws the image under the brush transform, clipped to the element.
 - **Still reported:**

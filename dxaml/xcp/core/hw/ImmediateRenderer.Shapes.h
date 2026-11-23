@@ -47,7 +47,7 @@ namespace ImmediateRenderingShapes
     // True for brushes ResolvePaint resolves to a gradient (callers that used the average stop color switch to Paint).
     bool IsGradientBrush(_In_opt_ CBrush* brush) noexcept;
 
-    // Shape stroke caps, join, miter limit and dashes (StrokeDashArray scaled by `thickness`, like Composition) into
+    // Shape stroke caps, join, miter limit and dashes (StrokeDashArray and StrokeDashOffset scaled by `thickness`, like Composition) into
     // paint->style. Leaves hasStyle false when the stroke uses the defaults (flat caps, miter 10 joins, no dashes).
     void ResolveStrokeStyle(_In_ CShape* shape, float thickness, _Inout_ Paint* paint);
 
