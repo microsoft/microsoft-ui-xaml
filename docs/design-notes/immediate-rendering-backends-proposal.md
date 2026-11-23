@@ -577,7 +577,9 @@ back (no key-frame getters) and keeps the per-window Composition fallback.
   animations (`SetAnimationComponent`) are reported approximated and use the default curve.
 - **Theme transitions/animations, VisualState transitions.** These are Storyboards on XAML properties (LTEs, transition
   roots, RenderTransform/Opacity/Projection); they already ran as dependent animations. Coverage pages hold each at
-  mid-progress (Seek+Pause) and compare with Composition.
+  mid-progress (Seek+Pause) and compare with Composition. Gap found and fixed: theme animations built by
+  ThemeGenerator (DrillIn, PVL entrance/exit) animate `TransitionTarget.Opacity`, which Composition multiplies into the
+  visual opacity; the walk now uses `GetOpacityCombined()` and the render-thread opacity track keeps that factor.
 - **MUXC controls.** `controls\dev\inc\ImmediateRendering.h` (`IsRequested()` reads `WINUI_RENDERING_BACKEND`;
   `KeyFrames` builds a DoubleAnimationUsingKeyFrames with Linear/Spline(=cubic bezier)/Discrete(=single step) frames and
   Composition-style delays; `EnsureCompositeTransform` never replaces an app RenderTransform). Controls switch to that
@@ -605,7 +607,17 @@ back (no key-frame getters) and keeps the per-window Composition fallback.
   ConnectedAnimation) at that progress and never completes it, so mid-animation captures are deterministic.
 - **Limitations.** The S15 render-thread ticker does not tick store transitions or ConnectedAnimation (they advance
   on UI-thread frames only); MUXC Storyboards are dependent animations (UI thread), like all Storyboards in immediate
-  modes.
+  modes.- **Results.** F10 coverage (`Run-Coverage.ps1 -Pages 'F10*' -Modes composition,gdiplus,d2d-sw`): 32 pages; every page
+  except a harness-only crash (programmatic `ToggleSwitch.IsOn`, 0xC000027B in Composition too; replaced by a generated
+  VisualTransition page) passes in GDI+ and D2D-SW with no fallback. Expected unsupported details: the ConnectedAnimation
+  cross-fade and AnimatedIcon's PathIcon (CheckBox glyph, Expander chevron, NavigationView pane button). ItemsView
+  itself still falls back through its ScrollView (scrolling scope); its LinedFlowLayout item transitions are covered on
+  a bare ItemsRepeater.
+- **Memory.** No per-element retained state beyond the transitions store (a few floats per running transition, freed on
+  completion). ConnectedAnimation holds one snapshot bitmap per running animation (bounded to 32 MB, released on
+  completion or cancel). Idle private bytes per coverage page (in-process; Composition's surfaces live in DWM):
+  ConnectedAnimation-Gravity 39.5 MB Composition / 53.7 GDI+ / 60.1 D2D-SW versus ~48-49 MB for plain transition pages
+  in the immediate modes, i.e. the snapshot path costs ~5-11 MB of transient heap.
 ## Source references
 
 These are investigation entry points, not permanent line-number contracts. Paths are relative to the repository unless
