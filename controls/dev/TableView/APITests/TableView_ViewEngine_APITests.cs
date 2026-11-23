@@ -57,13 +57,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             CollectGarbageAndWaitForIdle();
         }
 
-        // Views and groups the GC finds unreachable are released on the UI thread; drained here, not inside a later wait.
-        private static void CollectGarbageAndWaitForIdle()
+        // Views and groups the GC finds unreachable are released on the UI thread; drained here, not inside the next
+        // test's setup. A drain longer than IdleSynchronizer's 10 s wait is waited out (and logged) for up to a minute.
+        private static void CollectGarbageAndWaitForIdle([CallerMemberName] string caller = null)
         {
+            var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
-            IdleSynchronizer.Wait();
+            for (var attempt = 1; ; attempt++)
+            {
+                var error = IdleSynchronizer.TryWait();
+                if (string.IsNullOrEmpty(error))
+                {
+                    break;
+                }
+                Log.Comment($"{caller}: idle wait {attempt} failed after {stopwatch.ElapsedMilliseconds} ms: {error}");
+                if (attempt == 6)
+                {
+                    Verify.Fail($"{caller}: the UI thread did not go idle within a minute.");
+                }
+            }
+            Log.Comment($"{caller}: settled in {stopwatch.ElapsedMilliseconds} ms, {GcCounts()}");
         }
 
         private static string GcCounts() => $"gc {GC.CollectionCount(0)}/{GC.CollectionCount(1)}/{GC.CollectionCount(2)}";
@@ -110,6 +125,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
             }
+            CollectGarbageAndWaitForIdle();
         }
 
         #endregion
@@ -236,6 +252,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 rows.CanLoad = false;
                 Verify.IsFalse(view.HasMoreItems, "HasMoreItems follows the source.");
             });
+            CollectGarbageAndWaitForIdle();
         }
 
         [TestMethod]
@@ -630,6 +647,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(view.Count, visible);
                 Verify.IsTrue(view.HasMoreItems, "Once the view grows, HasMoreItems follows the source again.");
             });
+            CollectGarbageAndWaitForIdle();
         }
 
         [TestMethod]
@@ -679,6 +697,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ((ICollectionViewShaping)view).Refresh();
                 Verify.IsTrue(view.HasMoreItems, "An app Refresh starts loading over.");
             });
+            CollectGarbageAndWaitForIdle();
         }
 
         [TestMethod]
@@ -729,6 +748,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 Verify.IsGreaterThan(view.Count, visible, "The sparse matches were loaded.");
             });
+            CollectGarbageAndWaitForIdle();
         }
 
         #endregion
