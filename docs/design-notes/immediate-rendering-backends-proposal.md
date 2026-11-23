@@ -549,6 +549,41 @@ text, animation, and interop contracts. Then establish the M0 baseline before co
 | Walk approximations | Opacity is folded into primitive alpha only when an opacity group draws exactly one primitive; otherwise it uses `PushOpacityLayer`. Clips are world-space axis-aligned bounding boxes, plus rounded clips for CornerRadius. Gradients are painted as their average stop color. Text is drawn from XAML's glyph runs. `DrawText` is the fallback, using the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em | Each approximation is a known fidelity gap rather than a crash or a silent omission |
 | Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint. `WINUI_IMMEDIATE_STATS=<path.txt>` writes one line per painted island frame, with element counts (visited, painted, culled), commands, blits, damage, walk and paint time in µs, and reused subtrees, followed by `# unsupported` lines. `WINUI_IMMEDIATE_PRESENT_UNION=1` also repaints the previous frame's damage. Mid-scroll captures showed it is not needed: flip-model `Present1` dirty rects carry the rest of the frame forward | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
 
+### Full XAML coverage: imaging
+
+Branch `imaging`: F7 images and icons, F11 interop fallback, F13 windowing and hosting. Coverage pages are in
+`Coverage.Images.cs` (F7-images), `Coverage.Interop.cs` (F11-interop, all `ExpectFallback`) and `Coverage.Windowing.cs`
+(F13-windowing).
+
+| Topic | Decision |
+|---|---|
+| Image identity and damage | Every `ImageSurfaceWrapper` carries a process-unique content generation that is bumped whenever its software surface changes (new decode, DecodePixelWidth re-decode, animated GIF frame, WriteableBitmap `Invalidate`, RTB capture). Painters key bitmaps by (wrapper, generation), so a source update re-uploads exactly once and damages the element through its command signature |
+| GDI+ zero-copy | Decoded images (surfaces XAML does not keep in system memory) are immutable once delivered, so GDI+ wraps XAML's pixels in a `Gdiplus::Bitmap` with their stride (`BitmapSource::borrowPixels`) instead of copying. Kept surfaces (WriteableBitmap, RTB, SoftwareBitmapSource) can change in place and are still copied |
+| D2D duplicate copy | Not removed. `ID2D1DeviceContext::CreateSharedBitmap` over system memory only works with WIC targets, so D2D needs its own bitmap. Releasing XAML's software copy after upload would make device loss, printing, and painter-cache eviction (bitmaps are released after a few unused frames) re-decode, so the copy is kept and bounded by the painter's existing bitmap LRU |
+| NineGrid | `Image.NineGrid` draws nine source cells (`ComputeNineGridCells`, overlapping insets shrink proportionally like Composition's nine-grid brush). GDI+ draws the cells from sub-rectangles of the same bitmap |
+| Hardware-only sources | `SoftwareBitmapSource` uploads straight to a hardware surface; the walk asks it for a kept software copy (`ReloadReleasedSoftwareImage`) and the image appears when the copy arrives. `RenderTargetBitmap` used as an image source: the immediate capture keeps its pixels and `CRenderTargetBitmap::PostDraw` exposes them as the software surface (one extra width×height×4 buffer per captured RTB, released when the RTB is recaptured or destroyed). SVG is rasterized into a software surface by the immediate decode path |
+| Icons | FontIcon, SymbolIcon, PathIcon, ImageIcon, BitmapIcon (including `ShowAsMonochrome`, a tinted alpha mask) and IconSourceElement render natively |
+| CalendarView | `CalendarViewBaseItem` chrome is drawn from `CCalendarViewBaseItemChrome`, mirroring `HWWalk::CalendarViewBaseItemRenderChildren`: backgrounds, outer/today/selected borders, density bars, then the children (the day and label text are child TextBlocks). The keyboard focus border's two dotted 2px rings are drawn as the solid primary ring |
+| App `XamlCompositionBrushBase` | App subclasses are app Composition content: the window falls back to Composition (reason `XamlCompositionBrushBase`). `AcrylicBrush` stays native (BlurBackdrop); the MUXC RevealBrush, RadialGradientBrush and SpectrumBrush brushes are exempt; MonochromaticOverlayPresenter's brush paints its fallback color (approximated) |
+| `XamlLight` | App lights fall the window back (reason `XamlLight`). Built-in MUXC Reveal / ambient lights are not drawn and are reported `XamlLight:approximated` |
+| Fallback reports | Unsupported content seen during a walk that ends in a window fallback is dropped (deferred until the walk completes), so a fallen-back window reports only its `# fallback` line. Fallback still happens before the first immediate present of that content: the island is re-rendered by HWWalk in the same frame, so no incomplete frame is shown |
+| SystemBackdrop | Approximated (`SystemBackdrop:approximated`). The backdrop is attached to the ContentIsland and drawn by the system; no Composition content is needed, and the immediate walk skips the island root's theme background when `CXamlIslandRoot::HasTransparentBackground` (set by `Window.SystemBackdrop` and XamlIsland), exactly like `BaseContentRenderer`. But the system backdrop does not show through the transparent composition swap chain: the area behind the content composes white. Diagnosis on the GPU-less test VM: the presented buffer is transparent where there is no content, and content alpha blends over white on screen. With the swap-chain sprite removed, the backdrop shows (#F3F3F3, Mica's fallback). A 50% colour sprite in its place blends with the backdrop. Hosting the sprite under a ContainerVisual made no difference. Diff against Composition: 0.047 (Mica) and 0.024 (DesktopAcrylic); the pages declare the approximation. Untested on GPU hardware with real Mica. Options if it holds there: present through a `CompositionDrawingSurface` instead of a swap chain, or fall the window back |
+| Windowing | Secondary `Window`s, `DesktopWindowXamlSource` in a plain AppWindow, resize storms, minimize/restore, custom title bars (`ExtendsContentIntoTitleBar` + `SetTitleBar`, caption buttons drawn by the system) and moving an element between XamlRoots all stay immediate (one swap chain per island) |
+| Printing | `PrintDocument` renders with its own D2D print walk (`CreateD2DPrintFactoryAndTarget`), independent of Composition and of the backend selection; images print from XAML's software surface, which borrowing does not alter. No change needed |
+| Out of scope | SwapChainPanel, MediaPlayerElement, ElementCompositionPreview child visuals, app facade/hand-off animations, implicit show/hide animations, app AnimatedVisualPlayer sources and LoadedImageSurface (through an app brush) fall the window back, per the standing interop decision |
+
+Memory (S5, private MB medians per phase, `Run-RenderBench.ps1 -Modes composition,gdiplus,d2d-sw -Scenes gallery,gallery-decoded -InputMode programmatic -Repetitions 1 -Quick`, Hyper-V VM without a GPU, one run each):
+
+| Scene / phase | COMP | GDI+ | D2D-SW |
+|---|---|---|---|
+| gallery, before this branch (Steady) | 77 | 96 (+25%) | 106 (+38%) |
+| gallery, Steady | 83.1 | 85.7 (+3%) | 90.9 (+9%) |
+| gallery, Interaction | 86.1 | 85.8 (0%) | 101.4 (+18%) |
+| gallery-decoded, Steady | 78.3 | 78.6 (0%) | 92.2 (+18%) |
+| gallery-decoded, Interaction | 80.0 | 87.1 (+9%) | 101.2 (+26%) |
+
+GDI+ reaches Composition parity on S5 by borrowing decoded pixels; D2D-SW keeps its own bitmap per visible image (the "D2D duplicate copy" row), which is the remaining gap. The "before" row is from an earlier run on the same VM, so compare ratios rather than absolute values. One GDI+ gallery run failed `SteadyStateIsIdle` because decodes were still landing on the slow VM; the rerun passed (86.2 MB Steady).
+
 ## Source references
 
 These are investigation entry points, not permanent line-number contracts. Paths are relative to the repository unless

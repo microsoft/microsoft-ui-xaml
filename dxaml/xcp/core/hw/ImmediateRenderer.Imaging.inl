@@ -5,6 +5,7 @@
 // ImmediateRenderer.cpp after the Emitter (it emits display-list commands).
 
 #include "CalendarViewBaseItemChrome.h"
+#include <Microsoft.UI.Composition.h>
 
 namespace
 {
@@ -50,6 +51,18 @@ namespace
         emitter.Fill({ rect.left, innerBottom, rect.right, rect.bottom }, 0, 0, color, world);
         emitter.Fill({ rect.left, innerTop, std::min(rect.left + t.left, rect.right), innerBottom }, 0, 0, color, world);
         emitter.Fill({ std::max(rect.right - t.right, rect.left), innerTop, rect.right, innerBottom }, 0, 0, color, world);
+    }
+
+    // F13: true when the island's ContentIsland carries a SystemBackdrop (Window.SystemBackdrop = Mica/DesktopAcrylic).
+    bool IslandHasSystemBackdrop(_In_ CXamlIslandRoot* islandRoot) noexcept
+    {
+        ixp::IContentIsland* contentIsland = islandRoot->GetContentIsland();
+        Microsoft::WRL::ComPtr<ixp::ICompositionSupportsSystemBackdrop> target;
+        Microsoft::WRL::ComPtr<RealWUComp::ICompositionBrush> backdrop;
+        return contentIsland != nullptr
+            && SUCCEEDED(contentIsland->QueryInterface(IID_PPV_ARGS(&target)))
+            && SUCCEEDED(target->get_SystemBackdrop(&backdrop))
+            && backdrop != nullptr;
     }
 }
 

@@ -1775,6 +1775,12 @@ void ImmediateRenderer::EmitContent(
         if (type == KnownTypeIndex::XamlIslandRoot && static_cast<CXamlIslandRoot*>(element)->HasTransparentBackground())
         {
             backgroundResult = BrushResult::None;
+            // The backdrop itself is system-drawn, but it does not show through the transparent composition swap
+            // chain (the area behind the content composes white; a colour sprite in the same place blends correctly).
+            if (IslandHasSystemBackdrop(static_cast<CXamlIslandRoot*>(element)))
+            {
+                ReportUnsupported(element, L"SystemBackdrop:approximated");
+            }
         }
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
