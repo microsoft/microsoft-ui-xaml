@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <d2d1_1.h>
+
 struct IWICImagingFactory;
 struct IWICBitmapDecoder;
 struct ImageMetadata;
@@ -26,6 +28,10 @@ public:
     // the cost of ref counting.  However, caller should never release the object without
     // also doing an AddRef.
     const wrl::ComPtr<IWICImagingFactory>& GetFactory();
+
+    // For rasterizing SVGs off the UI thread. Not the render factory: its lock is also taken around XAML's D3D device
+    // context calls, and a software EndDraw holds the factory lock for the whole WARP flush.
+    const wrl::ComPtr<ID2D1Factory1>& GetD2DFactory();
 
      _Check_return_ HRESULT GetBitmapDecoder(
         _In_ IRawData& rawData,
@@ -63,4 +69,5 @@ private:
     WicService& operator=(const WicService&) = delete;
 
     wrl::ComPtr<IWICImagingFactory> m_spIWICFactory;
+    wrl::ComPtr<ID2D1Factory1> m_d2dFactory;
 };

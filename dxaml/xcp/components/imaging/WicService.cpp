@@ -22,11 +22,18 @@ WicService::WicService()
         nullptr,
         CLSCTX_INPROC_SERVER,
         IID_PPV_ARGS(&m_spIWICFactory)));
+
+    IFCFAILFAST(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, m_d2dFactory.GetAddressOf()));
 }
 
 const wrl::ComPtr<IWICImagingFactory>& WicService::GetFactory()
 {
     return m_spIWICFactory;
+}
+
+const wrl::ComPtr<ID2D1Factory1>& WicService::GetD2DFactory()
+{
+    return m_d2dFactory;
 }
 
 _Check_return_ HRESULT WicService::GetBitmapDecoder(
