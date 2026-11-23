@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 //  Abstract:
@@ -1233,6 +1233,9 @@ namespace DirectUI
                 _In_ wf::Point dragPoint);
 
             // Returns whether the passed item is the one being dragged over
+            // CanReorderItems, unless ItemsSource is a view that sorts or filters.
+            _Check_return_ HRESULT GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder);
+
             BOOLEAN IsDragOverItem(
                 _In_ ListViewBaseItem* pItem);
 
