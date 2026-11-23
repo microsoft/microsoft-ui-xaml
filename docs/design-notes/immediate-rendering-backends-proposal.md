@@ -252,6 +252,45 @@ accessibility, selection, and text semantics must not be changed merely to obtai
 | Mica / desktop acrylic (host backdrop) | Approximated by the material's fallback color (same as Composition when transparency effects are disabled); in-app acrylic uses `BlurBackdrop` + tint/luminosity/noise. |
 | Execution order | S11, S13, S14, S15, S12, S19, S16, S20, S21, S22, S23, each test-first. |
 
+### Full XAML coverage: text
+
+Branch `immediate-rendering-text` (families F5 text and F6 text editing).
+
+**Design.**
+- **Static text.** `TextBlock`, `RichTextBlock`, `RichTextBlockOverflow` and `PasswordBox` keep the existing glyph-run replay: `VisitImmediate` walks XAML's recorded `D2DTextDrawingContext`.
+  - TextHighlighters, decorations, selection, typography, spacing, line stacking, trimming, `MaxLines`, flow direction and reading order are all baked into the recorded runs, rectangles and lines, so they need no per-feature code.
+  - `InlineUIContainer` children are ordinary visual children and are walked.
+- **Editable text (RichEdit self-draw).** `CTextBoxView` renders through RichEdit's `ITextServices2::TxDrawD2D` into its recording `HWRenderTarget`, the same as in Composition mode, and then replays the recording through `ImmediateTextSink`.
+  - The recording covers glyph runs, selection and highlight rectangles, underlines and strike lines, the wavy-line and inline-image bitmaps, and the placeholder.
+  - This replaces the old plain `DrawText(TextBox.Text)` approximation and the `RichEditBox text` unsupported report. Scrolling, wrapping, alignment, selection (including `SelectionHighlightColor`, `SelectionHighlightColorWhenNotFocused` and read-only selection), IME and spell-check attributes, and RichEditBox formatting and images therefore match Composition by construction.
+  - No new painter primitive is needed. A painter "external draw" callback was considered and rejected: the recording already exists, and replaying it keeps both painters and the display-list signature (damage) unchanged.
+- **Caret.** The caret (`CompositeMode=DestInvert` rectangle) uses the new `IImmediatePainter::InvertRectangle(rect)` primitive, which applies `rgb = alpha - rgb` to the premultiplied destination and leaves alpha unchanged.
+  - D2D: the rectangle recorded into a command list and drawn with `D2D1_COMPOSITE_MODE_MASK_INVERT`.
+  - GDI+: in place on the PARGB target.
+- **Color fonts.** `ImmediateTextSink::GlyphRunImageFormats` passes the recorded glyph image formats through, so runs recorded as monochrome only (`IsColorFontEnabled=False`) replay without color-glyph translation.
+
+**Coverage.** Pages are in `Coverage.Text.cs` (F5-text) and `Coverage.TextEditing.cs` (F6-editing):
+- F5-text (decorations, highlighters, typography, line-stacking, trimming-wrapping, flow-direction, rich-text, selection, fonts) and F6-editing (textbox, textbox-selection, textbox-scrolled, spell-check, passwordbox, richeditbox, suggest-number, caret) report nothing unsupported in GDI+ or D2D-SW.
+- Mean absolute difference against Composition is ≤ 0.01 on every page in both modes, except GDI+ `fonts` at 0.014 (GDI+ antialiasing of large color and variable glyphs).
+
+**Approximations and gaps.**
+- *Caret shapes.* Rounded-rectangle and `Path` carets (RTL) are inverted over their bounding rectangle and reported `:approximated`.
+- *Inverting a transparent destination.* Composition inverts the composed backdrop. The painters invert their own target, so a caret drawn over transparent pixels of a transparent island differs. It is identical over opaque content, which is the normal case.
+- *Antialiasing.* D2D uses ClearType over opaque fills (S19) where Composition uses grayscale. GDI+ uses its own antialiasing.
+- *Out of scope here.*
+  - The `Glyphs` element is still reported `Element content` (F2, shapes).
+  - The legacy dotted Hyperlink focus rectangles, used only when high-visibility focus visuals are disabled, belong to F14.
+  - The elevation-border gradient on text controls is a brush issue (F3).
+  - Spell-check squiggles take the same path as RichEdit's wavy underline, which is covered. The test VM has no spell checker, so they cannot be produced in any mode there.
+- *Test page.* The RichEditBox page also inserts an inline image (`InsertImage` from an in-memory BMP). It renders in every mode. RichEdit reads the stream lazily, so the page keeps the stream alive.
+
+**Memory.**
+- No per-TextBox surfaces are added. The recorded RichEdit data already exists in Composition mode.
+- Glyph runs are drawn directly with no glyph atlas.
+- The wavy-line and inline-image bitmaps are the existing software `CWriteableBitmap` surfaces, cached by the renderer's bounded bitmap cache, which releases them after 120 idle frames.
+- D2D `InvertRectangle` creates one short-lived command list per caret per frame.
+- Measured on the `form` scene (quick run, peak private MB): Composition 46.3, GDI+ 45.5, D2D-SW 60.7. For D2D-SW the earlier full-backend baseline (`full-main`) was 60.6, so text self-draw adds nothing measurable.
+
 ### Failure, fallback, and observability
 
 Benchmark runs must report requested mode, effective mode, actual adapter/device type, software fallback, and retained
