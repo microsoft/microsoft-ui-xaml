@@ -47,6 +47,16 @@ public:
 
     void CleanupDeviceRelatedResourcesRecursive(bool cleanupDComp) override;
 
+    // ---- imaging ----
+    // Pixels of the last immediate-rendering capture (premultiplied BGRA, tightly packed); empty otherwise.
+    std::vector<uint32_t> TakeImmediatePixels(_Out_ uint32_t* width, _Out_ uint32_t* height)
+    {
+        *width = m_immediateWidth;
+        *height = m_immediateHeight;
+        m_immediateWidth = m_immediateHeight = 0;
+        return std::exchange(m_immediatePixels, {});
+    }
+
 private:
 
     void Cleanup();
@@ -61,4 +71,7 @@ private:
     xref_ptr<CUIElement> m_uiElement; // TODO: Can be removed in the future in favor of m_renderTargetElementData->GetRenderElement()
     ctl::ComPtr<CompositionSurfaceAsyncOperation> m_captureAsyncOperation;
     std::shared_ptr<CaptureAsyncCompletionState> m_captureAsyncCompletionState;
+    std::vector<uint32_t> m_immediatePixels;
+    uint32_t m_immediateWidth = 0;
+    uint32_t m_immediateHeight = 0;
 };

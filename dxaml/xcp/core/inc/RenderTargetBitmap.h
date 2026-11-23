@@ -121,4 +121,5 @@ private:
     std::unique_ptr<RenderTargetBitmapImplBase> m_impl;
     wistd::unique_ptr<CXcpList<RenderTargetBitmapPixelWaitExecutor>> m_pixelWaitExecutorList;
     xref_ptr<HWTexture> m_rtbTexture;
+    std::vector<uint32_t> m_immediatePixels; // ---- imaging ---- backs the software surface under immediate rendering
 };

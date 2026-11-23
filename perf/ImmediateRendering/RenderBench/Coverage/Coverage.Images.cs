@@ -105,7 +105,7 @@ static class ImagesCoverage
     // ---- pages ----
 
     // Stretch modes and alignments of a 64x48 PNG in 96x72 / 48x96 frames.
-    [CoveragePage(Family, "stretch-alignment", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage(Family, "stretch-alignment", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage StretchAlignment(CoverageContext context)
     {
         var rows = new StackPanel { Spacing = 12 };
@@ -134,7 +134,7 @@ static class ImagesCoverage
     }
 
     // Image.NineGrid: corners keep their size, edges and center stretch (CompositionNineGridBrush in Composition).
-    [CoveragePage(Family, "nine-grid", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage(Family, "nine-grid", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage NineGrid(CoverageContext context)
     {
         var row = Row();
@@ -154,7 +154,7 @@ static class ImagesCoverage
     }
 
     // ImageBrush as Border.Background, Rectangle/Ellipse Fill, with Stretch and AlignmentX/Y.
-    [CoveragePage(Family, "image-brush", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage(Family, "image-brush", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage ImageBrushes(CoverageContext context)
     {
         var row = Row();
@@ -174,7 +174,7 @@ static class ImagesCoverage
     }
 
     // DecodePixelWidth smaller and larger than the displayed size; JPEG and BMP decoders; a transparent PNG over color.
-    [CoveragePage(Family, "decode-formats", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage(Family, "decode-formats", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage DecodeFormats(CoverageContext context)
     {
         var row = Row();
@@ -212,7 +212,7 @@ static class ImagesCoverage
     }
 
     // WriteableBitmap: drawn, then its pixels rewritten in place and Invalidate()d (the update must damage and repaint).
-    [CoveragePage(Family, "writeable-bitmap", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage(Family, "writeable-bitmap", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage Writeable(CoverageContext context)
     {
         var bitmap = new WriteableBitmap(80, 60);
@@ -237,7 +237,7 @@ static class ImagesCoverage
     }
 
     // SoftwareBitmapSource and a RenderTargetBitmap of live content used as image sources.
-    [CoveragePage(Family, "software-and-rtb-sources", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage(Family, "software-and-rtb-sources", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage SoftwareAndRtb(CoverageContext context)
     {
         var captured = new Border
@@ -268,7 +268,7 @@ static class ImagesCoverage
     }
 
     // SvgImageSource (rasterized by XAML) at two sizes, and a still (AutoPlay=false) GIF.
-    [CoveragePage(Family, "svg-gif", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage(Family, "svg-gif", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage SvgGif(CoverageContext context)
     {
         var row = Row();
@@ -305,7 +305,7 @@ static class ImagesCoverage
     }
 
     // Icons: FontIcon, SymbolIcon, PathIcon, BitmapIcon (color and monochrome), ImageIcon and IconSourceElement.
-    [CoveragePage(Family, "icons", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage(Family, "icons", MaxMeanAbsDiff = 0.002)]
     public static CoveragePage Icons(CoverageContext context)
     {
         var row = Row(
@@ -338,7 +338,7 @@ static class ImagesCoverage
     }
 
     // CalendarView: day items with density bars, today, selected and blackout days (CalendarViewBaseItem chrome).
-    [CoveragePage(Family, "calendar-view", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage(Family, "calendar-view", MaxMeanAbsDiff = 0.005)]
     public static CoveragePage Calendar(CoverageContext context)
     {
         var start = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero);

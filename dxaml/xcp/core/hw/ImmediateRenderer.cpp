@@ -797,6 +797,14 @@ void ImmediateRenderer::ReportUnsupported(_In_ CUIElement* element, _In_z_ const
     std::wstring key(className.IsNullOrEmpty() ? L"" : className.GetBuffer());
     key += L'|';
     key += detail;
+    if (m_deferredUnsupported != nullptr)
+    {
+        if (m_reportedUnsupported.find(key) == m_reportedUnsupported.end())
+        {
+            m_deferredUnsupported->emplace_back(className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
+        }
+        return;
+    }
     if (m_reportedUnsupported.insert(key).second)
     {
         TraceUnsupportedContent(m_mode, className.IsNullOrEmpty() ? L"" : className.GetBuffer(), detail);
@@ -1495,6 +1503,15 @@ namespace
         IPALSurface* surface = brush->GetSoftwareSurface();
         if (surface == nullptr)
         {
+            // ---- imaging ----
+            // SoftwareBitmapSource uploads straight to a hardware surface; ask for a kept software copy (async, the
+            // source redraws when it arrives).
+            if (brush->m_pImageSource->HasHardwareSurfaces() &&
+                brush->m_pImageSource->OfTypeByIndex<KnownTypeIndex::SoftwareBitmapSource>())
+            {
+                IGNOREHR(brush->m_pImageSource->ReloadReleasedSoftwareImage());
+                return nullptr;
+            }
             // Still loading/decoding, or decoded to a hardware surface (SVG, SurfaceImageSource, ...).
             return brush->m_pImageSource->HasHardwareSurfaces() ? L"Image without software surface" : nullptr;
         }
@@ -1752,6 +1769,13 @@ void ImmediateRenderer::EmitContent(
 
         ColorF backgroundColor;
         BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
+        // ---- imaging ----
+        // Like BaseContentRenderer: a window with a SystemBackdrop (Mica/DesktopAcrylic) or a XamlIsland has a
+        // transparent island root, so the system-drawn backdrop shows through the premultiplied swap chain.
+        if (type == KnownTypeIndex::XamlIslandRoot && static_cast<CXamlIslandRoot*>(element)->HasTransparentBackground())
+        {
+            backgroundResult = BrushResult::None;
+        }
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
         if (auto imageBrush = do_pointer_cast<CImageBrush>(background.get()))
@@ -3081,6 +3105,27 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
         auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
         m_pendingFallback = nullptr;
+        std::vector<std::pair<std::wstring, std::wstring>> deferredUnsupported;
+        m_deferredUnsupported = &deferredUnsupported;
+        auto flushUnsupported = wil::scope_exit([&]
+        {
+            m_deferredUnsupported = nullptr;
+            if (m_pendingFallback != nullptr)
+            {
+                return; // the window falls back; Composition renders that content
+            }
+            for (const auto& [className, detail] : deferredUnsupported)
+            {
+                if (m_reportedUnsupported.insert(className + L'|' + detail).second)
+                {
+                    TraceUnsupportedContent(m_mode, className.c_str(), detail.c_str());
+                    if (FILE* stats = GetStatsFile())
+                    {
+                        fwprintf(stats, L"# unsupported %s %s\n", className.c_str(), detail.c_str());
+                    }
+                }
+            }
+        });
         walkSurface(this, walkContext, root, list);
         list.snapshotQpc = QpcMicroseconds();
     }

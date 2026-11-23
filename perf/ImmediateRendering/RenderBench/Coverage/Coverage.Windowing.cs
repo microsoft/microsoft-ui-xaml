@@ -89,7 +89,8 @@ static class WindowingCoverage
     }
 
     // A second XAML Window and a DesktopWindowXamlSource island in a plain AppWindow (Win32 host), resized and
-    // minimized/restored. The capture is of the main window; the secondary windows must stay immediate and not fail.
+    // minimized/restored, then hidden before the capture (a screen grab of the main window). The secondary windows must\r
+    // stay immediate and not fail.
     [CoveragePage(Family, "secondary-hosts")]
     public static CoveragePage SecondaryHosts(CoverageContext context)
     {
@@ -127,6 +128,11 @@ static class WindowingCoverage
                     overlapped.Restore();
                 }
                 await Task.Delay(300);
+
+                // The capture is a screen grab of the main window's client area: hide the secondary windows first.
+                host.Hide();
+                second.AppWindow.Hide();
+                await Task.Delay(200);
             },
             Detach = () =>
             {
@@ -161,6 +167,9 @@ static class WindowingCoverage
                 other.Children.Remove(moving);
                 slot.Children.Add(moving);
                 await Task.Delay(300);
+                second.Close();
+                second = null;
+                await Task.Delay(200);
             },
             Detach = () => second?.Close(),
         };
