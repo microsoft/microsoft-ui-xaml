@@ -585,6 +585,8 @@ public:
     void RefreshSortIndicators();
     // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
     void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
+    // Re-sorts a sorted column on its new key, or clears its sort when it no longer has one.
+    void OnColumnSortPathChanged(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // Drops a column that has left Columns from the active sort state. Returns true when the sort
     // state changed.

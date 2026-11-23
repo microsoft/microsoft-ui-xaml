@@ -386,6 +386,33 @@ bool TableView::IsActiveSourceOwnedByOther() const
     return m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
 }
 
+void TableView::OnColumnSortPathChanged(const winrt::TableViewColumn& column)
+{
+    // Only a sort this table installed for the column is keyed on its path; a comparer ignores the path.
+    if (!column || column.SortDirection() == winrt::SortDirection::None || column.CustomSortComparer() ||
+        m_tableViewSourceSort.AxisToken.empty() ||
+        m_tableViewSourceSort.AxisToken != GetTableViewSourceSortAxisToken(column, m_tableViewSourceSort.MemberPath))
+    {
+        return;
+    }
+
+    if (!CanSortColumn(column))
+    {
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
+        return;
+    }
+
+    if (column.GetSortMemberPathCore() == m_tableViewSourceSort.MemberPath)
+    {
+        return;
+    }
+
+    // Force a re-sort: SortByColumn no-ops when the column already carries this direction.
+    auto const direction = column.SortDirection();
+    SortByColumn(column, winrt::SortDirection::None);
+    SortByColumn(column, direction);
+}
+
 bool TableView::IsSortLitOnlyByApp() const
 {
     if (!m_tableViewSourceSort.AxisToken.empty())
