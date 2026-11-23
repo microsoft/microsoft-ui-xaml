@@ -91,7 +91,6 @@ bool ImmediateRenderer::IsHandOffVisualTouched(_In_ CUIElement* element) noexcep
         const xstring_ptr className = templatedParent != nullptr ? templatedParent->GetClassName() : xstring_ptr::NullString();
         if (!className.IsNullOrEmpty() && wcsncmp(className.GetBuffer(), c_controlsNamespace, ARRAYSIZE(c_controlsNamespace) - 1) == 0)
         {
-            ReportUnsupported(element, L"Control Composition animation:approximated");
             return false;
         }
     }
