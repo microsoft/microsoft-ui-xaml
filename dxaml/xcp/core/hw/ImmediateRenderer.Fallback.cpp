@@ -180,7 +180,7 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
     {
         interop.appCompositionBrush = interop.appCompositionBrush
             || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->m_pFill, element)
-            || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->m_pStroke, element);
+            || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->GetStroke().get(), element);
     }
 
     // S12: AnimatedIcon skips its Lottie visual under immediate rendering and shows FallbackIconSource (AnimatedIcon.cpp).
