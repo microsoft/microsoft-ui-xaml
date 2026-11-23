@@ -428,7 +428,7 @@ classDiagram
     }
 
     class SourceRecord {
-        +tracker_ref~IInspectable~ Item
+        +StrongRef Item
         +ObjectAddress Address
         +event_token PropertyChangedToken
         +WatchState Watch
@@ -622,7 +622,7 @@ classDiagram
     class ShapeState {
         <<on SourceRecord.Shape>>
         +ShapeFlags Flags
-        +vector~optional~tracker_ref~~ SortKeys
+        +vector~optional~StrongRef~~ SortKeys
         +vector~SourceRecord*~ ShapedChildren
         +GroupNode* Group
     }
@@ -1026,7 +1026,7 @@ and that live exactly as long as the item stays in the source.
 
 | Member | Purpose |
 |---|---|
-| `Item` | A `tracker_ref<IInspectable>` bound to the owning `TableViewSource2` (matching `Vector<IInspectable>`). Keeps the item alive while in the table while letting the .NET GC collect cycles when an item references its owner. `get_abi(Item.get())` is the raw-pointer lookup key. `Item.get()` is used only on live paths; teardown paths use `Item.safe_get()` (see *Reference tracking and teardown*). |
+| `Item` | A `StrongRef` (plain strong reference; #138). Keeps the item alive while in the table, so its COM address is not reused. `get_abi(Item.get())` is the raw-pointer lookup key. |
 | `Address` (`ObjectAddress` = `uintptr_t`) | The canonical `IUnknown` pointer: the object's physical identity. It costs one QI, at creation. |
 | `AddressOf(item)` (static) | Computes `Address` for any item: the address of its canonical `IUnknown`. A managed item can reach native code through different interface pointers on different calls, and all of them QI to the same `IUnknown`, so `SourceTable` lookups fall back to this key when the raw pointer misses. |
 | `Identity()` | The logical identity string: `"0x"` + `Address` in hex (fixed, D4; it is also the record's row key). It is formatted on first use and cached; this accessor is the only way to read it. |
@@ -1214,12 +1214,11 @@ on `IsLiveShaping`, **never on which shaping verbs are active**:
 **Reference tracking and teardown:**
 
 **Rule: every app-supplied object or delegate held natively goes through `tracker_ref`** bound to
-the owning `TableViewSource2`. This covers:
-- `CollectionAccessor2` (root and child feeds) and every `SourceRecord::Item`;
+the owning `TableViewSource2`, except per-record data (#138). This covers:
+- `CollectionAccessor2` (root and child feeds);
 - the hierarchy selectors (held by the `SourceHierarchy` strategy: `m_keySelector`,
   `m_parentKeySelector`, `m_childrenSelector`);
-- `ParentBy` object keys (`NodeKeys::KeyObject`);
-- `GroupNode::Key`;
+- `GroupNode::Key` (groups are few, so its O(N) tracker cost stays O(groups); an object key may reference the VM);
 - the filter, sort and group delegates, once the shape spec stores them (Phase 2).
 
 Why: a strong native reference to a .NET object (for example a lambda capturing the page or VM)
@@ -1237,7 +1236,7 @@ untracked strong reference.
 
 | Rule | Detail |
 |---|---|
-| Cost | Each record costs one `NewTrackerHandle` + `SetTrackerValue` on creation and one `DeleteTrackerHandle` on removal, the same as `Vector<IInspectable>`. A load or `Reset` of *n* items pays *n* of each. |
+| Cost | Per-record data (`SourceRecord::Item`, `ShapeState::SortKeys`, `NodeKeys::KeyObject`) is held through `StrongRef`, not `tracker_ref`: each tracker handle set or destroy scans the owner's handle list (O(N)), so per-record handles made a load or `Reset` O(N^2) (#138). |
 | Single source token | `SubscribeToSourceChanges` binds exactly one interface (`INotifyCollectionChanged` > `IObservableVector` > `IBindableObservableVector`) through `CollectionAccessor2::Subscribe`. `UnsubscribeFromSourceChanges` revokes through `CollectionAccessor2::Unsubscribe`, which reads the same resolved kind; ChildrenBy feeds share both. |
 | No `tracker_ref` outlives the owner | `~tracker_ref` dereferences its owner even when empty. `Clear()` releases the hierarchy strategy (its selectors and key index are `std::optional` for this reason), destroys every record, resets `m_sourceAccessor`, and nulls `m_trackerOwner` while the owner is alive. |
 | Detached table | After `Clear()` the table is empty and owner-free, so it is safe to outlive `TableViewSource2` (consumer `shared_ptr`s, or a posted off-thread lambda that has the table locked). Every entry point and event lambda checks `IsDetached()` and returns. `~SourceTable()` asserts it was detached and never touches `m_trackerOwner`. |
@@ -1518,7 +1517,7 @@ so raises never nest.
   `weak_ptr`, lock them only on the UI thread, and route only if `AdmitChange(isReset)` and
   `CurrentHierarchy()` is still the strategy that subscribed (a replaced strategy's late event is
   dropped).
-- Feed accessors, the selectors and object keys hold `tracker_ref`s bound to the host's
+- Feed accessors and the selectors hold `tracker_ref`s bound to the host's
   `TrackerOwner()` (`m_trackerOwner`).
 - `Clear()` calls `m_hierarchy->Release(host)` first (unsubscribe every feed via `safe_get`, destroy
   the child feeds and their records, drop the selectors and keys), then the root records, then

@@ -45,8 +45,9 @@
 // sign, never negates the value. A comparer that is not a strict weak ordering gives an
 // unspecified order, never memory-unsafe behaviour. A comparer throw propagates.
 //
-// Reference tracking: GroupNode::Key and ShapeState::SortKeys are tracker_refs bound to
-// trackerOwner (the owning TableViewSource2). Clear() must run while that owner is alive.
+// Reference tracking: GroupNode::Key is a tracker_ref bound to trackerOwner (the owning
+// TableViewSource2); ShapeState::SortKeys are StrongRefs. Clear() must run while that owner is
+// alive.
 //
 // Threading: UI-thread affine.
 
