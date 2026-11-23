@@ -162,6 +162,16 @@ namespace
         return value == xaml_data::CollectionViewSortDirection_Ascending || value == xaml_data::CollectionViewSortDirection_Descending;
     }
 
+    // Undoes a DependencyProperty change the owner rejects.
+    _Check_return_ HRESULT RestorePreviousValue(_In_ DependencyObject* pOwner, _In_ const PropertyChangedParams& args, _Inout_ bool* pIsRestoring)
+    {
+        *pIsRestoring = true;
+        const HRESULT hr = pOwner->SetValueCore(args.m_pDP, *args.m_pOldValue);
+        *pIsRestoring = false;
+        IFC_RETURN(hr);
+        return S_OK;
+    }
+
     // One shared default view per list source, held weakly (WPF: ViewManager's default views). Views are per
     // thread; a view removes its entry when it is destroyed.
     struct DefaultViewEntry
@@ -239,6 +249,35 @@ _Check_return_ HRESULT SortDescription::put_DirectionImpl(xaml_data::CollectionV
     return S_OK;
 }
 
+_Check_return_ HRESULT SortDescription::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
+{
+    IFC_RETURN(SortDescriptionGenerated::OnPropertyChanged2(args));
+
+    const auto index = args.m_pDP->GetIndex();
+    if (m_isRestoringValue || (index != KnownPropertyIndex::SortDescription_PropertyName && index != KnownPropertyIndex::SortDescription_Direction))
+    {
+        return S_OK;
+    }
+
+    bool isValid = true;
+    if (index == KnownPropertyIndex::SortDescription_Direction)
+    {
+        xaml_data::CollectionViewSortDirection direction = xaml_data::CollectionViewSortDirection_Ascending;
+        IFC_RETURN(get_Direction(&direction));
+        isValid = IsValidSortDirection(direction);
+    }
+
+    if (!m_isSealed && isValid)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
+    IFCEXPECTRC_RETURN(isValid, E_INVALIDARG);
+    IFC_RETURN(CheckNotSealed());
+    return S_OK;
+}
+
 _Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceWithPropertyNameImpl(
     _In_opt_ HSTRING propertyName,
     _Outptr_ xaml_data::IPropertyGroupDescription** ppInstance)
@@ -275,9 +314,27 @@ _Check_return_ HRESULT PropertyGroupDescriptionFactory::CreateInstanceWithConver
 }
 
 // WPF: PropertyGroupDescription.PropertyName / Converter / StringComparison raise PropertyChanged, which regroups.
+_Check_return_ HRESULT PropertyGroupDescription::get_StringComparisonImpl(_Out_ xaml_data::CollectionViewStringComparison* pValue)
+{
+    IFC_RETURN(GetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT PropertyGroupDescription::put_StringComparisonImpl(xaml_data::CollectionViewStringComparison value)
+{
+    IFCEXPECTRC_RETURN(IsValidStringComparison(value), E_INVALIDARG);
+    IFC_RETURN(SetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, value));
+    return S_OK;
+}
+
 _Check_return_ HRESULT PropertyGroupDescription::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
     IFC_RETURN(PropertyGroupDescriptionGenerated::OnPropertyChanged2(args));
+
+    if (m_isRestoringValue)
+    {
+        return S_OK;
+    }
 
     switch (args.m_pDP->GetIndex())
     {
@@ -285,7 +342,11 @@ _Check_return_ HRESULT PropertyGroupDescription::OnPropertyChanged2(_In_ const P
         {
             xaml_data::CollectionViewStringComparison value = xaml_data::CollectionViewStringComparison_Ordinal;
             IFC_RETURN(get_StringComparison(&value));
-            IFCEXPECTRC_RETURN(IsValidStringComparison(value), E_INVALIDARG);
+            if (!IsValidStringComparison(value))
+            {
+                IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
+                IFC_RETURN(E_INVALIDARG);
+            }
             IFC_RETURN(NotifyOwners());
         }
         break;
@@ -299,7 +360,7 @@ _Check_return_ HRESULT PropertyGroupDescription::OnPropertyChanged2(_In_ const P
     return S_OK;
 }
 
-_Check_return_ HRESULT PropertyGroupDescription::GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult)
+_Check_return_ HRESULT PropertyGroupDescription::GroupNameFromItemCoreImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult)
 {
     wrl_wrappers::HString propertyName;
     ctl::ComPtr<xaml_data::IValueConverter> spConverter;
@@ -310,7 +371,7 @@ _Check_return_ HRESULT PropertyGroupDescription::GroupNameFromItemImpl(_In_opt_ 
     return S_OK;
 }
 
-_Check_return_ HRESULT PropertyGroupDescription::NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
+_Check_return_ HRESULT PropertyGroupDescription::NamesMatchCoreImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
 {
     xaml_data::CollectionViewStringComparison comparison = xaml_data::CollectionViewStringComparison_Ordinal;
     bool isMatch = false;
@@ -327,6 +388,14 @@ _Check_return_ HRESULT GroupDescription::GetDefaultValue2(_In_ const CDependency
     {
         ctl::ComPtr<wfc::IObservableVector<xaml_data::SortDescription*>> spValue;
         IFC_RETURN(get_SortDescriptionsImpl(spValue.ReleaseAndGetAddressOf()));
+        pValue->SetIInspectableAddRef(spValue.Get());
+        return S_OK;
+    }
+
+    if (pDP->GetIndex() == KnownPropertyIndex::GroupDescription_GroupNames)
+    {
+        ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spValue;
+        IFC_RETURN(get_GroupNamesImpl(spValue.ReleaseAndGetAddressOf()));
         pValue->SetIInspectableAddRef(spValue.Get());
         return S_OK;
     }
@@ -392,11 +461,23 @@ _Check_return_ HRESULT GroupDescription::put_CustomSortImpl(_In_opt_ xaml_data::
 
 _Check_return_ HRESULT GroupDescription::GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult)
 {
-    *ppResult = nullptr;
+    IFC_RETURN(GroupNameFromItemCoreProtected(pItem, level, culture, ppResult));
     return S_OK;
 }
 
 _Check_return_ HRESULT GroupDescription::NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
+{
+    IFC_RETURN(NamesMatchCoreProtected(pGroupName, pItemName, pResult));
+    return S_OK;
+}
+
+_Check_return_ HRESULT GroupDescription::GroupNameFromItemCoreImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult)
+{
+    *ppResult = nullptr;
+    return S_OK;
+}
+
+_Check_return_ HRESULT GroupDescription::NamesMatchCoreImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
 {
     bool isMatch = false;
     IFC_RETURN(ShapingNamesMatch(xaml_data::CollectionViewStringComparison_Ordinal, pGroupName, pItemName, &isMatch));
@@ -561,6 +642,13 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     m_tpCustomSort.Clear();
 
     IFC_RETURN(pView->EnableShaping(this));
+
+    // Under an open DeferRefresh the view recomputes once, when it closes.
+    if (m_deferRefreshLevel > 0)
+    {
+        IFC_RETURN(pView->DeferRefresh(m_spViewDeferral.ReleaseAndGetAddressOf()));
+    }
+
     bool isLiveSorting = false;
     bool isLiveFiltering = false;
     bool isLiveGrouping = false;
@@ -569,12 +657,6 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
         m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
     IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), m_culture.Get()));
     m_culture.Release();
-
-    if (m_deferRefreshLevel > 0)
-    {
-        IFC_RETURN(pView->DeferRefresh(m_spViewDeferral.ReleaseAndGetAddressOf()));
-    }
-
     return S_OK;
 }
 
@@ -805,13 +887,13 @@ _Check_return_ HRESULT CollectionViewSource::RemoveFilterEventHandler(EventRegis
     return S_OK;
 }
 
-// WPF wraps the event in a filter delegate set on the view, so the view keeps the CollectionViewSource alive
-// while the event has handlers; an app that keeps only View keeps filtering.
+// WPF wraps the event in a filter delegate set on the view, so an app that keeps only View keeps filtering. The view
+// holds the handlers and only a weak reference to this, so the two form no cycle the GC cannot see.
 _Check_return_ HRESULT CollectionViewSource::OnFilterEventHandlersChanged()
 {
     if (m_tpShapingView)
     {
-        AsShapingView(m_tpShapingView.Get())->SetFilterHost(HasFilterEventHandlers() ? this : nullptr);
+        AsShapingView(m_tpShapingView.Get())->SetFilterEvents(GetFilterEventsIfHandled());
     }
 
     IFC_RETURN(OnShapingDescriptionsChanged());
@@ -823,14 +905,25 @@ bool CollectionViewSource::HasFilterEventHandlers() const
     return m_spFilterEventSource && m_spFilterEventSource->HasHandlers();
 }
 
-// WPF: CollectionViewSource.WrapFilter. Accepted starts true; each handler may change it.
-_Check_return_ HRESULT CollectionViewSource::RaiseFilterEvent(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted)
+IFilterEventSource* CollectionViewSource::GetFilterEventsIfHandled() const
 {
+    return HasFilterEventHandlers() ? m_spFilterEventSource.Get() : nullptr;
+}
+
+void CollectionViewSource::WalkFilterEvents(_In_ IFilterEventSource* pEvents, EReferenceTrackerWalkType walkType)
+{
+    static_cast<FilterEventSource*>(pEvents)->ReferenceTrackerWalk(walkType);
+}
+
+// WPF: CollectionViewSource.WrapFilter. Accepted starts true; each handler may change it.
+_Check_return_ HRESULT CollectionViewSource::RaiseFilterEvent(_In_ IFilterEventSource* pEvents, _In_opt_ IInspectable* pSender, _In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted)
+{
+    auto pSource = static_cast<FilterEventSource*>(pEvents);
     ctl::ComPtr<FilterEventArgs> spArgs;
     BOOLEAN isAccepted = TRUE;
 
     *pIsAccepted = true;
-    if (!HasFilterEventHandlers())
+    if (!pSource->HasHandlers())
     {
         return S_OK;
     }
@@ -838,7 +931,7 @@ _Check_return_ HRESULT CollectionViewSource::RaiseFilterEvent(_In_opt_ IInspecta
     IFC_RETURN(ctl::make(&spArgs));
     IFC_RETURN(spArgs->put_Item(pItem));
     IFC_RETURN(spArgs->put_Accepted(TRUE));
-    IFC_RETURN(m_spFilterEventSource->Raise(ctl::as_iinspectable(this), ctl::interface_cast<xaml_data::IFilterEventArgs>(spArgs.Get())));
+    IFC_RETURN(pSource->Raise(pSender, ctl::interface_cast<xaml_data::IFilterEventArgs>(spArgs.Get())));
     IFC_RETURN(spArgs->get_Accepted(&isAccepted));
     *pIsAccepted = !!isAccepted;
     return S_OK;
@@ -1015,6 +1108,7 @@ _Check_return_ HRESULT CollectionViewSource::EndDeferRefresh()
 // is replaced by one that can once a rule is set.
 _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
 {
+#ifdef MUX_PRERELEASE
     ctl::ComPtr<IInspectable> spSource;
     bool isShapingRequested = false;
 
@@ -1044,6 +1138,8 @@ _Check_return_ HRESULT CollectionViewSource::OnShapingDescriptionsChanged()
     }
 
     IFC_RETURN(EnsureView(spSource.Get()));
+#endif
+    // Shaping (an experimental API) changes nothing for a CollectionViewSource in a release build, as in EnsureView.
     return S_OK;
 }
 

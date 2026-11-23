@@ -8,6 +8,7 @@
 
 #include "precomp.h"
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -75,14 +76,85 @@ namespace
         HRESULT* m_pPrevious;
     };
 
+    // Failures no app code can cause, which are not contained.
+    bool IsUncontainedFailure(HRESULT hr)
+    {
+        return hr == E_OUTOFMEMORY || hr == RPC_E_WRONG_THREAD;
+    }
+
+    // A source change or a live restore no app caller waits for: the first failure of app code during it, with the
+    // error info the app's code left (its message and stack), reported once the view is consistent again.
+    class ContainedFailureReport
+    {
+    public:
+        ContainedFailureReport() : m_pPrevious(s_pCurrent)
+        {
+            s_pCurrent = this;
+        }
+
+        ~ContainedFailureReport()
+        {
+            s_pCurrent = m_pPrevious;
+        }
+
+        ContainedFailureReport(const ContainedFailureReport&) = delete;
+        ContainedFailureReport& operator=(const ContainedFailureReport&) = delete;
+
+        static void Capture(HRESULT hr)
+        {
+            auto pCurrent = s_pCurrent;
+            if (!pCurrent || !FAILED(hr) || FAILED(pCurrent->m_hr))
+            {
+                return;
+            }
+
+            pCurrent->m_hr = hr;
+            Microsoft::WRL::ComPtr<IRestrictedErrorInfo> spErrorInfo;
+            if (SUCCEEDED(::GetRestrictedErrorInfo(&spErrorInfo)) && spErrorInfo)
+            {
+                IGNOREHR(::SetRestrictedErrorInfo(spErrorInfo.Get()));
+                BSTR description = nullptr;
+                BSTR restrictedDescription = nullptr;
+                BSTR capabilitySid = nullptr;
+                HRESULT errorInfoHr = S_OK;
+                if (SUCCEEDED(spErrorInfo->GetErrorDetails(&description, &errorInfoHr, &restrictedDescription, &capabilitySid)) && errorInfoHr == hr)
+                {
+                    pCurrent->m_spErrorInfo = spErrorInfo;
+                }
+                SysFreeString(description);
+                SysFreeString(restrictedDescription);
+                SysFreeString(capabilitySid);
+            }
+        }
+
+        // Application.UnhandledException sees the failure, as for app code a dispatcher callback runs.
+        void Report(HRESULT hr)
+        {
+            if (hr == m_hr && m_spErrorInfo)
+            {
+                IGNOREHR(::SetRestrictedErrorInfo(m_spErrorInfo.Get()));
+            }
+            IGNOREHR(ErrorHelper::ReportUnhandledError(hr));
+        }
+
+    private:
+        static thread_local ContainedFailureReport* s_pCurrent;
+        HRESULT m_hr = S_OK;
+        Microsoft::WRL::ComPtr<IRestrictedErrorInfo> m_spErrorInfo;
+        ContainedFailureReport* m_pPrevious;
+    };
+
+    thread_local ContainedFailureReport* ContainedFailureReport::s_pCurrent = nullptr;
+
     HRESULT ContainRaiseFailure(HRESULT hr)
     {
-        if (FAILED(hr) && t_pRaiseFailure)
+        if (FAILED(hr) && t_pRaiseFailure && !IsUncontainedFailure(hr))
         {
             if (SUCCEEDED(*t_pRaiseFailure))
             {
                 *t_pRaiseFailure = hr;
             }
+            ContainedFailureReport::Capture(hr);
             return S_OK;
         }
         return hr;
@@ -94,6 +166,7 @@ namespace
         if (SUCCEEDED(*pFirst) && FAILED(hr))
         {
             *pFirst = hr;
+            ContainedFailureReport::Capture(hr);
         }
     }
 
@@ -121,14 +194,6 @@ namespace
     private:
         TrackerPtrVector<IUnknown> m_references;
     };
-
-    // A failure of app code no caller waits for (a source change, a live restore) is originated with a message, so
-    // a debugger and error reporting see it; the view recomputed.
-    void ReportContainedFailure(HRESULT hr)
-    {
-        static constexpr WCHAR c_message[] = L"App code the collection view ran while it followed a change failed; the view recomputed.";
-        IGNOREHR(ErrorHelper::OriginateError(hr, ARRAYSIZE(c_message) - 1, c_message));
-    }
 
     // Nonzero while the engine runs app code or raises its changes (VectorCollectionView::m_shapeBusyDepth).
     class BusyScope
@@ -412,6 +477,7 @@ namespace
                 return S_OK;
             }
 
+            IFC_RETURN(TrackerCollection<IInspectable*>::Clear());
             Reserve(count);
             for (const auto& spSubgroup : m_subgroups)
             {
@@ -473,6 +539,18 @@ namespace
             pSubgroup->ClearParent();
             m_subgroups.erase(m_subgroups.begin() + index);
             IFC_RETURN(m_tpSubgroupList->InternalRemoveAt(index));
+            return S_OK;
+        }
+
+        // Loading: the subgroups in a new order, nothing raised.
+        _Check_return_ HRESULT ReorderSubgroups(std::vector<ctl::ComPtr<CollectionViewGroupInternal>>&& subgroups)
+        {
+            m_subgroups = std::move(subgroups);
+            IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::Clear());
+            for (const auto& spSubgroup : m_subgroups)
+            {
+                IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::Append(ctl::as_iinspectable(spSubgroup.Get())));
+            }
             return S_OK;
         }
 
@@ -877,6 +955,45 @@ namespace
         }
     }
 
+    // An integer (sign and magnitude) against a double that is not NaN, exactly: through a double, integers above 2^53
+    // would compare equal to doubles they differ from, and the order would not be total.
+    int CompareIntegerWithDouble(bool isNegative, UINT64 magnitude, DOUBLE value)
+    {
+        constexpr DOUBLE c_twoTo64 = 18446744073709551616.0;
+        const bool isZero = magnitude == 0;
+        if (value >= c_twoTo64)
+        {
+            return -1;
+        }
+        if (value <= -c_twoTo64)
+        {
+            return 1;
+        }
+
+        const DOUBLE truncated = std::trunc(value);
+        const bool isValueNegative = truncated < 0;
+        const UINT64 valueMagnitude = static_cast<UINT64>(isValueNegative ? -truncated : truncated);
+        const bool isIntegerNegative = isNegative && !isZero;
+        const bool isTruncatedNegative = isValueNegative && valueMagnitude != 0;
+        int order = 0;
+        if (isIntegerNegative != isTruncatedNegative)
+        {
+            order = isIntegerNegative ? -1 : 1;
+        }
+        else if (magnitude != valueMagnitude)
+        {
+            order = (magnitude < valueMagnitude) ? -1 : 1;
+            order = isIntegerNegative ? -order : order;
+        }
+        if (order != 0)
+        {
+            return order;
+        }
+
+        const DOUBLE fraction = value - truncated;
+        return (fraction > 0) ? -1 : ((fraction < 0) ? 1 : 0);
+    }
+
     int CompareSortKeys(const SortKey& left, const SortKey& right)
     {
         if (left.kind != right.kind)
@@ -914,6 +1031,14 @@ namespace
                 const bool isLeftNaN = left.number != left.number;
                 const bool isRightNaN = right.number != right.number;
                 return (isLeftNaN ? 0 : 1) - (isRightNaN ? 0 : 1);
+            }
+            if (left.isInteger)
+            {
+                return CompareIntegerWithDouble(left.isNegative, left.magnitude, right.number);
+            }
+            if (right.isInteger)
+            {
+                return -CompareIntegerWithDouble(right.isNegative, right.magnitude, left.number);
             }
             return (left.number < right.number) ? -1 : ((left.number > right.number) ? 1 : 0);
 
@@ -1538,7 +1663,7 @@ namespace
 
                 if (groupLevel.pCustomDescription)
                 {
-                    IFC_RETURN(groupLevel.pCustomDescription->GroupNameFromItemProtected(pItem, static_cast<INT>(level), m_culture.Get(), (*pNames)[level].ReleaseAndGetAddressOf()));
+                    IFC_RETURN(groupLevel.pCustomDescription->GroupNameFromItemCoreProtected(pItem, static_cast<INT>(level), m_culture.Get(), (*pNames)[level].ReleaseAndGetAddressOf()));
                     continue;
                 }
 
@@ -1555,7 +1680,7 @@ namespace
             if (groupLevel.pCustomDescription)
             {
                 BOOLEAN isMatch = FALSE;
-                IFC_RETURN(groupLevel.pCustomDescription->NamesMatchProtected(pGroupName, pItemName, &isMatch));
+                IFC_RETURN(groupLevel.pCustomDescription->NamesMatchCoreProtected(pGroupName, pItemName, &isMatch));
                 *pMatch = !!isMatch;
                 return S_OK;
             }
@@ -1765,7 +1890,7 @@ namespace
                     ctl::ComPtr<CollectionViewGroupInternal> spSubgroup;
                     UINT position = static_cast<UINT>(pGroup->Subgroups().size());
                     IFC_RETURN(CreateGroup(names[level].Get(), pGroup, level, spSubgroup.ReleaseAndGetAddressOf()));
-                    if (HasGroupOrder(level))
+                    if (HasGroupOrder(level) && !IsGroupOrderVariable(level))
                     {
                         IFC_RETURN(FindOrderedSubgroupPosition(pGroup, level, spSubgroup.Get(), nullptr /* pRemoved */, &position));
                     }
@@ -1784,7 +1909,135 @@ namespace
 
         _Check_return_ HRESULT FinishLoading()
         {
+            bool isReordered = false;
             IFC_RETURN(CollectLeaves());
+            IFC_RETURN(SortVariableLevels(this, 0, &isReordered));
+            if (isReordered)
+            {
+                IFC_RETURN(CollectLeaves());
+            }
+            return S_OK;
+        }
+
+        // A level ordered by what its groups' items change (ItemCount): its groups are ordered once their items are
+        // known, and a change that leaves them out of order is applied by a recompute.
+        bool IsGroupOrderVariable(UINT level) const
+        {
+            const auto& groupLevel = m_levels[level];
+            return groupLevel.hasGroupOrder && !groupLevel.pGroupCustomSort && !groupLevel.areGroupSortKeysFixed;
+        }
+
+        bool HasVariableGroupOrder() const
+        {
+            for (UINT level = 0; level < LevelCount(); ++level)
+            {
+                if (IsGroupOrderVariable(level))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        _Check_return_ HRESULT IsGroupOrderValid(_In_ CollectionViewGroupInternal* pGroup, UINT level, _Out_ bool* pIsValid) const
+        {
+            *pIsValid = true;
+            if (pGroup->IsBottomLevel())
+            {
+                return S_OK;
+            }
+
+            const auto& subgroups = pGroup->Subgroups();
+            if (IsGroupOrderVariable(level))
+            {
+                for (size_t i = pGroup->ExplicitSubgroupCount(); i + 1 < subgroups.size(); ++i)
+                {
+                    int result = 0;
+                    IFC_RETURN(CompareGroups(level, subgroups[i].Get(), subgroups[i + 1].Get(), &result));
+                    if (result > 0)
+                    {
+                        *pIsValid = false;
+                        return S_OK;
+                    }
+                }
+            }
+
+            for (const auto& spSubgroup : subgroups)
+            {
+                IFC_RETURN(IsGroupOrderValid(spSubgroup.Get(), level + 1, pIsValid));
+                if (!*pIsValid)
+                {
+                    break;
+                }
+            }
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT SortVariableLevels(_In_ CollectionViewGroupInternal* pGroup, UINT level, _Inout_ bool* pIsReordered)
+        {
+            if (pGroup->IsBottomLevel())
+            {
+                return S_OK;
+            }
+
+            for (const auto& spSubgroup : pGroup->Subgroups())
+            {
+                IFC_RETURN(SortVariableLevels(spSubgroup.Get(), level + 1, pIsReordered));
+            }
+
+            if (!IsGroupOrderVariable(level))
+            {
+                return S_OK;
+            }
+
+            struct Entry
+            {
+                ctl::ComPtr<CollectionViewGroupInternal> spGroup;
+                SortKeys keys;
+            };
+
+            const auto& groupSort = m_levels[level].groupSort;
+            const auto& subgroups = pGroup->Subgroups();
+            const UINT explicitCount = pGroup->ExplicitSubgroupCount();
+            std::vector<Entry> entries;
+            entries.reserve(subgroups.size() - explicitCount);
+            for (size_t i = explicitCount; i < subgroups.size(); ++i)
+            {
+                Entry entry;
+                entry.spGroup = subgroups[i];
+                IFC_RETURN(groupSort.EvaluateKeys(ctl::as_iinspectable(entry.spGroup.Get()), &entry.keys));
+                entries.push_back(std::move(entry));
+            }
+
+            HRESULT hrCompare = S_OK;
+            std::stable_sort(entries.begin(), entries.end(), [&groupSort, &hrCompare](const Entry& left, const Entry& right)
+            {
+                int result = 0;
+                if (SUCCEEDED(hrCompare))
+                {
+                    hrCompare = groupSort.Compare(ctl::as_iinspectable(left.spGroup.Get()), left.keys.data(), 0, ctl::as_iinspectable(right.spGroup.Get()), right.keys.data(), 0, &result);
+                }
+                return SUCCEEDED(hrCompare) && result < 0;
+            });
+            IFC_RETURN(hrCompare);
+
+            bool isChanged = false;
+            for (size_t i = 0; i < entries.size(); ++i)
+            {
+                isChanged = isChanged || (entries[i].spGroup.Get() != subgroups[explicitCount + i].Get());
+            }
+            if (!isChanged)
+            {
+                return S_OK;
+            }
+
+            std::vector<ctl::ComPtr<CollectionViewGroupInternal>> ordered(subgroups.begin(), subgroups.begin() + explicitCount);
+            for (auto& entry : entries)
+            {
+                ordered.push_back(std::move(entry.spGroup));
+            }
+            IFC_RETURN(pGroup->ReorderSubgroups(std::move(ordered)));
+            *pIsReordered = true;
             return S_OK;
         }
 
@@ -2316,20 +2569,13 @@ _Check_return_ HRESULT VectorCollectionView::EnableShaping(_In_ CollectionViewSo
     m_isShapingEnabled = true;
     SetPtrValue(m_tpSourceList, m_tpSource.Get());
     IFC_RETURN(ctl::AsWeak(pHost, &m_hostRef));
-    SetFilterHost(pHost->HasFilterEventHandlers() ? pHost : nullptr);
+    SetFilterEvents(pHost->GetFilterEventsIfHandled());
     return S_OK;
 }
 
-void VectorCollectionView::SetFilterHost(_In_opt_ CollectionViewSource* pHost)
+void VectorCollectionView::SetFilterEvents(_In_opt_ IFilterEventSource* pEvents)
 {
-    if (pHost)
-    {
-        SetPtrValue(m_tpFilterHost, static_cast<xaml_data::ICollectionViewSource*>(pHost));
-    }
-    else
-    {
-        m_tpFilterHost.Clear();
-    }
+    m_spFilterEvents = pEvents;
 }
 
 _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules(
@@ -2403,7 +2649,7 @@ _Check_return_ HRESULT VectorCollectionView::DetachFromHost()
     HRESULT hr = S_OK;
 
     m_hostRef = ctl::WeakRefPtr();
-    m_tpFilterHost.Clear();
+    m_spFilterEvents.Reset();
     if (!m_tpSortDescriptions || !m_tpGroupDescriptions)
     {
         return S_OK;
@@ -2610,7 +2856,7 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_tpFilterHost;
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || m_spFilterEvents;
     return S_OK;
 }
 
@@ -2733,10 +2979,15 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
                     {
                         // The source's other listeners must still hear the change, so app code that failed in the
                         // view is reported rather than returned to the source; the view stays consistent.
+                        ContainedFailureReport report;
                         const HRESULT hr = ProcessCollectionChanged(pArgs);
+                        if (IsUncontainedFailure(hr))
+                        {
+                            return hr;
+                        }
                         if (FAILED(hr))
                         {
-                            ReportContainedFailure(hr);
+                            report.Report(hr);
                         }
                     }
                     return S_OK;
@@ -2808,7 +3059,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
     auto spSort = std::make_shared<ShapingSortState>();
     ctl::ComPtr<CollectionViewGroupRoot> spRoot;
-    ctl::ComPtr<CollectionViewSource> spFilterHost;
+    ShapingFilterEvents filterEvents;
     std::vector<Entry> entries;
     std::vector<ctl::ComPtr<IInspectable>> outputItems;
     std::vector<UINT> outputSourceIndices;
@@ -2825,7 +3076,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         IFC_RETURN(spRoot->InitializeRoot(m_tpGroupDescriptions.Get(), this, m_culture.Get(), size));
     }
 
-    IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetFilterEvents(&filterEvents));
     entries.reserve(size);
 
     for (UINT i = 0; i < size; ++i)
@@ -2836,7 +3087,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
         entry.sourceIndex = i;
         IFC_RETURN(m_tpSourceList->GetAt(i, entry.item.ReleaseAndGetAddressOf()));
 
-        IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
+        IFC_RETURN(PassesFilter(entry.item.Get(), filterEvents, &isAccepted));
         if (!isAccepted)
         {
             continue;
@@ -2928,26 +3179,26 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
 // The CollectionViewSource whose Filter event handlers filter the view, if any. As in WPF, its event replaces
 // the Filter delegate while it has handlers.
-_Check_return_ HRESULT VectorCollectionView::GetFilterHost(_Outptr_result_maybenull_ CollectionViewSource** ppHost)
+_Check_return_ HRESULT VectorCollectionView::GetFilterEvents(_Out_ ShapingFilterEvents* pEvents)
 {
-    ctl::ComPtr<xaml_data::ICollectionViewSource> spHost = m_tpFilterHost.Get();
-
-    *ppHost = nullptr;
-    if (spHost && static_cast<CollectionViewSource*>(spHost.Get())->HasFilterEventHandlers())
+    pEvents->spEvents = m_spFilterEvents;
+    pEvents->spSender.Reset();
+    if (pEvents->spEvents)
     {
-        *ppHost = static_cast<CollectionViewSource*>(spHost.Detach());
+        ctl::ComPtr<xaml_data::ICollectionViewSource> spHost;
+        IFC_RETURN(m_hostRef.As(&spHost));
+        pEvents->spSender = ctl::as_iinspectable(spHost.Get());
     }
-
     return S_OK;
 }
 
 // Whether the view shows the item (WPF: CollectionView.PassesFilter).
-_Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable* pItem, _In_opt_ CollectionViewSource* pFilterHost, _Out_ bool* pIsAccepted)
+_Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable* pItem, const ShapingFilterEvents& events, _Out_ bool* pIsAccepted)
 {
     *pIsAccepted = true;
-    if (pFilterHost)
+    if (events.spEvents)
     {
-        IFC_RETURN(pFilterHost->RaiseFilterEvent(pItem, pIsAccepted));
+        IFC_RETURN(CollectionViewSource::RaiseFilterEvent(events.spEvents.Get(), events.spSender.Get(), pItem, pIsAccepted));
     }
     else if (m_tpFilter)
     {
@@ -3104,6 +3355,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         hr = ProcessCollectionChangedWithAdjustedIndex(change, index, &isApplied);
         if (FAILED(hr))
         {
+            ContainedFailureReport::Capture(hr);
             m_areSourceIndicesValid = false;
             isApplied = false;
         }
@@ -3196,9 +3448,9 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChangedWithAdjuste
             {
                 bool isAccepted = true;
 
-                ctl::ComPtr<CollectionViewSource> spFilterHost;
-                IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
-                IFC_RETURN(PassesFilter(spItem.Get(), spFilterHost.Get(), &isAccepted));
+                ShapingFilterEvents filterEvents;
+                IFC_RETURN(GetFilterEvents(&filterEvents));
+                IFC_RETURN(PassesFilter(spItem.Get(), filterEvents, &isAccepted));
                 if (!isAccepted)
                 {
                     return S_OK;
@@ -3322,9 +3574,9 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
             {
                 bool isAccepted = true;
                 std::vector<ctl::ComPtr<IInspectable>> names;
-                ctl::ComPtr<CollectionViewSource> spFilterHost;
-                IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
-                IFC_RETURN(PassesFilter(spItem.Get(), spFilterHost.Get(), &isAccepted));
+                ShapingFilterEvents filterEvents;
+                IFC_RETURN(GetFilterEvents(&filterEvents));
+                IFC_RETURN(PassesFilter(spItem.Get(), filterEvents, &isAccepted));
                 if (!isAccepted)
                 {
                     return S_OK;
@@ -3388,8 +3640,22 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
     }
     IFC_RETURN(hr);
 
-    // A handler changed the source while the change was raised: recompute fully.
+    // A handler changed the source while the change was raised: recompute fully. So does a change that left groups
+    // ordered by their items (ItemCount) out of order.
     *pIsApplied = (sourceChangeCount == m_sourceListChangeCount);
+    IFC_RETURN(CheckGroupOrderAfterChange(pIsApplied));
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::CheckGroupOrderAfterChange(_Inout_ bool* pIsApplied)
+{
+    auto pRoot = static_cast<CollectionViewGroupRoot*>(static_cast<CollectionViewGroupInternal*>(m_spGroupRoot.Get()));
+    if (*pIsApplied && m_isGrouping && pRoot && pRoot->HasVariableGroupOrder())
+    {
+        bool isValid = true;
+        IFC_RETURN(pRoot->IsGroupOrderValid(pRoot, 0, &isValid));
+        *pIsApplied = isValid;
+    }
     return S_OK;
 }
 
@@ -3720,6 +3986,11 @@ void VectorCollectionView::OnReferenceTrackerWalk(INT walkType)
 {
     const auto walkTypeAsEnum = static_cast<EReferenceTrackerWalkType>(walkType);
 
+    if (m_spFilterEvents)
+    {
+        CollectionViewSource::WalkFilterEvents(m_spFilterEvents.Get(), walkTypeAsEnum);
+    }
+
     if (m_spSortState)
     {
         m_spSortState->references.ReferenceTrackerWalk(walkTypeAsEnum);
@@ -4044,9 +4315,31 @@ void VectorCollectionView::DisconnectLiveShapingItems(_In_ LiveShapingState& sta
     }
 }
 
+// The reference tracker walk reads the sort state and the group tree, so a destroyed view lets go of them under the
+// lock the walk runs under, before its members are destroyed.
+void VectorCollectionView::ReleaseShapingState()
+{
+    std::shared_ptr<ShapingSortState> spSortState;
+    ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroupRoot;
+    if (!m_spSortState && !m_spGroupRoot)
+    {
+        return;
+    }
+
+    {
+        AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+        spSortState = std::move(m_spSortState);
+        spGroupRoot = std::move(m_spGroupRoot);
+    }
+}
 void VectorCollectionView::ClearLiveShapingItems()
 {
     std::shared_ptr<LiveShapingState> spState;
+    if (!m_spLiveShaping)
+    {
+        return;
+    }
+
     {
         AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
         spState = std::move(m_spLiveShaping);
@@ -4207,10 +4500,15 @@ _Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
     }
 
     // Nothing the app called waits for this restore, so a failure of its code is reported; the view stays consistent.
+    ContainedFailureReport report;
     const HRESULT hr = RestoreLiveShaping();
+    if (IsUncontainedFailure(hr))
+    {
+        IFC_RETURN(hr);
+    }
     if (FAILED(hr))
     {
-        ReportContainedFailure(hr);
+        report.Report(hr);
     }
     return S_OK;
 }
@@ -4230,7 +4528,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     auto spState = m_spLiveShaping;
     auto spSort = m_spSortState;
     ctl::ComPtr<IInspectable> spCurrentItem;
-    ctl::ComPtr<CollectionViewSource> spFilterHost;
+    ShapingFilterEvents filterEvents;
     std::vector<bool> isSortDirty;
     const UINT sourceChangeCount = m_sourceListChangeCount;
     UINT dirtyCount = 0;
@@ -4285,9 +4583,9 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     }
 
     IFC_RETURN(get_CurrentItemImpl(spCurrentItem.ReleaseAndGetAddressOf()));
-    IFC_RETURN(GetFilterHost(spFilterHost.ReleaseAndGetAddressOf()));
+    IFC_RETURN(GetFilterEvents(&filterEvents));
 
-    const bool hasFilter = !!spFilterHost || !!m_tpFilter;
+    const bool hasFilter = !!filterEvents.spEvents || !!m_tpFilter;
 
     // A flat view where many items changed: the changed items' keys (and filter) are read again, the others' are
     // cached, the output is re-sorted once, and the fewest moves that reach it are raised, or a Reset.
@@ -4328,14 +4626,14 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                     bool isAccepted = true;
                     if ((flags & LiveShapingFlag_Filtering) && isFiltering)
                     {
-                        IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
+                        IFC_RETURN(PassesFilter(entry.item.Get(), filterEvents, &isAccepted));
                     }
                     if (!isAccepted)
                     {
                         leavingSourceIndices.push_back(entry.sourceIndex);
                         continue;
                     }
-                    if (flags & LiveShapingFlag_Sorting)
+                    if (isSorting && (flags & LiveShapingFlag_Sorting))
                     {
                         SortKeys keys;
                         IFC_RETURN(spSort->comparer.EvaluateKeys(entry.item.Get(), &keys));
@@ -4356,7 +4654,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                     bool isAccepted = false;
                     entry.sourceIndex = sourceIndex;
                     IFC_RETURN(m_tpSourceList->GetAt(sourceIndex, entry.item.ReleaseAndGetAddressOf()));
-                    IFC_RETURN(PassesFilter(entry.item.Get(), spFilterHost.Get(), &isAccepted));
+                    IFC_RETURN(PassesFilter(entry.item.Get(), filterEvents, &isAccepted));
                     if (isAccepted)
                     {
                         SortKeys keys;
@@ -4368,7 +4666,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 
                 HRESULT hrCompare = S_OK;
                 const auto& sort = *spSort;
-                std::stable_sort(entries.begin(), entries.end(), [&sort, &hrCompare](const Entry& left, const Entry& right)
+                auto isBefore = [&sort, &hrCompare](const Entry& left, const Entry& right)
                 {
                     int result = 0;
                     if (SUCCEEDED(hrCompare))
@@ -4376,7 +4674,25 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                         hrCompare = sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result);
                     }
                     return SUCCEEDED(hrCompare) && result < 0;
-                });
+                };
+
+                if (isSorting)
+                {
+                    std::stable_sort(entries.begin(), entries.end(), isBefore);
+                }
+                else
+                {
+                    // Without live sorting the items stay in order (a CustomSort would see their new values), and each
+                    // item the filter now accepts is placed among them, as a small tick places it.
+                    auto joining = std::find_if(entries.begin(), entries.end(), [](const Entry& entry) { return entry.oldPosition == UINT_MAX; });
+                    std::vector<Entry> placed(std::make_move_iterator(entries.begin()), std::make_move_iterator(joining));
+                    for (auto it = joining; it != entries.end() && SUCCEEDED(hrCompare); ++it)
+                    {
+                        auto position = std::upper_bound(placed.begin(), placed.end(), *it, isBefore);
+                        placed.insert(position, std::move(*it));
+                    }
+                    entries = std::move(placed);
+                }
                 IFC_RETURN(hrCompare);
                 return S_OK;
             }();
@@ -4514,7 +4830,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
             {
                 if (isFiltering)
                 {
-                    IFC_RETURN(PassesFilter(pItem, spFilterHost.Get(), &isAccepted));
+                    IFC_RETURN(PassesFilter(pItem, filterEvents, &isAccepted));
                 }
 
                 if (!isAccepted || (isInView && !isResorting))
@@ -4607,7 +4923,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
             {
                 if (isFiltering)
                 {
-                    IFC_RETURN(PassesFilter(pItem, spFilterHost.Get(), &isAccepted));
+                    IFC_RETURN(PassesFilter(pItem, filterEvents, &isAccepted));
                 }
 
                 if (!isAccepted || (isInView && !isResorting && !isRegrouping))
@@ -4721,9 +5037,14 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     }
 
     isApplied = isApplied && (sourceChangeCount == m_sourceListChangeCount);
+    if (SUCCEEDED(hr) && isApplied)
+    {
+        hr = CheckGroupOrderAfterChange(&isApplied);
+    }
     if (FAILED(hr) || !isApplied)
     {
         // The changes raised so far are complete; the rest is recomputed.
+        ContainedFailureReport::Capture(hr);
         m_areSourceIndicesValid = false;
         KeepFirstFailure(&hr, RefreshOrDefer());
         KeepFirstFailure(&hr, raiseFailure.Result());

@@ -74,6 +74,7 @@ enum class KnownNamespaceIndex: UINT16
 enum class KnownTypeIndex: UINT16
 {
     UnknownType,
+    IObservableVectorOfObject,
     IObservableVectorOfGroupStyle,
     IObservableVectorOfSortDescription,
     IObservableVectorOfGroupDescription,
@@ -1301,6 +1302,7 @@ enum class KnownPropertyIndex: UINT16
     GradientStop_Offset,
     GridLength_GridUnitType,
     GridLength_Value,
+    GroupDescription_GroupNames,
     GroupDescription_SortDescriptions,
     GroupStyle_ContainerStyle,
     GroupStyle_ContainerStyleSelector,
@@ -4049,6 +4051,8 @@ enum class KnownMethodIndex: UINT16
     CollectionViewSource_DeferRefresh,
     GroupDescription_GroupNameFromItem,
     GroupDescription_NamesMatch,
+    GroupDescription_GroupNameFromItemCore,
+    GroupDescription_NamesMatchCore,
     Matrix3D_GetHasInverse,
     Matrix3D_GetIsIdentity,
     Matrix3D_Invert,

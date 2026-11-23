@@ -2147,8 +2147,10 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Collections.IObservableVector<Object> GroupNames{ get; };
         Windows.Foundation.Collections.IObservableVector<Microsoft.UI.Xaml.Data.SortDescription> SortDescriptions{ get; };
         Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
-        overridable Object GroupNameFromItem(Object item, Int32 level, String culture);
-        overridable Boolean NamesMatch(Object groupName, Object itemName);
+        Object GroupNameFromItem(Object item, Int32 level, String culture);
+        Boolean NamesMatch(Object groupName, Object itemName);
+        overridable Object GroupNameFromItemCore(Object item, Int32 level, String culture);
+        overridable Boolean NamesMatchCore(Object groupName, Object itemName);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]

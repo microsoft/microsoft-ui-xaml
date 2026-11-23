@@ -63,12 +63,23 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGener
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::get_StringComparison(_Out_ ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison* pValue)
 {
-    RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, pValue));
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<PropertyGroupDescription*>(this)->get_StringComparisonImpl(pValue));
+Cleanup:
+    RRETURN(hr);
 }
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PropertyGroupDescriptionGenerated::put_StringComparison(ABI::Microsoft::UI::Xaml::Data::CollectionViewStringComparison value)
 {
-    IFC_RETURN(DefaultStrictApiCheck(this));
-    RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PropertyGroupDescription_StringComparison, value));
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<PropertyGroupDescription*>(this)->put_StringComparisonImpl(value));
+Cleanup:
+    RRETURN(hr);
 }
 
 // Events.

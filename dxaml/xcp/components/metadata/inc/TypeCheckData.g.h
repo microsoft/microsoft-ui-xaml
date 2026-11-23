@@ -26,6 +26,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 0, 0 },
     // Windows.Foundation.Collections.IObservableVector
     { 0, 0 },
+    // Windows.Foundation.Collections.IObservableVector
+    { 0, 0 },
     // Windows.Foundation.Collections.IVector
     { 0, 0 },
     // Windows.Foundation.Collections.IVector

@@ -9,7 +9,7 @@ namespace DirectUI
 {
     class VectorCollectionView;
 
-    // WPF's GroupDescription. The view calls GroupNameFromItem and NamesMatch through the overrides interface, so an
+    // WPF's GroupDescription. The view calls GroupNameFromItemCore and NamesMatchCore through the overrides interface, so an
     // app's derived class decides the groups; PropertyGroupDescription answers them natively.
     PARTIAL_CLASS(GroupDescription)
     {
@@ -21,12 +21,16 @@ namespace DirectUI
         _Check_return_ HRESULT get_CustomSortImpl(_Outptr_result_maybenull_ xaml_data::ICollectionViewComparer** ppValue);
         _Check_return_ HRESULT put_CustomSortImpl(_In_opt_ xaml_data::ICollectionViewComparer* pValue);
 
+        // Public, as in WPF: they call the overridables, so any view can group by a description.
+        _Check_return_ HRESULT GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult);
+        _Check_return_ HRESULT NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+
         // WPF: GroupNameFromItem is abstract; a GroupDescription that does not override it puts every item in one
         // group named null.
-        virtual _Check_return_ HRESULT GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult);
+        virtual _Check_return_ HRESULT GroupNameFromItemCoreImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult);
 
         // WPF: Object.Equals(groupName, itemName).
-        virtual _Check_return_ HRESULT NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+        virtual _Check_return_ HRESULT NamesMatchCoreImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
 
         wfc::IVector<xaml_data::SortDescription*>* GetSortDescriptionsNoRef() const
         {

@@ -18,7 +18,7 @@ namespace DirectUI
             wfc::IIterable<HSTRING>,
             wfc::IVector<HSTRING>,
             wfc::IObservableVector<HSTRING>,
-            IUntypedVector>
+            wrl::CloakedIid<IUntypedVector>>
     {
         InspectableClass(nullptr /*internal*/, BaseTrust);
 

@@ -110,8 +110,27 @@ Cleanup:
     }
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::GroupDescriptionGenerated::GroupNameFromItemCore(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GroupDescription_GroupNameFromItemCore", 0);
+    }
+    ARG_VALIDRETURNPOINTER(ppResult);
+    *ppResult={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<GroupDescription*>(this)->GroupNameFromItemCoreImpl(pItem, level, culture, ppResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "GroupDescription_GroupNameFromItemCore", hr);
+    }
+    RRETURN(hr);
+}
 
-_Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::GroupNameFromItemProtected(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult)
+_Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::GroupNameFromItemCoreProtected(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides* pVirtuals = NULL;
@@ -121,11 +140,11 @@ _Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::GroupNameFromItemPro
         IFC(ctl::do_query_interface(pVirtuals, this));
 
         // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
-        IFC(pVirtuals->GroupNameFromItem(pItem, level, culture, ppResult));
+        IFC(pVirtuals->GroupNameFromItemCore(pItem, level, culture, ppResult));
     }
     else
     {
-        IFC(GroupNameFromItem(pItem, level, culture, ppResult));
+        IFC(GroupNameFromItemCore(pItem, level, culture, ppResult));
     }
 
 Cleanup:
@@ -151,8 +170,27 @@ Cleanup:
     }
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::GroupDescriptionGenerated::NamesMatchCore(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GroupDescription_NamesMatchCore", 0);
+    }
+    ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<GroupDescription*>(this)->NamesMatchCoreImpl(pGroupName, pItemName, pResult));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "GroupDescription_NamesMatchCore", hr);
+    }
+    RRETURN(hr);
+}
 
-_Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::NamesMatchProtected(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
+_Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::NamesMatchCoreProtected(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides* pVirtuals = NULL;
@@ -162,11 +200,11 @@ _Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::NamesMatchProtected(
         IFC(ctl::do_query_interface(pVirtuals, this));
 
         // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
-        IFC(pVirtuals->NamesMatch(pGroupName, pItemName, pResult));
+        IFC(pVirtuals->NamesMatchCore(pGroupName, pItemName, pResult));
     }
     else
     {
-        IFC(NamesMatch(pGroupName, pItemName, pResult));
+        IFC(NamesMatchCore(pGroupName, pItemName, pResult));
     }
 
 Cleanup:
@@ -221,6 +259,7 @@ IFACEMETHODIMP DirectUI::GroupDescriptionFactory::CreateInstance(_In_opt_ IInspe
 }
 
 // Dependency properties.
+
 
 
 // Attached properties.

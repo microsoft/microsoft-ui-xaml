@@ -1498,6 +1498,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         nullptr, // Core constructor
         nullptr, // Framework constructor
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        nullptr, // Core constructor
+        nullptr, // Framework constructor
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
     {
         nullptr, // Core constructor
@@ -8054,6 +8059,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
     // Microsoft.UI.Xaml.GridLength.Value
     {
         (METHODPFN)OFFSET(CGridLength, m_gridLength.value), // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription.GroupNames
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
         nullptr, // Storage ensure method
         0 // Storage offset

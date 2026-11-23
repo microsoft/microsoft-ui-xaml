@@ -11,6 +11,11 @@ namespace DirectUI
     // SortDescriptions collection that holds it, and a change after that throws.
     PARTIAL_CLASS(SortDescription)
     {
+    protected:
+        // Markup, bindings and SetValue reach the properties without the setters: a change to a sealed description
+        // or an invalid Direction is undone here and fails.
+        _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
+
     public:
         _Check_return_ HRESULT get_PropertyNameImpl(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_PropertyNameImpl(_In_opt_ HSTRING value);
@@ -26,5 +31,6 @@ namespace DirectUI
         _Check_return_ HRESULT CheckNotSealed();
 
         bool m_isSealed = false;
+        bool m_isRestoringValue = false;
     };
 }
