@@ -493,6 +493,8 @@ Entry c_typeEntries[] =
                         false /* isAttachable */);
                 });
 
+            xamlType->SetIsBindable(true);
+
             return static_cast<winrt::IXamlType>(*xamlType);
         }
     },

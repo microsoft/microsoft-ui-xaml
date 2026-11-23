@@ -467,7 +467,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 return true;
             }
+#if CSWINRT3_0
+            // A getter can return a different wrapper over the same native object (CsWinRT 2 did too, but its Equals
+            // compared native identity). CsWinRT 3 removed that Equals behavior, so compare native identity explicitly.
+            return Equals(expected, actual) || global::WindowsRuntime.InteropServices.WindowsRuntimeMarshal.NativeReferenceEquals(expected, actual);
+#else
             return Equals(expected, actual);
+#endif
         }
 
         private static void VerifyDependencyProperty<T>(DependencyObject owner, string name, DependencyProperty property,

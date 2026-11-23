@@ -284,6 +284,8 @@ unsealed runtimeclass TableViewRowTemplateSelector : Microsoft.UI.Xaml.Controls.
 }
 
 [MUX_PREVIEW]
+/*The bindable tag is needed for {Binding} to this class, e.g. from the default group header template*/
+[bindable]
 [webhosthidden]
 runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
 {
