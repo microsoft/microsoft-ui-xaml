@@ -1606,7 +1606,9 @@ The app, `WinUIProfiler.Cli` and the MCP server send a few usage events to
 Microsoft, to show the WinUI team how many people use the profiler and which
 features they use. Events go to the WinUI tools telemetry endpoint with a
 Microsoft Entra token, which Windows gives a signed-in Microsoft work account
-without a prompt. Where Windows has no such account, nothing is sent. No key
+without a prompt. Where Windows has no such account, nothing is sent. An event
+that cannot be sent at once is kept in `%LOCALAPPDATA%\WinUITools\pending` and
+sent by a later run; saved events are dropped after two days. No key
 ships with the tools. The endpoint records no location. It records a keyed hash
 of the sender's Entra object ID, so that one person's use counts once across
 machines and tools. Set `WINUI_TOOLS_TELEMETRY_OPTOUT=1` to turn it off.
