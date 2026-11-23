@@ -107,7 +107,7 @@ static class CoverageTheming
 
     [CoveragePage(F, "focus-highvisibility")] public static CoveragePage FocusHighVisibility(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Light);
     [CoveragePage(F, "focus-highvisibility-dark")] public static CoveragePage FocusHighVisibilityDark(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Dark);
-    [CoveragePage(F, "focus-reveal")] public static CoveragePage FocusReveal(CoverageContext c) => FocusPage(FocusVisualKind.Reveal, ElementTheme.Light);
+    [CoveragePage(F, "focus-reveal", ExpectedUnsupported = ["Reveal focus glow:approximated"])] public static CoveragePage FocusReveal(CoverageContext c) => FocusPage(FocusVisualKind.Reveal, ElementTheme.Light);
     [CoveragePage(F, "focus-dottedline")] public static CoveragePage FocusDotted(CoverageContext c) => FocusPage(FocusVisualKind.DottedLine, ElementTheme.Light);
 
     [CoveragePage(F, "focus-custom-brushes")]

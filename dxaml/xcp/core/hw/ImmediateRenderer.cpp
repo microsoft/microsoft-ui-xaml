@@ -2226,7 +2226,12 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
             continue;
         }
         WalkContext ctx = parent;
-        ctx.world = chainToIsland(targetParent);
+        // The LTE's own transform positions the target relative to its parent (FocusRectManager translates the canvas
+        // to the focus bounds, i.e. by the negative FocusVisualMargin).
+        CMILMatrix lteLocal(true);
+        (void)lte->GetLocalTransform(TransformRetrievalOptions::None, &lteLocal);
+        ctx.world = lteLocal;
+        ctx.world.Append(chainToIsland(targetParent));
         ctx.world.Append(hostToIsland);
         ctx.world.Append(parent.world);
         ctx.scroller = -1;
@@ -2236,7 +2241,9 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
         const float lteOpacity = lte->GetOpacityLocal();
         if (lteOpacity > 0)
         {
+            ++m_secretTargetDepth;
             Walk(target, ctx, list);
+            --m_secretTargetDepth;
         }
     }
 }
@@ -2525,7 +2532,7 @@ void ImmediateRenderer::Walk(
     // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual) has no XAML
     // primitives to paint; ProgressRing's built-in Lottie is drawn natively (S12). Other hand-in content makes the
     // island fall back to Composition (CheckFallback), unless fallback is disabled.
-    if (element->IsUsingHandInVisual())
+    if (element->IsUsingHandInVisual() && m_secretTargetDepth == 0)
     {
         ImmediateRenderingMaterials::ProgressRingFill ring;
         if (!IsBuiltInProgressRingPlayer(element))

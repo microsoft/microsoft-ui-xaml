@@ -149,7 +149,13 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
     interop.connectedAnimation = element->HasActiveConnectedAnimation()
         || (type == KnownTypeIndex::ConnectedAnimationRoot && element->GetFirstChildNoAddRef() != nullptr);
     interop.implicitShowHideAnimation = element->HasImplicitShowAnimation() || element->HasImplicitHideAnimation();
-    if (element->IsUsingHandInVisual())
+    if (element->IsUsingHandInVisual() && m_secretTargetDepth > 0)
+    {
+        // FocusVisualKind.Reveal attaches its glow (a Composition light) to the focus rect border; the border itself
+        // is painted.
+        ReportUnsupported(element, L"Reveal focus glow:approximated");
+    }
+    else if (element->IsUsingHandInVisual())
     {
         interop.handInVisual = true;
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_animatedVisualPlayer, L"Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer");

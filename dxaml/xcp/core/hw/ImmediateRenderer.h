@@ -169,6 +169,8 @@ private:
     std::unordered_map<CXamlIslandRoot*, std::unique_ptr<IslandState>> m_islands;
     std::unordered_set<std::wstring> m_reportedUnsupported;
     uint32_t m_elementsVisited = 0;
+    // > 0 while walking a secret LTE target (the focus rect canvas).
+    uint32_t m_secretTargetDepth = 0;
     uint32_t m_elementsRendered = 0;   // elements with at least one command replayed (painted) this frame
     uint32_t m_elementsCulled = 0;
     uint32_t m_subtreesReused = 0;
