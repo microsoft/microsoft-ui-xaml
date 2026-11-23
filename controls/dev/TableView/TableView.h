@@ -1333,6 +1333,7 @@ private:
     bool IsBodyRowInViewport(int32_t row) const;
     void ShiftLastBodyFocusRow(const winrt::NotifyCollectionChangedEventArgs& args);
     winrt::DependencyObject GetFocusedBodyElement() const;
+    bool IsInRecycledRow(const winrt::DependencyObject& element) const;
     void RecordFocusRescueSource();
     void NoteFocusChangeWhileFollowingItem(const winrt::DependencyObject& oldFocus, const winrt::DependencyObject& newFocus);
     // The element ItemsRepeater moves focus away from when it recycles the focused row; any other focus move
