@@ -10,8 +10,8 @@
 #include "TeachingTipClosedEventArgs.h"
 #ifdef DBG
 #include "TeachingTipTestHooks.h"
-#include "ImmediateRendering.h" // ---- transitions
 #endif
+#include "ImmediateRendering.h" // ---- transitions
 #include "TeachingTipAutomationPeer.h"
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
