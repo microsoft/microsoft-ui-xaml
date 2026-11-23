@@ -23,6 +23,10 @@
 #include "RichTextBlockOverflow.h"
 #include "PasswordBox.h"
 #include "LayoutTransitionElement.h"
+#include <TransitionRoot.h>
+#include <CalendarViewBaseItemChrome.h>
+#include "focusmgr.h"
+#include <FocusRectOptions.h>
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
@@ -1227,6 +1231,28 @@ namespace
             Push(c, rect, m, ctx.clip, nullptr);
         }
 
+        // True when an earlier command of this display list draws under `rect`.
+        bool HasPaintUnder(const RectF& rect, const CMILMatrix& m) const
+        {
+            const RectF device = ToDevice(IntersectRect(TransformRectBounds(m, rect), ctx.clip), ctx.scale);
+            if (IsEmptyRect(device))
+            {
+                return false;
+            }
+            for (const Command& command : list.commands)
+            {
+                // A drop shadow alone is not a backdrop (it surrounds the popup content that casts it).
+                const bool draws = command.type != CommandType::Nop && command.type != CommandType::PushLayer
+                    && command.type != CommandType::PopLayer && command.type != CommandType::PushRoundedClip
+                    && command.type != CommandType::PopRoundedClip && command.type != CommandType::Shadow;
+                if (draws && !IsEmptyRect(IntersectRect(command.deviceBounds, device)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
         {
             if (text.empty() || fontSize <= 0) return;
@@ -1669,7 +1695,15 @@ static bool EmitMaterialFill(
         if (acrylic.blur)
         {
             // Noise texture is not drawn (small, costly to sample per pixel).
-            emitter.Backdrop(rect, rx, ry, ImmediateRenderingPolicy::AcrylicBlurRadius, m);
+            if (emitter.HasPaintUnder(rect, m))
+            {
+                emitter.Backdrop(rect, rx, ry, ImmediateRenderingPolicy::AcrylicBlurRadius, m);
+            }
+            else
+            {
+                // Nothing beneath (e.g. the root of a windowed popup): the backdrop is the opaque fallback color.
+                emitter.Fill(rect, rx, ry, acrylic.opaqueFallback, m);
+            }
             emitter.Fill(rect, rx, ry, acrylic.luminosity, m);
             emitter.Fill(rect, rx, ry, acrylic.tint, m);
         }
@@ -2029,10 +2063,28 @@ void ImmediateRenderer::EmitContent(
     }
     else if (type == KnownTypeIndex::Glyphs
         || type == KnownTypeIndex::SwapChainPanel
-        || type == KnownTypeIndex::MediaPlayerPresenter
-        || element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
+        || type == KnownTypeIndex::MediaPlayerPresenter)
     {
         ReportUnsupported(element, L"Element content");
+    }
+    else if (element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
+    {
+        // Rounded chrome (the default) draws only density bars itself; backgrounds, borders and text are children.
+        auto chrome = static_cast<CCalendarViewBaseItemChrome*>(element);
+        if (!chrome->IsRoundedCalendarViewBaseItemChromeEnabled())
+        {
+            ReportUnsupported(element, L"CalendarView square item chrome");
+        }
+        XRECTF bars[10];
+        wu::Color colors[10];
+        float barOpacity = 1.0f;
+        const uint32_t barCount = chrome->GetDensityBars(bars, colors, &barOpacity);
+        for (uint32_t i = 0; i < barCount; ++i)
+        {
+            const wu::Color c = colors[i];
+            const uint32_t argb = (static_cast<uint32_t>(c.A) << 24) | (c.R << 16) | (c.G << 8) | c.B;
+            emitter.Fill(FromXRect(bars[i]), 0, 0, ToColor(argb, barOpacity), world);
+        }
     }
 }
 
@@ -2091,6 +2143,59 @@ void ImmediateRenderer::EmitBorder(
     }
 }
 
+void ImmediateRenderer::EmitLegacyFocusRect(
+    _In_ CUIElement* element,
+    const WalkContext& ctx,
+    _Inout_ DisplayList& list)
+{
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(element);
+    FocusRectangleOptions options;
+    if (focusManager == nullptr || focusManager->GetFocusTarget() != element
+        || !CFocusRectManager::GetLegacyFocusRectOptions(element, &options))
+    {
+        return;
+    }
+    if (options.bounds.Width == 0 && options.bounds.Height == 0)
+    {
+        options.UseElementBounds(element);
+    }
+
+    // BaseContentRenderer::RenderFocusRectangle: a Rectangle stroke of thickness t inside the bounds, dash array {1, 1}
+    // (in units of t). The first brush has dash offset 0.5 and the second 1.5, so they alternate in t x t cells centered
+    // on the stroke's center line every t along the perimeter, starting at the top-left corner, clockwise.
+    const float t = options.firstThickness.left;
+    const XRECTF& b = options.bounds;
+    if (t <= 0 || b.Width <= t || b.Height <= t)
+    {
+        return;
+    }
+    ColorF first{}, second{};
+    const bool hasFirst = options.drawFirst && ResolveBrush(options.firstBrush.get(), 1.0f, &first) == BrushResult::Color;
+    const bool hasSecond = options.drawSecond && ResolveBrush(options.secondBrush.get(), 1.0f, &second) == BrushResult::Color;
+    if (!hasFirst && !hasSecond)
+    {
+        return;
+    }
+
+    Emitter emitter{ list, element, ctx };
+    const RectF center{ b.X + t / 2, b.Y + t / 2, b.X + b.Width - t / 2, b.Y + b.Height - t / 2 };
+    const float w = center.right - center.left, h = center.bottom - center.top;
+    const float perimeter = 2 * (w + h);
+    for (uint32_t i = 0; i * t < perimeter; ++i)
+    {
+        if ((i % 2 == 0) ? !hasFirst : !hasSecond)
+        {
+            continue;
+        }
+        float s = i * t, x, y;
+        if (s < w) { x = center.left + s; y = center.top; }
+        else if ((s -= w) < h) { x = center.right; y = center.top + s; }
+        else if ((s -= h) < w) { x = center.right - s; y = center.bottom; }
+        else { s -= w; x = center.left; y = center.bottom - s; }
+        emitter.Fill({ x - t / 2, y - t / 2, x + t / 2, y + t / 2 }, 0, 0, (i % 2 == 0) ? first : second, ctx.world);
+    }
+}
+
 void ImmediateRenderer::WalkSecretTransitionTargets(
     _In_ CUIElement* transitionRoot,
     const WalkContext& parent,
@@ -2124,7 +2229,9 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
         auto lte = static_cast<CLayoutTransitionElement*>(ltes[i]);
         CUIElement* target = lte->GetTargetElement();
         CUIElement* targetParent = target != nullptr ? target->GetUIElementAdjustedParentInternal(false) : nullptr;
-        if (targetParent == nullptr || !target->IsActive())
+        // The focus rect canvas is never entered into the live tree (FocusRectManager only AddParent()s it), so it is
+        // never IsActive(); the secrecy check below is what identifies it.
+        if (targetParent == nullptr)
         {
             continue;
         }
@@ -2149,7 +2256,12 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
             continue;
         }
         WalkContext ctx = parent;
-        ctx.world = chainToIsland(targetParent);
+        // The LTE's own transform positions the target relative to its parent (FocusRectManager translates the canvas
+        // to the focus bounds, i.e. by the negative FocusVisualMargin).
+        CMILMatrix lteLocal(true);
+        (void)lte->GetLocalTransform(TransformRetrievalOptions::None, &lteLocal);
+        ctx.world = lteLocal;
+        ctx.world.Append(chainToIsland(targetParent));
         ctx.world.Append(hostToIsland);
         ctx.world.Append(parent.world);
         ctx.scroller = -1;
@@ -2159,7 +2271,9 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
         const float lteOpacity = lte->GetOpacityLocal();
         if (lteOpacity > 0)
         {
+            ++m_secretTargetDepth;
             Walk(target, ctx, list);
+            --m_secretTargetDepth;
         }
     }
 }
@@ -2448,7 +2562,7 @@ void ImmediateRenderer::Walk(
     // Composition content parented to the element (ElementCompositionPreview.SetElementChildVisual) has no XAML
     // primitives to paint; ProgressRing's built-in Lottie is drawn natively (S12). Other hand-in content makes the
     // island fall back to Composition (CheckFallback), unless fallback is disabled.
-    if (element->IsUsingHandInVisual())
+    if (element->IsUsingHandInVisual() && m_secretTargetDepth == 0)
     {
         ImmediateRenderingMaterials::ProgressRingFill ring;
         if (!IsBuiltInProgressRingPlayer(element))
@@ -2527,6 +2641,16 @@ void ImmediateRenderer::Walk(
                 Walk(children[i], childCtx, list);
             }
         }
+        // Like HWWalk::Render: GetChildrenInRenderOrder omits a local transition root (the focus rect host's LTE).
+        if (CTransitionRoot* localTransitionRoot = element->GetLocalTransitionRoot(false))
+        {
+            Walk(localTransitionRoot, childCtx, list);
+        }
+    }
+
+    if (!CFocusRectManager::AreHighVisibilityFocusRectsEnabled())
+    {
+        EmitLegacyFocusRect(element, ctx, list);
     }
 
     if (clipIndex != SIZE_MAX)
@@ -3466,6 +3590,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
 
     if (FAILED(hr))
     {
+        // ---- coverage ----
+        if (statsFile)
+        {
+            fprintf(statsFile, "# paint-failed frame %u hr 0x%08X\n", frameNumber, static_cast<unsigned int>(hr));
+            fflush(statsFile);
+        }
         if (IsDeviceLost(hr))
         {
             OnDeviceLost(hr, frameNumber);

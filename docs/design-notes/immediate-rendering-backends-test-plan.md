@@ -749,3 +749,115 @@ immediate mode when all of these hold:
 | Documented `UnsupportedContent` details outside F11 | Only `:approximated` entries listed in the proposal doc |
 | Perf matrix (27 entries) | All gates pass; steady geometric mean vs Comp (Lifted) no more than 3 points worse than GDI+ 92% and D2D-SW 101% |
 | Native and kit tests | RenderingBackendTests and RenderBench.Tests pass |
+
+### XAML coverage: harness and results (coverage branch)
+
+**Usage.** Run from `perf\ImmediateRendering` after staging a build into the RenderBench output (`validate-branch.ps1
+-Mux -Muxc -Stage -Kit`):
+
+```powershell
+.\scripts\Run-Coverage.ps1 -Results <dir>                                    # whole corpus, comp + gdiplus + d2d-sw
+.\scripts\Run-Coverage.ps1 -Pages 'F8*,!F8-controls/itemsview-*' -Modes composition,gdiplus
+.\scripts\Run-Coverage.ps1 -Results <dir> -AnalyzeOnly                       # re-gate an existing tree
+```
+
+`-Pages` takes comma-separated globs over the page id (`F8-controls/buttons-light`), the family (`F8-controls`) or the
+family number (`F8`), and `!glob` excludes. Other parameters are `-TimeoutSeconds` (default 60 per run) and
+`-DeleteBmps`, which keeps BMPs only for failing runs (PNGs are always written). The whole corpus is 237 runs and takes
+about 12 minutes.
+
+**Pages.** A page is a static method `[CoveragePage(family, name, ExpectedUnsupported = ..., ExpectFallback = ...,
+MaxMeanAbsDiff = 0.01)]` that returns a `CoveragePage` (content, optional `Exercise` step). The contract is in
+`RenderBench\Coverage\CoverageContract.cs`. `RenderBench --list-coverage` discovers pages by reflection, and every
+branch adds its own `Coverage.<Family>.cs`. Helpers for themed hosts and light/dark/disabled variants are in
+`CoveragePageKit.cs`.
+
+**Pipeline.**
+
+1. Each (page, mode) runs in its own RenderBench process, so unsupported or fallback state never leaks between pages.
+   - `WINUI_RENDERING_BACKEND` selects the mode and is unset for Composition.
+   - `WINUI_IMMEDIATE_STATS` and `WINUI_IMMEDIATE_CAPTURE` point into the run folder.
+   - The process holds the machine-wide bench lock (`Global\mux-ir-bench`) only while it runs.
+2. The window has a fixed 1000x700 client area at the machine DPI. The harness waits for `Loaded`, awaits `Exercise`
+   (for example, opening a flyout or switching the theme), then waits for two identical consecutive captures.
+3. The process writes `capture.bmp`, `app.json` (exit status, private MB at idle) and `stats.txt`. The `# unsupported`,
+   `# fallback` and `# paint-failed` lines in `stats.txt` replace WPR, which is too slow for 237 runs.
+4. `RenderBench.Analyzer coverage <dir>` diffs every immediate capture against the Composition capture of the same page
+   and applies the gates. It writes `result.json` per run plus `coverage.json` and `coverage.html` at the root. The HTML
+   shows a page × mode matrix with pass/fail colors, Comp/immediate/diff thumbnails, family pass rates and the overall
+   percentage against the 95% target.
+
+**Capture method.** The harness uses `PrintWindow(PW_RENDERFULLCONTENT)` of the main window and of every visible popup
+window it owns, composited at their screen offsets. Pure-black margins of windowed popups count as transparent.
+
+| Option | Result |
+|---|---|
+| `RenderTargetBitmap` of the content root | Works headless but excludes popups (F12) |
+| `Windows.Graphics.Capture` | Fails in a disconnected or RDP session |
+| `BitBlt` of the screen DC | Black in a disconnected session |
+| DWM thumbnail | Not tried: needs a composed, visible destination window, so it has the same session constraint |
+| `PrintWindow(PW_RENDERFULLCONTENT)` | Works headless for Composition and for immediate HWND content; includes windowed popups when they are captured separately. **Chosen.** |
+
+The same capture is used in every mode. In immediate modes `WINUI_IMMEDIATE_CAPTURE` is written alongside it as a
+cross-check of what the backend presented.
+
+**Gates** (`RenderBench.Core\Coverage\CoverageGates.cs`). These are the four gates listed above.
+
+- Unsupported: allows the page's declared details plus the globally expected `AnimatedIcon:approximated`.
+- Fallback: must match `ExpectFallback`.
+- Fidelity: the mean absolute per-channel difference (0..1) must be at most `MaxMeanAbsDiff`.
+- Stability: covers exit code, timeout and `# paint-failed`.
+
+Composition is the reference and only gets the stability gate. Because the metric is a mean over 1000x700 pixels, a
+missing focus rect moves it by only about 6e-4. The focus pages therefore use tight thresholds (0.0006–0.0015).
+
+**High contrast** is a system-wide setting (`SPI_SETHIGHCONTRAST`) and can't be toggled per process. Toggling it would
+disturb other agents and sessions on the machine, so F14 has no high-contrast page. It needs a dedicated VM run.
+
+**Corpus on this branch.** 79 pages:
+
+- F8 (54): buttons, toggles, range, status, bars, pickers, calendar + ColorPicker, collections, ItemsRepeater, ItemsView,
+  FlipView/Pivot, TabView, NavigationView left/top/minimal, panels, panes, content, idle text and RichEditBox. Most come
+  in light, dark and disabled variants, plus an indeterminate progress page.
+- F12 (15): ContentDialog, Flyout, MenuFlyout with a submenu, CommandBarFlyout, TeachingTip and Popup, each windowed
+  (`ShouldConstrainToRootBounds=false`) and non-windowed where that applies. Also ToolTip, an open ComboBox, an open
+  CalendarDatePicker and AutoSuggestBox suggestions.
+- F14 (10): RTL, RequestedTheme per subtree, runtime theme switch, Viewbox scale, RasterizationScale, and focus visuals:
+  high-visibility light and dark, legacy `DottedLine`, Reveal, and custom brushes.
+
+**Results** (`Run-Coverage.ps1 -Results cov-run4 -DeleteBmps`, all 3 modes):
+
+| Mode | F8 | F12 | F14 | Total |
+|---|---|---|---|---|
+| Composition | 54/54 | 15/15 | 10/10 | 79/79 |
+| GDI+ | 50/54 | 14/15 | 10/10 | 74/79 (93.7%) |
+| D2D-SW | 50/54 | 14/15 | 10/10 | 74/79 (93.7%) |
+
+Passing pages have a mean diff of 0.0010 against Composition, with a maximum of 0.0041 (ColorPicker). The 95% target is
+not met only because of the failures below. Each has an owner, and all of them fail identically in GDI+ and D2D-SW.
+
+| Page | Gate failed | Root cause | Owner |
+|---|---|---|---|
+| itemsview-light, itemsview-dark | Fallback | ItemsView reports `Panel Hand-off Composition visual` | scrolling (F9) |
+| richeditbox-idle-light, richeditbox-idle-dark | Unsupported | `TextBoxView RichEditBox text` is not painted | text (F6) |
+| autosuggestbox-suggestions | Unsupported | Focused TextBox caret reports `Rectangle CompositeMode DestInvert:approximated` (fidelity passes, 0.0012) | text (F6) |
+
+**Fixes on this branch** (generic walk/render behavior and control chrome):
+
+- Walk the element's local transition root (it holds the focus visual and secret transition targets). Removed the
+  `IsActive` filter on secret layout-transition targets. Apply the LTE's local transform, so focus rects with a negative
+  `FocusVisualMargin` line up.
+- Legacy `FocusVisualKind.DottedLine` focus rects: `CFocusRectManager::GetLegacyFocusRectOptions` plus
+  `EmitLegacyFocusRect`, which is pixel-identical to Composition.
+- Reveal focus glow is reported as `Reveal focus glow:approximated` instead of triggering a hand-in fallback.
+- CalendarView density bars and theme-aware surfaces for dark pages.
+- Windowed popups: skip black when blending into the parent. In-app acrylic with nothing painted beneath it uses the
+  brush's opaque fallback color, matching MUXC AcrylicBrush (AutoSuggestBox and ComboBox lists).
+- MUXC CommandBarFlyout: when immediate rendering is requested, use the acrylic fallback instead of the
+  SystemBackdrop placement visual.
+- MUXC ColorSpectrum: SpectrumBrush (a `XamlCompositionBrushBase` over LoadedImageSurfaces with a transparent fallback)
+  painted nothing in immediate modes. When immediate rendering is requested, the spectrum now cross-fades the same pixel
+  data on the CPU into a WriteableBitmap ImageBrush.
+
+**Memory** (private MB at idle across all 79 pages, mean / max): Composition 43.4 / 54.1, GDI+ 48.6 / 60.7,
+D2D-SW 52.6 / 67.9.

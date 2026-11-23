@@ -608,6 +608,35 @@ _Check_return_ HRESULT CCalendarViewBaseItemChrome::DrawDensityBar(
     return S_OK;
 }
 
+uint32_t CCalendarViewBaseItemChrome::GetDensityBars(
+    _Out_writes_(10) XRECTF* rects,
+    _Out_writes_(10) wu::Color* colors,
+    _Out_ float* opacity)
+{
+    static_assert(s_maxNumberOfDensityBars == 10, "GetDensityBars buffers");
+    *opacity = m_isOutOfScope ? OutOfScopeDensityBarOpacity : InScopeDensityBarOpacity;
+    XRECTF bounds = { 0.0f, 0.0f, GetActualWidth(), GetActualHeight() };
+    if (ShouldUseLayoutRounding())
+    {
+        bounds.Width = LayoutRound(bounds.Width);
+        bounds.Height = LayoutRound(bounds.Height);
+    }
+    // Same geometry as DrawDensityBar.
+    XRECTF bar = bounds;
+    bar.Height = std::min(bounds.Height / s_maxNumberOfDensityBars - 1, MaxDensityBarHeight);
+    bar.Width = bounds.Width - 2;
+    bar.X = 1;
+    bar.Y = bounds.Height - bar.Height;
+    const uint32_t count = std::min<uint32_t>(m_numberOfDensityBar, s_maxNumberOfDensityBars);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        rects[i] = bar;
+        colors[i] = m_densityBarColors[i];
+        bar.Y -= bar.Height + 1;
+    }
+    return count;
+}
+
 _Check_return_ HRESULT CCalendarViewBaseItemChrome::DrawBorder(
     _In_ IContentRenderer* pContentRenderer,
     _In_ CBrush* pBrush,

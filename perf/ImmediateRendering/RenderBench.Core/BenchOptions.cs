@@ -46,6 +46,14 @@ public sealed record BenchOptions
     public bool NoMedia { get; init; }     // S16: SwapChainPanel only, no MediaPlayerElement
     // S21: WINUI_IMMEDIATE_SIMULATE_DEVICE_LOST value ("every:N" or a sorted frame list); null for other scenes.
     public string? DeviceLost { get; init; }
+    // ---- coverage ----
+    // XAML coverage page to render instead of a scene ("F8-controls/Button"), and the directory for its app.json and
+    // capture.bmp (scripts\Run-Coverage.ps1). The window defaults to 1000x700 client pixels for coverage pages.
+    public string? CoveragePage { get; init; }
+    public string? CoverageOut { get; init; }
+    // Writes the discovered coverage catalog (catalog.json) to this path and exits.
+    public string? ListCoverage { get; init; }
+    public const int CoverageWidth = 1000, CoverageHeight = 700;
 
     // Scene name used in RunStarted and in reports; variants are separate experiments, so they get separate labels.
     public string SceneLabel => Scene switch
@@ -66,6 +74,7 @@ public sealed record BenchOptions
         "[--decode-to-size] [--no-progressring] [--windows n] [--tabs] [--step-seconds s] " +
         "[--no-interop] [--no-player] [--no-media] [--device-lost every:N|frame,frame,...] " +
         "[--screenshot path.bmp] [--screenshot-method auto|screen|printwindow|xaml] " +
+        "[--coverage F<n>-family/name --coverage-out dir] [--list-coverage catalog.json] " +
         "[--composition-engine lifted|system] [--optional-changes none|all] [--no-exit]";
 
     // The engine and optional changes must be set before Application.Start, before OnLaunched parses the full command
@@ -175,6 +184,9 @@ public sealed record BenchOptions
                     options = options with { ScreenshotMethod = method };
                     break;
                 case "--screenshot": options = options with { ScreenshotPath = value }; break;
+                case "--coverage": options = options with { CoveragePage = value }; break;
+                case "--coverage-out": options = options with { CoverageOut = value }; break;
+                case "--list-coverage": options = options with { ListCoverage = value }; break;
                 case "--device-lost":
                     if (!ImmediateHooks.TryNormalizeDeviceLost(value, out var spec))
                     {
@@ -216,6 +228,24 @@ public sealed record BenchOptions
             Items = seen.Contains("--items") ? options.Items : defaults.Items,
             DeviceLost = options.Scene == SceneId.DeviceLost ? options.DeviceLost ?? ImmediateHooks.DefaultDeviceLost : null,
         };
+        if (options.CoveragePage is not null)
+        {
+            if (seen.Contains("--scene"))
+            {
+                error = "--coverage and --scene are exclusive";
+                return false;
+            }
+            options = options with
+            {
+                Width = seen.Contains("--width") ? options.Width : CoverageWidth,
+                Height = seen.Contains("--height") ? options.Height : CoverageHeight,
+            };
+        }
+        else if (options.CoverageOut is not null)
+        {
+            error = "--coverage-out applies only to --coverage";
+            return false;
+        }
         return true;
     }
 

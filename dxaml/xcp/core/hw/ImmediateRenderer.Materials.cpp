@@ -181,6 +181,7 @@ namespace ImmediateRenderingMaterials
         }
         const float brushOpacity = brush->m_eOpacity * opacity;
         acrylic->fallback = FromArgb(composition->m_fallbackColor, brushOpacity);
+        acrylic->opaqueFallback = FromArgb(composition->m_fallbackColor | 0xFF000000, brushOpacity);
         if (IsHighContrast(brush))
         {
             return true;

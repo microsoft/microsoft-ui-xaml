@@ -26,6 +26,11 @@ public partial class App : Application
             Exit();
             return;
         }
+        if (options.CoveragePage is not null)
+        {
+            new Coverage.CoverageRunner(options).Start(); // ---- coverage ----
+            return;
+        }
         _runner = new BenchRunner(options);
         _runner.Start();
     }

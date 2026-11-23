@@ -150,6 +150,9 @@ public:
 
     bool IsRoundedCalendarViewBaseItemChromeEnabled() const;
 
+    // Immediate rendering: the density bars RenderChrome would draw (element-local rects, colors, opacity).
+    uint32_t GetDensityBars(_Out_writes_(10) XRECTF* rects, _Out_writes_(10) wu::Color* colors, _Out_ float* opacity);
+
 private:
     static bool IsTransparentSolidColorBrush(_In_ CBrush* brush);
 

@@ -112,6 +112,13 @@ private:
         const ImmediateRenderingDetail::WalkContext& context,
         _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
+    // FocusVisualKind.DottedLine: the focus target draws its legacy dotted focus rect after its children
+    // (HWWalk via CFocusManager::RenderFocusRectForElementIfNeeded).
+    void EmitLegacyFocusRect(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& context,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+
     static void SaveScrollers(_Inout_ IslandState& state, const ImmediateRenderingDetail::DisplayList& list);
     void ReportUnsupported(_In_ CUIElement* element, _In_z_ const wchar_t* detail);
     static FILE* StatsFile() noexcept;
@@ -162,6 +169,8 @@ private:
     std::unordered_map<CXamlIslandRoot*, std::unique_ptr<IslandState>> m_islands;
     std::unordered_set<std::wstring> m_reportedUnsupported;
     uint32_t m_elementsVisited = 0;
+    // > 0 while walking a secret LTE target (the focus rect canvas).
+    uint32_t m_secretTargetDepth = 0;
     uint32_t m_elementsRendered = 0;   // elements with at least one command replayed (painted) this frame
     uint32_t m_elementsCulled = 0;
     uint32_t m_subtreesReused = 0;
