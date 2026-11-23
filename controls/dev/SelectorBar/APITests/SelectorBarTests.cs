@@ -162,15 +162,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public string[] Lines { get; set; }
         }
 
-        // Scenario: Focus an element inside an unmeasured ScrollView, and remove the selected data item from
-        //   TabView.TabItemsSource while keyboard focus is on its ContentControl hosting SelectorBar, ScrollView, or ItemsView.
-        // Expected: Focus rect computation treats an unlaid-out or shutting-down ScrollPresenter as non-scrollable without crashing.
+        // Scenario: Focus a child inside a live, templated ScrollView before its first Measure pass (HasLayoutStorage() == false).
+        // Expected: FocusProperties::IsScrollable treats the unmeasured ScrollPresenter as non-scrollable without crashing, and
+        //   keyboard focus remains on the button before and after layout runs.
         // Failure means: FocusProperties::IsScrollable dereferences null CLayoutStorage (0xC0000005 in Microsoft.UI.Xaml.dll)
-        //   on a ScrollPresenter when HasLayoutStorage() is false.
+        //   on an unmeasured ScrollPresenter.
         [TestMethod]
-        public void RemoveFocusedTabWithScrollPresenterControlsDoesNotCrash()
+        public void FocusInsideUnmeasuredScrollViewDoesNotCrash()
         {
-            // 1. Direct pre-measure reproduction: ScrollPresenter templated in live tree with HasLayoutStorage() == false.
             RunOnUIThread.Execute(() =>
             {
                 var button = new Button { Content = "UnmeasuredFocusTarget" };
@@ -179,15 +178,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollView.ApplyTemplate();
 
                 Verify.IsTrue(button.Focus(FocusState.Keyboard));
+                Verify.AreEqual(button, FocusManager.GetFocusedElement(scrollView.XamlRoot));
+
                 Content.UpdateLayout();
+                Verify.AreEqual(button, FocusManager.GetFocusedElement(scrollView.XamlRoot));
                 Content = null;
             });
 
             DrainLowPriorityTurns();
+        }
 
-            // 2. End-to-end TabView reproduction across SelectorBar, ScrollView, and ItemsView.
+        // Scenario: Remove the selected data item from TabView.TabItemsSource while keyboard focus is on its ContentControl
+        //   hosting SelectorBar, ScrollView, or ItemsView, compared against a classic ScrollViewer baseline.
+        // Expected: Focus rect computation treats the shutting-down ScrollPresenter as non-scrollable without crashing,
+        //   TabView selects the remaining tab, and keyboard focus lands on the same live, loaded element as with ScrollViewer.
+        // Failure means: FocusProperties::IsScrollable dereferences null CLayoutStorage (0xC0000005 in Microsoft.UI.Xaml.dll)
+        //   after CUIElement::Shutdown clears layout storage, or focus/selection fails to recover cleanly.
+        [TestMethod]
+        public void RemoveFocusedTabWithScrollPresenterControlsDoesNotCrash()
+        {
             string[] innerTemplates = new string[]
             {
+                @"
+                <ScrollViewer Height='200'>
+                    <Button Content='ScrollViewerBaseline' />
+                </ScrollViewer>",
                 @"
                 <StackPanel Padding='8'>
                     <SelectorBar>
@@ -207,10 +222,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 <ItemsView ItemsSource='{Binding Lines}' Height='200' />",
             };
 
-            foreach (string innerMarkup in innerTemplates)
+            Type baselineFocusedType = null;
+            bool baselineFocusInsideTabView = false;
+
+            for (int templateIndex = 0; templateIndex < innerTemplates.Length; templateIndex++)
             {
+                string innerMarkup = innerTemplates[templateIndex];
                 ObservableCollection<TabDocItem> docs = null;
                 TabView tabView = null;
+                ContentControl removedContentControl = null;
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -250,9 +270,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var presenter = VisualTreeUtils.FindVisualChildByName(tabView, "TabContentPresenter") as ContentPresenter;
                     Verify.IsNotNull(presenter);
-                    var contentControl = presenter.FindVisualChildByType<ContentControl>();
-                    Verify.IsNotNull(contentControl);
-                    Verify.IsTrue(contentControl.Focus(FocusState.Keyboard));
+                    removedContentControl = presenter.FindVisualChildByType<ContentControl>();
+                    Verify.IsNotNull(removedContentControl);
+                    Verify.IsTrue(removedContentControl.Focus(FocusState.Keyboard));
                     Content.UpdateLayout();
                 });
 
@@ -262,7 +282,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     docs.RemoveAt(0);
                     Content.UpdateLayout();
+                });
+
+                DrainLowPriorityTurns();
+
+                RunOnUIThread.Execute(() =>
+                {
                     Verify.AreEqual(1, docs.Count);
+                    Verify.AreEqual(docs[0], tabView.SelectedItem);
+
+                    var focusedAfterRemoval = FocusManager.GetFocusedElement(tabView.XamlRoot) as FrameworkElement;
+                    Verify.IsNotNull(focusedAfterRemoval);
+                    Verify.IsTrue(focusedAfterRemoval.IsLoaded);
+                    Verify.IsFalse(ReferenceEquals(removedContentControl, focusedAfterRemoval));
+
+                    bool isFocusInsideTabView = focusedAfterRemoval.FindVisualParentByType<TabView>() == tabView;
+                    if (templateIndex == 0)
+                    {
+                        baselineFocusedType = focusedAfterRemoval.GetType();
+                        baselineFocusInsideTabView = isFocusInsideTabView;
+                    }
+                    else
+                    {
+                        Verify.AreEqual(baselineFocusedType, focusedAfterRemoval.GetType());
+                        Verify.AreEqual(baselineFocusInsideTabView, isFocusInsideTabView);
+                    }
+
                     Content = null;
                 });
 
@@ -272,6 +317,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void DrainLowPriorityTurns()
         {
+            IdleSynchronizer.Wait();
+
+            // Drain two Low-priority passes because ItemsView/ScrollPresenter Low-priority work can enqueue follow-up Low callbacks.
             for (int i = 0; i < 2; i++)
             {
                 var drained = new AutoResetEvent(false);
