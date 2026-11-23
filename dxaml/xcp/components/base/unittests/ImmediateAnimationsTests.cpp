@@ -154,38 +154,57 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(store.HasOwner(&dummyOwnerB));
     }
 
-    void ImmediateAnimationsTests::ConnectedFrameInterpolatesRectsAndScale()
+    void ImmediateAnimationsTests::ConnectedFrameInterpolatesOffsetScaleAndInsets()
     {
-        ConnectedRects rects;
-        rects.sourceX = 10; rects.sourceY = 20; rects.sourceWidth = 100; rects.sourceHeight = 50;
-        rects.destX = 210; rects.destY = 120; rects.destWidth = 300; rects.destHeight = 100;
+        ConnectedParams params;
+        params.fromX = 10; params.fromY = 20; params.toX = 210; params.toY = 120;
+        params.toScaleX = 3; params.toScaleY = 2;
+        params.fromInsets[0] = 4; params.toInsets[0] = 0;
+        params.fromInsets[3] = 0; params.toInsets[3] = 8;
 
-        ConnectedFrame start = EvaluateConnected(rects, 0);
+        ConnectedFrame start = EvaluateConnected(params, Curve::Linear(), 0);
         VERIFY_IS_TRUE(Near(10, start.offsetX) && Near(20, start.offsetY));
         VERIFY_IS_TRUE(Near(1, start.scaleX) && Near(1, start.scaleY) && Near(0, start.crossFade));
+        VERIFY_IS_TRUE(Near(4, start.insets[0]) && Near(0, start.insets[3]));
 
-        ConnectedFrame mid = EvaluateConnected(rects, 0.5f);
+        ConnectedFrame mid = EvaluateConnected(params, Curve::Linear(), 0.5f);
         VERIFY_IS_TRUE(Near(110, mid.offsetX) && Near(70, mid.offsetY));
         VERIFY_IS_TRUE(Near(2, mid.scaleX) && Near(1.5f, mid.scaleY) && Near(0.5f, mid.crossFade));
+        VERIFY_IS_TRUE(Near(2, mid.insets[0]) && Near(4, mid.insets[3]));
+        VERIFY_IS_TRUE(Near(0, mid.liftZ));
 
-        // At the end the scaled snapshot covers the destination rect exactly.
-        ConnectedFrame end = EvaluateConnected(rects, 1);
-        VERIFY_IS_TRUE(Near(rects.destWidth, rects.sourceWidth * end.scaleX));
-        VERIFY_IS_TRUE(Near(rects.destHeight, rects.sourceHeight * end.scaleY));
+        // The configuration curve drives every channel: Direct's (0.1,0.9)-(0.2,1) is far ahead of linear at 25%.
+        const Curve direct = Curve::Bezier(0.1f, 0.9f, 0.2f, 1.0f);
+        ConnectedFrame early = EvaluateConnected(params, direct, 0.25f);
+        const float eased = direct.Evaluate(0.25f);
+        VERIFY_IS_TRUE(eased > 0.75f);
+        VERIFY_IS_TRUE(Near(10 + 200 * eased, early.offsetX) && Near(eased, early.crossFade));
+
+        ConnectedFrame end = EvaluateConnected(params, direct, 1);
         VERIFY_IS_TRUE(Near(210, end.offsetX) && Near(120, end.offsetY));
+        VERIFY_IS_TRUE(Near(3, end.scaleX) && Near(2, end.scaleY) && Near(1, end.crossFade));
     }
 
-    void ImmediateAnimationsTests::ConnectedFrameWithoutScaleCentersUnion()
+    void ImmediateAnimationsTests::GravityDipsAndReturns()
     {
-        ConnectedRects rects;
-        rects.scaleEnabled = false;
-        rects.sourceX = 0; rects.sourceY = 0; rects.sourceWidth = 100; rects.sourceHeight = 100;
-        rects.destX = 500; rects.destY = 0; rects.destWidth = 200; rects.destHeight = 50;
+        VERIFY_IS_TRUE(Near(0, EvaluateGravityDip(0)));
+        VERIFY_IS_TRUE(Near(1, EvaluateGravityDip(0.66f)));
+        VERIFY_IS_TRUE(Near(0, EvaluateGravityDip(1)));
+        VERIFY_IS_TRUE(EvaluateGravityDip(0.33f) > 0 && EvaluateGravityDip(0.33f) < 1);
 
-        ConnectedFrame start = EvaluateConnected(rects, 0);
-        VERIFY_IS_TRUE(Near(-50, start.offsetX) && Near(0, start.offsetY));
-        VERIFY_IS_TRUE(Near(1, start.scaleX) && Near(1, start.scaleY));
-        ConnectedFrame end = EvaluateConnected(rects, 1);
-        VERIFY_IS_TRUE(Near(500, end.offsetX) && Near(-25, end.offsetY));
+        // Same-size flight: the effect adds the dip to Offset.Y/Z and scales up by 10% at the peak.
+        ConnectedParams params;
+        params.toX = 100;
+        params.gravity = true;
+        ConnectedFrame peak = EvaluateConnected(params, Curve::Linear(), 0.66f);
+        VERIFY_IS_TRUE(Near(66, peak.offsetX) && Near(80, peak.offsetY) && Near(32, peak.liftZ));
+        VERIFY_IS_TRUE(Near(1.1f, peak.scaleX) && Near(1.1f, peak.scaleY));
+        ConnectedFrame end = EvaluateConnected(params, Curve::Linear(), 1);
+        VERIFY_IS_TRUE(Near(0, end.offsetY) && Near(0, end.liftZ) && Near(1, end.scaleX));
+
+        // When the primary motion scales, the effect leaves Scale alone (GetEffectPropertySet only adds it at 1x1).
+        params.toScaleX = 2;
+        peak = EvaluateConnected(params, Curve::Linear(), 0.66f);
+        VERIFY_IS_TRUE(Near(1.66f, peak.scaleX) && Near(1, peak.scaleY) && Near(80, peak.offsetY));
     }
 }

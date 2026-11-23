@@ -49,7 +49,7 @@
         <ClCompile Include="ImmediateRenderer.Fallback.cpp"/>
         <ClCompile Include="ImmediateRenderer.Materials.cpp"/>
         <ClCompile Include="ImmediateRenderer.Popups.cpp"/>
-        <!-- ---- transitions ---- -->
+        <!-- transitions branch -->
         <ClCompile Include="ImmediateRenderer.Transitions.cpp"/>
         <ClCompile Include="hwcompnode.cpp"/>
         <ClCompile Include="DManipData.cpp"/>

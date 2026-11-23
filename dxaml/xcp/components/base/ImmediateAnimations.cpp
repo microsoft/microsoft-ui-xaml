@@ -225,31 +225,43 @@ namespace ImmediateAnimations
         return RenderingBackend::IsImmediateModeActive();
     }
 
-    ConnectedFrame EvaluateConnected(const ConnectedRects& r, float eased) noexcept
+    float EvaluateGravityDip(float progress) noexcept
     {
-        ConnectedFrame f;
-        if (r.scaleEnabled)
+        // GravityConnectedAnimationConfiguration: key frames 0 -> 1 at 0.66 (ease-in (0.35,0)-(0.55,1)) -> 0 at 1
+        // (ease-out (0.45,0)-(0.55,1)), on the animation's linear time.
+        constexpr float peak = 0.66f;
+        progress = Clamp01(progress);
+        if (progress <= peak)
         {
-            f.offsetX = r.sourceX + (r.destX - r.sourceX) * eased;
-            f.offsetY = r.sourceY + (r.destY - r.sourceY) * eased;
-            const float sx = r.sourceWidth > 0 ? r.destWidth / r.sourceWidth : 1.0f;
-            const float sy = r.sourceHeight > 0 ? r.destHeight / r.sourceHeight : 1.0f;
-            f.scaleX = 1 + (sx - 1) * eased;
-            f.scaleY = 1 + (sy - 1) * eased;
+            return EvaluateCubicBezier(0.35f, 0.0f, 0.55f, 1.0f, progress / peak);
         }
-        else
+        return 1 - EvaluateCubicBezier(0.45f, 0.0f, 0.55f, 1.0f, (progress - peak) / (1 - peak));
+    }
+
+    ConnectedFrame EvaluateConnected(const ConnectedParams& p, const Curve& curve, float progress) noexcept
+    {
+        const float eased = curve.Evaluate(Clamp01(progress));
+        ConnectedFrame f;
+        f.offsetX = p.fromX + (p.toX - p.fromX) * eased;
+        f.offsetY = p.fromY + (p.toY - p.fromY) * eased;
+        f.scaleX = 1 + (p.toScaleX - 1) * eased;
+        f.scaleY = 1 + (p.toScaleY - 1) * eased;
+        for (int i = 0; i < 4; ++i)
         {
-            // CConnectedAnimation::ComputeAnimationOffset without scale: the host renders the union of both sizes,
-            // centred over the smaller rect.
-            float sx = r.sourceX, sy = r.sourceY, dx = r.destX, dy = r.destY;
-            if (r.sourceWidth < r.destWidth) sx -= (r.destWidth - r.sourceWidth) / 2;
-            if (r.sourceHeight < r.destHeight) sy -= (r.destHeight - r.sourceHeight) / 2;
-            if (r.destWidth < r.sourceWidth) dx -= (r.sourceWidth - r.destWidth) / 2;
-            if (r.destHeight < r.sourceHeight) dy -= (r.sourceHeight - r.destHeight) / 2;
-            f.offsetX = sx + (dx - sx) * eased;
-            f.offsetY = sy + (dy - sy) * eased;
+            f.insets[i] = p.fromInsets[i] + (p.toInsets[i] - p.fromInsets[i]) * eased;
         }
         f.crossFade = Clamp01(eased);
+        if (p.gravity)
+        {
+            const float dip = EvaluateGravityDip(progress);
+            f.offsetY += 80.0f * dip;
+            f.liftZ = 32.0f * dip;
+            if (p.toScaleX == 1 && p.toScaleY == 1)
+            {
+                f.scaleX *= 1 + 0.1f * dip;
+                f.scaleY *= 1 + 0.1f * dip;
+            }
+        }
         return f;
     }
 }

@@ -104,22 +104,36 @@ namespace ImmediateAnimations
     bool IsTargetImmediate(_In_ const void* element) noexcept;
 
     // ---- ConnectedAnimation (CConnectedAnimation::StartSpriteAnimations) ----
-    // The snapshot host visual animates Offset from the source to the destination rect and Scale from 1 to
-    // destination/source size; the cross-fade weight (destination snapshot over source) runs 0 -> 1 with the same
-    // curve. Rects are island DIPs.
+    // Composition animates one host visual: Offset from the source to the destination position, Scale from 1 to
+    // destination/source size, an InsetClip from the source to the destination insets and the cross-fade weight
+    // (destination over source) 0 -> 1, all with the configuration's duration and easing. The Gravity configuration
+    // combines an effect with the primary motion (Offset += (0, 80, 32) * dip, Scale *= 1 + 0.1 * dip when the primary
+    // scale stays 1) whose dip peaks at 66% of the duration on linear time. Offsets are island DIPs; insets are in the
+    // host visual's local (pre-scale) space.
+    struct ConnectedParams
+    {
+        float fromX = 0, fromY = 0, toX = 0, toY = 0;  // host offset
+        float toScaleX = 1, toScaleY = 1;              // host scale (from 1)
+        float fromInsets[4] = {}, toInsets[4] = {};    // left, top, right, bottom
+        bool gravity = false;
+    };
+
     struct ConnectedFrame
     {
-        float offsetX = 0, offsetY = 0;   // top-left of the host visual
-        float scaleX = 1, scaleY = 1;     // applied to the source-sized snapshot
+        float offsetX = 0, offsetY = 0;   // host offset
+        float scaleX = 1, scaleY = 1;     // host scale (about the host origin)
+        float insets[4] = {};             // left, top, right, bottom
         float crossFade = 0;              // destination weight
+        float liftZ = 0;                  // Gravity Offset.Z (shadow depth)
     };
 
-    struct ConnectedRects
-    {
-        float sourceX = 0, sourceY = 0, sourceWidth = 0, sourceHeight = 0;
-        float destX = 0, destY = 0, destWidth = 0, destHeight = 0;
-        bool scaleEnabled = true;
-    };
+    // Gravity dip weight for linear progress: 0 -> 1 at 66% (ease-in bezier) -> 0 (ease-out bezier).
+    float EvaluateGravityDip(float progress) noexcept;
 
-    ConnectedFrame EvaluateConnected(const ConnectedRects& rects, float easedProgress) noexcept;
+    ConnectedFrame EvaluateConnected(const ConnectedParams& params, const Curve& curve, float progress) noexcept;
+
+    // Opacity of the source snapshot drawn under the destination at weight w. A CrossFadeEffect is a per-pixel lerp;
+    // drawing the destination over the source at opacity w is exact for opaque destination pixels with the source at
+    // 1 and for transparent ones with the source at 1 - w. 1 - w^3 stays close to both and reaches 0 at the end.
+    inline float ConnectedSourceOpacity(float crossFade) noexcept { return 1 - crossFade * crossFade * crossFade; }
 }

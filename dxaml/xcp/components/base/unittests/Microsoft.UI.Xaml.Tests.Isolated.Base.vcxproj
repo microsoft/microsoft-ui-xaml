@@ -80,7 +80,7 @@
         <ClInclude Include="ImmediateIndependentTests.h"/>
         <ClCompile Include="ImmediateIndependentTests.cpp"/>
     </ItemGroup>
-    <!-- ---- transitions ---- -->
+    <!-- transitions branch -->
     <ItemGroup>
         <ClInclude Include="ImmediateAnimationsTests.h"/>
         <ClCompile Include="ImmediateAnimationsTests.cpp"/>

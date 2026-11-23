@@ -21,7 +21,7 @@ namespace RenderingBackendTests
         TEST_METHOD(NoOpTransitionIsNotStored);
         TEST_METHOD(BrushTransitionInterpolatesArgbLinearly);
         TEST_METHOD(CancelAndRemoveOwnerDropEntries);
-        TEST_METHOD(ConnectedFrameInterpolatesRectsAndScale);
-        TEST_METHOD(ConnectedFrameWithoutScaleCentersUnion);
+        TEST_METHOD(ConnectedFrameInterpolatesOffsetScaleAndInsets);
+        TEST_METHOD(GravityDipsAndReturns);
     };
 }

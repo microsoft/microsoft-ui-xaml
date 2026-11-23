@@ -56,7 +56,7 @@
         <ClInclude Include="..\inc\ImmediateIndependent.h"/>
     </ItemGroup>
 
-    <!-- ---- transitions ---- -->
+    <!-- transitions branch -->
     <ItemGroup>
         <ClCompile Include="..\ImmediateAnimations.cpp"/>
         <ClInclude Include="..\inc\ImmediateAnimations.h"/>
