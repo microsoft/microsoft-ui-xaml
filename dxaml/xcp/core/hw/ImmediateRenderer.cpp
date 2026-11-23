@@ -560,6 +560,9 @@ struct ImmediateRenderer::IslandState
     ComPtr<IDXGISwapChain1> swapChain;
     ComPtr<WUComp::ISpriteVisual> sprite;
     ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
+    // ---- imaging ---- island root: a ContainerVisual like Composition's root comp node, so the ContentIsland's
+    // SystemBackdrop (Mica / DesktopAcrylic) is placed behind the swap-chain sprite.
+    ComPtr<WUComp::IContainerVisual> root;
     uint32_t width = 0;
     uint32_t height = 0;
     float scale = 0;
@@ -758,10 +761,20 @@ _Check_return_ HRESULT ImmediateRenderer::EnsureIslandResources(
         ComPtr<WUComp::ICompositionBrush> brush;
         IFC_RETURN(state.surfaceBrush.As(&brush));
         IFC_RETURN(state.sprite->put_Brush(brush.Get()));
+
+        IFC_RETURN(compositor->CreateContainerVisual(&state.root));
+        ComPtr<WUComp::IVisualCollection> children;
+        IFC_RETURN(state.root->get_Children(&children));
+        ComPtr<WUComp::IVisual> spriteVisual;
+        IFC_RETURN(state.sprite.As(&spriteVisual));
+        IFC_RETURN(children->InsertAtTop(spriteVisual.Get()));
     }
 
+    ComPtr<WUComp::IVisual> spriteVisual;
+    IFC_RETURN(state.sprite.As(&spriteVisual));
+    IFC_RETURN(spriteVisual->put_Size({ static_cast<float>(width), static_cast<float>(height) }));
     ComPtr<WUComp::IVisual> visual;
-    IFC_RETURN(state.sprite.As(&visual));
+    IFC_RETURN(state.root.As(&visual));
     IFC_RETURN(visual->put_Size({ static_cast<float>(width), static_cast<float>(height) }));
 
     // Host the sprite as the island's root, the same way DCompTreeHost::ConnectXamlIslandTargetRoots hosts the island's
