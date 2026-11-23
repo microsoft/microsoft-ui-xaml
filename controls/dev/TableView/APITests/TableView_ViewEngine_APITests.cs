@@ -40,6 +40,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies random source changes, rule changes and refreshes leave a flat, grouped and two-level grouped view (groups ordered by name, or by ItemCount) equal to a fresh view over the same items.")]
         public void VerifyIncrementalMatchesFreshViewFuzz()
         {
+            CollectGarbageAndWaitForIdle();
             foreach (var levels in new[] { 0, 1, 2, 3 })
             {
                 RunOnUIThread.Execute(() =>
@@ -53,12 +54,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
             }
+            CollectGarbageAndWaitForIdle();
         }
+
+        // Views and groups the GC finds unreachable are released on the UI thread; drained here, not inside a later wait.
+        private static void CollectGarbageAndWaitForIdle()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            IdleSynchronizer.Wait();
+        }
+
+        private static string GcCounts() => $"gc {GC.CollectionCount(0)}/{GC.CollectionCount(1)}/{GC.CollectionCount(2)}";
 
         [TestMethod]
         [TestProperty("Description", "Verifies random property edits on a live sorted, filtered and grouped view, mixed with source changes, settle into the view a fresh view over the same items shows.")]
         public void VerifyLiveShapingMatchesFreshViewFuzz()
         {
+            CollectGarbageAndWaitForIdle();
             foreach (var levels in new[] { 0, 1, 2, 3 })
             {
                 EngineFixture fixture = null;
@@ -73,9 +87,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             ops.Add(fixture.ApplyRandomOperation(allowPropertyEdits: true));
                         }
                     });
-                    Log.Comment($"live, levels {levels}, round {round}: {string.Join(", ", ops)}");
-                    IdleSynchronizer.Wait();
-                    RunOnUIThread.Execute(() => fixture.VerifyMatchesFresh($"live, levels {levels}, round {round} ({string.Join(", ", ops)})"));
+
+                    // The live restore runs on a later dispatcher turn: wait for the view to settle into the expected
+                    // state rather than for the whole app to be idle.
+                    var gcBefore = GcCounts();
+                    var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
+                    var matches = false;
+                    string expected = null;
+                    string actual = null;
+                    while (!matches && stopwatch.Elapsed < TimeSpan.FromSeconds(30))
+                    {
+                        RunOnUIThread.Execute(() => matches = fixture.Matches(out expected, out actual));
+                        if (!matches)
+                        {
+                            Thread.Sleep(20);
+                        }
+                    }
+                    Log.Comment($"live, levels {levels}, round {round}: {string.Join(", ", ops)} [{stopwatch.ElapsedMilliseconds} ms, {gcBefore} -> {GcCounts()}]");
+                    if (!matches)
+                    {
+                        Verify.Fail($"live, levels {levels}, round {round}: the view differs from a fresh view.\n  expected {expected}\n  actual   {actual}");
+                    }
                 }
             }
         }
@@ -622,6 +654,62 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a filter that rejects the loaded items stops incremental loading through a shaped view also when the source reports each load as one Reset (an AddRange-style collection).")]
+        public void VerifyFilteredResetStyleIncrementalLoadingStops()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = new ResetIncrementalEngineRows(MakeEngineRows());
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                ((ICollectionViewShaping)view).Filter = item => ((EngineRow)item).Score < 100;
+                var visible = view.Count;
+
+                var loads = 0;
+                while (view.HasMoreItems && loads < 50)
+                {
+                    view.LoadMoreItemsAsync(5);
+                    loads++;
+                }
+
+                Log.Comment($"Loads until HasMoreItems turned false: {loads}");
+                Verify.IsLessThanOrEqual(loads, 11, "The loads stop.");
+                Verify.AreEqual(visible, view.Count);
+
+                ((ICollectionViewShaping)view).Refresh();
+                Verify.IsTrue(view.HasMoreItems, "An app Refresh starts loading over.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies index writes through a view over a source that raises no changes (a List) fail without changing the source once the view was shaped, even with its rules removed: the view could not follow the write.")]
+        public void VerifyWritesThroughViewOverNonObservableSourceFailSafely()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = MakeEngineRows().ToList();
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
+                cvs.SortDescriptions.Clear();
+                var before = string.Join(" ", rows.Select(row => row.Name));
+
+                var threw = false;
+                try
+                {
+                    view.RemoveAt(0);
+                }
+                catch (Exception)
+                {
+                    threw = true;
+                }
+                Verify.IsTrue(threw, "The write fails.");
+                Verify.AreEqual(before, string.Join(" ", rows.Select(row => row.Name)), "The source is unchanged.");
+                Verify.AreEqual(rows.Count, view.Count);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a sparse filter (one match every few loads) keeps loading through a shaped view: only loads in a row that bring the view nothing stop it.")]
         public void VerifySparseFilteredIncrementalLoadingContinues()
         {
@@ -1118,8 +1206,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // move the viewport thousands of pixels.
                 var after = GetBodyScroller(tableView).VerticalOffset;
                 Verify.IsTrue(Math.Abs(offset - after) <= 100.0, $"The viewport stays where the user scrolled it ({offset} -> {after}).");
-                var item = FocusedRowItem(tableView);
-                Verify.IsTrue(item == null || ReferenceEquals(item, focusedItem), "Focus is not moved to another row.");
+                Verify.AreSame(focusedItem, FocusedRowItem(tableView), "Focus stays on the original item.");
             });
         }
 
@@ -1772,13 +1859,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return "refresh";
             }
 
+            // The oracle: one view per rule set over a copy of the items, recomputed from scratch by a Reset each time.
+            private readonly ResettableEngineRows m_freshRows = new ResettableEngineRows();
+            private CollectionViewSource m_fresh;
+            private string m_freshRules;
+
+            public bool Matches(out string expected, out string actual)
+            {
+                var rules = $"{m_descending}|{m_secondKey}|{m_threshold}";
+                if (m_fresh == null || m_freshRules != rules)
+                {
+                    m_fresh = new CollectionViewSource { Source = m_freshRows };
+                    ApplyRules(m_fresh);
+                    m_freshRules = rules;
+                }
+                m_freshRows.ReplaceAll(m_rows);
+                expected = Describe(m_fresh.View);
+                actual = Describe(m_cvs.View);
+                return expected == actual;
+            }
+
             public void VerifyMatchesFresh(string context)
             {
-                var fresh = new CollectionViewSource { Source = m_rows.ToList() };
-                ApplyRules(fresh);
-                var expected = Describe(fresh.View);
-                var actual = Describe(m_cvs.View);
-                if (expected != actual)
+                if (!Matches(out var expected, out var actual))
                 {
                     Verify.Fail($"{context}: the view differs from a fresh view.\n  expected {expected}\n  actual   {actual}");
                 }
@@ -1985,6 +2088,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Thrower.Check();
             }
             return string.Equals(groupName as string, itemName as string, StringComparison.Ordinal);
+        }
+    }
+
+    internal sealed class ResettableEngineRows : ObservableCollection<EngineRow>
+    {
+        public void ReplaceAll(IEnumerable<EngineRow> rows)
+        {
+            Items.Clear();
+            foreach (var row in rows)
+            {
+                Items.Add(row);
+            }
+            OnCollectionChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(global::System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+        }
+    }
+
+    // Loads arrive as one Reset, as from an AddRange-style collection.
+    internal sealed partial class ResetIncrementalEngineRows : ObservableCollection<EngineRow>, ISupportIncrementalLoading
+    {
+        private int m_nextId = 1000;
+
+        public ResetIncrementalEngineRows(IEnumerable<EngineRow> rows) : base(rows)
+        {
+        }
+
+        public bool HasMoreItems => true;
+
+        public IAsyncOperation<LoadMoreItemsResult> LoadMoreItemsAsync(uint count)
+        {
+            for (uint i = 0; i < count; i++)
+            {
+                var id = m_nextId++;
+                Items.Add(new EngineRow(id, $"L{id}", 100 + (int)i, "X"));
+            }
+            OnCollectionChanged(new global::System.Collections.Specialized.NotifyCollectionChangedEventArgs(global::System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
+            return AsyncInfo.Run(_ => Task.FromResult(new LoadMoreItemsResult { Count = count }));
         }
     }
 

@@ -137,7 +137,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ReorderOverSortedViewByPointer)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates a pointer drag starts no reorder on a ListView over a sorted CollectionViewSource view, and that reorder works again once the view has no rule left")
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a pointer drag starts no reorder on a ListView over a sorted CollectionViewSource view")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderWorksAgainWithoutRules)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder moves the source item once a sorted CollectionViewSource view has no rule left")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderKeepsItemWhenRuleAddedMidMove)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a reorder whose RemoveAt makes a source handler sort the view still inserts the item into the source")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ReorderIsOffOverSortedView)
