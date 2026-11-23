@@ -8,6 +8,7 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <limits>
 #include <list>
 #include <map>
 #include <mutex>
@@ -1847,7 +1848,9 @@ namespace RenderingBackend
                     }
                     const float rx = std::min(radiusX, width / 2), ry = std::min(radiusY, height / 2);
                     const float dx = 2 * rx, dy = 2 * ry;
+                    // D2D's rounded rectangle starts where the top-left arc starts, (left, top + ry), and runs clockwise.
                     Record(path.StartFigure());
+                    Record(path.AddArc(rect.left, rect.top, dx, dy, 180, 90));
                     Record(path.AddLine(rect.left + rx, rect.top, rect.right - rx, rect.top));
                     Record(path.AddArc(rect.right - dx, rect.top, dx, dy, 270, 90));
                     Record(path.AddLine(rect.right, rect.top + ry, rect.right, rect.bottom - ry));
@@ -1855,7 +1858,6 @@ namespace RenderingBackend
                     Record(path.AddLine(rect.right - rx, rect.bottom, rect.left + rx, rect.bottom));
                     Record(path.AddArc(rect.left, rect.bottom - dy, dx, dy, 90, 90));
                     Record(path.AddLine(rect.left, rect.bottom - ry, rect.left, rect.top + ry));
-                    Record(path.AddArc(rect.left, rect.top, dx, dy, 180, 90));
                     Record(path.CloseFigure());
                 }
 
@@ -1883,12 +1885,16 @@ namespace RenderingBackend
                     Record(pen.SetColor(color));
                     Record(pen.SetWidth(thickness));
                     Record(pen.SetDashStyle(Gdiplus::DashStyleSolid));
-                    // GDI+'s LineJoinMiter clips the miter at the limit, like D2D1_LINE_JOIN_MITER (LineJoinMiterClipped
-                    // bevels instead). GDI+ measures the miter from the inner corner against the full width, D2D from the
-                    // vertex against half the width: the same ratio, so the limit passes through unchanged.
-                    Record(pen.SetLineJoin(style == nullptr || style->lineJoin == LineJoin::Miter ? Gdiplus::LineJoinMiter :
-                        style->lineJoin == LineJoin::Round ? Gdiplus::LineJoinRound : Gdiplus::LineJoinBevel));
-                    Record(pen.SetMiterLimit(style ? (std::isfinite(style->miterLimit) ? std::max(style->miterLimit, 1.0f) : 10.0f) : 10.0f));
+                    // D2D (and Composition) clip a miter join at miterLimit half-widths from the vertex. GDI+ bevels a
+                    // miter past its limit, which it measures against the full width (so limit / 2, at least 1); the
+                    // clipped part is filled by FillMiterJoins. Below a limit of 2 the pen bevels and FillMiterJoins
+                    // adds every miter.
+                    const bool miterJoin = style == nullptr || style->lineJoin == LineJoin::Miter;
+                    const float miterLimit = style ? (std::isfinite(style->miterLimit) ? std::max(style->miterLimit, 1.0f) : 10.0f) : 10.0f;
+                    const bool penBevels = miterJoin && miterLimit < 2;
+                    Record(pen.SetLineJoin(!miterJoin ? (style->lineJoin == LineJoin::Round ? Gdiplus::LineJoinRound : Gdiplus::LineJoinBevel) :
+                        penBevels ? Gdiplus::LineJoinBevel : Gdiplus::LineJoinMiter));
+                    Record(pen.SetMiterLimit(std::max(miterLimit / 2, 1.0f)));
                     const LineCap startCap = style ? style->startCap : LineCap::Flat;
                     const LineCap endCap = style ? style->endCap : LineCap::Flat;
                     if (!IsDashed(style) || !BuildDashes(path, *style))
@@ -1896,6 +1902,10 @@ namespace RenderingBackend
                         Record(pen.SetStartCap(ToGdiCap(startCap)));
                         Record(pen.SetEndCap(ToGdiCap(endCap)));
                         Record(graphics.DrawPath(&pen, &path));
+                        if (miterJoin)
+                        {
+                            FillMiterJoins(graphics, path, thickness, miterLimit, penBevels, color);
+                        }
                         return;
                     }
                     // Groups: bit 0 = the dash starts the open figure (start cap), bit 1 = it ends it (end cap).
@@ -1909,6 +1919,132 @@ namespace RenderingBackend
                         Record(pen.SetStartCap(ToGdiCap((group & 1) ? startCap : style->dashCap)));
                         Record(pen.SetEndCap(ToGdiCap((group & 2) ? endCap : style->dashCap)));
                         Record(graphics.DrawPath(&pen, &dashes));
+                        if (miterJoin)
+                        {
+                            FillMiterJoins(graphics, dashes, thickness, miterLimit, penBevels, color);
+                        }
+                    }
+                }
+
+                // Fills the miter joins GDI+ bevelled: the miter clipped at `limit` half-widths from the vertex (D2D
+                // D2D1_LINE_JOIN_MITER), or the whole miter when it is within the limit and the pen bevels. Uses the
+                // flattening scratch (m_flatPath / m_flatPoints), so it must not run while BuildDashes' output is read.
+                void FillMiterJoins(Gdiplus::Graphics& graphics, Gdiplus::GraphicsPath& path, float thickness, float limit, bool penBevels, const Gdiplus::Color& color) noexcept
+                {
+                    Gdiplus::GraphicsPath& flat = *m_flatPath;
+                    Record(flat.Reset());
+                    Record(flat.AddPath(&path, FALSE));
+                    Gdiplus::REAL elements[6];
+                    m_transform->GetElements(elements);
+                    const float scale = std::sqrt(std::abs(elements[0] * elements[3] - elements[1] * elements[2]));
+                    Record(flat.Flatten(nullptr, 0.1f / std::max(scale, 1e-3f)));
+                    const INT count = flat.GetPointCount();
+                    if (count <= 0 || FAILED(m_frameHr))
+                    {
+                        return;
+                    }
+                    m_flatPoints.resize(static_cast<size_t>(count));
+                    m_flatTypes.resize(static_cast<size_t>(count));
+                    Record(flat.GetPathPoints(m_flatPoints.data(), count));
+                    Record(flat.GetPathTypes(m_flatTypes.data(), count));
+                    if (FAILED(m_frameHr))
+                    {
+                        return;
+                    }
+                    Gdiplus::SolidBrush fill(color);
+                    // Opaque: include the vertex so the polygon overlaps the stroke body (no antialiasing seam).
+                    // Translucent: abut the bevel edge instead of blending twice.
+                    const bool overlap = color.GetA() == 255;
+                    const float h = thickness / 2;
+                    const auto same = [](const Gdiplus::PointF& a, const Gdiplus::PointF& b)
+                    {
+                        return std::abs(a.X - b.X) + std::abs(a.Y - b.Y) <= 1e-5f;
+                    };
+                    INT start = 0;
+                    while (start < count)
+                    {
+                        INT end = start + 1;
+                        while (end < count && (m_flatTypes[end] & Gdiplus::PathPointTypePathTypeMask) != Gdiplus::PathPointTypeStart)
+                        {
+                            ++end;
+                        }
+                        const bool closed = (m_flatTypes[end - 1] & Gdiplus::PathPointTypeCloseSubpath) != 0;
+                        m_joinFigure.clear();
+                        for (INT i = start; i < end; ++i)
+                        {
+                            if (m_joinFigure.empty() || !same(m_joinFigure.back(), m_flatPoints[i]))
+                            {
+                                m_joinFigure.push_back(m_flatPoints[i]);
+                            }
+                        }
+                        if (closed && m_joinFigure.size() > 2 && same(m_joinFigure.front(), m_joinFigure.back()))
+                        {
+                            m_joinFigure.pop_back();
+                        }
+                        start = end;
+                        const size_t n = m_joinFigure.size();
+                        if (n < 3)
+                        {
+                            continue;
+                        }
+                        for (size_t i = closed ? 0 : 1; i < (closed ? n : n - 1); ++i)
+                        {
+                            const Gdiplus::PointF& prev = m_joinFigure[(i + n - 1) % n];
+                            const Gdiplus::PointF& v = m_joinFigure[i];
+                            const Gdiplus::PointF& next = m_joinFigure[(i + 1) % n];
+                            float d1x = v.X - prev.X, d1y = v.Y - prev.Y, d2x = next.X - v.X, d2y = next.Y - v.Y;
+                            const float l1 = std::sqrt(d1x * d1x + d1y * d1y), l2 = std::sqrt(d2x * d2x + d2y * d2y);
+                            d1x /= l1; d1y /= l1; d2x /= l2; d2y /= l2;
+                            const float cross = d1x * d2y - d1y * d2x;
+                            if (std::abs(cross) < 1e-6f && d1x * d2x + d1y * d2y > 0)
+                            {
+                                continue;
+                            }
+                            // Outer normals: away from the turn.
+                            const float s = cross > 0 ? -1.0f : 1.0f;
+                            const float o1x = -s * d1y, o1y = s * d1x, o2x = -s * d2y, o2y = s * d2x;
+                            float mx = o1x + o2x, my = o1y + o2y;
+                            const float ml = std::sqrt(mx * mx + my * my);
+                            if (ml > 1e-6f)
+                            {
+                                mx /= ml; my /= ml;
+                            }
+                            else
+                            {
+                                mx = d1x; my = d1y;
+                            }
+                            const float cosHalf = o1x * mx + o1y * my;
+                            const float ratio = cosHalf > 1e-6f ? 1 / cosHalf : std::numeric_limits<float>::max();
+                            if (!(penBevels ? ratio > 1.0001f : ratio > limit))
+                            {
+                                continue;
+                            }
+                            const Gdiplus::PointF p1(v.X + o1x * h, v.Y + o1y * h), p2(v.X + o2x * h, v.Y + o2y * h);
+                            Gdiplus::PointF polygon[5];
+                            INT points = 0;
+                            if (overlap)
+                            {
+                                polygon[points++] = v;
+                            }
+                            polygon[points++] = p1;
+                            if (ratio <= limit)
+                            {
+                                polygon[points++] = Gdiplus::PointF(v.X + mx * h * ratio, v.Y + my * h * ratio);
+                            }
+                            else
+                            {
+                                const float along1 = d1x * mx + d1y * my, along2 = -(d2x * mx + d2y * my);
+                                if (along1 < 1e-6f || along2 < 1e-6f)
+                                {
+                                    continue;
+                                }
+                                const float t1 = (limit - cosHalf) * h / along1, t2 = (limit - cosHalf) * h / along2;
+                                polygon[points++] = Gdiplus::PointF(p1.X + d1x * t1, p1.Y + d1y * t1);
+                                polygon[points++] = Gdiplus::PointF(p2.X - d2x * t2, p2.Y - d2y * t2);
+                            }
+                            polygon[points++] = p2;
+                            Record(graphics.FillPolygon(&fill, polygon, points));
+                        }
                     }
                 }
 
@@ -3890,6 +4026,7 @@ namespace RenderingBackend
                 std::unique_ptr<Gdiplus::GraphicsPath> m_dashGroups[4];
                 std::vector<Gdiplus::PointF> m_flatPoints;
                 std::vector<BYTE> m_flatTypes;
+                std::vector<Gdiplus::PointF> m_joinFigure;
                 std::vector<Gdiplus::PointF> m_figurePoints;
                 std::vector<Gdiplus::PointF> m_dashPoints;
                 std::vector<float> m_dashPattern;

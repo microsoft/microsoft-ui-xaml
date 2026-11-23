@@ -315,8 +315,8 @@ namespace RenderingBackend
 
         // Styled strokes, centered on the outline. style nullptr: solid, flat caps, miter joins (limit 10), the same as
         // StrokeRoundedRectangle / StrokePath. A closed rounded rect or ellipse outline starts (for dashes) where D2D's
-        // rectangle, rounded-rectangle and ellipse geometries start: the top-left corner, the end of the top-left arc,
-        // and the rightmost point, clockwise.
+        // rectangle, rounded-rectangle and ellipse geometries start: the top-left corner, the start of the top-left arc
+        // (left, top + radiusY), and the rightmost point, clockwise.
         virtual void StrokeRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, float thickness,
             const BrushDesc& brush, _In_opt_ const StrokeStyleDesc* style) noexcept = 0;
         virtual void StrokePathBrush(const PathData& path, float thickness, const BrushDesc& brush,

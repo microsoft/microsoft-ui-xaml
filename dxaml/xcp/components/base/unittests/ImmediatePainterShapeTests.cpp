@@ -98,7 +98,7 @@ namespace RenderingBackendTests
             std::vector<GradientStop> stops;
             BrushDesc desc{};
 
-            explicit Brush(std::initializer_list<GradientStop> list) : stops(list)
+            explicit Brush(std::vector<GradientStop> list) : stops(std::move(list))
             {
                 desc.stops = stops.data();
                 desc.stopCount = static_cast<uint32_t>(stops.size());
@@ -106,13 +106,13 @@ namespace RenderingBackendTests
             Brush(const Brush&) = delete;
             Brush& operator=(const Brush&) = delete;
 
-            static std::initializer_list<GradientStop> RedBlue() { return { { 0, c_red }, { 1, c_blue } }; }
+            static std::vector<GradientStop> RedBlue() { return { { 0, c_red }, { 1, c_blue } }; }
         };
 
         struct LinearBrush : Brush
         {
-            LinearBrush(PointF start, PointF end, std::initializer_list<GradientStop> list = RedBlue(), GradientSpread spread = GradientSpread::Pad)
-                : Brush(list)
+            LinearBrush(PointF start, PointF end, std::vector<GradientStop> list = RedBlue(), GradientSpread spread = GradientSpread::Pad)
+                : Brush(std::move(list))
             {
                 desc.kind = BrushKind::Linear;
                 desc.start = start;
@@ -563,7 +563,7 @@ namespace RenderingBackendTests
         ExpectBlank(image, 8, 43, L"left gap");
     }
 
-    void ShapeBrushPainterConformanceTests::DashedRoundedRectangleStartsAfterTopLeftArc()
+    void ShapeBrushPainterConformanceTests::DashedRoundedRectangleStartsAtTopLeftArc()
     {
         auto painter = CreatePainter();
         if (!painter) return;
@@ -577,11 +577,12 @@ namespace RenderingBackendTests
             p.StrokeRoundedRectangleBrush({ 8, 8, 56, 56 }, 8, 8, 2, c_blackBrush, &style);
         });
         const Image image = Read(*painter);
-        // Starting at (16,8): on [16,20) off [20,24) on [24,28) off [28,32).
-        ExpectInk(image, 18, 8, L"first dash");
-        ExpectBlank(image, 22, 8, L"first gap");
-        ExpectInk(image, 26, 8, L"second dash");
-        ExpectBlank(image, 30, 8, L"second gap");
+        // Starting at (8,16) up the top-left arc (length 4π = 12.57): on [0,4) off [4,8) on [8,12) off [12,16) on [16,20),
+        // so along the top edge (x = 16 + d - 12.57): on [19.4,23.4) off [23.4,27.4) on [27.4,31.4) off [31.4,35.4).
+        ExpectInk(image, 21, 8, L"first top dash");
+        ExpectBlank(image, 25, 8, L"first top gap");
+        ExpectInk(image, 29, 8, L"second top dash");
+        ExpectBlank(image, 33, 8, L"second top gap");
     }
 
     void ShapeBrushPainterConformanceTests::DashedEllipseStartsAtRightmostPointClockwise()

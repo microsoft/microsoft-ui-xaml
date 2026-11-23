@@ -1817,6 +1817,13 @@ void D2DTextDrawingContext::VisitImmediate(
         CMILMatrix transform;
         GetLocalTransform(data.BaselineOffset.x, data.BaselineOffset.y, data.InvertHorizontalAxis, data.LineBounds.Width, &transform);
         transform.Append(renderTransform);
+        if (!IsEmptyRectF(data.LineBounds))
+        {
+            // ---- shapes ---- same brush bounds as HWBuildGlyphRunTextures.
+            XRECTF brushBounds = data.LineBounds;
+            renderTransform.TransformBounds(&brushBounds, &brushBounds);
+            sink.GlyphRunBrushBounds(brushBounds);
+        }
         sink.GlyphRun(GetDWriteGlyphRun(*data.GlyphRun), transform, brush, data.GlyphRunClipLeft, data.GlyphRunClipRight);
     }
 

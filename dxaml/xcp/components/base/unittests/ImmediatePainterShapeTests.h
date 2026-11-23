@@ -28,7 +28,7 @@ namespace RenderingBackendTests
         TEST_METHOD(LineJoinsShapeSharpCorner);
         TEST_METHOD(MiterLimitClipsSharpJoin);
         TEST_METHOD(DashedRectangleStartsAtTopLeftClockwise);
-        TEST_METHOD(DashedRoundedRectangleStartsAfterTopLeftArc);
+        TEST_METHOD(DashedRoundedRectangleStartsAtTopLeftArc);
         TEST_METHOD(DashedEllipseStartsAtRightmostPointClockwise);
 
         // Brushes

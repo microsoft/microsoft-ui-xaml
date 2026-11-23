@@ -7,6 +7,7 @@
 #include "textrunproperties.h"
 #include "TextDrawingContext.h"
 #include "D2DTextDrawingContext.h"
+#include <ImmediateTextSink.h>
 
 using namespace DirectUI;
 
@@ -1466,6 +1467,24 @@ Cleanup:
         hr = S_OK;
     }
     return hr;
+}
+
+// ---- shapes ----
+_Check_return_ HRESULT CGlyphs::VisitImmediate(ImmediateTextSink& sink)
+{
+    HRESULT hr = EnsureTextDrawingContext();
+    if (SUCCEEDED(hr))
+    {
+        hr = DrawGlyphRun();
+    }
+    if (hr == E_PENDING)
+    {
+        // The font file is still downloading: nothing to draw yet (as HWRender).
+        return S_OK;
+    }
+    IFC_RETURN(hr);
+    m_pTextDrawingContext->VisitImmediate(CMILMatrix(true), sink);
+    return S_OK;
 }
 
 //------------------------------------------------------------------------

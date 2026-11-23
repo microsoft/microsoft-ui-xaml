@@ -18,6 +18,10 @@ public:
     virtual void GlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_opt_ CBrush* brush, float clipLeft, float clipRight) = 0;
     virtual void Line(const XRECTF_RB& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) = 0;
 
+    // ---- shapes ----
+    // The bounds a non-solid brush maps to for the next GlyphRun (its line's bounds, in the visited element's space).
+    virtual void GlyphRunBrushBounds(const XRECTF& bounds) {}
+
 protected:
     ~ImmediateTextSink() = default;
 };

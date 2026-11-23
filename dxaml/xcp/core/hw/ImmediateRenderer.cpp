@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "ImmediateRenderer.h"
 #include "ImmediateRenderer.Materials.h"
+#include "ImmediateRenderer.Shapes.h"
 #include <GdiPlusPainter.h>
 #include <RenderingResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
@@ -404,6 +405,9 @@ namespace ImmediateRenderingDetail
         // S13 (ImmediateRenderer.Materials.cpp). Gradients: paths[index] (no verbs: rounded rect `rect`); Shadow: blur in
         // `thickness`, offset in sourceRect.left/top; Backdrop: blur in `thickness`.
         FillGradient, FillPathGradient, Shadow, Backdrop,
+        // ---- shapes ---- (ImmediateRenderer.Shapes.cpp) BrushFill/BrushStroke: paths[index] with a paint (no verbs:
+        // rounded rect `rect`); BrushGlyphRun: glyphRuns[index] with a paint.
+        BrushFill, BrushStroke, BrushGlyphRun,
     };
 
     struct Command
@@ -436,6 +440,7 @@ namespace ImmediateRenderingDetail
         std::vector<uint16_t> indices;
         std::vector<float> advances;
         std::vector<GlyphOffset> offsets;
+        std::shared_ptr<const ImmediateRenderingShapes::Paint> paint; // ---- shapes ---- BrushGlyphRun
     };
 
     // Per-element drawing summary used for damage. Content and group (opacity layer / rounded clip around the children)
@@ -475,6 +480,7 @@ namespace ImmediateRenderingDetail
         std::vector<GradientStop> stops;
         PointF gradientStart, gradientEnd;
         float gradientOpacity = 1;
+        std::shared_ptr<const ImmediateRenderingShapes::Paint> paint; // ---- shapes ---- BrushFill/BrushStroke
     };
 
     // Output range of one walked subtree (children included), recorded post-order so a subtree's descendant spans are
@@ -1086,9 +1092,13 @@ namespace
                 fnv.Add(text.data(), text.size() * sizeof(wchar_t));
                 fnv.Add(family.data(), family.size() * sizeof(wchar_t));
             }
-            else if (command.type == CommandType::GlyphRun)
+            else if (command.type == CommandType::GlyphRun || command.type == CommandType::BrushGlyphRun)
             {
                 const GlyphRunData& run = list.glyphRuns[command.index];
+                if (run.paint != nullptr)
+                {
+                    fnv.AddValue(run.paint->Hash());
+                }
                 fnv.AddValue(run.face.Get());
                 fnv.AddValue(run.emSize);
                 fnv.AddValue(run.bidiLevel);
@@ -1101,9 +1111,14 @@ namespace
                 fnv.Add(q, sizeof(q));
             }
             else if (command.type == CommandType::FillPath || command.type == CommandType::StrokePath
-                || command.type == CommandType::FillGradient || command.type == CommandType::FillPathGradient)
+                || command.type == CommandType::FillGradient || command.type == CommandType::FillPathGradient
+                || command.type == CommandType::BrushFill || command.type == CommandType::BrushStroke)
             {
                 const PathGeometryData& path = list.paths[command.index];
+                if (path.paint != nullptr)
+                {
+                    fnv.AddValue(path.paint->Hash());
+                }
                 fnv.Add(path.verbs.data(), path.verbs.size() * sizeof(PathVerb));
                 fnv.Add(path.points.data(), path.points.size() * sizeof(PointF));
                 fnv.AddValue(path.nonZero);
@@ -1199,6 +1214,26 @@ namespace
             Push(c, localInk, m, ctx.clip, nullptr);
         }
 
+        // ---- shapes ---- Brush fill (thickness 0) or styled brush stroke of a rounded rect (data.verbs empty) or a path.
+        void BrushPath(PathGeometryData data, std::shared_ptr<const ImmediateRenderingShapes::Paint> paint, float thickness,
+            const RectF& rect, float rx, float ry, const CMILMatrix& m, const RectF& localInk)
+        {
+            if (paint == nullptr || IsEmptyRect(localInk) || (data.verbs.empty() && (rect.right < rect.left || rect.bottom < rect.top)))
+            {
+                return;
+            }
+            Command c;
+            c.type = thickness > 0 ? CommandType::BrushStroke : CommandType::BrushFill;
+            c.rect = rect;
+            c.radiusX = rx;
+            c.radiusY = ry;
+            c.thickness = thickness;
+            c.index = static_cast<uint32_t>(list.paths.size());
+            data.paint = std::move(paint);
+            list.paths.push_back(std::move(data));
+            Push(c, localInk, m, ctx.clip, nullptr);
+        }
+
         // S13: blurred shadow of a rounded rect. `clip` is the caster's parent clip (shadows escape the caster's clip).
         void Shadow(const RectF& rect, float rx, float ry, const ImmediateRenderingPolicy::ShadowLayer& layer, const CMILMatrix& m, const RectF& clip)
         {
@@ -1242,7 +1277,8 @@ namespace
             Push(c, ink, ctx.world, ctx.clip, nullptr);
         }
 
-        void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight)
+        void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight,
+            std::shared_ptr<const ImmediateRenderingShapes::Paint> paint = nullptr)
         {
             if (run.glyphCount == 0 || run.fontFace == nullptr || run.glyphIndices == nullptr || !(run.fontEmSize > 0))
             {
@@ -1289,6 +1325,15 @@ namespace
             const float em = run.fontEmSize;
             RectF ink = (run.bidiLevel & 1) ? RectF{ -width - em / 2, -em * 1.3f, em / 2, em * 0.6f }
                                             : RectF{ -em / 2, -em * 1.3f, width + em / 2, em * 0.6f };
+            // ---- shapes ---- Glyphs positions every glyph by offset (zero advances): widen the ink to cover them.
+            for (const auto& offset : data.offsets)
+            {
+                const float x = (run.bidiLevel & 1) ? -offset.advanceOffset : offset.advanceOffset;
+                ink.left = std::min(ink.left, x - em / 2);
+                ink.right = std::max(ink.right, x + em * 1.5f);
+                ink.top = std::min(ink.top, -offset.ascenderOffset - em * 1.3f);
+                ink.bottom = std::max(ink.bottom, -offset.ascenderOffset + em * 0.6f);
+            }
             RectF clip = ctx.clip;
             if (clipLeft > -1e30f || clipRight < 1e30f)
             {
@@ -1302,10 +1347,11 @@ namespace
             }
 
             Command c;
-            c.type = CommandType::GlyphRun;
+            c.type = paint != nullptr ? CommandType::BrushGlyphRun : CommandType::GlyphRun;
             c.color = color;
             c.fontSize = em;
             c.index = static_cast<uint32_t>(list.glyphRuns.size());
+            data.paint = std::move(paint);
             list.glyphRuns.push_back(std::move(data));
             Push(c, ink, m, clip, nullptr);
         }
@@ -1313,19 +1359,20 @@ namespace
         // Draws the source rect (bitmap pixels) of a decoded surface into dest (element space). rx/ry > 0 clips the
         // image to a rounded rect (ImageBrush on an Ellipse or rounded Border).
         void Bitmap(_In_ IPALSurface* surface, const RectF& dest, const RectF& source, float opacity, const CMILMatrix& m,
-            const RectF& clipRect, float rx, float ry)
+            const RectF& clipRect, float rx, float ry, _In_opt_ const CMILMatrix* clipTransform = nullptr)
         {
             if (IsEmptyRect(dest) || !(opacity > 0))
             {
                 return;
             }
             size_t pushIndex = SIZE_MAX;
-            if (rx > 0 || ry > 0)
+            // clipTransform (---- shapes ----): the clip is in a different space than the bitmap (transformed ImageBrush).
+            if (rx > 0 || ry > 0 || clipTransform != nullptr)
             {
                 pushIndex = list.commands.size();
                 Command push;
                 push.type = CommandType::PushRoundedClip;
-                push.transform = ToMatrix(m);
+                push.transform = ToMatrix(clipTransform != nullptr ? *clipTransform : m);
                 push.rect = clipRect;
                 push.radiusX = rx;
                 push.radiusY = ry;
@@ -1382,6 +1429,12 @@ namespace
 
         void GlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_opt_ CBrush* brush, float clipLeft, float clipRight) override
         {
+            const bool hasBrushBounds = m_hasBrushBounds;
+            m_hasBrushBounds = false;
+            if (hasBrushBounds && ImmediateRenderingShapes::IsGradientBrush(brush) && GradientGlyphRun(run, transform, brush, clipLeft, clipRight))
+            {
+                return;
+            }
             ColorF color;
             if (Resolve(brush, &color))
             {
@@ -1389,6 +1442,13 @@ namespace
                 m.Append(m_world);
                 m_emitter.Glyphs(run, m, color, clipLeft, clipRight);
             }
+        }
+
+        // ---- shapes ----
+        void GlyphRunBrushBounds(const XRECTF& bounds) override
+        {
+            m_brushBounds = FromXRect(bounds);
+            m_hasBrushBounds = true;
         }
 
         void Line(const XRECTF_RB& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) override
@@ -1403,6 +1463,49 @@ namespace
         }
 
         bool unsupportedBrush = false;
+
+    private:
+        // Gradient foreground: the brush maps to the line's bounds (like D2DTextDrawingContext's brush bounds) and is
+        // drawn in glyph-run space. false: draw the average color instead.
+        bool GradientGlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_ CBrush* brush, float clipLeft, float clipRight)
+        {
+            auto paint = std::make_shared<ImmediateRenderingShapes::Paint>();
+            const wchar_t* detail = nullptr;
+            const auto kind = ImmediateRenderingShapes::ResolvePaint(brush, m_brushBounds, 1.0f, paint.get(), &detail);
+            if (detail != nullptr)
+            {
+                unsupportedDetail = detail;
+            }
+            if (kind == ImmediateRenderingShapes::PaintKind::None)
+            {
+                return true;
+            }
+            if (kind != ImmediateRenderingShapes::PaintKind::Paint)
+            {
+                return false;
+            }
+            CMILMatrix inverse = transform;
+            if (!inverse.Invert())
+            {
+                return true;
+            }
+            const Matrix3x2F& p = paint->brush.transform;
+            const Matrix3x2F i = ToMatrix(inverse);
+            paint->brush.transform = {
+                p.m11 * i.m11 + p.m12 * i.m21, p.m11 * i.m12 + p.m12 * i.m22,
+                p.m21 * i.m11 + p.m22 * i.m21, p.m21 * i.m12 + p.m22 * i.m22,
+                p.dx * i.m11 + p.dy * i.m21 + i.dx, p.dx * i.m12 + p.dy * i.m22 + i.dy };
+            CMILMatrix m = transform;
+            m.Append(m_world);
+            m_emitter.Glyphs(run, m, paint->brush.color, clipLeft, clipRight, std::move(paint));
+            return true;
+        }
+
+        RectF m_brushBounds{};
+        bool m_hasBrushBounds = false;
+
+    public:
+        const wchar_t* unsupportedDetail = nullptr;
 
     private:
         bool Resolve(_In_opt_ CBrush* brush, _Out_ ColorF* color)
@@ -1501,7 +1604,15 @@ namespace
         }
         if (!brushToElement.IsScaleOrTranslationOnly())
         {
-            return L"ImageBrush transform";
+            // ---- shapes ---- rotated / skewed ImageBrush.Transform or RelativeTransform: draw the whole image under
+            // the brush transform, clipped to the bounds in element space.
+            CMILMatrix imageToWorld = brushToElement;
+            imageToWorld.Append(world);
+            const float rsx = surface->GetWidth() / natural.Width;
+            const float rsy = surface->GetHeight() / natural.Height;
+            emitter.Bitmap(surface, { 0, 0, natural.Width, natural.Height }, { 0, 0, natural.Width * rsx, natural.Height * rsy },
+                std::min(1.0f, brush->m_eOpacity), imageToWorld, bounds, rx, ry, &world);
+            return nineGrid ? L"Image NineGrid" : nullptr;
         }
 
         const RectF dest = TransformRectBounds(brushToElement, { 0, 0, natural.Width, natural.Height });
@@ -1625,43 +1736,36 @@ static bool EmitMaterialFill(
         ImmediateRenderingPolicy::AppendRoundedRectangle(*hole, holeRadius, holeRadius, data.verbs, data.points);
         data.nonZero = false;
     };
-    irm::GradientFill gradient;
-    ColorF solid;
-    switch (irm::ResolveLinearGradient(brush, rect, 1.0f, &gradient, &solid))
+    // ---- shapes ---- Linear and radial gradients are exact brush fills (spread, interpolation, transforms).
+    if (ImmediateRenderingShapes::IsGradientBrush(brush))
     {
-        case irm::FillKind::NotHandled:
-            break;
-        case irm::FillKind::None:
-            return true;
-        case irm::FillKind::Solid:
-            if (hole != nullptr)
+        namespace irs = ImmediateRenderingShapes;
+        auto paint = std::make_shared<irs::Paint>();
+        switch (irs::ResolvePaint(brush, rect, 1.0f, paint.get(), detail))
+        {
+            case irs::PaintKind::NotHandled:
+                break;
+            case irs::PaintKind::None:
+                return true;
+            case irs::PaintKind::Paint:
             {
                 PathGeometryData data;
-                ring(data);
-                emitter.Path(std::move(data), 0, solid, m, rect);
+                if (hole != nullptr)
+                {
+                    ring(data);
+                }
+                if (!paint->IsGradient() && hole == nullptr)
+                {
+                    emitter.Fill(rect, rx, ry, paint->brush.color, m);
+                }
+                else
+                {
+                    emitter.BrushPath(std::move(data), std::move(paint), 0, rect, rx, ry, m, rect);
+                }
+                return true;
             }
-            else
-            {
-                emitter.Fill(rect, rx, ry, solid, m);
-            }
-            return true;
-        case irm::FillKind::Gradient:
-        {
-            PathGeometryData data;
-            if (hole != nullptr)
-            {
-                ring(data);
-            }
-            data.stops = std::move(gradient.stops);
-            data.gradientStart = gradient.start;
-            data.gradientEnd = gradient.end;
-            data.gradientOpacity = gradient.opacity;
-            emitter.Gradient(std::move(data), rect, rx, ry, m, rect);
-            *detail = gradient.detail;
-            return true;
         }
     }
-
     irm::AcrylicFill acrylic;
     if (hole == nullptr && irm::ResolveAcrylic(brush, 1.0f, &acrylic))
     {
@@ -1680,6 +1784,58 @@ static bool EmitMaterialFill(
         return true;
     }
     return false;
+}
+
+// ---- shapes ---- Shape stroke with its brush (gradients exact) and style (dashes, caps, join, miter limit). `path`
+// without verbs strokes the rounded rect `rect`. `bounds` is the geometry's local bounds (RelativeToBoundingBox).
+// Returns an unsupported-content detail, or nullptr.
+static const wchar_t* EmitShapeStroke(
+    Emitter& emitter,
+    _In_ CShape* shape,
+    _In_opt_ CBrush* brush,
+    PathGeometryData path,
+    const RectF& rect,
+    float rx,
+    float ry,
+    float thickness,
+    const ColorF& solid,
+    const CMILMatrix& m,
+    const RectF& bounds)
+{
+    namespace irs = ImmediateRenderingShapes;
+    auto paint = std::make_shared<irs::Paint>();
+    const wchar_t* detail = nullptr;
+    switch (irs::ResolvePaint(brush, bounds, 1.0f, paint.get(), &detail))
+    {
+        case irs::PaintKind::None:
+            return detail;
+        case irs::PaintKind::NotHandled:
+            // XamlCompositionBrushBase fallback colors and other brushes the caller resolved to a color.
+            paint->brush = {};
+            paint->brush.color = solid;
+            break;
+        case irs::PaintKind::Paint:
+            break;
+    }
+    irs::ResolveStrokeStyle(shape, thickness, paint.get());
+    const float reach = irs::StrokeReach(*paint, thickness);
+    const RectF ink{ bounds.left - reach, bounds.top - reach, bounds.right + reach, bounds.bottom + reach };
+    if (!paint->IsGradient() && !paint->hasStyle)
+    {
+        if (path.verbs.empty())
+        {
+            emitter.Stroke(rect, rx, ry, thickness, paint->brush.color, m);
+        }
+        else
+        {
+            emitter.Path(std::move(path), thickness, paint->brush.color, m, ink);
+        }
+    }
+    else
+    {
+        emitter.BrushPath(std::move(path), std::move(paint), thickness, rect, rx, ry, m, ink);
+    }
+    return detail;
 }
 
 void ImmediateRenderer::EmitContent(
@@ -1838,7 +1994,10 @@ void ImmediateRenderer::EmitContent(
         }
         if (strokeResult == BrushResult::Color)
         {
-            emitter.Stroke(geometry, rx, ry, t, strokeColor, world);
+            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), {}, geometry, rx, ry, t, strokeColor, world, geometry))
+            {
+                ReportUnsupported(element, strokeDetail);
+            }
         }
     }
     else if (type == KnownTypeIndex::TextBlock || type == KnownTypeIndex::RichTextBlock || type == KnownTypeIndex::RichTextBlockOverflow)
@@ -1855,6 +2014,27 @@ void ImmediateRenderer::EmitContent(
         if (sink.unsupportedBrush)
         {
             ReportUnsupported(element, L"Foreground brush");
+        }
+        if (sink.unsupportedDetail != nullptr)
+        {
+            ReportUnsupported(element, sink.unsupportedDetail);
+        }
+    }
+    else if (type == KnownTypeIndex::Glyphs)
+    {
+        // ---- shapes ---- Glyphs lays out its own glyph run (indices / unicode string, font uri, size, fill).
+        TextEmitter sink(emitter, world);
+        if (FAILED(static_cast<CGlyphs*>(element)->VisitImmediate(sink)))
+        {
+            ReportUnsupported(element, L"Glyphs layout unavailable");
+        }
+        if (sink.unsupportedBrush)
+        {
+            ReportUnsupported(element, L"Fill brush");
+        }
+        if (sink.unsupportedDetail != nullptr)
+        {
+            ReportUnsupported(element, sink.unsupportedDetail);
         }
     }
     else if (type == KnownTypeIndex::TextBoxView)
@@ -1979,41 +2159,34 @@ void ImmediateRenderer::EmitContent(
         {
             ReportUnsupported(element, L"Brush");
         }
-        if (strokeResult == BrushResult::Color && shape->HasStrokeDashArray())
+        const wchar_t* fillDetail = nullptr;
+        if (fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
         {
-            ReportUnsupported(element, L"Shape stroke dashes");
-        }
-        ImmediateRenderingMaterials::GradientFill pathGradient;
-        ColorF pathSolid;
-        const auto pathFill = fillResult == BrushResult::Color && !flattener->fill.verbs.empty()
-            ? ImmediateRenderingMaterials::ResolveLinearGradient(shape->m_pFill, b, 1.0f, &pathGradient, &pathSolid)
-            : ImmediateRenderingMaterials::FillKind::NotHandled;
-        if (pathFill == ImmediateRenderingMaterials::FillKind::Gradient)
-        {
-            PathGeometryData data = std::move(flattener->fill);
-            data.stops = std::move(pathGradient.stops);
-            data.gradientStart = pathGradient.start;
-            data.gradientEnd = pathGradient.end;
-            data.gradientOpacity = pathGradient.opacity;
-            emitter.Gradient(std::move(data), b, 0, 0, world, b);
-            if (pathGradient.detail != nullptr)
+            auto paint = std::make_shared<ImmediateRenderingShapes::Paint>();
+            const auto kind = ImmediateRenderingShapes::ResolvePaint(shape->m_pFill, b, 1.0f, paint.get(), &fillDetail);
+            if (kind == ImmediateRenderingShapes::PaintKind::Paint && paint->IsGradient())
             {
-                ReportUnsupported(element, pathGradient.detail);
+                emitter.BrushPath(std::move(flattener->fill), std::move(paint), 0, b, 0, 0, world, b);
             }
-        }
-        else if (pathFill == ImmediateRenderingMaterials::FillKind::Solid)
-        {
-            emitter.Path(std::move(flattener->fill), 0, pathSolid, world, b);
-        }
-        else if (pathFill == ImmediateRenderingMaterials::FillKind::NotHandled && fillResult == BrushResult::Color && !flattener->fill.verbs.empty())
-        {
-            emitter.Path(std::move(flattener->fill), 0, fillColor, world, b);
+            else if (kind == ImmediateRenderingShapes::PaintKind::Paint)
+            {
+                emitter.Path(std::move(flattener->fill), 0, paint->brush.color, world, b);
+            }
+            else if (kind == ImmediateRenderingShapes::PaintKind::NotHandled)
+            {
+                emitter.Path(std::move(flattener->fill), 0, fillColor, world, b);
+            }
+            if (fillDetail != nullptr)
+            {
+                ReportUnsupported(element, fillDetail);
+            }
         }
         if (strokeResult == BrushResult::Color)
         {
-            // Conservative ink for miter joins (the painter strokes with miter joins).
-            const float pad = 2 * t;
-            emitter.Path(std::move(flattener->stroke), t, strokeColor, world, { b.left - pad, b.top - pad, b.right + pad, b.bottom + pad });
+            if (const wchar_t* strokeDetail = EmitShapeStroke(emitter, shape, stroke.get(), std::move(flattener->stroke), b, 0, 0, t, strokeColor, world, b))
+            {
+                ReportUnsupported(element, strokeDetail);
+            }
         }
     }
     else if (type == KnownTypeIndex::Image)
@@ -2027,8 +2200,7 @@ void ImmediateRenderer::EmitContent(
             }
         }
     }
-    else if (type == KnownTypeIndex::Glyphs
-        || type == KnownTypeIndex::SwapChainPanel
+    else if (type == KnownTypeIndex::SwapChainPanel
         || type == KnownTypeIndex::MediaPlayerPresenter
         || element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
     {
@@ -2062,7 +2234,7 @@ void ImmediateRenderer::EmitBorder(
         const RectF outer{ 0, 0, width, height };
         const RectF inner{ thickness.left, thickness.top, width - thickness.right, height - thickness.bottom };
         const wchar_t* detail = nullptr;
-        if (EmitMaterialFill(emitter, do_pointer_cast<CGradientBrush>(border.get()), outer, radius, radius, IsEmptyRect(inner) ? nullptr : &inner, std::max(0.0f, radius - t), ctx.world, &detail))
+        if (EmitMaterialFill(emitter, ImmediateRenderingShapes::IsGradientBrush(border.get()) ? border.get() : nullptr, outer, radius, radius, IsEmptyRect(inner) ? nullptr : &inner, std::max(0.0f, radius - t), ctx.world, &detail))
         {
             if (detail != nullptr)
             {
@@ -2641,9 +2813,12 @@ bool ImmediateRenderer::ReuseSubtree(
         switch (c.type)
         {
             case CommandType::Text: shift(c.index, strDelta); break;
-            case CommandType::GlyphRun: shift(c.index, glyphDelta); break;
+            case CommandType::GlyphRun:
+            case CommandType::BrushGlyphRun: shift(c.index, glyphDelta); break;
             case CommandType::FillPath:
             case CommandType::StrokePath:
+            case CommandType::BrushFill:
+            case CommandType::BrushStroke:
             case CommandType::FillGradient:
             case CommandType::FillPathGradient: shift(c.index, pathDelta); break;
             case CommandType::Bitmap: shift(c.index, bitmapDelta); break;
@@ -2891,6 +3066,44 @@ static void ReplayCommands(
             case CommandType::Backdrop:
                 painter.BlurBackdrop(c.rect, c.radiusX, c.radiusY, c.thickness);
                 break;
+            case CommandType::BrushFill:
+            case CommandType::BrushStroke:
+            {
+                const PathGeometryData& data = list.paths[c.index];
+                const BrushDesc brush = data.paint->Bind(c.opacity);
+                StrokeStyleDesc styleStorage;
+                const StrokeStyleDesc* style = data.paint->BindStyle(&styleStorage);
+                PathData path;
+                path.verbs = data.verbs.data();
+                path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                path.points = data.points.data();
+                path.pointCount = static_cast<uint32_t>(data.points.size());
+                path.nonZeroFill = data.nonZero;
+                if (c.type == CommandType::BrushFill)
+                {
+                    data.verbs.empty() ? painter.FillRoundedRectangleBrush(c.rect, c.radiusX, c.radiusY, brush) : painter.FillPathBrush(path, brush);
+                }
+                else
+                {
+                    data.verbs.empty() ? painter.StrokeRoundedRectangleBrush(c.rect, c.radiusX, c.radiusY, c.thickness, brush, style)
+                                       : painter.StrokePathBrush(path, c.thickness, brush, style);
+                }
+                break;
+            }
+            case CommandType::BrushGlyphRun:
+            {
+                const GlyphRunData& data = list.glyphRuns[c.index];
+                GlyphRunDesc run;
+                run.fontFace = data.face.Get();
+                run.fontEmSize = data.emSize;
+                run.glyphIndices = data.indices.data();
+                run.glyphAdvances = data.advances.data();
+                run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
+                run.glyphCount = static_cast<uint32_t>(data.indices.size());
+                run.bidiLevel = data.bidiLevel;
+                painter.DrawGlyphRunBrush(run, data.paint->Bind(c.opacity));
+                break;
+            }
             default:
                 break;
         }
