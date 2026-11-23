@@ -168,6 +168,9 @@ namespace
     // ThemeResource or style value that produced the change stays in place, as when a binding's conversion fails.
     _Check_return_ HRESULT RestorePreviousValue(_In_ DependencyObject* pOwner, _In_ const PropertyChangedParams& args, _Inout_ bool* pIsRestoring, _In_z_ const WCHAR* pMessage)
     {
+        // These properties always report their default as the old value; ClearValue (which would drop a binding) is
+        // only a fallback.
+        ASSERT(!args.m_pOldValue->IsUnset());
         *pIsRestoring = true;
         const HRESULT hr = args.m_pOldValue->IsUnset()
             ? pOwner->ClearValue(args.m_pDP)
@@ -864,7 +867,10 @@ _Check_return_ HRESULT STDMETHODCALLTYPE CollectionViewSourceGenerated::add_Filt
     return S_OK;
 #else
     UNREFERENCED_PARAMETER(pValue);
-    UNREFERENCED_PARAMETER(pToken);
+    ARG_VALIDRETURNPOINTER(pToken);
+    *pToken = {};
+    static constexpr WCHAR c_message[] = L"CollectionViewSource.Filter is an experimental API that this build does not include.";
+    IFC_RETURN(ErrorHelper::OriginateError(E_NOTIMPL, ARRAYSIZE(c_message) - 1, c_message));
     return E_NOTIMPL;
 #endif
 }
@@ -885,7 +891,11 @@ _Check_return_ HRESULT CollectionViewSource::AddFilterEventHandler(_In_ xaml_dat
 
     if (!m_spFilterEventSource)
     {
-        IFC_RETURN(ctl::ComObject<FilterEventSource>::CreateInstance(m_spFilterEventSource.ReleaseAndGetAddressOf()));
+        // The reference tracker walk reads it.
+        ctl::ComPtr<FilterEventSource> spEvents;
+        IFC_RETURN(ctl::ComObject<FilterEventSource>::CreateInstance(spEvents.ReleaseAndGetAddressOf()));
+        AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+        m_spFilterEventSource = std::move(spEvents);
     }
 
     IFC_RETURN(m_spFilterEventSource->AddHandler(pHandler));
