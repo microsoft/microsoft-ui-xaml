@@ -96,10 +96,10 @@
                     </Grid.RowDefinitions>
 
                     <TextBox x:Name="PaddingLeftInput" AutomationProperties.Name="PaddingLeftInput" Header="Left" PlaceholderText="0" Width="90" HorizontalAlignment="Left" Grid.Row="1"/>
-                    <TextBlock x:Name="PaddingLeftText" AutomationProperties.Name="PaddingLeftText" Grid.Row="1" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Padding.Left, Mode=TwoWay}"/>
+                    <TextBlock x:Name="PaddingLeftText" AutomationProperties.Name="PaddingLeftText" Grid.Row="1" Grid.Column="1" Text="{x:Bind TestProgressBar.Padding.Left, Mode=OneWay}"/>
 
                     <TextBox x:Name="PaddingRightInput" AutomationProperties.Name="PaddingRightInput" Header="Right" PlaceholderText="0" Width="90" HorizontalAlignment="Left" Grid.Row="2"/>
-                    <TextBlock x:Name="PaddingRightText" AutomationProperties.Name="PaddingRightText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Padding.Right, Mode=TwoWay}"/>
+                    <TextBlock x:Name="PaddingRightText" AutomationProperties.Name="PaddingRightText" Grid.Row="2" Grid.Column="1" Text="{x:Bind TestProgressBar.Padding.Right, Mode=OneWay}"/>
 
                 </Grid>
                 <TextBlock Text="States"/>
