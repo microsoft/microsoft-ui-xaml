@@ -11,6 +11,19 @@
 #include "Vector.h"
 #include "SharedHelpers.h"
 
+// Immediate rendering prototype (WINUI_RENDERING_BACKEND=gdiplus|d2d-hw|d2d-sw): those backends paint XAML primitives
+// and can't draw the SystemBackdrop's Composition placement visual.
+static bool IsImmediateRenderingRequested()
+{
+    static const bool requested = []()
+    {
+        wchar_t value[32]{};
+        const DWORD length = GetEnvironmentVariableW(L"WINUI_RENDERING_BACKEND", value, ARRAYSIZE(value));
+        return length > 0 && length < ARRAYSIZE(value) && _wcsicmp(value, L"composition") != 0;
+    }();
+    return requested;
+}
+
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
     SetDefaultStyleKey(this);
@@ -227,6 +240,7 @@ void CommandBarFlyoutCommandBar::OnApplyTemplate()
     m_primaryItemsSystemBackdropRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"PrimaryItemsSystemBackdropRoot", thisAsControlProtected));
     m_overflowPopupSystemBackdropRoot.set(GetTemplateChildT<winrt::FrameworkElement>(L"OverflowPopupSystemBackdropRoot", thisAsControlProtected));
     m_outerOverflowContentRootV2.set(GetTemplateChildT<winrt::FrameworkElement>(L"OuterOverflowContentRootV2", thisAsControlProtected));
+    UpdateImmediateRenderingBackdrop();
 
     auto& primaryItemsRoot = m_primaryItemsRoot.get();
     auto& primaryItemsSystemBackdropRoot = m_primaryItemsSystemBackdropRoot.get();
@@ -1583,6 +1597,13 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
     {
         if (args.NewValue() != args.OldValue())
         {
+            if (IsImmediateRenderingRequested())
+            {
+                m_hasImmediateRenderingBackdrop = args.NewValue() != nullptr;
+                UpdateImmediateRenderingBackdrop();
+                return;
+            }
+
             const auto& oldSystemBackdrop = args.OldValue().try_as<winrt::SystemBackdrop>();
             const auto& newSystemBackdrop = args.NewValue().try_as<winrt::SystemBackdrop>();
 
@@ -1613,6 +1634,49 @@ void CommandBarFlyoutCommandBar::OnPropertyChanged(const winrt::DependencyProper
                 m_overflowPopupBackdropLink = nullptr;
             }
         }
+    }
+}
+
+void CommandBarFlyoutCommandBar::UpdateImmediateRenderingBackdrop()
+{
+    const auto update = [this](winrt::FrameworkElement const& backdropRoot, winrt::FrameworkElement const& cornerSource)
+    {
+        auto const panel = backdropRoot.try_as<winrt::Panel>();
+        if (!panel)
+        {
+            return;
+        }
+        auto children = panel.Children();
+        if (!m_hasImmediateRenderingBackdrop)
+        {
+            children.Clear();
+            return;
+        }
+        if (children.Size() > 0)
+        {
+            return;
+        }
+        // {ThemeResource} keeps the brush in step with the element's theme, like the backdrop it stands in for.
+        auto const fill = winrt::XamlReader::Load(
+            L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+            L"Background='{ThemeResource AcrylicBackgroundFillColorDefaultBrush}'/>").as<winrt::Grid>();
+        if (cornerSource)
+        {
+            winrt::Binding binding;
+            binding.Source(cornerSource);
+            binding.Path(winrt::PropertyPath(L"CornerRadius"));
+            fill.SetBinding(winrt::Grid::CornerRadiusProperty(), binding);
+        }
+        children.Append(fill);
+    };
+
+    if (auto const root = m_primaryItemsSystemBackdropRoot.get())
+    {
+        update(root, m_primaryItemsRoot.get());
+    }
+    if (auto const root = m_overflowPopupSystemBackdropRoot.get())
+    {
+        update(root, m_outerOverflowContentRootV2.get());
     }
 }
 

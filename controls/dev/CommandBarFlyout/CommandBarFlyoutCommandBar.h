@@ -154,6 +154,11 @@ private:
     // but the app can release and delete this CommandBarFlyoutCommandBar without ever closing it.
     weak_ref<winrt::SystemBackdrop> m_systemBackdrop{ nullptr };
 
+    // Immediate rendering prototype: the backdrop link's placement visual is Composition content the immediate
+    // backends can't draw, so a SystemBackdrop is shown as the equivalent in-app acrylic brush instead.
+    void UpdateImmediateRenderingBackdrop();
+    bool m_hasImmediateRenderingBackdrop{ false };
+
     // Bookkeeping for registering and unregistering with the SystemBackdrop. In order to register, we need to have a
     // XamlRoot available so we can listen for events like theme changed or high contrast changed. It's possible we get
     // a SystemBackdrop object set without being in the tree, in which case there's no XamlRoot so we can't register
