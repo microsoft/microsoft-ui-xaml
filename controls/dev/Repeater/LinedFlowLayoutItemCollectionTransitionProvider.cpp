@@ -5,6 +5,7 @@
 #include "common.h"
 #include "LinedFlowLayoutItemCollectionTransitionProvider.h"
 #include "LinedFlowLayoutItemCollectionTransitionProvider.properties.cpp"
+#include "ImmediateRendering.h" // ---- transitions
 
 #pragma region IItemCollectionTransitionProviderOverrides
 
@@ -30,6 +31,12 @@ void LinedFlowLayoutItemCollectionTransitionProvider::StartTransitions(
             MUX_ASSERT(transition.Operation() == winrt::ItemCollectionTransitionOperation::Move);
             moveTransitions.push_back(transition);
         }
+    }
+
+    if (ImmediateRendering::IsRequested()) // ---- transitions
+    {
+        StartTransitionsImmediate(addTransitions, removeTransitions, moveTransitions);
+        return;
     }
 
     StartAddTransitions(addTransitions, removeTransitions.size() > 0, moveTransitions.size() > 0);
@@ -392,4 +399,164 @@ void LinedFlowLayoutItemCollectionTransitionProvider::StartAnimationGroup(winrt:
 
     m_currentAnimationGroupByVisual.Insert(visual, animationGroup);
     visual.StartAnimationGroup(animationGroup);
+}
+
+// ---- transitions ----
+// Immediate rendering: the add/remove/move transitions above with the same timings, delays and cubic beziers, as
+// Storyboards on the element's CompositeTransform (Scale about the element center, Translate) and Opacity. The Composition
+// visual Offset/TransformMatrix translation maps to Translate. Stopping a Storyboard restores the base values, so elements
+// are left untransformed when their transition completes (Composition leaves the final visual values instead).
+void LinedFlowLayoutItemCollectionTransitionProvider::StartTransitionsImmediate(
+    std::vector<winrt::ItemCollectionTransition> const& addTransitions,
+    std::vector<winrt::ItemCollectionTransition> const& removeTransitions,
+    std::vector<winrt::ItemCollectionTransition> const& moveTransitions)
+{
+    const winrt::float2 easeIn1{ 0.55f, 0 }, easeIn2{ 0, 1 }, easeOut1{ 1, 0 }, easeOut2{ 1, 1 };
+    const auto scale = [](winrt::Storyboard const& storyboard, winrt::CompositeTransform const& transform, double from, double to,
+        winrt::float2 p1, winrt::float2 p2, winrt::TimeSpan duration, winrt::TimeSpan delay)
+    {
+        for (const wchar_t* property : { L"ScaleX", L"ScaleY" })
+        {
+            ImmediateRendering::KeyFrames(storyboard, transform, property, duration, delay)
+                .Preset(from)
+                .Step(0.0f, from)
+                .Bezier(1.0f, to, p1, p2);
+        }
+    };
+    const auto translate = [](winrt::Storyboard const& storyboard, winrt::CompositeTransform const& transform, winrt::float2 from,
+        winrt::float2 to, winrt::float2 p1, winrt::float2 p2, winrt::TimeSpan duration, winrt::TimeSpan delay)
+    {
+        ImmediateRendering::KeyFrames(storyboard, transform, L"TranslateX", duration, delay).Preset(from.x).Step(0.0f, from.x).Bezier(1.0f, to.x, p1, p2);
+        ImmediateRendering::KeyFrames(storyboard, transform, L"TranslateY", duration, delay).Preset(from.y).Step(0.0f, from.y).Bezier(1.0f, to.y, p1, p2);
+    };
+    const auto prepare = [](winrt::UIElement const& element) -> winrt::CompositeTransform
+    {
+        auto transform = ImmediateRendering::EnsureCompositeTransform(element);
+        if (transform)
+        {
+            const auto center = GetCenterPoint(element);
+            transform.CenterX(center.x);
+            transform.CenterY(center.y);
+        }
+        return transform;
+    };
+
+    const bool hasAdd = !addTransitions.empty();
+    const bool hasRemove = !removeTransitions.empty();
+    const bool hasMove = !moveTransitions.empty();
+
+    for (auto const& transition : addTransitions)
+    {
+        auto progress = transition.Start();
+        auto element = progress.Element();
+        auto transform = prepare(element);
+        if (!transform)
+        {
+            progress.Complete();
+            continue;
+        }
+        winrt::Storyboard storyboard;
+        if (!WI_IsFlagSet(transition.Triggers(), winrt::ItemCollectionTransitionTriggers::CollectionChangeAdd))
+        {
+            ImmediateRendering::KeyFrames(storyboard, element, L"Opacity", DefaultAnimationDuration).Step(0.0f, 0.0).Linear(1.0f, 1.0);
+            translate(storyboard, transform, { 0, SlideInDistance }, {}, easeIn1, easeIn2, DefaultAnimationDuration, {});
+        }
+        else
+        {
+            auto delay = 0ms;
+            if (hasMove)
+            {
+                delay += DefaultAnimationDuration * 2;
+            }
+            if (hasRemove)
+            {
+                delay += QuickAnimationDuration;
+            }
+            scale(storyboard, transform, 0.0, 1.0, easeIn1, easeIn2, QuickAnimationDuration, delay);
+        }
+        BeginImmediate(element, storyboard, [progress]() { progress.Complete(); });
+    }
+
+    for (auto const& transition : removeTransitions)
+    {
+        if (WI_IsFlagSet(transition.Triggers(), winrt::ItemCollectionTransitionTriggers::CollectionChangeReset) && hasAdd)
+        {
+            continue;
+        }
+        auto progress = transition.Start();
+        auto element = progress.Element();
+        auto transform = prepare(element);
+        if (!transform)
+        {
+            progress.Complete();
+            continue;
+        }
+        winrt::Storyboard storyboard;
+        scale(storyboard, transform, 1.0, 0.0, easeOut1, easeOut2, QuickAnimationDuration, {});
+        BeginImmediate(element, storyboard, [progress]() { progress.Complete(); });
+    }
+
+    for (auto const& transition : moveTransitions)
+    {
+        if (WI_IsFlagSet(transition.Triggers(), winrt::ItemCollectionTransitionTriggers::LayoutTransition))
+        {
+            continue;
+        }
+        auto progress = transition.Start();
+        auto element = progress.Element();
+        auto transform = prepare(element);
+        if (!transform)
+        {
+            progress.Complete();
+            continue;
+        }
+        const auto oldBounds = transition.OldBounds();
+        const auto newBounds = transition.NewBounds();
+        const winrt::float2 delta{ static_cast<float>(oldBounds.X - newBounds.X), static_cast<float>(oldBounds.Y - newBounds.Y) };
+        const std::chrono::milliseconds delay = (hasRemove ? QuickAnimationDuration : 0ms) + QuickAnimationDuration / 2;
+        winrt::Storyboard storyboard;
+        if (std::abs(oldBounds.Y - newBounds.Y) < Epsilon)
+        {
+            translate(storyboard, transform, delta, {}, easeIn1, easeIn2, DefaultAnimationDuration, delay);
+            BeginImmediate(element, storyboard, [progress]() { progress.Complete(); });
+        }
+        else
+        {
+            // Scale out about the center at the old position, then scale in at the new position.
+            ImmediateRendering::KeyFrames(storyboard, transform, L"TranslateX", QuickAnimationDuration, delay).Preset(delta.x);
+            ImmediateRendering::KeyFrames(storyboard, transform, L"TranslateY", QuickAnimationDuration, delay).Preset(delta.y);
+            scale(storyboard, transform, 1.0, 0.0, easeOut1, easeOut2, QuickAnimationDuration, delay);
+            BeginImmediate(element, storyboard, [strongThis = get_strong(), element, transform, progress, scale, easeIn1, easeIn2]()
+            {
+                winrt::Storyboard scaleIn;
+                scale(scaleIn, transform, 0.0, 1.0, easeIn1, easeIn2, strongThis->QuickAnimationDuration, {});
+                strongThis->BeginImmediate(element, scaleIn, [progress]() { progress.Complete(); });
+            });
+        }
+    }
+}
+
+// One Storyboard per element at a time, like StartAnimationGroup: a new transition stops the element's current one.
+void LinedFlowLayoutItemCollectionTransitionProvider::BeginImmediate(
+    winrt::UIElement const& element, winrt::Storyboard const& storyboard, std::function<void()> const& completed)
+{
+    if (m_immediateStoryboardByElement.HasKey(element))
+    {
+        auto previous = m_immediateStoryboardByElement.Lookup(element);
+        m_immediateStoryboardByElement.Remove(element);
+        previous.Stop();
+    }
+    m_immediateStoryboardByElement.Insert(element, storyboard);
+    storyboard.Completed([strongThis = get_strong(), element, storyboard, completed](auto&&, auto&&)
+    {
+        if (!strongThis->m_immediateStoryboardByElement.HasKey(element) ||
+            strongThis->m_immediateStoryboardByElement.Lookup(element) != storyboard)
+        {
+            return;
+        }
+        strongThis->m_immediateStoryboardByElement.Remove(element);
+        completed();
+        storyboard.Stop();
+    });
+    storyboard.Begin();
 }

@@ -10,6 +10,7 @@
 #include "TeachingTipClosedEventArgs.h"
 #ifdef DBG
 #include "TeachingTipTestHooks.h"
+#include "ImmediateRendering.h" // ---- transitions
 #endif
 #include "TeachingTipAutomationPeer.h"
 #include "../ResourceHelper/Utils.h"
@@ -1737,6 +1738,11 @@ void TeachingTip::CreateContractAnimation()
 
 void TeachingTip::StartExpandToOpen()
 {
+    if (ImmediateRendering::IsRequested()) // ---- transitions
+    {
+        StartImmediateAnimation(true);
+        return;
+    }
     if (!m_expandAnimation)
     {
         CreateExpandAnimation();
@@ -1793,6 +1799,11 @@ void TeachingTip::StartExpandToOpen()
 
 void TeachingTip::StartContractToClose()
 {
+    if (ImmediateRendering::IsRequested()) // ---- transitions
+    {
+        StartImmediateAnimation(false);
+        return;
+    }
     if (!m_contractAnimation)
     {
         CreateContractAnimation();
@@ -1835,6 +1846,112 @@ void TeachingTip::StartContractToClose()
             strongThis->SetIsIdle(true);
         }
     });
+}
+
+// ---- transitions ----
+// Immediate rendering: the expand/contract Scale animations (same key frames, duration and cubic bezier) run as a
+// Storyboard on a CompositeTransform about each element's CenterPoint; the content elevation (Translation.Z, which only
+// sizes the ThemeShadow) is set at the start of expand and the end of contract instead of being animated.
+void TeachingTip::StartImmediateAnimation(bool expand)
+{
+    if (auto previous = m_immediateStoryboard.get())
+    {
+        m_immediateStoryboard.set(nullptr);
+        previous.Stop();
+    }
+    winrt::Storyboard storyboard;
+    float width = s_defaultTipHeightAndWidth;
+    float height = s_defaultTipHeightAndWidth;
+    if (auto&& tailOcclusionGrid = m_tailOcclusionGrid.get())
+    {
+        if (!expand || (tailOcclusionGrid.ActualWidth() != 0 && tailOcclusionGrid.ActualHeight() != 0))
+        {
+            width = static_cast<float>(tailOcclusionGrid.ActualWidth());
+            height = static_cast<float>(tailOcclusionGrid.ActualHeight());
+        }
+    }
+    const winrt::TimeSpan duration = expand ? m_expandAnimationDuration : m_contractAnimationDuration;
+    const winrt::float2 p1 = expand ? s_expandAnimationEasingCurveControlPoint1 : s_contractAnimationEasingCurveControlPoint1;
+    const winrt::float2 p2 = expand ? s_expandAnimationEasingCurveControlPoint2 : s_contractAnimationEasingCurveControlPoint2;
+    const double smallX = expand ? std::min(0.01f, 20.0f / width) : 20.0f / width;
+    const double smallY = expand ? std::min(0.01f, 20.0f / height) : 20.0f / height;
+    bool any = false;
+    for (const winrt::UIElement& element : { static_cast<winrt::UIElement>(m_tailOcclusionGrid.get()), static_cast<winrt::UIElement>(m_tailEdgeBorder.get()) })
+    {
+        if (!element)
+        {
+            continue;
+        }
+        auto transform = ImmediateRendering::EnsureCompositeTransform(element);
+        if (!transform)
+        {
+            continue;
+        }
+        const auto center = element.CenterPoint();
+        transform.CenterX(center.x);
+        transform.CenterY(center.y);
+        ImmediateRendering::KeyFrames(storyboard, transform, L"ScaleX", duration)
+            .Step(0.0f, expand ? smallX : 1.0)
+            .Bezier(1.0f, expand ? 1.0 : smallX, p1, p2);
+        ImmediateRendering::KeyFrames(storyboard, transform, L"ScaleY", duration)
+            .Step(0.0f, expand ? smallY : 1.0)
+            .Bezier(1.0f, expand ? 1.0 : smallY, p1, p2);
+        any = true;
+    }
+    auto setElevation = [this](float z)
+    {
+        if (auto&& contentRootGrid = m_contentRootGrid.get())
+        {
+            const auto translation = contentRootGrid.Translation();
+            contentRootGrid.Translation({ translation.x, translation.y, z });
+        }
+    };
+    if (expand)
+    {
+        setElevation(m_contentElevation);
+    }
+    if (!any)
+    {
+        if (!expand)
+        {
+            ClosePopup();
+        }
+        SetIsIdle(true);
+        return;
+    }
+
+    (expand ? m_isExpandAnimationPlaying : m_isContractAnimationPlaying) = true;
+    m_immediateStoryboard.set(storyboard);
+    storyboard.Completed([strongThis = get_strong(), storyboard, expand, setElevation](auto&&, auto&&)
+    {
+        if (strongThis->m_immediateStoryboard.get() != storyboard)
+        {
+            return;
+        }
+        if (expand)
+        {
+            strongThis->m_isExpandAnimationPlaying = false;
+            if (!strongThis->m_isContractAnimationPlaying)
+            {
+                strongThis->SetIsIdle(true);
+#ifdef MUX_PRERELEASE
+                auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+                strongThis->m_openedEventSource(*strongThis, *myArgs);
+#endif
+            }
+        }
+        else
+        {
+            strongThis->m_isContractAnimationPlaying = false;
+            setElevation(0.01f);
+            strongThis->ClosePopup();
+            if (!strongThis->m_isExpandAnimationPlaying)
+            {
+                strongThis->SetIsIdle(true);
+            }
+        }
+    });
+    storyboard.Begin();
 }
 
 std::tuple<winrt::TeachingTipPlacementMode, bool> TeachingTip::DetermineEffectivePlacement()

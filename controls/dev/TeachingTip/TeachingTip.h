@@ -213,6 +213,9 @@ private:
     bool m_createNewPopupOnOpen{ false };
 
     bool m_isExpandAnimationPlaying{ false };
+    // ---- transitions: immediate rendering plays expand/contract as this Storyboard (ImmediateRendering.h).
+    tracker_ref<winrt::Storyboard> m_immediateStoryboard{ this };
+    void StartImmediateAnimation(bool expand);
     bool m_isContractAnimationPlaying{ false };
 
     bool m_hasF6BeenInvoked{ false };

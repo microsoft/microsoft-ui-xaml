@@ -38,4 +38,5 @@ private:
     void OnContentSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs& args);
 
     winrt::Border::SizeChanged_revoker m_expanderContentSizeChangedRevoker{};
+    winrt::Border::SizeChanged_revoker m_expanderContentClipSizeChangedRevoker{}; // ---- transitions
 };

@@ -10,6 +10,7 @@
 
 #include <RatingItemFontInfo.h>
 #include <RatingItemImageInfo.h>
+#include "ImmediateRendering.h" // ---- transitions
 
 const float c_scaleAnimationCenterPointXValue = 16.0f;
 const float c_scaleAnimationCenterPointYValue = 16.0f;
@@ -107,13 +108,16 @@ void RatingControl::OnApplyTemplate()
     m_fontFamilyChangedToken.value = RegisterPropertyChangedCallback(
         winrt::Control::FontFamilyProperty(), { this, &RatingControl::OnFontFamilyChanged });
 
-    winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-    winrt::Compositor comp = visual.Compositor();
+    if (!ImmediateRendering::IsRequested()) // ---- transitions: no hand-off visual (see ApplyScaleExpressionAnimation)
+    {
+        winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
+        winrt::Compositor comp = visual.Compositor();
 
-    m_sharedPointerPropertySet = comp.CreatePropertySet();
+        m_sharedPointerPropertySet = comp.CreatePropertySet();
 
-    m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
-    m_sharedPointerPropertySet.InsertScalar(L"pointerScalar", c_mouseOverScale);
+        m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
+        m_sharedPointerPropertySet.InsertScalar(L"pointerScalar", c_mouseOverScale);
+    }
 
     StampOutRatingItems();
 }
@@ -371,6 +375,24 @@ void RatingControl::UpdateRatingItemsAppearance()
 
 void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElement, int starIndex)
 {
+    if (!m_sharedPointerPropertySet) // ---- transitions
+    {
+        // Immediate rendering: evaluate the expression below in XAML. Its inputs never change after this point (the focal
+        // point stays c_noPointerOverMagicNumber), so the star scale is constant; apply it as a RenderTransform.
+        const auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
+        const float delta = starCenter - c_noPointerOverMagicNumber;
+        const float scale = std::max((-0.0005f * c_mouseOverScale * delta * delta) + c_mouseOverScale, 0.5f);
+        if (auto transform = ImmediateRendering::EnsureCompositeTransform(uiElement))
+        {
+            transform.CenterX(c_scaleAnimationCenterPointXValue);
+            transform.CenterY(c_scaleAnimationCenterPointYValue);
+            transform.ScaleX(scale);
+            transform.ScaleY(scale);
+        }
+        EnsureResourcesLoaded();
+        return;
+    }
+
     const winrt::Visual uiElementVisual = winrt::ElementCompositionPreview::GetElementVisual(uiElement);
     const winrt::Compositor comp = uiElementVisual.Compositor();
 
@@ -892,7 +914,7 @@ void RatingControl::PointerExitedImpl(const winrt::PointerRoutedEventArgs& args,
             m_hasPointerCapture = false;
         }
 
-        if (resetScaleAnimation)
+        if (resetScaleAnimation && m_sharedPointerPropertySet)
         {
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
         }
@@ -1165,7 +1187,10 @@ void RatingControl::ExitGamepadEngagementMode()
 {
     winrt::ElementSoundPlayer::Play(winrt::ElementSoundKind::GoBack);
 
-    m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
+    if (m_sharedPointerPropertySet)
+    {
+        m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", c_noPointerOverMagicNumber);
+    }
     m_disengagedWithA = false;
 }
 
