@@ -2286,7 +2286,8 @@ void ImmediateRenderer::Walk(
     const uint32_t spanBegin = static_cast<uint32_t>(list.spans.size());
     const uint32_t uncacheableBefore = list.uncacheable;
 
-    float localOpacity = element->GetOpacityLocal();
+    // Combined = UIElement.Opacity x TransitionTarget.Opacity (theme animations such as DrillIn animate the latter).
+    float localOpacity = element->GetOpacityCombined();
     if (connectedOverlay)
     {
         localOpacity *= m_connectedOverlayOpacity;

@@ -241,17 +241,23 @@ static class CoverageAnimations
         return new() { Root = root, Exercise = async () => { popup.IsOpen = true; await Settle(); }, Detach = () => popup.IsOpen = false };
     }
 
+    // NavigationThemeTransition on a content host (the transition Frame uses), with the navigation info as its default.
     static CoveragePage NavigationPage(NavigationTransitionInfo info)
     {
-        var frame = new Frame { Width = 400, Height = 240, ContentTransitions = new TransitionCollection { new NavigationThemeTransition() } };
+        var host = new ContentControl
+        {
+            Width = 400,
+            Height = 240,
+            ContentTransitions = new TransitionCollection { new NavigationThemeTransition { DefaultNavigationTransitionInfo = info } },
+            Content = Tile(Colors.Gray, "Previous page", 300, 180),
+        };
         return new()
         {
-            Root = Page(frame),
+            Root = Page(host),
             Exercise = async () =>
             {
-                frame.Navigate(typeof(CoverageAnimationsFramePage));
-                await Settle();
-                frame.Navigate(typeof(CoverageAnimationsFramePage), null, info);
+                await Settle(400);
+                host.Content = Tile(Colors.SlateBlue, "Next page", 300, 180);
                 await Settle();
             },
         };
@@ -322,28 +328,38 @@ static class CoverageAnimations
         return new() { Root = Page(Row(tile)), Exercise = () => SeekAndPause(storyboard, 500), Detach = storyboard.Stop };
     }
 
-    [CoveragePage(F, "VisualStateTransition")]
-    public static CoveragePage VisualStateTransitionPage(CoverageContext context)
+    // Visual state changes with generated/explicit VisualTransitions (ToggleSwitch knob, CheckBox glyph, Expander content).
+    static CoveragePage VisualStatePage(FrameworkElement control, Action change) => new()
+    {
+        Root = Page(new StackPanel { Spacing = 16, Children = { control } }),
+        Exercise = async () => { await Settle(300); change(); await Settle(1200); },
+    };
+
+    [CoveragePage(F, "VisualStateTransition-ToggleSwitch")]
+    public static CoveragePage VisualStateToggle(CoverageContext context)
     {
         var toggle = new ToggleSwitch { Header = "ToggleSwitch" };
+        return VisualStatePage(toggle, () => toggle.IsOn = true);
+    }
+
+    [CoveragePage(F, "VisualStateTransition-CheckBox")]
+    public static CoveragePage VisualStateCheck(CoverageContext context)
+    {
         var check = new CheckBox { Content = "CheckBox" };
-        var expanded = new Microsoft.UI.Xaml.Controls.Expander { Header = "Expander", Content = Tile(Colors.Olive, "Content", 200, 60), Width = 260 };
-        return new()
-        {
-            Root = Page(new StackPanel { Spacing = 16, Children = { toggle, check, expanded } }),
-            Exercise = async () =>
-            {
-                toggle.IsOn = true;
-                check.IsChecked = true;
-                expanded.IsExpanded = true;
-                await Settle(1200);
-            },
-        };
+        return VisualStatePage(check, () => check.IsChecked = true);
+    }
+
+    [CoveragePage(F, "Expander-Expand")]
+    public static CoveragePage ExpanderExpand(CoverageContext context)
+    {
+        var expander = new Microsoft.UI.Xaml.Controls.Expander { Header = "Expander", Content = Tile(Colors.Olive, "Content", 200, 60), Width = 260 };
+        return VisualStatePage(expander, () => expander.IsExpanded = true);
     }
 
     // ---- 4. MUXC controls that animate themselves ----
 
-    [CoveragePage(F, "NavigationView-SelectionIndicator")]
+    // The pane toggle button uses AnimatedIcon, which paints its PathIcon fallback in immediate modes.
+    [CoveragePage(F, "NavigationView-SelectionIndicator", ExpectedUnsupported = ["PathIcon AnimatedIcon:approximated"])]
     public static CoveragePage NavigationViewIndicator(CoverageContext context)
     {
         var nav = new NavigationView { PaneDisplayMode = NavigationViewPaneDisplayMode.Left, IsSettingsVisible = false, IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed, Width = 640, Height = 420 };
@@ -390,6 +406,32 @@ static class CoverageAnimations
         };
     }
 
+    // ItemsView + LinedFlowLayout: its item transition provider animates adds/removes (immediate-aware Storyboard path).
+    [CoveragePage(F, "ItemsView-LinedFlowLayout-Transitions")]
+    public static CoveragePage ItemsViewTransitions(CoverageContext context)
+    {
+        var items = new System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(1, 8).Select(i => $"Item {i}"));
+        var view = new ItemsView
+        {
+            ItemsSource = items,
+            Width = 480,
+            Height = 300,
+            Layout = new LinedFlowLayout { LineHeight = 48, LineSpacing = 6, MinItemSpacing = 6 },
+            ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
+                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><ItemContainer><Border Width='100' Background='LightSteelBlue'><TextBlock Text='{Binding}' Margin='8'/></Border></ItemContainer></DataTemplate>"),
+        };
+        return new()
+        {
+            Root = Page(view),
+            Exercise = async () =>
+            {
+                await Settle(400);
+                items.RemoveAt(1);
+                items.Insert(4, "Inserted");
+                await Settle(1500);
+            },
+        };
+    }
     [CoveragePage(F, "InfoBar-Open")]
     public static CoveragePage InfoBarOpen(CoverageContext context)
     {
@@ -405,8 +447,3 @@ static class CoverageAnimations
     }
 }
 
-// Frame content for the NavigationThemeTransition pages (public: Frame.Navigate activates it by type).
-public sealed class CoverageAnimationsFramePage : Microsoft.UI.Xaml.Controls.Page
-{
-    public CoverageAnimationsFramePage() => Content = new Border { Width = 300, Height = 180, Background = new SolidColorBrush(Colors.SlateBlue), Child = new TextBlock { Text = "Frame page", Margin = new Thickness(12), Foreground = new SolidColorBrush(Colors.White) } };
-}
