@@ -160,6 +160,18 @@ private:
 
     winrt::LoadedImageSurface m_valueSurface{ nullptr };
 
+    // Immediate rendering (WINUI_RENDERING_BACKEND=gdiplus|d2d-*) can't draw SpectrumBrush's Composition surfaces: the
+    // spectrum keeps its pixel data and shows the cross-faded image in a WriteableBitmap ImageBrush instead.
+    struct SpectrumPixels
+    {
+        int width{ 0 };
+        int height{ 0 };
+        // Min, Middle1..4, Max, as passed to CreateSurfaceFromPixelData.
+        std::array<std::shared_ptr<std::vector<byte>>, 6> data;
+    };
+    std::optional<SpectrumPixels> m_immediatePixels;
+    bool UpdateImmediateBitmapSource();
+
     // Fields used by UpdateEllipse() to ensure that it's using the data
     // associated with the last call to CreateBitmapsAndColorMap(),
     // in order to function properly while the asynchronous bitmap creation

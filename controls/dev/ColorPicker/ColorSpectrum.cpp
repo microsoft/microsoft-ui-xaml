@@ -10,6 +10,19 @@
 
 using namespace std;
 
+// Immediate rendering prototype (WINUI_RENDERING_BACKEND=gdiplus|d2d-hw|d2d-sw): those backends paint XAML primitives
+// and can't draw SpectrumBrush's Composition surface brushes.
+static bool IsImmediateRenderingRequested()
+{
+    static const bool requested = []()
+    {
+        wchar_t value[32]{};
+        const DWORD length = GetEnvironmentVariableW(L"WINUI_RENDERING_BACKEND", value, ARRAYSIZE(value));
+        return length > 0 && length < ARRAYSIZE(value) && _wcsicmp(value, L"composition") != 0;
+    }();
+    return requested;
+}
+
 ColorSpectrum::ColorSpectrum()
 {
     SetDefaultStyleKey(this);
@@ -1052,6 +1065,12 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
                 break;
             }
 
+            if (IsImmediateRenderingRequested())
+            {
+                strongThis->m_immediatePixels = SpectrumPixels{ pixelWidth, pixelHeight,
+                    { bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData } };
+            }
+
             strongThis->m_shapeFromLastBitmapCreation = strongThis->Shape();
             strongThis->m_componentsFromLastBitmapCreation = strongThis->Components();
             strongThis->m_imageWidthFromLastBitmapCreation = minDimension;
@@ -1431,6 +1450,11 @@ void ColorSpectrum::UpdateBitmapSources()
     auto&& spectrumRectangle = m_spectrumRectangle.get();
     auto&& spectrumEllipse = m_spectrumEllipse.get();
 
+    if (UpdateImmediateBitmapSource())
+    {
+        return;
+    }
+
     const winrt::float4 hsvColor = HsvColor();
     const winrt::ColorSpectrumComponents components = Components();
 
@@ -1533,6 +1557,60 @@ void ColorSpectrum::UpdateBitmapSources()
         }
         break;
     }
+}
+
+bool ColorSpectrum::UpdateImmediateBitmapSource()
+{
+    if (!m_immediatePixels)
+    {
+        return false;
+    }
+
+    // Same image selection as the SpectrumBrush path below: MaxSurfaceOpacity cross-fades from the min to the max image.
+    const winrt::float4 hsvColor = HsvColor();
+    size_t minIndex = 0;
+    size_t maxIndex = 5;
+    double weight = 1;
+    switch (Components())
+    {
+    case winrt::ColorSpectrumComponents::HueValue:
+    case winrt::ColorSpectrumComponents::ValueHue:
+        weight = hsv::GetSaturation(hsvColor);
+        break;
+    case winrt::ColorSpectrumComponents::HueSaturation:
+    case winrt::ColorSpectrumComponents::SaturationHue:
+        minIndex = 5;
+        break;
+    case winrt::ColorSpectrumComponents::ValueSaturation:
+    case winrt::ColorSpectrumComponents::SaturationValue:
+    {
+        const double sextant = hsv::GetHue(hsvColor) / 60.0;
+        minIndex = std::clamp(static_cast<size_t>(std::max(sextant, 0.0)), size_t{ 0 }, size_t{ 5 });
+        maxIndex = (minIndex + 1) % 6;
+        weight = sextant - static_cast<double>(minIndex);
+        break;
+    }
+    }
+
+    const auto& pixels = *m_immediatePixels;
+    const auto& minData = pixels.data[minIndex];
+    const auto& maxData = pixels.data[maxIndex];
+    if (!minData || !maxData || minData->size() != maxData->size())
+    {
+        return false;
+    }
+    const float w = static_cast<float>(std::clamp(weight, 0.0, 1.0));
+    auto blended = std::make_shared<std::vector<::byte>>(minData->size());
+    for (size_t i = 0; i < blended->size(); ++i)
+    {
+        (*blended)[i] = static_cast<::byte>((*minData)[i] + ((*maxData)[i] - (*minData)[i]) * w + 0.5f);
+    }
+
+    winrt::ImageBrush brush;
+    brush.ImageSource(CreateBitmapFromPixelData(pixels.width, pixels.height, blended));
+    m_spectrumRectangle.get().Fill(brush);
+    m_spectrumEllipse.get().Fill(brush);
+    return true;
 }
 
 bool ColorSpectrum::SelectionEllipseShouldBeLight()
