@@ -241,17 +241,18 @@ namespace RenderingBackendTests
         Paint(*painter, [&](IImmediatePainter& p)
         {
             p.Clear(c_white);
-            p.SetTransform({ 1, 0, 0, 1, 50, 50 }); // reset inside the layer
+            p.SetTransform({ 1, 0, 0, 1, 50, 50 }); // reset inside the layer, applied again when compositing
             p.PushPerspectiveLayer({ 0, 0, 64, 64 }, Matrix4x4F{});
             p.FillRectangle({ 16, 16, 48, 48 }, c_red);
             p.PopPerspectiveLayer();
             p.FillRectangle({ 0, 0, 4, 4 }, c_blue); // the push transform is restored: lands at (50, 50)
         });
         const Image image = Read(*painter);
-        VerifyWhite(image, 15, 15);
-        VerifyRed(image, 16, 16);
-        VerifyRed(image, 47, 47);
-        VerifyRed(image, 40, 20);
+        VerifyWhite(image, 65, 65);
+        VerifyRed(image, 66, 66);
+        VerifyRed(image, 97, 97);
+        VerifyRed(image, 90, 70);
+        VerifyWhite(image, 98, 98);
         VerifyColor(image, 51, 51, c_blue, Tolerance(3), L"expected blue");
         VerifyWhite(image, 49, 49);
     }
