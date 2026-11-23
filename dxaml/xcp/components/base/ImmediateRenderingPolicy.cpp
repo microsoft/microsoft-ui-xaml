@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include <ImmediateRenderingPolicy.h>
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 namespace ImmediateRenderingPolicy
@@ -53,25 +54,76 @@ namespace ImmediateRenderingPolicy
 
     bool IsHandOffVisualTouched(const HandOffVisualState& state) noexcept
     {
-        if (state.hasNonInsetClip || !Near(state.opacity, 1) || !Near(state.rotationAngle, 0))
+        return state.animating || state.unsupportedClip;
+    }
+
+    bool ComputeHandOffVisualTransform(const HandOffVisualState& state, _Out_writes_(16) float matrix[16]) noexcept
+    {
+        using M4 = std::array<double, 16>; // row-major, row vectors
+        auto identity = [] { M4 m{}; m[0] = m[5] = m[10] = m[15] = 1; return m; };
+        auto multiply = [](const M4& a, const M4& b) // a, then b
         {
-            return true;
+            M4 r{};
+            for (int i = 0; i < 4; ++i)
+                for (int j = 0; j < 4; ++j)
+                    for (int k = 0; k < 4; ++k)
+                        r[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+            return r;
+        };
+        auto translation = [&](double x, double y, double z) { M4 m = identity(); m[12] = x; m[13] = y; m[14] = z; return m; };
+
+        const double pivot[3] = {
+            static_cast<double>(state.centerPoint[0]) + static_cast<double>(state.anchorPoint[0]) * state.size[0],
+            static_cast<double>(state.centerPoint[1]) + static_cast<double>(state.anchorPoint[1]) * state.size[1],
+            state.centerPoint[2] };
+        M4 m = translation(-pivot[0], -pivot[1], -pivot[2]);
+
+        M4 scale = identity();
+        scale[0] = state.scale[0]; scale[5] = state.scale[1]; scale[10] = state.scale[2];
+        m = multiply(m, scale);
+
+        // System.Numerics Matrix4x4.CreateFromQuaternion / CreateFromAxisAngle (Composition's conventions).
+        {
+            const double x = state.orientation[0], y = state.orientation[1], z = state.orientation[2], w = state.orientation[3];
+            M4 q = identity();
+            q[0] = 1 - 2 * (y * y + z * z); q[1] = 2 * (x * y + z * w); q[2] = 2 * (x * z - y * w);
+            q[4] = 2 * (x * y - z * w); q[5] = 1 - 2 * (z * z + x * x); q[6] = 2 * (y * z + x * w);
+            q[8] = 2 * (x * z + y * w); q[9] = 2 * (y * z - x * w); q[10] = 1 - 2 * (y * y + x * x);
+            m = multiply(m, q);
         }
-        for (int i = 0; i < 3; ++i)
+        if (state.rotationAngle != 0)
         {
-            if (!Near(state.offset[i], 0) || !Near(state.scale[i], 1) || !Near(state.translation[i], 0))
+            double x = state.rotationAxis[0], y = state.rotationAxis[1], z = state.rotationAxis[2];
+            const double length = std::sqrt(x * x + y * y + z * z);
+            if (length > 0)
             {
-                return true;
+                x /= length; y /= length; z /= length;
+                const double sa = std::sin(state.rotationAngle), ca = std::cos(state.rotationAngle);
+                const double xx = x * x, yy = y * y, zz = z * z, xy = x * y, xz = x * z, yz = y * z;
+                M4 r = identity();
+                r[0] = xx + ca * (1 - xx); r[1] = xy - ca * xy + sa * z; r[2] = xz - ca * xz - sa * y;
+                r[4] = xy - ca * xy - sa * z; r[5] = yy + ca * (1 - yy); r[6] = yz - ca * yz + sa * x;
+                r[8] = xz - ca * xz + sa * y; r[9] = yz - ca * yz - sa * x; r[10] = zz + ca * (1 - zz);
+                m = multiply(m, r);
             }
         }
+        m = multiply(m, translation(state.centerPoint[0], state.centerPoint[1], state.centerPoint[2]));
+        M4 tm{};
         for (int i = 0; i < 16; ++i)
         {
-            if (!Near(state.transformMatrix[i], (i % 5 == 0) ? 1.0f : 0.0f))
-            {
-                return true;
-            }
+            tm[i] = state.transformMatrix[i];
         }
-        return false;
+        m = multiply(m, tm);
+        m = multiply(m, translation(static_cast<double>(state.offset[0]) + state.translation[0],
+            static_cast<double>(state.offset[1]) + state.translation[1], static_cast<double>(state.offset[2]) + state.translation[2]));
+
+        bool isIdentity = true;
+        for (int i = 0; i < 16; ++i)
+        {
+            matrix[i] = static_cast<float>(m[i]);
+            isIdentity = isIdentity && Near(matrix[i], (i % 5 == 0) ? 1.0f : 0.0f);
+        }
+        return !isIdentity;
     }
 
     namespace

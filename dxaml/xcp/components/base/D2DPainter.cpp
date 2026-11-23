@@ -826,7 +826,7 @@ namespace RenderingBackend
 
                 // Layer-space damage: the layer bounds in pixels.
                 const float s = m_dpiScale;
-                const auto clampEdge = [](float v, uint32_t limit) { return static_cast<int32_t>((std::min)((std::max)(v, 0.0f), static_cast<float>(limit))); };
+                const auto clampEdge = [](float v, uint32_t limit) { return static_cast<uint32_t>((std::min)((std::max)(v, 0.0f), static_cast<float>(limit))); };
                 m_damage[0] = { clampEdge(std::floor(bounds.left * s), m_width), clampEdge(std::floor(bounds.top * s), m_height),
                     clampEdge(std::ceil(bounds.right * s), m_width), clampEdge(std::ceil(bounds.bottom * s), m_height) };
                 m_damageCount = 1;

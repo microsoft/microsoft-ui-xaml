@@ -404,6 +404,10 @@ namespace ImmediateRenderingDetail
         // S13 (ImmediateRenderer.Materials.cpp). Gradients: paths[index] (no verbs: rounded rect `rect`); Shadow: blur in
         // `thickness`, offset in sourceRect.left/top; Backdrop: blur in `thickness`.
         FillGradient, FillPathGradient, Shadow, Backdrop,
+        // ---- clips3d ---- (ImmediateRenderer.Clips3D.inl). PushGeometryClip: path in paths[key] (element DIPs, under
+        // transform), rect = path bounds; PushPerspective: layer rect (0, 0, w, h) in layer DIPs, perspective[key] maps it
+        // into the enclosing surface, clip = enclosing clip.
+        PushGeometryClip, PopGeometryClip, PushPerspective, PopPerspective,
     };
 
     struct Command
@@ -515,6 +519,8 @@ namespace ImmediateRenderingDetail
         std::vector<std::pair<CPopup*, CMILMatrix>> windowedPopups;
         std::vector<IndependentLayer> layers; // innermost first
         int64_t snapshotQpc = 0;  // QPC (microseconds) when the walk sampled the animation clocks
+        // ---- clips3d ----
+        std::vector<IImmediatePainter::Matrix4x4F> perspective; // PushPerspective: key
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -537,6 +543,11 @@ namespace ImmediateRenderingDetail
         float offsetX = 0;       // DIPs: innermost scroller content origin
         float offsetY = 0;
         bool scrollerContent = false;
+        // ---- clips3d ----
+        bool has3D = false;      // world4 is not a 2D transform (Projection / Transform3D / 3D facades above)
+        bool inLayer = false;    // inside a perspective layer: world/clip are relative to the layer surface
+        double world4[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} }; // element -> island, row vectors
+        double layerInverse[3][3] = { {1,0,0}, {0,1,0}, {0,0,1} };             // island DIPs -> layer DIPs
     };
 }
 
@@ -843,6 +854,10 @@ namespace
             case CommandType::PopLayer:
             case CommandType::PushRoundedClip:
             case CommandType::PopRoundedClip:
+            case CommandType::PushGeometryClip:
+            case CommandType::PopGeometryClip:
+            case CommandType::PushPerspective:
+            case CommandType::PopPerspective:
                 return false;
             default:
                 return true;
@@ -851,12 +866,14 @@ namespace
 
     bool IsPush(CommandType type) noexcept
     {
-        return type == CommandType::PushLayer || type == CommandType::PushRoundedClip;
+        return type == CommandType::PushLayer || type == CommandType::PushRoundedClip || type == CommandType::PushGeometryClip ||
+            type == CommandType::PushPerspective;
     }
 
     bool IsPop(CommandType type) noexcept
     {
-        return type == CommandType::PopLayer || type == CommandType::PopRoundedClip;
+        return type == CommandType::PopLayer || type == CommandType::PopRoundedClip || type == CommandType::PopGeometryClip ||
+            type == CommandType::PopPerspective;
     }
 
     // Hashes a transform relative to the innermost scroller's content origin, so content that only scrolled keeps its
@@ -1565,6 +1582,18 @@ namespace
         fnv.AddValue(push.rect);
         fnv.AddValue(push.radiusX);
         HashRelative(fnv, world, ctx);
+        // ---- clips3d ----
+        if (push.type == CommandType::PushGeometryClip)
+        {
+            const PathGeometryData& path = list.paths[static_cast<size_t>(push.key)];
+            fnv.Add(path.verbs.data(), path.verbs.size() * sizeof(PathVerb));
+            fnv.Add(path.points.data(), path.points.size() * sizeof(PointF));
+        }
+        else if (push.type == CommandType::PushPerspective)
+        {
+            fnv.AddValue(list.perspective[static_cast<size_t>(push.key)]);
+            fnv.AddValue(push.clip);
+        }
         record.groupSignature = fnv.hash;
         record.groupBounds = UnionRect(record.groupBounds, bounds);
 
@@ -1583,17 +1612,29 @@ namespace
             return;
         }
 
-        if (!isLayer)
+        if (push.type == CommandType::PushRoundedClip)
         {
             const RectF clipRect = ScaleRect(TransformRectBounds(world, push.rect), ctx.scale);
             record.roundedClip = clipRect;
             record.roundedRadius = push.radiusX * ctx.scale * std::max(std::fabs(world.GetM11()), std::fabs(world.GetM22()));
         }
+        else if (push.type == CommandType::PushGeometryClip || push.type == CommandType::PushPerspective)
+        {
+            // clips3d: no uniform interior is known; a radius covering the whole box makes blitted viewports repaint it.
+            record.roundedClip = bounds;
+            record.roundedRadius = std::max(bounds.right - bounds.left, bounds.bottom - bounds.top);
+        }
 
         push.index = static_cast<uint32_t>(list.commands.size());
         push.deviceBounds = bounds;
         Command pop;
-        pop.type = isLayer ? CommandType::PopLayer : CommandType::PopRoundedClip;
+        switch (push.type)
+        {
+            case CommandType::PushLayer: pop.type = CommandType::PopLayer; break;
+            case CommandType::PushGeometryClip: pop.type = CommandType::PopGeometryClip; break;
+            case CommandType::PushPerspective: pop.type = CommandType::PopPerspective; break;
+            default: pop.type = CommandType::PopRoundedClip; break;
+        }
         pop.deviceBounds = bounds;
         pop.owner = element;
         list.commands.push_back(pop);

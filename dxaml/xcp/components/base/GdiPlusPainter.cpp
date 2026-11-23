@@ -1078,6 +1078,8 @@ namespace RenderingBackend
                     layer.graphics->Flush(Gdiplus::FlushIntentionSync);
                     CompositePerspective(layer, record.bounds, saved, parent);
                 }
+
+                void FillPath(const PathData& data, const ColorF& color) noexcept override
                 {
                     if (!BeginPrimitive())
                     {
@@ -1945,8 +1947,8 @@ namespace RenderingBackend
                         {
                             return;
                         }
-                        destination = Intersect(destination, PixelRect{ ToPixel(std::floor(minX) - 1), ToPixel(std::floor(minY) - 1),
-                            ToPixel(std::ceil(maxX) + 1), ToPixel(std::ceil(maxY) + 1) });
+                        destination = Intersect(destination, PixelRect{ ToPixel(static_cast<float>(std::floor(minX) - 1)), ToPixel(static_cast<float>(std::floor(minY) - 1)),
+                            ToPixel(static_cast<float>(std::ceil(maxX) + 1)), ToPixel(static_cast<float>(std::ceil(maxY) + 1)) });
                     }
                     if (destination.IsEmpty())
                     {

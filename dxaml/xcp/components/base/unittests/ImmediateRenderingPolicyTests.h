@@ -17,6 +17,7 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(BuiltInProgressRingHandInDoesNotFallBack);
         TEST_METHOD(UntouchedHandOffVisualIsPaintable);
         TEST_METHOD(TouchedHandOffVisualIsDetected);
+        TEST_METHOD(HandOffVisualTransformFollowsCompositionOrder);
         TEST_METHOD(RelativeGradientMapsToBounds);
         TEST_METHOD(AbsoluteGradientIsUnchanged);
         TEST_METHOD(GradientTransformsAreApplied);
