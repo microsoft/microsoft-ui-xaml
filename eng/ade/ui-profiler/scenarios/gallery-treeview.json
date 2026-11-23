@@ -1,0 +1,51 @@
+{
+  "schema": "ui-profiler/scenario/v1",
+  "name": "gallery-treeview",
+  "description": "Open WinUI Gallery, search TreeView, navigate to it, and verify real collapse/expand/collapse transitions in the first sample.",
+  "build": {
+    "project": "WinUIGallery\\WinUIGallery.csproj",
+    "configuration": "Release-Unpackaged",
+    "executable": "WinUIGallery.exe"
+  },
+  "window": { "width": 1280, "height": 900 },
+  "steps": [
+    {
+      "id": "search",
+      "action": "type-text",
+      "selector": { "name": "Search controls and samples...", "controlType": "Edit" },
+      "text": "TreeView",
+      "settleMilliseconds": 300
+    },
+    {
+      "id": "choose-search-result",
+      "action": "keys",
+      "selector": { "name": "Search controls and samples...", "controlType": "Edit" },
+      "keys": "{DOWN}{ENTER}",
+      "settleMilliseconds": 300
+    },
+    {
+      "id": "verify-treeview-page",
+      "action": "assert",
+      "selector": { "automationId": "PageHeader", "name": "TreeView" },
+      "settleMilliseconds": 300
+    },
+    {
+      "id": "prepare-collapsed-root",
+      "action": "collapse",
+      "selector": { "name": "Work Documents", "controlType": "TreeItem" },
+      "settleMilliseconds": 300
+    },
+    {
+      "id": "expand-root",
+      "action": "expand",
+      "selector": { "name": "Work Documents", "controlType": "TreeItem" },
+      "settleMilliseconds": 300
+    },
+    {
+      "id": "collapse-root",
+      "action": "collapse",
+      "selector": { "name": "Work Documents", "controlType": "TreeItem" },
+      "settleMilliseconds": 300
+    }
+  ]
+}

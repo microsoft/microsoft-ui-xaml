@@ -1,0 +1,12 @@
+{
+  "name": "ui-profiler",
+  "version": "0.1.0",
+  "description": "Profile an independent WinUI application with MUX WinUIProfiler, obtain actual WinUI expert recommendations, and use the shared ADE runtime for one approved isolated fix and a comparable candidate measurement. SQLite evidence and quantified observed differences stay outside the application. Start with /ui-profiler:work.",
+  "author": {
+    "name": "UI Profiler Team",
+    "email": "ui-profiler@example.invalid"
+  },
+  "keywords": ["ade", "ui-profiler", "bug-fix", "feature", "research", "work-types", "agentic-loop"],
+  "skills": "skills/",
+  "agents": "agents/"
+}

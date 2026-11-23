@@ -1,0 +1,29 @@
+{
+  "schema": "ade.team/v1",
+  "team": "ui-profiler",
+  "displayName": "WinUI Performance Profiling",
+  "packVersion": "0.1.0",
+  "runtimeVersion": "0.1.0",
+
+  // Regression checks. Each runs with pwsh in the working copy. A check that passed at baseline must still pass.
+  // Example: { "id": "unit", "command": "dotnet test --nologo", "timeoutSeconds": 900 }
+  "checks": [],
+
+  // Path prefixes, relative to the repository root, that the coding agent must not change.
+  "protectedPaths": [],
+
+  // Optional. Leave empty to use the defaults: .git, .vs, bin, obj, node_modules, .venv, __pycache__, .ade.
+  "copyExclude": [],
+
+  "limits": {
+    "maxRounds": 1,
+    "roundTimeoutSeconds": 900,
+    "checkTimeoutSeconds": 600,
+    "maxKnowledgeBytes": 40000
+  },
+
+  "permissions": {
+    "shell": false,
+    "urls": false
+  }
+}
