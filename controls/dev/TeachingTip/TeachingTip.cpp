@@ -1873,8 +1873,8 @@ void TeachingTip::StartImmediateAnimation(bool expand)
     const winrt::TimeSpan duration = expand ? m_expandAnimationDuration : m_contractAnimationDuration;
     const winrt::float2 p1 = expand ? s_expandAnimationEasingCurveControlPoint1 : s_contractAnimationEasingCurveControlPoint1;
     const winrt::float2 p2 = expand ? s_expandAnimationEasingCurveControlPoint2 : s_contractAnimationEasingCurveControlPoint2;
-    const double smallX = expand ? std::min(0.01f, 20.0f / width) : 20.0f / width;
-    const double smallY = expand ? std::min(0.01f, 20.0f / height) : 20.0f / height;
+    const double smallX = expand ? (std::min)(0.01f, 20.0f / width) : 20.0f / width;
+    const double smallY = expand ? (std::min)(0.01f, 20.0f / height) : 20.0f / height;
     bool any = false;
     for (const winrt::UIElement& element : { static_cast<winrt::UIElement>(m_tailOcclusionGrid.get()), static_cast<winrt::UIElement>(m_tailEdgeBorder.get()) })
     {

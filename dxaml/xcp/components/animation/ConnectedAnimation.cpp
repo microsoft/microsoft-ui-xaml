@@ -41,7 +41,8 @@
 #include <ErrorHelper.h>
 #include "RootScale.h"
 #include <FxCallbacks.h>
-#include <memorysurface.h> // ---- transitions
+#include <PixelFormat.h> // ---- transitions
+#include <memorysurface.h>
 #include <RenderingBackend.h>
 
 using namespace xaml_animation;
@@ -1716,9 +1717,9 @@ _Check_return_ HRESULT CConnectedAnimation::CaptureSourceImmediate()
     {
         scale *= std::sqrt(c_maxSnapshotPixels / area);
     }
-    scale = std::min(scale, c_maxSnapshotSide / std::max(unclipped.Width, unclipped.Height));
-    const uint32_t width = std::max(1u, static_cast<uint32_t>(std::ceil(unclipped.Width * scale)));
-    const uint32_t height = std::max(1u, static_cast<uint32_t>(std::ceil(unclipped.Height * scale)));
+    scale = (std::min)(scale, c_maxSnapshotSide / (std::max)(unclipped.Width, unclipped.Height));
+    const uint32_t width = (std::max)(1u, static_cast<uint32_t>(std::ceil(unclipped.Width * scale)));
+    const uint32_t height = (std::max)(1u, static_cast<uint32_t>(std::ceil(unclipped.Height * scale)));
 
     // The capture walk appends the source's local transform to this parent-space -> snapshot-pixels transform.
     CMILMatrix world(true);
@@ -1892,8 +1893,8 @@ _Check_return_ HRESULT CConnectedAnimation::StartImmediate()
     else
     {
         // Clipped brushes (Stretch None, centered) on a host as large as both.
-        state.hostWidth = std::max(source.clippedRect.Width, dest.clippedRect.Width);
-        state.hostHeight = std::max(source.clippedRect.Height, dest.clippedRect.Height);
+        state.hostWidth = (std::max)(source.clippedRect.Width, dest.clippedRect.Width);
+        state.hostHeight = (std::max)(source.clippedRect.Height, dest.clippedRect.Height);
         state.sourceContent = CenteredIn(state.hostWidth, state.hostHeight, source.clippedRect.Width, source.clippedRect.Height);
         if (state.snapshot != nullptr && source.unclippedRect.Width > 0 && source.unclippedRect.Height > 0)
         {

@@ -381,7 +381,7 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
         // point stays c_noPointerOverMagicNumber), so the star scale is constant; apply it as a RenderTransform.
         const auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
         const float delta = starCenter - c_noPointerOverMagicNumber;
-        const float scale = std::max((-0.0005f * c_mouseOverScale * delta * delta) + c_mouseOverScale, 0.5f);
+        const float scale = (std::max)((-0.0005f * c_mouseOverScale * delta * delta) + c_mouseOverScale, 0.5f);
         if (auto transform = ImmediateRendering::EnsureCompositeTransform(uiElement))
         {
             transform.CenterX(c_scaleAnimationCenterPointXValue);
