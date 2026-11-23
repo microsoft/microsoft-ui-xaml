@@ -109,6 +109,13 @@ namespace DirectUI
         // date: index-based writes go to the source, so it can be reordered. Otherwise a shaped view's writes fail.
         bool PresentsSourceOrder();
 
+        // The collection a reorder (RemoveAt then InsertAt) writes to, chosen once for the whole move so both halves
+        // reach the same collection whatever the view does in between; null when the view sorts, filters or groups.
+        wfc::IVector<IInspectable*>* GetReorderTarget()
+        {
+            return !IsShaped() ? m_tpSource.Get() : (PresentsSourceOrder() ? m_tpSourceList.Get() : nullptr);
+        }
+
     private:
         wfc::IVector<IInspectable*>* GetWriteTarget()
         {

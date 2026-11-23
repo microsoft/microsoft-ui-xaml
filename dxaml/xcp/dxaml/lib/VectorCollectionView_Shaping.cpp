@@ -253,6 +253,7 @@ IFACEMETHODIMP VectorCollectionView::put_Culture(_In_opt_ HSTRING value)
 IFACEMETHODIMP VectorCollectionView::Refresh()
 {
     IFC_RETURN(CheckThread());
+    ResetIncrementalLoadState();
     IFC_RETURN(RefreshOrDefer());
     return S_OK;
 }
@@ -317,7 +318,9 @@ bool VectorCollectionView::PresentsSourceOrder()
     bool hasRules = true;
     UINT outputSize = 0;
     UINT sourceSize = 0;
-    return m_tpInternalList && m_tpSourceList && !m_isGrouping &&
+    // The output follows the source only while the view listens to it with valid source indices.
+    return m_tpInternalList && m_tpSourceList && m_tpSourceListObservable && m_epSourceListChangedHandler &&
+        m_areSourceIndicesValid && !m_isGrouping &&
         m_deferRefreshLevel == 0 && m_shapeBusyDepth == 0 && !m_isRefreshPending && !m_isRecomputePending &&
         SUCCEEDED(HasShapingRules(&hasRules)) && !hasRules &&
         SUCCEEDED(m_tpInternalList->get_Size(&outputSize)) && SUCCEEDED(m_tpSourceList->get_Size(&sourceSize)) &&
@@ -353,6 +356,9 @@ _Check_return_ HRESULT VectorCollectionView::OnShapingRulesChanged()
     {
         return S_OK;
     }
+
+    // A source change recomputes too, but only a rule change starts incremental loading over.
+    ResetIncrementalLoadState();
 
     if (m_shapeBusyDepth > 0)
     {
@@ -549,7 +555,6 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     const UINT sourceChangeCount = m_sourceListChangeCount;
     UINT size = 0;
 
-    ResetIncrementalLoadState();
     IFC_RETURN(spSort->comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get(), spSort->references));
     spSort->keys.Reset(spSort->comparer.FieldCount());
     IFC_RETURN(m_tpSourceList->get_Size(&size));

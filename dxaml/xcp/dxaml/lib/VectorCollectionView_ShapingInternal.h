@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <XamlTraceLogging.h>
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -134,6 +135,9 @@ namespace DirectUI::ShapingEngine
         {
             if (hr != m_hr || !m_spErrorInfo)
             {
+                // Contained and not reported (no error info: most likely a framework listener's HRESULT).
+                TraceLoggingWrite(g_hTraceProvider, "CollectionViewContainedFailure",
+                    TraceLoggingHResult(hr, "HResult"));
                 return;
             }
             IGNOREHR(::SetRestrictedErrorInfo(m_spErrorInfo.Get()));
