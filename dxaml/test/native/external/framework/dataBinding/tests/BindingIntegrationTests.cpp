@@ -4641,7 +4641,7 @@ namespace Framework { namespace DataBinding {
             kept->Source = source;
             kept->Filter += ref new FilterEventHandler([sender, raised](Object^ eventSender, FilterEventArgs^ e)
             {
-                *sender = Platform::WeakReference(eventSender);
+                *sender = eventSender ? Platform::WeakReference(eventSender) : Platform::WeakReference();
                 ++*raised;
                 e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
             });

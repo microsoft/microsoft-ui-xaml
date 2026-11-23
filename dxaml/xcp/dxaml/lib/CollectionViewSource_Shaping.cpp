@@ -272,9 +272,12 @@ _Check_return_ HRESULT SortDescription::OnPropertyChanged2(_In_ const PropertyCh
         return S_OK;
     }
 
+    // Only markup, a binding or a style reaches here (the setters check first): the change is undone, and not
+    // thrown into the code that changed a binding's source.
     IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
-    IFCEXPECTRC_RETURN(isValid, E_INVALIDARG);
-    IFC_RETURN(CheckNotSealed());
+    ::OutputDebugStringW(isValid
+        ? L"A SortDescription cannot be changed once a SortDescriptions collection holds it; the change was undone.\n"
+        : L"SortDescription.Direction must be Ascending or Descending; the change was undone.\n");
     return S_OK;
 }
 
@@ -345,7 +348,8 @@ _Check_return_ HRESULT PropertyGroupDescription::OnPropertyChanged2(_In_ const P
             if (!IsValidStringComparison(value))
             {
                 IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
-                IFC_RETURN(E_INVALIDARG);
+                ::OutputDebugStringW(L"PropertyGroupDescription.StringComparison is not a CollectionViewStringComparison; the change was undone.\n");
+                return S_OK;
             }
             IFC_RETURN(NotifyOwners());
         }
