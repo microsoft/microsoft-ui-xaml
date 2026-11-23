@@ -587,13 +587,59 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
 
                 Log.Comment($"Loads until HasMoreItems turned false: {loads}");
-                Verify.IsLessThanOrEqual(loads, 5, "The loads stop.");
+                Verify.IsLessThanOrEqual(loads, 11, "The loads stop.");
                 Verify.AreEqual(visible, view.Count, "Precondition: the filter rejected every loaded item.");
                 Verify.IsTrue(rows.HasMoreItems, "The source still has more.");
+
+                shaping.Filter = item => ((EngineRow)item).Score < 99;
+                Verify.IsTrue(view.HasMoreItems, "A new rule recomputes the view and loading starts over.");
 
                 shaping.Filter = null;
                 Verify.IsGreaterThan(view.Count, visible);
                 Verify.IsTrue(view.HasMoreItems, "Once the view grows, HasMoreItems follows the source again.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies sort and group descriptions, GroupNames and StringComparison declared in compiled XAML (XBF) load and shape the view.")]
+        public void VerifyShapingDeclaredInCompiledXaml()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var page = new MUXControlsTestApp.CollectionViewShapingMarkupPage();
+                var cvs = (CollectionViewSource)page.Resources["People"];
+                Verify.AreEqual(1, cvs.SortDescriptions.Count);
+                Verify.AreEqual("Name", cvs.SortDescriptions[0].PropertyName);
+                Verify.AreEqual(CollectionViewSortDirection.Descending, cvs.SortDescriptions[0].Direction);
+                var group = (PropertyGroupDescription)cvs.GroupDescriptions[0];
+                Verify.AreEqual(CollectionViewStringComparison.OrdinalIgnoreCase, group.StringComparison);
+                Verify.AreEqual("Z X", string.Join(" ", group.GroupNames));
+
+                cvs.Source = MakeEngineRows();
+                Verify.AreEqual("Z X Y", string.Join(" ", cvs.View.CollectionGroups.Cast<ICollectionViewGroup>().Select(g => g.Group)));
+                Verify.AreEqual("Bo Lin Kai Eve Ada", EngineNames(cvs.View));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a sparse filter (one match every few loads) keeps loading through a shaped view: only loads in a row that bring the view nothing stop it.")]
+        public void VerifySparseFilteredIncrementalLoadingContinues()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = new IncrementalEngineRows(MakeEngineRows());
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                var shaping = (ICollectionViewShaping)view;
+                shaping.Filter = item => ((EngineRow)item).Score < 100 || ((EngineRow)item).Id % 35 == 0;
+                var visible = view.Count;
+
+                for (var loads = 0; loads < 40; loads++)
+                {
+                    Verify.IsTrue(view.HasMoreItems, $"Still loading after {loads} loads.");
+                    view.LoadMoreItemsAsync(5);
+                }
+                Verify.IsGreaterThan(view.Count, visible, "The sparse matches were loaded.");
             });
         }
 
@@ -1013,6 +1059,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreSame(focusedItem, ((TableViewRow)node).DataContext, $"{count} rows: focus followed the item to its new row.");
                 });
             }
+        }
+
+        private static object FocusedRowItem(TableView tableView)
+        {
+            var node = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+            while (node != null && !(node is TableViewRow))
+            {
+                node = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(node);
+            }
+            return (node as TableViewRow)?.DataContext;
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies focus follows its item when rows moved above it first shifted its row: the focused row is found where it is, not where focus last landed.")]
+        public void VerifyFocusFollowsItemAfterRowsMovedAboveIt()
+        {
+            var list = new ObservableCollection<LiveRow>(Enumerable.Range(1, 30).Select(i => new LiveRow { Id = i, Name = $"R{i:0000}", Score = i, Team = "X" }));
+            var tableView = PlaceLive(list, s => s.IsLiveSortingRequested = true, out _);
+            var focusedItem = list[5];
+            RunOnUIThread.Execute(() => Verify.IsTrue(GetRowForItem(tableView, focusedItem).Focus(FocusState.Keyboard), "Precondition: the row takes focus."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => list[20].Score = 0);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.AreSame(focusedItem, FocusedRowItem(tableView), "Precondition: a move above the row keeps focus on it."));
+
+            RunOnUIThread.Execute(() => focusedItem.Score = 25);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => Verify.AreSame(focusedItem, FocusedRowItem(tableView), "Focus followed the item to its new row."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing another row at the index the focused row had before an insert above it neither moves focus nor scrolls back to it.")]
+        public void VerifyUnrelatedRemoveDoesNotScrollBackToFocus()
+        {
+            var list = new ObservableCollection<LiveRow>(Enumerable.Range(1, 300).Select(i => new LiveRow { Id = i, Name = $"R{i:0000}", Score = i, Team = "X" }));
+            var tableView = PlaceLive(list, s => { }, out _);
+            var focusedItem = list[10];
+            RunOnUIThread.Execute(() => Verify.IsTrue(GetRowForItem(tableView, focusedItem).Focus(FocusState.Keyboard), "Precondition: the row takes focus."));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => list.Insert(0, new LiveRow { Id = 1000, Name = "R1000", Score = 0, Team = "X" }));
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Vertical, 3000.0);
+
+            double offset = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                offset = GetBodyScroller(tableView).VerticalOffset;
+                list.Remove(list.Single(row => row.Score == 10));
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(Math.Abs(offset - GetBodyScroller(tableView).VerticalOffset) <= 1.0, $"The viewport stays where the user scrolled it ({offset} -> {GetBodyScroller(tableView).VerticalOffset}).");
+                var item = FocusedRowItem(tableView);
+                Verify.IsTrue(item == null || ReferenceEquals(item, focusedItem), "Focus is not moved to another row.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app that moves focus to another row right after the view raises a Reset keeps that focus: the focused item is not followed over it.")]
+        public void VerifyAppFocusAfterResetIsKept()
+        {
+            var list = new ObservableCollection<LiveRow>(Enumerable.Range(1, 30).Select(i => new LiveRow { Id = i, Name = $"R{i:0000}", Score = i, Team = "X" }));
+            var tableView = PlaceLive(list, s => { }, out var cvs);
+            RunOnUIThread.Execute(() => Verify.IsTrue(GetRowForItem(tableView, list[3]).Focus(FocusState.Keyboard), "Precondition: the row takes focus."));
+            SettleLayout(tableView);
+
+            LiveRow first = null;
+            RunOnUIThread.Execute(() =>
+            {
+                cvs.SortDescriptions.Clear();
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Descending));
+                tableView.UpdateLayout();
+                first = (LiveRow)cvs.View[0];
+                Verify.IsTrue(GetRowCell(GetRowForItem(tableView, first), 0).Focus(FocusState.Programmatic), "Precondition: the app focuses row 0.");
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.AreSame(first, FocusedRowItem(tableView), "The app's focus stays."));
         }
 
         [TestMethod]

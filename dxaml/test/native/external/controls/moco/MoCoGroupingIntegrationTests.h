@@ -136,6 +136,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView follows a CollectionViewSource view whose grouping starts in a source VectorChanged handler and stops in a ContainerContentChanging handler")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ReorderOverSortedViewByPointer)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a pointer drag starts no reorder on a ListView over a sorted CollectionViewSource view, and that reorder works again once the view has no rule left")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ReorderIsOffOverSortedView)
             TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder does nothing on a ListView with CanReorderItems over a sorted CollectionViewSource view, as over a grouped one")
         END_TEST_METHOD()

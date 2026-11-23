@@ -353,6 +353,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource Filter event filters the view and replaces the view's Filter delegate while it has handlers, as WPF's does")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceFilterEventsUnderGCStress)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify Filter handlers can be added, removed and released on the UI thread while garbage collections walk the views")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CollectionViewSourceFilterEventDoesNotLeak)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify a CollectionViewSource with Filter event handlers and its view are destroyed once released (no native reference cycle), and a view kept alone keeps filtering")
             END_TEST_METHOD()
