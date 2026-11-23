@@ -548,6 +548,82 @@ text, animation, and interop contracts. Then establish the M0 baseline before co
 | Walk approximations | Opacity is folded into primitive alpha only when an opacity group draws exactly one primitive; otherwise it uses `PushOpacityLayer`. Clips are world-space axis-aligned bounding boxes, plus rounded clips for CornerRadius. Gradients are painted as their average stop color. Text is drawn from XAML's glyph runs. `DrawText` is the fallback, using the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em | Each approximation is a known fidelity gap rather than a crash or a silent omission |
 | Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint. `WINUI_IMMEDIATE_STATS=<path.txt>` writes one line per painted island frame, with element counts (visited, painted, culled), commands, blits, damage, walk and paint time in µs, and reused subtrees, followed by `# unsupported` lines. `WINUI_IMMEDIATE_PRESENT_UNION=1` also repaints the previous frame's damage. Mid-scroll captures showed it is not needed: flip-model `Present1` dirty rects carry the rest of the frame forward | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
 
+### Full XAML coverage: clips3d
+
+This covers families F3 (clips and transforms) and F4 (3D). It replaces the "Walk approximations" row for clips: clips are no longer world-space axis-aligned bounding boxes.
+
+**Painter contract.** Two pairs of methods were added in the `// ---- clips3d ----` block of `ImmediatePainter.h`:
+
+- `PushGeometryClip` / `PopGeometryClip` take device-space path data (figures of points) and clip antialiased.
+  - D2D: a layer with a geometric mask.
+  - GDI+: region clips are aliased, so the content is drawn into a scratch layer, masked by an antialiased fill of the path, and then composited.
+- `PushPerspectiveLayer` / `PopPerspectiveLayer` take a device-pixel region and a 4x4 matrix. The subtree is drawn into an offscreen target covering that region, which is then drawn with the matrix.
+  - D2D: `DrawBitmap` with `D2D1_MATRIX_4X4_F`.
+  - GDI+: GDI+ has no perspective, so on pop the layer is resampled per pixel through the inverse homography (bilinear, premultiplied) into the shadow scratch, then copied 1:1 under the outer clip. This is exact up to filtering, so no mesh approximation is needed.
+
+D2D keeps up to 4 target-sized perspective bitmaps (one per nesting depth) only while consecutive frames use them; a frame that doesn't use a slot releases it. GDI+ uses its layer stack and the existing shadow scratch, which is released when it grows unusually large. There are 13 conformance cases in `ImmediatePainterClips3DTests`, run in every mode. They cover:
+
+- pixels inside, outside and on the antialiased edge of a geometry clip;
+- rotated, nested, empty and popped clips;
+- perspective corner mapping for an identity, an affine and a depth matrix;
+- perspective layers combined with push transforms, clips, damage, DPI scale and nested opacity.
+
+**Walk** (`ImmediateRenderer.Clips3D.inl` plus the walk section of `ImmediateRenderer.cpp`):
+
+- **Clips:**
+  - A rectangle clip under a scale-and-translate world stays on the fast axis-aligned path.
+  - Any other clip becomes a geometry clip group plus a conservative bounds rectangle for culling and damage:
+    - rectangles under rotation or skew;
+    - `RectangleGeometry` with a `Transform`;
+    - rounded rectangle clips;
+    - hand-off visual clips.
+  - Element clips are pushed inside the opacity or independent-transform layer, so render-thread transforms move them with the content.
+  - Ancestor layout clips are pushed in parent space.
+- **3D:**
+  - Each element's local 4x4 matrix is `handoff · Projection · Transform3D · facade 3D (Rotation, RotationAxis, Scale.Z, Translation.Z, TransformMatrix) · local 2D`. It is built with the same core helpers HWWalk uses (`LocalTransformBuilder`, `CProjection`, `CTransform3D`).
+  - The world matrix is kept unflattened, as Composition does. That makes nested Transform3D render correctly.
+  - When the combined homography's w is constant to float precision over the element bounds (no perspective divide), it is drawn as a plain 2D transform and needs no layer.
+  - Otherwise a perspective layer is opened. Its region is the element bounds intersected with the inverse-mapped clip, snapped to device pixels.
+  - Damage and culling use the projected quad.
+  - Inside a layer, these are disabled:
+    - scroller blits;
+    - independent render-thread probes;
+    - backdrop blur (GDI+);
+    - ClearType (text is drawn grayscale).
+- **Hand-off visual statics** (`ImmediateRenderer.HandOff.*`): the app-set static properties of `ElementCompositionPreview.GetElementVisual` are read and painted natively:
+  - Offset, Size, Scale, RotationAngle, RotationAxis, CenterPoint, TransformMatrix, Opacity;
+  - InsetClip and RectangleClip (including corner radii);
+  - GeometricClip with a rectangle, rounded rectangle or ellipse geometry.
+
+**Fallback policy.** `IsHandOffVisualTouched` now falls back only for these cases:
+
+- an active app Composition animation on the hand-off visual or its clip, detected with `ICompositionObject4::TryGetAnimationController` per animatable property (animations on template parts of built-in `Microsoft.UI.Xaml.Controls` controls, such as NavigationView's selection indicator, paint their static values instead);
+- a clip that can't be read back (a `CompositionPathGeometry` or a custom geometry);
+- a facade animation (`StartAnimation` on Translation, Scale and other UIElement facades).
+
+An app-created child visual (`SetElementChildVisual`) still falls back through its own hand-in rule.
+
+Policy unit tests cover static properties (no fallback), an animated property (fallback) and a path clip (fallback).
+
+**What still falls back, approximates or differs:**
+
+- **Not detected:** ExpressionAnimations on the hand-off visual can't be detected, so they paint their current static value.
+- **Approximated:**
+  - A perspective layer larger than the window is clamped to the window size and reported as `Perspective layer larger than the window:approximated`.
+  - Backdrop materials and ClearType inside a perspective layer are approximated.
+- **Composition-mode differences that pages must avoid:**
+  - XAML itself writes the hand-off visual's Offset, TransformMatrix and Opacity, so in Composition an app value set before layout can be overwritten. The coverage pages place such elements at layout offset 0.
+  - In Composition, changing a static hand-off property after the first frame doesn't necessarily schedule a XAML frame.
+
+**Fidelity.** These pages were run on the same machine and compared with Composition, as mean absolute difference per channel (0-1):
+
+- F3-clips: rotated rect clip, rotated clip on a rotated parent, nested clips under skew, layout clip under rotation, and hand-off ellipse, rounded-rect and rectangle clips.
+- F4-3d: PlaneProjection RotationY 30 and 60, and XYZ with offsets; Matrix3DProjection; nested PerspectiveTransform3D and CompositeTransform3D; 2D facades; RotationAxis Y; TransformMatrix with perspective; hand-off Offset, Scale and Rotation; hand-off Opacity with RotationAxis.
+
+Every page measured at most 0.0005 in GDI+ and D2D-SW. The differences are antialiasing at edges, so the pages gate at 0.005. `handoff-path-clip` falls back as expected (`# fallback Grid Hand-off Composition visual`).
+
+**Memory.** No per-element retained surfaces were added. The extra memory is the D2D perspective slots described above, which are bounded and released after any frame that doesn't use them, and transient GDI+ layer surfaces for antialiased geometry clips and perspective layers.
+
 ## Source references
 
 These are investigation entry points, not permanent line-number contracts. Paths are relative to the repository unless
