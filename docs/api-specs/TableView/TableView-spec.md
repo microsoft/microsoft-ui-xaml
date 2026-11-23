@@ -585,6 +585,7 @@ Template parts:
 | `PART_RowsRepeater` | `ItemsRepeater` | Repeater that displays rows. |
 | `PART_EmptyStatePresenter` | `ContentControl` | Optional presenter for `EmptyTemplate`. |
 | `PART_ColumnReorderIndicator` | `Rectangle` | Optional, `x:Load="False"`: the drop line of a column reorder drag, realized by the first drag; see [Reordering columns](#reordering-columns). |
+| `PART_ColumnReorderDragVisual` | `Border` | Optional, `x:Load="False"`: the floating header of a column reorder drag; an `Image` child shows the source header's snapshot. See [Reordering columns](#reordering-columns). |
 
 The default table template's `PART_HeaderGridLine` paints an always-present bottom rule with
 `TabularSurfaceHeaderSeparatorBrush`. The overlay does not consume header layout space.
@@ -1210,9 +1211,9 @@ apart.
 
 - **Gesture.** Press on a header and drag it horizontally. The drag starts once the system's gesture
   threshold is passed, the same manipulation path the resize gripper uses, so mouse (left button),
-  touch and pen behave alike. A 2 px accent line between two headers marks where the column will
-  land; it is hidden while the drop would leave the column where it is. Releasing drops the column
-  there. A press that never passes the threshold is still a click, so it sorts as before.
+  touch and pen behave alike. A translucent copy of the header follows the pointer, and a 4 px
+  rounded accent line between two headers marks where the column will land; the line is hidden while
+  the drop would leave the column where it is. Releasing drops the column there. A press that never passes the threshold is still a click, so it sorts as before.
 - **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
   capture, unloading the table, a pan of the table body or a horizontal scroll, replacing `Columns`, or a
   change to `Columns` or to a column's `Visibility` or `FrozenEdge` cancels without changing anything.
@@ -1242,7 +1243,7 @@ apart.
   is never committed implicitly. Commit or cancel the edit first.
 - **Focus.** A focused body cell keeps focus when its column moves, and the body's column cursor stays
   on its column.
-- **High Contrast.** The line uses `SystemColorHighlightColor`.
+- **High Contrast.** The line and the floating header's border use `SystemColorHighlightColor`.
 - **Events.** `ColumnReordered` is raised once, after the move and its announcement; if a handler
   throws, the move stays applied. A gesture that drops a column back where it was raises nothing.
   Changes the app makes to `Columns` do not raise it.
@@ -1277,8 +1278,7 @@ The chord does not collide with existing header keys: bare arrows move between h
 
 Not in this proposal; each can be added later without changing the API above.
 
-- **Drag visuals beyond the line:** a header snapshot following the pointer and dimming the source
-  header.
+- **Dimming the source header** while it is dragged.
 - **Auto-scroll** while dragging near the ends of a wide table. Until then a column moves within the
   visible headers per drag, and the keys reach any position.
 - **Committing an open edit** on a move. A move is refused while editing instead.
@@ -1297,9 +1297,10 @@ Not in this proposal; each can be added later without changing the API above.
 3. **Locked-column holds.** A user reorder keeps the holds that a user resize put on locked `*`
    columns, though the held column may now sit after the column that was resized. Is that the right
    model, or should the holds be re-derived for the new order?
-4. **Template part.** The drop line is an optional part, `PART_ColumnReorderIndicator`. Should it be a
-   documented template part, or should the control draw it without exposing a name? A retemplated
-   table without it still reorders, with no line.
+4. **Template parts.** The drop line and the floating header are optional parts,
+   `PART_ColumnReorderIndicator` and `PART_ColumnReorderDragVisual`. Should they be documented template
+   parts, or should the control draw them without exposing names? A retemplated table without them
+   still reorders, without those visuals.
 5. **Cancelability and per-column locking (API review, #12387 Q5).** Does v1 need a cancelable
    `ColumnReordering` event (with its re-entrancy rules) or a per-column `TableViewColumn.CanReorder`?
    Neither is in this proposal; `ColumnReordered` is raised after the move and is not a veto.

@@ -14,9 +14,11 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <winrt/Microsoft.UI.Xaml.Media.Imaging.h>
 #include <vector>
 
 static constexpr std::wstring_view s_ColumnReorderIndicatorPartName{ L"PART_ColumnReorderIndicator"sv };
+static constexpr std::wstring_view s_ColumnReorderDragVisualPartName{ L"PART_ColumnReorderDragVisual"sv };
 
 namespace
 {
@@ -431,11 +433,18 @@ bool TableView::BeginColumnReorderDrag()
     }
 
     // Header-row coordinates; any header scroll during the drag cancels it.
+    winrt::FrameworkElement sourceCell{ nullptr };
     for (auto const& child : host.Children())
     {
         auto const cell = child.try_as<winrt::FrameworkElement>();
         auto const cellColumn = cell ? cell.Tag().try_as<winrt::TableViewColumn>() : nullptr;
-        if (cellColumn && state.edges.size() < state.slots.others.size() && state.slots.others[state.edges.size()] == cellColumn)
+        if (cellColumn && cellColumn == column)
+        {
+            sourceCell = cell;
+            state.grabOffset = state.pressX - cell.TransformToVisual(row).TransformPoint({ 0.0f, 0.0f }).X;
+            state.sourceWidth = cell.ActualWidth();
+        }
+        else if (cellColumn && state.edges.size() < state.slots.others.size() && state.slots.others[state.edges.size()] == cellColumn)
         {
             const double left = cell.TransformToVisual(row).TransformPoint({ 0.0f, 0.0f }).X;
             state.edges.emplace_back(left, left + cell.ActualWidth());
@@ -479,7 +488,48 @@ bool TableView::BeginColumnReorderDrag()
     {
         m_columnReorderIndicator.set(GetTemplateChild(winrt::hstring{ s_ColumnReorderIndicatorPartName }).try_as<winrt::Rectangle>());
     }
+    if (!m_columnReorderDragVisual.get())
+    {
+        m_columnReorderDragVisual.set(GetTemplateChild(winrt::hstring{ s_ColumnReorderDragVisualPartName }).try_as<winrt::Border>());
+    }
+    // The floating header: an empty box until the source header's snapshot arrives, so the drag never waits.
+    if (auto const visual = m_columnReorderDragVisual.get(); visual && sourceCell)
+    {
+        visual.Width(state.sourceWidth);
+        visual.Height(sourceCell.ActualHeight());
+        if (auto const image = visual.Child().try_as<winrt::Image>())
+        {
+            image.Source(nullptr);
+            winrt::Microsoft::UI::Xaml::Media::Imaging::RenderTargetBitmap bitmap;
+            bitmap.RenderAsync(sourceCell).Completed([weakThis = get_weak(), weakImage = winrt::make_weak(image), bitmap, generation = m_columnReorderGeneration](auto const&, winrt::AsyncStatus status)
+                {
+                    auto const strongThis = weakThis.get();
+                    auto const image = weakImage.get();
+                    if (strongThis && image && status == winrt::AsyncStatus::Completed && strongThis->m_columnReorder &&
+                        strongThis->m_columnReorder->dragging && strongThis->m_columnReorderGeneration == generation)
+                    {
+                        image.Source(bitmap);
+                    }
+                });
+        }
+        PlaceColumnReorderDragVisual(*m_columnReorder);
+        visual.Visibility(winrt::Visibility::Visible);
+    }
     return true;
+}
+
+// Follows the pointer through its own Translation, clamped to the header row and, for a scrolling column, the frozen band.
+void TableView::PlaceColumnReorderDragVisual(const ColumnReorderDragState& state)
+{
+    auto const visual = m_columnReorderDragVisual.get();
+    auto const row = m_headerRow.get();
+    if (!visual || !row)
+    {
+        return;
+    }
+    const double minX = (std::max)(0.0, state.bandEdge);
+    const double maxX = (std::max)(minX, row.ActualWidth() - state.sourceWidth);
+    visual.Translation({ static_cast<float>(std::clamp(state.pointerX - state.grabOffset, minX, maxX)), 0.0f, 0.0f });
 }
 
 int32_t TableView::ColumnReorderSlotAt(const ColumnReorderDragState& state)
@@ -504,6 +554,7 @@ bool TableView::UpdateColumnReorderDrag(double translationX)
     auto& state = *m_columnReorder;
     // The manipulation reports physical translation.
     state.pointerX = state.pressX + (FlowDirection() == winrt::FlowDirection::RightToLeft ? -translationX : translationX);
+    PlaceColumnReorderDragVisual(state);
 
     auto const indicator = m_columnReorderIndicator.get();
     auto const row = m_headerRow.get();
@@ -528,7 +579,9 @@ bool TableView::UpdateColumnReorderDrag(double translationX)
     }
     x = (std::max)(x, state.bandEdge);
     const double width = std::isnan(indicator.Width()) ? 0.0 : indicator.Width();
-    indicator.Margin(winrt::Thickness{ std::clamp(x - width / 2.0, 0.0, (std::max)(0.0, row.ActualWidth() - width)), 0.0, 0.0, 0.0 });
+    auto margin = indicator.Margin();
+    margin.Left = std::clamp(x - width / 2.0, 0.0, (std::max)(0.0, row.ActualWidth() - width));
+    indicator.Margin(margin);
     indicator.Visibility(winrt::Visibility::Visible);
     return true;
 }
@@ -581,6 +634,14 @@ void TableView::EndColumnReorderDrag(bool commit)
     if (auto const indicator = m_columnReorderIndicator.get())
     {
         indicator.Visibility(winrt::Visibility::Collapsed);
+    }
+    if (auto const visual = m_columnReorderDragVisual.get())
+    {
+        visual.Visibility(winrt::Visibility::Collapsed);
+        if (auto const image = visual.Child().try_as<winrt::Image>())
+        {
+            image.Source(nullptr);
+        }
     }
     if (!state.dragging)
     {

@@ -1930,7 +1930,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a mouse drag in LTR and RTL shows the 2px indicator at the reading-order drop edge and commits on release, and that Esc, a Columns change, losing capture and unloading each cancel the drag.")]
+        [TestProperty("Description", "Verifies a mouse drag in LTR and RTL shows the 4px line at the reading-order drop edge and the floating header under the pointer, commits on release, and that Esc, a Columns change, losing capture and unloading each cancel the drag.")]
         public void VerifyDragIndicatorCommitAndCancel()
         {
             foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
@@ -1960,14 +1960,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var line = VisualBounds(indicator);
                     var edge = flowDirection == FlowDirection.RightToLeft ? role.Left : role.Right;
                     Log.Comment($"Role {role}, indicator {line}.");
-                    Verify.AreEqual(2.0, line.Width, "The indicator is 2px wide.");
-                    Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - edge), 2.0, "The indicator marks the edge Role shares with City.");
+                    Verify.AreEqual(4.0, line.Width, "The indicator is 4px wide.");
+                    Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - edge), 3.0, "The indicator marks the edge Role shares with City.");
+
+                    // Pressed at Name's middle, dragged to 3/4 of Role: the floating header is Name's size, centred on the pointer less the drag threshold.
+                    var name = VisualBounds(GetHeaderCell(tableView, 0));
+                    var visual = VisualBounds(DragVisual(tableView));
+                    var roleCell = GetHeaderCell(tableView, 1);
+                    var pointer = roleCell.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(roleCell.ActualWidth * 0.75, 0)).X;
+                    Log.Comment($"Name {name}, floating header {visual}, pointer {pointer}.");
+                    Verify.AreEqual(Visibility.Visible, DragVisual(tableView).Visibility, "The floating header shows while dragging.");
+                    Verify.IsLessThan(Math.Abs(visual.Width - name.Width) + Math.Abs(visual.Height - name.Height), 1.0, "The floating header has the source header's size.");
+                    Verify.IsLessThan(Math.Abs(((visual.Left + visual.Right) / 2) - pointer), 6.0, "The floating header follows the pointer, keeping the grab offset.");
                 });
                 RunOnUIThread.Execute(() =>
                 {
                     VerifyOrder(tableView, "Role,Name,City", "after the drop");
                     Verify.AreEqual(1, reordered);
                     Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), "The drop hides the indicator.");
+                    Verify.AreEqual(Visibility.Collapsed, DragVisual(tableView).Visibility, "The drop hides the floating header.");
                 });
 
                 var cancels = new (string name, Action action)[]
@@ -1984,7 +1995,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             cancel();
                             IdleSynchronizer.Wait();
-                            RunOnUIThread.Execute(() => Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), $"{cancelName} must cancel the drag."));
+                            RunOnUIThread.Execute(() =>
+                            {
+                                Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), $"{cancelName} must cancel the drag.");
+                                Verify.AreEqual(Visibility.Collapsed, DragVisual(tableView)?.Visibility ?? Visibility.Collapsed, $"{cancelName} must hide the floating header.");
+                            });
                         });
                 }
 
@@ -2123,8 +2138,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var indicator = (Rectangle)tableView.FindVisualChildByName("PART_ColumnReorderIndicator");
                     var line = VisualBounds(indicator);
                     var band = VisualBounds(GetHeaderCell(tableView, 0));
-                    Log.Comment($"Band {band}, indicator {line}.");
+                    var visual = VisualBounds(DragVisual(tableView));
+                    Log.Comment($"Band {band}, indicator {line}, floating header {visual}.");
                     Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - band.Right), 2.0, "The indicator sits at the frozen band's edge.");
+                    Verify.IsLessThan(Math.Abs(visual.Left - band.Right), 1.0, "The floating header stops at the frozen band's edge.");
                 });
             }
             finally
@@ -2349,6 +2366,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
             return point;
         }
+
+        // Loaded on the first drag. Call on the UI thread.
+        private static Border DragVisual(TableView tableView) => tableView.FindVisualChildByName("PART_ColumnReorderDragVisual") as Border;
 
         // The indicator is loaded on the first drag. Call on the UI thread.
         private static Visibility IndicatorVisibility(TableView tableView)

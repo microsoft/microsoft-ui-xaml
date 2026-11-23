@@ -1785,6 +1785,9 @@ private:
         // The header band scrolled; the drag ends without a drop.
         bool stale{ false };
         double headerOffset{ 0.0 };
+        // Pointer-to-source-header offset and source width, for the floating header.
+        double grabOffset{ 0.0 };
+        double sourceWidth{ 0.0 };
         double bandEdge{ -std::numeric_limits<double>::infinity() };
         ColumnReorderSlots slots;
         // Leading and trailing edge of each of slots.others.
@@ -1797,6 +1800,7 @@ private:
     bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
     bool BeginColumnReorderDrag();
     bool UpdateColumnReorderDrag(double translationX);
+    void PlaceColumnReorderDragVisual(const ColumnReorderDragState& state);
     void EndColumnReorderDrag(bool commit);
     static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state);
     bool ConsumeColumnReorderTap();
@@ -1807,6 +1811,7 @@ private:
 
     std::optional<ColumnReorderDragState> m_columnReorder;
     tracker_ref<winrt::Rectangle> m_columnReorderIndicator{ this };
+    tracker_ref<winrt::Border> m_columnReorderDragVisual{ this };
     DragEscapeHook m_columnReorderEscape;
     winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
     bool m_suppressHeaderTap{ false };

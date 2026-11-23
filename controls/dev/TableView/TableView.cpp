@@ -983,6 +983,7 @@ try
     CancelColumnReorderDrag();
     m_suppressHeaderTap = false;
     m_columnReorderIndicator.set(nullptr);
+    m_columnReorderDragVisual.set(nullptr);
     HookColumnReorderInput();
     // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
     // has all three, so a missing one is the app's template.

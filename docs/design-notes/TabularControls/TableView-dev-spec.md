@@ -90,6 +90,7 @@ TableView
       ├─ Border PART_HeaderRow                    header background; contains overlaid PART_HeaderGridLine
       │  ├─ ScrollViewer PART_HeaderScroller      no user scrolling; H offset driven from the body
       │  │  └─ TableViewCellsPanel PART_HeaderHost   one TableViewColumnHeader per column
+      │  ├─ Border PART_ColumnReorderDragVisual  floating header while dragging, x:Load=False
       │  └─ Rectangle PART_ColumnReorderIndicator  reorder drop line, x:Load=False
       └─ ScrollViewer PART_BodyScroller           H + V, auto scrollbars
          └─ Grid PART_BodyContent
@@ -205,7 +206,10 @@ Reorder is opt-in (`CanUserReorderColumns`, default `false`) and lives in `Table
 - **Cancel.** `Esc` uses `DragEscapeHook` (`controls/dev/ResizeGripper`), the handled-events-too `KeyDown` hook on the `XamlRoot` content that the resize gripper also uses. A change to `Columns`, a column's `Visibility` or `FrozenEdge`, unloading, a cancel of the drag's own pointer or the host losing its capture cancels. A header scroll, a body pan or starting the header scroll animation also cancels; the first two can arrive inside layout, where releasing capture fail-fasts, so they mark the drag stale and cancel on the next tick (matched by a drag generation). Later manipulation events are ignored.
 - **Tap.** A drag suppresses the header's next `Tapped`, so the drop does not also sort.
 
-**Visuals.** Only the optional `PART_ColumnReorderIndicator` (`Rectangle`, `x:Load="False"`, realized by the first drag; `TableViewColumnReorderIndicatorBrush`, accent or `SystemColorHighlightColor` in High Contrast; `TableViewColumnReorderIndicatorWidth` = 2), positioned by its left margin in the header row, clamped to it, and hidden while the drop would leave the column where it is. When a scrolling header sits under the frozen band, the line yields to the band's edge.
+**Visuals.** Two optional parts in the header row's grid, outside `PART_HeaderHost` so the header scroll `Translation` does not move them, both realized by the first drag, `Raw` and not hit-testable, shown and hidden without animation:
+
+- `PART_ColumnReorderIndicator` (`Rectangle`; `TableViewColumnReorderIndicatorBrush`, accent or `SystemColorHighlightColor` in High Contrast; width 4, corner radius 2, inset 4 px top and bottom), positioned by its left margin in the header row, clamped to it, and hidden while the drop would leave the column where it is. When a scrolling header sits under the frozen band, the line yields to the band's edge.
+- `PART_ColumnReorderDragVisual` (`Border` with an `Image`; opacity 0.8, `TabularSurfaceHeaderBackgroundBrush`, 1 px `TableViewColumnReorderDragVisualBorderBrush`, `ControlStrongStrokeColorDefault` or `SystemColorHighlightColor` in High Contrast), the source header's size. It shows one `RenderTargetBitmap` snapshot of the source header, or an empty box until the snapshot completes, and follows the pointer by its own `Translation`, keeping the grab offset, clamped to the header row and, for a scrolling column, to the frozen band's trailing edge. Every end of the drag collapses it and releases the bitmap.
 
 **Keyboard.** `Ctrl+Shift+Left/Right` on a header moves it by one visible position, mirrored under RTL. It runs after the resize chord and before header navigation, which ignores `Ctrl`. While reorder is enabled, the chord is consumed on any header, moved or not, so it cannot fall through to focus navigation.
 
@@ -415,7 +419,7 @@ Text uses the same divider-free center as selection. `RefreshCellVisualGeometry`
 
 | Template | Parts |
 |---|---|
-| `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional), `PART_LayoutRoot` (`FrameworkElement`, optional, arranged inner frame for terminal separator comparison), `PART_ColumnReorderIndicator` (`Rectangle`, optional, the column reorder drop line). |
+| `TableView` | Resolved: `PART_HeaderHost` (`Panel`, required), `PART_RowsRepeater` (`ItemsRepeater`, required, do not bind `ItemsSource`), `PART_HeaderRow` (collapsed when headers hide), `PART_EmptyStatePresenter` (`ContentControl`, optional), `PART_LayoutRoot` (`FrameworkElement`, optional, arranged inner frame for terminal separator comparison), `PART_ColumnReorderIndicator` (`Rectangle`, optional, the column reorder drop line), `PART_ColumnReorderDragVisual` (`Border`, optional, the floating header while dragging). |
 | `TableViewRow` | Resolved: `PART_CellsHost` (`Panel`, required), `PART_GridLineBorder` and `PART_RowExpanderGutter` (optional). State: `PART_RootBorder`, `PART_CellForegroundPresenter`, `PART_SelectionIndicator`, `PART_RowExpanderIcon`. |
 | `TableViewColumnHeader` | Resolved, optional: `PART_ContentPresenter`, `PART_GridLine`, `PART_SortIndicatorHost`, `PART_ResizeGripperHost`. State: `PART_Background`, `PART_ContentPresenter`, `PART_SortIndicatorHost`. |
 | `TableViewGroupHeader` | Resolved, optional: `PART_GridLineBorder`, `PART_ExpanderGutter` (`Border`; content padding, and filtered from UIA children). State: `PART_Root`, `PART_ExpanderIcon`, `PART_ContentPresenter`. |
