@@ -192,12 +192,12 @@ namespace RenderingBackendTests
         {
             return;
         }
-        const PathBuilder small = Rectangle(8, 8, 16, 16);
+        const PathBuilder smallRect = Rectangle(8, 8, 16, 16);
         Paint(*painter, [&](IImmediatePainter& p)
         {
             p.Clear(c_white);
             p.PushAxisAlignedClip({ 0, 0, 48, 64 });
-            p.PushGeometryClip(small.Data());
+            p.PushGeometryClip(smallRect.Data());
             p.FillRectangle(c_everything, c_blue);
             p.PopGeometryClip();
             p.FillRectangle({ 32, 32, 64, 64 }, c_red);
