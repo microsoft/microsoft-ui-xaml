@@ -1231,6 +1231,28 @@ namespace
             Push(c, rect, m, ctx.clip, nullptr);
         }
 
+        // True when an earlier command of this display list draws under `rect`.
+        bool HasPaintUnder(const RectF& rect, const CMILMatrix& m) const
+        {
+            const RectF device = ToDevice(IntersectRect(TransformRectBounds(m, rect), ctx.clip), ctx.scale);
+            if (IsEmptyRect(device))
+            {
+                return false;
+            }
+            for (const Command& command : list.commands)
+            {
+                // A drop shadow alone is not a backdrop (it surrounds the popup content that casts it).
+                const bool draws = command.type != CommandType::Nop && command.type != CommandType::PushLayer
+                    && command.type != CommandType::PopLayer && command.type != CommandType::PushRoundedClip
+                    && command.type != CommandType::PopRoundedClip && command.type != CommandType::Shadow;
+                if (draws && !IsEmptyRect(IntersectRect(command.deviceBounds, device)))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
         {
             if (text.empty() || fontSize <= 0) return;
@@ -1673,7 +1695,15 @@ static bool EmitMaterialFill(
         if (acrylic.blur)
         {
             // Noise texture is not drawn (small, costly to sample per pixel).
-            emitter.Backdrop(rect, rx, ry, ImmediateRenderingPolicy::AcrylicBlurRadius, m);
+            if (emitter.HasPaintUnder(rect, m))
+            {
+                emitter.Backdrop(rect, rx, ry, ImmediateRenderingPolicy::AcrylicBlurRadius, m);
+            }
+            else
+            {
+                // Nothing beneath (e.g. the root of a windowed popup): the backdrop is the opaque fallback color.
+                emitter.Fill(rect, rx, ry, acrylic.opaqueFallback, m);
+            }
             emitter.Fill(rect, rx, ry, acrylic.luminosity, m);
             emitter.Fill(rect, rx, ry, acrylic.tint, m);
         }

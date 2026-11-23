@@ -42,6 +42,9 @@ namespace ImmediateRenderingMaterials
         RenderingBackend::ColorF luminosity;
         RenderingBackend::ColorF tint;
         RenderingBackend::ColorF fallback;
+        // FallbackColor made opaque (times the brush opacity): MUXC blends the backdrop onto it before blurring, which
+        // is all that shows where nothing is painted beneath (a windowed popup's own surface).
+        RenderingBackend::ColorF opaqueFallback;
         const wchar_t* detail = nullptr;      // unsupported-content detail to report, or nullptr
     };
 
