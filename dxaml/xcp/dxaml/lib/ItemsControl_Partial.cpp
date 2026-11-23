@@ -316,6 +316,17 @@ _Check_return_ HRESULT ItemsControl::OnCollectionViewPropertyChanged(_In_ xaml_d
     IFC_RETURN(pArgs->get_PropertyName(name.GetAddressOf()));
     if (wrl_wrappers::HStringReference(L"CollectionGroups") == name.Get())
     {
+        // Measure updates IsGrouping; until then, a view that stopped grouping must not be read as grouped.
+        auto spView = m_tpCollectionViewForGrouping.AsOrNull<xaml_data::ICollectionView>();
+        if (spView)
+        {
+            ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spGroups;
+            IFC_RETURN(spView->get_CollectionGroups(&spGroups));
+            if (!spGroups)
+            {
+                IFC_RETURN(SetIsGrouping(FALSE));
+            }
+        }
         IFC_RETURN(ClearContainers(/*bHostIsReplaced*/ FALSE));
     }
     return S_OK;

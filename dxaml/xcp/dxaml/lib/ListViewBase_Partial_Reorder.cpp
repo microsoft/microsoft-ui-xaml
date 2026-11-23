@@ -6,6 +6,7 @@
 #include "ListViewBaseItem.g.h"
 #include "AutomationPeer.g.h"
 #include "ItemCollection.g.h"
+#include "VectorCollectionView.g.h"
 #include "DragStartingEventArgs.g.h"
 #include "DragItemsStartingEventArgs.g.h"
 #include "DragItemsCompletedEventArgs.g.h"
@@ -1214,6 +1215,14 @@ _Check_return_ HRESULT ListViewBase::IsNotGroupingAndHostIsLookupPanel(
 
     if (!isGrouping)
     {
+        // As a grouped view, a sorted or filtered view decides the order itself: it cannot be reordered.
+        bool isShaped = false;
+        IFC(IsItemsSourceSortedOrFiltered(&isShaped));
+        if (isShaped)
+        {
+            goto Cleanup;
+        }
+
         // To match pointer reordering, only allow the action if our panel is an IItemLookupPanel,
         // even though it's technically possible to do keyboard reordering without this interface.
         ctl::ComPtr<IPanel> spItemsHost;
@@ -1223,6 +1232,44 @@ _Check_return_ HRESULT ListViewBase::IsNotGroupingAndHostIsLookupPanel(
 
 Cleanup:
     RRETURN(hr);
+}
+
+// Whether ItemsSource is a collection view that sorts or filters: a shaped VectorCollectionView, or an app view
+// (ICollectionViewShaping) with SortDescriptions, a CustomSort or a Filter.
+_Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped)
+{
+    ctl::ComPtr<IInspectable> spItemsSource;
+    *pIsShaped = false;
+
+    IFC_RETURN(get_ItemsSource(&spItemsSource));
+    auto spVectorView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get());
+    if (spVectorView)
+    {
+        *pIsShaped = spVectorView->IsShaped();
+        return S_OK;
+    }
+
+    auto spShaping = ctl::query_interface_cast<xaml_data::ICollectionViewShaping>(spItemsSource.Get());
+    if (!spShaping)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<wfc::IObservableVector<xaml_data::SortDescription*>> spSortDescriptions;
+    ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter;
+    ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort;
+    UINT sortCount = 0;
+    IFC_RETURN(spShaping->get_SortDescriptions(&spSortDescriptions));
+    if (spSortDescriptions)
+    {
+        ctl::ComPtr<wfc::IVector<xaml_data::SortDescription*>> spSortVector;
+        IFC_RETURN(spSortDescriptions.As(&spSortVector));
+        IFC_RETURN(spSortVector->get_Size(&sortCount));
+    }
+    IFC_RETURN(spShaping->get_Filter(&spFilter));
+    IFC_RETURN(spShaping->get_CustomSort(&spCustomSort));
+    *pIsShaped = sortCount > 0 || spFilter || spCustomSort;
+    return S_OK;
 }
 
 // Returns TRUE if reordering is enabled. This means CanReorderItems is TRUE,
