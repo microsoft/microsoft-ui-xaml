@@ -249,7 +249,7 @@ accessibility, selection, and text semantics must not be changed merely to obtai
 | Composition interop (`ElementCompositionPreview` hand-in/hand-off visuals with independent animations, implicit/connected animations), `SwapChainPanel`, `MediaPlayerElement` | **Per-window fallback to Composition.** When the walk finds such content in a window, that window (island) permanently switches to `HWWalk::RenderRoot` for the rest of its lifetime and the `WindowFallback` event is emitted. Other windows keep the immediate backend. |
 | Hybrid (immediate content plus retained Composition layers in one window) | **Not now.** Backends stay independent: each implements materials, shadows, popups, Lottie, off-thread animation ticking, text, DPI/theme and device-lost recovery itself. Hybrid is reassessed later from measured functional or performance gaps. |
 | WebView2 / hosted HWND (S17), InkCanvas (S18) | **Out of scope** for this phase. |
-| Mica / desktop acrylic (host backdrop) | Approximated by the material's fallback color (same as Composition when transparency effects are disabled); in-app acrylic uses `BlurBackdrop` + tint/luminosity/noise. |
+| Mica / desktop acrylic (host backdrop) | Exact: `SystemBackdrop` is applied to the ContentIsland and drawn by the system behind the premultiplied swap chain; the island root's theme background is skipped when the window has a backdrop (as `BaseContentRenderer` does). In-app acrylic uses `BlurBackdrop` + tint/luminosity/noise. |
 | Execution order | S11, S13, S14, S15, S12, S19, S16, S20, S21, S22, S23, each test-first. |
 
 ### Failure, fallback, and observability
@@ -477,8 +477,9 @@ D2D-SW; all gates pass except where noted.
 
 - The swap chain is premultiplied and transparent wherever nothing is painted, so a system backdrop such as Mica still
   shows through behind the content.
-- `AcrylicBrush` is drawn with a blurred backdrop. Other `XamlCompositionBrushBase` brushes paint their fallback color
-  and are reported as `XamlCompositionBrush:fallback`.
+- `AcrylicBrush` is drawn with a blurred backdrop. App-defined `XamlCompositionBrushBase` brushes are app Composition
+  content and cause a per-window fallback to Composition (see "Full XAML coverage: imaging"); the built-in
+  MonochromaticOverlayPresenter brush paints its fallback color (`XamlCompositionBrush:fallback`, approximated).
 - `ThemeShadow` is drawn as two blurred rounded-rectangle shadows.
 - Projections and non-rectangular clips are skipped and reported. Hand-in Composition visuals cause a per-window
   fallback to Composition.

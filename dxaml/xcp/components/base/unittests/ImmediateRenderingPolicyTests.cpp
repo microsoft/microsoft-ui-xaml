@@ -325,6 +325,9 @@ namespace ImmediateRenderingPolicyTests
         ElementInterop interop;
         interop.appCompositionBrush = true;
         VERIFY_ARE_EQUAL(std::wstring(L"XamlCompositionBrushBase"), std::wstring(GetFallbackReason(interop)));
+        ElementInterop lights;
+        lights.appXamlLight = true;
+        VERIFY_ARE_EQUAL(std::wstring(L"XamlLight"), std::wstring(GetFallbackReason(lights)));
     }
 
     void PolicyTests::NineGridCellsMapInsets()

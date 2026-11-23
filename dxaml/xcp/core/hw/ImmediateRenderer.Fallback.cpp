@@ -15,6 +15,7 @@
 #include <FxCallbacks.h>
 #include <MetadataAPI.h>
 #include "shape.h"
+#include <XamlLightCollection.h>
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -181,6 +182,32 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
         interop.appCompositionBrush = interop.appCompositionBrush
             || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->m_pFill, element)
             || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->GetStroke().get(), element);
+    }
+    // F11: an app XamlLight lights its targets with app Composition lights: per-window fallback like other app
+    // Composition content. Built-in lights (Reveal, in Microsoft.UI.Xaml.*) are not drawn (approximated).
+    if (element->HasXamlLights())
+    {
+        if (const xref_ptr<CXamlLightCollection> lights = element->GetXamlLightCollection())
+        {
+            DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_revealHoverLight, L"Microsoft.UI.Xaml.Media.RevealHoverLight");
+            DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_revealBorderLight, L"Microsoft.UI.Xaml.Media.RevealBorderLight");
+            DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_ambientLight, L"Microsoft.UI.Xaml.Media.XamlAmbientLight");
+            for (CDependencyObject* light : *lights)
+            {
+                if (light == nullptr)
+                {
+                    continue;
+                }
+                if (IsPeerOfType(light, c_revealHoverLight) || IsPeerOfType(light, c_revealBorderLight) || IsPeerOfType(light, c_ambientLight))
+                {
+                    ReportUnsupported(element, L"XamlLight:approximated");
+                }
+                else
+                {
+                    interop.appXamlLight = true;
+                }
+            }
+        }
     }
 
     // S12: AnimatedIcon skips its Lottie visual under immediate rendering and shows FallbackIconSource (AnimatedIcon.cpp).

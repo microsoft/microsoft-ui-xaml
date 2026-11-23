@@ -27,6 +27,7 @@ namespace ImmediateRenderingPolicy
         bool appAnimatedVisualPlayer = false;   // AnimatedVisualPlayer with an app source (not ProgressRing)
         // ---- imaging ----
         bool appCompositionBrush = false;       // app XamlCompositionBrushBase subclass (CompositionBrush set by the app)
+        bool appXamlLight = false;              // app XamlLight subclass (CompositionLight set by the app)
     };
 
     // Reason string for the WindowFallback event, or nullptr when the element can be painted immediately.

@@ -174,6 +174,24 @@ static class InteropCoverage
         Exercise = () => Task.Delay(300),
     };
 
+    // App XamlLight (Composition AmbientLight) on a panel with colored children.
+    [CoveragePage(Family, "app-xaml-light", ExpectFallback = true)]
+    public static CoveragePage AppLight(CoverageContext context)
+    {
+        var lit = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            Children =
+            {
+                new Border { Width = 120, Height = 60, Background = new SolidColorBrush(Color.FromArgb(255, 0x2E, 0x86, 0xDE)) },
+                new Border { Width = 120, Height = 60, Background = new SolidColorBrush(Color.FromArgb(255, 0xF3, 0x9C, 0x12)) },
+            },
+        };
+        lit.Lights.Add(new DimAmbientLight());
+        return new CoveragePage { Root = PageRoot(lit), Exercise = () => Task.Delay(300) };
+    }
+
     // LoadedImageSurface in a CompositionSurfaceBrush, through an app XamlCompositionBrushBase.
     [CoveragePage(Family, "loaded-image-surface", ExpectFallback = true)]
     public static CoveragePage LoadedSurface(CoverageContext context)
@@ -204,6 +222,27 @@ static class InteropCoverage
             CompositionBrush?.Dispose();
             CompositionBrush = null;
         }
+    }
+
+    // App XamlLight: a dim ambient Composition light on its targets.
+    sealed partial class DimAmbientLight : XamlLight
+    {
+        protected override void OnConnected(UIElement newElement)
+        {
+            var light = CompositionTarget.GetCompositorForCurrentThread().CreateAmbientLight();
+            light.Color = Color.FromArgb(255, 0x60, 0x60, 0x60);
+            CompositionLight = light;
+            AddTargetElement(GetId(), newElement);
+        }
+
+        protected override void OnDisconnected(UIElement oldElement)
+        {
+            RemoveTargetElement(GetId(), oldElement);
+            CompositionLight?.Dispose();
+            CompositionLight = null;
+        }
+
+        protected override string GetId() => typeof(DimAmbientLight).FullName!;
     }
 
     sealed partial class SurfaceCompositionBrush(LoadedImageSurface surface) : XamlCompositionBrushBase

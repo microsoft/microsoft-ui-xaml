@@ -44,6 +44,10 @@ namespace ImmediateRenderingPolicy
         {
             return L"XamlCompositionBrushBase";
         }
+        if (interop.appXamlLight)
+        {
+            return L"XamlLight";
+        }
         return nullptr;
     }
 
