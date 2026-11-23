@@ -1449,7 +1449,7 @@ namespace RenderingBackend
 
                 void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept override
                 {
-                    if (!m_inFrame || !(blurRadius > 0) || !std::isfinite(blurRadius))
+                    if (!m_inFrame || !(blurRadius > 0) || !std::isfinite(blurRadius) || !m_perspective.empty())
                     {
                         return;
                     }

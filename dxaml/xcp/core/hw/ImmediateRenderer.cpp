@@ -32,6 +32,10 @@
 #include <algorithm>
 #include <cmath>
 #include "ImmediateRenderer.Independent.h"
+// ---- clips3d ----
+#include "ImmediateRenderer.HandOff.h"
+#include <Transform3D.h>
+#include <LocalTransformBuilder.h>
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -548,6 +552,7 @@ namespace ImmediateRenderingDetail
         bool inLayer = false;    // inside a perspective layer: world/clip are relative to the layer surface
         double world4[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} }; // element -> island, row vectors
         double layerInverse[3][3] = { {1,0,0}, {0,1,0}, {0,0,1} };             // island DIPs -> layer DIPs
+        RectF surface{ -1e7f, -1e7f, 1e7f, 1e7f }; // DIPs: the target (perspective layers are at most this size)
     };
 }
 
@@ -2205,6 +2210,8 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
     }
 }
 
+#include "ImmediateRenderer.Clips3D.inl"
+
 void ImmediateRenderer::Walk(
     _In_ CUIElement* element,
     const WalkContext& parent,
@@ -2310,17 +2317,30 @@ void ImmediateRenderer::Walk(
     const uint32_t spanBegin = static_cast<uint32_t>(list.spans.size());
     const uint32_t uncacheableBefore = list.uncacheable;
 
-    const float localOpacity = element->GetOpacityLocal();
+    // ---- clips3d ---- Static properties of the element's hand-off visual (ElementCompositionPreview.GetElementVisual):
+    // opacity, transform and clip are painted here; running app animations make the window fall back (CheckFallback).
+    ImmediateRenderingHandOff::VisualInfo handOff;
+    const bool hasHandOff = usesHandOffVisual
+        && ImmediateRenderingHandOff::Read(element, element->GetActualWidth(), element->GetActualHeight(), false /* checkAnimations */, &handOff);
+    if (hasHandOff && !handOff.isVisible)
+    {
+        return;
+    }
+    float handOffMatrix[16];
+    const bool hasHandOffTransform = hasHandOff && ImmediateRenderingPolicy::ComputeHandOffVisualTransform(handOff.state, handOffMatrix);
+    if (hasHandOff && handOff.state.unsupportedClip)
+    {
+        ReportUnsupported(element, L"Hand-off visual clip");
+    }
+
+    // In Composition mode XAML writes UIElement.Opacity to the hand-off visual: an app-set value replaces it.
+    const float localOpacity = hasHandOff && handOff.state.opacity != 1.0f ? handOff.state.opacity : element->GetOpacityLocal();
     if (!(localOpacity > 0))
     {
         return;
     }
     IndependentProbe probe;
     ProbeIndependent(element, probe);
-    if (probe.active)
-    {
-        ++list.uncacheable;
-    }
 
     WalkContext ctx = parent;
     ctx.scrollerContent = false;
@@ -2330,24 +2350,211 @@ void ImmediateRenderer::Walk(
         ctx.contentClip = IntersectRect(ctx.contentClip, r);
     };
 
+    // Clips: a rectangle under a scale/translate transform narrows ctx.clip (exact); any other clip (rotated or skewed
+    // rectangles, geometries, rounded/elliptic Composition clips) becomes an antialiased geometry clip group, and its
+    // bounds narrow ctx.clip for culling and damage. Ancestor layout clips are pushed at once, in the parent's space;
+    // element clips are pushed inside the element's opacity layer (independent layers then move them with the element).
+    using ImmediateRenderingClips3D::PendingClip;
+    std::vector<PendingClip> elementClips;
+    auto addClip = [&](const RectF& rect, PathGeometryData&& path, const CMILMatrix& world)
+    {
+        if (path.verbs.empty())
+        {
+            if (world.IsScaleOrTranslationOnly())
+            {
+                clipTo(TransformRectBounds(world, rect));
+                return;
+            }
+            ImmediateRenderingClips3D::AppendRect(rect, path);
+        }
+        PendingClip clip;
+        clip.bounds = ImmediateRenderingClips3D::PointBounds(path.points);
+        clipTo(TransformRectBounds(world, clip.bounds));
+        clip.path = std::move(path);
+        clip.world = world;
+        elementClips.push_back(std::move(clip));
+    };
+    auto pushClip = [&](PendingClip& clip)
+    {
+        Command push = ImmediateRenderingClips3D::MakeGeometryClipPush(list, element, std::move(clip.path), clip.world, clip.bounds);
+        push.clip = ctx.clip;
+        clip.index = list.commands.size();
+        list.commands.push_back(push);
+    };
+
     const bool hasLayoutClip = element->HasLayoutClip();
     const bool layoutClipIsAncestor = element->ShouldApplyLayoutClipAsAncestorClip();
+    size_t ancestorClipIndex = SIZE_MAX;
     if (hasLayoutClip && layoutClipIsAncestor)
     {
-        clipTo(TransformRectBounds(parent.world, FromXRect(element->LayoutClipGeometry->m_rc)));
+        addClip(FromXRect(element->LayoutClipGeometry->m_rc), PathGeometryData{}, parent.world);
+        if (!elementClips.empty())
+        {
+            pushClip(elementClips.back());
+            ancestorClipIndex = elementClips.back().index;
+            elementClips.clear();
+        }
     }
     probe.outerClip = ctx.clip;
 
+    // Transform. 2D elements under 2D parents keep the 2D path. Otherwise the 4x4 chain (Projection, Transform3D, 3D
+    // facades, 3D hand-off transforms) is tracked unflattened in world4; while it is affine on the element plane the
+    // element draws with that affine transform, else its subtree goes to a perspective layer (Clips3D.inl).
+    ImmediateRenderingClips3D::PerspectiveScope perspective;
+    WalkContext outerCtx = ctx;
+    auto closeOuter = [&]()
     {
-        CMILMatrix local;
-        if (!element->GetLocalTransform(TransformRetrievalOptions::None, &local))
+        if (perspective.pushIndex != SIZE_MAX)
+        {
+            ImmediateRenderingClips3D::FinishPerspective(list, perspective);
+            CloseGroup(list, perspective.pushIndex, element, outerCtx, CMILMatrix(true));
+        }
+        if (ancestorClipIndex != SIZE_MAX)
+        {
+            CloseGroup(list, ancestorClipIndex, element, parent, parent.world);
+        }
+    };
+    {
+        using namespace ImmediateRenderingClips3D;
+        CMILMatrix local(true);
+        (void)element->GetLocalTransform(TransformRetrievalOptions::None, &local);
+        const float* handOff3D = nullptr;
+        if (hasHandOffTransform)
+        {
+            if (HandOffIs2D(handOffMatrix))
+            {
+                CMILMatrix m(true);
+                m.SetM11(handOffMatrix[0]);
+                m.SetM12(handOffMatrix[1]);
+                m.SetM21(handOffMatrix[4]);
+                m.SetM22(handOffMatrix[5]);
+                m.SetDx(handOffMatrix[12]);
+                m.SetDy(handOffMatrix[13]);
+                m.Append(local);
+                local = m;
+            }
+            else
+            {
+                handOff3D = handOffMatrix;
+            }
+        }
+        double local4[4][4];
+        const bool local3D = ComputeLocal4(element, local, handOff3D, local4);
+        if (!local3D && !parent.has3D)
         {
             ctx.world = local;
             ctx.world.Append(parent.world);
         }
+        else
+        {
+            double parentWorld4[4][4];
+            if (parent.has3D)
+            {
+                memcpy(parentWorld4, parent.world4, sizeof(parentWorld4));
+            }
+            else
+            {
+                From2D(parent.world, parentWorld4);
+            }
+            Mul4(local4, parentWorld4, ctx.world4);
+            ctx.has3D = true;
+            const H3 toIsland = Homography(ctx.world4);
+            H3 toTarget = toIsland;
+            if (parent.inLayer)
+            {
+                H3 layerInverse;
+                memcpy(layerInverse.m, parent.layerInverse, sizeof(layerInverse.m));
+                toTarget = Mul3(toIsland, layerInverse);
+            }
+            RectF inner{ 0, 0, element->GetActualWidth(), element->GetActualHeight() };
+            XRECTF_RB innerBounds{};
+            if (SUCCEEDED(element->GetInnerBounds(&innerBounds)) && innerBounds.right >= innerBounds.left && innerBounds.bottom >= innerBounds.top)
+            {
+                inner = { innerBounds.left, innerBounds.top, innerBounds.right, innerBounds.bottom };
+            }
+            constexpr float c_layerMargin = 16.0f; // antialiasing, glyph overhang and shadows
+            inner = { inner.left - c_layerMargin, inner.top - c_layerMargin, inner.right + c_layerMargin, inner.bottom + c_layerMargin };
+            if (IsAffine(toTarget, inner))
+            {
+                if (!(toTarget.m[2][2] > 0))
+                {
+                    closeOuter();
+                    return;
+                }
+                ctx.world = ToAffine(toTarget);
+            }
+            else
+            {
+                // The layer holds the part of the element plane visible through the enclosing clip.
+                RectF region = inner;
+                H3 targetToPlane;
+                RectF visible;
+                if (Invert3(toTarget, &targetToPlane) && MapBounds(targetToPlane, ctx.clip, &visible))
+                {
+                    region = IntersectRect(region, visible);
+                }
+                const float s = ctx.scale;
+                region.left = std::floor(region.left * s) / s;
+                region.top = std::floor(region.top * s) / s;
+                float width = region.right - region.left;
+                float height = region.bottom - region.top;
+                const float maxWidth = parent.surface.right - parent.surface.left;
+                const float maxHeight = parent.surface.bottom - parent.surface.top;
+                if (width > maxWidth || height > maxHeight)
+                {
+                    ReportUnsupported(element, L"Perspective layer larger than the window:approximated");
+                    width = std::min(width, maxWidth);
+                    height = std::min(height, maxHeight);
+                }
+                const H3 origin = Translation(region.left, region.top);
+                H3 islandToLayer;
+                if (!(width > 0 && height > 0) || IsEmptyRect(ctx.clip) || !Invert3(Mul3(origin, toIsland), &islandToLayer))
+                {
+                    closeOuter();
+                    return;
+                }
+                const H3 toOuter = Mul3(origin, toTarget);
+                Command push;
+                push.type = CommandType::PushPerspective;
+                push.rect = { 0, 0, width, height };
+                push.key = list.perspective.size();
+                push.clip = ctx.clip;
+                push.owner = element;
+                list.perspective.push_back(ToPainterMatrix(toOuter));
+                perspective.pushIndex = list.commands.size();
+                perspective.recordBegin = static_cast<uint32_t>(list.recordOrder.size());
+                perspective.scrollerBegin = list.scrollers.size();
+                perspective.toOuter = toOuter;
+                perspective.outerClip = ctx.clip;
+                perspective.scale = ctx.scale;
+                list.commands.push_back(push);
+                ++list.uncacheable;
+
+                outerCtx = ctx;
+                ctx.world = CMILMatrix(true);
+                ctx.world.SetDx(-region.left);
+                ctx.world.SetDy(-region.top);
+                ctx.clip = push.rect;
+                ctx.contentClip = push.rect;
+                ctx.scroller = -1;
+                ctx.offsetX = ctx.offsetY = 0;
+                ctx.inLayer = true;
+                memcpy(ctx.layerInverse, islandToLayer.m, sizeof(ctx.layerInverse));
+            }
+        }
     }
 
-    if (parent.scrollerContent && parent.scroller >= 0)
+    // Render-thread (independent) layers rewrite 2D island transforms: not under 3D or hand-off visual transforms.
+    if (ctx.has3D || hasHandOffTransform)
+    {
+        probe.active = false;
+    }
+    if (probe.active)
+    {
+        ++list.uncacheable;
+    }
+
+    if (parent.scrollerContent && parent.scroller >= 0 && !ctx.has3D)
     {
         // Scrolled content: snap its origin to device pixels (like Composition's DManip snapping) so scroll deltas are
         // whole pixels and can be blitted; clips inside the content are tracked relative to its origin.
@@ -2367,11 +2574,6 @@ void ImmediateRenderer::Walk(
         ctx.offsetX = ctx.world.GetDx();
         ctx.offsetY = ctx.world.GetDy();
         ctx.contentClip = c_unbounded;
-    }
-
-    if (element->HasActiveProjection())
-    {
-        ReportUnsupported(element, L"Projection");
     }
 
     // ThemeShadow: drawn as WinUI's drop-shadow recipe (ambient + directional) under the caster, in the caster's
@@ -2394,7 +2596,7 @@ void ImmediateRenderer::Walk(
         }
     }
 
-    // Clip rects are tracked as world-space bounding boxes; exact for scale/translate transforms (the target scenes).
+    // UIElement.Clip (a RectangleGeometry in WinUI, possibly with a Transform); other geometries are flattened.
     if (const xref_ptr<CGeometry> elementClip = element->GetClip())
     {
         if (auto rectangleClip = do_pointer_cast<CRectangleGeometry>(elementClip.get()))
@@ -2407,47 +2609,55 @@ void ImmediateRenderer::Walk(
                 clipWorld = clipTransform;
                 clipWorld.Append(ctx.world);
             }
-            clipTo(TransformRectBounds(clipWorld, FromXRect(rectangleClip->m_rc)));
+            addClip(FromXRect(rectangleClip->m_rc), PathGeometryData{}, clipWorld);
         }
         else
         {
-            ReportUnsupported(element, L"Non-rectangular clip");
-        }
-    }
-
-    // A Composition clip on the element's hand-off visual (ElementCompositionPreview.GetElementVisual; Expander sets an
-    // InsetClip on its content clip border). Insets apply to the element's render size: in immediate modes no comp
-    // node keeps the hand-off visual's Size in sync.
-    if (usesHandOffVisual)
-    {
-        ComPtr<WUComp::IVisual> handOffVisual;
-        element->GetStoredHandOffVisual(handOffVisual.ReleaseAndGetAddressOf());
-        ComPtr<WUComp::ICompositionClip> handOffClip;
-        if (handOffVisual != nullptr && SUCCEEDED(handOffVisual->get_Clip(&handOffClip)) && handOffClip != nullptr)
-        {
-            ComPtr<WUComp::IInsetClip> insetClip;
-            float left = 0, top = 0, right = 0, bottom = 0;
-            if (SUCCEEDED(handOffClip.As(&insetClip)) && SUCCEEDED(insetClip->get_LeftInset(&left))
-                && SUCCEEDED(insetClip->get_TopInset(&top)) && SUCCEEDED(insetClip->get_RightInset(&right))
-                && SUCCEEDED(insetClip->get_BottomInset(&bottom)))
+            // VisitSink applies the geometry's own Transform.
+            xref_ptr<PathFlattener> flattener;
+            flattener.attach(new PathFlattener());
+            if (FAILED(elementClip->VisitSink(flattener.get())))
             {
-                const RectF local{ left, top, element->GetActualWidth() - right, element->GetActualHeight() - bottom };
-                clipTo(TransformRectBounds(ctx.world, local));
+                ReportUnsupported(element, L"Clip geometry");
+            }
+            else if (flattener->fill.verbs.empty())
+            {
+                clipTo({});
             }
             else
             {
-                ReportUnsupported(element, L"Hand-off visual clip");
+                addClip({}, std::move(flattener->fill), ctx.world);
             }
+        }
+    }
+
+    // A Composition clip on the element's hand-off visual (InsetClip, RectangleClip, GeometricClip with a rectangle,
+    // rounded rectangle or ellipse), in the visual's space before its own transform.
+    if (hasHandOff && handOff.hasClip)
+    {
+        CMILMatrix clipWorld = ImmediateRenderingClips3D::FromMatrix(handOff.clipTransform);
+        clipWorld.Append(ctx.world);
+        if (handOff.clipIsRect)
+        {
+            addClip(handOff.clipRect, PathGeometryData{}, clipWorld);
+        }
+        else
+        {
+            PathGeometryData path;
+            path.verbs = handOff.clipVerbs;
+            path.points = handOff.clipPoints;
+            addClip({}, std::move(path), clipWorld);
         }
     }
 
     if (hasLayoutClip && !layoutClipIsAncestor)
     {
-        clipTo(TransformRectBounds(ctx.world, FromXRect(element->LayoutClipGeometry->m_rc)));
+        addClip(FromXRect(element->LayoutClipGeometry->m_rc), PathGeometryData{}, ctx.world);
     }
 
     if (IsEmptyRect(ctx.clip))
     {
+        closeOuter();
         return;
     }
 
@@ -2462,6 +2672,7 @@ void ImmediateRenderer::Walk(
             if (!probe.active && !RectsIntersect(TransformRectBounds(ctx.world, local), ctx.clip))
             {
                 ++m_elementsCulled;
+                closeOuter();
                 return;
             }
         }
@@ -2478,6 +2689,10 @@ void ImmediateRenderer::Walk(
         push.owner = element;
         push.pinned = probe.active;
         list.commands.push_back(push);
+    }
+    for (PendingClip& clip : elementClips)
+    {
+        pushClip(clip);
     }
 
     // CornerRadius on a Border/Panel/ContentPresenter with children clips the children to the rounded outer edge and
@@ -2575,8 +2790,19 @@ void ImmediateRenderer::Walk(
         CloseGroup(list, clipIndex, element, ctx, ctx.world);
         EmitBorder(element, ctx, list);
     }
+    for (auto it = elementClips.rbegin(); it != elementClips.rend(); ++it)
+    {
+        CloseGroup(list, it->index, element, ctx, it->world);
+    }
     if (layerIndex != SIZE_MAX)
     {
+        if (probe.active && std::any_of(list.commands.begin() + layerIndex + 1, list.commands.end(),
+            [](const Command& c) { return c.type == CommandType::PushPerspective; }))
+        {
+            // A perspective layer inside: its matrix is not a 2D transform the render thread can rewrite.
+            probe.active = false;
+            list.commands[layerIndex].pinned = false;
+        }
         if (probe.active)
         {
             FinishIndependentLayer(element, layerIndex, probe, ctx, list);
@@ -2588,9 +2814,10 @@ void ImmediateRenderer::Walk(
             list.layers.push_back(std::move(probe.layer));
         }
     }
+    closeOuter();
 
     // Leaves are cheap to re-emit; record spans for subtrees only.
-    if (childCount > 0 && !parent.scrollerContent && list.uncacheable == uncacheableBefore)
+    if (childCount > 0 && !parent.scrollerContent && list.uncacheable == uncacheableBefore && !parent.has3D && !parent.inLayer)
     {
         SubtreeSpan span;
         span.element = element;
@@ -2634,6 +2861,10 @@ bool ImmediateRenderer::ReuseSubtree(
     const SubtreeSpan& span = previous.spans[spanIndex];
     const CUIElement* scroller = parent.scroller >= 0 ? list.scrollers[parent.scroller].presenter : nullptr;
     const Matrix3x2F world = ToMatrix(parent.world);
+    if (parent.has3D || parent.inLayer)
+    {
+        return false; // clips3d: the span key does not capture the 3D context
+    }
     if (span.scroller != scroller || span.scale != parent.scale || span.offsetX != parent.offsetX || span.offsetY != parent.offsetY
         || memcmp(&span.world, &world, sizeof(world)) != 0 || memcmp(&span.clip, &parent.clip, sizeof(RectF)) != 0
         || memcmp(&span.contentClip, &parent.contentClip, sizeof(RectF)) != 0)
@@ -2689,7 +2920,12 @@ bool ImmediateRenderer::ReuseSubtree(
             case CommandType::FillPathGradient: shift(c.index, pathDelta); break;
             case CommandType::Bitmap: shift(c.index, bitmapDelta); break;
             case CommandType::PushLayer:
-            case CommandType::PushRoundedClip: shift(c.index, cmdDelta); break;
+            case CommandType::PushRoundedClip:
+            case CommandType::PushPerspective: shift(c.index, cmdDelta); break;
+            case CommandType::PushGeometryClip:
+                shift(c.index, cmdDelta);
+                c.key = static_cast<uint64_t>(static_cast<int64_t>(c.key) + pathDelta);
+                break;
             default: break;
         }
         if (c.foldedFrom != UINT32_MAX)
@@ -2743,6 +2979,7 @@ static void ReplayCommands(
         return fullDamage || std::any_of(damage.begin(), damage.end(), [&](const RectF& d) { return RectsIntersect(d, bounds); });
     };
     std::vector<bool> layerPushed;
+    std::vector<bool> perspectiveClipped; // clips3d
     painter.Clear({ 0, 0, 0, 0 });
     const Matrix3x2F identity;
     Matrix3x2F current = identity;
@@ -2789,6 +3026,31 @@ static void ReplayCommands(
                     painter.PushOpacityLayer(c.opacity);
                 }
             }
+            else if (c.type == CommandType::PushGeometryClip)
+            {
+                // ---- clips3d ----
+                const PathGeometryData& data = list.paths[static_cast<size_t>(c.key)];
+                PathData path;
+                path.verbs = data.verbs.data();
+                path.verbCount = static_cast<uint32_t>(data.verbs.size());
+                path.points = data.points.data();
+                path.pointCount = static_cast<uint32_t>(data.points.size());
+                path.nonZeroFill = data.nonZero;
+                setTransform(c.transform);
+                painter.PushGeometryClip(path);
+            }
+            else if (c.type == CommandType::PushPerspective)
+            {
+                setTransform(identity);
+                const bool clipped = !(c.clip.left <= islandClip.left && c.clip.top <= islandClip.top
+                    && c.clip.right >= islandClip.right && c.clip.bottom >= islandClip.bottom);
+                perspectiveClipped.push_back(clipped);
+                if (clipped)
+                {
+                    painter.PushAxisAlignedClip(c.clip);
+                }
+                painter.PushPerspectiveLayer(c.rect, list.perspective[static_cast<size_t>(c.key)]);
+            }
             else
             {
                 setTransform(c.transform);
@@ -2808,6 +3070,24 @@ static void ReplayCommands(
                 if (!layerPushed.empty())
                 {
                     layerPushed.pop_back();
+                }
+            }
+            else if (c.type == CommandType::PopGeometryClip)
+            {
+                painter.PopGeometryClip();
+            }
+            else if (c.type == CommandType::PopPerspective)
+            {
+                // The painter restores the transform active at push (identity).
+                painter.PopPerspectiveLayer();
+                current = identity;
+                if (!perspectiveClipped.empty())
+                {
+                    if (perspectiveClipped.back())
+                    {
+                        painter.PopAxisAlignedClip();
+                    }
+                    perspectiveClipped.pop_back();
                 }
             }
             else
@@ -2990,6 +3270,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     WalkContext root;
     root.clip = islandClip;
     root.contentClip = islandClip;
+    root.surface = islandClip;
     root.scale = scale;
     bool fellBack = false;
     hr = RenderSurface(state, frameNumber, reinterpret_cast<uint64_t>(island), root,
@@ -3380,11 +3661,13 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     std::vector<uint8_t> clearTypeRuns(list.glyphRuns.size(), 0);
     {
         std::vector<std::vector<RectF>> opaqueByLayer(1);
+        int perspectiveDepth = 0; // clips3d: no ClearType in perspective layers (resampled)
         for (const Command& c : list.commands)
         {
             if (IsPush(c.type))
             {
                 opaqueByLayer.emplace_back();
+                perspectiveDepth += c.type == CommandType::PushPerspective ? 1 : 0;
             }
             else if (IsPop(c.type))
             {
@@ -3392,6 +3675,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                 {
                     opaqueByLayer.pop_back();
                 }
+                perspectiveDepth -= c.type == CommandType::PopPerspective && perspectiveDepth > 0 ? 1 : 0;
             }
             else if ((c.type == CommandType::FillRect || c.type == CommandType::FillRounded) && c.color.a >= 0.999f
                 && c.transform.m12 == 0 && c.transform.m21 == 0)
@@ -3408,7 +3692,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                     opaque.push_back(r);
                 }
             }
-            else if (c.type == CommandType::GlyphRun && c.index < clearTypeRuns.size())
+            else if (c.type == CommandType::GlyphRun && c.index < clearTypeRuns.size() && perspectiveDepth == 0)
             {
                 const auto& opaque = opaqueByLayer.back();
                 clearTypeRuns[c.index] = ImmediateRenderingPolicy::IsCoveredByOpaque(c.deviceBounds, opaque.data(), static_cast<uint32_t>(opaque.size())) ? 1 : 0;
@@ -3619,6 +3903,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderWindowedPopups(
         WalkContext root;
         root.clip = { 0, 0, geometry.width / scale, geometry.height / scale };
         root.contentClip = root.clip;
+    root.surface = root.clip;
         root.scale = scale;
         CMILMatrix toWindow(true);
         toWindow.SetDx(-geometry.originX);
@@ -3721,6 +4006,7 @@ _Check_return_ HRESULT ImmediateRenderer::CaptureElement(
     WalkContext root;
     root.clip = bounds;
     root.contentClip = bounds;
+    root.surface = bounds;
     root.scale = 1.0f;
     root.world.SetM11(transform[0]);
     root.world.SetM12(transform[1]);
