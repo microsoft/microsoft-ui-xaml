@@ -1769,6 +1769,13 @@ int32_t TableView::GetBodyFocusRowBeforeChange() const
     bool cellLevel = false;
     if (TryResolveLiveBodyFocusPosition(row, column, cellLevel))
     {
+        // Subscribed ahead of ItemsRepeater (UpdateReshapeFocusDetectorSubscription): it has not moved its rows yet.
+        MUX_ASSERT([&]()
+        {
+            auto const repeater = m_rowsRepeater.get();
+            auto const element = repeater ? repeater.TryGetElement(row) : nullptr;
+            return element && IsBodyFocusInContainer(element);
+        }());
         return row;
     }
     return (m_lastBodyFocusValid && !IsFocusOnNonBodyElement()) ? m_lastBodyFocusRow : -1;

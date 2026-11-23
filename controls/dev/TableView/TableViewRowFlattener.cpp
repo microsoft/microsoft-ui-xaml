@@ -2156,8 +2156,13 @@ bool TableViewRowFlattener::TryApplyTreeChange(winrt::Windows::Foundation::Colle
             applied = mirroredCount == viewCount + 1 && index < mirroredCount && TryRemoveTreeNode(index);
             break;
         case CollectionChange::ItemChanged:
-            // A replacement is a removal and an insertion; an insertion that cannot follow it rebuilds from the view.
-            applied = mirroredCount == viewCount && index < mirroredCount && TryRemoveTreeNode(index) && TryInsertTreeNode(index);
+            // A replacement is a removal and an insertion. The new row is checked first, so a replacement that cannot be
+            // applied in place rebuilds without having published the old row's removal.
+            if (mirroredCount == viewCount && index < mirroredCount)
+            {
+                std::pair<std::wstring, std::wstring> keys;
+                applied = TryReadReplacementKeys(index, keys) && TryRemoveTreeNode(index) && TryInsertTreeNode(index, &keys);
+            }
             break;
         default:
             break;
@@ -2210,7 +2215,46 @@ void TableViewRowFlattener::RenumberSiblingRows(int32_t parentRow, int32_t depth
 
 // The new row's keys are read; the others are not. Its siblings stay in the view's order: it goes after the nearest
 // earlier view item with the same parent. Everything is found before anything changes.
-bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex)
+bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys)
+{
+    auto const index = m_treeIndex;
+    auto const structure = m_treeStructure;
+    auto const generation = m_declarationGeneration;
+
+    auto const item = m_view.GetAt(viewIndex);
+    auto const oldItem = structure->Rows[viewIndex];
+    if (!item || winrt::get_abi(item) == winrt::get_abi(oldItem))
+    {
+        return false;
+    }
+    auto const oldKey = structure->KeyByItem.find(winrt::get_abi(oldItem));
+    if (oldKey == structure->KeyByItem.end())
+    {
+        return false;
+    }
+    if (auto const* const children = index->TryGetChildren(oldKey->second); children && !children->empty())
+    {
+        return false;
+    }
+
+    ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, keys.first, keys.second);
+    if (m_treeRowsPending || generation != m_declarationGeneration || m_treeIndex != index || m_treeStructure != structure)
+    {
+        return false;
+    }
+
+    // What TryInsertTreeNode will check once the old row is gone; the old row's own key is free for the new one.
+    auto const& key = keys.first;
+    auto const& declaredParent = keys.second;
+    auto const sameKey = structure->ItemByKey.find(key);
+    return !key.empty() && key != declaredParent &&
+        !ShapingHelpers::IsObjectNodeKey(key) && !ShapingHelpers::IsObjectNodeKey(declaredParent) &&
+        (sameKey == structure->ItemByKey.end() || winrt::get_abi(sameKey->second) == winrt::get_abi(oldItem)) &&
+        !structure->OrphanParentKeys.contains(key) && declaredParent != oldKey->second &&
+        !structure->KeyByItem.contains(winrt::get_abi(item));
+}
+
+bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex, std::pair<std::wstring, std::wstring>* keys)
 {
     auto const index = m_treeIndex;
     auto const structure = m_treeStructure;
@@ -2224,7 +2268,15 @@ bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex)
 
     std::wstring key;
     std::wstring declaredParent;
-    ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, key, declaredParent);
+    if (keys)
+    {
+        key = std::move(keys->first);
+        declaredParent = std::move(keys->second);
+    }
+    else
+    {
+        ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, key, declaredParent);
+    }
     if (m_treeRowsPending || generation != m_declarationGeneration || m_treeIndex != index || m_treeStructure != structure)
     {
         // The selectors changed the view or the declaration.
