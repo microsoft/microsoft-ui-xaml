@@ -92,6 +92,84 @@ public static class ScrollingCoveragePages
         };
     }
 
+    // Mouse wheel over a ScrollViewer is handed to DManip (pure inertia input) in Composition.
+    [CoveragePage(Family, "ScrollViewer-MouseWheel")]
+    public static CoveragePage ScrollViewerMouseWheel(CoverageContext context)
+    {
+        var scrollViewer = CreateScrollViewer(zoom: false);
+        return new CoveragePage
+        {
+            Root = Frame(scrollViewer),
+            Exercise = async () =>
+            {
+                var progress = new OffsetProgress();
+                var done = new TaskCompletionSource();
+                EventHandler<ScrollViewerViewChangedEventArgs> handler = (_, e) =>
+                {
+                    progress.Record(scrollViewer.VerticalOffset);
+                    if (!e.IsIntermediate) done.TrySetResult();
+                };
+                scrollViewer.ViewChanged += handler;
+                try
+                {
+                    var center = scrollViewer.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(180, 120));
+                    if (!InputInjection.Wheel(context.Window, center, -360))
+                    {
+                        return; // No input desktop (disconnected session): the page then compares the unscrolled view.
+                    }
+                    await done.Task.WaitAsync(Timeout);
+                    await Task.Delay(500);
+                }
+                finally
+                {
+                    scrollViewer.ViewChanged -= handler;
+                }
+                if (scrollViewer.VerticalOffset <= 0)
+                {
+                    throw new InvalidOperationException("Mouse wheel did not scroll the ScrollViewer.");
+                }
+            },
+        };
+    }
+
+    // Touch pan of a ScrollViewer: DManip drives the content transform, then inertia settles it.
+    [CoveragePage(Family, "ScrollViewer-TouchPan")]
+    public static CoveragePage ScrollViewerTouchPan(CoverageContext context)
+    {
+        var scrollViewer = CreateScrollViewer(zoom: false);
+        return new CoveragePage
+        {
+            Root = Frame(scrollViewer),
+            Exercise = async () =>
+            {
+                var done = new TaskCompletionSource();
+                EventHandler<ScrollViewerViewChangedEventArgs> handler = (_, e) =>
+                {
+                    if (!e.IsIntermediate) done.TrySetResult();
+                };
+                scrollViewer.ViewChanged += handler;
+                try
+                {
+                    var origin = scrollViewer.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(250, 200));
+                    if (!await InputInjection.DragAsync(context.Window, origin, -150, -150, steps: 20))
+                    {
+                        return; // No input desktop (disconnected session): the page then compares the unscrolled view.
+                    }
+                    await done.Task.WaitAsync(Timeout);
+                    await Task.Delay(500);
+                }
+                finally
+                {
+                    scrollViewer.ViewChanged -= handler;
+                }
+                if (scrollViewer.VerticalOffset <= 0 || scrollViewer.HorizontalOffset <= 0)
+                {
+                    throw new InvalidOperationException("Touch pan did not scroll the ScrollViewer.");
+                }
+            },
+        };
+    }
+
     [CoveragePage(Family, "ItemsView-Scrolled")]
     public static CoveragePage ItemsViewScrolled(CoverageContext context)
     {
@@ -139,7 +217,7 @@ public static class ScrollingCoveragePages
             Exercise = async () =>
             {
                 var origin = swipe.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(20, 32));
-                await TouchInjection.DragAsync(context.Window, origin, 200, 0);
+                await InputInjection.DragAsync(context.Window, origin, 200, 0);
                 await Task.Delay(800);
             },
         };
@@ -361,6 +439,11 @@ public static class ScrollingCoveragePages
 
         public void AssertAnimated(string what)
         {
+            // With OS animations off (common on VMs) every animated view change jumps in Composition too.
+            if (!new Windows.UI.ViewManagement.UISettings().AnimationsEnabled)
+            {
+                return;
+            }
             // An animated view change spans many frames; fewer than 3 intermediate values means it jumped.
             if (Intermediate < 3)
             {
@@ -433,64 +516,100 @@ public static class ScrollingCoveragePages
     }
 }
 
-// Synthesized touch through Windows.UI.Input.Preview.Injection (no hardware needed). Points are in window DIPs.
-internal static class TouchInjection
+// Synthesized input through user32 SendInput / InjectTouchInput (no hardware or package capability needed; the session
+// must be able to receive input). Points are in window DIPs.
+internal static class InputInjection
 {
+    private struct Point32 { public int X, Y; }
+
+    // INPUT with the MOUSEINPUT union member (x64 layout: the union starts at offset 8, total size 40).
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size = 40)]
+    private struct MouseInput
+    {
+        [System.Runtime.InteropServices.FieldOffset(0)] public uint Type;
+        [System.Runtime.InteropServices.FieldOffset(8)] public int Dx;
+        [System.Runtime.InteropServices.FieldOffset(12)] public int Dy;
+        [System.Runtime.InteropServices.FieldOffset(16)] public uint MouseData;
+        [System.Runtime.InteropServices.FieldOffset(20)] public uint Flags;
+        [System.Runtime.InteropServices.FieldOffset(24)] public uint Time;
+        [System.Runtime.InteropServices.FieldOffset(32)] public nint ExtraInfo;
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct PointerTouchInfo
+    {
+        public uint PointerType, PointerId, FrameId, PointerFlags;
+        public nint SourceDevice, HwndTarget;
+        public Point32 PixelLocation, HimetricLocation, PixelLocationRaw, HimetricLocationRaw;
+        public uint Time, HistoryCount;
+        public int InputData;
+        public uint KeyStates;
+        public ulong PerformanceCount;
+        public int ButtonChangeType;
+        public uint TouchFlags, TouchMask;
+        public int ContactLeft, ContactTop, ContactRight, ContactBottom;
+        public int RawLeft, RawTop, RawRight, RawBottom;
+        public uint Orientation, Pressure;
+    }
+
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern bool ClientToScreen(nint hwnd, ref Point32 point);
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(nint hwnd);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool SetCursorPos(int x, int y);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern uint SendInput(uint count, MouseInput[] inputs, int size);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool InitializeTouchInjection(uint maxCount, uint mode);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool InjectTouchInput(uint count, PointerTouchInfo[] contacts);
 
-    private struct Point32 { public int X, Y; }
-
-    public static async Task<bool> DragAsync(Window window, Windows.Foundation.Point start, double dx, double dy, int steps = 12)
+    private static Point32 ToScreen(Window window, Windows.Foundation.Point at)
     {
-        var injector = Windows.UI.Input.Preview.Injection.InputInjector.TryCreate();
-        if (injector is null)
-        {
-            return false;
-        }
         nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(window);
         double scale = GetDpiForWindow(hwnd) / 96.0;
         var origin = new Point32();
         ClientToScreen(hwnd, ref origin);
-        injector.InitializeTouchInjection(Windows.UI.Input.Preview.Injection.InjectedInputVisualizationMode.None);
-        try
-        {
-            for (int i = 0; i <= steps + 1; i++)
-            {
-                double t = Math.Min(i, steps) / (double)steps;
-                var options = i == 0 ? Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.PointerDown | Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.InContact | Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.InRange
-                    : i <= steps ? Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.Update | Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.InContact | Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.InRange
-                    : Windows.UI.Input.Preview.Injection.InjectedInputPointerOptions.PointerUp;
-                var info = new Windows.UI.Input.Preview.Injection.InjectedInputTouchInfo
-                {
-                    Contact = new Windows.UI.Input.Preview.Injection.InjectedInputRectangle { Left = 2, Top = 2, Right = 2, Bottom = 2 },
-                    PointerInfo = new Windows.UI.Input.Preview.Injection.InjectedInputPointerInfo
-                    {
-                        PointerId = 1,
-                        PointerOptions = options,
-                        PixelLocation = new Windows.UI.Input.Preview.Injection.InjectedInputPoint
-                        {
-                            PositionX = origin.X + (int)Math.Round((start.X + dx * t) * scale),
-                            PositionY = origin.Y + (int)Math.Round((start.Y + dy * t) * scale),
-                        },
-                    },
-                    Pressure = 1.0,
-                    TouchParameters = Windows.UI.Input.Preview.Injection.InjectedInputTouchParameters.Pressure | Windows.UI.Input.Preview.Injection.InjectedInputTouchParameters.Contact,
-                };
-                injector.InjectTouchInput([info]);
-                await Task.Delay(16);
-            }
-            return true;
-        }
-        catch (Exception)
+        return new Point32 { X = origin.X + (int)Math.Round(at.X * scale), Y = origin.Y + (int)Math.Round(at.Y * scale) };
+    }
+
+    public static bool Wheel(Window window, Windows.Foundation.Point at, int delta)
+    {
+        var point = ToScreen(window, at);
+        SetCursorPos(point.X, point.Y);
+        var input = new MouseInput { Type = 0 /*INPUT_MOUSE*/, MouseData = unchecked((uint)delta), Flags = 0x0800 /*MOUSEEVENTF_WHEEL*/ };
+        return SendInput(1, [input], System.Runtime.InteropServices.Marshal.SizeOf<MouseInput>()) == 1;
+    }
+
+    public static async Task<bool> DragAsync(Window window, Windows.Foundation.Point start, double dx, double dy, int steps = 12)
+    {
+        if (!InitializeTouchInjection(1, 3 /*TOUCH_FEEDBACK_NONE*/))
         {
             return false;
         }
-        finally
+        var from = ToScreen(window, start);
+        var to = ToScreen(window, new Windows.Foundation.Point(start.X + dx, start.Y + dy));
+        for (int i = 0; i <= steps + 1; i++)
         {
-            injector.UninitializeTouchInjection();
+            double t = Math.Min(i, steps) / (double)steps;
+            int x = from.X + (int)Math.Round((to.X - from.X) * t);
+            int y = from.Y + (int)Math.Round((to.Y - from.Y) * t);
+            var contact = new PointerTouchInfo
+            {
+                PointerType = 2 /*PT_TOUCH*/,
+                PointerFlags = i == 0 ? 0x10006u /*DOWN|INRANGE|INCONTACT*/ : i <= steps ? 0x20006u /*UPDATE|INRANGE|INCONTACT*/ : 0x40000u /*UP*/,
+                PixelLocation = new Point32 { X = x, Y = y },
+                TouchMask = 0x5 /*CONTACTAREA|PRESSURE*/,
+                ContactLeft = x - 2, ContactTop = y - 2, ContactRight = x + 2, ContactBottom = y + 2,
+                Pressure = 512,
+            };
+            if (!InjectTouchInput(1, [contact]))
+            {
+                return false;
+            }
+            await Task.Delay(16);
         }
+        return true;
     }
 }
