@@ -36,6 +36,9 @@
     </PropertyGroup>
   </Target>
 
+  <Import Project="$(MSBuildThisFileDirectory)ManagedVersionResource.targets"
+          Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
+
   <!-- 
     The ProductxxxxVersions properties are for WinUI, but the product that distributes WinUI is WinAppSDK, so we reclassify 
     the product versions to WINUI versions for use in file versions within the product.  Also, in our WinAppSdk binaries, we
