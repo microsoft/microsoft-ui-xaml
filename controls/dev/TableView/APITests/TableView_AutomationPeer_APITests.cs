@@ -4923,6 +4923,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header replaced by a header rebuild is detached: its peer's Invoke fails with ElementNotAvailable and a new peer for it is rejected.")]
+        public void VerifyReplacedColumnHeaderIsDetachedFromItsColumn()
+        {
+            TableView tableView = null;
+            TableViewColumnHeader oldHeader = null;
+            IInvokeProvider oldInvoke = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                oldHeader = GetColumnHeader(tableView, tableView.Columns[1]);
+                oldInvoke = new TableViewColumnHeaderAutomationPeer(oldHeader).GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(oldInvoke, "Baseline: a sortable column's header peer must offer Invoke.");
+
+                // Opting another column out of sorting rebuilds every header.
+                tableView.Columns[2].CanSort = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(ReferenceEquals(oldHeader, GetColumnHeader(tableView, tableView.Columns[1])),
+                    "Baseline: the rebuild must replace the column's header.");
+                Verify.IsNull(oldHeader.Column, "A replaced header must be detached from its column.");
+
+                VerifyElementNotAvailable(() => oldInvoke.Invoke(), "Invoke on a replaced header's peer");
+                Verify.Throws<ArgumentException>(() => new TableViewColumnHeaderAutomationPeer(oldHeader),
+                    "A peer for a replaced header must be rejected with E_INVALIDARG.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection,
+                    "Invoke on a replaced header's peer must not sort the column."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the TableView peer serves a TableView-owned header peer for a column whose header is not realized yet, with name, AutomationId, help text, ShowContextMenu and Invoke.")]
         public void VerifyTableOwnedHeaderPeerServesUnrealizedHeader()
         {

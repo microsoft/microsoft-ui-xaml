@@ -57,19 +57,15 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    // A header whose column has left its table (before the rebuild drops it) gets the base peer, as
+    // A header whose column has left its table, or that a rebuild replaced, gets the base peer, as
     // the public constructor would reject it.
-    auto const table = m_table.get();
-    auto const column = m_column.get();
-    uint32_t index = 0;
-    if (!table || !column || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
-        !table.Columns().IndexOf(column, index))
+    auto const header = get_strong().as<winrt::TableViewColumnHeader>();
+    if (!TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(header))
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(
-        get_strong().as<winrt::TableViewColumnHeader>());
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(header);
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }

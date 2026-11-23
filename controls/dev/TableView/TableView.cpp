@@ -3422,8 +3422,21 @@ void TableView::RebuildHeadersCore()
     removingFocused = focusedAtTeardown && winrt::VisualTreeHelper::GetParent(focusedAtTeardown) != host;
     ReleaseHeaderCells(host);
     removingFocused = true;
+    std::vector<winrt::TableViewColumnHeader> discardedHeaders;
+    for (auto const& child : host.Children())
+    {
+        if (auto const header = child.try_as<winrt::TableViewColumnHeader>())
+        {
+            discardedHeaders.push_back(header);
+        }
+    }
     host.Children().Clear();
     removingFocused = false;
+    // A peer may outlive its header; detached, it can no longer act on the column.
+    for (auto const& header : discardedHeaders)
+    {
+        winrt::get_self<TableViewColumnHeader>(header)->SetOwnerInternal(nullptr, nullptr);
+    }
 
     m_rebuildingHeaders = true;
     auto const rebuildingGuard = wil::scope_exit([this]() noexcept { m_rebuildingHeaders = false; });

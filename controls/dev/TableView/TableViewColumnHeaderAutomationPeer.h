@@ -63,8 +63,12 @@ public:
 
     bool IsTableViewOwned();
 
+    // True for a header the table has attached to one of its columns and not since replaced.
+    static bool DescribesColumnHeader(winrt::TableViewColumnHeader const& header);
+
 private:
     winrt::FrameworkElement GetHeaderElement();
+    void ThrowIfHeaderReplaced();
     bool IsSortableColumn();
     bool IsResizableColumn();
     int32_t GetColumnIndex();

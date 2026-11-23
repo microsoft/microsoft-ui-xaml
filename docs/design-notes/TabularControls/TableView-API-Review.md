@@ -22,7 +22,7 @@ TableView is preview API. This review checks whether the proposed surface is rea
 |---|---|---|
 | Added | `TableViewColumn.NotifyCellContentChanged()` (protected) | Derived columns can regenerate their cells. |
 | Changed | `TableViewDensity`: `Standard = 0`, `Compact = 1`, `Comfortable = 2` | Zero value now equals the default. Persisted integers change meaning. |
-| Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. A header the table has not attached to one of its columns throws `E_INVALIDARG`. Stays unsealed. |
+| Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. A header the table has not attached to one of its columns, or one a header rebuild has replaced, throws `E_INVALIDARG`. Stays unsealed. |
 | Changed | `TableViewCellAutomationPeer` ctor `(FrameworkElement, TableViewRow, TableViewColumn, Int32)` → `(FrameworkElement owner)` | Owner-only, like every WinUI peer; row, column and index are derived from the cell, and a non-cell owner throws `E_INVALIDARG`. Stays unsealed. |
 | Changed | `TableViewColumn.CanResize` → `CanUserResize` | Matches `CanUserResizeColumns` and WPF. Gates user input only (pointer, keyboard, UIA Transform). A Star column with `CanUserResize=false` keeps its authored share whatever `CanUserResizeColumns` is, and toggling `CanUserResizeColumns` moves no column. |
 | Removed | `TableViewFrozenEdge.Trailing` | Reserved no-op; appending it later is compatible, changing a shipped no-op is not. |

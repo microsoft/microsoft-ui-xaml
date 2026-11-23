@@ -36,12 +36,9 @@ namespace
         return header ? winrt::get_self<TableViewColumnHeader>(header)->GetOwningTableView() : nullptr;
     }
 
-    // Only a header the table has attached to one of its columns describes a column header.
     winrt::TableViewColumnHeader HeaderForPublicConstructor(winrt::TableViewColumnHeader const& header)
     {
-        auto const column = ColumnOfHeader(header);
-        auto const table = TableOfHeader(header);
-        if (!column || !table || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table)
+        if (!TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(header))
         {
             throw winrt::hresult_invalid_argument();
         }
@@ -71,6 +68,21 @@ TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     , m_table(WeakOrNull(owner))
     , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
+}
+
+bool TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(winrt::TableViewColumnHeader const& header)
+{
+    auto const column = ColumnOfHeader(header);
+    auto const table = TableOfHeader(header);
+    uint32_t index = 0;
+    if (!column || !table || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+        !table.Columns().IndexOf(column, index))
+    {
+        return false;
+    }
+    // A header being built is not in the host yet; one the host has replaced is stale.
+    auto const current = TableViewCellsPanel::CellForColumn(winrt::get_self<TableView>(table)->GetHeaderHostInternal(), column);
+    return !current || current == header;
 }
 
 hstring TableViewColumnHeaderAutomationPeer::GetClassNameCore()
@@ -278,6 +290,7 @@ void TableViewColumnHeaderAutomationPeer::SetFocusCore()
 
 void TableViewColumnHeaderAutomationPeer::Invoke()
 {
+    ThrowIfHeaderReplaced();
     if (!IsEnabled())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
@@ -326,6 +339,7 @@ void TableViewColumnHeaderAutomationPeer::Move(double, double)
 
 void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
 {
+    ThrowIfHeaderReplaced();
     if (!IsEnabled())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
@@ -443,6 +457,15 @@ void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
         {
             peer.ShowContextMenu();
         }
+    }
+}
+
+// A header-owned peer whose header the table has replaced acts on nothing.
+void TableViewColumnHeaderAutomationPeer::ThrowIfHeaderReplaced()
+{
+    if (!IsTableViewOwned() && !GetHeaderElement())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
     }
 }
 
