@@ -1342,6 +1342,8 @@ namespace
                 }
             }
             return false;
+        }
+
         // ---- text ----
         // CompositeMode DestInvert (the TextBox caret): MASK_INVERT of the rect over what is already painted.
         void Invert(const RectF& rect, const ColorF& color, const CMILMatrix& m)
