@@ -76,7 +76,8 @@ namespace Gdiplus
 //     advances and offsets (right-to-left runs advance leftwards from the origin).
 //   - Bitmaps are painter-owned PARGB copies keyed by (key, generation), drawn with bilinear filtering, edge clamping
 //     (WrapModeTileFlipXY), and an alpha color matrix for opacity. Copies count in uploadBytesThisFrame; storage counts
-//     in cacheBytes (width * height * 4 per bitmap).
+//     in cacheBytes (width * height * 4 per bitmap). BitmapSource::borrowPixels (imaging): the Gdiplus::Bitmap wraps the
+//     caller's buffer with its stride instead (no copy, no upload bytes, not in cacheBytes).
 //   - ScrollPixels memmoves rows of the PARGB target. The moved area is added (without double counting overlap with the
 //     damage) to the next frame's back-buffer copy and Present1 dirty rects.
 // - S11-S23 primitives:
@@ -605,6 +606,10 @@ namespace RenderingBackend
                 uint64_t generation = 0;
                 uint32_t width = 0, height = 0;
                 std::vector<uint8_t> pixels;
+                // Pixels the bitmap wraps: `pixels` (owned copy) or the caller's buffer (BitmapSource::borrowPixels).
+                uint8_t* base = nullptr;
+                uint32_t stride = 0;
+                bool borrowed = false;
                 std::unique_ptr<Gdiplus::Bitmap> bitmap;
                 // A Bitmap over the pixel-aligned sub-region last drawn with a source rect, so bilinear sampling clamps
                 // at the source rect's edges instead of bleeding in neighboring pixels.
@@ -1042,7 +1047,8 @@ namespace RenderingBackend
                     }
 
                     BitmapEntry* entry = nullptr;
-                    if (found != m_bitmaps.end() && found->second->width == source.width && found->second->height == source.height)
+                    if (!source.borrowPixels && found != m_bitmaps.end() && !found->second->borrowed &&
+                        found->second->width == source.width && found->second->height == source.height)
                     {
                         // Same size: refresh the pixels in place; the Gdiplus::Bitmap wraps this buffer.
                         entry = found->second.get();
@@ -1054,11 +1060,24 @@ namespace RenderingBackend
                         {
                             return E_OUTOFMEMORY;
                         }
-                        created->pixels.resize(static_cast<size_t>(source.width) * source.height * 4);
                         created->width = source.width;
                         created->height = source.height;
+                        created->borrowed = source.borrowPixels;
+                        if (source.borrowPixels)
+                        {
+                            // Zero-copy: GDI+ only reads a source bitmap, and the caller keeps the buffer alive and
+                            // unchanged for this generation.
+                            created->base = const_cast<uint8_t*>(source.pixels);
+                            created->stride = source.stride;
+                        }
+                        else
+                        {
+                            created->pixels.resize(static_cast<size_t>(source.width) * source.height * 4);
+                            created->base = created->pixels.data();
+                            created->stride = source.width * 4;
+                        }
                         created->bitmap.reset(new Gdiplus::Bitmap(static_cast<INT>(source.width), static_cast<INT>(source.height),
-                            static_cast<INT>(source.width * 4), PixelFormat32bppPARGB, created->pixels.data()));
+                            static_cast<INT>(created->stride), PixelFormat32bppPARGB, created->base));
                         IFC_RETURN(CheckCreated(created->bitmap));
                         if (found != m_bitmaps.end())
                         {
@@ -1073,12 +1092,16 @@ namespace RenderingBackend
                         ++m_frameCreated;
                     }
 
+                    entry->generation = source.generation;
+                    if (entry->borrowed)
+                    {
+                        return S_OK;
+                    }
                     const size_t rowBytes = static_cast<size_t>(source.width) * 4;
                     for (uint32_t y = 0; y < source.height; ++y)
                     {
                         memcpy(entry->pixels.data() + y * rowBytes, source.pixels + static_cast<size_t>(y) * source.stride, rowBytes);
                     }
-                    entry->generation = source.generation;
                     (m_inFrame ? m_uploadBytes : m_pendingUploadBytes) += static_cast<uint64_t>(rowBytes) * source.height;
                     return S_OK;
                 }
@@ -1114,8 +1137,8 @@ namespace RenderingBackend
                                 ++m_frameDestroyed;
                             }
                             entry.view.reset(new Gdiplus::Bitmap(region.right - region.left, region.bottom - region.top,
-                                static_cast<INT>(entry.width * 4), PixelFormat32bppPARGB,
-                                entry.pixels.data() + (static_cast<size_t>(region.top) * entry.width + region.left) * 4));
+                                static_cast<INT>(entry.stride), PixelFormat32bppPARGB,
+                                entry.base + static_cast<size_t>(region.top) * entry.stride + static_cast<size_t>(region.left) * 4));
                             if (FAILED(CheckCreated(entry.view)))
                             {
                                 return;
@@ -1545,7 +1568,8 @@ namespace RenderingBackend
                     uint64_t bitmapBytes = 0;
                     for (const auto& bitmap : m_bitmaps)
                     {
-                        bitmapBytes += static_cast<uint64_t>(bitmap.second->width) * bitmap.second->height * 4;
+                        // Borrowed pixels belong to the caller (XAML's decoded surface): not painter memory.
+                        bitmapBytes += bitmap.second->borrowed ? 0 : static_cast<uint64_t>(bitmap.second->width) * bitmap.second->height * 4;
                         inventory.cachedObjectCount += bitmap.second->view ? 1 : 0;
                     }
                     inventory.cacheBytes = m_brushes.size() * c_brushBytes + m_pens.size() * c_penBytes + m_fonts.size() * c_fontBytes +

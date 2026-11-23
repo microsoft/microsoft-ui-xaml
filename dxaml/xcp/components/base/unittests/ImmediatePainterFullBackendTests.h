@@ -52,5 +52,11 @@ namespace RenderingBackendTests
         TEST_METHOD(ClearTypeGlyphRunOnTransparentTargetFallsBackToGrayscale);
         TEST_METHOD(GlyphRunWithCffFontDrawsInk);
         TEST_METHOD(GlyphRunWithVariableFontDrawsInk);
+
+        // ---- imaging ----
+        // Borrowed (zero-copy) bitmaps: drawn from caller memory with padded strides and sub-rects, refreshed per generation.
+        TEST_METHOD(BorrowedBitmapDrawsLikeCopiedBitmap);
+        TEST_METHOD(BorrowedBitmapSourceRectHonorsStride);
+        TEST_METHOD(BitmapNewGenerationRereadsPixels);
     };
 }

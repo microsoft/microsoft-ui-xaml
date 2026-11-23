@@ -117,6 +117,10 @@ namespace RenderingBackend
         uint64_t generation = 0; // bump when the pixels change
         uint32_t width = 0, height = 0, stride = 0;
         const uint8_t* pixels = nullptr; // premultiplied BGRA8
+        // ---- imaging ----
+        // The caller keeps `pixels` valid and unchanged until ReleaseBitmap(key) or the next EnsureBitmap(key) with another
+        // generation, so a CPU painter may draw from them in place instead of copying (GDI+). GPU painters still copy.
+        bool borrowPixels = false;
     };
 
     struct DeviceIdentity

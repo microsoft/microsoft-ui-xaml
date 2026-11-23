@@ -29,5 +29,9 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(BackdropDamageExpands);
         TEST_METHOD(RoundedRectanglePathIsClosed);
         TEST_METHOD(ArcPathEndsAtSweep);
+        // ---- imaging ----
+        TEST_METHOD(AppCompositionBrushFallsBack);
+        TEST_METHOD(NineGridCellsMapInsets);
+        TEST_METHOD(NineGridOverlappingInsetsShrink);
     };
 }

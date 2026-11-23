@@ -85,4 +85,10 @@ namespace ImmediateRenderingMaterials
 
     // Reads a custom (non-built-in) dependency property, e.g. MUXC AcrylicBrush.TintColor. Fails safe.
     bool TryGetCustomValue(_In_ CDependencyObject* object, _In_ const xstring_ptr& typeName, _In_ const xstring_ptr& propertyName, _Out_ CValue* value) noexcept;
+
+    // ---- imaging ----
+    // F11: an app XamlCompositionBrushBase subclass (its CompositionBrush is app Composition content). Built-in
+    // subclasses (AcrylicBrush, RevealBrush, RadialGradientBrush, ColorPicker's SpectrumBrush, the brush owned by
+    // MonochromaticOverlayPresenter owner) are not: they are painted natively or with their fallback color.
+    bool IsAppCompositionBrush(_In_opt_ CBrush* brush, _In_opt_ CUIElement* owner) noexcept;
 }

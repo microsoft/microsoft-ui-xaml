@@ -385,3 +385,34 @@ namespace ImmediateRenderingMaterials
         return !ring->track.verbs.empty() || !ring->arc.verbs.empty() || ring->animating;
     }
 }
+// ---- imaging ----
+namespace
+{
+    DECLARE_CONST_XSTRING_PTR_STORAGE(c_revealBrushStorage, L"Microsoft.UI.Xaml.Media.RevealBrush");
+    DECLARE_CONST_XSTRING_PTR_STORAGE(c_radialGradientBrushStorage, L"Microsoft.UI.Xaml.Media.RadialGradientBrush");
+    DECLARE_CONST_XSTRING_PTR_STORAGE(c_spectrumBrushStorage, L"Microsoft.UI.Private.Controls.SpectrumBrush");
+    DECLARE_CONST_XSTRING_PTR_STORAGE(c_monochromaticOverlayStorage, L"Microsoft.UI.Xaml.Controls.Primitives.MonochromaticOverlayPresenter");
+
+    bool IsPeerType(_In_ CDependencyObject* object, const xstring_ptr& typeName) noexcept
+    {
+        return object->HasManagedPeer() && SUCCEEDED(FxCallbacks::FrameworkCallbacks_CheckPeerType(object, typeName, FALSE));
+    }
+}
+
+namespace ImmediateRenderingMaterials
+{
+    bool IsAppCompositionBrush(_In_opt_ CBrush* brush, _In_opt_ CUIElement* owner) noexcept
+    {
+        if (do_pointer_cast<CXamlCompositionBrush>(brush) == nullptr || IsAcrylicBrush(brush))
+        {
+            return false;
+        }
+        if (IsPeerType(brush, XSTRING_PTR_FROM_STORAGE(c_revealBrushStorage))
+            || IsPeerType(brush, XSTRING_PTR_FROM_STORAGE(c_radialGradientBrushStorage))
+            || IsPeerType(brush, XSTRING_PTR_FROM_STORAGE(c_spectrumBrushStorage)))
+        {
+            return false;
+        }
+        return owner == nullptr || !IsPeerType(owner, XSTRING_PTR_FROM_STORAGE(c_monochromaticOverlayStorage));
+    }
+}

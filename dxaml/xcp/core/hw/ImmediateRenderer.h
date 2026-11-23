@@ -193,4 +193,13 @@ private:
     void CheckTargetChanges(_In_ CXamlIslandRoot* island, uint32_t frameNumber, uint32_t width, uint32_t height, float scale);
 
     std::unique_ptr<ImmediateRenderingDetail::IndependentState> m_independent;
+
+    // ---- imaging (ImmediateRenderer.Imaging.inl) ----
+    // CalendarViewBaseItem: walks the children in HWWalk::CalendarViewBaseItemRenderChildren order with the chrome the item
+    // draws itself (density bars; legacy chrome backgrounds, borders and focus). Returns the child count.
+    uint32_t WalkCalendarViewItem(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& context,
+        const ImmediateRenderingDetail::WalkContext& childContext,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
 };

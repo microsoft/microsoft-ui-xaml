@@ -1042,4 +1042,140 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(fixture.Create(face.Get(), c_hello, 20));
         VerifyHelloRunDrawsInk(fixture);
     }
+
+    // ---- imaging ----
+
+    namespace
+    {
+        // A width x height premultiplied BGRA image with `padding` unused pixels per row: left half red, right half blue,
+        // padding filled with green (must never be drawn).
+        std::vector<uint8_t> MakeSplitBitmap(uint32_t width, uint32_t height, uint32_t padding, const ColorF& left, const ColorF& right)
+        {
+            const uint32_t stride = (width + padding) * 4;
+            std::vector<uint8_t> bytes(static_cast<size_t>(stride) * height);
+            for (uint32_t y = 0; y < height; ++y)
+            {
+                for (uint32_t x = 0; x < width + padding; ++x)
+                {
+                    const ColorF& c = x >= width ? c_green : (x < width / 2 ? left : right);
+                    uint8_t* p = &bytes[static_cast<size_t>(y) * stride + x * 4];
+                    p[0] = static_cast<uint8_t>(c.b * c.a * 255);
+                    p[1] = static_cast<uint8_t>(c.g * c.a * 255);
+                    p[2] = static_cast<uint8_t>(c.r * c.a * 255);
+                    p[3] = static_cast<uint8_t>(c.a * 255);
+                }
+            }
+            return bytes;
+        }
+
+        BitmapSource MakeSource(uint64_t key, uint64_t generation, uint32_t width, uint32_t height, uint32_t padding, const std::vector<uint8_t>& bytes, bool borrow)
+        {
+            BitmapSource source;
+            source.key = key;
+            source.generation = generation;
+            source.width = width;
+            source.height = height;
+            source.stride = (width + padding) * 4;
+            source.pixels = bytes.data();
+            source.borrowPixels = borrow;
+            return source;
+        }
+    }
+
+    void FullBackendPainterConformanceTests::BorrowedBitmapDrawsLikeCopiedBitmap()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        const std::vector<uint8_t> copied = MakeSplitBitmap(16, 16, 0, c_red, c_blue);
+        const std::vector<uint8_t> borrowed = MakeSplitBitmap(16, 16, 3, c_red, c_blue);
+        VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(1, 1, 16, 16, 0, copied, false)));
+        VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(2, 1, 16, 16, 3, borrowed, true)));
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawBitmap(1, { 0, 0, 32, 32 }, nullptr, 1.0f);
+            p.DrawBitmap(2, { 32, 32, 64, 64 }, nullptr, 1.0f);
+        });
+        const Image image = Read(*painter);
+        // Same pixels in both quadrants (bilinear seams included), no padding (green) leaked into the borrowed draw.
+        uint32_t differences = 0;
+        for (uint32_t y = 0; y < 32; ++y)
+        {
+            for (uint32_t x = 0; x < 32; ++x)
+            {
+                if (MaxChannelDifference(image.At(x, y), image.At(x + 32, y + 32)) > 2 && differences++ == 0)
+                {
+                    LogPixel(L"copied", x, y, image.At(x, y));
+                    LogPixel(L"borrowed", x + 32, y + 32, image.At(x + 32, y + 32));
+                }
+            }
+        }
+        VERIFY_ARE_EQUAL(0u, differences);
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_red, Tolerance(2), 34, 34, 46, 62));
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_blue, Tolerance(2), 50, 34, 62, 62));
+        painter->ReleaseBitmap(1);
+        painter->ReleaseBitmap(2);
+    }
+
+    void FullBackendPainterConformanceTests::BorrowedBitmapSourceRectHonorsStride()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        const std::vector<uint8_t> borrowed = MakeSplitBitmap(16, 8, 5, c_red, c_blue);
+        VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(7, 1, 16, 8, 5, borrowed, true)));
+        // Two nine-grid-like cells from one bitmap: the right (blue) half, then the left (red) half.
+        const RectF right{ 8, 0, 16, 8 };
+        const RectF left{ 0, 0, 8, 8 };
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.DrawBitmap(7, { 0, 0, 32, 64 }, &right, 1.0f);
+            p.DrawBitmap(7, { 32, 0, 64, 64 }, &left, 1.0f);
+        });
+        const Image image = Read(*painter);
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_blue, Tolerance(2), 2, 2, 30, 62));
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_red, Tolerance(2), 34, 2, 62, 62));
+        painter->ReleaseBitmap(7);
+    }
+
+    void FullBackendPainterConformanceTests::BitmapNewGenerationRereadsPixels()
+    {
+        for (const bool borrow : { false, true })
+        {
+            Log::Comment(borrow ? L"borrowed" : L"copied");
+            auto painter = CreatePainter();
+            if (!painter) return;
+            std::vector<uint8_t> bytes = MakeSplitBitmap(8, 8, 0, c_red, c_red);
+            VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(3, 1, 8, 8, 0, bytes, borrow)));
+            Paint(*painter, [](IImmediatePainter& p)
+            {
+                p.Clear(c_white);
+                p.DrawBitmap(3, { 0, 0, 64, 64 }, nullptr, 1.0f);
+            });
+            VERIFY_ARE_EQUAL(0u, CountMismatches(Read(*painter), c_red, Tolerance(2), 0, 0, 64, 64));
+
+            // Same key, new generation: an animated GIF frame or a WriteableBitmap.Invalidate in the same buffer.
+            bytes = MakeSplitBitmap(8, 8, 0, c_blue, c_blue);
+            VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(3, 2, 8, 8, 0, bytes, borrow)));
+            Paint(*painter, [](IImmediatePainter& p)
+            {
+                p.Clear(c_white);
+                p.DrawBitmap(3, { 0, 0, 64, 64 }, nullptr, 1.0f);
+            });
+            VERIFY_ARE_EQUAL(0u, CountMismatches(Read(*painter), c_blue, Tolerance(2), 0, 0, 64, 64));
+
+            // New generation with a new size (a re-decode at another DecodePixelWidth).
+            const std::vector<uint8_t> larger = MakeSplitBitmap(16, 4, 0, c_red, c_blue);
+            VERIFY_SUCCEEDED(painter->EnsureBitmap(MakeSource(3, 3, 16, 4, 0, larger, borrow)));
+            Paint(*painter, [](IImmediatePainter& p)
+            {
+                p.Clear(c_white);
+                p.DrawBitmap(3, { 0, 0, 64, 64 }, nullptr, 1.0f);
+            });
+            const Image image = Read(*painter);
+            VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_red, Tolerance(2), 0, 0, 28, 64));
+            VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_blue, Tolerance(2), 36, 0, 64, 64));
+            painter->ReleaseBitmap(3);
+        }
+    }
 }

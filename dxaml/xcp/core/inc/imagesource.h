@@ -81,6 +81,9 @@ public:
 
     _Ret_maybenull_ IPALSurface* GetSoftwareSurface() { return m_pImageSurfaceWrapper->GetSoftwareSurface(); }
 
+    // Immediate rendering: identity and pixel generation of the software surface (see ImageSurfaceWrapper).
+    _Notnull_ ImageSurfaceWrapper* GetImageSurfaceWrapperNoRef() const { return m_pImageSurfaceWrapper; }
+
     virtual _Check_return_ HRESULT GetSoftwareSurfaceForPrinting(
         _Out_ xref_ptr<IPALSurface>& spSoftwareSurface
         );

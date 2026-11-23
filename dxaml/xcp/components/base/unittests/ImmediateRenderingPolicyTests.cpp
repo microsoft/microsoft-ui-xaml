@@ -317,4 +317,45 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(4u, static_cast<uint32_t>(verbs.size()));
         VERIFY_IS_TRUE(Near(points.back().x, -7.0711f) && Near(points.back().y, -7.0711f));
     }
+
+    // ---- imaging ----
+
+    void PolicyTests::AppCompositionBrushFallsBack()
+    {
+        ElementInterop interop;
+        interop.appCompositionBrush = true;
+        VERIFY_ARE_EQUAL(std::wstring(L"XamlCompositionBrushBase"), std::wstring(GetFallbackReason(interop)));
+    }
+
+    void PolicyTests::NineGridCellsMapInsets()
+    {
+        // 40x40 px bitmap realized at 2x for a 20x20 DIP image with 5 DIP insets, stretched over 100x60 at (10,20).
+        NineGridCell cells[9];
+        const uint32_t count = ComputeNineGridCells({ 10, 20, 110, 80 }, 40, 40, { 5, 5, 5, 5 }, 2, 2, cells);
+        VERIFY_ARE_EQUAL(9u, count);
+        // Top-left corner: 10x10 px source, 5x5 DIP destination.
+        VERIFY_IS_TRUE(Near(cells[0].source.right, 10) && Near(cells[0].source.bottom, 10));
+        VERIFY_IS_TRUE(Near(cells[0].dest.left, 10) && Near(cells[0].dest.top, 20) && Near(cells[0].dest.right, 15) && Near(cells[0].dest.bottom, 25));
+        // Center: source 10..30 px stretched over 15..105 x 25..75.
+        VERIFY_IS_TRUE(Near(cells[4].source.left, 10) && Near(cells[4].source.right, 30));
+        VERIFY_IS_TRUE(Near(cells[4].dest.left, 15) && Near(cells[4].dest.right, 105) && Near(cells[4].dest.top, 25) && Near(cells[4].dest.bottom, 75));
+        // Bottom-right corner ends at the bitmap and destination corners.
+        VERIFY_IS_TRUE(Near(cells[8].source.right, 40) && Near(cells[8].source.bottom, 40));
+        VERIFY_IS_TRUE(Near(cells[8].dest.right, 110) && Near(cells[8].dest.bottom, 80));
+
+        // Only the left inset: two columns, one row.
+        VERIFY_ARE_EQUAL(2u, ComputeNineGridCells({ 0, 0, 50, 50 }, 40, 40, { 5, 0, 0, 0 }, 1, 1, cells));
+        VERIFY_IS_TRUE(Near(cells[0].dest.right, 5) && Near(cells[1].dest.left, 5) && Near(cells[1].source.left, 5));
+    }
+
+    void PolicyTests::NineGridOverlappingInsetsShrink()
+    {
+        // 30 + 30 DIP horizontal insets over a 40 DIP wide destination shrink to 20 + 20; the center column vanishes.
+        NineGridCell cells[9];
+        const uint32_t count = ComputeNineGridCells({ 0, 0, 40, 100 }, 100, 100, { 30, 0, 30, 0 }, 1, 1, cells);
+        VERIFY_ARE_EQUAL(2u, count);
+        VERIFY_IS_TRUE(Near(cells[0].dest.right, 20) && Near(cells[1].dest.left, 20));
+        VERIFY_IS_TRUE(Near(cells[0].source.right, 30) && Near(cells[1].source.left, 70));
+        VERIFY_ARE_EQUAL(0u, ComputeNineGridCells({ 0, 0, 0, 10 }, 100, 100, {}, 1, 1, cells));
+    }
 }

@@ -25,6 +25,8 @@ namespace ImmediateRenderingPolicy
         bool swapChainPanel = false;
         bool media = false;                     // MediaPlayerElement / MediaPlayerPresenter / full-window media
         bool appAnimatedVisualPlayer = false;   // AnimatedVisualPlayer with an app source (not ProgressRing)
+        // ---- imaging ----
+        bool appCompositionBrush = false;       // app XamlCompositionBrushBase subclass (CompositionBrush set by the app)
     };
 
     // Reason string for the WindowFallback event, or nullptr when the element can be painted immediately.
@@ -128,4 +130,26 @@ namespace ImmediateRenderingPolicy
     };
 
     ArcSpan GetProgressRingArc(bool indeterminate, double value, double minimum, double maximum, double timeSeconds) noexcept;
+
+    // ---- imaging ----
+
+    // Image.NineGrid (DIPs).
+    struct NineGridInsets
+    {
+        float left = 0, top = 0, right = 0, bottom = 0;
+    };
+
+    struct NineGridCell
+    {
+        RenderingBackend::RectF dest;   // element DIPs
+        RenderingBackend::RectF source; // bitmap pixels
+    };
+
+    // Splits a nine-grid image stretched over `dest` into up to nine sub-bitmap draws, like CompositionNineGridBrush with
+    // XAML's settings (WUCBrushManager::GetNineGridBrush): source insets are the insets times the realization scale
+    // (pixels), destination insets are the insets in DIPs; corners keep their size, edges stretch along one axis and the
+    // center along both. Insets that do not fit (left + right wider than the source or the destination) shrink
+    // proportionally. Returns the number of non-empty cells written.
+    uint32_t ComputeNineGridCells(const RenderingBackend::RectF& dest, float sourceWidth, float sourceHeight, const NineGridInsets& insets,
+        float realizationScaleX, float realizationScaleY, _Out_writes_(9) NineGridCell* cells) noexcept;
 }

@@ -14,6 +14,7 @@
 #include "XamlIslandRoot.h"
 #include <FxCallbacks.h>
 #include <MetadataAPI.h>
+#include "shape.h"
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -165,6 +166,22 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
     // App animations on UIElement facades (StartAnimation on Translation/Scale/...) run in Composition.
     interop.handOffVisualTouched = element->HasFacadeAnimation()
         || (element->IsUsingHandOffVisual() && IsHandOffVisualTouched(element));
+
+    // ---- imaging ----
+    // F11: an app XamlCompositionBrushBase paints app Composition content; like other interop it falls the window back
+    // (built-in subclasses are painted natively or with their fallback color, see IsAppCompositionBrush).
+    if (element->OfTypeByIndex<KnownTypeIndex::FrameworkElement>())
+    {
+        auto fe = static_cast<CFrameworkElement*>(element);
+        interop.appCompositionBrush = ImmediateRenderingMaterials::IsAppCompositionBrush(fe->GetBackgroundBrush().get(), element)
+            || ImmediateRenderingMaterials::IsAppCompositionBrush(fe->GetBorderBrush().get(), element);
+    }
+    if (auto shape = do_pointer_cast<CShape>(element))
+    {
+        interop.appCompositionBrush = interop.appCompositionBrush
+            || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->m_pFill, element)
+            || ImmediateRenderingMaterials::IsAppCompositionBrush(shape->m_pStroke, element);
+    }
 
     // S12: AnimatedIcon skips its Lottie visual under immediate rendering and shows FallbackIconSource (AnimatedIcon.cpp).
     if (element->OfTypeByIndex<KnownTypeIndex::IconElement>() && element->HasManagedPeer())
