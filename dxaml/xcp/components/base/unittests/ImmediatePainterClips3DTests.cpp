@@ -241,20 +241,22 @@ namespace RenderingBackendTests
         Paint(*painter, [&](IImmediatePainter& p)
         {
             p.Clear(c_white);
-            p.SetTransform({ 1, 0, 0, 1, 50, 50 }); // reset inside the layer, applied again when compositing
-            p.PushPerspectiveLayer({ 0, 0, 64, 64 }, Matrix4x4F{});
-            p.FillRectangle({ 16, 16, 48, 48 }, c_red);
+            p.SetTransform({ 1, 0, 0, 1, 8, 8 }); // reset inside the layer, applied again when compositing
+            p.PushPerspectiveLayer({ 0, 0, 40, 40 }, Matrix4x4F{});
+            p.FillRectangle({ 8, 8, 24, 24 }, c_red);
             p.PopPerspectiveLayer();
-            p.FillRectangle({ 0, 0, 4, 4 }, c_blue); // the push transform is restored: lands at (50, 50)
+            p.FillRectangle({ 0, 0, 4, 4 }, c_blue); // the push transform is restored: lands at (8, 8)
+            p.SetTransform({});
         });
         const Image image = Read(*painter);
-        VerifyWhite(image, 65, 65);
-        VerifyRed(image, 66, 66);
-        VerifyRed(image, 97, 97);
-        VerifyRed(image, 90, 70);
-        VerifyWhite(image, 98, 98);
-        VerifyColor(image, 51, 51, c_blue, Tolerance(3), L"expected blue");
-        VerifyWhite(image, 49, 49);
+        VerifyWhite(image, 15, 15);
+        VerifyRed(image, 16, 16);
+        VerifyRed(image, 31, 31);
+        VerifyRed(image, 28, 20);
+        VerifyWhite(image, 32, 32);
+        VerifyWhite(image, 44, 44); // transparent layer pixels leave the target unchanged
+        VerifyColor(image, 9, 9, c_blue, Tolerance(3), L"expected blue");
+        VerifyWhite(image, 7, 7);
     }
 
     void Clips3DPainterConformanceTests::PerspectiveLayerAffineMatrixMapsCorners()
