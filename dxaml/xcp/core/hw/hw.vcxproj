@@ -49,6 +49,7 @@
         <ClCompile Include="ImmediateRenderer.Fallback.cpp"/>
         <ClCompile Include="ImmediateRenderer.Materials.cpp"/>
         <ClCompile Include="ImmediateRenderer.Popups.cpp"/>
+        <ClCompile Include="ImmediateRenderer.Shapes.cpp"/>
         <ClCompile Include="hwcompnode.cpp"/>
         <ClCompile Include="DManipData.cpp"/>
         <ClCompile Include="hwtexturemgr.cpp"/>

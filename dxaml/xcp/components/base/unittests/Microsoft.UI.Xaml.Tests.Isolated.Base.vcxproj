@@ -52,6 +52,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- shapes -->
+        <ClInclude Include="ImmediatePainterShapeTests.h"/>
+        <ClCompile Include="ImmediatePainterShapeTests.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- D2D-HW branch -->
         <ClInclude Include="D2DDeviceFactoryTests.h"/>
         <ClInclude Include="GpuTimestampProfilerTests.h"/>

@@ -253,6 +253,34 @@ namespace RenderingBackend
             ComPtr<ID2D1LinearGradientBrush> brush;
         };
 
+        // ---- shapes ----
+        constexpr uint32_t MaxShapeGradients = 16;
+        constexpr uint32_t MaxStrokeStyles = 16;
+        constexpr uint32_t MaxCachedDashes = 16;
+
+        // Stop collection (with its gamma and extend mode) and the brushes over it, created on first use.
+        struct ShapeGradientEntry
+        {
+            uint64_t hash = 0;
+            uint32_t stopCount = 0;
+            GradientStop stops[MaxCachedGradientStops]{};
+            D2D1_GAMMA gamma = D2D1_GAMMA_2_2;
+            D2D1_EXTEND_MODE extend = D2D1_EXTEND_MODE_CLAMP;
+            uint64_t lastUse = 0;
+            ComPtr<ID2D1GradientStopCollection> collection;
+            ComPtr<ID2D1LinearGradientBrush> linear;
+            ComPtr<ID2D1RadialGradientBrush> radial;
+        };
+
+        struct StrokeStyleEntry
+        {
+            D2D1_STROKE_STYLE_PROPERTIES properties{};
+            uint32_t dashCount = 0;
+            float dashes[MaxCachedDashes]{};
+            uint64_t lastUse = 0;
+            ComPtr<ID2D1StrokeStyle> style;
+        };
+
         struct ShadowKey
         {
             float width = 0, height = 0, radiusX = 0, radiusY = 0, blurRadius = 0, offsetX = 0, offsetY = 0;
@@ -1275,6 +1303,14 @@ namespace RenderingBackend
                     (static_cast<uint64_t>(m_damageGeometryObjects) + m_clipGeometryCount + m_pathGeometryCount) * GeometryBytesEstimate +
                     m_bitmapBytes + m_gradientCount * GradientBytesEstimate + m_shadowBytes + effects * EffectBytesEstimate +
                     m_backdropMaskCount * CommandListBytesEstimate;
+                // ---- shapes: gradient stop collections with their brushes, stroke styles ----
+                uint32_t shapeObjects = m_strokeStyleCount + (m_uncachedStrokeStyle ? 1 : 0);
+                for (uint32_t i = 0; i < m_shapeGradientCount; ++i)
+                {
+                    shapeObjects += 1 + (m_shapeGradients[i].linear ? 1 : 0) + (m_shapeGradients[i].radial ? 1 : 0);
+                }
+                inventory.cachedObjectCount += shapeObjects;
+                inventory.cacheBytes += m_shapeGradientCount * GradientBytesEstimate + (m_strokeStyleCount + (m_uncachedStrokeStyle ? 1 : 0)) * BrushBytesEstimate;
                 inventory.uploadBytesThisFrame = m_uploadBytes;
                 return inventory;
             }
@@ -1327,6 +1363,162 @@ namespace RenderingBackend
                 }
                 m_forceFullDamage = true;
                 return S_OK;
+            }
+
+            // ---- shapes (F1 shapes and strokes, F2 brushes) ----
+
+            void FillRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, const BrushDesc& brush) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                ComPtr<ID2D1Brush> d2dBrush = GetShapeBrush(brush);
+                if (!d2dBrush)
+                {
+                    return;
+                }
+                if (radiusX > 0 && radiusY > 0)
+                {
+                    m_context->FillRoundedRectangle(D2D1::RoundedRect(ToD2D(rect), radiusX, radiusY), d2dBrush.Get());
+                }
+                else
+                {
+                    m_context->FillRectangle(ToD2D(rect), d2dBrush.Get());
+                }
+                if (IsOpaqueShapeBrush(brush))
+                {
+                    RecordOpaqueFill(rect, radiusX, radiusY);
+                }
+                CountPrimitive(rect);
+            }
+
+            void FillPathBrush(const PathData& path, const BrushDesc& brush) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                RectF bounds;
+                ComPtr<ID2D1PathGeometry> geometry = GetPathGeometry(path, &bounds);
+                ComPtr<ID2D1Brush> d2dBrush = geometry ? GetShapeBrush(brush) : nullptr;
+                if (!d2dBrush)
+                {
+                    return;
+                }
+                m_context->FillGeometry(geometry.Get(), d2dBrush.Get());
+                CountPrimitive(bounds);
+            }
+
+            ComPtr<ID2D1PathGeometry> CreateBezierEllipse(const D2D1_ELLIPSE& e) noexcept
+            {
+                constexpr float k = 0.5522847498f;
+                const float cx = e.point.x, cy = e.point.y, rx = e.radiusX, ry = e.radiusY;
+                ComPtr<ID2D1PathGeometry> geometry;
+                ComPtr<ID2D1GeometrySink> sink;
+                if (FAILED(m_factory->CreatePathGeometry(&geometry)) || FAILED(geometry->Open(&sink)))
+                {
+                    return nullptr;
+                }
+                sink->BeginFigure(D2D1::Point2F(cx + rx, cy), D2D1_FIGURE_BEGIN_FILLED);
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx + rx, cy + k * ry), D2D1::Point2F(cx + k * rx, cy + ry), D2D1::Point2F(cx, cy + ry)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx - k * rx, cy + ry), D2D1::Point2F(cx - rx, cy + k * ry), D2D1::Point2F(cx - rx, cy)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx - rx, cy - k * ry), D2D1::Point2F(cx - k * rx, cy - ry), D2D1::Point2F(cx, cy - ry)));
+                sink->AddBezier(D2D1::BezierSegment(D2D1::Point2F(cx + k * rx, cy - ry), D2D1::Point2F(cx + rx, cy - k * ry), D2D1::Point2F(cx + rx, cy)));
+                sink->EndFigure(D2D1_FIGURE_END_CLOSED);
+                return SUCCEEDED(sink->Close()) ? geometry : nullptr;
+            }
+
+            void StrokeRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, float thickness, const BrushDesc& brush,
+                _In_opt_ const StrokeStyleDesc* style) noexcept override
+            {
+                if (!m_frameActive || !(thickness > 0))
+                {
+                    return;
+                }
+                ComPtr<ID2D1Brush> d2dBrush = GetShapeBrush(brush);
+                if (!d2dBrush)
+                {
+                    return;
+                }
+                ID2D1StrokeStyle* strokeStyle = GetStrokeStyle(style, thickness);
+                const float width = rect.right - rect.left, height = rect.bottom - rect.top;
+                if (radiusX > 0 && radiusY > 0 && radiusX * 2 >= width && radiusY * 2 >= height)
+                {
+                    const D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F((rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2), width / 2, height / 2);
+                    ComPtr<ID2D1PathGeometry> bezierEllipse = style != nullptr && style->dashCount > 0 ? CreateBezierEllipse(ellipse) : nullptr;
+                    if (bezierEllipse)
+                    {
+                        // Dashes follow the four-Bezier outline Composition strokes (from the rightmost point,
+                        // clockwise): D2D's analytic ellipse distributes dash lengths slightly differently.
+                        m_context->DrawGeometry(bezierEllipse.Get(), d2dBrush.Get(), thickness, strokeStyle);
+                    }
+                    else
+                    {
+                        // An ellipse geometry (like Composition's ellipse), so a dash pattern starts at the rightmost point.
+                        m_context->DrawEllipse(ellipse, d2dBrush.Get(), thickness, strokeStyle);
+                    }
+                }
+                else if (radiusX > 0 && radiusY > 0)
+                {
+                    m_context->DrawRoundedRectangle(D2D1::RoundedRect(ToD2D(rect), radiusX, radiusY), d2dBrush.Get(), thickness, strokeStyle);
+                }
+                else
+                {
+                    m_context->DrawRectangle(ToD2D(rect), d2dBrush.Get(), thickness, strokeStyle);
+                }
+                CountPrimitive(InflateStroke(rect, thickness, style));
+            }
+
+            void StrokePathBrush(const PathData& path, float thickness, const BrushDesc& brush, _In_opt_ const StrokeStyleDesc* style) noexcept override
+            {
+                if (!m_frameActive || !(thickness > 0))
+                {
+                    return;
+                }
+                RectF bounds;
+                ComPtr<ID2D1PathGeometry> geometry = GetPathGeometry(path, &bounds);
+                ComPtr<ID2D1Brush> d2dBrush = geometry ? GetShapeBrush(brush) : nullptr;
+                if (!d2dBrush)
+                {
+                    return;
+                }
+                m_context->DrawGeometry(geometry.Get(), d2dBrush.Get(), thickness, GetStrokeStyle(style, thickness));
+                CountPrimitive(InflateStroke(bounds, thickness, style));
+            }
+
+            void DrawGlyphRunBrush(const GlyphRunDesc& run, const BrushDesc& brush) noexcept override
+            {
+                if (!m_frameActive || run.fontFace == nullptr || !(run.fontEmSize > 0) || run.glyphCount == 0 ||
+                    run.glyphIndices == nullptr || run.glyphAdvances == nullptr)
+                {
+                    return;
+                }
+                ComPtr<ID2D1Brush> d2dBrush = GetShapeBrush(brush);
+                if (!d2dBrush)
+                {
+                    return;
+                }
+                DWRITE_GLYPH_RUN glyphRun{};
+                glyphRun.fontFace = run.fontFace;
+                glyphRun.fontEmSize = run.fontEmSize;
+                glyphRun.glyphCount = run.glyphCount;
+                glyphRun.glyphIndices = run.glyphIndices;
+                glyphRun.glyphAdvances = run.glyphAdvances;
+                glyphRun.glyphOffsets = reinterpret_cast<const DWRITE_GLYPH_OFFSET*>(run.glyphOffsets);
+                glyphRun.bidiLevel = run.bidiLevel;
+                m_context->DrawGlyphRun(D2D1::Point2F(run.baselineOrigin.x, run.baselineOrigin.y), &glyphRun, d2dBrush.Get(),
+                    DWRITE_MEASURING_MODE_NATURAL);
+
+                float advance = 0;
+                for (uint32_t i = 0; i < run.glyphCount; ++i)
+                {
+                    advance += run.glyphAdvances[i];
+                }
+                const float x = run.baselineOrigin.x;
+                const bool rightToLeft = (run.bidiLevel & 1) != 0;
+                CountPrimitive({ rightToLeft ? x - advance : x, run.baselineOrigin.y - run.fontEmSize,
+                    rightToLeft ? x : x + advance, run.baselineOrigin.y + run.fontEmSize / 2 });
             }
 
             // Back to an offscreen target, keeping the last frame so "outside the damage keeps the previous frame" holds.
@@ -2160,6 +2352,278 @@ namespace RenderingBackend
                 return brush;
             }
 
+            // ---- shapes ----
+
+            static D2D1_CAP_STYLE ToD2DCap(LineCap cap) noexcept
+            {
+                switch (cap)
+                {
+                case LineCap::Square: return D2D1_CAP_STYLE_SQUARE;
+                case LineCap::Round: return D2D1_CAP_STYLE_ROUND;
+                case LineCap::Triangle: return D2D1_CAP_STYLE_TRIANGLE;
+                default: return D2D1_CAP_STYLE_FLAT;
+                }
+            }
+
+            static bool IsOpaqueShapeBrush(const BrushDesc& brush) noexcept
+            {
+                if (!(brush.opacity >= 1))
+                {
+                    return false;
+                }
+                if (brush.kind == BrushKind::Solid)
+                {
+                    return brush.color.a >= 1;
+                }
+                if (brush.stops == nullptr || brush.stopCount == 0)
+                {
+                    return false;
+                }
+                for (uint32_t i = 0; i < brush.stopCount; ++i)
+                {
+                    if (!(brush.stops[i].color.a >= 1))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Conservative bounds of a stroke for statistics: miter joins reach miterLimit half-thicknesses out.
+            static RectF InflateStroke(const RectF& bounds, float thickness, const StrokeStyleDesc* style) noexcept
+            {
+                float reach = thickness / 2;
+                if (style == nullptr || style->lineJoin == LineJoin::Miter)
+                {
+                    reach *= std::max(style ? style->miterLimit : 10.0f, 1.5f);
+                }
+                else
+                {
+                    reach *= 1.5f;
+                }
+                return { bounds.left - reach, bounds.top - reach, bounds.right + reach, bounds.bottom + reach };
+            }
+
+            // Brush for a BrushDesc: the shared solid brush, or a cached gradient brush with this call's geometry,
+            // transform and opacity. nullptr draws nothing.
+            ComPtr<ID2D1Brush> GetShapeBrush(const BrushDesc& desc) noexcept
+            {
+                const float opacity = desc.opacity >= 0 ? (desc.opacity <= 1 ? desc.opacity : 1.0f) : 0.0f;
+                if (desc.kind == BrushKind::Solid)
+                {
+                    D2D1_COLOR_F color = ToD2D(desc.color);
+                    color.a *= opacity;
+                    m_brush->SetColor(color);
+                    return m_brush;
+                }
+                if (desc.stops == nullptr || desc.stopCount == 0)
+                {
+                    return nullptr;
+                }
+                const D2D1_GAMMA gamma = desc.interpolation == GradientInterpolation::Linear ? D2D1_GAMMA_1_0 : D2D1_GAMMA_2_2;
+                const D2D1_EXTEND_MODE extend = desc.spread == GradientSpread::Reflect ? D2D1_EXTEND_MODE_MIRROR :
+                    desc.spread == GradientSpread::Repeat ? D2D1_EXTEND_MODE_WRAP : D2D1_EXTEND_MODE_CLAMP;
+                const bool cacheable = desc.stopCount <= MaxCachedGradientStops;
+                const uint64_t hash = cacheable ? HashStops(desc.stops, desc.stopCount) : 0;
+                ++m_cacheTick;
+
+                ShapeGradientEntry* entry = nullptr;
+                ShapeGradientEntry uncached;
+                if (cacheable)
+                {
+                    for (uint32_t i = 0; i < m_shapeGradientCount; ++i)
+                    {
+                        ShapeGradientEntry& candidate = m_shapeGradients[i];
+                        if (candidate.hash == hash && candidate.stopCount == desc.stopCount && candidate.gamma == gamma &&
+                            candidate.extend == extend && memcmp(candidate.stops, desc.stops, sizeof(GradientStop) * desc.stopCount) == 0)
+                        {
+                            entry = &candidate;
+                            break;
+                        }
+                    }
+                }
+                if (!entry)
+                {
+                    std::unique_ptr<D2D1_GRADIENT_STOP[]> stops(new (std::nothrow) D2D1_GRADIENT_STOP[desc.stopCount]);
+                    if (!stops)
+                    {
+                        return nullptr;
+                    }
+                    for (uint32_t i = 0; i < desc.stopCount; ++i)
+                    {
+                        stops[i] = D2D1::GradientStop(desc.stops[i].offset, ToD2D(desc.stops[i].color));
+                    }
+                    ComPtr<ID2D1GradientStopCollection> collection;
+                    if (FAILED(static_cast<ID2D1RenderTarget*>(m_context.Get())->CreateGradientStopCollection(stops.get(),
+                        desc.stopCount, gamma, extend, &collection)))
+                    {
+                        return nullptr;
+                    }
+                    ++m_churnCreated;
+                    if (cacheable)
+                    {
+                        uint32_t slot = m_shapeGradientCount;
+                        if (slot == MaxShapeGradients)
+                        {
+                            slot = 0;
+                            for (uint32_t i = 1; i < MaxShapeGradients; ++i)
+                            {
+                                slot = m_shapeGradients[i].lastUse < m_shapeGradients[slot].lastUse ? i : slot;
+                            }
+                            const ShapeGradientEntry& victim = m_shapeGradients[slot];
+                            m_churnDestroyed += 1 + (victim.linear ? 1 : 0) + (victim.radial ? 1 : 0);
+                            m_shapeGradients[slot] = ShapeGradientEntry();
+                        }
+                        else
+                        {
+                            ++m_shapeGradientCount;
+                        }
+                        entry = &m_shapeGradients[slot];
+                        entry->hash = hash;
+                        entry->stopCount = desc.stopCount;
+                        memcpy(entry->stops, desc.stops, sizeof(GradientStop) * desc.stopCount);
+                        entry->gamma = gamma;
+                        entry->extend = extend;
+                    }
+                    else
+                    {
+                        entry = &uncached;
+                        m_churnDestroyed += 2; // collection and brush live for this call only
+                    }
+                    entry->collection = collection;
+                }
+                entry->lastUse = m_cacheTick;
+
+                ComPtr<ID2D1Brush> result;
+                if (desc.kind == BrushKind::Linear)
+                {
+                    if (!entry->linear)
+                    {
+                        if (FAILED(m_context->CreateLinearGradientBrush(D2D1::LinearGradientBrushProperties(D2D1::Point2F(), D2D1::Point2F()),
+                            D2D1::BrushProperties(), entry->collection.Get(), &entry->linear)))
+                        {
+                            return nullptr;
+                        }
+                        ++m_counters.gradientBrushesCreated;
+                        ++m_churnCreated;
+                    }
+                    entry->linear->SetStartPoint(D2D1::Point2F(desc.start.x, desc.start.y));
+                    entry->linear->SetEndPoint(D2D1::Point2F(desc.end.x, desc.end.y));
+                    result = entry->linear;
+                }
+                else
+                {
+                    if (!entry->radial)
+                    {
+                        if (FAILED(m_context->CreateRadialGradientBrush(D2D1::RadialGradientBrushProperties(D2D1::Point2F(), D2D1::Point2F(), 0, 0),
+                            D2D1::BrushProperties(), entry->collection.Get(), &entry->radial)))
+                        {
+                            return nullptr;
+                        }
+                        ++m_counters.gradientBrushesCreated;
+                        ++m_churnCreated;
+                    }
+                    entry->radial->SetCenter(D2D1::Point2F(desc.center.x, desc.center.y));
+                    entry->radial->SetGradientOriginOffset(D2D1::Point2F(desc.origin.x - desc.center.x, desc.origin.y - desc.center.y));
+                    entry->radial->SetRadiusX(std::max(desc.radiusX, 0.0f));
+                    entry->radial->SetRadiusY(std::max(desc.radiusY, 0.0f));
+                    result = entry->radial;
+                }
+                result->SetTransform(ToD2D(desc.transform));
+                result->SetOpacity(opacity);
+                return result;
+            }
+
+            // Stroke style for a StrokeStyleDesc (D2D dash lengths and offset are in thicknesses), cached by content
+            // (LRU, MaxStrokeStyles; dash arrays longer than MaxCachedDashes are built per call). nullptr: D2D's default.
+            ID2D1StrokeStyle* GetStrokeStyle(const StrokeStyleDesc* desc, float thickness) noexcept
+            {
+                if (desc == nullptr)
+                {
+                    return nullptr;
+                }
+                bool dashed = desc->dashes != nullptr && desc->dashCount > 0 && thickness > 0;
+                float total = 0;
+                for (uint32_t i = 0; dashed && i < desc->dashCount; ++i)
+                {
+                    dashed = std::isfinite(desc->dashes[i]) && desc->dashes[i] >= 0;
+                    total += desc->dashes[i];
+                }
+                dashed = dashed && total > 0 && std::isfinite(desc->dashOffset);
+
+                D2D1_STROKE_STYLE_PROPERTIES properties = D2D1::StrokeStyleProperties(ToD2DCap(desc->startCap), ToD2DCap(desc->endCap),
+                    ToD2DCap(desc->dashCap), desc->lineJoin == LineJoin::Bevel ? D2D1_LINE_JOIN_BEVEL :
+                    desc->lineJoin == LineJoin::Round ? D2D1_LINE_JOIN_ROUND : D2D1_LINE_JOIN_MITER,
+                    std::isfinite(desc->miterLimit) ? std::max(desc->miterLimit, 1.0f) : 10.0f,
+                    dashed ? D2D1_DASH_STYLE_CUSTOM : D2D1_DASH_STYLE_SOLID, dashed ? desc->dashOffset / thickness : 0.0f);
+                // An odd pattern repeats to even length (SVG / XAML semantics), independent of how D2D treats odd arrays.
+                const uint32_t dashCount = dashed ? desc->dashCount * (desc->dashCount % 2 == 0 ? 1 : 2) : 0;
+                std::unique_ptr<float[]> heap;
+                float local[MaxCachedDashes];
+                float* dashes = local;
+                if (dashCount > MaxCachedDashes)
+                {
+                    heap.reset(new (std::nothrow) float[dashCount]);
+                    if (!heap)
+                    {
+                        return nullptr;
+                    }
+                    dashes = heap.get();
+                }
+                for (uint32_t i = 0; i < dashCount; ++i)
+                {
+                    dashes[i] = desc->dashes[i % desc->dashCount] / thickness;
+                }
+
+                ++m_cacheTick;
+                if (dashCount <= MaxCachedDashes)
+                {
+                    for (uint32_t i = 0; i < m_strokeStyleCount; ++i)
+                    {
+                        StrokeStyleEntry& entry = m_strokeStyles[i];
+                        if (entry.dashCount == dashCount && memcmp(&entry.properties, &properties, sizeof(properties)) == 0 &&
+                            memcmp(entry.dashes, dashes, sizeof(float) * dashCount) == 0)
+                        {
+                            entry.lastUse = m_cacheTick;
+                            return entry.style.Get();
+                        }
+                    }
+                }
+                ComPtr<ID2D1StrokeStyle> style;
+                if (FAILED(m_factory->CreateStrokeStyle(properties, dashCount ? dashes : nullptr, dashCount, &style)))
+                {
+                    return nullptr;
+                }
+                ++m_churnCreated;
+                if (dashCount > MaxCachedDashes)
+                {
+                    ++m_churnDestroyed;
+                    m_uncachedStrokeStyle = style; // kept until the next uncached style
+                    return style.Get();
+                }
+                uint32_t slot = m_strokeStyleCount;
+                if (slot == MaxStrokeStyles)
+                {
+                    slot = 0;
+                    for (uint32_t i = 1; i < MaxStrokeStyles; ++i)
+                    {
+                        slot = m_strokeStyles[i].lastUse < m_strokeStyles[slot].lastUse ? i : slot;
+                    }
+                    ++m_churnDestroyed;
+                }
+                else
+                {
+                    ++m_strokeStyleCount;
+                }
+                StrokeStyleEntry& entry = m_strokeStyles[slot];
+                entry.properties = properties;
+                entry.dashCount = dashCount;
+                memcpy(entry.dashes, dashes, sizeof(float) * dashCount);
+                entry.lastUse = m_cacheTick;
+                entry.style = style;
+                return entry.style.Get();
+            }
+
             // Second device context on the same ID2D1Device, for rendering intermediates while the main context is
             // inside BeginDraw with clips and layers pushed.
             HRESULT EnsureAuxContext() noexcept
@@ -2718,6 +3182,13 @@ namespace RenderingBackend
             ClipState m_savedClipStates[MaxStackDepth];
             DeviceRect m_opaque[MaxOpaqueRects];
             uint32_t m_opaqueCount = 0;
+
+            // ---- shapes ----
+            ShapeGradientEntry m_shapeGradients[MaxShapeGradients];
+            uint32_t m_shapeGradientCount = 0;
+            StrokeStyleEntry m_strokeStyles[MaxStrokeStyles];
+            uint32_t m_strokeStyleCount = 0;
+            ComPtr<ID2D1StrokeStyle> m_uncachedStrokeStyle;
         };
     }
 

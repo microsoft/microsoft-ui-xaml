@@ -8,6 +8,7 @@ class FontFace;
 class D2DTextDrawingContext;
 struct HWTextRenderParams;
 class IContentRenderer;
+class ImmediateTextSink;
 
 //------------------------------------------------------------------------
 //
@@ -247,6 +248,9 @@ public:
     _Check_return_ HRESULT HWRender(
         _In_ IContentRenderer* pContentRenderer
         );
+
+    // ---- shapes ---- "Retained XAML, immediate rendering": the same glyph run HWRender draws, replayed to `sink`.
+    _Check_return_ HRESULT VisitImmediate(ImmediateTextSink& sink);
 
     void GetIndependentlyAnimatedBrushes(
         _Outptr_ CSolidColorBrush **ppFillBrush,

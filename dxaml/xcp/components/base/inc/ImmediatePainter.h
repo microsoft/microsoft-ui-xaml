@@ -111,6 +111,78 @@ namespace RenderingBackend
         float opacity = 1;
     };
 
+    // ---- shapes (F1 shapes and strokes, F2 brushes) ----
+
+    // XAML PenLineCap. Triangle: a point of height thickness/2 beyond the end.
+    enum class LineCap : uint8_t
+    {
+        Flat,
+        Square,
+        Round,
+        Triangle,
+    };
+
+    // XAML PenLineJoin. Miter: clipped at miterLimit (D2D1_LINE_JOIN_MITER).
+    enum class LineJoin : uint8_t
+    {
+        Miter,
+        Bevel,
+        Round,
+    };
+
+    // Shape stroke style, like Composition's sprite shape stroke. Lengths are in DIPs: the walk scales
+    // Shape.StrokeDashArray and StrokeDashOffset by StrokeThickness, as XAML does for Composition.
+    struct StrokeStyleDesc
+    {
+        LineCap startCap = LineCap::Flat;
+        LineCap endCap = LineCap::Flat;
+        LineCap dashCap = LineCap::Flat;
+        LineJoin lineJoin = LineJoin::Miter;
+        float miterLimit = 10;             // ratio of the miter length to half the thickness (D2D); clamped to >= 1
+        const float* dashes = nullptr;     // alternating dash and gap lengths, DIPs; nullptr or 0 count: solid
+        uint32_t dashCount = 0;
+        float dashOffset = 0;              // DIPs into the dash pattern where the stroke starts
+    };
+
+    enum class GradientSpread : uint8_t
+    {
+        Pad,     // D2D1_EXTEND_MODE_CLAMP
+        Reflect, // D2D1_EXTEND_MODE_MIRROR
+        Repeat,  // D2D1_EXTEND_MODE_WRAP
+    };
+
+    enum class GradientInterpolation : uint8_t
+    {
+        SRgb,   // gamma 2.2 (sRGB) interpolation, like Composition's default
+        Linear, // linear-light (scRGB) interpolation, D2D1_GAMMA_1_0
+    };
+
+    enum class BrushKind : uint8_t
+    {
+        Solid,
+        Linear,
+        Radial,
+    };
+
+    // A solid, linear or radial gradient brush. Gradient geometry is in brush space; `transform` maps brush space to
+    // the drawing's DIP space (the space of the path / rect / glyph run it paints). Stops are sorted by offset.
+    // Radial: the ellipse (center, radiusX, radiusY) is offset 1; offset 0 is the focal point `origin`, which may
+    // differ from the center (D2D/Composition radial gradient semantics).
+    struct BrushDesc
+    {
+        BrushKind kind = BrushKind::Solid;
+        ColorF color;                      // Solid
+        const GradientStop* stops = nullptr;
+        uint32_t stopCount = 0;
+        PointF start, end;                 // Linear
+        PointF center, origin;             // Radial
+        float radiusX = 0, radiusY = 0;    // Radial
+        GradientSpread spread = GradientSpread::Pad;
+        GradientInterpolation interpolation = GradientInterpolation::SRgb;
+        Matrix3x2F transform;
+        float opacity = 1;
+    };
+
     struct BitmapSource
     {
         uint64_t key = 0;        // caller-chosen identity (for example the decoded image surface)
@@ -233,6 +305,26 @@ namespace RenderingBackend
         //         painter accepts a swap chain on any D3D11 device and copies with UpdateSubresource. Resize also resizes the attached
                 // swap chain's buffers (ResizeBuffers); the next frame after attach or Resize is treated as fully damaged.
         virtual HRESULT SetPresentationSwapChain(_In_opt_ IDXGISwapChain1* swapChain) noexcept = 0;
+
+        // ---- shapes (F1 shapes and strokes, F2 brushes) ----
+
+        // Brush fills: a rounded rect (radiusX/radiusY = 0: plain rectangle; radii of half the size: an ellipse) or a
+        // path. A Solid brush is equivalent to the color fills.
+        virtual void FillRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, const BrushDesc& brush) noexcept = 0;
+        virtual void FillPathBrush(const PathData& path, const BrushDesc& brush) noexcept = 0;
+
+        // Styled strokes, centered on the outline. style nullptr: solid, flat caps, miter joins (limit 10), the same as
+        // StrokeRoundedRectangle / StrokePath. A closed rounded rect or ellipse outline starts (for dashes) where D2D's
+        // rectangle, rounded-rectangle and ellipse geometries start: the top-left corner, the start of the top-left arc
+        // (left, top + radiusY), and the rightmost point, clockwise.
+        virtual void StrokeRoundedRectangleBrush(const RectF& rect, float radiusX, float radiusY, float thickness,
+            const BrushDesc& brush, _In_opt_ const StrokeStyleDesc* style) noexcept = 0;
+        virtual void StrokePathBrush(const PathData& path, float thickness, const BrushDesc& brush,
+            _In_opt_ const StrokeStyleDesc* style) noexcept = 0;
+
+        // Glyph run painted with a brush (gradient text), grayscale antialiased. Color fonts are drawn monochrome with
+        // the brush (XAML draws color glyphs with their palette only for solid foregrounds).
+        virtual void DrawGlyphRunBrush(const GlyphRunDesc& run, const BrushDesc& brush) noexcept = 0;
     };
 
     // Dispatches to the per-backend factories below. Composition is not an immediate painter (E_INVALIDARG).
