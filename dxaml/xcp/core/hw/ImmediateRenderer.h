@@ -201,4 +201,14 @@ private:
     // Applies running transitions (opacity override); requests the next frame. False once they finished.
     static bool ApplyTransitions(_In_ CUIElement* element, _Inout_ float* opacity) noexcept;
     static bool TryGetTransitionColor(_In_ CUIElement* element, _Inout_ RenderingBackend::ColorF* color) noexcept;
+    // ImmediateRenderer.Connected.inl: ConnectedAnimation hosts emulated by CConnectedAnimation, painted by the root.
+    void EmitConnectedAnimations(
+        _In_ CUIElement* root,
+        const ImmediateRenderingDetail::WalkContext& parent,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+    static bool IsConnectedHidden(_In_ CUIElement* element) noexcept;
+    static bool IsConnectedEmulated(_In_ CUIElement* element) noexcept;
+    // The destination being drawn through its connected animation host (walked although hidden in place).
+    const CUIElement* m_connectedOverlayElement = nullptr;
+    float m_connectedOverlayOpacity = 1;
 };

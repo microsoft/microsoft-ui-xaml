@@ -178,8 +178,10 @@ _Check_return_ HRESULT CConnectedAnimationService::PreCommit()
             {
                 // Nothing retained by connected animation should be visible in the next frame.
                 HWCompTreeNodeWinRT* compNode = static_cast<HWCompTreeNodeWinRT*>(element->GetCompositionPeer());
-                ASSERT(compNode);
-                compNode->HidePrependVisual();
+                if (compNode != nullptr) // ---- transitions: immediate windows have no comp nodes
+                {
+                    compNode->HidePrependVisual();
+                }
             }
         }
     }

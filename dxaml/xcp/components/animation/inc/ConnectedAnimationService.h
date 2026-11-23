@@ -46,6 +46,10 @@ public:
     void DelayStartOfAnimations() { m_delayStartOfAnimations = true; }
     bool AnimationStartsAreDelayed() { return m_delayStartOfAnimations; }
 
+    // ---- transitions ----
+    // Immediate rendering (F10) paints the animations it emulates (ImmediateRenderer.Connected.inl).
+    const std::vector<xref_ptr<CConnectedAnimation>>& GetAnimations() const { return m_animations; }
+
 private:
     _Check_return_ HRESULT CleanupRetainedElements();
 

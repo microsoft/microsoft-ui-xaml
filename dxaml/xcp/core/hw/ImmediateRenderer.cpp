@@ -2181,6 +2181,12 @@ void ImmediateRenderer::Walk(
     {
         return;
     }
+    // ---- transitions: an emulated connected animation's source/destination is drawn by the ConnectedAnimationRoot.
+    if (element->HasActiveConnectedAnimation() && element != m_connectedOverlayElement && IsConnectedHidden(element))
+    {
+        ++list.uncacheable;
+        return;
+    }
 
     CheckFallback(element);
 
@@ -2245,7 +2251,10 @@ void ImmediateRenderer::Walk(
             return;
         case KnownTypeIndex::RenderTargetBitmapRoot:
         case KnownTypeIndex::XamlIslandRootCollection:
+            return;
         case KnownTypeIndex::ConnectedAnimationRoot:
+            EmitConnectedAnimations(element, parent, list); // ---- transitions
+            return;
         case KnownTypeIndex::LayoutTransitionElement:
         case KnownTypeIndex::FullWindowMediaRoot:
             return;
@@ -2259,7 +2268,8 @@ void ImmediateRenderer::Walk(
     // only dirty bounds, so subtrees with hand-off visuals are always walked.
     const bool usesHandOffVisual = element->IsUsingHandOffVisual();
     const bool hasTransitions = HasTransitions(element); // ---- transitions
-    if (usesHandOffVisual || hasTransitions)
+    const bool connectedOverlay = element == m_connectedOverlayElement;
+    if (usesHandOffVisual || hasTransitions || connectedOverlay)
     {
         ++list.uncacheable;
     }
@@ -2277,6 +2287,10 @@ void ImmediateRenderer::Walk(
     const uint32_t uncacheableBefore = list.uncacheable;
 
     float localOpacity = element->GetOpacityLocal();
+    if (connectedOverlay)
+    {
+        localOpacity *= m_connectedOverlayOpacity;
+    }
     if (hasTransitions)
     {
         ApplyTransitions(element, &localOpacity);
@@ -3736,3 +3750,4 @@ void ImmediateRenderer::SaveScrollers(_Inout_ IslandState& state, const DisplayL
 }
 
 #include "ImmediateRenderer.Independent.inl"
+#include "ImmediateRenderer.Connected.inl" // ---- transitions

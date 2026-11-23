@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -7,6 +7,8 @@
 #include "ConnectedAnimationCoreConfiguration.h"
 #include <fwd/windows.ui.composition.h>
 #include <fwd/Microsoft.UI.Xaml.media.animation.h>
+#include <ImmediateAnimations.h> // ---- transitions
+#include <vector>
 
 class CUIElement;
 class CConnectedAnimationService;
@@ -14,6 +16,7 @@ class CConnectedAnimationRoot;
 class CXamlIslandRoot;
 interface IUnknown;
 class CEasingFunctionBase;
+class CMemorySurface;
 
 enum class ConnectedAnimationState
 {
@@ -39,6 +42,35 @@ struct ConnectedAnimationElementInfo
     CMILMatrix transform;
  };
 
+// ---- transitions ----
+// Immediate rendering (F10): when the source's window renders with an immediate backend, CConnectedAnimation does not
+// build Composition snapshots or a host visual. It captures the source once (premultiplied BGRA at the rasterization
+// scale, capped), evaluates the host visual's offset/scale/clip/cross-fade itself and the walk paints the snapshot and
+// the live destination on top of the window (core\hw\ImmediateRenderer.Connected.inl). Rects are island DIPs; "host"
+// rects are in the host visual's local (pre-scale) space.
+struct ConnectedAnimationImmediateState
+{
+    bool active = false;            // emulated by the immediate walk
+    bool running = false;           // host animates (Running/ReadyToComplete)
+    bool shadow = false;            // configuration casts a shadow
+    bool approximated = false;      // easing could not be read back (default curve used)
+    bool coordinated = false;       // no source snapshot: the host fades in
+    bool customComponents = false;  // app component animations (not evaluated: the default motion is used)
+    bool hasDestination = false;    // destination drawn (Comp: a destination snapshot brush exists)
+    int64_t startUs = 0;
+    int64_t durationUs = 0;
+    ImmediateAnimations::Curve curve;
+    ImmediateAnimations::ConnectedParams params;
+    float hostWidth = 0, hostHeight = 0;
+    // Source snapshot (null when none) drawn into sourceContent, showing sourceCrop (snapshot pixels).
+    xref_ptr<CMemorySurface> snapshot;
+    std::vector<uint8_t> pixels;
+    XRECTF_WH sourceContent{};
+    XRECTF_WH sourceCrop{};
+    // Destination is walked live: destRect maps onto destContent.
+    XRECTF_WH destRect{};
+    XRECTF_WH destContent{};
+};
 class CConnectedAnimation : public CDependencyObject
 {
 public:
@@ -61,6 +93,19 @@ public:
     ConnectedAnimationState GetState() { return m_state; }
     xstring_ptr GetKey() const { return m_key; }
     CUIElement* GetSourceElementNoRef() { return m_source.element.get(); }
+
+    // ---- transitions ----
+    const ConnectedAnimationImmediateState& GetImmediateState() const { return m_immediate; }
+    CUIElement* GetDestinationElementNoRef() { return m_destination.element.get(); }
+    CConnectedAnimationRoot* GetRootNoRef() { return GetConnectedAnimationRootNoRef(); }
+    // Whether the immediate walk hides lement (an emulated animation's source or destination).
+    bool IsHiddenByImmediateEmulation(_In_ const CUIElement* element) const;
+    // Whether the element is the source or destination of an animation emulated by the immediate walk.
+    bool IsEmulatedImmediately(_In_ const CUIElement* element) const
+    {
+        return m_immediate.active && element != nullptr && (element == m_source.element.get() || element == m_destination.element.get());
+    }
+    bool IsPreparedState() const { return m_state == ConnectedAnimationState::Prepared || m_state == ConnectedAnimationState::Started; }
 
     _Check_return_ HRESULT OnUnloadingElement(_In_ CUIElement* unloadingElement, _Out_ bool* shouldRetain);
     _Check_return_ HRESULT UpdatePreRenderWalk();
@@ -177,6 +222,12 @@ private:
     // a weak ref when they are used.
     Microsoft::WRL::ComPtr<WUComp::ICompositionPropertySet> m_effectPropertySet;
     Microsoft::WRL::ComPtr<WUComp::ICompositionPropertySet> m_primaryPropertySet;
+
+    // ---- transitions ----
+    _Check_return_ HRESULT CaptureSourceImmediate();
+    _Check_return_ HRESULT UpdatePreCommitImmediate(_Out_ bool* remove);
+    _Check_return_ HRESULT StartImmediate();
+    ConnectedAnimationImmediateState m_immediate;
 
 
 };

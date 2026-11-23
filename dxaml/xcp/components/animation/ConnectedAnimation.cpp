@@ -41,6 +41,8 @@
 #include <ErrorHelper.h>
 #include "RootScale.h"
 #include <FxCallbacks.h>
+#include <memorysurface.h> // ---- transitions
+#include <RenderingBackend.h>
 
 using namespace xaml_animation;
 
@@ -98,6 +100,23 @@ _Check_return_ HRESULT CConnectedAnimation::Prepare(_In_ CUIElement* source)
 
     m_source.element = source;
 
+    // ---- transitions ----
+    // Immediate rendering: snapshot the source now (it is laid out and live) and skip the Composition host.
+    if (ImmediateAnimations::IsTargetImmediate(source))
+    {
+        IFC_RETURN(GetSnapshotTransformInfo(m_source));
+        m_immediate.active = true;
+        IFC_RETURN(CaptureSourceImmediate());
+    }
+    if (m_immediate.active)
+    {
+        IFC_RETURN(source->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None));
+        CUIElement::NWSetContentDirty(source, DirtyFlags::Render); // the walk hides it from now on
+        m_source.refreshSnapshot = false;
+        m_state = ConnectedAnimationState::Prepared;
+        return S_OK;
+    }
+
     // Ensure the ConnectedAnimationRoot's handoff viusal is created, so that it can be attached to the visual tree in during the next tick's render walk.
     CConnectedAnimationRoot* root = GetConnectedAnimationRootNoRef();
     ASSERT(root); // root should exist.
@@ -142,6 +161,12 @@ _Check_return_ HRESULT CConnectedAnimation::TryStart(_In_ CUIElement* destinatio
         m_state == ConnectedAnimationState::Idle)
     {
         return S_OK;
+    }
+
+    // ---- transitions ----
+    if (m_baseAnimation != nullptr)
+    {
+        m_immediate.active = m_baseAnimation->m_immediate.active;
     }
 
     IFC_RETURN(destination->SetRequiresComposition(CompositionRequirement::HasConnectedAnimation, IndependentAnimationType::None));
@@ -240,6 +265,17 @@ _Check_return_ HRESULT CConnectedAnimation::Reset()
 {
     // TODO: Stop any animations that are running
 
+    // ---- transitions ----
+    if (m_immediate.active || m_immediate.snapshot)
+    {
+        if (m_source.element || m_destination.element)
+        {
+            // The overlay stops drawing; repaint where it was.
+            GetContext()->RequestAdditionalFrame(RequestFrameReason::AnimationTick);
+        }
+        m_immediate = {};
+    }
+
     // Clean up any element based data
     auto connectedAnimationRoot = GetConnectedAnimationRootNoRef();
     IFC_RETURN(ClearElementInfo(m_source));
@@ -323,6 +359,12 @@ _Check_return_ HRESULT CConnectedAnimation::UpdatePreCommit(_Out_ bool * remove,
     if (m_baseAnimation != nullptr && m_baseAnimation->m_state == ConnectedAnimationState::Canceled)
     {
         IFC_RETURN(Cancel());
+    }
+
+    // ---- transitions ----
+    if (m_immediate.active)
+    {
+        return UpdatePreCommitImmediate(remove);
     }
 
     switch (m_state)
@@ -1576,4 +1618,301 @@ CConnectedAnimationRoot* CConnectedAnimation::GetConnectedAnimationRootNoRef()
     {
         return GetContext()->GetConnectedAnimationRoot();
     }
+}
+
+// ---- transitions ----
+// Immediate rendering (F10): CConnectedAnimation evaluates the host visual itself; core\hw\ImmediateRenderer.Connected.inl
+// paints it. See ConnectedAnimationImmediateState.
+namespace
+{
+    // Bounds the one transient snapshot an animation holds (32 MB at most).
+    constexpr float c_maxSnapshotPixels = 8.0f * 1024 * 1024;
+    constexpr float c_maxSnapshotSide = 8192.0f;
+
+    XRECTF_WH CenteredIn(float hostWidth, float hostHeight, float width, float height)
+    {
+        return { (hostWidth - width) / 2, (hostHeight - height) / 2, width, height };
+    }
+
+    ImmediateAnimations::Curve ReadCurve(_In_opt_ WUComp::ICompositionEasingFunction* easing, _Out_ bool* approximated)
+    {
+        *approximated = false;
+        Microsoft::WRL::ComPtr<WUComp::ICubicBezierEasingFunction> bezier;
+        if (easing != nullptr && SUCCEEDED(easing->QueryInterface(IID_PPV_ARGS(&bezier))))
+        {
+            wfn::Vector2 p1{};
+            wfn::Vector2 p2{};
+            if (SUCCEEDED(bezier->get_ControlPoint1(&p1)) && SUCCEEDED(bezier->get_ControlPoint2(&p2)))
+            {
+                return ImmediateAnimations::Curve::Bezier(p1.X, p1.Y, p2.X, p2.Y);
+            }
+        }
+        Microsoft::WRL::ComPtr<WUComp::ILinearEasingFunction> linear;
+        if (easing != nullptr && SUCCEEDED(easing->QueryInterface(IID_PPV_ARGS(&linear))))
+        {
+            return ImmediateAnimations::Curve::Linear();
+        }
+        // Other easing types (step, back, elastic...) have no getters: the service default curve.
+        *approximated = true;
+        return ImmediateAnimations::Curve::Bezier(0.8f, 0.0f, 0.2f, 1.0f);
+    }
+}
+
+bool CConnectedAnimation::IsHiddenByImmediateEmulation(_In_ const CUIElement* element) const
+{
+    if (!m_immediate.active || element == nullptr)
+    {
+        return false;
+    }
+    if (element == m_source.element.get())
+    {
+        return m_state == ConnectedAnimationState::Prepared || m_state == ConnectedAnimationState::Started
+            || m_state == ConnectedAnimationState::Running || m_state == ConnectedAnimationState::ReadyToComplete;
+    }
+    return element == m_destination.element.get() && m_immediate.running;
+}
+
+_Check_return_ HRESULT CConnectedAnimation::CaptureSourceImmediate()
+{
+    auto capture = RenderingBackend::GetCaptureElementCallback();
+    CUIElement* source = m_source.element.get();
+    if (capture == nullptr)
+    {
+        m_immediate.active = false;
+        return S_OK;
+    }
+
+    // Until TryStart the host shows the snapshot where the source was (CreateSnapshotBrush's initial host).
+    const XRECTF_WH& unclipped = m_source.unclippedRect;
+    const XRECTF_WH& clipped = m_source.clippedRect;
+    auto& state = m_immediate;
+    state.params = {};
+    state.params.fromX = state.params.toX = unclipped.X;
+    state.params.fromY = state.params.toY = unclipped.Y;
+    const float insets[4] = {
+        clipped.X - unclipped.X, clipped.Y - unclipped.Y,
+        unclipped.X + unclipped.Width - clipped.X - clipped.Width,
+        unclipped.Y + unclipped.Height - clipped.Y - clipped.Height };
+    for (int i = 0; i < 4; ++i)
+    {
+        state.params.fromInsets[i] = state.params.toInsets[i] = insets[i];
+    }
+    state.hostWidth = unclipped.Width;
+    state.hostHeight = unclipped.Height;
+    state.sourceContent = { 0, 0, unclipped.Width, unclipped.Height };
+
+    if (unclipped.Width < 0.5f || unclipped.Height < 0.5f)
+    {
+        return S_OK; // nothing to snapshot (CreateSnapshotBrush skips it too)
+    }
+
+    float scale = RootScale::GetRasterizationScaleForElement(source);
+    if (!(scale > 0))
+    {
+        scale = 1.0f;
+    }
+    const float area = unclipped.Width * scale * unclipped.Height * scale;
+    if (area > c_maxSnapshotPixels)
+    {
+        scale *= std::sqrt(c_maxSnapshotPixels / area);
+    }
+    scale = std::min(scale, c_maxSnapshotSide / std::max(unclipped.Width, unclipped.Height));
+    const uint32_t width = std::max(1u, static_cast<uint32_t>(std::ceil(unclipped.Width * scale)));
+    const uint32_t height = std::max(1u, static_cast<uint32_t>(std::ceil(unclipped.Height * scale)));
+
+    // The capture walk appends the source's local transform to this parent-space -> snapshot-pixels transform.
+    CMILMatrix world(true);
+    if (CUIElement* parent = source->GetUIElementAdjustedParentInternal(false))
+    {
+        xref_ptr<ITransformer> transformer;
+        IFC_RETURN(parent->TransformToRoot(transformer.ReleaseAndGetAddressOf()));
+        world = transformer->Get2DMatrixIgnore3D();
+    }
+    CMILMatrix toSnapshot(true);
+    toSnapshot.SetM11(scale);
+    toSnapshot.SetM22(scale);
+    toSnapshot.SetDx(-unclipped.X * scale);
+    toSnapshot.SetDy(-unclipped.Y * scale);
+    world.Append(toSnapshot);
+    const float transform[6] = { world.GetM11(), world.GetM12(), world.GetM21(), world.GetM22(), world.GetDx(), world.GetDy() };
+
+    std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4);
+    bool handled = false;
+    IFC_RETURN(capture(source, transform, width, height, pixels.data(), width * 4, &handled));
+    if (!handled)
+    {
+        // The window fell back to Composition: use the Composition implementation.
+        m_immediate = {};
+        return S_OK;
+    }
+
+    xref_ptr<CMemorySurface> surface;
+    IFC_RETURN(CMemorySurface::Create(pixelColor32bpp_A8R8G8B8, width, height, static_cast<XINT32>(width * 4),
+        static_cast<XUINT32>(pixels.size()), pixels.data(), surface.ReleaseAndGetAddressOf()));
+    state.pixels = std::move(pixels); // the surface keeps pointing at the moved buffer
+    state.snapshot = std::move(surface);
+    state.sourceCrop = { 0, 0, static_cast<float>(width), static_cast<float>(height) };
+    return S_OK;
+}
+
+_Check_return_ HRESULT CConnectedAnimation::UpdatePreCommitImmediate(_Out_ bool* remove)
+{
+    *remove = false;
+    switch (m_state)
+    {
+    case ConnectedAnimationState::Initialized:
+    case ConnectedAnimationState::Unloaded:
+    case ConnectedAnimationState::Prepared:
+    case ConnectedAnimationState::ReadyToComplete:
+        return S_OK;
+    case ConnectedAnimationState::Started:
+        if (m_baseAnimation != nullptr && m_baseAnimation->m_state != ConnectedAnimationState::Running)
+        {
+            return S_OK;
+        }
+        break;
+    case ConnectedAnimationState::Running:
+    {
+        bool finished = false;
+        (void)ImmediateAnimations::GetProgress(m_immediate.startUs, m_immediate.durationUs, ImmediateAnimations::NowMicroseconds(), &finished);
+        if (finished)
+        {
+            // The frame just rendered showed the end state; the destination reappears in place next frame.
+            IFC_RETURN(TryToCompleteAnimation());
+        }
+        else
+        {
+            GetContext()->RequestAdditionalFrame(RequestFrameReason::AnimationTick);
+        }
+        return S_OK;
+    }
+    default:
+        *remove = true;
+        return S_OK;
+    }
+
+    if (!m_destination.element->IsActive())
+    {
+        *remove = true;
+        return S_OK;
+    }
+    if (m_connectedAnimationServiceNoRef->AnimationStartsAreDelayed())
+    {
+        return S_OK;
+    }
+    return StartImmediate();
+}
+
+_Check_return_ HRESULT CConnectedAnimation::StartImmediate()
+{
+    IFC_RETURN(GetSnapshotTransformInfo(m_destination));
+    if (m_baseAnimation != nullptr)
+    {
+        if (m_baseAnimation->m_destination.clippedRect.Width == 0 || m_baseAnimation->m_destination.clippedRect.Height == 0)
+        {
+            return Cancel();
+        }
+        GetBaseAnimationSourceInfo();
+    }
+
+    // Same duration/easing resolution as StartSpriteAnimations.
+    wf::TimeSpan duration{};
+    Microsoft::WRL::ComPtr<WUComp::ICompositionEasingFunction> easingFunction;
+    Microsoft::WRL::ComPtr<IConnectedAnimationCoreConfiguration> configuration = m_configuration;
+    if (configuration == nullptr)
+    {
+        IFC_RETURN(ConnectedAnimationConfiguration_GetDefault(&configuration));
+    }
+    if (configuration == nullptr)
+    {
+        duration = m_connectedAnimationServiceNoRef->GetAnimationDuration();
+        IFC_RETURN(m_connectedAnimationServiceNoRef->GetDefaultEasingFunction(&easingFunction));
+    }
+    else
+    {
+        IFC_RETURN(configuration->GetEffectiveDuration(&duration));
+        IFC_RETURN(configuration->GetEffectiveEasingFunction(&easingFunction));
+    }
+
+    auto& state = m_immediate;
+    state.curve = ReadCurve(easingFunction.Get(), &state.approximated);
+    state.durationUs = ImmediateAnimations::ClampDurationMicroseconds(duration.Duration);
+    state.coordinated = m_baseAnimation != nullptr;
+    state.shadow = configuration != nullptr && configuration->ShouldShadowBeCast();
+    state.customComponents = false;
+    for (const auto& component : m_componentAnimation)
+    {
+        state.customComponents = state.customComponents || component != nullptr;
+    }
+
+    wfn::Vector3 sourceOffset{};
+    wfn::Vector3 destOffset{};
+    ComputeAnimationOffset(m_source, m_destination, sourceOffset);
+    ComputeAnimationOffset(m_destination, m_source, destOffset);
+    float scaleX = 1.0f;
+    float scaleY = 1.0f;
+    if (m_isScaleAnimationEnabled && m_source.unclippedRect.Width > 0 && m_source.unclippedRect.Height > 0)
+    {
+        scaleX = m_destination.unclippedRect.Width / m_source.unclippedRect.Width;
+        scaleY = m_destination.unclippedRect.Height / m_source.unclippedRect.Height;
+    }
+
+    auto& params = state.params;
+    params = {};
+    params.fromX = sourceOffset.X;
+    params.fromY = sourceOffset.Y;
+    params.toX = destOffset.X;
+    params.toY = destOffset.Y;
+    params.toScaleX = scaleX;
+    params.toScaleY = scaleY;
+    params.gravity = configuration != nullptr && configuration->HasGravityEffect();
+
+    const auto& source = m_source;
+    const auto& dest = m_destination;
+    if (m_isScaleAnimationEnabled)
+    {
+        // Unclipped brushes stretched over a source-sized host; the inset clip animates to the destination's.
+        state.hostWidth = source.unclippedRect.Width;
+        state.hostHeight = source.unclippedRect.Height;
+        const float from[4] = {
+            source.clippedRect.X - source.unclippedRect.X, source.clippedRect.Y - source.unclippedRect.Y,
+            source.unclippedRect.Right() - source.clippedRect.Right(), source.unclippedRect.Bottom() - source.clippedRect.Bottom() };
+        const float to[4] = {
+            (dest.clippedRect.X - dest.unclippedRect.X) / scaleX, (dest.clippedRect.Y - dest.unclippedRect.Y) / scaleY,
+            (dest.unclippedRect.Right() - dest.clippedRect.Right()) / scaleX, (dest.unclippedRect.Bottom() - dest.clippedRect.Bottom()) / scaleY };
+        for (int i = 0; i < 4; ++i)
+        {
+            params.fromInsets[i] = from[i];
+            params.toInsets[i] = to[i];
+        }
+        state.sourceContent = { 0, 0, state.hostWidth, state.hostHeight };
+        state.destRect = dest.unclippedRect;
+        state.destContent = { 0, 0, state.hostWidth, state.hostHeight };
+    }
+    else
+    {
+        // Clipped brushes (Stretch None, centered) on a host as large as both.
+        state.hostWidth = std::max(source.clippedRect.Width, dest.clippedRect.Width);
+        state.hostHeight = std::max(source.clippedRect.Height, dest.clippedRect.Height);
+        state.sourceContent = CenteredIn(state.hostWidth, state.hostHeight, source.clippedRect.Width, source.clippedRect.Height);
+        if (state.snapshot != nullptr && source.unclippedRect.Width > 0 && source.unclippedRect.Height > 0)
+        {
+            const float kx = state.snapshot->GetWidth() / source.unclippedRect.Width;
+            const float ky = state.snapshot->GetHeight() / source.unclippedRect.Height;
+            state.sourceCrop = {
+                (source.clippedRect.X - source.unclippedRect.X) * kx, (source.clippedRect.Y - source.unclippedRect.Y) * ky,
+                source.clippedRect.Width * kx, source.clippedRect.Height * ky };
+        }
+        state.destRect = dest.clippedRect;
+        state.destContent = CenteredIn(state.hostWidth, state.hostHeight, dest.clippedRect.Width, dest.clippedRect.Height);
+    }
+    // CreateSnapshotBrush skips elements under half a pixel: the source snapshot then just fades out.
+    state.hasDestination = state.destRect.Width >= 0.5f && state.destRect.Height >= 0.5f;
+
+    state.startUs = ImmediateAnimations::NowMicroseconds();
+    state.running = true;
+    m_state = ConnectedAnimationState::Running;
+    CUIElement::NWSetContentDirty(m_destination.element, DirtyFlags::Render); // hidden in place from now on
+    GetContext()->RequestAdditionalFrame(RequestFrameReason::AnimationTick);
+    return S_OK;
 }

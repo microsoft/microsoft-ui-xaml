@@ -13,6 +13,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT GetEffectPropertySet(wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet) override;
         bool ShouldShadowBeCast() override { return m_isShadowEnabled; }
+        bool HasGravityEffect() override { return true; } // ---- transitions
 
         _Check_return_ HRESULT get_IsShadowEnabledImpl(_Out_ BOOLEAN* value);
         _Check_return_ HRESULT put_IsShadowEnabledImpl(_In_ BOOLEAN value);
