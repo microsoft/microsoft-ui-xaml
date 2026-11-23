@@ -552,14 +552,12 @@ _Check_return_ HRESULT CollectionViewSource::GetLiveShapingRequests(_Out_ bool* 
 // WPF: CollectionViewSource.ApplyPropertiesToView. The view takes the rules and owns them while it is View.
 _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCollectionView* pView)
 {
-    ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter = m_tpFilter.Get();
     ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort = m_tpCustomSort.Get();
 
     IFC_RETURN(EnsureShapingDescriptions());
     IFC_RETURN(SetDescriptionsOwner(m_tpSortDescriptions.Get(), pView));
     IFC_RETURN(SetDescriptionsOwner(m_tpGroupDescriptions.Get(), pView));
     SetPtrValue(m_tpShapingView, static_cast<xaml_data::ICollectionView*>(pView));
-    m_tpFilter.Clear();
     m_tpCustomSort.Clear();
 
     IFC_RETURN(pView->EnableShaping(this));
@@ -569,7 +567,7 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     IFC_RETURN(GetLiveShapingRequests(&isLiveSorting, &isLiveFiltering, &isLiveGrouping));
     IFC_RETURN(pView->ApplyLiveShaping(isLiveSorting, isLiveFiltering, isLiveGrouping,
         m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
-    IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), spFilter.Get(), spCustomSort.Get(), m_culture.Get()));
+    IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), m_culture.Get()));
     m_culture.Release();
 
     if (m_deferRefreshLevel > 0)
@@ -580,11 +578,10 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     return S_OK;
 }
 
-// Takes the rules back from the shaping view before View is replaced.
+// Takes the rules back from the shaping view before View is replaced. The view's Filter delegate stays with it.
 _Check_return_ HRESULT CollectionViewSource::DetachShapingView()
 {
     ctl::ComPtr<xaml_data::ICollectionView> spView = m_tpShapingView.Get();
-    ctl::ComPtr<xaml_data::ICollectionViewFilter> spFilter;
     ctl::ComPtr<xaml_data::ICollectionViewComparer> spCustomSort;
 
     if (!spView)
@@ -593,14 +590,12 @@ _Check_return_ HRESULT CollectionViewSource::DetachShapingView()
     }
 
     auto pView = AsShapingView(spView.Get());
-    IFC_RETURN(pView->get_Filter(spFilter.ReleaseAndGetAddressOf()));
     IFC_RETURN(pView->get_CustomSort(spCustomSort.ReleaseAndGetAddressOf()));
     m_culture.Release();
     IFC_RETURN(pView->get_Culture(m_culture.GetAddressOf()));
     IFC_RETURN(pView->DetachFromHost());
 
     m_tpShapingView.Clear();
-    SetPtrValue(m_tpFilter, spFilter.Get());
     SetPtrValue(m_tpCustomSort, spCustomSort.Get());
     IFC_RETURN(SetDescriptionsOwner(m_tpSortDescriptions.Get(), this));
     IFC_RETURN(SetDescriptionsOwner(m_tpGroupDescriptions.Get(), this));
@@ -1067,7 +1062,7 @@ _Check_return_ HRESULT CollectionViewSource::HasShapingRules(_Out_ bool* pHasRul
         IFC_RETURN(m_tpGroupDescriptions->get_Size(&groupCount));
     }
 
-    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpFilter || m_tpCustomSort || HasFilterEventHandlers();
+    *pHasRules = sortCount > 0 || groupCount > 0 || m_tpCustomSort || HasFilterEventHandlers();
     return S_OK;
 }
 

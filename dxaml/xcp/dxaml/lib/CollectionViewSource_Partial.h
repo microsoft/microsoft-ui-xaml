@@ -100,12 +100,10 @@ namespace DirectUI
         CVSViewChangedEventSource *m_pCVSViewChangedEventSource;
 
         // The rules live here only while there is no shaping view; the view owns them while it is View.
-        // The descriptor collections are shared with the view.
+        // The descriptor collections are shared with the view. A view's Filter delegate stays with the view, as in
+        // WPF (the CollectionViewSource filters through its Filter event).
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::GroupDescription*>> m_tpGroupDescriptions;
-        // The view's Filter delegate, kept while there is no shaping view and applied to the next one (the
-        // CollectionViewSource has no Filter property, as in WPF).
-        TrackerPtr<xaml_data::ICollectionViewFilter> m_tpFilter;
         TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
         wrl_wrappers::HString m_culture;
         bool m_isApplyingCustomSort = false;
