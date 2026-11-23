@@ -1938,6 +1938,86 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
     }
 
+    void MoCoGroupingIntegrationTests::ReorderOverSortedViewByPointer()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+        Microsoft::UI::Xaml::FrameworkElement^ first = nullptr;
+        auto dragStarts = std::make_shared<int>(0);
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            list->DragItemsStarting += ref new xaml_controls::DragItemsStartingEventHandler([dragStarts](Platform::Object^, xaml_controls::DragItemsStartingEventArgs^)
+            {
+                ++*dragStarts;
+            });
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Ascending));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            first = safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(0));
+        });
+
+        LOG_OUTPUT(L"Over a sorted view a pointer drag starts no drag and changes nothing.");
+        TestServices::InputHelper->PressHoldAndPanFromCenter(first, 0 /* relX */, 100 /* relY */, 0.1 /* velocityFactor */, 1000 /* holdTime */);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(0, *dragStarts);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+
+            cvs->SortDescriptions->Clear();
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"With no rule left the view presents its source in order: keyboard reorder moves the source item.");
+        RunOnUIThread([&]()
+        {
+            list->SelectedIndex = 0;
+            safe_cast<xaml_controls::ListViewItem^>(list->ContainerFromIndex(0))->Focus(Microsoft::UI::Xaml::FocusState::Programmatic);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$d$_alt#$d$_shift");
+        }
+        TestServices::KeyboardHelper->Down();
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$u$_shift#$u$_alt");
+        }
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(5u, source->Size);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+            first = safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(0));
+        });
+
+        LOG_OUTPUT(L"And a pointer drag starts a drag again.");
+        TestServices::InputHelper->PressHoldAndPanFromCenter(first, 0 /* relX */, 100 /* relY */, 0.1 /* velocityFactor */, 1000 /* holdTime */);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(*dragStarts > 0);
+        });
+    }
+
     void MoCoGroupingIntegrationTests::ReorderIsOffOverSortedView()
     {
         TestCleanupWrapper cleanup;

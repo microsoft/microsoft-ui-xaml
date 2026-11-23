@@ -4670,6 +4670,58 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    void BindingIntegrationTests::CollectionViewSourceFilterEventsUnderGCStress()
+    {
+        TestCleanupWrapper cleanup;
+        Microsoft::UI::Dispatching::DispatcherQueue^ queue = nullptr;
+        auto kept = std::make_shared<std::vector<ICollectionView^>>();
+        RunOnUIThread([&]()
+        {
+            queue = Microsoft::UI::Dispatching::DispatcherQueue::GetForCurrentThread();
+        });
+
+        for (int round = 0; round < 20; ++round)
+        {
+            VERIFY_IS_TRUE(queue->TryEnqueue(ref new Microsoft::UI::Dispatching::DispatcherQueueHandler([kept]()
+            {
+                for (int i = 0; i < 25; ++i)
+                {
+                    auto cvs = ref new CollectionViewSource();
+                    cvs->Source = MakeShapingSource();
+                    auto token = cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^ e)
+                    {
+                        e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property != 0;
+                    });
+                    auto view = cvs->View;
+                    cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^) {});
+                    cvs->Filter -= token;
+                    if (i % 5 == 0)
+                    {
+                        kept->push_back(view);
+                    }
+                    else if (i % 5 == 1 && !kept->empty())
+                    {
+                        kept->erase(kept->begin());
+                    }
+                }
+            })));
+            TestServices::WindowHelper->GCCollect();
+            TestServices::WindowHelper->GCCollect();
+        }
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            for (auto const& view : *kept)
+            {
+                VERIFY_IS_TRUE(view->Size > 0);
+            }
+            kept->clear();
+        });
+        TestServices::WindowHelper->GCCollect();
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
     void BindingIntegrationTests::CollectionViewSourceDescriptorPropertySystem()
     {
         TestCleanupWrapper cleanup;
@@ -4679,6 +4731,8 @@ namespace Framework { namespace DataBinding {
                 L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
                 L"  <StackPanel.Resources>"
                 L"    <Border x:Key='Holder' Tag='StringProperty'/>"
+                L"    <Border x:Key='ComparisonHolder'/>"
+                L"    <PropertyGroupDescription x:Key='Bound' PropertyName='StringProperty' StringComparison='{Binding Tag, Source={StaticResource ComparisonHolder}}'/>"
                 L"    <CollectionViewSource x:Key='People'>"
                 L"      <CollectionViewSource.SortDescriptions>"
                 L"        <SortDescription PropertyName='{Binding Tag, Source={StaticResource Holder}}'/>"
@@ -4711,7 +4765,18 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
             holder->Tag = L"Int32Property";
             VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());            holder->Tag = L"Name";
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+
+            LOG_OUTPUT(L"A rejected value from a binding keeps the binding: the next valid value flows.");
+            auto comparisonHolder = safe_cast<Border^>(panel->Resources->Lookup(L"ComparisonHolder"));
+            auto bound = safe_cast<PropertyGroupDescription^>(panel->Resources->Lookup(L"Bound"));
+            comparisonHolder->Tag = CollectionViewStringComparison::OrdinalIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, bound->StringComparison);
+            comparisonHolder->Tag = static_cast<CollectionViewStringComparison>(99);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, bound->StringComparison);
+            comparisonHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, bound->StringComparison);
 
             LOG_OUTPUT(L"An invalid StringComparison is rejected and not stored.");
             bool threw = false;
