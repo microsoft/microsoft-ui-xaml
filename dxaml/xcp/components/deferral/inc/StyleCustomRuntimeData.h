@@ -207,6 +207,9 @@ public:
 
     // CustomWriterRuntimeData Serialization/Deserialization
     _Check_return_ HRESULT PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream) override;
+    _Check_return_ HRESULT HasConnectionId(
+        _In_ XamlBinaryFormatSubReader2* reader,
+        _Out_ bool* hasConnectionId) const override;
 protected:
     _Check_return_ HRESULT SerializeImpl(_In_ XamlBinaryFormatSubWriter2*, _In_ const std::vector<unsigned int>&) override;
     CustomWriterRuntimeDataTypeIndex GetTypeIndexForSerialization(_In_ const TargetOSVersion& targetOS) const override;
