@@ -73,6 +73,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             ops.Add(fixture.ApplyRandomOperation(allowPropertyEdits: true));
                         }
                     });
+                    Log.Comment($"live, levels {levels}, round {round}: {string.Join(", ", ops)}");
                     IdleSynchronizer.Wait();
                     RunOnUIThread.Execute(() => fixture.VerifyMatchesFresh($"live, levels {levels}, round {round} ({string.Join(", ", ops)})"));
                 }
