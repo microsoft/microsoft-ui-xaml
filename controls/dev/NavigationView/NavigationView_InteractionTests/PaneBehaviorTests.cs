@@ -1453,30 +1453,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                     UIObject Pancakes() { ElementCache.Clear(); return FindElement.ByName("Pancakes"); }
                     int CreateOffsetFromPancakes() => FindElement.ByName("Create").BoundingRectangle.Y - Pancakes().BoundingRectangle.Y;
                     void ClickChevron() => InputHelper.LeftClick(Pancakes(), Pancakes().BoundingRectangle.Width - 25, 20);
-                    void Settle() { Wait.ForIdle(); Task.Delay(1000).Wait(); }
+                    // Waits for idle, then reads until two reads 200ms apart agree, so an animation still running doesn't flake the test.
+                    int StableOffsetFromPancakes()
+                    {
+                        int previous = int.MinValue;
+                        for (int attempt = 0; attempt < 25; attempt++)
+                        {
+                            Wait.ForIdle();
+                            int current = CreateOffsetFromPancakes();
+                            if (current == previous)
+                            {
+                                return current;
+                            }
+                            previous = current;
+                            Task.Delay(200).Wait();
+                        }
+                        return previous;
+                    }
 
-                    Settle();
-                    int collapsedOffset = CreateOffsetFromPancakes();
+                    int collapsedOffset = StableOffsetFromPancakes();
 
                     // One collapse/expand cycle with the chevron (in the issue this happened through the pane toggle and step 7).
                     ClickChevron();
-                    Settle();
-                    int expandedOffset = CreateOffsetFromPancakes();
+                    int expandedOffset = StableOffsetFromPancakes();
                     Verify.IsGreaterThan(expandedOffset, collapsedOffset, $"{host}: expanding should push Create down");
                     ClickChevron();
-                    Settle();
-                    Verify.AreEqual(collapsedOffset, CreateOffsetFromPancakes(), $"{host}: first collapse");
+                    Verify.AreEqual(collapsedOffset, StableOffsetFromPancakes(), $"{host}: first collapse");
                     ClickChevron();
-                    Settle();
-                    Verify.AreEqual(expandedOffset, CreateOffsetFromPancakes(), $"{host}: expanded again");
+                    Verify.AreEqual(expandedOffset, StableOffsetFromPancakes(), $"{host}: expanded again");
 
                     // Issue step 9: click the item body (not the chevron) to collapse it.
                     var pancakes = Pancakes();
                     InputHelper.LeftClick(pancakes, pancakes.BoundingRectangle.Width / 2, 20);
-                    Task.Delay(1500).Wait();
 
                     // Issue step 10: the children's space must be given back.
-                    Verify.AreEqual(collapsedOffset, CreateOffsetFromPancakes(), $"{host}: collapsing by clicking the item should give back the children's space");
+                    Verify.AreEqual(collapsedOffset, StableOffsetFromPancakes(), $"{host}: collapsing by clicking the item should give back the children's space");
                 }
             }
         }
