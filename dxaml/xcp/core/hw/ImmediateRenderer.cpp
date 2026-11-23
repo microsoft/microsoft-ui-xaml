@@ -3466,6 +3466,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
 
     if (FAILED(hr))
     {
+        // ---- coverage ----
+        if (statsFile)
+        {
+            fprintf(statsFile, "# paint-failed frame %u hr 0x%08X\n", frameNumber, static_cast<unsigned int>(hr));
+            fflush(statsFile);
+        }
         if (IsDeviceLost(hr))
         {
             OnDeviceLost(hr, frameNumber);

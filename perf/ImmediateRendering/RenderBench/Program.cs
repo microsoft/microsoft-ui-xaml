@@ -27,6 +27,16 @@ public static class Program
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var (engine, changes) = BenchOptions.ParseStartup(args);
 
+        // ---- coverage ----
+        if (BenchOptions.TryParse(args, out var listOptions, out _) && listOptions.ListCoverage is { } catalogPath)
+        {
+            var (pages, errors) = Coverage.CoverageCatalog.Discover(typeof(Program).Assembly.GetTypes());
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(catalogPath))!);
+            File.WriteAllText(catalogPath, Coverage.CoverageCatalog.Serialize(pages));
+            File.WriteAllLines(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(catalogPath))!, "catalog-errors.txt"), errors);
+            return errors.Count == 0 ? 0 : 5;
+        }
+
         // Native immediate-backend test hooks (S21 device lost, S22 capture) are read at startup.
         string dataDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RenderBench");
         foreach (var (name, value) in BenchOptions.StartupEnvironment(args, Environment.GetEnvironmentVariable(BackendModes.EnvironmentVariable),

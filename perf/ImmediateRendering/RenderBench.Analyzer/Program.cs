@@ -5,6 +5,7 @@ using RenderBench.Analyzer;
 const string Usage = """
     RenderBench.Analyzer analyze <trace.etl> [--out metrics.json]   Parse one run's ETL into metrics JSON.
     RenderBench.Analyzer gate <metrics.json>...                     Print gate checks; exit 1 if any run fails.
+    RenderBench.Analyzer coverage <resultsDir>                     Gate a Run-Coverage.ps1 results tree; write coverage.json/.html.
     RenderBench.Analyzer records <trace.etl>                        Print the parsed records in time order (debugging).
     RenderBench.Analyzer report <resultsDir> [--out report.md]      Aggregate **/metrics.json into a comparison table.
     RenderBench.Analyzer adapters                                   List DXGI adapters with the D2D-HW verdict; exit 0 if
@@ -82,6 +83,22 @@ switch (args[0])
         File.WriteAllText(skipOutput, MetricsJson.Serialize(MetricsCalculator.Skipped(scene, args[2], args[3])));
         Console.WriteLine($"{scene} {args[2]}: SKIPPED ({args[3]}) -> {skipOutput}");
         return 0;
+    }
+    // ---- coverage ----
+    case "coverage":
+    {
+        var summary = RenderBench.Coverage.CoverageReport.Build(args[1]);
+        foreach (var run in summary.Runs.Where(r => !r.Passed))
+        {
+            Console.WriteLine($"FAIL {run.PageId} {run.Mode}: {string.Join("; ", run.Gates.Where(g => !g.Passed).Select(g => $"{g.Name}: {g.Detail}"))}");
+        }
+        foreach (var (mode, rate) in summary.PerMode)
+        {
+            Console.WriteLine($"{mode}: {rate}");
+        }
+        Console.WriteLine($"Overall (non-interop pages passing in every immediate mode): {summary.Overall}; interop: {summary.Interop}");
+        Console.WriteLine($"-> {Path.Combine(args[1], RenderBench.Coverage.CoverageFiles.Html)}");
+        return summary.Runs.All(r => r.Passed) && summary.CatalogErrors.Count == 0 ? 0 : 1;
     }
     default:
         Console.Error.WriteLine(Usage);
