@@ -9,6 +9,7 @@
 #include "ExpanderAutomationPeer.h"
 #include "Utils.h"
 #include "winnls.h"
+#include "ImmediateRendering.h" // ---- transitions
 
 static constexpr auto c_expanderHeader = L"ExpanderHeader"sv;
 static constexpr auto c_expanderContent = L"ExpanderContent"sv;
@@ -66,7 +67,24 @@ void Expander::OnApplyTemplate()
         }
     }
 
-    if (auto expanderContentClip = GetTemplateChildT<winrt::Border>(c_expanderContentClip, *this))
+    m_expanderContentClipSizeChangedRevoker.revoke();
+    winrt::Border immediateContentClip{ nullptr };
+    if (ImmediateRendering::IsRequested())
+    {
+        immediateContentClip = GetTemplateChildT<winrt::Border>(c_expanderContentClip, *this);
+    }
+    if (immediateContentClip)
+    {
+        // ---- transitions: immediate rendering has no hand-off visuals; clip to the same bounds with a XAML clip.
+        m_expanderContentClipSizeChangedRevoker = immediateContentClip.SizeChanged(winrt::auto_revoke,
+            [](const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+            {
+                winrt::RectangleGeometry clip;
+                clip.Rect({ 0, 0, args.NewSize().Width, args.NewSize().Height });
+                sender.as<winrt::UIElement>().Clip(clip);
+            });
+    }
+    else if (auto expanderContentClip = GetTemplateChildT<winrt::Border>(c_expanderContentClip, *this))
     {
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(expanderContentClip);
         visual.Clip(visual.Compositor().CreateInsetClip());

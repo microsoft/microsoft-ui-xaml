@@ -53,8 +53,79 @@
 #include "ExternalObjectReference.g.h"
 #include "PropertyTransitions.h"
 #include <FxCallbacks.h>
+#include <RenderingBackend.h>
+#include <ImmediateAnimations.h>
 
 using namespace DirectUI;
+
+// ---- transitions ----
+// F10: in an immediate-rendered window XAML runs its own property transitions (ImmediateAnimations) instead of starting
+// Composition facade animations (which would make the window fall back). Returns false when the element renders with
+// Composition: the caller then uses the Composition path.
+namespace
+{
+    bool RouteImmediateTransition(
+        _In_ CUIElement* element,
+        ImmediateAnimations::Channel channel,
+        _In_reads_(3) const float* from,
+        _In_reads_(3) const float* to,
+        uint32_t components,
+        _In_opt_ const wf::TimeSpan* duration /* null: no transition */)
+    {
+        if (!RenderingBackend::IsImmediateModeActive() || !ImmediateAnimations::IsTargetImmediate(element))
+        {
+            return false;
+        }
+        ImmediateAnimations::TransitionStore& store = ImmediateAnimations::GetThreadStore();
+        if (duration != nullptr)
+        {
+            const float from4[4] = { from[0], from[1], from[2], 0 };
+            const float to4[4] = { to[0], to[1], to[2], 0 };
+            store.Start(element, channel, from4, to4, components, ImmediateAnimations::ClampDurationMicroseconds(duration->Duration),
+                ImmediateAnimations::NowMicroseconds(), ImmediateAnimations::Curve::PropertyTransition());
+        }
+        else if (!store.Empty())
+        {
+            store.Cancel(element, channel);
+        }
+        return true;
+    }
+
+    bool RouteImmediateScalarTransition(_In_ CUIElement* element, ImmediateAnimations::Channel channel, float from, float to,
+        _In_opt_ CScalarTransition* transition)
+    {
+        const float f[3] = { from, 0, 0 };
+        const float t[3] = { to, 0, 0 };
+        wf::TimeSpan duration{};
+        if (transition != nullptr)
+        {
+            duration = SimpleProperty::Property::id<KnownPropertyIndex::ScalarTransition_Duration>::Get(transition);
+        }
+        return RouteImmediateTransition(element, channel, f, t, 1, transition != nullptr ? &duration : nullptr);
+    }
+
+    bool RouteImmediateVector3Transition(_In_ CUIElement* element, ImmediateAnimations::Channel channel, const wfn::Vector3& from,
+        const wfn::Vector3& to, _In_opt_ CVector3Transition* transition)
+    {
+        const float f[3] = { from.X, from.Y, from.Z };
+        const float t[3] = { to.X, to.Y, to.Z };
+        wf::TimeSpan duration{};
+        uint32_t components = 0;
+        if (transition != nullptr)
+        {
+            duration = SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Duration>::Get(transition);
+            // Vector3TransitionComponents: X = 1, Y = 2, Z = 4 (ImmediateAnimations component bits).
+            components = static_cast<uint32_t>(SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Components>::Get(transition));
+        }
+        return RouteImmediateTransition(element, channel, f, t, components, transition != nullptr ? &duration : nullptr);
+    }
+
+    bool TryGetImmediateTransitionValue(_In_ const CUIElement* element, ImmediateAnimations::Channel channel, _Out_writes_(4) float* value)
+    {
+        const ImmediateAnimations::TransitionStore& store = ImmediateAnimations::GetThreadStore();
+        return !store.Empty() && store.TryGetValue(element, channel, ImmediateAnimations::NowMicroseconds(), value);
+    }
+}
 
 const wchar_t* const CUIElement::s_translationString = L"Translation";
 
@@ -2123,6 +2194,11 @@ void CUIElement::StopAllFacadeAnimations()
 
 wfn::Vector3 CUIElement::GetTranslation(bool preferAnimatingValue) const
 {
+    float immediateValue[4];
+    if (preferAnimatingValue && TryGetImmediateTransitionValue(this, ImmediateAnimations::Channel::Translation, immediateValue))
+    {
+        return { immediateValue[0], immediateValue[1], immediateValue[2] };
+    }
     if (preferAnimatingValue && GetContext()->GetFacadeStorage().HasAnimation(this, KnownPropertyIndex::UIElement_Translation))
     {
         return SimpleProperty::Property::id<KnownPropertyIndex::UIElement_AnimatedTranslation>::Get(this);
@@ -2146,7 +2222,8 @@ void CUIElement::SetTranslation(const wfn::Vector3& translation)
         IGNOREHR(FxCallbacks::FrameworkCallbacks_IsAnimationEnabled(&isAnimationEnabled));
         DCompTreeHost* dcompTreeHost = GetDCompTreeHost();
         CVector3Transition* transition = GetVector3TransitionNoRef(*this, KnownPropertyIndex::UIElement_TranslationTransition);
-        if (dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
+        if (!RouteImmediateVector3Transition(this, ImmediateAnimations::Channel::Translation, CUIElement::GetTranslation(true), translation, isAnimationEnabled ? transition : nullptr)
+            && dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
         {
             implicitAnimation = transition->GetWUCAnimationNoRef(dcompTreeHost, wrl::Wrappers::HStringReference(FacadeProperty_Translation), translation);
         }
@@ -2218,6 +2295,11 @@ void CUIElement::UpdateHasTranslateZ(const wfn::Vector3& translation)
 
 FLOAT CUIElement::GetRotation(bool preferAnimatingValue) const
 {
+    float immediateValue[4];
+    if (preferAnimatingValue && TryGetImmediateTransitionValue(this, ImmediateAnimations::Channel::Rotation, immediateValue))
+    {
+        return immediateValue[0];
+    }
     if (preferAnimatingValue && GetContext()->GetFacadeStorage().HasAnimation(this, KnownPropertyIndex::UIElement_Rotation))
     {
         return static_cast<FLOAT>(SimpleProperty::Property::id<KnownPropertyIndex::UIElement_AnimatedRotation>::Get(this));
@@ -2239,7 +2321,8 @@ void CUIElement::SetRotation(FLOAT rotation)
         IGNOREHR(FxCallbacks::FrameworkCallbacks_IsAnimationEnabled(&isAnimationEnabled));
         DCompTreeHost* dcompTreeHost = GetDCompTreeHost();
         CScalarTransition* transition = GetScalarTransitionNoRef(*this, KnownPropertyIndex::UIElement_RotationTransition);
-        if (dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
+        if (!RouteImmediateScalarTransition(this, ImmediateAnimations::Channel::Rotation, CUIElement::GetRotation(true), rotation, isAnimationEnabled ? transition : nullptr)
+            && dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
         {
             WUComp::ICompositionAnimationBase* implicitAnimation = transition->GetWUCAnimationNoRef(dcompTreeHost, wrl::Wrappers::HStringReference(FacadeProperty_Rotation), rotation);
 
@@ -2296,6 +2379,11 @@ void CUIElement::UpdateHasNonZeroRotation(float rotation)
 
 wfn::Vector3 CUIElement::GetScale(bool preferAnimatingValue) const
 {
+    float immediateValue[4];
+    if (preferAnimatingValue && TryGetImmediateTransitionValue(this, ImmediateAnimations::Channel::Scale, immediateValue))
+    {
+        return { immediateValue[0], immediateValue[1], immediateValue[2] };
+    }
     if (preferAnimatingValue && GetContext()->GetFacadeStorage().HasAnimation(this, KnownPropertyIndex::UIElement_Scale))
     {
         return SimpleProperty::Property::id<KnownPropertyIndex::UIElement_AnimatedScale>::Get(this);
@@ -2319,7 +2407,8 @@ void CUIElement::SetScale(const wfn::Vector3& scale)
         IGNOREHR(FxCallbacks::FrameworkCallbacks_IsAnimationEnabled(&isAnimationEnabled));
         DCompTreeHost* dcompTreeHost = GetDCompTreeHost();
         CVector3Transition* transition = GetVector3TransitionNoRef(*this, KnownPropertyIndex::UIElement_ScaleTransition);
-        if (dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
+        if (!RouteImmediateVector3Transition(this, ImmediateAnimations::Channel::Scale, CUIElement::GetScale(true), scale, isAnimationEnabled ? transition : nullptr)
+            && dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
         {
             implicitAnimation = transition->GetWUCAnimationNoRef(dcompTreeHost, wrl::Wrappers::HStringReference(FacadeProperty_Scale), scale);
         }
@@ -2589,6 +2678,11 @@ bool CUIElement::BeforeSetLocalOpacity(float newOpacity)
         IGNOREHR(FxCallbacks::FrameworkCallbacks_IsAnimationEnabled(&isAnimationEnabled));
         DCompTreeHost* dcompTreeHost = GetDCompTreeHost();
         CScalarTransition* transition = GetScalarTransitionNoRef(*this, KnownPropertyIndex::UIElement_OpacityTransition);
+        if (RouteImmediateScalarTransition(this, ImmediateAnimations::Channel::Opacity, m_eOpacityPrivate, newOpacity, isAnimationEnabled ? transition : nullptr))
+        {
+            // XAML runs the transition; OnSetLocalOpacity stops explicit facade animations like a static set.
+            return false;
+        }
         if (dcompTreeHost != nullptr && isAnimationEnabled && transition != nullptr)
         {
             WUComp::ICompositionAnimationBase* implicitAnimation = transition->GetWUCAnimationNoRef(dcompTreeHost, wrl::Wrappers::HStringReference(FacadeProperty_Opacity), newOpacity);

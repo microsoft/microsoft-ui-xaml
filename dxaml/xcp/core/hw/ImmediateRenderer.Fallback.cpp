@@ -108,7 +108,8 @@ void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
     interop.swapChainPanel = type == KnownTypeIndex::SwapChainPanel || element->HasSwapChainContent();
     interop.media = type == KnownTypeIndex::MediaPlayerPresenter
         || (type == KnownTypeIndex::FullWindowMediaRoot && element->GetFirstChildNoAddRef() != nullptr);
-    interop.connectedAnimation = element->HasActiveConnectedAnimation()
+    // ---- transitions: animations emulated by CConnectedAnimation (immediate snapshot) don't need Composition.
+    interop.connectedAnimation = (element->HasActiveConnectedAnimation() && !IsConnectedEmulated(element))
         || (type == KnownTypeIndex::ConnectedAnimationRoot && element->GetFirstChildNoAddRef() != nullptr);
     interop.implicitShowHideAnimation = element->HasImplicitShowAnimation() || element->HasImplicitHideAnimation();
     if (element->IsUsingHandInVisual() && m_secretTargetDepth > 0)

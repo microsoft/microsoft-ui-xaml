@@ -392,6 +392,8 @@ private:
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };
     tracker_ref<winrt::UIElement> m_nextIndicator{ this };
     tracker_ref<winrt::UIElement> m_activeIndicator{ this };
+    // ---- transitions: immediate rendering runs the indicator animations as this Storyboard (ImmediateRendering.h).
+    tracker_ref<winrt::Storyboard> m_indicatorStoryboard{ this };
     tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };

@@ -233,7 +233,10 @@ namespace ImmediateRenderingClips3D
         double m[4][4];
         if (element->AreFacadesInUse())
         {
-            const FacadeTransformInfo facades = element->GetFacadeTransformInfo(false /* preferAnimatingValue */);
+            // XAML-evaluated transitions (ImmediateAnimations) animate facades in immediate mode: read their current value.
+            const ImmediateAnimations::TransitionStore& transitions = ImmediateAnimations::GetThreadStore();
+            const bool preferAnimating = !transitions.Empty() && transitions.HasOwner(element);
+            const FacadeTransformInfo facades = element->GetFacadeTransformInfo(preferAnimating);
             if (!facades.Is2D())
             {
                 FromMil4(facades.GetMatrix4x4(), m);

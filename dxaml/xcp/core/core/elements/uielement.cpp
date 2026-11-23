@@ -62,6 +62,7 @@
 
 #include <CValueBoxer.h>
 #include <rendertargetbitmapmgr.h>
+#include <ImmediateAnimations.h>
 
 using namespace DirectUI;
 using namespace DCompHelpers;
@@ -463,6 +464,14 @@ CUIElement::~CUIElement()
     // Those pointers are about to become dangling, so disconnect all completed handlers.
     StopAllFacadeAnimations();
 
+    // ---- transitions
+    {
+        ImmediateAnimations::TransitionStore& immediateTransitions = ImmediateAnimations::GetThreadStore();
+        if (!immediateTransitions.Empty())
+        {
+            immediateTransitions.RemoveOwner(this);
+        }
+    }
     ForceCloseHandInAndHandOffVisuals();
 
     core->GetFacadeStorage().OnDODestroyed(this);
@@ -2108,6 +2117,13 @@ _Check_return_ bool CUIElement::GetLocalTransform(
 
         // For facades, we'll prefer the animating value for hit-testing related queries only
         bool preferAnimatingValue = HasFacadeAnimation() && includePropertySetInComposition;
+        // ---- transitions: XAML-evaluated transitions in immediate-rendered windows (render walk and hit testing).
+        if (!preferAnimatingValue
+            && (includePropertySetInComposition || (transformRetrievalOptions & TransformRetrievalOptions::ImmediateAnimatedValues) == TransformRetrievalOptions::ImmediateAnimatedValues))
+        {
+            const ImmediateAnimations::TransitionStore& immediateTransitions = ImmediateAnimations::GetThreadStore();
+            preferAnimatingValue = !immediateTransitions.Empty() && immediateTransitions.HasOwner(this);
+        }
 
         // Facades_TODO:  Need to handle translation.Z in combination with perspective
         wfn::Vector3 translation = GetTranslation(preferAnimatingValue);

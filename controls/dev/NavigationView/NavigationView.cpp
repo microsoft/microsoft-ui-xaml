@@ -21,6 +21,7 @@
 #include "NavigationViewItemBaseRevokers.h"
 #include "IndexPath.h"
 #include "InspectingDataSource.h"
+#include "ImmediateRendering.h" // ---- transitions
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
@@ -540,8 +541,12 @@ void NavigationView::OnApplyTemplate()
         m_topNavOverflowButton.set(topNavOverflowButton);
         winrt::AutomationProperties::SetName(topNavOverflowButton, ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonName));
         topNavOverflowButton.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_NavigationOverflowButtonText)));
-        auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
-        CreateAndAttachHeaderAnimation(visual);
+        // ---- transitions: immediate rendering can't run the implicit Offset animation (the button moves without it).
+        if (!ImmediateRendering::IsRequested())
+        {
+            auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
+            CreateAndAttachHeaderAnimation(visual);
+        }
 
         auto const toolTip = winrt::ToolTipService::GetToolTip(topNavOverflowButton);
         if (!toolTip)
@@ -2266,8 +2271,18 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                 areElementsAtSameDepth = prevPosPoint.X == nextPosPoint.X;
             }
 
-            // Creating the batch must not request the NavigationView's non-strict handoff visual.
-            winrt::CompositionScopedBatch scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            // ---- transitions: immediate rendering plays the same key frames as a Storyboard (no hand-off visuals).
+            const bool immediate = ImmediateRendering::IsRequested();
+            winrt::CompositionScopedBatch scopedBatch{ nullptr };
+            if (immediate)
+            {
+                m_indicatorStoryboard.set(winrt::Storyboard());
+            }
+            else
+            {
+                // Creating the batch must not request the NavigationView's non-strict handoff visual.
+                scopedBatch = winrt::CompositionTarget::GetCompositorForCurrentThread().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+            }
 
             if (!areElementsAtSameDepth)
             {
@@ -2301,16 +2316,32 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
                     false);
             }
 
-            scopedBatch.End();
             m_prevIndicator.set(prevIndicator);
             m_nextIndicator.set(nextIndicator);
 
             auto strongThis = get_strong();
-            scopedBatch.Completed(
-                [strongThis](auto sender, auto args)
-                {
-                    strongThis->OnAnimationComplete(sender, args);
-                });
+            if (immediate)
+            {
+                auto storyboard = m_indicatorStoryboard.get();
+                storyboard.Completed(
+                    [strongThis, storyboard](auto&&, auto&&)
+                    {
+                        if (strongThis->m_indicatorStoryboard.get() == storyboard)
+                        {
+                            strongThis->OnAnimationComplete(nullptr, nullptr);
+                        }
+                    });
+                storyboard.Begin();
+            }
+            else
+            {
+                scopedBatch.End();
+                scopedBatch.Completed(
+                    [strongThis](auto sender, auto args)
+                    {
+                        strongThis->OnAnimationComplete(sender, args);
+                    });
+            }
         }
         else if (prevIndicator != nextIndicator)
         {
@@ -2325,6 +2356,20 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
 
 void NavigationView::PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop)
 {
+    if (auto storyboard = m_indicatorStoryboard.get()) // ---- transitions
+    {
+        const winrt::Size size = indicator.RenderSize();
+        auto transform = ImmediateRendering::EnsureCompositeTransform(indicator);
+        if (!transform)
+        {
+            return;
+        }
+        transform.CenterY(fromTop ? 0.0 : (IsTopNavigationView() ? size.Width : size.Height));
+        ImmediateRendering::KeyFrames(storyboard, transform, L"ScaleY", 600ms)
+            .Step(0.0f, isOutgoing ? 1.0 : 0.0)
+            .Linear(1.0f, isOutgoing ? 0.0 : 1.0);
+        return;
+    }
     winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
     winrt::Compositor comp = visual.Compositor();
 
@@ -2349,6 +2394,20 @@ void NavigationView::PlayIndicatorNonSameLevelAnimations(const winrt::UIElement&
 
 void NavigationView::PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing)
 {
+    if (auto storyboard = m_indicatorStoryboard.get()) // ---- transitions
+    {
+        // The Composition path sets CenterPoint.Y and scales X (about x = 0); keep the same motion.
+        auto transform = ImmediateRendering::EnsureCompositeTransform(indicator);
+        if (!transform)
+        {
+            return;
+        }
+        transform.CenterX(0.0);
+        ImmediateRendering::KeyFrames(storyboard, transform, L"ScaleX", 600ms)
+            .Step(0.0f, isOutgoing ? 1.0 : 0.0)
+            .Linear(1.0f, isOutgoing ? 0.0 : 1.0);
+        return;
+    }
     winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
     winrt::Compositor comp = visual.Compositor();
 
@@ -2372,9 +2431,6 @@ void NavigationView::PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::U
 
 void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, float from, float to, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing)
 {
-    const winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
-    const winrt::Compositor comp = visual.Compositor();
-
     const winrt::Size size = indicator.RenderSize();
     const float dimension = IsTopNavigationView() ? size.Width : size.Height;
 
@@ -2386,6 +2442,36 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
         endScale = endSize.Width / size.Width;
     }
 
+    if (auto storyboard = m_indicatorStoryboard.get()) // ---- transitions: the key frames below, as a Storyboard
+    {
+        const bool horizontal = IsTopNavigationView();
+        auto transform = ImmediateRendering::EnsureCompositeTransform(indicator);
+        if (!transform)
+        {
+            return;
+        }
+        if (isOutgoing)
+        {
+            ImmediateRendering::KeyFrames(storyboard, indicator, L"Opacity", 600ms)
+                .Step(0.0f, 1.0)
+                .Step(0.333f, 1.0)
+                .Bezier(1.0f, 0.0, c_frame2point1, c_frame2point2);
+        }
+        ImmediateRendering::KeyFrames(storyboard, transform, horizontal ? L"TranslateX" : L"TranslateY", 600ms)
+            .Step(0.0f, from < to ? from : (from + (dimension * (beginScale - 1))))
+            .Step(0.333f, from < to ? (to + (dimension * (endScale - 1))) : to);
+        ImmediateRendering::KeyFrames(storyboard, transform, horizontal ? L"ScaleX" : L"ScaleY", 600ms)
+            .Step(0.0f, beginScale)
+            .Bezier(0.333f, abs(to - from) / dimension + (from < to ? endScale : beginScale), c_frame1point1, c_frame1point2)
+            .Bezier(1.0f, endScale, c_frame2point1, c_frame2point2);
+        ImmediateRendering::KeyFrames(storyboard, transform, horizontal ? L"CenterX" : L"CenterY", 200ms)
+            .Step(0.0f, from < to ? 0.0f : dimension)
+            .Step(1.0f, from < to ? dimension : 0.0f);
+        return;
+    }
+
+    const winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(indicator);
+    const winrt::Compositor comp = visual.Compositor();
     winrt::StepEasingFunction singleStep = comp.CreateStepEasingFunction();
     singleStep.IsFinalStepSingleFrame(true);
 
@@ -2433,6 +2519,11 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
 
 void NavigationView::OnAnimationComplete(const winrt::IInspectable& /*sender*/, const winrt::CompositionBatchCompletedEventArgs& /*args*/)
 {
+    if (auto storyboard = m_indicatorStoryboard.get()) // ---- transitions
+    {
+        m_indicatorStoryboard.set(nullptr);
+        storyboard.Stop();
+    }
     auto indicator = m_prevIndicator.get();
     ResetElementAnimationProperties(indicator, 0.0f);
     m_prevIndicator.set(nullptr);
@@ -2447,7 +2538,17 @@ void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& ele
     if (element)
     {
         element.Opacity(desiredOpacity);
-        if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
+        if (ImmediateRendering::IsRequested()) // ---- transitions: no hand-off visual; reset the Storyboard's transform
+        {
+            if (auto transform = element.RenderTransform().try_as<winrt::CompositeTransform>())
+            {
+                transform.TranslateX(0);
+                transform.TranslateY(0);
+                transform.ScaleX(1);
+                transform.ScaleY(1);
+            }
+        }
+        else if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
         {
             visual.Offset(winrt::float3(0.0f, 0.0f, 0.0f));
             visual.Scale(winrt::float3(1.0f, 1.0f, 1.0f));

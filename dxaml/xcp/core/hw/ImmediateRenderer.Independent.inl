@@ -340,7 +340,9 @@ void ImmediateRenderer::ProbeIndependent(_In_ CUIElement* element, _Out_ Indepen
     const auto& animations = m_independent->animations;
     if (!animations.empty())
     {
-        layer.opacity0 = element->GetOpacityLocal();
+        // Non-UIElement.Opacity factor (TransitionTarget.Opacity); the opacity track replaces only UIElement.Opacity.
+        const float localOpacity = element->GetOpacityLocal();
+        layer.opacity0 = localOpacity > 0 ? element->GetOpacityCombined() / localOpacity : 1.0f;
         if (const AnimationBinding* binding = FindBinding(animations, element, KnownPropertyIndex::UIElement_Opacity))
         {
             II::AnimationTrack track;
@@ -607,7 +609,7 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
         }
         if (layer.opacityTrack >= 0)
         {
-            push.opacity = std::min(1.0f, std::max(0.0f, values[layer.opacityTrack]));
+            push.opacity = std::min(1.0f, std::max(0.0f, values[layer.opacityTrack])) * layer.opacity0;
         }
         RectF bounds = push.deviceBounds;
         if (layer.hasTransform)

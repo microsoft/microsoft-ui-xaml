@@ -60,4 +60,12 @@ private:
 
     winrt::CubicBezierEasingFunction m_easeInFunction{ nullptr };
     winrt::CubicBezierEasingFunction m_easeOutFunction{ nullptr };
+
+    // ---- transitions ----
+    // Immediate rendering (ImmediateRendering.h): the same transitions as Storyboards on a CompositeTransform/Opacity.
+    void StartTransitionsImmediate(std::vector<winrt::ItemCollectionTransition> const& addTransitions,
+        std::vector<winrt::ItemCollectionTransition> const& removeTransitions,
+        std::vector<winrt::ItemCollectionTransition> const& moveTransitions);
+    void BeginImmediate(winrt::UIElement const& element, winrt::Storyboard const& storyboard, std::function<void()> const& completed);
+    winrt::IMap<winrt::UIElement, winrt::Storyboard> m_immediateStoryboardByElement{ winrt::single_threaded_map<winrt::UIElement, winrt::Storyboard>() };
 };

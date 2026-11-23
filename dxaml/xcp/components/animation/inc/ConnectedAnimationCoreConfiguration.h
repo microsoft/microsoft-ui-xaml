@@ -10,6 +10,9 @@ interface __declspec(uuid("b47d6d7a-e739-44cf-90cf-b930a7b84d88")) IConnectedAni
     virtual _Check_return_ HRESULT GetEffectiveDuration(_Out_ wf::TimeSpan* value) = 0;
     virtual _Check_return_ HRESULT GetEffectPropertySet(_In_ wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet) = 0;
     virtual bool ShouldShadowBeCast() = 0;
+    // ---- transitions ----
+    // Immediate rendering evaluates the GravityConnectedAnimationConfiguration effect itself.
+    virtual bool HasGravityEffect() { return false; }
 };
 
 // Static function to retrieve the default configuration from DXaml.

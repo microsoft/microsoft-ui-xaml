@@ -41,6 +41,7 @@
 #include "ImmediateRenderer.HandOff.h"
 #include <Transform3D.h>
 #include <LocalTransformBuilder.h>
+#include <ImmediateAnimations.h>
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -618,6 +619,7 @@ ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
     , m_independent(std::make_unique<IndependentState>())
 {
     SetCaptureElementCallback(&ImmediateRenderer::CaptureElementCallback);
+    ImmediateAnimations::SetIsTargetImmediateCallback(&ImmediateRenderer::IsElementImmediateCallback); // ---- transitions
 }
 
 ImmediateRenderer::~ImmediateRenderer()
@@ -2062,6 +2064,10 @@ void ImmediateRenderer::EmitContent(
 
         ColorF backgroundColor;
         BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
+        if (backgroundResult == BrushResult::Color)
+        {
+            TryGetTransitionColor(element, &backgroundColor); // ---- transitions: BrushTransition
+        }
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
         if (auto imageBrush = do_pointer_cast<CImageBrush>(background.get()))
@@ -2509,7 +2515,7 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
             && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
         {
             CMILMatrix local;
-            (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+            (void)e->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
             m.Append(local);
         }
         return m;
@@ -2589,6 +2595,12 @@ void ImmediateRenderer::Walk(
     {
         return;
     }
+    // ---- transitions: an emulated connected animation's source/destination is drawn by the ConnectedAnimationRoot.
+    if (element->HasActiveConnectedAnimation() && element != m_connectedOverlayElement && IsConnectedHidden(element))
+    {
+        ++list.uncacheable;
+        return;
+    }
 
     CheckFallback(element);
 
@@ -2625,7 +2637,7 @@ void ImmediateRenderer::Walk(
                     && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
                 {
                     CMILMatrix local;
-                    (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+                    (void)e->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
                     popupWorld.Append(local);
                 }
                 popupWorld.Append(parent.world);
@@ -2653,7 +2665,10 @@ void ImmediateRenderer::Walk(
             return;
         case KnownTypeIndex::RenderTargetBitmapRoot:
         case KnownTypeIndex::XamlIslandRootCollection:
+            return;
         case KnownTypeIndex::ConnectedAnimationRoot:
+            EmitConnectedAnimations(element, parent, list); // ---- transitions
+            return;
         case KnownTypeIndex::LayoutTransitionElement:
         case KnownTypeIndex::FullWindowMediaRoot:
             return;
@@ -2666,7 +2681,9 @@ void ImmediateRenderer::Walk(
     // scroller's offset). Hand-off visual clip changes (Composition InsetClip, mirrored by DCompPropertyChangedListener)
     // only dirty bounds, so subtrees with hand-off visuals are always walked.
     const bool usesHandOffVisual = element->IsUsingHandOffVisual();
-    if (usesHandOffVisual)
+    const bool hasTransitions = HasTransitions(element); // ---- transitions
+    const bool connectedOverlay = element == m_connectedOverlayElement;
+    if (usesHandOffVisual || hasTransitions || connectedOverlay)
     {
         ++list.uncacheable;
     }
@@ -2699,8 +2716,22 @@ void ImmediateRenderer::Walk(
         ReportUnsupported(element, L"Hand-off visual clip");
     }
 
-    // In Composition mode XAML writes UIElement.Opacity to the hand-off visual: an app-set value replaces it.
-    const float localOpacity = hasHandOff && handOff.state.opacity != 1.0f ? handOff.state.opacity : element->GetOpacityLocal();
+    // In Composition mode XAML writes UIElement.Opacity to the hand-off visual: an app-set value replaces it. Combined =
+    // UIElement.Opacity x TransitionTarget.Opacity (theme animations such as DrillIn animate the latter).
+    float localOpacity = element->GetOpacityCombined();
+    if (hasHandOff && handOff.state.opacity != 1.0f)
+    {
+        const float uiOpacity = element->GetOpacityLocal();
+        localOpacity = handOff.state.opacity * (uiOpacity > 0 ? localOpacity / uiOpacity : 1.0f);
+    }
+    if (connectedOverlay)
+    {
+        localOpacity *= m_connectedOverlayOpacity;
+    }
+    if (hasTransitions)
+    {
+        ApplyTransitions(element, &localOpacity);
+    }
     if (!(localOpacity > 0))
     {
         return;
@@ -2783,7 +2814,7 @@ void ImmediateRenderer::Walk(
     {
         using namespace ImmediateRenderingClips3D;
         CMILMatrix local(true);
-        (void)element->GetLocalTransform(TransformRetrievalOptions::None, &local);
+        (void)element->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
         const float* handOff3D = nullptr;
         if (hasHandOffTransform)
         {
@@ -4478,3 +4509,4 @@ void ImmediateRenderer::SaveScrollers(_Inout_ IslandState& state, const DisplayL
 }
 
 #include "ImmediateRenderer.Independent.inl"
+#include "ImmediateRenderer.Connected.inl" // ---- transitions
