@@ -1,6 +1,6 @@
 # Background
 
-TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. Cells are display-only: TableView has no edit mode in this release (see [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)).
+TableView is a preview tabular control for WinUI 3. It presents an `ItemsSource` as rows and a developer-defined `Columns` collection as cells, with optional column headers, gridlines, density, alternating row backgrounds, leading-prefix frozen columns, and an empty-state template. Cells are display-only: TableView is a read-only table with no edit mode (see [Editing is not part of TableView](#editing-is-not-part-of-tableview)).
 
 Rows are virtualized: TableView renders rows with `ItemsRepeater`, so large row counts are virtualized (only on-screen rows plus a small cache are realized).
 
@@ -166,8 +166,7 @@ Both header strokes paint `TabularSurfaceHeaderSeparatorBrush`; overriding that 
 section-header heights. Larger text or custom content can grow them. Built-in text is 14px
 at every density; Standard is the default. App metric overrides and column-header font styles take precedence.
 `TableViewCellFontSizeSmall` and `TableViewHeaderFontSizeSmall` customize the
-Compact fonts. Density restamps preserve custom text-column fonts and bindings,
-including the display element saved during editing.
+Compact fonts. Density restamps preserve custom text-column fonts and bindings.
 
 Cell/header control padding is `12,2,12,2`, `12,6,12,6`, or `12,10,12,10`, respectively.
 Generated text uses the literal asymmetric [text-padding resources](#tableviewcolumnheader-class).
@@ -595,7 +594,7 @@ One thing to know when combining grouping with selection: group headers occupy t
 
 ### Editing cells
 
-TableView has no edit mode in this release: no `IsReadOnly`, edit gestures, edit events, or `CellEditingTemplate`. Controls inside a `TableViewTemplateColumn.CellTemplate` are always live and two-way bound by the app. Row navigation handles <kbd>Up</kbd>, <kbd>Down</kbd>, <kbd>PageUp</kbd> and <kbd>PageDown</kbd>, so an app-owned editor in a template cell that needs those keys (a multi-line `TextBox`, a `ComboBox`) should mark them handled in its own `KeyDown`. For rename-in-place and similar single-field edits, see [Rename-in-place guidance](#rename-in-place-guidance); full editing is [deferred to V2 / a future DataGrid](#deferred-to-v2--future-datagrid).
+TableView has no edit mode: no `IsReadOnly`, edit gestures, edit events, or `CellEditingTemplate`. Controls inside a `TableViewTemplateColumn.CellTemplate` are always live and two-way bound by the app. Row navigation handles <kbd>Up</kbd>, <kbd>Down</kbd>, <kbd>PageUp</kbd> and <kbd>PageDown</kbd>, so an app-owned editor in a template cell that needs those keys (a multi-line `TextBox`, a `ComboBox`) should mark them handled in its own `KeyDown`. For rename-in-place and similar single-field edits, see [Rename-in-place guidance](#rename-in-place-guidance); cell editing is [not part of TableView](#editing-is-not-part-of-tableview).
 
 # API Pages
 
@@ -1619,36 +1618,30 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
 
 # Appendix
 
-## Deferred to V2 / future DataGrid
+## Editing is not part of TableView
 
-Cell editing is not part of TableView V1. TableView is read-only-first and is not a `DataGrid`
-replacement; the named V1 scenarios (Task Manager, File Explorer details view, File properties)
+Cell editing is not part of TableView. TableView is a read-only table and is not a `DataGrid`
+replacement; the named scenarios (Task Manager, File Explorer details view, File properties)
 need at most a one-field rename, which composes from template columns and app code (see
-[Rename-in-place guidance](#rename-in-place-guidance)). A full edit-transaction model is the
-`DataGrid` feature set and is deferred to TableView V2 or a future DataGrid.
+[Rename-in-place guidance](#rename-in-place-guidance)). Apps that need editing build it in a
+`CellTemplate`; editing scenarios belong to a DataGrid-class control.
 
-Removed from V1, to be revisited there:
+TableView does not have:
 
 - `TableView.IsReadOnly` and `TableViewColumn.IsReadOnly` (and their dependency properties).
-  Without an edit mode they have no meaning; V1 behaves as the previous default, `IsReadOnly = true`.
+  Without an edit mode they have no meaning; TableView is always read-only.
 - `TableView.IsEditing` (read-only dependency property), `CommitEdit()` and `CancelEdit()`.
 - Events `BeginningEdit` and `CellEditEnding`, with `TableViewBeginningEditEventArgs`,
   `TableViewCellEditEndingEventArgs` and the `TableViewEditAction` enum.
 - `TableViewColumn.CellEditingTemplate`.
-- The built-in `TextBox` editor of `TableViewTextColumn`; the column itself is also deferred (see
-  [TableViewTextColumn (deferred)](#tableviewtextcolumn-deferred)).
+- `TableViewTextColumn` and its built-in `TextBox` editor (see
+  [TableViewTextColumn is not part of TableView](#tableviewtextcolumn-is-not-part-of-tableview)).
 - Edit gestures (double-click/double-tap, `F2`, `Enter`, `Esc`, focus-loss commit), menu
   suppression while editing, and the settable
   `IValueProvider` path on cells (the provider stays, read-only).
 
-Design input carried forward for V2: a public `BeginEdit` (so a context menu or "New folder" can
-start an edit), an async/deferrable commit (shell rename can prompt), per-row editors, row-scoped
-transactions (WinUI has no `BindingGroup`; a cell commit writes to the item immediately), editing
-UIA announcements, and the UX issues in GH #12354.
-
-Re-adding editing is additive: new members on a new contract version, with `IsReadOnly`
-defaulting to `true`, so V1 apps see no behavior change. Controls inside a `CellTemplate` are
-already outside any TableView edit model.
+Controls inside a `CellTemplate` are outside any TableView edit model: they are always live and
+bound by the app.
 
 ## Rename-in-place guidance
 
@@ -1767,11 +1760,11 @@ These ship additively in a later change — they are part of v1, not non-goals:
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
 - Column resize and reorder.
 
-## TableViewTextColumn (deferred)
+## TableViewTextColumn is not part of TableView
 
-Cut from V1 and deferred to V2; it can return additively:
+TableView has no `TableViewTextColumn` (`Binding`, with a built-in `TextBox` editor):
 
-- `TableViewTextColumn` (`Binding`, with a built-in `TextBox` editor). For display-only text, V1 sets
+- For display-only text, set
   `TableViewColumn.DisplayMemberBinding` on a base column instead (see
   [Basic usage](#basic-usage-text-cells-with-displaymemberbinding)); its `Path` is the sort key unless
   `SortMemberPath` is set:
@@ -1785,8 +1778,8 @@ Cut from V1 and deferred to V2; it can return additively:
   `TextBlock`; as in WPF's `GridViewColumn`, `DisplayMemberBinding` takes precedence over `CellTemplate`, so
   leave it unset on such a column.
 
-  V1 has no cell editing either (see [Deferred to V2 / future DataGrid](#deferred-to-v2--future-datagrid)), so a
-  `DisplayMemberBinding` cell is read-only. An editable text column is the V2 candidate.
+  TableView has no cell editing either (see [Editing is not part of TableView](#editing-is-not-part-of-tableview)), so a
+  `DisplayMemberBinding` cell is read-only. An editable text cell is an app-owned editor in a `CellTemplate`.
 
 ## Non-goals (out of scope for v1)
 

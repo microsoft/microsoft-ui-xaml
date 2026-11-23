@@ -3,7 +3,7 @@
 
 # Description
 
-`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only: cell editing is deferred to V2 / a future DataGrid (see [Editing](#editing)).
+`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is a read-only table: cell editing is not part of TableView (see [Editing](#editing)).
 
 It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, cell-level keyboard navigation and a UIA grid/table model. Column reorder is not yet implemented.
 
@@ -231,7 +231,7 @@ Selection is single, row-scoped, and follows keyboard focus. Pointer selection a
 
 ## Editing
 
-Deferred to V2 / a future DataGrid. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `TableViewEditAction`, `CellEditingTemplate`) and no built-in `TextBox` editor; `DisplayMemberBinding` text cells are read-only. The removed implementation (edit state machine, gesture layer, menu suppression while editing, and the settable cell `IValueProvider`) is recoverable from history when V2 revisits editing. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); deferred editing features are listed under [Deferred to V2 / future DataGrid](../../api-specs/TableView/TableView-spec.md#deferred-to-v2--future-datagrid).
+Not part of TableView. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `TableViewEditAction`, `CellEditingTemplate`) and no built-in `TextBox` editor; `DisplayMemberBinding` text cells are read-only. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); the editing features TableView does not have are listed under [Editing is not part of TableView](../../api-specs/TableView/TableView-spec.md#editing-is-not-part-of-tableview).
 
 ## Keyboard navigation
 
@@ -558,5 +558,5 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 
 - **Not yet implemented:** column reorder, trailing frozen columns, multi-select, `RowStyle`/`CellStyle`.
 - **Deferred:** `Auto` shrink, multi-column sort, clipboard, incremental loading.
-- **Deferred to V2 / future DataGrid:** cell editing (see [Editing](#editing)).
+- **Not part of TableView:** cell editing and `TableViewTextColumn` (see [Editing](#editing)); editing scenarios belong to a DataGrid-class control.
 - **Non-goals:** column virtualization, row headers, marquee selection, spreadsheet-style interaction.
