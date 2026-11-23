@@ -327,6 +327,7 @@ void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Dat
     if (auto const owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+        winrt::get_self<TableView>(owner)->OnColumnSortPathChanged(*this);
     }
 }
 
@@ -373,12 +374,16 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             for (winrt::DependencyProperty const& property : std::initializer_list<winrt::DependencyProperty>{ s_SortMemberPathProperty, s_HeaderContextFlyoutProperty })
             {
                 RegisterPropertyChangedCallback(property,
-                    [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                    [weakThis = get_weak(), isSortPath = property == s_SortMemberPathProperty](winrt::DependencyObject const&, winrt::DependencyProperty const&)
                     {
                         auto const strongThis = weakThis.get();
                         if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
                         {
                             winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+                            if (isSortPath)
+                            {
+                                winrt::get_self<TableView>(owner)->OnColumnSortPathChanged(*strongThis);
+                            }
                         }
                     });
             }

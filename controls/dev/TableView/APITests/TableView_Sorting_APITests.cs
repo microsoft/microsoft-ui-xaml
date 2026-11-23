@@ -191,6 +191,77 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a sorted column's DisplayMemberBinding path re-sorts the rows by the new path.")]
+        public void VerifyChangingSortedColumnDisplayMemberBindingResorts()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                tableView.Columns.Add(new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "baseline: the rows must be sorted by Name");
+                tableView.Columns[0].DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The column must keep its direction.");
+                VerifySequence(new[] { "Mei", "Asha", "Ines", "Diego", "Rafa", "Owen" },
+                    RowValues(tableView, person => person.Name), "the rows must be sorted by the new binding path");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing a sorted column's DisplayMemberBinding with no SortMemberPath clears its sort.")]
+        public void VerifyClearingSortedColumnDisplayMemberBindingClearsSort()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                tableView.Columns.Add(new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "baseline: the rows must be sorted by Name");
+                tableView.Columns[0].DisplayMemberBinding = null;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "A column left with no sort key must not stay sorted.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name), "clearing the sort must restore source order");
+                var indicator = FindSortIndicator(tableView, 0);
+                Verify.IsTrue(indicator == null || indicator.Direction == SortIndicatorDirection.None, "The header arrow must be cleared.");
+            });
+        }
+
         #endregion
 
         #region 7.2 Programmatic sort state
