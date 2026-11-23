@@ -37,10 +37,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         #region Incremental updates equal a full refresh
 
         [TestMethod]
-        [TestProperty("Description", "Verifies random source changes, rule changes and refreshes leave a flat, grouped and two-level grouped view equal to a fresh view over the same items.")]
+        [TestProperty("Description", "Verifies random source changes, rule changes and refreshes leave a flat, grouped and two-level grouped view (groups ordered by name, or by ItemCount) equal to a fresh view over the same items.")]
         public void VerifyIncrementalMatchesFreshViewFuzz()
         {
-            foreach (var levels in new[] { 0, 1, 2 })
+            foreach (var levels in new[] { 0, 1, 2, 3 })
             {
                 RunOnUIThread.Execute(() =>
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies random property edits on a live sorted, filtered and grouped view, mixed with source changes, settle into the view a fresh view over the same items shows.")]
         public void VerifyLiveShapingMatchesFreshViewFuzz()
         {
-            foreach (var levels in new[] { 0, 1, 2 })
+            foreach (var levels in new[] { 0, 1, 2, 3 })
             {
                 EngineFixture fixture = null;
                 RunOnUIThread.Execute(() => fixture = new EngineFixture(new Random(1337 + levels), levels, isLive: true));
@@ -484,6 +484,119 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies GroupDescription.GroupNameFromItem and NamesMatch are public and call the overridables, so a view an app writes can group by any description, as in WPF.")]
+        public void VerifyGroupDescriptionIsUsableByAppViews()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var row = new EngineRow(1, "a", 3, "X");
+                var property = new PropertyGroupDescription("Team");
+                Verify.AreEqual("X", property.GroupNameFromItem(row, 0, string.Empty));
+                Verify.IsTrue(property.NamesMatch("X", "X"));
+                Verify.IsFalse(property.NamesMatch("X", "x"));
+                Verify.IsTrue(new PropertyGroupDescription("Team", null, CollectionViewStringComparison.OrdinalIgnoreCase).NamesMatch("X", "x"));
+
+                GroupDescription custom = new IgnoreCaseTeamGroupDescription();
+                Verify.AreEqual("X", custom.GroupNameFromItem(row, 0, string.Empty), "The public method calls the subclass's GroupNameFromItemCore.");
+                Verify.IsTrue(custom.NamesMatch("x", "X"), "The public method calls the subclass's NamesMatchCore.");
+                Verify.IsTrue(new TeamGroupDescription().NamesMatch("X", "X"), "Without an override, NamesMatch is Equals.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a tick of live filtering only (no live sorting) leaves the items in place under a CustomSort whatever the tick's size, while the filter's changes apply.")]
+        public void VerifyLiveFilterTickKeepsOrderWithoutLiveSorting()
+        {
+            foreach (var changed in new[] { 5, 1500 })
+            {
+                ObservableCollection<EngineRow> rows = null;
+                ICollectionView view = null;
+                string before = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, 3000).Select(i => new EngineRow(i, $"r{i}", i, "X")));
+                    var cvs = new CollectionViewSource { Source = rows, IsLiveFilteringRequested = true };
+                    cvs.LiveFilteringProperties.Add("Score");
+                    view = cvs.View;
+                    var shaping = (ICollectionViewShaping)view;
+                    shaping.CustomSort = (left, right) => ((EngineRow)left).Score.CompareTo(((EngineRow)right).Score);
+                    shaping.Filter = item => ((EngineRow)item).Score % 7 != 3;
+                    before = EngineNames(view);
+                    for (var i = 0; i < changed; i++)
+                    {
+                        rows[i * 2].Score = 10000 - rows[i * 2].Score * 7;
+                    }
+                });
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    var beforeOrder = before.Split(' ');
+                    var now = new HashSet<string>(EngineNames(view).Split(' '));
+                    var wasIn = new HashSet<string>(beforeOrder);
+                    var kept = string.Join(" ", EngineNames(view).Split(' ').Where(wasIn.Contains));
+                    Verify.AreEqual(string.Join(" ", beforeOrder.Where(now.Contains)), kept, $"{changed} changed: the items that stay keep their order.");
+                    Verify.AreEqual(rows.Count(r => r.Score % 7 != 3), view.Count, $"{changed} changed: the filter applied.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies integer and floating-point sort keys compare exactly (2^53 + 1 sorts after 2^53 as a double), so incremental and full sorts agree.")]
+        public void VerifyIntegerAndDoubleKeysCompareExactly()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = new ObservableCollection<EngineRow>
+                {
+                    new EngineRow(1, "big", 0, "X") { Owner = 9007199254740993L },
+                    new EngineRow(2, "double", 0, "X") { Owner = 9007199254740992.0 },
+                    new EngineRow(3, "small", 0, "X") { Owner = 9007199254740991L },
+                };
+                var cvs = new CollectionViewSource { Source = rows };
+                cvs.SortDescriptions.Add(new SortDescription("Owner", CollectionViewSortDirection.Ascending));
+                Verify.AreEqual("small double big", EngineNames(cvs.View));
+                rows.Insert(0, new EngineRow(5, "huge", 0, "X") { Owner = ulong.MaxValue });
+                rows.Insert(0, new EngineRow(6, "neg", 0, "X") { Owner = -9007199254740993L });
+                rows.Insert(0, new EngineRow(7, "negd", 0, "X") { Owner = -9007199254740992.0 });
+                var fresh = new CollectionViewSource { Source = rows.ToList() };
+                fresh.SortDescriptions.Add(new SortDescription("Owner", CollectionViewSortDirection.Ascending));
+                Verify.AreEqual(EngineNames(fresh.View), EngineNames(cvs.View), "Incremental inserts equal a fresh sort.");
+                Verify.AreEqual("neg negd small double big huge", EngineNames(cvs.View));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a shaped view whose filter rejects every loaded item stops reporting HasMoreItems after a few loads instead of draining the source, and reports it again once the view grows.")]
+        public void VerifyFilteredIncrementalLoadingStops()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = new IncrementalEngineRows(MakeEngineRows());
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                var shaping = (ICollectionViewShaping)view;
+                shaping.Filter = item => ((EngineRow)item).Score < 100;
+                var visible = view.Count;
+
+                var loads = 0;
+                while (view.HasMoreItems && loads < 50)
+                {
+                    view.LoadMoreItemsAsync(5);
+                    loads++;
+                }
+
+                Log.Comment($"Loads until HasMoreItems turned false: {loads}");
+                Verify.IsLessThanOrEqual(loads, 5, "The loads stop.");
+                Verify.AreEqual(visible, view.Count, "Precondition: the filter rejected every loaded item.");
+                Verify.IsTrue(rows.HasMoreItems, "The source still has more.");
+
+                shaping.Filter = null;
+                Verify.IsGreaterThan(view.Count, visible);
+                Verify.IsTrue(view.HasMoreItems, "Once the view grows, HasMoreItems follows the source again.");
+            });
+        }
+
         #endregion
 
         #region Lifetime of app objects, exceptions in app code
@@ -515,7 +628,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies app code that throws while the view applies a source change (Filter, CustomSort, a group Converter, GroupDescription overrides, the Filter event, a handler of a change the view or a group raises) does not reach the source's other listeners, and leaves the view equal to a fresh view.")]
+        [TestProperty("Description", "Verifies app code that throws while the view applies a source change (Filter, CustomSort, a group Converter, GroupDescription overrides, the Filter event, a handler of a change the view or a group raises) does not reach the source's other listeners, is reported to Application.UnhandledException with its message, and leaves the view equal to a fresh view.")]
         public void VerifyThrowingAppCodeLeavesViewConsistent()
         {
             foreach (var callback in new[] { "Filter", "CustomSort", "Converter", "GroupNameFromItem", "NamesMatch", "FilterEvent", "ViewChanged", "GroupItemCount" })
@@ -533,23 +646,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var heard = 0;
                         rows.CollectionChanged += (sender, args) => heard++;
 
-                        thrower.IsArmed = true;
-                        var thrown = ThrownTypeName(() =>
+                        string thrown;
+                        List<string> reported;
+                        using (var unhandled = new UnhandledErrors())
                         {
-                            switch (operation)
+                            thrower.IsArmed = true;
+                            thrown = ThrownTypeName(() =>
                             {
-                                case "insert": rows.Insert(2, new EngineRow(50, "New", 5, "X")); break;
-                                case "replace": rows[1] = new EngineRow(51, "Swap", 4, "X"); break;
-                                case "remove": rows.RemoveAt(4); break;
-                                default: rows.Move(0, 7); break;
-                            }
-                        });
+                                switch (operation)
+                                {
+                                    case "insert": rows.Insert(2, new EngineRow(50, "New", 5, "X")); break;
+                                    case "replace": rows[1] = new EngineRow(51, "Swap", 4, "X"); break;
+                                    case "remove": rows.RemoveAt(4); break;
+                                    default: rows.Move(0, 7); break;
+                                }
+                            });
+                            reported = unhandled.Messages;
+                        }
                         var threw = thrower.Count > 0;
                         thrower.IsArmed = false;
 
-                        Log.Comment($"{context}: the callback {(threw ? "threw" : "did not run")}.");
+                        Log.Comment($"{context}: the callback {(threw ? "threw" : "did not run")}; reported: {string.Join(" | ", reported)}");
                         Verify.AreEqual("no exception", thrown, $"{context}: the failure does not reach the code that changed the source.");
                         Verify.AreEqual(1, heard, $"{context}: the source's other listeners heard the change.");
+                        Verify.AreEqual(thrower.Count, reported.Count, $"{context}: each failure is reported to Application.UnhandledException.");
+                        if (reported.Count > 0)
+                        {
+                            Verify.IsTrue(reported[0].Contains("Thrown by the test."), $"{context}: the report carries the app's message.");
+                        }
                         var fresh = new CollectionViewSource { Source = rows.ToList() };
                         ApplyThrowingRules(fresh, callback, new ThrowOnce());
                         Verify.AreEqual(Describe(fresh.View), Describe(view), $"{context}: the view equals a fresh view.");
@@ -562,6 +686,28 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        // Application.UnhandledException while it is attached (handled, so the app keeps running).
+        private sealed class UnhandledErrors : IDisposable
+        {
+            public UnhandledErrors()
+            {
+                Microsoft.UI.Xaml.Application.Current.UnhandledException += OnUnhandledException;
+            }
+
+            public List<string> Messages { get; } = new List<string>();
+
+            public void Dispose()
+            {
+                Microsoft.UI.Xaml.Application.Current.UnhandledException -= OnUnhandledException;
+            }
+
+            private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+            {
+                Messages.Add(e.Message ?? string.Empty);
+                e.Handled = true;
+            }
+        }
+
         [TestMethod]
         [TestProperty("Description", "Verifies a CustomSort that throws during a live restore leaves the view equal to a fresh view, and that a Refresh whose Filter throws throws to its caller and keeps the previous items.")]
         public void VerifyThrowingAppCodeInLiveRestoreAndRefresh()
@@ -569,6 +715,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var thrower = new ThrowOnce();
             ObservableCollection<EngineRow> rows = null;
             CollectionViewSource cvs = null;
+            UnhandledErrors unhandled = null;
             RunOnUIThread.Execute(() =>
             {
                 rows = MakeEngineRows();
@@ -576,6 +723,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 cvs.LiveSortingProperties.Add("Score");
                 ApplyThrowingRules(cvs, "CustomSort", thrower);
                 Verify.IsNotNull(cvs.View);
+                unhandled = new UnhandledErrors();
                 thrower.IsArmed = true;
                 rows[0].Score = 1;
                 rows[3].Score = 2;
@@ -583,7 +731,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             RunOnUIThread.Execute(() =>
             {
+                unhandled.Dispose();
                 Verify.AreEqual(1, thrower.Count, "Precondition: the comparer threw in the restore.");
+                Verify.AreEqual(1, unhandled.Messages.Count, "The failed restore is reported to Application.UnhandledException.");
                 var fresh = new CollectionViewSource { Source = rows.ToList() };
                 ApplyThrowingRules(fresh, "CustomSort", new ThrowOnce());
                 Verify.AreEqual(Describe(fresh.View), Describe(cvs.View), "The view equals a fresh view after the failed restore.");
@@ -625,8 +775,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     ((ICollectionViewShaping)view).Refresh();
                 };
 
-                Verify.AreEqual("no exception", ThrownTypeName(() => rows.Add(new EngineRow(60, "New", 25, "X"))));
-                Log.Comment($"Resets: {resets}");
+                using (var unhandled = new UnhandledErrors())
+                {
+                    Verify.AreEqual("no exception", ThrownTypeName(() => rows.Add(new EngineRow(60, "New", 25, "X"))));
+                    Log.Comment($"Resets: {resets}; reported: {string.Join(" | ", unhandled.Messages)}");
+                    Verify.AreEqual(1, unhandled.Messages.Count, "The endless recompute is reported to Application.UnhandledException.");
+                }
                 Verify.IsLessThanOrEqual(resets, 10, "The recomputes stop.");
             });
         }
@@ -1325,7 +1479,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ((ICollectionViewShaping)cvs.View).Filter = MakeFilter(m_threshold);
                 if (m_levels >= 1)
                 {
+                    // Levels 3: two levels, the teams ordered by their item count (which changes with the items).
                     var team = new PropertyGroupDescription("Team");
+                    if (m_levels == 3)
+                    {
+                        team.SortDescriptions.Add(new SortDescription("ItemCount", CollectionViewSortDirection.Descending));
+                    }
                     team.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending));
                     cvs.GroupDescriptions.Add(team);
                 }
@@ -1449,19 +1608,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         public EngineOwner Owner { get; set; }
 
-        protected override object GroupNameFromItem(object item, int level, string culture) => ((EngineRow)item).Bucket;
+        protected override object GroupNameFromItemCore(object item, int level, string culture) => ((EngineRow)item).Bucket;
     }
 
     internal sealed class TeamGroupDescription : GroupDescription
     {
-        protected override object GroupNameFromItem(object item, int level, string culture) => ((EngineRow)item).Team;
+        protected override object GroupNameFromItemCore(object item, int level, string culture) => ((EngineRow)item).Team;
     }
 
     internal sealed class IgnoreCaseTeamGroupDescription : GroupDescription
     {
-        protected override object GroupNameFromItem(object item, int level, string culture) => ((EngineRow)item).Team;
+        protected override object GroupNameFromItemCore(object item, int level, string culture) => ((EngineRow)item).Team;
 
-        protected override bool NamesMatch(object groupName, object itemName) => string.Equals((string)groupName, (string)itemName, StringComparison.OrdinalIgnoreCase);
+        protected override bool NamesMatchCore(object groupName, object itemName) => string.Equals((string)groupName, (string)itemName, StringComparison.OrdinalIgnoreCase);
     }
 
     // Throws once, when armed.
@@ -1499,7 +1658,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public ThrowOnce Thrower { get; set; }
         public bool ThrowsInNamesMatch { get; set; }
 
-        protected override object GroupNameFromItem(object item, int level, string culture)
+        protected override object GroupNameFromItemCore(object item, int level, string culture)
         {
             if (!ThrowsInNamesMatch)
             {
@@ -1508,7 +1667,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return ((EngineRow)item).Team;
         }
 
-        protected override bool NamesMatch(object groupName, object itemName)
+        protected override bool NamesMatchCore(object groupName, object itemName)
         {
             if (ThrowsInNamesMatch)
             {

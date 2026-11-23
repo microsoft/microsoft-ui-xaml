@@ -128,6 +128,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates a GridView shows groups when its CollectionViewSource view starts grouping, regroups, and shows flat items when it stops, with the same ItemsSource")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(GroupingOffInPlaceWithFocusedItem)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView whose CollectionViewSource view stops grouping in place updates IsGrouping at once and handles keyboard navigation before the next measure")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GroupingToggledFromCallbacks)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a ListView follows a CollectionViewSource view whose grouping starts in a source VectorChanged handler and stops in a ContainerContentChanging handler")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReorderIsOffOverSortedView)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder does nothing on a ListView with CanReorderItems over a sorted CollectionViewSource view, as over a grouped one")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //

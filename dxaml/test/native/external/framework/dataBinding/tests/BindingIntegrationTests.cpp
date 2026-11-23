@@ -3991,14 +3991,14 @@ namespace Framework { namespace DataBinding {
         property int Calls;
 
     protected:
-        virtual Object^ GroupNameFromItem(Object^ item, int level, String^ culture) override
+        virtual Object^ GroupNameFromItemCore(Object^ item, int level, String^ culture) override
         {
             Calls++;
             auto name = safe_cast<InpcDataSource^>(item)->StringProperty;
             return ref new String(name->Data(), 1);
         }
 
-        virtual bool NamesMatch(Object^ groupName, Object^ itemName) override
+        virtual bool NamesMatchCore(Object^ groupName, Object^ itemName) override
         {
             return _wcsicmp(safe_cast<String^>(groupName)->Data(), safe_cast<String^>(itemName)->Data()) == 0;
         }
@@ -4610,6 +4610,127 @@ namespace Framework { namespace DataBinding {
             LOG_OUTPUT(L"Removing the last handler hands filtering back to the delegate.");
             cvs->Filter -= token;
             VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(view)->Data());
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceFilterEventDoesNotLeak()
+    {
+        TestCleanupWrapper cleanup;
+        Platform::WeakReference cvsRef;
+        Platform::WeakReference viewRef;
+        Platform::WeakReference keptCvsRef;
+        ::Windows::Foundation::Collections::IObservableVector<Object^>^ source = nullptr;
+        ICollectionView^ keptView = nullptr;
+        auto sender = std::make_shared<Platform::WeakReference>();
+        auto raised = std::make_shared<int>(0);
+
+        RunOnUIThread([&]()
+        {
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            cvs->Filter += ref new FilterEventHandler([](Object^, FilterEventArgs^ e)
+            {
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            VERIFY_ARE_STRINGS_EQUAL(L"ba", ShapingNamesOf(cvs->View)->Data());
+            cvsRef = cvs;
+            viewRef = cvs->View;
+
+            source = MakeShapingSource();
+            auto kept = ref new CollectionViewSource();
+            kept->Source = source;
+            kept->Filter += ref new FilterEventHandler([sender, raised](Object^ eventSender, FilterEventArgs^ e)
+            {
+                *sender = Platform::WeakReference(eventSender);
+                ++*raised;
+                e->Accepted = safe_cast<InpcDataSource^>(e->Item)->Int32Property == 1;
+            });
+            keptView = kept->View;
+            keptCvsRef = kept;
+            VERIFY_IS_TRUE(sender->Resolve<CollectionViewSource>() == kept);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Released, the CollectionViewSource and its view are destroyed: the view holds the handlers, not the source.");
+            VERIFY_IS_NULL(cvsRef.Resolve<CollectionViewSource>());
+            VERIFY_IS_NULL(viewRef.Resolve<Object>());
+
+            LOG_OUTPUT(L"A view kept alone keeps filtering through the handlers; the released source is no longer the sender.");
+            VERIFY_IS_NULL(keptCvsRef.Resolve<CollectionViewSource>());
+            *raised = 0;
+            source->Append(MakeShapingItem(L"e", 1));
+            source->Append(MakeShapingItem(L"f", 2));
+            VERIFY_ARE_EQUAL(2, *raised);
+            VERIFY_ARE_STRINGS_EQUAL(L"bae", ShapingNamesOf(keptView)->Data());
+            VERIFY_IS_NULL(sender->Resolve<Object>());
+            keptView = nullptr;
+            source = nullptr;
+        });
+    }
+
+    void BindingIntegrationTests::CollectionViewSourceDescriptorPropertySystem()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            auto panel = safe_cast<StackPanel^>(XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel.Resources>"
+                L"    <Border x:Key='Holder' Tag='StringProperty'/>"
+                L"    <CollectionViewSource x:Key='People'>"
+                L"      <CollectionViewSource.SortDescriptions>"
+                L"        <SortDescription PropertyName='{Binding Tag, Source={StaticResource Holder}}'/>"
+                L"      </CollectionViewSource.SortDescriptions>"
+                L"      <CollectionViewSource.GroupDescriptions>"
+                L"        <PropertyGroupDescription PropertyName='Int32Property'>"
+                L"          <PropertyGroupDescription.GroupNames>"
+                L"            <x:Int32>3</x:Int32>"
+                L"            <x:Int32>1</x:Int32>"
+                L"          </PropertyGroupDescription.GroupNames>"
+                L"        </PropertyGroupDescription>"
+                L"      </CollectionViewSource.GroupDescriptions>"
+                L"    </CollectionViewSource>"
+                L"  </StackPanel.Resources>"
+                L"</StackPanel>"));
+            auto cvs = safe_cast<CollectionViewSource^>(panel->Resources->Lookup(L"People"));
+            auto holder = safe_cast<Border^>(panel->Resources->Lookup(L"Holder"));
+            auto sort = cvs->SortDescriptions->GetAt(0);
+            auto group = safe_cast<PropertyGroupDescription^>(cvs->GroupDescriptions->GetAt(0));
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+
+            LOG_OUTPUT(L"GroupNames declared in markup are the explicit groups, first and in order.");
+            VERIFY_ARE_EQUAL(2u, group->GroupNames->Size);
+            auto groups = cvs->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(4u, groups->Size);
+            VERIFY_ARE_EQUAL(0u, safe_cast<ICollectionViewGroup^>(groups->GetAt(0))->GroupItems->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"ab", ShapingNamesOf(safe_cast<ICollectionViewGroup^>(groups->GetAt(1))->GroupItems)->Data());
+
+            LOG_OUTPUT(L"A binding cannot change a SortDescription a collection holds: it stays sealed.");
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            holder->Tag = L"Int32Property";
+            VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+
+            LOG_OUTPUT(L"An invalid StringComparison is rejected and not stored.");
+            bool threw = false;
+            try
+            {
+                group->StringComparison = static_cast<CollectionViewStringComparison>(99);
+            }
+            catch (Platform::Exception^)
+            {
+                threw = true;
+            }
+            VERIFY_IS_TRUE(threw);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::Ordinal, group->StringComparison);
+
+            LOG_OUTPUT(L"The public GroupNameFromItem and NamesMatch call the description's overridables.");
+            auto item = MakeShapingItem(L"z", 7);
+            VERIFY_ARE_EQUAL(7, safe_cast<int32>(group->GroupNameFromItem(item, 0, nullptr)));
+            VERIFY_IS_TRUE(group->NamesMatch(7, 7));
+            VERIFY_IS_FALSE(group->NamesMatch(7, 8));
         });
     }
 
