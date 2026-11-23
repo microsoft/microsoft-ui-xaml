@@ -3292,15 +3292,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return false;
         }
 
-        // Some lab machines never grant the foreground, so injected keys cannot reach the app there.
-        private static bool CanInjectKeys()
+        // Some lab machines never grant the foreground, or never deliver injected keys to the app;
+        // the tests cannot run there.
+        private bool CanInjectKeys()
         {
-            if (InjectedKeyboard.TryTakeForeground())
+            if (!InjectedKeyboard.TryTakeForeground())
             {
-                return true;
+                Log.Result(TestResult.Skipped, "The test app could not take the foreground, so injected keys cannot reach it.");
+                return false;
             }
-            Log.Result(TestResult.Skipped, "The test app could not take the foreground, so injected keys cannot reach it.");
-            return false;
+
+            bool delivered = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var probe = new Button { Content = "Probe" };
+                var host = new StackPanel();
+                host.Children.Add(probe);
+                host.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((s, e) => delivered |= e.Key == global::Windows.System.VirtualKey.F2), true);
+                LoadContent(host);
+                probe.Focus(FocusState.Keyboard);
+            });
+            IdleSynchronizer.Wait();
+            InjectedKeyboard.PressF2();
+            if (!delivered)
+            {
+                Log.Result(TestResult.Skipped, "Injected keys do not reach the test app on this machine.");
+            }
+            return delivered;
         }
 
         // A Button ahead of the table gives focus somewhere outside the body to go.
