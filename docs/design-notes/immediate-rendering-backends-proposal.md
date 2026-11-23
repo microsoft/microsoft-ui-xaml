@@ -548,6 +548,64 @@ text, animation, and interop contracts. Then establish the M0 baseline before co
 | Walk approximations | Opacity is folded into primitive alpha only when an opacity group draws exactly one primitive; otherwise it uses `PushOpacityLayer`. Clips are world-space axis-aligned bounding boxes, plus rounded clips for CornerRadius. Gradients are painted as their average stop color. Text is drawn from XAML's glyph runs. `DrawText` is the fallback, using the arranged rect: no-wrap text gets 2 em of slack and wrapping text gets ½ em | Each approximation is a known fidelity gap rather than a crash or a silent omission |
 | Diagnostics | `WINUI_IMMEDIATE_CAPTURE=<path.bmp>` writes the most recently presented swap-chain buffer after each paint. `WINUI_IMMEDIATE_STATS=<path.txt>` writes one line per painted island frame, with element counts (visited, painted, culled), commands, blits, damage, walk and paint time in µs, and reused subtrees, followed by `# unsupported` lines. `WINUI_IMMEDIATE_PRESENT_UNION=1` also repaints the previous frame's damage. Mid-scroll captures showed it is not needed: flip-model `Present1` dirty rects carry the rest of the frame forward | Screen capture of a disconnected remote session returns black, so this is the C1 source on headless lab VMs |
 
+### Full XAML coverage: transitions
+
+Branch `transitions` (test-plan family F10). Rule: an animation XAML or MUXC *built itself* (known parameters) is
+evaluated by XAML and rendered natively; an animation the *app* built on a Composition object (UIElement.StartAnimation
+with an app CompositionAnimation, implicit show/hide animations, ElementCompositionPreview hand-off visuals) can't be read
+back (no key-frame getters) and keeps the per-window Composition fallback.
+
+- **Property and brush transitions.** `ScalarTransition`/`Vector3Transition` (Opacity, Rotation, Scale, Translation)
+  and `BrushTransition` (Panel/Border/ContentPresenter Background) are XAML's own: in immediate modes the facade no
+  longer creates Composition animations; `ImmediateAnimations::TransitionStore` (components\base, XAML-type free) records
+  from/to, duration (clamped like SharedTransitionAnimations) and curve (cubic bezier 0.8,0,0.2,1 for property
+  transitions, linear RGB for brushes). A retarget starts from the current animated value (Composition's StartingValue),
+  `Vector3Transition.Components` masks snap unmasked components. The walk reads the animated value per element, forces a
+  non-reused subtree walk, damages old and new bounds, and requests frames while the store is non-empty. Entries are a
+  few dozen bytes and are pruned when finished or when the element leaves the tree. `HasFacadeAnimation()` now only
+  triggers fallback for app `StartAnimation`.
+- **ConnectedAnimation.** `ConnectedAnimationService` animations are emulated: `Prepare` captures the source element
+  through the immediate capture callback (S22) into a bounded snapshot (<= 8 MP, <= 8192 px per side, i.e. <= 32 MB,
+  released at Reset/completion), hides the source like the Composition path, and `TryStart` computes the same geometry
+  as `StartSpriteAnimations` (offset/scale from source to destination, Gravity dip and shadow lift, Direct/Basic curves
+  read from the configuration's cubic-bezier or linear easing; any other easing uses the default curve and reports
+  `:approximated`). The renderer paints the snapshot at the `ConnectedAnimationRoot` with the animated host transform,
+  inset clip and theme shadow, then walks the destination live on top with the overlay opacity; the destination is
+  hidden from its normal position until completion. Coordinated elements move with the host. `Completed` fires at the
+  configured duration. The cross-fade is a two-layer opacity blend of snapshot and live destination rather than
+  Composition's surface cross-fade: reported as `ConnectedAnimation cross-fade:approximated`; custom component
+  animations (`SetAnimationComponent`) are reported approximated and use the default curve.
+- **Theme transitions/animations, VisualState transitions.** These are Storyboards on XAML properties (LTEs, transition
+  roots, RenderTransform/Opacity/Projection); they already ran as dependent animations. Coverage pages hold each at
+  mid-progress (Seek+Pause) and compare with Composition.
+- **MUXC controls.** `controls\dev\inc\ImmediateRendering.h` (`IsRequested()` reads `WINUI_RENDERING_BACKEND`;
+  `KeyFrames` builds a DoubleAnimationUsingKeyFrames with Linear/Spline(=cubic bezier)/Discrete(=single step) frames and
+  Composition-style delays; `EnsureCompositeTransform` never replaces an app RenderTransform). Controls switch to that
+  path only when immediate rendering is requested, so Composition behavior is unchanged:
+  - NavigationView selection indicator: same key frames, durations and beziers on a CompositeTransform/Opacity
+    Storyboard; the overflow button's implicit Offset animation is skipped (the button moves without animation).
+    Segments without an explicit easing use linear (Composition's implicit default key-frame easing is not exposed;
+    treated as an approximation).
+  - TeachingTip open/close: same Scale key frames and beziers about the elements' CenterPoint; the content elevation
+    (Translation.Z, which only sizes the ThemeShadow) is set at the start of expand and the end of contract instead of
+    being animated.
+  - ItemsView/LinedFlowLayout item transitions (add slide-in/scale-in, remove scale-out, move translate or
+    scale-out/scale-in): same durations, delays and beziers as Storyboards; elements are left untransformed after the
+    transition. ItemsRepeater with an app `ElementAnimator`/`ItemCollectionTransitionProvider` remains app code.
+  - RatingControl: the per-star scale expression has constant inputs, so it is evaluated once and applied as a
+    RenderTransform (the control no longer touches its hand-off visual, which made every RatingControl fall back).
+  - Expander: the content clip (a Composition inset clip on a hand-off visual) becomes a RectangleGeometry clip kept in
+    sync with the size.
+  - Already immediate-aware or Storyboard-based: AnimatedIcon (FallbackIconSource), InfoBar, TabView, BreadcrumbBar,
+    ProgressBar, PipsPager, CommandBarFlyout (VisualState storyboards; its SystemBackdrop link is materials scope).
+    Still Composition-only (fallback): ScrollPresenter/ParallaxView/PullToRefresh/SwipeControl expression animations
+    (scrolling scope), AnimatedVisualPlayer, Lights, SystemBackdropElement, AnnotatedScrollBar, InkCanvas/InkToolbar,
+    WebView2.
+- **Diagnostics.** `WINUI_IMMEDIATE_ANIMATION_HOLD=<0..1>` holds every XAML-evaluated animation (transitions,
+  ConnectedAnimation) at that progress and never completes it, so mid-animation captures are deterministic.
+- **Limitations.** The S15 render-thread ticker does not tick store transitions or ConnectedAnimation (they advance
+  on UI-thread frames only); MUXC Storyboards are dependent animations (UI thread), like all Storyboards in immediate
+  modes.
 ## Source references
 
 These are investigation entry points, not permanent line-number contracts. Paths are relative to the repository unless
