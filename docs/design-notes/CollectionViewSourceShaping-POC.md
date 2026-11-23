@@ -789,6 +789,23 @@ earlier scenarios' rows (the grouped 1,000-edit tick took 63 ms in two runs and 
 code path). The chk build is not a reference: its tracker-pointer registry (`ReferenceTrackerManager::m_allTrackerPtrs`, DBG
 only) makes every tracker pointer release O(all tracker pointers), so 100k live listeners took 20 minutes there.
 
+Batch 4 (same harness and VM, `7c7446b` vs batch 4, no other build on the host; milliseconds; "moves" or "Reset" is
+what the tick raised):
+
+| Scenario | 10k before | 10k now | 100k before | 100k now |
+|---|---:|---:|---:|---:|
+| Group into 1,000 groups by a C# `GroupDescription` subclass (no `NamesMatch` override) | 5,527 | 746 | 62,945 | 1,869 |
+| The same with a C# `NamesMatch` override | 1,018 | 190 | 11,526 | 936 |
+| `Replace` under that subclass, each | 1.50 | 0.26 | 1.45 | 0.28 |
+| Live tick, 50 rows changed, flat | 18 (moves) | 17 (moves) | 129 (moves) | 140 (moves) |
+| Live tick, 255 rows changed, flat | 328 (moves) | 11 (`Reset`) | 668 (moves) | 153 (`Reset`) |
+| Live tick, 1,000 rows changed, flat | 18 (`Reset`) | 13 (`Reset`) | 156 (`Reset`) | 162 (`Reset`) |
+| Live tick, 0.9·n edits, 100 groups | 111 (`Reset`) | 121 (`Reset`) | 1,351 (`Reset`) | 1,474 (`Reset`) |
+
+The subclass without an override is slower than the one with: its `NamesMatch` crosses the ABI twice (into the app's
+class and back to the base), and each new group still asks it of every existing group (O(G²) calls, about 0.5 million
+for 1,000 groups). Other rows are unchanged within run-to-run noise (±15%); the full table is in the batch 4 logs.
+
 What is still O(n) per change, and why it stays for now:
 
 - **The presented vector shifts.** The view's output (`InternalList`) is a `TrackerCollection`; inserting or
