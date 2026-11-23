@@ -450,7 +450,7 @@ Orders.Clear();
 
 ### Keyboard navigation & accessibility
 
-TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column.
+TableView supports cell focus on actionable cells. Up, Down, PageUp, and PageDown move to the same visible column in another displayed row (the nearest actionable cell, else the row); Left and Right move the cell cursor among the actionable cells of the focused row. Home and End move to the first or last actionable cell of the current row once a cell has focus, and Ctrl+Home / Ctrl+End move to the first or last row of the table. Enter and Space on a column header sort that column. Plain `DisplayMemberBinding` text cells are not focusable: focus stays on the row, Left and Right do not step into them, and screen readers reach their text through the Grid and Table patterns.
 
 Read-only UI Automation grid/table peers are provided for the table, rows, cells, and column headers.
 
@@ -1308,9 +1308,9 @@ TableView provides UI Automation peers for grid/table accessibility and row sele
 | `TableViewRowAutomationPeer` | `FrameworkElementAutomationPeer` | `ISelectionItemProvider` |
 | `TableViewColumnHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IInvokeProvider` (sort), `ITransformProvider` (resize; implementation-only, not in the IDL) |
 | `TableViewGroupHeaderAutomationPeer` | `FrameworkElementAutomationPeer` | `IExpandCollapseProvider`, `IGridItemProvider` |
-| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider`, `IValueProvider` |
+| `TableViewCellAutomationPeer` | `FrameworkElementAutomationPeer` | `IGridItemProvider`, `ITableItemProvider` |
 
-These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` implements `IValueProvider` read-only (`IsReadOnly` is always `true` and `SetValue` fails), and does not offer the Value pattern from `GetPattern` in this release; a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named by evaluating the visible columns' `DisplayMemberBinding`s (with their converters) against the item, joined like realized cell text; columns without `DisplayMemberBinding` contribute nothing; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
+These peers expose the table structure to assistive technologies. `TableViewCellAutomationPeer` does not implement `IValueProvider` or offer the Value pattern; cells are read-only, and a cell's text is its `Name`. A selected row that is not realized (scrolled out of view) is named by evaluating the visible columns' `DisplayMemberBinding`s (with their converters) against the item, joined like realized cell text; columns without `DisplayMemberBinding` contribute nothing; only when none yields text does it fall back to the item's own string form (for a class without `ToString`, its type name). Cell peers use the `Custom` automation control type with localized control type `cell`; UIA only permits that localized-control-type override on `Custom`, and the previous `DataItem`-inside-`DataItem` shape broke Narrator item counting.
 
 Migration notes:
 
@@ -1604,8 +1604,7 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     unsealed runtimeclass TableViewCellAutomationPeer :
         Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
         Microsoft.UI.Xaml.Automation.Provider.IGridItemProvider,
-        Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
-        Microsoft.UI.Xaml.Automation.Provider.IValueProvider
+        Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider
     {
         TableViewCellAutomationPeer(
             Microsoft.UI.Xaml.FrameworkElement cell,
@@ -1637,8 +1636,7 @@ TableView does not have:
 - `TableViewTextColumn` and its built-in `TextBox` editor (see
   [TableViewTextColumn is not part of TableView](#tableviewtextcolumn-is-not-part-of-tableview)).
 - Edit gestures (double-click/double-tap, `F2`, `Enter`, `Esc`, focus-loss commit), menu
-  suppression while editing, and the settable
-  `IValueProvider` path on cells (the provider stays, read-only).
+  suppression while editing, and `IValueProvider` on cells (cell text is the cell peer's `Name`).
 
 Controls inside a `CellTemplate` are outside any TableView edit model: they are always live and
 bound by the app.

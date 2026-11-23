@@ -57,11 +57,6 @@ public:
     winrt::com_array<winrt::IRawElementProviderSimple> GetRowHeaderItems();
     winrt::com_array<winrt::IRawElementProviderSimple> GetColumnHeaderItems();
 
-    // IValueProvider — read-only: Value reports the cell text, SetValue is not supported.
-    winrt::hstring Value();
-    bool IsReadOnly();
-    void SetValue(winrt::hstring const& value);
-
     // IVirtualizedItemProvider — available only after the owning row has been recycled out.
     void Realize();
 
