@@ -1234,7 +1234,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-// Whether ItemsSource is a collection view that sorts or filters: a shaped VectorCollectionView, or an app view
+// Whether ItemsSource is a collection view that sorts or filters: a shaped VectorCollectionView that does not present
+// its source in order, or an app view
 // (ICollectionViewShaping) with SortDescriptions, a CustomSort or a Filter.
 _Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* pIsShaped)
 {
@@ -1245,7 +1246,7 @@ _Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* p
     auto spVectorView = ctl::query_interface_cast<VectorCollectionView>(spItemsSource.Get());
     if (spVectorView)
     {
-        *pIsShaped = spVectorView->IsShaped();
+        *pIsShaped = spVectorView->IsShaped() && !spVectorView->PresentsSourceOrder();
         return S_OK;
     }
 
@@ -1269,6 +1270,19 @@ _Check_return_ HRESULT ListViewBase::IsItemsSourceSortedOrFiltered(_Out_ bool* p
     IFC_RETURN(spShaping->get_Filter(&spFilter));
     IFC_RETURN(spShaping->get_CustomSort(&spCustomSort));
     *pIsShaped = sortCount > 0 || spFilter || spCustomSort;
+    return S_OK;
+}
+
+// CanReorderItems, unless ItemsSource is a view that sorts or filters (the order is the view's).
+_Check_return_ HRESULT ListViewBase::GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder)
+{
+    IFC_RETURN(get_CanReorderItems(pCanReorder));
+    if (*pCanReorder)
+    {
+        bool isSortedOrFiltered = false;
+        IFC_RETURN(IsItemsSourceSortedOrFiltered(&isSortedOrFiltered));
+        *pCanReorder = !isSortedOrFiltered;
+    }
     return S_OK;
 }
 
@@ -1631,7 +1645,8 @@ _Check_return_ HRESULT ListViewBase::GetIsDragEnabled(
     IFC(get_CanDragItems(&canDragItems));
     IFC(get_CanReorderItems(&canReorderItems));
 
-    // Ignore canReorderItems if we're grouping.
+    // Ignore canReorderItems if we're grouping, or if the view sorts or filters.
+    IFC(GetCanReorderItemsOverItemsSource(&canReorderItems));
     reorderActive = canReorderItems && !isGrouping;
     *pDragEnabled = (canDragItems || reorderActive);
 
@@ -2021,7 +2036,7 @@ _Check_return_ HRESULT ListViewBase::IsCurrentlyReordering(_Out_ bool* isReorder
     if (m_isDraggingOverSelf)
     {
         BOOLEAN canReorder = FALSE;
-        IFC_RETURN(get_CanReorderItems(&canReorder));
+        IFC_RETURN(GetCanReorderItemsOverItemsSource(&canReorder));
         *isReordering = !!canReorder;
     }
     return S_OK;
@@ -2049,7 +2064,7 @@ _Check_return_ HRESULT ListViewBase::ShouldPlayLiveReorder(
     }
 
     IFC_RETURN(get_AllowDrop(&allowDrop));
-    IFC_RETURN(get_CanReorderItems(&canReorder));
+    IFC_RETURN(GetCanReorderItemsOverItemsSource(&canReorder));
 
     *pResult = canReorder && allowDrop && isStationary && supportLiveReorder;
 

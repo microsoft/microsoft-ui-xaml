@@ -579,7 +579,7 @@ IFACEMETHODIMP ListViewBaseItem::OnPointerPressed(
                     AutomaticDragHelper* helper = nullptr;
 
                     IFC(spListView->get_CanDragItems(&canDragItems));
-                    IFC(spListView->get_CanReorderItems(&canReorderItems));
+                    IFC(spListView->GetCanReorderItemsOverItemsSource(&canReorderItems));
 
                     isDraggable = canDragItems || canReorderItems;
 
@@ -664,7 +664,7 @@ IFACEMETHODIMP ListViewBaseItem::OnHolding(
                 BOOLEAN canDragItems = FALSE;
                 BOOLEAN canReorderItems = FALSE;
                 IFC(spListView->get_CanDragItems(&canDragItems));
-                IFC(spListView->get_CanReorderItems(&canReorderItems));
+                IFC(spListView->GetCanReorderItemsOverItemsSource(&canReorderItems));
 
                 if (canDragItems || canReorderItems)
                 {
@@ -2431,7 +2431,7 @@ _Check_return_ HRESULT ListViewBaseItem::ChangeVisualStateWithContextNewStyle(
 
         // Holding gesture will show drag visual
         IFC_RETURN(spListView->get_CanDragItems(&criteria.canDrag));
-        IFC_RETURN(spListView->get_CanReorderItems(&criteria.canReorder));
+        IFC_RETURN(spListView->GetCanReorderItemsOverItemsSource(&criteria.canReorder));
         if (spListView->GetIsHolding())
         {
             criteria.isHolding = TRUE;
