@@ -1326,8 +1326,19 @@ private:
         const winrt::IInspectable& sender,
         const winrt::NotifyCollectionChangedEventArgs& args);
     // A live move (Remove + Insert) or a Reset the view raised on its own: focus follows the row's item.
-    void CaptureBodyFocusForMove(int32_t removedIndex);
+    void CaptureBodyFocusForMove(int32_t focusedRow);
     bool RestoreBodyFocusToCapturedItem();
+    // The focused body row before a rows source change: the change handler runs before ItemsRepeater's.
+    int32_t GetBodyFocusRowBeforeChange() const;
+    bool IsBodyRowInViewport(int32_t row) const;
+    void ShiftLastBodyFocusRow(const winrt::NotifyCollectionChangedEventArgs& args);
+    winrt::DependencyObject GetFocusedBodyElement() const;
+    void RecordFocusRescueSource();
+    void NoteFocusChangeWhileFollowingItem(const winrt::DependencyObject& oldFocus, const winrt::DependencyObject& newFocus);
+    // The element ItemsRepeater moves focus away from when it recycles the focused row; any other focus move
+    // while focus follows an item is the app's or the user's, and wins.
+    winrt::weak_ref<winrt::DependencyObject> m_focusRescueFrom{ nullptr };
+    bool m_reshapeFocusMovedElsewhere{ false };
     bool m_reshapeFocusValid{ false };
     bool m_reshapeFocusDisarmQueued{ false };
     int32_t m_reshapeFocusRow{ -1 };

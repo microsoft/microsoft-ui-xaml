@@ -2434,26 +2434,48 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // A Remove recycles the focused row (a live move removes and re-inserts it); a Reset recycles every realized row.
-    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove)
+    const auto action = args.Action();
+    if (action != winrt::NotifyCollectionChangedAction::Reset)
     {
-        CaptureBodyFocusForMove(args.OldStartingIndex());
-        return;
-    }
-
-    if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
-    {
+        const int32_t focusedRow = GetBodyFocusRowBeforeChange();
+        if (action == winrt::NotifyCollectionChangedAction::Remove && focusedRow >= 0)
+        {
+            const int32_t start = args.OldStartingIndex();
+            auto const oldItems = args.OldItems();
+            const int32_t count = oldItems ? static_cast<int32_t>(oldItems.Size()) : 1;
+            if (start >= 0 && focusedRow >= start && focusedRow < start + count)
+            {
+                if (m_reshapeFocusValid && m_reshapeFocusFollowsItem)
+                {
+                    // The row focus was moved to is recycled too: ItemsRepeater moves focus on again.
+                    RecordFocusRescueSource();
+                }
+                else
+                {
+                    CaptureBodyFocusForMove(focusedRow);
+                }
+            }
+        }
+        if (m_lastBodyFocusValid && focusedRow >= 0)
+        {
+            m_lastBodyFocusRow = focusedRow;
+        }
+        ShiftLastBodyFocusRow(args);
         return;
     }
 
     SuppressBodyFocusTrackingForThisTurn();
 
     // TableView's own re-shapes claim the capture in this turn and keep the row index; one the view raised on its own
-    // (a live restore, the app's rule change) follows the item.
+    // (a live restore, the app's rule change) follows the item if its row was in view.
     const bool wasCaptured = m_reshapeFocusValid;
+    const int32_t focusedRow = GetBodyFocusRowBeforeChange();
     CaptureBodyFocusForReshape();
-    if (!wasCaptured && m_reshapeFocusValid && m_reshapeFocusItem.get())
+    if (!wasCaptured && m_reshapeFocusValid && m_reshapeFocusItem.get() && IsBodyRowInViewport(focusedRow))
     {
         m_reshapeFocusFollowsItem = true;
+        m_reshapeFocusMovedElsewhere = false;
+        RecordFocusRescueSource();
     }
 }
 
