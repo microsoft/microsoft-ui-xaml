@@ -4151,12 +4151,12 @@ _Check_return_ HRESULT VectorCollectionView::OnLivePropertyChanged(_In_ LiveProp
 namespace
 {
     // Estimated costs of a live restore (amd64fre, CollectionViewPerfBenchmarks; see the design note). An insert or
-    // remove shifts the presented list at ~14 ns a row and plans and raises the change in ~10 us; a flat re-sort on
+    // remove shifts the presented list at ~14 ns a row and plans and raises the change in ~30 us; a flat re-sort on
     // the cached keys announced as a Reset costs ~1.4 us a row, and a grouped recompute ~13 us a row. Moves keep the
     // realized rows, focus, scroll position and UIA tree, so they are preferred until they cost twice a Reset, or
     // while they fit a budget of a few frames.
     constexpr DOUBLE c_nsPerShiftedRow = 14;
-    constexpr DOUBLE c_nsPerChange = 10000;
+    constexpr DOUBLE c_nsPerChange = 30000;
     constexpr DOUBLE c_nsPerResortedRow = 1400;
     constexpr DOUBLE c_nsPerRecomputedRow = 13000;
     constexpr DOUBLE c_changeBudgetNs = 50000000;
