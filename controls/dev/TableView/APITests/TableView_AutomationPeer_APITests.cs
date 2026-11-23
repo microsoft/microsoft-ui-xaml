@@ -1428,6 +1428,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies FindItemByProperty(Name) finds an unrealized row by the name composed from its DisplayMemberBinding values.")]
+        public void VerifyFindItemByPropertyNameMatchesUnrealizedComposedName()
+        {
+            TableView tableView = null;
+            var items = MakeNamedPeople(200);
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateNamedPeopleTable(items);
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                const int target = 150;
+                var repeater = GetRowsRepeater(tableView);
+                Verify.IsNull(repeater.TryGetElement(target), "Precondition: the target row must not be realized.");
+
+                var probe = new ProviderPeerProbe();
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var composedName = $"Person {target}, Role {target}";
+                var found = probe.ToPeer(container.FindItemByProperty(null, AutomationElementIdentifiers.NameProperty, composedName));
+                Verify.IsNotNull(found, "FindItemByProperty(Name) must match an unrealized row's composed name.");
+                Verify.AreEqual(composedName, found.GetName());
+                Verify.AreSame(RowPeerOf(repeater.TryGetElement(target)), found, "FindItemByProperty must return the target row's peer.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a group header keeps an EventsSource the app installed on its peer when it re-syncs its group's element, as a row does.")]
         public void VerifyGroupHeaderKeepsAppInstalledEventsSource()
         {
