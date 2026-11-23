@@ -118,7 +118,6 @@ try
         '  BEGIN',
         '    BLOCK "040704b0"',
         '    BEGIN',
-        ('      VALUE "Comments", "SourceRevision={0}\0"' -f $defaultSourceRevision),
         '      VALUE "FileVersion", "3.2.0.2610\0"',
         '      VALUE "ProductVersion", "2.0\0"',
         '      VALUE "OriginalFilename", "Microsoft.ui.xaml.dll.mui\0"',
@@ -214,6 +213,25 @@ public static class LocalizedResourceFixture
         }
         Write-Output "PASS: localized MUI version '$version' preserves translated metadata."
     }
+    foreach ($revision in @($defaultSourceRevision, $otherSourceRevision))
+    {
+        & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary `
+            -Version '102.7.3.0' -SourceRevision $revision | Out-Null
+        $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary)
+        if ($info.Comments -cne "SourceRevision=$revision" -or $info.FileVersion -cne '102.7.3.0' -or
+            $info.ProductVersion -cne '102.7.3.0' -or
+            [LocalizedResourceFixture]::ReadString($localizedBinary) -cne 'Lokalisierte Zeichenfolge')
+        {
+            throw 'Stamping the localized source revision did not preserve versions and translated resources.'
+        }
+        Write-Output "PASS: localized MUI source revision '$revision' is added or updated."
+    }
+    & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary -Version '102.7.3.41' | Out-Null
+    if ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary).Comments -cne "SourceRevision=$otherSourceRevision")
+    {
+        throw 'Stamping only a localized version discarded the source revision.'
+    }
+    Write-Output 'PASS: version-only localized stamping preserves the source revision.'
 
     $invalidVersions = @(
         @{ Version = "10$([char]0x0662).6.6.21"; Message = 'is not a numeric four-part version' },
