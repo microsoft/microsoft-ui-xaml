@@ -3109,10 +3109,11 @@ _Check_return_ HRESULT VectorCollectionView::ProcessCollectionChanged(_In_ wfc::
         }
     }
 
+    // A failed recompute marks the view itself; one that only raised a failing handler leaves it consistent.
     const HRESULT hrUpdate = isApplied ? UpdateLiveShapingItems(change, index) : RefreshOrDefer();
     if (FAILED(hrUpdate))
     {
-        m_areSourceIndicesValid = false;
+        m_areSourceIndicesValid = m_areSourceIndicesValid && !isApplied;
         KeepFirstFailure(&hr, hrUpdate);
     }
     else
@@ -4152,8 +4153,8 @@ namespace
     // Estimated costs of a live restore (amd64fre, CollectionViewPerfBenchmarks; see the design note). An insert or
     // remove shifts the presented list at ~14 ns a row and plans and raises the change in ~10 us; a flat re-sort on
     // the cached keys announced as a Reset costs ~1.4 us a row, and a grouped recompute ~13 us a row. Moves keep the
-    // realized rows, focus, scroll position and UIA tree, so they are preferred while they cost less than a Reset or
-    // fit a budget of a few frames.
+    // realized rows, focus, scroll position and UIA tree, so they are preferred until they cost twice a Reset, or
+    // while they fit a budget of a few frames.
     constexpr DOUBLE c_nsPerShiftedRow = 14;
     constexpr DOUBLE c_nsPerChange = 10000;
     constexpr DOUBLE c_nsPerResortedRow = 1400;
@@ -4164,7 +4165,7 @@ namespace
     bool AreChangesPreferred(UINT64 changeCount, UINT rowsShifted, DOUBLE resetNs)
     {
         const DOUBLE changesNs = static_cast<DOUBLE>(changeCount) * (rowsShifted * c_nsPerShiftedRow + c_nsPerChange);
-        return changesNs <= std::max(resetNs, c_changeBudgetNs);
+        return changesNs <= std::max(2 * resetNs, c_changeBudgetNs);
     }
 
     // Marks a longest increasing subsequence of values: the items a reorder leaves in place.
