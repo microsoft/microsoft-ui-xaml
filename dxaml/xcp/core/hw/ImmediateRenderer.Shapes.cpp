@@ -20,7 +20,7 @@
 #include <cmath>
 
 using namespace RenderingBackend;
-using namespace ImmediateRenderingShapes;
+namespace irs = ImmediateRenderingShapes;
 
 namespace
 {
@@ -48,14 +48,14 @@ namespace
     }
 
     // Degenerate gradients fill with the last stop color (what Composition shows).
-    PaintKind Solid(const ColorF& color, float opacity, _Out_ Paint* paint) noexcept
+    irs::PaintKind Solid(const ColorF& color, float opacity, _Out_ irs::Paint* paint) noexcept
     {
         paint->brush = {};
         paint->stops.clear();
         paint->brush.kind = BrushKind::Solid;
         paint->brush.color = color;
         paint->brush.color.a *= opacity;
-        return paint->brush.color.a > 0 ? PaintKind::Paint : PaintKind::None;
+        return paint->brush.color.a > 0 ? irs::PaintKind::Paint : irs::PaintKind::None;
     }
 
     bool TryGetDouble(const CValue& value, _Out_ double* result) noexcept
@@ -188,7 +188,7 @@ namespace
         return true;
     }
 
-    PaintKind ResolveRadial(_In_ CBrush* brush, const RectF& bounds, float opacity, _Out_ Paint* paint, _Outptr_result_maybenull_ const wchar_t** detail)
+    irs::PaintKind ResolveRadial(_In_ CBrush* brush, const RectF& bounds, float opacity, _Out_ irs::Paint* paint, _Outptr_result_maybenull_ const wchar_t** detail)
     {
         namespace irm = ImmediateRenderingMaterials;
         const xstring_ptr typeName = XSTRING_PTR_FROM_STORAGE(c_radialGradientBrushStorage);
@@ -225,7 +225,7 @@ namespace
         }
         if (paint->stops.empty() || !(paint->brush.opacity > 0))
         {
-            return PaintKind::None;
+            return irs::PaintKind::None;
         }
         SortStops(paint->stops);
         if (paint->stops.size() == 1 || !(radiusX > 0) || !(radiusY > 0))
@@ -250,10 +250,10 @@ namespace
             paint->brush.transform = { bounds.right - bounds.left, 0, 0, bounds.bottom - bounds.top, bounds.left, bounds.top };
         }
         // XamlCompositionBrushBase rejects Transform/RelativeTransform, so there is nothing else to apply.
-        return PaintKind::Paint;
+        return irs::PaintKind::Paint;
     }
 
-    PaintKind ResolveLinear(_In_ CLinearGradientBrush* linear, const RectF& bounds, float opacity, _Out_ Paint* paint)
+    irs::PaintKind ResolveLinear(_In_ CLinearGradientBrush* linear, const RectF& bounds, float opacity, _Out_ irs::Paint* paint)
     {
         paint->brush = {};
         paint->stops.clear();
@@ -270,7 +270,7 @@ namespace
         }
         if (paint->stops.empty() || !(paint->brush.opacity > 0))
         {
-            return PaintKind::None;
+            return irs::PaintKind::None;
         }
         SortStops(paint->stops);
 
@@ -294,7 +294,7 @@ namespace
             : linear->m_nSpread == XcpGradientWrapModeTile ? GradientSpread::Repeat : GradientSpread::Pad;
         paint->brush.interpolation = linear->m_nInterpolate == XcpColorInterpolationModeScRgbLinearInterpolation
             ? GradientInterpolation::Linear : GradientInterpolation::SRgb;
-        return PaintKind::Paint;
+        return irs::PaintKind::Paint;
     }
 
     RenderingBackend::LineCap ToCap(XcpPenCap cap) noexcept
