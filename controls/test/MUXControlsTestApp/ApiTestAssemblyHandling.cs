@@ -19,6 +19,18 @@ namespace MUXControlsTestApp
     [TestClass]
     public class ApiTestAssemblyHandling
     {
+#if CSWINRT3_0
+        // TAEF's native CoreCLR host ignores runtimeconfig, and CsWinRT caches its feature switches on first use,
+        // so match the app's CsWinRTEnableOpaqueRcwMarshalling and (temporary) CsWinRTSuppressCustomPropertyNotSupportedException
+        // as soon as this assembly loads.
+        [System.Runtime.CompilerServices.ModuleInitializer]
+        internal static void InitializeCsWinRTSwitches()
+        {
+            AppContext.SetSwitch("CSWINRT_ENABLE_OPAQUE_RCW_MARSHALLING", true);
+            AppContext.SetSwitch("CSWINRT_SUPPRESS_CUSTOM_PROPERTY_NOT_SUPPORTED_EXCEPTION", true);
+        }
+#endif
+
         [AssemblyInitialize]
         [TestProperty("CoreClrProfile", "localDotNet")]
         [TestProperty("Classification", "Integration")]

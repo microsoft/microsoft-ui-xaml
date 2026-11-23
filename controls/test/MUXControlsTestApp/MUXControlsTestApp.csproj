@@ -37,6 +37,10 @@
       8305; <!-- 'x' is for evaluation purposes only and is subject to change or removal in future updates. -->
     </NoWarn>
     <NoWarn Condition="'$(UseCsWinRT3)' == 'true'">$(NoWarn);CSWINRT3005</NoWarn>
+    <!-- XAML's reference tracker requests CCWs for projected native objects (e.g. binding fallback); see ApiTestAssemblyHandling for the TAEF API host. -->
+    <CsWinRTEnableOpaqueRcwMarshalling Condition="'$(UseCsWinRT3)' == 'true'">true</CsWinRTEnableOpaqueRcwMarshalling>
+    <!-- Temporary: missing members on native binding sources must be "not found" rather than NotSupportedException until CsWinRT handles native wrappers. -->
+    <CsWinRTSuppressCustomPropertyNotSupportedException Condition="'$(UseCsWinRT3)' == 'true'">true</CsWinRTSuppressCustomPropertyNotSupportedException>
     <MSBuildWarningsAsMessages>
       CA1416; <!-- 'x' is supported on 'Windows' 10.0.18362.0 and later -->
     </MSBuildWarningsAsMessages>

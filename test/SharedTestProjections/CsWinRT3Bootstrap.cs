@@ -15,6 +15,10 @@ internal static class CsWinRT3Bootstrap
     {
         // Native activation must share TAEF's runtime and type-map assembly identities.
         AppContext.SetSwitch("CSWINRT_LOAD_COMPONENTS_IN_DEFAULT_ALC", true);
+        // TAEF's native CoreCLR host ignores runtimeconfig; XAML's reference tracker requests CCWs for projected native objects.
+        AppContext.SetSwitch("CSWINRT_ENABLE_OPAQUE_RCW_MARSHALLING", true);
+        // Temporary, matching CsWinRTSuppressCustomPropertyNotSupportedException in SharedTestProjections.csproj.
+        AppContext.SetSwitch("CSWINRT_SUPPRESS_CUSTOM_PROPERTY_NOT_SUPPORTED_EXCEPTION", true);
         if (Environment.Version.Major >= 11)
         {
             AppContext.SetData("System.Runtime.InteropServices.TypeMappingEntryAssembly", "SharedTestProjections");

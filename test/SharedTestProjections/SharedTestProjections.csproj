@@ -22,6 +22,10 @@
     <CsWinRTBuildForNativeConsumer>true</CsWinRTBuildForNativeConsumer>
     <CsWinRTEmitEntryPointInitializer>false</CsWinRTEmitEntryPointInitializer>
     <CsWinRTLoadComponentsInDefaultALC>true</CsWinRTLoadComponentsInDefaultALC>
+    <!-- XAML's reference tracker requests CCWs for projected native objects (e.g. binding fallback); TAEF-hosted runtimes set it in CsWinRT3Bootstrap. -->
+    <CsWinRTEnableOpaqueRcwMarshalling>true</CsWinRTEnableOpaqueRcwMarshalling>
+    <!-- Temporary: missing members on native binding sources must be "not found" rather than NotSupportedException until CsWinRT handles native wrappers. -->
+    <CsWinRTSuppressCustomPropertyNotSupportedException>true</CsWinRTSuppressCustomPropertyNotSupportedException>
     <CsWinRTWindowsMetadata />
     <WebView2UseWinRT>true</WebView2UseWinRT>
     <WebView2EnableCsWinRTProjection>true</WebView2EnableCsWinRTProjection>
