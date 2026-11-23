@@ -27,6 +27,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validate if TextEditTextChanged Events are being raised.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextEditTextChangedEventChangeTypes)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that TextEditTextChanged events with the None, Composition and CompositionFinalized change types reach UIA clients with that change type.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
     };
 
 } } } } } }

@@ -34,6 +34,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(TestCompare)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can call ITextRangeProvider::Compare correctly")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCustomTextRangeProviderMarshalling)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that UIA text range calls and their arguments and results are marshalled to and from an app-implemented ITextRangeProvider.")
+        END_TEST_METHOD()
     };
 
 } } } } } }

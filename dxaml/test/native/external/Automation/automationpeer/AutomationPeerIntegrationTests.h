@@ -102,6 +102,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyItemContainerFindItemByPropertyIds)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates ItemContainer FindItemByProperty for the Name, AutomationId, ControlType and IsSelected properties.")
+        END_TEST_METHOD()
+
     private:
 
         ref class CustomButtonAP sealed : public xaml_automation_peers::ButtonAutomationPeer

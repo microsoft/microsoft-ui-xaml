@@ -26,6 +26,46 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(VerifyLocalizedControlType)
             TEST_METHOD_PROPERTY(L"Description", L"Validates LocalizedControl type returned by XAML for a particular ControlType")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyBaseAutomationPeerDefaultCoreValues)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the default values a peer deriving directly from AutomationPeer reports when it overrides no Core method.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDefaultNavigateCoreWithCustomChildren)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the default NavigateCore implementation for first/last child, siblings, parent and an unsupported direction.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyLabeledByControlledPeersAndShowContextMenuThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that UIA clients see LabeledBy, ControllerFor and can call ShowContextMenu on a XAML element.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyDockGridAndTableProvidersThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that app-implemented Dock, Grid, GridItem and Table providers are marshalled to UIA clients.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyMultipleViewTransformAndInputProvidersThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that app-implemented MultipleView, Transform, Transform2, VirtualizedItem and SynchronizedInput providers are marshalled to UIA clients.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyWindowProviderThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that an app-implemented Window provider is marshalled to UIA clients.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyTextChildAnnotationAndTextProvidersThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that app-implemented Text, Text2, TextChild and Annotation providers are marshalled to UIA clients.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifySpreadsheetStylesObjectModelAndDragProvidersThroughUia)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that app-implemented Spreadsheet, SpreadsheetItem, Styles, ObjectModel and Drag providers are marshalled to UIA clients.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyCalendarDatePickerAutomationPeerPublicConstructor)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the public CalendarDatePickerAutomationPeer constructor.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyLocalizedControlTypeForFlipViewAndInvalidType)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the localized control type for FlipView and that an unknown control type is rejected.")
+        END_TEST_METHOD()
     };
 
 } } } } } }
