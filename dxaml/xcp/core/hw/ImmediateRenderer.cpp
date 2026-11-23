@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cmath>
 #include "ImmediateRenderer.Independent.h"
+#include <ImmediateAnimations.h>
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -586,6 +587,7 @@ ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
     , m_independent(std::make_unique<IndependentState>())
 {
     SetCaptureElementCallback(&ImmediateRenderer::CaptureElementCallback);
+    ImmediateAnimations::SetIsTargetImmediateCallback(&ImmediateRenderer::IsElementImmediateCallback); // ---- transitions
 }
 
 ImmediateRenderer::~ImmediateRenderer()
@@ -1705,6 +1707,10 @@ void ImmediateRenderer::EmitContent(
 
         ColorF backgroundColor;
         BrushResult backgroundResult = ResolveBrush(background.get(), 1.0f, &backgroundColor);
+        if (backgroundResult == BrushResult::Color)
+        {
+            TryGetTransitionColor(element, &backgroundColor); // ---- transitions: BrushTransition
+        }
         ColorF borderColor;
         const BrushResult borderResult = t > 0 ? ResolveBrush(border.get(), 1.0f, &borderColor) : BrushResult::None;
         if (auto imageBrush = do_pointer_cast<CImageBrush>(background.get()))
@@ -2106,7 +2112,7 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
             && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
         {
             CMILMatrix local;
-            (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+            (void)e->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
             m.Append(local);
         }
         return m;
@@ -2211,7 +2217,7 @@ void ImmediateRenderer::Walk(
                     && e->GetTypeIndex() != KnownTypeIndex::PopupRoot; e = e->GetUIElementAdjustedParentInternal(false))
                 {
                     CMILMatrix local;
-                    (void)e->GetLocalTransform(TransformRetrievalOptions::None, &local);
+                    (void)e->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
                     popupWorld.Append(local);
                 }
                 popupWorld.Append(parent.world);
@@ -2252,7 +2258,8 @@ void ImmediateRenderer::Walk(
     // scroller's offset). Hand-off visual clip changes (Composition InsetClip, mirrored by DCompPropertyChangedListener)
     // only dirty bounds, so subtrees with hand-off visuals are always walked.
     const bool usesHandOffVisual = element->IsUsingHandOffVisual();
-    if (usesHandOffVisual)
+    const bool hasTransitions = HasTransitions(element); // ---- transitions
+    if (usesHandOffVisual || hasTransitions)
     {
         ++list.uncacheable;
     }
@@ -2269,7 +2276,11 @@ void ImmediateRenderer::Walk(
     const uint32_t spanBegin = static_cast<uint32_t>(list.spans.size());
     const uint32_t uncacheableBefore = list.uncacheable;
 
-    const float localOpacity = element->GetOpacityLocal();
+    float localOpacity = element->GetOpacityLocal();
+    if (hasTransitions)
+    {
+        ApplyTransitions(element, &localOpacity);
+    }
     if (!(localOpacity > 0))
     {
         return;
@@ -2299,7 +2310,7 @@ void ImmediateRenderer::Walk(
 
     {
         CMILMatrix local;
-        if (!element->GetLocalTransform(TransformRetrievalOptions::None, &local))
+        if (!element->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local))
         {
             ctx.world = local;
             ctx.world.Append(parent.world);

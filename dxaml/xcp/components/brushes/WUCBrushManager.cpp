@@ -20,6 +20,8 @@
 #include "PropertyTransitions.h"
 #include "SharedTransitionAnimations.h"
 #include "DropShadowRecipe.h"
+#include <RenderingBackend.h>
+#include <ImmediateAnimations.h>
 
 SolidColorBrushTransitionState::~SolidColorBrushTransitionState()
 {
@@ -551,6 +553,29 @@ void WUCBrushManager::SetUpBrushTransitionIfAllowedHelper(
         && oldBrushIsNullOrStatic
         && !newBrush->IsEffectiveValueInSparseStorage(KnownPropertyIndex::SolidColorBrush_ColorAnimation))
     {
+        // ---- transitions: in an immediate-rendered window XAML runs the transition (linear ARGB interpolation, like
+        // the ColorKeyFrameAnimation started by GetColorBrush); a running transition hands off from its current color.
+        if (RenderingBackend::IsImmediateModeActive() && ImmediateAnimations::IsTargetImmediate(&element))
+        {
+            const XUINT32 fromArgb = oldBrush != nullptr ? oldBrush->m_rgb : (newBrush->m_rgb & 0x00ffffff);
+            const XUINT32 toArgb = newBrush->m_rgb;
+            auto channels = [](XUINT32 argb, float* out)
+            {
+                out[0] = static_cast<float>((argb >> 24) & 0xff);
+                out[1] = static_cast<float>((argb >> 16) & 0xff);
+                out[2] = static_cast<float>((argb >> 8) & 0xff);
+                out[3] = static_cast<float>(argb & 0xff);
+            };
+            float from4[4];
+            float to4[4];
+            channels(fromArgb, from4);
+            channels(toArgb, to4);
+            ImmediateAnimations::GetThreadStore().Start(&element, ImmediateAnimations::Channel::BackgroundColor, from4, to4, 0xF,
+                ImmediateAnimations::ClampDurationMicroseconds(duration.Duration), ImmediateAnimations::NowMicroseconds(),
+                ImmediateAnimations::Curve::Linear());
+            return;
+        }
+
         for (auto& transition : *m_wucColorBrushTransitions)
         {
             // Look for hand off scenarios. One example of hand off is when a green brush is changed to a yellow
@@ -605,6 +630,10 @@ void WUCBrushManager::CleanUpBrushTransition(
     const CUIElement& element,
     ElementBrushProperty elementBrushProperty)
 {
+    if (elementBrushProperty == ElementBrushProperty::Fill)
+    {
+        ImmediateAnimations::GetThreadStore().Cancel(&element, ImmediateAnimations::Channel::BackgroundColor); // ---- transitions
+    }
     for (auto iterator = m_wucColorBrushTransitions->begin(); iterator != m_wucColorBrushTransitions->end(); iterator++)
     {
         if (iterator->m_element == &element

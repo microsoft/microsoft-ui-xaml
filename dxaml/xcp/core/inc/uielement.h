@@ -107,7 +107,9 @@ enum class TransformRetrievalOptions : unsigned char
 {
     None = 0x0,
     IncludePropertiesSetInComposition = 0x1,
-    UseManipulationTargets = 0x2                // When getting a transform that is in the process of being manipulated return the target offsets instead of the current values
+    UseManipulationTargets = 0x2,               // When getting a transform that is in the process of being manipulated return the target offsets instead of the current values
+    // ---- transitions ----
+    ImmediateAnimatedValues = 0x4               // Immediate render walk: include XAML-evaluated property transitions (ImmediateAnimations)
 };
 DEFINE_ENUM_FLAG_OPERATORS(TransformRetrievalOptions);
 

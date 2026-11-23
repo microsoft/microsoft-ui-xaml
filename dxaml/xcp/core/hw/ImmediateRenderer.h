@@ -193,4 +193,12 @@ private:
     void CheckTargetChanges(_In_ CXamlIslandRoot* island, uint32_t frameNumber, uint32_t width, uint32_t height, float scale);
 
     std::unique_ptr<ImmediateRenderingDetail::IndependentState> m_independent;
+
+    // ---- transitions ----
+    // F10 (ImmediateRenderer.Transitions.cpp): XAML-owned property transitions evaluated by XAML.
+    static bool IsElementImmediateCallback(_In_ const void* element) noexcept;
+    static bool HasTransitions(_In_ CUIElement* element) noexcept;
+    // Applies running transitions (opacity override); requests the next frame. False once they finished.
+    static bool ApplyTransitions(_In_ CUIElement* element, _Inout_ float* opacity) noexcept;
+    static bool TryGetTransitionColor(_In_ CUIElement* element, _Inout_ RenderingBackend::ColorF* color) noexcept;
 };
