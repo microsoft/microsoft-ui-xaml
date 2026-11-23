@@ -3420,7 +3420,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var tableView = CreateTableViewShell(
                 names.Select(name => new Person { Name = name, Role = "Role" }).ToList(), 600, 260);
 
-            tableView.Columns.Add(MakeTextTemplateColumn(header, "Name", GridLength.Auto));
+            // Generated text cells, so density font changes reach the cells being Auto-sized.
+            tableView.Columns.Add(MakeDisplayMemberColumn(header, "Name", GridLength.Auto));
 
             return tableView;
         }

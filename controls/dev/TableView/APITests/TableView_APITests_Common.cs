@@ -192,6 +192,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return column;
         }
 
+        // A base column whose cells are the control-generated DisplayMemberBinding TextBlock bound to
+        // path, sorting on it. Use this, not MakeTextTemplateColumn, when a test relies on behaviour
+        // only generated text cells get (density font size and text padding). Width is left at the
+        // column default unless supplied.
+        internal static TableViewColumn MakeDisplayMemberColumn(string header, string path, GridLength? width = null)
+        {
+            var column = new TableViewColumn
+            {
+                Header = header,
+                SortMemberPath = path,
+                DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
+            };
+
+            if (width.HasValue)
+            {
+                column.Width = width.Value;
+            }
+
+            return column;
+        }
+
         // Plain text cells are not focus targets; a cell menu makes every cell actionable, so the
         // body can reach cell level.
         internal static void MakeCellsActionable(TableView tableView)
