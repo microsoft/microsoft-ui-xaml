@@ -3186,13 +3186,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
 
     // FocusManager.TryMoveFocus never raises the Tab KeyDown that moves an edit between cells, so these
-    // tests inject real key presses. The test app must be the foreground window to receive them.
+    // tests inject real key presses. Injected input goes to the foreground window, so the test window itself
+    // (not just any window of this process) must be active, and each press is confirmed to reach XAML.
     internal static class InjectedKeyboard
     {
         private const byte VkShift = 0x10;
         private const uint KeyEventKeyUp = 0x2;
-
-        private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+        private const int SwMinimize = 6;
+        private const int SwRestore = 9;
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -3200,20 +3201,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
 
-        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool EnumWindows(EnumWindowsProc callback, IntPtr lParam);
+        [global::System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern uint GetCurrentThreadId();
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool IsWindowVisible(IntPtr hwnd);
+        private static extern bool AttachThreadInput(uint attach, uint attachTo, bool doAttach);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool IsIconic(IntPtr hwnd);
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hwnd, int command);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hwnd);
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern void SwitchToThisWindow(IntPtr hwnd, bool altTab);
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll", CharSet = global::System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern int GetClassName(IntPtr hwnd, global::System.Text.StringBuilder className, int maxCount);
 
         [global::System.Runtime.InteropServices.DllImport("user32.dll")]
         private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
@@ -3222,10 +3232,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         internal static void PressF2() => Press(0x71, false);
 
+        // Activates the test window. Call before setting XAML focus so activation can't disturb it later.
+        internal static void EnsureTestWindowActive() => EnsureForeground(GetTestWindowHandle());
+
+        private static IntPtr GetTestWindowHandle()
+        {
+            IntPtr hwnd = IntPtr.Zero;
+            RunOnUIThread.Execute(() => hwnd = global::WinRT.Interop.WindowNative.GetWindowHandle(global::MUXControlsTestApp.App.CurrentWindow));
+            return hwnd;
+        }
+
         // Called off the UI thread; waits for idle so the key's handlers have run.
         private static void Press(byte virtualKey, bool shift)
         {
-            EnsureForeground();
+            IntPtr hwnd = GetTestWindowHandle();
+            int received = 0;
+            UIElement root = null;
+            KeyEventHandler onKey = (s, e) =>
+            {
+                if ((int)e.Key == virtualKey)
+                {
+                    global::System.Threading.Interlocked.Increment(ref received);
+                }
+            };
+            RunOnUIThread.Execute(() =>
+            {
+                root = global::MUXControlsTestApp.App.CurrentWindow.Content;
+                root.AddHandler(UIElement.PreviewKeyDownEvent, onKey, true);
+            });
+
+            try
+            {
+                // A key that never reached XAML had no effect, so sending it again is safe.
+                for (int attempt = 1; attempt <= 2 && global::System.Threading.Volatile.Read(ref received) == 0; attempt++)
+                {
+                    EnsureForeground(hwnd);
+                    SendKey(virtualKey, shift);
+
+                    // A Tab move to an off-screen row lands over several layout passes and posted callbacks.
+                    for (int i = 0; i < 4; i++)
+                    {
+                        IdleSynchronizer.Wait();
+                        global::System.Threading.Thread.Sleep(100);
+                    }
+
+                    if (global::System.Threading.Volatile.Read(ref received) == 0)
+                    {
+                        Log.Warning($"Injected key 0x{virtualKey:X2} did not reach XAML (attempt {attempt}). {Describe(hwnd)}");
+                    }
+                }
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => root.RemoveHandler(UIElement.PreviewKeyDownEvent, onKey));
+            }
+
+            Verify.IsTrue(global::System.Threading.Volatile.Read(ref received) > 0,
+                $"Injected key 0x{virtualKey:X2} must reach the test window. {Describe(hwnd)}");
+        }
+
+        private static void SendKey(byte virtualKey, bool shift)
+        {
             if (shift)
             {
                 keybd_event(VkShift, 0, 0, UIntPtr.Zero);
@@ -3236,53 +3303,69 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 keybd_event(VkShift, 0, KeyEventKeyUp, UIntPtr.Zero);
             }
-
-            // A Tab move to an off-screen row lands over several layout passes and posted callbacks.
-            for (int i = 0; i < 4; i++)
-            {
-                IdleSynchronizer.Wait();
-                global::System.Threading.Thread.Sleep(100);
-            }
         }
 
-        private static bool IsForegroundOurs()
+        // Matching on the process id alone isn't enough: another window of this process can hold the
+        // foreground and swallow the keys while the test window sits inactive.
+        private static void EnsureForeground(IntPtr hwnd)
         {
-            GetWindowThreadProcessId(GetForegroundWindow(), out uint processId);
-            return processId == (uint)global::System.Diagnostics.Process.GetCurrentProcess().Id;
-        }
-
-        private static void EnsureForeground()
-        {
-            if (IsForegroundOurs())
+            if (GetForegroundWindow() == hwnd)
             {
                 return;
             }
 
-            uint self = (uint)global::System.Diagnostics.Process.GetCurrentProcess().Id;
-            IntPtr window = IntPtr.Zero;
-            EnumWindows((hwnd, lParam) =>
+            Log.Comment($"Activating the test window before injecting keys. {Describe(hwnd)}");
+            for (int attempt = 0; attempt < 3 && GetForegroundWindow() != hwnd; attempt++)
             {
-                GetWindowThreadProcessId(hwnd, out uint processId);
-                if (processId == self && IsWindowVisible(hwnd))
-                {
-                    window = hwnd;
-                    return false;
-                }
-                return true;
-            }, IntPtr.Zero);
+                RunOnUIThread.Execute(() => global::MUXControlsTestApp.App.CurrentWindow.Activate());
 
-            for (int attempt = 0; attempt < 3 && window != IntPtr.Zero && !IsForegroundOurs(); attempt++)
-            {
-                const int SwMinimize = 6;
-                const int SwRestore = 9;
-                ShowWindow(window, SwMinimize);
-                ShowWindow(window, SwRestore);
-                SwitchToThisWindow(window, true);
-                SetForegroundWindow(window);
-                global::System.Threading.Thread.Sleep(500);
+                // Sharing the foreground thread's input state lets SetForegroundWindow past the foreground lock.
+                uint self = GetCurrentThreadId();
+                uint foregroundThread = GetWindowThreadProcessId(GetForegroundWindow(), out _);
+                bool attached = foregroundThread != 0 && foregroundThread != self && AttachThreadInput(self, foregroundThread, true);
+                try
+                {
+                    if (IsIconic(hwnd))
+                    {
+                        ShowWindow(hwnd, SwRestore);
+                    }
+                    BringWindowToTop(hwnd);
+                    SetForegroundWindow(hwnd);
+                }
+                finally
+                {
+                    if (attached)
+                    {
+                        AttachThreadInput(self, foregroundThread, false);
+                    }
+                }
+
+                if (attempt > 0 && GetForegroundWindow() != hwnd)
+                {
+                    ShowWindow(hwnd, SwMinimize);
+                    ShowWindow(hwnd, SwRestore);
+                    SwitchToThisWindow(hwnd, true);
+                    SetForegroundWindow(hwnd);
+                }
+
+                IdleSynchronizer.Wait();
+                global::System.Threading.Thread.Sleep(300);
             }
 
-            Verify.IsTrue(IsForegroundOurs(), "The test app must be the foreground window to receive injected keys.");
+            Verify.IsTrue(GetForegroundWindow() == hwnd, $"The test window must be the foreground window to receive injected keys. {Describe(hwnd)}");
+        }
+
+        private static string Describe(IntPtr testWindow)
+        {
+            IntPtr foreground = GetForegroundWindow();
+            GetWindowThreadProcessId(foreground, out uint processId);
+            var className = new global::System.Text.StringBuilder(256);
+            if (foreground != IntPtr.Zero)
+            {
+                GetClassName(foreground, className, className.Capacity);
+            }
+            int testProcessId = global::System.Diagnostics.Process.GetCurrentProcess().Id;
+            return $"Test window 0x{testWindow.ToInt64():X}; foreground 0x{foreground.ToInt64():X} class '{className}' pid {processId} (test pid {testProcessId}).";
         }
     }
 
@@ -3324,6 +3407,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static void OpenEditor(TableView table, object item, int columnIndex)
         {
+            InjectedKeyboard.EnsureTestWindowActive();
             RunOnUIThread.Execute(() => GetCellPeer(table, item, columnIndex).SetFocus());
             IdleSynchronizer.Wait();
             InjectedKeyboard.PressF2();
