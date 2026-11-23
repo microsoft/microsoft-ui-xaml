@@ -85,8 +85,136 @@ table serves as both the shared identity store and the cached full set that shap
 
 ## Class diagram
 
-Four diagrams, one per area: public surface, source layer and coordinator (below); then the spec,
-the engine, and the shaped tree with its row events. `ShapingManager` appears in each as the hub.
+An implementation-status overview comes first. Four detailed diagrams follow, one per area: public
+surface, source layer and coordinator; then the spec, the engine, and the shaped tree with its row
+events. `ShapingManager` appears in each as the hub.
+
+### Implementation status overview
+
+Status as of commit `c7dcde2922`. Every class in the original spec diagrams is implemented.
+
+- **Green:** a class from the spec diagrams, now implemented.
+- **Blue:** a class added during implementation, not in the original spec diagrams.
+- **Grey:** an existing control, outside `TableViewSource2`.
+
+Two classes changed shape without being new:
+- `ShapedCollectionView` implements `IItemsSourceView` natively instead of subclassing
+  `ItemsSourceView` (drift #118).
+- `ThreadBinding` moved to `Source/ThreadBinding.h`.
+
+The overview leaves out helpers that exist only inside a `.cpp`: `StaleOnThrow`, `Frame`,
+`BindableIndexIterator` and `PlaceholderItems`.
+
+```mermaid
+classDiagram
+    direction TB
+
+    class TableView { <<WinRT control>> }
+    class SourceOwnerSink { <<new, TableView.h>> }
+    class TableViewSource2 { <<WinRT runtimeclass>> }
+    class DeferRefreshHandle { <<WinRT IClosable>> }
+    class ShapingManager { <<coordinator>> }
+    class CommitScope { <<new, RAII>> }
+    class CommitState
+    class IShapingOwner { <<interface>> }
+    class IShapedExpansion { <<interface>> }
+    class IShapedRowsListener { <<interface>> }
+
+    class SourceTable
+    class ThreadBinding { <<moved to own header>> }
+    class CollectionAccessor2
+    class SourceRecord
+    class StrongRef { <<new, replaces tracker_ref>> }
+    class SourceChange
+    class ISourceHierarchyHost { <<interface>> }
+    class SourceHierarchy { <<abstract>> }
+    class ParentKeyHierarchy
+    class ChildCollectionsHierarchy
+    class ChildFeed
+
+    class ShapeSpec
+    class ShapeDelegates
+    class PathEvaluator
+
+    class ShapingEngine
+    class StagedEdit
+    class StagedLeave { <<new>> }
+    class StagedRecord
+    class ShapedTree
+    class ShapedNode { <<base>> }
+    class GroupNode
+    class ShapeState
+    class FenwickTree
+    class GroupExpansion
+
+    class ShapedRowQueries { <<read-only>> }
+    class ShapedCollectionView { <<native IItemsSourceView>> }
+    class ShapedRowMetadata { <<row metadata adapter>> }
+    class GroupedEntry { <<WinRT, v1 reuse>> }
+
+    TableView *-- SourceOwnerSink
+    SourceOwnerSink ..|> IShapingOwner
+    TableView ..> TableViewSource2 : ItemsSource
+    TableViewSource2 *-- ShapingManager
+    TableViewSource2 ..> DeferRefreshHandle
+    TableViewSource2 ..> IShapingOwner
+    ShapingManager ..> IShapingOwner
+    ShapingManager ..|> IShapedExpansion
+    ShapingManager ..|> IShapedRowsListener
+    ShapingManager *-- CommitState
+    ShapingManager ..> CommitScope : opens per commit
+    CommitScope ..> CommitState
+
+    ShapingManager *-- SourceTable
+    SourceTable *-- ThreadBinding : shared
+    SourceTable *-- CollectionAccessor2
+    SourceTable "1" *-- "0..*" SourceRecord
+    SourceRecord *-- StrongRef : Item
+    SourceTable ..> SourceChange
+    SourceTable ..|> ISourceHierarchyHost
+    SourceTable *-- SourceHierarchy
+    SourceHierarchy ..> ISourceHierarchyHost
+    SourceHierarchy <|-- ParentKeyHierarchy
+    SourceHierarchy <|-- ChildCollectionsHierarchy
+    ChildCollectionsHierarchy "1" *-- "0..*" ChildFeed
+    ChildFeed *-- CollectionAccessor2
+    ChildFeed "1" *-- "0..*" SourceRecord
+
+    ShapingManager *-- ShapeSpec
+    ShapingManager *-- ShapeDelegates
+    ShapingManager *-- PathEvaluator
+
+    ShapingManager *-- ShapingEngine
+    ShapingEngine ..> StagedEdit
+    ShapingEngine ..> StagedLeave
+    StagedEdit *-- StagedRecord
+    ShapingEngine *-- ShapedTree
+    ShapingEngine "1" *-- "0..*" GroupNode
+    ShapedTree *-- GroupNode : root
+    ShapedTree *-- GroupExpansion
+    ShapedTree --> IShapedRowsListener
+    ShapedNode <|-- GroupNode
+    ShapedNode <|-- SourceRecord
+    ShapedNode *-- FenwickTree : ChildRows
+    SourceRecord *-- ShapeState
+
+    ShapingManager *-- ShapedRowQueries
+    ShapingManager o-- ShapedCollectionView
+    ShapingManager o-- ShapedRowMetadata
+    ShapedCollectionView ..> ShapedRowQueries
+    ShapedCollectionView ..> GroupedEntry
+    ShapedRowMetadata ..> ShapedRowQueries
+    ShapedRowMetadata ..> IShapedExpansion
+
+    classDef done fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef newcls fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef existing fill:#eeeeee,stroke:#757575,color:#000
+    cssClass "TableViewSource2,DeferRefreshHandle,ShapingManager,CommitState,IShapingOwner,IShapedExpansion,IShapedRowsListener,SourceTable,ThreadBinding,CollectionAccessor2,SourceRecord,SourceChange,ISourceHierarchyHost,SourceHierarchy,ParentKeyHierarchy,ChildCollectionsHierarchy,ChildFeed,ShapeSpec,ShapeDelegates,PathEvaluator,ShapingEngine,StagedEdit,StagedRecord,ShapedTree,ShapedNode,GroupNode,ShapeState,FenwickTree,GroupExpansion,ShapedRowQueries,ShapedCollectionView,ShapedRowMetadata,GroupedEntry" done
+    cssClass "SourceOwnerSink,CommitScope,StrongRef,StagedLeave" newcls
+    cssClass "TableView" existing
+```
+
+### Detailed diagrams
 
 <details>
 <summary><b>Public surface, source layer and coordinator</b></summary>
