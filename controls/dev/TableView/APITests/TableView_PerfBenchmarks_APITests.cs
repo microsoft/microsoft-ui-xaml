@@ -368,14 +368,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     internal sealed class BenchTeamGroupDescription : GroupDescription
     {
-        protected override object GroupNameFromItem(object item, int level, string culture) => ((BenchRow)item).Team1k;
+        protected override object GroupNameFromItemCore(object item, int level, string culture) => ((BenchRow)item).Team1k;
     }
 
     internal sealed class BenchTeamNamesMatchGroupDescription : GroupDescription
     {
-        protected override object GroupNameFromItem(object item, int level, string culture) => ((BenchRow)item).Team1k;
+        protected override object GroupNameFromItemCore(object item, int level, string culture) => ((BenchRow)item).Team1k;
 
-        protected override bool NamesMatch(object groupName, object itemName) => string.Equals((string)groupName, (string)itemName, StringComparison.Ordinal);
+        protected override bool NamesMatchCore(object groupName, object itemName) => string.Equals((string)groupName, (string)itemName, StringComparison.Ordinal);
     }
 
     internal sealed class BenchRow : INotifyPropertyChanged

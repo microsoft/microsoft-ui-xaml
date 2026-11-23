@@ -353,6 +353,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify the CollectionViewSource Filter event filters the view and replaces the view's Filter delegate while it has handlers, as WPF's does")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceFilterEventDoesNotLeak)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a CollectionViewSource with Filter event handlers and its view are destroyed once released (no native reference cycle), and a view kept alone keeps filtering")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(CollectionViewSourceDescriptorPropertySystem)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify a held SortDescription stays sealed and Direction and StringComparison stay valid through SetValue, as through the setters, and GroupNames can be declared in XAML")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CollectionViewSourceGetDefaultView)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
             END_TEST_METHOD()

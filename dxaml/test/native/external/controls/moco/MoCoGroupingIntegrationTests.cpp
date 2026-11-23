@@ -1807,4 +1807,182 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
     }
 
+    // A grouped ListView over a CollectionViewSource view of fruit names, grouped by first letter, in the window.
+    static xaml_controls::ListView^ CreateFruitListView(xaml_data::CollectionViewSource^* pCvs, Platform::Collections::Vector<Platform::Object^>^* pSource)
+    {
+        auto list = ref new xaml_controls::ListView();
+        list->Width = 400;
+        list->Height = 600;
+        auto groupStyle = ref new xaml_controls::GroupStyle();
+        groupStyle->HeaderTemplate = safe_cast<Microsoft::UI::Xaml::DataTemplate^>(xaml_markup::XamlReader::Load(
+            L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding Key}'/></DataTemplate>"));
+        list->GroupStyle->Append(groupStyle);
+
+        auto source = ref new Platform::Collections::Vector<Platform::Object^>();
+        for (auto name : { L"apple", L"banana", L"avocado", L"cherry", L"blueberry" })
+        {
+            source->Append(ref new Platform::String(name));
+        }
+
+        auto cvs = ref new xaml_data::CollectionViewSource();
+        cvs->Source = source;
+        list->ItemsSource = cvs->View;
+        auto rootPanel = ref new xaml_controls::Grid();
+        rootPanel->Children->Append(list);
+        test_infra::TestServices::WindowHelper->WindowContent = rootPanel;
+        *pCvs = cvs;
+        *pSource = source;
+        return list;
+    }
+
+    void MoCoGroupingIntegrationTests::GroupingOffInPlaceWithFocusedItem()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            cvs->GroupDescriptions->Append(ref new xaml_data::PropertyGroupDescription(L"", ref new FirstLetterGroupConverter()));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(list->IsGrouping);
+            safe_cast<xaml_controls::ListViewItem^>(list->ContainerFromIndex(1))->Focus(Microsoft::UI::Xaml::FocusState::Keyboard);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"Grouping stops in place: IsGrouping follows at once, before the next measure.");
+            cvs->GroupDescriptions->Clear();
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+            VERIFY_IS_FALSE(list->IsGrouping);
+        });
+
+        LOG_OUTPUT(L"Keyboard navigation right after reads no groups.");
+        TestServices::KeyboardHelper->Down();
+        TestServices::KeyboardHelper->PageDown();
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(5u, list->Items->Size);
+        });
+    }
+
+    void MoCoGroupingIntegrationTests::GroupingToggledFromCallbacks()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+        bool isGroupedFromSourceChange = false;
+        bool isUngroupedFromContainerContentChanging = false;
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            source->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Platform::Object^>(
+                [&](::Windows::Foundation::Collections::IObservableVector<Platform::Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^)
+                {
+                    if (!isGroupedFromSourceChange)
+                    {
+                        isGroupedFromSourceChange = true;
+                        cvs->GroupDescriptions->Append(ref new xaml_data::PropertyGroupDescription(L"", ref new FirstLetterGroupConverter()));
+                    }
+                });
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A source VectorChanged handler starts grouping while the source raises.");
+            source->Append(ref new Platform::String(L"cranberry"));
+            VERIFY_IS_TRUE(isGroupedFromSourceChange);
+            VERIFY_IS_NOT_NULL(cvs->View->CollectionGroups);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(6u, list->Items->Size);
+
+            LOG_OUTPUT(L"A ContainerContentChanging handler stops grouping during layout.");
+            list->ContainerContentChanging += ref new wf::TypedEventHandler<xaml_controls::ListViewBase^, xaml_controls::ContainerContentChangingEventArgs^>(
+                [&](xaml_controls::ListViewBase^, xaml_controls::ContainerContentChangingEventArgs^)
+                {
+                    if (!isUngroupedFromContainerContentChanging)
+                    {
+                        isUngroupedFromContainerContentChanging = true;
+                        cvs->GroupDescriptions->Clear();
+                    }
+                });
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Descending));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(isUngroupedFromContainerContentChanging);
+            VERIFY_IS_NULL(cvs->View->CollectionGroups);
+            VERIFY_IS_FALSE(list->IsGrouping);
+            VERIFY_ARE_EQUAL(6u, list->Items->Size);
+            VERIFY_IS_NOT_NULL(list->ContainerFromIndex(0));
+        });
+    }
+
+    void MoCoGroupingIntegrationTests::ReorderIsOffOverSortedView()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Ascending));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()));
+            list->SelectedIndex = 0;
+            safe_cast<xaml_controls::ListViewItem^>(list->ContainerFromIndex(0))->Focus(Microsoft::UI::Xaml::FocusState::Programmatic);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Keyboard reorder (Alt+Shift+Down) over a sorted view changes nothing: the view decides the order.");
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$d$_alt#$d$_shift");
+        }
+        TestServices::KeyboardHelper->Down();
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$u$_shift#$u$_alt");
+        }
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(5u, source->Size);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+        });
+    }
+
 }}}}}}
