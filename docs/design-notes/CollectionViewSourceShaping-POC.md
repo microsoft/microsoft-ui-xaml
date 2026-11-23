@@ -333,12 +333,17 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     recompute (one `Reset`); if that fails too, the view keeps its output and recomputes on the next change. The
     failure is reported to `Application.UnhandledException` with the app's error info (its message and stack), as
     for app code a dispatcher callback runs; unhandled, it ends the app. WPF lets it propagate from
-    `CollectionChanged`. `E_OUTOFMEMORY` and `RPC_E_WRONG_THREAD` are not contained: they stop the change.
+    `CollectionChanged`. Only a failure that carries error info (an exception app code threw) is reported; a bare
+    `HRESULT` from a framework listener of the view is contained without a report. The report runs inside the
+    source's change notification, so an `UnhandledException` handler that changes the same source re-enters it (an
+    `ObservableCollection` throws). `E_OUTOFMEMORY` and `RPC_E_WRONG_THREAD` are not contained: they stop the change.
   - A live restore (a dispatcher callback): the same; the items placed before the failure stay placed.
 - **Incremental loading.** A shaped view forwards `HasMoreItems` and `LoadMoreItemsAsync` to the collection it shapes
   when that implements `ISupportIncrementalLoading`; the loaded items arrive as source changes and are placed by the
   rules like any other. A filter that rejects the loaded items would make a consumer load until the source is
-  drained, so after 3 loads in a row that added nothing to the view, `HasMoreItems` is false until the view grows.
+  drained, so after 10 loads in a row that grew the source but not the view, `HasMoreItems` is false until the view
+  grows or is recomputed (a rule change, `Refresh()`, a new source). A filter that matches less than once in 10
+  pages stops early; the source's own `HasMoreItems` is unaffected.
   `LoadMoreItemsResult.Count` is the source's count, not the view's.
 - **Group notifications.** A computed group raises `PropertyChanged("ItemCount")` when an item joins or leaves it, as
   WPF's `CollectionViewGroup` does, so `{Binding ItemCount}` in a group header stays current.
@@ -413,8 +418,11 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
    `CustomSort` and `Culture` stay `PropertyOnly` (a delegate is not set in markup; see "Naming" for `Culture`). The
    XBF type, property and event tables were appended to by `runcodegen` (no reordering). `CollectionViewSource_Filter`
    is event 340, the index `FilterRequested` had in batches 1-2 (it never shipped, so it was reused, not tombstoned);
-   `GroupDescription_GroupNames` is property 2490. A `SortDescription` held by a collection is sealed in the property
-   system too: a markup or binding change is undone and fails.
+   `GroupDescription_GroupNames` is property 2490 (a compiled-XAML test page loads it from XBF). A `SortDescription`
+   held by a collection is sealed in the property system too: a markup or binding change to it, or an invalid
+   `Direction` or `StringComparison`, is undone. Only the effective value is restored, so the binding, style or
+   ThemeResource stays attached (as when a binding's conversion fails); the rejection is logged as a binding failure
+   (`DebugSettings.BindingFailed`).
 5. **Descriptors are `DependencyObject`s, like `AutomationAnnotation` and `Setter`.** A default constructor plus a
    convenience constructor, settable properties, creatable from markup. They are UI-thread objects (the free-threaded
    immutable classes they replace could not be created in markup). `GroupDescription` copies `NavigationTransitionInfo`
@@ -628,8 +636,11 @@ cvs.Refresh();                                                                  
   at its new index without raising `SelectionChanged` (the item is still in the view's `SourceCollection`, so it was
   moved, not deleted). Keyboard focus follows the item too: when the focused row is removed and its item is still in
   the source, or the view raises a `Reset` on its own (a mass live restore, an app's rule change), focus is put back
-  on the item's new row at the end of the turn (scrolled into view when needed). TableView's own header sort keeps
-  focus at the same row index, as before.
+  on the item's new row at the end of the turn. The focused row is found where it is when the change arrives (rows
+  inserted, removed or moved above it shift it), and a removal of several rows counts if it contains it. Focus does
+  not follow when the row was scrolled out of view before the change (the viewport is not moved for it), or when the
+  app or user moved focus elsewhere in the same turn (ItemsRepeater's own move of focus off the recycled row does not
+  count). TableView's own header sort keeps focus at the same row index, as before.
 - **Plain collection.** TableView wraps it in an internal `CollectionViewSource` and shows that `View` (see "One
   engine" below), so a header click on a plain collection takes exactly the path above.
 - **`ICollectionView` without `ICollectionViewShaping`.** An app's own view (for example the Toolkit's
@@ -713,6 +724,9 @@ filters or groups; the view never flattens, because expansion state is per contr
   keys are read, it joins or leaves its sibling list at its place in the view's order, and its row is spliced in or out
   of the visible rows. What that cannot localize (a row with children leaving, a row whose key orphaned rows name,
   object keys, a duplicate, a tree under a grouped view, a `Reset`) rebuilds the tree, at most once per dispatcher turn.
+  The flattener owns the index and is its only writer; everything is located before anything changes, and a view
+  change made by app code (a key selector, a row handler) while one is applied makes it fall back to a rebuild. The
+  expansion intent of a removed row is dropped at the end of the turn unless the row came back (a move).
 
 Row identity is the item's COM identity. A header sort keeps the selection on its item (the selected item is found
 again after the view reorders) and restores body focus; `Sorting` / `Sorted`, the arrow reconcile and
@@ -882,8 +896,11 @@ the rows' layout) has not been profiled yet.
   to the view's `PropertyChanged("CollectionGroups")`. Changing `IsSourceGrouped` still gives the CVS a new `View`.
 - **Reorder.** `ListViewBase` drag-reorder calls `RemoveAt` / `InsertAt` on the items source
   (`ListViewBase_Partial_Reorder.cpp:1498-1499`). Shaped views are read-only, so, as for grouped views, reorder is
-  off while `ItemsSource` is a shaped view or an app `ICollectionViewShaping` view with a sort or a filter
-  (`IsNotGroupingAndHostIsLookupPanel`). WPF also blocks reorder on sorted views.
+  off while `ItemsSource` is a shaped view or an app `ICollectionViewShaping` view with a sort or a filter: keyboard
+  reorder, drop, drag start, the live reorder animation and the item's reorder hints all ask
+  `GetCanReorderItemsOverItemsSource`. WPF also blocks reorder on sorted views. A shaped view whose rules were all
+  removed presents its source in order again; while it does (and has no pending recompute) its index writes go to the
+  source, as WPF's view does once it no longer needs a local array, so reorder works again.
 - **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
   selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat
   and grouped views.
