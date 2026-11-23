@@ -1602,12 +1602,14 @@ dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
 
 ## Data collection
 
-The app, `WinUIProfiler.Cli` and the MCP server can send a few usage events to
+The app, `WinUIProfiler.Cli` and the MCP server send a few usage events to
 Microsoft, to show the WinUI team how many people use the profiler and which
-features they use. Builds from this repository send nothing: telemetry is on
-only when `WINUI_TOOLS_TELEMETRY_CONNECTION_STRING` names an Application
-Insights resource, which only internal distributions set. Set
-`WINUI_TOOLS_TELEMETRY_OPTOUT=1` to turn it off.
+features they use. Events go to the WinUI tools telemetry endpoint with a
+Microsoft Entra token, which Windows gives a signed-in Microsoft work account
+without a prompt. Where Windows has no such account, nothing is sent. No key
+ships with the tools. The endpoint records no location. It records a keyed hash
+of the sender's Entra object ID, so that one person's use counts once across
+machines and tools. Set `WINUI_TOOLS_TELEMETRY_OPTOUT=1` to turn it off.
 
 When it is on, the first run shows a notice (in the app, or on standard error
 for the CLI), and the tools send these events, each with the tool's version and

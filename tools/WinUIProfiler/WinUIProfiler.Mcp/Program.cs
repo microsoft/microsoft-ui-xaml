@@ -78,7 +78,7 @@ internal static class Program
 
     private static async Task RunServerAsync()
     {
-        UsageTelemetry.Initialize("profiler", "mcp", ServerVersion.Value);
+        UsageTelemetry.Initialize("profiler", "mcp", ServerVersion.Value, onByDefault: true);
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         AddServer(builder.Services).WithStdioServerTransport();

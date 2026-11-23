@@ -19,7 +19,8 @@ internal static class Program
     private static int Main(string[] args)
     {
         UsageTelemetry.Initialize("profiler", "cli",
-            typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "");
+            typeof(Program).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "",
+            onByDefault: true);
         if (UsageTelemetry.TakeNotice() is { } notice)
         {
             Console.Error.WriteLine(notice);

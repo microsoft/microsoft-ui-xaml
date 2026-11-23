@@ -6,28 +6,28 @@ using System.Net;
 using System.Text.Json.Nodes;
 using WinUITools.Telemetry;
 
-// The usage telemetry helper: off without a connection string or when opted out, the Application Insights envelope with
-// the common properties first, one install ID and one notice for each user, and no waiting, throwing or standard output.
+// The usage telemetry helper: off without an endpoint unless on by default, off when opted out, the Application
+// Insights envelope with the common properties first and the sign-in token instead of a key, one install ID and one
+// notice for each user, and no waiting, throwing or standard output.
 internal static class UsageTelemetryTests
 {
-    private const string ConnectionStringVariable = "WINUI_TOOLS_TELEMETRY_CONNECTION_STRING";
+    private const string EndpointVariable = "WINUI_TOOLS_TELEMETRY_ENDPOINT";
     private const string OptOutVariable = "WINUI_TOOLS_TELEMETRY_OPTOUT";
     private const string ChannelVariable = "WINUI_TOOLS_CHANNEL";
-    private const string Key = "00000000-0000-0000-0000-000000000001";
-    private const string ConnectionString =
-        $"InstrumentationKey={Key};IngestionEndpoint=https://telemetry.invalid/;LiveEndpoint=https://live.invalid/";
+    private const string Endpoint = "https://telemetry.invalid/";
 
     internal static void Run()
     {
-        var saved = new[] { ConnectionStringVariable, OptOutVariable, ChannelVariable }
+        var saved = new[] { EndpointVariable, OptOutVariable, ChannelVariable }
             .ToDictionary(name => name, Environment.GetEnvironmentVariable);
         var output = Console.Out;
         using var standardOutput = new StringWriter();
         Console.SetOut(standardOutput);
         try
         {
-            OffWithoutConnectionString();
+            OffWithoutEndpoint();
             OffWhenOptedOutOrInvalid();
+            OnByDefault();
             SendsTheEnvelope();
             NeverWaitsForTheNetwork();
         }
@@ -42,48 +42,70 @@ internal static class UsageTelemetryTests
         }
 
         Expect(standardOutput.ToString().Length == 0, "Usage telemetry must not write to standard output.");
-        Console.WriteLine("Passed: usage telemetry is off by default and when opted out, sends one envelope per event, " +
-            "and never waits for the network, throws or writes to standard output.");
+        Console.WriteLine("Passed: usage telemetry is off without an endpoint unless on by default, and when opted out, " +
+            "sends one envelope per event with the sign-in token, and never waits for the network, throws or writes to " +
+            "standard output.");
     }
 
-    private static void OffWithoutConnectionString()
+    private static void OffWithoutEndpoint()
     {
         var folder = NewFolder();
         var handler = new RecordingHandler(hang: false);
-        Environment.SetEnvironmentVariable(ConnectionStringVariable, null);
+        Environment.SetEnvironmentVariable(EndpointVariable, null);
         Environment.SetEnvironmentVariable(OptOutVariable, null);
         UsageTelemetry.Reset();
-        UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler);
+        UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler, Token);
         UsageTelemetry.Track("Profiler.CliCommand");
         UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
         Expect(!UsageTelemetry.IsEnabled && UsageTelemetry.TakeNotice() is null && handler.Requests.Count == 0 &&
-            !Directory.Exists(folder), "Without a connection string, usage telemetry must be off and create no files.");
+            !Directory.Exists(folder), "Without an endpoint, usage telemetry must be off and create no files.");
     }
 
     private static void OffWhenOptedOutOrInvalid()
     {
-        foreach (var (connectionString, optOut) in new (string, string?)[]
+        foreach (var (endpoint, optOut) in new (string, string?)[]
         {
-            (ConnectionString, "1"),
-            ($"InstrumentationKey={Key};IngestionEndpoint=http://telemetry.invalid/", null),
-            ("IngestionEndpoint=https://telemetry.invalid/", null),
-            ($"InstrumentationKey=not-a-key;IngestionEndpoint=https://telemetry.invalid/", null),
-            ($"InstrumentationKey={Key}", null),
+            (Endpoint, "1"),
+            ("http://telemetry.invalid/", null),
+            ("telemetry.invalid", null),
         })
         {
             var folder = NewFolder();
             var handler = new RecordingHandler(hang: false);
-            Environment.SetEnvironmentVariable(ConnectionStringVariable, connectionString);
+            Environment.SetEnvironmentVariable(EndpointVariable, endpoint);
             Environment.SetEnvironmentVariable(OptOutVariable, optOut);
             UsageTelemetry.Reset();
-            UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler);
+            UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler, Token, onByDefault: true);
             UsageTelemetry.Track("Profiler.CliCommand");
             UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
             Expect(!UsageTelemetry.IsEnabled && handler.Requests.Count == 0 && !Directory.Exists(folder),
-                $"Usage telemetry must stay off for '{connectionString}' with opt-out '{optOut}'.");
+                $"Usage telemetry must stay off for '{endpoint}' with opt-out '{optOut}'.");
         }
 
         Environment.SetEnvironmentVariable(OptOutVariable, null);
+    }
+
+    // The profiler's tools are on by default: without any setting they send to the WinUI tools endpoint over https.
+    private static void OnByDefault()
+    {
+        var folder = NewFolder();
+        try
+        {
+            var handler = new RecordingHandler(hang: false);
+            Environment.SetEnvironmentVariable(EndpointVariable, null);
+            UsageTelemetry.Reset();
+            UsageTelemetry.Initialize("profiler", "app", "0.1.0", folder, handler, Token, onByDefault: true);
+            UsageTelemetry.Track("Profiler.ViewOpened");
+            UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+            Expect(handler.Requests.Count == 1 && handler.Requests[0].Uri is { Scheme: "https" } uri &&
+                uri.AbsolutePath.EndsWith("/v2/track", StringComparison.Ordinal),
+                "On by default, usage telemetry must send to the WinUI tools endpoint without any setting.");
+        }
+        finally
+        {
+            UsageTelemetry.Reset();
+            Delete(folder);
+        }
     }
 
     private static void SendsTheEnvelope()
@@ -91,12 +113,12 @@ internal static class UsageTelemetryTests
         var folder = NewFolder();
         try
         {
-            Environment.SetEnvironmentVariable(ConnectionStringVariable, ConnectionString);
+            Environment.SetEnvironmentVariable(EndpointVariable, Endpoint);
             Environment.SetEnvironmentVariable(ChannelVariable, "test");
             var handler = new RecordingHandler(hang: false);
             UsageTelemetry.Reset();
-            UsageTelemetry.Initialize("profiler", "mcp", "0.1.0+0123456789abcdef", folder, handler);
-            Expect(UsageTelemetry.IsEnabled, "A valid connection string must turn usage telemetry on.");
+            UsageTelemetry.Initialize("profiler", "mcp", "0.1.0+0123456789abcdef", folder, handler, Token);
+            Expect(UsageTelemetry.IsEnabled, "An https endpoint must turn usage telemetry on.");
             Expect(UsageTelemetry.TakeNotice() is { Length: > 0 } && UsageTelemetry.TakeNotice() is null,
                 "The notice must be shown once.");
             UsageTelemetry.Track("Profiler.McpToolCall",
@@ -105,20 +127,21 @@ internal static class UsageTelemetryTests
             UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
             Expect(handler.Requests.Count == 1, "Each event must be sent once.");
 
-            var (uri, body) = handler.Requests[0];
-            Expect(uri?.AbsoluteUri == "https://telemetry.invalid/v2/track",
-                "Events must be posted to v2/track of the connection string's ingestion endpoint.");
+            var (uri, body, authorization) = handler.Requests[0];
+            Expect(uri?.AbsoluteUri == "https://telemetry.invalid/v2/track" && authorization == "Bearer token-1",
+                "Events must be posted to v2/track of the endpoint with the sign-in token.");
             var envelope = JsonNode.Parse(body)!;
             var tags = envelope["tags"]!;
             var data = envelope["data"]!;
             var baseData = data["baseData"]!;
             var installId = File.ReadAllText(Path.Combine(folder, "install-id"));
-            Expect((string?)envelope["name"] == "Microsoft.ApplicationInsights.Event" && (string?)envelope["iKey"] == Key &&
+            Expect((string?)envelope["name"] == "Microsoft.ApplicationInsights.Event" && envelope["iKey"] is null &&
                 Guid.TryParse(installId, out _) && (string?)tags["ai.user.id"] == installId &&
                 Guid.TryParse((string?)tags["ai.session.id"], out _) && (string?)tags["ai.application.ver"] == "0.1.0" &&
                 (string?)data["baseType"] == "EventData" && (int?)baseData["ver"] == 2 &&
                 (string?)baseData["name"] == "Profiler.McpToolCall",
-                "Events must use the Application Insights envelope with the install ID, a session ID and the version.");
+                "Events must use the Application Insights envelope, without a key, with the install ID, a session ID and " +
+                "the version.");
 
             var isCI = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TF_BUILD")) ||
                 !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
@@ -130,7 +153,7 @@ internal static class UsageTelemetryTests
                 "Only finite measurements must be sent.");
 
             UsageTelemetry.Reset();
-            UsageTelemetry.Initialize("migrate", "cli", "0.2.4", folder, handler);
+            UsageTelemetry.Initialize("migrate", "cli", "0.2.4", folder, handler, Token);
             UsageTelemetry.Track("Migrate.Command");
             UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
             Expect(handler.Requests.Count == 2 &&
@@ -151,10 +174,10 @@ internal static class UsageTelemetryTests
         var folder = NewFolder();
         try
         {
-            Environment.SetEnvironmentVariable(ConnectionStringVariable, ConnectionString);
+            Environment.SetEnvironmentVariable(EndpointVariable, Endpoint);
             var handler = new RecordingHandler(hang: true);
             UsageTelemetry.Reset();
-            UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler);
+            UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler, Token);
             var watch = Stopwatch.StartNew();
             UsageTelemetry.Track("Profiler.CliCommand");
             var tracked = watch.Elapsed;
@@ -168,6 +191,9 @@ internal static class UsageTelemetryTests
             Delete(folder);
         }
     }
+
+    // The token Windows would give the signed-in account.
+    private static Task<string?> Token() => Task.FromResult<string?>("token-1");
 
     private static string NewFolder() =>
         Path.Combine(Path.GetTempPath(), $"WinUIProfiler-UsageTelemetry-{Guid.NewGuid():N}");
@@ -191,9 +217,9 @@ internal static class UsageTelemetryTests
     // Records each request instead of sending it; when hang is set, never answers, like an unreachable network.
     private sealed class RecordingHandler(bool hang) : HttpMessageHandler
     {
-        private readonly List<(Uri? Uri, string Body)> requests = [];
+        private readonly List<(Uri? Uri, string Body, string? Authorization)> requests = [];
 
-        public IReadOnlyList<(Uri? Uri, string Body)> Requests
+        public IReadOnlyList<(Uri? Uri, string Body, string? Authorization)> Requests
         {
             get
             {
@@ -210,7 +236,7 @@ internal static class UsageTelemetryTests
             var body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
             lock (requests)
             {
-                requests.Add((request.RequestUri, body));
+                requests.Add((request.RequestUri, body, request.Headers.Authorization?.ToString()));
             }
 
             if (hang)

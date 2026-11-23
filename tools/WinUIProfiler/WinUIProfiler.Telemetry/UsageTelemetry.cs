@@ -6,21 +6,32 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Broker;
 
 namespace WinUITools.Telemetry;
 
 /// <summary>
-/// Sends a few usage events to one Application Insights resource. Telemetry is off unless
-/// WINUI_TOOLS_TELEMETRY_CONNECTION_STRING is set, and WINUI_TOOLS_TELEMETRY_OPTOUT=1 turns it off. No method throws,
-/// waits for the network on the caller's thread, or writes to standard output, which carries the MCP protocol.
+/// Sends a few usage events to the WinUI tools telemetry endpoint, which forwards them to Application Insights.
+/// Telemetry is off unless WINUI_TOOLS_TELEMETRY_ENDPOINT is set or the tool turns it on by default, and
+/// WINUI_TOOLS_TELEMETRY_OPTOUT=1 turns it off. Each send carries a Microsoft Entra token that Windows gives the
+/// signed-in work account without a prompt; where it has none, nothing is sent. No method throws, waits for the network
+/// on the caller's thread, or writes to standard output, which carries the MCP protocol.
 /// </summary>
 /// <remarks>This file is shared with other WinUI tools; keep the copies identical.</remarks>
 public static class UsageTelemetry
 {
-    private const string ConnectionStringVariable = "WINUI_TOOLS_TELEMETRY_CONNECTION_STRING";
+    private const string EndpointVariable = "WINUI_TOOLS_TELEMETRY_ENDPOINT";
     private const string OptOutVariable = "WINUI_TOOLS_TELEMETRY_OPTOUT";
     private const string ChannelVariable = "WINUI_TOOLS_CHANNEL";
-    private const string Notice = "WinUI Tools collect anonymous usage data to help the WinUI team improve the tools. " +
+
+    // The endpoint holds the Application Insights key, so the tools hold none. It accepts only tokens of the app
+    // registration "WinUI Tools Telemetry" in the Microsoft tenant.
+    private const string Endpoint = "https://app-winui-tools-telemetry-dnh3c7fdazhycfe7.westus3-01.azurewebsites.net/";
+    private const string ClientId = "20fc6284-b18f-4874-bbf1-52f6a17fc2a7";
+    private const string TenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
+    private static readonly string[] Scopes = [$"api://{ClientId}/Telemetry.Send"];
+    private const string Notice = "WinUI Tools send usage data to the WinUI team to help improve the tools. " +
         "The data does not include your code, file paths, prompts or app content. To turn it off, set " +
         "WINUI_TOOLS_TELEMETRY_OPTOUT=1.";
 
@@ -35,9 +46,12 @@ public static class UsageTelemetry
     /// <param name="tool">"profiler" or "migrate".</param>
     /// <param name="component">"app", "cli" or "mcp".</param>
     /// <param name="toolVersion">The tool's version; build metadata after a '+' is removed.</param>
-    public static void Initialize(string tool, string component, string toolVersion) =>
+    /// <param name="onByDefault">Send to the WinUI tools telemetry endpoint when WINUI_TOOLS_TELEMETRY_ENDPOINT is not set,
+    /// instead of staying off.</param>
+    public static void Initialize(string tool, string component, string toolVersion, bool onByDefault = false) =>
         Initialize(tool, component, toolVersion,
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUITools"), null);
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WinUITools"), null,
+            onByDefault: onByDefault);
 
     /// <summary>
     /// Returns the first-run notice while telemetry is on and the notice has not been shown to this user, and records
@@ -123,14 +137,15 @@ public static class UsageTelemetry
         }
     }
 
-    // folder holds install-id and notice-shown; handler replaces the network in tests.
+    // folder holds install-id and notice-shown; handler replaces the network and token the sign-in in tests.
     internal static void Initialize(string tool, string component, string toolVersion, string folder,
-        HttpMessageHandler? handler)
+        HttpMessageHandler? handler, Func<Task<string?>>? token = null, bool onByDefault = false)
     {
         try
         {
+            var address = Environment.GetEnvironmentVariable(EndpointVariable);
             if (IsEnabled || Environment.GetEnvironmentVariable(OptOutVariable) == "1" ||
-                !TryParse(Environment.GetEnvironmentVariable(ConnectionStringVariable), out var key, out var endpoint))
+                !TryParse(string.IsNullOrWhiteSpace(address) && onByDefault ? Endpoint : address, out var endpoint))
             {
                 return;
             }
@@ -144,8 +159,8 @@ public static class UsageTelemetry
             var channel = Environment.GetEnvironmentVariable(ChannelVariable);
             var client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
             client.Timeout = SendTimeout;
-            Volatile.Write(ref current, new Session(client, endpoint, key, installId, Guid.NewGuid().ToString(), folder,
-                version, new Dictionary<string, string>
+            Volatile.Write(ref current, new Session(client, endpoint, token ?? SignIn(), installId,
+                Guid.NewGuid().ToString(), folder, version, new Dictionary<string, string>
                 {
                     ["tool"] = tool,
                     ["component"] = component,
@@ -182,46 +197,47 @@ public static class UsageTelemetry
         }
     }
 
-    private static bool TryParse(string? connectionString, [NotNullWhen(true)] out string? key,
-        [NotNullWhen(true)] out Uri? endpoint)
+    // The endpoint's track URL, from its https base address.
+    private static bool TryParse(string? address, [NotNullWhen(true)] out Uri? endpoint)
     {
-        key = null;
         endpoint = null;
-        if (string.IsNullOrWhiteSpace(connectionString))
+        var text = address?.Trim();
+        if (string.IsNullOrEmpty(text))
         {
             return false;
         }
 
-        string? ingestion = null;
-        foreach (var part in connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            var separator = part.IndexOf('=');
-            if (separator <= 0)
-            {
-                continue;
-            }
-
-            var name = part[..separator].Trim();
-            var value = part[(separator + 1)..].Trim();
-            if (name.Equals("InstrumentationKey", StringComparison.OrdinalIgnoreCase))
-            {
-                key = value;
-            }
-            else if (name.Equals("IngestionEndpoint", StringComparison.OrdinalIgnoreCase))
-            {
-                ingestion = value.EndsWith('/') ? value : value + "/";
-            }
-        }
-
-        if (!Guid.TryParse(key, out _) || !Uri.TryCreate(ingestion, UriKind.Absolute, out var root) ||
+        if (!Uri.TryCreate(text.EndsWith('/') ? text : text + "/", UriKind.Absolute, out var root) ||
             root.Scheme != Uri.UriSchemeHttps)
         {
-            key = null;
             return false;
         }
 
         endpoint = new Uri(root, "v2/track");
         return true;
+    }
+
+    // A token for the endpoint from the account Windows is signed in with, without a prompt; null where there is none,
+    // such as on a machine signed in with no Microsoft work account. The broker caches it, so each send asks again.
+    private static Func<Task<string?>> SignIn()
+    {
+        var app = PublicClientApplicationBuilder.Create(ClientId)
+            .WithAuthority(AzureCloudInstance.AzurePublic, TenantId)
+            .WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows))
+            .Build();
+        return async () =>
+        {
+            try
+            {
+                var result = await app.AcquireTokenSilent(Scopes, PublicClientApplication.OperatingSystemAccount)
+                    .ExecuteAsync().ConfigureAwait(false);
+                return result.AccessToken;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        };
     }
 
     // A random ID shared by the tools of one user; never the alias, machine name or a hardware ID. It is read, and written
@@ -265,9 +281,18 @@ public static class UsageTelemetry
     {
         try
         {
-            using var content = new ByteArrayContent(body);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            using var response = await session.Client.PostAsync(session.Endpoint, content).ConfigureAwait(false);
+            if (await session.Token().ConfigureAwait(false) is not { } token)
+            {
+                return;
+            }
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, session.Endpoint)
+            {
+                Content = new ByteArrayContent(body),
+            };
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var response = await session.Client.SendAsync(request).ConfigureAwait(false);
         }
         catch (Exception)
         {
@@ -275,7 +300,8 @@ public static class UsageTelemetry
         }
     }
 
-    // The Application Insights event envelope. The common properties come first and cannot be replaced.
+    // The Application Insights event envelope, without a key: the endpoint adds its own. The common properties come
+    // first and cannot be replaced.
     private static byte[] Serialize(Session session, string eventName, IDictionary<string, string>? properties,
         IDictionary<string, double>? measurements)
     {
@@ -285,7 +311,6 @@ public static class UsageTelemetry
             json.WriteStartObject();
             json.WriteString("name", "Microsoft.ApplicationInsights.Event");
             json.WriteString("time", DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture));
-            json.WriteString("iKey", session.Key);
             json.WriteStartObject("tags");
             json.WriteString("ai.user.id", session.InstallId);
             json.WriteString("ai.session.id", session.Id);
@@ -335,6 +360,6 @@ public static class UsageTelemetry
         return stream.ToArray();
     }
 
-    private sealed record Session(HttpClient Client, Uri Endpoint, string Key, string InstallId, string Id, string Folder,
-        string Version, IReadOnlyDictionary<string, string> Common);
+    private sealed record Session(HttpClient Client, Uri Endpoint, Func<Task<string?>> Token, string InstallId, string Id,
+        string Folder, string Version, IReadOnlyDictionary<string, string> Common);
 }

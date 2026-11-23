@@ -7,4 +7,8 @@
   <ItemGroup>
     <InternalsVisibleTo Include="WinUIProfiler.Tests" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Gets the telemetry endpoint's token from the account Windows is signed in with, without a prompt. -->
+    <PackageReference Include="Microsoft.Identity.Client.Broker" />
+  </ItemGroup>
 </Project>
