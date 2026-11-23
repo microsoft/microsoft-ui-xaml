@@ -99,6 +99,9 @@ Describe 'System composition engine pipeline review fixes' {
         $script:pipelineJobTemplate = Join-Path `
             $script:repositoryRoot `
             'build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml'
+        $script:systemCompositionStage = Join-Path `
+            $script:repositoryRoot `
+            'build\AzurePipelinesTemplates\WinUI-RunSystemCompositionEngineTests-Stage.yml'
         $script:excludedTestsManifest = Join-Path `
             $PSScriptRoot `
             'SystemCompositionEngineExcludedTests-WPF.csv'
@@ -151,14 +154,83 @@ Describe 'System composition engine pipeline review fixes' {
     }
 
     Context 'focused exclusion manifest metadata' {
-        It 'accepts public failure categories for focused exclusions' {
-            $focusedTests = @(
-                Import-Csv -LiteralPath $script:focusedExcludedTestsManifest |
-                    ForEach-Object { [string]$_.TestName }
+        It 'excludes only CompNode12 from the focused system composition lane' {
+            $stageContent = Get-Content `
+                -LiteralPath $script:systemCompositionStage `
+                -Raw
+            $broadGeneratorPath = Join-Path `
+                $PSScriptRoot `
+                'New-SystemCompositionEngineBroadWorkItemsForExecutionOS.ps1'
+            $broadGeneratorContent = Get-Content `
+                -LiteralPath $broadGeneratorPath `
+                -Raw
+            $focusedExclusions = @(
+                Import-Csv -LiteralPath $script:focusedExcludedTestsManifest
             )
-            $focusedTests += (
+
+            $stageContent | Should Match (
+                "@Name='\*SystemCompositionEngineTests\*'")
+            $stageContent | Should Match (
+                'SystemCompositionEngineFocusedExcludedTests-WPF\.csv')
+            $stageContent | Should Match 'wpfExcludedTestsManifestPath'
+            $stageContent | Should Match (
+                'WinUI-RunSystemCompositionEngineBroadTests-Job\.yml')
+            $broadGeneratorContent | Should Match (
+                'SystemCompositionEngineExcludedTests-WPF\.csv')
+            $broadGeneratorContent | Should Not Match (
+                'SystemCompositionEngineFocusedExcludedTests-WPF\.csv')
+
+            $focusedExclusions.Count | Should Be 1
+            $focusedExclusions[0].WorkItem | Should Be (
+                'WPF-Foundation-Graphics-SystemCompositionEngineTests')
+            $focusedExclusions[0].TestName | Should Be (
                 'Microsoft::UI::Xaml::Tests::Foundation::Graphics::' +
-                'SystemCompositionEngineTests::UnexcludedControl')
+                'SystemCompositionEngineTests::CompNode12WUCWithMockDComp')
+            $focusedExclusions[0].FailureCategory | Should Be (
+                'NativeCompositionCrash')
+            $focusedExclusions[0].FailureSignature | Should Be '0xC000027B'
+        }
+
+        It 'fails closed when focused discovery generates no work items' {
+            $harnessPath = Join-Path $TestDrive 'empty-taef.ps1'
+            '$global:LASTEXITCODE = 0' |
+                Set-Content -LiteralPath $harnessPath -Encoding UTF8
+            $outputProjFile = Join-Path $TestDrive 'empty-focused-output.proj'
+
+            {
+                & $script:helixGenerator `
+                    -TestFilePattern 'Test\Microsoft.UI.Xaml.Tests.External.*.dll' `
+                    -TestBinaryPath $script:testBinaryPath `
+                    -OutputProjFile $outputProjFile `
+                    -JobTestSuiteName DevTestSuite `
+                    -CustomTaefQuery "(@Name='*SystemCompositionEngineTests*')" `
+                    -CompositionEngineType System `
+                    -HostingMode WPF `
+                    -TargetOSVersion 26200 `
+                    -TaefExePath $harnessPath
+            } | Should Throw 'generated no test work items'
+        }
+
+        It 'selects 13 focused tests while excluding CompNode12' {
+            $focusedTestClass = (
+                'Microsoft::UI::Xaml::Tests::Foundation::Graphics::' +
+                'SystemCompositionEngineTests')
+            $focusedTests = @(
+                1..13 |
+                    ForEach-Object {
+                        '{0}::CompNode{1}WUCWithMockDComp' -f `
+                            $focusedTestClass, $_
+                    }
+            )
+            $focusedTests += "$focusedTestClass::VerifySystemEngineEquivalent"
+            $excludedTest = (
+                "$focusedTestClass::CompNode12WUCWithMockDComp")
+            $enabledTests = @(
+                $focusedTests |
+                    Where-Object { $_ -cne $excludedTest }
+            )
+            $enabledTests.Count | Should Be 13
+
             $harness = New-FakeTaefHarness -RegularTests $focusedTests
             $outputProjFile = Join-Path $TestDrive 'focused-output.proj'
 
@@ -173,15 +245,40 @@ Describe 'System composition engine pipeline review fixes' {
                 -TaefExePath $harness.Path `
                 -ExcludedTestsManifestPath $script:focusedExcludedTestsManifest
 
-            @($result.MatchedExcludedTests).Count | Should Be 14
+            @($result.MatchedExcludedTests).Count | Should Be 1
+            @($result.MatchedExcludedTests)[0] | Should Be (
+                "WPF-Foundation-Graphics-SystemCompositionEngineTests`t" +
+                $excludedTest)
+            $result.GeneratedWorkItemCount | Should Be 1
+            $result.SkippedWorkItemCount | Should Be 0
+
             [xml]$plan = Get-Content -LiteralPath $outputProjFile -Raw
-            $commands = @(
-                $plan.SelectNodes('/Project/ItemGroup/HelixWorkItem') |
-                    ForEach-Object { [string]$_.Command }
+            $workItems = @(
+                $plan.SelectNodes('/Project/ItemGroup/HelixWorkItem')
             )
-            ($commands.Count -gt 0) | Should Be $true
-            ($commands -join [Environment]::NewLine) |
-                Should Not Match '/reportLoadingIssue'
+            $workItems.Count | Should Be 1
+            $command = [string]$workItems[0].Command
+            $command | Should Match (
+                [regex]::Escape("@Name='$focusedTestClass::*'"))
+            $command | Should Not Match '/reportLoadingIssue'
+
+            $exclusionMatches = @(
+                [regex]::Matches(
+                    $command,
+                    "NOT\(@Name='([^']+)'\)")
+            )
+            $exclusionMatches.Count | Should Be 1
+            $exclusionMatches[0].Groups[1].Value | Should Be $excludedTest
+
+            $selectedTests = @(
+                $focusedTests |
+                    Where-Object {
+                        $_ -cne $exclusionMatches[0].Groups[1].Value
+                    }
+            )
+            $selectedTests.Count | Should Be 13
+            (($selectedTests | Sort-Object) -join "`n") | Should Be (
+                ($enabledTests | Sort-Object) -join "`n")
         }
 
         It 'rejects an invalid focused failure category' {

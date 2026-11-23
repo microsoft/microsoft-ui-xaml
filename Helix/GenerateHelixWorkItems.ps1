@@ -212,6 +212,24 @@ $generationOutput = @(
     & $PSScriptRoot\common\pipeline\GenerateHelixWorkItems.ps1 @generatorParameters
 )
 
+if ($CompositionEngineType -eq "System" -and $HostingMode -eq "WPF")
+{
+    [xml]$generatedProject = Get-Content -LiteralPath $OutputProjFile -Raw
+    $generatedWorkItems = @(
+        $generatedProject.SelectNodes('/Project/ItemGroup/HelixWorkItem')
+    )
+    if ($generatedWorkItems.Count -eq 0)
+    {
+        throw (
+            "System composition engine WPF discovery generated no test work items. " +
+            "The focused validation lane must execute at least one test.")
+    }
+
+    Write-Host (
+        "Validated $($generatedWorkItems.Count) system composition engine WPF " +
+        "work item(s) in $OutputProjFile.")
+}
+
 if ($null -ne $excludedTestsByWorkItem)
 {
     $generationResults = @(
