@@ -4733,6 +4733,8 @@ namespace Framework { namespace DataBinding {
                 L"    <Border x:Key='Holder' Tag='StringProperty'/>"
                 L"    <Border x:Key='ComparisonHolder'/>"
                 L"    <PropertyGroupDescription x:Key='Bound' PropertyName='StringProperty' StringComparison='{Binding Tag, Source={StaticResource ComparisonHolder}}'/>"
+                L"    <Border x:Key='TwoWayHolder'/>"
+                L"    <PropertyGroupDescription x:Key='TwoWayBound' PropertyName='StringProperty' StringComparison='{Binding Tag, Source={StaticResource TwoWayHolder}, Mode=TwoWay}'/>"
                 L"    <CollectionViewSource x:Key='People'>"
                 L"      <CollectionViewSource.SortDescriptions>"
                 L"        <SortDescription PropertyName='{Binding Tag, Source={StaticResource Holder}}'/>"
@@ -4765,7 +4767,8 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
             holder->Tag = L"Int32Property";
             VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());            holder->Tag = L"Name";
+            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(cvs->View)->Data());
+            holder->Tag = L"Name";
             VERIFY_ARE_STRINGS_EQUAL(L"StringProperty", sort->PropertyName->Data());
 
             LOG_OUTPUT(L"A rejected value from a binding keeps the binding: the next valid value flows.");
@@ -4777,6 +4780,17 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, bound->StringComparison);
             comparisonHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, bound->StringComparison);
+
+            LOG_OUTPUT(L"The same with a TwoWay binding: the binding stays, and the restored value may flow back to the source.");
+            auto twoWayHolder = safe_cast<Border^>(panel->Resources->Lookup(L"TwoWayHolder"));
+            auto twoWayBound = safe_cast<PropertyGroupDescription^>(panel->Resources->Lookup(L"TwoWayBound"));
+            twoWayHolder->Tag = CollectionViewStringComparison::OrdinalIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
+            twoWayHolder->Tag = static_cast<CollectionViewStringComparison>(99);
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
+            LOG_OUTPUT(L"Source after the rejected value: %s", twoWayHolder->Tag ? twoWayHolder->Tag->ToString()->Data() : L"(null)");
+            twoWayHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
+            VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, twoWayBound->StringComparison);
 
             LOG_OUTPUT(L"An invalid StringComparison is rejected and not stored.");
             bool threw = false;

@@ -1938,6 +1938,28 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
     }
 
+    // Alt+Shift+Down on the focused, selected first item: ListView's keyboard reorder.
+    static void KeyboardReorderFirstItemDown(xaml_controls::ListView^ list)
+    {
+        RunOnUIThread([&]()
+        {
+            list->SelectedIndex = 0;
+            safe_cast<xaml_controls::ListViewItem^>(list->ContainerFromIndex(0))->Focus(Microsoft::UI::Xaml::FocusState::Programmatic);
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$d$_alt#$d$_shift");
+        }
+        TestServices::KeyboardHelper->Down();
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        {
+            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
+            TestServices::KeyboardHelper->PressKeySequence(L"$u$_shift#$u$_alt");
+        }
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+    }
+
     void MoCoGroupingIntegrationTests::ReorderOverSortedViewByPointer()
     {
         TestCleanupWrapper cleanup;
@@ -1975,30 +1997,33 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
             VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+        });
+    }
 
+    void MoCoGroupingIntegrationTests::ReorderWorksAgainWithoutRules()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Ascending));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        RunOnUIThread([&]()
+        {
             cvs->SortDescriptions->Clear();
             VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
         });
         test_infra::TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"With no rule left the view presents its source in order: keyboard reorder moves the source item.");
-        RunOnUIThread([&]()
-        {
-            list->SelectedIndex = 0;
-            safe_cast<xaml_controls::ListViewItem^>(list->ContainerFromIndex(0))->Focus(Microsoft::UI::Xaml::FocusState::Programmatic);
-        });
-        test_infra::TestServices::WindowHelper->WaitForIdle();
-        {
-            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
-            TestServices::KeyboardHelper->PressKeySequence(L"$d$_alt#$d$_shift");
-        }
-        TestServices::KeyboardHelper->Down();
-        test_infra::TestServices::WindowHelper->WaitForIdle();
-        {
-            KeyboardInjectionIgnoreEventWaitOverride kbdInjectionOverride(KeyboardWaitKind::None);
-            TestServices::KeyboardHelper->PressKeySequence(L"$u$_shift#$u$_alt");
-        }
-        test_infra::TestServices::WindowHelper->WaitForIdle();
+        KeyboardReorderFirstItemDown(list);
 
         RunOnUIThread([&]()
         {
@@ -2006,6 +2031,52 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
             VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+        });
+    }
+
+    void MoCoGroupingIntegrationTests::ReorderKeepsItemWhenRuleAddedMidMove()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+        auto sorted = std::make_shared<bool>(false);
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Ascending));
+            cvs->SortDescriptions->Clear();
+            auto weakCvs = Platform::WeakReference(cvs);
+            source->VectorChanged += ref new ::Windows::Foundation::Collections::VectorChangedEventHandler<Platform::Object^>(
+                [sorted, weakCvs](::Windows::Foundation::Collections::IObservableVector<Platform::Object^>^, ::Windows::Foundation::Collections::IVectorChangedEventArgs^ args)
+            {
+                auto strongCvs = weakCvs.Resolve<xaml_data::CollectionViewSource>();
+                if (!*sorted && strongCvs && args->CollectionChange == ::Windows::Foundation::Collections::CollectionChange::ItemRemoved)
+                {
+                    *sorted = true;
+                    strongCvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Descending));
+                }
+            });
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"A source handler sorts the view between the move's RemoveAt and InsertAt: the item still reaches the source.");
+        KeyboardReorderFirstItemDown(list);
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(*sorted);
+            VERIFY_ARE_EQUAL(5u, source->Size);
+            bool hasApple = false;
+            for (unsigned int i = 0; i < source->Size; ++i)
+            {
+                hasApple = hasApple || wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(i))->Data()) == 0;
+            }
+            VERIFY_IS_TRUE(hasApple, L"The moved item is still in the source.");
+            VERIFY_ARE_EQUAL(0, wcscmp(L"cherry", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()), L"The view is sorted by the new rule.");
         });
     }
 
