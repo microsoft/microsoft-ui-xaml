@@ -483,9 +483,11 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
 
     auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
 
-    // Regenerating cells inside measure or arrange would mutate the tree being laid out, so it is
-    // never done here. At most one post per column; the reset requests are OR'ed into it.
-    if (IsInLayoutCallback())
+    // Regenerating cells inside measure or arrange would mutate the tree being laid out. Layout can
+    // measure a dirty cell without passing through any of this control's overrides, so once the
+    // table is in a live tree the regeneration is always posted. At most one post per column; the
+    // reset requests are OR'ed into it.
+    if (XamlRoot() || IsLoaded())
     {
         if (columnImpl->QueueCellContentChangeInternal(resetAutoWidth))
         {
@@ -506,18 +508,24 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
                     return;
                 }
                 // The column may have moved to another table meanwhile; its current owner regenerates.
-                const bool reset = liveColumnImpl->TakeQueuedCellContentChangeInternal();
                 if (auto const owner = liveColumnImpl->GetOwningTableView())
                 {
-                    winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(liveColumn, reset);
+                    winrt::get_self<TableView>(owner)->RegenerateColumnCells(liveColumn, false /* resetAutoWidth */);
                 }
             });
-        // Without a post (teardown) the change stays pending for the next regeneration outside layout.
+        // Without a post (teardown) the change stays pending for the next regeneration.
         columnImpl->SetCellContentChangePostedInternal(posted);
         return;
     }
 
-    // This regeneration also applies a change still pending from layout.
+    RegenerateColumnCells(column, resetAutoWidth);
+}
+
+void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth)
+{
+    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
+
+    // This regeneration also applies a change still pending from an earlier request.
     resetAutoWidth = columnImpl->TakeQueuedCellContentChangeInternal() || resetAutoWidth;
 
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.

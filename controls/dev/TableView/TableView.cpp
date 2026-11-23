@@ -2836,7 +2836,6 @@ void TableView::OnRowElementPrepared(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     TableViewTelemetry::NoteContent(m_telemetrySession, TableViewTelemetry::ContentShown::Rows);
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
@@ -2872,7 +2871,6 @@ void TableView::OnRowElementClearing(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     if (auto row = args.Element().try_as<winrt::TableViewRow>())
     {
         auto const rowImpl = winrt::get_self<TableViewRow>(row);
@@ -2920,7 +2918,6 @@ void TableView::OnRowElementIndexChanged(
     const winrt::ItemsRepeater& /*sender*/,
     const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     auto const row = args.Element().try_as<winrt::TableViewRow>();
     if (!row)
     {

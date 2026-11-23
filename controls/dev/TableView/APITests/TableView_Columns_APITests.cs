@@ -1548,8 +1548,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies NotifyCellContentChanged called while a cell is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
-        public void VerifyNotifyCellContentChangedDuringLayoutIsDeferred()
+        [TestProperty("Description", "Verifies NotifyCellContentChanged called while only a cell's content is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
+        public void VerifyNotifyCellContentChangedDuringMeasureIsDeferred()
+        {
+            VerifyNotifyCellContentChangedDuringLayoutIsDeferred(arrange: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies NotifyCellContentChanged called while only a cell's content is being arranged is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
+        public void VerifyNotifyCellContentChangedDuringArrangeIsDeferred()
+        {
+            VerifyNotifyCellContentChangedDuringLayoutIsDeferred(arrange: true);
+        }
+
+        private void VerifyNotifyCellContentChangedDuringLayoutIsDeferred(bool arrange)
         {
             TableView tableView = null;
             LayoutNotifyingColumn column = null;
@@ -1573,14 +1585,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsGreaterThan(realizedRows, 0, "At least one row should be realized.");
                 generatedBefore = column.GenerateCount;
 
-                // Dirtying the cells panel too makes the cell measure run inside the panel's MeasureOverride.
-                column.NotifyOnNextMeasure = true;
-                var cell = GetRowCell(rows[0], 1);
-                ((FrameworkElement)GetCellContent(cell)).InvalidateMeasure();
-                ((UIElement)VisualTreeHelper.GetParent(cell)).InvalidateMeasure();
+                // Only the cell content is dirtied, so layout reaches it without any TableView override.
+                var content = (FrameworkElement)GetCellContent(GetRowCell(rows[0], 1));
+                if (arrange)
+                {
+                    column.NotifyOnNextArrange = true;
+                    content.InvalidateArrange();
+                }
+                else
+                {
+                    column.NotifyOnNextMeasure = true;
+                    content.InvalidateMeasure();
+                }
                 tableView.UpdateLayout();
 
-                Verify.IsFalse(column.NotifyOnNextMeasure, "Precondition: the cell's measure must have run and notified.");
+                Verify.IsFalse(column.NotifyOnNextMeasure || column.NotifyOnNextArrange, "Precondition: the cell's layout must have run and notified.");
                 Verify.AreEqual(0, column.GenerationsDuringNotify, "NotifyCellContentChanged during layout must not regenerate cells re-entrantly.");
                 Verify.AreEqual(generatedBefore, column.GenerateCount, "The regeneration must wait until layout has finished.");
             });
@@ -1848,12 +1867,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // A derived column that calls NotifyCellContentChanged (twice) from inside one cell's measure.
+    // A derived column that calls NotifyCellContentChanged (twice) from inside one cell's measure or arrange.
     internal sealed partial class LayoutNotifyingColumn : TableViewColumn
     {
         private bool _notifying;
 
         public bool NotifyOnNextMeasure { get; set; }
+
+        public bool NotifyOnNextArrange { get; set; }
 
         public int GenerateCount { get; private set; }
 
@@ -1876,6 +1897,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
             NotifyOnNextMeasure = false;
+            NotifyTwice();
+        }
+
+        internal void OnCellArrange()
+        {
+            if (!NotifyOnNextArrange)
+            {
+                return;
+            }
+            NotifyOnNextArrange = false;
+            NotifyTwice();
+        }
+
+        private void NotifyTwice()
+        {
             _notifying = true;
             NotifyCellContentChanged();
             NotifyCellContentChanged();
@@ -1893,6 +1929,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             _column.OnCellMeasure();
             return base.MeasureOverride(availableSize);
+        }
+
+        protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
+        {
+            _column.OnCellArrange();
+            return base.ArrangeOverride(finalSize);
         }
     }
 

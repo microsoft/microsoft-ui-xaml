@@ -352,6 +352,7 @@ public:
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
+    void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
@@ -479,25 +480,6 @@ public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 
     void SetCurrentCell(winrt::IInspectable const& item, winrt::TableViewColumn const& column);
-
-    // Measure, arrange and the repeater's element callbacks. App-visible work is posted from here.
-    [[nodiscard]] auto BeginLayoutCallbackScope()
-    {
-        ++m_layoutCallbackDepth;
-        return gsl::finally([this]() { --m_layoutCallbackDepth; });
-    }
-    bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || s_elementLayoutDepth > 0; }
-
-    // Measure/arrange of the control's own elements (cells panels, column and group headers). Per thread, not
-    // per table: any of them can run app code that reaches a table.
-    static inline thread_local uint32_t s_elementLayoutDepth{ 0 };
-    struct ElementLayoutScope
-    {
-        ElementLayoutScope() noexcept { ++s_elementLayoutDepth; }
-        ~ElementLayoutScope() { --s_elementLayoutDepth; }
-        ElementLayoutScope(ElementLayoutScope const&) = delete;
-        ElementLayoutScope& operator=(ElementLayoutScope const&) = delete;
-    };
 
     // Turns a row's container-level item into the data item. Identity today; the seam a wrapping
     // layer (grouping) changes in one place.
@@ -750,8 +732,6 @@ private:
     // Keyboard/focus position.
     tracker_ref<winrt::IInspectable> m_currentItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentColumn{ this };
-
-    uint32_t m_layoutCallbackDepth{ 0 };
 
     void SetCurrentItem(winrt::IInspectable const& item);
     void UpdateCurrentColumn(winrt::TableViewColumn const& column);

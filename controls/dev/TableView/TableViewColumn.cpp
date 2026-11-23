@@ -393,7 +393,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
     else
     {
         m_owningTableView = nullptr;
-        // A detached column has no cells; drop a change deferred from layout.
+        // A detached column has no cells; drop a pending change.
         TakeQueuedCellContentChangeInternal();
         return true;
     }

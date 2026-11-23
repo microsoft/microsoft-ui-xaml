@@ -1458,6 +1458,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies creating a peer for a removed column's header before layout does not throw and does not describe the removed column.")]
+        public void VerifyRemovedColumnHeaderPeerCreationDoesNotThrow()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[1];
+                var header = GetColumnHeader(tableView, column);
+                tableView.Columns.Remove(column);
+
+                AutomationPeer peer = null;
+                try
+                {
+                    peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                }
+                catch (Exception e)
+                {
+                    Verify.Fail($"Creating a peer for a removed column's header must not throw: {e.Message}");
+                }
+                Verify.IsNotNull(peer, "The removed column's header must still get a peer.");
+                Verify.IsFalse(peer is TableViewColumnHeaderAutomationPeer, "The header no longer describes a column of its table.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a group header keeps an EventsSource the app installed on its peer when it re-syncs its group's element, as a row does.")]
         public void VerifyGroupHeaderKeepsAppInstalledEventsSource()
         {

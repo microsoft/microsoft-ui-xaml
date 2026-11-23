@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewColumnHeader.h"
 #include "TableView.h"
+#include "TableViewColumn.h"
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "SharedHelpers.h"
@@ -56,7 +57,13 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    if (!m_table.get() || !m_column.get())
+    // A header whose column has left its table (before the rebuild drops it) gets the base peer, as
+    // the public constructor would reject it.
+    auto const table = m_table.get();
+    auto const column = m_column.get();
+    uint32_t index = 0;
+    if (!table || !column || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+        !table.Columns().IndexOf(column, index))
     {
         return __super::OnCreateAutomationPeer();
     }
@@ -169,7 +176,6 @@ void TableViewColumnHeader::SetDensityPaddingInternal(winrt::Thickness const& pa
 
 winrt::Size TableViewColumnHeader::MeasureOverride(winrt::Size const& availableSize)
 {
-    TableView::ElementLayoutScope const layoutScope;
     UpdateContentPadding();
     return __super::MeasureOverride(availableSize);
 }

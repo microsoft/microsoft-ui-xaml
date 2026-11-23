@@ -154,7 +154,6 @@ namespace
 
 winrt::Size TableView::MeasureOverride(winrt::Size const& availableSize)
 {
-    auto const layoutScope = BeginLayoutCallbackScope();
     auto desired = __super::MeasureOverride(availableSize);
     ResolveColumnWidths();
     QueueTerminalGridLineRefresh();

@@ -78,8 +78,8 @@ public:
     void NotifyCellContentChanged();
     void NotifyCellContentChangedInternal(bool resetAutoWidth);
 
-    // Internal: a cell-content change raised during layout stays pending until a regeneration
-    // outside layout takes it. Queue returns true when a post for it is already in flight.
+    // Internal: a cell-content change on a live table stays pending until a regeneration takes it.
+    // Queue returns true when a post for it is already in flight.
     bool QueueCellContentChangeInternal(bool resetAutoWidth) noexcept
     {
         m_queuedCellContentResetAutoWidth = m_queuedCellContentResetAutoWidth || resetAutoWidth;
