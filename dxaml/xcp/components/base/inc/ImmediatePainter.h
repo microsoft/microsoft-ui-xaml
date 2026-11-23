@@ -345,6 +345,12 @@ namespace RenderingBackend
         // Glyph run painted with a brush (gradient text), grayscale antialiased. Color fonts are drawn monochrome with
         // the brush (XAML draws color glyphs with their palette only for solid foregrounds).
         virtual void DrawGlyphRunBrush(const GlyphRunDesc& run, const BrushDesc& brush) noexcept = 0;
+        // ---- text ----
+        // F6: CompositeMode DestInvert (the TextBox caret). Composites the rect, filled with color under the current
+        // transform and clip (antialiased edges), with D2D1_COMPOSITE_MODE_MASK_INVERT over the pixels already painted:
+        // O_rgb = (1 - D_rgb) * S + (1 - S_a) * D_rgb (premultiplied), destination alpha unchanged. An opaque white
+        // source inverts the destination.
+        virtual void InvertRectangle(const RectF& rect, const ColorF& color) noexcept = 0;
     };
 
     // Dispatches to the per-backend factories below. Composition is not an immediate painter (E_INVALIDARG).

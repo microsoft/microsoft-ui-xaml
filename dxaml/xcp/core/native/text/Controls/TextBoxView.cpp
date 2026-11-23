@@ -5,6 +5,7 @@
 #include "TextBoxView.h"
 #include "TextBoxBase.h"
 #include "HWRenderTarget.h"
+#include "D2DTextDrawingContext.h"
 #include "TextBoxHelpers.h"
 #include "WinTextCore.h"
 #include "Real.h"
@@ -2077,6 +2078,34 @@ Cleanup:
     return hr;
 }
 
+// ---- text ----
+_Check_return_ HRESULT CTextBoxView::VisitImmediate(_In_ ImmediateTextSink& sink)
+{
+    XRECTF_RB viewport;
+    CMILMatrix viewportTransform;
+    GetViewportAndViewportTransform(&viewport, &viewportTransform);
+
+    XRECT_RB updateBounds = {
+        XcpFloor(viewport.left),
+        XcpFloor(viewport.top),
+        XcpCeiling(viewport.right),
+        XcpCeiling(viewport.bottom)
+    };
+    XRECT_RB contentBounds = { 0, 0, XcpCeiling(m_scrollData.ExtentWidth), XcpCeiling(m_scrollData.ExtentHeight) };
+
+    // RichEdit records into the same HWRenderTarget the composition walk uses; no glyph textures are realized.
+    m_isRendering = TRUE;
+    const HRESULT hr = HWNWRenderCommon(nullptr, contentBounds, updateBounds);
+    m_isRendering = FALSE;
+    IFC_RETURN(hr);
+
+    if (m_pRenderTarget != nullptr && m_pRenderTarget->GetTextDrawingContext() != nullptr)
+    {
+        m_pRenderTarget->GetTextDrawingContext()->VisitImmediate(viewportTransform, sink);
+    }
+    return S_OK;
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -2348,7 +2377,15 @@ _Check_return_ HRESULT CTextBoxView::HWNWRenderCommon(
                 HRESULT drawHR = m_pTextControl->GetTextServices()->TxDrawD2D(m_pRenderTarget, reinterpret_cast<RECTL*>(&contentBounds), reinterpret_cast<RECT*>(&updateBounds), TXTVIEW_ACTIVE);
                 if (drawHR == E_UNEXPECTED)
                 {
-                    contentRenderer->AddDirtyElementForNextFrame(this);
+                    if (contentRenderer != nullptr)
+                    {
+                        contentRenderer->AddDirtyElementForNextFrame(this);
+                    }
+                    else
+                    {
+                        // Immediate rendering (VisitImmediate): m_isRendering is set, so this posts an async dirty.
+                        IGNOREHR(InvalidateView());
+                    }
                     forceRedrawNextFrame = true;
                     hr = S_OK;
                 }

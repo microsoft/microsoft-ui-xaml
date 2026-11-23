@@ -52,5 +52,14 @@ namespace RenderingBackendTests
         TEST_METHOD(ClearTypeGlyphRunOnTransparentTargetFallsBackToGrayscale);
         TEST_METHOD(GlyphRunWithCffFontDrawsInk);
         TEST_METHOD(GlyphRunWithVariableFontDrawsInk);
+
+        // ---- text ----
+        // InvertRectangle (CompositeMode DestInvert caret)
+        TEST_METHOD(InvertRectangleInvertsOpaquePixels);
+        TEST_METHOD(InvertRectangleTwiceRestoresPixels);
+        TEST_METHOD(InvertRectangleWithTranslucentSourceBlends);
+        TEST_METHOD(InvertRectangleAntialiasesFractionalEdges);
+        TEST_METHOD(InvertRectangleRespectsTransformClipAndDamage);
+        TEST_METHOD(InvertRectangleCountsInStats);
     };
 }

@@ -1548,6 +1548,90 @@ namespace RenderingBackend
                     m_stats.paintedPixels += VisibleArea(region);
                 }
 
+                // ---- text ----
+                // MASK_INVERT on the current surface's pixels, in place: O_rgb = (1 - D_rgb) * S + (1 - S_a) * D_rgb with S
+                // the premultiplied color times antialiased coverage; alpha unchanged, rgb clamped to alpha (valid PARGB).
+                void InvertRectangle(const RectF& rect, const ColorF& color) noexcept override
+                {
+                    if (!(rect.right > rect.left) || !(rect.bottom > rect.top) || !(color.a > 0) || !BeginPrimitive())
+                    {
+                        return;
+                    }
+                    MaskSpace space;
+                    if (!GetMaskSpace(space))
+                    {
+                        return;
+                    }
+                    const PixelRect region = Intersect(Intersect(DeviceBounds(rect, 0), CurrentClip()), m_damageBounds);
+                    if (region.IsEmpty())
+                    {
+                        return;
+                    }
+                    const Matrix3x2F& t = m_userTransform;
+                    const float determinant = t.m11 * t.m22 - t.m21 * t.m12;
+                    if (!space.axisAligned && !(std::fabs(determinant) > 0))
+                    {
+                        return;
+                    }
+                    const RectF device = space.Map(rect);
+                    const auto coverageAt = [&](int32_t x, int32_t y) noexcept -> uint32_t
+                    {
+                        if (space.axisAligned)
+                        {
+                            return RoundedRectCoverage(device, 0, 0, x, y);
+                        }
+                        // 4x4 supersampled pixel-center tests through the inverse transform.
+                        uint32_t inside = 0;
+                        for (int j = 0; j < 4; ++j)
+                        {
+                            for (int i = 0; i < 4; ++i)
+                            {
+                                const float u = (x + (i + 0.5f) / 4) / m_dpiScale - t.dx;
+                                const float v = (y + (j + 0.5f) / 4) / m_dpiScale - t.dy;
+                                const float lx = (u * t.m22 - v * t.m21) / determinant;
+                                const float ly = (v * t.m11 - u * t.m12) / determinant;
+                                inside += lx >= rect.left && lx < rect.right && ly >= rect.top && ly < rect.bottom ? 1 : 0;
+                            }
+                        }
+                        return (inside * 255 + 8) / 16;
+                    };
+
+                    const float a = std::clamp(color.a, 0.0f, 1.0f);
+                    // B, G, R premultiplied source and source alpha, 0..255.
+                    const float source[4] = { std::clamp(color.b, 0.0f, 1.0f) * a * 255, std::clamp(color.g, 0.0f, 1.0f) * a * 255,
+                        std::clamp(color.r, 0.0f, 1.0f) * a * 255, a * 255 };
+                    Surface& surface = CurrentSurface();
+                    surface.graphics->Flush(Gdiplus::FlushIntentionSync);
+                    const size_t stride = static_cast<size_t>(m_width) * 4;
+                    for (const PixelRect& damage : m_damage)
+                    {
+                        const PixelRect area = Intersect(damage, region);
+                        for (int32_t y = area.top; y < area.bottom; ++y)
+                        {
+                            uint8_t* destination = surface.pixels.data() + y * stride + static_cast<size_t>(area.left) * 4;
+                            for (int32_t x = area.left; x < area.right; ++x, destination += 4)
+                            {
+                                const uint32_t coverage = coverageAt(x, y);
+                                if (coverage == 0)
+                                {
+                                    continue;
+                                }
+                                const float k = coverage / 255.0f;
+                                const float sa = source[3] * k / 255;
+                                const float alpha = destination[3];
+                                for (int channel = 0; channel < 3; ++channel)
+                                {
+                                    const float d = destination[channel];
+                                    const float s = source[channel] * k / 255;
+                                    const float o = (255 - d) * s + (1 - sa) * d;
+                                    destination[channel] = static_cast<uint8_t>(std::clamp(o + 0.5f, 0.0f, alpha));
+                                }
+                            }
+                        }
+                    }
+                    m_stats.paintedPixels += VisibleArea(region);
+                }
+
                 HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept override
                 {
                     if (m_inFrame)

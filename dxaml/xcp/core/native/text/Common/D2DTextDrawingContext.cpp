@@ -1806,6 +1806,18 @@ void D2DTextDrawingContext::VisitImmediate(
     ImmediateTextSink& sink
     )
 {
+    // Same order as HWRender: lines (selection/composition backgrounds, underlines), glyph runs, then images.
+    for (XUINT32 i = 0, count = m_lines.GetCount(); i < count; i++)
+    {
+        CBrush* brush = GetForegroundBrush(m_lines[i].BrushSource, m_lines[i].Brush, m_controlEnabled);
+        if (brush != nullptr)
+        {
+            XRECTF_RB rect = { 0, 0, m_lines[i].Width, m_lines[i].Thickness };
+            m_lines[i].Transform.TransformBounds(&rect, &rect);
+            sink.Line(rect, renderTransform, brush);
+        }
+    }
+
     for (XUINT32 i = 0, count = m_glyphRuns.GetCount(); i < count; i++)
     {
         const GlyphRunData& data = m_glyphRuns[i];
@@ -1824,17 +1836,18 @@ void D2DTextDrawingContext::VisitImmediate(
             renderTransform.TransformBounds(&brushBounds, &brushBounds);
             sink.GlyphRunBrushBounds(brushBounds);
         }
+        sink.GlyphRunImageFormats(static_cast<uint32_t>(data.GlyphImageFormat)); // ---- text ----
         sink.GlyphRun(GetDWriteGlyphRun(*data.GlyphRun), transform, brush, data.GlyphRunClipLeft, data.GlyphRunClipRight);
     }
 
-    for (XUINT32 i = 0, count = m_lines.GetCount(); i < count; i++)
+    // ---- text ----
+    // Wavy lines recorded before a Clear keep only their pixels; realize their brushes like HWRender does.
+    IGNOREHR(EnsureWavyLineRealization());
+    for (XUINT32 i = 0, count = m_images.GetCount(); i < count; i++)
     {
-        CBrush* brush = GetForegroundBrush(m_lines[i].BrushSource, m_lines[i].Brush, m_controlEnabled);
-        if (brush != nullptr)
+        if (m_images[i].Brush != nullptr)
         {
-            XRECTF_RB rect = { 0, 0, m_lines[i].Width, m_lines[i].Thickness };
-            m_lines[i].Transform.TransformBounds(&rect, &rect);
-            sink.Line(rect, renderTransform, brush);
+            sink.Image(m_images[i].ImageRect, renderTransform, m_images[i].Brush);
         }
     }
 }

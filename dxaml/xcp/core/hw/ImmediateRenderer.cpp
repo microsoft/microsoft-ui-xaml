@@ -321,7 +321,7 @@ namespace
     };
 
     // Maps XAML family names ("XamlAutoFontFamily", "A, B", "ms-appx:///font.ttf#Name") to one installed family name.
-    std::wstring ResolveFontFamily(_In_opt_ CFontFamily* family)
+    [[maybe_unused]] std::wstring ResolveFontFamily(_In_opt_ CFontFamily* family)
     {
         std::wstring name;
         xstring_ptr source;
@@ -420,6 +420,8 @@ namespace ImmediateRenderingDetail
         // transform), rect = path bounds; PushPerspective: layer rect (0, 0, w, h) in layer DIPs, perspective[key] maps it
         // into the enclosing surface, clip = enclosing clip.
         PushGeometryClip, PopGeometryClip, PushPerspective, PopPerspective,
+        // ---- text ----
+        InvertRect, // CompositeMode DestInvert: MASK_INVERT of `rect` filled with `color`
     };
 
     struct Command
@@ -453,6 +455,8 @@ namespace ImmediateRenderingDetail
         std::vector<float> advances;
         std::vector<GlyphOffset> offsets;
         std::shared_ptr<const ImmediateRenderingShapes::Paint> paint; // ---- shapes ---- BrushGlyphRun
+        // ---- text ----
+        bool useColorFont = true; // false when XAML resolved the run to monochrome outlines (IsColorFontEnabled=False)
     };
 
     // Per-element drawing summary used for damage. Content and group (opacity layer / rounded clip around the children)
@@ -1131,6 +1135,7 @@ namespace
                 fnv.Add(run.indices.data(), run.indices.size() * sizeof(uint16_t));
                 fnv.Add(run.advances.data(), run.advances.size() * sizeof(float));
                 fnv.Add(run.offsets.data(), run.offsets.size() * sizeof(GlyphOffset));
+                fnv.AddValue(run.useColorFont);
                 // Glyph-run clips (trimming) are in glyph space; hash them relative to the content origin.
                 const RectF relClip = OffsetRect(clip, -ctx.offsetX, -ctx.offsetY);
                 const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
@@ -1301,13 +1306,25 @@ namespace
                 // A drop shadow alone is not a backdrop (it surrounds the popup content that casts it).
                 const bool draws = command.type != CommandType::Nop && command.type != CommandType::PushLayer
                     && command.type != CommandType::PopLayer && command.type != CommandType::PushRoundedClip
-                    && command.type != CommandType::PopRoundedClip && command.type != CommandType::Shadow;
+                    && command.type != CommandType::PopRoundedClip && command.type != CommandType::Shadow
+                    && command.type != CommandType::PushGeometryClip && command.type != CommandType::PopGeometryClip
+                    && command.type != CommandType::PushPerspective && command.type != CommandType::PopPerspective;
                 if (draws && !IsEmptyRect(IntersectRect(command.deviceBounds, device)))
                 {
                     return true;
                 }
             }
             return false;
+        // ---- text ----
+        // CompositeMode DestInvert (the TextBox caret): MASK_INVERT of the rect over what is already painted.
+        void Invert(const RectF& rect, const ColorF& color, const CMILMatrix& m)
+        {
+            if (IsEmptyRect(rect) || !(color.a > 0)) return;
+            Command c;
+            c.type = CommandType::InvertRect;
+            c.rect = rect;
+            c.color = color;
+            Push(c, rect, m, ctx.clip, nullptr);
         }
 
         void Text(std::wstring text, std::wstring family, float fontSize, uint32_t weight, const RectF& layout, const RectF& ink, const ColorF& color)
@@ -1326,7 +1343,7 @@ namespace
         }
 
         void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight,
-            std::shared_ptr<const ImmediateRenderingShapes::Paint> paint = nullptr)
+            std::shared_ptr<const ImmediateRenderingShapes::Paint> paint = nullptr, bool useColorFont = true)
         {
             if (run.glyphCount == 0 || run.fontFace == nullptr || run.glyphIndices == nullptr || !(run.fontEmSize > 0))
             {
@@ -1336,6 +1353,7 @@ namespace
             data.face = run.fontFace;
             data.emSize = run.fontEmSize;
             data.bidiLevel = run.bidiLevel;
+            data.useColorFont = useColorFont;
             data.indices.assign(run.glyphIndices, run.glyphIndices + run.glyphCount);
             float width = 0;
             if (run.glyphAdvances != nullptr)
@@ -1479,6 +1497,8 @@ namespace
         {
             const bool hasBrushBounds = m_hasBrushBounds;
             m_hasBrushBounds = false;
+            const bool useColorFont = m_nextRunUsesColor;
+            m_nextRunUsesColor = true;
             if (!hasBrushBounds && ImmediateRenderingShapes::IsGradientBrush(brush))
             {
                 // No line bounds (Glyphs): Composition maps the brush to the glyph run's realization (ink) bounds.
@@ -1502,8 +1522,16 @@ namespace
             {
                 CMILMatrix m = transform;
                 m.Append(m_world);
-                m_emitter.Glyphs(run, m, color, clipLeft, clipRight);
+                m_emitter.Glyphs(run, m, color, clipLeft, clipRight, nullptr, useColorFont);
             }
+        }
+
+        // ---- text ----
+        void GlyphRunImageFormats(uint32_t formats) override
+        {
+            // XAML already translated color runs into per-layer runs; a run left with only outline formats must not be
+            // re-translated to color by the painter (IsColorFontEnabled=False, high contrast).
+            m_nextRunUsesColor = (formats & ~(DWRITE_GLYPH_IMAGE_FORMATS_TRUETYPE | DWRITE_GLYPH_IMAGE_FORMATS_CFF)) != 0;
         }
 
         // ---- shapes ----
@@ -1524,7 +1552,11 @@ namespace
             }
         }
 
+        // ---- text ----
+        void Image(const XRECTF_RB& rect, const CMILMatrix& transform, _In_ CImageBrush* brush) override;
+
         bool unsupportedBrush = false;
+        const wchar_t* imageDetail = nullptr;
 
     private:
         // Black box of a (horizontal, left-to-right or right-to-left) glyph run in glyph-run space, from design metrics.
@@ -1629,6 +1661,7 @@ namespace
 
         Emitter& m_emitter;
         const CMILMatrix& m_world;
+        bool m_nextRunUsesColor = true; // ---- text ----
     };
 
     float MaxOf(const XTHICKNESS& t) noexcept
@@ -1736,6 +1769,17 @@ namespace
             (visible.right - dest.left) * sx, (visible.bottom - dest.top) * sy };
         emitter.Bitmap(surface, visible, source, std::min(1.0f, brush->m_eOpacity), world, bounds, rx, ry);
         return nineGrid ? L"Image NineGrid" : nullptr;
+    }
+
+    // ---- text ----
+    void TextEmitter::Image(const XRECTF_RB& rect, const CMILMatrix& transform, _In_ CImageBrush* brush)
+    {
+        CMILMatrix m = transform;
+        m.Append(m_world);
+        if (const wchar_t* detail = EmitImageBrush(m_emitter, brush, { rect.left, rect.top, rect.right, rect.bottom }, 0, 0, m, m_emitter.ctx.scale, false))
+        {
+            imageDetail = detail;
+        }
     }
 
     // Closes a group opened at pushIndex: drops empty groups, folds a single-primitive opacity group into the
@@ -2078,26 +2122,7 @@ void ImmediateRenderer::EmitContent(
         const float t = stroke ? shape->GetStrokeThickness() : 0.0f;
         ColorF fillColor;
         BrushResult fillResult = ResolveBrush(shape->m_pFill, 1.0f, &fillColor);
-        if (fillResult == BrushResult::Color && element->GetCompositeMode() == DirectUI::ElementCompositeMode::DestInvert)
-        {
-            // The TextBox caret inverts what is under it. Painters have no invert blend, so draw it in the text
-            // foreground (which contrasts with the background the same way) or, elsewhere, in the inverted color.
-            ColorF foreground;
-            const TextFormatting* formatting = nullptr;
-            CUIElement* parentElement = element->GetUIElementAdjustedParentInternal(false);
-            if (parentElement != nullptr && parentElement->GetTypeIndex() == KnownTypeIndex::TextBoxView
-                && SUCCEEDED(parentElement->GetTextFormatting(&formatting)) && formatting != nullptr
-                && ResolveBrush(formatting->m_pForeground, 1.0f, &foreground) == BrushResult::Color)
-            {
-                foreground.a *= fillColor.a;
-                fillColor = foreground;
-            }
-            else
-            {
-                fillColor = { 1 - fillColor.r, 1 - fillColor.g, 1 - fillColor.b, fillColor.a };
-            }
-            ReportUnsupported(element, L"CompositeMode DestInvert:approximated");
-        }
+        const bool invert = fillResult == BrushResult::Color && element->GetCompositeMode() == DirectUI::ElementCompositeMode::DestInvert;
         ColorF strokeColor;
         const BrushResult strokeResult = t > 0 ? ResolveBrush(stroke.get(), 1.0f, &strokeColor) : BrushResult::None;
         CImageBrush* fillImage = do_pointer_cast<CImageBrush>(shape->m_pFill);
@@ -2138,7 +2163,19 @@ void ImmediateRenderer::EmitContent(
             {
                 ReportUnsupported(element, compositionDetail);
             }
-            emitter.Fill(geometry, rx, ry, fillColor, world);
+            if (invert)
+            {
+                // The TextBox caret inverts what is painted under it (MASK_INVERT, like Composition's DestInvert).
+                if (rx > 0 || ry > 0)
+                {
+                    ReportUnsupported(element, L"CompositeMode DestInvert rounded:approximated");
+                }
+                emitter.Invert(geometry, fillColor, world);
+            }
+            else
+            {
+                emitter.Fill(geometry, rx, ry, fillColor, world);
+            }
         }
         else if (fillImage != nullptr)
         {
@@ -2194,60 +2231,21 @@ void ImmediateRenderer::EmitContent(
     }
     else if (type == KnownTypeIndex::TextBoxView)
     {
-        // TextBoxView draws its owner's text (RichEdit layout, not exposed as glyph runs); re-lay it out with DrawText.
-        std::wstring text;
-        CDependencyObject* ancestor = element->GetParentInternal(false);
-        for (int depth = 0; ancestor != nullptr && depth < 16; ++depth)
+        // TextBox, PasswordBox and RichEditBox: RichEdit draws itself (TxDrawD2D into the recording render target the
+        // composition walk uses), and its glyph runs, selection/composition rects, decorations, spell-check wavy lines
+        // and inline images replay like TextBlock's. The caret is a child Rectangle (DestInvert).
+        TextEmitter sink(emitter, world);
+        if (FAILED(static_cast<CTextBoxView*>(element)->VisitImmediate(sink)))
         {
-            if (ancestor->OfTypeByIndex<KnownTypeIndex::TextBox>())
-            {
-                CValue value;
-                if (SUCCEEDED(ancestor->GetValueByIndex(KnownPropertyIndex::TextBox_Text, &value)))
-                {
-                    const xstring_ptr str = value.AsString();
-                    if (!str.IsNullOrEmpty())
-                    {
-                        text.assign(str.GetBuffer(), str.GetCount());
-                    }
-                }
-                break;
-            }
-            if (ancestor->OfTypeByIndex<KnownTypeIndex::PasswordBox>())
-            {
-                if (FAILED(static_cast<CPasswordBox*>(ancestor)->GetDisplayText(&text)))
-                {
-                    text.clear();
-                }
-                break;
-            }
-            if (ancestor->OfTypeByIndex<KnownTypeIndex::RichEditBox>())
-            {
-                // RichEditBox content is a formatted ITextDocument; only its plain layout could be approximated.
-                ReportUnsupported(element, L"RichEditBox text");
-                break;
-            }
-            ancestor = ancestor->GetParentInternal(false);
+            ReportUnsupported(element, L"Text layout unavailable");
         }
-
-        const TextFormatting* formatting = nullptr;
-        if (!text.empty() && SUCCEEDED(element->GetTextFormatting(&formatting)) && formatting != nullptr)
+        if (sink.unsupportedBrush)
         {
-            ColorF color;
-            const BrushResult result = ResolveBrush(formatting->m_pForeground, 1.0f, &color);
-            if (result == BrushResult::Unsupported)
-            {
-                ReportUnsupported(element, L"Foreground brush");
-            }
-            else if (result == BrushResult::Color)
-            {
-                const float fontSize = formatting->m_eFontSize;
-                // A different shaper may measure a few pixels wider than RichEdit; widen so single lines never wrap.
-                RectF layout{ 0, 0, width + fontSize * 2, height };
-                const float overhang = std::max(2.0f, fontSize / 4);
-                const RectF ink{ layout.left - overhang, layout.top - overhang, layout.right + overhang, layout.bottom + overhang };
-                emitter.Text(std::move(text), ResolveFontFamily(formatting->m_pFontFamily), fontSize,
-                    static_cast<uint32_t>(formatting->m_nFontWeight), layout, ink, color);
-            }
+            ReportUnsupported(element, L"Foreground brush");
+        }
+        if (sink.imageDetail != nullptr)
+        {
+            ReportUnsupported(element, sink.imageDetail);
         }
     }
     else if (element->OfTypeByIndex<KnownTypeIndex::ListViewBaseItemPresenter>())
@@ -2263,6 +2261,11 @@ void ImmediateRenderer::EmitContent(
     {
         // Path, Line, Polyline, Polygon: flatten the render geometry and draw it under the shape's stretch transform.
         auto shape = static_cast<CShape*>(element);
+        if (element->GetCompositeMode() == DirectUI::ElementCompositeMode::DestInvert)
+        {
+            // The right-to-left TextBox caret (a Path) is filled, not inverted.
+            ReportUnsupported(element, L"CompositeMode DestInvert path:approximated");
+        }
         if (shape->m_pRender == nullptr)
         {
             IGNOREHR(shape->UpdateRenderGeometry());
@@ -3526,7 +3529,7 @@ static void ReplayCommands(
                 run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
                 run.glyphCount = static_cast<uint32_t>(data.indices.size());
                 run.bidiLevel = data.bidiLevel;
-                run.useColorFont = true;
+                run.useColorFont = data.useColorFont;
                 run.clearType = clearTypeRuns != nullptr && c.index < clearTypeRuns->size() && (*clearTypeRuns)[c.index] != 0;
                 painter.DrawGlyphRun(run, c.color);
                 break;
@@ -3624,6 +3627,9 @@ static void ReplayCommands(
                 painter.DrawGlyphRunBrush(run, data.paint->Bind(c.opacity));
                 break;
             }
+            case CommandType::InvertRect:
+                painter.InvertRectangle(c.rect, c.color);
+                break;
             default:
                 break;
         }
