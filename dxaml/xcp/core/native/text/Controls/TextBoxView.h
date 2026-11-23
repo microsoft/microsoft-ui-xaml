@@ -11,6 +11,7 @@ class HWRenderTarget;
 struct ID2D1RenderTarget;
 struct IDWriteFontFace;
 class CTransformToRoot;
+class ImmediateTextSink;
 
 inline bool
 DoRectsIntersectOrTouch(
@@ -164,6 +165,11 @@ public:
     _Check_return_ HRESULT OnGotFocus();
 
     _Check_return_ HRESULT HwRender(_In_ IContentRenderer* contentRenderer);
+
+    // ---- text ----
+    // Immediate rendering: lets RichEdit draw (TxDrawD2D into the recording HWRenderTarget, exactly as HwRender) and
+    // reports the recorded glyph runs, selection/composition rects, decorations and images in element space.
+    _Check_return_ HRESULT VisitImmediate(_In_ ImmediateTextSink& sink);
 
     XRECTF GetCaretRect() const
     {

@@ -6,6 +6,7 @@
 struct DWRITE_GLYPH_RUN;
 class CMILMatrix;
 class CBrush;
+class CImageBrush;
 
 // "Retained XAML, immediate rendering" prototype: receives the render data XAML's text stack already produced (the same
 // glyph runs, lines and highlight rects the D2D/PC render paths draw) so ImmediateRenderer can replay them through an
@@ -17,6 +18,11 @@ public:
     // clipLeft/clipRight are in glyph-run space; -FLT_MAX/FLT_MAX (XFLOAT_MIN/XFLOAT_MAX) when unclipped.
     virtual void GlyphRun(const DWRITE_GLYPH_RUN& run, const CMILMatrix& transform, _In_opt_ CBrush* brush, float clipLeft, float clipRight) = 0;
     virtual void Line(const XRECTF_RB& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) = 0;
+
+    // ---- text ----
+    // Images the text stack records (spell-check wavy underlines, RichEdit inline images): brush (a WriteableBitmap
+    // ImageBrush with a software surface) stretched over rect.
+    virtual void Image(const XRECTF_RB& rect, const CMILMatrix& transform, _In_ CImageBrush* brush) = 0;
 
 protected:
     ~ImmediateTextSink() = default;

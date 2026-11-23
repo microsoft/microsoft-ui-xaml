@@ -1042,4 +1042,109 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(fixture.Create(face.Get(), c_hello, 20));
         VerifyHelloRunDrawsInk(fixture);
     }
+
+    // ---- text: InvertRectangle (CompositeMode DestInvert caret) ----
+
+    void FullBackendPainterConformanceTests::InvertRectangleInvertsOpaquePixels()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        const ColorF background{ 0.2f, 0.4f, 0.6f, 1 };
+        Paint(*painter, [&](IImmediatePainter& p) { p.Clear(background); });
+        const auto before = Read(*painter);
+        Paint(*painter, [&](IImmediatePainter& p)
+        {
+            p.Clear(background);
+            p.InvertRectangle({ 16, 16, 48, 48 }, c_white);
+        });
+        const auto image = Read(*painter);
+        LogPixel(L"inside", 32, 32, image.At(32, 32));
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, { 0.8f, 0.6f, 0.4f, 1 }, Tolerance(2), 16, 16, 48, 48), L"inside: 1 - destination, opaque");
+        VERIFY_ARE_EQUAL(0u, CountChanged(image, before, 1, [](uint32_t x, uint32_t y) { return x < 16 || x >= 48 || y < 16 || y >= 48; }),
+            L"outside: unchanged");
+    }
+
+    void FullBackendPainterConformanceTests::InvertRectangleTwiceRestoresPixels()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        Paint(*painter, PaintStripes);
+        const auto before = Read(*painter);
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            PaintStripes(p);
+            p.InvertRectangle({ 10, 10, 50, 50 }, c_white);
+            p.InvertRectangle({ 10, 10, 50, 50 }, c_white);
+        });
+        const auto image = Read(*painter);
+        VERIFY_ARE_EQUAL(0u, CountChanged(image, before, Tolerance(2), [](uint32_t, uint32_t) { return true; }), L"invert is an involution");
+    }
+
+    void FullBackendPainterConformanceTests::InvertRectangleWithTranslucentSourceBlends()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        // S = white at 50%: O = 0.5 * (1 - D) + 0.5 * D = 0.5 on both sides of the edge.
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            PaintEdge(p, 32);
+            p.InvertRectangle({ 16, 16, 48, 48 }, { 1, 1, 1, 0.5f });
+        });
+        const auto image = Read(*painter);
+        LogPixel(L"black side", 24, 32, image.At(24, 32));
+        LogPixel(L"white side", 40, 32, image.At(40, 32));
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, { 0.5f, 0.5f, 0.5f, 1 }, Tolerance(3), 16, 16, 48, 48), L"inside: mid gray, opaque");
+        VERIFY_IS_TRUE(IsColor(image.At(8, 32), c_black, 1) && IsColor(image.At(56, 32), c_white, 1), L"outside: unchanged");
+    }
+
+    void FullBackendPainterConformanceTests::InvertRectangleAntialiasesFractionalEdges()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_black);
+            p.InvertRectangle({ 16.5f, 16, 47.5f, 48 }, c_white);
+        });
+        const auto image = Read(*painter);
+        LogPixel(L"left edge", 16, 32, image.At(16, 32));
+        LogPixel(L"right edge", 47, 32, image.At(47, 32));
+        VERIFY_IS_TRUE(IsGray(image.At(16, 32), 90, 166) && IsGray(image.At(47, 32), 90, 166), L"half-covered edge pixels are half inverted");
+        VERIFY_IS_TRUE(IsColor(image.At(32, 32), c_white, 1), L"fully covered pixels are inverted");
+        VERIFY_IS_TRUE(IsColor(image.At(15, 32), c_black, 1) && IsColor(image.At(48, 32), c_black, 1), L"uncovered pixels are unchanged");
+    }
+
+    void FullBackendPainterConformanceTests::InvertRectangleRespectsTransformClipAndDamage()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        // Translate (8, 8) maps [8, 40)^2 to [16, 48)^2; the clip keeps y < 32; the damage keeps x < 32.
+        const RectF damage{ 0, 0, 32, 64 };
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushAxisAlignedClip({ 0, 0, 64, 32 });
+            p.SetTransform({ 1, 0, 0, 1, 8, 8 });
+            p.InvertRectangle({ 8, 8, 40, 40 }, c_white);
+            p.SetTransform({});
+            p.PopAxisAlignedClip();
+        }, &damage, 1);
+        const auto image = Read(*painter);
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_black, Tolerance(2), 16, 16, 32, 32), L"inside transform, clip and damage: inverted");
+        VERIFY_ARE_EQUAL(0u, CountMismatches(image, c_white, 2, 0, 0, c_size, c_size,
+            [](uint32_t x, uint32_t y) { return x < 16 || x >= 32 || y < 16 || y >= 32; }), L"elsewhere: untouched");
+    }
+
+    void FullBackendPainterConformanceTests::InvertRectangleCountsInStats()
+    {
+        auto painter = CreatePainter();
+        if (!painter) return;
+        const auto stats = Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.InvertRectangle({ 16, 16, 18, 48 }, c_white);
+        });
+        VERIFY_ARE_EQUAL(1u, stats.primitiveCount, L"one invert is one primitive");
+    }
 }

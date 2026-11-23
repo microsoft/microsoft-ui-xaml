@@ -1102,6 +1102,27 @@ namespace RenderingBackend
                 CountPrimitive(rect);
             }
 
+            // ---- text ----
+            // The rect is recorded (current transform, antialiased) into a command list and composited with MASK_INVERT;
+            // the context's clips and layers apply as for any draw. One small command list per call (the caret).
+            void InvertRectangle(const RectF& rect, const ColorF& color) noexcept override
+            {
+                if (!m_frameActive || !(rect.right > rect.left) || !(rect.bottom > rect.top) || !(color.a > 0))
+                {
+                    return;
+                }
+                ComPtr<ID2D1CommandList> shape;
+                if (FAILED(RecordShape(ToD2D(rect), 0, 0, ToD2D(m_transform), &shape, ToD2D(color))))
+                {
+                    return;
+                }
+                m_context->SetTransform(D2D1::Matrix3x2F::Identity());
+                m_context->DrawImage(shape.Get(), D2D1_INTERPOLATION_MODE_NEAREST_NEIGHBOR, D2D1_COMPOSITE_MODE_MASK_INVERT);
+                m_context->SetTransform(ToD2D(m_transform));
+                ++m_churnDestroyed;
+                CountPrimitive(rect);
+            }
+
             HRESULT ScrollPixels(const RectF& rect, int32_t dx, int32_t dy) noexcept override
             {
                 if (m_frameActive)
@@ -2181,7 +2202,7 @@ namespace RenderingBackend
 
             // Records a filled rounded rect (rectangle when a radius is 0) under transform into a new command list.
             HRESULT RecordShape(const D2D1_RECT_F& rect, float radiusX, float radiusY, const D2D1_MATRIX_3X2_F& transform,
-                _Outptr_ ID2D1CommandList** result) noexcept
+                _Outptr_ ID2D1CommandList** result, const D2D1_COLOR_F& color = D2D1::ColorF(0, 0, 0, 1)) noexcept
             {
                 *result = nullptr;
                 IFC_RETURN(EnsureAuxContext());
@@ -2192,7 +2213,7 @@ namespace RenderingBackend
                 m_auxContext->SetTarget(commandList.Get());
                 m_auxContext->BeginDraw();
                 m_auxContext->SetTransform(transform);
-                m_auxBrush->SetColor(D2D1::ColorF(0, 0, 0, 1));
+                m_auxBrush->SetColor(color);
                 if (radiusX > 0 && radiusY > 0)
                 {
                     m_auxContext->FillRoundedRectangle(D2D1::RoundedRect(rect, radiusX, radiusY), m_auxBrush.Get());

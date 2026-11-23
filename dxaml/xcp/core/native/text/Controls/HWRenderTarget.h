@@ -434,6 +434,10 @@ public:
 
     HRESULT DrawBaseLine(long baseLineY, long left, long right, UINT32 crText);
 
+    // ---- text ----
+    // Immediate rendering: reports the recorded glyph runs, lines and images (see D2DTextDrawingContext::VisitImmediate).
+    D2DTextDrawingContext* GetTextDrawingContext() const { return m_pTextDrawingContext; }
+
 private:
 
     // Count of references to this instance.
