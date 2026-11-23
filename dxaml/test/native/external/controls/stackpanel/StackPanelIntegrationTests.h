@@ -77,6 +77,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates the calculation and event triggering of Snap Points in an Horizontal and Vertical StackPanel.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifySnapPointsChangedAfterRemovingOneOfTwoHandlers)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that removing one of two SnapPointsChanged handlers keeps the event raised for the remaining one.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyContentClipping)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a clipped item that has it's position shifted by the insert of another still clips correctly.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
