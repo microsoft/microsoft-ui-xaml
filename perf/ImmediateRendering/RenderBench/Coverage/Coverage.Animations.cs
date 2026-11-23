@@ -335,21 +335,54 @@ static class CoverageAnimations
         Exercise = async () => { await Settle(300); change(); await Settle(1200); },
     };
 
-    [CoveragePage(F, "VisualStateTransition-ToggleSwitch")]
-    public static CoveragePage VisualStateToggle(CoverageContext context)
+    // A template's VisualTransition with a generated duration (VSM builds the transition storyboard: color, opacity
+    // and transform). Programmatic ToggleSwitch.IsOn crashes the harness in every mode (0xC000027B), so the generated
+    // transition is exercised with an app template instead.
+    [CoveragePage(F, "VisualStateTransition-Generated")]
+    public static CoveragePage VisualStateGenerated(CoverageContext context)
     {
-        var toggle = new ToggleSwitch { Header = "ToggleSwitch" };
-        return VisualStatePage(toggle, () => toggle.IsOn = true);
+        var control = new ContentControl
+        {
+            Template = (ControlTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load("""
+                <ControlTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' TargetType='ContentControl'>
+                  <Grid Width='240' Height='120'>
+                    <VisualStateManager.VisualStateGroups>
+                      <VisualStateGroup>
+                        <VisualStateGroup.Transitions>
+                          <VisualTransition GeneratedDuration='0:0:0.4'/>
+                        </VisualStateGroup.Transitions>
+                        <VisualState x:Name='A' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>
+                        <VisualState x:Name='B' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                          <VisualState.Setters>
+                            <Setter Target='Knob.Opacity' Value='0.5'/>
+                          </VisualState.Setters>
+                          <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName='Move' Storyboard.TargetProperty='X' To='120' Duration='0'/>
+                            <ColorAnimation Storyboard.TargetName='Fill' Storyboard.TargetProperty='Color' To='Crimson' Duration='0'/>
+                          </Storyboard>
+                        </VisualState>
+                      </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name='Knob' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' Width='100' Height='100' CornerRadius='50' HorizontalAlignment='Left'>
+                      <Border.Background><SolidColorBrush x:Name='Fill' Color='SteelBlue'/></Border.Background>
+                      <Border.RenderTransform><TranslateTransform x:Name='Move'/></Border.RenderTransform>
+                    </Border>
+                  </Grid>
+                </ControlTemplate>
+                """),
+        };
+        return VisualStatePage(control, () => VisualStateManager.GoToState(control, "B", true));
     }
 
-    [CoveragePage(F, "VisualStateTransition-CheckBox")]
+    // The CheckBox glyph and the Expander chevron are AnimatedIcons (PathIcon fallback in immediate modes).
+    [CoveragePage(F, "VisualStateTransition-CheckBox", ExpectedUnsupported = ["PathIcon AnimatedIcon:approximated"])]
     public static CoveragePage VisualStateCheck(CoverageContext context)
     {
         var check = new CheckBox { Content = "CheckBox" };
         return VisualStatePage(check, () => check.IsChecked = true);
     }
 
-    [CoveragePage(F, "Expander-Expand")]
+    [CoveragePage(F, "Expander-Expand", ExpectedUnsupported = ["PathIcon AnimatedIcon:approximated"])]
     public static CoveragePage ExpanderExpand(CoverageContext context)
     {
         var expander = new Microsoft.UI.Xaml.Controls.Expander { Header = "Expander", Content = Tile(Colors.Olive, "Content", 200, 60), Width = 260 };
@@ -406,19 +439,20 @@ static class CoverageAnimations
         };
     }
 
-    // ItemsView + LinedFlowLayout: its item transition provider animates adds/removes (immediate-aware Storyboard path).
-    [CoveragePage(F, "ItemsView-LinedFlowLayout-Transitions")]
-    public static CoveragePage ItemsViewTransitions(CoverageContext context)
+    // LinedFlowLayout's item transition provider (what ItemsView uses) animates adds/removes/moves through its
+    // immediate-aware Storyboard path. Hosted in a bare ItemsRepeater: ItemsView's ScrollView is the scrolling family's.
+    [CoveragePage(F, "LinedFlowLayout-ItemTransitions")]
+    public static CoveragePage LinedFlowTransitions(CoverageContext context)
     {
         var items = new System.Collections.ObjectModel.ObservableCollection<string>(Enumerable.Range(1, 8).Select(i => $"Item {i}"));
-        var view = new ItemsView
+        var view = new ItemsRepeater
         {
             ItemsSource = items,
             Width = 480,
-            Height = 300,
             Layout = new LinedFlowLayout { LineHeight = 48, LineSpacing = 6, MinItemSpacing = 6 },
+            ItemTransitionProvider = new LinedFlowLayoutItemCollectionTransitionProvider(),
             ItemTemplate = (DataTemplate)Microsoft.UI.Xaml.Markup.XamlReader.Load(
-                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><ItemContainer><Border Width='100' Background='LightSteelBlue'><TextBlock Text='{Binding}' Margin='8'/></Border></ItemContainer></DataTemplate>"),
+                "<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Border Width='100' Background='LightSteelBlue'><TextBlock Text='{Binding}' Margin='8'/></Border></DataTemplate>"),
         };
         return new()
         {
