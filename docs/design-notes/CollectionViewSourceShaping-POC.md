@@ -354,12 +354,12 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
   - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
     `Reset` by cost: a move costs two vector shifts (about 14 ns a row each at 100k items, fre) and two raised changes
-    (about 10 µs); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
+    (about 30 µs each); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
     changed items' moves cost less than twice a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat
     view re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the
     new order (the items outside the longest run still in order; none when the order did not change), or one `Reset`
     if those still cost more; a grouped view recomputes. At 100k rows that is about 100 moves before a `Reset`, at 10k
-    about 170, at 2k about 650, so a Task Manager-size view moves rows and resets only for a mass change. WPF
+    about 150, at 2k about 430, so a Task Manager-size view moves rows and resets only for a mass change. WPF
     re-sorts with a `Reset` once 80% of the items changed (`LiveSortingDensityThreshold`) and insertion-sorts below.
   - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
     observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
