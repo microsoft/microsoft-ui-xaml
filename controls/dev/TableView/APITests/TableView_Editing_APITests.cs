@@ -3331,6 +3331,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Injected keys miss the test window on RS5/23H2 CI; re-enable with the InjectedKeyboard fix
         [TestProperty("Description", "Verifies a Shift+Tab move to a realized row above the viewport selects nothing when GettingFocus redirects it out of the table.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void VerifyRedirectedOffscreenTabMoveDoesNotSelectTargetRow()
@@ -3373,6 +3374,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Ignore", "True")] // Injected keys miss the test window on RS5/23H2 CI; re-enable with the InjectedKeyboard fix
         [TestProperty("Description", "Verifies Tab keeps focus on the edited cell when a CellEditEnding handler locks the target column, even though a context flyout keeps that cell focusable.")]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void VerifyTabToColumnLockedDuringCommitStaysOnEditedCell()
