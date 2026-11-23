@@ -210,7 +210,14 @@ namespace RenderingBackend
             Clip,
             Layer,
             RoundedClip, // a layer with a geometric mask
+            // ---- clips3d ----
+            GeometryClip,      // a layer with a path mask
+            Perspective,       // drawing moved to a pooled offscreen context
+            PerspectiveFailed, // an empty axis-aligned clip
         };
+
+        // ---- clips3d ----
+        constexpr uint32_t MaxPerspectiveDepth = 4;
 
         struct ClipGeometryEntry
         {
@@ -502,6 +509,8 @@ namespace RenderingBackend
                 m_overflowDepth = 0;
                 m_clipState = ClipState{ DeviceRect{ 0, 0, static_cast<float>(m_width), static_cast<float>(m_height) }, true, 0 };
                 m_opaqueCount = 0;
+                m_perspectiveHr = S_OK;
+                m_perspectiveUsed = 0;
                 // Bitmap copies made between frames, and areas moved by ScrollPixels, belong to this frame.
                 m_uploadBytes = m_pendingUploadBytes;
                 m_pendingUploadBytes = 0;
@@ -723,6 +732,193 @@ namespace RenderingBackend
             void PopRoundedRectangleClip() noexcept override
             {
                 PopEntry(StackEntry::RoundedClip);
+            }
+
+            // ---- clips3d ----
+            void PushGeometryClip(const PathData& path) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                if (m_depth >= MaxStackDepth)
+                {
+                    ++m_overflowDepth;
+                    return;
+                }
+                RectF bounds{};
+                ComPtr<ID2D1PathGeometry> geometry = GetPathGeometry(path, &bounds);
+                // A malformed path clips everything: an empty content rect, no mask.
+                const D2D1_RECT_F content = geometry ? ToD2D(bounds) : D2D1::RectF(0, 0, 0, 0);
+                const D2D1_LAYER_PARAMETERS1 parameters = D2D1::LayerParameters1(content, geometry.Get(),
+                    D2D1_ANTIALIAS_MODE_PER_PRIMITIVE, D2D1::IdentityMatrix(), 1.0f, nullptr, D2D1_LAYER_OPTIONS1_NONE);
+                m_context->PushLayer(&parameters, nullptr);
+                m_savedClipStates[m_depth] = m_clipState;
+                ++m_clipState.layers;
+                m_stack[m_depth++] = StackEntry::GeometryClip;
+            }
+
+            void PopGeometryClip() noexcept override
+            {
+                PopEntry(StackEntry::GeometryClip);
+            }
+
+            // Content is drawn by a second device context into a pooled offscreen bitmap (one per nesting depth, sized
+            // like the target) clipped to the layer bounds; on pop it is drawn with a 4x4 perspective transform.
+            void PushPerspectiveLayer(const RectF& bounds, const Matrix4x4F& matrix) noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                if (m_depth >= MaxStackDepth)
+                {
+                    ++m_overflowDepth;
+                    return;
+                }
+                PerspectiveSlot& slot = m_perspectiveSlots[(std::min)(m_perspectiveDepth, MaxPerspectiveDepth - 1)];
+                HRESULT hr = m_perspectiveDepth < MaxPerspectiveDepth ? S_OK : E_OUTOFMEMORY;
+                if (SUCCEEDED(hr) && !slot.context)
+                {
+                    hr = m_d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE, &slot.context);
+                }
+                if (SUCCEEDED(hr) && (!slot.bitmap || slot.width != m_width || slot.height != m_height || slot.dpiScale != m_dpiScale))
+                {
+                    slot.bitmap.Reset();
+                    const D2D1_BITMAP_PROPERTIES1 properties = D2D1::BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET,
+                        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED), 96.0f * m_dpiScale, 96.0f * m_dpiScale);
+                    hr = slot.context->CreateBitmap(D2D1::SizeU(m_width, m_height), nullptr, 0, &properties, &slot.bitmap);
+                    if (SUCCEEDED(hr))
+                    {
+                        slot.width = m_width;
+                        slot.height = m_height;
+                        slot.dpiScale = m_dpiScale;
+                        ++m_churnCreated;
+                    }
+                }
+                if (FAILED(hr))
+                {
+                    // Nothing inside the layer can be drawn correctly: clip it all away.
+                    if (m_perspectiveDepth < MaxPerspectiveDepth)
+                    {
+                        slot.bitmap.Reset();
+                    }
+                    m_context->PushAxisAlignedClip(D2D1::RectF(0, 0, 0, 0), D2D1_ANTIALIAS_MODE_ALIASED);
+                    m_savedClipStates[m_depth] = m_clipState;
+                    m_stack[m_depth++] = StackEntry::PerspectiveFailed;
+                    return;
+                }
+
+                SavedPerspectiveState& saved = slot.saved;
+                saved.context = m_context;
+                saved.transform = m_transform;
+                saved.clipState = m_clipState;
+                saved.damageCount = m_damageCount;
+                for (uint32_t i = 0; i < m_damageCount; ++i)
+                {
+                    saved.damage[i] = m_damage[i];
+                }
+                saved.damageBounds = m_damageBounds;
+                saved.damageUsesLayer = m_damageUsesLayer;
+                saved.opaqueCount = m_opaqueCount;
+                saved.bounds = bounds;
+                saved.matrix = matrix;
+
+                // Layer-space damage: the layer bounds in pixels.
+                const float s = m_dpiScale;
+                const auto clampEdge = [](float v, uint32_t limit) { return static_cast<int32_t>((std::min)((std::max)(v, 0.0f), static_cast<float>(limit))); };
+                m_damage[0] = { clampEdge(std::floor(bounds.left * s), m_width), clampEdge(std::floor(bounds.top * s), m_height),
+                    clampEdge(std::ceil(bounds.right * s), m_width), clampEdge(std::ceil(bounds.bottom * s), m_height) };
+                m_damageCount = 1;
+                m_damageBounds = m_damage[0];
+                m_damageUsesLayer = false;
+
+                // The outer stack entries stay on m_context; the layer context starts a fresh stack above them.
+                if (!m_colorInterfacesQueried)
+                {
+                    m_colorInterfacesQueried = true;
+                    m_dwriteFactory.As(&m_dwriteFactory4);
+                    m_context.As(&m_context4);
+                }
+                saved.context4 = m_context4;
+                m_context4.Reset();
+                slot.context.As(&m_context4);
+                m_perspectiveUsed |= 1u << m_perspectiveDepth;
+                m_stack[m_depth++] = StackEntry::Perspective;
+                ++m_perspectiveDepth;
+                m_context = slot.context;
+                m_context->SetDpi(96.0f * s, 96.0f * s);
+                m_context->SetTarget(slot.bitmap.Get());
+                m_context->BeginDraw();
+                m_context->SetTransform(D2D1::Matrix3x2F::Identity());
+                m_transform = {};
+                m_context->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+                m_context->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
+                m_context->SetPrimitiveBlend(D2D1_PRIMITIVE_BLEND_SOURCE_OVER);
+                m_context->PushAxisAlignedClip(ToDips(m_damageBounds), D2D1_ANTIALIAS_MODE_ALIASED);
+                m_context->Clear(D2D1::ColorF(0, 0, 0, 0));
+                m_clipState = ClipState{ DeviceRect{ static_cast<float>(m_damageBounds.left), static_cast<float>(m_damageBounds.top),
+                    static_cast<float>(m_damageBounds.right), static_cast<float>(m_damageBounds.bottom) }, true, 0 };
+                // Opaque fills inside the layer are not opaque on the target.
+                m_clipState.layers = 1;
+            }
+
+            void PopPerspectiveLayer() noexcept override
+            {
+                if (!m_frameActive)
+                {
+                    return;
+                }
+                if (m_overflowDepth > 0)
+                {
+                    --m_overflowDepth;
+                    return;
+                }
+                if (m_depth > 0 && (m_stack[m_depth - 1] == StackEntry::Perspective || m_stack[m_depth - 1] == StackEntry::PerspectiveFailed))
+                {
+                    PopEntry(m_stack[m_depth - 1]);
+                }
+            }
+
+            // Ends the top perspective layer (its stack entry is already popped) and draws it into the outer context.
+            void EndPerspective() noexcept
+            {
+                if (m_perspectiveDepth == 0)
+                {
+                    return;
+                }
+                PerspectiveSlot& slot = m_perspectiveSlots[--m_perspectiveDepth];
+                m_context->PopAxisAlignedClip();
+                const HRESULT hr = m_context->EndDraw();
+                m_context->SetTarget(nullptr);
+                const SavedPerspectiveState& saved = slot.saved;
+                m_context = saved.context;
+                m_context4 = saved.context4;
+                m_transform = saved.transform;
+                m_clipState = saved.clipState;
+                m_damageCount = saved.damageCount;
+                for (uint32_t i = 0; i < m_damageCount; ++i)
+                {
+                    m_damage[i] = saved.damage[i];
+                }
+                m_damageBounds = saved.damageBounds;
+                m_damageUsesLayer = saved.damageUsesLayer;
+                m_opaqueCount = saved.opaqueCount;
+                m_context->SetTransform(ToD2D(m_transform));
+                if (FAILED(hr))
+                {
+                    if (SUCCEEDED(m_perspectiveHr))
+                    {
+                        m_perspectiveHr = hr;
+                    }
+                    return;
+                }
+                const D2D1_RECT_F rect = ToD2D(saved.bounds);
+                D2D1_MATRIX_4X4_F perspective;
+                static_assert(sizeof(perspective.m) == sizeof(saved.matrix.m), "4x4 layout");
+                memcpy(perspective.m, saved.matrix.m, sizeof(perspective.m));
+                m_context->DrawBitmap(slot.bitmap.Get(), &rect, 1.0f, D2D1_INTERPOLATION_MODE_LINEAR, &rect, &perspective);
+                CountPrimitive(saved.bounds);
             }
 
             void FillPath(const PathData& path, const ColorF& color) noexcept override
@@ -1034,7 +1230,8 @@ namespace RenderingBackend
 
             void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept override
             {
-                if (!m_frameActive || !(rect.right > rect.left) || !(rect.bottom > rect.top) || !(blurRadius > 0))
+                // Inside a perspective layer the backdrop is not in the layer: skipped (reported by the walk).
+                if (!m_frameActive || !(rect.right > rect.left) || !(rect.bottom > rect.top) || !(blurRadius > 0) || m_perspectiveDepth > 0)
                 {
                     return;
                 }
@@ -1181,6 +1378,12 @@ namespace RenderingBackend
                 PopDamageClip();
                 m_frameActive = false;
                 HRESULT hr = m_context->EndDraw();
+                // ---- clips3d ----
+                if (SUCCEEDED(hr) && FAILED(m_perspectiveHr) && IsDeviceLoss(m_perspectiveHr))
+                {
+                    hr = m_perspectiveHr;
+                }
+                ReleaseUnusedPerspectiveSlots();
                 if (SUCCEEDED(hr) && m_swapChain)
                 {
                     hr = PresentDamage();
@@ -1266,6 +1469,10 @@ namespace RenderingBackend
                 // An attached swap chain's buffers are the target; they belong to the swap chain, not the painter.
                 inventory.surfaceBytes = (m_targetTexture && !m_swapChain ? targetBytes : 0) + (m_staging ? targetBytes : 0) +
                     (m_scrollScratch ? targetBytes : 0) + static_cast<uint64_t>(m_backdropWidth) * m_backdropHeight * 4;
+                for (const PerspectiveSlot& slot : m_perspectiveSlots)
+                {
+                    inventory.surfaceBytes += slot.bitmap ? static_cast<uint64_t>(slot.width) * slot.height * 4 : 0;
+                }
                 const uint32_t brushes = (m_brush ? 1 : 0) + (m_auxBrush ? 1 : 0);
                 const uint32_t bitmaps = static_cast<uint32_t>(m_bitmaps.size());
                 const uint32_t effects = (m_shadowEffect ? 1 : 0) + (m_backdropCrop ? 5 : 0);
@@ -1390,6 +1597,22 @@ namespace RenderingBackend
                 m_staging.Reset();
                 m_scrollScratch.Reset();
                 ReleaseBackdrop();
+                m_perspectiveUsed = 0;
+                ReleaseUnusedPerspectiveSlots();
+            }
+
+            // ---- clips3d ----
+            // Perspective layers keep their target-sized bitmap only while every frame uses them.
+            void ReleaseUnusedPerspectiveSlots() noexcept
+            {
+                for (uint32_t i = 0; i < MaxPerspectiveDepth; ++i)
+                {
+                    if ((m_perspectiveUsed & (1u << i)) == 0 && m_perspectiveSlots[i].bitmap)
+                    {
+                        m_perspectiveSlots[i].bitmap.Reset();
+                        ++m_churnDestroyed;
+                    }
+                }
             }
 
             HRESULT ResizeSwapChain() noexcept
@@ -1637,8 +1860,13 @@ namespace RenderingBackend
                     return; // unbalanced pop; ignored rather than corrupting D2D's stack
                 }
                 --m_depth;
+                if (expected == StackEntry::Perspective)
+                {
+                    EndPerspective();
+                    return;
+                }
                 m_clipState = m_savedClipStates[m_depth];
-                if (expected == StackEntry::Clip)
+                if (expected == StackEntry::Clip || expected == StackEntry::PerspectiveFailed)
                 {
                     m_context->PopAxisAlignedClip();
                 }
@@ -2620,6 +2848,33 @@ namespace RenderingBackend
             ComPtr<ID3D11DeviceContext> m_d3dContext;
             ComPtr<ID2D1Factory1> m_factory;
             ComPtr<ID2D1Device> m_d2dDevice;
+            // ---- clips3d ----
+            struct SavedPerspectiveState
+            {
+                ComPtr<ID2D1DeviceContext> context;
+                ComPtr<ID2D1DeviceContext4> context4;
+                Matrix3x2F transform{};
+                ClipState clipState;
+                PixelRect damage[MaxDamageRects]{};
+                uint32_t damageCount = 0;
+                PixelRect damageBounds{};
+                bool damageUsesLayer = false;
+                uint32_t opaqueCount = 0;
+                RectF bounds{};
+                Matrix4x4F matrix;
+            };
+            struct PerspectiveSlot
+            {
+                ComPtr<ID2D1DeviceContext> context;
+                ComPtr<ID2D1Bitmap1> bitmap;
+                uint32_t width = 0, height = 0;
+                float dpiScale = 0;
+                SavedPerspectiveState saved;
+            };
+            PerspectiveSlot m_perspectiveSlots[MaxPerspectiveDepth];
+            uint32_t m_perspectiveDepth = 0;
+            uint32_t m_perspectiveUsed = 0; // bit per slot, this frame
+            HRESULT m_perspectiveHr = S_OK;
             ComPtr<ID2D1DeviceContext> m_context;
             ComPtr<IDWriteFactory> m_dwriteFactory;
             ComPtr<ID2D1SolidColorBrush> m_brush;
