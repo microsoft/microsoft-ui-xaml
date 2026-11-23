@@ -42,6 +42,12 @@ private:
     void EnsureThumbAnimation();
     void StartThumbAnimation();
     void StopThumbAnimation();
+
+public:
+    // Immediate rendering: UI-thread equivalent of the thumb expression animation.
+    void UpdateImmediateThumbOffset(double offset);
+
+private:
     void UpdateThumbExpression();
 
     void UpdatePanningElementOffsetMultiplier();

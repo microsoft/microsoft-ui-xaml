@@ -8,6 +8,7 @@
 #include "VectorChangedEventArgs.h"
 #include "ScrollViewerIRefreshInfoProviderAdapter.h"
 #include "PTRTracing.h"
+#include "ImmediateRenderingHelpers.h"
 
 #define REFRESH_ANIMATION_DURATION 100ms
 #define REFRESH_VISUALIZER_OVERPAN_RATIO 0.4
@@ -52,6 +53,20 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::InteractionTracker
     if (!interactionTracker)
     {
         m_interactionTracker = nullptr;
+        return;
+    }
+
+    if (ImmediateRendering::IsRequested())
+    {
+        // The expressions below evaluated for the tracker's current position.
+        const winrt::float3 position = interactionTracker.Position();
+        const winrt::float2 size = ImmediateRefreshVisualizerSize();
+        const float s = IsOrientationVertical() ? size.y : size.x;
+        const float p = IsOrientationVertical() ? position.y : position.x;
+        const bool isNear = m_refreshPullDirection == winrt::RefreshPullDirection::TopToBottom || m_refreshPullDirection == winrt::RefreshPullDirection::LeftToRight;
+        m_immediateRenderingRevoker.revoke();
+        SetImmediateTranslation(m_refreshVisualizer.get(), isNear ? -s + std::min(s, -p) : s - std::min(s, p));
+        SetImmediateTranslation(m_infoProvider.get(), isNear ? std::min(s, std::max(-p, -s * 0.4f)) : std::max(-s, std::min(-p, s * 0.4f)));
         return;
     }
 
@@ -124,6 +139,16 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshRequestedAn
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     ValidateAndStoreParameters(refreshVisualizer, infoProvider, nullptr);
 
+    if (ImmediateRendering::IsRequested())
+    {
+        const winrt::float2 size = ImmediateRefreshVisualizerSize();
+        const float s = IsOrientationVertical() ? size.y : size.x;
+        const float ratio = static_cast<float>(executionRatio);
+        const bool isNear = m_refreshPullDirection == winrt::RefreshPullDirection::TopToBottom || m_refreshPullDirection == winrt::RefreshPullDirection::LeftToRight;
+        StartImmediateAnimation(isNear ? -(s * (1 - ratio)) : s * (1 - ratio), isNear ? s * ratio : -s * ratio, false /*isRefreshCompleted*/);
+        return;
+    }
+
     if ((!m_refreshVisualizerRefreshRequestedAnimation || !m_infoProviderRefreshRequestedAnimation || m_refreshRequestedAnimationNeedsUpdating) && m_compositor)
     {
         m_refreshVisualizerRefreshRequestedAnimation = m_compositor.CreateScalarKeyFrameAnimation();
@@ -167,6 +192,15 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::RefreshCompletedAn
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     ValidateAndStoreParameters(refreshVisualizer, infoProvider, nullptr);
+
+    if (ImmediateRendering::IsRequested())
+    {
+        const winrt::float2 size = ImmediateRefreshVisualizerSize();
+        const float s = IsOrientationVertical() ? size.y : size.x;
+        const bool isNear = m_refreshPullDirection == winrt::RefreshPullDirection::TopToBottom || m_refreshPullDirection == winrt::RefreshPullDirection::LeftToRight;
+        StartImmediateAnimation(isNear ? -s : s, 0.0f, true /*isRefreshCompleted*/);
+        return;
+    }
 
     if ((!m_refreshVisualizerRefreshCompletedAnimation || !m_infoProviderRefreshCompletedAnimation || m_refreshCompletedAnimationNeedsUpdating) && m_compositor)
     {
@@ -228,8 +262,11 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStorePa
         m_refreshRequestedAnimationNeedsUpdating = true;
         m_refreshCompletedAnimationNeedsUpdating = true;
 
-        winrt::ElementCompositionPreview::SetIsTranslationEnabled(refreshVisualizer, true);
-        m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+        if (!ImmediateRendering::IsRequested())
+        {
+            winrt::ElementCompositionPreview::SetIsTranslationEnabled(refreshVisualizer, true);
+            m_refreshVisualizerVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+        }
 
         if (!m_compositor)
         {
@@ -245,8 +282,11 @@ void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ValidateAndStorePa
         m_refreshRequestedAnimationNeedsUpdating = true;
         m_refreshCompletedAnimationNeedsUpdating = true;
 
-        winrt::ElementCompositionPreview::SetIsTranslationEnabled(infoProvider, true);
-        m_infoProviderVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+        if (!ImmediateRendering::IsRequested())
+        {
+            winrt::ElementCompositionPreview::SetIsTranslationEnabled(infoProvider, true);
+            m_infoProviderVisual.Properties().InsertVector3(L"Translation", { 0.0f, 0.0f, 0.0f });
+        }
 
         if (!m_compositor)
         {
@@ -290,4 +330,65 @@ winrt::hstring ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::getAnima
     }
 
     return animatedProperty;
+}
+
+winrt::float2 ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ImmediateRefreshVisualizerSize()
+{
+    // refreshVisualizerVisual.Size: no Composition node sizes hand-off visuals under immediate rendering.
+    if (auto refreshVisualizer = m_refreshVisualizer.get())
+    {
+        return refreshVisualizer.ActualSize();
+    }
+    return {};
+}
+
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::SetImmediateTranslation(const winrt::UIElement& element, float value)
+{
+    if (element)
+    {
+        winrt::float3 translation = element.Translation();
+        (IsOrientationVertical() ? translation.y : translation.x) = value;
+        element.Translation(translation);
+    }
+}
+
+float ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::GetImmediateTranslation(const winrt::UIElement& element)
+{
+    if (element)
+    {
+        const winrt::float3 translation = element.Translation();
+        return IsOrientationVertical() ? translation.y : translation.x;
+    }
+    return 0.0f;
+}
+
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::StartImmediateAnimation(float refreshVisualizerTo, float infoProviderTo, bool isRefreshCompleted)
+{
+    m_immediateRefreshVisualizerFrom = GetImmediateTranslation(m_refreshVisualizer.get());
+    m_immediateInfoProviderFrom = GetImmediateTranslation(m_infoProvider.get());
+    m_immediateRefreshVisualizerTo = refreshVisualizerTo;
+    m_immediateInfoProviderTo = infoProviderTo;
+    m_immediateIsRefreshCompleted = isRefreshCompleted;
+    m_immediateAnimationStart = std::chrono::steady_clock::now();
+    if (!m_immediateRenderingRevoker)
+    {
+        m_immediateRenderingRevoker = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::OnImmediateRendering });
+    }
+}
+
+void ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::OnImmediateRendering(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    const float progress = std::min(1.0f, std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - m_immediateAnimationStart).count()
+        / std::chrono::duration<float, std::milli>(REFRESH_ANIMATION_DURATION).count());
+    SetImmediateTranslation(m_refreshVisualizer.get(), m_immediateRefreshVisualizerFrom + (m_immediateRefreshVisualizerTo - m_immediateRefreshVisualizerFrom) * progress);
+    SetImmediateTranslation(m_infoProvider.get(), m_immediateInfoProviderFrom + (m_immediateInfoProviderTo - m_immediateInfoProviderFrom) * progress);
+    if (progress >= 1.0f)
+    {
+        m_immediateRenderingRevoker.revoke();
+        if (m_immediateIsRefreshCompleted)
+        {
+            // RefreshCompletedBatchCompleted
+            InteractionTrackerAnimation(m_refreshVisualizer.get(), m_infoProvider.get(), m_interactionTracker);
+        }
+    }
 }

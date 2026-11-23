@@ -5,6 +5,7 @@
 #include "common.h"
 #include "ScrollInputHelper.h"
 #include "ScrollPresenter.h"
+#include "ImmediateRenderingHelpers.h"
 
 PCWSTR ScrollInputHelper::s_horizontalOffsetPropertyName = L"TranslationX";
 PCWSTR ScrollInputHelper::s_verticalOffsetPropertyName = L"TranslationY";
@@ -126,6 +127,7 @@ void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewe
             UnhookScrollViewerDirectManipulationCompleted();
             UnhookRichEditBoxTextChanged();
 
+            m_immediateScrollViewerViewChangedRevoker.revoke();
             m_richEditBox.set(nullptr);
             m_scrollViewerPropertySet = nullptr;
             m_isScrollViewerInDirectManipulation = false;
@@ -144,6 +146,11 @@ void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewe
             HookScrollViewerDirectManipulationCompleted();
             HookRichEditBoxTextChanged();
 
+            if (ImmediateRendering::IsRequested())
+            {
+                m_immediateScrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, [this](auto const&, auto const&) { m_infoChangedFunction(true, true); });
+            }
+
             m_scrollViewerPropertySet = winrt::ElementCompositionPreview::GetScrollViewerManipulationPropertySet(scrollViewer);
         }
 
@@ -158,6 +165,7 @@ void ScrollInputHelper::SetScrollPresenter(const winrt::ScrollPresenter& scrollP
         if (m_scrollPresenter)
         {
             UnhookScrollPresenterPropertyChanged();
+            m_immediateScrollPresenterViewChangedRevoker.revoke();
         }
 
         m_scrollPresenter.set(scrollPresenter);
@@ -165,10 +173,54 @@ void ScrollInputHelper::SetScrollPresenter(const winrt::ScrollPresenter& scrollP
         if (scrollPresenter)
         {
             HookScrollPresenterPropertyChanged();
+            if (ImmediateRendering::IsRequested())
+            {
+                m_immediateScrollPresenterViewChangedRevoker = scrollPresenter.ViewChanged(winrt::auto_revoke, [this](auto const&, auto const&) { m_infoChangedFunction(true, true); });
+            }
         }
 
         ProcessScrollPresenterContentChange();
     }
+}
+
+// UI-thread equivalent of the m_internalTranslationX/YExpressionAnimation output (see UpdateInternalExpressionAnimations).
+double ScrollInputHelper::GetImmediateSourceOffset(winrt::Orientation orientation) const
+{
+    const bool isHorizontal = orientation == winrt::Orientation::Horizontal;
+    if (auto scrollViewer = m_scrollViewer.get())
+    {
+        double translation = -(isHorizontal ? scrollViewer.HorizontalOffset() : scrollViewer.VerticalOffset());
+        const double delta = GetContentSize(orientation) * GetImmediateSourceScale() - GetViewportSize(orientation);
+        if (delta < 0.0)
+        {
+            const bool isCentered = isHorizontal ?
+                (GetEffectiveHorizontalAlignment() == winrt::HorizontalAlignment::Stretch || GetEffectiveHorizontalAlignment() == winrt::HorizontalAlignment::Center) :
+                (GetEffectiveVerticalAlignment() == winrt::VerticalAlignment::Stretch || GetEffectiveVerticalAlignment() == winrt::VerticalAlignment::Center);
+            const bool isFar = isHorizontal ?
+                GetEffectiveHorizontalAlignment() == winrt::HorizontalAlignment::Right :
+                GetEffectiveVerticalAlignment() == winrt::VerticalAlignment::Bottom;
+            translation += isCentered ? delta / 2.0 : (isFar ? delta : 0.0);
+        }
+        return translation;
+    }
+    if (auto scrollPresenter = m_scrollPresenter.get())
+    {
+        return -(isHorizontal ? scrollPresenter.HorizontalOffset() : scrollPresenter.VerticalOffset());
+    }
+    return 0.0;
+}
+
+double ScrollInputHelper::GetImmediateSourceScale() const
+{
+    if (auto scrollViewer = m_scrollViewer.get())
+    {
+        return scrollViewer.ZoomFactor();
+    }
+    if (auto scrollPresenter = m_scrollPresenter.get())
+    {
+        return scrollPresenter.ZoomFactor();
+    }
+    return 1.0;
 }
 
 // Returns the parent RichEditBox if any.

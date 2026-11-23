@@ -9,6 +9,7 @@
 #include "Vector.h"
 #include "SwipeItem.h"
 #include "RuntimeProfiler.h"
+#include "ImmediateRenderingHelpers.h"
 #ifdef DBG
 #include "SwipeTestHooks.h"
 #endif
@@ -236,6 +237,8 @@ void SwipeControl::IdleStateEntered(
         m_createdContent = CreatedContent::None;
     }
 
+    UpdateImmediateSwipeTransforms();
+
     if (!m_isIdle)
     {
         m_isIdle = true;
@@ -341,6 +344,8 @@ void SwipeControl::InertiaStateEntered(
             assert(false);
         }
     }
+
+    UpdateImmediateSwipeTransforms();
 }
 
 void SwipeControl::ValuesChanged(
@@ -398,6 +403,7 @@ void SwipeControl::ValuesChanged(
         }
     }
     UpdateThresholdReached(value);
+    UpdateImmediateSwipeTransforms();
 }
 
 #pragma region TestHookHelpers
@@ -1120,6 +1126,7 @@ void SwipeControl::CreateContent(const winrt::SwipeItems& items)
         SetupExecuteExpressionAnimation();
         SetupClipAnimation();
         UpdateColors();
+        UpdateImmediateSwipeTransforms();
     }
 }
 
@@ -1190,6 +1197,11 @@ void SwipeControl::SetupExecuteExpressionAnimation()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    if (ImmediateRendering::IsRequested())
+    {
+        return; // UpdateImmediateSwipeTransforms
+    }
+
     if (IsTranslationFacadeAvailableForSwipeControl(m_swipeContentStackPanel.get()))
     {
         m_swipeContentStackPanel.get().StopAnimation(m_executeExpressionAnimation.get());
@@ -1219,6 +1231,11 @@ void SwipeControl::SetupExecuteExpressionAnimation()
 void SwipeControl::SetupClipAnimation()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (ImmediateRendering::IsRequested())
+    {
+        return; // UpdateImmediateSwipeTransforms
+    }
 
     if (!m_insetClip)
     {
@@ -1508,6 +1525,17 @@ void SwipeControl::TryGetSwipeVisuals()
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    if (ImmediateRendering::IsRequested())
+    {
+        // No hand-off visuals or expression animations: UpdateImmediateSwipeTransforms applies them as XAML properties.
+        if (!m_immediateInertiaConfigured)
+        {
+            m_immediateInertiaConfigured = true;
+            ConfigurePositionInertiaRestingValues();
+        }
+        return;
+    }
+
     if (IsTranslationFacadeAvailableForSwipeControl(m_content.get()))
     {
         m_swipeAnimation.get().Target(GetAnimationTarget(m_content.get()));
@@ -1619,6 +1647,110 @@ void SwipeControl::UpdateIsOpen(bool isOpen)
             }
 #endif
         }
+    }
+}
+
+// Immediate rendering equivalent of m_swipeAnimation, m_executeExpressionAnimation and m_clipExpressionAnimation (see
+// InitializeInteractionTracker): the same expressions evaluated on the UI thread with the tracker's current values,
+// applied as UIElement.Translation and a XAML clip.
+void SwipeControl::UpdateImmediateSwipeTransforms()
+{
+    if (!ImmediateRendering::IsRequested() || !m_interactionTracker || !m_content || !m_swipeContentRoot || !m_swipeContentStackPanel)
+    {
+        return;
+    }
+
+    const auto tracker = m_interactionTracker.get();
+    const auto properties = tracker.Properties();
+    const auto getBoolean = [&properties](wstring_view name)
+    {
+        bool value = false;
+        properties.TryGetBoolean(name, value);
+        return value;
+    };
+
+    const winrt::float3 position = tracker.Position();
+    const float value = m_isHorizontal ? position.x : position.y;
+    const auto content = m_content.get();
+    const float contentSize = m_isHorizontal ? content.ActualSize().x : content.ActualSize().y;
+
+    float minTranslation = 0.0f;
+    float maxTranslation = 0.0f;
+    if (getBoolean(s_isFarOpenPropertyName) || getBoolean(s_blockNearContentPropertyName))
+    {
+        minTranslation = -contentSize;
+    }
+    else if (getBoolean(s_isNearOpenPropertyName) || getBoolean(s_blockFarContentPropertyName))
+    {
+        maxTranslation = contentSize;
+    }
+    else
+    {
+        minTranslation = getBoolean(m_isHorizontal ? s_hasRightContentPropertyName : s_hasBottomContentPropertyName) ? -10000.0f : 0.0f;
+        maxTranslation = getBoolean(m_isHorizontal ? s_hasLeftContentPropertyName : s_hasTopContentPropertyName) ? 10000.0f : 0.0f;
+    }
+    const float translation = std::clamp(-value, minTranslation, maxTranslation);
+    const auto toVector = [this](float v) { return m_isHorizontal ? winrt::float3{ v, 0.0f, 0.0f } : winrt::float3{ 0.0f, v, 0.0f }; };
+    if (content.Translation() != toVector(translation))
+    {
+        content.Translation(toVector(translation));
+    }
+
+    const bool isNearContent = m_createdContent == CreatedContent::Left || m_createdContent == CreatedContent::Top;
+    const auto stackPanel = m_swipeContentStackPanel.get();
+    float stackPanelTranslation = 0.0f;
+    if (m_createdContent != CreatedContent::None && m_currentItems && m_currentItems.get().Mode() == winrt::SwipeMode::Execute)
+    {
+        const float stackPanelSize = m_isHorizontal ? stackPanel.ActualSize().x : stackPanel.ActualSize().y;
+        stackPanelTranslation = translation * 0.5f + (isNearContent ? -0.5f : 0.5f) * stackPanelSize;
+    }
+    if (stackPanel.Translation() != toVector(stackPanelTranslation))
+    {
+        stackPanel.Translation(toVector(stackPanelTranslation));
+    }
+
+    const auto swipeContentRoot = m_swipeContentRoot.get();
+    if (m_createdContent == CreatedContent::None)
+    {
+        if (swipeContentRoot.Clip())
+        {
+            swipeContentRoot.Clip(nullptr);
+        }
+        return;
+    }
+
+    const winrt::float2 rootSize = swipeContentRoot.ActualSize();
+    const float inset = std::max((m_isHorizontal ? rootSize.x : rootSize.y) + (isNearContent ? value : -value), 0.0f);
+    winrt::Rect clipRect{ 0.0f, 0.0f, rootSize.x, rootSize.y };
+    switch (m_createdContent)
+    {
+    case CreatedContent::Left: // RightInset
+        clipRect.Width = std::max(rootSize.x - inset, 0.0f);
+        break;
+    case CreatedContent::Right: // LeftInset
+        clipRect.X = inset;
+        clipRect.Width = std::max(rootSize.x - inset, 0.0f);
+        break;
+    case CreatedContent::Top: // BottomInset
+        clipRect.Height = std::max(rootSize.y - inset, 0.0f);
+        break;
+    case CreatedContent::Bottom: // TopInset
+        clipRect.Y = inset;
+        clipRect.Height = std::max(rootSize.y - inset, 0.0f);
+        break;
+    default:
+        break;
+    }
+    auto clip = swipeContentRoot.Clip();
+    if (!clip)
+    {
+        clip = winrt::Microsoft::UI::Xaml::Media::RectangleGeometry();
+        swipeContentRoot.Clip(clip);
+    }
+    const winrt::Rect current = clip.Rect();
+    if (current.X != clipRect.X || current.Y != clipRect.Y || current.Width != clipRect.Width || current.Height != clipRect.Height)
+    {
+        clip.Rect(clipRect);
     }
 }
 

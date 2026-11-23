@@ -17,6 +17,7 @@
 #include "XboxUtility.h"
 #include <DesignMode.h>
 #include <XamlOneCoreTransforms.h>
+#include <RenderingBackend.h>
 
 XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { namespace Controls
 {
@@ -1183,7 +1184,15 @@ Pivot::UpdateVisibleContent(_In_ INT index, _In_ PivotAnimationDirection animati
                         }
 
                         translation = { static_cast<float>(xOffset), 0, 0 };
-                        spCompPropSet.Get()->InsertVector3(wrl_wrappers::HStringReference(L"Translation").Get(), translation);
+                        if (RenderingBackend::IsImmediateModeActive())
+                        {
+                            // ---- scrolling ---- immediate rendering paints the Translation facade, not hand-off visual properties.
+                            IFC(spContainerAsUE->put_Translation(translation));
+                        }
+                        else
+                        {
+                            spCompPropSet.Get()->InsertVector3(wrl_wrappers::HStringReference(L"Translation").Get(), translation);
+                        }
                     }
                 }
 
@@ -2027,8 +2036,18 @@ Pivot::UpdateFocusFollowerImpl(_In_ INT idx)
             }
         }
 
+        if (RenderingBackend::IsImmediateModeActive())
+        {
+            // ---- scrolling ---- UI-thread evaluation of "(-1 * TransformedPosition) - this.Target.Offset.X".
+            wfn::Vector3 actualOffset = {};
+            IFC_RETURN(spFocusFollowerAsUIElement->get_ActualOffset(&actualOffset));
+            wfn::Vector3 translation = {};
+            IFC_RETURN(spFocusFollowerAsUIElement->get_Translation(&translation));
+            translation.X = -transformedPosition.X - actualOffset.X;
+            IFC_RETURN(spFocusFollowerAsUIElement->put_Translation(translation));
+        }
         //We only need to make the animation once, after that we can instead update just the Scalar parameter
-        if (!m_tpFocusFollowerExpresssionAnimation)
+        else if (!m_tpFocusFollowerExpresssionAnimation)
         {
             wrl::ComPtr<WUComp::ICompositor> spCompositor;
             IFC_RETURN(spCompObj.Get()->get_Compositor(&spCompositor));

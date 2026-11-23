@@ -6,6 +6,7 @@
 #include "AnnotatedScrollBarPanningInfo.h"
 #include "AnnotatedScrollBarTrace.h"
 #include "ScrollControllerPanRequestedEventArgs.h"
+#include "ImmediateRenderingHelpers.h"
 
 AnnotatedScrollBarPanningInfo::AnnotatedScrollBarPanningInfo()
 {
@@ -109,8 +110,11 @@ void AnnotatedScrollBarPanningInfo::PanningFrameworkElement(const winrt::Framewo
         if (m_panningFrameworkElement)
         {
             m_panningVisual.set(winrt::ElementCompositionPreview::GetElementVisual(m_panningFrameworkElement.get()));
-            winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_panningFrameworkElement.get(), true);
-            StartThumbAnimation();
+            if (!ImmediateRendering::IsRequested())
+            {
+                winrt::ElementCompositionPreview::SetIsTranslationEnabled(m_panningFrameworkElement.get(), true);
+                StartThumbAnimation();
+            }
         }
         else
         {
@@ -183,7 +187,7 @@ void AnnotatedScrollBarPanningInfo::EnsureThumbAnimation()
 
 void AnnotatedScrollBarPanningInfo::StartThumbAnimation()
 {
-    if (m_panningVisual && m_thumbOffsetAnimation)
+    if (m_panningVisual && m_thumbOffsetAnimation && !ImmediateRendering::IsRequested())
     {
         m_panningVisual.get().StartAnimation(L"Translation.Y", m_thumbOffsetAnimation);
     }
@@ -216,5 +220,19 @@ void AnnotatedScrollBarPanningInfo::UpdatePanningElementOffsetMultiplier()
     if (m_expressionAnimationSources && m_multiplierPropertyName != L"")
     {
         m_expressionAnimationSources.InsertScalar(m_multiplierPropertyName, m_panningElementOffsetMultiplier);
+    }
+}
+
+void AnnotatedScrollBarPanningInfo::UpdateImmediateThumbOffset(double offset)
+{
+    if (auto panningElement = m_panningFrameworkElement.get(); panningElement && m_panningElementOffsetMultiplier != 0.0f)
+    {
+        auto translation = panningElement.Translation();
+        const float y = static_cast<float>(offset / -m_panningElementOffsetMultiplier);
+        if (translation.y != y)
+        {
+            translation.y = y;
+            panningElement.Translation(translation);
+        }
     }
 }
