@@ -220,22 +220,22 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
         QueueRebuildHeaders();
     }
 
-    // A focused body cell is the current cell, so the cursor follows its column.
-    if (focusColumn || cursorColumn)
+    // A focused body cell is the current cell, so the cursor follows its column; a handler may have removed or collapsed it.
+    if (const int32_t cursorIndex = (focusColumn || cursorColumn) ? VisibleColumnIndexOf(columns, focusColumn ? focusColumn : cursorColumn) : -1; cursorIndex >= 0)
     {
-        SetColumnCursorInternal(VisibleColumnIndexOf(columns, focusColumn ? focusColumn : cursorColumn));
+        SetColumnCursorInternal(cursorIndex);
     }
     if (lastFocusColumn)
     {
         m_lastBodyFocusColumn = (std::max)(0, VisibleColumnIndexOf(columns, lastFocusColumn));
     }
     // Removing the focused cell's column drops its focus; restore it, in its original state, once the row has laid out the cell.
-    if (focusColumn == column)
+    if (const int32_t movedIndex = focusColumn == column ? VisibleColumnIndexOf(columns, column) : -1; movedIndex >= 0)
     {
-        BeginPendingBodyFocus(focusRow, VisibleColumnIndexOf(columns, focusColumn), true /* cellLevel */, std::nullopt, nullptr);
+        BeginPendingBodyFocus(focusRow, movedIndex, true /* cellLevel */, std::nullopt, nullptr);
         m_pendingReshapeFocusState = focusState;
     }
-    else if (focusColumn)
+    else if (focusColumn && focusColumn != column)
     {
         // The row re-lays out its cells, which can drop another cell's focus; restore it only if focus was lost.
         auto token = std::make_shared<winrt::event_token>();
@@ -247,10 +247,11 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
                     return;
                 }
                 strongThis->LayoutUpdated(*token);
-                auto const root = strongThis->XamlRoot();
-                if (root && !winrt::FocusManager::GetFocusedElement(root))
+                auto const xamlRoot = strongThis->XamlRoot();
+                const int32_t index = VisibleColumnIndexOf(strongThis->Columns(), focusColumn);
+                if (xamlRoot && index >= 0 && !winrt::FocusManager::GetFocusedElement(xamlRoot))
                 {
-                    strongThis->BeginPendingBodyFocus(focusRow, VisibleColumnIndexOf(strongThis->Columns(), focusColumn), true /* cellLevel */, std::nullopt, nullptr);
+                    strongThis->BeginPendingBodyFocus(focusRow, index, true /* cellLevel */, std::nullopt, nullptr);
                     strongThis->m_pendingReshapeFocusState = focusState;
                 }
             });

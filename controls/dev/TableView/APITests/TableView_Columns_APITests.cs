@@ -2276,6 +2276,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Name", string.Join(",", edited), "F2 edits the focused column.");
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a ColumnReordered handler that removes the focused body cell's column, whether that column moved or another did, leaves no focus or cursor on a missing column.")]
+        public void VerifyReorderHandlerRemovingFocusedColumnIsSafe()
+        {
+            foreach (var dragged in new[] { 0, 1 })
+            {
+                TableView tableView = null;
+                List<EditablePerson> items = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    items = MakeEditableItems();
+                    tableView = CreateEditableTable(items);
+                    tableView.Columns.Add(MakeTextColumn("Team", bound: false));
+                    tableView.IsReadOnly = false;
+                    tableView.CanUserReorderColumns = true;
+                    tableView.CanUserSortColumns = false;
+                    tableView.CanUserResizeColumns = false;
+                    var role = tableView.Columns[1];
+                    tableView.ColumnReordered += (s, e) => s.Columns.Remove(role);
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+
+                RunOnUIThread.Execute(() => GetCellPeer(tableView, items[0], 1).SetFocus());
+                IdleSynchronizer.Wait();
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, dragged, 0.5), HeaderPoint(tableView, 2, 0.75));
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, dragged == 0 ? "Team,Name" : "Name,Team", $"after dragging column {dragged} and removing Role");
+                    var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as FrameworkElement;
+                    var focusedColumn = focused?.Tag as TableViewColumn;
+                    Log.Comment($"Focused: {focused?.GetType().Name} {focusedColumn?.Header}.");
+                    Verify.IsTrue(focusedColumn == null || tableView.Columns.Contains(focusedColumn), "Focus is not on a removed column.");
+                });
+            }
+        }
+
         private void RunChordSteps(string[] headers, Action<TableView> setup, params (int focus, bool right, string expected)[] steps)
         {
             TableView tableView = null;

@@ -41,17 +41,20 @@ private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReor
 private void RestoreColumnOrder(IReadOnlyList<string> order)
 {
     // Known columns only, once each: a stale or repeated saved name must not shift the rest.
+    // Frozen columns keep their leading prefix; the saved order applies to the columns after it.
+    int frozen = ProcessTable.Columns.TakeWhile(c => c.FrozenEdge == TableViewFrozenEdge.Leading).Count();
     var known = order.Distinct()
         .Select(header => ProcessTable.Columns.FirstOrDefault(c => c.Header as string == header))
-        .Where(column => column is not null)
+        .Where(column => column is not null && column.FrozenEdge != TableViewFrozenEdge.Leading)
         .ToList();
-    for (int target = 0; target < known.Count; target++)
+    for (int i = 0; i < known.Count; i++)
     {
-        int current = ProcessTable.Columns.IndexOf(known[target]);
+        int target = frozen + i;
+        int current = ProcessTable.Columns.IndexOf(known[i]);
         if (current != target)
         {
             ProcessTable.Columns.RemoveAt(current);
-            ProcessTable.Columns.Insert(target, known[target]);
+            ProcessTable.Columns.Insert(target, known[i]);
         }
     }
 }
