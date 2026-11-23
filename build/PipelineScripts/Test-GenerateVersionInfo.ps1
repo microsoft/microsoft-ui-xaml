@@ -22,13 +22,16 @@ $generator = Join-Path $RepoRoot 'build\PipelineScripts\GenerateVersionInfo.ps1'
 $resourceTemplate = Join-Path $RepoRoot 'dxaml\xcp\inc\WinUIrc.ver'
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('WinUIVersionInfo-' + [guid]::NewGuid().ToString('N'))
 $originalBinaryVersion = $env:WindowsAppSDKBinaryVersion
+$defaultSourceRevision = '0123456789abcdef0123456789abcdef01234567'
 
 function Test-VersionResource
 {
     Param(
         [string]$Name,
         [string]$Version,
-        [string[]]$ExpectedVersions
+        [string[]]$ExpectedVersions,
+        [string]$SourceRevision = $defaultSourceRevision,
+        [string]$ExpectedComments = ''
     )
 
     $directory = Join-Path $testRoot $Name
@@ -39,7 +42,7 @@ function Test-VersionResource
     Copy-Item -LiteralPath $resourceTemplate -Destination (Join-Path $directory 'WinUIrc.ver')
     [System.IO.File]::WriteAllLines((Join-Path $directory 'WinUISourceRevision.h'), @(
         '#define WINUI_BUILD_MACHINE fixture_machine',
-        '#define WINUI_SOURCE_REVISION_ID fixture_revision'
+        "#define WINUI_SOURCE_REVISION_ID $SourceRevision"
     ))
     [System.IO.File]::WriteAllLines((Join-Path $directory 'VersionInfo.rc'), @(
         '#define VER_INTERNALNAME_STR "VersionInfo.dll"',
@@ -74,7 +77,11 @@ function Test-VersionResource
             throw "$Name $($fields[$index]): expected '$($ExpectedVersions[$index])', got '$($actualVersions[$index])'."
         }
     }
-    Write-Output "PASS: $Name native fixed/string file/product versions."
+    if ($info.Comments -cne $ExpectedComments)
+    {
+        throw "$Name Comments: expected '$ExpectedComments', got '$($info.Comments)'."
+    }
+    Write-Output "PASS: $Name native fixed/string file/product versions and source revision."
 }
 
 try
@@ -82,11 +89,16 @@ try
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
     foreach ($version in @('102.6.6.21', '102.6.6.0', '65535.65535.65535.65535'))
     {
-        Test-VersionResource -Name $version -Version $version -ExpectedVersions @($version, $version, $version, $version)
+        Test-VersionResource -Name $version -Version $version -ExpectedVersions @($version, $version, $version, $version) `
+            -ExpectedComments "SourceRevision=$defaultSourceRevision"
     }
+    $otherSourceRevision = '89abcdef0123456789abcdef0123456789abcdef'
+    Test-VersionResource -Name 'DifferentSourceRevision' -Version '102.6.6.21' `
+        -ExpectedVersions @('102.6.6.21', '102.6.6.21', '102.6.6.21', '102.6.6.21') `
+        -SourceRevision $otherSourceRevision -ExpectedComments "SourceRevision=$otherSourceRevision"
     $standaloneVersions = @(
         '3.3.0.0',
-        '3.3.0.0 (fixture_machine-fixture_revision)',
+        "3.3.0.0 (fixture_machine-$defaultSourceRevision)",
         '3.0.0.0',
         '3.0'
     )
@@ -106,6 +118,7 @@ try
         '  BEGIN',
         '    BLOCK "040704b0"',
         '    BEGIN',
+        ('      VALUE "Comments", "SourceRevision={0}\0"' -f $defaultSourceRevision),
         '      VALUE "FileVersion", "3.2.0.2610\0"',
         '      VALUE "ProductVersion", "2.0\0"',
         '      VALUE "OriginalFilename", "Microsoft.ui.xaml.dll.mui\0"',
@@ -188,7 +201,7 @@ public static class LocalizedResourceFixture
         {
             throw "Localized fixed/string file/product versions did not converge to '$version'."
         }
-        foreach ($field in @('OriginalFilename', 'LegalCopyright', 'Language'))
+        foreach ($field in @('Comments', 'OriginalFilename', 'LegalCopyright', 'Language'))
         {
             if ($info.$field -cne $localizedInfo.$field)
             {
