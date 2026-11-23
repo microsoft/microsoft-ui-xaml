@@ -24,6 +24,7 @@
 #include <winrt/Windows.Devices.Input.h>
 #include <winrt/Windows.System.h>
 #include <winrt/Microsoft.UI.Dispatching.h>
+#include <atomic>
 #include <functional>
 #include <vector>
 
@@ -344,6 +345,39 @@ private:
 // Must be called on the ink thread, inside the OS event handler, while 'args' is still live.
 winrt::Windows::UI::Core::PointerEventArgs SnapshotPointerEventArgs(winrt::Windows::UI::Core::PointerEventArgs const& args);
 
+// winrt::event plus a "has handlers" flag the ink thread can read without a data race. winrt::event's own
+// operator bool reads its handler list unsynchronized, while add/remove (from any thread) replace it. Here add and
+// remove run under m_lock and publish the result to an atomic, so HasHandlers never touches the handler list.
+template <typename Handler>
+class InkTrackedEvent
+{
+public:
+    winrt::event_token add(Handler const& handler)
+    {
+        winrt::slim_lock_guard const guard(m_lock);
+        auto token = m_event.add(handler);
+        m_hasHandlers.store(true, std::memory_order_release);
+        return token;
+    }
+
+    void remove(winrt::event_token const& token) noexcept
+    {
+        winrt::slim_lock_guard const guard(m_lock);
+        m_event.remove(token);
+        m_hasHandlers.store(static_cast<bool>(m_event), std::memory_order_release);
+    }
+
+    template <typename... Args>
+    void operator()(Args const&... args) { m_event(args...); }
+
+    bool HasHandlers() const noexcept { return m_hasHandlers.load(std::memory_order_acquire); }
+
+private:
+    winrt::event<Handler> m_event;
+    winrt::slim_mutex m_lock;
+    std::atomic<bool> m_hasHandlers{ false };
+};
+
 // Mirror of Windows.UI.Input.Inking.InkStrokeInput. Holds the app's handlers; the owning
 // InkPresenter proxy subscribes to the OS presenter's InkStrokeInput on the ink thread and calls
 // the Raise* helpers (marshaled to the UI thread) to fire these events. Agile (default), so the
@@ -370,12 +404,12 @@ public:
     void RaiseStrokeCanceled(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_strokeCanceled(*this, a); }
 
     // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
-    // event nobody listens to costs nothing. It only tests the handler list for null; an add or remove racing with it
-    // decides that one event.
-    bool HasStrokeStarted() const noexcept { return static_cast<bool>(m_strokeStarted); }
-    bool HasStrokeContinued() const noexcept { return static_cast<bool>(m_strokeContinued); }
-    bool HasStrokeEnded() const noexcept { return static_cast<bool>(m_strokeEnded); }
-    bool HasStrokeCanceled() const noexcept { return static_cast<bool>(m_strokeCanceled); }
+    // event nobody listens to costs nothing. Reads an atomic flag (InkTrackedEvent); an add or remove that races with it
+    // decides only that one event.
+    bool HasStrokeStarted() const noexcept { return m_strokeStarted.HasHandlers(); }
+    bool HasStrokeContinued() const noexcept { return m_strokeContinued.HasHandlers(); }
+    bool HasStrokeEnded() const noexcept { return m_strokeEnded.HasHandlers(); }
+    bool HasStrokeCanceled() const noexcept { return m_strokeCanceled.HasHandlers(); }
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
@@ -384,10 +418,10 @@ public:
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
-    winrt::event<Handler> m_strokeStarted;
-    winrt::event<Handler> m_strokeContinued;
-    winrt::event<Handler> m_strokeEnded;
-    winrt::event<Handler> m_strokeCanceled;
+    InkTrackedEvent<Handler> m_strokeStarted;
+    InkTrackedEvent<Handler> m_strokeContinued;
+    InkTrackedEvent<Handler> m_strokeEnded;
+    InkTrackedEvent<Handler> m_strokeCanceled;
 };
 
 // Mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Same marshaling model as InkStrokeInput.
@@ -422,15 +456,15 @@ public:
     void RaisePointerLost(winrt::Windows::UI::Core::PointerEventArgs const& a) { m_pointerLost(*this, a); }
 
     // Internal: whether the app has a handler for an event. Checked on the ink thread before an event is copied, so an
-    // event nobody listens to costs nothing. It only tests the handler list for null; an add or remove racing with it
-    // decides that one event.
-    bool HasPointerEntered() const noexcept { return static_cast<bool>(m_pointerEntered); }
-    bool HasPointerHovered() const noexcept { return static_cast<bool>(m_pointerHovered); }
-    bool HasPointerExited() const noexcept { return static_cast<bool>(m_pointerExited); }
-    bool HasPointerPressed() const noexcept { return static_cast<bool>(m_pointerPressed); }
-    bool HasPointerMoved() const noexcept { return static_cast<bool>(m_pointerMoved); }
-    bool HasPointerReleased() const noexcept { return static_cast<bool>(m_pointerReleased); }
-    bool HasPointerLost() const noexcept { return static_cast<bool>(m_pointerLost); }
+    // event nobody listens to costs nothing. Reads an atomic flag (InkTrackedEvent); an add or remove that races with it
+    // decides only that one event.
+    bool HasPointerEntered() const noexcept { return m_pointerEntered.HasHandlers(); }
+    bool HasPointerHovered() const noexcept { return m_pointerHovered.HasHandlers(); }
+    bool HasPointerExited() const noexcept { return m_pointerExited.HasHandlers(); }
+    bool HasPointerPressed() const noexcept { return m_pointerPressed.HasHandlers(); }
+    bool HasPointerMoved() const noexcept { return m_pointerMoved.HasHandlers(); }
+    bool HasPointerReleased() const noexcept { return m_pointerReleased.HasHandlers(); }
+    bool HasPointerLost() const noexcept { return m_pointerLost.HasHandlers(); }
 
     // Back-pointer to the owning presenter mirror (UWP parity). Weak, so it never keeps the owner
     // alive; returns null once the owner is gone. Set by InkPresenter::Start (post-construction).
@@ -439,13 +473,13 @@ public:
 
 private:
     winrt::weak_ref<muxc::InkPresenter> m_owner{ nullptr };
-    winrt::event<Handler> m_pointerEntered;
-    winrt::event<Handler> m_pointerHovered;
-    winrt::event<Handler> m_pointerExited;
-    winrt::event<Handler> m_pointerPressed;
-    winrt::event<Handler> m_pointerMoved;
-    winrt::event<Handler> m_pointerReleased;
-    winrt::event<Handler> m_pointerLost;
+    InkTrackedEvent<Handler> m_pointerEntered;
+    InkTrackedEvent<Handler> m_pointerHovered;
+    InkTrackedEvent<Handler> m_pointerExited;
+    InkTrackedEvent<Handler> m_pointerPressed;
+    InkTrackedEvent<Handler> m_pointerMoved;
+    InkTrackedEvent<Handler> m_pointerReleased;
+    InkTrackedEvent<Handler> m_pointerLost;
 };
 
 // Mirror of Windows.UI.Input.Inking.InkSynchronizer, returned by InkPresenter.ActivateCustomDrying.
