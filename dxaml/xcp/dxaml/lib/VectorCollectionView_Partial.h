@@ -14,6 +14,14 @@ namespace DirectUI
     class GroupDescription;
     class VectorCollectionView;
     struct ShapingSortState;
+    struct IFilterEventSource;
+
+    // The Filter event handlers a view filters through, and their sender (the CollectionViewSource, while it lives).
+    struct ShapingFilterEvents
+    {
+        ctl::ComPtr<IFilterEventSource> spEvents;
+        ctl::ComPtr<IInspectable> spSender;
+    };
 
     // Drops a default view from CollectionViewSource.GetDefaultView's table (CollectionViewSource_Shaping.cpp).
     void UnregisterDefaultView(_In_ VectorCollectionView* pView);
@@ -91,6 +99,12 @@ namespace DirectUI
         // A default view (CollectionViewSource.GetDefaultView): shapes with its own rules, no host.
         _Check_return_ HRESULT EnableDefaultViewShaping();
 
+        // The view presents a shaped, read-only list (index-based writes fail): it cannot be reordered.
+        bool IsShaped() const
+        {
+            return !!m_tpInternalList;
+        }
+
         // WPF: ICollectionView.SourceCollection.
         void SetSourceCollection(_In_opt_ IInspectable* pSource);
 
@@ -109,9 +123,9 @@ namespace DirectUI
         // keeps following its source with its own copy of the rules; nothing it is told reaches the host.
         _Check_return_ HRESULT DetachFromHost();
 
-        // While the host has Filter event handlers the view holds it, as WPF's view holds the CVS through
-        // the wrapped filter; else only weakly.
-        void SetFilterHost(_In_opt_ CollectionViewSource* pHost);
+        // While the host has Filter event handlers the view holds them (as WPF's view holds the wrapped filter) and
+        // the host only weakly, so the two form no cycle; the host is the sender while it lives.
+        void SetFilterEvents(_In_opt_ IFilterEventSource* pEvents);
 
         _Check_return_ HRESULT OnSortDescriptionsChanged();
         _Check_return_ HRESULT OnShapingRulesChanged();
@@ -182,12 +196,15 @@ namespace DirectUI
         _Check_return_ HRESULT ProcessCollectionChanged(_In_ wfc::IVectorChangedEventArgs* pArgs);
         _Check_return_ HRESULT ProcessCollectionChangedWithAdjustedIndex(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
         _Check_return_ HRESULT ProcessGroupedCollectionChanged(wfc::CollectionChange change, UINT index, _Out_ bool* pIsApplied);
-        _Check_return_ HRESULT GetFilterHost(_Outptr_result_maybenull_ CollectionViewSource** ppHost);
-        _Check_return_ HRESULT PassesFilter(_In_opt_ IInspectable* pItem, _In_opt_ CollectionViewSource* pFilterHost, _Out_ bool* pIsAccepted);
+        _Check_return_ HRESULT CheckGroupOrderAfterChange(_Inout_ bool* pIsApplied);
+        _Check_return_ HRESULT GetFilterEvents(_Out_ ShapingFilterEvents* pEvents);
+        _Check_return_ HRESULT PassesFilter(_In_opt_ IInspectable* pItem, const ShapingFilterEvents& events, _Out_ bool* pIsAccepted);
         _Check_return_ HRESULT CreateShapingDescriptions(
             _Outptr_ wfc::IVector<xaml_data::SortDescription*>** ppSortDescriptions,
             _Outptr_ wfc::IVector<xaml_data::GroupDescription*>** ppGroupDescriptions);
         void DetachSourceList();
+        void ReleaseShapingState();
+        bool IsFilterStarvingLoads();
 
         // Live shaping (VectorCollectionView_Shaping.cpp; WPF: LiveShapingList / LiveShapingItem).
         struct LiveShapingState;
@@ -224,7 +241,11 @@ namespace DirectUI
         bool m_isShapingEnabled = false;
         bool m_isDefaultView = false;
         ctl::WeakRefPtr m_hostRef;
-        TrackerPtr<xaml_data::ICollectionViewSource> m_tpFilterHost;
+        ctl::ComPtr<IFilterEventSource> m_spFilterEvents;
+
+        // Incremental loading through a shaped view (IsFilterStarvingLoads).
+        UINT m_sizeAtLastLoad = UINT_MAX;
+        UINT m_fruitlessLoadCount = 0;
 
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::GroupDescription*>> m_tpGroupDescriptions;

@@ -3498,6 +3498,7 @@ namespace Parser
         PropertyGroupDescription_Converter = 2487,
         PropertyGroupDescription_PropertyName = 2488,
         PropertyGroupDescription_StringComparison = 2489,
+        GroupDescription_GroupNames = 2490,
     };
 
     enum class StableEventIndex: UINT16
@@ -3842,11 +3843,10 @@ namespace Parser
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
-        CollectionViewSource_FilterRequested_Deleted0 = 340,
-        CollectionViewSource_Filter = 341,
+        CollectionViewSource_Filter = 340,
     };
 
     static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::CollectionViewStringComparison) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::PropertyGroupDescription_StringComparison) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::GroupDescription_GroupNames) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::CollectionViewSource_Filter) + 1;
 }

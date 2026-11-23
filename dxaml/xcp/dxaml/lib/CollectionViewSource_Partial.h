@@ -63,7 +63,11 @@ namespace DirectUI
         _Check_return_ HRESULT AddFilterEventHandler(_In_ xaml_data::IFilterEventHandler* pHandler, _Out_ EventRegistrationToken* pToken);
         _Check_return_ HRESULT RemoveFilterEventHandler(EventRegistrationToken token);
         bool HasFilterEventHandlers() const;
-        _Check_return_ HRESULT RaiseFilterEvent(_In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted);
+
+        // The handlers a shaping view filters through while there are any, else null. The view holds them, not this.
+        IFilterEventSource* GetFilterEventsIfHandled() const;
+        static _Check_return_ HRESULT RaiseFilterEvent(_In_ IFilterEventSource* pEvents, _In_opt_ IInspectable* pSender, _In_opt_ IInspectable* pItem, _Out_ bool* pIsAccepted);
+        static void WalkFilterEvents(_In_ IFilterEventSource* pEvents, EReferenceTrackerWalkType walkType);
 
         _Check_return_ HRESULT OnShapingDescriptionsChanged();
         _Check_return_ HRESULT OnSortDescriptionsChanged();

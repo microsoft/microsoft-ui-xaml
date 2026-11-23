@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "VectorCollectionView.g.h"
+#include "CollectionViewSource.g.h"
 
 using namespace DirectUI;
 using namespace xaml_data;
@@ -23,6 +24,7 @@ VectorCollectionView::~VectorCollectionView()
     }
 
     DetachSourceList();
+    ReleaseShapingState();
 
     if (m_isDefaultView)
     {
@@ -153,6 +155,10 @@ VectorCollectionView::get_HasMoreItemsImpl(_Out_ BOOLEAN *value)
     else
     {
         IFC(m_tpSupportIncrementalLoading->get_HasMoreItems(value));
+        if (*value && IsFilterStarvingLoads())
+        {
+            *value = FALSE;
+        }
     }
 
 Cleanup:
@@ -175,11 +181,28 @@ VectorCollectionView::LoadMoreItemsAsyncImpl(
         IFC(E_NOTIMPL);
     }
 
+    if (IsShaped())
+    {
+        UINT size = 0;
+        IFC(get_Size(&size));
+        m_fruitlessLoadCount = (size == m_sizeAtLastLoad) ? m_fruitlessLoadCount + 1 : 0;
+        m_sizeAtLastLoad = size;
+    }
+
     IFC(m_tpSupportIncrementalLoading->LoadMoreItemsAsync(count, operation));
 
 Cleanup:
 
     RRETURN(hr);
+}
+
+// A filter that rejects the items loads bring would make a consumer (ListView) load until the source has no more:
+// once several loads in a row added nothing to the view, it reports no more items until the view grows.
+bool VectorCollectionView::IsFilterStarvingLoads()
+{
+    constexpr UINT c_maxFruitlessLoads = 3;
+    UINT size = 0;
+    return IsShaped() && m_fruitlessLoadCount >= c_maxFruitlessLoads && SUCCEEDED(get_Size(&size)) && size == m_sizeAtLastLoad;
 }
 
 _Check_return_

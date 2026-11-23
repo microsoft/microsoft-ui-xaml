@@ -878,7 +878,7 @@ namespace Microsoft.UI.Xaml.Data
     }
 
     // WPF's System.ComponentModel.GroupDescription: how a level of groups divides items. Derive from it and override
-    // GroupNameFromItem (and NamesMatch) for custom grouping; PropertyGroupDescription groups by a property.
+    // GroupNameFromItemCore (and NamesMatchCore) for custom grouping; PropertyGroupDescription groups by a property.
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -890,9 +890,12 @@ namespace Microsoft.UI.Xaml.Data
     {
         protected GroupDescription() { }
 
-        // WPF's GroupDescription.GroupNames: groups that exist, in this order and before the others, even when empty.
+        // WPF's GroupDescription.GroupNames: groups that exist, in this order and before the others, even when empty. A
+        // read-only DependencyProperty, so markup can fill it.
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromCore = true)]
+        [DependencyPropertyModifier(Modifier.Internal)]
+        [CollectionType(CollectionKind.Observable, NewCodeGenCollectionType = typeof(Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object>))]
         [ReadOnly]
         public Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> GroupNames
         {
@@ -920,14 +923,27 @@ namespace Microsoft.UI.Xaml.Data
         }
 
         // WPF's GroupDescription.GroupNameFromItem: the name of the group the item belongs to at this level. culture is the
-        // view's Culture (empty when unset).
-        protected virtual Windows.Foundation.Object GroupNameFromItem([Optional] Windows.Foundation.Object item, Windows.Foundation.Int32 level, [Optional] Windows.Foundation.String culture)
+        // view's Culture (empty when unset). Public, so any ICollectionView can group by a description; it calls
+        // GroupNameFromItemCore, which a derived class overrides (the AutomationPeer pattern).
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.Object GroupNameFromItem([Optional] Windows.Foundation.Object item, Windows.Foundation.Int32 level, [Optional] Windows.Foundation.String culture)
         {
             return default(Windows.Foundation.Object);
         }
 
         // WPF's GroupDescription.NamesMatch: whether an item whose group name is itemName belongs to the group groupName.
-        protected virtual Windows.Foundation.Boolean NamesMatch([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Windows.Foundation.Boolean NamesMatch([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
+        {
+            return default(Windows.Foundation.Boolean);
+        }
+
+        protected virtual Windows.Foundation.Object GroupNameFromItemCore([Optional] Windows.Foundation.Object item, Windows.Foundation.Int32 level, [Optional] Windows.Foundation.String culture)
+        {
+            return default(Windows.Foundation.Object);
+        }
+
+        protected virtual Windows.Foundation.Boolean NamesMatchCore([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
         {
             return default(Windows.Foundation.Boolean);
         }
@@ -961,6 +977,7 @@ namespace Microsoft.UI.Xaml.Data
         }
 
         // WPF's PropertyGroupDescription.StringComparison: how string group names match. Ordinal unless set.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromCore = true)]
         [DependencyPropertyModifier(Modifier.Internal)]
         public Microsoft.UI.Xaml.Data.CollectionViewStringComparison StringComparison

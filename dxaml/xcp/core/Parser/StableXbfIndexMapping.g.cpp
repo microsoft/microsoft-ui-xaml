@@ -1021,6 +1021,7 @@ namespace Parser
         StableXbfTypeIndex::UnknownType,
         StableXbfTypeIndex::UnknownType,
         StableXbfTypeIndex::UnknownType,
+        StableXbfTypeIndex::UnknownType,
         StableXbfTypeIndex::Byte,
         StableXbfTypeIndex::Char16,
         StableXbfTypeIndex::DateTime,
@@ -4511,6 +4512,7 @@ namespace Parser
         KnownPropertyIndex::PropertyGroupDescription_Converter,
         KnownPropertyIndex::PropertyGroupDescription_PropertyName,
         KnownPropertyIndex::PropertyGroupDescription_StringComparison,
+        KnownPropertyIndex::GroupDescription_GroupNames,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4736,6 +4738,7 @@ namespace Parser
         StableXbfPropertyIndex::GradientStop_Offset,
         StableXbfPropertyIndex::GridLength_GridUnitType,
         StableXbfPropertyIndex::GridLength_Value,
+        StableXbfPropertyIndex::GroupDescription_GroupNames,
         StableXbfPropertyIndex::GroupDescription_SortDescriptions,
         StableXbfPropertyIndex::GroupStyle_ContainerStyle,
         StableXbfPropertyIndex::GroupStyle_ContainerStyleSelector,
@@ -6831,7 +6834,6 @@ namespace Parser
         KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::FrameworkApplication_ResourceManagerRequested,
         KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread,
-        KnownEventIndex::UnknownType_UnknownEvent,
         KnownEventIndex::CollectionViewSource_Filter,
     };
 

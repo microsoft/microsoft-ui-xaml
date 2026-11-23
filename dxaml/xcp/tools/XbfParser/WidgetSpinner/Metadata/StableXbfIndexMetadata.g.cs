@@ -3502,6 +3502,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         PropertyGroupDescription_Converter = 2487,
         PropertyGroupDescription_PropertyName = 2488,
         PropertyGroupDescription_StringComparison = 2489,
+        GroupDescription_GroupNames = 2490,
     }
 
     // Define the stable XBF event indices
@@ -3847,8 +3848,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         FrameworkApplication_ResourceManagerInitializing_Deleted0 = 337,
         FrameworkApplication_ResourceManagerRequested = 338,
         WindowsXamlManager_XamlShutdownCompletedOnThread = 339,
-        CollectionViewSource_FilterRequested_Deleted0 = 340,
-        CollectionViewSource_Filter = 341,
+        CollectionViewSource_Filter = 340,
     }
 
     [Flags]
@@ -4983,6 +4983,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.GradientStop_Offset, new XamlPropertyInfo("Microsoft.UI.Xaml.Media.GradientStop.Offset", StableXbfTypeIndex.Double, StableXbfTypeIndex.GradientStop, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.GridLength_GridUnitType, new XamlPropertyInfo("Microsoft.UI.Xaml.GridLength.GridUnitType", StableXbfTypeIndex.GridUnitType, StableXbfTypeIndex.GridLength, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.GridLength_Value, new XamlPropertyInfo("Microsoft.UI.Xaml.GridLength.Value", StableXbfTypeIndex.Double, StableXbfTypeIndex.GridLength, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.GroupDescription_GroupNames, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.GroupDescription.GroupNames", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.GroupDescription, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.GroupDescription_SortDescriptions, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.GroupDescription.SortDescriptions", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.GroupDescription, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.GroupStyle_ContainerStyle, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.GroupStyle.ContainerStyle", StableXbfTypeIndex.Style, StableXbfTypeIndex.GroupStyle, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.GroupStyle_ContainerStyleSelector, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.GroupStyle.ContainerStyleSelector", StableXbfTypeIndex.StyleSelector, StableXbfTypeIndex.GroupStyle, XamlPropertyFlags.None) },

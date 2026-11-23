@@ -138,6 +138,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::UnknownType, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor)), // Type flags
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        KnownTypeIndex::IObservableVectorOfObject, // Index name
+        KnownTypeIndex::UnknownType, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsInterface) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCollection)), // Type flags
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
     {
         KnownTypeIndex::IObservableVectorOfGroupStyle, // Index name
@@ -6166,6 +6172,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         { /* empty string */ }, // Name
         { /* empty string */ }, // Full name
         KnownNamespaceIndex::UnknownNamespace, // Declaring namespace index
+    },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        { /* empty string */ }, // Name
+        { /* empty string */ }, // Full name
+        KnownNamespaceIndex::Windows_Foundation_Collections, // Declaring namespace index
     },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
     {
@@ -12199,6 +12211,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First object property = UnknownObject.UnknownProperty
         0, // Property slot count
     },
+    // Windows.Foundation.Collections.IObservableVector`1[Windows.Foundation.Object]
+    {
+        KnownPropertyIndex::UnknownType_UnknownProperty, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        0, // Property slot count
+    },
     // Windows.Foundation.Collections.IObservableVector`1[Microsoft.UI.Xaml.Controls.GroupStyle]
     {
         KnownPropertyIndex::UnknownType_UnknownProperty, // First property
@@ -13596,12 +13617,12 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     },
     // Microsoft.UI.Xaml.Data.GroupDescription
     {
-        KnownPropertyIndex::GroupDescription_SortDescriptions, // First property
+        KnownPropertyIndex::GroupDescription_GroupNames, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        9, // Property slot count
+        10, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.GroupStyle
     {
@@ -16265,7 +16286,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        12, // Property slot count
+        13, // Property slot count
     },
     // Microsoft.UI.Xaml.PVLStaggerFunction
     {
@@ -21047,6 +21068,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
 extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 {
     GUID{} /*GUID_NULL*/,
+    __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<IInspectable*>),
     __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::GroupStyle*>),
     __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>),
     __uuidof(ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::GroupDescription*>),
@@ -24766,6 +24788,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::GridLength, // Declaring type
         KnownTypeIndex::GridLength, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::StoreDoubleAsFloat)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.GroupDescription.GroupNames
+    {
+        KnownPropertyIndex::GroupDescription_GroupNames, // Index name
+        KnownTypeIndex::IObservableVectorOfObject, // Property type
+        KnownTypeIndex::GroupDescription, // Declaring type
+        KnownTypeIndex::GroupDescription, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsReadOnlyProperty) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
     },
     // Microsoft.UI.Xaml.Data.GroupDescription.SortDescriptions
     {
@@ -38992,6 +39022,7 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::DependencyObject_Column, // GradientStop_Offset
     KnownPropertyIndex::GridLength_Value, // GridLength_GridUnitType
     KnownPropertyIndex::DependencyObject_Column, // GridLength_Value
+    KnownPropertyIndex::GroupDescription_SortDescriptions, // GroupDescription_GroupNames
     KnownPropertyIndex::DependencyObject_Column, // GroupDescription_SortDescriptions
     KnownPropertyIndex::GroupStyle_ContainerStyleSelector, // GroupStyle_ContainerStyle
     KnownPropertyIndex::GroupStyle_HeaderContainerStyle, // GroupStyle_ContainerStyleSelector
@@ -39488,7 +39519,7 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::EasingFunctionBase_EasingMode, // PowerEase_Power
     KnownPropertyIndex::PropertyGroupDescription_PropertyName, // PropertyGroupDescription_Converter
     KnownPropertyIndex::PropertyGroupDescription_StringComparison, // PropertyGroupDescription_PropertyName
-    KnownPropertyIndex::GroupDescription_SortDescriptions, // PropertyGroupDescription_StringComparison
+    KnownPropertyIndex::GroupDescription_GroupNames, // PropertyGroupDescription_StringComparison
     KnownPropertyIndex::PVLStaggerFunction_DelayReduce, // PVLStaggerFunction_Delay
     KnownPropertyIndex::PVLStaggerFunction_Maximum, // PVLStaggerFunction_DelayReduce
     KnownPropertyIndex::PVLStaggerFunction_Reverse, // PVLStaggerFunction_Maximum
@@ -40967,7 +40998,8 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // GradientStop_Offset
     8, // GridLength_GridUnitType
     9, // GridLength_Value
-    8, // GroupDescription_SortDescriptions
+    8, // GroupDescription_GroupNames
+    9, // GroupDescription_SortDescriptions
     8, // GroupStyle_ContainerStyle
     9, // GroupStyle_ContainerStyleSelector
     10, // GroupStyle_HeaderContainerStyle
@@ -41461,9 +41493,9 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     9, // PopupThemeTransition_FromHorizontalOffset
     10, // PopupThemeTransition_FromVerticalOffset
     9, // PowerEase_Power
-    9, // PropertyGroupDescription_Converter
-    10, // PropertyGroupDescription_PropertyName
-    11, // PropertyGroupDescription_StringComparison
+    10, // PropertyGroupDescription_Converter
+    11, // PropertyGroupDescription_PropertyName
+    12, // PropertyGroupDescription_StringComparison
     8, // PVLStaggerFunction_Delay
     9, // PVLStaggerFunction_DelayReduce
     10, // PVLStaggerFunction_Maximum
@@ -42942,6 +42974,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"Offset"),
     XSTRING_PTR_STORAGE(L"GridUnitType"),
     XSTRING_PTR_STORAGE(L"Value"),
+    XSTRING_PTR_STORAGE(L"GroupNames"),
     XSTRING_PTR_STORAGE(L"SortDescriptions"),
     XSTRING_PTR_STORAGE(L"ContainerStyle"),
     XSTRING_PTR_STORAGE(L"ContainerStyleSelector"),

@@ -32,14 +32,16 @@ namespace ctl
         IFACEMETHOD(put_CustomSort)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewComparer* pValue) override { return This()->put_CustomSort(pValue); }
         IFACEMETHOD(get_GroupNames)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<IInspectable*>** ppValue) override { return This()->get_GroupNames(ppValue); }
         IFACEMETHOD(get_SortDescriptions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Data::SortDescription*>** ppValue) override { return This()->get_SortDescriptions(ppValue); }
+        IFACEMETHOD(GroupNameFromItem)(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult) override { return This()->GroupNameFromItem(pItem, level, culture, ppResult); }
+        IFACEMETHOD(NamesMatch)(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override { return This()->NamesMatch(pGroupName, pItemName, pResult); }
     };
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(GroupNameFromItem)(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult) override { return This()->GroupNameFromItem(pItem, level, culture, ppResult); }
-        IFACEMETHOD(NamesMatch)(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override { return This()->NamesMatch(pGroupName, pItemName, pResult); }
+        IFACEMETHOD(GroupNameFromItemCore)(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult) override { return This()->GroupNameFromItemCore(pItem, level, culture, ppResult); }
+        IFACEMETHOD(NamesMatchCore)(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override { return This()->NamesMatchCore(pGroupName, pItemName, pResult); }
     };
 }
 #endif
@@ -95,9 +97,11 @@ namespace DirectUI
 
         // Methods.
         _Check_return_ HRESULT STDMETHODCALLTYPE GroupNameFromItem(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult);
-        _Check_return_ HRESULT GroupNameFromItemProtected(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult);
+        _Check_return_ HRESULT STDMETHODCALLTYPE GroupNameFromItemCore(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult);
+        _Check_return_ HRESULT GroupNameFromItemCoreProtected(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_ IInspectable** ppResult);
         _Check_return_ HRESULT STDMETHODCALLTYPE NamesMatch(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
-        _Check_return_ HRESULT NamesMatchProtected(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+        _Check_return_ HRESULT STDMETHODCALLTYPE NamesMatchCore(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+        _Check_return_ HRESULT NamesMatchCoreProtected(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
 
 
     protected:
@@ -140,6 +144,7 @@ namespace DirectUI
         // Static properties.
 
         // Dependency properties.
+        
         
 
         // Attached properties.

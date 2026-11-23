@@ -137,6 +137,7 @@ CDependencyProperty::GetDefaultValue(
     case KnownPropertyIndex::CollectionViewSource_LiveFilteringProperties:
     case KnownPropertyIndex::CollectionViewSource_LiveGroupingProperties:
     case KnownPropertyIndex::GroupDescription_SortDescriptions:
+    case KnownPropertyIndex::GroupDescription_GroupNames:
     case KnownPropertyIndex::ToggleSwitch_OnContent:
     case KnownPropertyIndex::ToggleSwitch_OffContent:
     {

@@ -15,7 +15,12 @@ namespace DirectUI
         _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 
     public:
-        _Check_return_ HRESULT GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult) override;
-        _Check_return_ HRESULT NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override;
+        _Check_return_ HRESULT get_StringComparisonImpl(_Out_ xaml_data::CollectionViewStringComparison* pValue);
+        _Check_return_ HRESULT put_StringComparisonImpl(xaml_data::CollectionViewStringComparison value);
+        _Check_return_ HRESULT GroupNameFromItemCoreImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult) override;
+        _Check_return_ HRESULT NamesMatchCoreImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override;
+
+    private:
+        bool m_isRestoringValue = false;
     };
 }
