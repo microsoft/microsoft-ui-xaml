@@ -112,6 +112,13 @@ private:
         const ImmediateRenderingDetail::WalkContext& context,
         _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
+    // FocusVisualKind.DottedLine: the focus target draws its legacy dotted focus rect after its children
+    // (HWWalk via CFocusManager::RenderFocusRectForElementIfNeeded).
+    void EmitLegacyFocusRect(
+        _In_ CUIElement* element,
+        const ImmediateRenderingDetail::WalkContext& context,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+
     static void SaveScrollers(_Inout_ IslandState& state, const ImmediateRenderingDetail::DisplayList& list);
     void ReportUnsupported(_In_ CUIElement* element, _In_z_ const wchar_t* detail);
     static FILE* StatsFile() noexcept;

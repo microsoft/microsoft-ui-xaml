@@ -27,6 +27,12 @@ public:
         _In_ CUIElement* element,
         _In_ IContentRenderer* renderer);
 
+    // The legacy dotted-line focus rectangle RenderFocusRectForElement would draw for `element` (immediate rendering
+    // paints it itself). Returns false when legacy focus rects are off or the element draws none.
+    static bool GetLegacyFocusRectOptions(
+        _In_ CUIElement* element,
+        _Out_ FocusRectangleOptions* options);
+
     // Returns true if we're showing the "high-visibility" solid-line focus rectangles,
     // false if we're showing the "legacy" dotted-line focus rectangles. Returns true
     // if RevealFocus mode is enabled as well, as that just adds an extra effect around the existing

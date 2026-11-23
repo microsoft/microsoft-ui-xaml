@@ -25,6 +25,8 @@
 #include "LayoutTransitionElement.h"
 #include <TransitionRoot.h>
 #include <CalendarViewBaseItemChrome.h>
+#include "focusmgr.h"
+#include <FocusRectOptions.h>
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
@@ -2111,6 +2113,59 @@ void ImmediateRenderer::EmitBorder(
     }
 }
 
+void ImmediateRenderer::EmitLegacyFocusRect(
+    _In_ CUIElement* element,
+    const WalkContext& ctx,
+    _Inout_ DisplayList& list)
+{
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(element);
+    FocusRectangleOptions options;
+    if (focusManager == nullptr || focusManager->GetFocusTarget() != element
+        || !CFocusRectManager::GetLegacyFocusRectOptions(element, &options))
+    {
+        return;
+    }
+    if (options.bounds.Width == 0 && options.bounds.Height == 0)
+    {
+        options.UseElementBounds(element);
+    }
+
+    // BaseContentRenderer::RenderFocusRectangle: a Rectangle stroke of thickness t inside the bounds, dash array {1, 1}
+    // (in units of t). The first brush has dash offset 0.5 and the second 1.5, so they alternate in t x t cells centered
+    // on the stroke's center line every t along the perimeter, starting at the top-left corner, clockwise.
+    const float t = options.firstThickness.left;
+    const XRECTF& b = options.bounds;
+    if (t <= 0 || b.Width <= t || b.Height <= t)
+    {
+        return;
+    }
+    ColorF first{}, second{};
+    const bool hasFirst = options.drawFirst && ResolveBrush(options.firstBrush.get(), 1.0f, &first) == BrushResult::Color;
+    const bool hasSecond = options.drawSecond && ResolveBrush(options.secondBrush.get(), 1.0f, &second) == BrushResult::Color;
+    if (!hasFirst && !hasSecond)
+    {
+        return;
+    }
+
+    Emitter emitter{ list, element, ctx };
+    const RectF center{ b.X + t / 2, b.Y + t / 2, b.X + b.Width - t / 2, b.Y + b.Height - t / 2 };
+    const float w = center.right - center.left, h = center.bottom - center.top;
+    const float perimeter = 2 * (w + h);
+    for (uint32_t i = 0; i * t < perimeter; ++i)
+    {
+        if ((i % 2 == 0) ? !hasFirst : !hasSecond)
+        {
+            continue;
+        }
+        float s = i * t, x, y;
+        if (s < w) { x = center.left + s; y = center.top; }
+        else if ((s -= w) < h) { x = center.right; y = center.top + s; }
+        else if ((s -= h) < w) { x = center.right - s; y = center.bottom; }
+        else { s -= w; x = center.left; y = center.bottom - s; }
+        emitter.Fill({ x - t / 2, y - t / 2, x + t / 2, y + t / 2 }, 0, 0, (i % 2 == 0) ? first : second, ctx.world);
+    }
+}
+
 void ImmediateRenderer::WalkSecretTransitionTargets(
     _In_ CUIElement* transitionRoot,
     const WalkContext& parent,
@@ -2144,7 +2199,9 @@ void ImmediateRenderer::WalkSecretTransitionTargets(
         auto lte = static_cast<CLayoutTransitionElement*>(ltes[i]);
         CUIElement* target = lte->GetTargetElement();
         CUIElement* targetParent = target != nullptr ? target->GetUIElementAdjustedParentInternal(false) : nullptr;
-        if (targetParent == nullptr || !target->IsActive())
+        // The focus rect canvas is never entered into the live tree (FocusRectManager only AddParent()s it), so it is
+        // never IsActive(); the secrecy check below is what identifies it.
+        if (targetParent == nullptr)
         {
             continue;
         }
@@ -2552,6 +2609,11 @@ void ImmediateRenderer::Walk(
         {
             Walk(localTransitionRoot, childCtx, list);
         }
+    }
+
+    if (!CFocusRectManager::AreHighVisibilityFocusRectsEnabled())
+    {
+        EmitLegacyFocusRect(element, ctx, list);
     }
 
     if (clipIndex != SIZE_MAX)

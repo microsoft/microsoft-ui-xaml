@@ -1006,13 +1006,31 @@ CFocusRectManager::RenderFocusRectForElement(
         return;
     }
 
-    Focusable focusTarget(element);
     FocusRectangleOptions options;
-    if (SetLegacyRenderOptions(focusTarget, &options))
+    if (GetLegacyFocusRectOptions(element, &options))
     {
-        options.bounds = focusTarget.GetBounds();
         IFCFAILFAST(contentRenderer->RenderFocusRectangle(element, options));
     }
+}
+
+/*static*/ bool
+CFocusRectManager::GetLegacyFocusRectOptions(
+    _In_ CUIElement* element,
+    _Out_ FocusRectangleOptions* options)
+{
+    *options = FocusRectangleOptions();
+    if (AreHighVisibilityFocusRectsEnabled())
+    {
+        return false;
+    }
+
+    Focusable focusTarget(element);
+    if (!SetLegacyRenderOptions(focusTarget, options))
+    {
+        return false;
+    }
+    options->bounds = focusTarget.GetBounds();
+    return true;
 }
 
 // Find a suitable focus host.  See header file for more info on that.
