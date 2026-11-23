@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -410,6 +410,10 @@ private:
         const winrt::UIElement& content);
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content);
+    void ApplyImmediateContentTransform(
+        const winrt::UIElement& content,
+        const winrt::float3& position,
+        float scale);
     bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
     void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
@@ -863,6 +867,8 @@ private:
     winrt::ExpressionAnimation m_transformMatrixTranslateYExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_zoomFactorExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_transformMatrixZoomFactorExpressionAnimation{ nullptr };
+    // Immediate rendering: the content transform is applied on the UI thread (ApplyImmediateContentTransform).
+    bool m_isImmediateContentTransformActive{ false };
 
     winrt::ExpressionAnimation m_positionSourceExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_minPositionSourceExpressionAnimation{ nullptr };

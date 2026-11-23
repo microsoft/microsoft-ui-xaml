@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -18,6 +18,7 @@
 #include "Vector.h"
 #include "RegUtil.h"
 #include "MuxcTraceLogging.h"
+#include "ImmediateRenderingHelpers.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollPresenterTrace::s_IsDebugOutputEnabled{ false };
@@ -942,6 +943,18 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
 
     UpdateViewportClip(viewport);
 
+    if (ImmediateRendering::IsRequested())
+    {
+        // Without a Composition tree no comp node sizes the hand-off visual, but the min/max position expressions
+        // read scrollPresenterVisual.Size: keep it equal to the viewport.
+        const winrt::Visual scrollPresenterVisual = winrt::ElementCompositionPreview::GetElementVisual(*this);
+        const winrt::float2 visualSize{ viewport.Width, viewport.Height };
+        if (scrollPresenterVisual.Size() != visualSize)
+        {
+            scrollPresenterVisual.Size(visualSize);
+        }
+    }
+
     if (layoutRoundFactorChanged)
     {
         // The global scale factor has changed since the last measure pass. Do not record the viewport size and extent based on the old
@@ -1193,6 +1206,14 @@ void ScrollPresenter::ValuesChanged(
     }
 
     UpdateOffset(ScrollPresenterDimension::VerticalScroll, static_cast<double>(args.Position().y) - minPosition.y);
+
+    if (m_isImmediateContentTransformActive)
+    {
+        if (const winrt::UIElement content = Content())
+        {
+            ApplyImmediateContentTransform(content, args.Position(), args.Scale());
+        }
+    }
 
     if (oldZoomFactor != m_zoomFactor || oldZoomedHorizontalOffset != m_zoomedHorizontalOffset || oldZoomedVerticalOffset != m_zoomedVerticalOffset)
     {
@@ -3417,6 +3438,17 @@ void ScrollPresenter::StartTransformExpressionAnimations(
         auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollPresenterDimension::ZoomFactor);
         auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollPresenterDimension::Scroll);
 
+        if (ImmediateRendering::IsRequested())
+        {
+            // Immediate rendering: the content Translation and Scale facades are set on the UI thread from the
+            // InteractionTracker values (see ApplyImmediateContentTransform) instead of being animated in Composition.
+            m_isImmediateContentTransformActive = true;
+            ApplyImmediateContentTransform(content, m_interactionTracker.Position(), m_interactionTracker.Scale());
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
+            return;
+        }
+
         m_translationExpressionAnimation.Target(scrollPropertyName);
         m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
 
@@ -3431,6 +3463,13 @@ void ScrollPresenter::StartTransformExpressionAnimations(
 void ScrollPresenter::StopTransformExpressionAnimations(
     const winrt::UIElement& content)
 {
+    if (content && ImmediateRendering::IsRequested())
+    {
+        // Keep the last applied transform, like a stopped Composition animation keeps its last value.
+        m_isImmediateContentTransformActive = false;
+        return;
+    }
+
     if (content)
     {
         content.StopAnimation(m_translationExpressionAnimation);
@@ -3442,6 +3481,42 @@ void ScrollPresenter::StopTransformExpressionAnimations(
 #ifdef DBG
         RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, GetVisualTargetedPropertyName(ScrollPresenterDimension::ZoomFactor) /*propertyName*/);
 #endif
+    }
+}
+
+// Immediate rendering equivalent of m_translationExpressionAnimation and m_zoomFactorExpressionAnimation (see
+// SetupTransformExpressionAnimations): the same expressions evaluated on the UI thread for the given tracker values.
+void ScrollPresenter::ApplyImmediateContentTransform(
+    const winrt::UIElement& content,
+    const winrt::float3& position,
+    float scale)
+{
+    MUX_ASSERT(content);
+
+    const winrt::float2 adjustment = GetArrangeRenderSizesDelta(content);
+    float translationX = -position.x + (scale - 1.0f) * adjustment.x;
+
+    if (FlowDirection() == winrt::FlowDirection::RightToLeft)
+    {
+        translationX = position.x + (scale - 1.0f) * adjustment.x;
+
+        if (content.try_as<winrt::Image>())
+        {
+            translationX += (scale - 1.0f) * static_cast<float>(m_unzoomedExtentWidth);
+        }
+    }
+
+    const winrt::float3 translation{ translationX, -position.y + (scale - 1.0f) * adjustment.y, 0.0f };
+    const winrt::float3 scale3{ scale, scale, 1.0f };
+
+    if (content.Translation() != translation)
+    {
+        content.Translation(translation);
+    }
+
+    if (content.Scale() != scale3)
+    {
+        content.Scale(scale3);
     }
 }
 

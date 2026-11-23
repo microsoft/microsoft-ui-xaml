@@ -29,5 +29,8 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(BackdropDamageExpands);
         TEST_METHOD(RoundedRectanglePathIsClosed);
         TEST_METHOD(ArcPathEndsAtSweep);
+        // ---- scrolling ----
+        TEST_METHOD(ScrollBlitNeedsWholePixelTranslation);
+        TEST_METHOD(ScrollBlitRefusesZoomChange);
     };
 }
