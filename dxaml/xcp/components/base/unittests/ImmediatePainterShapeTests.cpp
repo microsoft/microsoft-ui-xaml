@@ -957,7 +957,7 @@ namespace RenderingBackendTests
             StrokeStyleDesc style = dashed;
             style.dashCap = LineCap::Square;
             p.StrokeRoundedRectangleBrush({ 10, 20, 118, 108 }, 54, 44, 4, c_blackBrush, &style);
-        }, 1.0, 20);
+        }, 1.0, 32); // GDI+ and D2D flatten the Bezier outline differently: square dash ends drift by a fraction of a pixel.
 
         CompareBackends(L"dashed eccentric ellipse", [&](IImmediatePainter& p)
         {

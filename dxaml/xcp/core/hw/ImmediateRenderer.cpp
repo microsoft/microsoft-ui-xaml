@@ -1557,7 +1557,8 @@ namespace
                 p.dx * i.m11 + p.dy * i.m21 + i.dx, p.dx * i.m12 + p.dy * i.m22 + i.dy };
             CMILMatrix m = transform;
             m.Append(m_world);
-            m_emitter.Glyphs(run, m, paint->brush.color, clipLeft, clipRight, std::move(paint));
+            const ColorF color = paint->brush.color;
+            m_emitter.Glyphs(run, m, color, clipLeft, clipRight, std::move(paint));
             return true;
         }
 
