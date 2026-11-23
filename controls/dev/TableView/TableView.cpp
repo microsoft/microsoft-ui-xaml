@@ -2194,7 +2194,13 @@ void TableView::OnRowsSourceResetForFocus(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
-    // Only a Reset recycles every realized row; on Add/Remove focus rides along with its element.
+    // A Remove recycles the focused row (a live move removes and re-inserts it); a Reset recycles every realized row.
+    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove)
+    {
+        CaptureBodyFocusForMove(args.OldStartingIndex());
+        return;
+    }
+
     if (args.Action() != winrt::NotifyCollectionChangedAction::Reset)
     {
         return;
@@ -2202,7 +2208,14 @@ void TableView::OnRowsSourceResetForFocus(
 
     SuppressBodyFocusTrackingForThisTurn();
 
+    // TableView's own re-shapes claim the capture in this turn and keep the row index; one the view raised on its own
+    // (a live restore, the app's rule change) follows the item.
+    const bool wasCaptured = m_reshapeFocusValid;
     CaptureBodyFocusForReshape();
+    if (!wasCaptured && m_reshapeFocusValid && m_reshapeFocusItem.get())
+    {
+        m_reshapeFocusFollowsItem = true;
+    }
 }
 
 void TableView::UpdateEmptyState()

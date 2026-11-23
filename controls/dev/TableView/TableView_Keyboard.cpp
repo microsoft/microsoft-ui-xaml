@@ -1700,8 +1700,54 @@ void TableView::CaptureBodyFocusForReshape()
     m_reshapeFocusCellLevel = cellLevel;
     m_reshapeFocusState = focusState;
     m_reshapeFocusValid = true;
+    // The item the focused row showed before the re-shape: tracked, since the rows already show the new order.
+    m_reshapeFocusItem.set((m_lastBodyFocusValid && m_lastBodyFocusRow == row) ? m_lastBodyFocusItem.get() : nullptr);
+    m_reshapeFocusFollowsItem = false;
 
     QueueReshapeFocusCaptureDisarm();
+}
+
+// A live move raises the focused row's Remove, then its Insert at the new index; ItemsRepeater meanwhile moves focus
+// to a neighbor. The item is remembered and focused where it lands once the turn's changes are in.
+void TableView::CaptureBodyFocusForMove(int32_t removedIndex)
+{
+    if (m_reshapeFocusValid || !m_lastBodyFocusValid || m_lastBodyFocusRow != removedIndex || removedIndex < 0 || IsFocusOnNonBodyElement())
+    {
+        return;
+    }
+
+    auto const item = m_lastBodyFocusItem.get();
+    if (!item || !IsItemInViewSource(UnwrapDataItem(item)))
+    {
+        // A deleted row: ItemsRepeater's choice of neighbor stands.
+        return;
+    }
+
+    SuppressBodyFocusTrackingForThisTurn();
+    m_reshapeFocusRow = -1;
+    m_reshapeFocusColumn = m_lastBodyFocusColumn;
+    m_reshapeFocusCellLevel = m_lastBodyFocusCellLevel;
+    m_reshapeFocusState = m_lastBodyFocusState;
+    m_reshapeFocusItem.set(item);
+    m_reshapeFocusFollowsItem = true;
+    m_reshapeFocusValid = true;
+    QueueReshapeFocusCaptureDisarm();
+}
+
+bool TableView::RestoreBodyFocusToCapturedItem()
+{
+    auto const item = m_reshapeFocusItem.get();
+    const int32_t index = IndexOfItem(item);
+    if (index < 0)
+    {
+        return false;
+    }
+
+    m_reshapeFocusRow = index;
+    RestoreBodyFocusAfterReshape();
+    // Landing follows the item if more changes shift it before its row is realized.
+    m_pendingBodyFocusItem = GetRowsSourceItemAt(index);
+    return true;
 }
 
 bool TableView::IsElementInBody(const winrt::DependencyObject& element) const
@@ -1740,6 +1786,7 @@ void TableView::ForgetBodyFocusPosition()
         m_lastBodyFocusValid = false;
         m_lastBodyFocusRow = -1;
         m_lastBodyFocusState = winrt::FocusState::Keyboard;
+        m_lastBodyFocusItem.set(nullptr);
 }
 
 // Pointer/app-placed focus is replayed as Programmatic so a restore never paints keyboard visuals.
@@ -1825,6 +1872,7 @@ void TableView::TrackBodyFocusPosition()
         m_lastBodyFocusRow = row;
         m_lastBodyFocusColumn = column;
         m_lastBodyFocusCellLevel = cellLevel;
+        m_lastBodyFocusItem.set(GetRowsSourceItemAt(row));
         if (auto const root = XamlRoot())
         {
             m_lastBodyFocusState = GetRestoreFocusStateFor(winrt::FocusManager::GetFocusedElement(root));
@@ -1907,7 +1955,8 @@ void TableView::SuppressBodyFocusTrackingForThisTurn()
 }
 
 // An app can raise Reset on its own collection, so a capture not claimed by a restore in the same
-// turn is dropped rather than left for an unrelated later re-shape to replay.
+// turn is dropped rather than left for an unrelated later re-shape to replay. A capture that follows
+// its item (a live move, a Reset the view raised on its own) is restored to the item instead.
 void TableView::QueueReshapeFocusCaptureDisarm()
 {
     if (m_reshapeFocusDisarmQueued)
@@ -1928,8 +1977,20 @@ void TableView::QueueReshapeFocusCaptureDisarm()
             if (auto strongThis = weakThis.get())
             {
                 strongThis->m_reshapeFocusDisarmQueued = false;
+                const bool followedItem = strongThis->m_reshapeFocusValid && strongThis->m_reshapeFocusFollowsItem;
+                if (followedItem && strongThis->RestoreBodyFocusToCapturedItem())
+                {
+                    return;
+                }
                 strongThis->m_reshapeFocusValid = false;
                 strongThis->m_reshapeFocusRow = -1;
+                strongThis->m_reshapeFocusFollowsItem = false;
+                strongThis->m_reshapeFocusItem.set(nullptr);
+                if (followedItem)
+                {
+                    // The item left the view: focus stays where ItemsRepeater put it, which tracking missed this turn.
+                    strongThis->TrackBodyFocusPosition();
+                }
             }
         }))
     {
@@ -1952,6 +2013,8 @@ void TableView::RestoreBodyFocusAfterReshape()
 
     m_reshapeFocusValid = false;
     m_reshapeFocusRow = -1;
+    m_reshapeFocusFollowsItem = false;
+    m_reshapeFocusItem.set(nullptr);
 
     if (row < 0)
     {
