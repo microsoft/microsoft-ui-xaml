@@ -268,7 +268,7 @@ Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
   - a brush-to-DIP transform
 
   New `*Brush` fill, stroke and glyph-run methods take both descriptions. The older solid and average-color methods are unchanged.
-- **D2D.** Uses `ID2D1StrokeStyle` with custom dashes, `D2D1_CAP_STYLE_TRIANGLE`, and `D2D1_LINE_JOIN_MITER`, which clips at the limit as XAML does. Linear and radial gradient brushes use `D2D1_EXTEND_MODE` (clamp, mirror or wrap) for spread and `D2D1_GAMMA_1_0` for linear-light interpolation. The brush transform maps the unit space of relative brushes. Text gradients are drawn with the brush in glyph-run space.
+- **D2D.** Uses `ID2D1StrokeStyle` with custom dashes, `D2D1_CAP_STYLE_TRIANGLE`, and `D2D1_LINE_JOIN_MITER`, which clips at the limit as XAML does. Linear and radial gradient brushes use `D2D1_EXTEND_MODE` (clamp, mirror or wrap) for spread and `D2D1_GAMMA_1_0` for linear-light interpolation. The brush transform maps the unit space of relative brushes. Text gradients are drawn with the brush in glyph-run space. Dashed ellipses are stroked as a four-Bezier outline that starts at the rightmost point and runs clockwise, which matches Composition's dash phase (`DrawEllipse` places its dashes differently).
 - **GDI+.** GDI+ has no exact equivalents, so it emulates them:
   - Dashes are split from the flattened outline by the painter (GDI+ dash patterns cannot express zero-length dashes, odd-length patterns, or per-dash caps that differ from the end caps). Each dash is stroked with the pen's line caps, including `LineCapTriangle`.
   - Rounded-rectangle outlines start at the top-left arc, matching D2D's dash phase.
@@ -280,7 +280,7 @@ Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
     - `LinearGradientBrush`, including Transform and RelativeTransform, spread and interpolation
     - the MUXC `RadialGradientBrush`. Its properties are read as custom dependency properties, and `GradientStops` through the peer's `IXamlMember`.
   - `ResolveStrokeStyle` maps the Shape stroke properties.
-  - Gradient fills and strokes on Rectangle, Ellipse, Path, Line, Polyline, Polygon and Border, and gradient foregrounds on TextBlock and RichTextBlock glyph runs, render natively. The brush bounds match Composition (hwwalk `GetBrushBounds` per part): `CShape::GetFillBounds` for shape fills, the widened `CShape::GetStrokeBounds` for shape strokes (so a horizontal dashed Line still gets a gradient), the content bounds for Border, and the glyph-run line bounds for text.
+  - Gradient fills and strokes on Rectangle, Ellipse, Path, Line, Polyline, Polygon and Border, and gradient foregrounds on TextBlock and RichTextBlock glyph runs, render natively. The brush bounds match Composition (hwwalk `GetBrushBounds` per part): `CShape::GetFillBounds` for shape fills, the widened `CShape::GetStrokeBounds` for shape strokes (so a horizontal dashed Line still gets a gradient), the content bounds for Border, and the glyph-run line bounds for text. `Glyphs` runs have no line bounds, so, as Composition does with the run's realization bounds, the brush maps to the run's ink box (computed from the DirectWrite design metrics).
   - Linear gradients follow `CLinearGradientBrush`: relative start and end points are mapped into the bounds first, the gradient is perpendicular to start-end in DIP space (not in the unit square, as in WPF), and the combined Transform/RelativeTransform (`CBrushTypeUtils::GetBrushTransform`) is then applied as the brush transform, which may skew it.
   - The `Glyphs` element renders through `CGlyphs::VisitImmediate`, which reuses its text drawing context.
   - An ImageBrush whose transform includes rotation or skew draws the image under the brush transform, clipped to the element.
@@ -289,7 +289,7 @@ Covers families F1 (shapes and strokes) and F2 (brushes) from the test plan.
   - `RadialGradientBrush stops:fallback`: reported if the peer cannot be read; the brush then paints its fallback color, as Composition does.
   - TextBox and RichEditBox (RichEdit) gradient foregrounds keep the average color.
   - ImageBrush strokes and text foregrounds keep their current reporting.
-- **Memory.** Each display-list entry holds its brush and style descriptions (stops plus dashes, a few hundred bytes at most). Painter stroke-style and gradient caches are LRU-bounded and are released with the painter. No surfaces are kept for individual elements.
+- **Memory.** Each display-list entry holds its brush and style descriptions (stops plus dashes, a few hundred bytes at most). Painter stroke-style and gradient caches are LRU-bounded and are released with the painter. No surfaces are kept for individual elements. Measured on the `form` scene (one quick run): private MB median per phase is 43.0-43.6 for GDI+, 52.9-58.0 for D2D-SW and 45.3-46.1 for Composition. The scene draws no gradients or dashes, so it checks only that the new paths cost nothing when unused.
 - **Tests:**
   - `ImmediatePainterShapeTests` holds the conformance cases for every mode. They check:
     - dash on and off positions, offset and start phase

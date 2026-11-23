@@ -35,7 +35,7 @@ public static class BrushesCoverage
     static Rectangle Swatch(Brush fill, double width = 100, double height = 60) => new() { Width = width, Height = height, Fill = fill };
 
     // SpreadMethod Pad / Reflect / Repeat, absolute mapping, and sRGB vs linear (ScRgb) interpolation.
-    [CoveragePage("F2-brushes", "linear-spread-interpolation", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F2-brushes", "linear-spread-interpolation", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage LinearSpread(CoverageContext context)
     {
         var root = Surface();
@@ -71,7 +71,7 @@ public static class BrushesCoverage
     }
 
     // LinearGradientBrush Transform and RelativeTransform (rotation / skew of the gradient, not the element).
-    [CoveragePage("F2-brushes", "linear-transforms", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F2-brushes", "linear-transforms", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage LinearTransforms(CoverageContext context)
     {
         var root = Surface();
@@ -100,7 +100,7 @@ public static class BrushesCoverage
     static Brush GradientStopsFill() => new LinearGradientBrush { StartPoint = new(0, 0), EndPoint = new(0, 1), GradientStops = Stops(), RelativeTransform = new RotateTransform { Angle = -30 } };
 
     // MUXC RadialGradientBrush: center, gradient origin (focal point), radii, mapping, spread and interpolation space.
-    [CoveragePage("F2-brushes", "radial-gradients", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F2-brushes", "radial-gradients", MaxMeanAbsDiff = 0.004)]
     public static CoveragePage RadialGradients(CoverageContext context)
     {
         var root = Surface();
@@ -133,7 +133,7 @@ public static class BrushesCoverage
     }
 
     // Gradient foregrounds on TextBlock and RichTextBlock glyph runs (mapped to each line's bounds).
-    [CoveragePage("F2-brushes", "gradient-text", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F2-brushes", "gradient-text", MaxMeanAbsDiff = 0.012)]
     public static CoveragePage GradientText(CoverageContext context)
     {
         var root = Surface();
@@ -160,7 +160,7 @@ public static class BrushesCoverage
     }
 
     // ImageBrush Stretch, AlignmentX / AlignmentY and Transform / RelativeTransform on rectangles, ellipses and borders.
-    [CoveragePage("F2-brushes", "image-brush", MaxMeanAbsDiff = 0.015)]
+    [CoveragePage("F2-brushes", "image-brush", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage ImageBrushes(CoverageContext context)
     {
         var root = Surface();

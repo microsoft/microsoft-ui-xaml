@@ -58,7 +58,7 @@ public static class ShapesCoverage
 
     // Dash arrays (scaled by StrokeThickness), dash offset and dash caps on lines, rectangles, rounded rectangles and
     // ellipses (where the outline starts matters).
-    [CoveragePage("F1-shapes", "dashed-strokes", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F1-shapes", "dashed-strokes", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage DashedStrokes(CoverageContext context)
     {
         var root = Surface();
@@ -88,7 +88,7 @@ public static class ShapesCoverage
     }
 
     // StrokeStartLineCap / StrokeEndLineCap including Triangle, on open lines and polylines.
-    [CoveragePage("F1-shapes", "line-caps", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F1-shapes", "line-caps", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage LineCaps(CoverageContext context)
     {
         var root = Surface();
@@ -112,7 +112,7 @@ public static class ShapesCoverage
     }
 
     // StrokeLineJoin and StrokeMiterLimit on sharp and shallow corners (a clipped miter is not a bevel).
-    [CoveragePage("F1-shapes", "line-joins", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F1-shapes", "line-joins", MaxMeanAbsDiff = 0.003)]
     public static CoveragePage LineJoins(CoverageContext context)
     {
         var root = Surface();
@@ -135,7 +135,7 @@ public static class ShapesCoverage
     }
 
     // Gradient strokes on Rectangle, Ellipse, Path, Line and Border (brush mapped to the shape's bounds).
-    [CoveragePage("F1-shapes", "gradient-strokes", MaxMeanAbsDiff = 0.01)]
+    [CoveragePage("F1-shapes", "gradient-strokes", MaxMeanAbsDiff = 0.004)]
     public static CoveragePage GradientStrokes(CoverageContext context)
     {
         var root = Surface();
