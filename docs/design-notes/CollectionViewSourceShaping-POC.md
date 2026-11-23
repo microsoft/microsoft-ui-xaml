@@ -334,7 +334,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     failure is reported to `Application.UnhandledException` with the app's error info (its message and stack), as
     for app code a dispatcher callback runs; unhandled, it ends the app. WPF lets it propagate from
     `CollectionChanged`. Only a failure that carries error info (an exception app code threw) is reported; a bare
-    `HRESULT` from a framework listener of the view is contained without a report. The report runs inside the
+    `HRESULT` from a framework listener of the view is contained without a report (a `CollectionViewContainedFailure`
+    TraceLogging event records it). "Carries error info" is a heuristic: a framework listener that originates error
+    info is reported too. The report runs inside the
     source's change notification, so an `UnhandledException` handler that changes the same source re-enters it (an
     `ObservableCollection` throws). `E_OUTOFMEMORY` and `RPC_E_WRONG_THREAD` are not contained: they stop the change.
   - A live restore (a dispatcher callback): the same; the items placed before the failure stay placed.
@@ -342,7 +344,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   when that implements `ISupportIncrementalLoading`; the loaded items arrive as source changes and are placed by the
   rules like any other. A filter that rejects the loaded items would make a consumer load until the source is
   drained, so after 10 loads in a row that grew the source but not the view, `HasMoreItems` is false until the view
-  grows or is recomputed (a rule change, `Refresh()`, a new source). A filter that matches less than once in 10
+  grows or the app starts over (a rule change, `Refresh()`, a new source; a source `Reset`, as an AddRange-style
+  collection raises for each load, does not). A filter that matches less than once in 10
   pages stops early; the source's own `HasMoreItems` is unaffected.
   `LoadMoreItemsResult.Count` is the source's count, not the view's.
 - **Group notifications.** A computed group raises `PropertyChanged("ItemCount")` when an item joins or leaves it, as
@@ -640,7 +643,9 @@ cvs.Refresh();                                                                  
   inserted, removed or moved above it shift it), and a removal of several rows counts if it contains it. Focus does
   not follow when the row was scrolled out of view before the change (the viewport is not moved for it), or when the
   app or user moved focus elsewhere in the same turn (ItemsRepeater's own move of focus off the recycled row does not
-  count). TableView's own header sort keeps focus at the same row index, as before.
+  count). When the focused row was in view and the change moves it out of view, the viewport follows it (the row is
+  realized and focused, which brings it into view); restoring focus without moving the viewport is pending a design
+  decision. TableView's own header sort keeps focus at the same row index, as before.
 - **Plain collection.** TableView wraps it in an internal `CollectionViewSource` and shows that `View` (see "One
   engine" below), so a header click on a plain collection takes exactly the path above.
 - **`ICollectionView` without `ICollectionViewShaping`.** An app's own view (for example the Toolkit's
@@ -898,9 +903,16 @@ the rows' layout) has not been profiled yet.
   (`ListViewBase_Partial_Reorder.cpp:1498-1499`). Shaped views are read-only, so, as for grouped views, reorder is
   off while `ItemsSource` is a shaped view or an app `ICollectionViewShaping` view with a sort or a filter: keyboard
   reorder, drop, drag start, the live reorder animation and the item's reorder hints all ask
-  `GetCanReorderItemsOverItemsSource`. WPF also blocks reorder on sorted views. A shaped view whose rules were all
-  removed presents its source in order again; while it does (and has no pending recompute) its index writes go to the
-  source, as WPF's view does once it no longer needs a local array, so reorder works again.
+  `GetCanReorderItemsOverItemsSource`. WPF also blocks reorder on sorted views. The containers' visual states read a
+  value cached per `ItemsSource` and items change (a rule change that moves no item leaves the hints stale until the
+  next change) and ask only the internal view, so no app code runs from a visual state; drag start and drop ask afresh,
+  app views included. All of it is compiled only with `MUX_PRERELEASE`. A shaped view whose rules were all removed
+  presents its source in order again; while it does (it listens to an observable source, its source indices are valid
+  and no recompute is pending) its index writes go to the source, as WPF's view does once it no longer needs a local
+  array, so reorder works again. A reorder picks the collection it writes to once (`GetReorderTarget`), so its
+  `RemoveAt` and `InsertAt` reach the same collection even if a source handler adds a rule in between; if the
+  `InsertAt` still fails, the item is put back where it was. Over a source that raises no changes, a shaped view
+  never writes through: writes fail and leave the source unchanged.
 - **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
   selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat
   and grouped views.
