@@ -6972,7 +6972,7 @@ void ScrollPresenter::ProcessZoomFactorChange(
                 zoomFactorAnimation,
                 true /*isZoom*/,
                 m_interactionTracker.Position(),
-                std::clamp(zoomFactor, MinZoomFactor(), MaxZoomFactor()),
+                std::clamp(zoomFactor, static_cast<float>(MinZoomFactor()), static_cast<float>(MaxZoomFactor())),
                 centerPoint);
         }
         else
