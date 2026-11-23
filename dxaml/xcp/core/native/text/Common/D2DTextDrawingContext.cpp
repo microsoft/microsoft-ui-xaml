@@ -1829,6 +1829,7 @@ void D2DTextDrawingContext::VisitImmediate(
         CMILMatrix transform;
         GetLocalTransform(data.BaselineOffset.x, data.BaselineOffset.y, data.InvertHorizontalAxis, data.LineBounds.Width, &transform);
         transform.Append(renderTransform);
+        sink.GlyphRunImageFormats(static_cast<uint32_t>(data.GlyphImageFormat)); // ---- text ----
         sink.GlyphRun(GetDWriteGlyphRun(*data.GlyphRun), transform, brush, data.GlyphRunClipLeft, data.GlyphRunClipRight);
     }
 

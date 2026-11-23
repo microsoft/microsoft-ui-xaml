@@ -438,6 +438,8 @@ namespace ImmediateRenderingDetail
         std::vector<uint16_t> indices;
         std::vector<float> advances;
         std::vector<GlyphOffset> offsets;
+        // ---- text ----
+        bool useColorFont = true; // false when XAML resolved the run to monochrome outlines (IsColorFontEnabled=False)
     };
 
     // Per-element drawing summary used for damage. Content and group (opacity layer / rounded clip around the children)
@@ -1097,6 +1099,7 @@ namespace
                 fnv.Add(run.indices.data(), run.indices.size() * sizeof(uint16_t));
                 fnv.Add(run.advances.data(), run.advances.size() * sizeof(float));
                 fnv.Add(run.offsets.data(), run.offsets.size() * sizeof(GlyphOffset));
+                fnv.AddValue(run.useColorFont);
                 // Glyph-run clips (trimming) are in glyph space; hash them relative to the content origin.
                 const RectF relClip = OffsetRect(clip, -ctx.offsetX, -ctx.offsetY);
                 const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
@@ -1256,7 +1259,7 @@ namespace
             Push(c, ink, ctx.world, ctx.clip, nullptr);
         }
 
-        void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight)
+        void Glyphs(const DWRITE_GLYPH_RUN& run, const CMILMatrix& m, const ColorF& color, float clipLeft, float clipRight, bool useColorFont = true)
         {
             if (run.glyphCount == 0 || run.fontFace == nullptr || run.glyphIndices == nullptr || !(run.fontEmSize > 0))
             {
@@ -1266,6 +1269,7 @@ namespace
             data.face = run.fontFace;
             data.emSize = run.fontEmSize;
             data.bidiLevel = run.bidiLevel;
+            data.useColorFont = useColorFont;
             data.indices.assign(run.glyphIndices, run.glyphIndices + run.glyphCount);
             float width = 0;
             if (run.glyphAdvances != nullptr)
@@ -1401,8 +1405,17 @@ namespace
             {
                 CMILMatrix m = transform;
                 m.Append(m_world);
-                m_emitter.Glyphs(run, m, color, clipLeft, clipRight);
+                m_emitter.Glyphs(run, m, color, clipLeft, clipRight, m_nextRunUsesColor);
             }
+            m_nextRunUsesColor = true;
+        }
+
+        // ---- text ----
+        void GlyphRunImageFormats(uint32_t formats) override
+        {
+            // XAML already translated color runs into per-layer runs; a run left with only outline formats must not be
+            // re-translated to color by the painter (IsColorFontEnabled=False, high contrast).
+            m_nextRunUsesColor = (formats & ~(DWRITE_GLYPH_IMAGE_FORMATS_TRUETYPE | DWRITE_GLYPH_IMAGE_FORMATS_CFF)) != 0;
         }
 
         void Line(const XRECTF_RB& rect, const CMILMatrix& transform, _In_opt_ CBrush* brush) override
@@ -1435,6 +1448,7 @@ namespace
 
         Emitter& m_emitter;
         const CMILMatrix& m_world;
+        bool m_nextRunUsesColor = true; // ---- text ----
     };
 
     float MaxOf(const XTHICKNESS& t) noexcept
@@ -2819,7 +2833,7 @@ static void ReplayCommands(
                 run.glyphOffsets = data.offsets.empty() ? nullptr : data.offsets.data();
                 run.glyphCount = static_cast<uint32_t>(data.indices.size());
                 run.bidiLevel = data.bidiLevel;
-                run.useColorFont = true;
+                run.useColorFont = data.useColorFont;
                 run.clearType = clearTypeRuns != nullptr && c.index < clearTypeRuns->size() && (*clearTypeRuns)[c.index] != 0;
                 painter.DrawGlyphRun(run, c.color);
                 break;

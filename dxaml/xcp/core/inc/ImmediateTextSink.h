@@ -23,6 +23,9 @@ public:
     // Images the text stack records (spell-check wavy underlines, RichEdit inline images): brush (a WriteableBitmap
     // ImageBrush with a software surface) stretched over rect.
     virtual void Image(const XRECTF_RB& rect, const CMILMatrix& transform, _In_ CImageBrush* brush) = 0;
+    // Glyph image formats XAML resolved for the next GlyphRun (DWRITE_GLYPH_IMAGE_FORMATS). Outline-only formats mean
+    // the run must be drawn monochrome (IsColorFontEnabled=False or high contrast); color runs arrive already translated.
+    virtual void GlyphRunImageFormats(uint32_t formats) = 0;
 
 protected:
     ~ImmediateTextSink() = default;

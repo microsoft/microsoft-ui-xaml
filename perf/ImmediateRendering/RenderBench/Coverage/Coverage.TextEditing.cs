@@ -36,7 +36,7 @@ static class TextEditingCoverage
             new TextBox { Text = "Disabled", IsEnabled = false, Width = 300, HorizontalAlignment = HorizontalAlignment.Left },
             new TextBox
             {
-                Text = LongText + " " + LongText, TextWrapping = TextWrapping.Wrap, AcceptsReturn = true, Height = 90, Width = 300,
+                AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, Text = LongText + " " + LongText, Height = 90, Width = 300,
                 HorizontalAlignment = HorizontalAlignment.Left, FontFamily = new FontFamily("Georgia"), Foreground = new SolidColorBrush(Colors.DarkBlue),
             }),
     };
@@ -74,8 +74,10 @@ static class TextEditingCoverage
         var single = new TextBox { Text = LongText, Width = 260, HorizontalAlignment = HorizontalAlignment.Left };
         var multi = new TextBox
         {
+            // AcceptsReturn before Text: a single-line box keeps only the first line.
+            AcceptsReturn = true,
             Text = string.Join("\r", Enumerable.Range(1, 20).Select(i => $"Line {i} of a multi-line TextBox")),
-            AcceptsReturn = true, Height = 110, Width = 300, HorizontalAlignment = HorizontalAlignment.Left,
+            Height = 110, Width = 300, HorizontalAlignment = HorizontalAlignment.Left,
         };
         ScrollViewer.SetVerticalScrollBarVisibility(multi, ScrollBarVisibility.Auto);
         return new()
@@ -97,17 +99,17 @@ static class TextEditingCoverage
     [CoveragePage("F6-editing", "spell-check")]
     public static CoveragePage SpellCheck(CoverageContext ctx)
     {
-        var box = new TextBox { Text = "Thiss sentense has misspeled words", IsSpellCheckEnabled = true, Width = 360, HorizontalAlignment = HorizontalAlignment.Left };
+        var box = new TextBox { IsSpellCheckEnabled = true, Width = 360, HorizontalAlignment = HorizontalAlignment.Left };
         return new()
         {
             Root = Page(box, new TextBox { Text = "No squiggles here: wrongg", IsSpellCheckEnabled = false, Width = 360, HorizontalAlignment = HorizontalAlignment.Left }),
             Exercise = async () =>
             {
-                // The spell checker runs asynchronously after the text is edited in a focused box.
+                // The spell checker runs asynchronously on edits made in a focused box (like typing).
                 box.Focus(FocusState.Programmatic);
+                box.SelectedText = "Thiss sentense has misspeled words ";
                 box.Select(box.Text.Length, 0);
-                box.Text += " ";
-                await Task.Delay(1000);
+                await Task.Delay(1500);
             },
         };
     }
@@ -137,7 +139,7 @@ static class TextEditingCoverage
             Exercise = async () =>
             {
                 var document = box.Document;
-                document.SetText(TextSetOptions.None, "Bold, italic, underlined, colored and large text.\rSecond paragraph with a highlighted word.");
+                document.SetText(TextSetOptions.None, "Bold, italic, underlined, colored and large text.\rSecond paragraph with a highlighted word and a wavy underline.");
                 var bold = document.GetRange(0, 4);
                 bold.CharacterFormat.Bold = FormatEffect.On;
                 var italic = document.GetRange(6, 12);
@@ -148,13 +150,58 @@ static class TextEditingCoverage
                 colored.CharacterFormat.ForegroundColor = Colors.Crimson;
                 var large = document.GetRange(38, 43);
                 large.CharacterFormat.Size = 24;
-                var highlighted = document.GetRange(79, 90);
+                var highlighted = document.GetRange(74, 85);
                 highlighted.CharacterFormat.BackgroundColor = Colors.Yellow;
+                // Wavy underlines are recorded as images (the same path as spell-check squiggles).
+                var wavy = document.GetRange(97, 111);
+                wavy.CharacterFormat.Underline = UnderlineType.Wave;
+                var thick = document.GetRange(38, 43);
+                thick.CharacterFormat.Underline = UnderlineType.Thick;
+                // An inline image (RichEdit draws it as a bitmap into the text render target).
+                // RichEdit reads the stream lazily; keep it alive for the process lifetime.
+                s_swatch ??= await SwatchStream();
+                document.GetRange(49, 49).InsertImage(24, 16, 12, VerticalCharacterAlignment.Baseline, "swatch", s_swatch);
                 box.Focus(FocusState.Programmatic);
-                document.Selection.SetRange(50, 56);
+                document.Selection.SetRange(51, 57); // "Second", after the image
                 await Task.Delay(150);
             },
         };
+    }
+
+    static Windows.Storage.Streams.IRandomAccessStream? s_swatch;
+
+    // A 24x16 BMP (blue-to-orange stripes) in memory, for RichEditBox.InsertImage.
+    static async Task<Windows.Storage.Streams.IRandomAccessStream> SwatchStream()
+    {
+        const int w = 24, h = 16;
+        var bmp = new byte[54 + w * h * 4];
+        bmp[0] = (byte)'B'; bmp[1] = (byte)'M';
+        BitConverter.GetBytes(bmp.Length).CopyTo(bmp, 2);
+        BitConverter.GetBytes(54).CopyTo(bmp, 10);
+        BitConverter.GetBytes(40).CopyTo(bmp, 14);
+        BitConverter.GetBytes(w).CopyTo(bmp, 18);
+        BitConverter.GetBytes(h).CopyTo(bmp, 22);
+        BitConverter.GetBytes((short)1).CopyTo(bmp, 26);
+        BitConverter.GetBytes((short)32).CopyTo(bmp, 28);
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                int i = 54 + (y * w + x) * 4;
+                bool stripe = (x / 4) % 2 == 0;
+                bmp[i] = (byte)(stripe ? 200 : 0); bmp[i + 1] = (byte)(stripe ? 80 : 140); bmp[i + 2] = (byte)(stripe ? 20 : 255); bmp[i + 3] = 255;
+            }
+        }
+        var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+        using (var writer = new Windows.Storage.Streams.DataWriter(stream.GetOutputStreamAt(0)))
+        {
+            writer.WriteBytes(bmp);
+            await writer.StoreAsync();
+            await writer.FlushAsync();
+            writer.DetachStream();
+        }
+        stream.Seek(0);
+        return stream;
     }
 
     [CoveragePage("F6-editing", "suggest-number")]
