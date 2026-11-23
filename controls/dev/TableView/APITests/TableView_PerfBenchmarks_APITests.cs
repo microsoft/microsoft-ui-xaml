@@ -155,6 +155,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Times grouping into 1000 groups by an app GroupDescription subclass, with and without a NamesMatch override.")]
+        public void BenchCustomGroupDescription()
+        {
+            foreach (var n in s_sizes)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var rows = MakeRows(n, seed: 8);
+                    var cvs = new CollectionViewSource { Source = rows };
+                    cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Name), CollectionViewSortDirection.Ascending));
+                    var view = cvs.View;
+                    Verify.AreEqual(n, view.Count);
+
+                    Report("CustomGroup1k.Regroup", n, Time(() => cvs.GroupDescriptions.Add(new BenchTeamGroupDescription())));
+                    Verify.AreEqual(1000, view.CollectionGroups.Count);
+                    var replaceMs = Time(() =>
+                    {
+                        var random = new Random(9);
+                        for (var i = 0; i < 200; i++)
+                        {
+                            rows[random.Next(rows.Count)] = NewRow(3 * n + i, random);
+                        }
+                    });
+                    Report("CustomGroup1k.ReplaceEach", n, replaceMs / 200);
+
+                    cvs.GroupDescriptions.Clear();
+                    Report("CustomGroup1kNamesMatch.Regroup", n, Time(() => cvs.GroupDescriptions.Add(new BenchTeamNamesMatchGroupDescription())));
+                    Verify.AreEqual(1000, view.CollectionGroups.Count);
+                });
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Times a live sorting tick in which 1000 rows, or 90% of the rows, change their sort key.")]
         public void BenchLiveSortingTick()
         {
@@ -179,8 +212,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Report($"{name}.Setup", n, Time(() => shaping.Refresh()));
 
                         var random = new Random(6);
-                        foreach (var changed in new[] { 1000, n * 9 / 10 })
+                        var resets = 0;
+                        var moves = 0;
+                        view.VectorChanged += (sender, args) =>
                         {
+                            if (args.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.Reset)
+                            {
+                                resets++;
+                            }
+                            else if (args.CollectionChange == global::Windows.Foundation.Collections.CollectionChange.ItemInserted)
+                            {
+                                moves++;
+                            }
+                        };
+                        foreach (var changed in new[] { 50, 255, 256, 1000, n * 9 / 10 })
+                        {
+                            resets = 0;
+                            moves = 0;
                             var ms = Time(() =>
                             {
                                 using (shaping.DeferRefresh())
@@ -191,7 +239,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                     }
                                 }
                             });
-                            Report(changed == 1000 ? $"{name}.Tick1k" : $"{name}.Tick90pct", n, ms);
+                            var tick = changed == n * 9 / 10 ? "Tick90pct" : (changed == 1000 ? "Tick1k" : $"Tick{changed}");
+                            Report($"{name}.{tick}", n, ms);
+                            Log.Comment($"BENCHCHANGES|{name}.{tick}|{n}|resets={resets}|moves={moves}");
                         }
 
                         var previous = int.MinValue;
@@ -314,6 +364,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Log.Comment($"BENCH|{scenario}|{n}|{ms:F3}");
         }
+    }
+
+    internal sealed class BenchTeamGroupDescription : GroupDescription
+    {
+        protected override object GroupNameFromItem(object item, int level, string culture) => ((BenchRow)item).Team1k;
+    }
+
+    internal sealed class BenchTeamNamesMatchGroupDescription : GroupDescription
+    {
+        protected override object GroupNameFromItem(object item, int level, string culture) => ((BenchRow)item).Team1k;
+
+        protected override bool NamesMatch(object groupName, object itemName) => string.Equals((string)groupName, (string)itemName, StringComparison.Ordinal);
     }
 
     internal sealed class BenchRow : INotifyPropertyChanged
