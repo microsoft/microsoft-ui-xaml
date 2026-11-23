@@ -616,7 +616,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Z X", string.Join(" ", group.GroupNames));
 
                 cvs.Source = MakeEngineRows();
-                Verify.AreEqual("Z X Y", string.Join(" ", cvs.View.CollectionGroups.Select(g => (string)GroupProperty(g, "Key"))));
+                Verify.AreEqual("Z X Y", string.Join(" ", cvs.View.CollectionGroups.Select(g => (string)GroupProperty(((ICollectionViewGroup)g).Group, "Key"))));
                 Verify.AreEqual("Bo Lin Kai Eve Ada", EngineNames(cvs.View));
             });
         }
