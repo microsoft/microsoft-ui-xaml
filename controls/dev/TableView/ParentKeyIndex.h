@@ -33,6 +33,18 @@ struct ParentStructure
     std::vector<size_t> ParentIndex;
     std::vector<std::vector<size_t>> ChildIndices;
     std::vector<size_t> RootIndices;
+
+    // Position-free maps an incremental update (TableViewRowFlattener::TryApplyTreeChange) keeps current, with
+    // Rows and KeyByItem. NodeKeys, ParentIndex, ChildIndices, RootIndices and IndexByKey describe the build only.
+    // nodeKey -> row; keys view KeyByItem's values.
+    std::unordered_map<std::wstring_view, winrt::IInspectable> ItemByKey;
+    // ABI pointer -> the parent key the row declared (empty for none), resolved or not.
+    std::unordered_map<void*, std::wstring> ParentKeyByItem;
+    // Parent keys rows declared that no row has (orphans, shown as roots) -> how many rows declared each.
+    std::unordered_map<std::wstring, uint32_t> OrphanParentKeys;
+
+    // The parent key a row resolves to: its declared parent's key if a row has it, else empty (a root).
+    std::wstring_view ResolvedParentKey(winrt::IInspectable const& item) const;
 };
 
 // Parent-key index: one filtered, sorted reading of a ParentStructure. Immutable once built.
@@ -94,6 +106,14 @@ void BuildParentKeyIndex(
 
 // Exposed for the adapter: "node:" + lookup key, or empty when `key` means "no key".
 std::wstring MakeNodeKey(winrt::IInspectable const& key);
+
+// A row's node key and parent node key through the selectors (a selector that throws reads as no key).
+void ReadNodeKeys(
+    KeySelector const& keySelector,
+    KeySelector const& parentKeySelector,
+    winrt::IInspectable const& item,
+    std::wstring& nodeKey,
+    std::wstring& parentKey);
 
 // True when MakeNodeKey keyed by object address (address may be recycled, so unprovable).
 bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept;

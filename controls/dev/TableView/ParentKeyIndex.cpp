@@ -131,6 +131,28 @@ bool IsObjectNodeKey(std::wstring_view nodeKey) noexcept
     return nodeKey.starts_with(c_objectNodeKeyPrefix);
 }
 
+void ReadNodeKeys(
+    KeySelector const& keySelector,
+    KeySelector const& parentKeySelector,
+    winrt::IInspectable const& item,
+    std::wstring& nodeKey,
+    std::wstring& parentKey)
+{
+    nodeKey = MakeNodeKey(SafeSelect(keySelector, item));
+    parentKey = MakeNodeKey(SafeSelect(parentKeySelector, item));
+}
+
+std::wstring_view ParentStructure::ResolvedParentKey(winrt::IInspectable const& item) const
+{
+    auto const declared = ParentKeyByItem.find(winrt::get_abi(item));
+    if (declared == ParentKeyByItem.end() || declared->second.empty())
+    {
+        return {};
+    }
+    auto const parent = ItemByKey.find(declared->second);
+    return parent != ItemByKey.end() ? parent->first : std::wstring_view{};
+}
+
 const std::vector<winrt::IInspectable>* ParentKeyIndex::TryGetChildren(std::wstring_view nodeKey) const
 {
     auto it = Children.find(nodeKey);
@@ -236,6 +258,7 @@ bool BuildParentStructure(
             return false;
         }
         result.NodeKeys[i] = &stored;
+        result.ItemByKey.emplace(std::wstring_view{ stored }, rows[i]);
     }
 
     // Pass 2: resolve parents; self-parent is an error, unknown parent = orphan root.
@@ -251,6 +274,10 @@ bool BuildParentStructure(
         if (auto it = indexByKey.find(parentKey); it != indexByKey.end())
         {
             result.ParentIndex[i] = it->second;
+        }
+        else
+        {
+            ++result.OrphanParentKeys[parentKey];
         }
     }
 
@@ -295,6 +322,11 @@ bool BuildParentStructure(
     }
 
     out = std::move(result);
+    out.ParentKeyByItem.reserve(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+        out.ParentKeyByItem.emplace(winrt::get_abi(out.Rows[i]), std::move(parentKeys[i]));
+    }
     if (cache)
     {
         *cache = std::move(nextCache);

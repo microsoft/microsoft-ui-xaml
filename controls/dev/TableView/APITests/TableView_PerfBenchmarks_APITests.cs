@@ -305,6 +305,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 Report("Tree.RemoveLeafEach", n, total / inserts);
 
+                // Through the end of the dispatcher turn, which holds any work the tree defers.
+                Report("Tree.TurnBaseline", n, Enumerable.Range(0, inserts).Select(_ => TimeThroughTurn(() => { })).Average());
+                total = 0.0;
+                for (var i = 0; i < inserts; i++)
+                {
+                    var row = new BenchRow(n + 101 + i, "Inserted", i, parentId: 1 + i);
+                    total += TimeThroughTurn(() => rows.Insert(rows.Count / 2, row));
+                    SettleLayout(tableView);
+                }
+                Report("Tree.InsertTurnEach", n, total / inserts);
+
+                total = 0.0;
+                for (var i = 0; i < inserts; i++)
+                {
+                    total += TimeThroughTurn(() => rows.RemoveAt(rows.Count - 1 - i));
+                    SettleLayout(tableView);
+                }
+                Report("Tree.RemoveLeafTurnEach", n, total / inserts);
+
+                total = 0.0;
+                for (var i = 0; i < inserts; i++)
+                {
+                    var at = rows.Count - 1 - 2 * inserts - i;
+                    var old = rows[at];
+                    var moved = new BenchRow(old.Id, old.Name, old.Score, parentId: 1 + (old.ParentId.Value + 7 * (i + 1)) % (n / 10));
+                    total += TimeThroughTurn(() => rows[at] = moved);
+                    SettleLayout(tableView);
+                }
+                Report("Tree.ReparentTurnEach", n, total / inserts);
+
                 RunOnUIThread.Execute(() => Report("Tree.CollapseAll", n, Time(() => tableView.CollapseAllRows())));
                 SettleLayout(tableView);
                 RunOnUIThread.Execute(() => Content = null);
@@ -354,6 +384,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return stopwatch.Elapsed.TotalMilliseconds;
         }
 
+        private static double TimeThroughTurn(Action action)
+        {
+            var elapsed = 0.0;
+            using (var done = new global::System.Threading.ManualResetEventSlim(false))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var queue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+                    var stopwatch = Stopwatch.StartNew();
+                    action();
+                    queue.TryEnqueue(() =>
+                    {
+                        elapsed = stopwatch.Elapsed.TotalMilliseconds;
+                        done.Set();
+                    });
+                });
+                Verify.IsTrue(done.Wait(TimeSpan.FromSeconds(60)), "The turn ended.");
+            }
+            return elapsed;
+        }
         private static double Median(Action action)
         {
             var samples = Enumerable.Range(0, 3).Select(_ => Time(action)).OrderBy(ms => ms).ToList();

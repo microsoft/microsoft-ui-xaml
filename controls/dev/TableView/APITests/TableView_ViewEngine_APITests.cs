@@ -1221,6 +1221,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.AreEqual("Dee1 Ann1- Cat2 Fay2 Bob2", TreeLabelsOf(tableView), "Dee lost its only child.");
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies random inserts, removes, replacements, re-parentings, moves and expand/collapse on a TableView tree over a sorted view leave the rows (labels, depth, expansion, position in set) equal to a full rebuild of the same tree and expansion.")]
+        public void VerifyIncrementalTreeMatchesRebuildFuzz()
+        {
+            var random = new Random(2026);
+            var nextId = 1;
+            LiveRow NewRow()
+            {
+                var id = nextId++;
+                int? parent = null;
+                var roll = random.Next(10);
+                if (roll < 6 && id > 1)
+                {
+                    parent = random.Next(1, id);
+                }
+                else if (roll == 6)
+                {
+                    parent = 1000 + random.Next(5);
+                }
+                return new LiveRow { Id = id, Name = $"N{id}", Score = random.Next(20), Team = "X", ParentId = parent };
+            }
+
+            var list = new ObservableCollection<LiveRow>();
+            for (var i = 0; i < 14; i++)
+            {
+                list.Add(NewRow());
+            }
+            CollectionViewSource cvs = null;
+            var tableView = PlaceLive(list, s => { }, out cvs, IdPath, ParentIdPath);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            string Rows()
+            {
+                string labels = null;
+                RunOnUIThread.Execute(() => labels = TreeLabels(tableView) + " | " + PositionLabels(tableView));
+                return labels;
+            }
+
+            for (var step = 0; step < 160; step++)
+            {
+                var op = "";
+                RunOnUIThread.Execute(() =>
+                {
+                    var roll = random.Next(100);
+                    if (list.Count < 6 || (roll < 30 && list.Count < 24))
+                    {
+                        var row = NewRow();
+                        var at = random.Next(list.Count + 1);
+                        list.Insert(at, row);
+                        op = $"insert {row.Name}->{row.ParentId}@{at}";
+                    }
+                    else if (roll < 55)
+                    {
+                        var at = random.Next(list.Count);
+                        op = $"remove {list[at].Name}";
+                        list.RemoveAt(at);
+                    }
+                    else if (roll < 75)
+                    {
+                        // Same key, new parent (no cycle: a parent's Id is always smaller) or a new score.
+                        var at = random.Next(list.Count);
+                        var old = list[at];
+                        var parent = (old.Id > 1 && random.Next(3) > 0) ? random.Next(1, old.Id) : (int?)null;
+                        list[at] = new LiveRow { Id = old.Id, Name = old.Name, Score = random.Next(20), Team = "X", ParentId = parent };
+                        op = $"replace {old.Name}->{parent}";
+                    }
+                    else if (roll < 85)
+                    {
+                        var from = random.Next(list.Count);
+                        var to = random.Next(list.Count);
+                        list.Move(from, to);
+                        op = $"move {from}->{to}";
+                    }
+                    else
+                    {
+                        var rows = GetProjectedElements(tableView).OfType<TableViewRow>().Where(r => r.IsExpandable).ToList();
+                        if (rows.Count > 0)
+                        {
+                            var row = rows[random.Next(rows.Count)];
+                            var expand = !row.IsExpanded;
+                            ToggleTreeRow(tableView, NameOf(row.DataContext), expand);
+                            op = $"{(expand ? "expand" : "collapse")} {NameOf(row.DataContext)}";
+                        }
+                    }
+                });
+                SettleLayout(tableView);
+                var incremental = Rows();
+
+                RunOnUIThread.Execute(() => ((ICollectionViewShaping)cvs.View).Refresh());
+                SettleLayout(tableView);
+                var rebuilt = Rows();
+                if (rebuilt != incremental)
+                {
+                    Verify.Fail($"step {step} ({op}): the rows differ from a rebuild.\n  rebuilt     {rebuilt}\n  incremental {incremental}");
+                }
+            }
+        }
+
         #region TableView over a live view
 
         [TestMethod]
