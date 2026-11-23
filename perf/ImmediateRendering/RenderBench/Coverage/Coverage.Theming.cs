@@ -86,6 +86,8 @@ static class CoverageTheming
         return new() { Root = root };
     }
 
+    // A focus rect covers ~0.3% of the window, so a missing one moves the mean diff by only ~6e-4: the focus pages use
+    // thresholds just above their measured diff (2-5e-4; reveal 1.3e-3 without its glow) so a lost focus rect fails.
     static CoveragePage FocusPage(FocusVisualKind kind, ElementTheme theme)
     {
         var target = new Button { Content = "Keyboard focus" };
@@ -105,12 +107,12 @@ static class CoverageTheming
         };
     }
 
-    [CoveragePage(F, "focus-highvisibility")] public static CoveragePage FocusHighVisibility(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Light);
-    [CoveragePage(F, "focus-highvisibility-dark")] public static CoveragePage FocusHighVisibilityDark(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Dark);
-    [CoveragePage(F, "focus-reveal", ExpectedUnsupported = ["Reveal focus glow:approximated"])] public static CoveragePage FocusReveal(CoverageContext c) => FocusPage(FocusVisualKind.Reveal, ElementTheme.Light);
-    [CoveragePage(F, "focus-dottedline")] public static CoveragePage FocusDotted(CoverageContext c) => FocusPage(FocusVisualKind.DottedLine, ElementTheme.Light);
+    [CoveragePage(F, "focus-highvisibility", MaxMeanAbsDiff = 0.001)] public static CoveragePage FocusHighVisibility(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Light);
+    [CoveragePage(F, "focus-highvisibility-dark", MaxMeanAbsDiff = 0.001)] public static CoveragePage FocusHighVisibilityDark(CoverageContext c) => FocusPage(FocusVisualKind.HighVisibility, ElementTheme.Dark);
+    [CoveragePage(F, "focus-reveal", MaxMeanAbsDiff = 0.0015, ExpectedUnsupported = ["Reveal focus glow:approximated"])] public static CoveragePage FocusReveal(CoverageContext c) => FocusPage(FocusVisualKind.Reveal, ElementTheme.Light);
+    [CoveragePage(F, "focus-dottedline", MaxMeanAbsDiff = 0.0006)] public static CoveragePage FocusDotted(CoverageContext c) => FocusPage(FocusVisualKind.DottedLine, ElementTheme.Light);
 
-    [CoveragePage(F, "focus-custom-brushes")]
+    [CoveragePage(F, "focus-custom-brushes", MaxMeanAbsDiff = 0.0008)]
     public static CoveragePage FocusCustom(CoverageContext c)
     {
         var target = new Button
