@@ -78,15 +78,20 @@ public:
     void NotifyCellContentChanged();
     void NotifyCellContentChangedInternal(bool resetAutoWidth);
 
-    // Internal: one posted regeneration per column. Queue returns true when a post is already pending.
+    // Internal: a cell-content change raised during layout stays pending until a regeneration
+    // outside layout takes it. Queue returns true when a post for it is already in flight.
     bool QueueCellContentChangeInternal(bool resetAutoWidth) noexcept
     {
         m_queuedCellContentResetAutoWidth = m_queuedCellContentResetAutoWidth || resetAutoWidth;
-        return std::exchange(m_cellContentChangeQueued, true);
+        return m_cellContentChangePosted;
     }
+    void SetCellContentChangePostedInternal(bool posted) noexcept { m_cellContentChangePosted = posted; }
+    // Bumped by every take, so a post that a regeneration has already covered does nothing.
+    uint32_t CellContentChangeGenerationInternal() const noexcept { return m_cellContentChangeGeneration; }
     bool TakeQueuedCellContentChangeInternal() noexcept
     {
-        m_cellContentChangeQueued = false;
+        m_cellContentChangePosted = false;
+        ++m_cellContentChangeGeneration;
         return std::exchange(m_queuedCellContentResetAutoWidth, false);
     }
 
@@ -151,8 +156,9 @@ private:
     double m_headerDesiredWidth{ 0.0 };
     winrt::GridLength m_authoredWidth{ c_widthDefault };
     bool m_inUserResize{ false };
-    bool m_cellContentChangeQueued{ false };
+    bool m_cellContentChangePosted{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
+    uint32_t m_cellContentChangeGeneration{ 0 };
 
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_displayMemberBinding{ this };
     tracker_ref<winrt::Microsoft::UI::Xaml::Data::Binding> m_cellToolTipBinding{ this };

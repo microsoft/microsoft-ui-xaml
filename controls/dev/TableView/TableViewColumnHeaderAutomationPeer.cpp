@@ -26,15 +26,6 @@ namespace
         return column ? winrt::get_self<TableViewColumn>(column)->AutomationIdentity() : 0;
     }
 
-    winrt::TableViewColumnHeader HeaderForPublicConstructor(winrt::TableViewColumnHeader const& header)
-    {
-        if (!header)
-        {
-            throw winrt::hresult_invalid_argument();
-        }
-        return header;
-    }
-
     winrt::TableViewColumn ColumnOfHeader(winrt::TableViewColumnHeader const& header)
     {
         return header ? winrt::get_self<TableViewColumnHeader>(header)->Column() : nullptr;
@@ -43,6 +34,18 @@ namespace
     winrt::TableView TableOfHeader(winrt::TableViewColumnHeader const& header)
     {
         return header ? winrt::get_self<TableViewColumnHeader>(header)->GetOwningTableView() : nullptr;
+    }
+
+    // Only a header the table has attached to one of its columns describes a column header.
+    winrt::TableViewColumnHeader HeaderForPublicConstructor(winrt::TableViewColumnHeader const& header)
+    {
+        auto const column = ColumnOfHeader(header);
+        auto const table = TableOfHeader(header);
+        if (!column || !table || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table)
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+        return header;
     }
 
     template <typename T>

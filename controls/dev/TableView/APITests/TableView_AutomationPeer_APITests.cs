@@ -4884,6 +4884,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var fallback = tablePeer.Resolve(headers[3]) as TableViewColumnHeaderAutomationPeer;
                 Verify.IsNotNull(fallback, "The unrealized column must still get a column header peer.");
                 Verify.IsTrue(fallback.Owner is TableView, "The fallback peer is owned by the TableView.");
+                var children = fallback.GetChildren();
+                Verify.IsTrue(children == null || children.Count == 0, "The fallback peer must not expose its owner TableView's children.");
                 Verify.AreEqual("Extra", fallback.GetName(), "The fallback peer must name the column from its Header.");
                 Verify.IsFalse(string.IsNullOrEmpty(fallback.GetAutomationId()), "The fallback peer must generate an AutomationId.");
                 Verify.IsFalse(string.IsNullOrEmpty(fallback.GetHelpText()), "A sortable column's fallback peer must report its sort state.");

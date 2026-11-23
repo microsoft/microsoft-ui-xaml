@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| **Status** | Proposal for API review (branch `user/hik/tableview/api-cleanups`, stacked on PR #12420 and under PR #12654) |
+| **Status** | Proposal for API review (PR #12804, branch `user/hik/tableview/api-cleanups`) |
 | **Surface** | `controls/dev/TableView/TableView.idl`, `controls/dev/TabularShaping/SortDirection.idl`, plus `TabularControlsResources` and `XamlControlsTabularXamlMetaDataProvider` from `controls/dev/dll-tabular/Microsoft.UI.Xaml.Controls.Tabular.idl` |
 | **Namespace / binary** | `Microsoft.UI.Xaml.Controls.Tabular`, `Microsoft.UI.Xaml.Controls.Tabular.dll`. Every type is `[MUX_PREVIEW]`. |
-| **Stack** | #12420 removes editing and `TableViewTextColumn` and adds `DisplayMemberBinding`. This PR makes the non-data API cleanups (§1.1). #12654 makes every data-operation change (sorting, grouping, item lookup, data shaping) and removes `TableViewSource` in favour of `CollectionViewSource`. |
+| **Stack** | `main` ← #12420 ← #12804 (this PR) ← #12654. #12420 removes editing and `TableViewTextColumn` and adds `DisplayMemberBinding`. This PR makes the non-data API cleanups (§1.1). #12654 makes every data-operation change (sorting, grouping, item lookup, data shaping) and removes `TableViewSource` in favour of `CollectionViewSource`. |
 | **Companion docs** | [API spec](../../api-specs/TableView/TableView-spec.md), [dev spec](TableView-dev-spec.md), [functional spec](TableView-functional-spec.md), [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md) |
 
 The IDLs are the source of truth for shape. This document reviews the whole proposed surface, so its sorting, grouping, selection-lookup and data sections (§2.1, §2.3, §2.4 `IndexOf`/`StartBringItemIntoView`, §2.6) describe the surface as proposed in #12654; on this branch those members are still as on `main`. Where a contract depends on implementation that has not landed or been validated at run time, it says so.
@@ -22,9 +22,9 @@ TableView is preview API. This review checks whether the proposed surface is rea
 |---|---|---|
 | Added | `TableViewColumn.NotifyCellContentChanged()` (protected) | Derived columns can regenerate their cells. |
 | Changed | `TableViewDensity`: `Standard = 0`, `Compact = 1`, `Comfortable = 2` | Zero value now equals the default. Persisted integers change meaning. |
-| Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. Stays unsealed. |
+| Changed | `TableViewColumnHeaderAutomationPeer` ctor `(TableView, TableViewColumn)` → `(TableViewColumnHeader owner)` | Owner is the element (WinUI convention); old ctor made the TableView the owner. A header the table has not attached to one of its columns throws `E_INVALIDARG`. Stays unsealed. |
 | Changed | `TableViewCellAutomationPeer` ctor `(FrameworkElement, TableViewRow, TableViewColumn, Int32)` → `(FrameworkElement owner)` | Owner-only, like every WinUI peer; row, column and index are derived from the cell, and a non-cell owner throws `E_INVALIDARG`. Stays unsealed. |
-| Changed | `TableViewColumn.CanResize` → `CanUserResize` | Matches `CanUserResizeColumns` and WPF. Gates user input only (pointer, keyboard, UIA Transform). |
+| Changed | `TableViewColumn.CanResize` → `CanUserResize` | Matches `CanUserResizeColumns` and WPF. Gates user input only (pointer, keyboard, UIA Transform). A Star column with `CanUserResize=false` keeps its authored share whatever `CanUserResizeColumns` is, and toggling `CanUserResizeColumns` moves no column. |
 | Removed | `TableViewFrozenEdge.Trailing` | Reserved no-op; appending it later is compatible, changing a shipped no-op is not. |
 | Removed | public `TableViewColumn.GenerateElement(Object)` | Only `GenerateElementCore` is an extension point. |
 
@@ -45,8 +45,8 @@ TableView is preview API. This review checks whether the proposed surface is rea
 | | Member | Reason |
 |---|---|---|
 | Added | `TableViewColumn.DisplayMemberBinding` (`Binding`, CLR) | Restores the template-free "bind a collection, render data cleanly" baseline without a new column type, after `TableViewTextColumn` was cut: a read-only `TextBlock` cell bound against the row item, whose `Path` is the sort key when `SortMemberPath` is empty. WPF `GridViewColumn.DisplayMemberBinding` precedent, including its precedence: `DisplayMemberBinding` over `CellTemplate`, so a template column ignores its `CellTemplate` while `DisplayMemberBinding` is set. |
-| Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, `CellEditEnded`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate`, `CommitCellEditCore` | Deferred to V2 / a future DataGrid (§2.5). V1 behaves as the old default `IsReadOnly = true`. |
-| Removed | `TableViewTextColumn` (and `Binding`) | Deferred to V2 (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name now comes from the visible columns' `GetSortMemberPathCore()` values. |
+| Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate` | Deferred to V2 / a future DataGrid (§2.5). V1 behaves as the old default `IsReadOnly = true`. |
+| Removed | `TableViewTextColumn` (and `Binding`) | Deferred to V2 (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name comes from the visible columns' `DisplayMemberBinding` values, as its realized cells show them. |
 
 ## 2. API surface by area
 
@@ -65,7 +65,7 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `Width` | `GridLength`, 120 px | `Pixel` exact; `Auto` = widest realized cell (grows within a data set) or current header; `*` = share of body viewport after fixed columns. |
 | `MinWidth` / `MaxWidth` | `Double`, 20 / ∞ | Clamp every mode. |
 | `ActualWidth` | `Double` (get), 120 | Realized width. |
-| `CanUserResize` | `Boolean`, `true` | User resize (pointer, keyboard, UIA Transform) for this column, ANDed with `TableView.CanUserResizeColumns`. |
+| `CanUserResize` | `Boolean`, `true` | User resize (pointer, keyboard, UIA Transform) for this column, ANDed with `TableView.CanUserResizeColumns`. A Star column with `CanUserResize=false` keeps its authored share (resizing other columns does not move it) whether or not `CanUserResizeColumns` is set; both properties gate input only, so toggling either moves no column. |
 | Sort members | — | See §2.3. |
 | `Visibility` | `Visibility`, `Visible` | Collapsed columns are absent from layout and from the UIA grid. |
 | `FrozenEdge` | `TableViewFrozenEdge`, `None` | `Leading` pins only within the contiguous prefix from column 0. Out-of-range values act as `None`. |
@@ -96,7 +96,7 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `TableView.ClearSort()` | `Boolean` | Clears the column sort and, with it, every sort axis on the source. `false` when no column is sorted. |
 | `Sorting` | `TableViewSortingEventArgs` (`Column`, `Direction`, `Cancel`) | Raised first; cancellable. |
 | `Sorted` | `TableViewSortedEventArgs` (`Column`, `Direction`) | Raised after. `Column == null` means clear-all. |
-| `SortDirection` enum | `None = 0`, `Ascending = 1`, `Descending = 2` | Shared by `TableViewSource` and `TableView`. |
+| `SortDirection` enum | `None = 0`, `Ascending = 1`, `Descending = 2` | Shared with the data layer (#12654). |
 
 **Gates.**
 
@@ -105,14 +105,14 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | Header click / Enter / Space / UIA Invoke | gates | gates | yes | yes |
 | `SortByColumn` / `ToggleSortDirection` | ignored | ignored | yes | yes |
 | Setting `TableViewColumn.SortDirection` | ignored | ignored | no | **no** |
-| `TableViewSource.Sort(path, …)` | — | — | — | yes; lights the column whose path matches |
+| A sort the app declares on the data source | — | — | — | yes; see #12654 for how it lights the arrow |
 | Turning `CanUserSortColumns`/`CanUserSort` off | — | — | no | no; the active sort and arrow stay (WPF parity) |
 
-**Contracts.** One control sort axis is in force: a column sort becomes the only sort axis on the source, and a sort the app then declares on the source takes the arrow (a path sort lights the column whose path matches, a key-selector sort lights none), so the arrow never shows a losing axis. `SortByColumn`/`ToggleSortDirection` return `false` and change nothing when `Sorting` is cancelled, the column has no sort path and no comparer, rows lack identity, or the source is refused.
+**Contracts.** One control sort axis is in force, and the arrow never shows a losing axis. `SortByColumn`/`ToggleSortDirection` return `false` and change nothing when `Sorting` is cancelled or the column has no sort path and no comparer. How a column sort maps onto the `CollectionViewSource` and how app-declared source sorts light the arrow are reviewed in #12654.
 
 **Display-only `SortDirection`.** Setting it updates the arrow and UIA state and records the column as lit by the app; it never reshapes. A non-`None` value clears the arrow on every other column. The next header click cycles from the displayed value. A value preset in XAML or before attach is applied when the column joins `Columns`. Setting `CustomSortComparer` while the arrow was set by the app neither reshapes nor raises events. Typical server-sort pattern: handle `Sorting`, set `Cancel = true`, fetch, set `Column.SortDirection`.
 
-**Nuances.** `Sorted(null, None)` is raised both for clear-all and for an app key-selector sort (§6). The direction contract of `ITableViewSortComparer` (does the control invert for `Descending`?) is not stated in the IDL (§6).
+**Nuances.** `Sorted(null, None)` means clear-all; how app-declared source sorts are reported is reviewed in #12654 (§6). The direction contract of `ITableViewSortComparer` (does the control invert for `Descending`?) is not stated in the IDL (§6).
 
 ### 2.4 Selection and navigation
 
@@ -141,14 +141,14 @@ V1 has no editing API, edit mode or edit gestures, and no `TableViewTextColumn`;
 | `TableView.GroupHeaderTemplate` | `DataTemplate` | Content of the control-owned band; data context `TableViewGroupInfo`. |
 | `TableViewGroupInfo` | INPC; `Key`, `ItemCount`, `IsExpandable`, `IsExpanded`, `KeyText`, `ItemCountText` | Updated in place on recycle; `KeyText`/`ItemCountText` lazily culture-formatted. |
 | `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) | Realized band; written internally only. An external `SetValue` is reverted (observers may see a transient change notification); bind `OneWay` only. |
-| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is resolved to a group identity exactly as `GroupBy` does (built-in identity, or the identity selector passed to `GroupBy`) and matched by identity; a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
+| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is matched against the groups' keys by identity (key resolution with `CollectionViewSource` grouping: see #12654); a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
 | `ExpandAllGroups()` / `CollapseAllGroups()` | `void` | Moves the default (applies to groups that appear later) and resets per-group exceptions. No-op when not grouped. |
 | `GroupExpanding` | args `GroupKey` | Always synchronous, before the state changes. Not cancellable. |
 | `GroupCollapsed` | args `GroupKey` | After the state changes. |
-| `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows under `ParentBy`; no-op otherwise. |
+| `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows of hierarchical data (see #12654); no-op otherwise. |
 | `TableViewRow.Level` / `IsExpandable` / `IsExpanded` | read-only DPs | `Level` 1-based for tree rows, `0` otherwise (matches `AutomationProperties.Level`). |
 
-**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. A handler that changes the source (lazy load, `Filter`, `Sort`) reshapes it before the state change; the control then finds the group again by identity in the new projection and applies the change. Exceptions thrown by group-event handlers are contained and logged. Once `GroupExpanding` has been raised the direction is pinned: the operation never toggles back after the handler, and a handler that calls `ExpandGroup` on the same group is a no-op (one `GroupExpanding`, no recursion). After the handler the control re-checks the state and the source, so a handler that swaps `ItemsSource` does not expand the new source's groups. A bulk request made while a `GroupExpanding` is being raised is queued until it finishes. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
+**Group events.** Raised for **every** group whose state changes, from any source: pointer, keyboard, UIA ExpandCollapse, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per changed group). Order: `GroupExpanding` (synchronous) → state change → UIA `ExpandCollapseState` change; `GroupCollapsed` after the change. A request that arrives during layout (including the measure/arrange of rows, headers and the cells panel) posts the **whole operation** to the next dispatcher turn, so the events are never raised after the state already changed. A handler that changes the source (lazy load, filtering, sorting) reshapes it before the state change; the control then finds the group again by identity in the new projection and applies the change. Exceptions thrown by group-event handlers are contained and logged. Once `GroupExpanding` has been raised the direction is pinned: the operation never toggles back after the handler, and a handler that calls `ExpandGroup` on the same group is a no-op (one `GroupExpanding`, no recursion). After the handler the control re-checks the state and the source, so a handler that swaps `ItemsSource` does not expand the new source's groups. A bulk request made while a `GroupExpanding` is being raised is queued until it finishes. `TableViewGroupHeader.IsExpanded`/`IsExpandable` revert an external `SetValue`; pooled headers re-prepare through internal writes that raise nothing.
 
 **Nuances.** Expansion is intent keyed by group identity, so a collapse survives sort, filter and regroup. Grouping is single-level. Tree rows have no per-row expand API and no events (§6). Group order is the source's, unchanged from `main` (§2.1).
 
@@ -305,7 +305,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Settable `TableViewGroupHeader.IsExpanded` routed to the owner | TVS feedback (TreeView/Expander precedent); first draft of this PR | Rejected: read-only + `ExpandGroup`/`CollapseGroup` | Headers are pooled and re-created on every reshape; expansion is intent keyed by group identity, so the API takes a key on the owner. |
 | Remove `TableViewGroupInfo.ItemCountText` | IDL feedback #23; first draft of this PR | Kept | A localized, culture-formatted string the group header template binds; `{Binding}` cannot reproduce the localized format. |
 | Remove `TableViewGroupInfo.IsExpandable` | IDL feedback #24 (optional) | Kept | Not constant: empty groups and hierarchical groups make it vary; drives the `NotExpandable` state. |
-| Cell editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, edit events and args, `CellEditingTemplate`, `CommitCellEditCore`) | API review 2026-11-11 | Deferred to V2 / future DataGrid | See §2.5. |
+| Cell editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, edit events and args, `CellEditingTemplate`) | API review 2026-11-11 | Deferred to V2 / future DataGrid | See §2.5. |
 | Rename `SortDirection` → `TableViewSortDirection`; reuse `ListSortDirection` | TVS feedback A12; precedent P14 | Not taken | Shared shaping enum; `None` is required. |
 | `Select(Object)` | IDL feedback #4 | Not taken | `IndexOf` + `Select(Int32)` keeps one selection API (ItemsView). |
 | Move peer ctors to a TestHooks IDL | Stability review | Not taken; owner-element ctors instead | `(TableViewColumnHeader)` and `(FrameworkElement)` owner ctors follow the WinUI peer convention and validate the owner. |
@@ -317,7 +317,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Topic | Problem | Direction |
 |---|---|---|
 | **Width / auto-fit** | `GridLength` cannot express size-to-header/cells or shrink; no programmatic re-fit; user resize writes `Pixel` to the dragged and earlier `*` columns, replacing bindings; no `ColumnResized`. | Decide before stabilizing: keep `GridLength` + additive `AutoFit()` and stop rewriting other columns, or introduce `TableViewLength`. |
-| **`Sorted` origin** | `Sorted(null, None)` means both clear-all and "app key-selector sort". | Add an origin/`IsCleared` field to `TableViewSortedEventArgs`. |
+| **`Sorted` origin** | `Sorted(null, None)` means clear-all; an app-declared source sort may need a distinct origin (#12654). | Add an origin/`IsCleared` field to `TableViewSortedEventArgs`. |
 | `ITableViewSortComparer` direction | Who inverts for `Descending` is unstated; interface cannot be versioned. | State it in the IDL/spec before stabilizing. |
 | **Per-row expand APIs** | Tree rows: only `ExpandAllRows`/`CollapseAllRows`; no row events. | Additive `ExpandRow(item)`/`CollapseRow(item)` + row `Expanding`/`Collapsed` mirroring the group events. Consider `ExpandAllNodes` naming. |
 | **Row lifecycle events** | No prepared/cleared events and no way to supply a derived `TableViewRow`. | `RowPrepared`/`RowClearing` (ItemsRepeater/`LoadingRow` precedent) and/or a container factory. |

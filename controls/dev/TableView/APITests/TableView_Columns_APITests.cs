@@ -1548,6 +1548,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies NotifyCellContentChanged called while a cell is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
+        public void VerifyNotifyCellContentChangedDuringLayoutIsDeferred()
+        {
+            TableView tableView = null;
+            LayoutNotifyingColumn column = null;
+            int generatedBefore = 0;
+            int realizedRows = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new LayoutNotifyingColumn { Header = "L", Width = new GridLength(120) };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                realizedRows = rows.Count;
+                Verify.IsGreaterThan(realizedRows, 0, "At least one row should be realized.");
+                generatedBefore = column.GenerateCount;
+
+                // Dirtying the cells panel too makes the cell measure run inside the panel's MeasureOverride.
+                column.NotifyOnNextMeasure = true;
+                var cell = GetRowCell(rows[0], 1);
+                ((FrameworkElement)GetCellContent(cell)).InvalidateMeasure();
+                ((UIElement)VisualTreeHelper.GetParent(cell)).InvalidateMeasure();
+                tableView.UpdateLayout();
+
+                Verify.IsFalse(column.NotifyOnNextMeasure, "Precondition: the cell's measure must have run and notified.");
+                Verify.AreEqual(0, column.GenerationsDuringNotify, "NotifyCellContentChanged during layout must not regenerate cells re-entrantly.");
+                Verify.AreEqual(generatedBefore, column.GenerateCount, "The regeneration must wait until layout has finished.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(realizedRows, GetRealizedRows(tableView).Count, "Precondition: the realized rows must not change.");
+                Verify.AreEqual(realizedRows, column.GenerateCount - generatedBefore, "The deferred calls must regenerate each realized cell exactly once.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies the element a custom column returns is what appears in the row's cell.")]
         public void VerifyCustomColumnElementRendersInCell()
         {
@@ -1798,6 +1845,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(item.Name, cell.Text, $"The cell should show its own row's data ({context}).");
             }
+        }
+    }
+
+    // A derived column that calls NotifyCellContentChanged (twice) from inside one cell's measure.
+    internal sealed partial class LayoutNotifyingColumn : TableViewColumn
+    {
+        private bool _notifying;
+
+        public bool NotifyOnNextMeasure { get; set; }
+
+        public int GenerateCount { get; private set; }
+
+        public int GenerationsDuringNotify { get; private set; }
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            GenerateCount++;
+            if (_notifying)
+            {
+                GenerationsDuringNotify++;
+            }
+            return new MeasureHookGrid(this) { Children = { new TextBlock { Text = "L" } } };
+        }
+
+        internal void OnCellMeasure()
+        {
+            if (!NotifyOnNextMeasure)
+            {
+                return;
+            }
+            NotifyOnNextMeasure = false;
+            _notifying = true;
+            NotifyCellContentChanged();
+            NotifyCellContentChanged();
+            _notifying = false;
+        }
+    }
+
+    internal sealed partial class MeasureHookGrid : Grid
+    {
+        private readonly LayoutNotifyingColumn _column;
+
+        public MeasureHookGrid(LayoutNotifyingColumn column) { _column = column; }
+
+        protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
+        {
+            _column.OnCellMeasure();
+            return base.MeasureOverride(availableSize);
         }
     }
 

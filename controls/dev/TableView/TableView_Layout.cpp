@@ -640,7 +640,7 @@ void TableView::FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, 
         {
             continue;
         }
-        if (CanUserResizeColumns() && !other.CanUserResize() &&
+        if (!other.CanUserResize() &&
             winrt::get_self<TableViewColumn>(other)->AuthoredWidthInternal().GridUnitType == winrt::GridUnitType::Star)
         {
             holds.push_back({ winrt::make_weak(other), other.ActualWidth() });
@@ -719,7 +719,6 @@ size_t TableView::LockedColumnHoldsSignature()
     auto const mix = [&seed](size_t value) { seed ^= value + static_cast<size_t>(0x9e3779b9) + (seed << 6) + (seed >> 2); };
     auto const bodyScroller = m_bodyScroller.get();
     mix(std::hash<double>{}(bodyScroller ? bodyScroller.ViewportWidth() : 0.0));
-    mix(CanUserResizeColumns());
     if (auto const columns = Columns())
     {
         for (auto const& c : columns)

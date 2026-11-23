@@ -4671,6 +4671,6 @@ void TableView::OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPro
         return;
     }
 
-    ExpireLockedColumnHolds();
+    // Gates user input only: resize holds and authored shares survive the toggle.
     RebuildHeaders();
 }

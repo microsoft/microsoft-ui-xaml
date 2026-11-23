@@ -244,6 +244,12 @@ winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSi
     return desired;
 }
 
+winrt::Size TableViewGroupHeader::ArrangeOverride(winrt::Size const& finalSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::ArrangeOverride(finalSize);
+}
+
 winrt::Size TableViewGroupHeader::MeasureBand(winrt::Size const& availableSize)
 {
     // Same sum TableViewCellsPanel uses for a row, evaluated at the same point in the layout

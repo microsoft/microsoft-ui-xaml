@@ -169,6 +169,7 @@ void TableViewColumnHeader::SetDensityPaddingInternal(winrt::Thickness const& pa
 
 winrt::Size TableViewColumnHeader::MeasureOverride(winrt::Size const& availableSize)
 {
+    TableView::ElementLayoutScope const layoutScope;
     UpdateContentPadding();
     return __super::MeasureOverride(availableSize);
 }

@@ -488,7 +488,7 @@ public:
     }
     bool IsInLayoutCallback() const noexcept { return m_layoutCallbackDepth > 0 || s_elementLayoutDepth > 0; }
 
-    // Measure/arrange of the control's own elements (cells panels, group headers). Per thread, not
+    // Measure/arrange of the control's own elements (cells panels, column and group headers). Per thread, not
     // per table: any of them can run app code that reaches a table.
     static inline thread_local uint32_t s_elementLayoutDepth{ 0 };
     struct ElementLayoutScope
@@ -1365,9 +1365,9 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
-    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Hash of the hold inputs a user resize does not change: the viewport width, the Columns identities,
+    // and each column's authored Width, MinWidth (and whether it is local), MaxWidth, Visibility and
+    // CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);

@@ -2148,7 +2148,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ("CanUserResize", t => { t.Columns[2].CanUserResize = false; t.Columns[2].CanUserResize = true; }),
                 ("Columns", t => { var c = t.Columns[3]; t.Columns.RemoveAt(3); t.Columns.Add(c); }),
                 ("held column", t => { var c = t.Columns[1]; t.Columns.RemoveAt(1); t.Columns.Insert(1, c); }),
-                ("CanUserResizeColumns", t => { t.CanUserResizeColumns = false; t.CanUserResizeColumns = true; }),
                 ("viewport", t => { t.Width = 500.0; t.UpdateLayout(); t.Width = 600.0; }),
                 ("ItemsSource", t => t.ItemsSource = ((global::System.Collections.IEnumerable)t.ItemsSource).Cast<object>().ToList()),
             };
@@ -2176,6 +2175,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 SettleLayout(tableView);
 
                 RunOnUIThread.Execute(() => VerifyLockedStarLayout(tableView, $"after a {name} change"));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies toggling CanUserResizeColumns, which gates user input only, moves no column: resized columns, a CanUserResize=false Star column's share and its resize hold all survive.")]
+        public void VerifyCanUserResizeColumnsToggleKeepsWidths()
+        {
+            foreach (var latchHold in new[] { false, true })
+            {
+                Log.Comment(latchHold ? "With a resize hold." : "Without a resize hold.");
+                TableView tableView = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateLockedStarTable();
+                    LoadContent(tableView);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    if (latchHold)
+                    {
+                        LatchLockedStarHold(tableView);
+                    }
+                    else
+                    {
+                        DragLockedStarTableColumns(tableView);
+                    }
+                    var before = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+
+                    foreach (var enabled in new[] { false, true })
+                    {
+                        tableView.CanUserResizeColumns = enabled;
+                        tableView.UpdateLayout();
+                        var widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                        Log.Comment($"CanUserResizeColumns={enabled}: widths={string.Join(", ", widths)}.");
+                        for (int i = 0; i < before.Length; i++)
+                        {
+                            VerifyNear(before[i], widths[i], 0.5, $"Column {i} must keep its width with CanUserResizeColumns={enabled}");
+                        }
+                    }
+                });
             }
         }
 

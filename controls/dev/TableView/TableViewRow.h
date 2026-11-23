@@ -28,9 +28,6 @@ public:
 
     // IFrameworkElement overrides
     void OnApplyTemplate();
-    // Mark the row's layout for TableView::IsInLayoutCallback.
-    winrt::Size MeasureOverride(winrt::Size const& availableSize);
-    winrt::Size ArrangeOverride(winrt::Size const& finalSize);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     // Use the Control virtual signatures; event-handler overloads break the ABI shim.

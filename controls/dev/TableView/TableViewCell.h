@@ -6,7 +6,7 @@
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewRow.h"
 
-struct __declspec(uuid("843c3f59-aab0-4bcb-a8a4-12327286a29f")) __declspec(novtable)
+struct __declspec(uuid("e994625a-2405-4cb6-90c3-dedb266d3c06")) __declspec(novtable)
     ITableViewCellAutomationPeerAccess : ::IUnknown
 {
     virtual HRESULT __stdcall GetExistingPeer(_Outptr_result_maybenull_ ::IInspectable** peer) noexcept = 0;

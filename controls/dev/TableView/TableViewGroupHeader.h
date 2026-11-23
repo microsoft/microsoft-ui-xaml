@@ -35,6 +35,7 @@ public:
     // came out short and, because it then had a fixed width inside a stretch slot, centred itself
     // with a gap at both ends. Measuring is self-timing and cannot go stale.
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
+    winrt::Size ArrangeOverride(winrt::Size const& finalSize);
 
     // IUIElement overrides
     winrt::AutomationPeer OnCreateAutomationPeer();

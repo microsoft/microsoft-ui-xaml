@@ -3871,7 +3871,7 @@ bool TableView::ScrollBodyHorizontallyInternal(bool forward, bool toEdge, winrt:
     // A focused non-frozen element stays in view: an edge scroll stops short, and a step is refused.
     auto const element = keepInView.try_as<winrt::FrameworkElement>();
     auto const column = element ? element.Tag().try_as<winrt::TableViewColumn>() : nullptr;
-    if (element && !(column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None))
+    if (element && !(column && column.FrozenEdge() == winrt::TableViewFrozenEdge::Leading))
     {
         auto const bounds = element.TransformToVisual(scroller).TransformBounds({ 0.0f, 0.0f, static_cast<float>(element.ActualWidth()), 0.0f });
         const double left = offset + bounds.X;

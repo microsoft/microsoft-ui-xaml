@@ -481,38 +481,44 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
-    // Regenerating cells inside measure or arrange would mutate the tree being laid out. At most one
-    // post per column; the reset requests are OR'ed into it.
+    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
+
+    // Regenerating cells inside measure or arrange would mutate the tree being laid out, so it is
+    // never done here. At most one post per column; the reset requests are OR'ed into it.
     if (IsInLayoutCallback())
     {
-        auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
         if (columnImpl->QueueCellContentChangeInternal(resetAutoWidth))
         {
             return;
         }
-        if (auto const queue = DispatcherQueue())
-        {
-            if (queue.TryEnqueue([weakColumn = winrt::make_weak(column)]()
-                {
-                    auto const liveColumn = weakColumn.get();
-                    if (!liveColumn)
-                    {
-                        return;
-                    }
-                    // The column may have moved to another table meanwhile; its current owner regenerates.
-                    auto* const liveColumnImpl = winrt::get_self<TableViewColumn>(liveColumn);
-                    const bool reset = liveColumnImpl->TakeQueuedCellContentChangeInternal();
-                    if (auto const owner = liveColumnImpl->GetOwningTableView())
-                    {
-                        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(liveColumn, reset);
-                    }
-                }))
+        const uint32_t generation = columnImpl->CellContentChangeGenerationInternal();
+        auto const queue = DispatcherQueue();
+        const bool posted = queue && queue.TryEnqueue([weakColumn = winrt::make_weak(column), generation]()
             {
-                return;
-            }
-        }
-        columnImpl->TakeQueuedCellContentChangeInternal();
+                auto const liveColumn = weakColumn.get();
+                if (!liveColumn)
+                {
+                    return;
+                }
+                auto* const liveColumnImpl = winrt::get_self<TableViewColumn>(liveColumn);
+                if (liveColumnImpl->CellContentChangeGenerationInternal() != generation)
+                {
+                    return;
+                }
+                // The column may have moved to another table meanwhile; its current owner regenerates.
+                const bool reset = liveColumnImpl->TakeQueuedCellContentChangeInternal();
+                if (auto const owner = liveColumnImpl->GetOwningTableView())
+                {
+                    winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(liveColumn, reset);
+                }
+            });
+        // Without a post (teardown) the change stays pending for the next regeneration outside layout.
+        columnImpl->SetCellContentChangePostedInternal(posted);
+        return;
     }
+
+    // This regeneration also applies a change still pending from layout.
+    resetAutoWidth = columnImpl->TakeQueuedCellContentChangeInternal() || resetAutoWidth;
 
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
     ForEachRealizedRow([](winrt::TableViewRow const& row)
@@ -526,7 +532,7 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     // does not reset pre-existing columns).
     if (resetAutoWidth)
     {
-        winrt::get_self<TableViewColumn>(column)->ResetDesiredWidthInternal();
+        columnImpl->ResetDesiredWidthInternal();
     }
     InvalidateMeasure();
     RefreshCellFocusLevelsInternal();

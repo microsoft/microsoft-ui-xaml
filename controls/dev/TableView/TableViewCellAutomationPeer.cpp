@@ -43,6 +43,15 @@ TableViewCellAutomationPeer::CellOwner TableViewCellAutomationPeer::CellOwnerFor
     {
         throw winrt::hresult_invalid_argument();
     }
+    // A row not yet owned by a TableView has no column set to check against.
+    if (auto const table = winrt::get_self<TableViewRow>(result.Row)->GetOwningTableView())
+    {
+        if (winrt::get_self<TableViewColumn>(result.Column)->GetOwningTableView() != table ||
+            static_cast<uint32_t>(result.ColumnIndex) >= table.Columns().Size())
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+    }
     return result;
 }
 
