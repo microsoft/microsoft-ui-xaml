@@ -466,6 +466,7 @@ void TableViewRowFlattener::UpdateTree(Kind kind)
     auto const generation = m_declarationGeneration;
     auto const keySelector = m_keySelector;
     auto const parentKeySelector = m_parentKeySelector;
+    m_treeIndexIsCurrent = false;
 
     auto structure = std::make_shared<ShapingHelpers::ParentStructure>();
     winrt::hstring error;
@@ -509,6 +510,7 @@ void TableViewRowFlattener::UpdateTree(Kind kind)
             SetTreeIndex(std::move(index), {});
         }
         SetKind(Kind::Tree, m_treeRowsView);
+        m_treeIndexIsCurrent = !m_treeDetached && generation == m_declarationGeneration;
         return;
     }
 
@@ -671,12 +673,20 @@ void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collection
         }
     }
 
-    // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items, and at
+    // Flat rows are the view; grouped rows follow its groups. Only a tree is rebuilt from the items. A plain tree
+    // applies an Insert, Remove or Replace to its index and rows in place; what it cannot localize rebuilds, at
     // most once per dispatcher turn: a live tick moves many rows, each as a Remove and an Insert. The first
     // Insert, Replace or Reset of a turn rebuilds at once; a Remove (the first half of a move) and anything
     // later in the turn wait for the next turn, which rebuilds once.
     if (m_kind == Kind::Tree)
     {
+        if (!m_treeUpdatePending && change != CollectionChange::Reset && TryApplyTreeChange(change, index))
+        {
+            RaiseRowsChanged();
+            return;
+        }
+
+        m_treeIndexIsCurrent = false;
         if (!m_treeUpdatedThisTurn && change != CollectionChange::ItemRemoved)
         {
             m_treeUpdatedThisTurn = QueueTreeTurnEnd();
@@ -1479,6 +1489,7 @@ void TableViewRowFlattener::ClearTreeIndex()
     // No rebuild: the repeater may still be bound mid-teardown, so an empty Reset is a hazard. The rows and
     // node rows stay as they are until the rows are swapped.
     m_treeDetached = true;
+    m_treeIndexIsCurrent = false;
     m_treeIndex.reset();
     m_rootSegments.clear();
     m_filterOverlayCollapsed.clear();
@@ -2082,6 +2093,345 @@ bool TableViewRowFlattener::TryPublishTreeRowsAsSplice(std::vector<winrt::IInspe
     m_nodeRows = std::move(nodeRows);
     m_indexByNodeKeyValid = false;
     m_indexByItemValid = false;
+    return true;
+}
+
+bool TableViewRowFlattener::TryApplyTreeChange(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index)
+{
+    using winrt::Windows::Foundation::Collections::CollectionChange;
+
+    if (m_kind != Kind::Tree || !m_treeIndexIsCurrent || !m_treeIndex || !m_treeIndex->Structure || m_treeDetached ||
+        m_treeRowsInFlight || m_updating || !m_rootSegments.empty() || !m_keySelector ||
+        m_nodeRows.size() != static_cast<size_t>(m_treeRows.Size()))
+    {
+        return false;
+    }
+
+    auto const keepAlive = shared_from_this();
+    const size_t mirroredCount = m_treeIndex->Structure->Rows.size();
+    const size_t viewCount = m_view.Size();
+    bool applied = false;
+    bool runPending = false;
+    {
+        // A handler of a row change that changes the view again rebuilds once this unwinds.
+        m_treeRowsInFlight = true;
+        m_treeRowsPending = false;
+        auto resetGuard = wil::scope_exit([this, &runPending]() noexcept
+        {
+            m_treeRowsInFlight = false;
+            runPending = m_treeRowsPending;
+            m_treeRowsPending = false;
+        });
+
+        switch (change)
+        {
+        case CollectionChange::ItemInserted:
+            applied = mirroredCount + 1 == viewCount && index < viewCount && TryInsertTreeNode(index);
+            break;
+        case CollectionChange::ItemRemoved:
+            applied = mirroredCount == viewCount + 1 && index < mirroredCount && TryRemoveTreeNode(index);
+            break;
+        case CollectionChange::ItemChanged:
+            // A replacement is a removal and an insertion; an insertion that cannot follow it rebuilds from the view.
+            if (mirroredCount == viewCount && index < mirroredCount && TryRemoveTreeNode(index))
+            {
+                applied = TryInsertTreeNode(index);
+                m_treeIndexIsCurrent = applied;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (runPending)
+    {
+        m_treeIndexIsCurrent = false;
+        Update();
+        return true;
+    }
+    return applied;
+}
+
+int32_t TableViewRowFlattener::FindNodeRowIndex(winrt::IInspectable const& item, int32_t from) const
+{
+    auto const abi = winrt::get_abi(item);
+    for (size_t i = static_cast<size_t>((std::max)(from, 0)); i < m_nodeRows.size(); ++i)
+    {
+        if (winrt::get_abi(m_nodeRows[i].Item) == abi)
+        {
+            return static_cast<int32_t>(i);
+        }
+    }
+    return -1;
+}
+
+void TableViewRowFlattener::RenumberSiblingRows(int32_t parentRow, int32_t depth, int32_t siblingCount)
+{
+    int32_t sibling = 0;
+    for (size_t i = static_cast<size_t>(parentRow + 1); i < m_nodeRows.size(); ++i)
+    {
+        auto& row = m_nodeRows[i];
+        if (parentRow >= 0 && row.Depth < depth)
+        {
+            break;
+        }
+        if (row.Depth == depth)
+        {
+            row.SiblingIndex = ++sibling;
+            row.SiblingCount = siblingCount;
+        }
+    }
+}
+
+// The new row's keys are read; the others are not. Its siblings stay in the view's order: it goes after the nearest
+// earlier view item with the same parent.
+bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex)
+{
+    auto const index = std::const_pointer_cast<ShapingHelpers::ParentKeyIndex>(m_treeIndex);
+    auto const structure = std::const_pointer_cast<ShapingHelpers::ParentStructure>(index->Structure);
+
+    auto const item = m_view.GetAt(viewIndex);
+    if (!item)
+    {
+        return false;
+    }
+
+    std::wstring key;
+    std::wstring declaredParent;
+    ShapingHelpers::ReadNodeKeys(m_keySelector, m_parentKeySelector, item, key, declaredParent);
+    if (key.empty() || key == declaredParent ||
+        ShapingHelpers::IsObjectNodeKey(key) || ShapingHelpers::IsObjectNodeKey(declaredParent) ||
+        structure->ItemByKey.contains(key) || structure->OrphanParentKeys.contains(key) ||
+        structure->KeyByItem.contains(winrt::get_abi(item)))
+    {
+        // A duplicate or a row that adopts orphans: the rebuild reports or reshapes it.
+        return false;
+    }
+
+    std::wstring_view parentKey;
+    winrt::IInspectable parentItem{ nullptr };
+    if (!declaredParent.empty())
+    {
+        if (auto const parent = structure->ItemByKey.find(declaredParent); parent != structure->ItemByKey.end())
+        {
+            parentKey = parent->first;
+            parentItem = parent->second;
+        }
+    }
+
+    std::vector<winrt::IInspectable>* siblings = &index->Roots;
+    std::vector<winrt::IInspectable> noSiblings;
+    if (!parentKey.empty())
+    {
+        auto const children = index->Children.find(parentKey);
+        siblings = (children != index->Children.end()) ? &children->second : &noSiblings;
+    }
+
+    auto const& rows = structure->Rows;
+    size_t position = 0;
+    if (!siblings->empty())
+    {
+        std::unordered_set<void*> siblingSet;
+        if (!parentKey.empty())
+        {
+            siblingSet.reserve(siblings->size());
+            for (auto const& sibling : *siblings)
+            {
+                siblingSet.insert(winrt::get_abi(sibling));
+            }
+        }
+        for (size_t j = viewIndex; j-- > 0;)
+        {
+            const bool isSibling = parentKey.empty()
+                ? structure->ResolvedParentKey(rows[j]).empty()
+                : siblingSet.contains(winrt::get_abi(rows[j]));
+            if (isSibling)
+            {
+                auto const found = std::find_if(siblings->begin(), siblings->end(),
+                    [&](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == winrt::get_abi(rows[j]); });
+                if (found == siblings->end())
+                {
+                    return false;
+                }
+                position = static_cast<size_t>(found - siblings->begin()) + 1;
+                break;
+            }
+        }
+    }
+
+    // Where the row shows, found before anything changes.
+    int32_t parentRow = -1;
+    int32_t depth = 0;
+    bool isParentVisible = true;
+    if (parentItem)
+    {
+        parentRow = FindNodeRowIndex(parentItem);
+        isParentVisible = parentRow >= 0;
+        depth = isParentVisible ? m_nodeRows[static_cast<size_t>(parentRow)].Depth + 1 : 0;
+    }
+    int32_t previousRow = -1;
+    if (isParentVisible && position > 0)
+    {
+        previousRow = FindNodeRowIndex((*siblings)[position - 1], parentRow + 1);
+    }
+
+    if (siblings == &noSiblings)
+    {
+        siblings = &index->Children[parentKey];
+    }
+    siblings->insert(siblings->begin() + position, item);
+    const int32_t siblingCount = static_cast<int32_t>(siblings->size());
+    ++index->KeptNodeCount;
+    structure->Rows.insert(structure->Rows.begin() + viewIndex, item);
+    auto const entry = structure->KeyByItem.emplace(winrt::get_abi(item), std::move(key)).first;
+    std::wstring const& stored = entry->second;
+    structure->ItemByKey.emplace(std::wstring_view{ stored }, item);
+    if (!declaredParent.empty() && parentKey.empty())
+    {
+        ++structure->OrphanParentKeys[declaredParent];
+    }
+    structure->ParentKeyByItem.emplace(winrt::get_abi(item), std::move(declaredParent));
+
+    if (!isParentVisible)
+    {
+        return true;
+    }
+
+    bool isShown = true;
+    if (parentRow >= 0)
+    {
+        auto& parent = m_nodeRows[static_cast<size_t>(parentRow)];
+        parent.ChildCount = siblingCount;
+        if (!parent.HasChildren)
+        {
+            parent.HasChildren = true;
+            parent.IsExpanded = EffectiveExpanded(parent.NodeKey, true, parent.IsContext);
+        }
+        isShown = parent.IsExpanded;
+    }
+    if (!isShown)
+    {
+        return true;
+    }
+
+    int32_t at = parentRow + 1;
+    if (position > 0)
+    {
+        if (previousRow < 0)
+        {
+            return false;
+        }
+        at = previousRow + 1;
+        while (static_cast<size_t>(at) < m_nodeRows.size() && m_nodeRows[static_cast<size_t>(at)].Depth > depth)
+        {
+            ++at;
+        }
+    }
+
+    NodeRow row;
+    row.Item = item;
+    row.NodeKey = winrt::hstring{ stored };
+    row.ParentKey = winrt::hstring{ parentKey };
+    row.Depth = depth;
+    row.SiblingIndex = static_cast<int32_t>(position) + 1;
+    row.SiblingCount = siblingCount;
+    InsertTreeRows(at, { item }, { row });
+    if (!m_treeDetached)
+    {
+        RenumberSiblingRows(parentRow, depth, siblingCount);
+    }
+    return true;
+}
+
+// A leaf leaves; a row with children rebuilds (its children become orphan roots).
+bool TableViewRowFlattener::TryRemoveTreeNode(uint32_t viewIndex)
+{
+    auto const index = std::const_pointer_cast<ShapingHelpers::ParentKeyIndex>(m_treeIndex);
+    auto const structure = std::const_pointer_cast<ShapingHelpers::ParentStructure>(index->Structure);
+
+    auto const item = structure->Rows[viewIndex];
+    auto const keyEntry = structure->KeyByItem.find(winrt::get_abi(item));
+    if (keyEntry == structure->KeyByItem.end())
+    {
+        return false;
+    }
+    const std::wstring_view key{ keyEntry->second };
+    if (auto const* const children = index->TryGetChildren(key); children && !children->empty())
+    {
+        return false;
+    }
+
+    const std::wstring_view parentKey = structure->ResolvedParentKey(item);
+    std::vector<winrt::IInspectable>* siblings = &index->Roots;
+    auto children = index->Children.end();
+    if (!parentKey.empty())
+    {
+        children = index->Children.find(parentKey);
+        if (children == index->Children.end())
+        {
+            return false;
+        }
+        siblings = &children->second;
+    }
+    auto const found = std::find_if(siblings->begin(), siblings->end(),
+        [&](winrt::IInspectable const& sibling) { return winrt::get_abi(sibling) == winrt::get_abi(item); });
+    if (found == siblings->end())
+    {
+        return false;
+    }
+
+    int32_t parentRow = -1;
+    int32_t depth = 0;
+    bool isParentVisible = true;
+    if (!parentKey.empty())
+    {
+        parentRow = FindNodeRowIndex(structure->ItemByKey.at(parentKey));
+        isParentVisible = parentRow >= 0;
+        depth = isParentVisible ? m_nodeRows[static_cast<size_t>(parentRow)].Depth + 1 : 0;
+    }
+    const int32_t row = isParentVisible ? FindNodeRowIndex(item, parentRow + 1) : -1;
+
+    siblings->erase(found);
+    const int32_t siblingCount = static_cast<int32_t>(siblings->size());
+    if (siblingCount == 0 && children != index->Children.end())
+    {
+        index->Children.erase(children);
+    }
+    --index->KeptNodeCount;
+    structure->Rows.erase(structure->Rows.begin() + viewIndex);
+    auto const declared = structure->ParentKeyByItem.find(winrt::get_abi(item));
+    if (declared != structure->ParentKeyByItem.end())
+    {
+        if (!declared->second.empty() && parentKey.empty())
+        {
+            if (auto const orphan = structure->OrphanParentKeys.find(declared->second);
+                orphan != structure->OrphanParentKeys.end() && --orphan->second == 0)
+            {
+                structure->OrphanParentKeys.erase(orphan);
+            }
+        }
+        structure->ParentKeyByItem.erase(declared);
+    }
+    structure->ItemByKey.erase(key);
+    structure->KeyByItem.erase(keyEntry);
+    m_treeKeyCache.erase(winrt::get_abi(item));
+
+    if (parentRow >= 0)
+    {
+        auto& parent = m_nodeRows[static_cast<size_t>(parentRow)];
+        parent.ChildCount = siblingCount;
+        parent.HasChildren = siblingCount > 0;
+        parent.IsExpanded = parent.HasChildren && parent.IsExpanded;
+    }
+    if (row >= 0)
+    {
+        RemoveTreeRows(row, 1);
+        if (!m_treeDetached)
+        {
+            RenumberSiblingRows(parentRow, depth, siblingCount);
+        }
+    }
     return true;
 }
 

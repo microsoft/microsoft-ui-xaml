@@ -224,6 +224,15 @@ private:
     // Publishes rebuilt rows as the few removals and insertions that turn the current rows into them; false
     // when that would be many (a Reset then).
     bool TryPublishTreeRowsAsSplice(std::vector<winrt::IInspectable> const& built, std::vector<NodeRow>& nodeRows);
+    // Applies one view Insert, Remove or Replace to the tree index and splices the visible rows, without reading
+    // the other rows; false (a rebuild then) for what it does not localize: a row that adopts orphans, a row with
+    // children leaving, object keys, a duplicate, a grouped tree.
+    bool TryApplyTreeChange(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index);
+    bool TryInsertTreeNode(uint32_t viewIndex);
+    bool TryRemoveTreeNode(uint32_t viewIndex);
+    int32_t FindNodeRowIndex(winrt::IInspectable const& item, int32_t from = 0) const;
+    // Renumbers the visible rows of one sibling list (roots when parentRow is -1) after it changed.
+    void RenumberSiblingRows(int32_t parentRow, int32_t depth, int32_t siblingCount);
     // Tree rows, node rows and index maps are only correct as a set; mutate only through these.
     void InsertTreeRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& nodeRows);
     void RemoveTreeRows(int32_t index, int32_t count);
@@ -299,6 +308,8 @@ private:
     bool m_groupRowsProfiled{ false };
 
     std::shared_ptr<const ShapingHelpers::ParentKeyIndex> m_treeIndex;
+    // The tree index describes the view's current items (a plain tree, built or kept current incrementally).
+    bool m_treeIndexIsCurrent{ false };
     // Each row's keys as last read, so a rebuild after an Insert, Remove or Replace reads only the rows that
     // change brought in. Emptied by a Reset, a new declaration and a released tree.
     ShapingHelpers::NodeKeyCache m_treeKeyCache;
