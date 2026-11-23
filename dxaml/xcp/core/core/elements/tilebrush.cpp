@@ -330,8 +330,12 @@ _Check_return_ HRESULT CTileBrush::AdjustDecodeRectForStretch(
 
         // The brush Transform and RelativeTransform scale the image when it is drawn (see ComputeDeviceToSource), so an
         // enlarging transform needs a larger decode, capped by the clamp below. Smaller scales keep the current size. An
-        // SVG with an intrinsic size isn't clamped, so it keeps the current size too.
-        if (!hasIntrinsicSize)
+        // SVG lays out its artwork inside the decoded size, so it keeps the current size too.
+        const bool isSvg =
+            OfTypeByIndex<KnownTypeIndex::ImageBrush>() &&
+            static_cast<CImageBrush*>(this)->m_pImageSource &&
+            static_cast<CImageBrush*>(this)->m_pImageSource->OfTypeByIndex<KnownTypeIndex::SvgImageSource>();
+        if (!isSvg)
         {
             CMILMatrix brushTransform(TRUE);
             if (auto relativeTransform = GetRelativeTransform())
