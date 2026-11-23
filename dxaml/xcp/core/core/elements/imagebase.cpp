@@ -174,8 +174,12 @@ CImageBase::EnsureBrush()
         // Keep drawing the current picture while a new URI source loads; see BaseContentRenderer::ImageRenderContent.
         // The fallback is per Image, so the new source and anything else sharing it are not affected.
         // Not when the Image now shows another item, e.g. a list fills a reused container, unless it's the same picture.
+        // Not for a source that has already failed either: it won't load, and the fallback's size would keep a naturally
+        // sized Image laid out.
         const bool samePicture = m_pImageSource && m_pImageSource->IsSourceSetAndEqualTo(m_pBackgroundBrush->m_pImageSource);
-        const bool keepPicture = m_pImageSource && !m_pImageSource->m_strSource.IsNull() && IsActive() &&
+        bool available = false;
+        const bool alreadyFailed = m_pImageSource && m_pImageSource->IsImageDecoded(&available) && !available;
+        const bool keepPicture = m_pImageSource && !m_pImageSource->m_strSource.IsNull() && IsActive() && !alreadyFailed &&
             (samePicture || (!m_itemChanged && !IsListFillIn(this)));
         m_itemChanged = false;
         if (keepPicture && m_pBackgroundBrush->GetHardwareSurface() != nullptr)

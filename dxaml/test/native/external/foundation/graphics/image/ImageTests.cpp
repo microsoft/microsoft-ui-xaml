@@ -1613,6 +1613,11 @@ void ImageTests::NewSourceKeepsPreviousImageWhileLoading()
     // so B can't be shown yet: the Image must still draw A (same tree and surface as "A") rather than an empty surface.
     bool sourceChanged = false;
     bool verified = false;
+    // The callback captures locals; clear it even if a verification below throws.
+    TestCleanupWrapper cleanup([]()
+    {
+        TestServices::WindowHelper->SetPostTickCallback(nullptr);
+    });
     TestServices::WindowHelper->SetPostTickCallback(ref new PostTickCallback([&]()
     {
         if (sourceChanged && !verified)
