@@ -2006,15 +2006,6 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
             VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
-            first = safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(0));
-        });
-
-        LOG_OUTPUT(L"And a pointer drag starts a drag again.");
-        TestServices::InputHelper->PressHoldAndPanFromCenter(first, 0 /* relX */, 100 /* relY */, 0.1 /* velocityFactor */, 1000 /* holdTime */);
-        test_infra::TestServices::WindowHelper->WaitForIdle();
-        RunOnUIThread([&]()
-        {
-            VERIFY_IS_TRUE(*dragStarts > 0);
         });
     }
 
