@@ -666,13 +666,14 @@ void VectorCollectionView::DisconnectLiveShapingItems(_In_ LiveShapingState& sta
     }
 }
 
-// The reference tracker walk reads the sort state and the group tree, so a destroyed view lets go of them under the
+// The reference tracker walk reads the sort state, the group tree and the Filter events, so a destroyed view lets go of them under the
 // lock the walk runs under, before its members are destroyed.
 void VectorCollectionView::ReleaseShapingState()
 {
     std::shared_ptr<ShapingSortState> spSortState;
     ctl::ComPtr<xaml_data::ICollectionViewGroup> spGroupRoot;
-    if (!m_spSortState && !m_spGroupRoot)
+    ctl::ComPtr<IFilterEventSource> spFilterEvents;
+    if (!m_spSortState && !m_spGroupRoot && !m_spFilterEvents)
     {
         return;
     }
@@ -681,6 +682,7 @@ void VectorCollectionView::ReleaseShapingState()
         AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
         spSortState = std::move(m_spSortState);
         spGroupRoot = std::move(m_spGroupRoot);
+        spFilterEvents = std::move(m_spFilterEvents);
     }
 }
 void VectorCollectionView::ClearLiveShapingItems()
@@ -1033,16 +1035,41 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 }
                 else
                 {
-                    // Without live sorting the items stay in order (a CustomSort would see their new values), and each
-                    // item the filter now accepts is placed among them, as a small tick places it.
+                    // Without live sorting the items stay in order, and each item the filter now accepts is placed
+                    // among them by a binary search, as a small tick places it. The kept items need not be in order
+                    // under the comparer's current values (a CustomSort sees their edits), so a position is only where
+                    // the search lands; joiners that land together are ordered by the comparer. One merge builds the
+                    // output.
                     auto joining = std::find_if(entries.begin(), entries.end(), [](const Entry& entry) { return entry.oldPosition == UINT_MAX; });
-                    std::vector<Entry> placed(std::make_move_iterator(entries.begin()), std::make_move_iterator(joining));
+                    const size_t keptCount = static_cast<size_t>(joining - entries.begin());
+                    std::vector<std::pair<size_t, size_t>> joinerSlots;
+                    joinerSlots.reserve(entries.size() - keptCount);
                     for (auto it = joining; it != entries.end() && SUCCEEDED(hrCompare); ++it)
                     {
-                        auto position = std::upper_bound(placed.begin(), placed.end(), *it, isBefore);
-                        placed.insert(position, std::move(*it));
+                        const auto landingAt = std::upper_bound(entries.begin(), joining, *it, isBefore) - entries.begin();
+                        joinerSlots.emplace_back(static_cast<size_t>(landingAt), static_cast<size_t>(it - entries.begin()));
                     }
-                    entries = std::move(placed);
+                    std::stable_sort(joinerSlots.begin(), joinerSlots.end(), [&](const auto& left, const auto& right)
+                    {
+                        return left.first != right.first ? left.first < right.first : isBefore(entries[left.second], entries[right.second]);
+                    });
+
+                    std::vector<Entry> merged;
+                    merged.reserve(entries.size());
+                    size_t nextKept = 0;
+                    for (const auto& [landing, joinerIndex] : joinerSlots)
+                    {
+                        while (nextKept < landing)
+                        {
+                            merged.push_back(std::move(entries[nextKept++]));
+                        }
+                        merged.push_back(std::move(entries[joinerIndex]));
+                    }
+                    while (nextKept < keptCount)
+                    {
+                        merged.push_back(std::move(entries[nextKept++]));
+                    }
+                    entries = std::move(merged);
                 }
                 IFC_RETURN(hrCompare);
                 return S_OK;

@@ -99,11 +99,23 @@ namespace DirectUI
         // A default view (CollectionViewSource.GetDefaultView): shapes with its own rules, no host.
         _Check_return_ HRESULT EnableDefaultViewShaping();
 
-        // The view presents a shaped, read-only list (index-based writes fail): it cannot be reordered.
+        // The view presents its own output list (it was shaped; WPF: UsesLocalArray).
         bool IsShaped() const
         {
             return !!m_tpInternalList;
         }
+
+        // A shaped view with no rule left (no sort, filter or grouping) presents its source in order and is up to
+        // date: index-based writes go to the source, so it can be reordered. Otherwise a shaped view's writes fail.
+        bool PresentsSourceOrder();
+
+    private:
+        wfc::IVector<IInspectable*>* GetWriteTarget()
+        {
+            return (IsShaped() && PresentsSourceOrder()) ? m_tpSourceList.Get() : m_tpSource.Get();
+        }
+
+    public:
 
         // WPF: ICollectionView.SourceCollection.
         void SetSourceCollection(_In_opt_ IInspectable* pSource);
@@ -205,6 +217,7 @@ namespace DirectUI
         void DetachSourceList();
         void ReleaseShapingState();
         bool IsFilterStarvingLoads();
+        void ResetIncrementalLoadState();
 
         // Live shaping (VectorCollectionView_Shaping.cpp; WPF: LiveShapingList / LiveShapingItem).
         struct LiveShapingState;
@@ -244,7 +257,10 @@ namespace DirectUI
         ctl::ComPtr<IFilterEventSource> m_spFilterEvents;
 
         // Incremental loading through a shaped view (IsFilterStarvingLoads).
+        // A load is fruitless when the source grew and the view did not (the filter rejected all it brought).
+        static constexpr UINT c_maxFruitlessLoads = 10;
         UINT m_sizeAtLastLoad = UINT_MAX;
+        UINT m_sourceSizeAtLastLoad = UINT_MAX;
         UINT m_fruitlessLoadCount = 0;
 
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
