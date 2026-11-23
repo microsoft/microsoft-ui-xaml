@@ -1257,8 +1257,18 @@ static bool MatchesItemName(
         }
         return false;
     }
-    auto const group = TryGetGroupedEntry(item);
-    auto const name = group ? table.GetGroupHeaderNameCandidate(*group) : ItemToName(item);
+    if (auto const group = TryGetGroupedEntry(item))
+    {
+        auto const name = table.GetGroupHeaderNameCandidate(*group);
+        return !name.empty() && name == requested;
+    }
+    // Same name an unrealized row's peer reports (GetNameCore).
+    auto const dataItem = table.UnwrapDataItem(item);
+    auto name = ComposeDisplayMemberValues(table, dataItem);
+    if (name.empty())
+    {
+        name = ItemToName(dataItem);
+    }
     return !name.empty() && name == requested;
 }
 
@@ -1367,13 +1377,6 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
             if (property == winrt::AutomationElementIdentifiers::NameProperty())
             {
                 isMatch = MatchesItemName(*impl, item, repeater.TryGetElement(i), StringPropertyValue(value));
-            }
-            // ValueValue — match by cell value (text content).
-            else if (property == winrt::ValuePatternIdentifiers::ValueProperty())
-            {
-                hstring requested = StringPropertyValue(value);
-                hstring candidate = ItemToName(item);
-                isMatch = (candidate == requested);
             }
             // Match only explicit row AutomationId values; defaults are empty.
             else if (property == winrt::AutomationElementIdentifiers::AutomationIdProperty())
