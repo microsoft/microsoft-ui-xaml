@@ -616,7 +616,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Z X", string.Join(" ", group.GroupNames));
 
                 cvs.Source = MakeEngineRows();
-                Verify.AreEqual("Z X Y", string.Join(" ", cvs.View.CollectionGroups.Cast<ICollectionViewGroup>().Select(g => g.Group)));
+                Verify.AreEqual("Z X Y", string.Join(" ", cvs.View.CollectionGroups.Select(g => (string)GroupProperty(g, "Key"))));
                 Verify.AreEqual("Bo Lin Kai Eve Ada", EngineNames(cvs.View));
             });
         }
@@ -1114,7 +1114,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsTrue(Math.Abs(offset - GetBodyScroller(tableView).VerticalOffset) <= 1.0, $"The viewport stays where the user scrolled it ({offset} -> {GetBodyScroller(tableView).VerticalOffset}).");
+                // A row removed above the viewport shifts the content by its height; a scroll back to the focused row would
+                // move the viewport thousands of pixels.
+                var after = GetBodyScroller(tableView).VerticalOffset;
+                Verify.IsTrue(Math.Abs(offset - after) <= 100.0, $"The viewport stays where the user scrolled it ({offset} -> {after}).");
                 var item = FocusedRowItem(tableView);
                 Verify.IsTrue(item == null || ReferenceEquals(item, focusedItem), "Focus is not moved to another row.");
             });
@@ -1136,7 +1139,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Descending));
                 tableView.UpdateLayout();
                 first = (LiveRow)cvs.View[0];
-                Verify.IsTrue(GetRowCell(GetRowForItem(tableView, first), 0).Focus(FocusState.Programmatic), "Precondition: the app focuses row 0.");
+                var row = GetRowForItem(tableView, first) ?? (TableViewRow)GetRowsRepeater(tableView).GetOrCreateElement(0);
+                tableView.UpdateLayout();
+                Verify.IsTrue(GetRowCell(row, 0).Focus(FocusState.Keyboard) || row.Focus(FocusState.Keyboard), "Precondition: the app focuses row 0.");
             });
             SettleLayout(tableView);
 

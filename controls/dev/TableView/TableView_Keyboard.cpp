@@ -1820,13 +1820,37 @@ winrt::DependencyObject TableView::GetFocusedBodyElement() const
     return IsElementInBody(focused) ? focused : nullptr;
 }
 
+// In a row ItemsRepeater no longer has realized at an index (it is being recycled or was cleared).
+bool TableView::IsInRecycledRow(const winrt::DependencyObject& element) const
+{
+    auto const repeater = m_rowsRepeater.get();
+    if (!repeater || !element)
+    {
+        return false;
+    }
+    auto const repeaterObject = repeater.try_as<winrt::DependencyObject>();
+    auto node = element;
+    while (node)
+    {
+        auto const parent = winrt::VisualTreeHelper::GetParent(node);
+        if (parent == repeaterObject)
+        {
+            auto const row = node.try_as<winrt::UIElement>();
+            return row && repeater.GetElementIndex(row) < 0;
+        }
+        node = parent;
+    }
+    return false;
+}
+
 void TableView::RecordFocusRescueSource()
 {
     auto const focused = GetFocusedBodyElement();
     m_focusRescueFrom = focused ? winrt::make_weak(focused) : winrt::weak_ref<winrt::DependencyObject>{ nullptr };
 }
 
-// ItemsRepeater's rescue moves focus from the recycled element to a row container; anything else is a newer intent.
+// Focus leaving the recycled row (ItemsRepeater's rescue, or the focus manager when the row leaves the tree) is the
+// change's doing; any other move while focus follows the item is a newer intent of the app or the user.
 void TableView::NoteFocusChangeWhileFollowingItem(const winrt::DependencyObject& oldFocus, const winrt::DependencyObject& newFocus)
 {
     if (!newFocus)
@@ -1835,12 +1859,9 @@ void TableView::NoteFocusChangeWhileFollowingItem(const winrt::DependencyObject&
     }
 
     auto const expected = m_focusRescueFrom.get();
-    auto const repeater = m_rowsRepeater.get();
-    const bool fromRecycled = expected && oldFocus &&
+    const bool fromCaptured = expected && oldFocus &&
         (oldFocus == expected || SharedHelpers::IsAncestor(oldFocus, expected, false /* checkVisibility */));
-    const bool toRowContainer = repeater &&
-        winrt::VisualTreeHelper::GetParent(newFocus) == repeater.try_as<winrt::DependencyObject>();
-    if (fromRecycled && toRowContainer)
+    if (fromCaptured || IsInRecycledRow(oldFocus))
     {
         m_focusRescueFrom = nullptr;
         return;
