@@ -553,7 +553,11 @@ namespace RenderingBackend
                 AxisAlignedClip,
                 OpacityLayer,
                 RoundedClip,          // layer + antialiased mask
-                RoundedClipAsAxisClip // square and pixel-aligned: no layer needed
+                RoundedClipAsAxisClip, // square and pixel-aligned: no layer needed
+                // ---- clips3d ----
+                GeometryClip,          // layer + antialiased path mask
+                GeometryClipAsAxisClip, // malformed path: clips everything
+                PerspectiveLayer,
             };
 
             // A PARGB bitmap over a painter-owned buffer, with its Graphics. Used for the target and opacity layers.
@@ -574,6 +578,20 @@ namespace RenderingBackend
                 RectF maskRect{};
                 float radiusX = 0, radiusY = 0;
                 Matrix3x2F maskTransform{};
+                // ---- clips3d ----
+                std::shared_ptr<Gdiplus::GraphicsPath> maskPath; // geometry clip: the path replaces maskRect
+            };
+
+            // ---- clips3d ----
+            // Painter state outside a perspective layer, restored on pop.
+            struct PerspectiveRecord
+            {
+                IImmediatePainter::Matrix4x4F matrix;
+                RectF bounds{};
+                Matrix3x2F transform{};
+                std::vector<PixelRect> damage;
+                PixelRect damageBounds{};
+                std::vector<PixelRect> clipStack;
             };
 
             struct CachedPath
@@ -728,6 +746,7 @@ namespace RenderingBackend
                     m_clipStack.clear();
                     m_layerStack.clear();
                     m_stack.clear();
+                    m_perspective.clear();
                     if (m_presentFull || damageRects == nullptr || damageRectCount == 0)
                     {
                         m_damage.push_back(full);
@@ -953,6 +972,112 @@ namespace RenderingBackend
                     {
                         ApplyState(Current());
                     }
+                }
+
+                // ---- clips3d ----
+                void PushGeometryClip(const PathData& data) noexcept override
+                {
+                    if (!m_inFrame)
+                    {
+                        return;
+                    }
+                    auto path = std::make_shared<Gdiplus::GraphicsPath>();
+                    RectF pathBounds{};
+                    if (path == nullptr || path->GetLastStatus() != Gdiplus::Ok || !BuildPath(data, *path, pathBounds)
+                        || !(pathBounds.right >= pathBounds.left) || !(pathBounds.bottom >= pathBounds.top))
+                    {
+                        m_clipStack.push_back({});
+                        m_stack.push_back(StackEntry::GeometryClipAsAxisClip);
+                        ApplyState(Current());
+                        return;
+                    }
+                    m_clipStack.push_back(Intersect(CurrentClip(), TransformBounds(pathBounds, 1, false)));
+                    m_stack.push_back(StackEntry::GeometryClip);
+                    LayerRecord record{};
+                    record.mask = true;
+                    record.maskPath = std::move(path);
+                    record.maskTransform = m_userTransform;
+                    PushLayer(std::move(record));
+                }
+
+                void PopGeometryClip() noexcept override
+                {
+                    if (!m_inFrame || m_stack.empty())
+                    {
+                        return;
+                    }
+                    const StackEntry entry = m_stack.back();
+                    if (entry != StackEntry::GeometryClip && entry != StackEntry::GeometryClipAsAxisClip)
+                    {
+                        return;
+                    }
+                    m_stack.pop_back();
+                    m_clipStack.pop_back();
+                    if (entry == StackEntry::GeometryClip)
+                    {
+                        PopLayer();
+                    }
+                    else
+                    {
+                        ApplyState(Current());
+                    }
+                }
+
+                // The layer is drawn in layer pixels (no damage other than the layer bounds, no outer clips); on pop it
+                // is resampled through the inverse homography into the shadow scratch, then copied 1:1 under the outer
+                // clip and damage.
+                void PushPerspectiveLayer(const RectF& bounds, const Matrix4x4F& matrix) noexcept override
+                {
+                    if (!m_inFrame)
+                    {
+                        return;
+                    }
+                    PerspectiveRecord saved;
+                    saved.matrix = matrix;
+                    saved.bounds = bounds;
+                    saved.transform = m_userTransform;
+                    saved.damage = std::move(m_damage);
+                    saved.damageBounds = m_damageBounds;
+                    saved.clipStack = std::move(m_clipStack);
+                    const float s = m_dpiScale;
+                    const PixelRect layerPixels = Intersect(FullTarget(), PixelRect{ ToPixel(std::floor(bounds.left * s)), ToPixel(std::floor(bounds.top * s)),
+                        ToPixel(std::ceil(bounds.right * s)), ToPixel(std::ceil(bounds.bottom * s)) });
+                    m_perspective.push_back(std::move(saved));
+                    m_damage.assign(1, layerPixels);
+                    m_damageBounds = layerPixels;
+                    m_clipStack.assign(1, layerPixels);
+                    m_userTransform = {};
+                    UpdateDeviceTransform();
+                    m_stack.push_back(StackEntry::PerspectiveLayer);
+                    PushLayer(LayerRecord{});
+                }
+
+                void PopPerspectiveLayer() noexcept override
+                {
+                    if (!m_inFrame || m_stack.empty() || m_stack.back() != StackEntry::PerspectiveLayer || m_perspective.empty() || m_layerStack.empty())
+                    {
+                        return;
+                    }
+                    m_stack.pop_back();
+                    const LayerRecord record = m_layerStack.back();
+                    const size_t depth = m_layerStack.size() - 1;
+                    m_layerStack.pop_back();
+                    PerspectiveRecord saved = std::move(m_perspective.back());
+                    m_perspective.pop_back();
+                    m_damage = std::move(saved.damage);
+                    m_damageBounds = saved.damageBounds;
+                    m_clipStack = std::move(saved.clipStack);
+                    m_userTransform = saved.transform;
+                    UpdateDeviceTransform();
+                    Gdiplus::Graphics& parent = Current();
+                    ApplyState(parent);
+                    if (!record.active || FAILED(m_frameHr) || record.bounds.IsEmpty() || m_clipIsEmpty)
+                    {
+                        return;
+                    }
+                    Surface& layer = *m_layers[depth];
+                    layer.graphics->Flush(Gdiplus::FlushIntentionSync);
+                    CompositePerspective(layer, record.bounds, saved, parent);
                 }
 
                 void FillPath(const PathData& data, const ColorF& color) noexcept override
@@ -1325,7 +1450,7 @@ namespace RenderingBackend
 
                 void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept override
                 {
-                    if (!m_inFrame || !(blurRadius > 0) || !std::isfinite(blurRadius))
+                    if (!m_inFrame || !(blurRadius > 0) || !std::isfinite(blurRadius) || !m_perspective.empty())
                     {
                         return;
                     }
@@ -1490,11 +1615,15 @@ namespace RenderingBackend
                         {
                             case StackEntry::AxisAlignedClip: PopAxisAlignedClip(); break;
                             case StackEntry::OpacityLayer: PopOpacityLayer(); break;
+                            case StackEntry::GeometryClip:
+                            case StackEntry::GeometryClipAsAxisClip: PopGeometryClip(); break;
+                            case StackEntry::PerspectiveLayer: PopPerspectiveLayer(); break;
                             default: PopRoundedRectangleClip(); break;
                         }
                     }
                     m_clipStack.clear();
                     m_layerStack.clear();
+                    m_perspective.clear();
                     m_target.graphics->Flush(Gdiplus::FlushIntentionSync);
                     m_inFrame = false;
                     ReleaseLargeScratch();
@@ -2647,6 +2776,160 @@ namespace RenderingBackend
                     m_stats.paintedPixels += VisibleArea(b);
                 }
 
+                // ---- clips3d ----
+                // Resamples the layer pixels in `source` through the perspective matrix (bilinear, premultiplied, texels
+                // outside `source` transparent) into the shadow scratch, then copies the result 1:1 into the parent.
+                void CompositePerspective(const Surface& layer, const PixelRect& source, const PerspectiveRecord& saved, Gdiplus::Graphics& parent) noexcept
+                {
+                    // Forward homography G (row vectors, 3x3): layer pixels -> device pixels.
+                    const float s = m_dpiScale;
+                    const auto& m = saved.matrix.m;
+                    const Matrix3x2F& t = saved.transform;
+                    // H: layer DIPs -> push DIPs (rows/cols 0, 1, 3 of the 4x4).
+                    const double h[3][3] = {
+                        { m[0][0], m[0][1], m[0][3] },
+                        { m[1][0], m[1][1], m[1][3] },
+                        { m[3][0], m[3][1], m[3][3] },
+                    };
+                    // A: push DIPs -> device pixels (affine).
+                    const double a[3][3] = {
+                        { t.m11 * s, t.m12 * s, 0 },
+                        { t.m21 * s, t.m22 * s, 0 },
+                        { t.dx * s, t.dy * s, 1 },
+                    };
+                    double g[3][3] = {};
+                    for (int r = 0; r < 3; ++r)
+                    {
+                        for (int c = 0; c < 3; ++c)
+                        {
+                            double v = 0;
+                            for (int k = 0; k < 3; ++k)
+                            {
+                                v += h[r][k] * a[k][c];
+                            }
+                            // Layer pixels -> layer DIPs scales the first two rows by 1/s.
+                            g[r][c] = r < 2 ? v / s : v;
+                        }
+                    }
+
+                    const PixelRect src = Intersect(source, PixelRect{ ToPixel(std::floor(saved.bounds.left * s)), ToPixel(std::floor(saved.bounds.top * s)),
+                        ToPixel(std::ceil(saved.bounds.right * s)), ToPixel(std::ceil(saved.bounds.bottom * s)) });
+                    if (src.IsEmpty())
+                    {
+                        return;
+                    }
+                    double minX = INFINITY, minY = INFINITY, maxX = -INFINITY, maxY = -INFINITY;
+                    bool behind = false;
+                    for (const int32_t x : { src.left, src.right })
+                    {
+                        for (const int32_t y : { src.top, src.bottom })
+                        {
+                            const double w = x * g[0][2] + y * g[1][2] + g[2][2];
+                            if (!(w > 1e-9))
+                            {
+                                behind = true;
+                                continue;
+                            }
+                            const double dx = (x * g[0][0] + y * g[1][0] + g[2][0]) / w;
+                            const double dy = (x * g[0][1] + y * g[1][1] + g[2][1]) / w;
+                            minX = std::min(minX, dx); maxX = std::max(maxX, dx);
+                            minY = std::min(minY, dy); maxY = std::max(maxY, dy);
+                        }
+                    }
+                    PixelRect destination = Intersect(CurrentClip(), m_damageBounds);
+                    if (!behind)
+                    {
+                        if (!std::isfinite(minX) || !std::isfinite(minY) || !std::isfinite(maxX) || !std::isfinite(maxY))
+                        {
+                            return;
+                        }
+                        destination = Intersect(destination, PixelRect{ ToPixel(static_cast<float>(std::floor(minX) - 1)), ToPixel(static_cast<float>(std::floor(minY) - 1)),
+                            ToPixel(static_cast<float>(std::ceil(maxX) + 1)), ToPixel(static_cast<float>(std::ceil(maxY) + 1)) });
+                    }
+                    if (destination.IsEmpty())
+                    {
+                        return;
+                    }
+
+                    // Inverse homography (adjugate; the scale factor cancels in the divide by w).
+                    double inv[3][3];
+                    inv[0][0] = g[1][1] * g[2][2] - g[1][2] * g[2][1];
+                    inv[0][1] = g[0][2] * g[2][1] - g[0][1] * g[2][2];
+                    inv[0][2] = g[0][1] * g[1][2] - g[0][2] * g[1][1];
+                    inv[1][0] = g[1][2] * g[2][0] - g[1][0] * g[2][2];
+                    inv[1][1] = g[0][0] * g[2][2] - g[0][2] * g[2][0];
+                    inv[1][2] = g[0][2] * g[1][0] - g[0][0] * g[1][2];
+                    inv[2][0] = g[1][0] * g[2][1] - g[1][1] * g[2][0];
+                    inv[2][1] = g[0][1] * g[2][0] - g[0][0] * g[2][1];
+                    inv[2][2] = g[0][0] * g[1][1] - g[0][1] * g[1][0];
+                    const double det = g[0][0] * inv[0][0] + g[0][1] * inv[1][0] + g[0][2] * inv[2][0];
+                    if (!(std::fabs(det) > 1e-12))
+                    {
+                        return;
+                    }
+
+                    const uint32_t w = static_cast<uint32_t>(destination.right - destination.left);
+                    const uint32_t hgt = static_cast<uint32_t>(destination.bottom - destination.top);
+                    if (!EnsureShadowScratch(w, hgt))
+                    {
+                        return;
+                    }
+                    const uint32_t scratchStride = m_shadowScratchWidth;
+                    uint32_t* out = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
+                    const uint32_t* in = reinterpret_cast<const uint32_t*>(layer.pixels.data());
+                    const int32_t layerStride = static_cast<int32_t>(m_width);
+                    auto texel = [&](int32_t x, int32_t y) -> uint32_t
+                    {
+                        return (x < src.left || y < src.top || x >= src.right || y >= src.bottom) ? 0u : in[y * layerStride + x];
+                    };
+                    for (uint32_t row = 0; row < hgt; ++row)
+                    {
+                        uint32_t* line = out + static_cast<size_t>(row) * scratchStride;
+                        const double py = destination.top + row + 0.5;
+                        for (uint32_t col = 0; col < w; ++col)
+                        {
+                            const double px = destination.left + col + 0.5;
+                            const double hw = px * inv[0][2] + py * inv[1][2] + inv[2][2];
+                            line[col] = 0;
+                            if (hw == 0)
+                            {
+                                continue;
+                            }
+                            const double u = (px * inv[0][0] + py * inv[1][0] + inv[2][0]) / hw;
+                            const double v = (px * inv[0][1] + py * inv[1][1] + inv[2][1]) / hw;
+                            // The source point must be in front of the viewer (forward w > 0).
+                            if (!(u * g[0][2] + v * g[1][2] + g[2][2] > 0))
+                            {
+                                continue;
+                            }
+                            const double fx = u - 0.5, fy = v - 0.5;
+                            if (!(fx > src.left - 1.0 && fy > src.top - 1.0 && fx < src.right && fy < src.bottom))
+                            {
+                                continue;
+                            }
+                            const int32_t x0 = static_cast<int32_t>(std::floor(fx));
+                            const int32_t y0 = static_cast<int32_t>(std::floor(fy));
+                            const double ax = fx - x0, ay = fy - y0;
+                            const uint32_t c00 = texel(x0, y0), c10 = texel(x0 + 1, y0), c01 = texel(x0, y0 + 1), c11 = texel(x0 + 1, y0 + 1);
+                            uint32_t result = 0;
+                            for (int shift = 0; shift < 32; shift += 8)
+                            {
+                                const double top = ((c00 >> shift) & 0xFF) * (1 - ax) + ((c10 >> shift) & 0xFF) * ax;
+                                const double bottom = ((c01 >> shift) & 0xFF) * (1 - ax) + ((c11 >> shift) & 0xFF) * ax;
+                                const uint32_t value = static_cast<uint32_t>(std::min(255.0, top * (1 - ay) + bottom * ay + 0.5));
+                                result |= value << shift;
+                            }
+                            line[col] = result;
+                        }
+                    }
+
+                    Record(parent.ResetTransform());
+                    Record(parent.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(destination.left, destination.top, static_cast<INT>(w), static_cast<INT>(hgt)),
+                        0, 0, static_cast<INT>(w), static_cast<INT>(hgt), Gdiplus::UnitPixel, nullptr));
+                    Record(parent.SetTransform(m_transform.get()));
+                    m_stats.paintedPixels += VisibleArea(destination);
+                }
+
                 // Antialiased rounded clip: scales every premultiplied layer pixel in the bounds by the clip shape's
                 // coverage. Under an axis-aligned transform (the common case) coverage is computed exactly; otherwise the
                 // shape is filled (under the transform current at push) into the mask surface with GDI+ antialiasing,
@@ -2677,7 +2960,7 @@ namespace RenderingBackend
 
                     const Matrix3x2F& t = record.maskTransform;
                     const float s = m_dpiScale;
-                    if (t.m12 == 0 && t.m21 == 0)
+                    if (t.m12 == 0 && t.m21 == 0 && !record.maskPath)
                     {
                         const float x0 = (t.m11 * record.maskRect.left + t.dx) * s;
                         const float x1 = (t.m11 * record.maskRect.right + t.dx) * s;
@@ -2714,7 +2997,11 @@ namespace RenderingBackend
                     m_transform->SetElements(t.m11 * s, t.m12 * s, t.m21 * s, t.m22 * s, t.dx * s, t.dy * s);
                     Record(mask.SetTransform(m_transform.get()));
                     UpdateDeviceTransform();
-                    if (BuildRoundedPath(record.maskRect, record.radiusX, record.radiusY))
+                    if (record.maskPath)
+                    {
+                        Record(mask.FillPath(brush, record.maskPath.get()));
+                    }
+                    else if (BuildRoundedPath(record.maskRect, record.radiusX, record.radiusY))
                     {
                         Record(mask.FillPath(brush, m_path.get()));
                     }
@@ -4046,6 +4333,7 @@ namespace RenderingBackend
                 std::vector<PixelRect> m_clipStack;
                 std::vector<LayerRecord> m_layerStack;
                 std::vector<StackEntry> m_stack;
+                std::vector<PerspectiveRecord> m_perspective; // ---- clips3d ----
                 FrameStats m_stats{};
                 uint64_t m_uploadBytes = 0;
                 uint32_t m_frameCreated = 0;

@@ -9,6 +9,7 @@
 #include "precomp.h"
 #include "ImmediateRenderer.h"
 #include "ImmediateRenderer.Materials.h"
+#include "ImmediateRenderer.HandOff.h"
 #include <ImmediateRenderingPolicy.h>
 #include <XamlProfilerTracing.h>
 #include "XamlIslandRoot.h"
@@ -74,66 +75,27 @@ bool ImmediateRenderer::IsBuiltInProgressRingPlayer(_In_ CUIElement* element) no
 
 bool ImmediateRenderer::IsHandOffVisualTouched(_In_ CUIElement* element) noexcept
 {
-    ComPtr<WUComp::IVisual> visual;
-    element->GetStoredHandOffVisual(visual.ReleaseAndGetAddressOf());
-    if (visual == nullptr)
+    // clips3d: static values (Offset, Scale, RotationAngle, TransformMatrix, Opacity, Translation, inset/rectangle/
+    // geometric clips) are painted by the walk; only running animations and unreadable clips need Composition.
+    ImmediateRenderingHandOff::VisualInfo info;
+    if (!ImmediateRenderingHandOff::Read(element, element->GetActualWidth(), element->GetActualHeight(), true, &info))
     {
         return false;
     }
-
-    ImmediateRenderingPolicy::HandOffVisualState state;
-    // Opacity equal to UIElement.Opacity is not an app change: controls mirror the two (NavigationView's
-    // ResetElementAnimationProperties sets both to 0 on the previous selection indicator) and the walk paints it.
-    IGNOREHR(visual->get_Opacity(&state.opacity));
-    if (std::fabs(state.opacity - element->GetOpacityLocal()) <= 1e-4f)
+    if (info.state.animating && !info.state.unsupportedClip)
     {
-        state.opacity = 1;
-    }
-    IGNOREHR(visual->get_RotationAngle(&state.rotationAngle));
-    wfn::Vector3 v{};
-    if (SUCCEEDED(visual->get_Offset(&v)))
-    {
-        state.offset[0] = v.X; state.offset[1] = v.Y; state.offset[2] = v.Z;
-    }
-    if (SUCCEEDED(visual->get_Scale(&v)))
-    {
-        state.scale[0] = v.X; state.scale[1] = v.Y; state.scale[2] = v.Z;
-    }
-    wfn::Matrix4x4 m{};
-    if (SUCCEEDED(visual->get_TransformMatrix(&m)))
-    {
-        const float values[16] = { m.M11, m.M12, m.M13, m.M14, m.M21, m.M22, m.M23, m.M24, m.M31, m.M32, m.M33, m.M34, m.M41, m.M42, m.M43, m.M44 };
-        std::copy(std::begin(values), std::end(values), std::begin(state.transformMatrix));
-    }
-
-    // Translation set by the app through the visual's property set (SetIsTranslationEnabled). XAML's own
-    // UIElement.Translation (painted by the walk) is excluded.
-    ComPtr<WUComp::ICompositionObject> object;
-    ComPtr<WUComp::ICompositionPropertySet> properties;
-    if (SUCCEEDED(visual.As(&object)) && SUCCEEDED(object->get_Properties(&properties)) && properties != nullptr)
-    {
-        WUComp::CompositionGetValueStatus status{};
-        wfn::Vector3 translation{};
-        if (SUCCEEDED(properties->TryGetVector3(wrl_wrappers::HStringReference(L"Translation").Get(), &translation, &status))
-            && status == WUComp::CompositionGetValueStatus_Succeeded)
+        // Built-in control animations (NavigationView's selection indicator) are short transitions on template parts:
+        // the walk paints their static values instead of switching the window to Composition for good.
+        static const wchar_t c_controlsNamespace[] = L"Microsoft.UI.Xaml.Controls.";
+        CDependencyObject* templatedParent = element->GetTemplatedParent();
+        const xstring_ptr className = templatedParent != nullptr ? templatedParent->GetClassName() : xstring_ptr::NullString();
+        if (!className.IsNullOrEmpty() && wcsncmp(className.GetBuffer(), c_controlsNamespace, ARRAYSIZE(c_controlsNamespace) - 1) == 0)
         {
-            const wfn::Vector3 xamlTranslation = element->GetTranslation();
-            state.translation[0] = translation.X - xamlTranslation.X;
-            state.translation[1] = translation.Y - xamlTranslation.Y;
-            state.translation[2] = translation.Z - xamlTranslation.Z;
+            return false;
         }
     }
-
-    ComPtr<WUComp::ICompositionClip> clip;
-    if (SUCCEEDED(visual->get_Clip(&clip)) && clip != nullptr)
-    {
-        ComPtr<WUComp::IInsetClip> insetClip;
-        state.hasNonInsetClip = FAILED(clip.As(&insetClip));
-    }
-
-    return ImmediateRenderingPolicy::IsHandOffVisualTouched(state);
+    return ImmediateRenderingPolicy::IsHandOffVisualTouched(info.state);
 }
-
 void ImmediateRenderer::CheckFallback(_In_ CUIElement* element) noexcept
 {
     if (m_pendingFallback != nullptr)

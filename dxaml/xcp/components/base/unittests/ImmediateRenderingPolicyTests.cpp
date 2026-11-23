@@ -78,33 +78,58 @@ namespace ImmediateRenderingPolicyTests
 
     void PolicyTests::TouchedHandOffVisualIsDetected()
     {
+        // Static values are painted natively (clips3d); only animations and unreadable clips need Composition.
         HandOffVisualState state;
         state.opacity = 0.5f;
-        VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
-
-        state = {};
         state.offset[1] = 12;
-        VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
-
-        state = {};
         state.scale[0] = 0.9f;
-        VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
-
-        state = {};
         state.rotationAngle = 0.1f;
-        VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
-
-        state = {};
         state.transformMatrix[12] = 4;
-        VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
-
-        state = {};
         state.translation[2] = 32;
+        VERIFY_IS_FALSE(IsHandOffVisualTouched(state));
+
+        state = {};
+        state.animating = true;
         VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
 
         state = {};
-        state.hasNonInsetClip = true;
+        state.unsupportedClip = true;
         VERIFY_IS_TRUE(IsHandOffVisualTouched(state));
+    }
+
+    void PolicyTests::HandOffVisualTransformFollowsCompositionOrder()
+    {
+        auto map = [](const float m[16], float x, float y, float* outX, float* outY)
+        {
+            const float w = x * m[3] + y * m[7] + m[15];
+            *outX = (x * m[0] + y * m[4] + m[12]) / w;
+            *outY = (x * m[1] + y * m[5] + m[13]) / w;
+        };
+        float m[16];
+        VERIFY_IS_FALSE(ComputeHandOffVisualTransform(HandOffVisualState{}, m));
+
+        // Scale 2 about (10, 10), then rotate 90 degrees clockwise about it, then offset (100, 0): (20, 10) is 10 DIPs
+        // right of the center, scaled to 20 and rotated to 20 below it.
+        HandOffVisualState state;
+        state.centerPoint[0] = 10;
+        state.centerPoint[1] = 10;
+        state.scale[0] = 2;
+        state.scale[1] = 2;
+        state.rotationAngle = 3.14159265f / 2;
+        state.offset[0] = 100;
+        VERIFY_IS_TRUE(ComputeHandOffVisualTransform(state, m));
+        float x, y;
+        map(m, 20, 10, &x, &y);
+        VERIFY_IS_TRUE(Near(x, 110) && Near(y, 30));
+
+        // TransformMatrix applies after the center-point transforms and before Offset; Translation adds to Offset.
+        state = {};
+        state.scale[0] = 2;
+        state.transformMatrix[12] = 5;
+        state.translation[1] = 7;
+        VERIFY_IS_TRUE(ComputeHandOffVisualTransform(state, m));
+        map(m, 3, 0, &x, &y);
+        VERIFY_IS_TRUE(Near(x, 11) && Near(y, 7));
     }
 
     void PolicyTests::RelativeGradientMapsToBounds()

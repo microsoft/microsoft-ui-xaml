@@ -30,21 +30,35 @@ namespace ImmediateRenderingPolicy
     // Reason string for the WindowFallback event, or nullptr when the element can be painted immediately.
     const wchar_t* GetFallbackReason(const ElementInterop& interop) noexcept;
 
-    // Snapshot of a hand-off visual (ElementCompositionPreview.GetElementVisual) as polled by the walk.
+    // Snapshot of a hand-off visual (ElementCompositionPreview.GetElementVisual) as polled by the walk. In immediate
+    // modes no comp node writes the visual, so every value here was set by the app (or a control).
     struct HandOffVisualState
     {
         float opacity = 1;
         float offset[3] = {};
         float scale[3] = { 1, 1, 1 };
-        float rotationAngle = 0;
+        float rotationAngle = 0;      // radians
         float transformMatrix[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         float translation[3] = {};   // the "Translation" property set value, when present
-        bool hasNonInsetClip = false; // InsetClip alone is drawn (Expander); other clips are not
+        // ---- clips3d ----
+        float rotationAxis[3] = { 0, 0, 1 };
+        float orientation[4] = { 0, 0, 0, 1 }; // quaternion (x, y, z, w)
+        float centerPoint[3] = {};
+        float anchorPoint[2] = {};
+        float size[2] = {};
+        bool animating = false;       // a Composition animation runs on the visual or its clip (values cannot be read)
+        bool unsupportedClip = false; // a clip the walk cannot read (path geometry, view box, clip anchor point)
     };
 
-    // True when the app changed or animated the hand-off visual in a way the immediate walk cannot reproduce.
-    // A running StartAnimation that has not yet moved a value cannot be observed; see the design notes.
+    // True when the hand-off visual needs Composition: a running app animation (its values cannot be read back) or a
+    // clip the walk cannot read. Static Offset/Scale/RotationAngle/TransformMatrix/Opacity/Translation and inset,
+    // rectangle and geometric (rectangle, rounded rectangle, ellipse) clips are painted by the walk (clips3d).
     bool IsHandOffVisualTouched(const HandOffVisualState& state) noexcept;
+
+    // Static transform of the hand-off visual (row-vector 4x4, element DIPs -> element DIPs, applied before the
+    // element's XAML local transform), in Composition's order: -(CenterPoint + AnchorPoint*Size), Scale, Orientation,
+    // RotationAngle about RotationAxis, +CenterPoint, TransformMatrix, Offset + Translation. False when identity.
+    bool ComputeHandOffVisualTransform(const HandOffVisualState& state, _Out_writes_(16) float matrix[16]) noexcept;
 
     // ---- S13 materials ----
 

@@ -26,6 +26,7 @@
         <ClInclude Include="ImmediatePainterTestHelpers.h"/>
         <ClInclude Include="ImmediatePainterExtendedTests.h"/>
         <ClInclude Include="ImmediatePainterFullBackendTests.h"/>
+        <ClInclude Include="ImmediatePainterClips3DTests.h"/>
         <ClInclude Include="RenderingBackendTests.h"/>
         <ClInclude Include="ImmediateRenderingPolicyTests.h"/>
         <ClInclude Include="RenderingResourceDiagnosticsTests.h"/>
@@ -48,6 +49,7 @@
         <ClCompile Include="ImmediatePainterTests.cpp"/>
         <ClCompile Include="ImmediatePainterExtendedTests.cpp"/>
         <ClCompile Include="ImmediatePainterFullBackendTests.cpp"/>
+        <ClCompile Include="ImmediatePainterClips3DTests.cpp"/>
         <ClCompile Include="GdiPlusPainterTests.cpp"/>
     </ItemGroup>
 

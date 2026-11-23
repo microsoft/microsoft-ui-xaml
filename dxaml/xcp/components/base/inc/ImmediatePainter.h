@@ -290,6 +290,26 @@ namespace RenderingBackend
         // must include the blur's full bounds (rect inflated by 3*sigma) in the damage when anything under it changes.
         virtual void BlurBackdrop(const RectF& rect, float radiusX, float radiusY, float blurRadius) noexcept = 0;
 
+        // ---- clips3d (F3 clips and transforms, F4 3D; test plan "XAML coverage (full backends)") ----
+
+        // Antialiased clip to a path (DIPs, under the current transform; non-rectangular UIElement.Clip, rectangle
+        // clips under rotation or skew, Composition geometric clips). Intersects with the clips already pushed.
+        virtual void PushGeometryClip(const PathData& path) noexcept = 0;
+        virtual void PopGeometryClip() noexcept = 0;
+
+        // 3D (PlaneProjection, Matrix3DProjection, Transform3D, 3D facades). Drawing between push and pop goes to an
+        // offscreen layer in layer DIPs (the transform is reset to identity; the layer is the target's size, so only
+        // `bounds`, which must fit in it, is kept). On pop, the layer content inside `bounds` is composited through
+        // `matrix` (row-vector 4x4, D2D1_MATRIX_4X4_F layout, layer DIPs -> DIPs of the transform active at push;
+        // x' = (x*m11 + y*m21 + m41) / w, w = x*m14 + y*m24 + m44) and then through that transform, under the clips and
+        // damage active at push. Points with w <= 0 are not drawn. The transform active at push is restored on pop.
+        struct Matrix4x4F
+        {
+            float m[4][4] = { { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 } };
+        };
+        virtual void PushPerspectiveLayer(const RectF& bounds, const Matrix4x4F& matrix) noexcept = 0;
+        virtual void PopPerspectiveLayer() noexcept = 0;
+
         virtual HRESULT EndFrame(_Out_ FrameStats* stats) noexcept = 0;
 
         // Copies the current target as premultiplied BGRA8. For tests and fidelity capture, not the present path.

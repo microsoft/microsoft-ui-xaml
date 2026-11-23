@@ -39,6 +39,8 @@
         <ClInclude Include="ImmediateRenderer.h"/>
         <ClInclude Include="ImmediateRenderer.Independent.h"/>
         <None Include="ImmediateRenderer.Independent.inl"/>
+        <None Include="ImmediateRenderer.Clips3D.inl"/>
+        <ClInclude Include="ImmediateRenderer.HandOff.h"/>
         <ClInclude Include="ManipulationTransform.h"/>
         <ClInclude Include="precomp.h"/>
         <ClInclude Include="VisualContentRenderer.h"/>
@@ -47,6 +49,7 @@
         <ClCompile Include="hwwalk.cpp"/>
         <ClCompile Include="ImmediateRenderer.cpp"/>
         <ClCompile Include="ImmediateRenderer.Fallback.cpp"/>
+        <ClCompile Include="ImmediateRenderer.HandOff.cpp"/>
         <ClCompile Include="ImmediateRenderer.Materials.cpp"/>
         <ClCompile Include="ImmediateRenderer.Popups.cpp"/>
         <ClCompile Include="ImmediateRenderer.Shapes.cpp"/>
