@@ -13,7 +13,8 @@
 namespace ShapingHelpers
 {
 // Validated tree over the UNFILTERED source, in source order. Independent of filter/sort, so a
-// reshape can reuse it once no key or parent key moved. Immutable once built.
+// reshape can reuse it once no key or parent key moved. Immutable once built, except by its single owner,
+// TableViewRowFlattener, which updates a plain tree's structure and index in place (TryApplyTreeChange).
 struct ParentStructure
 {
     static constexpr size_t Root = SIZE_MAX;
@@ -47,7 +48,8 @@ struct ParentStructure
     std::wstring_view ResolvedParentKey(winrt::IInspectable const& item) const;
 };
 
-// Parent-key index: one filtered, sorted reading of a ParentStructure. Immutable once built.
+// Parent-key index: one filtered, sorted reading of a ParentStructure. Immutable once built, except by its owner
+// (see ParentStructure).
 struct ParentKeyIndex
 {
     // Items are in sorted order within every sibling list.

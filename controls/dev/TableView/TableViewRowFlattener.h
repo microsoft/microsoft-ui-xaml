@@ -201,7 +201,7 @@ private:
 
     // --- Tree rows ---
 
-    void SetTreeIndex(std::shared_ptr<const ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
+    void SetTreeIndex(std::shared_ptr<ShapingHelpers::ParentKeyIndex> index, std::vector<size_t> rootSegments);
     void ClearTreeIndex();
     void ResetNodeIntentQuietly();
     void RebuildTreeRows();
@@ -307,9 +307,14 @@ private:
     bool m_groupRowsPending{ false };
     bool m_groupRowsProfiled{ false };
 
-    std::shared_ptr<const ShapingHelpers::ParentKeyIndex> m_treeIndex;
+    // Owned here: a plain tree's index and its structure are updated in place by TryApplyTreeChange.
+    std::shared_ptr<ShapingHelpers::ParentKeyIndex> m_treeIndex;
+    std::shared_ptr<ShapingHelpers::ParentStructure> m_treeStructure;
     // The tree index describes the view's current items (a plain tree, built or kept current incrementally).
     bool m_treeIndexIsCurrent{ false };
+    bool m_treeChangeInFlight{ false };
+    // Keys of rows removed in place this turn; their expansion intent is dropped at the turn's end unless they returned.
+    std::vector<winrt::hstring> m_removedTreeKeys;
     // Each row's keys as last read, so a rebuild after an Insert, Remove or Replace reads only the rows that
     // change brought in. Emptied by a Reset, a new declaration and a released tree.
     ShapingHelpers::NodeKeyCache m_treeKeyCache;
