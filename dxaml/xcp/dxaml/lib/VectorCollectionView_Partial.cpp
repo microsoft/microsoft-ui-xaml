@@ -93,34 +93,34 @@ IFACEMETHODIMP VectorCollectionView::SetAt(
     unsigned index,
     _In_opt_ IInspectable *item)
 {
-    RRETURN(m_tpSource->SetAt(index, item));
+    RRETURN(GetWriteTarget()->SetAt(index, item));
 }
 
 IFACEMETHODIMP VectorCollectionView::InsertAt(
     unsigned index,
     _In_ IInspectable *item)
 {
-    RRETURN(m_tpSource->InsertAt(index, item));
+    RRETURN(GetWriteTarget()->InsertAt(index, item));
 }
 
 IFACEMETHODIMP VectorCollectionView::RemoveAt(unsigned index)
 {
-    RRETURN(m_tpSource->RemoveAt(index));
+    RRETURN(GetWriteTarget()->RemoveAt(index));
 }
 
 IFACEMETHODIMP VectorCollectionView::Append(_In_opt_ IInspectable * item)
 {
-    RRETURN(m_tpSource->Append(item));
+    RRETURN(GetWriteTarget()->Append(item));
 }
 
 IFACEMETHODIMP VectorCollectionView::RemoveAtEnd()
 {
-    RRETURN(m_tpSource->RemoveAtEnd());
+    RRETURN(GetWriteTarget()->RemoveAtEnd());
 }
 
 IFACEMETHODIMP VectorCollectionView::Clear()
 {
-    RRETURN(m_tpSource->Clear());
+    RRETURN(GetWriteTarget()->Clear());
 }
 
 // IIterable<IInspectable *>
@@ -184,9 +184,19 @@ VectorCollectionView::LoadMoreItemsAsyncImpl(
     if (IsShaped())
     {
         UINT size = 0;
+        UINT sourceSize = 0;
         IFC(get_Size(&size));
-        m_fruitlessLoadCount = (size == m_sizeAtLastLoad) ? m_fruitlessLoadCount + 1 : 0;
+        IFC(m_tpSourceList->get_Size(&sourceSize));
+        if (size != m_sizeAtLastLoad)
+        {
+            m_fruitlessLoadCount = 0;
+        }
+        else if (sourceSize != m_sourceSizeAtLastLoad)
+        {
+            ++m_fruitlessLoadCount;
+        }
         m_sizeAtLastLoad = size;
+        m_sourceSizeAtLastLoad = sourceSize;
     }
 
     IFC(m_tpSupportIncrementalLoading->LoadMoreItemsAsync(count, operation));
@@ -197,12 +207,20 @@ Cleanup:
 }
 
 // A filter that rejects the items loads bring would make a consumer (ListView) load until the source has no more:
-// once several loads in a row added nothing to the view, it reports no more items until the view grows.
+// once c_maxFruitlessLoads loads in a row grew the source but not the view, it reports no more items (unlike the
+// source's HasMoreItems, and unlike WPF, which has no incremental loading) until the view grows or its rules, its
+// source or a Refresh recompute it. A filter sparser than that many pages per match stops early.
 bool VectorCollectionView::IsFilterStarvingLoads()
 {
-    constexpr UINT c_maxFruitlessLoads = 3;
     UINT size = 0;
     return IsShaped() && m_fruitlessLoadCount >= c_maxFruitlessLoads && SUCCEEDED(get_Size(&size)) && size == m_sizeAtLastLoad;
+}
+
+void VectorCollectionView::ResetIncrementalLoadState()
+{
+    m_fruitlessLoadCount = 0;
+    m_sizeAtLastLoad = UINT_MAX;
+    m_sourceSizeAtLastLoad = UINT_MAX;
 }
 
 _Check_return_
@@ -231,6 +249,7 @@ HRESULT VectorCollectionView::SetSource(_In_ wfc::IVector<IInspectable *> *pSour
     ctl::ComPtr<wfc::IObservableVector<IInspectable *>> spObservable;
 
     SetPtrValue(m_tpSource, pSource);
+    ResetIncrementalLoadState();
 
     // Capture the virtualization interface
     SetPtrValueWithQIOrNull(m_tpSupportIncrementalLoading, m_tpSource.Get());

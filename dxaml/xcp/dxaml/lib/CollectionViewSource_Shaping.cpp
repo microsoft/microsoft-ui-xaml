@@ -16,6 +16,8 @@
 #include "CollectionViewManager.h"
 #include "CollectionViewRefreshDeferral.h"
 #include "CollectionViewLiveShapingProperties.h"
+#include "DebugOutput.h"
+#include <XStringUtils.h>
 
 using namespace DirectUI;
 
@@ -162,13 +164,21 @@ namespace
         return value == xaml_data::CollectionViewSortDirection_Ascending || value == xaml_data::CollectionViewSortDirection_Descending;
     }
 
-    // Undoes a DependencyProperty change the owner rejects.
-    _Check_return_ HRESULT RestorePreviousValue(_In_ DependencyObject* pOwner, _In_ const PropertyChangedParams& args, _Inout_ bool* pIsRestoring)
+    // Undoes a DependencyProperty change the owner rejects. Only the effective value is restored, so a binding,
+    // ThemeResource or style value that produced the change stays in place, as when a binding's conversion fails.
+    _Check_return_ HRESULT RestorePreviousValue(_In_ DependencyObject* pOwner, _In_ const PropertyChangedParams& args, _Inout_ bool* pIsRestoring, _In_z_ const WCHAR* pMessage)
     {
         *pIsRestoring = true;
-        const HRESULT hr = pOwner->SetValueCore(args.m_pDP, *args.m_pOldValue);
+        const HRESULT hr = args.m_pOldValue->IsUnset()
+            ? pOwner->ClearValue(args.m_pDP)
+            : pOwner->SetValueCore(SetValueParams(args.m_pDP, *args.m_pOldValue), true /* fSetEffectiveValueOnly */);
         *pIsRestoring = false;
         IFC_RETURN(hr);
+
+        if (DebugOutput::IsLoggingForBindingEnabled())
+        {
+            DebugOutput::LogBindingErrorMessage(StringCchPrintfWWrapper(L"%s\n", pMessage));
+        }
         return S_OK;
     }
 
@@ -274,10 +284,9 @@ _Check_return_ HRESULT SortDescription::OnPropertyChanged2(_In_ const PropertyCh
 
     // Only markup, a binding or a style reaches here (the setters check first): the change is undone, and not
     // thrown into the code that changed a binding's source.
-    IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
-    ::OutputDebugStringW(isValid
-        ? L"A SortDescription cannot be changed once a SortDescriptions collection holds it; the change was undone.\n"
-        : L"SortDescription.Direction must be Ascending or Descending; the change was undone.\n");
+    IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue, isValid
+        ? L"A SortDescription cannot be changed once a SortDescriptions collection holds it; the change was undone."
+        : L"SortDescription.Direction must be Ascending or Descending; the change was undone."));
     return S_OK;
 }
 
@@ -347,8 +356,8 @@ _Check_return_ HRESULT PropertyGroupDescription::OnPropertyChanged2(_In_ const P
             IFC_RETURN(get_StringComparison(&value));
             if (!IsValidStringComparison(value))
             {
-                IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue));
-                ::OutputDebugStringW(L"PropertyGroupDescription.StringComparison is not a CollectionViewStringComparison; the change was undone.\n");
+                IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringValue,
+                    L"PropertyGroupDescription.StringComparison is not a CollectionViewStringComparison; the change was undone."));
                 return S_OK;
             }
             IFC_RETURN(NotifyOwners());
@@ -847,9 +856,17 @@ _Check_return_ HRESULT CollectionViewSource::ApplyLiveShapingToView()
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 _Check_return_ HRESULT STDMETHODCALLTYPE CollectionViewSourceGenerated::add_Filter(_In_ xaml_data::IFilterEventHandler* pValue, _Out_ EventRegistrationToken* pToken)
 {
+    // The feature check compiles the accessor in every flavor; shaping itself is compiled only with MUX_PRERELEASE
+    // (OnShapingDescriptionsChanged, EnsureView), so elsewhere a handler would be added and never raised.
+#ifdef MUX_PRERELEASE
     IFC_RETURN(CheckThread());
     IFC_RETURN(static_cast<CollectionViewSource*>(this)->AddFilterEventHandler(pValue, pToken));
     return S_OK;
+#else
+    UNREFERENCED_PARAMETER(pValue);
+    UNREFERENCED_PARAMETER(pToken);
+    return E_NOTIMPL;
+#endif
 }
 
 _Check_return_ HRESULT STDMETHODCALLTYPE CollectionViewSourceGenerated::remove_Filter(EventRegistrationToken token)

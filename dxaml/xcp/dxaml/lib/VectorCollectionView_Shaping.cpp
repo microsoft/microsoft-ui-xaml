@@ -41,7 +41,12 @@ _Check_return_ HRESULT VectorCollectionView::EnableShaping(_In_ CollectionViewSo
 
 void VectorCollectionView::SetFilterEvents(_In_opt_ IFilterEventSource* pEvents)
 {
-    m_spFilterEvents = pEvents;
+    // The reference tracker walk reads it; the previous source is released after the lock.
+    ctl::ComPtr<IFilterEventSource> spPrevious(pEvents);
+    {
+        AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+        m_spFilterEvents.Swap(spPrevious);
+    }
 }
 
 _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules(
@@ -115,7 +120,7 @@ _Check_return_ HRESULT VectorCollectionView::DetachFromHost()
     HRESULT hr = S_OK;
 
     m_hostRef = ctl::WeakRefPtr();
-    m_spFilterEvents.Reset();
+    SetFilterEvents(nullptr);
     if (!m_tpSortDescriptions || !m_tpGroupDescriptions)
     {
         return S_OK;
@@ -305,6 +310,18 @@ _Check_return_ HRESULT VectorCollectionView::OnSortDescriptionsChanged()
 
     IFC_RETURN(OnShapingRulesChanged());
     return S_OK;
+}
+
+bool VectorCollectionView::PresentsSourceOrder()
+{
+    bool hasRules = true;
+    UINT outputSize = 0;
+    UINT sourceSize = 0;
+    return m_tpInternalList && m_tpSourceList && !m_isGrouping &&
+        m_deferRefreshLevel == 0 && m_shapeBusyDepth == 0 && !m_isRefreshPending && !m_isRecomputePending &&
+        SUCCEEDED(HasShapingRules(&hasRules)) && !hasRules &&
+        SUCCEEDED(m_tpInternalList->get_Size(&outputSize)) && SUCCEEDED(m_tpSourceList->get_Size(&sourceSize)) &&
+        outputSize == sourceSize;
 }
 
 _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRules)
@@ -532,6 +549,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     const UINT sourceChangeCount = m_sourceListChangeCount;
     UINT size = 0;
 
+    ResetIncrementalLoadState();
     IFC_RETURN(spSort->comparer.Initialize(m_tpSortDescriptions.Get(), m_tpCustomSort.Get(), m_culture.Get(), spSort->references));
     spSort->keys.Reset(spSort->comparer.FieldCount());
     IFC_RETURN(m_tpSourceList->get_Size(&size));

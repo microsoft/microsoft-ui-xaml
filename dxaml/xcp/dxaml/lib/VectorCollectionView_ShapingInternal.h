@@ -126,13 +126,17 @@ namespace DirectUI::ShapingEngine
             }
         }
 
-        // Application.UnhandledException sees the failure, as for app code a dispatcher callback runs.
+        // Application.UnhandledException sees the failure, as for app code a dispatcher callback runs. Only a failure
+        // that carries error info (an exception app code threw) is reported; a framework listener's bare HRESULT is
+        // not turned into an app crash. The report runs synchronously inside the source's change notification, so an
+        // UnhandledException handler that changes the same source re-enters it (an ObservableCollection throws then).
         void Report(HRESULT hr)
         {
-            if (hr == m_hr && m_spErrorInfo)
+            if (hr != m_hr || !m_spErrorInfo)
             {
-                IGNOREHR(::SetRestrictedErrorInfo(m_spErrorInfo.Get()));
+                return;
             }
+            IGNOREHR(::SetRestrictedErrorInfo(m_spErrorInfo.Get()));
             IGNOREHR(ErrorHelper::ReportUnhandledError(hr));
         }
 
