@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 //  Abstract:
@@ -1237,10 +1237,10 @@ namespace DirectUI
                 _In_ DragDropMessageType type,
                 _In_ wf::Point dragPoint);
 
-            // Returns whether the passed item is the one being dragged over
             // CanReorderItems, unless ItemsSource is a view that sorts or filters.
-            _Check_return_ HRESULT GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder);
+            _Check_return_ HRESULT GetCanReorderItemsOverItemsSource(_Out_ BOOLEAN* pCanReorder, bool isForVisualState = false);
 
+            // Returns whether the passed item is the one being dragged over
             BOOLEAN IsDragOverItem(
                 _In_ ListViewBaseItem* pItem);
 
@@ -1385,7 +1385,12 @@ namespace DirectUI
                 _Out_ BOOLEAN* pResult);
 
             _Check_return_ HRESULT IsItemsSourceSortedOrFiltered(
-                _Out_ bool* pIsShaped);
+                _Out_ bool* pIsShaped,
+                bool includeAppViews = true);
+
+            // GetCanReorderItemsOverItemsSource for container visual states; cleared on an ItemsSource or items change.
+            bool m_isReorderBlockedByView = false;
+            bool m_isReorderBlockedByViewValid = false;
 
             // Complete a drop gesture.
             _Check_return_ HRESULT CompleteDrop();

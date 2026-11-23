@@ -2431,7 +2431,7 @@ _Check_return_ HRESULT ListViewBaseItem::ChangeVisualStateWithContextNewStyle(
 
         // Holding gesture will show drag visual
         IFC_RETURN(spListView->get_CanDragItems(&criteria.canDrag));
-        IFC_RETURN(spListView->GetCanReorderItemsOverItemsSource(&criteria.canReorder));
+        IFC_RETURN(spListView->GetCanReorderItemsOverItemsSource(&criteria.canReorder, true /* isForVisualState */));
         if (spListView->GetIsHolding())
         {
             criteria.isHolding = TRUE;

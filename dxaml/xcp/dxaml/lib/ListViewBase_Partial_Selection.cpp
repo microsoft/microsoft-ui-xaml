@@ -184,6 +184,7 @@ _Check_return_ HRESULT ListViewBase::OnItemsChanged(
                                                             // of reordering items after a drop.
 
     IFCPTR(pArgs);
+    m_isReorderBlockedByViewValid = false;
     IFC(ListViewBaseGenerated::OnItemsChanged(pArgs));
 
     IFC(pArgs->get_CollectionChange(&action));
