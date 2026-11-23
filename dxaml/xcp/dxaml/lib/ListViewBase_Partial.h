@@ -1376,6 +1376,9 @@ namespace DirectUI
             _Check_return_ HRESULT IsNotGroupingAndHostIsLookupPanel(
                 _Out_ BOOLEAN* pResult);
 
+            _Check_return_ HRESULT IsItemsSourceSortedOrFiltered(
+                _Out_ bool* pIsShaped);
+
             // Complete a drop gesture.
             _Check_return_ HRESULT CompleteDrop();
 
