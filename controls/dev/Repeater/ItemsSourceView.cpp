@@ -62,6 +62,9 @@ void ItemsSourceView::CollectionChanged(winrt::event_token const& token)
 
 void ItemsSourceView::OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
 {
+    // A handler can release the last reference to this object (for example by replacing ItemsRepeater.ItemsSource).
+    // Keep it alive until the event source has finished raising the event.
+    auto strongThis = get_strong();
     m_cachedSize = GetSizeCore();
     m_collectionChangedEventSource(*this, args);
 }

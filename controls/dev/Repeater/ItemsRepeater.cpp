@@ -779,6 +779,13 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
     m_transitionManager.OnItemsSourceChanged(sender, args);
     m_viewManager.OnItemsSourceChanged(sender, args);
 
+    if (!IsProcessingCollectionChange())
+    {
+        // A handler of an event raised above (for example ElementIndexChanged) replaced ItemsSource or ItemTemplate.
+        // That reset the layout and ended this change, so these args no longer apply to the layout's elements.
+        return;
+    }
+
     if (auto layout = GetEffectiveLayout())
     {
         if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())

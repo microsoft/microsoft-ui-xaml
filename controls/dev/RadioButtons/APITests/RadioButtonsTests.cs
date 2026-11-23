@@ -531,6 +531,158 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: RadioButtons over ObservableCollection {A, B, C, D, E} with B selected; Move the selected item (1 -> 3),
+        //     then Move unselected items across it (0 -> 4, then 4 -> 0). An app SelectionChanged handler reads
+        //     ContainerFromIndex(SelectedIndex) (GitHub issue #11570).
+        // Expected: after each Move SelectedIndex is B's new index, SelectedItem stays B, only B's RadioButton is checked
+        //     and it is ContainerFromIndex(SelectedIndex). At most one SelectionChanged per Move; when it is raised,
+        //     AddedItems is [B] and inside it ContainerFromIndex(SelectedIndex) is already B's RadioButton.
+        //     RemovedItems is logged but not checked: RadioButtons::Select reads the previous item from the source after the
+        //     change, so it names the item now at the old index. That is pre-existing and the same for Insert and Remove.
+        // Failure means: ItemsRepeater does not report index changes for a Move (RadioButtons::OnRepeaterElementIndexChanged
+        //     is not called), or reports them before all indices are updated.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that RadioButtons selection follows the selected item when an ObservableCollection.Move changes its index.")]
+        public void VerifySelectionFollowsMovedItem()
+        {
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+            int selectionChangedCount = 0;
+            var containersInSelectionChanged = new List<object>();
+            var addedItemsInSelectionChanged = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                radioButtons.SelectedIndex = 1;
+                Content = radioButtons;
+                Content.UpdateLayout();
+                radioButtons.SelectionChanged += (s, e) =>
+                {
+                    selectionChangedCount++;
+                    var container = radioButtons.ContainerFromIndex(radioButtons.SelectedIndex) as RadioButton;
+                    var added = string.Join(",", e.AddedItems);
+                    Log.Comment($"SelectionChanged: SelectedIndex={radioButtons.SelectedIndex}, container '{container?.Content}', AddedItems=[{added}], RemovedItems=[{string.Join(",", e.RemovedItems)}]");
+                    containersInSelectionChanged.Add(container?.Content);
+                    addedItemsInSelectionChanged.Add(added);
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            void MoveAndVerify(int oldIndex, int newIndex, int expectedSelectedIndex)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Move({oldIndex}, {newIndex})");
+                    selectionChangedCount = 0;
+                    containersInSelectionChanged.Clear();
+                    addedItemsInSelectionChanged.Clear();
+                    items.Move(oldIndex, newIndex);
+                    Content.UpdateLayout();
+
+                    Verify.AreEqual(expectedSelectedIndex, radioButtons.SelectedIndex);
+                    Verify.AreEqual("B", radioButtons.SelectedItem);
+                    Verify.IsLessThanOrEqual(selectionChangedCount, 1, "At most one SelectionChanged per Move.");
+                    for (int k = 0; k < selectionChangedCount; k++)
+                    {
+                        Verify.AreEqual("B", addedItemsInSelectionChanged[k], "SelectionChanged.AddedItems is the selected item B.");
+                        Verify.AreEqual("B", containersInSelectionChanged[k], "Inside SelectionChanged, ContainerFromIndex(SelectedIndex) is B's RadioButton.");
+                    }
+
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                        Verify.IsNotNull(container, $"ContainerFromIndex({i})");
+                        Log.Comment($"Index {i}: '{container.Content}' IsChecked={container.IsChecked}");
+                        Verify.AreEqual(items[i], container.Content, $"ContainerFromIndex({i}) shows item {i}.");
+                        Verify.AreEqual(i == expectedSelectedIndex, container.IsChecked == true, $"Only the selected item is checked (index {i}).");
+                    }
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            MoveAndVerify(1, 3, expectedSelectedIndex: 3); // Move the selected item: {A, C, D, B, E}
+            MoveAndVerify(0, 4, expectedSelectedIndex: 2); // Move an item from before to after it: {C, D, B, E, A}
+            MoveAndVerify(4, 0, expectedSelectedIndex: 3); // And back: {A, C, D, B, E}
+        }
+
+        // Scenario: RadioButtons over ObservableCollection {A, B, C, D, E} with B selected. An app SelectionChanged handler
+        //     replaces ItemsSource with {P, Q, R} the first time it runs; then Move(1, 3) moves the selected item, so the
+        //     handler runs while the inner ItemsRepeater is still handling the Move.
+        // Expected: no crash; Move returns, and after layout the RadioButtons shows P, Q, R.
+        // Failure means: the old ItemsSourceView is destroyed while it is still raising CollectionChanged (crash of the test
+        //     process), or the repeater keeps using the old source after it was replaced.
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from a SelectionChanged handler raised by a Move of the selected item does not crash.")]
+        public void VerifyItemsSourceReplacedInSelectionChangedDuringMove()
+        {
+            VerifyItemsSourceReplacedInSelectionChanged("Move(1, 3)", items => items.Move(1, 3));
+        }
+
+        // Scenario: same as VerifyItemsSourceReplacedInSelectionChangedDuringMove, with Insert(0) before the selected item.
+        //     RadioButtons uses a non-virtualizing layout, so replacing ItemsSource removes every child of the inner
+        //     ItemsRepeater while the repeater is still re-indexing its children for the Insert.
+        // Expected: no crash; Insert returns, and after layout the RadioButtons shows P, Q, R.
+        // Failure means: the repeater keeps walking its children after the handler removed them (crash of the test process).
+        [TestMethod]
+        [TestProperty("Description", "Verifies that replacing ItemsSource from a SelectionChanged handler raised by an Insert before the selected item does not crash.")]
+        public void VerifyItemsSourceReplacedInSelectionChangedDuringInsert()
+        {
+            VerifyItemsSourceReplacedInSelectionChanged("Insert(0)", items => items.Insert(0, "Inserted"));
+        }
+
+        private void VerifyItemsSourceReplacedInSelectionChanged(string operation, global::System.Action<global::System.Collections.ObjectModel.ObservableCollection<string>> change)
+        {
+            RadioButtons radioButtons = null;
+            var items = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "A", "B", "C", "D", "E" };
+            var newItems = new global::System.Collections.ObjectModel.ObservableCollection<string>() { "P", "Q", "R" };
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = items;
+                radioButtons.SelectedIndex = 1;
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                bool replaced = false;
+                radioButtons.SelectionChanged += (s, e) =>
+                {
+                    Log.Comment($"SelectionChanged: AddedItems=[{string.Join(",", e.AddedItems)}], RemovedItems=[{string.Join(",", e.RemovedItems)}]");
+                    if (!replaced)
+                    {
+                        replaced = true;
+                        Log.Comment("Handler: ItemsSource = {P, Q, R}");
+                        radioButtons.ItemsSource = newItems;
+                    }
+                };
+
+                Log.Comment(operation);
+                change(items);
+                Log.Comment($"{operation} returned");
+                Verify.IsTrue(replaced, $"{operation} moved the selected item, so SelectionChanged was raised and the handler replaced ItemsSource.");
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreSame(newItems, radioButtons.ItemsSource);
+                for (int i = 0; i < newItems.Count; i++)
+                {
+                    var container = radioButtons.ContainerFromIndex(i) as RadioButton;
+                    Verify.IsNotNull(container, $"ContainerFromIndex({i})");
+                    Log.Comment($"Index {i}: '{container.Content}' IsChecked={container.IsChecked}");
+                    Verify.AreEqual(newItems[i], container.Content, $"ContainerFromIndex({i}) shows the new item {i}.");
+                }
+            });
+        }
+
         // Scenario: a loaded RadioButtons with a string header, then a header template and an element header; its automation
         //           peer with and without AutomationProperties.Name; MaxColumns; removing a SelectionChanged handler; and the
         //           dependency property identifiers of RadioButtons and ColumnMajorUniformToLargestGridLayout.

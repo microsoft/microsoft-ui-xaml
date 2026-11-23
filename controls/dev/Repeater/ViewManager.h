@@ -57,6 +57,7 @@ private:
     void UpdateElementIndex(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo, int index);
 
     void InvalidateRealizedIndicesHeldByLayout();
+    void ExtendRealizedIndicesHeldByLayout(int index);
     void EnsureFirstLastRealizedIndices();
 
     struct PinnedElementInfo
