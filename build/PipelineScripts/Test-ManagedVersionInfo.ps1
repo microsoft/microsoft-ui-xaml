@@ -192,22 +192,39 @@ function Test-ManagedVersion
         throw "$AssemblyName changed the company/title resource text, including escaped characters."
     }
 
+    $baselineDirectory = Join-Path $directory 'baseline'
+    [System.IO.Directory]::CreateDirectory($baselineDirectory) | Out-Null
+    $baseline = Join-Path $baselineDirectory $properties.TargetFileName
+    $compilerArguments = @(
+        '/nologo', "/target:$outputType", '/nostdlib+', "/reference:$frameworkReference",
+        '/publicsign+', "/keyfile:$keyFile", "/out:$baseline",
+        $properties.GeneratedAssemblyInfoFile, (Join-Path $testRoot 'Program.cs')
+    )
+    if ($manifestPath) { $compilerArguments += "/win32manifest:$manifestPath" }
+    if ($noManifest -eq 'true') { $compilerArguments += '/nowin32manifest' }
+    if ($iconPath) { $compilerArguments += "/win32icon:$iconPath" }
+    $compilerOutput = @(& $dotnet $compiler @compilerArguments 2>&1)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Baseline compilation failed: $($compilerOutput -join [Environment]::NewLine)"
+    }
+    $baselineVersionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($baseline)
+    foreach ($field in @('InternalName', 'OriginalFilename', 'CompanyName', 'FileDescription', 'ProductName',
+        'LegalCopyright', 'LegalTrademarks', 'Comments', 'IsDebug', 'IsPatched', 'IsPrivateBuild', 'IsPreRelease', 'IsSpecialBuild'))
+    {
+        if ($versionInfo.$field -cne $baselineVersionInfo.$field)
+        {
+            throw "$AssemblyName changed native resource metadata ${field}: '$($versionInfo.$field)' instead of '$($baselineVersionInfo.$field)'."
+        }
+    }
+    $versionResource = [System.Text.Encoding]::Unicode.GetString([WinUIManagedVersionResourceTest]::Read($binary, 16, 1))
+    if ($versionResource -cnotmatch ('Assembly Version\0+' + [regex]::Escape($ExpectedAssemblyVersion) + '\0'))
+    {
+        throw "$AssemblyName lost the preserved 'Assembly Version' resource string."
+    }
+
     if ($outputType -eq 'exe')
     {
-        $baseline = Join-Path $directory 'baseline.exe'
-        $compilerArguments = @(
-            '/nologo', '/target:exe', '/nostdlib+', "/reference:$frameworkReference",
-            '/publicsign+', "/keyfile:$keyFile", "/out:$baseline",
-            $properties.GeneratedAssemblyInfoFile, (Join-Path $testRoot 'Program.cs')
-        )
-        if ($manifestPath) { $compilerArguments += "/win32manifest:$manifestPath" }
-        if ($noManifest -eq 'true') { $compilerArguments += '/nowin32manifest' }
-        if ($iconPath) { $compilerArguments += "/win32icon:$iconPath" }
-        $compilerOutput = @(& $dotnet $compiler @compilerArguments 2>&1)
-        if ($LASTEXITCODE -ne 0)
-        {
-            throw "Baseline compilation failed: $($compilerOutput -join [Environment]::NewLine)"
-        }
         if ($VerifyIncremental)
         {
             $resourceTime = [System.IO.File]::GetLastWriteTimeUtc($properties._WindowsAppSDKManagedVersionResource)

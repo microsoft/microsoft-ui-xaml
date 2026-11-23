@@ -8,6 +8,7 @@
       <SourcePath Required="true" />
       <ResourcePath Required="true" />
       <OriginalFileName Required="true" />
+      <AssemblyVersion />
       <IsExecutable ParameterType="System.Boolean" />
       <FileDescription />
       <Company />
@@ -40,9 +41,9 @@
         foreach (var field in new Dictionary<string, string> {
             { "FileVersion", BinaryVersion }, { "ProductVersion", BinaryVersion },
             { "OriginalFilename", OriginalFileName },
-            { "InternalName", Path.GetFileNameWithoutExtension(OriginalFileName) },
-            { "FileDescription", FileDescription }, { "CompanyName", Company },
-            { "ProductName", Product }, { "LegalCopyright", Copyright },
+            { "InternalName", OriginalFileName }, { "Assembly Version", AssemblyVersion },
+            { "FileDescription", String.IsNullOrEmpty(FileDescription) ? " " : FileDescription }, { "CompanyName", Company },
+            { "ProductName", Product }, { "LegalCopyright", String.IsNullOrEmpty(Copyright) ? " " : Copyright },
             { "LegalTrademarks", Trademark }, { "Comments", Description }
         })
         {
@@ -130,6 +131,7 @@
         SourcePath="$(_WindowsAppSDKManagedVersionSource)"
         ResourcePath="$(_WindowsAppSDKManagedVersionResource)"
         OriginalFileName="$(TargetFileName)"
+        AssemblyVersion="$(AssemblyVersion)"
         IsExecutable="$(_WindowsAppSDKIsExecutable)"
         FileDescription="$(AssemblyTitle)"
         Company="$(Company)" Product="$(Product)" Copyright="$(Copyright)"
