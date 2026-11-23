@@ -355,11 +355,11 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
     `Reset` by cost: a move costs two vector shifts (about 14 ns a row each at 100k items, fre) and two raised changes
     (about 10 µs); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
-    changed items' moves cost less than a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat view
-    re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the new
-    order (the items outside the longest run still in order; none when the order did not change), or one `Reset` if
-    those still cost more; a grouped view recomputes. At 100k rows that is about 50 moves before a `Reset`, at 10k
-    about 170, at 2k about 650, so a Task Manager-size view moves rows and never resets for a live tick. WPF
+    changed items' moves cost less than twice a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat
+    view re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the
+    new order (the items outside the longest run still in order; none when the order did not change), or one `Reset`
+    if those still cost more; a grouped view recomputes. At 100k rows that is about 100 moves before a `Reset`, at 10k
+    about 170, at 2k about 650, so a Task Manager-size view moves rows and resets only for a mass change. WPF
     re-sorts with a `Reset` once 80% of the items changed (`LiveSortingDensityThreshold`) and insertion-sorts below.
   - Turning a live feature on, or changing what it observes, catches up on the changes made while they were not
     observed (WPF `RebuildLocalArray`): the view recomputes and raises a `Reset` only if its order changed. Changing
@@ -759,7 +759,7 @@ group, k = items a live tick changed.
 | Flat `Add` / `Remove` / `Replace` | O(n) scans + O(log m) compares reading the other item's keys + the vector shifts | the same scans and shifts, O(log m) compares on cached keys, no comparer rebuilt per change, no scan for an `Add` |
 | Grouped `Add` / `Remove` / `Replace` | O(n) leaf search + O(L·G) `NamesMatch` | O(1) bottom group by source index + O(g) in it, O(L) hashed lookups; O(n) source-index shift |
 | Group lookup, custom `GroupDescription` (batch 4) | O(G) `NamesMatch` calls per item and level (the ABI hop each time) | the name hashed as the default `NamesMatch` compares it (ordinal) and one `NamesMatch` call to confirm; a miss (a new group, or an override that matches more names than the default) scans the subgroups with `NamesMatch`, as WPF always does: O(m + G²) calls for a load instead of O(m·G) |
-| Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
+| Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than twice a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
 | `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
 | TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | only the rows the change brought in are read + O(n) native rebuild, published as a splice (≤ 64 rows, or a moved run) |
 
