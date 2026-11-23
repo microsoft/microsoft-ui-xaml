@@ -363,7 +363,7 @@ winrt::hstring TableViewCellAutomationPeer::GetCellValueText()
     }
 
     auto const content = GetCellContentElement(Owner().try_as<winrt::FrameworkElement>());
-    // ValuePattern describes editable text, not the accessibility label naming that text.
+    // The text the cell displays, not the accessibility label naming that text.
     if (auto const text = content.try_as<winrt::TextBlock>())
     {
         return text.Text();
@@ -1095,22 +1095,4 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
     }
 
     return winrt::com_array(headers);
-}
-
-// ----- IValueProvider -----
-
-winrt::hstring TableViewCellAutomationPeer::Value()
-{
-    return GetCellValueText();
-}
-
-// Editing is not part of this release, so the value is never settable.
-bool TableViewCellAutomationPeer::IsReadOnly()
-{
-    return true;
-}
-
-void TableViewCellAutomationPeer::SetValue(winrt::hstring const& /*value*/)
-{
-    throw winrt::hresult_error(E_NOTIMPL, L"This cell is read-only.");
 }

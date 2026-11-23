@@ -48,7 +48,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     //     prises one open with raw UIA pattern ids, and these do not start.
     //
     // NOT COVERED HERE, deliberately:
-    //   * The Value pattern on cells - Category 10 owns the advertisement gate in full (four tests).
     //   * Tooltip -> HelpText mapping and its duplicate suppression - Category 14. This file keeps
     //     only the sort-state half of header help text, which has no tooltip in play.
     //   * "Invoke sorts the column" - Category 7.5 owns the positive path; this file owns the
@@ -2596,6 +2595,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.IsTrue(children[i] is TableViewCellAutomationPeer,
                         $"Row peer child {i} must be a TableViewCellAutomationPeer.");
+                    // Cells are read-only and their text is the Name; there is no Value pattern to offer.
+                    Verify.IsNull(children[i].GetPattern(PatternInterface.Value),
+                        $"Cell peer {i} must not offer the Value pattern.");
+                    Verify.IsFalse(children[i] is IValueProvider,
+                        $"Cell peer {i} must not implement IValueProvider.");
                 }
 
                 // Visible-column order: the collapsed column is the middle one, so the two survivors are

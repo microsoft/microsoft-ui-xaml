@@ -47,6 +47,7 @@ TableView is preview API. This review checks whether the proposed surface is rea
 | Added | `TableViewColumn.DisplayMemberBinding` (`Binding`, CLR) | Restores the template-free "bind a collection, render data cleanly" baseline without a new column type, after `TableViewTextColumn` was cut: a read-only `TextBlock` cell bound against the row item, whose `Path` is the sort key when `SortMemberPath` is empty. WPF `GridViewColumn.DisplayMemberBinding` precedent, including its precedence: `DisplayMemberBinding` over `CellTemplate`, so a template column ignores its `CellTemplate` while `DisplayMemberBinding` is set. |
 | Removed | The editing surface: `TableView.IsReadOnly`, `IsEditing`, `CommitEdit`, `CancelEdit`, `BeginningEdit`, `CellEditEnding`, their args, `TableViewEditAction`, `TableViewColumn.IsReadOnly`, `CellEditingTemplate` | Not part of TableView (§2.5). TableView is always read-only, as the old default `IsReadOnly = true`. |
 | Removed | `TableViewTextColumn` (and `Binding`) | Not part of TableView (§5). A display-only text cell is `TableViewColumn.DisplayMemberBinding`; a styled one is a `TableViewTemplateColumn` whose `CellTemplate` is a bound `TextBlock`, with `SortMemberPath` set. An unrealized row's UIA name comes from the visible columns' `DisplayMemberBinding` values, as its realized cells show them. |
+| Removed | `IValueProvider` on `TableViewCellAutomationPeer` (`Value`, `IsReadOnly`, `SetValue`) | Dead surface with editing gone: `GetPattern` never offered `Value`, `IsReadOnly` was always `true` and `SetValue` failed. A cell's text is its UIA `Name`; screen readers navigate cells through the `Grid`/`Table` patterns. |
 
 ## 2. API surface by area
 
@@ -132,7 +133,7 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 
 ### 2.5 Editing (not part of TableView)
 
-TableView is a read-only table: it has no editing API, edit mode or edit gestures, and no `TableViewTextColumn`, and neither is planned (removed members: §1.3, §5). Apps that need editing build it in a `CellTemplate`; editing scenarios belong to a DataGrid-class control. The named scenarios (Task Manager, File Explorer details view, File properties) need at most a one-field rename, which an app owns by swapping the cell template (for example from F2 through a `handledEventsToo` key handler); see [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance). Live controls in a `TableViewTemplateColumn.CellTemplate` are unaffected, and the cell peer's `IValueProvider` is read-only.
+TableView is a read-only table: it has no editing API, edit mode or edit gestures, and no `TableViewTextColumn`, and neither is planned (removed members: §1.3, §5). Apps that need editing build it in a `CellTemplate`; editing scenarios belong to a DataGrid-class control. The named scenarios (Task Manager, File Explorer details view, File properties) need at most a one-field rename, which an app owns by swapping the cell template (for example from F2 through a `handledEventsToo` key handler); see [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance). Live controls in a `TableViewTemplateColumn.CellTemplate` are unaffected, and the cell peer has no `Value` pattern (§1.3): a cell's text is its UIA `Name`.
 
 ### 2.6 Grouping and hierarchy
 
@@ -176,7 +177,7 @@ TableView is a read-only table: it has no editing API, edit mode or edit gesture
 |---|---|---|---|---|
 | `TableViewAutomationPeer` | no | `(TableView)` | `DataGrid` | `Selection`, `Grid`, `Table`, `ItemContainer` |
 | `TableViewRowAutomationPeer` | no | `(TableViewRow)` | `DataItem` | `SelectionItem`, `ExpandCollapse` |
-| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | see §6 | `GridItem`, `TableItem`, `Value` |
+| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | see §6 | `GridItem`, `TableItem` |
 | `TableViewColumnHeaderAutomationPeer` | no | `(TableViewColumnHeader)` | `HeaderItem` | `Invoke` (+ `Transform`, implementation-only) |
 | `TableViewGroupHeaderAutomationPeer` | no | `(TableViewGroupHeader)` | `Group` | `ExpandCollapse`, `GridItem` |
 

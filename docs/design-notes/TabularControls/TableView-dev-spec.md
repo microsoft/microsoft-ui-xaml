@@ -264,7 +264,7 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
 | Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `ScrollItem`; `VirtualizedItem` while virtualized. |
-| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `VirtualizedItem`. The peer implements `IValueProvider` read-only but does not offer `Value`. |
+| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `VirtualizedItem`. No `Value` pattern: cells are read-only and the cell text is the peer's `Name`. |
 | Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
 | Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`, `ScrollItem`. |
 
