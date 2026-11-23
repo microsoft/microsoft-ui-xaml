@@ -23,6 +23,8 @@
 #include "RichTextBlockOverflow.h"
 #include "PasswordBox.h"
 #include "LayoutTransitionElement.h"
+#include <TransitionRoot.h>
+#include <CalendarViewBaseItemChrome.h>
 #include "ListViewBaseItemChrome.h"
 #include <ImmediateTextSink.h>
 #include <PixelFormat.h>
@@ -2029,10 +2031,28 @@ void ImmediateRenderer::EmitContent(
     }
     else if (type == KnownTypeIndex::Glyphs
         || type == KnownTypeIndex::SwapChainPanel
-        || type == KnownTypeIndex::MediaPlayerPresenter
-        || element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
+        || type == KnownTypeIndex::MediaPlayerPresenter)
     {
         ReportUnsupported(element, L"Element content");
+    }
+    else if (element->OfTypeByIndex<KnownTypeIndex::CalendarViewBaseItem>())
+    {
+        // Rounded chrome (the default) draws only density bars itself; backgrounds, borders and text are children.
+        auto chrome = static_cast<CCalendarViewBaseItemChrome*>(element);
+        if (!chrome->IsRoundedCalendarViewBaseItemChromeEnabled())
+        {
+            ReportUnsupported(element, L"CalendarView square item chrome");
+        }
+        XRECTF bars[10];
+        wu::Color colors[10];
+        float barOpacity = 1.0f;
+        const uint32_t barCount = chrome->GetDensityBars(bars, colors, &barOpacity);
+        for (uint32_t i = 0; i < barCount; ++i)
+        {
+            const wu::Color c = colors[i];
+            const uint32_t argb = (static_cast<uint32_t>(c.A) << 24) | (c.R << 16) | (c.G << 8) | c.B;
+            emitter.Fill(FromXRect(bars[i]), 0, 0, ToColor(argb, barOpacity), world);
+        }
     }
 }
 
@@ -2526,6 +2546,11 @@ void ImmediateRenderer::Walk(
             {
                 Walk(children[i], childCtx, list);
             }
+        }
+        // Like HWWalk::Render: GetChildrenInRenderOrder omits a local transition root (the focus rect host's LTE).
+        if (CTransitionRoot* localTransitionRoot = element->GetLocalTransitionRoot(false))
+        {
+            Walk(localTransitionRoot, childCtx, list);
         }
     }
 

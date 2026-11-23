@@ -113,6 +113,9 @@ namespace RenderBench.Tests
                 Expect(glob.Passed, "glob over the detail");
                 var other = Gate(new() { Page = Page(unsupported: ["Acrylic:approximated"]), Mode = BackendMode.ImmediateD2DSoftware, ExitCode = 0, App = OkApp, Stats = stats, Diff = 0 }, CoverageGates.Unsupported);
                 Expect(!other.Passed, "a different declared detail doesn't cover it");
+                var animatedIcon = Gate(new() { Page = Page(), Mode = BackendMode.ImmediateGdiPlus, ExitCode = 0, App = OkApp,
+                    Stats = Stats("# unsupported PathIcon AnimatedIcon:approximated"), Diff = 0 }, CoverageGates.Unsupported);
+                Expect(animatedIcon.Passed, "the S12 AnimatedIcon approximation is accepted on every page");
             }),
             new("Coverage.FallbackGateMatchesDeclaration", () =>
             {

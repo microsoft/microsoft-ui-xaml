@@ -40,7 +40,7 @@ static class CoverageTheming
         Border Panel(ElementTheme theme, string title)
         {
             var inner = Surface(theme, [Label(title), .. Sample()]);
-            return new Border { RequestedTheme = theme, Child = inner, BorderThickness = new Thickness(1), BorderBrush = ThemeBrush("ControlStrokeColorDefaultBrush") };
+            return ThemedBorder(null, "ControlStrokeColorDefaultBrush", inner).With(b => b.RequestedTheme = theme);
         }
         var outer = Surface(ElementTheme.Light, [Panel(ElementTheme.Light, "Light")], [Panel(ElementTheme.Dark, "Dark")],
             [new Border { RequestedTheme = ElementTheme.Dark, Child = Surface(ElementTheme.Default, [Label("Default inside Dark"), new Button { Content = "Inherits dark" },

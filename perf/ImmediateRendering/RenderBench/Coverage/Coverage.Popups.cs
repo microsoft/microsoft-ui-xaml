@@ -109,12 +109,9 @@ static class CoveragePopups
         var popup = new Popup
         {
             ShouldConstrainToRootBounds = !windowed, HorizontalOffset = 200, VerticalOffset = 120,
-            Child = new Border
-            {
-                Width = 260, Height = 120, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(1), Padding = new Thickness(12),
-                Background = ThemeBrush("SolidBackgroundFillColorBaseBrush"), BorderBrush = ThemeBrush("SurfaceStrokeColorFlyoutBrush"),
-                Child = new TextBlock { Text = windowed ? "Windowed popup" : "Non-windowed popup" },
-            },
+            Child = ThemedBorder("SolidBackgroundFillColorBaseBrush", "SurfaceStrokeColorFlyoutBrush",
+                new TextBlock { Text = windowed ? "Windowed popup" : "Non-windowed popup" })
+                .With(b => { b.Width = 260; b.Height = 120; b.CornerRadius = new CornerRadius(8); b.Padding = new Thickness(12); }),
         };
         root.Children.Add(popup);
         return Open(root, () => { popup.IsOpen = true; return Task.CompletedTask; }, () => popup.IsOpen = false);

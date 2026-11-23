@@ -116,7 +116,9 @@ static unsafe partial class Win32
     }
 
     // Source-over with premultiplied alpha when the popup's alpha channel carries coverage; opaque copy when the whole
-    // alpha channel is zero (PrintWindow left it unset).
+    // alpha channel is zero (PrintWindow left it unset). PrintWindow renders the transparent margin a windowed popup
+    // keeps for its shadow as pure black (RGB 0) in every mode, so pure-black popup pixels count as transparent: the
+    // capture shows the popup body over the main window, without the DWM-composed shadow.
     static void BlendInto(byte[] canvas, int cw, int ch, byte[] src, int sw, int sh, int dx, int dy)
     {
         bool hasAlpha = false;
@@ -129,6 +131,10 @@ static unsafe partial class Win32
             for (int x = Math.Max(0, -dx); x < sw && x + dx < cw; x++)
             {
                 int s = (y * sw + x) * 4, d = ((y + dy) * cw + x + dx) * 4;
+                if (src[s] == 0 && src[s + 1] == 0 && src[s + 2] == 0)
+                {
+                    continue;
+                }
                 int a = hasAlpha ? src[s + 3] : 255;
                 for (int c = 0; c < 3; c++)
                 {

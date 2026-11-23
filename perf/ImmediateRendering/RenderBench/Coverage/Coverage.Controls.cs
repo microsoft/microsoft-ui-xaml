@@ -118,8 +118,7 @@ static class CoverageControls
 
     static UIElement[][] Collections()
     {
-        var list = new ListView { Width = 200, Height = 180, ItemsSource = Words(12), SelectedIndex = 1, BorderThickness = new Thickness(1) };
-        list.BorderBrush = ThemeBrush("ControlStrokeColorDefaultBrush");
+        var list = ThemedBorder(null, "ControlStrokeColorDefaultBrush", new ListView { Width = 200, Height = 180, ItemsSource = Words(12), SelectedIndex = 1 });
         var grid = new GridView
         {
             Width = 260, Height = 200, ItemsSource = Words(9), SelectedIndex = 0,
@@ -138,20 +137,34 @@ static class CoverageControls
             root.Children.Add(child);
         }
         tree.RootNodes.Add(root);
-        var repeater = new ItemsRepeater
-        {
-            ItemsSource = Words(6),
-            Layout = new StackLayout { Spacing = 4 },
-            ItemTemplate = Template("<Border Padding='6,2' Background='{ThemeResource CardBackgroundFillColorDefaultBrush}' " +
-                "BorderBrush='{ThemeResource CardStrokeColorDefaultBrush}' BorderThickness='1' CornerRadius='4'><TextBlock Text='{Binding}'/></Border>"),
-        };
-        var itemsView = new ItemsView
-        {
-            Width = 220, Height = 160, ItemsSource = Words(8),
-            ItemTemplate = Template("<ItemContainer><TextBlock Margin='8,4' Text='{Binding}'/></ItemContainer>"),
-        };
-        return [[Label("ListView"), list, Label("GridView"), grid], [Label("TreeView"), tree, Label("ItemsRepeater"), repeater], [Label("ItemsView"), itemsView]];
+        return [[Label("ListView"), list, Label("GridView"), grid], [Label("TreeView"), tree]];
     }
+
+    static UIElement[][] Repeater() =>
+    [
+        [
+            Label("ItemsRepeater"),
+            new ItemsRepeater
+            {
+                ItemsSource = Words(6),
+                Layout = new StackLayout { Spacing = 4 },
+                ItemTemplate = Template("<Border Padding='6,2' Background='{ThemeResource CardBackgroundFillColorDefaultBrush}' " +
+                    "BorderBrush='{ThemeResource CardStrokeColorDefaultBrush}' BorderThickness='1' CornerRadius='4'><TextBlock Text='{Binding}'/></Border>"),
+            },
+        ],
+    ];
+
+    static UIElement[][] ItemsViewPage() =>
+    [
+        [
+            Label("ItemsView"),
+            new ItemsView
+            {
+                Width = 220, Height = 160, ItemsSource = Words(8),
+                ItemTemplate = Template("<ItemContainer><TextBlock Margin='8,4' Text='{Binding}'/></ItemContainer>"),
+            },
+        ],
+    ];
 
     static UIElement[][] FlipAndPivot()
     {
@@ -254,11 +267,7 @@ static class CoverageControls
 
     static UIElement[][] Panes()
     {
-        Border Fill(string text, string brush) => new()
-        {
-            Background = ThemeBrush(brush),
-            Child = new TextBlock { Text = text, Margin = new Thickness(8) },
-        };
+        Border Fill(string text, string brush) => ThemedBorder(brush, child: new TextBlock { Text = text, Margin = new Thickness(8) });
         var split = new SplitView
         {
             Width = 420, Height = 200, IsPaneOpen = true, DisplayMode = SplitViewDisplayMode.Inline, OpenPaneLength = 140,
@@ -276,7 +285,7 @@ static class CoverageControls
     static UIElement[][] Panels()
     {
         Rectangle Box(Color c, double w = 40, double h = 30) => new() { Width = w, Height = h, Fill = new SolidColorBrush(c) };
-        var relative = new RelativePanel { Width = 200, Height = 100, Background = ThemeBrush("CardBackgroundFillColorDefaultBrush") };
+        var relative = new RelativePanel { Width = 200, Height = 100 };
         var a = Box(Colors.SteelBlue); var b = Box(Colors.IndianRed); var c = Box(Colors.SeaGreen);
         relative.Children.Add(a); relative.Children.Add(b); relative.Children.Add(c);
         RelativePanel.SetRightOf(b, a); RelativePanel.SetBelow(c, b); RelativePanel.SetAlignRightWithPanel(c, true);
@@ -289,7 +298,7 @@ static class CoverageControls
             var cell = Box(Color.FromArgb(255, (byte)(60 * i), 120, (byte)(200 - 40 * i)), double.NaN, double.NaN);
             Grid.SetRow(cell, i / 2); Grid.SetColumn(cell, i % 2); grid.Children.Add(cell);
         }
-        var canvas = new Canvas { Width = 200, Height = 100, Background = ThemeBrush("CardBackgroundFillColorDefaultBrush") };
+        var canvas = new Canvas { Width = 200, Height = 100 };
         var e = new Ellipse { Width = 50, Height = 50, Fill = new SolidColorBrush(Colors.Goldenrod) };
         Canvas.SetLeft(e, 30); Canvas.SetTop(e, 20); canvas.Children.Add(e);
         var r = Box(Colors.SlateBlue, 60, 40); Canvas.SetLeft(r, 110); Canvas.SetTop(r, 40); Canvas.SetZIndex(r, -1); canvas.Children.Add(r);
@@ -302,8 +311,8 @@ static class CoverageControls
         }
         return
         [
-            [Label("RelativePanel"), relative, Label("StackPanel"), stack, Label("Grid"), grid],
-            [Label("Canvas"), canvas, Label("VariableSizedWrapGrid"), wrap],
+            [Label("RelativePanel"), ThemedBorder("CardBackgroundFillColorDefaultBrush", child: relative), Label("StackPanel"), stack, Label("Grid"), grid],
+            [Label("Canvas"), ThemedBorder("CardBackgroundFillColorDefaultBrush", child: canvas), Label("VariableSizedWrapGrid"), wrap],
         ];
     }
 
@@ -328,11 +337,10 @@ static class CoverageControls
             ],
             [
                 Label("Border / ContentControl"),
-                new Border { Width = 220, Padding = new Thickness(12), CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(2),
-                    BorderBrush = ThemeBrush("AccentFillColorDefaultBrush"), Background = ThemeBrush("CardBackgroundFillColorDefaultBrush"),
-                    Child = new ContentControl { Content = "Content in a Border" } },
-                new ContentPresenter { Content = "ContentPresenter", Padding = new Thickness(8), BorderThickness = new Thickness(1),
-                    BorderBrush = ThemeBrush("ControlStrokeColorDefaultBrush"), CornerRadius = new CornerRadius(4) },
+                ThemedBorder("CardBackgroundFillColorDefaultBrush", "AccentFillColorDefaultBrush", new ContentControl { Content = "Content in a Border" })
+                    .With(b => { b.Width = 220; b.Padding = new Thickness(12); b.CornerRadius = new CornerRadius(8); b.BorderThickness = new Thickness(2); }),
+                ThemedBorder(null, "ControlStrokeColorDefaultBrush", new ContentPresenter { Content = "ContentPresenter", Padding = new Thickness(8) })
+                    .With(b => b.CornerRadius = new CornerRadius(4)),
                 Label("Icons"),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children =
                     { new SymbolIcon(Symbol.Globe), new FontIcon { Glyph = "\uE734" },
@@ -351,10 +359,15 @@ static class CoverageControls
         ],
         [
             Label("AutoSuggestBox"), new AutoSuggestBox { Width = 240, PlaceholderText = "Search", QueryIcon = new SymbolIcon(Symbol.Find) },
-            Label("RichEditBox"), new RichEditBox { Width = 240, Height = 80 },
             Label("RichTextBlock"), new RichTextBlock { Width = 240, Blocks = { new Microsoft.UI.Xaml.Documents.Paragraph {
                 Inlines = { new Microsoft.UI.Xaml.Documents.Run { Text = "Rich " }, new Microsoft.UI.Xaml.Documents.Bold { Inlines = { new Microsoft.UI.Xaml.Documents.Run { Text = "text" } } } } } } },
         ],
+    ];
+
+    // RichEditBox renders through the RichEdit text services (F6 text branch), so it is isolated on its own page.
+    static UIElement[][] RichEditIdle() =>
+    [
+        [Label("RichEditBox"), new RichEditBox { Width = 240, Height = 80 }, new RichEditBox { Width = 240, PlaceholderText = "Placeholder" }],
     ];
 
     static UIElement[][] Indeterminate() =>
@@ -385,6 +398,10 @@ static class CoverageControls
     [CoveragePage(F, "collections-light")] public static CoveragePage CollectionsLight(CoverageContext c) => Light(Collections);
     [CoveragePage(F, "collections-dark")] public static CoveragePage CollectionsDark(CoverageContext c) => Dark(Collections);
     [CoveragePage(F, "collections-disabled")] public static CoveragePage CollectionsDisabled(CoverageContext c) => Disabled(Collections);
+    [CoveragePage(F, "itemsrepeater-light")] public static CoveragePage RepeaterLight(CoverageContext c) => Light(Repeater);
+    [CoveragePage(F, "itemsrepeater-dark")] public static CoveragePage RepeaterDark(CoverageContext c) => Dark(Repeater);
+    [CoveragePage(F, "itemsview-light")] public static CoveragePage ItemsViewLight(CoverageContext c) => Light(ItemsViewPage);
+    [CoveragePage(F, "itemsview-dark")] public static CoveragePage ItemsViewDark(CoverageContext c) => Dark(ItemsViewPage);
     [CoveragePage(F, "flipview-pivot-light")] public static CoveragePage FlipLight(CoverageContext c) => Light(FlipAndPivot);
     [CoveragePage(F, "flipview-pivot-dark")] public static CoveragePage FlipDark(CoverageContext c) => Dark(FlipAndPivot);
     [CoveragePage(F, "flipview-pivot-disabled")] public static CoveragePage FlipDisabled(CoverageContext c) => Disabled(FlipAndPivot);
@@ -414,6 +431,8 @@ static class CoverageControls
     [CoveragePage(F, "text-idle-light")] public static CoveragePage TextLight(CoverageContext c) => Light(TextIdle);
     [CoveragePage(F, "text-idle-dark")] public static CoveragePage TextDark(CoverageContext c) => Dark(TextIdle);
     [CoveragePage(F, "text-idle-disabled")] public static CoveragePage TextDisabled(CoverageContext c) => Disabled(TextIdle);
+    [CoveragePage(F, "richeditbox-idle-light")] public static CoveragePage RichEditLight(CoverageContext c) => Light(RichEditIdle);
+    [CoveragePage(F, "richeditbox-idle-dark")] public static CoveragePage RichEditDark(CoverageContext c) => Dark(RichEditIdle);
     // Endless animations: the capture lands on an arbitrary animation phase, so only a loose threshold is meaningful.
     [CoveragePage(F, "progress-indeterminate", MaxMeanAbsDiff = 0.03)] public static CoveragePage IndeterminateLight(CoverageContext c) => Light(Indeterminate);
 }

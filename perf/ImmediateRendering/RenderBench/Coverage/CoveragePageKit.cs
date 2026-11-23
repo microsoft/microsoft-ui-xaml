@@ -12,8 +12,10 @@ static class CoveragePageKit
     // A page surface with the theme's page background, laid out as columns of stacked samples.
     public static Grid Surface(ElementTheme theme, params UIElement[][] columns)
     {
-        var grid = new Grid { RequestedTheme = theme, Padding = new Thickness(16), ColumnSpacing = 24 };
-        grid.SetValue(Panel.BackgroundProperty, ThemeBrush("ApplicationPageBackgroundThemeBrush"));
+        var grid = (Grid)XamlReader.Load($"<Grid {Xmlns} Background='{{ThemeResource ApplicationPageBackgroundThemeBrush}}'/>");
+        grid.RequestedTheme = theme;
+        grid.Padding = new Thickness(16);
+        grid.ColumnSpacing = 24;
         for (int i = 0; i < columns.Length; i++)
         {
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -45,7 +47,18 @@ static class CoveragePageKit
         return new() { Root = surface };
     }
 
-    public static Brush ThemeBrush(string key) => (Brush)Application.Current.Resources[key];
+    const string Xmlns = "xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'";
+
+    // A Border whose brushes are {ThemeResource} references, so they follow RequestedTheme and runtime theme changes
+    // (a brush looked up in code is the app theme's brush and never changes).
+    public static Border ThemedBorder(string? background, string? border = null, UIElement? child = null)
+    {
+        string attributes = (background is null ? "" : $" Background='{{ThemeResource {background}}}'")
+            + (border is null ? "" : $" BorderBrush='{{ThemeResource {border}}}' BorderThickness='1'");
+        var result = (Border)XamlReader.Load($"<Border {Xmlns}{attributes}/>");
+        result.Child = child;
+        return result;
+    }
 
     public static TextBlock Label(string text) => new() { Text = text, FontSize = 12, Opacity = 0.7 };
 

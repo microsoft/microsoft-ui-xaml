@@ -184,11 +184,16 @@ public static class CoverageGates
         return new(Stability, problems.Count == 0, problems.Count == 0 ? "ok" : string.Join("; ", problems));
     }
 
+    // Approximations the design accepts for every page, so pages need not declare them; the fidelity gate still
+    // catches any visible difference. AnimatedIcon (S12) shows its FallbackIconSource instead of the Lottie visual, and
+    // MUXC templates use it for every chevron (DropDownButton, SplitButton, Expander, NavigationView, ...).
+    public static readonly string[] GloballyExpected = ["AnimatedIcon:approximated"];
+
     // A declared entry matches an unsupported detail ("Mica:approximated"), "Class detail", or a glob over either.
     // On a page that expects a fallback, the content that caused it is expected too.
     public static bool IsExpected(CoveragePageInfo page, UnsupportedEntry entry, IReadOnlyList<string> fallbacks)
     {
-        foreach (var declared in page.ExpectedUnsupported)
+        foreach (var declared in page.ExpectedUnsupported.Concat(GloballyExpected))
         {
             if (CoverageCatalog.GlobMatch(declared, entry.Detail) || CoverageCatalog.GlobMatch(declared, entry.ToString()))
             {
