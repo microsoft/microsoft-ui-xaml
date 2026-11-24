@@ -292,11 +292,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             StackPanel host = null;
             int sortingCount = 0;
             int sortedCount = 0;
-            var comparerOrder = new[] { "Mei", "Asha", "Ines", "Owen", "Rafa", "Diego" };
+            var comparerOrder = new[] { "Asha", "Ines", "Owen", "Rafa", "Diego", "Meiriannwen" };
+            List<ShapedPerson> people = null;
 
             RunOnUIThread.Execute(() =>
             {
-                tableView = CreateTableView(TableViewSource.From(MakeShapedPeople()), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                people = MakeShapedPeople();
+                tableView = CreateTableView(TableViewSource.From(people), headers: new[] { "Name", "Role" }, width: 500, height: 300);
                 tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
                 host = new StackPanel();
                 host.Children.Add(tableView);
@@ -322,7 +324,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             IdleSynchronizer.Wait();
-            RunOnUIThread.Execute(() => host.Children.Add(tableView));
+            RunOnUIThread.Execute(() =>
+            {
+                // Reorders under the accepted comparer, unseen while unloaded.
+                people.First(p => p.Name == "Mei").Name = "Meiriannwen";
+                host.Children.Add(tableView);
+            });
             SettleLayout(tableView);
 
             RunOnUIThread.Execute(() =>
