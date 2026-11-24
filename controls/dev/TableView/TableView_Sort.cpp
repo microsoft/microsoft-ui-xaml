@@ -394,19 +394,17 @@ void TableView::ReconcileSortKey(const winrt::TableViewColumn& column)
     auto const key = EffectiveSortKey(column);
     if (IsSameSortKey(key, m_tableViewSourceSort.MemberPath, m_tableViewSourceSort.ComparerIdentity))
     {
+        ForgetDeclinedSortKeys(column);
         return;
     }
-    for (auto const& declined : m_declinedSortKeys)
+    if (IsSortKeyStillDeclined(column))
     {
-        if (declined.Column.get() == column && IsSameSortKey(key, declined.MemberPath, declined.Comparer))
-        {
-            return;
-        }
+        return;
     }
 
     if (!CanSortColumn(column))
     {
-        SortByColumnInternal(column, winrt::SortDirection::None, false, false);
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false, true /* reapply */);
         return;
     }
 
@@ -423,7 +421,41 @@ void TableView::RecordDeclinedSortKey(const winrt::TableViewColumn& column)
     }
     auto key = EffectiveSortKey(column);
     ForgetDeclinedSortKeys(column);
-    m_declinedSortKeys.push_back({ winrt::make_weak(column), std::move(key.MemberPath), std::move(key.Comparer) });
+    DeclinedSortKey declined{ winrt::make_weak(column), std::move(key.MemberPath) };
+    if (key.Comparer)
+    {
+        // A comparer that can't be weakly referenced isn't tracked: it would have to be owned.
+        try
+        {
+            declined.Comparer = winrt::make_weak(key.Comparer);
+        }
+        catch (...)
+        {
+            return;
+        }
+        declined.HasComparer = true;
+    }
+    m_declinedSortKeys.push_back(std::move(declined));
+}
+
+bool TableView::IsSortKeyStillDeclined(const winrt::TableViewColumn& column)
+{
+    auto const it = std::find_if(m_declinedSortKeys.begin(), m_declinedSortKeys.end(),
+        [&column](auto const& declined) { return declined.Column.get() == column; });
+    if (it == m_declinedSortKeys.end())
+    {
+        return false;
+    }
+
+    auto const key = EffectiveSortKey(column);
+    const bool stillDeclined = it->HasComparer
+        ? key.Comparer && key.Comparer == it->Comparer.get()
+        : !key.Comparer && key.MemberPath == it->MemberPath;
+    if (!stillDeclined)
+    {
+        m_declinedSortKeys.erase(it);
+    }
+    return stillDeclined;
 }
 
 // Null forgets every column's.
@@ -476,7 +508,7 @@ bool TableView::SortByColumnInternal(
             return false;
         }
 
-        if (RaiseSortingAndCheckCanceled(column, direction))
+        if (RaiseSortingAndCheckCanceled(column, direction, reapply))
         {
             return false;
         }
@@ -605,6 +637,12 @@ void TableView::OnColumnSortKeyChanged(const winrt::TableViewColumn& column)
 {
     // Queued first so it still runs when a Sorting or Sorted handler throws.
     RefreshHeaderSortability(column);
+
+    // Checked on every change, also a deferred one: moving off the declined key ends the decline.
+    if (column)
+    {
+        IsSortKeyStillDeclined(column);
+    }
 
     if (!column || column.SortDirection() == winrt::SortDirection::None)
     {
@@ -743,11 +781,30 @@ void TableView::ApplySingleColumnSortState(const winrt::TableViewColumn& column,
 
 bool TableView::RaiseSortingAndCheckCanceled(
     const winrt::TableViewColumn& trigger,
-    winrt::SortDirection direction)
+    winrt::SortDirection direction,
+    bool offersKey)
 {
     if (!m_sortingEventSource)
     {
         return false;
+    }
+
+    // The keys this Sorting is about, to tell a key the handler changed from one deferred earlier.
+    std::vector<std::pair<winrt::TableViewColumn, SortKey>> keysBefore;
+    if (trigger)
+    {
+        keysBefore.emplace_back(trigger, EffectiveSortKey(trigger));
+    }
+    else
+    {
+        for (auto const& weakColumn : m_sortedColumns)
+        {
+            if (auto column = weakColumn.get())
+            {
+                auto key = EffectiveSortKey(column);
+                keysBefore.emplace_back(std::move(column), std::move(key));
+            }
+        }
     }
 
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
@@ -758,21 +815,11 @@ bool TableView::RaiseSortingAndCheckCanceled(
     if (canceled)
     {
         // At any depth: the handler's own key change must not re-sort what it just cancelled.
-        if (trigger)
+        // Any other pending change stays dirty for the reconcile.
+        for (auto const& [column, before] : keysBefore)
         {
-            RecordDeclinedSortKey(trigger);
-        }
-        else
-        {
-            std::vector<winrt::TableViewColumn> sorted;
-            for (auto const& weakColumn : m_sortedColumns)
-            {
-                if (auto column = weakColumn.get())
-                {
-                    sorted.push_back(std::move(column));
-                }
-            }
-            for (auto const& column : sorted)
+            if ((offersKey && column == trigger) ||
+                !IsSameSortKey(EffectiveSortKey(column), before.MemberPath, before.Comparer))
             {
                 RecordDeclinedSortKey(column);
             }
@@ -1410,7 +1457,7 @@ void TableView::QueueClearSortAfterColumnRemoval(){
             if (auto strongThis = weakThis.get())
             {
                 strongThis->m_clearSortAfterColumnRemovalQueued = false;
-                strongThis->m_sortedColumnPendingRemoval = nullptr;
+                strongThis->CancelPendingSortRestore();
                 // RecomputeSortDPsAndRaiseInternal's stale-clear guard drops this if the app
                 // applied a new sort on a different column in the meantime.
                 strongThis->RecomputeSortDPsAndRaiseInternal(nullptr, false);
@@ -1420,7 +1467,7 @@ void TableView::QueueClearSortAfterColumnRemoval(){
     else
     {
         m_clearSortAfterColumnRemovalQueued = false;
-        m_sortedColumnPendingRemoval = nullptr;
+        CancelPendingSortRestore();
     }
 }
 
@@ -1429,6 +1476,13 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
     const bool wasSorted = std::any_of(m_sortedColumns.begin(), m_sortedColumns.end(),
         [&column](auto const& sorted) { return sorted.get() == column; });
     const auto direction = column.SortDirection();
+    auto const declined = std::find_if(m_declinedSortKeys.begin(), m_declinedSortKeys.end(),
+        [&column](auto const& entry) { return entry.Column.get() == column; });
+    std::optional<DeclinedSortKey> pendingDeclined;
+    if (declined != m_declinedSortKeys.end())
+    {
+        pendingDeclined = *declined;
+    }
     if (!PurgeColumnFromSortState(column))
     {
         return;
@@ -1438,6 +1492,7 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
     {
         m_sortedColumnPendingRemoval = winrt::make_weak(column);
         m_sortedColumnPendingRemovalDirection = direction;
+        m_sortedColumnPendingRemovalDeclined = std::move(pendingDeclined);
     }
     QueueClearSortAfterColumnRemoval();
 }
@@ -1449,6 +1504,8 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
         return;
     }
     m_sortedColumnPendingRemoval = nullptr;
+    auto declined = std::move(m_sortedColumnPendingRemovalDeclined);
+    m_sortedColumnPendingRemovalDeclined.reset();
 
     // A sort applied since the removal replaced this one. A column that opted out while detached
     // never told the table; one lit only by the app's source sort keeps it, as when attached.
@@ -1459,6 +1516,12 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
 
     winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(m_sortedColumnPendingRemovalDirection);
     m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, column });
+    if (declined)
+    {
+        m_declinedSortKeys.push_back(std::move(*declined));
+        // A key change while detached reached no table.
+        IsSortKeyStillDeclined(column);
+    }
 }
 
 void TableView::AnnounceSortChange(const winrt::hstring& announcement){

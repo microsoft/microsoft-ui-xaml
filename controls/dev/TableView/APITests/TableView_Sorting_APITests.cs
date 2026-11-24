@@ -614,6 +614,193 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies returning to the installed key ends a decline, so assigning the declined key again re-sorts once.")]
+        public void VerifyDeclinedKeyExpiresWhenKeyReturnsToInstalledKey()
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+                bool cancelled = false;
+                tableView.Sorting += (sender, args) =>
+                {
+                    events.Add($"Sorting:{args.Direction}");
+                    args.Cancel = !cancelled;
+                    cancelled = true;
+                };
+                tableView.Sorted += (sender, args) => events.Add($"Sorted:{args.Direction}");
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Ascending" }, events, "precondition: the key re-sort is cancelled");
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") };
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Ascending", "Sorting:Ascending", "Sorted:Ascending" }, events,
+                    "the declined key must re-sort once after the key returned to the installed one");
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection, "The column must keep its direction.");
+                VerifySequence(new[] { "Mei", "Asha", "Ines", "Diego", "Rafa", "Owen" },
+                    RowValues(tableView, person => person.Name), "the rows must be sorted by the new key");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cancelled SortByColumn that leaves the key alone does not decline a key change deferred from a Sorted handler.")]
+        public void VerifyUnrelatedCancelledSortKeepsDeferredKeyChange()
+        {
+            VerifyUnrelatedCancelKeepsDeferredKeyChange(clear: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cancelled ClearSort that leaves the key alone does not decline a key change deferred from a Sorted handler.")]
+        public void VerifyUnrelatedCancelledClearKeepsDeferredKeyChange()
+        {
+            VerifyUnrelatedCancelKeepsDeferredKeyChange(clear: true);
+        }
+
+        private void VerifyUnrelatedCancelKeepsDeferredKeyChange(bool clear)
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                bool cancelNext = false;
+                int sortedCount = 0;
+                tableView.Sorting += (sender, args) =>
+                {
+                    events.Add($"Sorting:{args.Direction}");
+                    args.Cancel = cancelNext;
+                    cancelNext = false;
+                };
+                tableView.Sorted += (sender, args) =>
+                {
+                    events.Add($"Sorted:{args.Direction}");
+                    if (++sortedCount == 1)
+                    {
+                        column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+                    }
+                };
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+                cancelNext = true;
+                Verify.IsFalse(clear ? tableView.ClearSort() : tableView.SortByColumn(column, SortDirection.Descending),
+                    "Precondition: the handler cancels the unrelated request.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Ascending", "Sorted:Ascending", clear ? "Sorting:None" : "Sorting:Descending",
+                    "Sorting:Ascending", "Sorted:Ascending" }, events, "the deferred key must still re-sort once in the installed direction");
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection, "The column must keep its direction.");
+                VerifySequence(new[] { "Mei", "Asha", "Ines", "Diego", "Rafa", "Owen" },
+                    RowValues(tableView, person => person.Name), "the rows must be sorted by the deferred key");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing a column with itself keeps the key its Sorting handler declined.")]
+        public void VerifyDeclinedKeySurvivesSameColumnReplacement()
+        {
+            VerifyDeclinedKeySurvivesColumnMove(replace: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies removing and re-inserting a column keeps the key its Sorting handler declined.")]
+        public void VerifyDeclinedKeySurvivesColumnRemoveAndReinsert()
+        {
+            VerifyDeclinedKeySurvivesColumnMove(replace: false);
+        }
+
+        private void VerifyDeclinedKeySurvivesColumnMove(bool replace)
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+                bool cancelled = false;
+                tableView.Sorting += (sender, args) =>
+                {
+                    events.Add($"Sorting:{args.Direction}");
+                    if (!cancelled)
+                    {
+                        cancelled = true;
+                        column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+                        args.Cancel = true;
+                    }
+                };
+                tableView.Sorted += (sender, args) => events.Add($"Sorted:{args.Direction}");
+                Verify.IsFalse(tableView.SortByColumn(column, SortDirection.Descending), "Precondition: the handler cancels the sort.");
+                if (replace)
+                {
+                    tableView.Columns[0] = column;
+                }
+                else
+                {
+                    tableView.Columns.RemoveAt(0);
+                    tableView.Columns.Insert(0, column);
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Descending" }, events, "the moved column must not re-sort on its declined key");
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection, "The moved column must keep its direction.");
+                Verify.AreEqual("Role", column.DisplayMemberBinding.Path.Path, "The column must keep the declined key.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the rows must keep the order built before the cancel");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies sort-key changes made from successive Sorted handlers are each applied on a later turn, leaving the rows on the final key.")]
         public void VerifySortedHandlerKeyChangesApplyOnLaterTurns()
         {
