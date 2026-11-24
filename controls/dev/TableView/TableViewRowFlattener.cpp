@@ -294,8 +294,9 @@ void TableViewRowFlattener::SetHierarchy(ShapingHelpers::KeySelector const& keyS
 
     // Validated before anything changes, so a relation the rows cannot satisfy leaves the current rows.
     ShapingHelpers::ParentStructure probe;
+    ShapingHelpers::NodeKeyCache probeKeys;
     winrt::hstring error;
-    if (!ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, probe, error))
+    if (!ShapingHelpers::BuildParentStructure(ReadViewItems(), keySelector, parentKeySelector, probe, error, &probeKeys))
     {
         throw winrt::hresult_invalid_argument(L"TableView: " + error);
     }
@@ -303,7 +304,9 @@ void TableViewRowFlattener::SetHierarchy(ShapingHelpers::KeySelector const& keyS
     m_keySelector = keySelector;
     m_parentKeySelector = parentKeySelector;
     ++m_declarationGeneration;
-    m_treeKeyCache.clear();
+    // The keys the probe just read through these selectors: the build below reads none of them again (every row's
+    // keys are read through a binding, which dominated a tree's load).
+    m_treeKeyCache = std::move(probeKeys);
     // A different relation is a different tree: its rows start collapsed.
     m_resetTreeIntent = true;
     Update();
@@ -655,8 +658,9 @@ void TableViewRowFlattener::OnViewChanged(winrt::Windows::Foundation::Collection
 {
     using winrt::Windows::Foundation::Collections::CollectionChange;
 
-    // The rows a change brings in are read again at the next rebuild; a Reset reads every row.
-    if (m_kind == Kind::Tree || m_kind == Kind::GroupedTree)
+    // The rows a change brings in are read again at the next rebuild; a Reset reads every row. A cache filled
+    // before the first tree (SetHierarchy's probe) is kept current the same way.
+    if (m_kind == Kind::Tree || m_kind == Kind::GroupedTree || !m_treeKeyCache.empty())
     {
         if (change == CollectionChange::ItemInserted || change == CollectionChange::ItemChanged)
         {
@@ -1492,13 +1496,17 @@ void TableViewRowFlattener::SetTreeIndex(std::shared_ptr<ShapingHelpers::ParentK
     // Pruned after publish, against the UNFILTERED key set, so intent for filtered-out rows survives.
     if (m_treeIndex && m_treeIndex->Structure && m_prunedForStructure.lock() != m_treeIndex->Structure)
     {
-        std::unordered_set<winrt::hstring> liveKeys;
-        liveKeys.reserve(m_treeIndex->Structure->KeyByItem.size());
-        for (auto const& [item, key] : m_treeIndex->Structure->KeyByItem)
+        // Nothing to prune while every node follows the default (a load, an expand-all or collapse-all).
+        if (m_nodeExpansion.HasExceptions())
         {
-            liveKeys.emplace(winrt::hstring{ key });
+            std::unordered_set<winrt::hstring> liveKeys;
+            liveKeys.reserve(m_treeIndex->Structure->KeyByItem.size());
+            for (auto const& [item, key] : m_treeIndex->Structure->KeyByItem)
+            {
+                liveKeys.emplace(winrt::hstring{ key });
+            }
+            m_nodeExpansion.RetainOnly(liveKeys);
         }
-        m_nodeExpansion.RetainOnly(liveKeys);
         m_prunedForStructure = m_treeIndex->Structure;
     }
 }
@@ -1604,7 +1612,7 @@ void TableViewRowFlattener::EmitNodeRange(
         row.SiblingIndex = static_cast<int32_t>(i - frame.Begin + 1);
         row.SiblingCount = static_cast<int32_t>(frame.End - frame.Begin);
         row.HasChildren = row.ChildCount > 0;
-        row.IsContext = m_treeIndex->ContextKeys.contains(*key);
+        row.IsContext = !m_treeIndex->ContextKeys.empty() && m_treeIndex->ContextKeys.contains(*key);
         row.IsExpanded = EffectiveExpanded(row.NodeKey, row.HasChildren, row.IsContext);
 
         // Captured before the push below, which may reallocate the stack and invalidate `frame`.
@@ -1681,18 +1689,11 @@ void TableViewRowFlattener::RebuildTreeRows()
             continue;
         }
 
-        // Built into a local so a failure cannot publish a partial map.
-        std::unordered_map<winrt::hstring, int32_t> indexByNodeKey;
-        indexByNodeKey.reserve(nodeRows.size());
-        for (size_t i = 0; i < nodeRows.size(); ++i)
-        {
-            indexByNodeKey.emplace(nodeRows[i].NodeKey, static_cast<int32_t>(i));
-        }
-
-        // Node rows before the Reset, so synchronous handlers see agreeing state.
+        // Node rows before the Reset, so synchronous handlers see agreeing state. The node key index is built on
+        // first use (EnsureNodeKeyIndex), not for every rebuild.
         auto previousNodeRows = std::exchange(m_nodeRows, std::move(nodeRows));
-        auto previousIndex = std::exchange(m_indexByNodeKey, std::move(indexByNodeKey));
-        const bool previousIndexValid = std::exchange(m_indexByNodeKeyValid, true);
+        auto previousIndex = std::exchange(m_indexByNodeKey, {});
+        const bool previousIndexValid = std::exchange(m_indexByNodeKeyValid, false);
         m_indexByItemValid = false;
 
         // Roll back only if ReplaceAll's assignment threw (old rows still published, detected by row
