@@ -51,6 +51,11 @@ public:
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
 
+    // S27: the window is hidden or minimized (CCoreServices::OnSuspend). Releases every island's painter, swap chain and
+    // cached bitmaps, detaches the swap chains from their sprites and trims the device, which is kept for a fast resume.
+    // The next RenderIsland recreates them with full damage. Returns the number of islands released.
+    uint32_t TrimHidden() noexcept;
+
     // S11/S16 per-window fallback (ImmediateRenderer.Fallback.cpp): an island whose walk found Composition-only
     // content is rendered by HWWalk from then on. ConsumeFallbackRedraw is true once, for the first HWWalk pass, which
     // must force a full redraw (the island's subtree never had comp nodes).

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -7713,6 +7713,12 @@ _Check_return_ HRESULT CCoreServices::OnSuspend(bool isTriggeredByResourceTimer,
         }
 
         IFC(PauseDCompAnimationsOnSuspend());
+
+        // S27: immediate backends release their window-sized swap chains and painters while the window is not visible.
+        if (m_immediateRenderer != nullptr && RenderingBackend::IsTrimWhenHiddenEnabled())
+        {
+            m_immediateRenderer->TrimHidden();
+        }
 
         // The notification behavior of the IHM (Input Pane) is somewhat odd.  If we suspend and the input
         // pane is hidden, we don't ever get notified that it is gone.  That means when we are brought back

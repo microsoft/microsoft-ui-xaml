@@ -166,6 +166,21 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(selection.reason == FallbackReason::None);
     }
 
+    void SelectionTests::TrimWhenHiddenOnlyForImmediateModes()
+    {
+        VERIFY_IS_TRUE(ParseTrimWhenHiddenSetting(nullptr));
+        VERIFY_IS_TRUE(ParseTrimWhenHiddenSetting(L"1"));
+        VERIFY_IS_FALSE(ParseTrimWhenHiddenSetting(L"0"));
+        VERIFY_IS_FALSE(ParseTrimWhenHiddenSetting(L"OFF"));
+        VERIFY_IS_FALSE(ParseTrimWhenHiddenSetting(L"False"));
+
+        VERIFY_IS_FALSE(ShouldTrimWhenHidden(Mode::Composition, true));
+        VERIFY_IS_TRUE(ShouldTrimWhenHidden(Mode::ImmediateGdiPlus, true));
+        VERIFY_IS_TRUE(ShouldTrimWhenHidden(Mode::ImmediateD2DSoftware, true));
+        VERIFY_IS_TRUE(ShouldTrimWhenHidden(Mode::ImmediateD2DHardware, true));
+        VERIFY_IS_FALSE(ShouldTrimWhenHidden(Mode::ImmediateD2DSoftware, false));
+    }
+
     void SelectionTests::ProviderIdentityIsStable()
     {
         // EventSource-style name hash of "Microsoft-WinUI-RenderingBackend"; the WPR profile and analyzer depend on it.

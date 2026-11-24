@@ -316,16 +316,15 @@ sealed class BackgroundScene(BenchOptions options) : DecisionScene(options), ISc
     public override void Detach() => RemoveOccluder();
 }
 
-// S28: navigation churn. A Frame (CacheSize 0, NavigationCacheMode Disabled, back stack cleared) navigates Items (200)
-// times round-robin through ten page types; every page gets a unique 128x128 WriteableBitmap and seeded text. After every
-// 20 navigations a full GC, then step nav-N. NavPath is 1 for Frame.Navigate, 0 when it fell back to Frame.Content.
+// S28: navigation churn. A Frame (CacheSize 0, pages with NavigationCacheMode Disabled) shows Items (200) new pages
+// round-robin through ten page types; every page gets a unique 128x128 WriteableBitmap and seeded text. After every
+// 20 navigations a full GC, then step nav-N.
 sealed class NavChurnScene : DecisionScene, IScene
 {
     public const int PageTypes = 10;
     public const int NavigationsPerStep = 20;
     readonly Frame _frame = new() { CacheSize = 0 };
     readonly Grid _root;
-    bool _navigate = true;
     int _navigations;
 
     public NavChurnScene(BenchOptions options) : base(options)
@@ -349,26 +348,12 @@ sealed class NavChurnScene : DecisionScene, IScene
         }
     }
 
+    // Frame.Navigate needs XAML type metadata for the page type; RenderBench's code-only pages have none (Navigate
+    // fails with an access violation), so each navigation replaces Frame.Content with a new page instance instead.
     void Navigate()
     {
         int index = _navigations++;
         int kind = index % PageTypes;
-        if (_navigate)
-        {
-            try
-            {
-                if (_frame.Navigate(ChurnPage.Types[kind], index))
-                {
-                    _frame.BackStack.Clear();
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"S28: Frame.Navigate failed, using Frame.Content: {ex.Message}");
-            }
-            _navigate = false;
-        }
         var page = (ChurnPage)Activator.CreateInstance(ChurnPage.Types[kind])!;
         page.Build(index);
         _frame.Content = page;
@@ -380,7 +365,6 @@ sealed class NavChurnScene : DecisionScene, IScene
         int step = 0;
         Collect();
         host.Step(step++, "nav-0", 0);
-        Value("NavPath", _navigate ? 1 : 0);
         await Hold();
         for (int done = 0; done < total;)
         {
@@ -394,9 +378,7 @@ sealed class NavChurnScene : DecisionScene, IScene
             done += batch;
             Collect();
             host.Step(step++, $"nav-{done}", done);
-            Value("NavPath", _navigate ? 1 : 0);
-            Value("BackStack", _frame.BackStackDepth);
-            await Hold();
+                await Hold();
         }
     }
 }
@@ -417,8 +399,6 @@ abstract class ChurnPage : Page
         _kind = kind;
         NavigationCacheMode = NavigationCacheMode.Disabled;
     }
-
-    protected override void OnNavigatedTo(NavigationEventArgs e) => Build(e.Parameter is int index ? index : 0);
 
     public void Build(int index)
     {

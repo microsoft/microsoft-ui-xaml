@@ -234,6 +234,31 @@ namespace RenderingBackend
         return s_active;
     }
 
+    bool ParseTrimWhenHiddenSetting(_In_opt_z_ const wchar_t* text) noexcept
+    {
+        if (text == nullptr)
+        {
+            return true;
+        }
+        return !(_wcsicmp(text, L"0") == 0 || _wcsicmp(text, L"false") == 0 || _wcsicmp(text, L"off") == 0);
+    }
+
+    bool ShouldTrimWhenHidden(Mode mode, bool settingEnabled) noexcept
+    {
+        return mode != Mode::Composition && settingEnabled;
+    }
+
+    bool IsTrimWhenHiddenEnabled() noexcept
+    {
+        static const bool s_enabled = []()
+        {
+            wchar_t buffer[16] = {};
+            const auto length = GetEnvironmentVariableW(TrimWhenHiddenVariableName, buffer, ARRAYSIZE(buffer));
+            return ParseTrimWhenHiddenSetting(length == 0 || length >= ARRAYSIZE(buffer) ? nullptr : buffer);
+        }();
+        return ShouldTrimWhenHidden(GetProcessSelection().effective, s_enabled);
+    }
+
     const GUID& GetProviderId() noexcept
     {
         return c_providerId;

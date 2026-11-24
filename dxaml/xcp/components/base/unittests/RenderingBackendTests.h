@@ -25,5 +25,6 @@ namespace RenderingBackendTests
         TEST_METHOD(CompositionIsAlwaysAvailable);
         TEST_METHOD(ReadsEnvironmentVariable);
         TEST_METHOD(ProviderIdentityIsStable);
+        TEST_METHOD(TrimWhenHiddenOnlyForImmediateModes);
     };
 }

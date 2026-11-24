@@ -78,6 +78,16 @@ namespace RenderingBackend
     // True when the process renders with an immediate-mode painter (effective mode is not Composition). Cached.
     bool IsImmediateModeActive() noexcept;
 
+    // S27: once a window has been hidden or minimized past the background-resource timeout (CCoreServices::OnSuspend),
+    // immediate backends release their per-window painters and swap chains and trim the device; the next visible frame
+    // recreates them with full damage. Composition keeps its own offer/reclaim path. WINUI_IMMEDIATE_TRIM_HIDDEN=0
+    // (or false/off) disables the trim for A/B measurement; anything else, or unset, enables it.
+    constexpr const wchar_t* TrimWhenHiddenVariableName = L"WINUI_IMMEDIATE_TRIM_HIDDEN";
+    bool ParseTrimWhenHiddenSetting(_In_opt_z_ const wchar_t* text) noexcept;
+    bool ShouldTrimWhenHidden(Mode mode, bool settingEnabled) noexcept;
+    // ShouldTrimWhenHidden for the process selection and environment. Cached.
+    bool IsTrimWhenHiddenEnabled() noexcept;
+
     // ---- ETW: provider "Microsoft-WinUI-RenderingBackend" {d18ce99c-dd66-5390-18da-068546739801} ----
     namespace Keywords
     {

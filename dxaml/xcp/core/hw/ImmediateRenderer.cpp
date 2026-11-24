@@ -10,6 +10,7 @@
 #include <XamlProfilerTracing.h>
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#include <dxgi1_3.h>
 #include <RootScale.h>
 #include <UIThreadScheduler.h>
 #include "XamlIslandRoot.h"
@@ -655,6 +656,48 @@ void ImmediateRenderer::ReleaseResources() noexcept
     m_islands.clear();
     m_device.Reset();
     m_deviceTraced = false;
+}
+
+uint32_t ImmediateRenderer::TrimHidden() noexcept
+{
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
+    const uint32_t released = static_cast<uint32_t>(m_islands.size());
+    for (auto& entry : m_islands)
+    {
+        IslandState& state = *entry.second;
+        for (auto& popup : state.popups)
+        {
+            if (popup.surface->sprite)
+            {
+                DetachWindowedPopupVisual(popup.popup.get(), popup.surface->sprite.Get());
+            }
+        }
+        // The sprite stays the island's root until the next frame hosts a new one; dropping its brush releases the
+        // composition surface's reference to the swap chain buffers now.
+        if (state.sprite)
+        {
+            IGNOREHR(state.sprite->put_Brush(nullptr));
+        }
+        if (state.painter)
+        {
+            IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+        }
+    }
+    m_islands.clear();
+
+    if (m_device)
+    {
+        ComPtr<ID3D11DeviceContext> context;
+        m_device->GetImmediateContext(&context);
+        context->ClearState();
+        context->Flush();
+        ComPtr<IDXGIDevice3> dxgiDevice;
+        if (SUCCEEDED(m_device.As(&dxgiDevice)))
+        {
+            dxgiDevice->Trim();
+        }
+    }
+    return released;
 }
 
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
