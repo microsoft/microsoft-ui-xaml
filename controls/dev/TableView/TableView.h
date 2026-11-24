@@ -224,6 +224,8 @@ class GroupedEntry;
 struct TableViewSourceSortBinding
 {
     winrt::hstring MemberPath;
+    // The comparer the installed axis ranked with, compared by identity only.
+    void const* ComparerIdentity{ nullptr };
     winrt::hstring AxisToken;
     winrt::TableViewKeySelector KeySelector{ nullptr };
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
@@ -585,8 +587,9 @@ public:
     void RefreshSortIndicators();
     // CanSort gates whether the chevron is built at all, so a runtime flip needs a header rebuild.
     void OnColumnCanSortChanged(const winrt::TableViewColumn& column);
-    // Re-sorts a sorted column on its new key, or clears its sort when it no longer has one.
-    void OnColumnSortPathChanged(const winrt::TableViewColumn& column);
+    // Re-sorts a sorted column on its new key (path or comparer) in one transition, or clears its
+    // sort when it no longer has one.
+    void OnColumnSortKeyChanged(const winrt::TableViewColumn& column);
     void RefreshHeaderSortability(const winrt::TableViewColumn& column);
     void OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     // Drops a column that has left Columns from the active sort state. Returns true when the sort
@@ -1079,8 +1082,16 @@ private:
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
-    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true);
+    // reapply: re-sorts a column already sorted in `direction` on its current key.
+    bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true, bool reapply = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
+    // Sorting and Sorted handlers may change a column's sort key; that change is processed after
+    // the transition instead of re-entering it.
+    template <typename F> bool RunSortTransition(F&& transition);
+    void ProcessPendingSortKeyChanges();
+    uint32_t m_sortTransitionDepth{ 0 };
+    bool m_processingSortKeyChanges{ false };
+    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_pendingSortKeyColumns;
     // The lit column describes the app's source sort, not one this table installed.
     bool IsSortLitOnlyByApp() const;
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);

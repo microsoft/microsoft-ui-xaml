@@ -263,6 +263,141 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a Sorting handler that replaces the sorted column's DisplayMemberBinding does not re-enter the sort, and the rows follow the final key.")]
+        public void VerifySortingHandlerReplacingSortKeyDoesNotRecurse()
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            int sortingCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) =>
+                {
+                    // Bounded so the pre-fix recursion fails the count instead of overflowing the stack.
+                    if (++sortingCount < 50)
+                    {
+                        column.DisplayMemberBinding = new Binding { Path = new PropertyPath("DepartmentName") };
+                    }
+                };
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sortingCount, "A key change made from Sorting must not start another sort.");
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection, "The column must keep its direction.");
+                VerifySequence(new[] { "Diego", "Rafa", "Owen", "Mei", "Asha", "Ines" },
+                    RowValues(tableView, person => person.Name), "the rows must be sorted by the key the handler left");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing a sorted column's key raises exactly one Sorting and one Sorted in the existing direction.")]
+        public void VerifySortKeyChangeRaisesOneSortTransition()
+        {
+            VerifySortKeyChangeTransition(cancel: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies cancelling the Sorting raised by a sort key change keeps the previous order and arrow.")]
+        public void VerifyCancelledSortKeyChangeKeepsOrder()
+        {
+            VerifySortKeyChangeTransition(cancel: true);
+        }
+
+        private void VerifySortKeyChangeTransition(bool cancel)
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) =>
+                {
+                    events.Add($"Sorting:{args.Direction}:{args.Column == column}");
+                    args.Cancel = cancel;
+                };
+                tableView.Sorted += (sender, args) => events.Add($"Sorted:{args.Direction}:{args.Column == column}");
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(cancel ? new[] { "Sorting:Ascending:True" } : new[] { "Sorting:Ascending:True", "Sorted:Ascending:True" },
+                    events, "a key change must be one transition in the current direction");
+                Verify.AreEqual(SortDirection.Ascending, column.SortDirection, "The column must keep its direction.");
+                var indicator = FindSortIndicator(tableView, 0);
+                Verify.IsNotNull(indicator, "The header must keep its sort affordance.");
+                Verify.AreEqual(SortIndicatorDirection.Ascending, indicator.Direction, "The header arrow must stay.");
+                VerifySequence(cancel ? NameAscendingOrder : new[] { "Mei", "Asha", "Ines", "Diego", "Rafa", "Owen" },
+                    RowValues(tableView, person => person.Name),
+                    cancel ? "a cancelled re-sort must keep the previous order" : "the rows must be sorted by the new key");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies swapping a sorted column's CustomSortComparer re-sorts with one Sorting/Sorted pair.")]
+        public void VerifyCustomSortComparerSwapRaisesOneSortTransition()
+        {
+            TableView tableView = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort.");
+                tableView.Sorting += (sender, args) => events.Add($"Sorting:{args.Direction}");
+                tableView.Sorted += (sender, args) => events.Add($"Sorted:{args.Direction}");
+                tableView.Columns[0].CustomSortComparer = new ReverseNameComparer();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(new[] { "Sorting:Ascending", "Sorted:Ascending" }, events, "a comparer swap must be one transition");
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
+                    "the rows must follow the new comparer");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies giving a keyless column a DisplayMemberBinding makes its header sortable.")]
         public void VerifySettingDisplayMemberBindingMakesHeaderSortable()
         {
@@ -2311,6 +2446,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
     // Orders by name length first, then ordinally. Deliberately not alphabetical, so a default
     // comparison cannot produce this order by coincidence.
+    internal sealed class ReverseNameComparer : ITableViewSortComparer
+    {
+        public int Compare(object left, object right)
+            => string.CompareOrdinal((right as ShapedPerson)?.Name, (left as ShapedPerson)?.Name);
+    }
+
     internal sealed class LengthThenOrdinalComparer : ITableViewSortComparer
     {
         public int CompareCount { get; private set; }
