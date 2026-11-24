@@ -426,7 +426,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
    held by a collection is sealed in the property system too: a markup or binding change to it, or an invalid
    `Direction` or `StringComparison`, is undone. Only the effective value is restored, so the binding, style or
    ThemeResource stays attached (as when a binding's conversion fails); the rejection is logged as a binding failure
-   (`DebugSettings.BindingFailed`).
+   (`DebugSettings.BindingFailed`). A TwoWay binding does not write the restored value back: its source keeps the
+   rejected value, and the next valid value flows as usual.
 5. **Descriptors are `DependencyObject`s, like `AutomationAnnotation` and `Setter`.** A default constructor plus a
    convenience constructor, settable properties, creatable from markup. They are UI-thread objects (the free-threaded
    immutable classes they replace could not be created in markup). `GroupDescription` copies `NavigationTransitionInfo`

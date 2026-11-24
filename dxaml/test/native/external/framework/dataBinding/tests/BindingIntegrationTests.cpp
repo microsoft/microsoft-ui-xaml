@@ -4781,7 +4781,7 @@ namespace Framework { namespace DataBinding {
             comparisonHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, bound->StringComparison);
 
-            LOG_OUTPUT(L"The same with a TwoWay binding: the binding stays, and the restored value may flow back to the source.");
+            LOG_OUTPUT(L"The same with a TwoWay binding: the binding stays, and the restored value does not flow back to the source.");
             auto twoWayHolder = safe_cast<Border^>(panel->Resources->Lookup(L"TwoWayHolder"));
             auto twoWayBound = safe_cast<PropertyGroupDescription^>(panel->Resources->Lookup(L"TwoWayBound"));
             twoWayHolder->Tag = CollectionViewStringComparison::OrdinalIgnoreCase;
@@ -4791,8 +4791,8 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_NOT_NULL(twoWayHolder->Tag);
             const auto twoWaySource = safe_cast<CollectionViewStringComparison>(twoWayHolder->Tag);
             LOG_OUTPUT(L"Source after the rejected value: %d", static_cast<int>(twoWaySource));
-            VERIFY_IS_TRUE(twoWaySource == static_cast<CollectionViewStringComparison>(99) || twoWaySource == CollectionViewStringComparison::OrdinalIgnoreCase,
-                L"The source keeps the rejected value or receives the restored one, once; nothing else is written.");
+            VERIFY_ARE_EQUAL(static_cast<CollectionViewStringComparison>(99), twoWaySource,
+                L"The restored value does not flow back: the binding is updating the target, so the source keeps its value.");
             twoWayHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, twoWayBound->StringComparison);
 
