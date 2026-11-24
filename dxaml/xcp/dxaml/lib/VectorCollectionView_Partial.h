@@ -109,6 +109,11 @@ namespace DirectUI
         // date: index-based writes go to the source, so it can be reordered. Otherwise a shaped view's writes fail.
         bool PresentsSourceOrder();
 
+        // The view is applying a change, deferred, or has a recompute pending: PresentsSourceOrder is false for now.
+        bool IsChanging() const
+        {
+            return m_deferRefreshLevel > 0 || m_shapeBusyDepth > 0 || m_isRefreshPending || m_isRecomputePending;
+        }
         // The collection a reorder (RemoveAt then InsertAt) writes to, chosen once for the whole move so both halves
         // reach the same collection whatever the view does in between; null when the view sorts, filters or groups.
         wfc::IVector<IInspectable*>* GetReorderTarget()
@@ -206,6 +211,8 @@ namespace DirectUI
             _In_ IInspectable *pArgs);
 
         _Check_return_ HRESULT HasShapingRules(_Out_ bool* pHasRules);
+        // OnShapingRulesChanged without starting incremental loading over.
+        _Check_return_ HRESULT ApplyShapingRules();
         _Check_return_ HRESULT StartShaping(bool isGrouping);
         _Check_return_ HRESULT RefreshOverride(bool isSkippedWhenUnchanged = false);
         _Check_return_ HRESULT RefreshOrDefer(bool isSkippedWhenUnchanged = false);

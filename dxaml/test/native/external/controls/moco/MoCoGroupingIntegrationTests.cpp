@@ -10,6 +10,7 @@
 #include <SafeEventRegistration.h>
 #include <ItemsControlHelper.h>
 #include <TestEvent.h>
+#include <ControlHelper.h>
 #include <TreeHelper.h>
 #include <TestCleanupWrapper.h>
 #include <RuntimeEnabledFeaturesEnum.h>
@@ -2000,6 +2001,63 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
     }
 
+    void MoCoGroupingIntegrationTests::DragOverSortedViewDoesNotReorder()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        xaml_data::CollectionViewSource^ cvs = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+        Microsoft::UI::Xaml::FrameworkElement^ first = nullptr;
+        ::Windows::Foundation::Point dropPoint = { 0, 0 };
+        auto dragStarts = std::make_shared<int>(0);
+        auto dragCompletedRegistration = CreateSafeEventRegistration(xaml_controls::ListViewBase, DragItemsCompleted);
+        auto dragCompleted = std::make_shared<Event>();
+
+        RunOnUIThread([&]()
+        {
+            list = CreateFruitListView(&cvs, &source);
+            list->CanDragItems = true;
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            list->DragItemsStarting += ref new xaml_controls::DragItemsStartingEventHandler([dragStarts](Platform::Object^, xaml_controls::DragItemsStartingEventArgs^)
+            {
+                ++*dragStarts;
+            });
+            dragCompletedRegistration.Attach(list,
+                ref new wf::TypedEventHandler<xaml_controls::ListViewBase^, xaml_controls::DragItemsCompletedEventArgs^>(
+                [dragCompleted](xaml_controls::ListViewBase^, xaml_controls::DragItemsCompletedEventArgs^)
+            {
+                dragCompleted->Set();
+            }));
+            cvs->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Ascending));
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            first = safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(0));
+            dropPoint = ControlHelper::GetCenterOfElement(safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(3)));
+        });
+
+        LOG_OUTPUT(L"With CanDragItems a drag over a sorted view starts, and dropping it on the list reorders nothing.");
+        TestServices::InputHelper->MouseButtonDown(first, 0, 0, test_infra::MouseButton::Left);
+        TestServices::InputHelper->MoveMouse(dropPoint);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        TestServices::InputHelper->MouseButtonUp(dropPoint, test_infra::MouseButton::Left);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        dragCompleted->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *dragStarts);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(source->GetAt(2))->Data()));
+            VERIFY_ARE_EQUAL(5u, source->Size);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(list->Items->GetAt(1))->Data()));
+        });
+    }
+
     void MoCoGroupingIntegrationTests::ReorderWorksAgainWithoutRules()
     {
         TestCleanupWrapper cleanup;
@@ -2070,14 +2128,135 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         {
             VERIFY_IS_TRUE(*sorted);
             VERIFY_ARE_EQUAL(5u, source->Size);
-            bool hasApple = false;
-            for (unsigned int i = 0; i < source->Size; ++i)
-            {
-                hasApple = hasApple || wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(i))->Data()) == 0;
-            }
-            VERIFY_IS_TRUE(hasApple, L"The moved item is still in the source.");
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(0))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(1))->Data()), L"The moved item reaches its place in the source.");
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(source->GetAt(2))->Data()));
             VERIFY_ARE_EQUAL(0, wcscmp(L"cherry", safe_cast<Platform::String^>(list->Items->GetAt(0))->Data()), L"The view is sorted by the new rule.");
+            VERIFY_ARE_EQUAL(4, list->SelectedIndex, L"The moved item is selected where the sorted view shows it.");
+            VERIFY_IS_NOT_NULL(list->SelectedItem);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->SelectedItem)->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(list->SelectedIndex))->Data()), L"SelectedIndex and SelectedItem agree.");
         });
+    }
+
+    // A source whose next InsertAt fails once: after inserting and raising the change (as when a change handler
+    // fails), or before inserting (as a collection that refuses the item).
+    ref class InsertFaultCollection sealed : public wfc::IObservableVector<Platform::Object^>
+    {
+    public:
+        InsertFaultCollection()
+        {
+            for (auto name : { L"apple", L"banana", L"avocado", L"cherry", L"blueberry" })
+            {
+                _items.Append(ref new Platform::String(name));
+            }
+        }
+
+        property bool FailsAfterNextInsert;
+        property bool RefusesNextInsert;
+        property bool HasFailed;
+
+        virtual event wfc::VectorChangedEventHandler<Platform::Object^>^ VectorChanged;
+        virtual wfc::IIterator<Platform::Object^>^ First() { return _items.First(); }
+        virtual property unsigned int Size { unsigned int get() { return _items.Size; } }
+        virtual Platform::Object^ GetAt(unsigned int index) { return _items.GetAt(index); }
+        virtual wfc::IVectorView<Platform::Object^>^ GetView() { return _items.GetView(); }
+        virtual bool IndexOf(Platform::Object^ value, unsigned int* index) { return _items.IndexOf(value, index); }
+        virtual void SetAt(unsigned int index, Platform::Object^ value) { _items.SetAt(index, value); Raise(wfc::CollectionChange::ItemChanged, index); }
+        virtual void InsertAt(unsigned int index, Platform::Object^ value)
+        {
+            if (RefusesNextInsert)
+            {
+                RefusesNextInsert = false;
+                HasFailed = true;
+                throw ref new Platform::AccessDeniedException(L"The collection refuses the item.");
+            }
+            _items.InsertAt(index, value);
+            Raise(wfc::CollectionChange::ItemInserted, index);
+            if (FailsAfterNextInsert)
+            {
+                FailsAfterNextInsert = false;
+                HasFailed = true;
+                throw ref new Platform::FailureException(L"A change handler failed.");
+            }
+        }
+        virtual void RemoveAt(unsigned int index) { _items.RemoveAt(index); Raise(wfc::CollectionChange::ItemRemoved, index); }
+        virtual void Append(Platform::Object^ value) { InsertAt(_items.Size, value); }
+        virtual void RemoveAtEnd() { RemoveAt(_items.Size - 1); }
+        virtual void Clear() { _items.Clear(); Raise(wfc::CollectionChange::Reset, 0); }
+        virtual unsigned int GetMany(unsigned int startIndex, Platform::WriteOnlyArray<Platform::Object^>^ items) { return _items.GetMany(startIndex, items); }
+        virtual void ReplaceAll(const Platform::Array<Platform::Object^>^ items) { _items.ReplaceAll(items); Raise(wfc::CollectionChange::Reset, 0); }
+
+        Platform::String^ Names()
+        {
+            Platform::String^ names = L"";
+            for (unsigned int i = 0; i < _items.Size; ++i)
+            {
+                names = names + (i > 0 ? L" " : L"") + safe_cast<Platform::String^>(_items.GetAt(i));
+            }
+            return names;
+        }
+
+    private:
+        void Raise(wfc::CollectionChange change, unsigned int index)
+        {
+            VectorChanged(this, ref new ::Microsoft::UI::Xaml::Tests::Common::VectorChangedEventArgs(change, index));
+        }
+
+        Platform::Collections::Vector<Platform::Object^> _items;
+    };
+
+    void MoCoGroupingIntegrationTests::ReorderKeepsCollectionIntactWhenInsertFails()
+    {
+        for (const bool refuses : { false, true })
+        {
+            TestCleanupWrapper cleanup;
+            xaml_controls::ListView^ list = nullptr;
+            xaml_data::CollectionViewSource^ cvs = nullptr;
+            Platform::Collections::Vector<Platform::Object^>^ unused = nullptr;
+            InsertFaultCollection^ source = nullptr;
+            auto reported = std::make_shared<int>(0);
+            ::Windows::Foundation::EventRegistrationToken token{};
+
+            RunOnUIThread([&]()
+            {
+                list = CreateFruitListView(&cvs, &unused);
+                source = ref new InsertFaultCollection();
+                list->ItemsSource = source;
+                list->CanReorderItems = true;
+                list->AllowDrop = true;
+                token = Microsoft::UI::Xaml::Application::Current->UnhandledException += ref new Microsoft::UI::Xaml::UnhandledExceptionEventHandler(
+                    [reported](Platform::Object^, Microsoft::UI::Xaml::UnhandledExceptionEventArgs^ args)
+                {
+                    ++*reported;
+                    args->Handled = true;
+                });
+            });
+            test_infra::TestServices::WindowHelper->WaitForIdle();
+
+            LOG_OUTPUT(refuses
+                ? L"The collection refuses the moved item: it is put back where it was."
+                : L"The collection inserts the moved item, then fails: the item is not put back a second time.");
+            RunOnUIThread([&]()
+            {
+                source->RefusesNextInsert = refuses;
+                source->FailsAfterNextInsert = !refuses;
+            });
+            KeyboardReorderFirstItemDown(list);
+
+            RunOnUIThread([&]()
+            {
+                Microsoft::UI::Xaml::Application::Current->UnhandledException -= token;
+                LOG_OUTPUT(L"Reported to UnhandledException: %d. Source: %s", *reported, source->Names()->Data());
+                VERIFY_IS_TRUE(source->HasFailed, L"Precondition: the insert failed.");
+                VERIFY_ARE_EQUAL(5u, source->Size, L"The item is neither lost nor duplicated.");
+                VERIFY_ARE_EQUAL(0, wcscmp(refuses ? L"apple banana avocado cherry blueberry" : L"banana apple avocado cherry blueberry", source->Names()->Data()));
+                VERIFY_ARE_EQUAL(5u, list->Items->Size);
+                VERIFY_IS_NOT_NULL(list->SelectedItem);
+                VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->SelectedItem)->Data()), L"The moved item stays selected.");
+                VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(list->SelectedIndex))->Data()));
+            });
+        }
     }
 
     void MoCoGroupingIntegrationTests::ReorderIsOffOverSortedView()

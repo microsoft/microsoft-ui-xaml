@@ -1386,11 +1386,24 @@ namespace DirectUI
 
             _Check_return_ HRESULT IsItemsSourceSortedOrFiltered(
                 _Out_ bool* pIsShaped,
-                bool includeAppViews = true);
+                bool includeAppViews = true,
+                _Out_opt_ bool* pIsChanging = nullptr);
+            _Check_return_ HRESULT ComputeIsItemsSourceSortedOrFiltered(
+                _Out_ bool* pIsShaped,
+                bool includeAppViews,
+                _Out_opt_ bool* pIsChanging);
 
             // GetCanReorderItemsOverItemsSource for container visual states; cleared on an ItemsSource or items change.
+            // It leaves app views (ICollectionViewShaping) out, so the hints show "reorderable" over a sorted app view
+            // while the drag refuses, and it is not cached while a VectorCollectionView is in the middle of a change. A
+            // rule change that moves no item raises nothing, so the value can stay stale until the next items change.
             bool m_isReorderBlockedByView = false;
             bool m_isReorderBlockedByViewValid = false;
+
+            // IsItemsSourceSortedOrFiltered once per drag over this ListViewBase (DragOver asks at pointer-move rate,
+            // and an app view's getters are app code); set on DragEnter.
+            bool m_isItemsSourceShapedDuringDrag = false;
+            bool m_isItemsSourceShapedDuringDragValid = false;
 
             // Complete a drop gesture.
             _Check_return_ HRESULT CompleteDrop();
