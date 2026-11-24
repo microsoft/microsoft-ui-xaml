@@ -1548,6 +1548,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies NotifyCellContentChanged on a removed column regenerates its cells when it is re-inserted in the same turn.")]
+        public void VerifyNotifyCellContentChangedWhileDetachedAppliesOnReinsert()
+        {
+            TableView tableView = null;
+            PrefixColumn column = null;
+            double widthBefore = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new PrefixColumn { Header = "P", Width = GridLength.Auto };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                widthBefore = column.ActualWidth;
+                tableView.Columns.RemoveAt(1);
+                column.Prefix = new string('W', 30);
+                tableView.Columns.Insert(1, column);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = GetRealizedRows(tableView);
+                Verify.IsGreaterThan(rows.Count, 0, "At least one row should be realized.");
+                foreach (var row in rows)
+                {
+                    Verify.AreEqual(column.Prefix, (GetCellContent(GetRowCell(row, 1)) as TextBlock)?.Text, "Every realized cell must show the new content.");
+                }
+
+                Verify.IsGreaterThan(column.ActualWidth, widthBefore, "An Auto column must re-measure to the regenerated content.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies NotifyCellContentChanged called while only a cell's content is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
         public void VerifyNotifyCellContentChangedDuringMeasureIsDeferred()
         {

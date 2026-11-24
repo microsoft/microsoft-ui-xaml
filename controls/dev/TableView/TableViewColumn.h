@@ -171,6 +171,7 @@ private:
     bool m_inUserResize{ false };
     bool m_cellContentChangePosted{ false };
     bool m_cellContentChangePending{ false };
+    bool m_hasBeenOwned{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
     uint32_t m_cellContentChangeGeneration{ 0 };
 

@@ -320,6 +320,11 @@ void TableViewColumn::NotifyCellContentChangedInternal(bool resetAutoWidth)
     {
         winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, resetAutoWidth);
     }
+    else if (m_hasBeenOwned)
+    {
+        // Rows of a table it left may keep its cells; the next live owner regenerates them.
+        QueueCellContentChangeInternal(resetAutoWidth);
+    }
 }
 
 winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::DisplayMemberBinding()
@@ -374,6 +379,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        m_hasBeenOwned = true;
         UpdateSortKeyGeneration();
         // These have no generated change callback: a menu makes cells actionable, a sort key the header.
         if (!m_cellContextFlyoutToken)
