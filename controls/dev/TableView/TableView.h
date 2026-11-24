@@ -1082,24 +1082,30 @@ private:
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
     bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
-    // reapply: re-sorts a column already sorted in `direction` on its current key.
+    // reapply: a key reconcile offering the column's current key; re-sorts even in the same
+    // direction, and a cancel declines that key.
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true, bool reapply = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
     // Sorting and Sorted handlers may change a column's sort key. A change made inside a transition
     // only marks the table dirty; once the outermost transition ends, a reconcile on the next
     // dispatcher turn compares each sorted column's key with the key its order was built with
-    // (m_tableViewSourceSort) and the key a cancelled Sorting left it with (declined).
+    // (m_tableViewSourceSort) and the key a cancelled Sorting declined. A decline lasts only while
+    // the column's key still equals it.
     template <typename F> bool RunSortTransition(F&& transition);
     void ScheduleSortKeyReconcile(bool allowSynchronous);
     void ReconcileSortKeys();
     void ReconcileSortKey(const winrt::TableViewColumn& column);
     void RecordDeclinedSortKey(const winrt::TableViewColumn& column);
     void ForgetDeclinedSortKeys(const winrt::TableViewColumn& column = nullptr);
+    // Forgets the column's decline once its key moved off it; true if the key is still declined.
+    bool IsSortKeyStillDeclined(const winrt::TableViewColumn& column);
     struct DeclinedSortKey
     {
         winrt::weak_ref<winrt::TableViewColumn> Column;
         winrt::hstring MemberPath;
-        winrt::ITableViewSortComparer Comparer{ nullptr };
+        // Weak: the decline must not keep the app's comparer alive. Dead means expired.
+        winrt::weak_ref<winrt::ITableViewSortComparer> Comparer;
+        bool HasComparer{ false };
     };
     std::vector<DeclinedSortKey> m_declinedSortKeys;
     uint32_t m_sortTransitionDepth{ 0 };
@@ -1116,7 +1122,8 @@ private:
     void ReleaseCustomSortRows(const winrt::IInspectable& item, const std::vector<winrt::IInspectable>& liveRows);
     // Re-ranks the control's CustomSortComparer axis after a reclaim; see m_rerankCustomSortOnReconcile.
     void RerankCustomSortAfterReclaim();
-    bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    // A cancel declines a column's key only when it was offered (offersKey) or the handler changed it.
+    bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool offersKey = false);
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
     // A non-null trigger is always an explicit request; a null one is explicit only when asked.
@@ -1138,9 +1145,14 @@ private:
     // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
     void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
     // Any other change to the sort or to the columns while the column is out makes the restore stale.
-    void CancelPendingSortRestore() { m_sortedColumnPendingRemoval = nullptr; }
+    void CancelPendingSortRestore()
+    {
+        m_sortedColumnPendingRemoval = nullptr;
+        m_sortedColumnPendingRemovalDeclined.reset();
+    }
     winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
     winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
+    std::optional<DeclinedSortKey> m_sortedColumnPendingRemovalDeclined;
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected
