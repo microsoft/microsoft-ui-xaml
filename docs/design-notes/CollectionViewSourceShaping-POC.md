@@ -422,7 +422,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - A source change made while a live sort edit waits for its restore is applied incrementally: the binary search
     skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
   - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
-    `Reset` by cost: a move costs two vector shifts (about 14 ns a row each at 100k items, fre) and two raised changes
+    `Reset` by cost: a move costs two vector shifts (about 2 ns a row each at 100k items since P-2, estimated; about 14 ns
+    measured before it, fre) and two raised changes
     (about 30 µs each); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
     changed items' moves cost less than twice a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat
     view re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the
@@ -1013,6 +1014,8 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   is the integer scans and moves above and raising the change); a live move likewise; a grouped change no longer
   moves its group's tracker pointers. The live restore's cost model (`c_nsPerShiftedRow`, 14 → 2 ns) prefers moves
   over a `Reset` for about 7× more rows; it is an estimate to recalibrate from the new numbers.
+  **TODO: recalibrate from bench.** Measure the post-P-2 per-row shift cost with `CollectionViewPerfBenchmarks`
+  (amd64fre) and update `c_nsPerShiftedRow` and the move-versus-`Reset` row counts in Behavior (computed at 14 ns).
 - **P-5.** The tracker shift it listed is gone (P-2). The flat `std::find`, the source-index renumbering and burst
   coalescing are not changed: they are integer scans, and coalescing changes the notifications (out of scope).
 - **TableView tree load.** Every row's `ItemKeyPath` and `ParentKeyPath` are read through a one-time `{Binding}`
