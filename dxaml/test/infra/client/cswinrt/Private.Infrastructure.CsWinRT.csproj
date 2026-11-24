@@ -71,9 +71,9 @@
     </BinplaceItem>
   </ItemGroup>
 
-  <Target Name="BinplaceCsWinRTRuntime" AfterTargets="ResolveReferences" BeforeTargets="AddBinplaceItems">
+  <Target Name="BinplaceCsWinRTRuntime" DependsOnTargets="ResolvePackageAssets" AfterTargets="ResolveReferences" BeforeTargets="AddBinplaceItems">
     <ItemGroup>
-      <_CsWinRTRuntimeReference Include="@(ReferenceCopyLocalPaths)" Condition="'%(Filename)%(Extension)' == 'WinRT.Runtime.dll'" />
+      <_CsWinRTRuntimeReference Include="@(RuntimeCopyLocalItems)" Condition="'%(Filename)%(Extension)' == 'WinRT.Runtime.dll'" />
       <BinplaceItem Include="@(_CsWinRTRuntimeReference)">
         <Destination>$(TestBinplaceDestinationPath)</Destination>
       </BinplaceItem>
