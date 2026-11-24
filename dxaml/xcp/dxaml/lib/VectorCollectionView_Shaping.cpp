@@ -527,6 +527,8 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
 
     m_isRecomputePending = false;
     RaiseFailureScope raiseFailure;
+    CurrencyScope currency;
+    IFC_RETURN(BeginRefreshCurrency(&currency, true /* isChangingRaisedFirst */));
     BusyScope busy(m_shapeBusyDepth);
     hr = RefreshOverride();
     if (FAILED(hr))
@@ -559,6 +561,7 @@ _Check_return_ HRESULT VectorCollectionView::StartShaping(bool isGrouping)
         return S_OK;
     }();
     IFC_RETURN(hr);
+    IFC_RETURN(EndRefreshCurrency(&currency));
     IFC_RETURN(raiseFailure.Result());
     return S_OK;
 }
@@ -742,10 +745,6 @@ _Check_return_ HRESULT VectorCollectionView::PassesFilter(_In_opt_ IInspectable*
 
 _Check_return_ HRESULT VectorCollectionView::RefreshOrDefer(bool isSkippedWhenUnchanged)
 {
-    ctl::ComPtr<IInspectable> spCurrentItem;
-    BOOLEAN wasBeforeFirst = FALSE;
-    BOOLEAN wasAfterLast = FALSE;
-    BOOLEAN isCurrentValid = FALSE;
     HRESULT hr = S_OK;
 
     if (!m_tpInternalList)
@@ -766,14 +765,15 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOrDefer(bool isSkippedWhenUn
         return S_OK;
     }
 
-    IFC_RETURN(get_CurrentItemImpl(spCurrentItem.ReleaseAndGetAddressOf()));
-    IFC_RETURN(get_IsCurrentBeforeFirstImpl(&wasBeforeFirst));
-    IFC_RETURN(get_IsCurrentAfterLastImpl(&wasAfterLast));
-
     // A recompute that app code fails keeps the previous output, which no longer follows the source or the rules:
     // the next change recomputes.
     RaiseFailureScope raiseFailure;
     m_isRecomputePending = false;
+
+    // WPF (ListCollectionView.RefreshOverride): currency stays before the first or after the last item, else
+    // follows the item, else goes to the first (VectorCollectionView_Currency.cpp).
+    CurrencyScope currency;
+    IFC_RETURN(BeginRefreshCurrency(&currency, !isSkippedWhenUnchanged));
     {
         BusyScope busy(m_shapeBusyDepth);
         hr = RefreshOverride(isSkippedWhenUnchanged);
@@ -784,34 +784,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOrDefer(bool isSkippedWhenUn
         IFC_RETURN(hr);
     }
 
-    // WPF (ListCollectionView.RefreshOverride): currency stays before the first or after the last item, else
-    // follows the item, else goes to the first.
-    if (wasAfterLast || wasBeforeFirst)
-    {
-        UINT size = 0;
-        BOOLEAN isBeforeFirst = FALSE;
-        BOOLEAN isAfterLast = FALSE;
-        IFC_RETURN(get_Size(&size));
-        IFC_RETURN(get_IsCurrentBeforeFirstImpl(&isBeforeFirst));
-        IFC_RETURN(get_IsCurrentAfterLastImpl(&isAfterLast));
-        if (wasAfterLast ? !isAfterLast : !isBeforeFirst)
-        {
-            IFC_RETURN(MoveCurrentToPositionImpl(wasAfterLast ? static_cast<INT>(size) : -1, &isCurrentValid));
-        }
-    }
-    else
-    {
-        ctl::ComPtr<IInspectable> spNowCurrent;
-        IFC_RETURN(get_CurrentItemImpl(spNowCurrent.ReleaseAndGetAddressOf()));
-        if (!spCurrentItem || spNowCurrent.Get() != spCurrentItem.Get())
-        {
-            IFC_RETURN(MoveCurrentToImpl(spCurrentItem.Get(), &isCurrentValid));
-            if (!isCurrentValid)
-            {
-                IFC_RETURN(MoveCurrentToFirstImpl(&isCurrentValid));
-            }
-        }
-    }
+    IFC_RETURN(EndRefreshCurrency(&currency));
 
     IFC_RETURN(RunPendingRecompute());
     IFC_RETURN(raiseFailure.Result());

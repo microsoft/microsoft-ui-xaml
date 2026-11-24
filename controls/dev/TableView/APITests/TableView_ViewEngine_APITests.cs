@@ -395,6 +395,127 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a recompute announces currency as WPF's ListCollectionView.RefreshOverride: one non-cancelable CurrentChanging before the Reset, the currency already placed when the Reset is raised, then CurrentChanged once; an item the filter drops moves currency to the first item.")]
+        public void VerifyRefreshRaisesCurrencyChangeOnceAroundTheReset()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakeEngineRows() };
+                var view = cvs.View;
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending)); // Ada Bo Eve Kai Lin
+                Verify.IsTrue(view.MoveCurrentToPosition(2));
+                Verify.AreEqual("Eve", ((EngineRow)view.CurrentItem).Name, "Precondition.");
+
+                var log = new List<string>();
+                view.CurrentChanging += (sender, args) => log.Add(args.IsCancelable ? "changing(cancelable)" : "changing");
+                view.CurrentChanged += (sender, args) => log.Add("changed");
+                view.VectorChanged += (sender, args) => log.Add($"{args.CollectionChange}:{((EngineRow)view.CurrentItem)?.Name}@{view.CurrentPosition}");
+                ((INotifyPropertyChanged)view).PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName.StartsWith("Current") || args.PropertyName.StartsWith("IsCurrent"))
+                    {
+                        log.Add(args.PropertyName);
+                    }
+                };
+
+                cvs.SortDescriptions[0] = new SortDescription("Score", CollectionViewSortDirection.Descending); // Bo Kai Lin Eve Ada
+                Verify.AreEqual("changing Reset:Eve@3 CurrentPosition changed", string.Join(" ", log), "A sort follows the item.");
+
+                log.Clear();
+                ((ICollectionViewShaping)view).Filter = item => ((EngineRow)item).Name != "Eve"; // Bo Kai Lin Ada
+                Verify.AreEqual("changing Reset:Bo@0 CurrentPosition CurrentItem changed", string.Join(" ", log), "A dropped item moves currency to the first item.");
+
+                log.Clear();
+                view.MoveCurrentToPosition(-1);
+                log.Clear();
+                ((ICollectionViewShaping)view).Refresh();
+                Verify.AreEqual("changing Reset:@-1 changed", string.Join(" ", log), "Before the first item stays there, announced once.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a source Replace that keeps the current item's place on a shaped view makes the replacement current, as WPF does, while an unshaped view keeps CollectionView's contract (the first item).")]
+        public void VerifyReplacingTheCurrentItemInPlace()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = MakeEngineRows();
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending)); // Ada Bo Eve Kai Lin
+                Verify.IsTrue(view.MoveCurrentToPosition(2));
+                var log = new List<string>();
+                view.CurrentChanging += (sender, args) => log.Add("changing");
+                view.CurrentChanged += (sender, args) => log.Add("changed");
+
+                rows[4] = new EngineRow(6, "Eva", 20, "Y"); // Eve -> Eva, same place
+                Verify.AreEqual("Ada Bo Eva Kai Lin", EngineNames(view));
+                Verify.AreEqual("Eva", ((EngineRow)view.CurrentItem).Name, "The replacement is current.");
+                Verify.AreEqual(2, view.CurrentPosition);
+                Verify.AreEqual("changing changed", string.Join(" ", log));
+
+                var plainRows = MakeEngineRows();
+                var plain = new CollectionViewSource { Source = plainRows }.View;
+                Verify.IsTrue(plain.MoveCurrentToPosition(2));
+                plainRows[2] = new EngineRow(6, "Max", 20, "X");
+                Verify.AreEqual(0, plain.CurrentPosition, "An unshaped view moves currency to the first item, as before.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a live move keeps currency on the moved item with only CurrentPosition changing (WPF's Move), and an item that live filtering drops moves currency to the item now at its place.")]
+        public void VerifyLiveMoveKeepsCurrencyOnTheItem()
+        {
+            ObservableCollection<EngineRow> rows = null;
+            ICollectionView view = null;
+            var log = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                rows = MakeEngineRows();
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true, IsLiveFilteringRequested = true };
+                cvs.LiveFilteringProperties.Add("Score");
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending)); // Ada Lin Eve Kai Bo
+                view = cvs.View;
+                ((ICollectionViewShaping)view).Filter = item => ((EngineRow)item).Score < 100;
+                Verify.IsTrue(view.MoveCurrentToPosition(1));
+                Verify.AreEqual("Lin", ((EngineRow)view.CurrentItem).Name, "Precondition.");
+                view.CurrentChanging += (sender, args) => log.Add("changing");
+                view.CurrentChanged += (sender, args) => log.Add("changed");
+                ((INotifyPropertyChanged)view).PropertyChanged += (sender, args) =>
+                {
+                    if (args.PropertyName == "CurrentPosition" || args.PropertyName == "CurrentItem")
+                    {
+                        log.Add(args.PropertyName);
+                    }
+                };
+                rows[2].Score = 35; // Lin
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Ada Eve Kai Lin Bo", EngineNames(view));
+                Verify.AreEqual("Lin", ((EngineRow)view.CurrentItem).Name, "Currency moved with the item.");
+                Verify.AreEqual(3, view.CurrentPosition);
+                Verify.IsFalse(log.Contains("changing") || log.Contains("changed") || log.Contains("CurrentItem"), $"Only the position changed: {string.Join(" ", log)}");
+                Verify.IsTrue(log.Contains("CurrentPosition"));
+
+                log.Clear();
+                rows[2].Score = 500; // Lin leaves the view
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Ada Eve Kai Bo", EngineNames(view));
+                Verify.AreEqual("Bo", ((EngineRow)view.CurrentItem).Name, "Currency is on the item now at the dropped item's place.");
+                Verify.AreEqual(3, view.CurrentPosition);
+                Verify.AreEqual(1, log.Count(entry => entry == "changing"));
+                Verify.AreEqual(1, log.Count(entry => entry == "changed"));
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a ListView synchronized with a CollectionViewSource view keeps no selection across a sort when nothing was selected, and a TableView header sort with nothing selected selects nothing.")]
         public void VerifySortWithNothingSelectedSelectsNothing()
         {
