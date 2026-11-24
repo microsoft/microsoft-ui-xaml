@@ -853,14 +853,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestProperty("Description", "Verifies LinedFlowLayout handles collapsing a scrolled viewport to height 0 with item width and scroll changes.")]
         public void VerifyScrolledViewportCollapseAndWidthChangeDoesNotCrash()
         {
+            ObservableCollection<UIElement> items = null;
+            ItemsRepeater repeater = null;
+            LinedFlowLayout layout = null;
+            ScrollPresenter scrollPresenter = null;
+            var scrollCompletedEvent = new AutoResetEvent(false);
+            TypedEventHandler<ScrollPresenter, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (s, e) => scrollCompletedEvent.Set();
+            TypedEventHandler<LinedFlowLayout, LinedFlowLayoutItemsInfoRequestedEventArgs> itemsInfoHandler = null;
+
             try
             {
-                ObservableCollection<UIElement> items = null;
-                ItemsRepeater repeater = null;
-                LinedFlowLayout layout = null;
-                ScrollPresenter scrollPresenter = null;
-                var scrollCompletedEvent = new AutoResetEvent(false);
-
                 RunOnUIThread.Execute(() =>
                 {
                     layout = KeepAlive(new LinedFlowLayout()
@@ -908,7 +910,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scrollPresenter.ScrollCompleted += (s, e) => scrollCompletedEvent.Set();
+                    scrollPresenter.ScrollCompleted += scrollCompletedHandler;
                     scrollPresenter.ScrollTo(0.0, 1200.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 });
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Initial ScrollTo completed.");
@@ -916,6 +918,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Border mutatedItem = null;
                 int mutatedIndex = -1;
+                bool hasRealizedItems = false;
                 RunOnUIThread.Execute(() =>
                 {
                     Verify.IsNull(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(items[0]), "Leading items are virtualized out after scrolling.");
@@ -923,6 +926,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     // Pick the middle realized item so it sits inside the scrolled range while m_firstSizedLineIndex > 0.
                     var realizedItems = items.Where(e => Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(e) == repeater).Cast<Border>().ToList();
                     Verify.IsGreaterThan(realizedItems.Count, 0, "Found realized items in the scrolled range.");
+                    if (realizedItems.Count == 0)
+                    {
+                        return;
+                    }
+                    hasRealizedItems = true;
                     mutatedItem = realizedItems[realizedItems.Count / 2];
                     mutatedIndex = items.IndexOf(mutatedItem);
 
@@ -930,10 +938,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     scrollPresenter.Height = 0.0;
                     Content.UpdateLayout();
 
-                    if (mutatedItem != null)
-                    {
-                        mutatedItem.Width = 240.0;
-                    }
+                    mutatedItem.Width = 240.0;
                     repeater.InvalidateMeasure();
                     Content.UpdateLayout();
 
@@ -941,14 +946,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     scrollCompletedEvent.Reset();
                     scrollPresenter.ScrollTo(0.0, 800.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 });
+                if (!hasRealizedItems)
+                {
+                    return;
+                }
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Zero-viewport ScrollTo completed.");
                 SettleLayout();
 
                 // Also exercise the regular-path partial ItemsInfoRequested branch (m_itemsInfoFirstIndex != -1)
                 // when sized-line bounds shift while viewport height is 0.
+                int itemsInfoRequestedCount = 0;
+                bool partialRangeObserved = false;
+                int itemCount = 150;
+                int capturedMutatedIndex = mutatedIndex;
                 RunOnUIThread.Execute(() =>
                 {
-                    layout.ItemsInfoRequested += (s, args) => SetAspectRatios(args, idx => ((Border)items[idx]).Width);
+                    itemsInfoHandler = (s, args) =>
+                    {
+                        itemsInfoRequestedCount++;
+                        if (args.ItemsRangeStartIndex > 0 && args.ItemsRangeRequestedLength < itemCount)
+                        {
+                            partialRangeObserved = true;
+                        }
+                        SetAspectRatios(args, idx => idx == capturedMutatedIndex ? 240.0 : 110.0);
+                    };
+                    layout.ItemsInfoRequested += itemsInfoHandler;
                     layout.InvalidateItemsInfo();
                     Content.UpdateLayout();
 
@@ -957,6 +979,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Zero-viewport ItemsInfoRequested ScrollTo completed.");
                 SettleLayout();
+                Verify.IsGreaterThan(itemsInfoRequestedCount, 0, "ItemsInfoRequested fired while viewport height was 0.");
+                Verify.IsTrue(partialRangeObserved, "ItemsInfoRequested stayed on the partial regular path.");
 
                 RunOnUIThread.Execute(() =>
                 {
@@ -977,7 +1001,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
             finally
             {
-                DetachLayouts();
+                RunOnUIThread.Execute(() =>
+                {
+                    if (layout != null && itemsInfoHandler != null)
+                    {
+                        layout.ItemsInfoRequested -= itemsInfoHandler;
+                    }
+                    if (scrollPresenter != null)
+                    {
+                        scrollPresenter.ScrollCompleted -= scrollCompletedHandler;
+                    }
+                    DetachLayoutsCore();
+                });
+                scrollCompletedEvent.Dispose();
             }
         }
 
