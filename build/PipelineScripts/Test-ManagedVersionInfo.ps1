@@ -76,6 +76,8 @@ function Test-ManagedVersion
         [ValidateSet('Default', 'Custom', 'None')][string]$Manifest = 'Default',
         [switch]$WithIcon,
         [switch]$VerifyIncremental,
+        [string]$RetryBinaryVersion,
+        [switch]$PartialResourceOutput,
         [string]$ExistingResource,
         [string]$ExpectedError
     )
@@ -209,6 +211,67 @@ function Test-ManagedVersion
         throw "Baseline compilation failed: $($compilerOutput -join [Environment]::NewLine)"
     }
     $baselineVersionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($baseline)
+    if ($RetryBinaryVersion)
+    {
+        $fakeSdk = Join-Path $directory 'sdk'
+        foreach ($architecture in @('x86', 'x64', 'arm64'))
+        {
+            $compilerDirectory = Join-Path $fakeSdk "bin\10.0.0.0\$architecture"
+            [System.IO.Directory]::CreateDirectory($compilerDirectory) | Out-Null
+            Copy-Item -LiteralPath $failureCompiler -Destination (Join-Path $compilerDirectory 'rc.exe')
+            if ($PartialResourceOutput)
+            {
+                [System.IO.File]::WriteAllText((Join-Path $compilerDirectory 'partial-output'), '')
+            }
+        }
+        $retryArguments = @($arguments | Where-Object { $_ -notlike '-p:WindowsAppSDKBinaryVersion=*' })
+        $retryArguments += "-p:WindowsAppSDKBinaryVersion=$RetryBinaryVersion"
+        try
+        {
+            $ErrorActionPreference = 'Continue'
+            $failedOutput = @(& $msbuild @retryArguments "-p:WindowsSdkDir=$fakeSdk" 2>&1)
+            $failedResult = $LASTEXITCODE
+        }
+        finally
+        {
+            $ErrorActionPreference = 'Stop'
+        }
+        $receipt = $properties._WindowsAppSDKManagedVersionResource + '.failed'
+        $failureMode = if ($PartialResourceOutput) { 'partial' } else { 'none' }
+        if ($failedResult -eq 0 -or -not [System.IO.File]::Exists($receipt) -or
+            [System.IO.File]::ReadAllText($receipt) -cne $failureMode)
+        {
+            throw "Resource compiler failure was not injected: $($failedOutput -join [Environment]::NewLine)"
+        }
+        $retryOutput = @(& $msbuild @retryArguments 2>&1)
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Failed-regeneration retry did not compile: $($retryOutput -join [Environment]::NewLine)"
+        }
+        $properties = (($retryOutput -join [Environment]::NewLine) | ConvertFrom-Json).Properties
+        $retryIdentity = [System.Reflection.AssemblyName]::GetAssemblyName($binary)
+        $versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($binary)
+        $retryVersions = @(
+            (@($versionInfo.FileMajorPart, $versionInfo.FileMinorPart, $versionInfo.FileBuildPart, $versionInfo.FilePrivatePart) -join '.'),
+            $versionInfo.FileVersion,
+            (@($versionInfo.ProductMajorPart, $versionInfo.ProductMinorPart, $versionInfo.ProductBuildPart, $versionInfo.ProductPrivatePart) -join '.'),
+            $versionInfo.ProductVersion
+        )
+        $retryAttributes = [System.Reflection.Assembly]::Load([System.IO.File]::ReadAllBytes($binary)).GetCustomAttributesData()
+        $fileAttribute = @($retryAttributes | Where-Object { $_.AttributeType.FullName -eq 'System.Reflection.AssemblyFileVersionAttribute' })
+        $information = @($retryAttributes | Where-Object { $_.AttributeType.FullName -eq 'System.Reflection.AssemblyInformationalVersionAttribute' })
+        if (@($retryVersions | Where-Object { $_ -cne $RetryBinaryVersion }).Count -gt 0 -or
+            $fileAttribute.Count -ne 1 -or $fileAttribute[0].ConstructorArguments[0].Value -cne $RetryBinaryVersion -or
+            $information.Count -ne 1 -or $information[0].ConstructorArguments[0].Value -cne $expectedInformation -or
+            $retryIdentity.FullName -cne $identity.FullName)
+        {
+            throw "Failed-regeneration retry emitted '$($retryVersions -join '; ')'; expected '$RetryBinaryVersion' with preserved attributes and identity."
+        }
+        $arguments = $retryArguments
+        $ExpectedFileVersion = $RetryBinaryVersion
+        $ExpectedProductVersion = $RetryBinaryVersion
+        Write-Output "PASS: failed-regeneration retry ($failureMode output) uses '$RetryBinaryVersion'."
+    }
     foreach ($field in @('InternalName', 'OriginalFilename', 'CompanyName', 'FileDescription', 'ProductName',
         'LegalCopyright', 'LegalTrademarks', 'Comments', 'IsDebug', 'IsPatched', 'IsPrivateBuild', 'IsPreRelease', 'IsSpecialBuild'))
     {
@@ -223,23 +286,23 @@ function Test-ManagedVersion
         throw "$AssemblyName lost the preserved 'Assembly Version' resource string."
     }
 
+    if ($VerifyIncremental)
+    {
+        $resourceTime = [System.IO.File]::GetLastWriteTimeUtc($properties._WindowsAppSDKManagedVersionResource)
+        $binaryTime = [System.IO.File]::GetLastWriteTimeUtc($binary)
+        $repeatOutput = @(& $msbuild @arguments 2>&1)
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Incremental fixture compilation failed: $($repeatOutput -join [Environment]::NewLine)"
+        }
+        if ($resourceTime -ne [System.IO.File]::GetLastWriteTimeUtc($properties._WindowsAppSDKManagedVersionResource) -or
+            $binaryTime -ne [System.IO.File]::GetLastWriteTimeUtc($binary))
+        {
+            throw 'An unchanged build rewrote the version resource or managed binary.'
+        }
+    }
     if ($outputType -eq 'exe')
     {
-        if ($VerifyIncremental)
-        {
-            $resourceTime = [System.IO.File]::GetLastWriteTimeUtc($properties._WindowsAppSDKManagedVersionResource)
-            $binaryTime = [System.IO.File]::GetLastWriteTimeUtc($binary)
-            $repeatOutput = @(& $msbuild @arguments 2>&1)
-            if ($LASTEXITCODE -ne 0)
-            {
-                throw "Incremental fixture compilation failed: $($repeatOutput -join [Environment]::NewLine)"
-            }
-            if ($resourceTime -ne [System.IO.File]::GetLastWriteTimeUtc($properties._WindowsAppSDKManagedVersionResource) -or
-                $binaryTime -ne [System.IO.File]::GetLastWriteTimeUtc($binary))
-            {
-                throw 'An unchanged build rewrote the version resource or managed binary.'
-            }
-        }
         foreach ($resource in @(@(24, 1), @(14, 32512), @(3, 1)))
         {
             $actual = [WinUIManagedVersionResourceTest]::Read($binary, $resource[0], $resource[1])
@@ -272,6 +335,29 @@ try
     Copy-Item -LiteralPath (Join-Path $RepoRoot 'src\XamlCompiler\Directory.Build.props') -Destination (Join-Path $testRoot 'compiler\Directory.Build.props')
     [System.IO.File]::WriteAllText((Join-Path $testRoot 'Program.cs'),
         'internal static class VersionFixture { public static void Main() {} }')
+    $failureSource = Join-Path $testRoot 'FailingResourceCompiler.cs'
+    $failureCompiler = Join-Path $testRoot 'FailingResourceCompiler.exe'
+    [System.IO.File]::WriteAllText($failureSource, @'
+using System;
+using System.IO;
+internal static class FailingResourceCompiler
+{
+    public static int Main(string[] arguments)
+    {
+        int output = Array.IndexOf(arguments, "/fo") + 1;
+        if (output == 0 || output >= arguments.Length) return 43;
+        bool partial = File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "partial-output"));
+        if (partial) File.WriteAllBytes(arguments[output], new byte[] { 0, 1, 2, 3 });
+        File.WriteAllText(arguments[output] + ".failed", partial ? "partial" : "none");
+        return 42;
+    }
+}
+'@)
+    $failureCompilerOutput = @(& $dotnet $compiler /nologo /target:exe /nostdlib+ "/reference:$frameworkReference" "/out:$failureCompiler" $failureSource 2>&1)
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Failure compiler fixture did not compile: $($failureCompilerOutput -join [Environment]::NewLine)"
+    }
     [System.IO.File]::WriteAllText((Join-Path $testRoot 'custom.manifest'),
         '<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"><assemblyIdentity version="7.6.5.4" name="VersionFixture.Custom" /><trustInfo xmlns="urn:schemas-microsoft-com:asm.v3"><security><requestedPrivileges><requestedExecutionLevel level="asInvoker" uiAccess="false" /></requestedPrivileges></security></trustInfo></assembly>')
     $icon = New-Object System.IO.MemoryStream
@@ -292,6 +378,13 @@ try
         $icon.Dispose()
     }
 
+    Test-ManagedVersion -AssemblyName Microsoft.WinUI -Kind Projection -VerifyIncremental `
+        -BinaryVersion '102.3.4.35' -InformationalVersion '2.3.4-dev.experimentalz' `
+        -ExpectedFileVersion '102.3.4.35' -ExpectedProductVersion '102.3.4.35' -RetryBinaryVersion '102.3.4.36'
+    Test-ManagedVersion -AssemblyName XamlCompiler -Kind Compiler -TargetFramework net472 -Manifest Custom -WithIcon `
+        -VerifyIncremental -PartialResourceOutput -RetryBinaryVersion '102.3.4.36' `
+        -BinaryVersion '102.3.4.35' -InformationalVersion '2.3.4-dev.experimentalz' `
+        -ExpectedFileVersion '102.3.4.35' -ExpectedProductVersion '102.3.4.35'
     Test-ManagedVersion -AssemblyName Microsoft.WinUI -Kind Projection `
         -BinaryVersion '102.3.4.35' -InformationalVersion '2.3.4-dev.experimentalz' `
         -ExpectedFileVersion '102.3.4.35' -ExpectedProductVersion '102.3.4.35'
