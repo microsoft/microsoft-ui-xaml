@@ -171,9 +171,13 @@ internal static class SnapshotStorageTests
             await writer.SaveSnapshotAsync(capture, path + ".json");
             for (var i = 1; i <= 10_000; i++)
                 writer.Process(i, new(i, i, 42, 7, XamlProvider.Xaml, true, "Tick", 0, [new("Text", new string('x', 120))]));
+            await writer.SaveSnapshotAsync(Capture(2_000_000, padding: new string('x', 48_000)), path + ".json");
+            Require(writer.Status.StoredEvents == SessionFile.ReadInfo(path).StoredEvents &&
+                writer.Status.CompleteFromSeconds is > 0,
+                "Successful snapshot retention must publish its committed event count and cutoff.");
             writer.Close("Test complete");
             Require(writer.Failure is null && SessionFile.ReadInfo(path).CompleteFromSeq is not null &&
-                SessionFile.ReadTreeSnapshots(path).Single().CaptureId == capture.CaptureId,
+                SessionFile.ReadTreeSnapshots(path).Any(row => row.CaptureId == capture.CaptureId),
                 "Trimming older ETW events must not invalidate a newer, self-contained stored snapshot.");
         }
     }
@@ -200,6 +204,7 @@ internal static class SnapshotStorageTests
             writer.Process(i, new(i, i, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
                 [new("ElementId", (long)i), new("PeerHandle", 0x1000L + i), new("Text", new string('x', 256))]));
         await writer.SaveSnapshotAsync(Capture(1_000_000), path + ".json");
+        var originalStatus = writer.Status;
         var capture = Capture(2_000_000, padding: new string('x', 48_000));
         capture = capture with
         {
@@ -213,9 +218,10 @@ internal static class SnapshotStorageTests
                 Sql.Scalar(connection, "PRAGMA page_count") * Sql.Scalar(connection, "PRAGMA page_size") +
                     TreeSnapshotCodec.Encode(capture).LongLength > writer.LimitBytes * 0.9,
                 "The fault must occur during snapshot-triggered retention, not while seeding events.");
-            // Objects.Trim has already changed its caches when the later Events delete fails.
+            // Let the first pass advance status before a later Events delete fails.
             Sql.Execute(connection, """
                 CREATE TRIGGER FailRetention BEFORE DELETE ON Events
+                WHEN OLD.Seq >= 51
                 BEGIN SELECT RAISE(ABORT, 'injected retention failure'); END
                 """);
         }
@@ -223,6 +229,8 @@ internal static class SnapshotStorageTests
             .WaitAsync(TimeSpan.FromSeconds(10)));
         Require(ReferenceEquals(writer.Failure, error) && error.Message.Contains("injected retention failure"),
             "Retention rollback must enter Run's fatal failure path before any producer can reuse stale index caches.");
+        Require(writer.Status == originalStatus,
+            "A failure during retention must restore the status from before its first trimming pass.");
         writer.Process(1001, new(1001, 1001, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
             [new("ElementId", 1L), new("PeerHandle", 0x1001L)]));
         var subsequent = await ThrowsAsync<IOException>(() => writer.SaveSnapshotAsync(Capture(3_000_000), path + ".json"));
@@ -293,6 +301,7 @@ internal static class SnapshotStorageTests
         }
         var retained = Capture(0);
         await writer.SaveSnapshotAsync(retained, path + ".json");
+        var originalStatus = writer.Status;
         var rejected = Capture(2_000_000, padding: new string('x', 48_000));
         rejected = rejected with
         {
@@ -323,6 +332,8 @@ internal static class SnapshotStorageTests
                 .WaitAsync(TimeSpan.FromSeconds(10)))
             : await ThrowsAsync<IOException>(() => writer.SaveSnapshotAsync(rejected, path + ".json")
                 .WaitAsync(TimeSpan.FromSeconds(10)));
+        Require(writer.Status == originalStatus,
+            "A rejected snapshot must restore its exposed recording status before reporting failure.");
         writer.Close("Test complete");
         using var restored = SessionFile.Open(path);
         Require(SessionFile.ReadTreeSnapshots(path).SingleOrDefault()?.CaptureId == retained.CaptureId &&

@@ -406,28 +406,43 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
         // Retention mutates cached indexes as well as SQL rows. A rollback must stop Run, not resume with stale caches.
         // Once retention starts, finish the write rather than cancelling after deleting older history.
-        using var transaction = connection.BeginTransaction();
-        var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction);
+        var originalOldest = Interlocked.Read(ref oldestSequence);
+        var originalCompleteFrom = Interlocked.Read(ref completeFromQpc);
+        var committed = false;
         try
         {
-            if ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
-                snapshot.IncomingBytes > LimitBytes * TrimAt)
-                throw new IOException("The snapshot cannot fit within the session file's size limit.");
-            Sql.Execute(connection, """
-                INSERT INTO TreeSnapshots (CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc, Document)
-                VALUES ($id, $saved, $path, $start, $end, $document)
-                """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
-                ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
-                ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
-            var committedBytes = Sql.Scalar(connection, "PRAGMA page_count", transaction) * pageSize;
-            transaction.Commit();
-            Interlocked.Exchange(ref fileBytes, committedBytes);
-            snapshot.Completion.TrySetResult();
+            using var transaction = connection.BeginTransaction();
+            var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction);
+            try
+            {
+                if ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
+                    snapshot.IncomingBytes > LimitBytes * TrimAt)
+                    throw new IOException("The snapshot cannot fit within the session file's size limit.");
+                Sql.Execute(connection, """
+                    INSERT INTO TreeSnapshots (CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc, Document)
+                    VALUES ($id, $saved, $path, $start, $end, $document)
+                    """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
+                    ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
+                    ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
+                var committedBytes = Sql.Scalar(connection, "PRAGMA page_count", transaction) * pageSize;
+                transaction.Commit();
+                committed = true;
+                Interlocked.Exchange(ref fileBytes, committedBytes);
+                snapshot.Completion.TrySetResult();
+            }
+            catch (Exception error) when (!trimmed && (error is SqliteException or IOException))
+            {
+                Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
+                snapshot.Completion.TrySetException(error);
+            }
         }
-        catch (Exception error) when (!trimmed && (error is SqliteException or IOException))
+        finally
         {
-            Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
-            snapshot.Completion.TrySetException(error);
+            if (!committed)
+            {
+                Interlocked.Exchange(ref oldestSequence, originalOldest);
+                Interlocked.Exchange(ref completeFromQpc, originalCompleteFrom);
+            }
         }
     }
 
