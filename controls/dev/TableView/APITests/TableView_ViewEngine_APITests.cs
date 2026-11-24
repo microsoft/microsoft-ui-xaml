@@ -1264,6 +1264,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies how live shaping follows an INotifyPropertyChanged row: a change of another property moves nothing, a change with no property name is a change of every live property, a change of a live property moves its row, and a dotted live path follows the nested object.")]
+        public void VerifyLivePropertiesFollowPropertyChangedByName()
+        {
+            ObservableCollection<NotifyingRow> rows = null;
+            ICollectionView view = null;
+            string Names() => string.Join(" ", view.Cast<NotifyingRow>().Select(r => r.Name));
+            void Step(Action edit, string expected, string context)
+            {
+                RunOnUIThread.Execute(edit);
+                IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() => Verify.AreEqual(expected, Names(), context));
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                rows = new ObservableCollection<NotifyingRow> { new NotifyingRow("a", 1), new NotifyingRow("b", 2), new NotifyingRow("c", 3) };
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true, IsLiveFilteringRequested = true };
+                cvs.SortDescriptions.Add(new SortDescription(nameof(NotifyingRow.Score), CollectionViewSortDirection.Ascending));
+                cvs.LiveFilteringProperties.Add("Child.Score");
+                view = cvs.View;
+                ((ICollectionViewShaping)view).Filter = item => ((NotifyingRow)item).Child.Score >= 0;
+                Verify.AreEqual("a b c", Names(), "Precondition: sorted by Score.");
+            });
+
+            Step(() =>
+            {
+                rows[0].SetScoreSilently(10);
+                rows[0].Raise(nameof(NotifyingRow.Name));
+            }, "a b c", "A change of a property that is not live moves nothing.");
+            Step(() => rows[0].Raise(null), "b c a", "A change with no property name is a change of Score.");
+            Step(() => rows[0].Score = 0, "a b c", "A change of Score moves the row.");
+            Step(() => rows[1].Child.Score = -1, "a c", "A change of Child.Score refilters the row.");
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a live tick on a large TableView that changes every key but moves few rows reaches the rows as moves, not a Reset, and keeps the selection.")]
         public void VerifyLargeLiveTickKeepsTableViewRows()
         {
@@ -2226,6 +2261,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+    }
+
+    // Raises PropertyChanged as the test asks: for another property, or with no name.
+    internal sealed class NotifyingRow : INotifyPropertyChanged
+    {
+        private int _score;
+
+        public NotifyingRow(string name, int score)
+        {
+            Name = name;
+            _score = score;
+        }
+
+        public string Name { get; }
+        public int Score { get => _score; set { _score = value; Raise(nameof(Score)); } }
+        public NotifyingChild Child { get; } = new NotifyingChild();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void SetScoreSilently(int score) => _score = score;
+
+        public void Raise(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    internal sealed class NotifyingChild : INotifyPropertyChanged
+    {
+        private int _score;
+
+        public int Score { get => _score; set { _score = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Score))); } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     // Holds its rows and the CollectionViewSource over them, as a view model would.

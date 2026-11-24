@@ -204,10 +204,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             cvs.GroupDescriptions.Add(new PropertyGroupDescription(nameof(BenchRow.Team100)));
                         }
-                        var view = cvs.View;
+                        ICollectionView view = null;
+                        var name = grouped ? "LiveGrouped100" : "LiveFlat";
+                        // The first sort and one observer per row (P-4).
+                        Report($"{name}.Create", n, Time(() => view = cvs.View));
                         var shaping = (ICollectionViewShaping)view;
                         Verify.AreEqual(n, view.Count);
-                        var name = grouped ? "LiveGrouped100" : "LiveFlat";
 
                         Report($"{name}.Setup", n, Time(() => shaping.Refresh()));
 
