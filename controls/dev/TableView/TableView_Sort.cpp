@@ -85,42 +85,6 @@ void TableView::ReleaseCustomSortRows(const winrt::IInspectable& item, const std
     }
 }
 
-// Rank() starts from the current rows, so it drops ranks rooted while released and re-reads values
-// edited meanwhile; re-declaring the axis makes the projection read the new keys.
-void TableView::RerankCustomSortAfterReclaim()
-{
-    auto const& state = m_tableViewSourceSort.CustomSortState;
-    if (!state || !state->HasComparer() || m_sortedColumns.size() != 1)
-    {
-        return;
-    }
-    auto const column = m_sortedColumns.front().get();
-    if (!column || !column.CustomSortComparer())
-    {
-        return;
-    }
-    const auto direction = column.SortDirection();
-    if (direction == winrt::SortDirection::None || !CanApplySortTo(direction))
-    {
-        return;
-    }
-
-    const auto preservedSelection = SelectedItemInternal();
-    try
-    {
-        // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
-        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
-        {
-            ApplySelection(FindEntryIndexForDataItem(preservedSelection));
-        }
-    }
-    catch (...)
-    {
-        // Dispatcher callback: best-effort, the previous order stands.
-        TVDiag::LogRetailF(L"[TableView] Re-ranking the custom sort after reclaim failed.");
-    }
-}
-
 namespace
 {
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
@@ -198,6 +162,44 @@ namespace
         }
 
         return L"path:" + sortMemberPath;
+    }
+}
+
+// Rank() starts from the current rows, so it drops ranks rooted while released and re-reads values
+// edited meanwhile; re-declaring the axis makes the projection read the new keys.
+void TableView::RerankCustomSortAfterReclaim()
+{
+    auto const& state = m_tableViewSourceSort.CustomSortState;
+    if (!state || !state->HasComparer() || m_sortedColumns.size() != 1)
+    {
+        return;
+    }
+    auto const column = m_sortedColumns.front().get();
+    // A key changed meanwhile, possibly declined, is the sort-key reconcile's to raise Sorting for.
+    if (!column || !column.CustomSortComparer() ||
+        !IsSameSortKey(EffectiveSortKey(column), m_tableViewSourceSort.MemberPath, m_tableViewSourceSort.ComparerIdentity))
+    {
+        return;
+    }
+    const auto direction = column.SortDirection();
+    if (direction == winrt::SortDirection::None || !CanApplySortTo(direction))
+    {
+        return;
+    }
+
+    const auto preservedSelection = SelectedItemInternal();
+    try
+    {
+        // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
+        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
+        {
+            ApplySelection(FindEntryIndexForDataItem(preservedSelection));
+        }
+    }
+    catch (...)
+    {
+        // Dispatcher callback: best-effort, the previous order stands.
+        TVDiag::LogRetailF(L"[TableView] Re-ranking the custom sort after reclaim failed.");
     }
 }
 
@@ -315,7 +317,9 @@ bool TableView::RunSortTransition(F&& transition)
 // Only the synchronous pass can throw.
 void TableView::ScheduleSortKeyReconcile(bool allowSynchronous)
 {
-    if (!m_sortKeysDirty || m_sortTransitionDepth || m_reconcilingSortKeys || m_sortKeyReconcileQueued)
+    // Held while another table owns the source; the reclaim schedules it.
+    if (!m_sortKeysDirty || m_sortTransitionDepth || m_reconcilingSortKeys || m_sortKeyReconcileQueued ||
+        IsSortHeldByOtherOwner())
     {
         return;
     }
@@ -400,6 +404,11 @@ void TableView::ReconcileSortKey(const winrt::TableViewColumn& column)
     }
     if (IsSortKeyStillDeclined(column))
     {
+        return;
+    }
+    if (IsSortHeldByOtherOwner())
+    {
+        m_sortKeysDirty = true;
         return;
     }
 
@@ -1314,6 +1323,12 @@ void TableView::ReconcileSortStateWithSource()
         return;
     }
     const bool rerankCustomSort = std::exchange(m_rerankCustomSortOnReconcile, false);
+    if (rerankCustomSort)
+    {
+        // A key change made while another table owned the source reached no sort.
+        m_sortKeysDirty = true;
+        ScheduleSortKeyReconcile(false);
+    }
 
     auto const& ownToken = m_tableViewSourceSort.AxisToken;
     auto tableViewSourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
