@@ -246,6 +246,7 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+        winrt::get_self<TableView>(owner)->RefreshHeaderSortability(*this);
     }
 
     // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply

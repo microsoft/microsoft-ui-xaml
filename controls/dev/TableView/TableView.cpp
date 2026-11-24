@@ -3506,7 +3506,7 @@ void TableView::RebuildHeadersCore()
             }
 
             const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
-            const bool headerIsSortable = canUserSortColumns && column.CanSort();
+            const bool headerIsSortable = canUserSortColumns && IsColumnUserSortableInternal(column);
             if (!styleSetsCornerRadius)
             {
                 AttachFocusCornerRadius(header);
