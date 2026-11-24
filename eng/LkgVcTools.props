@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<!--
+  Points C++ builds at the LKG VC toolset package named by the LkgVcToolsName/LkgVcToolsVersion
+  environment variables (set by the pipelines). Imported from Directory.Build.props for .vcxproj only.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <LkgVcToolsPackageDir>$(NugetPackageDirectory)\$(LkgVcToolsName).$(LkgVcToolsVersion)</LkgVcToolsPackageDir>
+    <LkgVcToolsContentDir>$(LkgVcToolsPackageDir)\content</LkgVcToolsContentDir>
+  </PropertyGroup>
+
+  <!-- Binaries are under content\Host<host>\<target>, with amd64 rather than x64 as the target folder name.
+       ARM64EC uses the arm64 target compiler. -->
+  <PropertyGroup Condition="Exists('$(LkgVcToolsContentDir)')">
+    <VC_ExecutablePath_x86_x86>$(LkgVcToolsContentDir)\HostX86\x86</VC_ExecutablePath_x86_x86>
+    <VC_ExecutablePath_x86_x64>$(LkgVcToolsContentDir)\HostX86\amd64</VC_ExecutablePath_x86_x64>
+    <VC_ExecutablePath_x86_ARM64>$(LkgVcToolsContentDir)\HostX86\arm64</VC_ExecutablePath_x86_ARM64>
+    <VC_ExecutablePath_x64_x86>$(LkgVcToolsContentDir)\HostX64\x86</VC_ExecutablePath_x64_x86>
+    <VC_ExecutablePath_x64_x64>$(LkgVcToolsContentDir)\HostX64\amd64</VC_ExecutablePath_x64_x64>
+    <VC_ExecutablePath_x64_ARM64>$(LkgVcToolsContentDir)\HostX64\arm64</VC_ExecutablePath_x64_ARM64>
+    <VC_ExecutablePath_arm64_x86>$(LkgVcToolsContentDir)\HostArm64\x86</VC_ExecutablePath_arm64_x86>
+    <VC_ExecutablePath_arm64_x64>$(LkgVcToolsContentDir)\HostArm64\amd64</VC_ExecutablePath_arm64_x64>
+    <VC_ExecutablePath_arm64_ARM64>$(LkgVcToolsContentDir)\HostArm64\arm64</VC_ExecutablePath_arm64_ARM64>
+  </PropertyGroup>
+
+</Project>
