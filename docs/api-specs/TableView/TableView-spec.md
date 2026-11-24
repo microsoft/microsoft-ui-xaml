@@ -958,7 +958,16 @@ Methods:
 
 A header is user-sortable only when its column has a sort key: a `CustomSortComparer`, a `SortMemberPath`, or, when `SortMemberPath` is empty, the `Path` of a `DisplayMemberBinding` that sets no `Source`, `RelativeSource` or `ElementName`. A keyless column shows no sort arrow, does not sort when its header is clicked, and its header exposes no Invoke pattern.
 
-Changing the sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`) re-sorts the rows in place with one `Sorting`/`Sorted` pair in the existing `SortDirection`. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`. A key changed from a `Sorting` handler is used by that sort; one changed from a `Sorted` handler is applied once after the sort completes.
+Changing the sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`) outside a sort re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
+
+A key changed while a sort is in progress is not applied inside it:
+
+- From a `Sorting` handler, the change is picked up by that sort. If the handler also cancels that sort (or a clear), the change does not re-sort the column: the column keeps the new key, but the rows keep the order they had, until the column is next sorted.
+- From a `Sorted` handler, the change is applied on the next dispatcher turn, as one more `Sorting`/`Sorted` pair. A key changed by that pair's handlers is applied on the turn after, so a handler that changes the key on every `Sorted` re-sorts once per turn indefinitely; that is an app error. Without a dispatcher, such a change is applied once, right after the sort, and a further change made by that re-sort's handlers is dropped.
+
+A deferred change is skipped if, by the time it is applied, the column has moved to another TableView or is no longer sorted.
+
+`DisplayMemberBinding` is compared by instance: setting it to the `Binding` it already holds is ignored, so editing that `Binding`'s `Path` in place neither refreshes the cells nor re-sorts. Assign a new `Binding` instead.
 
 A derived column that overrides `GetSortMemberPathCore` is read when a sort is applied and when headers are built; TableView is not notified when the override's result changes. If it changes, set `SortMemberPath`, or re-sort explicitly (`SortByColumn(column, None)` then `SortByColumn(column, direction)`); header sortability is re-evaluated at the next header rebuild.
 

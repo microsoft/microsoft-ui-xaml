@@ -259,34 +259,96 @@ bool TableView::SortByColumn(const winrt::TableViewColumn& column, winrt::SortDi
     return SortByColumnInternal(column, direction, true, !clearsOwnSort);
 }
 
+// `column` is the column the transition sorts; null for a clear, which covers every sorted column.
 template <typename F>
-bool TableView::RunSortTransition(F&& transition)
+bool TableView::RunSortTransition(const winrt::TableViewColumn& column, F&& transition)
 {
+    const bool outermost = m_sortTransitionDepth == 0;
+    const size_t pendingMark = m_pendingSortKeyColumns.size();
+    if (outermost)
+    {
+        m_outerSortTransitionCanceled = false;
+    }
+
     bool result;
     {
         ++m_sortTransitionDepth;
         auto const leave = wil::scope_exit([this]() noexcept { --m_sortTransitionDepth; });
+        // A throwing handler abandons the changes recorded during this transition.
+        auto dropOnThrow = wil::scope_exit([this, pendingMark]() noexcept
+        {
+            if (pendingMark < m_pendingSortKeyColumns.size())
+            {
+                m_pendingSortKeyColumns.erase(m_pendingSortKeyColumns.begin() + pendingMark, m_pendingSortKeyColumns.end());
+            }
+        });
         result = transition();
+        dropOnThrow.release();
     }
-    ProcessPendingSortKeyChanges();
+
+    if (outermost)
+    {
+        // A cancelling Sorting handler's own key change must not re-sort what it just cancelled.
+        if (std::exchange(m_outerSortTransitionCanceled, false) && pendingMark < m_pendingSortKeyColumns.size())
+        {
+            auto const first = m_pendingSortKeyColumns.begin() + pendingMark;
+            m_pendingSortKeyColumns.erase(std::remove_if(first, m_pendingSortKeyColumns.end(),
+                [&column](auto const& weakColumn) { return !column || weakColumn.get() == column; }),
+                m_pendingSortKeyColumns.end());
+        }
+        SchedulePendingSortKeyChanges();
+    }
     return result;
 }
 
-void TableView::ProcessPendingSortKeyChanges()
+// Applied on a later dispatcher turn so a follow-up re-sort never runs inside, or recurses from,
+// the sort whose handler requested it. A handler that changes the key on every Sorted keeps
+// re-sorting once per turn; that is an app error.
+void TableView::SchedulePendingSortKeyChanges()
 {
-    if (m_sortTransitionDepth || m_processingSortKeyChanges || m_pendingSortKeyColumns.empty())
+    if (m_sortTransitionDepth || m_processingSortKeyChanges || m_sortKeyChangesQueued || m_pendingSortKeyColumns.empty())
     {
         return;
     }
 
-    // One pass, not a loop: a change made by the follow-up's own handlers waits for the next
-    // transition, so a handler that always changes the key cannot spin.
+    if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+    {
+        m_sortKeyChangesQueued = queue.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->m_sortKeyChangesQueued = false;
+                // A transition in progress reschedules them when it ends.
+                if (!strongThis->m_sortTransitionDepth)
+                {
+                    strongThis->ApplyPendingSortKeyChanges();
+                }
+            }
+        });
+        if (m_sortKeyChangesQueued)
+        {
+            return;
+        }
+    }
+
+    // No dispatcher: one synchronous pass; changes made by its own handlers are dropped.
     m_processingSortKeyChanges = true;
-    auto const reset = wil::scope_exit([this]() noexcept { m_processingSortKeyChanges = false; });
+    auto const reset = wil::scope_exit([this]() noexcept
+    {
+        m_processingSortKeyChanges = false;
+        m_pendingSortKeyColumns.clear();
+    });
+    ApplyPendingSortKeyChanges();
+}
+
+void TableView::ApplyPendingSortKeyChanges()
+{
     auto const pending = std::exchange(m_pendingSortKeyColumns, {});
     for (auto const& weakColumn : pending)
     {
-        if (auto const column = weakColumn.get())
+        auto const column = weakColumn.get();
+        // It may have moved to another table, or lost its sort, since the change.
+        if (column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this)
         {
             OnColumnSortKeyChanged(column);
         }
@@ -296,7 +358,7 @@ void TableView::ProcessPendingSortKeyChanges()
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort, bool reapply)
 {
-    return RunSortTransition([&]()
+    return RunSortTransition(column, [&]()
     {
         // Only a clear may skip the CanSort gate.
         requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
@@ -346,7 +408,7 @@ bool TableView::SortByColumnInternal(
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
 {
-    return RunSortTransition([&]()
+    return RunSortTransition(column, [&]()
     {
         if (!CanSortColumnNow(column))
         {
@@ -464,6 +526,7 @@ void TableView::OnColumnSortKeyChanged(const winrt::TableViewColumn& column)
 
     if (m_sortTransitionDepth)
     {
+        // Appended only: RunSortTransition marks where each transition's entries start.
         for (auto const& weakColumn : m_pendingSortKeyColumns)
         {
             if (weakColumn.get() == column)
@@ -491,7 +554,7 @@ void TableView::OnColumnSortKeyChanged(const winrt::TableViewColumn& column)
     // A comparer ignores the path.
     auto const comparer = column.CustomSortComparer();
     if (comparer
-        ? winrt::get_abi(comparer) == m_tableViewSourceSort.ComparerIdentity
+        ? comparer == m_tableViewSourceSort.ComparerIdentity
         : !m_tableViewSourceSort.ComparerIdentity && column.GetSortMemberPathCore() == m_tableViewSourceSort.MemberPath)
     {
         return;
@@ -528,7 +591,7 @@ bool TableView::IsSortLitOnlyByApp() const
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
-    return RunSortTransition([&]()
+    return RunSortTransition(nullptr, [&]()
     {
         CancelPendingSortRestore();
         if (m_sortedColumns.empty())
@@ -630,7 +693,12 @@ bool TableView::RaiseSortingAndCheckCanceled(
     try { m_sortingEventSource(*this, *args); }
     catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 
-    return args->Cancel();
+    const bool canceled = args->Cancel();
+    if (canceled && m_sortTransitionDepth == 1)
+    {
+        m_outerSortTransitionCanceled = true;
+    }
+    return canceled;
 }
 
 winrt::TableViewKeySelector TableView::GetTableViewSourceSortKeySelector(
@@ -719,7 +787,7 @@ bool TableView::SyncTableViewSourceSort(
         if (const auto customComparer = trigger.CustomSortComparer())
         {
             keySelector = GetTableViewSourceSortKeySelector(L"");
-            m_tableViewSourceSort.ComparerIdentity = winrt::get_abi(customComparer);
+            m_tableViewSourceSort.ComparerIdentity = customComparer;
             sortAxisToken = GetTableViewSourceSortAxisToken(trigger, L"");
 
             if (direction != winrt::SortDirection::None)

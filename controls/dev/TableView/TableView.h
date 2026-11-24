@@ -225,7 +225,7 @@ struct TableViewSourceSortBinding
 {
     winrt::hstring MemberPath;
     // The comparer the installed axis ranked with, compared by identity only.
-    void const* ComparerIdentity{ nullptr };
+    winrt::ITableViewSortComparer ComparerIdentity{ nullptr };
     winrt::hstring AxisToken;
     winrt::TableViewKeySelector KeySelector{ nullptr };
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
@@ -1085,12 +1085,16 @@ private:
     // reapply: re-sorts a column already sorted in `direction` on its current key.
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true, bool reapply = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
-    // Sorting and Sorted handlers may change a column's sort key; that change is processed after
-    // the transition instead of re-entering it.
-    template <typename F> bool RunSortTransition(F&& transition);
-    void ProcessPendingSortKeyChanges();
+    // Sorting and Sorted handlers may change a column's sort key. The change is not applied inside
+    // the transition: a Sorting handler's change is used by that sort (or dropped if it cancels),
+    // and one from a Sorted handler is applied on the next dispatcher turn.
+    template <typename F> bool RunSortTransition(const winrt::TableViewColumn& column, F&& transition);
+    void SchedulePendingSortKeyChanges();
+    void ApplyPendingSortKeyChanges();
     uint32_t m_sortTransitionDepth{ 0 };
+    bool m_outerSortTransitionCanceled{ false };
     bool m_processingSortKeyChanges{ false };
+    bool m_sortKeyChangesQueued{ false };
     std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_pendingSortKeyColumns;
     // The lit column describes the app's source sort, not one this table installed.
     bool IsSortLitOnlyByApp() const;
