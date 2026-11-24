@@ -17,6 +17,9 @@
 # WinUI step templates (see WinUI-BuildMUXProject-Steps.yml for the full rationale).
 
 parameters:
+  - name: IsOfficial
+    type: boolean
+    default: true
   - name: IsMonobuild
     default: false
   - name: InnerParams
@@ -26,7 +29,11 @@ parameters:
 steps:
   - ${{ if eq(parameters.IsMonobuild, 'true') }}:
     - template: Build/WindowsAppSDK/AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@self
-      parameters: ${{ parameters.InnerParams }}
+      parameters:
+        ${{ insert }}: ${{ parameters.InnerParams }}
+        IsOfficial: ${{ parameters.IsOfficial }}
   - ${{ else }}:
     - template: Build/WindowsAppSDK/AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WinAppSDK
-      parameters: ${{ parameters.InnerParams }}
+      parameters:
+        ${{ insert }}: ${{ parameters.InnerParams }}
+        IsOfficial: ${{ parameters.IsOfficial }}
