@@ -358,6 +358,13 @@ namespace UnitTests
             DiffCodegen(@"Basic\CSharp\Simple\generated");
         }
 
+        // A desktop app built with OutputType=Exe must get an STA Main, as WinExe does (#11028).
+        [TestMethod]
+        public void Codegen_BasicCSConsoleExe()
+        {
+            DiffCodegen(@"Basic\CSharp\ConsoleExe\generated");
+        }
+
         [TestMethod]
         public void Codegen_EventHandlingCppWinRT()
         {

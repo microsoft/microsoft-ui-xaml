@@ -8,6 +8,7 @@
 
 # Basic
 Basic\CSharp\Simple\generated|CompilerTests\Basic\CSharp\Simple\generated
+Basic\CSharp\ConsoleExe\generated|CompilerTests\Basic\CSharp\ConsoleExe\generated
 Basic\CppWinRT\Simple\generated|CompilerTests\Basic\CppWinRT\Simple\generated
 Basic\CppWinRT\EventHandling_968976\generated|CompilerTests\Basic\CppWinRT\EventHandling_968976\generated
 
