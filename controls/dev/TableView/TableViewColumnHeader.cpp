@@ -311,7 +311,7 @@ void TableViewColumnHeader::SyncSortIndicatorForeground(bool highlighted)
 
 void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
 {
-    // Hover and press advertise click-to-sort, so a header that cannot sort stays Normal.
+    // Hover and press advertise click-to-sort, so a header that cannot sort stays Normal, except while it is reorder-dragged.
     const wchar_t* commonState = L"Normal";
     if (!IsEnabled())
     {

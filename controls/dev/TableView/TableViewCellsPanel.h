@@ -36,6 +36,9 @@ public:
     // scroll offset and clips the scrolled cells beneath it. Shared by the header host and every row's
     // cell host (both are TableViewCellsPanel).
     static void ApplyFrozenColumnLayout(const winrt::Panel& host, double horizontalOffset, double leadingFrozenWidth);
+    // Frozen cells paint above scrolled ones, and a reorder-dragged header above both.
+    static constexpr int32_t c_frozenZIndex = 1;
+    static constexpr int32_t c_reorderDragZIndex = 2;
 
     // Returns the first cell in host whose Tag is the given column (or null). Cells are Tagged with
     // their owning TableViewColumn; this is the inverse of ColumnForCell, shared by the header/row

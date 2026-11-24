@@ -213,11 +213,16 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
     {
         RebuildHeaders();
         InvalidateMeasure();
-        // The new cells are clipped out of a scrolled frozen band only once they have been measured.
-        if (auto const queue = DispatcherQueue())
+        // The new cells can be clipped out of a scrolled frozen band only once they have been measured.
+        if (auto const host = m_headerHost.get())
         {
-            queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis = get_weak()]()
+            auto token = std::make_shared<winrt::event_token>();
+            *token = host.LayoutUpdated([weakThis = get_weak(), weakHost = winrt::make_weak(host), token](auto const&, auto const&)
                 {
+                    if (auto const host = weakHost.get())
+                    {
+                        host.LayoutUpdated(*token);
+                    }
                     if (auto const strongThis = weakThis.get())
                     {
                         strongThis->RefreshFrozenColumns();
@@ -604,9 +609,9 @@ void TableView::ApplyColumnReorderPreview(ColumnReorderDragState& state)
             (std::max)(state.sourceLeft + state.sourceWidth, state.slots.max > 0 ? state.edges[static_cast<size_t>(state.slots.max - 1)].second : 0.0) : row.ActualWidth();
         const double maxX = (std::max)(minX, end - state.sourceWidth);
         OffsetColumnReorderCell(source, state.sourceLeft, state.sourceBase, std::clamp(state.pointerX - state.grabOffset, minX, maxX) - state.sourceLeft, state.bandEdge);
-        if (winrt::Canvas::GetZIndex(source) != 2)
+        if (winrt::Canvas::GetZIndex(source) != TableViewCellsPanel::c_reorderDragZIndex)
         {
-            winrt::Canvas::SetZIndex(source, 2);
+            winrt::Canvas::SetZIndex(source, TableViewCellsPanel::c_reorderDragZIndex);
         }
     }
 }

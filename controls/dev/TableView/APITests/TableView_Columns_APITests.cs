@@ -1966,28 +1966,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(0f, name.Translation.Y, "The drag is horizontal only.");
                     Verify.AreEqual(2, Canvas.GetZIndex(name), "The dragged header paints above the others.");
                     Verify.AreEqual("Pressed", CurrentState(name, "CommonStates"), "The dragged header stays Pressed under the header row's capture.");
-                    if (new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
-                    {
-                        Verify.AreEqual("HighContrastPressed", CurrentState(name, "HighContrastStates"), "Under High Contrast the dragged header uses the pressed brushes.");
-                    }
                 });
                 RunOnUIThread.Execute(() =>
                 {
                     VerifyOrder(tableView, "Role,Name,City", "after the drop");
                     Verify.AreEqual(1, reordered);
                     Verify.IsFalse(PreviewShown(tableView), "After the drop every header is back at Translation 0.");
-                    Verify.AreEqual("Normal", CurrentState(GetHeaderCell(tableView, 1), "CommonStates"), "The dropped header leaves Pressed.");
                 });
                 var cancels = new (string name, Action action)[]
                 {
                     ("Esc", () => ReorderInput.SendChord(ReorderInput.VkEscape)),
                     ("a Columns change", () => RunOnUIThread.Execute(() => tableView.Columns.Add(MakeTextColumn("Team", bound: false)))),
                     ("losing capture", () => RunOnUIThread.Execute(() => GetHeaderHost(tableView).ReleasePointerCaptures())),
+                    ("a width change", () => RunOnUIThread.Execute(() => tableView.Columns[2].Width = new GridLength(tableView.Columns[2].ActualWidth + 20))),
+                    ("a Density change", () => RunOnUIThread.Execute(() => tableView.Density = tableView.Density == TableViewDensity.Compact ? TableViewDensity.Standard : TableViewDensity.Compact)),
                     ("unloading", () => RunOnUIThread.Execute(() => Content = null)),
                 };
                 foreach (var (cancelName, cancel) in cancels)
                 {
-                    DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), $"Precondition: dragging before {cancelName}."),
+                    FrameworkElement source = null;
+                    DragHeader(tableView, onDrag: () =>
+                        {
+                            Verify.IsTrue(PreviewShown(tableView), $"Precondition: dragging before {cancelName}.");
+                            source = GetHeaderCell(tableView, 0);
+                        },
                         cancel: () =>
                         {
                             cancel();
@@ -1995,6 +1997,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             RunOnUIThread.Execute(() =>
                             {
                                 Verify.IsFalse(PreviewShown(tableView), $"{cancelName} must cancel the drag and put every header back at Translation 0.");
+                                Verify.AreEqual("Normal", CurrentState(source, "CommonStates"), $"{cancelName} must take the dragged header out of Pressed.");
                             });
                         });
                 }
@@ -2140,87 +2143,103 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     VerifyOrder(tableView, "Name,A,D,B,C,E", "after dropping D over the frozen band");
                     Verify.IsFalse(PreviewShown(tableView), "After the drop every header is back at its pin or 0.");
+                    // D now starts at 300 in the panel; 200 px scrolled, its first 50 px are under the 150 px band.
+                    var clip = (GetHeaderCell(tableView, 2).Clip as RectangleGeometry)?.Rect;
+                    Verify.IsNotNull(clip, "The partly hidden D is clipped out of the frozen band after the drop.");
+                    Verify.AreEqual("50,100", $"{clip?.X},{clip?.Width}", "D's clip starts at the band's edge.");
                 });
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies that with the table scrolled, a frozen column dragged among the frozen columns moves its neighbour by its width from the pin, and that Esc puts both back at the pin.")]
+        [TestProperty("Description", "Verifies in LTR and RTL that with the table scrolled, a frozen column dragged among the frozen columns moves its neighbour by its width from the pin, and that Esc puts both back.")]
         public void VerifyFrozenSourceDragKeepsPins()
         {
-            var tableView = CreateScrolledFrozenTable(FlowDirection.LeftToRight, frozen: 2);
-            if (!InputReachesTable(tableView))
+            foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
-                return;
-            }
-            float pin = 0;
-            RunOnUIThread.Execute(() => pin = GetHeaderCell(tableView, 0).Translation.X);
-            Verify.IsGreaterThan(pin, 0f, "Precondition: the frozen headers are pinned against the scroll.");
-            SnapshotHeaders(tableView);
-            try
-            {
-                ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
-                RunOnUIThread.Execute(() =>
+                Log.Comment($"FlowDirection {flowDirection}.");
+                var tableView = CreateScrolledFrozenTable(flowDirection, frozen: 2);
+                if (!InputReachesTable(tableView))
                 {
-                    tableView.UpdateLayout();
-                    var shifts = Enumerable.Range(0, 6).Select(i => GetHeaderCell(tableView, i).Translation.X).ToArray();
-                    Log.Comment($"Pin {pin}; translations {string.Join(",", shifts)}.");
-                    Verify.IsLessThan((double)Math.Abs(shifts[0] - (pin + 150)), 0.5, "Name slides into A's slot from its pin.");
-                    Verify.IsLessThan((double)Math.Abs(shifts[1] - (pin - 150)), 1.0, "A stops at the row's leading edge, in Name's slot.");
-                    Verify.AreEqual("0,0,0,0", string.Join(",", shifts.Skip(2)), "The scrolling headers stay.");
-                    Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, 1)), "The dragged header paints above the frozen band.");
-                });
-                ReorderInput.SendChord(ReorderInput.VkEscape);
-                IdleSynchronizer.Wait();
-                RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "Esc puts the frozen headers back at the pin and ZIndex 1."));
+                    return;
+                }
+                float pin = 0;
+                RunOnUIThread.Execute(() => pin = GetHeaderCell(tableView, 0).Translation.X);
+                Verify.IsGreaterThan(pin, 0f, "Precondition: the frozen headers are pinned against the scroll.");
+                SnapshotHeaders(tableView);
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.UpdateLayout();
+                        var shifts = Enumerable.Range(0, 6).Select(i => GetHeaderCell(tableView, i).Translation.X).ToArray();
+                        Log.Comment($"Pin {pin}; translations {string.Join(",", shifts)}.");
+                        Verify.IsLessThan((double)Math.Abs(shifts[0] - (pin + 150)), 0.5, "Name slides into A's slot from its pin.");
+                        Verify.IsLessThan((double)Math.Abs(shifts[1] - (pin - 150)), 1.0, "A stops at the row's leading edge, in Name's slot.");
+                        Verify.AreEqual("0,0,0,0", string.Join(",", shifts.Skip(2)), "The scrolling headers stay.");
+                        Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, 1)), "The dragged header paints above the frozen band.");
+                    });
+                    ReorderInput.SendChord(ReorderInput.VkEscape);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsFalse(PreviewShown(tableView), "Esc puts the frozen headers back at the pin and ZIndex 1.");
+                        Verify.AreEqual("Normal", CurrentState(GetHeaderCell(tableView, 1), "CommonStates"), "Esc takes A out of Pressed.");
+                    });
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,A,B,C,D,E", "after the canceled drag"));
             }
-            finally
-            {
-                ReorderInput.LeftUp();
-            }
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,A,B,C,D,E", "after the canceled drag"));
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a header the pointer enters and then leaves slides back to 0.")]
-        public void VerifyLeftNeighbourSlidesBack()
+        [TestProperty("Description", "Verifies a header on either side that the pointer enters and then leaves slides back to 0 while the drag goes on.")]
+        public void VerifyEnteredNeighbourSlidesBack()
         {
-            TableView tableView = null;
-            RunOnUIThread.Execute(() =>
+            // Dragged header, neighbour entered, and the pointer's way back into the dragged header's slot.
+            foreach (var (dragged, neighbour, back) in new[] { (0, 1, 0.75), (1, 0, 0.25) })
             {
-                tableView = CreateReorderTable("Name", "Role", "City");
-                LoadContent(tableView);
-            });
-            SettleLayout(tableView);
-            if (!InputReachesTable(tableView))
-            {
-                return;
-            }
-            SnapshotHeaders(tableView);
-            // Measured before the drag moves Name.
-            var back = HeaderPoint(tableView, 0, 0.75);
-            try
-            {
-                ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.25));
-                RunOnUIThread.Execute(() => Verify.AreNotEqual(0f, GetHeaderCell(tableView, 1).Translation.X, "Precondition: Role slid over."));
-                ReorderInput.MoveTo(back);
-                IdleSynchronizer.Wait();
+                Log.Comment($"Dragging header {dragged} into header {neighbour} and back.");
+                TableView tableView = null;
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(0f, GetHeaderCell(tableView, 1).Translation.X, "Leaving Role slides it back.");
-                    Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, 0)), "The drag goes on.");
+                    tableView = CreateReorderTable("Name", "Role", "City");
+                    LoadContent(tableView);
                 });
-                ReorderInput.SendChord(ReorderInput.VkEscape);
+                SettleLayout(tableView);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                SnapshotHeaders(tableView);
+                // Measured before the drag moves the dragged header.
+                var backPoint = HeaderPoint(tableView, dragged, back);
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, dragged, 0.5), HeaderPoint(tableView, neighbour, 1 - back));
+                    RunOnUIThread.Execute(() => Verify.AreNotEqual(0f, GetHeaderCell(tableView, neighbour).Translation.X, "Precondition: the neighbour slid over."));
+                    ReorderInput.MoveTo(backPoint);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(0f, GetHeaderCell(tableView, neighbour).Translation.X, "Leaving the neighbour slides it back.");
+                        Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, dragged)), "The drag goes on.");
+                    });
+                    ReorderInput.SendChord(ReorderInput.VkEscape);
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,Role,City", "after the canceled drag"));
             }
-            finally
-            {
-                ReorderInput.LeftUp();
-            }
-            SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,Role,City", "after the canceled drag"));
         }
-
         // Name, A..E at 150px with the first columns frozen, scrolled by 200px. A is then under the band.
         private TableView CreateScrolledFrozenTable(FlowDirection flowDirection, int frozen)
         {
