@@ -295,6 +295,7 @@ sealed class BackgroundScene(BenchOptions options) : DecisionScene(options), ISc
             await Frames(2);
             Value("Iconic", Win32.IsIconicWindow(host.Hwnd) ? 1 : 0);
             Value("Visible", window.IsVisible ? 1 : 0);
+            Value("HostVisible", _root.XamlRoot?.IsHostVisible == true ? 1 : 0);
             await Hold(seconds: hidden ? BackgroundHoldSeconds : Options.StepSeconds);
         }
 

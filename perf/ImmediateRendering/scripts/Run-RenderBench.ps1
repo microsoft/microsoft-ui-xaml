@@ -220,7 +220,9 @@ try {
                 if ($DeleteTraces -and (Test-Path (Join-Path $runDir 'metrics.json'))) {
                     Remove-Item $etl -Force
                 }
-                Start-Sleep -Seconds 2
+                # Decision scenes compare session dwm.exe memory against a pre-window baseline; give DWM time to release the
+                # previous run's surfaces.
+                Start-Sleep -Seconds $(if ($decisionScenes -contains $scene) { 6 } else { 2 })
             }
         }
     }
