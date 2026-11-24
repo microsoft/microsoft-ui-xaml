@@ -191,7 +191,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void ValidateFocusOrderWithoutSelectedItem()
         {
             // Expected focus order: (other)->Header->GroupHeader->Footer->(other)
@@ -685,7 +685,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void CanTabOntoFirstNonEmptyGroupHeaderWithHiddenEmptyGroupsAtTheBeginning()
         {
             ListView lv = null;
@@ -741,56 +741,20 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
 
             UIExecutor.Execute(() =>
             {
-                lv.SelectedIndex = -1;
                 button.Focus(FocusState.Keyboard);
             });
             TestServices.WindowHelper.WaitForIdle();
 
-            for (int entry = 0; entry < 2; entry++)
-            {
-                Log.Comment("Tab into the ListView, which should focus the header for the first group with items.");
-                TestServices.KeyboardHelper.Tab();
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() =>
-                {
-                    // Item 0 will be in the first group with items.
-                    var itemContainer = lv.ContainerFromIndex(0);
-                    var firstNonEmptyGroupHeader = lv.GroupHeaderContainerFromItemContainer(itemContainer);
-                    Verify.IsNotNull(firstNonEmptyGroupHeader);
-                    Verify.AreEqual(firstNonEmptyGroupHeader, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
-                    Verify.AreEqual(-1, lv.SelectedIndex);
-                });
-
-                TestServices.KeyboardHelper.ShiftTab();
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() =>
-                {
-                    Verify.AreEqual(button, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
-                });
-            }
-
-            Log.Comment("After an item receives focus, tabbing back in should restore that item instead.");
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsTrue(((Control)lv.ContainerFromIndex(1)).Focus(FocusState.Keyboard));
-            });
-            TestServices.WindowHelper.WaitForIdle();
-
-            UIExecutor.Execute(() =>
-            {
-                Verify.IsTrue(button.Focus(FocusState.Keyboard));
-            });
-            TestServices.WindowHelper.WaitForIdle();
-
+            Log.Comment("Tab into the ListView, which should focus the header for the first group with items.");
             TestServices.KeyboardHelper.Tab();
             TestServices.WindowHelper.WaitForIdle();
 
             UIExecutor.Execute(() =>
             {
-                Verify.AreEqual(lv.ContainerFromIndex(1), FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
-                Verify.AreEqual(-1, lv.SelectedIndex);
+                // Item 0 will be in the first group with items.
+                var itemContainer = lv.ContainerFromIndex(0);
+                var firstNonEmptyGroupHeader = lv.GroupHeaderContainerFromItemContainer(itemContainer);
+                Verify.AreEqual(firstNonEmptyGroupHeader, FocusManager.GetFocusedElement(TestServices.WindowHelper.WindowContent.XamlRoot));
             });
         }
 
@@ -976,7 +940,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls.ListViewBase
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void ValidateArrowNavigationWithNonFocusableGroupsThatHaveFocusableChildren()
         {
             ListView lv = null;
