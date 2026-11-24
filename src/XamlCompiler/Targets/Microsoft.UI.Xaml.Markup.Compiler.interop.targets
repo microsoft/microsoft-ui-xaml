@@ -88,6 +88,10 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- For managed apps, OutputType is WinExe for Win32 -->
         <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == '' AND '$(OutputType)' == 'WinExe'">true</EnableWin32Codegen >
 
+        <!-- A managed desktop app built as a console exe (OutputType=Exe) is also Win32. Without this its generated
+             Main has no [STAThread], so the XAML UI thread starts in the MTA (#11028). -->
+        <EnableWin32Codegen Condition="'$(EnableWin32Codegen)' == '' AND '$(OutputType)' == 'Exe' AND '$(AppContainerApplication)' != 'true'">true</EnableWin32Codegen>
+
         <!-- If we couldn't determine whether we're building UWP or Win32, assume UWP. -->
         <EnableWin32Codegen  Condition="'$(EnableWin32Codegen)' == ''">false</EnableWin32Codegen>
 
