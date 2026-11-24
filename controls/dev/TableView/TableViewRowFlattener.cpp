@@ -2161,7 +2161,9 @@ bool TableViewRowFlattener::TryApplyTreeChange(winrt::Windows::Foundation::Colle
             if (mirroredCount == viewCount && index < mirroredCount)
             {
                 std::pair<std::wstring, std::wstring> keys;
-                applied = TryReadReplacementKeys(index, keys) && TryRemoveTreeNode(index) && TryInsertTreeNode(index, &keys);
+                bool isSameRow = false;
+                applied = TryReadReplacementKeys(index, keys, isSameRow) &&
+                    (isSameRow ? TryRefreshTreeRow(index) : (TryRemoveTreeNode(index) && TryInsertTreeNode(index, &keys)));
             }
             break;
         default:
@@ -2215,24 +2217,28 @@ void TableViewRowFlattener::RenumberSiblingRows(int32_t parentRow, int32_t depth
 
 // The new row's keys are read; the others are not. Its siblings stay in the view's order: it goes after the nearest
 // earlier view item with the same parent. Everything is found before anything changes.
-bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys)
+bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys, bool& isSameRow)
 {
     auto const index = m_treeIndex;
     auto const structure = m_treeStructure;
     auto const generation = m_declarationGeneration;
 
+    isSameRow = false;
     auto const item = m_view.GetAt(viewIndex);
     auto const oldItem = structure->Rows[viewIndex];
-    if (!item || winrt::get_abi(item) == winrt::get_abi(oldItem))
+    if (!item)
     {
         return false;
     }
+    const bool isSameObject = winrt::get_abi(item) == winrt::get_abi(oldItem);
     auto const oldKey = structure->KeyByItem.find(winrt::get_abi(oldItem));
     if (oldKey == structure->KeyByItem.end())
     {
         return false;
     }
-    if (auto const* const children = index->TryGetChildren(oldKey->second); children && !children->empty())
+    auto const* const children = index->TryGetChildren(oldKey->second);
+    const bool hasChildren = children && !children->empty();
+    if (hasChildren && !isSameObject)
     {
         return false;
     }
@@ -2241,6 +2247,21 @@ bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair
     if (m_treeRowsPending || generation != m_declarationGeneration || m_treeIndex != index || m_treeStructure != structure)
     {
         return false;
+    }
+    if (isSameObject)
+    {
+        // A row refreshed (coll[i] = coll[i]): unchanged keys keep its place, its children and its expansion.
+        auto const oldDeclaredParent = structure->ParentKeyByItem.find(winrt::get_abi(oldItem));
+        isSameRow = keys.first == oldKey->second &&
+            oldDeclaredParent != structure->ParentKeyByItem.end() && keys.second == oldDeclaredParent->second;
+        if (isSameRow)
+        {
+            return true;
+        }
+        if (hasChildren)
+        {
+            return false;
+        }
     }
 
     // What TryInsertTreeNode will check once the old row is gone; the old row's own key is free for the new one.
@@ -2251,7 +2272,18 @@ bool TableViewRowFlattener::TryReadReplacementKeys(uint32_t viewIndex, std::pair
         !ShapingHelpers::IsObjectNodeKey(key) && !ShapingHelpers::IsObjectNodeKey(declaredParent) &&
         (sameKey == structure->ItemByKey.end() || winrt::get_abi(sameKey->second) == winrt::get_abi(oldItem)) &&
         !structure->OrphanParentKeys.contains(key) && declaredParent != oldKey->second &&
-        !structure->KeyByItem.contains(winrt::get_abi(item));
+        (isSameObject || !structure->KeyByItem.contains(winrt::get_abi(item)));
+}
+
+bool TableViewRowFlattener::TryRefreshTreeRow(uint32_t viewIndex)
+{
+    auto const item = m_treeStructure->Rows[viewIndex];
+    const int32_t row = FindNodeRowIndex(item);
+    if (row >= 0 && !m_treeDetached)
+    {
+        m_treeRows.SetAt(static_cast<uint32_t>(row), item);
+    }
+    return true;
 }
 
 bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex, std::pair<std::wstring, std::wstring>* keys)

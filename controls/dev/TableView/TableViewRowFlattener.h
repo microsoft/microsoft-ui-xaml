@@ -230,8 +230,10 @@ private:
     bool TryApplyTreeChange(winrt::Windows::Foundation::Collections::CollectionChange change, uint32_t index);
     // keys: the new row's node key and declared parent key when already read (a Replace reads them first).
     bool TryInsertTreeNode(uint32_t viewIndex, std::pair<std::wstring, std::wstring>* keys = nullptr);
-    // A Replace's new row can take the old one's place: read and checked before the old row is removed.
-    bool TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys);
+    // A Replace's new row can take the old one's place: read and checked before the old row is removed. isSameRow: the
+    // same object with the same keys, refreshed in place by TryRefreshTreeRow.
+    bool TryReadReplacementKeys(uint32_t viewIndex, std::pair<std::wstring, std::wstring>& keys, bool& isSameRow);
+    bool TryRefreshTreeRow(uint32_t viewIndex);
     bool TryRemoveTreeNode(uint32_t viewIndex);
     int32_t FindNodeRowIndex(winrt::IInspectable const& item, int32_t from = 0) const;
     // Renumbers the visible rows of one sibling list (roots when parentRow is -1) after it changed.
