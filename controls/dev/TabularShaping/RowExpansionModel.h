@@ -72,6 +72,9 @@ namespace ShapingHelpers
         // source, so intent hidden behind a collapse or a filter survives.
         void RetainOnly(std::unordered_set<winrt::hstring> const& liveKeys);
 
+        // Whether any key differs from the default (RetainOnly has nothing to drop otherwise).
+        bool HasExceptions() const noexcept { return !m_nonDefault.empty(); }
+
         // Drops intent for one key that no longer exists. Silent, like RetainOnly.
         void Forget(winrt::hstring const& key) { m_nonDefault.erase(key); }
 

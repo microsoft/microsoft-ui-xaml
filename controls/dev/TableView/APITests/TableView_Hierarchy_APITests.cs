@@ -599,6 +599,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a same-object Replace in the turn the tree read that row's keys reads its new parent key: the row read last at load (Gus) is reparented and moves under its new parent.")]
+        public void VerifySameObjectReplaceInLoadTurnReadsNewParentKey()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                EnsureTabularControlsResources();
+                list = MakeTree();
+                tableView = CreateTreeTable(list, IdPath, ManagerPath);
+                list[6].ManagerId = 5;
+                list[6] = list[6];
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            Toggle(tableView, "Eve", true);
+
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1+ Eve1- Fay2 Gus2", "Gus moved under Eve"));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies unsorted siblings follow source order after a Move.")]
         public void VerifyMoveKeepsSiblingOrderBySource()
         {

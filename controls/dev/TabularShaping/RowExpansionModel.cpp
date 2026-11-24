@@ -45,6 +45,11 @@ namespace ShapingHelpers
             return defaultExpanded;
         }
 
+        if (m_nonDefault.empty())
+        {
+            return defaultExpanded;
+        }
+
         return m_nonDefault.find(key) != m_nonDefault.end() ? !defaultExpanded : defaultExpanded;
     }
 
