@@ -1601,7 +1601,10 @@ void NavigationView::UpdateRootSplitViewClip(winrt::Size const& size)
 
 void NavigationView::UpdateOpenPaneLength(double width)
 {
-    if (!IsTopNavigationView() && m_rootSplitView)
+    // While the pane is invisible, keep the pane length as it is. The SplitView is collapsed to CompactOverlay with a zero
+    // CompactPaneLength then, and each OpenPaneLength change made during a resize renders one frame with the content moved
+    // aside (screen blink). The length is updated again when the pane becomes visible.
+    if (!IsTopNavigationView() && m_rootSplitView && IsPaneVisible())
     {
         const auto newOpenPaneLength = std::max(0.0, std::min(width, OpenPaneLength()));
         const bool openPaneLengthChanged = m_OpenPaneLength != newOpenPaneLength;
@@ -4624,11 +4627,17 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdateVisualState();
         UpdatePaneButtonsWidths();
         UpdateBackAndCloseButtonsVisibility();
+        // The pane length isn't updated in Top mode or while the pane is invisible, so it can be stale here.
+        UpdateOpenPaneLength(ActualWidth());
     }
     else if (property == s_IsPaneVisibleProperty)
     {
         UpdatePaneVisibility();
         UpdateVisualStateForDisplayModeGroup(DisplayMode());
+
+        // Apply the width and OpenPaneLength changes made while the pane was invisible, now that the SplitView is
+        // out of its collapsed state.
+        UpdateOpenPaneLength(ActualWidth());
 
         // When NavView is in expaneded mode with fixed window size, setting IsPaneVisible to false doesn't closes the pane
         // We manually close/open it for this case
