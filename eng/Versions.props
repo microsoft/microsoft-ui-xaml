@@ -107,7 +107,7 @@
          newer runtime to use recent C# features (eg. 'required' members and 'init'-only setters). -->
     <SamplesTargetFrameworkMoniker>net8.0-windows$(WindowsAppSdkTargetPlatformVersion)</SamplesTargetFrameworkMoniker>
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
-    <MicrosoftCsWinRTv3PackageVersion>3.0.0-preview.261104.1</MicrosoftCsWinRTv3PackageVersion>
+    <MicrosoftCsWinRTv3PackageVersion>3.0.0-preview.261124.1</MicrosoftCsWinRTv3PackageVersion>
     <TaefCsWinRT3NugetPackageVersion>11.0.261015001-cswinrt3Attributes</TaefCsWinRT3NugetPackageVersion>
     <WindowsAppSdkWindowsSdkPackageVersionSuffix_v3>88-preview</WindowsAppSdkWindowsSdkPackageVersionSuffix_v3>
     <WindowsAppSdkWindowsSdkPackageVersion_v3>10.0.17763.$(WindowsAppSdkWindowsSdkPackageVersionSuffix_v3)</WindowsAppSdkWindowsSdkPackageVersion_v3>
