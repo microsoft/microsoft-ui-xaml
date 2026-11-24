@@ -2793,7 +2793,10 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         // the request arrives for a container focus has already left, whose position may now be
         // a recycled or estimated one; honoring it scrolled the body back to the top.
         const auto requested = args.TargetRect();
-        const bool focusPadded = requested.Y < -0.5f || requested.Y + requested.Height > target.ActualHeight() + 0.5;
+        // Sub-pixel layout rounding of the rect must not read as focus padding.
+        constexpr double c_layoutRoundingTolerance = 0.5;
+        const bool focusPadded = requested.Y < -c_layoutRoundingTolerance ||
+            requested.Y + requested.Height > target.ActualHeight() + c_layoutRoundingTolerance;
         if (focusPadded && !IsBodyFocusInContainer(bodyItem))
         {
             args.Handled(true);
