@@ -16,6 +16,7 @@ No harness, instrumentation event, or result described here exists yet unless st
 - [Required WinUI instrumentation](#required-winui-instrumentation)
 - [Comparative report format](#comparative-report-format)
 - [Measurement pitfalls](#measurement-pitfalls)
+- [Backend decision scenarios (S24-S32)](#backend-decision-scenarios-s24-s32)
 
 ## Purpose
 
@@ -1003,3 +1004,182 @@ All 117 skipped TAEF tests are the D2D-HW painter variants, which skip because t
   - High contrast can't be tested per process.
   - D2D-HW is unmeasured because the VM has no GPU, and its tests skip.
   - S22's Comp screen capture needs a desktop larger than the window.
+
+## Backend decision scenarios (S24-S32)
+
+S1-S23 compare typical pages at one size. Choosing a backend for an app depends on how cost grows with the app's
+shape, so S24-S32 measure cost curves instead:
+
+- fixed per-window cost;
+- cost per window pixel and per visible element;
+- behaviour while minimized or hidden;
+- churn and leaks;
+- CPU under continuous animation.
+
+Every scene is a deterministic step sweep using programmatic input only. Each step records one `StepMetrics`, and each
+(scene, backend, repetition) runs in its own process. Scene code: `RenderBench\DecisionScenes.cs`. Analysis:
+`RenderBench.Core\Analysis\MetricsCalculator.Decision.cs`. Run them with `Run-RenderBench.ps1 -Scenes decision`
+(aliases s24-s32).
+
+### Scene definitions
+
+| Id | Scene | Steps | Question |
+|---|---|---|---|
+| S24 | `winsize` | The S1 settings page at client sizes 640x480, 1280x800, 1920x1080, 2560x1440 and 3840x2160. | Does the immediate back buffer overtake the savings on large or high-resolution windows? MB per megapixel (slope) and intercept. |
+| S25 | `density` | A full 1280x800 window with 250, 1k, 4k, 16k and 32k visible elements: a third each Border+TextBlock tiles (rounded corners), Rectangles and Ellipses. No virtualization. | Where does Composition's per-visual cost exceed immediate's? MB per 1k elements, and CPU ms per full-window frame. |
+| S26 | `windowcount` | 1, 2, 4, 8 and 16 open 400x300 windows with light content. | Fixed per-window cost: MB per extra window (slope). |
+| S27 | `background` | visible, minimized (12 s), restored, hidden (`AppWindow.Hide`, 12 s), shown, occluded (a topmost opaque popup covering the window), unoccluded. | Are back buffers and surfaces released when the window is not visible? This matters for tray and background apps. |
+| S28 | `navchurn` | A Frame (CacheSize 0) shows 200 new pages, cycling through 10 page types. Each page has a unique 128x128 WriteableBitmap and seeded text. A full GC and a step every 20 navigations. | Growth slope (MB per 100 navigations) and the size of the painter caches. |
+| S29 | `sustained` | pre (idle), animating (60 s: 200 tiles rotating forever plus a 20-tile ticker updated every frame), stopped. | CPU ms per second (process and by thread category), FPS and memory under the immediate backends' worst case. |
+| S30 | `resize` | pre, storm (150 programmatic resizes to seeded sizes between 800x600 and 1600x1000, one frame each), settle (back to the start size), recovered (after a full GC). | Peak during the storm, steady state after settling, and recovery to the pre-storm level. |
+| S31 | `minimal` | A 320x200 tray-style window with one TextBlock and one Button: idle (after one click), then after-gc. | Each backend's memory floor and fixed initialization cost. |
+| S32 | `largecanvas` | A ScrollViewer over a 10000x10000 Canvas with 3000 items (a third each Border+TextBlock nodes, connecting Lines and shapes). Steps at ZoomFactor 1, 0.25 and 4, each followed by a 60-frame programmatic pan (`ChangeView`, disableAnimation). | Composition's virtual surfaces and tiling versus immediate repaint of the viewport. |
+
+### Metrics
+
+Each step's values are read from the second half of the step, after it has settled.
+
+| Metric | Definition |
+|---|---|
+| In-proc MB | RenderBench private commit: the median of the 500 ms samples in the step. **Peak** is the largest sample in the step. |
+| WS MB | Working set, median. |
+| DWM Δ MB | Private bytes of the session's `dwm.exe` (the instance in RenderBench's session) at the step, minus a baseline taken before RenderBench creates its window. Composition surfaces, and the immediate backends' swap chains as composed by DWM, live there; in-process private bytes don't count them. Reading DWM needs the elevated shell. |
+| Total MB | In-proc MB + DWM Δ MB. |
+| CPU ms/s | Process CPU per second over the step. Per-thread categories (UI, WARP rasterizer, D2D/DWrite, Composition, Other) come from ETW CPU sampling. |
+| Full-frame CPU ms | S25: the root background is toggled five times, two frames apart, each a full-window invalidation. The value is the process CPU per invalidation, averaged over the five. |
+| Frames / FPS | Presented frames in the step. |
+| Gates | UnsupportedContent = 0 and WindowFallbackCount = 0 for every run, plus the usual harness gates. |
+
+The analysis computes these summaries:
+
+- least-squares slope and intercept: S24 MB per megapixel, S25 MB per 1k elements, S26 MB per window;
+- S28 growth slope over nav-20 to nav-200, after first use;
+- S27 deltas of each state against the visible step;
+- S30 storm peak, settle and recovered deltas against pre;
+- S29 CPU ms per second by thread category.
+
+Kit tests cover the fits, the per-window cost, the growth slope, the CPU rates and the option parsing of the new scenes
+(`RenderBench.Tests\DecisionScenesTests.cs`).
+
+### Deviations from the requested design
+
+- S24:
+  - The window is placed at (0,0) and extends past the VM's 1024x768 desktop. `WM_GETMINMAXINFO` is raised so that
+    Windows doesn't clamp it.
+  - The `ClientWidth` and `ClientHeight` reported per step confirm that every size is reached, and frames are
+    presented at each size.
+  - 3840x2160 is included.
+- S25 measures five full-window invalidations per step instead of one, and reports their average.
+- S27:
+  - WinUI doesn't detect occlusion: `XamlRoot.IsHostVisible` stays true under the occluding popup. The occluded step
+    therefore shows no backend reaction.
+  - Invisible states hold for 12 s, which is longer than the 10 s requested and longer than the framework's 2 s
+    background-resource timer.
+- S28:
+  - `Frame.Navigate` needs XAML type metadata, and RenderBench's code-only pages have none: Navigate fails with an
+    access violation.
+  - Each navigation therefore replaces `Frame.Content` with a new page instance, so there is no back stack. This is
+    equivalent for page creation and teardown and for the caches.
+- S29 uses 200 rotating tiles and a 20-tile ticker.
+- DWM baseline:
+  - dwm.exe keeps a closed window's surfaces until another top-level window is shown and closed. After a 4K window
+    that is about 30 MB, which would otherwise leave the next run with DWM Δ ≈ -32 MB.
+  - `Run-RenderBench.ps1` therefore shows and closes a small WinForms window before every decision run (Invoke-DwmSettle).
+    RenderBench then waits for dwm.exe private bytes to stabilize before taking the baseline.
+  - An in-process probe window, even a captioned one, did not trigger the release.
+- D2D-HW isn't measured: the VM has no GPU.
+- The ResourceInventory surface column (Backend surf MB) reflects one window.
+- Harness idle CPU (sampling, ETW) is a constant 170-290 ms/s offset on this VM in every backend. Compare CPU across
+  backends rather than in absolute terms.
+
+### Decision results
+
+The run is the matrix from 24 November 2026 on the GPU-less Hyper-V VM: two repetitions per (scene, backend), with medians
+reported. The report is `C:\mux-ir\results\decision-scenarios.html`, generated by `C:\mux-ir\results\build-html-decision.ps1`
+from `C:\mux-ir\results\decision\{main,system,notrim}`. Total MB = in-process private MB + DWM Δ.
+
+| Scene | Metric | Comp (Lifted) | Comp (System) | GDI+ | D2D-SW |
+|---|---|---|---|---|---|
+| S24 winsize | Total MB per megapixel (slope) | 0.15 | 0.09 | 8.3 (5.1-11.5) | 0.96 |
+| S24 winsize | Intercept MB | 48.8 | 39.2 | 31.2 | 43.5 |
+| S25 density | MB per 1k visible elements | 98 | 86 | 4.9 | 23.6 (15.6-31.6) |
+| S25 density | Full-frame CPU ms at 32k elements | 1600 | 1062 | 423 | 29,219 (5.3-53 s) |
+| S26 windowcount | Total MB per extra window | 1.35 | 0.42 | 1.48 | 3.16 |
+| S26 windowcount | First window MB | 31.4 | 25.4 | 28.5 | 34.3 |
+| S27 background | In-process Δ minimized / hidden (MB) | -0.2 / 0 | +0.6 / +0.7 | -11.8 / -12.2 | -7.4 / -6.6 |
+| S28 navchurn | Total MB per 100 navigations | 6.0 | 4.1 | 5.0 | 7.7 |
+| S29 sustained | Process CPU ms/s | 512 | 438 | 1247 | 3275 |
+| S29 sustained | FPS | 31.6 | 31.5 | 34.7 | 37.8 |
+| S29 sustained | Total MB | 86.8 | 54.1 | 44.8 | 93.9 |
+| S30 resize | Storm peak MB | 48.4 | 43.6 | 44.8 | 51.3 |
+| S30 resize | Δ after settle vs pre-storm (MB) | -3.3 | -3.0 | -1.5 | +7.6 |
+| S30 resize | Storm CPU ms/s | 960 | 1131 | 1295 | 1762 |
+| S31 minimal | Floor in-process MB (Total) | 26.6 (27.9) | 23.8 (23.4) | 24.2 (23.1) | 28.3 (27.8) |
+| S32 largecanvas | Peak MB | 850, crashed | 808, crashed | 64 | 74 |
+| S32 largecanvas | Pan CPU ms/s | 299 | 271 | 641 | 908 |
+| S32 largecanvas | Zoom 4 Δ MB vs zoom 1 | +360 | +317 | +1.3 | +11.7 |
+
+Crossovers and slopes:
+
+- S24: GDI+ crosses Comp (Lifted) at about 2.1 MP (about 1920x1080). D2D-SW crosses it at about 6.5 MP. Neither
+  immediate backend is below Comp (System) above about 1 MP.
+- S25: there is no crossover. GDI+ and D2D-SW are below Composition from 250 elements upwards, and the gap grows with
+  the element count.
+- S26: Comp (System) has the smallest fixed per-window cost. D2D-SW has the largest, because each window has its own
+  painter and swap chain.
+- S28: all backends grow by similar amounts, about the size of the unique 64 KB WriteableBitmap each page creates. The
+  painter caches stay bounded: the cache maximum equals the end value, 7.4 MB for GDI+ and 6.5 MB for D2D-SW.
+
+S1 anchor (steady MB, same session vs main matrix): Comp 46.5 vs 46, GDI+ 36.8 vs 46, D2D-SW 39.7 vs 44. The decision
+runs sit at or below the main matrix, so they can be compared with it.
+
+#### S27 hidden-window trim (product change)
+
+- Before this branch, the immediate backends kept their swap chain and painter layers while minimized or hidden.
+- The branch adds a per-island trim. When `XamlRoot.IsHostVisible` has been false for 2 s, ImmediateRenderer
+  releases the island's swap chain and painter caches and calls `IDXGIDevice3::Trim`. The next visible frame recreates
+  them.
+  - The render walk is forced on visibility changes (`RequestImmediateVisibilityWalk`), so the trim runs even
+    when nothing is dirty.
+  - The trim runs only on the immediate path, and `WINUI_IMMEDIATE_TRIM_HIDDEN=0` disables it.
+  - Native tests are in `RenderingBackendTests`.
+
+| Backend | Minimized Δ MB, no trim | Minimized Δ MB, trim | Hidden Δ MB, no trim | Hidden Δ MB, trim |
+|---|---|---|---|---|
+| GDI+ | -0.95 | -11.8 (-7.1..-16.9) | -1.18 | -12.2 |
+| D2D-SW | -0.33 | -7.4 | +0.76 | -6.6 |
+
+Restore and show return to the visible level with no visible delay.
+
+#### Findings and open questions
+
+- **Comp `largecanvas` runs out of memory.** Both engines fail with E_OUTOFMEMORY (0x8007000e, stowed exception
+  0xC000027B) in Microsoft.UI.Xaml.dll during the ZoomFactor 4 pan, at about 810-850 MB private, in 4 of 4 runs.
+  - On this VM the WARP device and its surfaces are in-process.
+  - Not yet checked whether stock WinUI behaves the same.
+- **GDI+ winsize variance.** GdiPlusPainter allocates a full window-size layer per opacity or rounded-clip nesting
+  depth, plus a mask, lazily. It keeps them until the next resize. Its surface is therefore 1-3x the window,
+  depending on content and timing.
+  - Recommendation: size layers to the clip bounds, or release them when idle.
+- **D2D-SW density pathology (not profiled).** Each rounded Border pushes a geometry-mask layer: about 10.7k per frame
+  at 32k elements on WARP. The 32-entry clip-geometry LRU thrashes. Full-frame time varies between 5 and 53 s.
+- **Navchurn retention.** The growth is the same in every backend and matches one bitmap per page. Pages or their
+  bitmaps may be retained outside the backend (not backend-specific).
+- **Occlusion** isn't reported by WinUI, so no backend reacts to it.
+- **Thread categories:** WARP rasterizer threads are counted as "Other".
+- **D2D-HW** wasn't measured: the VM has no GPU.
+
+### Backend decision guide
+
+| Decision factor | Memory winner | CPU winner | Measured crossover or slope | Recommendation |
+|---|---|---|---|---|
+| Large or high-DPI windows | Comp (System) | Comp | GDI+ 5-12 MB/MP crosses Comp (Lifted) at ~2 MP; D2D-SW ~1 MB/MP crosses at ~6.5 MP | Composition for large windows when memory matters. Size the GDI+ layers to the clip bounds. |
+| Element-dense UI | GDI+ | GDI+ | Comp 86-98 MB per 1k elements vs GDI+ 4.9; no crossover | GDI+. Avoid D2D-SW on WARP with many rounded clips. |
+| Many windows | Comp (System) | n/a | 0.4 (System), 1.35 (Lifted), 1.5 (GDI+), 3.2 (D2D-SW) MB per window | Comp (System); Lifted and GDI+ are close. |
+| Tray or background app | GDI+ / D2D-SW with trim | n/a | -12 MB (GDI+) and -7 MB (D2D-SW) within ~2 s when hidden | Immediate with the hidden-window trim. |
+| Long-running, navigation-heavy app | none | n/a | 4-8 MB per 100 navigations in every backend | Not a differentiator. Painter caches are bounded. |
+| Continuous animation on CPU-only machines | GDI+ | Comp | 440-510 vs 1250 (GDI+) vs 3270 (D2D-SW) ms/s at 31-38 FPS | Composition. |
+| Resize-heavy | Comp / GDI+ | Comp (Lifted) | D2D-SW keeps +7.6 MB after the storm | Composition or GDI+. |
+| Tiny utility | GDI+ / Comp (System) | n/a | Floors 23-24 MB vs 26.6 (Lifted) and 28.3 (D2D-SW) | GDI+ or Comp (System). |
+| Huge zoomable canvas | GDI+ | Comp, until it crashes | Comp +317-360 MB at zoom 4, then OOM; immediate +1-12 MB | Immediate. |
+| Interop-heavy (SwapChainPanel, media, Lottie, app visuals) | n/a | n/a | Falls back per window | Composition, which those windows use anyway. |

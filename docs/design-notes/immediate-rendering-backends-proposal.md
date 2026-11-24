@@ -392,6 +392,22 @@ on hardware content rendering but may increase CPU time, memory bandwidth, and e
 Do not replace an objective of lower total UI memory with a proxy of fewer visuals, lower app working set, or lower
 GPU allocation alone. Report benefits and regressions by workload and backend rather than producing one overall score.
 
+The decision scenarios (S24-S32) measured these cost curves on a GPU-less VM. See
+[Backend decision scenarios](immediate-rendering-backends-test-plan.md#backend-decision-scenarios-s24-s32).
+
+**Where immediate wins:**
+- Element-dense UI: GDI+ costs about 5 MB per 1k visible elements, against 86-98 MB for Composition.
+- Huge zoomable canvases: Composition ran out of memory at ZoomFactor 4.
+- Tray and background apps, using the hidden-window trim added for the immediate path.
+
+**Where Composition wins:**
+- Large windows: GDI+ costs 5-12 MB per megapixel and crosses Composition at about 2 MP.
+- Many windows: Comp (System) adds 0.4 MB per window.
+- Continuous full-window animation on CPU-only machines: about 0.5 s/s of CPU, against 1.25 s/s for GDI+ and 3.3 s/s
+  for D2D-SW.
+
+Navigation churn and resize storms don't differentiate the backends.
+
 ## Evaluation plan
 
 The detailed test cases, metric definitions, and measurement methods are in the

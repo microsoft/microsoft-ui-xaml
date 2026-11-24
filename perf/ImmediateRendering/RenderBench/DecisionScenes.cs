@@ -379,7 +379,7 @@ sealed class NavChurnScene : DecisionScene, IScene
             done += batch;
             Collect();
             host.Step(step++, $"nav-{done}", done);
-                await Hold();
+            await Hold();
         }
     }
 }
