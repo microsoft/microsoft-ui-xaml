@@ -870,8 +870,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE CollectionViewSourceGenerated::add_Filt
     ARG_VALIDRETURNPOINTER(pToken);
     *pToken = {};
     static constexpr WCHAR c_message[] = L"CollectionViewSource.Filter is an experimental API that this build does not include.";
-    IFC_RETURN(ErrorHelper::OriginateError(E_NOTIMPL, ARRAYSIZE(c_message) - 1, c_message));
-    return E_NOTIMPL;
+    return ErrorHelper::OriginateError(E_NOTIMPL, ARRAYSIZE(c_message) - 1, c_message);
 #endif
 }
 

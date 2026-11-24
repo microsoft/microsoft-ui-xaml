@@ -8,8 +8,22 @@
 
 #include "precomp.h"
 #include "VectorCollectionView_ShapingInternal.h"
+#include <XamlTraceLogging.h>
 
 using namespace DirectUI;
+
+void ShapingEngine::TraceContainedFailure(HRESULT hr, HRESULT capturedHr, bool hasErrorInfo)
+{
+    TraceLoggingWrite(
+        g_hTraceProvider,
+        "CollectionViewContainedFailure",
+        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+        TraceLoggingHResult(hr, "HResult"),
+        TraceLoggingHResult(capturedHr, "CapturedHResult"),
+        TraceLoggingBoolean(hasErrorInfo, "HasErrorInfo"),
+        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+}
 
 HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
@@ -349,16 +363,21 @@ _Check_return_ HRESULT VectorCollectionView::HasShapingRules(_Out_ bool* pHasRul
 // A rule changed (WPF: RefreshOrDefer after a SortDescriptions, GroupDescriptions or Filter change).
 _Check_return_ HRESULT VectorCollectionView::OnShapingRulesChanged()
 {
-    UINT groupCount = 0;
-    bool hasRules = false;
-
     if (!m_isShapingEnabled)
     {
         return S_OK;
     }
 
-    // A source change recomputes too, but only a rule change starts incremental loading over.
+    // Only a rule change starts incremental loading over, not a source change RunPendingRecompute replays.
     ResetIncrementalLoadState();
+    IFC_RETURN(ApplyShapingRules());
+    return S_OK;
+}
+
+_Check_return_ HRESULT VectorCollectionView::ApplyShapingRules()
+{
+    UINT groupCount = 0;
+    bool hasRules = false;
 
     if (m_shapeBusyDepth > 0)
     {
@@ -419,7 +438,7 @@ _Check_return_ HRESULT VectorCollectionView::RunPendingRecompute()
             m_areSourceIndicesValid = false;
             IFC_RETURN(ErrorHelper::OriginateError(E_ILLEGAL_METHOD_CALL, ARRAYSIZE(c_message) - 1, c_message));
         }
-        IFC_RETURN(OnShapingRulesChanged());
+        IFC_RETURN(ApplyShapingRules());
     }
     return S_OK;
 }
