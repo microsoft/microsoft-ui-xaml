@@ -433,7 +433,7 @@ History);
             etw = null;
             cpu?.Dispose();
             cpu = null;
-            recordings?.Close("ETW could not start");
+            recordings?.AbortStartup();
             etwFromProcessStart = false;
             SetEtwStartError(error);
             SaveStartupRecordings("ETW could not start");
@@ -590,7 +590,7 @@ History);
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
         var token = cancellation.Token;
-        var sessionPath = Recording?.Path;
+        var sessionPath = recordings?.SnapshotRecordingPath;
         TreeSnapshotDocument snapshot;
         await targetCommands.WaitAsync(token).ConfigureAwait(false);
         try
@@ -619,6 +619,10 @@ History);
             token.ThrowIfCancellationRequested();
             File.Move(temporary, path);
             committed = true;
+            if (recordings is { } group)
+            {
+                await group.SaveSnapshotAsync(snapshot, path, token).ConfigureAwait(false);
+            }
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
                 snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);
         }
@@ -697,6 +701,36 @@ History);
     private async Task CleanupAsync(bool targetExited = false)
     {
         var errors = new List<Exception>();
+        // Disconnect from the TAP first. The heartbeat has stopped, and the TAP closes the pipe when no request comes for
+        // 30 seconds (PipeServer OperationMilliseconds); closing a large recording can take longer than that, and a
+        // Disconnect sent after it then fails with "Pipe is broken".
+        if (tap is not null)
+        {
+            try
+            {
+                if (!targetExited && Failure is null && !tap.IsClosed)
+                {
+                    await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+            catch (Exception error)
+            {
+                errors.Add(error);
+            }
+            finally
+            {
+                try
+                {
+                    await tap.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception error)
+                {
+                    errors.Add(error);
+                }
+                tap = null;
+            }
+        }
+
         try
         {
             // Stop the source before the pipeline so nothing is posted to a finished queue, and the pipeline before the
@@ -751,35 +785,6 @@ History);
 
             }
             sampling = null;
-        }
-        if (tap is not null)
-        {
-            try
-            {
-                if (!targetExited && Failure is null && !tap.IsClosed)
-                {
-                    await tap.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
-                }
-            }
-            catch (Exception error)
-            {
-                errors.Add(error);
-
-            }
-            finally
-            {
-                try
-                {
-                    await tap.DisposeAsync().ConfigureAwait(false);
-
-                }
-                catch (Exception error)
-                {
-                    errors.Add(error);
-
-                }
-                tap = null;
-            }
         }
         if (nativeLaunch is not null) nativeLaunch.Dispose();
         else target?.Dispose();

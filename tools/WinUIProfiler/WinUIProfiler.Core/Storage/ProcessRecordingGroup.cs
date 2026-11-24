@@ -1,4 +1,7 @@
 using System.Diagnostics;
+using System.Text.Json;
+using Microsoft.Data.Sqlite;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
@@ -26,6 +29,7 @@ internal sealed class ProcessRecordingGroup : IDisposable
     private readonly int primaryProcessId;
     private readonly int? launcherProcessId;
     private int closed;
+    private int startupFailed;
 
     internal ProcessRecordingGroup(IReadOnlyCollection<SessionStart> sources, int primaryProcessId,
         int? launcherProcessId, string? directory)
@@ -122,6 +126,28 @@ internal sealed class ProcessRecordingGroup : IDisposable
         {
             recording.Writer?.PostSample(sample, wait: false);
         }
+    }
+
+    internal string? SnapshotRecordingPath => Volatile.Read(ref startupFailed) == 0 ? Primary.Recording?.Path : null;
+
+    internal async Task SaveSnapshotAsync(TreeSnapshotDocument snapshot, string jsonPath, CancellationToken token)
+    {
+        if (Volatile.Read(ref startupFailed) != 0 || recordings[primaryProcessId].Writer is not { } writer) return;
+        try
+        {
+            await writer.SaveSnapshotAsync(snapshot, jsonPath, token).ConfigureAwait(false);
+        }
+        catch (Exception error) when (error is IOException or InvalidDataException or JsonException or
+            ObjectDisposedException or SqliteException)
+        {
+            throw new IOException($"The snapshot JSON was saved to '{jsonPath}', but storing it in the session failed: {error.Message}", error);
+        }
+    }
+
+    internal void AbortStartup()
+    {
+        Interlocked.Exchange(ref startupFailed, 1);
+        Close("ETW could not start");
     }
 
     // What the CPU sampling recorded, or why there is none (summary null), for every session file. Call before Close.

@@ -306,6 +306,69 @@ The trees and resource counters do not require a recording database, heap captur
 or MUX changes. The **Textures** section uses the snapshot's original ETW
 recording, when one is available.
 
+When the connection has a recording database, each successful capture is also
+committed to its `TreeSnapshots` table before capture completion is reported.
+The complete validated JSON is stored in `Document`, independently of the
+export file. This includes both trees, root intervals, correlations, properties,
+limitations and resource capture status/counters. A database write failure is
+reported with the path of the JSON that was saved; it is not reported as a
+successful database capture. Connections without a database still export JSON.
+If ETW fails to start after creating a recording file, captures also remain
+JSON-only; the failed recording is kept for diagnostics, not used for snapshots.
+Saved documents have separate size bounds from native transfers because JSON
+escaping can expand icon, emoji and other text. They remain subject to the
+recording's actual byte budget and the same schema and identity validation.
+
+Start with `SnapshotSummary`, or find the snapshot views in `QueryCatalog`:
+
+```sql
+SELECT CaptureId, SavedUtc, JsonPath, EndQpc, XamlNodes, CompositionNodes,
+       ResourceStatus, OutstandingAllocSize
+FROM SnapshotSummary ORDER BY EndQpc;
+
+SELECT * FROM SnapshotNodes WHERE CaptureId = :capture AND Tree = 'Xaml';
+SELECT * FROM SnapshotRoots WHERE CaptureId = :capture;
+SELECT * FROM SnapshotCorrelations WHERE CaptureId = :capture;
+SELECT * FROM SnapshotResources WHERE CaptureId = :capture;
+```
+
+`SnapshotNodes.Properties` retains the complete property JSON, including
+unknown/nested properties and explicit nulls. For example, compare opacity on
+objects present in both captures from the same database:
+
+```sql
+WITH Nodes AS MATERIALIZED (
+    SELECT * FROM SnapshotNodes WHERE CaptureId IN (:before, :after)),
+Roots AS MATERIALIZED (
+    SELECT * FROM SnapshotRoots WHERE CaptureId IN (:before, :after))
+SELECT b.Tree, b.ObjectAddress, b.Type,
+       b.Properties -> '$.opacity' AS BeforeOpacity,
+       a.Properties -> '$.opacity' AS AfterOpacity
+FROM Nodes b
+JOIN Roots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
+JOIN Nodes a ON a.Tree = b.Tree
+    AND a.ObjectAddress = b.ObjectAddress AND a.Type = b.Type
+JOIN Roots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
+    AND ar.ThreadId = br.ThreadId AND ar.XamlRootAddress = br.XamlRootAddress
+WHERE b.CaptureId = :before AND a.CaptureId = :after
+    AND (b.Properties -> '$.opacity') IS NOT (a.Properties -> '$.opacity');
+```
+
+The views expand snapshot JSON on demand. When joining them, materialize the
+capture-filtered rows once as above; otherwise SQLite can repeatedly parse the
+documents for each candidate node, making comparisons of real trees very slow.
+
+Node/root IDs are capture-local, not cross-capture identities. The example
+matches root thread/address and object address/type, as the tree comparison
+does; addresses alone cannot prove continuous lifetimes between captures.
+IDs and unsigned graphics counters are exposed as exact decimal **text**,
+not SQLite REAL or signed integers. Use `->` to preserve large numeric property
+tokens; calculate full-range unsigned counter deltas with decimal arithmetic
+outside SQLite. Signed allocator counters remain integers, with `-1` unavailable.
+The existing session size limit includes snapshot documents: rolling retention
+can delete whole oldest captures as well as events/samples, but never parts of a
+capture. JSON exports are not deleted. Older databases have no stored snapshots.
+
 In snapshot viewers and comparisons, expand **Textures** inside
 **Resource allocations**, after the existing resource groups. The section lists
 process-wide D3D11 Texture1D/2D/3D lifetimes at the tree capture's end QPC.
