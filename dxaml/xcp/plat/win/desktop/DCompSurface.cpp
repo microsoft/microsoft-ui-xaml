@@ -804,7 +804,7 @@ DCompSurface::CopySubresource(
         sourceBoxWithGutters.bottom = pSource->GetHeight();
     }
 
-    TraceSurfaceTextureObserved(pDestD3DResource, dstOffsetWithGutters);
+    TraceSurfaceTextureObserved(pDestD3DResource, dstOffsetNoGutters);
 
     // Nobody should be staging from heap memory
     ASSERT(pSource->IsDriverVisible());
@@ -1398,7 +1398,8 @@ void DCompSurface::TraceSurfaceInit(DXGI_FORMAT format)
 
 void DCompSurface::TraceSurfaceTextureObserved(_In_ IUnknown* updateObject, const POINT& offset) noexcept
 {
-    if (!XamlProfilerTracing::IsProfilerEnabled())
+    if (!XamlProfilerTracing::IsProfilerEnabled() ||
+        !XamlProfilerLogging::IsEnabled(WINEVENT_LEVEL_VERBOSE))
     {
         return;
     }

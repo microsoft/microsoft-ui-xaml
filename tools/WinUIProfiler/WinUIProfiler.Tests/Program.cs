@@ -1386,6 +1386,7 @@ finally
 }
 Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
 
+SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();

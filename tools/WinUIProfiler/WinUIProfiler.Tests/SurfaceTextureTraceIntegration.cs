@@ -5,26 +5,59 @@ using System.Runtime.Versioning;
 using Microsoft.Diagnostics.Tracing;
 using WinUIProfiler.Engine.Events;
 
-[SupportedOSPlatform("windows")]
 internal static class SurfaceTextureTraceIntegration
 {
+    [SupportedOSPlatform("windows")]
     internal static void Run(string enabledTrace, int enabledPid, string disabledTrace, int disabledPid)
     {
         var enabled = Read(enabledTrace, enabledPid);
         var disabled = Read(disabledTrace, disabledPid);
-        Expect(enabled.Observations.Count > 0, "The opt-in capture must contain real surface-to-texture observations.");
-        Expect(enabled.Observations.All(item => enabled.Surfaces.Contains(item.Surface)),
-            "Observed surfaces must join DCompSurfaceInit in the same process.");
-        var matched = enabled.Observations.Count(item => enabled.Resources.Contains(item.Resource));
-        Expect(matched > 0, "Observed resource IDs must match real Direct3D11 texture resource identities.");
-        Expect(disabled.XamlEvents > 0 && disabled.Resources.Count > 0,
-            "The disabled-provider control must still record an app that renders XAML and creates textures.");
-        Expect(disabled.ProfilerEvents == 0,
-            "The control without the opt-in provider must not contain profiler events.");
+        var matched = Validate(enabled, disabled);
         Console.WriteLine($"Passed: {enabled.Observations.Count} opt-in surface observations; " +
             $"{matched} matched Direct3D11 texture observations; disabled-provider control.");
     }
 
+    internal static void RunRegressionTests()
+    {
+        var enabled = new Capture();
+        enabled.Surfaces.UnionWith([1, 2, 3]);
+        enabled.Resources.UnionWith([10, 20]);
+        enabled.Observations.AddRange([(1, 10), (2, 10), (3, 20)]);
+        var disabled = new Capture { XamlEvents = 1 };
+        disabled.Resources.Add(30);
+        Expect(Validate(enabled, disabled) == 3,
+            "Every observation must join, including surfaces that share an atlas texture.");
+
+        enabled.Resources.Remove(20);
+        var rejected = false;
+        try
+        {
+            Validate(enabled, disabled);
+        }
+        catch (InvalidOperationException)
+        {
+            rejected = true;
+        }
+        Expect(rejected, "Matching texture observations must not hide an unmatched resource identity.");
+        Console.WriteLine("Passed: surface-to-texture validation accepts shared textures and rejects partial resource joins.");
+    }
+
+    private static int Validate(Capture enabled, Capture disabled)
+    {
+        Expect(enabled.Observations.Count > 0, "The opt-in capture must contain real surface-to-texture observations.");
+        Expect(enabled.Observations.All(item => enabled.Surfaces.Contains(item.Surface)),
+            "Observed surfaces must join DCompSurfaceInit in the same process.");
+        var matched = enabled.Observations.Count(item => enabled.Resources.Contains(item.Resource));
+        Expect(matched == enabled.Observations.Count,
+            $"Every observed resource ID must match a real Direct3D11 texture resource identity ({matched}/{enabled.Observations.Count} matched).");
+        Expect(disabled.XamlEvents > 0 && disabled.Resources.Count > 0,
+            "The disabled-provider control must still record an app that renders XAML and creates textures.");
+        Expect(disabled.ProfilerEvents == 0,
+            "The control without the opt-in provider must not contain profiler events.");
+        return matched;
+    }
+
+    [SupportedOSPlatform("windows")]
     private static Capture Read(string path, int pid)
     {
         if (pid <= 0) throw new ArgumentOutOfRangeException(nameof(pid));

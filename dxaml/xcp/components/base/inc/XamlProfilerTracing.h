@@ -81,7 +81,8 @@ public:
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Reports a transient BeginDraw update texture. Atlased surfaces may share this resource;
-    // its interface is not retained after the observation.
+    // its interface is not retained after the observation. OffsetX/OffsetY identify the
+    // gutter-excluded content origin within the update texture.
     DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
         uint64_t, SurfaceId,
         uint64_t, ResourceId,
