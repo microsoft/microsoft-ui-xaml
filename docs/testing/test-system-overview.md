@@ -85,6 +85,7 @@ Here's how the pipelines and scripts are organized to do this work:
           * Run the test command (a TAEF query that runs multiple tests)
           * For each failed test, re-run once.  If the re-run failed, run the test 9x in a loop.          
           * If a te.exe run is still going after 60 minutes, dump and end it, and record the hang as a failed test (see [Hung TAEF runs](#hung-taef-runs)).
+          * If te.exe exits before it finishes its log, rebuild the log, and fail the work item if a selected test never ran (see [Incomplete TAEF runs](#incomplete-taef-runs)).
       * PublishTestResults
       * Call **UpdateUnreliableTests.ps1**
 
@@ -158,6 +159,23 @@ slice still runs, and then the job fails.
 A hang dump includes a process's memory only if Windows Error Reporting is set to write full crash dumps of that
 process; otherwise it's a mini dump. While the System Composition tests run, the test host holds a token, so its crash
 dumps, and therefore its hang dumps, are limited to mini dumps.
+
+### Incomplete TAEF runs
+
+te.exe buffers its log, `te.wtl`, so if it exits abnormally the log can end partway through an entry and can't be read.
+**RunHelixWorkItem.ps1** then rebuilds the log from its complete entries and from the results te.exe printed to its
+console, which it saves as `te_console.log`. It uploads the incomplete log as `te_<run>.incomplete.wtl`. A test that was
+running when te.exe exited is reported as failed, so the usual reruns retry it.
+
+The rebuilt log only has the tests te.exe got to. So when the first run's log had to be rebuilt, RunHelixWorkItem.ps1
+runs `te.exe /list` with the work item's selection and checks that every selected test has a result. If one doesn't, or
+the tests can't be listed, it records a failed `<work item>.TaefRunIncomplete` test that names the tests that never ran.
+`/list` names a data-driven test once, so a data-driven test that te.exe was running, or had just run, when it exited
+also fails the check.
+
+Each te.exe run's exit code and log state are recorded in `TaefRuns.json` in the work item's upload folder. A work item
+that has no results, or didn't run every selected test, gets an error; the rest of the slice still runs, and then the
+job fails.
 
 ### Publish Test Results
 

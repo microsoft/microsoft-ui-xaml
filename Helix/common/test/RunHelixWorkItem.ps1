@@ -388,6 +388,7 @@ function Repair-TaefLog
         testsWithoutResults         = @()
         dataDrivenTestsCutShort     = @()
         selectionCheckFailure       = $null
+        endedByHangWatchdog         = [bool]$script:teHangReport
     }
 
     $recovery = $null
@@ -409,8 +410,8 @@ function Repair-TaefLog
     }
 
     # A recovered first run is only complete if it ran every selected test. Reruns don't need the check: a test that's
-    # missing from a rerun stays failed.
-    if (($runName -eq "original") -and ($null -ne $recovery) -and ($recovery.State -eq [HelixTestHelpers.WttLogState]::Recovered))
+    # missing from a rerun stays failed. Nor does a run the hang watchdog ended: its failed TaefHang test says why.
+    if (($runName -eq "original") -and -not $runRecord.endedByHangWatchdog -and ($null -ne $recovery) -and ($recovery.State -eq [HelixTestHelpers.WttLogState]::Recovered))
     {
         try
         {
@@ -432,15 +433,25 @@ function Repair-TaefLog
         {
             $dumpText = "Uploaded te.exe crash dump(s) with the work item: $($runRecord.dumps -join ', ')."
         }
+        elseif ($runRecord.endedByHangWatchdog)
+        {
+            $dumpText = "The hang watchdog's report, in TaefHang.txt, lists the dumps it wrote."
+        }
         else
         {
             $dumpText = "No new te.exe crash dump was found in '$($env:HELIX_DUMP_FOLDER)'."
         }
 
+        $exitText = "exited abnormally"
+        if ($runRecord.endedByHangWatchdog)
+        {
+            $exitText = "was ended by the hang watchdog"
+        }
+
         $where = "in work item '$workItemName' (te.exe run '$runName')"
         if (-not $logIncomplete)
         {
-            Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) after it finished writing te.wtl, $where. $dumpText"
+            Write-Host "##vso[task.logissue type=warning]te.exe $exitText (exit code $exitCodeHex) after it finished writing te.wtl, $where. $dumpText"
         }
         else
         {
@@ -488,11 +499,11 @@ function Repair-TaefLog
                     $selectionText = " $($runRecord.selectionCheckFailure) The work item fails."
                 }
 
-                Write-Host "##vso[task.logissue type=warning]te.exe exited abnormally (exit code $exitCodeHex) $when, $where. $logText, so the results were recovered: $recoveredText.$selectionText $dumpText"
+                Write-Host "##vso[task.logissue type=warning]te.exe $exitText (exit code $exitCodeHex) $when, $where. $logText, so the results were recovered: $recoveredText.$selectionText $dumpText"
             }
             else
             {
-                Write-Host "te.exe exited abnormally (exit code $exitCodeHex) $where. $logText, and te.exe reported no test results, so there are none to recover. $dumpText"
+                Write-Host "te.exe $exitText (exit code $exitCodeHex) $where. $logText, and te.exe reported no test results, so there are none to recover. $dumpText"
             }
         }
     }
@@ -929,17 +940,18 @@ elseif ($script:teHangReport)
 elseif (Test-Path .\te_original.wtl)
 {
     .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl te_rerun_more.wtl testResults.xml $testnameprefix
-
-    # A first run that te.exe didn't finish can still be missing selected tests (see Test-SelectedTestsRan).
-    $originalRun = @($script:taefRuns | Where-Object { $_.run -eq "original" }) | Select-Object -First 1
-    if ($originalRun -and $originalRun.selectionCheckFailure -and (Test-Path .\testResults.xml))
-    {
-        Add-TaefRunIncompleteResult -resultsPath .\testResults.xml -testnameprefix $testnameprefix -message $originalRun.selectionCheckFailure
-    }
 }
 else
 {
     Write-Host "There's no readable te_original.wtl, so this work item has no test results."
+}
+
+# A first run that te.exe didn't finish can still be missing selected tests (see Test-SelectedTestsRan), even if a
+# later rerun hung.
+$originalRun = @($script:taefRuns | Where-Object { $_.run -eq "original" }) | Select-Object -First 1
+if (-not $isLifetimeStress -and $originalRun -and $originalRun.selectionCheckFailure -and (Test-Path .\testResults.xml))
+{
+    Add-TaefRunIncompleteResult -resultsPath .\testResults.xml -testnameprefix $testnameprefix -message $originalRun.selectionCheckFailure
 }
 
 Copy-Item .\*_subresults.json $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
