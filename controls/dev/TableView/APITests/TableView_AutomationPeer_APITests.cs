@@ -4928,7 +4928,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             TableView tableView = null;
             TableViewColumnHeader oldHeader = null;
+            TableViewColumnHeaderAutomationPeer oldPeer = null;
             IInvokeProvider oldInvoke = null;
+            ITransformProvider oldTransform = null;
 
             RunOnUIThread.Execute(() =>
             {
@@ -4942,8 +4944,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 oldHeader = GetColumnHeader(tableView, tableView.Columns[1]);
-                oldInvoke = new TableViewColumnHeaderAutomationPeer(oldHeader).GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                oldPeer = new TableViewColumnHeaderAutomationPeer(oldHeader);
+                oldInvoke = oldPeer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 Verify.IsNotNull(oldInvoke, "Baseline: a sortable column's header peer must offer Invoke.");
+                oldTransform = oldPeer.GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(oldTransform, "Baseline: a resizable column's header peer must offer Transform.");
 
                 // Opting another column out of sorting rebuilds every header.
                 tableView.Columns[2].CanSort = false;
@@ -4958,6 +4963,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(oldHeader.Column, "A replaced header must be detached from its column.");
 
                 VerifyElementNotAvailable(() => oldInvoke.Invoke(), "Invoke on a replaced header's peer");
+                Verify.IsNull(oldPeer.GetPattern(PatternInterface.Invoke), "A replaced header's peer must not offer Invoke.");
+                Verify.IsNull(oldPeer.GetPattern(PatternInterface.Transform), "A replaced header's peer must not offer Transform.");
+                Verify.IsFalse(oldTransform.CanResize, "A replaced header's peer must not report it can resize.");
                 Verify.Throws<ArgumentException>(() => new TableViewColumnHeaderAutomationPeer(oldHeader),
                     "A peer for a replaced header must be rejected with E_INVALIDARG.");
             });

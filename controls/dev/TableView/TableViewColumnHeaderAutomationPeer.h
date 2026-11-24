@@ -68,6 +68,7 @@ public:
 
 private:
     winrt::FrameworkElement GetHeaderElement();
+    bool IsHeaderReplaced();
     void ThrowIfHeaderReplaced();
     bool IsSortableColumn();
     bool IsResizableColumn();

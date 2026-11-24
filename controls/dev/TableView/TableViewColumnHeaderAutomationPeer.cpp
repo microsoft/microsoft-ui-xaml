@@ -225,6 +225,11 @@ hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)
 {
+    if (IsHeaderReplaced())
+    {
+        return __super::GetPatternCore(patternInterface);
+    }
+
     if (patternInterface == winrt::PatternInterface::Invoke && IsSortableColumn())
     {
         return *this;
@@ -318,7 +323,7 @@ bool TableViewColumnHeaderAutomationPeer::CanMove()
 
 bool TableViewColumnHeaderAutomationPeer::CanResize()
 {
-    if (!IsResizableColumn())
+    if (!IsResizableColumn() || IsHeaderReplaced())
     {
         return false;
     }
@@ -461,9 +466,14 @@ void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
 }
 
 // A header-owned peer whose header the table has replaced acts on nothing.
+bool TableViewColumnHeaderAutomationPeer::IsHeaderReplaced()
+{
+    return !IsTableViewOwned() && !GetHeaderElement();
+}
+
 void TableViewColumnHeaderAutomationPeer::ThrowIfHeaderReplaced()
 {
-    if (!IsTableViewOwned() && !GetHeaderElement())
+    if (IsHeaderReplaced())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
     }
