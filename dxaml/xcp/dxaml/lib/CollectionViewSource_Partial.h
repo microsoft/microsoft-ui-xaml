@@ -93,6 +93,7 @@ namespace DirectUI
         _Check_return_ HRESULT DetachShapingView();
         _Check_return_ HRESULT EnsureLiveShapingProperties();
         _Check_return_ HRESULT ApplyLiveShapingToView();
+        _Check_return_ HRESULT OnCultureChanged(_In_ const PropertyChangedParams& args);
         _Check_return_ HRESULT GetLiveShapingRequests(_Out_ bool* pIsLiveSorting, _Out_ bool* pIsLiveFiltering, _Out_ bool* pIsLiveGrouping);
 
     protected:
@@ -109,8 +110,8 @@ namespace DirectUI
         TrackerPtr<wfc::IVector<xaml_data::SortDescription*>> m_tpSortDescriptions;
         TrackerPtr<wfc::IVector<xaml_data::GroupDescription*>> m_tpGroupDescriptions;
         TrackerPtr<xaml_data::ICollectionViewComparer> m_tpCustomSort;
-        wrl_wrappers::HString m_culture;
         bool m_isApplyingCustomSort = false;
+        bool m_isRestoringCulture = false;
 
         ctl::ComPtr<FilterEventSource> m_spFilterEventSource;
 

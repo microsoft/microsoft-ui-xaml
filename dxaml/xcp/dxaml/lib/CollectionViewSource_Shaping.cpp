@@ -545,6 +545,14 @@ _Check_return_ HRESULT GroupDescription::AddOwner(_In_ VectorCollectionView* pVi
     return S_OK;
 }
 
+// WPF: GroupDescription.OnPropertyChanged; the views that group by this description regroup, whatever the property.
+_Check_return_ HRESULT GroupDescription::OnPropertyChangedImpl(_In_opt_ xaml_data::IPropertyChangedEventArgs* pArgs)
+{
+    UNREFERENCED_PARAMETER(pArgs);
+    IFC_RETURN(NotifyOwners());
+    return S_OK;
+}
+
 _Check_return_ HRESULT GroupDescription::NotifyOwners()
 {
     std::vector<ctl::ComPtr<xaml_data::ICollectionView>> owners;
@@ -671,8 +679,9 @@ _Check_return_ HRESULT CollectionViewSource::ApplyPropertiesToView(_In_ VectorCo
     IFC_RETURN(GetLiveShapingRequests(&isLiveSorting, &isLiveFiltering, &isLiveGrouping));
     IFC_RETURN(pView->ApplyLiveShaping(isLiveSorting, isLiveFiltering, isLiveGrouping,
         m_spLiveSortingProperties.Get(), m_spLiveFilteringProperties.Get(), m_spLiveGroupingProperties.Get()));
-    IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), m_culture.Get()));
-    m_culture.Release();
+    wrl_wrappers::HString culture;
+    IFC_RETURN(get_Culture(culture.GetAddressOf()));
+    IFC_RETURN(pView->ApplyShapingRules(m_tpSortDescriptions.Get(), m_tpGroupDescriptions.Get(), nullptr /* pFilter */, spCustomSort.Get(), culture.Get()));
     return S_OK;
 }
 
@@ -689,8 +698,6 @@ _Check_return_ HRESULT CollectionViewSource::DetachShapingView()
 
     auto pView = AsShapingView(spView.Get());
     IFC_RETURN(pView->get_CustomSort(spCustomSort.ReleaseAndGetAddressOf()));
-    m_culture.Release();
-    IFC_RETURN(pView->get_Culture(m_culture.GetAddressOf()));
     IFC_RETURN(pView->DetachFromHost());
 
     m_tpShapingView.Clear();
@@ -765,26 +772,40 @@ _Check_return_ HRESULT CollectionViewSource::put_CustomSortImpl(_In_opt_ xaml_da
 
 _Check_return_ HRESULT CollectionViewSource::get_CultureImpl(_Out_ HSTRING* pValue)
 {
-    if (m_tpShapingView)
-    {
-        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->get_Culture(pValue));
-        return S_OK;
-    }
-
-    IFC_RETURN(m_culture.CopyTo(pValue));
+    IFC_RETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_Culture, pValue));
     return S_OK;
 }
 
+// As in WPF, Culture is the CollectionViewSource's own value, applied to each view it creates and to View when it
+// changes; a Culture set on the view directly is the view's.
 _Check_return_ HRESULT CollectionViewSource::put_CultureImpl(_In_opt_ HSTRING value)
 {
-    if (m_tpShapingView)
+    IFC_RETURN(VectorCollectionView::ValidateCulture(value));
+    IFC_RETURN(SetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_Culture, value));
+    return S_OK;
+}
+
+// Markup and bindings reach Culture without the setter: an invalid tag is undone there.
+_Check_return_ HRESULT CollectionViewSource::OnCultureChanged(_In_ const PropertyChangedParams& args)
+{
+    wrl_wrappers::HString culture;
+
+    if (m_isRestoringCulture)
     {
-        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_Culture(value));
         return S_OK;
     }
 
-    IFC_RETURN(VectorCollectionView::ValidateCulture(value));
-    IFC_RETURN(m_culture.Set(value));
+    IFC_RETURN(get_Culture(culture.GetAddressOf()));
+    if (FAILED(VectorCollectionView::ValidateCulture(culture.Get())))
+    {
+        IFC_RETURN(RestorePreviousValue(this, args, &m_isRestoringCulture, L"CollectionViewSource.Culture must be a BCP-47 language tag; the change was undone."));
+        return S_OK;
+    }
+
+    if (m_tpShapingView)
+    {
+        IFC_RETURN(AsShapingView(m_tpShapingView.Get())->put_Culture(culture.Get()));
+    }
     return S_OK;
 }
 
@@ -1044,6 +1065,39 @@ void DirectUI::UnregisterDefaultView(_In_ VectorCollectionView* pView)
     {
         return entry.pView == pView;
     }), t_defaultViews.end());
+}
+
+// WPF: CollectionViewSource.IsDefaultView; true for null, as in WPF. A view is the default view of its source while
+// GetDefaultView returns it.
+_Check_return_ HRESULT CollectionViewSourceFactory::IsDefaultViewImpl(_In_opt_ xaml_data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue)
+{
+    *pReturnValue = TRUE;
+    if (!pView)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IUnknown> spIdentity;
+    IFC_RETURN(pView->QueryInterface(IID_PPV_ARGS(spIdentity.ReleaseAndGetAddressOf())));
+    *pReturnValue = FALSE;
+    for (auto& entry : t_defaultViews)
+    {
+        ctl::ComPtr<xaml_data::ICollectionView> spCandidate;
+        IGNOREHR(entry.viewRef.As(&spCandidate));
+        if (!spCandidate)
+        {
+            continue;
+        }
+
+        ctl::ComPtr<IUnknown> spCandidateIdentity;
+        IFC_RETURN(spCandidate.As(&spCandidateIdentity));
+        if (spCandidateIdentity.Get() == spIdentity.Get())
+        {
+            *pReturnValue = TRUE;
+            break;
+        }
+    }
+    return S_OK;
 }
 
 // Collections for a view no CollectionViewSource owns (a default view).

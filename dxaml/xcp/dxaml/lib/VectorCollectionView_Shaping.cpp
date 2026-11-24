@@ -264,6 +264,28 @@ IFACEMETHODIMP VectorCollectionView::put_Culture(_In_opt_ HSTRING value)
     return S_OK;
 }
 
+// WPF: ListCollectionView.CanSort / CanFilter / CanGroup, all true.
+IFACEMETHODIMP VectorCollectionView::get_CanSort(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_CanFilter(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
+IFACEMETHODIMP VectorCollectionView::get_CanGroup(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
 IFACEMETHODIMP VectorCollectionView::Refresh()
 {
     IFC_RETURN(CheckThread());
@@ -561,6 +583,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     {
         ctl::ComPtr<IInspectable> item;
         std::vector<ctl::ComPtr<IInspectable>> groupNames;
+        bool hasCollectionName = false;
         UINT sourceIndex = 0;
         UINT slot = 0;
     };
@@ -606,7 +629,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
         if (spRoot)
         {
-            IFC_RETURN(spRoot->GetGroupNames(entry.item.Get(), &entry.groupNames));
+            IFC_RETURN(spRoot->GetGroupNames(entry.item.Get(), &entry.groupNames, &entry.hasCollectionName));
         }
 
         entries.push_back(std::move(entry));
@@ -645,7 +668,7 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
     {
         for (const auto& entry : entries)
         {
-            IFC_RETURN(spRoot->AddLoading(entry.item.Get(), entry.groupNames, entry.sourceIndex, entry.slot));
+            IFC_RETURN(spRoot->AddLoading(entry.item.Get(), entry.groupNames, entry.sourceIndex, entry.slot, entry.hasCollectionName));
         }
         IFC_RETURN(spRoot->FinishLoading());
 

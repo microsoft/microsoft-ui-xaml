@@ -2032,6 +2032,17 @@ namespace Microsoft.UI.Xaml.Data
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
+    interface ICollectionViewGroup2 
+    {
+        Object Name{ get; };
+        Windows.Foundation.Collections.IObservableVector<Object> Items{ get; };
+        Int32 ItemCount{ get; };
+        Boolean IsBottomLevel{ get; };
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
     interface ICollectionViewLiveShaping 
     {
         Boolean CanChangeLiveSorting{ get; };
@@ -2058,6 +2069,9 @@ namespace Microsoft.UI.Xaml.Data
         Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
         Object SourceCollection{ get; };
         String Culture;
+        Boolean CanSort{ get; };
+        Boolean CanFilter{ get; };
+        Boolean CanGroup{ get; };
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2129,10 +2143,12 @@ namespace Microsoft.UI.Xaml.Data
             event Microsoft.UI.Xaml.Data.FilterEventHandler Filter;
             void Refresh();
             Windows.Foundation.IClosable DeferRefresh();
+            static Microsoft.UI.Xaml.DependencyProperty CultureProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveSortingRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveFilteringRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveGroupingRequestedProperty{ get; };
             static Microsoft.UI.Xaml.Data.ICollectionView GetDefaultView(Object source);
+            static Boolean IsDefaultView(Microsoft.UI.Xaml.Data.ICollectionView view);
         }
     };
 
@@ -2149,6 +2165,7 @@ namespace Microsoft.UI.Xaml.Data
         Microsoft.UI.Xaml.Data.CollectionViewComparer CustomSort;
         Object GroupNameFromItem(Object item, Int32 level, String culture);
         Boolean NamesMatch(Object groupName, Object itemName);
+        protected void OnPropertyChanged(Microsoft.UI.Xaml.Data.PropertyChangedEventArgs e);
         overridable Object GroupNameFromItemCore(Object item, Int32 level, String culture);
         overridable Boolean NamesMatchCore(Object groupName, Object itemName);
     };

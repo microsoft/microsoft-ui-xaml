@@ -9,12 +9,24 @@ namespace DirectUI
 {
     class GroupedDataCollectionView;
 
-    PARTIAL_CLASS(CollectionViewGroup)
+    // WPF's CollectionViewGroup for a group of an IsSourceGrouped view: Name is the app's group object, and the group
+    // is always a bottom-level group.
+    PARTIAL_CLASS(CollectionViewGroup),
+        public xaml_data::ICollectionViewGroup2
     {
     public:
 
         CollectionViewGroup();
         ~CollectionViewGroup() override;
+
+        // ICollectionViewGroup2
+        IFACEMETHOD(get_Name)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
+        IFACEMETHOD(get_Items)(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override;
+        IFACEMETHOD(get_ItemCount)(_Out_ INT32* pValue) override;
+        IFACEMETHOD(get_IsBottomLevel)(_Out_ BOOLEAN* pValue) override;
+
+    protected:
+        HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
     public:
 

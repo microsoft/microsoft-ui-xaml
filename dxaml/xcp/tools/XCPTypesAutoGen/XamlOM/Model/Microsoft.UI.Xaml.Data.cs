@@ -589,10 +589,10 @@ namespace Microsoft.UI.Xaml.Data
             set;
         }
 
-        // WPF's CollectionViewSource.Culture, as a BCP-47 language tag.
+        // WPF's CollectionViewSource.Culture (a DependencyProperty), as a BCP-47 language tag.
         [VelocityFeature("Feature_ExperimentalApi")]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromCore = true)]
         public Windows.Foundation.String Culture
         {
             get;
@@ -672,6 +672,14 @@ namespace Microsoft.UI.Xaml.Data
         public static Microsoft.UI.Xaml.Data.ICollectionView GetDefaultView([Optional] Windows.Foundation.Object source)
         {
             return null;
+        }
+
+        // WPF's CollectionViewSource.IsDefaultView.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public static Windows.Foundation.Boolean IsDefaultView([Optional] Microsoft.UI.Xaml.Data.ICollectionView view)
+        {
+            return default(Windows.Foundation.Boolean);
         }
 
         [VelocityFeature("Feature_ExperimentalApi")]
@@ -797,6 +805,44 @@ namespace Microsoft.UI.Xaml.Data
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(7)]
         Windows.Foundation.String Culture { get; set; }
+
+        // WPF's ICollectionView.CanSort / CanFilter / CanGroup: which of the rules above the view applies.
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(8)]
+        Windows.Foundation.Boolean CanSort { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(9)]
+        Windows.Foundation.Boolean CanFilter { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(10)]
+        Windows.Foundation.Boolean CanGroup { get; }
+    }
+
+    // WPF's CollectionViewGroup (Name, Items, ItemCount, IsBottomLevel) for the groups of an ICollectionView. An
+    // interface rather than WPF's abstract class: the groups are created by the view, and an app's view can implement it.
+    [DXamlIdlGroup("coretypes2")]
+    [HideFromOldCodeGen]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    public interface ICollectionViewGroup2
+    {
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(0)]
+        Windows.Foundation.Object Name { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(1)]
+        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> Items { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(2)]
+        Windows.Foundation.Int32 ItemCount { get; }
+
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [OrderHint(3)]
+        Windows.Foundation.Boolean IsBottomLevel { get; }
     }
 
     // WPF's ICollectionViewLiveShaping: re-sort, re-filter and re-group an item when one of its properties changes.
@@ -946,6 +992,12 @@ namespace Microsoft.UI.Xaml.Data
         protected virtual Windows.Foundation.Boolean NamesMatchCore([Optional] Windows.Foundation.Object groupName, [Optional] Windows.Foundation.Object itemName)
         {
             return default(Windows.Foundation.Boolean);
+        }
+
+        // WPF's GroupDescription.OnPropertyChanged: a derived class whose grouping changed regroups the views that use it.
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        protected void OnPropertyChanged([Optional] Microsoft.UI.Xaml.Data.PropertyChangedEventArgs e)
+        {
         }
     }
 

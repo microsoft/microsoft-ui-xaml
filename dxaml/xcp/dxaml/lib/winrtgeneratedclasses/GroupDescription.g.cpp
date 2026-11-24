@@ -10,6 +10,7 @@
 //------------------------------------------------------------------------
 
 #include "GroupDescription.g.h"
+#include "PropertyChangedEventArgs.g.h"
 #include "XamlTelemetry.h"
 
 // Constructors/destructors.
@@ -31,6 +32,10 @@ HRESULT DirectUI::GroupDescriptionGenerated::QueryInterfaceImpl(_In_ REFIID iid,
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IGroupDescription)) && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Data::IGroupDescription>(this);
+    }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected>(this);
     }
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides)) && Feature_ExperimentalApi::IsEnabled())
     {
@@ -209,6 +214,24 @@ _Check_return_ HRESULT DirectUI::GroupDescriptionGenerated::NamesMatchCoreProtec
 
 Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::GroupDescriptionGenerated::OnPropertyChanged(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgs* pE)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "GroupDescription_OnPropertyChanged", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<GroupDescription*>(this)->OnPropertyChangedImpl(pE));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "GroupDescription_OnPropertyChanged", hr);
+    }
     RRETURN(hr);
 }
 

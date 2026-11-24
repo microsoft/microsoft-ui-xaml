@@ -24,6 +24,7 @@ namespace DirectUI
         // Public, as in WPF: they call the overridables, so any view can group by a description.
         _Check_return_ HRESULT GroupNameFromItemImpl(_In_opt_ IInspectable* pItem, INT level, _In_opt_ HSTRING culture, _Outptr_result_maybenull_ IInspectable** ppResult);
         _Check_return_ HRESULT NamesMatchImpl(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+        _Check_return_ HRESULT OnPropertyChangedImpl(_In_opt_ xaml_data::IPropertyChangedEventArgs* pArgs);
 
         // WPF: GroupNameFromItem is abstract; a GroupDescription that does not override it puts every item in one
         // group named null.

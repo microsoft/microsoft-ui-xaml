@@ -3499,6 +3499,7 @@ namespace Parser
         PropertyGroupDescription_PropertyName = 2488,
         PropertyGroupDescription_StringComparison = 2489,
         GroupDescription_GroupNames = 2490,
+        CollectionViewSource_Culture = 2491,
     };
 
     enum class StableEventIndex: UINT16
@@ -3847,6 +3848,6 @@ namespace Parser
     };
 
     static const UINT16 StableXbfTypeCount = static_cast<UINT16>(StableXbfTypeIndex::CollectionViewStringComparison) + 1;
-    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::GroupDescription_GroupNames) + 1;
+    static const UINT16 StableXbfPropertyCount = static_cast<UINT16>(StableXbfPropertyIndex::CollectionViewSource_Culture) + 1;
     static const UINT16 StableEventCount = static_cast<UINT16>(StableEventIndex::CollectionViewSource_Filter) + 1;
 }

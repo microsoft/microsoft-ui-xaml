@@ -40,6 +40,60 @@ CollectionViewGroup::get_GroupItemsImpl(_Outptr_ wfc::IObservableVector<IInspect
     RRETURN(m_tpGroupItems.CopyTo(pValue));
 }
 
+HRESULT CollectionViewGroup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
+{
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = static_cast<xaml_data::ICollectionViewGroup2*>(this);
+        AddRefOuter();
+        return S_OK;
+    }
+
+    return CollectionViewGroupGenerated::QueryInterfaceImpl(iid, ppObject);
+}
+
+IFACEMETHODIMP CollectionViewGroup::get_Name(_Outptr_result_maybenull_ IInspectable** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(get_GroupImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionViewGroup::get_Items(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue)
+{
+    ARG_VALIDRETURNPOINTER(ppValue);
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(get_GroupItemsImpl(ppValue));
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionViewGroup::get_ItemCount(_Out_ INT32* pValue)
+{
+    ctl::ComPtr<wfc::IObservableVector<IInspectable*>> spItems;
+    UINT size = 0;
+
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = 0;
+    IFC_RETURN(CheckThread());
+    IFC_RETURN(get_GroupItemsImpl(spItems.ReleaseAndGetAddressOf()));
+    if (spItems)
+    {
+        ctl::ComPtr<wfc::IVector<IInspectable*>> spVector;
+        IFC_RETURN(spItems.As(&spVector));
+        IFC_RETURN(spVector->get_Size(&size));
+    }
+    *pValue = static_cast<INT32>(size);
+    return S_OK;
+}
+
+IFACEMETHODIMP CollectionViewGroup::get_IsBottomLevel(_Out_ BOOLEAN* pValue)
+{
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = TRUE;
+    return S_OK;
+}
+
 _Check_return_ HRESULT
 CollectionViewGroup::get_TypeImpl(_Out_ wxaml_interop::TypeName* pValue)
 {

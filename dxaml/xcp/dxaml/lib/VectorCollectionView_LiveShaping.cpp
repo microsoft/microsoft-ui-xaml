@@ -1295,6 +1295,14 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
             return S_OK;
         }
 
+        // An item in several groups is placed by a recompute.
+        if (pRoot->HasMultiGroupItems())
+        {
+            isApplied = false;
+            return S_OK;
+        }
+
+        bool hasCollectionName = false;
         {
             BusyScope busy(m_shapeBusyDepth);
             hr = [&]() -> HRESULT
@@ -1313,7 +1321,11 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 IFC_RETURN(spSort->comparer.EvaluateKeys(pItem, &keys));
                 if (!isInView)
                 {
-                    IFC_RETURN(pRoot->GetGroupNames(pItem, &names));
+                    IFC_RETURN(pRoot->GetGroupNames(pItem, &names, &hasCollectionName));
+                    if (hasCollectionName)
+                    {
+                        return S_OK;
+                    }
                     IFC_RETURN(PlanGroupedInsertion(pRoot, *spSort, pItem, keys, names, sourceIndex, GroupedExclusion(), isSkipped, &insertion));
                     return S_OK;
                 }
@@ -1321,7 +1333,11 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                 bool isInGroup = true;
                 if (isRegrouping)
                 {
-                    IFC_RETURN(pRoot->GetGroupNames(pItem, &names));
+                    IFC_RETURN(pRoot->GetGroupNames(pItem, &names, &hasCollectionName));
+                    if (hasCollectionName)
+                    {
+                        return S_OK;
+                    }
                     IFC_RETURN(pRoot->IsGroupPath(pOldGroup, names, &isInGroup));
                 }
 
@@ -1351,7 +1367,7 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         }
         IFC_RETURN(hr);
 
-        if (sourceChangeCount != m_sourceListChangeCount)
+        if (sourceChangeCount != m_sourceListChangeCount || hasCollectionName)
         {
             isApplied = false;
             return S_OK;

@@ -4040,6 +4040,140 @@ namespace Framework { namespace DataBinding {
         });
     }
 
+    // A GroupDescription whose grouping changes with its own state, which it announces with OnPropertyChanged (WPF).
+    ref class ThresholdGroupDescription sealed : public GroupDescription
+    {
+    public:
+        property int Threshold
+        {
+            int get() { return m_threshold; }
+            void set(int value)
+            {
+                m_threshold = value;
+                OnPropertyChanged(ref new PropertyChangedEventArgs(L"Threshold"));
+            }
+        }
+
+    protected:
+        virtual Object^ GroupNameFromItemCore(Object^ item, int level, String^ culture) override
+        {
+            return safe_cast<InpcDataSource^>(item)->Int32Property >= m_threshold ? L"high" : L"low";
+        }
+
+    private:
+        int m_threshold = 2;
+    };
+
+    void BindingIntegrationTests::CollectionViewSourceWpfParityMembers()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            LOG_OUTPUT(L"CanSort, CanFilter and CanGroup are true on the view a CollectionViewSource creates over a list.");
+            auto cvs = ref new CollectionViewSource();
+            cvs->Source = MakeShapingSource(); // b1 d2 a1 c0
+            auto shaping = safe_cast<ICollectionViewShaping^>(cvs->View);
+            VERIFY_IS_TRUE(shaping->CanSort);
+            VERIFY_IS_TRUE(shaping->CanFilter);
+            VERIFY_IS_TRUE(shaping->CanGroup);
+
+            LOG_OUTPUT(L"IsDefaultView: true for null and for GetDefaultView's view, false for a CollectionViewSource's View.");
+            auto list = MakeShapingSource();
+            auto defaultView = CollectionViewSource::GetDefaultView(list);
+            VERIFY_IS_TRUE(CollectionViewSource::IsDefaultView(nullptr));
+            VERIFY_IS_TRUE(CollectionViewSource::IsDefaultView(defaultView));
+            VERIFY_IS_FALSE(CollectionViewSource::IsDefaultView(cvs->View));
+
+            LOG_OUTPUT(L"Culture is a DependencyProperty, as in WPF; set through it, it reaches the view.");
+            cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
+            VERIFY_IS_NOT_NULL(CollectionViewSource::CultureProperty);
+            cvs->SetValue(CollectionViewSource::CultureProperty, L"sv-SE");
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", shaping->Culture->Data());
+            LOG_OUTPUT(L"An invalid tag set through the property system is undone.");
+            cvs->SetValue(CollectionViewSource::CultureProperty, L"not a culture");
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", shaping->Culture->Data());
+            LOG_OUTPUT(L"As in WPF, a Culture set on the view is the view's: the CollectionViewSource keeps its own.");
+            shaping->Culture = L"en-US";
+            VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
+
+            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup): Name, Items, ItemCount, IsBottomLevel.");
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
+            cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
+            auto top = safe_cast<ICollectionViewGroup2^>(cvs->View->CollectionGroups->GetAt(0));
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(top->Name));
+            VERIFY_ARE_EQUAL(2, top->ItemCount);
+            VERIFY_IS_FALSE(top->IsBottomLevel);
+            VERIFY_ARE_EQUAL(2u, top->Items->Size);
+            auto bottom = safe_cast<ICollectionViewGroup2^>(top->Items->GetAt(0));
+            VERIFY_IS_TRUE(bottom->IsBottomLevel);
+            VERIFY_ARE_EQUAL(1, bottom->ItemCount);
+            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(bottom->Name)->Data());
+
+            LOG_OUTPUT(L"An IsSourceGrouped view's groups answer it too.");
+            auto groupedSource = ref new Platform::Collections::Vector<Object^>();
+            auto firstGroup = ref new InpcDataSource();
+            firstGroup->StringProperty = L"g";
+            auto groupItems = MakeShapingSource();
+            firstGroup->ObjectProperty = groupItems;
+            groupedSource->Append(firstGroup);
+            auto sourceGrouped = ref new CollectionViewSource();
+            sourceGrouped->IsSourceGrouped = true;
+            sourceGrouped->ItemsPath = ref new PropertyPath(L"ObjectProperty");
+            sourceGrouped->Source = groupedSource;
+            auto sourceGroup = safe_cast<ICollectionViewGroup2^>(sourceGrouped->View->CollectionGroups->GetAt(0));
+            VERIFY_IS_TRUE(sourceGroup->Name == firstGroup);
+            VERIFY_ARE_EQUAL(4, sourceGroup->ItemCount);
+            VERIFY_IS_TRUE(sourceGroup->IsBottomLevel);
+
+            LOG_OUTPUT(L"A group name that is a collection puts the item in each of its groups, as in WPF.");
+            auto tagged = ref new Platform::Collections::Vector<Object^>();
+            auto both = MakeShapingItem(L"x", 0);
+            auto xTags = ref new Platform::Collections::Vector<Object^>();
+            xTags->Append(L"red");
+            xTags->Append(L"blue");
+            both->ObjectProperty = xTags;
+            auto one = MakeShapingItem(L"y", 0);
+            one->ObjectProperty = L"blue";
+            auto none = MakeShapingItem(L"z", 0);
+            none->ObjectProperty = ref new Platform::Collections::Vector<Object^>();
+            tagged->Append(both);
+            tagged->Append(one);
+            tagged->Append(none);
+            auto tags = ref new CollectionViewSource();
+            tags->Source = tagged;
+            tags->GroupDescriptions->Append(ref new PropertyGroupDescription(L"ObjectProperty"));
+            auto tagGroups = tags->View->CollectionGroups;
+            VERIFY_ARE_EQUAL(2u, tagGroups->Size);
+            auto red = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(0));
+            auto blue = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(1));
+            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(red->Name)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"x", ShapingNamesOf(red->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(blue->Name)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"xy", ShapingNamesOf(blue->Items)->Data());
+            VERIFY_ARE_EQUAL(3u, tags->View->Size);
+
+            LOG_OUTPUT(L"A source change while an item is in several groups recomputes the groups.");
+            auto added = MakeShapingItem(L"w", 0);
+            added->ObjectProperty = L"red";
+            tagged->Append(added);
+            VERIFY_ARE_STRINGS_EQUAL(L"xw", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(0))->Items)->Data());
+            tagged->RemoveAt(0);
+            VERIFY_ARE_EQUAL(2u, tags->View->CollectionGroups->Size);
+            VERIFY_ARE_STRINGS_EQUAL(L"w", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(1))->Items)->Data());
+
+            LOG_OUTPUT(L"GroupDescription.OnPropertyChanged regroups the views that use the description.");
+            auto threshold = ref new ThresholdGroupDescription();
+            auto byThreshold = ref new CollectionViewSource();
+            byThreshold->Source = MakeShapingSource(); // b1 d2 a1 c0
+            byThreshold->GroupDescriptions->Append(threshold);
+            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(1))->Items)->Data());
+            threshold->Threshold = 1;
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(0))->Items)->Data());
+        });
+    }
+
     void BindingIntegrationTests::CollectionViewSourceGroupNames()
     {
         TestCleanupWrapper cleanup;

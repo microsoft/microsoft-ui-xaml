@@ -285,6 +285,10 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_ItemsPathProperty(_Out
 }
 
 
+IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_CultureProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
+{
+    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::CollectionViewSource_Culture, ppValue));
+}
 IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_IsLiveSortingRequestedProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
 {
     RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested, ppValue));
@@ -321,6 +325,24 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, 0, "CollectionViewSource_GetDefaultView", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::IsDefaultView(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "CollectionViewSource_IsDefaultView", 0);
+    }
+    ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
+    IFC(CheckActivationAllowed());
+    IFC(IsDefaultViewImpl(pView, pReturnValue));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "CollectionViewSource_IsDefaultView", hr);
     }
     RRETURN(hr);
 }

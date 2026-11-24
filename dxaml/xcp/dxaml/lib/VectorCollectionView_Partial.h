@@ -65,6 +65,9 @@ namespace DirectUI
         IFACEMETHOD(get_SourceCollection)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(get_Culture)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Culture)(_In_opt_ HSTRING value) override;
+        IFACEMETHOD(get_CanSort)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_CanFilter)(_Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(get_CanGroup)(_Out_ BOOLEAN* pValue) override;
 
         // ICollectionViewLiveShaping (WPF: ListCollectionView live shaping)
         IFACEMETHOD(get_CanChangeLiveSorting)(_Out_ BOOLEAN* pValue) override;

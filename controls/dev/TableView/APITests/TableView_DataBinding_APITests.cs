@@ -1479,6 +1479,36 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header click on an app's ICollectionViewShaping view whose CanSort is false raises Sorting for the app and writes nothing to the view, as WPF's DataGrid checks CanSort.")]
+        public void VerifyHeaderSortOnAppShapingViewThatCannotSortRaisesSortingOnly()
+        {
+            TableView tableView = null;
+            AppShapingView view = null;
+            int sorting = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                view = new AppShapingView(MakeShapedPeople()) { CanSortValue = false };
+                tableView = CreateBindingTable(view);
+                tableView.Sorting += (sender, args) => sorting++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => TableViewSortingTestHelpers.InvokeHeader(tableView, 0));
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sorting, "The header click raises Sorting so the app can sort its view.");
+                Verify.AreEqual(0, view.SortDescriptions.Count, "Nothing is written to a view that cannot sort.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
+                VerifyProjection(tableView, new List<string> { "Asha", "Diego", "Mei", "Rafa", "Ines", "Owen" }, "the view's order stands");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies TableView sorts an app's own view that implements ICollectionViewShaping through that view's SortDescriptions, and lights the arrow for a sort the app writes there: the contract is the interface, not the framework's view.")]
         public void VerifyHeaderSortOnAppShapingViewWritesItsSortDescriptions()
         {
@@ -1943,6 +1973,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public CollectionViewComparer CustomSort { get => m_customSort; set { m_customSort = value; RefreshOrDefer(); } }
         public object SourceCollection => m_source;
         public string Culture { get; set; } = string.Empty;
+        public bool CanSortValue { get; set; } = true;
+        public bool CanSort => CanSortValue;
+        public bool CanFilter => true;
+        public bool CanGroup => false;
 
         public void Refresh()
         {

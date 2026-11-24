@@ -13158,12 +13158,12 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource
     {
-        KnownPropertyIndex::CollectionViewSource_GroupDescriptions, // First property
+        KnownPropertyIndex::CollectionViewSource_Culture, // First property
         KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        20, // Property slot count
+        21, // Property slot count
     },
     // Windows.UI.Color
     {
@@ -24204,6 +24204,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::CalendarViewTemplateSettings, // Declaring type
         KnownTypeIndex::CalendarViewTemplateSettings, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Data.CollectionViewSource.Culture
+    {
+        KnownPropertyIndex::CollectionViewSource_Culture, // Index name
+        KnownTypeIndex::String, // Property type
+        KnownTypeIndex::CollectionViewSource, // Declaring type
+        KnownTypeIndex::CollectionViewSource, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions
     {
@@ -38949,6 +38957,7 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::CalendarViewTemplateSettings_WeekDay6, // CalendarViewTemplateSettings_WeekDay5
     KnownPropertyIndex::CalendarViewTemplateSettings_WeekDay7, // CalendarViewTemplateSettings_WeekDay6
     KnownPropertyIndex::DependencyObject_Column, // CalendarViewTemplateSettings_WeekDay7
+    KnownPropertyIndex::CollectionViewSource_GroupDescriptions, // CollectionViewSource_Culture
     KnownPropertyIndex::CollectionViewSource_IsLiveFilteringRequested, // CollectionViewSource_GroupDescriptions
     KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested, // CollectionViewSource_IsLiveFilteringRequested
     KnownPropertyIndex::CollectionViewSource_IsLiveSortingRequested, // CollectionViewSource_IsLiveGroupingRequested
@@ -40925,18 +40934,19 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     20, // CalendarViewTemplateSettings_WeekDay5
     21, // CalendarViewTemplateSettings_WeekDay6
     22, // CalendarViewTemplateSettings_WeekDay7
-    8, // CollectionViewSource_GroupDescriptions
-    9, // CollectionViewSource_IsLiveFilteringRequested
-    10, // CollectionViewSource_IsLiveGroupingRequested
-    11, // CollectionViewSource_IsLiveSortingRequested
-    12, // CollectionViewSource_IsSourceGrouped
-    13, // CollectionViewSource_ItemsPath
-    14, // CollectionViewSource_LiveFilteringProperties
-    15, // CollectionViewSource_LiveGroupingProperties
-    16, // CollectionViewSource_LiveSortingProperties
-    17, // CollectionViewSource_SortDescriptions
-    18, // CollectionViewSource_Source
-    19, // CollectionViewSource_View
+    8, // CollectionViewSource_Culture
+    9, // CollectionViewSource_GroupDescriptions
+    10, // CollectionViewSource_IsLiveFilteringRequested
+    11, // CollectionViewSource_IsLiveGroupingRequested
+    12, // CollectionViewSource_IsLiveSortingRequested
+    13, // CollectionViewSource_IsSourceGrouped
+    14, // CollectionViewSource_ItemsPath
+    15, // CollectionViewSource_LiveFilteringProperties
+    16, // CollectionViewSource_LiveGroupingProperties
+    17, // CollectionViewSource_LiveSortingProperties
+    18, // CollectionViewSource_SortDescriptions
+    19, // CollectionViewSource_Source
+    20, // CollectionViewSource_View
     8, // Color_A
     9, // Color_B
     10, // Color_ContentProperty
@@ -42901,6 +42911,7 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"WeekDay5"),
     XSTRING_PTR_STORAGE(L"WeekDay6"),
     XSTRING_PTR_STORAGE(L"WeekDay7"),
+    XSTRING_PTR_STORAGE(L"Culture"),
     XSTRING_PTR_STORAGE(L"GroupDescriptions"),
     XSTRING_PTR_STORAGE(L"IsLiveFilteringRequested"),
     XSTRING_PTR_STORAGE(L"IsLiveGroupingRequested"),

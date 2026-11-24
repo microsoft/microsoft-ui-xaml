@@ -3503,6 +3503,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         PropertyGroupDescription_PropertyName = 2488,
         PropertyGroupDescription_StringComparison = 2489,
         GroupDescription_GroupNames = 2490,
+        CollectionViewSource_Culture = 2491,
     }
 
     // Define the stable XBF event indices
@@ -4910,6 +4911,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.CalendarViewTemplateSettings_WeekDay5, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.CalendarViewTemplateSettings.WeekDay5", StableXbfTypeIndex.String, StableXbfTypeIndex.CalendarViewTemplateSettings, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CalendarViewTemplateSettings_WeekDay6, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.CalendarViewTemplateSettings.WeekDay6", StableXbfTypeIndex.String, StableXbfTypeIndex.CalendarViewTemplateSettings, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CalendarViewTemplateSettings_WeekDay7, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.CalendarViewTemplateSettings.WeekDay7", StableXbfTypeIndex.String, StableXbfTypeIndex.CalendarViewTemplateSettings, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.CollectionViewSource_Culture, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.Culture", StableXbfTypeIndex.String, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_GroupDescriptions, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.GroupDescriptions", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_IsLiveFilteringRequested, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveFilteringRequested", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.CollectionViewSource_IsLiveGroupingRequested, new XamlPropertyInfo("Microsoft.UI.Xaml.Data.CollectionViewSource.IsLiveGroupingRequested", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.CollectionViewSource, XamlPropertyFlags.None) },
