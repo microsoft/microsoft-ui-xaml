@@ -7,7 +7,7 @@
 | **Namespace / binary** | `Microsoft.UI.Xaml.Controls.Tabular`, `Microsoft.UI.Xaml.Controls.Tabular.dll`. Every type is `[MUX_PREVIEW]`. |
 | **Companion docs** | [API spec](../../api-specs/TableView/TableView-spec.md), [dev spec](TableView-dev-spec.md), [functional spec](TableView-functional-spec.md), [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md) |
 
-The IDLs are the source of truth for shape. This document reviews the whole proposed surface, so its sorting, grouping, selection-lookup and data sections (§2.1, §2.3, §2.4 `IndexOf`/`StartBringItemIntoView`, §2.6) describe the proposed data-shaping surface. Where a contract depends on implementation that has not landed or been validated at run time, it says so.
+The IDLs are the source of truth for shape. This document reviews the whole proposed surface, so its sorting, grouping, selection-lookup and data sections (§1.2, §2.1, §2.3, §2.4 `IndexOf`/`StartBringItemIntoView`, §2.6, and the matching rows of §3 to §5) describe the proposed data-shaping surface; members of it that this branch's IDL does not have are marked *(proposed; not in this IDL)*. Where a contract depends on implementation that has not landed or been validated at run time, it says so.
 
 ## 1. Purpose and scope
 
@@ -33,13 +33,13 @@ These members are part of the proposed data-shaping surface.
 
 | | Member | Reason |
 |---|---|---|
-| Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` | Map an item to the selection index space and reveal it; previously no way to select or show "this record" after shaping. |
-| Added | `TableView.ExpandGroup(Object)`, `CollapseGroup(Object)`, `GroupExpanding`, `GroupCollapsed` + args (`GroupKey`) | Per-group programmatic expansion and a notification for every group state change. |
-| Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` | App-owned (e.g. server) sorts can show the arrow. Display only. |
-| Changed | `TableViewGroupHeader.IsExpanded`/`IsExpandable` → read-only | Setters changed visuals but not rows, so UI/UIA could disagree with data. |
-| Changed | `TableViewColumn.CanSort` → `CanUserSort` | Matches `CanUserSortColumns` and WPF. Gates user input only: programmatic sorts ignore it, and turning it off does not clear the active sort. |
-| Removed | `TableViewGroupHeader.ToggleRequested`, `TableViewGroupHeaderToggleRequestedEventArgs` | Internal header→owner wiring; headers are control-created so apps could not subscribe usefully. Replaced by TableView-level events. |
-| Removed | `TableViewGroupInfo.Level` | Always 0 and 0-based while `TableViewRow.Level` is 1-based. Re-add with nested grouping. |
+| Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` (proposed; not in this IDL) | Map an item to the selection index space and reveal it; previously no way to select or show "this record" after shaping. |
+| Added | `TableView.ExpandGroup(Object)`, `CollapseGroup(Object)`, `GroupExpanding`, `GroupCollapsed` + args (`GroupKey`) (proposed; not in this IDL) | Per-group programmatic expansion and a notification for every group state change. |
+| Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` (proposed; not in this IDL) | App-owned (e.g. server) sorts can show the arrow. Display only. |
+| Changed | `TableViewGroupHeader.IsExpanded`/`IsExpandable` → read-only (proposed; not in this IDL) | Setters changed visuals but not rows, so UI/UIA could disagree with data. |
+| Changed | `TableViewColumn.CanSort` → `CanUserSort` (proposed; not in this IDL) | Matches `CanUserSortColumns` and WPF. Gates user input only: programmatic sorts ignore it, and turning it off does not clear the active sort. |
+| Removed | `TableViewGroupHeader.ToggleRequested`, `TableViewGroupHeaderToggleRequestedEventArgs` (proposed; not in this IDL) | Internal header→owner wiring; headers are control-created so apps could not subscribe usefully. Replaced by TableView-level events. |
+| Removed | `TableViewGroupInfo.Level` (proposed; not in this IDL) | Always 0 and 0-based while `TableViewRow.Level` is 1-based. Re-add with nested grouping. |
 
 ### 1.3 Editing removal
 
@@ -73,10 +73,10 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `CellToolTipBinding` | `Binding` (CLR) | Per-cell tooltip content, evaluated against the row item. |
 | `CellContextFlyout`, `HeaderContextFlyout` | `FlyoutBase` | See §2.7. |
 | `overridable GenerateElementCore(Object)` | `FrameworkElement` | Creates the cell element; the base returns the `DisplayMemberBinding` cell or `null`. `dataItem` is for initial setup only; content must bind to the inherited `DataContext` because rows recycle. |
-| `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. After the table is loaded, regeneration is always asynchronous: it is posted once per dispatcher turn, however many times it is requested. Before load it is immediate. `DisplayMemberBinding`, `CellTemplate` and `CellToolTipBinding` changes regenerate the same way. |
+| `protected NotifyCellContentChanged()` | `void` | Regenerates realized cells for this column and resets `Auto` width. Once the table is in a live tree (has a `XamlRoot`), regeneration is always asynchronous: it is posted once per dispatcher turn, however many times it is requested. Until then it is immediate. `DisplayMemberBinding`, `CellTemplate` and `CellToolTipBinding` changes regenerate the same way. |
 | `overridable GetSortMemberPathCore()` | `String` | Effective sort path; the base returns `SortMemberPath`, else `DisplayMemberBinding`'s path, and an app-derived column can override it. |
 | `TableViewTemplateColumn.CellTemplate` | `DataTemplate` DP | Ignored while `DisplayMemberBinding` is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, `CellTemplate`, `CellTemplateSelector`). Both null → empty cell (never `ToString()`). |
-| `TableViewColumnHeader` | sealed `ContentControl`, no ctor; `Column` (get) | `TargetType` for header styles. |
+| `TableViewColumnHeader` | sealed `ContentControl`, no ctor; `Column` (get) | `TargetType` for header styles. A header replaced by a header rebuild reads `Column == null`. |
 | `TableView.Columns` | `IVector<TableViewColumn>` (get) | Collection order = visual and UIA order. |
 
 **Nuances.** Auto widths reset on `ItemsSource` assignment, `Columns` replacement, or a column's header/template change, not on in-place `Reset`, refilter or `Density`; re-fit currently needs re-assigning `ItemsSource` (§6). A completed user resize writes local `Pixel` widths to the dragged column and to earlier `*` columns, which replaces bindings on those columns (§6).
@@ -86,8 +86,8 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | Member | Type | Semantics / default |
 |---|---|---|
 | `TableView.CanUserSortColumns` | `Boolean`, `true` | Gates **user input only** for the whole table. Turning it off does not clear the active sort. |
-| `TableViewColumn.CanUserSort` | `Boolean`, `true` | Gates **user input only** (pointer, keyboard, UIA Invoke on the header). Turning it off does not clear an active sort on the column. |
-| `TableViewColumn.SortDirection` | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
+| `TableViewColumn.CanUserSort` (proposed; not in this IDL) | `Boolean`, `true` | Gates **user input only** (pointer, keyboard, UIA Invoke on the header). Turning it off does not clear an active sort on the column. |
+| `TableViewColumn.SortDirection` (settable (proposed; not in this IDL)) | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
 | `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()` (the base falls back to `DisplayMemberBinding`'s path). |
 | `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
 | `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
@@ -122,8 +122,8 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `SelectedItem` | `Object` (read-only DP) | |
 | `SelectedIndex` | `Int32` (read-only DP), `-1` | Index in the **displayed projection**. |
 | `Select(Int32)`, `Deselect(Int32)`, `IsSelected(Int32)`, `DeselectAll()` | | `ItemsView` names. `Select(<0)` clears. `Deselect` only clears if `index` is selected. `DeselectAll` works in any mode. |
-| `IndexOf(Object)` | `Int32` | Item → projection index; `-1` for null, not present, filtered out, or under a collapsed group/parent. Value-typed items (boxed numbers, strings) match by value; reference items by identity. Duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded` and after `Unloaded` (reads the source projection). A `TableViewGroupInfo` is not a data item. |
-| `StartBringItemIntoView(Int32, BringIntoViewOptions)` | `void` | `ItemsView` shape. Out-of-range → `E_INVALIDARG`; `options` may be null. Asynchronous; realizes the row and lays it out before bringing its real bounds into view (ItemsView pattern); accounts for the sticky header and frozen columns; safe before `Loaded`. A pending request is cancelled when `ItemsSource` or the projection changes, or on `Unloaded`. |
+| `IndexOf(Object)` (proposed; not in this IDL) | `Int32` | Item → projection index; `-1` for null, not present, filtered out, or under a collapsed group/parent. Value-typed items (boxed numbers, strings) match by value; reference items by identity. Duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded` and after `Unloaded` (reads the source projection). A `TableViewGroupInfo` is not a data item. |
+| `StartBringItemIntoView(Int32, BringIntoViewOptions)` (proposed; not in this IDL) | `void` | `ItemsView` shape. Out-of-range → `E_INVALIDARG`; `options` may be null. Asynchronous; realizes the row and lays it out before bringing its real bounds into view (ItemsView pattern); accounts for the sticky header and frozen columns; safe before `Loaded`. A pending request is cancelled when `ItemsSource` or the projection changes, or on `Unloaded`. |
 | `SelectionChanged` | `TypedEventHandler<TableView, SelectionChangedEventArgs>` | Platform args; raised once after the selection settles; not raised for index shifts. |
 
 **Projection index space.** `SelectedIndex`, `Select`, `IsSelected`, `Deselect`, `IndexOf` and `StartBringItemIntoView` all use **display-projection indexes**: the displayed rows, where **group headers take slots** and collapsed descendants are absent. It is not an `ItemsSource` index once any shaping is active. Indexes are a snapshot: expanding or collapsing a group or row, sorting, filtering, regrouping and source changes all shift them. Call `IndexOf` immediately before `Select` or `StartBringItemIntoView` rather than caching an index. Group-header slots: `Select(headerIndex)` is a silent no-op that keeps the current selection (it neither selects the header nor clears); `IsSelected(headerIndex)` is always `false`, so `Deselect(headerIndex)` does nothing; `StartBringItemIntoView(headerIndex)` is valid and brings the group header band into view; `IndexOf` never returns a header slot (a `TableViewGroupInfo` or other header object returns `-1`). An out-of-range `Select` is also a no-op, while an out-of-range `StartBringItemIntoView` throws `E_INVALIDARG`. Typical use: `var i = table.IndexOf(item); if (i >= 0) { table.Select(i); table.StartBringItemIntoView(i, null); }`.
@@ -140,11 +140,11 @@ TableView is a read-only table: it has no editing API, edit mode or edit gesture
 |---|---|---|
 | `TableView.GroupHeaderTemplate` | `DataTemplate` | Content of the control-owned band; data context `TableViewGroupInfo`. |
 | `TableViewGroupInfo` | INPC; `Key`, `ItemCount`, `IsExpandable`, `IsExpanded`, `KeyText`, `ItemCountText` | Updated in place on recycle; `KeyText`/`ItemCountText` lazily culture-formatted. |
-| `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) | Realized band; written internally only. An external `SetValue` is reverted (observers may see a transient change notification); bind `OneWay` only. |
-| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` | `void` | The key is matched against the groups' keys by identity (key resolution with `CollectionViewSource` grouping is part of the proposed data-shaping surface); a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
+| `TableViewGroupHeader` | unsealed `ContentControl`; `IsExpanded`, `IsExpandable` read-only DPs (`false`) (proposed; not in this IDL) | Realized band; written internally only. An external `SetValue` is reverted (observers may see a transient change notification); bind `OneWay` only. |
+| `ExpandGroup(Object key)` / `CollapseGroup(Object key)` (proposed; not in this IDL) | `void` | The key is matched against the groups' keys by identity (key resolution with `CollectionViewSource` grouping is part of the proposed data-shaping surface); a null key and `""` never collide. Unknown key or already in state: no-op, no event. |
 | `ExpandAllGroups()` / `CollapseAllGroups()` | `void` | Moves the default (applies to groups that appear later) and resets per-group exceptions. No-op when not grouped. |
-| `GroupExpanding` | args `GroupKey` | Always synchronous, before the state changes. Not cancellable. |
-| `GroupCollapsed` | args `GroupKey` | After the state changes. |
+| `GroupExpanding` (proposed; not in this IDL) | args `GroupKey` | Always synchronous, before the state changes. Not cancellable. |
+| `GroupCollapsed` (proposed; not in this IDL) | args `GroupKey` | After the state changes. |
 | `ExpandAllRows()` / `CollapseAllRows()` | `void` | Tree rows of hierarchical data (proposed data-shaping surface); no-op otherwise. |
 | `TableViewRow.Level` / `IsExpandable` / `IsExpanded` | read-only DPs | `Level` 1-based for tree rows, `0` otherwise (matches `AutomationProperties.Level`). |
 
@@ -176,7 +176,7 @@ TableView is a read-only table: it has no editing API, edit mode or edit gesture
 |---|---|---|---|---|
 | `TableViewAutomationPeer` | no | `(TableView)` | `DataGrid` | `Selection`, `Grid`, `Table`, `ItemContainer` |
 | `TableViewRowAutomationPeer` | no | `(TableViewRow)` | `DataItem` | `SelectionItem`, `ExpandCollapse` |
-| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | see §6 | `GridItem`, `TableItem` |
+| `TableViewCellAutomationPeer` | no | `(FrameworkElement owner)`: typed `FrameworkElement` because the cell element type is internal; validated at run time (`E_INVALIDARG` unless a prepared TableView cell with a row, column and index) | `DataItem` (localized `cell`) | `GridItem`, `TableItem` |
 | `TableViewColumnHeaderAutomationPeer` | no | `(TableViewColumnHeader)` | `HeaderItem` | `Invoke` (+ `Transform`, implementation-only) |
 | `TableViewGroupHeaderAutomationPeer` | no | `(TableViewGroupHeader)` | `Group` | `ExpandCollapse`, `GridItem` |
 
@@ -327,7 +327,6 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 | **Column reorder** | No `DisplayIndex`; collection order is visual and UIA order. | Lock "collection order = visual order + `MoveColumn`" vs `DisplayIndex` before reorder ships. |
 | **Incremental loading** | No `ISupportIncrementalLoading` story. | Define how the shaped projection interacts with partial data. |
 | **Data shaping** | `TableViewSource` open items (declared-state read-back, source comparers, callback errors, key types, sharing, live-shaping cost, callback lifetime, `CollectionViewSource` interop, row identity selector). | Handled by the proposed data-shaping surface, which moves data shaping to `CollectionViewSource`. |
-| Cell UIA control type | API spec says `Custom` ("cell"); implementation and dev spec use `DataItem`. | Decide with Narrator/Axe evidence. |
 | Peer `ClassName` | Mixed fully qualified vs short names. | Pick one before stabilizing. |
 | Theme keys / template parts | Which `TabularSurface*`/`TableView*` keys and parts are contract. | Publish the supported list. |
 | `TableViewRowTemplateSelector` | `[MUX_INTERNAL]` type in the public namespace. | Move to `Microsoft.UI.Private.Controls`. |
