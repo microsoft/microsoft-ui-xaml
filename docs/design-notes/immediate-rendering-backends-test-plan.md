@@ -861,3 +861,145 @@ not met only because of the failures below. Each has an owner, and all of them f
 
 **Memory** (private MB at idle across all 79 pages, mean / max): Composition 43.4 / 54.1, GDI+ 48.6 / 60.7,
 D2D-SW 52.6 / 67.9.
+
+### Full XAML coverage: integrated results
+
+The integration branch `user/neeverma/immediate-rendering-integration` merges the seven coverage branches in this order:
+coverage, shapes, clips3d, text, scrolling, transitions, imaging. All numbers below come from one session on the GPU-less
+VM. The desktop was a 1024×768 console session; earlier matrices ran in a larger RDP desktop.
+
+**Coverage.** `Run-Coverage.ps1 -Results C:\mux-ir\results\coverage-integrated -DeleteBmps` ran the whole corpus: 195
+pages in F1-F14, all three modes, 585 runs, about 22 minutes, under the bench lock.
+
+| Family | Composition | GDI+ | D2D-SW |
+|---|---|---|---|
+| F1-shapes | 5/5 | 5/5 | 5/5 |
+| F2-brushes | 5/5 | 5/5 | 5/5 |
+| F3-clips | 8/8 | 8/8 | 8/8 |
+| F4-3d | 10/10 | 10/10 | 10/10 |
+| F5-text | 9/9 | 9/9 | 9/9 |
+| F6-editing | 8/8 | 8/8 | 8/8 |
+| F7-images | 9/9 | 9/9 | 9/9 |
+| F8-controls | 54/54 | 54/54 | 54/54 |
+| F9-scrolling | 15/15 | 15/15 | 15/15 |
+| F10-animations | 32/32 | 32/32 | 32/32 |
+| F11-interop | 10/10 | 10/10 | 10/10 |
+| F12-popups | 15/15 | 15/15 | 15/15 |
+| F13-windowing | 5/5 | 5/5 | 5/5 |
+| F14-theming | 10/10 | 10/10 | 10/10 |
+| **Total** | **195/195** | **195/195 (100%)** | **195/195 (100%)** |
+
+Both success measures are met:
+
+- **Non-interop pages:** 184/184 (100%) pass in every immediate mode, against a 95% target.
+- **Interop pages:** 11/11 fall back and match Comp, against a 100% target. These are the 10 F11 pages plus
+  `F3-clips/handoff-path-clip`.
+
+Fidelity, as the mean absolute difference against Comp:
+
+| Mode | Mean | Max |
+|---|---|---|
+| GDI+ | 0.0010 | 0.047 |
+| D2D-SW | 0.0009 | 0.047 |
+
+The maximum is on the materials and backdrop pages, which have higher declared thresholds.
+
+Private MB at idle, mean / max:
+
+| Mode | Mean | Max |
+|---|---|---|
+| Comp | 43.6 | 93.5 |
+| GDI+ | 48.7 | 62.5 |
+| D2D-SW | 51.2 | 69.5 |
+
+The only approximated content reported in immediate modes:
+
+| Content | Runs |
+|---|---|
+| `AnimatedIcon:approximated` | 76 |
+| `ConnectedAnimation cross-fade:approximated` | 8 |
+| `SystemBackdrop:approximated` (Mica, DesktopAcrylic) | 4 |
+| `Reveal focus glow:approximated` | 2 |
+
+**Integration fixes.**
+
+- `HasPaintUnder` lost its closing brace in the text merge.
+- `F11-interop/hand-off-visual` now starts a 50 ms app `ScalarKeyFrameAnimation` on `RotationAngleInDegrees`.
+  - With clips3d, static hand-off properties are painted without a fallback. The imaging page's static
+    CenterPoint/RotationAngleInDegrees no longer triggered the expected fallback.
+  - The page now covers the animated hand-off case. Static hand-off is covered by `F4-3d/handoff-*`.
+
+No other cross-branch regressions were found. The coverage branch's failures pass after the merge:
+
+- itemsview: fixed by scrolling, clips3d and transitions.
+- richeditbox-idle: fixed by text.
+- autosuggestbox caret: fixed by text.
+
+**Perf matrix.** `C:\mux-ir\run-matrix-integrated.ps1` runs the 27 entries × {composition, gdiplus, d2d-sw}. Each run is
+one `Run-RenderBench.ps1 -Modes <mode> -Scenes <entry> -Repetitions 1 -Quick -InputMode programmatic -DeleteTraces` process
+under the bench lock, writing to `C:\mux-ir\results\matrix-integrated`.
+
+80/81 gates pass. The exception is S22 `accessibility` Composition, `CaptureWithinTolerance` 23.3 (max 8), and it is
+environmental:
+
+- At 1024×768 the window extends past the desktop, so the on-screen capture is clipped.
+- The immediate modes compare against their own presented buffer and pass.
+
+Geometric means vs same-session Comp (Lifted):
+
+| Measure | GDI+ | D2D-SW |
+|---|---|---|
+| Steady | 81% | 98% |
+| Peak | 83% | 102% |
+| Steady, previous matrix | 92% | 101% |
+| Peak, previous matrix | 84% | 107% |
+
+- D2D-SW is within the ±3 point target.
+- GDI+ is 11 points lower, and the cause is the Comp baseline, not the immediate backends.
+  - In this session Comp no longer drops from its start-up peak to about 32 MB at idle. Its steady geo mean is 114% of
+    the first matrix, while its peak is 93%.
+  - The pre-coverage kit (renderloop worktree) reproduces it in this session: S7 45 MB and S13 49 MB, against 32 and
+    33 MB earlier.
+- The immediate modes' absolute steady memory is flat:
+  - GDI+ is 101% of the first matrix (peak 91%).
+  - D2D-SW is 96% of its after-fix run (peak 94%).
+- Notable per-scene changes beyond ±10%:
+  - S5 gallery and gallery-decoded: GDI+ 21-31% lower, D2D-SW 15-20% lower. This comes from imaging's zero-copy
+    bitmaps and content generations.
+  - S2, S7, S13 and S21: Comp steady 36-53% higher, from the environment described above.
+
+The report is `C:\mux-ir\results\memory-comparison-s1-s23.html`, in the "After full XAML coverage" and "XAML coverage"
+sections. The CSV is `memory-s1-s23.csv`.
+
+**Tests.**
+
+All tests were run against the committed integration head, built in the `C:\mux-ir\base` build environment.
+
+| Command | Total | Passed | Failed | Skipped |
+|---|---|---|---|---|
+| `validate-branch.ps1 -Backend integration -TestFilter '*'` (Isolated.Base TAEF) | 511 | 394 | 0 | 117 |
+| `validate-branch.ps1 -Backend integration -TestFilter 'RenderingBackendTests::*' -Mux -Muxc -Stage -Kit`: TAEF | 455 | 338 | 0 | 117 |
+| The same command: RenderBench.Tests (kit) | 116 | 115 | 0 | 1 |
+
+All 117 skipped TAEF tests are the D2D-HW painter variants, which skip because there is no GPU adapter.
+
+**Known gaps.**
+
+- Scrolling:
+  - Wheel, touch, pinch, inertia and keyboard scrolling jump instead of animating, because there is no DManip compositor.
+  - Input injection is unavailable on the VM.
+- Animations:
+  - ExpressionAnimations and template-part animations silently paint their static value.
+  - Transitions don't advance on the render thread while the UI thread is blocked.
+- Per-window Composition fallback (by design): app Composition animations, hand-off path clips, app brushes and lights,
+  SwapChainPanel, media and AnimatedVisualPlayer sources.
+- Approximations:
+  - Mica and DesktopAcrylic show white behind the swap chain (`:approximated`; thresholds 0.06 and 0.035).
+  - Radial gradients interpolate in HSL approximately.
+  - TextBox and RichEditBox gradient text uses the average colour.
+  - The ConnectedAnimation cross-fade is approximated.
+  - AnimatedIcon shows its fallback icon.
+- Not tested:
+  - High contrast can't be tested per process.
+  - D2D-HW is unmeasured because the VM has no GPU, and its tests skip.
+  - S22's Comp screen capture needs a desktop larger than the window.
