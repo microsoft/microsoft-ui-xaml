@@ -397,7 +397,7 @@ void CXamlIslandRoot::OnStateChanged()
         // starts that timer on hide and repaints (full damage) on show.
         if (RenderingBackend::IsTrimWhenHiddenEnabled())
         {
-            GetContext()->RequestAdditionalFrame(RequestFrameReason::AfterResume);
+            GetContext()->RequestImmediateVisibilityWalk(0);
         }
     }
 

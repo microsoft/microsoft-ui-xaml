@@ -6788,7 +6788,8 @@ CCoreServices::NWDrawTree(
                 pVisualRoot != nullptr &&
                     (  forceRedraw
                     || pVisualRoot->NWNeedsRendering()
-                    || m_renderStateChanged));
+                    || m_renderStateChanged
+                    || m_immediateVisibilityWalkPending));
 
             // We do a render walk only if it is determined to be needed by
             // logic above and the window is visible. Only exception is that
@@ -7182,6 +7183,7 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
         {
             m_immediateRenderer->ResetStats();
         }
+        m_immediateVisibilityWalkPending = false;
 
         for (auto& islandData : dcompTreeHost->GetXamlIslandRenderData())
         {
@@ -7209,10 +7211,7 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                         const uint32_t trimInMs = m_immediateRenderer->OnIslandHidden(xamlIslandRoot);
                         if (trimInMs > 0)
                         {
-                            if (ITickableFrameScheduler* frameScheduler = GetBrowserHost() ? GetBrowserHost()->GetFrameScheduler() : nullptr)
-                            {
-                                IFC_RETURN(frameScheduler->RequestAdditionalFrame(trimInMs, RequestFrameReason::AfterResume));
-                            }
+                            RequestImmediateVisibilityWalk(trimInMs);
                         }
                         xamlIslandRoot->PropagateNWClean();
                         continue;
@@ -11533,6 +11532,20 @@ void CCoreServices::RequestAdditionalFrame(RequestFrameReason reason)
         if (pFrameScheduler != nullptr)
         {
             IFCFAILFAST(pFrameScheduler->RequestAdditionalFrame(0 /* immediate */, reason));
+        }
+    }
+}
+
+void CCoreServices::RequestImmediateVisibilityWalk(uint32_t delayMs)
+{
+    m_immediateVisibilityWalkPending = true;
+    IXcpBrowserHost *pBH = GetBrowserHost();
+    if (pBH != nullptr)
+    {
+        ITickableFrameScheduler *pFrameScheduler = pBH->GetFrameScheduler();
+        if (pFrameScheduler != nullptr)
+        {
+            IFCFAILFAST(pFrameScheduler->RequestAdditionalFrame(delayMs, RequestFrameReason::AfterResume));
         }
     }
 }

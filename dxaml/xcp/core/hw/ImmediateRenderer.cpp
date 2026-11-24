@@ -706,6 +706,8 @@ uint32_t ImmediateRenderer::OnIslandHidden(_In_ CXamlIslandRoot* island) noexcep
             dxgiDevice->Trim();
         }
     }
+    // The last inventory came from the last painted frame; report the released island as owning nothing.
+    TraceResourceInventory(m_mode, 0, 0, 0, 0);
     return 0;
 }
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
@@ -3824,7 +3826,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
 
     std::lock_guard<std::recursive_mutex> independentLock(m_independent->mutex);
-    m_hiddenSinceUs.erase(island);
+    // Dirty flags were cleared unpainted while the island was hidden, so incremental reuse would show stale content.
+    const bool wasHidden = m_hiddenSinceUs.erase(island) > 0;
     if (FAILED(m_independent->renderThreadLoss))
     {
         OnDeviceLost(m_independent->renderThreadLoss, frameNumber);
@@ -3839,6 +3842,10 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
         slot = std::make_unique<IslandState>();
     }
     IslandState& state = *slot;
+    if (wasHidden)
+    {
+        state.fullDamage = true;
+    }
 
     HRESULT hr = EnsureIslandResources(dcompTreeHost, island, state, width, height, scale);
     if (FAILED(hr))
