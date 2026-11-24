@@ -34,6 +34,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         }
     }
 
+    void ETWWaiterServerHelper::StartWithTaskNameAndPayload(GUID providerGuid, const wchar_t* taskName, const wchar_t* payloadCriteria)
+    {
+        ETWWaiterKey key(providerGuid, taskName);
+        if (AddKeyValue(&key, new EtwWaiter(providerGuid, taskName, payloadCriteria)))
+        {
+            LOG_OUTPUT(L"Event with TaskName %ls has already been enabled.", taskName);
+        }
+    }
+
     //returns true if key already existed in map
     // not going to throw exception if true, just remove and recreate a new ETWWaiter object
     bool ETWWaiterServerHelper::AddKeyValue(ETWWaiterKey* key, EtwWaiter* waiter)

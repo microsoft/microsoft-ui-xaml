@@ -75,6 +75,10 @@
   <Import Project="$(MUXCProjectRoot)dev\**\*.vcxitems" />
   <ItemGroup>
     <PageToTest Include="@(Page)" />
+    <Page Include="AutomaticDragPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

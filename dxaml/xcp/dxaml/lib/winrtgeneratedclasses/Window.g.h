@@ -46,6 +46,8 @@ namespace ctl
         IFACEMETHOD(put_MinHeight)(DOUBLE value) override { return This()->put_MinHeight(value); }
         IFACEMETHOD(get_MinWidth)(_Out_ DOUBLE* pValue) override { return This()->get_MinWidth(pValue); }
         IFACEMETHOD(put_MinWidth)(DOUBLE value) override { return This()->put_MinWidth(value); }
+        IFACEMETHOD(get_PlacementId)(_Out_ HSTRING* pValue) override { return This()->get_PlacementId(pValue); }
+        IFACEMETHOD(put_PlacementId)(_In_opt_ HSTRING value) override { return This()->put_PlacementId(value); }
         IFACEMETHOD(get_Width)(_Out_ DOUBLE* pValue) override { return This()->get_Width(pValue); }
         IFACEMETHOD(put_Width)(DOUBLE value) override { return This()->put_Width(value); }
     };
@@ -119,6 +121,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinHeight(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MinWidth(_Out_ DOUBLE* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MinWidth(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_PlacementId(_Out_ HSTRING* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_PlacementId(_In_opt_ HSTRING value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
@@ -199,6 +203,7 @@ namespace DirectUI
         
         
         
+
 
         // Attached properties.
 

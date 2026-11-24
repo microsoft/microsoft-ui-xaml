@@ -71,6 +71,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(KeyboardAcceleratorScopeOwnerDoesNotLeak)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that destroying keyboard accelerators releases their ScopeOwner storage.")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
         private:
             void EnterKeyDownKeyUpHelper(xaml_controls::Control^ element);
         };

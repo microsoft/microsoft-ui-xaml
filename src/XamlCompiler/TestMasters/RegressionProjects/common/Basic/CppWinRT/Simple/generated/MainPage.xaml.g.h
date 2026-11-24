@@ -53,6 +53,24 @@ namespace winrt::Simple::implementation
         void UnloadObject(::winrt::Microsoft::UI::Xaml::DependencyObject const& dependencyObject);
         void DisconnectUnloadedObject(int32_t connectionId);
 
+        ::winrt::hstring NamedResourceString()
+        {
+            return _NamedResourceString;
+        }
+        void NamedResourceString(::winrt::hstring value)
+        {
+            _NamedResourceString = value;
+        }
+
+        ::winrt::hstring NamedEmptyString()
+        {
+            return _NamedEmptyString;
+        }
+        void NamedEmptyString(::winrt::hstring value)
+        {
+            _NamedEmptyString = value;
+        }
+
         ::winrt::Simple::PropBag propertyBagObject()
         {
             return _propertyBagObject;
@@ -69,6 +87,33 @@ namespace winrt::Simple::implementation
         void propertyBagObjectSecond(::winrt::Simple::PropBag value)
         {
             _propertyBagObjectSecond = value;
+        }
+
+        ::winrt::Microsoft::UI::Xaml::Controls::Grid MainGrid()
+        {
+            return _MainGrid;
+        }
+        void MainGrid(::winrt::Microsoft::UI::Xaml::Controls::Grid value)
+        {
+            _MainGrid = value;
+        }
+
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock NamedStringTextBlock()
+        {
+            return _NamedStringTextBlock;
+        }
+        void NamedStringTextBlock(::winrt::Microsoft::UI::Xaml::Controls::TextBlock value)
+        {
+            _NamedStringTextBlock = value;
+        }
+
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock EmptyStringTextBlock()
+        {
+            return _EmptyStringTextBlock;
+        }
+        void EmptyStringTextBlock(::winrt::Microsoft::UI::Xaml::Controls::TextBlock value)
+        {
+            _EmptyStringTextBlock = value;
         }
 
         ::winrt::Microsoft::UI::Xaml::Controls::Button Button1()
@@ -88,6 +133,24 @@ namespace winrt::Simple::implementation
         {
             _Button2 = value;
         }
+
+        ::winrt::hstring NamedEmptyInlineString()
+        {
+            return _NamedEmptyInlineString;
+        }
+        void NamedEmptyInlineString(::winrt::hstring value)
+        {
+            _NamedEmptyInlineString = value;
+        }
+
+        ::winrt::hstring NamedInlineString()
+        {
+            return _NamedInlineString;
+        }
+        void NamedInlineString(::winrt::hstring value)
+        {
+            _NamedInlineString = value;
+        }
         
          ::winrt::com_ptr<::winrt::Simple::implementation::XamlBindings> Bindings;
 
@@ -97,10 +160,17 @@ namespace winrt::Simple::implementation
     private:
         struct MainPage_obj1_Bindings;
 
+        ::winrt::hstring _NamedResourceString{};
+        ::winrt::hstring _NamedEmptyString{};
         ::winrt::Simple::PropBag _propertyBagObject{nullptr};
         ::winrt::Simple::PropBag _propertyBagObjectSecond{nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::Grid _MainGrid{nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _NamedStringTextBlock{nullptr};
+        ::winrt::Microsoft::UI::Xaml::Controls::TextBlock _EmptyStringTextBlock{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::Button _Button1{nullptr};
         ::winrt::Microsoft::UI::Xaml::Controls::Button _Button2{nullptr};
+        ::winrt::hstring _NamedEmptyInlineString{};
+        ::winrt::hstring _NamedInlineString{};
     };
 }
 

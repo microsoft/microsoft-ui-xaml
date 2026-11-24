@@ -15,6 +15,30 @@
     <FileVersion>$(ProductMajorVersion).$(ProductMinorVersion).$(ProductPatchVersion).$(ProductBuildVersion)</FileVersion>
   </PropertyGroup>
 
+  <Target Name="ApplyWinUIManagedDeliveryVersion"
+          BeforeTargets="GetAssemblyVersion"
+          Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WindowsAppSDKBinaryVersion)' != ''">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(WindowsAppSDKBinaryVersion)', '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'))"
+           Text="WindowsAppSDKBinaryVersion must be a numeric four-part version." />
+    <Error Condition="$([System.Version]::Parse('$(WindowsAppSDKBinaryVersion)').Major) &gt; 65535 or
+                      $([System.Version]::Parse('$(WindowsAppSDKBinaryVersion)').Minor) &gt; 65535 or
+                      $([System.Version]::Parse('$(WindowsAppSDKBinaryVersion)').Build) &gt; 65535 or
+                      $([System.Version]::Parse('$(WindowsAppSDKBinaryVersion)').Revision) &gt; 65535"
+           Text="WindowsAppSDKBinaryVersion is outside the VERSIONINFO range 0-65535." />
+    <Error Condition="'$(WindowsAppSDKInformationalVersion)' == ''"
+           Text="WindowsAppSDKInformationalVersion is required with WindowsAppSDKBinaryVersion." />
+    <PropertyGroup>
+      <!-- Keep the binding identity already evaluated by the projection/compiler props. -->
+      <AssemblyVersion Condition="'$(AssemblyVersion)' == ''">$(Version)</AssemblyVersion>
+      <FileVersion>$(WindowsAppSDKBinaryVersion)</FileVersion>
+      <InformationalVersion>$(WindowsAppSDKInformationalVersion)</InformationalVersion>
+      <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)ManagedVersionResource.targets"
+          Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
+
   <!-- 
     The ProductxxxxVersions properties are for WinUI, but the product that distributes WinUI is WinAppSDK, so we reclassify 
     the product versions to WINUI versions for use in file versions within the product.  Also, in our WinAppSdk binaries, we

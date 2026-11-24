@@ -1,4 +1,13 @@
 {
+  "None": {
+    "team": null,
+    "confidence": "medium",
+    "match": ["contribution guidance", "feedback guidance", "product roadmap link", "CONTRIBUTING_feedback_and_requests.md"],
+    "note": "Reserved team-only routes when no existing area fits. Do not invent an area or use this entry for generic documentation, runtime failures, external services, or feature requests.",
+    "overrides": [
+      {"id": "repo-contribution-guidance", "when": "A maintenance defect in this repository's OSS contribution, feedback, or roadmap guidance, such as a broken guidance link or outdated Gallery naming. Excludes product API documentation, runtime navigation, external service failures, and roadmap feature requests.", "team": "team-Controls"}
+    ]
+  },
   "area-AOT": {
     "team": "team-Markup",
     "confidence": "high",
@@ -55,7 +64,8 @@
   "area-AutoSuggestBox": {
     "team": "team-Controls",
     "confidence": "high",
-    "match": ["AutoSuggestBox", "suggestion list", "auto suggest", "type-ahead"]
+    "match": ["AutoSuggestBox", "suggestion list", "auto suggest", "type-ahead"],
+    "note": "Suggestion-list and suggestion-selection defects belong here. A touch text-selection caret hidden behind the suggestion popup can instead identify the editing surface in area-TextBox; distinguish that from a generic popup-layering defect."
   },
   "area-Binding": {
     "team": "team-Markup",
@@ -95,7 +105,8 @@
   "area-CommandBarFlyout": {
     "team": "team-Controls",
     "confidence": "medium",
-    "match": ["CommandBarFlyout", "CommandBar", "AppBarButton", "secondary commands"]
+    "match": ["CommandBarFlyout", "CommandBar", "AppBarButton", "secondary commands"],
+    "note": "CommandBar overflow background and visual presentation belong here, rather than area-Commanding. Command execution and ICommand/XamlUICommand semantics retain area-Commanding."
   },
   "area-Commanding": {
     "team": "team-Controls",
@@ -234,7 +245,8 @@
   "area-Infrastructure": {
     "team": "team-Core",
     "confidence": "low",
-    "match": ["repo infrastructure", "build agent", "internal tooling"]
+    "match": ["repo infrastructure", "build agent", "internal tooling", "XamlMetadataProviderGenerated.h"],
+    "overrides": [{"id": "controls-metadata-ordering", "when": "This repository's product build nondeterministically reorders generated entries in controls/dev/dll/XamlMetadataProviderGenerated.h. Excludes application-generated XAML metadata, other generator failures, and generic build infrastructure.", "team": "team-Controls"}]
   },
   "area-InkCanvas": {
     "team": "team-Controls",
@@ -254,7 +266,8 @@
   "area-Islands": {
     "team": "team-Reach",
     "confidence": "high",
-    "match": ["DesktopWindowXamlSource", "XAML island", "island hosting", "ContentIsland", "Win32 interop"]
+    "match": ["DesktopWindowXamlSource", "XAML island", "island hosting", "ContentIsland", "Win32 interop"],
+    "overrides": [{"id": "island-resize-presentation", "when": "Resizing DesktopWindowXamlSource island content exposes a diagonal white or unpainted region. Excludes CoreWindow, generic resize artifacts, and unrelated island activation, focus, lifetime, or hosting failures.", "team": "team-CompInput"}]
   },
   "area-ItemsRepeater": {
     "team": "team-Controls",
@@ -280,7 +293,8 @@
   "area-Lifetime": {
     "team": "team-Reach",
     "confidence": "medium",
-    "match": ["shutdown", "teardown", "object lifetime", "leak", "finalizer", "reference cycle"]
+    "match": ["shutdown", "teardown", "object lifetime", "leak", "finalizer", "reference cycle", "ItemCollection", "ItemContainerGenerator"],
+    "overrides": [{"id": "controls-item-lifetime", "when": "An ItemCollection retained after its ItemsControl owner dies fails mutation operations, or a retained ItemContainerGenerator fails or corrupts its item map after host detachment and RemoveAll. The type and failing owner/detach contract must be identified, not merely present in a stack. Excludes generic GC, reference tracking, and shutdown failures.", "team": "team-Controls"}]
   },
   "area-Lists": {
     "team": "team-Controls",
@@ -321,7 +335,8 @@
   "area-MediaPlayerElement": {
     "team": "team-Rendering",
     "confidence": "high",
-    "match": ["MediaPlayerElement", "MediaPlayer", "video playback", "transport controls"]
+    "match": ["MediaPlayerElement", "MediaPlayer", "video playback", "transport controls"],
+    "overrides": [{"id": "island-cast-command", "when": "MediaPlayerElement's built-in MediaTransportControls Cast command invokes CastingDevicePicker on a desktop XAML island and causes a shutdown crash or hang. Excludes other transport commands, codec/playback/frame rendering, and generic media or island teardown failures.", "team": "team-Controls"}]
   },
   "area-Menus": {
     "team": "team-Controls",
@@ -341,8 +356,8 @@
   "area-Navigation": {
     "team": "team-Controls",
     "confidence": "medium",
-    "match": ["Frame", "Page navigation", "back stack", "NavigationCacheMode", "OnNavigatedTo"],
-    "note": "Frame/page navigation. Distinct from the area-NavigationView control."
+    "match": ["Frame", "Page navigation", "back stack", "NavigationCacheMode", "OnNavigatedTo", "SelectorBar", "SelectorBarItem"],
+    "note": "Frame/page navigation and SelectorBar visual-state behavior, including hover flicker and a stuck pressed state. SelectorBar uses this existing area; pointer or theme keywords do not by themselves establish a generic Pointer or Styling defect. Distinct from the area-NavigationView control."
   },
   "area-NavigationView": {
     "team": "team-Controls",
@@ -352,7 +367,9 @@
   "area-NugetPackage": {
     "team": "team-Markup",
     "confidence": "low",
-    "match": ["NuGet package", "package restore", "WindowsAppSDK package", "nupkg"]
+    "match": ["NuGet package", "package restore", "WindowsAppSDK package", "nupkg"],
+    "note": "Distinguish generic package/restore failures from compiled XAML/resource layout failures in packaged control libraries, which can start in area-XamlCompiler. A package reference alone does not establish a packaging defect.",
+    "overrides": [{"id": "composition-interop-header-packaging", "when": "Microsoft.UI.Composition.Interop.h requires Microsoft.ui.composition.h, and that native header is missing from the package/header distribution rather than expected from cppwinrt generation. Excludes generic include-path, projection generation, package restore, and unrelated missing-header failures.", "team": "team-CompInput"}]
   },
   "area-NumberBox": {
     "team": "team-Controls",
@@ -383,7 +400,7 @@
     "team": null,
     "confidence": "low",
     "match": ["performance", "slow", "memory usage", "startup time", "regression in speed", "CPU"],
-    "note": "Spread evenly across every team in the data. Route by the subsystem that is slow, not by this label alone."
+    "note": "Spread evenly across every team in the data. Route by the subsystem that is slow, not by this label alone. Do not choose or reject an area just to obtain a team: GPU memory growth, cross-adapter copies, or a stale graphics device may require manual compositor/XAML ownership review."
   },
   "area-PersonPicture": {
     "team": "team-Controls",
@@ -419,7 +436,8 @@
   "area-ProjectSystem": {
     "team": "team-Markup",
     "confidence": "high",
-    "match": ["csproj", "vcxproj", "MSBuild", "project template", "build target", "SDK version"]
+    "match": ["csproj", "vcxproj", "MSBuild", "project template", "build target", "SDK version"],
+    "note": "MSBuild or dotnet format being the trigger does not override an identified XAML-generation failure. Duplicated .g.cs/.g.i.cs compile items from IncludeGeneratedXamlCompileItemsForDesignTime and DesignTimeMarkupCompilation can start in area-XamlCompiler; unrelated project configuration stays here."
   },
   "area-PullToRefresh": {
     "team": "team-Controls",
@@ -465,6 +483,7 @@
     "team": "team-Controls",
     "confidence": "high",
     "match": ["ScrollViewer", "ScrollView", "ScrollPresenter", "scrolling", "InteractionTracker", "zoom factor"],
+    "note": "A window-resize trigger does not displace a diagnosed failing ScrollPresenter operation or reentrancy path. Prefer this component when the diagnostic evidence identifies it; a resize trigger or incidental stack frame alone is insufficient.",
     "overrides": [{"id": "compositor-input", "when": "compositor-thread interaction tracker or input latency", "team": "team-CompInput"}]
   },
   "area-SelectionModel": {
@@ -536,7 +555,8 @@
   "area-Charting": {
     "team": "team-Controls",
     "confidence": "high",
-    "match": ["Charts", "Charting", "Graphs"]
+    "match": ["Chart", "Charts", "Charting", "Graphs", "live chart", "Charts Review App"],
+    "note": "Chart-specific behavior, including a chart staying light in a secondary live-data window while the main chart follows Dark theme, can start here. Window or theme keywords alone do not establish a generic XamlWindow or Styling defect. Prefer those areas only when evidence identifies that broader failing boundary; do not claim a verified chart root cause."
   },
   "area-Inking": {
     "team": "team-Controls",
@@ -561,7 +581,8 @@
   "area-TextBox": {
     "team": "team-Controls",
     "confidence": "high",
-    "match": ["TextBox", "RichEditBox", "text input", "caret", "selection", "spell check"]
+    "match": ["TextBox", "RichEditBox", "text input", "caret", "selection", "spell check"],
+    "note": "Touch text-selection/caret visibility in an editing surface can start here even when an AutoSuggestBox suggestion popup obscures it. Do not redirect suggestion-list defects or generic popup z-order failures merely because a caret is mentioned."
   },
   "area-TitleBar": {
     "team": "team-Controls",
@@ -608,7 +629,8 @@
   "area-Unpackaged": {
     "team": "team-Markup",
     "confidence": "high",
-    "match": ["unpackaged", "self-contained", "sparse package", "bootstrapper", "no identity"]
+    "match": ["unpackaged", "self-contained", "sparse package", "bootstrapper", "no identity"],
+    "note": "Packaging mode is context, not necessarily the failing boundary. A renamed self-contained executable disrupting XAML resource identity/loading can start in area-XamlCompiler; generic bootstrapper/deployment failures remain here. XamlParseException alone is not enough to identify either area."
   },
   "area-VSM": {
     "team": "team-Controls",
@@ -624,7 +646,8 @@
   "area-Windowing": {
     "team": "team-CompInput",
     "confidence": "high",
-    "match": ["window positioning", "window state", "minimize", "maximize", "monitor", "z-order", "window styles"]
+    "match": ["window positioning", "window state", "minimize", "maximize", "monitor", "z-order", "window styles"],
+    "note": "Use for window operations or behavior, not graphics adapter/device selection merely triggered by a display change. A compositor retaining its previous GPU is not by itself a window-positioning or window-state defect; leave unmatched compositor ownership for human triage."
   },
   "area-WindowsDesign": {
     "team": "team-Design",
@@ -639,7 +662,8 @@
   "area-XamlCompiler": {
     "team": "team-Markup",
     "confidence": "high",
-    "match": ["XAML compiler", "XamlCompiler", "genxbf", "compile error", "code-behind generation", "XamlTypeInfo"]
+    "match": ["XAML compiler", "XamlCompiler", "genxbf", "compile error", "code-behind generation", "XamlTypeInfo", "IncludeGeneratedXamlCompileItemsForDesignTime", "DesignTimeMarkupCompilation", "compiled XAML resource layout"],
+    "note": "Initial investigation can start here for duplicated XAML-generated compile items in design-time builds, missing compiled XAML/resource layout when a control library works by project reference but not as a NuGet package, or a renamed self-contained executable breaking XAML resource identity/loading. Distinguish these boundaries from generic MSBuild, restore, or unpackaged deployment failures; a runtime XamlParseException alone does not establish compiler ownership or a verified root cause."
   },
   "area-XamlWindow": {
     "team": "team-Reach",

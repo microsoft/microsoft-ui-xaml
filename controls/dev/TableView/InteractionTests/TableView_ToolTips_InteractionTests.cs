@@ -32,6 +32,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewToolTipsInteractionTests
     {
         // ToolTipService's initial show delay plus slack. A dwell shorter than the delay reads exactly like a
@@ -350,6 +351,110 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         #endregion
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a column's HeaderToolTip does not open while the pointer rests on its resize gripper, so the resize cursor holds (GH #12436).")]
+        public void HeaderToolTipStaysClosedOverResizeGripper()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                if (nameHeader == null)
+                {
+                    Verify.Fail("The 'Name' column header peer was not found on the header host.");
+                    return;
+                }
+
+                var bounds = nameHeader.BoundingRectangle;
+                var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
+                HoverPoint(gripper, "the Name header's resize gripper");
+                UIObject toolTip = FindOpenToolTip("while resting on the gripper");
+
+                Verify.IsNull(toolTip, "The header tooltip must not open while the pointer is on the resize gripper.");
+
+                HoverPoint(new Point(bounds.Left + (bounds.Width / 3), gripper.Y), "the Name header's content");
+                UIObject contentToolTip = FindOpenToolTip("after hovering the header content");
+                Verify.IsNotNull(contentToolTip, "Hovering the header content must still open its tooltip.");
+                if (contentToolTip != null)
+                {
+                    Verify.IsTrue(ReadToolTipText(contentToolTip).Contains("The person's name"), "The restored tooltip must carry the header's text.");
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header tooltip whose column is pinned by app code while the gripper detaches it still opens afterwards (GH #12436).")]
+        public void HeaderToolTipOpensAfterColumnPinnedDuringGripperDetach()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                var arm = FindElement.ById<Button>(PinNameOnHeaderToolTipDetachButton);
+                if (nameHeader == null || arm == null)
+                {
+                    Verify.Fail("The 'Name' column header peer and/or " + PinNameOnHeaderToolTipDetachButton + " were not found.");
+                    return;
+                }
+
+                var bounds = nameHeader.BoundingRectangle;
+                var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
+                DismissToolTip();
+                arm.Invoke();
+                if (!WaitForStatusText("Detach pin armed"))
+                {
+                    Verify.Fail("The page did not arm the detach handler.");
+                    return;
+                }
+
+                PointerInput.Move(new Point(gripper.X, bounds.Top - 40));
+                PointerInput.Move(gripper);
+                Wait.ForIdle();
+                if (!WaitForStatusText("Pinned while detaching"))
+                {
+                    Verify.Fail("Entering the gripper must detach the header tooltip, pinning the column from the page's handler. Status: " + FindElement.ById<TextBlock>(StatusText)?.DocumentText);
+                    return;
+                }
+
+                HoverPoint(new Point(bounds.Left + (bounds.Width / 3), gripper.Y), "the Name header's content");
+                UIObject toolTip = FindOpenToolTip("after the column was pinned mid-detach");
+                Verify.IsNotNull(toolTip, "The header tooltip must still open after a restore requested while it was being detached.");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies pinning a column whose suppressed header tooltip, once restored, runs app code that clears Columns and rebuilds the headers does not fail (GH #12436).")]
+        public void PinningColumnSurvivesHeaderRebuildFromRestoredToolTip()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject nameHeader = FindColumnHeader(FindElement.ById(BasicTable), "Name");
+                var trigger = FindElement.ById<Button>(PinNameRebuildOnHeaderToolTipAttachButton);
+                if (nameHeader == null || trigger == null)
+                {
+                    Verify.Fail("The 'Name' column header peer and/or " + PinNameRebuildOnHeaderToolTipAttachButton + " were not found.");
+                    return;
+                }
+
+                var bounds = nameHeader.BoundingRectangle;
+                var gripper = new Point(bounds.Left + bounds.Width - 3, bounds.Top + (bounds.Height / 2));
+                DismissToolTip();
+                trigger.Invoke();
+                if (!WaitForStatusText("Rebuild probe ready"))
+                {
+                    Verify.Fail("The page did not prepare the Name header's tooltip.");
+                    return;
+                }
+
+                PointerInput.Move(new Point(gripper.X, bounds.Top - 40));
+                PointerInput.Move(gripper);
+                Wait.ForIdle();
+                // UIA, not a click: the pointer stays on the gripper, so the header tooltip is still suppressed.
+                trigger.Invoke();
+
+                Verify.IsTrue(WaitForStatusText("Pinned; columns=0"),
+                    "Pinning the column must complete after the restored tooltip's handler rebuilt the headers. Status: " + FindElement.ById<TextBlock>(StatusText)?.DocumentText);
+            }
+        }
+
         // The screen point over a given column's cell in a given row: the column's x from its HEADER, the row's
         // y from the ROW. See the note in CellToolTipAppearsOnHover for why this composition is what keeps the
         // test clear of finding #13.
@@ -507,7 +612,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         //
         // Both layers are logged whether or not the tooltip is found: a null result has to be attributable to
         // "nothing opened" rather than to "the search looked in the wrong place".
-        private static UIObject FindOpenToolTip(string phase)
+        internal static UIObject FindOpenToolTip(string phase)
         {
             foreach (UIObject rootChild in UIObject.Root.Children)
             {

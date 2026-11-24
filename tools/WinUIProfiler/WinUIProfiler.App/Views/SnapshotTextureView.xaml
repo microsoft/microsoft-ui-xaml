@@ -1,0 +1,99 @@
+<UserControl
+    x:Class="WinUIProfiler.App.Views.SnapshotTextureView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:WinUIProfiler.App.Views">
+    <UserControl.Resources>
+        <DataTemplate x:Key="TextureRowTemplate" x:DataType="views:SnapshotTextureDisplayRow">
+            <Grid ColumnSpacing="16" Padding="0,8" AutomationProperties.Name="{x:Bind Description}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                    <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Label}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                <TextBlock Text="{x:Bind Change}" Grid.Column="1" Visibility="{x:Bind ComparisonVisibility}" TextWrapping="Wrap" />
+                <TextBlock Text="{x:Bind Before}" Grid.Column="2" Visibility="{x:Bind ComparisonVisibility}"
+                           TextWrapping="Wrap" Typography.NumeralAlignment="Tabular" />
+                <TextBlock Text="{x:Bind After}" Grid.Column="3" TextWrapping="Wrap" Typography.NumeralAlignment="Tabular" />
+                <TextBlock Text="{x:Bind Delta}" Grid.Column="4" Visibility="{x:Bind ComparisonVisibility}"
+                           TextWrapping="Wrap" Typography.NumeralAlignment="Tabular" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="TextureDetailsTemplate" x:DataType="views:SnapshotTextureDisplayRow">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{x:Bind ComparisonWidth}" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ScrollViewer Visibility="{x:Bind ComparisonVisibility}" VerticalScrollBarVisibility="Auto"
+                              HorizontalContentAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Uid="SnapshotTextureBeforeDetails" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind BeforeDetails}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalContentAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{x:Bind DetailsHeading}" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind AfterDetails}" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid Padding="0,12,0,0" RowSpacing="8">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Single" />
+                <VisualState x:Name="Comparison">
+                    <VisualState.Setters>
+                        <Setter Target="ChangesOnly.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="3*" MinHeight="100" />
+            <RowDefinition Height="2*" MinHeight="100" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="Status" x:Uid="SnapshotTextureStatus" TextWrapping="Wrap"
+                   AutomationProperties.LiveSetting="Polite" />
+        <TextBlock x:Name="Summary" Grid.Row="1" TextWrapping="Wrap" IsTextSelectionEnabled="True" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="16">
+            <Button x:Name="Refresh" x:Uid="SnapshotTextureRefresh" Click="Refresh_Click" />
+            <CheckBox x:Name="ChangesOnly" x:Uid="SnapshotTextureChangesOnly" Visibility="Collapsed"
+                      VerticalAlignment="Center" Click="ChangesOnly_Click" />
+            <Button x:Uid="SnapshotTextureAbout">
+                <Button.Flyout>
+                    <Flyout>
+                        <ScrollViewer MaxWidth="520" MaxHeight="360" VerticalScrollBarVisibility="Auto"
+                                      HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="12">
+                                <TextBlock x:Uid="SnapshotTextureScope" TextWrapping="Wrap" />
+                                <TextBlock x:Name="SourcePath" x:Uid="SnapshotTextureSource" TextWrapping="Wrap"
+                                           IsTextSelectionEnabled="True" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+        </StackPanel>
+        <ContentPresenter x:Name="Columns" Grid.Row="3" Margin="12,0"
+                          ContentTemplate="{StaticResource TextureRowTemplate}" HorizontalContentAlignment="Stretch" />
+        <Grid Grid.Row="4">
+            <ListView x:Name="Textures" x:Uid="SnapshotTextureList" HorizontalContentAlignment="Stretch"
+                      SelectionMode="Single" ItemTemplate="{StaticResource TextureRowTemplate}"
+                      SelectionChanged="Textures_SelectionChanged" />
+            <TextBlock x:Name="Empty" x:Uid="SnapshotTextureEmpty" TextWrapping="Wrap" Margin="12" IsHitTestVisible="False" />
+        </Grid>
+        <ContentPresenter x:Name="Details" Grid.Row="5" ContentTemplate="{StaticResource TextureDetailsTemplate}"
+                          HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+    </Grid>
+</UserControl>

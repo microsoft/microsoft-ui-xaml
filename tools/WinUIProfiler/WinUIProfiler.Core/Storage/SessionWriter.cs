@@ -9,8 +9,11 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.Engine.Storage;
 
@@ -21,18 +24,27 @@ public enum SessionCoverage
     Trace
 }
 
-// Where a session's events come from. For a recorded trace, a null QpcFrequency is derived from the events and a
-// null StartQpc makes the first event time zero.
+// Where a session's events come from. For a recorded trace, pass the trace's QpcFrequency
+// (OfflineEtlSource.ReadQpcFrequency): a null one is derived from the events once they span a second, and until then
+// readers time events with this machine's frequency. A null StartQpc makes the target's first event time zero.
+// LauncherProcessId is the process that created the target, when known, such as the profiler for a launch from the app:
+// the events of another process the session receives are that process's (MarkerProviderSettings.Launcher).
 public sealed record SessionStart(int ProcessId, string? ProcessName, DateTime? ProcessCreatedUtc, long? QpcFrequency,
-    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null);
+    long? StartQpc, SessionCoverage Coverage, string? EtlPath = null, int? LauncherProcessId = null, string? LauncherName = null);
+
+// For a recorded trace: when the target process was created, on the events' clock, and its executable name without .exe,
+// from the kernel's process start event, and the process that created it, its launcher, which the event names.
+// LauncherName is null when the trace doesn't have it.
+public sealed record TraceProcessStart(long Qpc, string? Name, int LauncherProcessId, string? LauncherName);
 
 // CompleteFromSeconds is set once older events were dropped to stay within the limit: the file holds every event
 // from that many seconds after the recording started.
 public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds);
 
 // Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the object index
-// (ObjectIndex) and the frame index (FrameIndex) in the same transactions. Process waits while the writer is
-// behind, so the ETW reader's queue stays the only place events are dropped.
+// (ObjectIndex), the frame index (FrameIndex) and graphics lifetimes (GraphicsIndex) in the same transactions. Process waits while the writer is
+// behind, so the ETW reader's queue stays the only place events are dropped. An event of another process than the
+// target's is the launcher's: it is stored as one, and not indexed.
 public sealed class SessionWriter : IEventProcessor, IDisposable
 {
     public const long DefaultLimitBytes = 500L * 1024 * 1024;
@@ -48,15 +60,23 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // object indexes.
     private const int RowOverheadBytes = 100;
 
-    private readonly BlockingCollection<(long Sequence, ProfilerEvent Event)> queue = new(16_384);
+    private readonly BlockingCollection<QueueItem> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand insertType;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
-    // Event types written so far, by provider, kind (TraceLogging or manifest), name and opcode. Usually one layout
-    // each; a field that is sometimes null gives a second.
-    private readonly Dictionary<(XamlProvider, bool, string, int), List<EventLayout>> types = [];
+    private readonly GraphicsIndex graphics;
+    private readonly CpuSampleIndex cpu;
+    // What SetCpuSampling gave, stored when the file is closed.
+    private CpuSamplingResult? cpuSampling;
+    private long droppedSamples;
+    private readonly int processId;
+    private readonly SessionStart source;
+    private readonly long emptyFileBytes;
+    // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode,
+    // launcher, ETW ID and version. Usually one layout each; a field that is sometimes null gives a second.
+    private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool, int?, int?), List<EventLayout>> types = [];
     private long typeCount;
     private readonly ArrayBufferWriter<byte> payload = new();
     private readonly Utf8JsonWriter json;
@@ -70,6 +90,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private long newestSequence;
     private long fileBytes;
     private long completeFromQpc;
+    // A process start SetProcessStart gave that is not stored yet.
+    private TraceProcessStart? pendingProcessStart;
     private volatile Exception? failure;
     private int closed;
 
@@ -78,6 +100,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         Path = path;
         LimitBytes = limitBytes;
         this.connection = connection;
+        processId = start.ProcessId;
+        source = start;
         derivesFrequency = start.QpcFrequency is null;
         qpcFrequency = start.QpcFrequency ?? 0;
         startQpc = start.StartQpc ?? 0;
@@ -88,15 +112,22 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer), ("$type", SqliteType.Integer),
             ("$payload", SqliteType.Text));
         insertType = Sql.Prepare(connection, """
-            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging)
-            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging)
+            INSERT INTO EventTypes (TypeId, Provider, Name, Opcode, FieldNames, FieldTypes, TraceLogging, ProviderName, ProviderId,
+                Launcher, EventId, Version)
+            VALUES ($id, $provider, $name, $opcode, $names, $types, $tracelogging, $providerName, $providerId, $launcher,
+                $eventId, $version)
             """, ("$id", SqliteType.Integer), ("$provider", SqliteType.Text), ("$name", SqliteType.Text), ("$opcode", SqliteType.Integer),
-            ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer));
+            ("$names", SqliteType.Text), ("$types", SqliteType.Text), ("$tracelogging", SqliteType.Integer),
+            ("$providerName", SqliteType.Text), ("$providerId", SqliteType.Text), ("$launcher", SqliteType.Integer),
+            ("$eventId", SqliteType.Integer), ("$version", SqliteType.Integer));
 
         // The payload is never embedded in HTML, so only the escaping JSON requires is applied and type names stay readable.
         json = new(payload, new JsonWriterOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         objects = new(connection);
         frames = new(connection);
+        graphics = new(connection);
+        cpu = new(connection);
+        emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
     }
@@ -159,8 +190,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 var startedUtc = DateTime.UtcNow;
                 Sql.Execute(connection, """
                     INSERT INTO SessionInfo (SessionId, ProcessId, ProcessName, ProcessCreatedUtc, QpcFrequency, StartQpc,
-                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes)
-                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit)
+                        StartedUtc, StartedQpc, Source, EtlPath, Coverage, LimitBytes, LauncherProcessId, LauncherName)
+                    VALUES ($id, $pid, $name, $created, $frequency, $start, $started, $startedQpc, $source, $etl, $coverage, $limit,
+                        $launcher, $launcherName)
                     """, transaction,
                     ("$id", Guid.NewGuid().ToString()), ("$pid", start.ProcessId), ("$name", start.ProcessName),
                     ("$created", start.ProcessCreatedUtc?.ToString("O", CultureInfo.InvariantCulture)),
@@ -168,7 +200,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     ("$started", startedUtc.ToString("O", CultureInfo.InvariantCulture)),
                     ("$startedQpc", start.EtlPath is null ? startedQpc : null),
                     ("$source", start.EtlPath is null ? "Live" : "Trace"), ("$etl", start.EtlPath),
-                    ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes));
+                    ("$coverage", start.Coverage.ToString()), ("$limit", limitBytes),
+                    ("$launcher", start.LauncherProcessId), ("$launcherName", start.LauncherName));
                 transaction.Commit();
             }
 
@@ -199,20 +232,110 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         if (failure is null)
         {
-            queue.Add((sequence, profilerEvent));
+            queue.Add(new(sequence, profilerEvent, null));
         }
+    }
+
+    // Stores a CPU sample of the target, in its own transactions. A recorded trace's reader waits while the writer is
+    // behind; live sampling doesn't (wait false), so the kernel session's buffers don't fill: the sample is dropped and
+    // counted instead. After a failure or once the file is closing, samples are no longer stored.
+    internal void PostSample(CompletedSample sample, bool wait)
+    {
+        if (failure is not null || Volatile.Read(ref closed) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (wait)
+            {
+                queue.Add(new(0, null, sample));
+            }
+            else if (!queue.TryAdd(new(0, null, sample)))
+            {
+                Interlocked.Increment(ref droppedSamples);
+            }
+        }
+        catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException)
+        {
+            // Closed meanwhile.
+        }
+    }
+
+    // What the CPU sampling recorded, or why there is none (summary null), stored in the CpuSampling row when the file is
+    // closed. Without a call, the file has no CpuSampling row: the session didn't sample.
+    internal void SetCpuSampling(CpuSamplingSummary? summary, string? note) =>
+        Interlocked.Exchange(ref cpuSampling, new(summary, note));
+
+    private sealed record CpuSamplingResult(CpuSamplingSummary? Summary, string? Note);
+
+    internal async Task SaveSnapshotAsync(TreeSnapshotDocument snapshot, string jsonPath, CancellationToken token = default)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentException.ThrowIfNullOrWhiteSpace(jsonPath);
+        if (!System.IO.Path.IsPathFullyQualified(jsonPath))
+            throw new ArgumentException("Snapshot export path must be absolute.", nameof(jsonPath));
+        token.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref closed) != 0, this);
+        if (failure is { } error) throw new IOException("The session writer has stopped.", error);
+        var legacy = snapshot.SchemaVersion == 2;
+        var bytes = TreeSnapshotCodec.Encode(snapshot);
+        snapshot = TreeSnapshotCodec.DecodeSaved(bytes, token: token);
+        if (snapshot.ProcessId != processId || source.ProcessCreatedUtc?.ToFileTimeUtc() != snapshot.CreationTimeFileTime)
+            throw new InvalidDataException("The snapshot belongs to a different process instance than the recording.");
+        if (source.EtlPath is not null || source.QpcFrequency != snapshot.QpcFrequency ||
+            source.StartQpc is not { } start || snapshot.StartQpc < start)
+            throw new InvalidDataException("The snapshot does not belong to the recording's live QPC clock.");
+        // Normalize legacy documents just as the JSON reader does, before exposing them through the shared views.
+        if (legacy) bytes = TreeSnapshotCodec.Encode(snapshot);
+        var incomingBytes = bytes.LongLength + 4 * pageSize + RowOverheadBytes;
+        if (emptyFileBytes + incomingBytes > LimitBytes * TrimAt)
+            throw new IOException("The snapshot exceeds the session file's size limit.");
+        var request = new SnapshotWrite(snapshot.CaptureId, snapshot.StartQpc, snapshot.EndQpc,
+            DateTime.UtcNow, jsonPath, Encoding.UTF8.GetString(bytes), incomingBytes, token);
+        try
+        {
+            await Task.Run(() => queue.Add(new(0, null, null, request), token), token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+        {
+            throw new ObjectDisposedException(nameof(SessionWriter), ex.Message);
+        }
+        await request.Completion.Task.ConfigureAwait(false);
+    }
+
+    private sealed record SnapshotWrite(Guid CaptureId, long StartQpc, long EndQpc, DateTime SavedUtc,
+        string JsonPath, string Document, long IncomingBytes, CancellationToken Token)
+    {
+        internal TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private readonly record struct QueueItem(long Sequence, ProfilerEvent? Event, CompletedSample? Sample,
+        SnapshotWrite? Snapshot = null);
+
+    // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
+    // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
+    // stored only when the session has none.
+    public void SetProcessStart(TraceProcessStart processStart)
+    {
+        ArgumentNullException.ThrowIfNull(processStart);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processStart.Qpc);
+        Interlocked.Exchange(ref pendingProcessStart, processStart);
     }
 
     private void Run()
     {
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
+        var samples = new List<CompletedSample>();
+        var snapshots = new List<SnapshotWrite>();
         try
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
-                batch.Add(first);
+                Add(first);
                 var started = Stopwatch.GetTimestamp();
-                while (batch.Count < BatchSize)
+                while (batch.Count + samples.Count + snapshots.Count < BatchSize)
                 {
                     var remaining = BatchInterval - Stopwatch.GetElapsedTime(started);
                     if (remaining <= TimeSpan.Zero || !queue.TryTake(out var next, remaining))
@@ -220,22 +343,123 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                         break;
                     }
 
-                    batch.Add(next);
+                    Add(next);
                 }
 
-                Write(batch);
-                batch.Clear();
+                if (batch.Count > 0)
+                {
+                    Write(batch);
+                    batch.Clear();
+                }
+
+                if (samples.Count > 0)
+                {
+                    WriteSamples(samples);
+                    samples.Clear();
+                }
+                foreach (var snapshot in snapshots) WriteSnapshot(snapshot);
+                snapshots.Clear();
             }
         }
         catch (Exception error)
         {
             Trace.TraceError($"Session recording stopped: {error}");
             failure = error;
+            foreach (var snapshot in snapshots) snapshot.Completion.TrySetException(error);
             // Keep taking so a producer waiting in Process is released; nothing more is stored.
-            foreach (var _ in queue.GetConsumingEnumerable())
+            foreach (var item in queue.GetConsumingEnumerable())
             {
+                item.Snapshot?.Completion.TrySetException(error);
             }
         }
+
+        void Add(QueueItem item)
+        {
+            if (item.Snapshot is { } snapshot)
+            {
+                snapshots.Add(snapshot);
+            }
+            else if (item.Sample is { } sample)
+            {
+                samples.Add(sample);
+            }
+            else
+            {
+                batch.Add((item.Sequence, item.Event!));
+            }
+        }
+    }
+
+    private void WriteSnapshot(SnapshotWrite snapshot)
+    {
+        if (snapshot.Token.IsCancellationRequested)
+        {
+            snapshot.Completion.TrySetCanceled(snapshot.Token);
+            return;
+        }
+        // A duplicate capture must not evict existing history while making room.
+        if (Sql.Scalar(connection, "SELECT COUNT(*) FROM TreeSnapshots WHERE CaptureId = $id",
+            null, ("$id", snapshot.CaptureId.ToString("D"))) != 0)
+        {
+            snapshot.Completion.TrySetException(new IOException($"Snapshot {snapshot.CaptureId:D} is already stored."));
+            return;
+        }
+        // Retention mutates cached indexes as well as SQL rows. A rollback must stop Run, not resume with stale caches.
+        // Once retention starts, finish the write rather than cancelling after deleting older history.
+        var originalOldest = Interlocked.Read(ref oldestSequence);
+        var originalCompleteFrom = Interlocked.Read(ref completeFromQpc);
+        var committed = false;
+        try
+        {
+            using var transaction = connection.BeginTransaction();
+            var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction);
+            try
+            {
+                if ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
+                    snapshot.IncomingBytes > LimitBytes * TrimAt)
+                    throw new IOException("The snapshot cannot fit within the session file's size limit.");
+                Sql.Execute(connection, """
+                    INSERT INTO TreeSnapshots (CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc, Document)
+                    VALUES ($id, $saved, $path, $start, $end, $document)
+                    """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
+                    ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
+                    ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
+                var committedBytes = Sql.Scalar(connection, "PRAGMA page_count", transaction) * pageSize;
+                transaction.Commit();
+                committed = true;
+                Interlocked.Exchange(ref fileBytes, committedBytes);
+                snapshot.Completion.TrySetResult();
+            }
+            catch (Exception error) when (!trimmed && (error is SqliteException or IOException))
+            {
+                Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
+                snapshot.Completion.TrySetException(error);
+            }
+        }
+        finally
+        {
+            if (!committed)
+            {
+                Interlocked.Exchange(ref oldestSequence, originalOldest);
+                Interlocked.Exchange(ref completeFromQpc, originalCompleteFrom);
+            }
+        }
+    }
+
+    private void WriteSamples(List<CompletedSample> samples)
+    {
+        TrimIfNeeded(cpu.IncomingBytes(samples));
+        using (var transaction = connection.BeginTransaction())
+        {
+            foreach (var sample in samples)
+            {
+                cpu.Add(sample, transaction);
+            }
+
+            transaction.Commit();
+        }
+
+        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
     }
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
@@ -250,7 +474,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             EventPayload.Write(json, batch[i].Event.Fields);
             json.Flush();
             payloads[i] = Encoding.UTF8.GetString(payload.WrittenSpan);
-            incomingBytes += payload.WrittenCount + RowOverheadBytes;
+            incomingBytes += payload.WrittenCount + RowOverheadBytes + GraphicsIndex.EstimatedBytes(batch[i].Event);
         }
 
         TrimIfNeeded(incomingBytes);
@@ -261,18 +485,24 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             for (var i = 0; i < batch.Count; i++)
             {
                 var (sequence, profilerEvent) = batch[i];
-                var typeId = TypeId(profilerEvent);
+                var launcher = profilerEvent.ProcessId != processId;
+                var typeId = TypeId(profilerEvent, launcher);
                 insertEvent.Parameters["$seq"].Value = sequence;
                 insertEvent.Parameters["$qpc"].Value = profilerEvent.TimestampQpc;
                 insertEvent.Parameters["$thread"].Value = profilerEvent.ThreadId;
                 insertEvent.Parameters["$type"].Value = typeId;
                 insertEvent.Parameters["$payload"].Value = payloads[i];
                 insertEvent.ExecuteNonQuery();
-                objects.Add(sequence, typeId, profilerEvent, transaction);
-                frames.Add(sequence, typeId, profilerEvent, transaction);
+                // The indexes describe the target's objects and UI threads.
+                if (!launcher)
+                {
+                    objects.Add(sequence, typeId, profilerEvent, transaction);
+                    frames.Add(sequence, typeId, profilerEvent, transaction);
+                    graphics.Add(sequence, typeId, profilerEvent, transaction);
+                }
             }
 
-            UpdateTimeBase(batch[0].Event, batch[^1].Event, transaction);
+            UpdateTimeBase(batch, transaction);
             transaction.Commit();
         }
 
@@ -285,10 +515,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
     }
 
-    private long TypeId(ProfilerEvent profilerEvent)
+    private long TypeId(ProfilerEvent profilerEvent, bool launcher)
     {
         var fields = profilerEvent.Fields;
-        var key = (profilerEvent.Provider, profilerEvent.TraceLogging, profilerEvent.Name, profilerEvent.Opcode);
+        var key = (profilerEvent.Provider, profilerEvent.Marker?.Id ?? Guid.Empty, profilerEvent.TraceLogging, profilerEvent.Name,
+            profilerEvent.Opcode, launcher, profilerEvent.EventId, profilerEvent.Version);
         if (!types.TryGetValue(key, out var layouts))
         {
             types[key] = layouts = [];
@@ -311,6 +542,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         insertType.Parameters["$names"].Value = string.Join(',', layout.Names);
         insertType.Parameters["$types"].Value = string.Join(',', layout.Types);
         insertType.Parameters["$tracelogging"].Value = profilerEvent.TraceLogging;
+        insertType.Parameters["$providerName"].Value = profilerEvent.ProviderName;
+        insertType.Parameters["$providerId"].Value = profilerEvent.ProviderId.ToString();
+        insertType.Parameters["$launcher"].Value = launcher;
+        insertType.Parameters["$eventId"].Value = profilerEvent.EventId ?? (object)DBNull.Value;
+        insertType.Parameters["$version"].Value = profilerEvent.Version ?? (object)DBNull.Value;
         insertType.ExecuteNonQuery();
         layouts.Add(layout);
         typeCount = layout.Id;
@@ -338,19 +574,22 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // A recorded trace gives neither: time zero is its first event, and the frequency comes from the events' QPC
-    // timestamps and their milliseconds since the trace started, measured over at least a second.
-    private void UpdateTimeBase(ProfilerEvent first, ProfilerEvent last, SqliteTransaction transaction)
+    // A recorded trace gives no start: time zero is the target's first event, so the launcher's events before it have
+    // negative times. Its frequency is normally given; if not, it comes from the events' QPC timestamps and their
+    // milliseconds since the trace started, measured over at least a second.
+    private void UpdateTimeBase(List<(long Sequence, ProfilerEvent Event)> batch, SqliteTransaction transaction)
     {
         var changed = false;
-        if (Interlocked.Read(ref startQpc) == 0)
+        if (Interlocked.Read(ref startQpc) == 0 &&
+            batch.Find(item => item.Event.ProcessId == processId).Event is { } targetFirst)
         {
-            Interlocked.Exchange(ref startQpc, first.TimestampQpc);
+            Interlocked.Exchange(ref startQpc, targetFirst.TimestampQpc);
             changed = true;
         }
 
         if (derivesFrequency && Interlocked.Read(ref qpcFrequency) == 0)
         {
+            var (first, last) = (batch[0].Event, batch[^1].Event);
             firstEventTime ??= (first.TimestampQpc, first.RelativeMilliseconds);
             var milliseconds = last.RelativeMilliseconds - firstEventTime.Value.Milliseconds;
             if (milliseconds >= 1000)
@@ -364,39 +603,111 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         if (changed)
         {
             Sql.Execute(connection, "UPDATE SessionInfo SET StartQpc = $start, QpcFrequency = $frequency", transaction,
-                ("$start", Interlocked.Read(ref startQpc)), ("$frequency", qpcFrequency == 0 ? null : qpcFrequency));
+                ("$start", Interlocked.Read(ref startQpc) is var start and not 0 ? start : (long?)null),
+                ("$frequency", qpcFrequency == 0 ? null : qpcFrequency));
+        }
+
+        StoreProcessStart(transaction);
+    }
+
+    private void StoreProcessStart(SqliteTransaction? transaction)
+    {
+        if (Interlocked.Exchange(ref pendingProcessStart, null) is { } processStart)
+        {
+            Sql.Execute(connection, """
+                UPDATE SessionInfo SET ProcessStartQpc = $processStart, ProcessName = COALESCE(ProcessName, $name),
+                    LauncherProcessId = $launcher, LauncherName = $launcherName
+                """, transaction,
+                ("$processStart", processStart.Qpc), ("$name", processStart.Name),
+                ("$launcher", processStart.LauncherProcessId), ("$launcherName", processStart.LauncherName));
         }
     }
 
-    // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
-    private void TrimIfNeeded(long incomingBytes)
+    // Deletes the oldest data until what's stored plus the incoming batch fits under the trim point: the oldest events, with
+    // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
+    // or no event can be deleted. Whole tree captures also participate by their end QPC. The call stacks and code
+    // addresses no sample has any more go with them.
+    private bool TrimIfNeeded(long incomingBytes, SqliteTransaction? transaction = null)
     {
-        while ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
+        var trimmed = false;
+        while ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
             incomingBytes > LimitBytes * TrimAt)
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
-            if (oldest == 0 || newest <= oldest)
+            long? firstEvent = oldest != 0 && newest > oldest
+                ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1", transaction) : null;
+            var firstSample = cpu.FirstQpc(transaction);
+            var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1", transaction);
+            long? firstSnapshot = snapshotTimes.Count == 0 ? null : snapshotTimes[0];
+            if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
+                (firstSample is null || firstSnapshot <= firstSample))
             {
-                return;
+                TrimSnapshot(transaction);
             }
-
-            var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
-            long qpc;
-            using (var transaction = connection.BeginTransaction())
+            else if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
             {
-                objects.Trim(cutoff, transaction);
-                frames.Trim(cutoff, transaction);
-                Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-                qpc = Sql.Scalar(connection, "SELECT Qpc FROM Events WHERE Seq = $cutoff", transaction, ("$cutoff", cutoff));
-                Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
-                    ("$cutoff", cutoff), ("$qpc", qpc));
-                transaction.Commit();
+                TrimEvents(oldest, newest, transaction);
             }
-
-            Interlocked.Exchange(ref oldestSequence, cutoff);
-            Interlocked.Exchange(ref completeFromQpc, qpc);
+            else if (firstSample is null || !TrimSamples(firstEvent, transaction))
+            {
+                if (firstSnapshot is null) return trimmed;
+                TrimSnapshot(transaction);
+            }
+            trimmed = true;
         }
+        return trimmed;
+    }
+
+    private void TrimSnapshot(SqliteTransaction? transaction) => Sql.Execute(connection, """
+        DELETE FROM TreeSnapshots WHERE CaptureId =
+            (SELECT CaptureId FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1)
+        """, transaction);
+
+    // Deletes the oldest events, with the CPU samples from before the first event left.
+    private void TrimEvents(long oldest, long newest, SqliteTransaction? transaction)
+    {
+        var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
+        var current = transaction ?? connection.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        objects.Trim(cutoff, current);
+        frames.Trim(cutoff, current);
+        graphics.Trim(cutoff, current);
+        Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", current, ("$cutoff", cutoff));
+        // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+        // process's first event from the cutoff, or else the cutoff's.
+        var qpc = Sql.Scalar(connection, """
+            SELECT COALESCE(
+                (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                    AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+            """, current, ("$cutoff", cutoff));
+        Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", current,
+            ("$cutoff", cutoff), ("$qpc", qpc));
+        if (cpu.Trim(qpc, current) > 0)
+        {
+            cpu.Prune(current);
+        }
+        owned?.Commit();
+
+        Interlocked.Exchange(ref oldestSequence, cutoff);
+        Interlocked.Exchange(ref completeFromQpc, qpc);
+    }
+
+    // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
+    // event it keeps. Returns false when none was deleted.
+    private bool TrimSamples(long? firstEvent, SqliteTransaction? transaction)
+    {
+        var current = transaction ?? connection.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, current) == 0)
+        {
+            return false;
+        }
+
+        cpu.Prune(current);
+        owned?.Commit();
+        return true;
     }
 
     // Stores the remaining events, records how the session ended and closes the file. Call after the last Process call.
@@ -413,6 +724,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             if (failure is null)
             {
+                StoreProcessStart(null);
+                if (Interlocked.Exchange(ref cpuSampling, null) is { } sampling)
+                {
+                    using var transaction = connection.BeginTransaction();
+                    cpu.Finish(sampling.Summary, Interlocked.Read(ref droppedSamples), sampling.Note, transaction);
+                    transaction.Commit();
+                }
+
                 Sql.Execute(connection,
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),
@@ -433,6 +752,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             json.Dispose();
             objects.Dispose();
             frames.Dispose();
+            graphics.Dispose();
+            cpu.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();

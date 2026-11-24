@@ -37,10 +37,9 @@ namespace ShapingHelpers
         KeySelector Key{ nullptr };
         // Stable identity of the evaluator, used to match axes when AxisToken is empty.
         // std::function is not equality-comparable, so a caller that wants un-tokenized replace
-        // semantics supplies the underlying delegate here as an IUnknown. Comparing the
-        // interface (rather than a raw address) keeps the original delegate-equality semantics,
-        // which match two different interface pointers on the same COM object.
-        winrt::Windows::Foundation::IUnknown KeyIdentity{ nullptr };
+        // semantics supplies the underlying delegate's canonical IUnknown address here. It is not
+        // a reference, so the axis cannot keep the delegate alive; the caller's Key must.
+        void const* KeyIdentity{ nullptr };
         // The property path this axis sorts on, when the caller named one. Empty means the key is
         // a delegate that no path expresses (computed, multi-field, identity, or a ranked custom
         // comparer). Purely descriptive - the pipeline never evaluates it - but it is what lets a
@@ -107,7 +106,7 @@ namespace ShapingHelpers
             winrt::hstring const& previousAxisToken,
             winrt::hstring const& axisToken,
             KeySelector const& key,
-            winrt::Windows::Foundation::IUnknown const& keyIdentity,
+            void const* keyIdentity,
             winrt::hstring const& sortMemberPath,
             winrt::SortDirection direction);
         void ClearSorts() noexcept { m_sorts.clear(); }
@@ -123,7 +122,7 @@ namespace ShapingHelpers
         bool HasSortOtherThan(winrt::hstring const& axisToken) const noexcept;
         // True when SetSort(..., axisToken, ..., keyIdentity, ..., None) would remove an axis: the same axis
         // match SetSort uses, by token, or by key identity for an untokenized axis.
-        bool HasMatchingSort(winrt::hstring const& axisToken, winrt::Windows::Foundation::IUnknown const& keyIdentity) const noexcept;
+        bool HasMatchingSort(winrt::hstring const& axisToken, void const* keyIdentity) const noexcept;
 
         // Axes with a live key and direction whose Order falls strictly between the bounds. A
         // negative bound is unbounded, so ActiveSortAxes(-1, -1) is every active axis. Returned in

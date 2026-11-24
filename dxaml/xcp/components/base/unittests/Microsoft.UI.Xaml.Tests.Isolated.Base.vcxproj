@@ -22,16 +22,20 @@
 
     <ItemGroup>
         <ClInclude Include="BitVectorUnitTests.h"/>
+        <ClInclude Include="RenderingResourceDiagnosticsTests.h"/>
         <ClInclude Include="CompactInlineVectorUnitTests.h"/>
+        <ClInclude Include="IndexedListUnitTests.h"/>
         <ClInclude Include="SmartPointerUnitTests.h"/>
         <ClInclude Include="ThreadLocalStorageUnitTests.h"/>
         <ClInclude Include="VectorTreeUnitTests.h"/>
 
         <ClCompile Include="CompactInlineVectorUnitTests.cpp"/>
+        <ClCompile Include="IndexedListUnitTests.cpp"/>
         <ClCompile Include="SmartPointerUnitTests.cpp"/>
         <ClCompile Include="ThreadLocalStorageUnitTests.cpp"/>
         <ClCompile Include="VectorTreeUnitTests.cpp"/>
         <ClCompile Include="BitVectorUnitTests.cpp"/>
+        <ClCompile Include="RenderingResourceDiagnosticsTests.cpp"/>
     </ItemGroup>
 
     <ItemDefinitionGroup>

@@ -128,6 +128,7 @@
     <ClInclude Include="graphics\rendering\ShutdownTests.h" />
     <ClInclude Include="graphics\rendering\SISTests.h" />
     <ClInclude Include="graphics\rendering\SuspendResumeTests.h" />
+    <ClInclude Include="graphics\rendering\SystemCompositionEngineTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockClippingTests.h" />
     <ClInclude Include="graphics\rendering\TextBlockTests.h" />
     <ClInclude Include="graphics\rendering\TextBoxTests.h" />
@@ -154,6 +155,8 @@
     <ClInclude Include="input\DManip\Redirection.h" />
     <ClInclude Include="input\DManip\RichEditBox.h" />
     <ClInclude Include="input\DManip\ScrollContentPresenter.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterHeaderFocusTests.h" />
+    <ClInclude Include="input\DManip\ScrollContentPresenterPublicApiTests.h" />
     <ClInclude Include="input\DManip\ScrollViewerHeaders.h" />
     <ClInclude Include="input\DManip\SetContact.h" />
     <ClInclude Include="input\DManip\StickyHeaders.h" />
@@ -181,6 +184,7 @@
     <ClInclude Include="input\Pointer\PointerRegressionTests.h" />
     <ClInclude Include="input\Pointer\ReplayPointerUpdateTests.h" />
     <!--<ClInclude Include="printing\PrintingIntegrationTestSuite.h" />-->
+    <ClInclude Include="printing\PrintDocumentLifetimeTests.h" />
     <ClInclude Include="shell\BlockingAppFocusTests.h" />
     <ClInclude Include="shell\LockScreenTests.h" />
     <ClInclude Include="shell\StartMenuTests.h" />
@@ -265,6 +269,7 @@
     <ClCompile Include="graphics\rendering\ShapeTests.cpp" />
     <ClCompile Include="graphics\rendering\Matrix3DProjectionTests.cpp" />
     <ClCompile Include="graphics\rendering\SuspendResumeTests.cpp" />
+    <ClCompile Include="graphics\rendering\SystemCompositionEngineTests.cpp" />
     <ClCompile Include="graphics\rendering\CompositionTargetTests.cpp" />
     <ClCompile Include="graphics\rendering\DebugCounterTests.cpp" />
     <ClCompile Include="graphics\rendering\ShutdownTests.cpp" />
@@ -293,6 +298,8 @@
     <ClCompile Include="input\DManip\AutoScrollBehaviorTests.cpp" />
     <ClCompile Include="input\DManip\BasicScrollViewerManipulationTests.cpp" />
     <ClCompile Include="input\DManip\ScrollContentPresenter.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterHeaderFocusTests.cpp" />
+    <ClCompile Include="input\DManip\ScrollContentPresenterPublicApiTests.cpp" />
     <ClCompile Include="input\DManip\ScrollViewerHeaders.cpp" />
     <ClCompile Include="input\DManip\Redirection.cpp" />
     <ClCompile Include="input\DManip\StickyHeaders.cpp" />
@@ -327,6 +334,7 @@
     <ClCompile Include="input\Pointer\PointerReentrancyTests.cpp" />
     <ClCompile Include="input\Pointer\PointerRegressionTests.cpp" />
     <!--<ClCompile Include="printing\PrintingIntegrationTestSuite.cpp" />-->
+    <ClCompile Include="printing\PrintDocumentLifetimeTests.cpp" />
     <ClCompile Include="shell\BlockingAppFocusTests.cpp" />
     <ClCompile Include="shell\LockScreenTests.cpp" />
     <ClCompile Include="shell\StartMenuTests.cpp" />

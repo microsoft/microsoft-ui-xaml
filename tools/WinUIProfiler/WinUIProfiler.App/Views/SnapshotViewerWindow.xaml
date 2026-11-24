@@ -31,6 +31,7 @@
             <TextBlock Text="{x:Bind Entry.Summary}" />
             <TextBlock Text="{x:Bind Entry.Saved.Path}" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
             <TextBlock x:Uid="SnapshotViewerScope" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" />
+            <views:SnapshotResourceView x:Name="ResourceSnapshot" Visibility="Collapsed" />
         </StackPanel>
         <Grid Grid.Row="1">
             <ProgressRing x:Name="Loading" x:Uid="SnapshotViewerLoading" IsActive="True" Width="28" Height="28" />
@@ -92,7 +93,7 @@
                 <ComboBox x:Name="Matches" x:Uid="SnapshotMatches" Grid.Column="1"
                           HorizontalAlignment="Stretch" SelectionChanged="Matches_SelectionChanged">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="vm:SnapshotTreeNode">
+                        <DataTemplate x:DataType="views:SnapshotTreeLabel">
                             <TextBlock Text="{x:Bind Label}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>

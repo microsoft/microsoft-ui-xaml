@@ -102,6 +102,7 @@ RenderingScopeGuard::RenderingScopeGuard(
 
 HRESULT RenderingScopeGuard::Close()
 {
+    LogThrow_IfFailed(m_spUtilities->SetMaxTextureSizeOverride(0));
     LogThrow_IfFailed(m_spWindowHelper->ClearTestLTEs());
     LogThrow_IfFailed(m_spWindowHelper->CleanUpAfterTest());
     LogThrow_IfFailed(m_spWindowHelper->ResetWindowContentAndWaitForIdle());

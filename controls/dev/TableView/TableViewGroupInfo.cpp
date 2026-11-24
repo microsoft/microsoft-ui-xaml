@@ -7,7 +7,9 @@
 #include "TableViewGroupingHelpers.h"
 #include "ResourceAccessor.h"
 
+#include <cmath>
 #include <string>
+#include <winrt/Windows.UI.Xaml.Interop.h>
 
 namespace
 {
@@ -41,6 +43,48 @@ namespace
 
         return winrt::hstring{ countFormat };
     }
+
+    class GroupInfoProperty :
+        public winrt::implements<GroupInfoProperty, winrt::Microsoft::UI::Xaml::Data::ICustomProperty>
+    {
+    public:
+        using Getter = winrt::IInspectable (*)(TableViewGroupInfo&);
+
+        GroupInfoProperty(wchar_t const* name, winrt::TypeName const& type, Getter getter)
+            : m_name(name), m_type(type), m_getter(getter)
+        {
+        }
+
+        winrt::TypeName Type() { return m_type; }
+        winrt::hstring Name() { return m_name; }
+        bool CanRead() { return true; }
+        bool CanWrite() { return false; }
+
+        winrt::IInspectable GetValue(winrt::IInspectable const& target)
+        {
+            return m_getter(*winrt::get_self<TableViewGroupInfo>(target.as<winrt::TableViewGroupInfo>()));
+        }
+
+        void SetValue(winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            throw winrt::hresult_not_implemented();
+        }
+
+        winrt::IInspectable GetIndexedValue(winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            throw winrt::hresult_not_implemented();
+        }
+
+        void SetIndexedValue(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)
+        {
+            throw winrt::hresult_not_implemented();
+        }
+
+    private:
+        winrt::hstring m_name;
+        winrt::TypeName m_type;
+        Getter m_getter;
+    };
 }
 
 TableViewGroupInfo::TableViewGroupInfo(
@@ -114,6 +158,54 @@ void TableViewGroupInfo::RaisePropertyChanged(wchar_t const* propertyName)
     m_propertyChanged(*this, winrt::PropertyChangedEventArgs{ winrt::hstring{ propertyName } });
 }
 
+winrt::TypeName TableViewGroupInfo::Type()
+{
+    return { winrt::get_class_name(*this), winrt::TypeKind::Metadata };
+}
+
+winrt::Microsoft::UI::Xaml::Data::ICustomProperty TableViewGroupInfo::GetCustomProperty(winrt::hstring const& name)
+{
+    static const struct
+    {
+        wchar_t const* name;
+        winrt::TypeName (*type)();
+        GroupInfoProperty::Getter getter;
+    } properties[] =
+    {
+        { L"Key", &winrt::xaml_typename<winrt::IInspectable>, [](TableViewGroupInfo& info) { return info.Key(); } },
+        { L"KeyText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.KeyText()); } },
+        { L"ItemCount", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCount()); } },
+        { L"ItemCountText", &winrt::xaml_typename<winrt::hstring>, [](TableViewGroupInfo& info) { return winrt::box_value(info.ItemCountText()); } },
+        { L"Level", &winrt::xaml_typename<int32_t>, [](TableViewGroupInfo& info) { return winrt::box_value(info.Level()); } },
+        { L"IsExpandable", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpandable()); } },
+        { L"IsExpanded", &winrt::xaml_typename<bool>, [](TableViewGroupInfo& info) { return winrt::box_value(info.IsExpanded()); } },
+    };
+
+    for (auto const& property : properties)
+    {
+        if (name == property.name)
+        {
+            return winrt::make<GroupInfoProperty>(property.name, property.type(), property.getter);
+        }
+    }
+    return nullptr;
+}
+
+winrt::Microsoft::UI::Xaml::Data::ICustomProperty TableViewGroupInfo::GetIndexedProperty(winrt::hstring const&, winrt::TypeName const&)
+{
+    return nullptr;
+}
+
+winrt::hstring TableViewGroupInfo::GetStringRepresentation()
+{
+    return m_keyText;
+}
+
+winrt::hstring TableViewGroupInfo::ToString()
+{
+    return m_keyText;
+}
+
 // C++/WinRT's operator== compares the ABI pointer of the interface currently held, with no
 // QI, so the same object reached through different interfaces compares unequal. Boxed keys
 // are also re-created per projection pass, so two *equal* keys are distinct objects --
@@ -151,10 +243,20 @@ bool SameGroupKey(winrt::IInspectable const& left, winrt::IInspectable const& ri
                 return leftValue.GetUInt64() == rightValue.GetUInt64();
             case winrt::PropertyType::Boolean:
                 return leftValue.GetBoolean() == rightValue.GetBoolean();
+            // NaN != NaN, but a NaN key is still one group; treat it as equal so the cached
+            // projection is updated in place rather than replaced.
             case winrt::PropertyType::Double:
-                return leftValue.GetDouble() == rightValue.GetDouble();
+            {
+                auto const l = leftValue.GetDouble();
+                auto const r = rightValue.GetDouble();
+                return l == r || (std::isnan(l) && std::isnan(r));
+            }
             case winrt::PropertyType::Single:
-                return leftValue.GetSingle() == rightValue.GetSingle();
+            {
+                auto const l = leftValue.GetSingle();
+                auto const r = rightValue.GetSingle();
+                return l == r || (std::isnan(l) && std::isnan(r));
+            }
             case winrt::PropertyType::UInt8:
                 return leftValue.GetUInt8() == rightValue.GetUInt8();
             case winrt::PropertyType::Int16:

@@ -2711,7 +2711,7 @@ this.Write("        if (obj != nullptr)\r\n        {\r\n");
          }
          List<BindPathStep> stepsWithFallback = new List<BindPathStep>();
          string lastCondition = null;
-         foreach (BindPathStep childStep in (from step in steps where step.IsIncludedInUpdate orderby step.PhaseList select step))
+         foreach (BindPathStep childStep in steps.Where(step => step.IsIncludedInUpdate).OrderBy(step => step.PhaseList, StringComparer.Ordinal))
          {
              if(checkPhaseCondition) 
              { 

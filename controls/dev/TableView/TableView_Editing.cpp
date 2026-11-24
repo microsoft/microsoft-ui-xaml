@@ -564,7 +564,30 @@ winrt::TableViewRow TableView::FindRealizedRowForItem(winrt::IInspectable const&
 
 bool TableView::TryBeginEditVisual(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
-    if (auto row = FindRealizedRowForItem(item))
+    // The same object can appear more than once in an unshaped source. Prefer the row that has
+    // focus (Tab, F2 and double-click all edit there) over the first realized occurrence.
+    winrt::TableViewRow row{ nullptr };
+    if (auto repeater = m_rowsRepeater.get(); repeater && item)
+    {
+        if (const int32_t focusedRow = GetFocusedRowIndex(); focusedRow >= 0)
+        {
+            if (auto focusedElement = repeater.TryGetElement(focusedRow).try_as<winrt::TableViewRow>())
+            {
+                if (auto dataItem = UnwrapEditingDataItem(focusedElement.DataContext());
+                    dataItem && SameInspectableIdentity(dataItem, item))
+                {
+                    row = focusedElement;
+                }
+            }
+        }
+    }
+
+    if (!row)
+    {
+        row = FindRealizedRowForItem(item);
+    }
+
+    if (row)
     {
         if (winrt::get_self<TableViewRow>(row)->BeginCellEdit(column, item))
         {
@@ -602,7 +625,8 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         {
             std::optional<HRESULT> displayFailure;
             bool applicationFault = false;
-            winrt::get_self<TableViewRow>(row)->EndCellEdit(action, tip ? &displayFailure : nullptr, &applicationFault);
+            winrt::get_self<TableViewRow>(row)->EndCellEdit(
+                action, tip ? &displayFailure : nullptr, &applicationFault, m_editCloseFocusColumn.get());
             if (displayFailure && tip)
             {
                 // The edit already landed and the row fell back to its parked element.
@@ -612,9 +636,7 @@ void TableView::EndEditVisual(winrt::TableViewEditAction action, ActionTip* tip)
         }
     }
     m_currentEditRow.set(nullptr);
-    m_editorFlyoutClosedRevoker.revoke();
-    m_editorFlyoutClosingRevoker.revoke();
-    m_editorPopupClosedRevoker.revoke();
+    ResetEditFocusTracking();
 }
 
 bool TableView::TerminateEditWithoutVisualRestore(bool insideLayoutPass, bool sourceReplaced)
@@ -1147,7 +1169,13 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
 {
     if (m_editState == EditState::None)
     {
-        return true;
+        // Work deferred past an earlier forced close is older than this request.
+        FlushDeferredEditReshapes();
+        // A handler run by that work may have opened an edit; end it like any other.
+        if (m_editState == EditState::None)
+        {
+            return true;
+        }
     }
 
     // Already inside a transition (a consumer callback, or a deferral in flight): the reshape
@@ -1170,25 +1198,84 @@ bool TableView::TryTerminateEditForControlInitiatedReshape()
     return terminated;
 }
 
-void TableView::QueueCoalescedEditReshape(std::function<void()> operation)
+void TableView::QueueCoalescedEditReshape(TableViewTip::Operation operation, std::function<void()> apply)
 {
-    if (operation)
+    if (apply)
     {
-        m_pendingEditReshapes.push_back(std::move(operation));
+        m_pendingEditReshapes.push_back({ operation, std::move(apply) });
     }
 }
 
-void TableView::QueueReshapeAfterEditCloses(std::function<void()> operation)
+void TableView::QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply)
 {
-    if (operation)
+    if (apply)
     {
-        m_reshapesAfterEditCloses.push_back(std::move(operation));
+        m_reshapesAfterEditCloses.push_back({ operation, std::move(apply) });
     }
 }
 
 void TableView::ClearCoalescedEditReshape()
 {
     m_pendingEditReshapes.clear();
+}
+
+void TableView::QueueDeferredEditReshapeDrain()
+{
+    if (IsEditing() || m_editReshapeDrainQueued ||
+        (m_reshapesAfterEditCloses.empty() && m_pendingEditReshapes.empty()))
+    {
+        return;
+    }
+    if (auto const queue = DispatcherQueue())
+    {
+        m_editReshapeDrainQueued = queue.TryEnqueue([weakThis = get_weak()]()
+        {
+            if (auto const strongThis = weakThis.get())
+            {
+                strongThis->m_editReshapeDrainQueued = false;
+                // While another table owns the source the queue waits for the next edit close.
+                if (!strongThis->IsEditing() && !strongThis->IsActiveSourceOwnedByOther())
+                {
+                    try
+                    {
+                        strongThis->DrainCoalescedEditReshape();
+                    }
+                    catch (...)
+                    {
+                        TVDiag::LogRetailF(L"[TableView] A reshape deferred past a forced edit close threw while draining.");
+                        strongThis->NoteDeferredEditReshapeFault();
+                    }
+                }
+            }
+        });
+    }
+}
+
+void TableView::FlushDeferredEditReshapes()
+{
+    // Each pass pops at least one operation, so this terminates even if every one throws.
+    while (!m_suppressEditVisualRestore && !m_isApplyingCoalescedEditReshape && !IsActiveSourceOwnedByOther() && !IsEditing() &&
+        (!m_pendingEditReshapes.empty() || !m_reshapesAfterEditCloses.empty()))
+    {
+        try
+        {
+            DrainCoalescedEditReshape();
+        }
+        catch (...)
+        {
+            // The rest is re-posted; the newer request must not fail for an older one.
+            TVDiag::LogRetailF(L"[TableView] A deferred edit reshape threw while flushing ahead of a newer one.");
+            NoteDeferredEditReshapeFault();
+        }
+    }
+}
+
+void TableView::NoteDeferredEditReshapeFault() noexcept
+{
+    auto const fault = TableViewTip::CurrentFault();
+    auto const stage = m_failedEditReshapeOperation == TableViewTip::Operation::Sort ?
+        TableViewTip::Stage::Sort : TableViewTip::Stage::Expansion;
+    NoteRecoveredAppFault(m_failedEditReshapeOperation, stage, fault.appFault, fault.error);
 }
 
 void TableView::DrainCoalescedEditReshape()
@@ -1209,6 +1296,8 @@ void TableView::DrainCoalescedEditReshape()
     // layout" signal, so it gates this too.
     if (m_suppressEditVisualRestore)
     {
+        // No later close is coming to replay them.
+        QueueDeferredEditReshapeDrain();
         return;
     }
 
@@ -1233,15 +1322,26 @@ void TableView::DrainCoalescedEditReshape()
     {
         auto operation = std::move(m_pendingEditReshapes.front());
         m_pendingEditReshapes.pop_front();
-        if (operation)
+        if (operation.apply)
         {
-            operation();
+            try
+            {
+                operation.apply();
+            }
+            catch (...)
+            {
+                m_failedEditReshapeOperation = operation.operation;
+                // Already popped, so re-posting the rest terminates.
+                QueueDeferredEditReshapeDrain();
+                throw;
+            }
         }
     }
 }
 
 void TableView::ResetPendingBeginEdit()
 {
+    ResetEditFocusTracking();
     m_currentEditItem.set(nullptr);
     m_currentEditColumn.set(nullptr);
     m_editUneditedValue.set(nullptr);
@@ -1263,6 +1363,10 @@ bool TableView::BeginEdit()
 
 bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColumn const& column)
 {
+    // Any newer edit request (an automation SetValue included) retires a Tab move still waiting
+    // for its row or for its posted open; the posted live-shaping resume re-checks the hold.
+    EndPendingTabEditMove();
+
     if (IsReadOnly() || !item || !column || column.IsReadOnly() || !IsColumnInColumns(*this, column))
     {
         return false;

@@ -8,17 +8,27 @@ private void AttachHeaderMenus()
 {
     foreach (var column in new TableViewColumn[] { NameColumn, DepartmentColumn, StatusColumn, OfficeColumn, SalaryColumn })
     {
+        var hideRequested = false;
         var hide = new MenuFlyoutItem
         {
             Text = string.Format(CultureInfo.CurrentCulture, "Hide {0}", column.Header),
             Icon = new FontIcon { Glyph = "\uED1A" },
         };
-        hide.Click += (_, _) => HideColumn(column);
+        hide.Click += (_, _) => hideRequested = true;
 
         var showAll = new MenuFlyoutItem { Text = "Show all columns", Icon = new FontIcon { Glyph = "\uE7B3" } };
         showAll.Click += (_, _) => ShowAllColumns();
 
         var menu = new MenuFlyout();
+        menu.Closed += (_, _) =>
+        {
+            if (hideRequested)
+            {
+                hideRequested = false;
+                // Let the menu restore header focus before collapsing the column.
+                HideColumn(column);
+            }
+        };
         menu.Items.Add(hide);
         menu.Items.Add(showAll);
         column.HeaderContextFlyout = menu;

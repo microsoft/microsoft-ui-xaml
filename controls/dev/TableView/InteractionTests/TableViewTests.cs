@@ -27,6 +27,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // which is precisely the point: they assert that gestures and a UIA client reach the state
     // machine the API tests cover in process.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewTests
     {
         [ClassInitialize]

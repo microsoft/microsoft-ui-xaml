@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "IconElement.g.h"
 #include "IconSource.g.h"
+#include "PropertyChangedParamsHelper.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -66,14 +67,29 @@ _Check_return_ HRESULT IconSource::OnPropertyChanged2(_In_ const PropertyChanged
     
     if (iconElementProperty)
     {
+        ctl::ComPtr<IInspectable> oldValue;
+        ctl::ComPtr<IInspectable> newValue;
+        IFC_RETURN(PropertyChangedParamsHelper::GetObjects(args, &oldValue, &newValue));
+
+        // Clear the element when the source value was cleared, so it falls back to its own inherited or default value.
+        // An explicitly set value, including null, is pushed as is.
+        const bool clearValue = GetHandle()->IsPropertyDefault(args.m_pDP);
+
         m_createdIconElements.erase(std::remove_if(m_createdIconElements.begin(), m_createdIconElements.end(),
-            [iconElementProperty, newValue = args.m_pNewValueOuterNoRef](ctl::WeakRefPtr weakElement)
+            [iconElementProperty, newValue, clearValue](ctl::WeakRefPtr weakElement)
         {
             auto iconElement = weakElement.AsOrNull<IconElement>();
             
             if (iconElement)
             {
-                iconElement->SetValue(iconElementProperty.Get(), newValue);
+                if (clearValue)
+                {
+                    iconElement->ClearValue(iconElementProperty.Get());
+                }
+                else
+                {
+                    iconElement->SetValue(iconElementProperty.Get(), newValue.Get());
+                }
             }
             
             return !iconElement;

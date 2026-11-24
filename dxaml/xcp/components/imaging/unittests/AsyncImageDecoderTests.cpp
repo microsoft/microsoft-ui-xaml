@@ -196,5 +196,41 @@ void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedStopped()
         0x7d7e5b0d));
 }
 
+void AsyncImageDecoderTests::CleanupDeviceRelatedResourcesBeforeDecodeStarts()
+{
+    auto fileName = GetImageResourcesPath() + L"Smiley.bmp";
+    auto spEncodedImageData = GetFileEncodedData(fileName);
+    auto spDecodeCallback = make_xref<TestImageDecodeCallback>();
+
+    auto onDecodeEvent = std::make_shared<Microsoft::UI::Xaml::Tests::Common::Event>();
+    xref_ptr<OfferableSoftwareBitmap> decodedSurface;
+
+    spDecodeCallback->onDecode = [onDecodeEvent, &decodedSurface](const xref_ptr<IImageAvailableResponse>& spResponse)
+    {
+        VERIFY_SUCCEEDED(spResponse->GetDecodingResult());
+        VERIFY_ARE_NOT_EQUAL(nullptr, spResponse->GetSurface());
+        decodedSurface = spResponse->GetSurface();
+        onDecodeEvent->Set();
+        return S_OK;
+    };
+
+    auto spAsyncDecoder = std::make_unique<AsyncImageDecoder>(
+        WicService::GetInstance().CreateDefaultDecoder(spEncodedImageData->GetMetadata()),
+        std::move(spEncodedImageData),
+        false /* isAutoPlay */,
+        xref::get_weakref(spDecodeCallback));
+
+    // Device-loss cleanup can run before the thread pool starts the queued decode; that decode must still be presented.
+    // Verify after cleanup so the logging doesn't give the decode a head start.
+    const HRESULT hr = spAsyncDecoder->SetDecodeParams(make_xref<ImageDecodeParams>(pixelColor32bpp_A8R8G8B8, 0, 0, false, 0 /* imageId */, xstring_ptr::EmptyString()), 0);
+    spAsyncDecoder->CleanupDeviceRelatedResources();
+    VERIFY_SUCCEEDED(hr);
+    onDecodeEvent->WaitForDefault();
+    VERIFY_IS_TRUE(ValidateImageCrc(
+        decodedSurface,
+        L"AsyncImageDecoderTests_CleanupDeviceRelatedResourcesBeforeDecodeStarts",
+        0x92ad67b6));
+}
+
 
 } } } } } }

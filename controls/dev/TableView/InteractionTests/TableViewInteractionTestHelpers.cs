@@ -454,6 +454,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
+        // MITA has no horizontal wheel, so this injects MOUSEEVENTF_HWHEEL directly. A positive delta scrolls right.
+        internal static void HorizontalWheelAtPoint(Point point, int delta)
+        {
+            Log.Comment("Rotate horizontal wheel by {0} at ({1}, {2}).", delta, point.X, point.Y);
+
+            PointerInput.Move(point);
+            var input = new NativeInput { type = 0 /* INPUT_MOUSE */, mi = new NativeMouseInput { mouseData = delta, dwFlags = 0x01000 /* MOUSEEVENTF_HWHEEL */ } };
+            Verify.AreEqual(1u, SendInput(1, new[] { input }, System.Runtime.InteropServices.Marshal.SizeOf<NativeInput>()),
+                "SendInput must inject the horizontal wheel.");
+            Wait.ForIdle();
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct NativeMouseInput
+        {
+            public int dx;
+            public int dy;
+            public int mouseData;
+            public uint dwFlags;
+            public uint time;
+            public IntPtr dwExtraInfo;
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        private struct NativeInput
+        {
+            public uint type;
+            public NativeMouseInput mi;
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, NativeInput[] inputs, int size);
+
         internal static Point CentreOf(UIObject element)
         {
             var bounds = element.BoundingRectangle;
@@ -485,8 +518,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         // middle can exceed the system double-click time and turn the gesture into two single clicks.
         internal static void DoubleClickRowAtColumnOffset(UIObject row, int rowRelativeX)
         {
-            var point = RowPointAtColumnOffset(row, rowRelativeX);
+            DoubleClickPoint(RowPointAtColumnOffset(row, rowRelativeX));
+        }
 
+        internal static void DoubleClickPoint(Point point)
+        {
             Log.Comment("Double-click at absolute point ({0}, {1}).", point.X, point.Y);
             PointerInput.Move(point);
             PointerInput.Press(PointerButtons.Primary);
@@ -634,6 +670,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        internal static bool SetPageCheckBox(string automationId, bool isChecked)
+        {
+            var checkBox = FindElement.ById<CheckBox>(automationId);
+            if (checkBox == null) { Verify.Fail(automationId + " was not found."); return false; }
+            if (isChecked) { checkBox.Check(); } else { checkBox.Uncheck(); }
+            Wait.ForIdle();
+            return true;
+        }
+
         // Selects a Pivot item by invoking the page's GoTo<Item>Button, found by AutomationId rather than by header
         // name. Returns false if the button could not be found; the caller decides whether that fails the test.
         internal static bool SelectPivotItem(string pivotItem)
@@ -758,6 +803,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             var readout = FindElement.ById<TextBlock>(ScrollOffsets);
             return readout == null ? "<no readout>" : readout.DocumentText;
+        }
+
+        // Animated scrolls (wheel, touch inertia) outlast Wait.ForIdle, so poll until two reads agree.
+        internal static string ReadSettledScrollOffsets()
+        {
+            string previous = ReadScrollOffsets();
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            while (timer.ElapsedMilliseconds < 4000)
+            {
+                Wait.ForMilliseconds(400);
+                string current = ReadScrollOffsets();
+                if (current == previous)
+                {
+                    return current;
+                }
+                previous = current;
+            }
+            return previous;
         }
 
         // Returns double.NaN when the readout is missing or malformed.

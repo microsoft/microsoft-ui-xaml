@@ -70,13 +70,44 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
                 });
             }
             break;
+        case 4:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                this->DeferredContent(targetElement);
+            }
+            break;
         case 5:
+            {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->ViewText(targetElement);
+            }
+            break;
+        case 6:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                this->SharedText(targetElement);
+                auto weakThis = ::winrt::make_weak<class_type>(*this);
+                targetElement.Click([weakThis](::winrt::Windows::Foundation::IInspectable const& p0, ::winrt::Microsoft::UI::Xaml::RoutedEventArgs const& p1){
+                    if (auto t = weakThis.get())
+                    {
+                        ::winrt::get_self<D>(t)->MyControl_Click(p0, p1);
+                    }
+                });
+            }
+            break;
+        case 7:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
+                this->EmptySharedText(targetElement);
+            }
+            break;
+        case 9:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::TextBlock>();
                 this->DisplayText(targetElement);
             }
             break;
-        case 6:
+        case 10:
             {
                 auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Button>();
                 this->MyControl(targetElement);
@@ -89,20 +120,107 @@ namespace winrt::MultipleViewsTestbedCppWinRT::implementation
                 });
             }
             break;
+        case 11:
+            {
+                auto targetElement = target.as<::winrt::Microsoft::UI::Xaml::Controls::Grid>();
+                this->DeferredContent(targetElement);
+            }
+            break;
+        case 12:
+            {
+                this->SharedText(target);
+            }
+            break;
+        case 13:
+            {
+                this->EmptySharedText(target);
+            }
+            break;
+        case 14:
+            {
+                auto targetElement = target ? target.as<::winrt::hstring>() : ::winrt::hstring{};
+                this->ViewText(targetElement);
+            }
+            break;
         }
         _contentLoaded = true;
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t)
+    void MainPageT<D, I...>::UnloadObject(DependencyObject const& unloadableObject)
     {
-        throw ::winrt::hresult_invalid_argument { L"No unloadable objects to disconnect." };
+        if (unloadableObject)
+        {
+            // MainPage.Portrait.xaml line 18
+            if (unloadableObject == DeferredContent())
+            {
+                DisconnectUnloadedObject(4);
+            }
+            // MainPage.xaml line 18
+            if (unloadableObject == DeferredContent())
+            {
+                DisconnectUnloadedObject(11);
+            }
+            ::winrt::Microsoft::UI::Xaml::Markup::XamlMarkupHelper::UnloadObject(unloadableObject);
+        }
     }
 
     template <typename D, typename ... I>
-    void MainPageT<D, I...>::UnloadObject(DependencyObject const&)
+    void MainPageT<D, I...>::DisconnectUnloadedObject(int32_t connectionId)
     {
-        throw ::winrt::hresult_invalid_argument { L"No unloadable objects." };
+        switch(connectionId)
+        {
+            case 4: // MainPage.Portrait.xaml line 18
+            {
+                DisconnectUnloadedObject(5);
+                DisconnectUnloadedObject(6);
+                DisconnectUnloadedObject(7);
+                DeferredContent(nullptr);
+                break;
+            }
+            case 5: // MainPage.Portrait.xaml line 20
+            {
+                ViewText(::winrt::hstring{});
+                break;
+            }
+            case 6: // MainPage.Portrait.xaml line 23
+            {
+                SharedText(nullptr);
+                break;
+            }
+            case 7: // MainPage.Portrait.xaml line 24
+            {
+                EmptySharedText(nullptr);
+                break;
+            }
+            case 11: // MainPage.xaml line 18
+            {
+                DisconnectUnloadedObject(12);
+                DisconnectUnloadedObject(13);
+                DisconnectUnloadedObject(14);
+                DeferredContent(nullptr);
+                break;
+            }
+            case 12: // MainPage.xaml line 20
+            {
+                SharedText(nullptr);
+                break;
+            }
+            case 13: // MainPage.xaml line 21
+            {
+                EmptySharedText(nullptr);
+                break;
+            }
+            case 14: // MainPage.xaml line 22
+            {
+                ViewText(::winrt::hstring{});
+                break;
+            }
+            default:
+            {
+                throw hresult_invalid_argument(L"Invalid connectionId.");
+            }
+        }
     }
 
 

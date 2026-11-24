@@ -45,6 +45,7 @@
     <GenerateWinRTClassRegistration>true</GenerateWinRTClassRegistration>
     <IncludeIxpExtensions>true</IncludeIxpExtensions>
     <IncludeMrtExtensions>true</IncludeMrtExtensions>
+    <IncludeStorageExtensions>true</IncludeStorageExtensions>
   </PropertyGroup>
   <Import Project="$(MSBuildThisFileDirectory)..\..\dxaml\Xaml.Cpp.props" />
   <PropertyGroup>
