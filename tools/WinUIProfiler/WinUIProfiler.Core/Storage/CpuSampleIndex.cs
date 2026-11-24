@@ -195,9 +195,9 @@ internal sealed class CpuSampleIndex : IDisposable
     }
 
     // The time of the first sample stored, which is the oldest but for the few a live session stores late; null when
-    // there are none. Call outside a transaction.
-    internal long? FirstQpc() =>
-        Samples == 0 ? null : Sql.Scalar(connection, "SELECT Qpc FROM CpuSamples ORDER BY rowid LIMIT 1");
+    // there are none.
+    internal long? FirstQpc(SqliteTransaction? transaction = null) =>
+        Samples == 0 ? null : Sql.Scalar(connection, "SELECT Qpc FROM CpuSamples ORDER BY rowid LIMIT 1", transaction);
 
     // Deletes the stack nodes the trimmed samples left unused, then the callers that leaves unused, and the code addresses
     // no node has any more, and forgets them, so a later sample stores them again rather than referring to the deleted

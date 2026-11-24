@@ -433,7 +433,7 @@ History);
             etw = null;
             cpu?.Dispose();
             cpu = null;
-            recordings?.Close("ETW could not start");
+            recordings?.AbortStartup();
             etwFromProcessStart = false;
             SetEtwStartError(error);
             SaveStartupRecordings("ETW could not start");
@@ -590,7 +590,7 @@ History);
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
         var token = cancellation.Token;
-        var sessionPath = Recording?.Path;
+        var sessionPath = recordings?.SnapshotRecordingPath;
         TreeSnapshotDocument snapshot;
         await targetCommands.WaitAsync(token).ConfigureAwait(false);
         try
@@ -619,6 +619,10 @@ History);
             token.ThrowIfCancellationRequested();
             File.Move(temporary, path);
             committed = true;
+            if (recordings is { } group)
+            {
+                await group.SaveSnapshotAsync(snapshot, path, token).ConfigureAwait(false);
+            }
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
                 snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);
         }
