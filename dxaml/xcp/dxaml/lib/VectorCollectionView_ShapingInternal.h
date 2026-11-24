@@ -222,18 +222,179 @@ namespace DirectUI::ShapingEngine
         UINT& m_depth;
     };
 
-    // The shaped list the view wraps (WPF: ListCollectionView.InternalList). Read-only; a recompute
-    // replaces its contents wholesale and announces a single Reset.
-    class __declspec(novtable) InternalList : public ReadOnlyObservableTrackerCollection<IInspectable*>
+    // The storage of the presented lists (a TrackerCollection storage, see TrackerPtrVector). A TrackerPtrVector moves
+    // every later TrackerPtr on an insert or a remove, and each move takes the reference lock (about 14 ns a row, so
+    // 1.4 ms a change at 100k rows). Here an item keeps the slot it was put in until it leaves, and the order is a
+    // vector of slot numbers: an insert or a remove moves 4-byte integers and no TrackerPtr. The reference tracker
+    // walk walks the slots; a free slot is empty.
+    template <typename T>
+    class StableTrackerPtrVector
     {
     public:
+        class ConstIterator
+        {
+        public:
+            ConstIterator(typename std::vector<TrackerPtr<T>>::const_iterator slots, std::vector<UINT>::const_iterator position)
+                : m_slots(slots), m_position(position)
+            {
+            }
+
+            const TrackerPtr<T>& operator*() const
+            {
+                return *(m_slots + *m_position);
+            }
+
+            ConstIterator& operator++()
+            {
+                ++m_position;
+                return *this;
+            }
+
+            ConstIterator operator++(int)
+            {
+                ConstIterator previous(*this);
+                ++m_position;
+                return previous;
+            }
+
+            bool operator==(const ConstIterator& other) const
+            {
+                return m_position == other.m_position;
+            }
+
+            bool operator!=(const ConstIterator& other) const
+            {
+                return m_position != other.m_position;
+            }
+
+        private:
+            typename std::vector<TrackerPtr<T>>::const_iterator m_slots;
+            std::vector<UINT>::const_iterator m_position;
+        };
+
+        _Check_return_ HRESULT GetAt(_In_ UINT index, _Outptr_ T** item)
+        {
+            IFCCHECK_RETURN(index < m_order.size());
+            IFC_RETURN(m_slots.GetAt(m_order[index], item));
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT GetAsReferenceTrackerUnsafe(_In_ UINT index, _Outptr_ xaml_hosting::IReferenceTrackerInternal** itemNoRef)
+        {
+            IFCCHECK_RETURN(index < m_order.size());
+            IFC_RETURN(m_slots.GetAsReferenceTrackerUnsafe(m_order[index], itemNoRef));
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT SetAt(_In_ UINT index, _In_opt_ T* item)
+        {
+            IFCCHECK_RETURN(index < m_order.size());
+            IFC_RETURN(m_slots.SetAt(m_order[index], item));
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_opt_ T* item)
+        {
+            IFCEXPECTRC_RETURN(index <= m_order.size(), E_BOUNDS);
+            const UINT slot = AllocateSlot(item);
+            m_order.insert(m_order.begin() + index, slot);
+            return S_OK;
+        }
+
+        void Append(_In_opt_ T* item)
+        {
+            m_order.push_back(AllocateSlot(item));
+        }
+
+        // The item is released after it left the order, as TrackerPtrVector::RemoveAt releases it after the erase:
+        // its release may run code that reads or changes this list.
+        _Check_return_ HRESULT RemoveAt(_In_ UINT index)
+        {
+            IFCCHECK_RETURN(index < m_order.size());
+            const UINT slot = m_order[index];
+            m_order.erase(m_order.begin() + index);
+            IFC_RETURN(m_slots.SetAt(slot, nullptr));
+            m_freeSlots.push_back(slot);
+            return S_OK;
+        }
+
+        void Clear()
+        {
+            m_order.clear();
+            m_freeSlots.clear();
+            m_slots.Clear();
+        }
+
+        void Reserve(_In_ UINT capacity)
+        {
+            m_slots.Reserve(capacity);
+            m_order.reserve(capacity);
+        }
+
+        ConstIterator Begin() const
+        {
+            return ConstIterator(m_slots.Begin(), m_order.cbegin());
+        }
+
+        ConstIterator End() const
+        {
+            return ConstIterator(m_slots.Begin(), m_order.cend());
+        }
+
+        UINT Size() const
+        {
+            return static_cast<UINT>(m_order.size());
+        }
+
+        bool Empty() const
+        {
+            return m_order.empty();
+        }
+
+        void ReferenceTrackerWalk(_In_ EReferenceTrackerWalkType walkType)
+        {
+            m_slots.ReferenceTrackerWalk(walkType);
+        }
+
+    private:
+        UINT AllocateSlot(_In_opt_ T* item)
+        {
+            if (m_freeSlots.empty())
+            {
+                m_slots.Append(item);
+                return m_slots.Size() - 1;
+            }
+
+            const UINT slot = m_freeSlots.back();
+            m_freeSlots.pop_back();
+            VERIFYHR(m_slots.SetAt(slot, item));
+            return slot;
+        }
+
+        // Grows only by Append, so an item's TrackerPtr moves only when the vector reallocates (amortized O(1)).
+        TrackerPtrVector<T> m_slots;
+        // The slot of each item, in list order.
+        std::vector<UINT> m_order;
+        std::vector<UINT> m_freeSlots;
+    };
+
+    using PresentedListStorage = StableTrackerPtrVector<IInspectable>;
+
+    // The shaped list the view wraps (WPF: ListCollectionView.InternalList). Read-only; a recompute
+    // replaces its contents wholesale and announces a single Reset.
+    class __declspec(novtable) InternalList : public ReadOnlyObservableTrackerCollection<IInspectable*, PresentedListStorage>
+    {
+    public:
+        // The collection without the change notifications, for the engine's unraised edits.
+        using StorageCollection = TrackerCollection<IInspectable*, PresentedListStorage>;
+
         _Check_return_ HRESULT ReplaceAll(_In_ const std::vector<ctl::ComPtr<IInspectable>>& items)
         {
-            IFC_RETURN(TrackerCollection<IInspectable*>::Clear());
+            IFC_RETURN(StorageCollection::Clear());
             Reserve(static_cast<uint32_t>(items.size()));
             for (const auto& item : items)
             {
-                IFC_RETURN(TrackerCollection<IInspectable*>::Append(item.Get()));
+                IFC_RETURN(StorageCollection::Append(item.Get()));
             }
 
             IFC_RETURN(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
@@ -245,7 +406,7 @@ namespace DirectUI::ShapingEngine
 
         _Check_return_ HRESULT RaiseVectorChanged(_In_ wfc::CollectionChange action, UINT index) override
         {
-            return ContainRaiseFailure(ReadOnlyObservableTrackerCollection<IInspectable*>::RaiseVectorChanged(action, index));
+            return ContainRaiseFailure(ReadOnlyObservableTrackerCollection<IInspectable*, PresentedListStorage>::RaiseVectorChanged(action, index));
         }
     };
 
@@ -485,7 +646,7 @@ namespace DirectUI::ShapingEngine
                 return S_OK;
             }
 
-            IFC_RETURN(TrackerCollection<IInspectable*>::Clear());
+            IFC_RETURN(StorageCollection::Clear());
             Reserve(count);
             for (const auto& spSubgroup : m_subgroups)
             {
@@ -494,7 +655,7 @@ namespace DirectUI::ShapingEngine
                 {
                     ctl::ComPtr<IInspectable> spItem;
                     IFC_RETURN(spSubgroup->GetAt(i, spItem.ReleaseAndGetAddressOf()));
-                    IFC_RETURN(TrackerCollection<IInspectable*>::Append(spItem.Get()));
+                    IFC_RETURN(StorageCollection::Append(spItem.Get()));
                 }
             }
             return S_OK;
@@ -523,7 +684,7 @@ namespace DirectUI::ShapingEngine
             }
             else
             {
-                IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::InsertAt(index, pSubgroupItem));
+                IFC_RETURN(m_tpSubgroupList->StorageCollection::InsertAt(index, pSubgroupItem));
             }
             return S_OK;
         }
@@ -554,10 +715,10 @@ namespace DirectUI::ShapingEngine
         _Check_return_ HRESULT ReorderSubgroups(std::vector<ctl::ComPtr<CollectionViewGroupInternal>>&& subgroups)
         {
             m_subgroups = std::move(subgroups);
-            IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::Clear());
+            IFC_RETURN(m_tpSubgroupList->StorageCollection::Clear());
             for (const auto& spSubgroup : m_subgroups)
             {
-                IFC_RETURN(m_tpSubgroupList->TrackerCollection<IInspectable*>::Append(ctl::as_iinspectable(spSubgroup.Get())));
+                IFC_RETURN(m_tpSubgroupList->StorageCollection::Append(ctl::as_iinspectable(spSubgroup.Get())));
             }
             return S_OK;
         }
@@ -571,7 +732,7 @@ namespace DirectUI::ShapingEngine
             }
             else
             {
-                IFC_RETURN(TrackerCollection<IInspectable*>::InsertAt(index, pItem));
+                IFC_RETURN(StorageCollection::InsertAt(index, pItem));
             }
             return S_OK;
         }
