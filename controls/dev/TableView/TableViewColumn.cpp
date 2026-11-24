@@ -311,6 +311,11 @@ winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::DisplayMemberBinding(
 
 void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
 {
+    if (m_displayMemberBinding.get() == value)
+    {
+        return;
+    }
+
     m_displayMemberBinding.set(value);
 
     NotifyCellContentChanged(true /* resetAutoWidth */);
