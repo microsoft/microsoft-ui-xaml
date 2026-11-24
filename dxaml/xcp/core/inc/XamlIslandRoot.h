@@ -126,6 +126,7 @@ public:
     void SetRootVisual(_In_opt_ ixp::IVisual* visual) { m_rootVisual = visual;}
 
     wrl::ComPtr<ixp::IInputPointerSource> GetInputPointerSource() const { return m_inputPointerSource; }
+    wrl::ComPtr<ixp::IInputNonClientPointerSource> GetInputNonClientPointerSource() const { return m_inputNonClientPointerSource; }
 
     void ReplayPointerUpdate();
     void ClearLastPointerPointForReplay();
