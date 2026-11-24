@@ -63,6 +63,25 @@ static unsafe partial class Win32
 
     public static bool IsIconicWindow(nint hwnd) => IsIconic(hwnd);
 
+    // Run-RenderBench shows and closes a WinForms window before each decision run so that DWM releases the previous run's
+    // surfaces; here, wait until dwm.exe private bytes are stable (two samples within 0.5 MB, at most 3 s) before the baseline.
+    public static void SettleDwm(Func<long> dwmPrivateBytes)
+    {
+        DwmFlush();
+        long previous = dwmPrivateBytes();
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        while (clock.ElapsedMilliseconds < 3000)
+        {
+            Thread.Sleep(250);
+            long current = dwmPrivateBytes();
+            if (Math.Abs(current - previous) < 512 * 1024 && clock.ElapsedMilliseconds >= 750)
+            {
+                return;
+            }
+            previous = current;
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     struct MINMAXINFO { public POINT ptReserved, ptMaxSize, ptMaxPosition, ptMinTrackSize, ptMaxTrackSize; }
 
@@ -74,4 +93,5 @@ static unsafe partial class Win32
         int height, nint parent, nint menu, nint instance, nint param);
     [DllImport("user32.dll")] static extern bool DestroyWindow(nint hwnd);
     [DllImport("user32.dll")] static extern bool IsIconic(nint hwnd);
+    [DllImport("dwmapi.dll")] static extern int DwmFlush();
 }

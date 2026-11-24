@@ -82,6 +82,10 @@ public static class Program
         (long PrivateBytes, long WorkingSetBytes, int ProcessId, double CpuMs) dwm;
         using (var dwmSampler = new DwmSampler())
         {
+            if (BenchOptions.TryParse(args, out var sceneOptions, out _) && SceneCatalog.IsDecisionScene(sceneOptions.Scene))
+            {
+                Win32.SettleDwm(() => dwmSampler.Take().PrivateBytes);
+            }
             dwm = dwmSampler.Take();
         }
         BenchEventSource.Log.DwmMemorySample(0, dwm.PrivateBytes, dwm.WorkingSetBytes, dwm.ProcessId, dwm.CpuMs);

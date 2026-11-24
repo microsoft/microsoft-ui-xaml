@@ -149,6 +149,23 @@ function Get-SceneArgs([string]$entry) {
     if ($InputMode -ne 'auto') { $sceneArgs += @('--input-mode', $InputMode) }
     return $sceneArgs
 }
+# DWM keeps a closed window's surfaces (~30 MB after a 4K window) until another top-level window is shown and closed, so
+# the previous run's leftovers would land in the next decision run's dwm.exe baseline. An in-process probe window does not
+# trigger the release; showing and closing a WinForms form from this script does.
+function Invoke-DwmSettle {
+    Add-Type -AssemblyName System.Windows.Forms
+    $form = [System.Windows.Forms.Form]::new()
+    $form.Text = 'RenderBench DWM settle'
+    $form.StartPosition = 'Manual'
+    $form.SetBounds(0, 0, 200, 100)
+    $form.Show()
+    $clock = [Diagnostics.Stopwatch]::StartNew()
+    while ($clock.ElapsedMilliseconds -lt 1000) { [System.Windows.Forms.Application]::DoEvents(); Start-Sleep -Milliseconds 20 }
+    $form.Close()
+    $form.Dispose()
+    [System.Windows.Forms.Application]::DoEvents()
+    Start-Sleep -Seconds 2
+}
 New-Item -ItemType Directory -Force $Results | Out-Null
 $Results = (Resolve-Path $Results).Path
 & wpr -cancel 2>$null | Out-Null
@@ -203,6 +220,7 @@ try {
                 $env:WINUI_RENDERING_BACKEND = if ($mode -eq 'composition') { '' } else { $mode }
 
                 Write-Host "[$rep/$Repetitions] $scene $mode -> $runDir"
+                if ($decisionScenes -contains $scene) { Invoke-DwmSettle }
                 & wpr -start "$profilePath!$Profile" -filemode
                 if ($LASTEXITCODE -ne 0) { throw "wpr -start failed ($LASTEXITCODE)" }
                 try {
