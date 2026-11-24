@@ -85,14 +85,28 @@ namespace DirectUI
 
         void OnReferenceTrackerWalk(INT walkType) override;
 
+        // A derived view that places its currency itself for a change (VectorCollectionView once shaped, as WPF's
+        // ListCollectionView) sets *pIsHandled: ProcessCollectionChange then only raises the change, between the
+        // call with isRaised false and the call with isRaised true.
+        virtual _Check_return_ HRESULT AdjustCurrencyForChange(_In_ wfc::IVectorChangedEventArgs* pArgs, bool isRaised, _Out_ bool* pIsHandled)
+        {
+            *pIsHandled = false;
+            return S_OK;
+        }
+
+        // Sets the currency without raising anything (WPF: CollectionView.SetCurrent).
+        void SetCurrentNoRaise(_In_opt_ IInspectable* pItem, INT position, UINT size);
+
+        _Check_return_ HRESULT SetCurrentIndexAt(_In_ INT newIndex, _Out_opt_ BOOLEAN *valid);
+        _Check_return_ HRESULT RaiseCurrentChanged();
+        // Not cancelable.
+        _Check_return_ HRESULT RaiseCurrentChanging();
+
     private:
         _Check_return_ HRESULT GetCurrentChangedEventSource(_Outptr_ CurrentChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT GetCurrentChangingEventSource(_Outptr_ CurrentChangingEventSourceType** ppEventSource);
 
-        _Check_return_ HRESULT SetCurrentIndexAt(_In_ INT newIndex, _Out_opt_ BOOLEAN *valid);
-        _Check_return_ HRESULT RaiseCurrentChanged();
         _Check_return_ HRESULT RaiseCurrentChanging(_In_ xaml_data::ICurrentChangingEventArgs *pArgs);
-        _Check_return_ HRESULT RaiseCurrentChanging();
         _Check_return_ HRESULT RaiseVectorChanged(_In_ wfc::IVectorChangedEventArgs *pArgs);
 
         _Check_return_ HRESULT OkToChangeCurrent(_Out_ BOOLEAN *pfOkToChange);

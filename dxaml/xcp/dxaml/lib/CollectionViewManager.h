@@ -11,7 +11,8 @@ namespace DirectUI
     public:
 
         // *pIsShapeable: the view is a VectorCollectionView the CollectionViewSource can shape (WPF: the
-        // ListCollectionView ViewManager creates for an IList).
+        // ListCollectionView ViewManager creates for an IList). Unlike WPF's, it always creates a new view: there is
+        // no view cache (each CollectionViewSource holds its View; see the design note).
         static _Check_return_ HRESULT GetViewRecord(
             _In_ IInspectable *pSource,
             _In_ xaml_data::ICollectionViewSource *pCVS,

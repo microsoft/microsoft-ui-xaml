@@ -348,10 +348,23 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   When grouping stops, the group collection is emptied (one `Reset`) after the view's `Reset`, so it holds no items.
   Views that do not shape (`IsSourceGrouped`, factory and app views) keep their behavior: an `IsSourceGrouped`
   change still gives the CVS a new `View`, and their `CollectionGroups` changes are raised as before.
-- **Currency** (WPF `ListCollectionView.RefreshOverride`). After a refresh, currency that was before the first item
-  or after the last stays there; a current item is followed if it is still in the view, otherwise currency moves to
-  the first item. So a sort with nothing current (a synchronized ListView with nothing selected) selects nothing. A
-  rebuilt `View` starts at the first item, as today.
+- **Currency** (WPF `ListCollectionView`; `VectorCollectionView_Currency.cpp`). An unshaped view keeps
+  `CollectionView`'s contract. On a shaped view:
+  - A recompute (a rule change, `Refresh()`, a source `Reset`, grouping on or off, closing `DeferRefresh`) raises one
+    non-cancelable `CurrentChanging` before it recomputes, places the currency before its `Reset` is raised (so a
+    `VectorChanged` handler reads the new `CurrentItem` / `CurrentPosition`), then raises the changed currency
+    properties and `CurrentChanged` once. Currency that was before the first item or after the last stays there; a
+    current item is followed if it is still in the view, otherwise currency moves to the first item; an empty result is
+    before the first. So a sort with nothing current (a synchronized ListView with nothing selected) selects nothing.
+    A handler of the `Reset` that moves the currency (a synchronized `Selector` clears a selection the `Reset` moved) is
+    overruled once, with a non-cancelable `CurrentChanging`, so the selection follows the item, as before.
+  - A live move (`ItemRemoved` + `ItemInserted`) keeps currency on the moved item and raises only
+    `PropertyChanged("CurrentPosition")`, as WPF's `Move`; an item live filtering drops moves currency to the item now
+    at its place, or the last, with one non-cancelable `CurrentChanging` / `CurrentChanged`, as a removal does.
+  - A source `Replace` that keeps the current item's place makes the replacement current (WPF), instead of
+    `CollectionView`'s move to the first item. A `Remove` of the current item moves currency to the item now at its
+    place, or the last, in both (unchanged).
+  - A rebuilt `View` starts at the first item, as today (WPF `ViewRecord.InitializeView`).
 - **Reentrancy.** App code runs inside the engine (filters, `Filter` event handlers, property getters, converters, `GroupDescription` overrides,
   comparers) and while it raises its changes (every `VectorChanged` / `PropertyChanged` handler). A rule change,
   `Refresh()` or source change made from there is not dropped: it is recorded and the view recomputes once that work
@@ -608,7 +621,7 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 | `VectorCollectionView::RefreshOrDefer` | `CollectionView.RefreshOrDefer` | Recompute now, or once the last `DeferRefresh` closes; keeps currency. |
 | `VectorCollectionView::ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | `ListCollectionView.ProcessCollectionChanged` / `ProcessCollectionChangedWithAdjustedIndex` | A source change: applied incrementally on a flat view, else a full recompute. |
 | `CollectionViewSource::ApplyPropertiesToView` | `CollectionViewSource.ApplyPropertiesToView` | Gives a new view the CVS's rules. |
-| `CollectionViewManager::GetViewRecord` | `ViewManager.GetViewRecord` | Picks the view class for a source. |
+| `CollectionViewManager::GetViewRecord` | `ViewManager.GetViewRecord` | Picks the view class for a source. Always creates a view: there is no view cache (see "WPF semantics" below). |
 | `CollectionViewGroupInternal` | `MS.Internal.Data.CollectionViewGroupInternal` | A computed group: its subgroups (`Items`) or items, its leaves, `Key` / `Name` / `ItemCount` / `IsBottomLevel`; `LeafCountBefore` and `FindSubgroupPosition` play `LeafIndexFromItem` and `FindIndex`. |
 | `CollectionViewGroupRoot` | `MS.Internal.Data.CollectionViewGroupRoot` | The top of the group tree: the group descriptions per level (`GetGroupNames` = `GroupNameFromItem`, `NamesMatch`, the group order), `AddLoading` (`AddToSubgroups` while loading), `FindLeaf`. |
 | `PlanGroupedInsertion` / `ApplyGroupedInsertion` / `ApplyGroupedRemoval` | `CollectionViewGroupRoot.AddToSubgroups` / `RemoveFromSubgroups` | An item joins or leaves the group tree incrementally. |
@@ -623,6 +636,52 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 
 `VectorCollectionView`, `GroupedDataCollectionView`, `CollectionView` and `CollectionViewManager` are pre-existing
 WinUI classes and keep their names.
+
+### WPF semantics: what matches and what deliberately does not (batch 6)
+
+The rule: match WPF where its design is sound for a WinRT, reference-counted, single-threaded view and performs well;
+deviate where it would be unsafe for the GC, contradict a shipped WinUI contract, or put per-control state in the
+shared view. Editing (`IEditableCollectionView`) is out of scope: TableView does not edit.
+
+**Currency** (WPF `ListCollectionView`, `CollectionView`; ours `VectorCollectionView_Currency.cpp`, see "Behavior"):
+
+| Behavior | WPF | Ours | Decision | Why |
+|---|---|---|---|---|
+| After a recompute | Before first / after last kept, else item followed, else first | Same | Match | Batch 1 |
+| `CurrentChanging` on a recompute | One, non-cancelable, before recomputing | Same (was a cancelable one after the `Reset`, up to three pairs with a transient "before first") | Match | Handlers save state with the old currency; selection no longer flickers through "nothing" |
+| Currency when the `Reset` is raised | Already placed | Same (was stale) | Match | A `VectorChanged` handler reads consistent currency |
+| A `Reset` handler moves the currency | Kept (WPF's `Selector` reselects the current item) | Overruled once, non-cancelable | Deviate | WinUI's `Selector` unselects a moved item on `Reset` and moves currency to "nothing"; without this a sort would drop a synchronized ListView's selection |
+| Order of the currency events | `CurrentChanged`, then `PropertyChanged` | `PropertyChanged`, then `CurrentChanged` | Deviate | `CollectionView`'s order, one order for every view |
+| Live move of the current item | `Move`: currency moves, only `CurrentPosition` raised | Same, over `ItemRemoved` + `ItemInserted` (was two `CurrentChanging`/`CurrentChanged` pairs) | Match | WinRT has no `Move`; the pair is folded back into one |
+| Current item dropped by live filtering | To the item now at its place, or the last | Same (was the first item) | Match | Same rule as a removal |
+| Source `Replace` of the current item, same place | The replacement is current | Same on a shaped view (was the first item) | Match | Unshaped views keep the old behavior (below) |
+| `Remove` of the current item; insert before it; a `Replace` that moves | Item at its place or last; position shifts; item at its place | Same (unchanged `CollectionView` code) | Match | — |
+| Unshaped views (`VectorCollectionView` before a rule, `IsSourceGrouped`, factory, app views) | — | `CollectionView`'s shipped contract (a `Replace` of the current item moves to the first) | Deviate (keep) | Shipped behavior; only views that shape get the WPF rules |
+| `MoveCurrentTo*` to the current item | No events | `CurrentChanging` + `CurrentChanged` | Deviate (keep) | Shipped `ICollectionView` contract, same class shaped or not; `Selector` sync relies on the events |
+| `MoveCurrentToPosition` out of range | Throws `ArgumentOutOfRangeException` | Clamps to before first / after last | Deviate (keep) | Shipped contract |
+| A cancelled `MoveCurrentTo*` | Returns `IsCurrentInView` | Returns false | Deviate (keep) | Shipped contract |
+| Empty view | Before first and after last | Before first | Deviate (keep) | WinUI derives both flags from the position |
+| Currency members during `DeferRefresh` | Throw | Work on the output not yet recomputed | Deviate | WinUI `ICollectionView` never throws; a selection handler may move currency while the app defers |
+| First item added to an empty view that is after last | Before first | After last | Skip | Edge case of the shipped contract |
+
+**The questionable rows of the WPF parity audit:**
+
+| Row | Decision | Why |
+|---|---|---|
+| `GetDefaultView` lifetime (#17, A-3) | Deviate (keep) | WPF's lifetime is not GC-safe here (see "Default view lifetime") |
+| Rules shared with the view, not copied (#7, #8, #34) | Deviate (keep) | One set of rules per CVS: a TableView header sort written on the view is the CVS's rule too, so it survives a new `View` (an `IsSourceGrouped` change); a replaced view keeps a copy, as each WPF view does |
+| No view cache in `CollectionViewManager::GetViewRecord` (#186) | Deviate (keep, documented) | Each CVS holds its `View` and `ItemsControl` never shows a default view, so a cache would have nothing to share; a CVS whose `Source` goes back to an earlier collection gets a new view (currency on the first item), where WPF reuses the old one. A cache would also need the GC-safe lifetime A-3 lacks |
+| Internal names that differ (#162 `ProcessGroupedCollectionChanged`, #169 `Plan`/`ApplyGroupedInsertion`, #178 `LiveShapingState`) | Deviate (keep) | The code is shaped differently (plan before raising, for exception safety; no `LiveShapingList` swapped in); WPF's names would claim a parity the structure lacks. The table above maps them |
+
+**Other missing WPF semantics:**
+
+| Feature | Decision | Why |
+|---|---|---|
+| Live restore at `DispatcherPriority.DataBind` | Skip | The XAML dispatcher has no data-binding priority; whether the restore lands a frame late is measured with the live-shaping performance work |
+| `NeedsRefresh`, `IsInUse`, `DetachFromSourceCollection`, `Comparer`, `IItemProperties` (#72–#75, #92) | Skip | New members without a partner need |
+| `GroupBySelector`, `IsDataInGroupOrder`, `CompositeCollection` (#64, #65, #153) | Skip | No partner need |
+| `ItemCollection` shaping, nested groups in ListView (#202, #204) | Skip | Separate proposals |
+| `IEditableCollectionView`, `NewItemPlaceholder` (#76, #91, #93–#101) | Skip | TableView does not edit |
 
 ## How controls consume it
 
@@ -1024,7 +1083,7 @@ Hand-written files: `CollectionViewSource_Partial.h/.cpp` (`EnsureView`), `Colle
 `VectorCollectionView_Partial.h` and the engine: `VectorCollectionView_ShapingInternal.h` (sort keys, the group tree,
 failure containment, in the named namespace `DirectUI::ShapingEngine`), `VectorCollectionView_Shaping.cpp` (rules,
 `ICollectionViewShaping`, recompute), `VectorCollectionView_SourceChanges.cpp` (incremental source changes) and
-`VectorCollectionView_LiveShaping.cpp` (live shaping),
+`VectorCollectionView_LiveShaping.cpp` (live shaping), `VectorCollectionView_Currency.cpp` (currency of a shaped view),
 `PropertyGroupDescription_Partial.h` (group order), `CollectionViewLiveShapingProperties.h` (the `Live*Properties`
 collections),
 `CollectionViewManager.h/.cpp` (`GetViewRecord`), `CollectionViewRefreshDeferral.h`, and `wrtdxamlfoundation.vcxproj`.
@@ -1159,7 +1218,9 @@ Grouping keeps the view (phase C):
   the view equal to a fresh view; a throwing comparer in a live restore and a throwing filter in `Refresh()`; a
   handler that refreshes on every change stops; a view's `Filter` stays with it; live ticks that move, raise
   nothing, raise only the few moves, or one `Reset`; and a large TableView live tick that keeps its rows and
-  selection.
+  selection. Batch 6 adds currency on a shaped view: one non-cancelable `CurrentChanging` before a recompute with the
+  currency placed when its `Reset` is raised, then `CurrentChanged` once; a `Replace` of the current item in place on
+  a shaped and an unshaped view; a live move that keeps currency on its item and a live filter that drops it.
 
 ## Effort to productize
 

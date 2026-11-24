@@ -880,7 +880,6 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 {
     auto spState = m_spLiveShaping;
     auto spSort = m_spSortState;
-    ctl::ComPtr<IInspectable> spCurrentItem;
     ShapingFilterEvents filterEvents;
     std::vector<bool> isSortDirty;
     const UINT sourceChangeCount = m_sourceListChangeCount;
@@ -935,7 +934,9 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         isResorted = !AreChangesPreferred(2ull * dirtyCount, presentedCount, presentedCount * c_nsPerResortedRow);
     }
 
-    IFC_RETURN(get_CurrentItemImpl(spCurrentItem.ReleaseAndGetAddressOf()));
+    // Currency follows the current item through its moves (VectorCollectionView_Currency.cpp).
+    CurrencyScope currency;
+    IFC_RETURN(BeginLiveCurrency(&currency));
     IFC_RETURN(GetFilterEvents(&filterEvents));
 
     const bool hasFilter = !!filterEvents.spEvents || !!m_tpFilter;
@@ -1441,25 +1442,12 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
         ContainedFailureReport::Capture(hr);
         m_areSourceIndicesValid = false;
         KeepFirstFailure(&hr, RefreshOrDefer());
+        KeepFirstFailure(&hr, EndLiveCurrency(&currency));
         KeepFirstFailure(&hr, raiseFailure.Result());
         return hr;
     }
 
-    // Currency follows the item, as after a recompute.
-    if (spCurrentItem)
-    {
-        ctl::ComPtr<IInspectable> spNowCurrent;
-        IFC_RETURN(get_CurrentItemImpl(spNowCurrent.ReleaseAndGetAddressOf()));
-        if (spNowCurrent.Get() != spCurrentItem.Get())
-        {
-            BOOLEAN isCurrentValid = FALSE;
-            IFC_RETURN(MoveCurrentToImpl(spCurrentItem.Get(), &isCurrentValid));
-            if (!isCurrentValid)
-            {
-                IFC_RETURN(MoveCurrentToFirstImpl(&isCurrentValid));
-            }
-        }
-    }
+    IFC_RETURN(EndLiveCurrency(&currency));
 
     IFC_RETURN(RunPendingRecompute());
     IFC_RETURN(raiseFailure.Result());

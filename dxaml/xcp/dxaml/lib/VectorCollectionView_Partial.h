@@ -260,6 +260,53 @@ namespace DirectUI
         // Walks the live shaping listeners, which hold the source items.
         void OnReferenceTrackerWalk(INT walkType) override;
 
+        _Check_return_ HRESULT AdjustCurrencyForChange(_In_ wfc::IVectorChangedEventArgs* pArgs, bool isRaised, _Out_ bool* pIsHandled) override;
+
+    private:
+        // Currency (VectorCollectionView_Currency.cpp). A recompute raises its changes between BeginRefreshCurrency and
+        // EndRefreshCurrency, a live restore between BeginLiveCurrency and EndLiveCurrency; the scope leaves the view
+        // when it is destroyed.
+        struct CurrencyScope
+        {
+            CurrencyScope() = default;
+            ~CurrencyScope()
+            {
+                LeaveCurrencyScope(this);
+            }
+            CurrencyScope(const CurrencyScope&) = delete;
+            CurrencyScope& operator=(const CurrencyScope&) = delete;
+
+            bool isLive = false;
+            // The currency when the scope began.
+            ctl::ComPtr<IInspectable> spItem;
+            INT position = -1;
+            BOOLEAN wasBeforeFirst = FALSE;
+            BOOLEAN wasAfterLast = FALSE;
+            // Recompute: the non-cancelable CurrentChanging was raised; a Reset placed the currency here.
+            bool isChangingRaised = false;
+            bool isPlaced = false;
+            INT placedPosition = -1;
+            bool isPlacedAfterLast = false;
+            ctl::ComPtr<IInspectable> spPlacedItem;
+            // Live restore: the current item was removed, at detachedPosition, and may be inserted back; when it
+            // was, at another position, CurrentPosition is raised after that insertion.
+            bool isDetached = false;
+            INT detachedPosition = -1;
+            bool isMoveRaisePending = false;
+            // A recompute inside the live restore placed the currency.
+            bool isResolved = false;
+
+            CurrencyScope* pPrevious = nullptr;
+            CurrencyScope** ppSlot = nullptr;
+        };
+        _Check_return_ HRESULT BeginRefreshCurrency(_Inout_ CurrencyScope* pScope, bool isChangingRaisedFirst);
+        _Check_return_ HRESULT EndRefreshCurrency(_Inout_ CurrencyScope* pScope);
+        _Check_return_ HRESULT BeginLiveCurrency(_Inout_ CurrencyScope* pScope);
+        _Check_return_ HRESULT EndLiveCurrency(_Inout_ CurrencyScope* pScope);
+        void EnterCurrencyScope(_Inout_ CurrencyScope* pScope);
+        static void LeaveCurrencyScope(_Inout_ CurrencyScope* pScope);
+        _Check_return_ HRESULT PlaceCurrencyAfterRefresh(_Inout_ CurrencyScope* pScope);
+
     private:
 
         // What the view presents: the source itself, or once shaping starts the InternalList (flat) or
@@ -321,6 +368,10 @@ namespace DirectUI
         // Open DeferRefresh deferrals; a change made while any is open recomputes once, when the last closes.
         UINT m_deferRefreshLevel = 0;
         bool m_isRefreshPending = false;
+
+        // Currency of a shaped view (VectorCollectionView_Currency.cpp; WPF: ListCollectionView). While a recompute
+        // or a live restore runs, it places the currency for the changes it raises instead of CollectionView.
+        CurrencyScope* m_pCurrencyScope = nullptr;
 
         // ICollectionViewLiveShaping. The state (observers per source item, dirty items) is created while any
         // live feature is on.
