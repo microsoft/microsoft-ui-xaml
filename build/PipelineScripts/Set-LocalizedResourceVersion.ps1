@@ -8,7 +8,10 @@ param(
 
     [Parameter(Mandatory = $true)]
     [ValidatePattern('^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')]
-    [string]$Version
+    [string]$Version,
+
+    [ValidatePattern('^[0-9a-fA-F]{40}$')]
+    [string]$SourceRevision
 )
 
 Set-StrictMode -Version 2.0
@@ -66,7 +69,7 @@ namespace WinUIBuild
 
         // Rebuild length-prefixed, DWORD-aligned blocks so longer version strings do not
         // overwrite localized metadata, translation tables, or another string's padding.
-        private static byte[] RewriteBlock(byte[] data, int start, string version, uint high, uint low)
+        private static byte[] RewriteBlock(byte[] data, int start, string version, uint high, uint low, string sourceRevision)
         {
             if (start + 6 > data.Length)
             {
@@ -115,6 +118,11 @@ namespace WinUIBuild
                 value = Encoding.Unicode.GetBytes(version + "\0");
                 valueLength = checked((ushort)(value.Length / 2));
             }
+            else if (key == "Comments" && !String.IsNullOrEmpty(sourceRevision))
+            {
+                value = Encoding.Unicode.GetBytes("SourceRevision=" + sourceRevision + "\0");
+                valueLength = checked((ushort)(value.Length / 2));
+            }
 
             using (MemoryStream stream = new MemoryStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
@@ -126,6 +134,8 @@ namespace WinUIBuild
                 Pad(writer);
                 writer.Write(value);
                 cursor = Align(cursor);
+                bool hasComments = false;
+                const string commentsKey = "Comments\0";
                 while (cursor + 6 <= end)
                 {
                     int childLength = BitConverter.ToUInt16(data, cursor);
@@ -133,9 +143,26 @@ namespace WinUIBuild
                     {
                         throw new InvalidDataException("Invalid VERSIONINFO child.");
                     }
+                    hasComments |= childLength >= 6 + commentsKey.Length * 2 &&
+                        Encoding.Unicode.GetString(data, cursor + 6, commentsKey.Length * 2) == commentsKey;
                     Pad(writer);
-                    writer.Write(RewriteBlock(data, cursor, version, high, low));
+                    writer.Write(RewriteBlock(data, cursor, version, high, low, sourceRevision));
                     cursor = Align(cursor + childLength);
+                }
+                uint stringTable;
+                if (!String.IsNullOrEmpty(sourceRevision) && !hasComments && key.Length == 8 &&
+                    UInt32.TryParse(key, System.Globalization.NumberStyles.HexNumber,
+                        System.Globalization.CultureInfo.InvariantCulture, out stringTable))
+                {
+                    Pad(writer);
+                    byte[] commentKey = Encoding.Unicode.GetBytes(commentsKey);
+                    byte[] commentValue = Encoding.Unicode.GetBytes("SourceRevision=" + sourceRevision + "\0");
+                    writer.Write(checked((ushort)(Align(6 + commentKey.Length) + commentValue.Length)));
+                    writer.Write(checked((ushort)(commentValue.Length / 2)));
+                    writer.Write((ushort)1);
+                    writer.Write(commentKey);
+                    Pad(writer);
+                    writer.Write(commentValue);
                 }
                 ushort length = checked((ushort)stream.Length);
                 stream.Position = 0;
@@ -145,6 +172,11 @@ namespace WinUIBuild
         }
 
         public static void Set(string path, string version)
+        {
+            Set(path, version, null);
+        }
+
+        public static void Set(string path, string version, string sourceRevision)
         {
             string[] parts = version.Split('.');
             ushort[] numbers = Array.ConvertAll(parts, part => ushort.Parse(part, System.Globalization.CultureInfo.InvariantCulture));
@@ -176,7 +208,7 @@ namespace WinUIBuild
                     }
                     byte[] data = new byte[checked((int)SizeofResource(module, resource))];
                     Marshal.Copy(address, data, 0, data.Length);
-                    resources.Add(language, RewriteBlock(data, 0, version, high, low));
+                    resources.Add(language, RewriteBlock(data, 0, version, high, low, sourceRevision));
                 }
             }
             finally
@@ -218,7 +250,7 @@ namespace WinUIBuild
 }
 
 $resolvedPath = (Resolve-Path -LiteralPath $Path).ProviderPath
-[WinUIBuild.LocalizedVersionResource]::Set($resolvedPath, $Version)
+[WinUIBuild.LocalizedVersionResource]::Set($resolvedPath, $Version, $SourceRevision)
 $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($resolvedPath)
 $versions = @(
     (@($info.FileMajorPart, $info.FileMinorPart, $info.FileBuildPart, $info.FilePrivatePart) -join '.'),
@@ -229,6 +261,10 @@ $versions = @(
 if (@($versions | Where-Object { $_ -cne $Version }).Count -gt 0)
 {
     throw "Failed to stamp all native version fields in '$resolvedPath' with '$Version': $($versions -join '; ')"
+}
+if ($SourceRevision -and $info.Comments -cne "SourceRevision=$SourceRevision")
+{
+    throw "Failed to stamp the source revision in '$resolvedPath'."
 }
 
 return 0
