@@ -39,7 +39,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     class SpecialTreeViewNode : TreeViewNode { }
 
     [TestClass]
-    public class TreeViewTests : ApiTestBase
+    public partial class TreeViewTests : ApiTestBase
     {
         // Scenario: Detached TreeViewNodes (no TreeView): Children.Add/Insert/RemoveAt on a parent node.
         // Expected: HasChildren (+DP) false at first; Parent/Count/order/Depth update (child 0, removed -1);
@@ -2778,6 +2778,139 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        // Scenario: Content mode whose child collections the TreeView cannot write node moves back to
+        //   (IObservableVector<object> without IBindableVector, as in C++/WinRT apps). As drops do, move a0 from A to the
+        //   expanded B, and a1 from A to C, which has no child collection, and expand C; the empty A collapses. Then scroll
+        //   A, B and C out of view and back, so that containers that showed other rows are prepared for them during
+        //   layout. Then set a new collection on B's container.
+        // Expected: Scrolling adds no rows and changes no children: A stays empty, a0 stays under B and a1 under C, and
+        //   the rows match the nodes. The new collection replaces B's children.
+        // Failure means: Preparing a container made TreeViewNode::ItemsSource rebuild the node's children from the
+        //   collection (or null) that the node already had. That undoes the moves (duplicate or missing rows) and changes
+        //   the list's items during layout, which can crash the list.
+        [TestMethod]
+        public void TreeViewContentModeKeepsMovedNodesWhenContainersAreRecycled()
+        {
+            string fillerRows = String.Join(",", Enumerable.Range(0, 100).Select(i => "F" + i));
+            string expectedRows = "P,A,B,a0,b0,C,a1," + fillerRows;
+            TreeView treeView = null;
+            ScrollViewer scrollViewer = null;
+            TreeViewNode nodeA = null, nodeB = null, nodeC = null, nodeA0 = null, nodeA1 = null;
+            DependencyObject[] originalContainers = null;
+            FlatListRecorder recorder = null;
+
+            void ScrollTo(bool end)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, end ? scrollViewer.ScrollableHeight : 0, null, true);
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var a = new VectorOnlyItem("A", new VectorOnlyItem("a0"), new VectorOnlyItem("a1"));
+                    var b = new VectorOnlyItem("B", new VectorOnlyItem("b0"));
+                    var c = new VectorOnlyItem("C") { Children = null };
+                    // P comes first because the list can keep the first row's container. 100 rows after A, B and C in a
+                    // 200 px high TreeView, so that scrolling to the end reuses their containers.
+                    var items = new[] { new VectorOnlyItem("P"), a, b, c }.Concat(Enumerable.Range(0, 100).Select(i => new VectorOnlyItem("F" + i)));
+                    treeView = (TreeView)XamlReader.Load(@"
+                        <TreeView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='400' Height='200'>
+                            <TreeView.ItemTemplate>
+                                <DataTemplate>
+                                    <TreeViewItem ItemsSource='{Binding Children}' Content='{Binding Content}'/>
+                                </DataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>");
+                    treeView.ItemsSource = new VectorOnlyCollection(items);
+                    // Focus stays out of the TreeView, because the list keeps the focused item's container.
+                    var focusTarget = new Button() { Content = "Focus" };
+                    Content = new StackPanel() { Children = { focusTarget, treeView } };
+                    Content.UpdateLayout();
+                    Verify.IsTrue(focusTarget.Focus(FocusState.Programmatic), "The button outside the TreeView takes focus");
+                    scrollViewer = VisualTreeUtils.FindVisualChildByName(treeView, "ListControl").FindVisualChildByType<ScrollViewer>();
+                    nodeA = treeView.RootNodes[1];
+                    nodeB = treeView.RootNodes[2];
+                    nodeC = treeView.RootNodes[3];
+                    nodeA0 = nodeA.Children[0];
+                    nodeA1 = nodeA.Children[1];
+                    recorder = new FlatListRecorder(treeView);
+
+                    recorder.VerifyEdit("Expand A and B", () => { treeView.Expand(nodeA); treeView.Expand(nodeB); }, "+2,+3,+5", "P,A,a0,a1,B,b0,C," + fillerRows);
+                    recorder.VerifyEdit("Move a0 from A to B", () =>
+                    {
+                        nodeA.Children.RemoveAt(0);
+                        nodeB.Children.Insert(0, nodeA0);
+                    }, "-2,+4", "P,A,a1,B,a0,b0,C," + fillerRows);
+                    recorder.VerifyEdit("Move a1 from A to C, and expand C", () =>
+                    {
+                        nodeA.Children.RemoveAt(0);
+                        nodeC.Children.Insert(0, nodeA1);
+                        treeView.Expand(nodeC);
+                    }, "-2,+6", expectedRows);
+                    Verify.IsFalse(nodeA.IsExpanded, "Removing its last child collapses A");
+                    Verify.AreEqual("a0,a1", DescribeItems(a.Children), "Precondition: the moves are not written back to A's children");
+                    Verify.AreEqual("b0", DescribeItems(b.Children), "Precondition: the move is not written back to B's children");
+                    originalContainers = new[] { nodeA, nodeB, nodeC }.Select(node => treeView.ContainerFromNode(node)).ToArray();
+                });
+                IdleSynchronizer.Wait();
+
+                ScrollTo(end: true);
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var node in new[] { nodeA, nodeB, nodeC })
+                    {
+                        Verify.IsNull(treeView.ContainerFromNode(node), DescribeItem(node) + " has no container");
+                    }
+                    Verify.IsTrue(originalContainers.Any(container => DescribeItem(treeView.NodeFromContainer(container)).StartsWith("F")),
+                        "A container that showed A, B or C now shows another row");
+                });
+
+                ScrollTo(end: false);
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var node in new[] { nodeA, nodeB, nodeC })
+                    {
+                        Verify.IsNotNull(treeView.ContainerFromNode(node), DescribeItem(node) + " is shown again");
+                    }
+                    Verify.IsFalse(recorder.Events.Any(e => e.StartsWith("+") || e == "reset"),
+                        "Scrolling adds no rows, row events: " + String.Join(",", recorder.Events));
+                    recorder.VerifyRowsMatchTree("Scroll A, B and C out of view and back");
+                    Verify.AreEqual(0, nodeA.Children.Count, "A has no children");
+                    Verify.AreEqual("a0,b0", DescribeItems(nodeB.Children), "B's children");
+                    Verify.AreSame(nodeA0, nodeB.Children[0], "a0 is the moved node");
+                    Verify.AreEqual("a1", DescribeItems(nodeC.Children), "C's children");
+                    Verify.AreSame(nodeA1, nodeC.Children[0], "a1 is the moved node");
+
+                    // Containers created during the scroll can collapse B and C, so expand them again before checking the rows.
+                    recorder.Dispose();
+                    recorder = null;
+                    treeView.Expand(nodeB);
+                    treeView.Expand(nodeC);
+                    Content.UpdateLayout();
+                    recorder = new FlatListRecorder(treeView);
+                    Verify.AreEqual(expectedRows, recorder.Rows, "Rows with B and C expanded");
+
+                    ((TreeViewItem)treeView.ContainerFromNode(nodeB)).ItemsSource = new VectorOnlyCollection(new[] { new VectorOnlyItem("b1") });
+                    Content.UpdateLayout();
+                    recorder.VerifyRowsMatchTree("Set a new collection on B's container");
+                    Verify.AreEqual("b1", DescribeItems(nodeB.Children), "B's children are the new collection's items");
+                    Verify.IsNull(nodeA0.Parent, "a0 is no longer under B");
+                    Verify.AreEqual("P,A,B,b1,C,a1," + fillerRows, recorder.Rows, "Rows after the new collection");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => recorder?.Dispose());
+                IdleSynchronizer.Wait();
+            }
+        }
+
         // Collapsing R while A1 has focus moves focus through B to Q, the first row after the collapsed rows.
         [TestMethod]
         public void TreeViewCollapseMovesFocusToTheRowAfterTheCollapsedRows()
@@ -3063,6 +3196,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return String.Join(",", items.Select(DescribeItem));
         }
 
+        // A content mode data item whose children are in a VectorOnlyCollection.
+        public sealed class VectorOnlyItem
+        {
+            public VectorOnlyItem(string content, params VectorOnlyItem[] children)
+            {
+                Content = content;
+                Children = new VectorOnlyCollection(children);
+            }
+
+            public string Content { get; }
+            public VectorOnlyCollection Children { get; set; }
+
+            public override string ToString() => Content;
+        }
+
+        // An IObservableVector<object> that is not a System.Collections.IList, so it is not an IBindableVector, like the
+        // collections of C++/WinRT apps. The TreeView writes node edits back only to an IBindableVector. It never changes.
+        public sealed partial class VectorOnlyCollection : IObservableVector<object>
+        {
+            private readonly List<object> m_items;
+
+            public VectorOnlyCollection(IEnumerable<object> items)
+            {
+                m_items = new List<object>(items);
+            }
+
+            // Never raised, because the collection never changes.
+            public event VectorChangedEventHandler<object> VectorChanged { add { } remove { } }
+
+            public object this[int index] { get => m_items[index]; set => throw new NotSupportedException(); }
+            public int Count => m_items.Count;
+            public bool IsReadOnly => true;
+            public void Add(object item) => throw new NotSupportedException();
+            public void Clear() => throw new NotSupportedException();
+            public bool Contains(object item) => m_items.Contains(item);
+            public void CopyTo(object[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+            public IEnumerator<object> GetEnumerator() => m_items.GetEnumerator();
+            global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => m_items.GetEnumerator();
+            public int IndexOf(object item) => m_items.IndexOf(item);
+            public void Insert(int index, object item) => throw new NotSupportedException();
+            public bool Remove(object item) => throw new NotSupportedException();
+            public void RemoveAt(int index) => throw new NotSupportedException();
+        }
+
         // Records the flat list's row events as "+i", "-i", "=i" or "reset", and replays each one on a copy. The list
         // control applies each event when it is raised, so the copy must match the rows after every event.
         private sealed class FlatListRecorder : IDisposable
@@ -3083,6 +3260,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             public string Rows => DescribeItems(ReadList());
+
+            // The row events since the last VerifyEdit.
+            public IReadOnlyList<string> Events => m_events;
 
             public void Dispose()
             {

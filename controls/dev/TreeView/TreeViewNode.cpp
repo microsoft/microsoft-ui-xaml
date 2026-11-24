@@ -155,6 +155,14 @@ winrt::IInspectable TreeViewNode::ItemsSource()
 
 void TreeViewNode::ItemsSource(winrt::IInspectable const& value)
 {
+    // A recycled container can pass the source (or null) that this node already has while the list is in layout.
+    // Rebuilding the children then would change rows during layout and undo node moves that weren't written back to
+    // the source.
+    if (value == m_itemsSource.get())
+    {
+        return;
+    }
+
     m_itemItemsSourceViewChangedRevoker.revoke();
     m_itemsSource.set(value);
     m_itemsDataSource = value ? winrt::ItemsSourceView(value) : nullptr;
