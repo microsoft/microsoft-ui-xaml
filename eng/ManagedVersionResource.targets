@@ -1,0 +1,168 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project>
+  <UsingTask TaskName="WriteWindowsAppSDKManagedVersionResource"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <BinaryVersion Required="true" />
+      <SourcePath Required="true" />
+      <ResourcePath Required="true" />
+      <OriginalFileName Required="true" />
+      <AssemblyVersion />
+      <IsExecutable ParameterType="System.Boolean" />
+      <FileDescription />
+      <Company />
+      <Product />
+      <Copyright />
+      <Trademark />
+      <Description />
+      <ManifestPath />
+      <IconPath />
+      <WindowsSdkDirectory />
+      <ResourceChanged ParameterType="System.Boolean" Output="true" />
+      <ResourceCompiler Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        Func<string, string> escape = value => (value ?? "").Replace("\\", "\\\\")
+            .Replace("\"", "\"\"").Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", "\\t");
+        var source = new StringBuilder();
+        source.AppendLine("LANGUAGE 0, 0");
+        source.AppendLine("1 VERSIONINFO");
+        source.AppendLine("FILEVERSION " + BinaryVersion.Replace('.', ','));
+        source.AppendLine("PRODUCTVERSION " + BinaryVersion.Replace('.', ','));
+        source.AppendLine("FILEFLAGSMASK 0x3fL\nFILEFLAGS 0\nFILEOS 0x4L");
+        source.AppendLine("FILETYPE " + (IsExecutable ? "1" : "2"));
+        source.AppendLine("FILESUBTYPE 0\nBEGIN\n BLOCK \"StringFileInfo\"\n BEGIN\n  BLOCK \"000004b0\"\n  BEGIN");
+        foreach (var field in new Dictionary<string, string> {
+            { "FileVersion", BinaryVersion }, { "ProductVersion", BinaryVersion },
+            { "OriginalFilename", OriginalFileName },
+            { "InternalName", OriginalFileName }, { "Assembly Version", AssemblyVersion },
+            { "FileDescription", String.IsNullOrEmpty(FileDescription) ? " " : FileDescription }, { "CompanyName", Company },
+            { "ProductName", Product }, { "LegalCopyright", String.IsNullOrEmpty(Copyright) ? " " : Copyright },
+            { "LegalTrademarks", Trademark }, { "Comments", Description }
+        })
+        {
+            source.AppendLine("   VALUE \"" + field.Key + "\", \"" + escape(field.Value) + "\\0\"");
+        }
+        source.AppendLine("  END\n END\n BLOCK \"VarFileInfo\"\n BEGIN\n  VALUE \"Translation\", 0, 1200\n END\nEND");
+        if (!String.IsNullOrEmpty(ManifestPath))
+            source.AppendLine((IsExecutable ? "1" : "2") + " 24 \"" + escape(ManifestPath) + "\"");
+        if (!String.IsNullOrEmpty(IconPath))
+            source.AppendLine("32512 ICON \"" + escape(IconPath) + "\"");
+
+        var text = source.ToString();
+        ResourceChanged = !File.Exists(ResourcePath) || !File.Exists(SourcePath) ||
+            File.ReadAllText(SourcePath) != text;
+        foreach (var input in new[] { ManifestPath, IconPath })
+        {
+            if (!String.IsNullOrEmpty(input))
+            {
+                if (!File.Exists(input))
+                    throw new FileNotFoundException("Managed Win32 resource input was not found.", input);
+                ResourceChanged |= File.GetLastWriteTimeUtc(input) > File.GetLastWriteTimeUtc(ResourcePath);
+            }
+        }
+        if (ResourceChanged)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(SourcePath));
+            File.WriteAllText(SourcePath, text, Encoding.Unicode);
+            ResourceCompiler = "rc.exe";
+            var sdkRoot = String.IsNullOrEmpty(WindowsSdkDirectory)
+                ? Microsoft.Build.Utilities.ToolLocationHelper.GetPlatformSDKLocation("Windows", "10.0")
+                : WindowsSdkDirectory;
+            var sdkBin = Path.Combine(sdkRoot ?? "", "bin");
+            if (Directory.Exists(sdkBin))
+            {
+                var architecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+                architecture = String.Equals(architecture, "ARM64", StringComparison.OrdinalIgnoreCase)
+                    ? "arm64" : (Environment.Is64BitProcess ? "x64" : "x86");
+                foreach (var directory in Directory.GetDirectories(sdkBin)
+                    .Where(path => { Version version; return Version.TryParse(Path.GetFileName(path), out version); })
+                    .OrderByDescending(path => Version.Parse(Path.GetFileName(path))))
+                {
+                    var compiler = Path.Combine(directory, architecture, "rc.exe");
+                    if (File.Exists(compiler))
+                    {
+                        ResourceCompiler = compiler;
+                        break;
+                    }
+                }
+            }
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="GenerateWindowsAppSDKManagedVersionResource"
+          BeforeTargets="CoreCompile"
+          DependsOnTargets="GenerateAssemblyInfo"
+          Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WindowsAppSDKBinaryVersion)' != ''">
+    <Error Condition="'$(Win32Resource)' != ''"
+           Text="Cannot replace an existing Win32Resource when applying the shared managed delivery version." />
+    <PropertyGroup>
+      <_WindowsAppSDKManagedVersionResource>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', '$(MSBuildProjectName).Version.res'))</_WindowsAppSDKManagedVersionResource>
+      <_WindowsAppSDKManagedVersionSource>$([System.IO.Path]::ChangeExtension('$(_WindowsAppSDKManagedVersionResource)', '.rc'))</_WindowsAppSDKManagedVersionSource>
+      <_WindowsAppSDKIsExecutable>false</_WindowsAppSDKIsExecutable>
+      <_WindowsAppSDKIsExecutable Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_WindowsAppSDKIsExecutable>
+      <_WindowsAppSDKOriginalManifest>$(Win32Manifest)</_WindowsAppSDKOriginalManifest>
+      <_WindowsAppSDKOriginalIcon>$(ApplicationIcon)</_WindowsAppSDKOriginalIcon>
+      <_WindowsAppSDKOriginalNoManifest>$(NoWin32Manifest)</_WindowsAppSDKOriginalNoManifest>
+      <_WindowsAppSDKResourceManifest>$(Win32Manifest)</_WindowsAppSDKResourceManifest>
+      <_WindowsAppSDKResourceManifest Condition="'$(_WindowsAppSDKResourceManifest)' == ''">$(ApplicationManifest)</_WindowsAppSDKResourceManifest>
+      <_WindowsAppSDKResourceManifest Condition="'$(_WindowsAppSDKResourceManifest)' == '' and '$(_WindowsAppSDKIsExecutable)' == 'true'">$(EmbeddedWin32Manifest)</_WindowsAppSDKResourceManifest>
+    </PropertyGroup>
+    <GetFrameworkPath Condition="'$(_WindowsAppSDKResourceManifest)' == '' and '$(_WindowsAppSDKIsExecutable)' == 'true' and '$(NoWin32Manifest)' != 'true'">
+      <Output TaskParameter="FrameworkVersion40Path" PropertyName="_WindowsAppSDKFrameworkPath" />
+    </GetFrameworkPath>
+    <PropertyGroup>
+      <_WindowsAppSDKFrameworkPath Condition="'$(_WindowsAppSDKFrameworkPath)' == ''">$(SystemRoot)\Microsoft.NET\Framework\v4.0.30319</_WindowsAppSDKFrameworkPath>
+      <_WindowsAppSDKResourceManifest Condition="'$(_WindowsAppSDKResourceManifest)' == '' and '$(_WindowsAppSDKIsExecutable)' == 'true' and '$(NoWin32Manifest)' != 'true'">$(_WindowsAppSDKFrameworkPath)\default.win32manifest</_WindowsAppSDKResourceManifest>
+      <_WindowsAppSDKResourceManifest Condition="'$(NoWin32Manifest)' == 'true'"></_WindowsAppSDKResourceManifest>
+      <_WindowsAppSDKResourceManifest Condition="'$(_WindowsAppSDKResourceManifest)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(_WindowsAppSDKResourceManifest)'))</_WindowsAppSDKResourceManifest>
+      <_WindowsAppSDKResourceIcon Condition="'$(ApplicationIcon)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(ApplicationIcon)'))</_WindowsAppSDKResourceIcon>
+    </PropertyGroup>
+    <WriteWindowsAppSDKManagedVersionResource
+        BinaryVersion="$(WindowsAppSDKBinaryVersion)"
+        SourcePath="$(_WindowsAppSDKManagedVersionSource)"
+        ResourcePath="$(_WindowsAppSDKManagedVersionResource)"
+        OriginalFileName="$(TargetFileName)"
+        AssemblyVersion="$(AssemblyVersion)"
+        IsExecutable="$(_WindowsAppSDKIsExecutable)"
+        FileDescription="$(AssemblyTitle)"
+        Company="$(Company)" Product="$(Product)" Copyright="$(Copyright)"
+        Trademark="$(Trademark)" Description="$(Description)"
+        ManifestPath="$(_WindowsAppSDKResourceManifest)" IconPath="$(_WindowsAppSDKResourceIcon)"
+        WindowsSdkDirectory="$(WindowsSdkDir)">
+      <Output TaskParameter="ResourceChanged" PropertyName="_WindowsAppSDKManagedResourceChanged" />
+      <Output TaskParameter="ResourceCompiler" PropertyName="_WindowsAppSDKResourceCompiler" />
+    </WriteWindowsAppSDKManagedVersionResource>
+    <Exec Condition="'$(_WindowsAppSDKManagedResourceChanged)' == 'true'"
+          Command="&quot;$(_WindowsAppSDKResourceCompiler)&quot; /nologo /fo &quot;$(_WindowsAppSDKManagedVersionResource)&quot; &quot;$(_WindowsAppSDKManagedVersionSource)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(_WindowsAppSDKManagedVersionSource);$(_WindowsAppSDKManagedVersionResource)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <Win32Resource>$(_WindowsAppSDKManagedVersionResource)</Win32Resource>
+      <!-- The manifest and icon are already included in the explicit resource. -->
+      <Win32Manifest></Win32Manifest>
+      <ApplicationIcon></ApplicationIcon>
+      <NoWin32Manifest></NoWin32Manifest>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="RestoreWindowsAppSDKManagedResourceInputs"
+          AfterTargets="CoreCompile"
+          Condition="'$(_WindowsAppSDKManagedVersionResource)' != ''">
+    <PropertyGroup>
+      <Win32Resource></Win32Resource>
+      <Win32Manifest>$(_WindowsAppSDKOriginalManifest)</Win32Manifest>
+      <ApplicationIcon>$(_WindowsAppSDKOriginalIcon)</ApplicationIcon>
+      <NoWin32Manifest>$(_WindowsAppSDKOriginalNoManifest)</NoWin32Manifest>
+    </PropertyGroup>
+  </Target>
+</Project>
