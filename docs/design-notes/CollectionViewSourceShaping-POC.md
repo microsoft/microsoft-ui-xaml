@@ -892,11 +892,12 @@ group, k = items a live tick changed.
 | Full recompute (sort) | O(n·f) reads + O(m log m) compares, each re-decoding both keys (2 QIs, 2 `HSTRING` copies, `CompareStringEx`) | O(n·f) reads, each decoded once into a typed key (`LCMAP_SORTKEY` bytes for a string, exact integer, double, ticks) + O(m log m) `memcmp` or integer compares |
 | Full recompute (grouping) | O(m·L·G) `NamesMatch` + every ancestor inserts each leaf mid-vector | O(m·L) hashed group lookups (a key per `StringComparison`: ordinal, invariant uppercase or the culture's sort key; a scalar's value; an object's identity), leaves appended to bottom groups, then each ancestor collects its leaves once |
 | New group with group `SortDescriptions` on `Key`/`Name` | O(G) compares, 2 property reads each | O(log G) compares on keys read when the group was created (other paths, such as `ItemCount`, are still read at each compare, as in WPF) |
-| Flat `Add` / `Remove` / `Replace` | O(n) scans + O(log m) compares reading the other item's keys + the vector shifts | the same scans and shifts, O(log m) compares on cached keys, no comparer rebuilt per change, no scan for an `Add` |
+| Flat `Add` / `Remove` / `Replace` | O(n) scans + O(log m) compares reading the other item's keys + the vector shifts | the same scans, O(log m) compares on cached keys, no comparer rebuilt per change, no scan for an `Add`; batch 6: the presented list shifts 4-byte slot numbers, not tracker pointers (see below) |
 | Grouped `Add` / `Remove` / `Replace` | O(n) leaf search + O(L·G) `NamesMatch` | O(1) bottom group by source index + O(g) in it, O(L) hashed lookups; O(n) source-index shift |
 | Group lookup, custom `GroupDescription` (batch 4) | O(G) `NamesMatch` calls per item and level (the ABI hop each time) | the name hashed as the default `NamesMatch` compares it (ordinal) and one `NamesMatch` call to confirm; a miss (a new group, or an override that matches more names than the default) scans the subgroups with `NamesMatch`, as WPF always does: O(m + G²) calls for a load instead of O(m·G) |
 | Live tick, k changed items (batch 4) | O(n + k·(m + log m compares)), two changes per move; one `Reset` past fixed thresholds (k ≥ 80% of n, or n ≥ 1024 and k ≥ n/8, flat k ≥ 256) | k moves while they cost less than twice a `Reset` or 50 ms; else a flat view re-sorts on cached keys (only the k items are read), finds the longest run still in order (O(m log m)) and raises a move for each other item, or one `Reset` if those cost more; a grouped view recomputes; a source change while an edit waits is applied incrementally |
 | `Refresh` with live shaping on | n·p listeners torn down and recreated | kept when the live properties and the items are unchanged |
+| Live shaping setup, p live properties (batch 6) | n·p property path listeners (a listener, its step, a property access and a `PropertyChanged` handler each) | n `PropertyChanged` handlers and n tracked references for the plain property names on `INotifyPropertyChanged` items; a listener per item and path only for a dotted or indexed path, a `DependencyObject`, a map or a collection view |
 | TableView tree, one view change | every row's key and parent key read (app code) + O(n) rebuild + `Reset` | batch 3: only the rows the change brought in are read + O(n) native rebuild, published as a splice; batch 5: an `Insert`, `Remove` or `Replace` reads the one row's keys and updates the index and rows in place: O(siblings) to place it plus O(rows) scans of native pointers to find its row, no rebuild |
 
 Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`; run them with `te.exe ...
@@ -923,7 +924,8 @@ Measured with `CollectionViewPerfBenchmarks` (TableView API tests, `Ignore=True`
 Each number is one run (the sorts are the median of three); the 100k live ticks vary with garbage collection of the
 earlier scenarios' rows (the grouped 1,000-edit tick took 63 ms in two runs and 1,424 ms in a third, on the same
 code path). The chk build is not a reference: its tracker-pointer registry (`ReferenceTrackerManager::m_allTrackerPtrs`, DBG
-only) makes every tracker pointer release O(all tracker pointers), so 100k live listeners took 20 minutes there.
+only) makes every tracker pointer release O(all tracker pointers), so 100k live listeners took 20 minutes there. Batch 6 makes that registry a hash set (DBG only), which was
+also why creating small live views in the chk teardown benchmark took 1.3–1.9 s each (see "Batch 6" below).
 
 Batch 4 (same harness and VM, `7c7446b` vs batch 4, no other build on the host; milliseconds; "moves" or "Reset" is
 what the tick raised):
@@ -944,13 +946,14 @@ for 1,000 groups). Other rows are unchanged within run-to-run noise (±15%); the
 
 What is still O(n) per change, and why it stays for now:
 
-- **The presented vector shifts.** The view's output (`InternalList`) is a `TrackerCollection`; inserting or
-  removing an item moves every later element, and each `TrackerPtr` move takes the reference lock
-  (`TrackerTargetReference::Assign`), about 1 ms per change at 100k items (fre). That, not the position lookup,
-  is what a live move costs on a large flat view, so an order-statistic index (WPF's `LiveShapingTree`) alone would
-  not help. The fix is a presented list whose storage does not move tracker pointers (a node-based or
-  relocation-aware `TrackerPtrVector`); it touches the shared collection base, so it is a follow-up. Until then a
-  large tick that moves many items is one `Reset` (see "Live shaping" for the cost model).
+- **The presented list's integer arrays shift.** Since batch 6 the view's output (`InternalList`, and each group's
+  leaves) keeps each item's `TrackerPtr` in a slot that does not move while the item stays, with the order as a
+  vector of slot numbers (`StableTrackerPtrVector`, see "Batch 6"). An insert or a remove still moves the later
+  entries of three integer arrays (the order, the source indices and the sort key slots) and scans the source
+  indices: O(n) memory moves of 4-byte values, about 2 ns a row, not O(n) lock-taking `TrackerPtr` moves. A live move
+  is therefore O(n) with a small constant, plus O(log m) compares. An order-statistic tree (WPF's
+  `LiveShapingTree`) would make it O(log n), but at 100k rows the integer moves (~0.1–0.2 ms) are already below the
+  cost of raising the two changes and of the consumers' handling of them, so it is not done.
 - **Source index shifts.** A source insert or remove renumbers the later source indices (a scan of n integers).
 - **TableView's tree** applies a single row's change in place (batch 5) but still finds the row with a linear scan of
   its visible rows and renumbers the sibling positions it shows (a few ms at 100k rows). Per-sibling visible-subtree
@@ -958,7 +961,7 @@ What is still O(n) per change, and why it stays for now:
   `Reset` and the other cases in "Tree" above still rebuild (about 0.5 s at 100k rows). A node expand or collapse
   splices up to 64 rows per toggle (WinRT vector changes have no ranges) and otherwise raises one `Reset`.
 - Each item still costs one property read per sort field, group level and live property on a full recompute, and
-  one listener per live property and item, as in WPF.
+  one observer per item (a listener per item and path for paths that are not a plain name; WPF binds each).
 
 Batch 5 (TableView tree, `38c2a7b` vs the incremental index, same harness; n/10 roots with nine children each,
 sorted view, every row expanded; "through the turn" includes work deferred to the end of the dispatcher turn):
@@ -973,8 +976,58 @@ sorted view, every row expanded; "through the turn" includes work deferred to th
 | Expand all | 19.4 | 18.5 | 152 | 147 |
 | Collapse all | 7.7 | 7.9 | 51 | 50 |
 
-Load and expand-all build the index once and are unchanged; where their time goes (the sort, the first key reads,
-the rows' layout) has not been profiled yet.
+Load and expand-all build the index once and were unchanged by batch 5.
+
+Batch 6 (code complete, not yet measured; the expected effect is stated, and the benchmarks above are the ones to rerun:
+`BenchIncrementalChanges`, `BenchLiveSortingTick` including its new `LiveFlat.Create` / `LiveGrouped100.Create`,
+`BenchTree`, and `BenchTeardown` on fre and chk):
+
+- **Slow live view creation (chk).** `BenchTeardown` created a grouped, live-sorted, live-grouped view over 60 rows
+  in 1.3–1.9 s, and non-live views got slower the more were alive (19 ms each for 100 views, 87 ms for 1,600). The
+  runs were amd64**chk**. In DBG builds every `TrackerPtr` a `WeakReferenceSource` owns registers in
+  `ReferenceTrackerManager::m_allTrackerPtrs` (for the "every tracker pointer is walked" validation), which was a
+  sorted `vector_set` shrunk to fit on every erase: each registration and unregistration moved or reallocated the
+  whole registry, O(all tracker pointers alive). A live item cost p property path listeners, each with several
+  registered tracker pointers, so a live view's creation paid that O(N) dozens of times per row. Fix: the registry
+  is a hash set (O(1); DBG only, no fre change), and a live item creates far fewer tracker pointers (next item).
+  Expected: chk creation per view in the low milliseconds and flat in the number of views alive; fre unchanged
+  by the registry.
+- **P-4, one `PropertyChanged` handler per item.** A live property that is a plain name (no `.`, indexer or
+  attached property) on an `INotifyPropertyChanged` item that is not a `DependencyObject`, a map or a collection view
+  is followed by one handler per item for all such properties, matching the name ordinally and treating a null or
+  empty name as every property, exactly as the listener's `INPCListenerBase` does. The item is held by one tracked
+  reference the view walks, as the listener held it. Other paths and items keep a listener per path. Expected:
+  setup allocates one handler instead of p listeners (each a listener, a step, a property access and a handler) per
+  item; for the teardown benchmark's three live properties, about 3× fewer `PropertyChanged` subscriptions and
+  ~10× fewer tracker pointers. WPF binds each `LiveShapingItem` to each live property; here the binding engine's
+  per-path machinery is not needed for a plain name, so it is not used.
+- **P-2, presented-list storage.** `TrackerCollection` takes its storage as a template parameter (default
+  `TrackerPtrVector`, so every other collection is unchanged). The view's lists use `StableTrackerPtrVector`: the
+  `TrackerPtr`s live in a `TrackerPtrVector` that only grows at its end (an item keeps its slot until it leaves; a
+  freed slot is reused), and the list order is a `std::vector<UINT>` of slots. `GetAt` is one more index; the
+  reference tracker walk walks the slots (a free slot is empty), under the same lock as before; the order is not
+  read by the walk, so it changes without the lock. Chosen over a chunked or gap buffer of `TrackerPtr`s because
+  those still move tracker pointers (a gap buffer moves O(distance) per edit, a chunked list O(chunk)), and over
+  making `TrackerPtrVector` itself relocate cheaply because that changes a lifetime primitive every collection in
+  the framework uses. Expected: a flat `Add`/`Remove`/`Replace` at 100k from ~1.4 ms to ~0.1–0.2 ms (what is left
+  is the integer scans and moves above and raising the change); a live move likewise; a grouped change no longer
+  moves its group's tracker pointers. The live restore's cost model (`c_nsPerShiftedRow`, 14 → 2 ns) prefers moves
+  over a `Reset` for about 7× more rows; it is an estimate to recalibrate from the new numbers.
+- **P-5.** The tracker shift it listed is gone (P-2). The flat `std::find`, the source-index renumbering and burst
+  coalescing are not changed: they are integer scans, and coalescing changes the notifications (out of scope).
+- **TableView tree load.** Every row's `ItemKeyPath` and `ParentKeyPath` are read through a one-time `{Binding}`
+  (`SortMemberPathResolver`), which set the probe's `DataContext` to the row and then back to null, and a load read
+  every key twice: once to validate the relation (`SetHierarchy`) and again, with the key cache just cleared, to
+  build it. Now the validation's reads fill the key cache the build uses, and the probe's `DataContext` is cleared
+  once on the next dispatcher turn instead of after each read (the same row twice in a row is still re-read through
+  a null `DataContext`, so an edited key is seen). Expected: a quarter of the binding evaluations at load (4n
+  instead of 8n `DataContext` writes for n rows); if those dominate, as their count suggests, the 8.4 s load at
+  100k should drop to roughly 2–3 s, the rest being the view's sort, the index build and the first layout.
+- **Tree rebuild and expand-all.** A rebuild no longer builds the node-key index eagerly (it is built on first use,
+  as after a splice), no longer collects every key into a set to prune expansion intent when no key differs from
+  the default (a load, after expand-all or collapse-all), and skips the context-key and intent lookups when those
+  sets are empty. Expected: expand-all at 100k somewhat below its 147 ms (one hash map of n `hstring`s and n
+  lookups fewer); the per-row `hstring` and `NodeRow` are unchanged.
 
 ## Out of scope for the POC
 
@@ -1046,7 +1099,8 @@ the rows' layout) has not been profiled yet.
   published at the end of the dispatcher turn, so for that turn the rows, selection and UIA may still show it.
 - **Feature gate in tests.** The new test assumes `Feature_ExperimentalApi` is enabled in the test configuration,
   like other experimental-API tests (for example `GridViewIntegrationTests.cpp:573`).
-- **Live shaping cost and lifetime.** One property path listener per source item and live property. A full
+- **Live shaping cost and lifetime.** One `PropertyChanged` handler per `INotifyPropertyChanged` source item for its
+  plain live property names, and one property path listener per item and other live path (batch 6). A full
   recompute (a header sort, `Refresh()`) keeps them when the live properties and the source items are unchanged; a
   source `Reset` or a new live property list rebuilds them. The view walks them (and a group walks its key and
   its `PropertyChanged` handlers) in its reference tracker walk; they unsubscribe when an item leaves the source,
