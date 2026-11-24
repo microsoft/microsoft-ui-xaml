@@ -243,6 +243,7 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 
     m_customSortComparer = value;
+    UpdateSortKeyGeneration();
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
@@ -272,6 +273,18 @@ winrt::hstring TableViewColumn::GetSortMemberPathCore()
     }
 
     return {};
+}
+
+void TableViewColumn::UpdateSortKeyGeneration()
+{
+    auto const comparer = m_customSortComparer;
+    auto const path = comparer ? winrt::hstring{} : TableViewColumn::GetSortMemberPathCore();
+    if (comparer != m_sortKeyComparer || path != m_sortKeyPath)
+    {
+        m_sortKeyComparer = comparer;
+        m_sortKeyPath = path;
+        ++m_sortKeyGeneration;
+    }
 }
 
 void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
@@ -317,6 +330,7 @@ void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Dat
     }
 
     m_displayMemberBinding.set(value);
+    UpdateSortKeyGeneration();
 
     NotifyCellContentChanged(true /* resetAutoWidth */);
     // The binding path can make the column sortable, which makes its header actionable.
@@ -355,6 +369,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        UpdateSortKeyGeneration();
         // These have no generated change callback: a menu makes cells actionable, a sort key the header.
         if (!m_cellContextFlyoutToken)
         {
@@ -373,6 +388,10 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                     [weakThis = get_weak(), isSortPath = property == s_SortMemberPathProperty](winrt::DependencyObject const&, winrt::DependencyProperty const&)
                     {
                         auto const strongThis = weakThis.get();
+                        if (strongThis && isSortPath)
+                        {
+                            strongThis->UpdateSortKeyGeneration();
+                        }
                         if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
                         {
                             winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();

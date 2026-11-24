@@ -45,6 +45,7 @@ void TableViewSourceSortBinding::Clear()
 {
     MemberPath = {};
     ComparerIdentity = nullptr;
+    SortKeyGeneration = 0;
     AxisToken = {};
     KeySelector = nullptr;
     // Dropped, not reset: the axis left on a source this table no longer owns still ranks through
@@ -422,16 +423,16 @@ void TableView::RecordDeclinedSortKey(const winrt::TableViewColumn& column)
     auto key = EffectiveSortKey(column);
     ForgetDeclinedSortKeys(column);
     DeclinedSortKey declined{ winrt::make_weak(column), std::move(key.MemberPath) };
+    declined.Generation = winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal();
     if (key.Comparer)
     {
-        // A comparer that can't be weakly referenced isn't tracked: it would have to be owned.
         try
         {
             declined.Comparer = winrt::make_weak(key.Comparer);
         }
         catch (...)
         {
-            return;
+            declined.StrongComparer = key.Comparer;
         }
         declined.HasComparer = true;
     }
@@ -448,9 +449,11 @@ bool TableView::IsSortKeyStillDeclined(const winrt::TableViewColumn& column)
     }
 
     auto const key = EffectiveSortKey(column);
-    const bool stillDeclined = it->HasComparer
-        ? key.Comparer && key.Comparer == it->Comparer.get()
-        : !key.Comparer && key.MemberPath == it->MemberPath;
+    const bool stillDeclined =
+        it->Generation == winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal() &&
+        (it->HasComparer
+            ? key.Comparer && key.Comparer == (it->StrongComparer ? it->StrongComparer : it->Comparer.get())
+            : !key.Comparer && key.MemberPath == it->MemberPath);
     if (!stillDeclined)
     {
         m_declinedSortKeys.erase(it);
@@ -497,7 +500,14 @@ bool TableView::SortByColumnInternal(
             {
                 if (sortedColumn == column && sortedColumn.SortDirection() == direction)
                 {
-                    return false;
+                    // Re-sorts in place on a key the installed sort was not built with, e.g. a declined one.
+                    if (m_tableViewSourceSort.AxisToken.empty() ||
+                        m_tableViewSourceSort.AxisToken != GetTableViewSourceSortAxisToken(column, m_tableViewSourceSort.MemberPath) ||
+                        IsSameSortKey(EffectiveSortKey(column), m_tableViewSourceSort.MemberPath, m_tableViewSourceSort.ComparerIdentity))
+                    {
+                        return false;
+                    }
+                    reapply = true;
                 }
             }
         }
@@ -1044,6 +1054,10 @@ bool TableView::SyncTableViewSourceSort(
     else
     {
         m_tableViewSourceSort.AxisToken = sortAxisToken;
+        if (trigger)
+        {
+            m_tableViewSourceSort.SortKeyGeneration = winrt::get_self<TableViewColumn>(trigger)->SortKeyGenerationInternal();
+        }
     }
 
     // The verb mutated the active source in place, so the source lifetime is unchanged - just push
@@ -1519,8 +1533,18 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
     if (declined)
     {
         m_declinedSortKeys.push_back(std::move(*declined));
-        // A key change while detached reached no table.
-        IsSortKeyStillDeclined(column);
+    }
+
+    // A key change while detached reached no table: apply it on the next turn, unless still declined.
+    if (IsSortKeyStillDeclined(column) || m_tableViewSourceSort.AxisToken.empty())
+    {
+        return;
+    }
+    if (winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal() != m_tableViewSourceSort.SortKeyGeneration ||
+        !IsSameSortKey(EffectiveSortKey(column), m_tableViewSourceSort.MemberPath, m_tableViewSourceSort.ComparerIdentity))
+    {
+        m_sortKeysDirty = true;
+        ScheduleSortKeyReconcile(false);
     }
 }
 
