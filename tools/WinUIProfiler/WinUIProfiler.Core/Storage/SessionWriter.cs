@@ -281,7 +281,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         if (failure is { } error) throw new IOException("The session writer has stopped.", error);
         var legacy = snapshot.SchemaVersion == 2;
         var bytes = TreeSnapshotCodec.Encode(snapshot);
-        snapshot = TreeSnapshotCodec.Decode(bytes, token: token);
+        snapshot = TreeSnapshotCodec.DecodeSaved(bytes, token: token);
         if (snapshot.ProcessId != processId || source.ProcessCreatedUtc?.ToFileTimeUtc() != snapshot.CreationTimeFileTime)
             throw new InvalidDataException("The snapshot belongs to a different process instance than the recording.");
         if (source.EtlPath is not null || source.QpcFrequency != snapshot.QpcFrequency ||
@@ -392,15 +392,23 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
     private void WriteSnapshot(SnapshotWrite snapshot)
     {
+        if (snapshot.Token.IsCancellationRequested)
+        {
+            snapshot.Completion.TrySetCanceled(snapshot.Token);
+            return;
+        }
+        // A duplicate capture must not evict existing history while making room.
+        if (Sql.Scalar(connection, "SELECT COUNT(*) FROM TreeSnapshots WHERE CaptureId = $id",
+            null, ("$id", snapshot.CaptureId.ToString("D"))) != 0)
+        {
+            snapshot.Completion.TrySetException(new IOException($"Snapshot {snapshot.CaptureId:D} is already stored."));
+            return;
+        }
+        // Retention mutates cached indexes as well as SQL rows. A rollback must stop Run, not resume with stale caches.
+        // Once retention starts, finish the write rather than cancelling after deleting older history.
+        TrimIfNeeded(snapshot.IncomingBytes);
         try
         {
-            snapshot.Token.ThrowIfCancellationRequested();
-            // A duplicate capture must not evict existing history while making room.
-            if (Sql.Scalar(connection, "SELECT COUNT(*) FROM TreeSnapshots WHERE CaptureId = $id",
-                null, ("$id", snapshot.CaptureId.ToString("D"))) != 0)
-                throw new IOException($"Snapshot {snapshot.CaptureId:D} is already stored.");
-            // Once retention starts, finish the write rather than cancelling after deleting older history.
-            TrimIfNeeded(snapshot.IncomingBytes);
             if ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
                 snapshot.IncomingBytes > LimitBytes * TrimAt)
                 throw new IOException("The snapshot cannot fit within the session file's size limit.");
@@ -414,10 +422,6 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             transaction.Commit();
             Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
             snapshot.Completion.TrySetResult();
-        }
-        catch (OperationCanceledException)
-        {
-            snapshot.Completion.TrySetCanceled(snapshot.Token);
         }
         catch (Exception error) when (error is SqliteException or IOException)
         {

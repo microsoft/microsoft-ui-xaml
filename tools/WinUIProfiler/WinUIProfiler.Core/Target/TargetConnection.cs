@@ -433,7 +433,7 @@ History);
             etw = null;
             cpu?.Dispose();
             cpu = null;
-            recordings?.Close("ETW could not start");
+            recordings?.AbortStartup();
             etwFromProcessStart = false;
             SetEtwStartError(error);
             SaveStartupRecordings("ETW could not start");
@@ -590,7 +590,7 @@ History);
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, stop.Token);
         var token = cancellation.Token;
-        var sessionPath = Recording?.Path;
+        var sessionPath = recordings?.SnapshotRecordingPath;
         TreeSnapshotDocument snapshot;
         await targetCommands.WaitAsync(token).ConfigureAwait(false);
         try
@@ -621,15 +621,7 @@ History);
             committed = true;
             if (recordings is { } group)
             {
-                try
-                {
-                    await group.SaveSnapshotAsync(snapshot, path, token).ConfigureAwait(false);
-                }
-                catch (Exception error) when (error is IOException or ObjectDisposedException or
-                    Microsoft.Data.Sqlite.SqliteException)
-                {
-                    throw new IOException($"The snapshot JSON was saved to '{path}', but storing it in the session failed: {error.Message}", error);
-                }
+                await group.SaveSnapshotAsync(snapshot, path, token).ConfigureAwait(false);
             }
             return new(path, snapshot.CaptureId, snapshot.Roots.Count, snapshot.XamlNodes.Count,
                 snapshot.CompositionNodes.Count, snapshot.Correlations.Count, sessionPath);

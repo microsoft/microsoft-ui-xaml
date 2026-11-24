@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Contracts;
@@ -18,14 +19,17 @@ internal static class SnapshotStorageTests
         {
             await RoundTripAsync(Path.Combine(directory, "roundtrip.sqlite"));
             await RetentionAsync(Path.Combine(directory, "retention.sqlite"));
+            await RetentionFailureAsync(Path.Combine(directory, "retention-failure.sqlite"));
+            await EscapedDocumentAsync(Path.Combine(directory, "escaped.sqlite"));
             await ProcessRoutingAsync(directory);
+            await StartupFailureAsync(directory);
         }
         finally
         {
             foreach (var file in Directory.GetFiles(directory)) File.Delete(file);
             Directory.Delete(directory);
         }
-        Console.WriteLine("Passed: SQLite snapshot persistence, exact counters/properties, comparisons, process isolation and retention.");
+        Console.WriteLine("Passed: SQLite snapshots, escaped documents, comparisons, retention failures and JSON-only startup fallback.");
     }
 
     private static SessionStart Source(int pid = 42) => new(pid, $"Snapshots{pid}", Created, 1000, 0, SessionCoverage.Connection);
@@ -181,6 +185,131 @@ internal static class SnapshotStorageTests
         Require(SessionFile.ReadTreeSnapshots(group.RecordingPaths[0]).Single().CaptureId == capture.CaptureId &&
             SessionFile.ReadTreeSnapshots(group.RecordingPaths[1]).Count == 0,
             "A startup recording group must save snapshots only in the connected target's database.");
+        var closed = await ThrowsAsync<IOException>(() => group.SaveSnapshotAsync(Capture(200),
+            Path.Combine(directory, "closed.json"), default));
+        Require(closed.InnerException is ObjectDisposedException && closed.Message.Contains("closed.json"),
+            "A recording closed after use must still report snapshot storage errors with the saved export path.");
+    }
+
+    private static async Task RetentionFailureAsync(string path)
+    {
+        using var writer = SessionWriter.Create(path, Source(), 1024 * 1024);
+        for (var i = 1; i <= 1000; i++)
+            writer.Process(i, new(i, i, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
+                [new("ElementId", (long)i), new("PeerHandle", 0x1000L + i), new("Text", new string('x', 256))]));
+        await writer.SaveSnapshotAsync(Capture(1_000_000), path + ".json");
+        var capture = Capture(2_000_000, padding: new string('x', 48_000));
+        capture = capture with
+        {
+            XamlNodes = capture.XamlNodes.Concat(Enumerable.Range(1, 8).Select(i =>
+                capture.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i })).ToArray()
+        };
+        using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
+        {
+            connection.Open();
+            Require(SessionFile.ReadInfo(path).CompleteFromSeq is null &&
+                Sql.Scalar(connection, "PRAGMA page_count") * Sql.Scalar(connection, "PRAGMA page_size") +
+                    TreeSnapshotCodec.Encode(capture).LongLength > writer.LimitBytes * 0.9,
+                "The fault must occur during snapshot-triggered retention, not while seeding events.");
+            // Objects.Trim has already changed its caches when the later Events delete fails.
+            Sql.Execute(connection, """
+                CREATE TRIGGER FailRetention BEFORE DELETE ON Events
+                BEGIN SELECT RAISE(ABORT, 'injected retention failure'); END
+                """);
+        }
+        var error = await ThrowsAsync<SqliteException>(() => writer.SaveSnapshotAsync(capture, path + ".json")
+            .WaitAsync(TimeSpan.FromSeconds(10)));
+        Require(ReferenceEquals(writer.Failure, error) && error.Message.Contains("injected retention failure"),
+            "Retention rollback must enter Run's fatal failure path before any producer can reuse stale index caches.");
+        writer.Process(1001, new(1001, 1001, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
+            [new("ElementId", 1L), new("PeerHandle", 0x1001L)]));
+        var subsequent = await ThrowsAsync<IOException>(() => writer.SaveSnapshotAsync(Capture(3_000_000), path + ".json"));
+        Require(ReferenceEquals(subsequent.InnerException, error), "Later snapshot saves must expose the original writer failure.");
+        writer.Close("Test complete");
+        using var retained = SessionFile.Open(path);
+        Require(Sql.Scalar(retained, "SELECT COUNT(*) FROM Events") == 1000 &&
+            Sql.Scalar(retained, "SELECT COUNT(*) FROM Objects") == 1000 &&
+            Sql.Scalar(retained, "SELECT COUNT(*) FROM TreeSnapshots") == 1,
+            "Failed retention must roll back its rows and prevent further writes from stale cached state.");
+    }
+
+    private static async Task EscapedDocumentAsync(string path)
+    {
+        // Native JSON can contain raw icon/emoji text that System.Text.Json escapes even with relaxed encoding.
+        var text = string.Concat(Enumerable.Repeat("\uE700\U0001F600", 7000));
+        using var properties = JsonDocument.Parse("{\"text\":\"" + text + "\"}");
+        var capture = Capture(100);
+        capture = capture with
+        {
+            XamlNodes = capture.XamlNodes.Concat(Enumerable.Range(1, 540).Select(i =>
+                capture.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i + 1, ObjectAddress = $"0x{0x2000 + i:X}",
+                    Properties = properties.RootElement })).ToArray()
+        };
+        var savedBytes = TreeSnapshotCodec.Encode(capture);
+        var nativeBytes = Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(savedBytes)
+            .Replace("\\uE700", "\uE700", StringComparison.OrdinalIgnoreCase)
+            .Replace("\\uD83D\\uDE00", "\U0001F600", StringComparison.OrdinalIgnoreCase));
+        Require(nativeBytes.Length < TapProtocol.MaximumSnapshotBytes && savedBytes.Length > TapProtocol.MaximumSnapshotBytes,
+            "The fixture must represent a valid transfer whose escaped saved document exceeds the transfer limit.");
+        var native = TreeSnapshotCodec.Decode(nativeBytes);
+        await ThrowsAsync<InvalidDataException>(() =>
+        {
+            TreeSnapshotCodec.Decode(savedBytes);
+            return Task.CompletedTask;
+        });
+        var jsonPath = Path.ChangeExtension(path, ".json");
+        await using (var output = File.Create(jsonPath)) await TreeSnapshotCodec.WriteAsync(output, native, default);
+        using (var writer = SessionWriter.Create(path, Source()))
+        {
+            await writer.SaveSnapshotAsync(native, jsonPath);
+            writer.Close("Test complete");
+            Require(writer.Failure is null, "A valid escaped document must not stop snapshot recording.");
+        }
+        var fromFile = await SnapshotViewerData.LoadAsync(jsonPath);
+        File.Delete(jsonPath);
+        var fromDatabase = SnapshotViewerData.FromDocument(SessionFile.ReadTreeSnapshot(path, capture.CaptureId));
+        Require(fromDatabase.Xaml.Nodes[1].Properties.GetProperty("text").GetString() == text &&
+            new SnapshotDiffData(fromFile, fromDatabase).Xaml.Nodes.All(node => node.Change == SnapshotChange.None),
+            "Expanded exports and database-only comparisons must validate stored documents, not transferred byte lengths.");
+    }
+
+    private static async Task StartupFailureAsync(string directory)
+    {
+        using (var group = new ProcessRecordingGroup([Source() with { ProcessName = "StartupFailure" }], 42, null, directory))
+        {
+            var recordingPath = group.SnapshotRecordingPath!;
+            group.AbortStartup();
+            for (var i = 1; i <= 2; i++)
+            {
+                var capture = Capture(i * 100);
+                var jsonPath = Path.Combine(directory, $"json-only-{i}.json");
+                await using (var output = File.Create(jsonPath)) await TreeSnapshotCodec.WriteAsync(output, capture, default);
+                await group.SaveSnapshotAsync(capture, jsonPath, default);
+                Require((await SnapshotViewerData.LoadAsync(jsonPath)).Document.CaptureId == capture.CaptureId,
+                    "Initial and subsequent JSON-only captures must remain usable after ETW startup fails.");
+            }
+            Require(group.SnapshotRecordingPath is null && SessionFile.ReadTreeSnapshots(recordingPath).Count == 0,
+                "Failed-startup recording inventories may stay visible, but JSON-only captures must not claim database storage.");
+        }
+        using (var group = new ProcessRecordingGroup([Source() with { ProcessName = "ActiveFailure" }], 42, null, directory))
+        {
+            var jsonPath = Path.Combine(directory, "active-failure.json");
+            var invalid = await ThrowsAsync<IOException>(() => group.SaveSnapshotAsync(Capture(100) with { ProcessId = 43 },
+                jsonPath, default));
+            Require(invalid.InnerException is InvalidDataException && invalid.Message.Contains(jsonPath),
+                "Active-recording validation failures must report the saved JSON path instead of silently falling back.");
+            using (var connection = new SqliteConnection($"Data Source={group.SnapshotRecordingPath};Pooling=False"))
+            {
+                connection.Open();
+                Sql.Execute(connection, """
+                    CREATE TRIGGER FailSnapshot BEFORE INSERT ON TreeSnapshots
+                    BEGIN SELECT RAISE(ABORT, 'injected snapshot failure'); END
+                    """);
+            }
+            var error = await ThrowsAsync<IOException>(() => group.SaveSnapshotAsync(Capture(200), jsonPath, default));
+            Require(error.InnerException is SqliteException && error.Message.Contains(jsonPath),
+                "Active-recording SQL failures must remain visible and identify the saved export.");
+        }
     }
 
     private static TreeSnapshotDocument Capture(long endQpc, bool changed = false, string padding = "")
@@ -213,10 +342,10 @@ internal static class SnapshotStorageTests
         if (!condition) throw new InvalidOperationException(message);
     }
 
-    private static async Task ThrowsAsync<T>(Func<Task> action) where T : Exception
+    private static async Task<T> ThrowsAsync<T>(Func<Task> action) where T : Exception
     {
         try { await action(); }
-        catch (T) { return; }
+        catch (T error) { return error; }
         throw new InvalidOperationException($"Expected {typeof(T).Name}.");
     }
 }

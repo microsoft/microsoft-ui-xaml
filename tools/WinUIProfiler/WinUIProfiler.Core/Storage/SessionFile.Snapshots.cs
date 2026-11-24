@@ -41,7 +41,7 @@ public static partial class SessionFile
             ("$id", captureId.ToString("D")));
         var document = command.ExecuteScalar() as string ??
             throw new InvalidDataException($"Snapshot {captureId:D} is not retained in this session file.");
-        var snapshot = TreeSnapshotCodec.Decode(Encoding.UTF8.GetBytes(document), captureId: captureId, token: token);
+        var snapshot = TreeSnapshotCodec.DecodeSaved(Encoding.UTF8.GetBytes(document), captureId: captureId, token: token);
         SessionQueries.Report(command, 1);
         return snapshot;
     }

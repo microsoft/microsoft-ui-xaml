@@ -313,6 +313,11 @@ export file. This includes both trees, root intervals, correlations, properties,
 limitations and resource capture status/counters. A database write failure is
 reported with the path of the JSON that was saved; it is not reported as a
 successful database capture. Connections without a database still export JSON.
+If ETW fails to start after creating a recording file, captures also remain
+JSON-only; the failed recording is kept for diagnostics, not used for snapshots.
+Saved documents have separate size bounds from native transfers because JSON
+escaping can expand icon, emoji and other text. They remain subject to the
+recording's actual byte budget and the same schema and identity validation.
 
 Start with `SnapshotSummary`, or find the snapshot views in `QueryCatalog`:
 
