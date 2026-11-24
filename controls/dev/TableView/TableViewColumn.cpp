@@ -389,13 +389,18 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                     });
             }
         }
+        // A change still pending when the column left never reached the cells its rows kept.
+        if (m_cellContentChangePending && (owner.XamlRoot() || owner.IsLoaded()))
+        {
+            winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, false /* resetAutoWidth */);
+        }
         return true;
     }
     else
     {
         m_owningTableView = nullptr;
-        // A detached column has no cells; drop a pending change.
-        TakeQueuedCellContentChangeInternal();
+        // The old owner's post must not run; the change stays pending for the next owner.
+        InvalidateCellContentChangePostInternal();
         return true;
     }
 }

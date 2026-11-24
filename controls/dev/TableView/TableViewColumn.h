@@ -82,6 +82,7 @@ public:
     // Queue returns true when a post for it is already in flight.
     bool QueueCellContentChangeInternal(bool resetAutoWidth) noexcept
     {
+        m_cellContentChangePending = true;
         m_queuedCellContentResetAutoWidth = m_queuedCellContentResetAutoWidth || resetAutoWidth;
         return m_cellContentChangePosted;
     }
@@ -90,9 +91,15 @@ public:
     uint32_t CellContentChangeGenerationInternal() const noexcept { return m_cellContentChangeGeneration; }
     bool TakeQueuedCellContentChangeInternal() noexcept
     {
+        m_cellContentChangePending = false;
+        InvalidateCellContentChangePostInternal();
+        return std::exchange(m_queuedCellContentResetAutoWidth, false);
+    }
+    // Drops the in-flight post but keeps the change pending, for the next owner to regenerate.
+    void InvalidateCellContentChangePostInternal() noexcept
+    {
         m_cellContentChangePosted = false;
         ++m_cellContentChangeGeneration;
-        return std::exchange(m_queuedCellContentResetAutoWidth, false);
     }
 
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
@@ -157,6 +164,7 @@ private:
     winrt::GridLength m_authoredWidth{ c_widthDefault };
     bool m_inUserResize{ false };
     bool m_cellContentChangePosted{ false };
+    bool m_cellContentChangePending{ false };
     bool m_queuedCellContentResetAutoWidth{ false };
     uint32_t m_cellContentChangeGeneration{ 0 };
 

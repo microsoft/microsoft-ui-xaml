@@ -395,6 +395,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CellTemplate change still rebuilds the cells when the column is removed and re-inserted, or re-assigned, in the same turn.")]
+        public void VerifyCellTemplateChangeSurvivesColumnReinsertInSameTurn()
+        {
+            TableView tableView = null;
+            TableViewTemplateColumn column = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 500, 700);
+                column = new TableViewTemplateColumn { Header = "Under test", CellTemplate = CreateBoundTextTemplate("Name") };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "Precondition: the cell renders through the first template.");
+                column.CellTemplate = CreateBoundTextTemplate("Role");
+                tableView.Columns.RemoveAt(0);
+                tableView.Columns.Insert(0, column);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "A re-inserted column must keep its pending template change.");
+                column.CellTemplate = CreateBoundTextTemplate("DepartmentName");
+                tableView.Columns[0] = column;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("Studio", GetCellText(tableView, 0, 0), "A re-assigned column must keep its pending template change."));
+        }
+
         #endregion
 
         #region 2.4 Live source updates
