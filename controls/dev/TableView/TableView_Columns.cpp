@@ -54,6 +54,18 @@ double TableView::ComputeLeadingFrozenWidth()
 void TableView::RefreshFrozenColumns()
 {
     const double leadingFrozenWidth = ComputeLeadingFrozenWidth();
+    double horizontalOffset = 0.0;
+    if (auto bodyScroller = m_bodyScroller.get())
+    {
+        horizontalOffset = bodyScroller.HorizontalOffset();
+    }
+
+    // A live reorder drag owns the header cells until a layout change cancels it.
+    const bool reorderOwnsHeaders = m_columnReorder && m_columnReorder->dragging && !m_columnReorder->stale;
+    if (reorderOwnsHeaders && ColumnReorderLayoutChanged(leadingFrozenWidth, horizontalOffset))
+    {
+        QueueCancelColumnReorderDrag();
+    }
 
     // No active frozen columns; avoid walking realized rows on every scroll.
     if (leadingFrozenWidth <= 0.0 && !m_frozenColumnsActive)
@@ -64,20 +76,10 @@ void TableView::RefreshFrozenColumns()
     // Run once after deactivation to clear prior transforms and clips.
     m_frozenColumnsActive = leadingFrozenWidth > 0.0;
 
-    double horizontalOffset = 0.0;
-    if (auto bodyScroller = m_bodyScroller.get())
-    {
-        horizontalOffset = bodyScroller.HorizontalOffset();
-    }
-
     // Header and row cells share pinning so they stay aligned.
-    if (auto headerHost = m_headerHost.get())
+    if (auto headerHost = m_headerHost.get(); headerHost && !(m_columnReorder && m_columnReorder->dragging && !m_columnReorder->stale))
     {
         TableViewCellsPanel::ApplyFrozenColumnLayout(headerHost, horizontalOffset, leadingFrozenWidth);
-        if (m_columnReorder && m_columnReorder->dragging)
-        {
-            ApplyColumnReorderPreview(*m_columnReorder);
-        }
     }
 
     // Re-pin realized rows.

@@ -5,6 +5,8 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewColumnHeader.h"
+#include "TableViewCellsPanel.h"
 #include "TableViewColumnReorderedEventArgs.h"
 #include "TableViewAutomationHelpers.h"
 #include "ResourceAccessor.h"
@@ -211,6 +213,17 @@ bool TableView::TryReorderColumn(const winrt::TableViewColumn& column, int32_t s
     {
         RebuildHeaders();
         InvalidateMeasure();
+        // The new cells are clipped out of a scrolled frozen band only once they have been measured.
+        if (auto const queue = DispatcherQueue())
+        {
+            queue.TryEnqueue(winrt::DispatcherQueuePriority::Low, [weakThis = get_weak()]()
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        strongThis->RefreshFrozenColumns();
+                    }
+                });
+        }
     }
     catch (...)
     {
@@ -365,7 +378,8 @@ void TableView::HookColumnReorderInput()
         })), true);
     add(winrt::UIElement::ManipulationCompletedEvent(), winrt::box_value(winrt::ManipulationCompletedEventHandler([weakThis](auto const&, auto const& args)
         {
-            if (auto const strongThis = weakThis.get(); strongThis && strongThis->UpdateColumnReorderDrag(args.Cumulative().Translation.X))
+            // The drop rebuilds the headers, so no slide starts.
+            if (auto const strongThis = weakThis.get(); strongThis && strongThis->UpdateColumnReorderDrag(args.Cumulative().Translation.X, false /* preview */))
             {
                 args.Handled(true);
                 strongThis->EndColumnReorderDrag(true /* commit */);
@@ -442,6 +456,7 @@ bool TableView::BeginColumnReorderDrag()
             sourceCell = cell;
             state.source = winrt::make_weak(cell);
             state.sourceLeft = cell.TransformToVisual(row).TransformPoint({ 0.0f, 0.0f }).X;
+            state.sourceBase = cell.Translation().x;
             state.grabOffset = state.pressX - state.sourceLeft;
             state.sourceWidth = cell.ActualWidth();
         }
@@ -450,6 +465,7 @@ bool TableView::BeginColumnReorderDrag()
             const double left = cell.TransformToVisual(row).TransformPoint({ 0.0f, 0.0f }).X;
             state.edges.emplace_back(left, left + cell.ActualWidth());
             state.cells.push_back(winrt::make_weak(cell));
+            state.bases.push_back(cell.Translation().x);
         }
     }
     if (!sourceCell || state.edges.size() != state.slots.others.size())
@@ -463,6 +479,8 @@ bool TableView::BeginColumnReorderDrag()
         state.bandEdge = state.edges[static_cast<size_t>(state.slots.min - 1)].second;
     }
     state.headerOffset = headerScroller ? headerScroller.HorizontalOffset() : 0.0;
+    state.frozenWidth = ComputeLeadingFrozenWidth();
+    state.bodyOffset = bodyOffset;
 
     m_suppressHeaderTap = true;
     ++m_columnReorderGeneration;
@@ -487,14 +505,17 @@ bool TableView::BeginColumnReorderDrag()
             return true;
         });
     m_columnReorder->slides.resize(m_columnReorder->cells.size());
-    winrt::Canvas::SetZIndex(sourceCell, 1);
+    if (auto const header = sourceCell.try_as<winrt::TableViewColumnHeader>())
+    {
+        winrt::get_self<TableViewColumnHeader>(header)->SetReorderDragging(true);
+    }
     ApplyColumnReorderPreview(*m_columnReorder);
     return true;
 }
 
 namespace
 {
-    // ListView's reorder hints use the theme's DragBetween timing: 200 ms, cubic-bezier(0.1, 0.9, 0.2, 1).
+    // ListView DragBetween timing.
     constexpr std::chrono::milliseconds c_columnReorderSlideDuration{ 200 };
 
     float ColumnReorderSlideProgress(double time)
@@ -510,20 +531,21 @@ namespace
         return static_cast<float>(bezier((lo + hi) / 2.0, 0.9, 1.0));
     }
 
-    // As in ApplyFrozenColumnLayout, the part of a scrolling header under the frozen band is clipped away.
-    void OffsetColumnReorderCell(const winrt::FrameworkElement& cell, double left, double offset, double bandEdge)
+    // Clips the part under the frozen band, as ApplyFrozenColumnLayout does.
+    void OffsetColumnReorderCell(const winrt::FrameworkElement& cell, double left, float base, double offset, double bandEdge)
     {
-        if (!cell)
-        {
-            return;
-        }
-        cell.Translation({ static_cast<float>(offset), 0.0f, 0.0f });
+        // Set the static value first: it cancels the running slide without write-back.
+        cell.Translation({ base + static_cast<float>(offset), 0.0f, 0.0f });
         const double clipLeft = (std::max)(0.0, bandEdge - left - offset);
         if (clipLeft > 0.0 && cell.ActualHeight() > 0.0)
         {
-            winrt::RectangleGeometry geometry;
+            auto geometry = cell.Clip().try_as<winrt::RectangleGeometry>();
+            if (!geometry)
+            {
+                geometry = winrt::RectangleGeometry();
+                cell.Clip(geometry);
+            }
             geometry.Rect({ static_cast<float>(clipLeft), 0.0f, static_cast<float>((std::max)(0.0, cell.ActualWidth() - clipLeft)), static_cast<float>(cell.ActualHeight()) });
-            cell.Clip(geometry);
         }
         else if (cell.Clip())
         {
@@ -532,49 +554,89 @@ namespace
     }
 }
 
-// The source header follows the pointer, clamped to the row and the frozen band; the headers it passed shift by its width.
+// The source follows the pointer; each header it passed slides over by its width.
 void TableView::ApplyColumnReorderPreview(ColumnReorderDragState& state)
 {
     auto const row = m_headerRow.get();
-    if (!row)
+    if (!row || state.stale)
     {
         return;
     }
-    const int32_t slot = state.stale ? state.slots.own : ColumnReorderSlotAt(state);
+    const int32_t slot = ColumnReorderSlotAt(state);
+    winrt::Microsoft::UI::Composition::Compositor compositor{ nullptr };
+    winrt::Microsoft::UI::Composition::CompositionEasingFunction easing{ nullptr };
     for (int32_t k = state.slots.min; k < state.slots.max; ++k)
     {
         auto const cell = state.cells[static_cast<size_t>(k)].get();
-        const float offset = static_cast<float>(k >= slot && k < state.slots.own ? state.sourceWidth : (k >= state.slots.own && k < slot ? -state.sourceWidth : 0.0));
-        if (!cell || cell.Translation().x == offset)
+        const double offset = k >= slot && k < state.slots.own ? state.sourceWidth : (k >= state.slots.own && k < slot ? -state.sourceWidth : 0.0);
+        const float target = state.bases[static_cast<size_t>(k)] + static_cast<float>(offset);
+        if (!cell || cell.Translation().x == target)
         {
             continue;
         }
-        // Retarget from where the running slide has got to; a reset by the frozen layout starts from its value.
+        // Retarget from the running slide's current value.
         auto& slide = state.slides[static_cast<size_t>(k)];
         const auto now = std::chrono::steady_clock::now();
         const float from = cell.Translation().x != slide.to ? cell.Translation().x :
             slide.from + (slide.to - slide.from) * ColumnReorderSlideProgress((std::min)(1.0, std::chrono::duration<double>(now - slide.start) / c_columnReorderSlideDuration));
-        slide = { from, offset, now };
-        OffsetColumnReorderCell(cell, state.edges[static_cast<size_t>(k)].first, offset, state.bandEdge);
+        slide = { from, target, now };
+        OffsetColumnReorderCell(cell, state.edges[static_cast<size_t>(k)].first, state.bases[static_cast<size_t>(k)], offset, state.bandEdge);
         if (SharedHelpers::IsAnimationsEnabled())
         {
-            auto const compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
+            if (!compositor)
+            {
+                compositor = winrt::Microsoft::UI::Xaml::Media::CompositionTarget::GetCompositorForCurrentThread();
+                easing = compositor.CreateCubicBezierEasingFunction({ 0.1f, 0.9f }, { 0.2f, 1.0f });
+            }
             auto const animation = compositor.CreateVector3KeyFrameAnimation();
             animation.InsertKeyFrame(0.0f, { from, 0.0f, 0.0f });
-            animation.InsertKeyFrame(1.0f, { offset, 0.0f, 0.0f }, compositor.CreateCubicBezierEasingFunction({ 0.1f, 0.9f }, { 0.2f, 1.0f }));
+            animation.InsertKeyFrame(1.0f, { target, 0.0f, 0.0f }, easing);
             animation.Duration(c_columnReorderSlideDuration);
             animation.Target(L"Translation");
             cell.StartAnimation(animation);
         }
     }
-    const double minX = (std::max)(0.0, state.bandEdge);
-    const double maxX = (std::max)(minX, row.ActualWidth() - state.sourceWidth);
-    OffsetColumnReorderCell(state.source.get(), state.sourceLeft, std::clamp(state.pointerX - state.grabOffset, minX, maxX) - state.sourceLeft, state.bandEdge);
+    if (auto const source = state.source.get())
+    {
+        // A frozen source stays in the frozen band; a scrolling one stays past it.
+        const double minX = (std::max)(0.0, state.bandEdge);
+        const double end = state.slots.max < static_cast<int32_t>(state.edges.size()) ?
+            (std::max)(state.sourceLeft + state.sourceWidth, state.slots.max > 0 ? state.edges[static_cast<size_t>(state.slots.max - 1)].second : 0.0) : row.ActualWidth();
+        const double maxX = (std::max)(minX, end - state.sourceWidth);
+        OffsetColumnReorderCell(source, state.sourceLeft, state.sourceBase, std::clamp(state.pointerX - state.grabOffset, minX, maxX) - state.sourceLeft, state.bandEdge);
+        if (winrt::Canvas::GetZIndex(source) != 2)
+        {
+            winrt::Canvas::SetZIndex(source, 2);
+        }
+    }
+}
+
+// A drag measured the header layout; a change to it cancels the drag.
+bool TableView::ColumnReorderLayoutChanged(double frozenWidth, double bodyOffset)
+{
+    auto const& state = *m_columnReorder;
+    auto const widthChanged = [](const winrt::FrameworkElement& cell, double width)
+    {
+        auto const column = cell ? cell.Tag().try_as<winrt::TableViewColumn>() : nullptr;
+        return column && std::abs(column.ActualWidth() - width) >= 0.5;
+    };
+    if (std::abs(frozenWidth - state.frozenWidth) >= 0.5 || std::abs(bodyOffset - state.bodyOffset) >= 0.5 || widthChanged(state.source.get(), state.sourceWidth))
+    {
+        return true;
+    }
+    for (size_t k = 0; k < state.cells.size(); ++k)
+    {
+        if (widthChanged(state.cells[k].get(), state.edges[k].second - state.edges[k].first))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int32_t TableView::ColumnReorderSlotAt(const ColumnReorderDragState& state)
 {
-    // As in File Explorer and Task Manager, a header is passed once the pointer enters it; the frozen band clamps the pointer.
+    // A header is passed once the pointer enters it.
     const double pointerX = (std::max)(state.pointerX, state.bandEdge);
     int32_t slot = state.slots.min;
     for (int32_t k = state.slots.min; k < state.slots.max; ++k)
@@ -585,7 +647,7 @@ int32_t TableView::ColumnReorderSlotAt(const ColumnReorderDragState& state)
     return slot;
 }
 
-bool TableView::UpdateColumnReorderDrag(double translationX)
+bool TableView::UpdateColumnReorderDrag(double translationX, bool preview)
 {
     if (!m_columnReorder || !m_columnReorder->dragging)
     {
@@ -594,7 +656,10 @@ bool TableView::UpdateColumnReorderDrag(double translationX)
     auto& state = *m_columnReorder;
     // The manipulation reports physical translation.
     state.pointerX = state.pressX + (FlowDirection() == winrt::FlowDirection::RightToLeft ? -translationX : translationX);
-    ApplyColumnReorderPreview(state);
+    if (preview)
+    {
+        ApplyColumnReorderPreview(state);
+    }
     return true;
 }
 
@@ -647,18 +712,15 @@ void TableView::EndColumnReorderDrag(bool commit)
     {
         return;
     }
-    // Snap every header back; on a drop the rebuilt headers land where the preview put them.
-    for (int32_t k = state.slots.min; k < state.slots.max; ++k)
+    // The frozen layout restores every header's pin, clip and ZIndex.
+    if (auto const header = state.source.get().try_as<winrt::TableViewColumnHeader>())
     {
-        if (auto const cell = state.cells[static_cast<size_t>(k)].get())
-        {
-            OffsetColumnReorderCell(cell, state.edges[static_cast<size_t>(k)].first, 0.0, state.bandEdge);
-        }
+        winrt::get_self<TableViewColumnHeader>(header)->SetReorderDragging(false);
     }
-    if (auto const source = state.source.get())
+    if (auto const host = m_headerHost.get())
     {
-        OffsetColumnReorderCell(source, state.sourceLeft, 0.0, state.bandEdge);
-        winrt::Canvas::SetZIndex(source, 0);
+        auto const bodyScroller = m_bodyScroller.get();
+        TableViewCellsPanel::ApplyFrozenColumnLayout(host, bodyScroller ? bodyScroller.HorizontalOffset() : 0.0, ComputeLeadingFrozenWidth());
     }
     if (auto const host = m_columnReorderHookedHost.get(); host && host.XamlRoot())
     {

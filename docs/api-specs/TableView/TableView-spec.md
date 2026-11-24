@@ -1241,7 +1241,7 @@ apart.
   is never committed implicitly. Commit or cancel the edit first.
 - **Focus.** A focused body cell keeps focus when its column moves, and the body's column cursor stays
   on its column.
-- **High Contrast.** The drag moves the headers themselves, so it uses their own brushes and needs no others.
+- **High Contrast.** The dragged header keeps its pressed look for the whole drag, with the High Contrast pressed brushes, and needs no others.
 - **Events.** `ColumnReordered` is raised once, after the move and its announcement; if a handler
   throws, the move stays applied. A gesture that drops a column back where it was raises nothing.
   Changes the app makes to `Columns` do not raise it.

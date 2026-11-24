@@ -317,7 +317,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     {
         commonState = L"Disabled";
     }
-    else if (m_isSortable && m_isPressed)
+    else if (m_isReorderDragging || (m_isSortable && m_isPressed))
     {
         commonState = L"Pressed";
     }
@@ -327,7 +327,7 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
     }
 
     const wchar_t* highContrastState = L"HighContrastNormal";
-    if (IsLoaded() && IsEnabled() && m_isSortable)
+    if (IsLoaded() && IsEnabled() && (m_isSortable || m_isReorderDragging))
     {
         if (auto const owner = GetOwningTableView(); owner && winrt::get_self<TableView>(owner)->IsHighContrast())
         {
@@ -380,6 +380,14 @@ void TableViewColumnHeader::UpdateVisualStates(bool useTransitions)
         commonState != std::wstring_view{ L"Pressed" } &&
         SharedHelpers::IsAnimationsEnabled();
     winrt::VisualStateManager::GoToState(*this, sortState, animateSortAffordance);
+}
+
+void TableViewColumnHeader::SetReorderDragging(bool dragging)
+{
+    if (std::exchange(m_isReorderDragging, dragging) != dragging)
+    {
+        UpdateVisualStates(false /* useTransitions */);
+    }
 }
 
 void TableViewColumnHeader::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)

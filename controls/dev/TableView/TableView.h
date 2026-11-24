@@ -1790,12 +1790,16 @@ private:
         double sourceLeft{ 0.0 };
         double sourceWidth{ 0.0 };
         double bandEdge{ -std::numeric_limits<double>::infinity() };
+        // The frozen band's width and the body offset the drag measured.
+        double frozenWidth{ 0.0 };
+        double bodyOffset{ 0.0 };
+        float sourceBase{ 0.0f };
         ColumnReorderSlots slots;
-        // Leading and trailing edge, and header cell, of each of slots.others.
+        // Per slots.others: edges, cell, pre-drag Translation.X and running slide.
         std::vector<std::pair<double, double>> edges;
         std::vector<winrt::weak_ref<winrt::FrameworkElement>> cells;
+        std::vector<float> bases;
         winrt::weak_ref<winrt::FrameworkElement> source{ nullptr };
-        // The running slide of each of cells.
         struct Slide { float from{ 0.0f }; float to{ 0.0f }; std::chrono::steady_clock::time_point start{}; };
         std::vector<Slide> slides;
     };
@@ -1805,8 +1809,9 @@ private:
     winrt::TableViewColumn HeaderColumnFromSource(const winrt::IInspectable& source, winrt::FrameworkElement& headerCell);
     bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
     bool BeginColumnReorderDrag();
-    bool UpdateColumnReorderDrag(double translationX);
+    bool UpdateColumnReorderDrag(double translationX, bool preview = true);
     void ApplyColumnReorderPreview(ColumnReorderDragState& state);
+    bool ColumnReorderLayoutChanged(double frozenWidth, double bodyOffset);
     void EndColumnReorderDrag(bool commit);
     static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state);
     bool ConsumeColumnReorderTap();

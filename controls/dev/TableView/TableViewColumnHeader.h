@@ -59,6 +59,9 @@ public:
     // Returns the previous value: whether the header's HelpText last offered the move keys.
     bool ExchangeMovableInternal(bool movable) { return std::exchange(m_movable, movable); }
 
+    // The reorder drag keeps the dragged header Pressed while the header row holds the capture.
+    void SetReorderDragging(bool dragging);
+
 private:
     void UpdateVisualStates(bool useTransitions);
     void UpdateContentReserve();
@@ -89,6 +92,7 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    bool m_isReorderDragging{ false };
     winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
     winrt::Thickness m_textPadding{};
     tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
