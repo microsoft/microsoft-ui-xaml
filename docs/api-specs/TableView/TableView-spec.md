@@ -960,7 +960,7 @@ A header is user-sortable only when its column has a sort key: a `CustomSortComp
 
 Changing a sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`):
 
-- Outside a sort, re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
+- Outside a sort, re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`; if a deferred reconcile is already pending for the table, the change is applied with it on the next dispatcher turn instead. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
 - From a `Sorting` handler for that column, is used by that sort. If the handler cancels the sort (or a clear), the key is not applied: the column keeps the new key and the arrow, and the rows keep their order, until the key changes again.
 - From a `Sorted` handler, or for a different column that is still sorted, is applied on the next dispatcher turn as one more `Sorting`/`Sorted` pair (or a clear, if no key is left). A handler that changes the key on every `Sorted` re-sorts once per turn indefinitely; that is an app error. Without a dispatcher, it is applied once, right after the outermost sort.
 
