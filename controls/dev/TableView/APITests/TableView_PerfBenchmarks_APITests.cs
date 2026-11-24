@@ -350,16 +350,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Report("Teardown.Baseline", 0, baseline);
             foreach (var live in new[] { false, true })
             {
-                foreach (var views in new[] { 100, 400, 1600 })
+                // Created in one UI turn, so nothing created is released before the turn ends: the creation time grows
+                // faster than the count, the drain does not.
+                foreach (var views in live ? new[] { 25, 50, 100 } : new[] { 100, 400, 1600 })
                 {
                     var created = 0.0;
                     RunOnUIThread.Execute(() => created = Time(() => CreateGroupedViews(views, 60, live)));
                     var drained = DrainAfterCollect();
                     var name = live ? "Teardown.LiveViewsOverOneSource" : "Teardown.ViewsOverCopies";
                     Report($"{name}.Create", views, created);
+                    Report($"{name}.CreatePerView", views, created / views);
                     Report($"{name}.Drain", views, drained);
                     Report($"{name}.DrainPerView", views, (drained - baseline) / views);
                 }
+            }
+            foreach (var views in new[] { 25, 100 })
+            {
+                var created = 0.0;
+                for (var i = 0; i < views; i++)
+                {
+                    RunOnUIThread.Execute(() => created += Time(() => CreateGroupedViews(1, 60, live: true)));
+                }
+                Report("Teardown.LiveViewsOneTurnEach.CreatePerView", views, created / views);
+                Report("Teardown.LiveViewsOneTurnEach.Drain", views, DrainAfterCollect());
             }
             foreach (var n in s_sizes)
             {
