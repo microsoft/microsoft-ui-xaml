@@ -958,14 +958,15 @@ Methods:
 
 A header is user-sortable only when its column has a sort key: a `CustomSortComparer`, a `SortMemberPath`, or, when `SortMemberPath` is empty, the `Path` of a `DisplayMemberBinding` that sets no `Source`, `RelativeSource` or `ElementName`. A keyless column shows no sort arrow, does not sort when its header is clicked, and its header exposes no Invoke pattern.
 
-Changing the sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`) outside a sort re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
+Changing a sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`):
 
-A key changed while a sort is in progress is not applied inside it:
+- Outside a sort, re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
+- From a `Sorting` handler for that column, is used by that sort. If the handler cancels the sort (or a clear), the key is not applied: the column keeps the new key and the arrow, and the rows keep their order, until the key changes again.
+- From a `Sorted` handler, or for a different column that is still sorted, is applied on the next dispatcher turn as one more `Sorting`/`Sorted` pair (or a clear, if no key is left). A handler that changes the key on every `Sorted` re-sorts once per turn indefinitely; that is an app error. Without a dispatcher, it is applied once, right after the outermost sort.
 
-- From a `Sorting` handler, the change is picked up by that sort. If the handler also cancels that sort (or a clear), the change does not re-sort the column: the column keeps the new key, but the rows keep the order they had, until the column is next sorted.
-- From a `Sorted` handler, the change is applied on the next dispatcher turn, as one more `Sorting`/`Sorted` pair. A key changed by that pair's handlers is applied on the turn after, so a handler that changes the key on every `Sorted` re-sorts once per turn indefinitely; that is an app error. Without a dispatcher, such a change is applied once, right after the sort, and a further change made by that re-sort's handlers is dropped.
+An exception thrown by a `Sorting` or `Sorted` handler during a deferred re-sort surfaces through the XAML `UnhandledException` path. A deferred change is skipped if the column has since moved to another TableView or is no longer sorted.
 
-A deferred change is skipped if, by the time it is applied, the column has moved to another TableView or is no longer sorted.
+A cancelled sort whose `Sorting` handler removed the column's key leaves the column sorted, with no key; clear it with `SortByColumn(column, None)`.
 
 `DisplayMemberBinding` is compared by instance: setting it to the `Binding` it already holds is ignored, so editing that `Binding`'s `Path` in place neither refreshes the cells nor re-sorts. Assign a new `Binding` instead.
 
