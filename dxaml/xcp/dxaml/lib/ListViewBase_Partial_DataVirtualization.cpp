@@ -78,12 +78,19 @@ _Check_return_ HRESULT ListViewBase::ProcessDataVirtualizationScrollOffsets()
                 IFC(spItems.Cast<ItemCollection>()->get_Size(&itemsCount));
             }
 
-            if (itemsCount > 0 && lastItemInViewport < 0 && ctl::is<IModernCollectionBasePanel>(spItemsHost))
+            ctl::ComPtr<IModernCollectionBasePanel> spModernPanel = spItemsHost.AsOrNull<IModernCollectionBasePanel>();
+            if (itemsCount > 0 && spModernPanel)
             {
+                // The last index in the viewport is also -1 when a header is taller than the viewport,
+                // so ask the panel directly whether any item has been laid out.
+                INT firstCacheIndex = -1;
+                IFC(spModernPanel.Cast<ModernCollectionBasePanel>()->get_FirstCacheIndexBase(&firstCacheIndex));
+
                 const auto itemsHost = static_cast<CUIElement*>(spItemsHost.Cast<Panel>()->GetHandle());
-                if (itemsHost->GetIsMeasureDirty() ||
-                    itemsHost->GetIsOnMeasureDirtyPath() ||
-                    itemsHost->GetIsMeasuringSelf())
+                if (firstCacheIndex < 0 &&
+                    (itemsHost->GetIsMeasureDirty() ||
+                     itemsHost->GetIsOnMeasureDirtyPath() ||
+                     itemsHost->GetIsMeasuringSelf()))
                 {
                     // No item has been laid out yet, so the viewport index and page estimate are
                     // placeholders. Retry after virtualization finishes instead of loading one item.

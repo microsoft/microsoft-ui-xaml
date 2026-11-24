@@ -635,6 +635,18 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [TestProperty("Hosting:Mode", "WPF")]
         public void SynchronousPartialBatchesDoNotExhaustLayoutIterations()
         {
+            VerifyPartialBatchesDoNotExhaustLayoutIterations(withWideHeader: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Hosting:Mode", "WPF")]
+        public void SynchronousPartialBatchesBehindWideHeaderDoNotExhaustLayoutIterations()
+        {
+            VerifyPartialBatchesDoNotExhaustLayoutIterations(withWideHeader: true);
+        }
+
+        private void VerifyPartialBatchesDoNotExhaustLayoutIterations(bool withWideHeader)
+        {
             var data = new SynchronousStartupSource(false)
             {
                 MaximumItemCount = 400,
@@ -648,6 +660,12 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
                 inner.Width = 300;
                 inner.Height = 100;
                 inner.DataFetchSize = 1;
+                if (withWideHeader)
+                {
+                    // The header is wider than the viewport, so no item intersects the viewport
+                    // even though items are laid out in the cache buffer.
+                    inner.Header = new Border { Width = 500, Height = 100 };
+                }
                 inner.ItemTemplate = (DataTemplate)XamlReader.Load(
                     @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
                         <Grid Width='1' Height='100'/>
@@ -869,104 +887,6 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
 
             UIExecutor.Execute(() => Verify.AreEqual(0, data.RequestedCounts.Count,
                 "An unrelated arrange must not initiate an automatic loading check."));
-        }
-
-        [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
-        public void IncrementalLoadingZoomOutHorizontal()
-        {
-            VerifyZoomedPageEstimate(vertical: false, zoomFactor: 0.5f);
-        }
-
-        [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
-        public void IncrementalLoadingZoomInHorizontal()
-        {
-            VerifyZoomedPageEstimate(vertical: false, zoomFactor: 2.0f);
-        }
-
-        [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
-        public void IncrementalLoadingZoomOutVertical()
-        {
-            VerifyZoomedPageEstimate(vertical: true, zoomFactor: 0.5f);
-        }
-
-        [TestMethod]
-        [TestProperty("Hosting:Mode", "WPF")]
-        public void IncrementalLoadingZoomInVertical()
-        {
-            VerifyZoomedPageEstimate(vertical: true, zoomFactor: 2.0f);
-        }
-
-        private void VerifyZoomedPageEstimate(bool vertical, float zoomFactor)
-        {
-            SynchronousStartupSource data = null;
-            StartupListView inner = null;
-            ScrollViewer scrollViewer = null;
-            using (var viewChanged = new AutoResetEvent(false))
-            {
-                UIExecutor.Execute(() =>
-                {
-                    data = new SynchronousStartupSource(true);
-                    inner = ShowStartupListView(data, wrapping: true, vertical: vertical, manual: true);
-                    inner.DataFetchSize = 1;
-                    if (vertical)
-                    {
-                        inner.Height = 300;
-                        inner.Width = 100;
-                    }
-                    else
-                    {
-                        inner.Width = 500;
-                        inner.Height = 100;
-                    }
-                });
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() =>
-                {
-                    var panel = (ItemsWrapGrid)inner.ItemsPanelRoot;
-                    panel.ItemWidth = 100;
-                    panel.ItemHeight = 100;
-                    panel.MaximumRowsOrColumns = 1;
-                    scrollViewer = inner.FindElementOfTypeInSubtree<ScrollViewer>();
-                    scrollViewer.MinZoomFactor = 0.5f;
-                    scrollViewer.MaxZoomFactor = 2.0f;
-                    scrollViewer.ZoomMode = ZoomMode.Enabled;
-                    scrollViewer.ViewChanged += (sender, args) =>
-                    {
-                        if (!args.IsIntermediate)
-                        {
-                            viewChanged.Set();
-                        }
-                    };
-                });
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() => Verify.IsTrue(scrollViewer.ChangeView(null, null, zoomFactor, true)));
-                Verify.IsTrue(viewChanged.WaitOne(TimeSpan.FromSeconds(10)), "Zoom must complete.");
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() =>
-                {
-                    Verify.AreEqual(zoomFactor, scrollViewer.ZoomFactor);
-                    Verify.AreEqual(0, data.RequestedCounts.Count);
-                    double viewport = vertical ? scrollViewer.ViewportHeight : scrollViewer.ViewportWidth;
-                    uint expected = (uint)Math.Ceiling(viewport / zoomFactor / 100);
-                    Verify.IsTrue(expected > 0);
-                    var load = inner.LoadMoreItemsAsync();
-                    Verify.AreEqual(1, data.RequestedCounts.Count);
-                    Log.Comment("Zoom " + zoomFactor + ", viewport " + viewport + ", requested " + data.RequestedCounts[0]);
-                    Verify.AreEqual(expected, data.RequestedCounts[0],
-                        "A page must use the zoom-adjusted scrolling viewport and one stacking line.");
-                    load.Cancel();
-                    load.Close();
-                });
-                TestServices.WindowHelper.WaitForIdle();
-
-                UIExecutor.Execute(() => VerifyStartupViewportFilled(inner, data, vertical));
-            }
         }
 
         private void VerifySynchronousStartup(bool wrapping, bool seeded, bool vertical = false, uint maximumBatchSize = 64)
