@@ -187,8 +187,9 @@ VectorCollectionView::LoadMoreItemsAsyncImpl(
         UINT sourceSize = 0;
         IFC(get_Size(&size));
         IFC(m_tpSourceList->get_Size(&sourceSize));
-        if (size != m_sizeAtLastLoad)
+        if (size != m_sizeAtLastLoad || sourceSize < m_sourceSizeAtLastLoad)
         {
+            // The view grew, or the source shrank (a Reset or Clear for a new query): loads start over.
             m_fruitlessLoadCount = 0;
         }
         else if (sourceSize != m_sourceSizeAtLastLoad)
@@ -208,12 +209,15 @@ Cleanup:
 
 // A filter that rejects the items loads bring would make a consumer (ListView) load until the source has no more:
 // once c_maxFruitlessLoads loads in a row grew the source but not the view, it reports no more items (unlike the
-// source's HasMoreItems, and unlike WPF, which has no incremental loading) until the view grows or its rules, its
-// source or a Refresh recompute it. A filter sparser than that many pages per match stops early.
+// source's HasMoreItems, and unlike WPF, which has no incremental loading) until the view grows, the source shrinks
+// (a new query) or its rules, its source or a Refresh recompute it. A filter sparser than that many pages per match
+// stops early.
 bool VectorCollectionView::IsFilterStarvingLoads()
 {
     UINT size = 0;
-    return IsShaped() && m_fruitlessLoadCount >= c_maxFruitlessLoads && SUCCEEDED(get_Size(&size)) && size == m_sizeAtLastLoad;
+    UINT sourceSize = 0;
+    return IsShaped() && m_fruitlessLoadCount >= c_maxFruitlessLoads && SUCCEEDED(get_Size(&size)) && size == m_sizeAtLastLoad &&
+        m_tpSourceList && SUCCEEDED(m_tpSourceList->get_Size(&sourceSize)) && sourceSize >= m_sourceSizeAtLastLoad;
 }
 
 void VectorCollectionView::ResetIncrementalLoadState()

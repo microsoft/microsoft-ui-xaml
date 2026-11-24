@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <XamlTraceLogging.h>
 #include <algorithm>
 #include <cmath>
 #include <string>
@@ -82,6 +81,9 @@ namespace DirectUI::ShapingEngine
         return hr == E_OUTOFMEMORY || hr == RPC_E_WRONG_THREAD;
     }
 
+    // A diagnostics event (VectorCollectionView_Shaping.cpp) for a contained failure that is not reported.
+    void TraceContainedFailure(HRESULT hr, HRESULT capturedHr, bool hasErrorInfo);
+
     // A source change or a live restore no app caller waits for: the first failure of app code during it, with the
     // error info the app's code left (its message and stack), reported once the view is consistent again.
     class ContainedFailureReport
@@ -136,8 +138,7 @@ namespace DirectUI::ShapingEngine
             if (hr != m_hr || !m_spErrorInfo)
             {
                 // Contained and not reported (no error info: most likely a framework listener's HRESULT).
-                TraceLoggingWrite(g_hTraceProvider, "CollectionViewContainedFailure",
-                    TraceLoggingHResult(hr, "HResult"));
+                TraceContainedFailure(hr, m_hr, !!m_spErrorInfo);
                 return;
             }
             IGNOREHR(::SetRestrictedErrorInfo(m_spErrorInfo.Get()));
