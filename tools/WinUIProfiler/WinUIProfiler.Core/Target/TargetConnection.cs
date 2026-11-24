@@ -712,19 +712,16 @@ History);
             catch (Exception error)
             {
                 errors.Add(error);
-
             }
             finally
             {
                 try
                 {
                     await tap.DisposeAsync().ConfigureAwait(false);
-
                 }
                 catch (Exception error)
                 {
                     errors.Add(error);
-
                 }
                 tap = null;
             }
