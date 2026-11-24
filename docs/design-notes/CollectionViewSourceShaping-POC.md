@@ -344,8 +344,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   when that implements `ISupportIncrementalLoading`; the loaded items arrive as source changes and are placed by the
   rules like any other. A filter that rejects the loaded items would make a consumer load until the source is
   drained, so after 10 loads in a row that grew the source but not the view, `HasMoreItems` is false until the view
-  grows or the app starts over (a rule change, `Refresh()`, a new source; a source `Reset`, as an AddRange-style
-  collection raises for each load, does not). A filter that matches less than once in 10
+  grows or the app starts over (a rule change, `Refresh()`, a new source, or the source shrinking, as when it is cleared
+  for a new query; a source `Reset` that only adds, as an AddRange-style collection raises for each load, does not).
+  A filter that matches less than once in 10
   pages stops early; the source's own `HasMoreItems` is unaffected.
   `LoadMoreItemsResult.Count` is the source's count, not the view's.
 - **Group notifications.** A computed group raises `PropertyChanged("ItemCount")` when an item joins or leaves it, as
@@ -905,13 +906,18 @@ the rows' layout) has not been profiled yet.
   reorder, drop, drag start, the live reorder animation and the item's reorder hints all ask
   `GetCanReorderItemsOverItemsSource`. WPF also blocks reorder on sorted views. The containers' visual states read a
   value cached per `ItemsSource` and items change (a rule change that moves no item leaves the hints stale until the
-  next change) and ask only the internal view, so no app code runs from a visual state; drag start and drop ask afresh,
-  app views included. All of it is compiled only with `MUX_PRERELEASE`. A shaped view whose rules were all removed
+  next change; it is not cached while the view is mid-change or deferred) and ask only the internal view, so no app
+  code runs from a visual state: over a sorted app view the hints show "reorderable" while the drag refuses. A drag
+  over the list asks once, on `DragEnter`, app views included; keyboard reorder and drag start ask afresh. All of it
+  is compiled only with `MUX_PRERELEASE`. A shaped view whose rules were all removed
   presents its source in order again; while it does (it listens to an observable source, its source indices are valid
   and no recompute is pending) its index writes go to the source, as WPF's view does once it no longer needs a local
   array, so reorder works again. A reorder picks the collection it writes to once (`GetReorderTarget`), so its
-  `RemoveAt` and `InsertAt` reach the same collection even if a source handler adds a rule in between; if the
-  `InsertAt` still fails, the item is put back where it was. Over a source that raises no changes, a shaped view
+  `RemoveAt` and `InsertAt` reach the same collection even if a source handler adds a rule in between; the view then
+  no longer presents source order, so the rest of a multi-item move stops and selection and focus follow the moved
+  item to where the view shows it. If an `InsertAt` fails without inserting (the collection is one item short), the
+  item is put back where it was; if it inserted and then failed (a change handler failed), it is left at its new
+  place. Either way the error reaches the caller. Over a source that raises no changes, a shaped view
   never writes through: writes fail and leave the source unchanged.
 - **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
   selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat

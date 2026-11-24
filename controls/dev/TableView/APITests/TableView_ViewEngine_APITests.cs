@@ -52,13 +52,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var op = fixture.ApplyRandomOperation(allowPropertyEdits: false);
                         fixture.VerifyMatchesFresh($"levels {levels}, step {step} ({op})");
                     }
+                    fixture.VerifyMatchesFresh($"levels {levels}, last step", isNewOracle: true);
                 });
             }
             CollectGarbageAndWaitForIdle();
         }
 
         // Views and groups the GC finds unreachable are released on the UI thread; drained here, not inside the next
-        // test's setup. A drain longer than IdleSynchronizer's 10 s wait is waited out (and logged) for up to a minute.
+        // test's setup. A drain longer than IdleSynchronizer's 10 s wait is waited out for up to a minute, and one
+        // longer than 2 s is logged as a warning (BenchTeardown in CollectionViewPerfBenchmarks times the drain).
         private static void CollectGarbageAndWaitForIdle([CallerMemberName] string caller = null)
         {
             var stopwatch = global::System.Diagnostics.Stopwatch.StartNew();
@@ -67,7 +69,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             GC.Collect();
             for (var attempt = 1; ; attempt++)
             {
-                var error = IdleSynchronizer.TryWait();
+                string error;
+                try
+                {
+                    error = IdleSynchronizer.TryWait();
+                }
+                catch (global::System.Runtime.InteropServices.COMException ex)
+                {
+                    error = ex.Message;
+                }
                 if (string.IsNullOrEmpty(error))
                 {
                     break;
@@ -77,6 +87,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.Fail($"{caller}: the UI thread did not go idle within a minute.");
                 }
+            }
+            if (stopwatch.ElapsedMilliseconds > 2000)
+            {
+                Log.Warning($"{caller}: settling took {stopwatch.ElapsedMilliseconds} ms, {GcCounts()}");
             }
             Log.Comment($"{caller}: settled in {stopwatch.ElapsedMilliseconds} ms, {GcCounts()}");
         }
@@ -123,7 +137,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Verify.Fail($"live, levels {levels}, round {round}: the view differs from a fresh view.\n  expected {expected}\n  actual   {actual}");
                     }
+
+                    // A later restore must not undo the match.
+                    RunOnUIThread.Execute(() => matches = fixture.Matches(out expected, out actual));
+                    if (!matches)
+                    {
+                        Verify.Fail($"live, levels {levels}, round {round}: the view changed after it matched.\n  expected {expected}\n  actual   {actual}");
+                    }
                 }
+
+                CollectGarbageAndWaitForIdle();
+                RunOnUIThread.Execute(() => fixture.VerifyMatchesFresh($"live, levels {levels}, settled", isNewOracle: true));
             }
             CollectGarbageAndWaitForIdle();
         }
@@ -696,6 +720,35 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 ((ICollectionViewShaping)view).Refresh();
                 Verify.IsTrue(view.HasMoreItems, "An app Refresh starts loading over.");
+            });
+            CollectGarbageAndWaitForIdle();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a filtered view that stopped incremental loading with no item visible loads again once its source is cleared for a new query.")]
+        public void VerifyIncrementalLoadingStartsOverAfterSourceClear()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var rows = new ResetIncrementalEngineRows(MakeEngineRows());
+                var cvs = new CollectionViewSource { Source = rows };
+                var view = cvs.View;
+                ((ICollectionViewShaping)view).Filter = item => ((EngineRow)item).Score < 0;
+                Verify.AreEqual(0, view.Count, "Precondition: the filter shows nothing.");
+
+                var loads = 0;
+                while (view.HasMoreItems && loads < 50)
+                {
+                    view.LoadMoreItemsAsync(5);
+                    loads++;
+                }
+                Verify.IsLessThanOrEqual(loads, 11, "Precondition: the loads stop.");
+
+                rows.Clear();
+                Verify.AreEqual(0, view.Count);
+                Verify.IsTrue(view.HasMoreItems, "A cleared source loads again.");
+                view.LoadMoreItemsAsync(5);
+                Verify.IsTrue(view.HasMoreItems, "Loading starts over: one fruitless load does not stop it.");
             });
             CollectGarbageAndWaitForIdle();
         }
@@ -1899,12 +1952,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return expected == actual;
             }
 
-            public void VerifyMatchesFresh(string context)
+            public void VerifyMatchesFresh(string context, bool isNewOracle = false)
             {
                 if (!Matches(out var expected, out var actual))
                 {
                     Verify.Fail($"{context}: the view differs from a fresh view.\n  expected {expected}\n  actual   {actual}");
                 }
+                if (isNewOracle)
+                {
+                    // Oracles that share nothing with the long-lived one: a new view over a copy, and LINQ.
+                    var fresh = new CollectionViewSource { Source = m_rows.ToList() };
+                    ApplyRules(fresh);
+                    Verify.AreEqual(Describe(fresh.View), Describe(m_cvs.View), $"{context}: the view equals a new view over a copy.");
+                    Verify.AreEqual(ExpectedIdsByLinq(), string.Join(" ", m_cvs.View.Select(item => ((EngineRow)item).Id)), $"{context}: the items are in the order LINQ gives.");
+                }
+            }
+
+            private string ExpectedIdsByLinq()
+            {
+                var culture = StringComparer.CurrentCulture;
+                var sourceIndex = m_rows.Select((row, i) => (row, i)).ToDictionary(pair => pair.row, pair => pair.i);
+                var visible = m_rows.Where(row => row.Score >= m_threshold).ToList();
+                var teamCounts = visible.GroupBy(row => row.Team).ToDictionary(group => group.Key, group => group.Count());
+                IOrderedEnumerable<EngineRow> ordered;
+                if (m_levels >= 1)
+                {
+                    ordered = m_levels == 3
+                        ? visible.OrderByDescending(row => teamCounts[row.Team]).ThenBy(row => row.Team, culture)
+                        : visible.OrderBy(row => row.Team, culture);
+                    if (m_levels >= 2)
+                    {
+                        ordered = ordered.ThenByDescending(row => row.Bucket);
+                    }
+                    ordered = m_descending ? ordered.ThenByDescending(row => row.Score) : ordered.ThenBy(row => row.Score);
+                }
+                else
+                {
+                    ordered = m_descending ? visible.OrderByDescending(row => row.Score) : visible.OrderBy(row => row.Score);
+                }
+                if (m_secondKey)
+                {
+                    ordered = ordered.ThenBy(row => row.Name, culture);
+                }
+                return string.Join(" ", ordered.ThenBy(row => sourceIndex[row]).Select(row => row.Id));
             }
 
             private void ApplyRules(CollectionViewSource cvs)
