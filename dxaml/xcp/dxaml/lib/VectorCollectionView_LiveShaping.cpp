@@ -25,7 +25,25 @@ namespace
     {
         wrl_wrappers::HString path;
         UINT flags = 0;
+        // A plain property name (no '.', indexer or attached property): on an INotifyPropertyChanged item it is
+        // followed by the item's one PropertyChanged handler (LivePropertyObserver::ConnectToPropertyChanged).
+        bool isPropertyName = false;
     };
+
+    bool IsPropertyName(_In_ HSTRING path)
+    {
+        UINT32 length = 0;
+        LPCWSTR buffer = WindowsGetStringRawBuffer(path, &length);
+        for (UINT32 i = 0; i < length; ++i)
+        {
+            const WCHAR c = buffer[i];
+            if (!((c >= L'a' && c <= L'z') || (c >= L'A' && c <= L'Z') || (c >= L'0' && c <= L'9') || c == L'_'))
+            {
+                return false;
+            }
+        }
+        return length > 0;
+    }
 
     _Check_return_ HRESULT AddLivePath(std::vector<LivePath>& paths, _In_opt_ HSTRING path, UINT flag)
     {
@@ -48,6 +66,7 @@ namespace
         LivePath added;
         IFC_RETURN(added.path.Set(path));
         added.flags = flag;
+        added.isPropertyName = IsPropertyName(path);
         paths.push_back(std::move(added));
         return S_OK;
     }
@@ -117,13 +136,39 @@ public:
             m_listener.Begin()->Get()->ClearOwner();
             m_listener.Clear();
         }
+        if (m_epPropertyChanged && !m_source.Empty())
+        {
+            auto spSource = m_source.Begin()->GetSafeReference();
+            if (spSource)
+            {
+                IGNOREHR(m_epPropertyChanged.DetachEventHandler(spSource.Get()));
+            }
+        }
+        m_source.Clear();
         m_pView = nullptr;
+    }
+
+    // Follows every plain property name among the paths on an INotifyPropertyChanged item with one handler, as the
+    // listener's step would follow each of them (INPCListenerBase: the names compare ordinally, a null or empty name
+    // is every property). One handler and one tracked reference per item, instead of a listener with its steps,
+    // property access and handler per item and path (P-4 in the design note).
+    _Check_return_ HRESULT ConnectToPropertyChanged(_In_ const std::vector<LivePath>* pPaths, _In_ IInspectable* pSource, _In_ xaml_data::INotifyPropertyChanged* pNotifier)
+    {
+        m_pPaths = pPaths;
+        m_source.Append(pSource);
+        IFC_RETURN(m_epPropertyChanged.AttachEventHandler(pNotifier,
+            [this](IInspectable*, xaml_data::IPropertyChangedEventArgs* pArgs)
+            {
+                return OnSourcePropertyChanged(pArgs);
+            }));
+        return S_OK;
     }
 
     // The listener holds the item (an app object), so the view walks it (VectorCollectionView::OnReferenceTrackerWalk).
     void ReferenceTrackerWalk(EReferenceTrackerWalkType walkType)
     {
         m_listener.ReferenceTrackerWalk(walkType);
+        m_source.ReferenceTrackerWalk(walkType);
     }
 
     LiveShapingItem* Item() const
@@ -136,6 +181,12 @@ public:
         return m_flags;
     }
 
+    // The flags of the live properties the change being reported is about.
+    UINT ChangedFlags() const
+    {
+        return m_changedFlags;
+    }
+
     _Check_return_ HRESULT GetTraceString(_Outptr_result_z_ const WCHAR** pszTraceString) override
     {
         *pszTraceString = L"";
@@ -146,20 +197,66 @@ public:
     // not a change the view silently misses.
     _Check_return_ HRESULT SourceChanged() override
     {
-        if (m_pView)
+        IFC_RETURN(ReportChange(m_flags));
+        return S_OK;
+    }
+
+private:
+    _Check_return_ HRESULT ReportChange(UINT flags)
+    {
+        if (m_pView && flags)
         {
             IFC_RETURN(m_pView->CheckThread());
+            m_changedFlags = flags;
             IFC_RETURN(m_pView->OnLivePropertyChanged(this));
         }
         return S_OK;
     }
 
-private:
+    _Check_return_ HRESULT OnSourcePropertyChanged(_In_ xaml_data::IPropertyChangedEventArgs* pArgs)
+    {
+        wrl_wrappers::HString name;
+        UINT flags = 0;
+
+        if (!m_pView || !m_pPaths)
+        {
+            return S_OK;
+        }
+
+        IFC_RETURN(pArgs->get_PropertyName(name.GetAddressOf()));
+        if (!name.Get())
+        {
+            flags = m_flags;
+        }
+        else
+        {
+            UINT32 length = 0;
+            LPCWSTR buffer = name.GetRawBuffer(&length);
+            for (const auto& path : *m_pPaths)
+            {
+                UINT32 pathLength = 0;
+                LPCWSTR pathBuffer = path.isPropertyName ? WindowsGetStringRawBuffer(path.path.Get(), &pathLength) : nullptr;
+                if (pathBuffer && pathLength == length && wcsncmp(buffer, pathBuffer, length) == 0)
+                {
+                    flags |= path.flags;
+                }
+            }
+        }
+
+        IFC_RETURN(ReportChange(flags & m_flags));
+        return S_OK;
+    }
+
     VectorCollectionView* m_pView;
     LiveShapingItem* m_pItem;
     UINT m_flags;
+    UINT m_changedFlags = 0;
     // At most one; a TrackerPtrVector so the view can walk it.
     TrackerPtrVector<PropertyPathListener> m_listener;
+    // ConnectToPropertyChanged: the item (at most one, walked as the listener is) and its PropertyChanged handler.
+    TrackerPtrVector<IInspectable> m_source;
+    ctl::EventPtr<PropertyChangedEventCallback> m_epPropertyChanged;
+    const std::vector<LivePath>* m_pPaths = nullptr;
 };
 
 // One per source item, in source order (WPF: LiveShapingItem). Dirty flags mark a live property that changed.
@@ -641,11 +738,40 @@ _Check_return_ HRESULT VectorCollectionView::CreateLiveShapingItem(_In_ const Li
         IFC_RETURN(spSourceItem.As(&spIdentity));
         spItem->pIdentity = spIdentity.Get();
     }
+
+    // The listener would follow these items' plain property names through their PropertyChanged too; a
+    // DependencyObject (property changes), a map (MapChanged) and a collection view (its current item) are followed
+    // by a listener per path.
+    ctl::ComPtr<xaml_data::INotifyPropertyChanged> spNotifier;
+    if (spSourceItem
+        && !ctl::is<xaml::IDependencyObject>(spSourceItem.Get())
+        && !ctl::is<wfc::IMap<HSTRING, IInspectable*>>(spSourceItem.Get())
+        && !ctl::is<xaml_data::ICollectionView>(spSourceItem.Get()))
+    {
+        spNotifier = ctl::query_interface_cast<xaml_data::INotifyPropertyChanged>(spSourceItem.Get());
+    }
+
+    UINT notifiedFlags = 0;
     for (const auto& livePath : state.paths)
     {
+        if (spNotifier && livePath.isPropertyName)
+        {
+            notifiedFlags |= livePath.flags;
+            continue;
+        }
+
         auto spObserver = std::make_unique<LivePropertyObserver>(this, spItem.get(), livePath.flags);
         // A path the item does not have is observed as a binding to it would be: it never changes.
         if (SUCCEEDED(spObserver->Connect(livePath.path.Get(), spSourceItem.Get())))
+        {
+            spItem->observers.push_back(std::move(spObserver));
+        }
+    }
+
+    if (notifiedFlags != 0)
+    {
+        auto spObserver = std::make_unique<LivePropertyObserver>(this, spItem.get(), notifiedFlags);
+        if (SUCCEEDED(spObserver->ConnectToPropertyChanged(&state.paths, spSourceItem.Get(), spNotifier.Get())))
         {
             spItem->observers.push_back(std::move(spObserver));
         }
@@ -774,11 +900,11 @@ _Check_return_ HRESULT VectorCollectionView::OnLivePropertyChanged(_In_ LiveProp
     }
 
     auto pItem = pObserver->Item();
-    if (!(pItem->dirtyFlags & LiveShapingFlag_Sorting) && (pObserver->Flags() & LiveShapingFlag_Sorting))
+    if (!(pItem->dirtyFlags & LiveShapingFlag_Sorting) && (pObserver->ChangedFlags() & LiveShapingFlag_Sorting))
     {
         ++spState->sortDirtyCount;
     }
-    pItem->dirtyFlags |= pObserver->Flags();
+    pItem->dirtyFlags |= pObserver->ChangedFlags();
 
     if (!spState->isRestoreQueued && m_deferRefreshLevel == 0)
     {

@@ -1068,7 +1068,6 @@ ReferenceTrackerManager::UnregisterTrackerPtr( _In_ TrackerTargetReference *pTra
         CStaticLock lock;
 
         This->m_allTrackerPtrs.erase(pTrackerPtr);
-        This->m_allTrackerPtrs.shrink_to_fit();
     }
 }
 #endif

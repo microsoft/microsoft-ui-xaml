@@ -365,8 +365,9 @@ namespace DirectUI
 #if DBG
         // Use the LeakIgnoringAllocator. If objects holding a TrackerPtr have been leaked, they won't unregister that pointer with the ReferenceTrackerManager
         // so we need to ignore these leaks. We also don't want a perfectly clean test getting dinged if this container has to reallocate
-        // since a previous test dirtied it.
-        using TrackerContainer = containers::vector_set<TrackerTargetReference*, ::std::less<TrackerTargetReference*>, XcpAllocation::LeakIgnoringAllocator<TrackerTargetReference*>>;
+        // since a previous test dirtied it. Hashed: every TrackerPtr a WeakReferenceSource owns registers and unregisters here, and a
+        // sorted vector made each of those O(all TrackerPtrs), so creating many objects slowed down with how many were alive.
+        using TrackerContainer = std::unordered_set<TrackerTargetReference*, std::hash<TrackerTargetReference*>, std::equal_to<TrackerTargetReference*>, XcpAllocation::LeakIgnoringAllocator<TrackerTargetReference*>>;
         TrackerContainer m_allTrackerPtrs;
 #endif
 
