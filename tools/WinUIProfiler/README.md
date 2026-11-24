@@ -136,6 +136,20 @@ phases, processed lifetimes and kernel-allocation links.
 It owns and stops only its unique test ETW session
 and deletes its temporary recording.
 
+To validate the opt-in surface-to-texture producer against real app captures, start
+recording before launching the same WinUI workload twice, with Direct3D11 and the
+default XAML provider enabled. Enable `Microsoft-Windows-XAML-Profiler` at Verbose level only for the first capture:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --surface-texture-integration enabled.etl <enabled-pid> disabled.etl <disabled-pid>
+```
+
+This verifies the real `DCompSurfaceTextureObserved` payload, requires every observation
+to join surface-initialization and Direct3D11 resource events, and checks the active-rendering
+control without the opt-in provider. Offsets identify the gutter-excluded content origin.
+Observations describe transient update textures, not exclusive surface or element GPU bytes.
+The test reads existing ETLs and does not require elevated capture permissions.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, then connect. The target settings include a note that connecting
 trusts the bundled injector and TAP binaries to run native code in the target.

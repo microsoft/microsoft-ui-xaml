@@ -49,6 +49,14 @@ if (args is ["--graphics-probe"])
     return;
 }
 
+if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, var disabledTrace, var disabledPid])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Surface texture integration requires Windows.");
+    SurfaceTextureTraceIntegration.Run(enabledTrace, int.Parse(enabledPid, System.Globalization.CultureInfo.InvariantCulture),
+        disabledTrace, int.Parse(disabledPid, System.Globalization.CultureInfo.InvariantCulture));
+    return;
+}
+
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
 var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
@@ -1382,6 +1390,7 @@ finally
 }
 Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
 
+SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
