@@ -312,6 +312,12 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     // This is a one-time override. To clear it, call it again with true
     IFACEMETHOD(SetXamlVisibilityOverride)(_In_ BOOLEAN isVisible) = 0;
 
+    // Deliver a session display on/off notification, as the GUID_SESSION_DISPLAY_STATUS callback does.
+    IFACEMETHOD(SimulateDisplayStatusChanged)(_In_ BOOLEAN isDisplayOn) = 0;
+
+    // Apply SetXamlVisibilityOverride, then deliver a visibility notification, as a window or island change does.
+    IFACEMETHOD(SimulateXamlVisibilityChanged)(_In_ BOOLEAN isVisible) = 0;
+
     IFACEMETHOD(SetBrushForXamlRoot)(
         _In_ xaml_media::IXamlCompositionBrushBase* xcbb,
         _In_ IInspectable* xamlRoot,
