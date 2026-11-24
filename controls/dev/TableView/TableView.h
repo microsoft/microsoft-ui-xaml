@@ -1085,17 +1085,27 @@ private:
     // reapply: re-sorts a column already sorted in `direction` on its current key.
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true, bool reapply = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
-    // Sorting and Sorted handlers may change a column's sort key. The change is not applied inside
-    // the transition: a Sorting handler's change is used by that sort (or dropped if it cancels),
-    // and one from a Sorted handler is applied on the next dispatcher turn.
-    template <typename F> bool RunSortTransition(const winrt::TableViewColumn& column, F&& transition);
-    void SchedulePendingSortKeyChanges();
-    void ApplyPendingSortKeyChanges();
+    // Sorting and Sorted handlers may change a column's sort key. A change made inside a transition
+    // only marks the table dirty; once the outermost transition ends, a reconcile on the next
+    // dispatcher turn compares each sorted column's key with the key its order was built with
+    // (m_tableViewSourceSort) and the key a cancelled Sorting left it with (declined).
+    template <typename F> bool RunSortTransition(F&& transition);
+    void ScheduleSortKeyReconcile(bool allowSynchronous);
+    void ReconcileSortKeys();
+    void ReconcileSortKey(const winrt::TableViewColumn& column);
+    void RecordDeclinedSortKey(const winrt::TableViewColumn& column);
+    void ForgetDeclinedSortKeys(const winrt::TableViewColumn& column = nullptr);
+    struct DeclinedSortKey
+    {
+        winrt::weak_ref<winrt::TableViewColumn> Column;
+        winrt::hstring MemberPath;
+        winrt::ITableViewSortComparer Comparer{ nullptr };
+    };
+    std::vector<DeclinedSortKey> m_declinedSortKeys;
     uint32_t m_sortTransitionDepth{ 0 };
-    bool m_outerSortTransitionCanceled{ false };
-    bool m_processingSortKeyChanges{ false };
-    bool m_sortKeyChangesQueued{ false };
-    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_pendingSortKeyColumns;
+    bool m_sortKeysDirty{ false };
+    bool m_sortKeyReconcileQueued{ false };
+    bool m_reconcilingSortKeys{ false };
     // The lit column describes the app's source sort, not one this table installed.
     bool IsSortLitOnlyByApp() const;
     winrt::TableViewKeySelector GetTableViewSourceSortKeySelector(const winrt::hstring& sortMemberPath);
