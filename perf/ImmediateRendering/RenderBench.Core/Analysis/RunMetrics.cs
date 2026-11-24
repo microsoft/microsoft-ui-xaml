@@ -113,7 +113,43 @@ public sealed record ThreadModuleMetrics(string Module, string Category, int Thr
 
 // Memory after one S9 lifecycle step: the last sample before the next step (or the end of the phase).
 public sealed record StepMetrics(int Step, string Name, int Windows, double PrivateMB, double WorkingSetMB, double GpuLocalMB,
-    int GdiObjects, int UserObjects);
+    int GdiObjects, int UserObjects)
+{
+    // ---- Backend decision scenes S24-S32 (null for older traces). The step window is [SceneStep, next SceneStep), or
+    // to the end of its phase for the last step. "Settled" values are medians over the second half of the window. ----
+    public double? DurationMs { get; init; }
+    public double? PrivateMBMedian { get; init; }
+    public double? PeakPrivateMB { get; init; }
+    public double? WorkingSetMBMedian { get; init; }
+    // Process CPU (user + kernel) over the window, and the ThreadCategory split.
+    public double? CpuMsPerSecond { get; init; }
+    public ThreadCpuMetrics? ThreadCpu { get; init; }
+    public int? FramesDrawn { get; init; }
+    public double? Fps { get; init; }
+    // Session dwm.exe private MB (settled median) minus its pre-window baseline; TotalMB = PrivateMBMedian + DwmDeltaMB.
+    public double? DwmDeltaMB { get; init; }
+    public double? TotalMB { get; init; }
+    // dwm.exe CPU over the window (whole desktop composition; meaningful only on an otherwise idle session).
+    public double? DwmCpuMsPerSecond { get; init; }
+    // Last ResourceInventory before the window ends, i.e. of the last painted frame (immediate modes): swap chain/surface bytes and painter cache bytes/objects.
+    public double? BackendSurfaceMB { get; init; }
+    public double? BackendCacheMB { get; init; }
+    public int? CachedObjects { get; init; }
+    // Last value of each SceneValue counter in the window (ClientWidth, FullFrameCpuMs, ...).
+    public IReadOnlyDictionary<string, double>? Values { get; init; }
+}
+
+// Least-squares line y = Slope * x + Intercept over Points sweep steps.
+public sealed record LinearFit(double Slope, double Intercept, double RSquared, int Points);
+
+// Backend decision scenes S24-S32: the sweep's cost curve and named per-scene results (see the test plan section
+// "Backend decision scenarios"). XUnit names the sweep axis of the fits (megapixels, 1k elements, windows, 100 navigations).
+public sealed record DecisionMetrics(
+    string XUnit,
+    double? DwmBaselineMB,
+    LinearFit? PrivateFit,
+    LinearFit? TotalFit,
+    IReadOnlyDictionary<string, double> Summary);
 
 public sealed record StartupMetrics(double? ProcessStartToSceneReadyMs, double? ProcessStartToFirstFrameMs);
 
@@ -185,7 +221,9 @@ public sealed record RunMetrics(
     double? PrivateMBPerOpenPopup = null,
     // S22: share of successful RenderTargetBitmap renders and the mean of the capture comparisons (0..255).
     double? RtbSuccessRate = null,
-    double? CaptureMeanAbsDiff = null)
+    double? CaptureMeanAbsDiff = null,
+    // ---- Backend decision scenes S24-S32 ----
+    DecisionMetrics? Decision = null)
 {
     public bool IsSkipped => SkipReason is not null;
     public bool GatePassed => !IsSkipped && Gate.All(g => g.Passed);

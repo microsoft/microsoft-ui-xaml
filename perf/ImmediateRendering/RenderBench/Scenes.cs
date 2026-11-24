@@ -68,6 +68,15 @@ static class SceneFactory
         SceneId.DeviceLost => new DeviceLostScene(options),
         SceneId.Accessibility => new AccessibilityScene(options),
         SceneId.AppShell => new AppShellScene(options),
+        SceneId.WindowSize => new WindowSizeScene(options),
+        SceneId.Density => new DensityScene(options),
+        SceneId.WindowCount => new WindowCountScene(options),
+        SceneId.Background => new BackgroundScene(options),
+        SceneId.NavChurn => new NavChurnScene(options),
+        SceneId.Sustained => new SustainedScene(options),
+        SceneId.Resize => new ResizeScene(options),
+        SceneId.Minimal => new MinimalScene(options),
+        SceneId.LargeCanvas => new LargeCanvasScene(options),
         _ => new SettingsScene(options),
     };
 }

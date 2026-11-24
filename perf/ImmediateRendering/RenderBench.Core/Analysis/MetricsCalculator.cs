@@ -85,7 +85,7 @@ public static partial class MetricsCalculator
 
         var latency = ComputeInputLatency(records, frames, options, IsRealInput);
         string? scene = runStarted?.Scene ?? sceneReady?.Scene;
-        var steps = ComputeSteps(records, phases);
+        var steps = ComputeSteps(records, phases, frames);
         var full = ComputeFullBackend(scene, records, frames, steps, options);
         var unsupportedCounts = CountUnsupported(scene, records, full.FallbackCount > 0);
 
@@ -134,7 +134,9 @@ public static partial class MetricsCalculator
             PopupOpenMsByKind: full.PopupOpenByKind,
             PrivateMBPerOpenPopup: full.PrivateMBPerOpenPopup,
             RtbSuccessRate: full.RtbSuccessRate,
-            CaptureMeanAbsDiff: full.CaptureMeanAbsDiff);
+            CaptureMeanAbsDiff: full.CaptureMeanAbsDiff,
+            // Backend decision scenes S24-S32
+            Decision: ComputeDecision(scene, records, steps));
     }
 
     // ---- Added by immediate-rendering-d2d-sw: per-thread CPU split ----

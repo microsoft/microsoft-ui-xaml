@@ -86,7 +86,7 @@ public static partial class MetricsCalculator
 
     // Each step's memory is the last sample before the next step starts (the settled value), or before the end of the
     // phase containing the step for the last one.
-    static IReadOnlyList<StepMetrics>? ComputeSteps(List<TraceRecord> records, List<PhaseWindow> phases)
+    static IReadOnlyList<StepMetrics>? ComputeSteps(List<TraceRecord> records, List<PhaseWindow> phases, List<FrameSpan> frames)
     {
         var steps = records.OfType<SceneStepRecord>().OrderBy(s => s.TimeMs).ToList();
         if (steps.Count == 0)
@@ -103,10 +103,11 @@ public static partial class MetricsCalculator
                 ? steps[i + 1].TimeMs
                 : phases.FirstOrDefault(p => p.Contains(begin))?.EndMs ?? lastTime + 1;
             var sample = samples.LastOrDefault(s => s.TimeMs >= begin && s.TimeMs < end);
-            result.Add(sample is null
+            var step = sample is null
                 ? new StepMetrics(steps[i].Step, steps[i].Name, steps[i].Windows, double.NaN, double.NaN, double.NaN, 0, 0)
                 : new StepMetrics(steps[i].Step, steps[i].Name, steps[i].Windows, sample.PrivateBytes / MB,
-                    sample.WorkingSetBytes / MB, sample.GpuLocalBytes / MB, sample.GdiObjects, sample.UserObjects));
+                    sample.WorkingSetBytes / MB, sample.GpuLocalBytes / MB, sample.GdiObjects, sample.UserObjects);
+            result.Add(DescribeStepWindow(step, begin, end, records, frames));
         }
         return result;
     }

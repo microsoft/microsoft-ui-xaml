@@ -13,7 +13,7 @@ for each scene. Each run:
 Afterwards it writes <Results>\report.md. Requires an elevated shell (WPR).
 
 -Scenes picks entries from the scene matrix below (default: S1-S10 with their variants, S1/S2 first), plan-id aliases
-(s1..s23) or the groups full-backend (S11-S23) and all. Variant entries (gallery-decoded, animated-noring,
+(s1..s32) or the groups full-backend (S11-S23), decision (S24-S32) and all. Variant entries (gallery-decoded, animated-noring,
 multiwindow-tabs, interop-nointerop, lottie-noplayer, swapchain-nomedia) add their RenderBench flags; results go to
 <Results>\<entry>\<mode>\run<N>.
 Full runs use each scene's default phase lengths (README, "Scenes"); -Quick shortens every phase, per scene.
@@ -30,8 +30,8 @@ Full runs use each scene's default phase lengths (README, "Scenes"); -Quick shor
 param(
     [ValidateSet('composition', 'gdiplus', 'd2d-hw', 'd2d-sw')]
     [string[]]$Modes = @('composition', 'gdiplus', 'd2d-hw', 'd2d-sw'),
-    # Entries of the scene matrix below, plan-id aliases (s1..s23, s11-nointerop, s12-noplayer, s16-nomedia), or the
-    # groups 'full-backend' (S11-S16, S19-S23 and their variants) and 'all'. Validated after the matrix is defined.
+    # Entries of the scene matrix below, plan-id aliases (s1..s32, s11-nointerop, s12-noplayer, s16-nomedia), or the
+    # groups 'full-backend' (S11-S16, S19-S23 and their variants), 'decision' (S24-S32) and 'all'. Validated after the matrix is defined.
     [string[]]$Scenes = @('settings', 'dashboard', 'inbox', 'gallery', 'gallery-decoded', 'animated', 'animated-noring',
         'reader', 'layered', 'datagrid', 'multiwindow', 'multiwindow-tabs', 'form'),
     # auto picks programmatic input in remote/disconnected sessions (README, "Input modes").
@@ -105,6 +105,17 @@ $sceneMatrix = [ordered]@{
     'devicelost'        = @{ Args = @('--scene', 'devicelost');                  Quick = 6 }
     'accessibility'     = @{ Args = @('--scene', 'accessibility');               Quick = 6 }
     'appshell'          = @{ Args = @('--scene', 'appshell');                    Quick = 10; QuickArgs = @('--items', '500') }
+    # Backend decision scenes (test plan S24-S32): step sweeps that run to completion (--interaction only sets S29's
+    # animation length). Steps hold --step-seconds (default 4 s), so each settled half has about four 500 ms samples.
+    'winsize'           = @{ Args = @('--scene', 'winsize'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
+    'density'           = @{ Args = @('--scene', 'density'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
+    'windowcount'       = @{ Args = @('--scene', 'windowcount'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
+    'background'        = @{ Args = @('--scene', 'background'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
+    'navchurn'          = @{ Args = @('--scene', 'navchurn'); Quick = 1; QuickArgs = @('--step-seconds', '2', '--items', '60') }
+    'sustained'         = @{ Args = @('--scene', 'sustained'); Quick = 10; QuickArgs = @('--step-seconds', '2') }
+    'resize'            = @{ Args = @('--scene', 'resize'); Quick = 1; QuickArgs = @('--step-seconds', '2', '--items', '40') }
+    'minimal'           = @{ Args = @('--scene', 'minimal'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
+    'largecanvas'       = @{ Args = @('--scene', 'largecanvas'); Quick = 1; QuickArgs = @('--step-seconds', '2') }
 }
 $sceneAliases = @{
     's1' = 'settings'; 's2' = 'dashboard'; 's3' = 'inbox'; 's4' = 'gallery'; 's5' = 'animated'; 's6' = 'reader'
@@ -112,17 +123,21 @@ $sceneAliases = @{
     's11' = 'interop'; 's11-nointerop' = 'interop-nointerop'; 's12' = 'lottie'; 's12-noplayer' = 'lottie-noplayer'
     's13' = 'materials'; 's14' = 'popups'; 's15' = 'independent'; 's16' = 'swapchain'; 's16-nomedia' = 'swapchain-nomedia'
     's19' = 'text'; 's20' = 'dpitheme'; 's21' = 'devicelost'; 's22' = 'accessibility'; 's23' = 'appshell'
+    's24' = 'winsize'; 's25' = 'density'; 's26' = 'windowcount'; 's27' = 'background'; 's28' = 'navchurn'
+    's29' = 'sustained'; 's30' = 'resize'; 's31' = 'minimal'; 's32' = 'largecanvas'
 }
+$decisionScenes = @('winsize', 'density', 'windowcount', 'background', 'navchurn', 'sustained', 'resize', 'minimal', 'largecanvas')
 $fullBackendScenes = @('interop', 'interop-nointerop', 'lottie', 'lottie-noplayer', 'materials', 'popups', 'independent',
     'swapchain', 'swapchain-nomedia', 'text', 'dpitheme', 'devicelost', 'accessibility', 'appshell')
 $Scenes = @(foreach ($entry in $Scenes) {
     $name = $entry.ToLowerInvariant()
     if ($name -eq 'all') { @($sceneMatrix.Keys) }
     elseif ($name -eq 'full-backend') { $fullBackendScenes }
+    elseif ($name -eq 'decision') { $decisionScenes }
     elseif ($sceneAliases.ContainsKey($name)) { $sceneAliases[$name] }
     elseif ($sceneMatrix.Contains($name)) { $name }
     elseif ($name -in 's17', 's18') { throw "$entry (WebView2/InkCanvas) is out of scope; see the test plan." }
-    else { throw "Unknown scene '$entry'. Valid: $((@($sceneMatrix.Keys) + @($sceneAliases.Keys) + 'full-backend', 'all') -join ', ')" }
+    else { throw "Unknown scene '$entry'. Valid: $((@($sceneMatrix.Keys) + @($sceneAliases.Keys) + 'full-backend', 'decision', 'all') -join ', ')" }
 }) | Select-Object -Unique
 function Get-SceneArgs([string]$entry) {
     $spec = $sceneMatrix[$entry]

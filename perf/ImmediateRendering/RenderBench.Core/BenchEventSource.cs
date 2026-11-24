@@ -110,4 +110,13 @@ public sealed class BenchEventSource : EventSource
     [Event(22, Level = EventLevel.Informational)]
     public void RasterModuleVersion(string Module, string Version) => WriteEvent(22, Module, Version);
     // ---- End immediate-rendering-d2d-sw ----
+
+    // ---- Backend decision scenes S24-S32 ----
+    // Private bytes and working set of the dwm.exe in this process's session: surfaces the system compositor holds for
+    // this app are not in the app's private bytes. Phase 0 is the baseline taken before the first window is created.
+    // CpuMs is dwm.exe's cumulative CPU (it composes every window, so its rate is attributable only on an idle desktop).
+    // PrivateBytes is -1 when dwm.exe could not be queried.
+    [Event(23, Level = EventLevel.Informational)]
+    public void DwmMemorySample(int Phase, long PrivateBytes, long WorkingSetBytes, int DwmProcessId, double CpuMs)
+        => WriteEvent(23, Phase, PrivateBytes, WorkingSetBytes, DwmProcessId, CpuMs);
 }

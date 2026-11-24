@@ -24,6 +24,16 @@ public enum SceneId
     DeviceLost,           // S21: simulated device loss (immediate modes)
     Accessibility,        // S22: focus visuals over 50 controls, RenderTargetBitmap vs on-screen capture
     AppShell,             // S23: NavigationView shell, settings pages, 5x2,000 details list, control gallery
+    // ---- Backend decision scenes: step sweeps that expose fixed and per-unit cost curves ----
+    WindowSize,  // S24: one page at client sizes 640x480 .. 3840x2160
+    Density,     // S25: 250 .. 32k visible elements in one window
+    WindowCount, // S26: 1 .. 16 small tool windows
+    Background,  // S27: visible, minimized, restored, hidden, shown, occluded
+    NavChurn,    // S28: 200 Frame navigations over 10 page types, no page cache
+    Sustained,   // S29: 60 s of continuous full-window animation
+    Resize,      // S30: 150 programmatic resizes, then settle
+    Minimal,     // S31: 320x200 tray-style window, one TextBlock and one Button
+    LargeCanvas, // S32: 10,000x10,000 zoomable canvas, scripted pans and zooms
 }
 
 // How scripted interactions reach the app. Auto resolves at run time (see BenchRunner.ResolveInputMode).
@@ -84,11 +94,28 @@ public static class SceneCatalog
             "focus visuals over 50 controls; RenderTargetBitmap vs capture"),
         new(SceneId.AppShell, "appshell", "S23", "AppShell", new(30, 0, 0.5, 0, 2_000),
             "NavigationView shell, settings, details list, gallery; 10 navigations"),
+        // Backend decision scenes. All activity is in Interaction, one SceneStep per sweep point.
+        // Items: S25 maximum element count, S26 maximum windows, S28 navigations, S29 animated tiles, S30 resizes,
+        // S32 canvas shapes. S29 InteractionSeconds is the animation length.
+        new(SceneId.WindowSize, "winsize", "S24", "WindowSize", new(0, 0, 0, 0, 0), "settings page at 640x480..3840x2160 client sizes"),
+        new(SceneId.Density, "density", "S25", "Density", new(0, 0, 0, 0, 32_000), "250..32k visible tiles and shapes; full-frame CPU"),
+        new(SceneId.WindowCount, "windowcount", "S26", "WindowCount", new(0, 0, 0, 0, 16), "1..16 small 400x300 tool windows"),
+        new(SceneId.Background, "background", "S27", "Background", new(0, 0, 0, 0, 0),
+            "visible, minimized, restored, hidden, shown, occluded"),
+        new(SceneId.NavChurn, "navchurn", "S28", "NavChurn", new(0, 0, 0, 0, 200), "200 Frame navigations over 10 page types"),
+        new(SceneId.Sustained, "sustained", "S29", "Sustained", new(60, 0, 0, 0, 200), "60 s of continuous full-window animation"),
+        new(SceneId.Resize, "resize", "S30", "Resize", new(0, 0, 0, 0, 150), "150 resizes between 800x600 and 1600x1000, then settle"),
+        new(SceneId.Minimal, "minimal", "S31", "Minimal", new(0, 0, 0, 0, 0), "320x200 window with one TextBlock and one Button"),
+        new(SceneId.LargeCanvas, "largecanvas", "S32", "LargeCanvas", new(0, 0, 0, 0, 3_000),
+            "10,000x10,000 canvas of 3k shapes; pans at zoom 0.25, 1 and 4"),
     ];
+
+    // Backend decision scenes (S24..S32): step sweeps whose length is set by the scene, not by --duration.
+    public static bool IsDecisionScene(SceneId id) => id >= SceneId.WindowSize;
 
     public static SceneInfo Get(SceneId id) => All.First(s => s.Id == id);
 
-    public const string PlanIdRange = "s1..s23 (no s17/s18)";
+    public const string PlanIdRange = "s1..s32 (no s17/s18)";
 
     // Accepts the CLI name ("datagrid"), the enum name, or the test-plan id ("s8"); never a number.
     public static bool TryParse(string text, out SceneId id)

@@ -108,6 +108,9 @@ public static class EtlReader
                 // Full-backend scenes S11-S23
                 "UiBlockBegin" => new UiBlockRecord(t, pid, I32(e, "BlockId"), true, F64(e, "DurationMs")),
                 "UiBlockEnd" => new UiBlockRecord(t, pid, I32(e, "BlockId"), false, F64(e, "DurationMs")),
+                // Backend decision scenes S24-S32
+                "DwmMemorySample" => new DwmMemoryRecord(t, pid, I32(e, "Phase"), I64(e, "PrivateBytes"), I64(e, "WorkingSetBytes"),
+                    I32(e, "DwmProcessId"), F64(e, "CpuMs")),
                 _ => null,
             };
         }

@@ -78,6 +78,14 @@ public static class Program
             }
         }
 
+        // Decision scenes: session dwm.exe memory before this process creates any window (DWM delta baseline).
+        (long PrivateBytes, long WorkingSetBytes, int ProcessId, double CpuMs) dwm;
+        using (var dwmSampler = new DwmSampler())
+        {
+            dwm = dwmSampler.Take();
+        }
+        BenchEventSource.Log.DwmMemorySample(0, dwm.PrivateBytes, dwm.WorkingSetBytes, dwm.ProcessId, dwm.CpuMs);
+
         Application.Start(_ =>
         {
             SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread()));

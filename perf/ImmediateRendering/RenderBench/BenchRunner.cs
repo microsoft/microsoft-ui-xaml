@@ -13,6 +13,7 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
     readonly Window _window = new() { Title = "RenderBench" };
     readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
     readonly MemorySampler _sampler = new();
+    readonly DwmSampler _dwmSampler = new();
     readonly ThreadCpuSampler _threadSampler = new(); // immediate-rendering-d2d-sw: W1/W2 CPU split
     readonly object _sampleLock = new();
     IScene? _scene;
@@ -97,7 +98,12 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
 
             await Phase(BenchPhase.Interaction, options.InteractionSeconds, async () =>
             {
-                using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(options.InteractionSeconds));
+                // Decision scenes (S24-S32) run their step sweep to completion; their length is not --interaction.
+                using var stop = new CancellationTokenSource();
+                if (!SceneCatalog.IsDecisionScene(options.Scene))
+                {
+                    stop.CancelAfter(TimeSpan.FromSeconds(options.InteractionSeconds));
+                }
                 _tick = 0;
                 var updates = _scene.IsDynamic && options.UpdateHz > 0 ? Every(options.UpdateHz, Update, stop.Token) : Task.CompletedTask;
                 Task activity;
@@ -155,6 +161,7 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
             EmitThreadSummary(); // immediate-rendering-d2d-sw
             BenchEventSource.Log.RunCompleted(status, detail);
             _sampler.Dispose();
+            _dwmSampler.Dispose();
             if (options.Exit)
             {
                 Application.Current.Exit();
@@ -362,6 +369,8 @@ sealed class BenchRunner(BenchOptions options) : ISceneHost
             BenchEventSource.Log.ThreadCpuSample(_phase, ms[(int)ThreadCategory.Ui], ms[(int)ThreadCategory.WarpRasterizer],
                 ms[(int)ThreadCategory.D2DDWrite], ms[(int)ThreadCategory.Composition], ms[(int)ThreadCategory.Other], threads);
             // ---- End immediate-rendering-d2d-sw ----
+            var dwm = _dwmSampler.Take(); // decision scenes: DWM delta
+            BenchEventSource.Log.DwmMemorySample(_phase, dwm.PrivateBytes, dwm.WorkingSetBytes, dwm.ProcessId, dwm.CpuMs);
         }
     }
 

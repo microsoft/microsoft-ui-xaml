@@ -92,3 +92,9 @@ public sealed record WindowFallbackRecord(double TimeMs, int ProcessId, BackendM
 // Harness (S15): the UI thread is deliberately blocked. Begin carries the planned duration, End the measured one.
 public sealed record UiBlockRecord(double TimeMs, int ProcessId, int BlockId, bool IsBegin, double DurationMs)
     : TraceRecord(TimeMs, ProcessId);
+
+// ---- Backend decision scenes S24-S32 ----
+// Session dwm.exe memory; Phase 0 is the pre-window baseline. PrivateBytes < 0: dwm.exe could not be queried.
+public sealed record DwmMemoryRecord(double TimeMs, int ProcessId, int Phase, long PrivateBytes, long WorkingSetBytes, int DwmProcessId,
+    double CpuMs = 0)
+    : TraceRecord(TimeMs, ProcessId);

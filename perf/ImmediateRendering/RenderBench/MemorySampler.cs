@@ -51,7 +51,7 @@ sealed unsafe class MemorySampler : IDisposable
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct PROCESS_MEMORY_COUNTERS_EX
+    internal struct PROCESS_MEMORY_COUNTERS_EX
     {
         public uint cb;
         public uint PageFaultCount;
@@ -70,11 +70,75 @@ sealed unsafe class MemorySampler : IDisposable
     static extern nint GetCurrentProcess();
 
     [DllImport("psapi.dll", SetLastError = true)]
-    static extern bool GetProcessMemoryInfo(nint process, PROCESS_MEMORY_COUNTERS_EX* counters, uint size);
+    internal static extern bool GetProcessMemoryInfo(nint process, PROCESS_MEMORY_COUNTERS_EX* counters, uint size);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool GetProcessTimes(nint process, out long creation, out long exit, out long kernel, out long user);
+    internal static extern bool GetProcessTimes(nint process, out long creation, out long exit, out long kernel, out long user);
 
     [DllImport("user32.dll")]
     static extern uint GetGuiResources(nint process, uint flags);
+}
+
+// Backend decision scenes S24-S32: the dwm.exe of this process's session. Surfaces the system compositor (and, for the
+// window's final composition, DWM itself) holds for the app are charged to dwm.exe, not to the app's private bytes.
+// Private bytes come from the process object (PROCESS_QUERY_LIMITED_INFORMATION), which needs no elevation on most
+// systems; Take returns PrivateBytes -1 when dwm.exe cannot be found or queried.
+sealed unsafe class DwmSampler : IDisposable
+{
+    const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+    nint _handle;
+    int _pid;
+
+    // OpenProcess + GetProcessMemoryInfo/GetProcessTimes: System.Diagnostics.Process would snapshot every process on
+    // each read, which costs more CPU than the sample is worth at 2 Hz.
+    public (long PrivateBytes, long WorkingSetBytes, int ProcessId, double CpuMs) Take()
+    {
+        if (_handle == 0 && !Open())
+        {
+            return (-1, -1, 0, 0);
+        }
+        var counters = new MemorySampler.PROCESS_MEMORY_COUNTERS_EX { cb = (uint)sizeof(MemorySampler.PROCESS_MEMORY_COUNTERS_EX) };
+        if (!MemorySampler.GetProcessMemoryInfo(_handle, &counters, counters.cb))
+        {
+            Dispose(); // dwm.exe restarted; look it up again next time
+            return (-1, -1, 0, 0);
+        }
+        double cpu = MemorySampler.GetProcessTimes(_handle, out _, out _, out long kernel, out long user) ? (kernel + user) / 10000.0 : 0;
+        return ((long)counters.PrivateUsage, (long)counters.WorkingSetSize, _pid, cpu);
+    }
+
+    bool Open()
+    {
+        try
+        {
+            int session = System.Diagnostics.Process.GetCurrentProcess().SessionId;
+            var dwm = System.Diagnostics.Process.GetProcessesByName("dwm").FirstOrDefault(p => p.SessionId == session);
+            if (dwm is null)
+            {
+                return false;
+            }
+            _handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)dwm.Id);
+            _pid = _handle == 0 ? 0 : dwm.Id;
+            return _handle != 0;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_handle != 0)
+        {
+            CloseHandle(_handle);
+            _handle = 0;
+        }
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    static extern nint OpenProcess(uint access, bool inherit, uint pid);
+
+    [DllImport("kernel32.dll")]
+    static extern bool CloseHandle(nint handle);
 }

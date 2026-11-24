@@ -37,7 +37,7 @@ public sealed record BenchOptions
     public bool NoProgressRing { get; init; }    // S6: exclude the Lottie-based ProgressRing
     public int Windows { get; init; } = 10;      // S9
     public bool Tabs { get; init; }              // S9: one window with a 20-tab TabView instead of N windows
-    public double StepSeconds { get; init; } = 2; // S9: time between lifecycle steps
+    public double StepSeconds { get; init; } = 2; // S9: time between lifecycle steps; S24-S32: hold per sweep step (default 4)
     public CompositionEngineChoice CompositionEngine { get; init; } = CompositionEngineChoice.Lifted;
     public OptionalChangesChoice OptionalChanges { get; init; } = OptionalChangesChoice.None;
     // ---- Full-backend scenes (S11-S23) ----
@@ -211,7 +211,8 @@ public sealed record BenchOptions
 
         foreach (var (variant, owner) in s_variantScenes)
         {
-            if (seen.Contains(variant) && options.Scene != owner)
+            bool decisionStep = variant == "--step-seconds" && SceneCatalog.IsDecisionScene(options.Scene);
+            if (seen.Contains(variant) && options.Scene != owner && !decisionStep)
             {
                 error = $"{variant} applies only to --scene {SceneCatalog.Get(owner).CliName}";
                 return false;
@@ -228,6 +229,19 @@ public sealed record BenchOptions
             Items = seen.Contains("--items") ? options.Items : defaults.Items,
             DeviceLost = options.Scene == SceneId.DeviceLost ? options.DeviceLost ?? ImmediateHooks.DefaultDeviceLost : null,
         };
+        // Decision scenes with a fixed window size (S26 tool windows, S31 tray-style window); --width/--height still win.
+        if (SceneCatalog.IsDecisionScene(options.Scene) && !seen.Contains("--step-seconds"))
+        {
+            options = options with { StepSeconds = DecisionStepSeconds };
+        }
+        if (DefaultWindowSize(options.Scene) is { } size)
+        {
+            options = options with
+            {
+                Width = seen.Contains("--width") ? options.Width : size.Width,
+                Height = seen.Contains("--height") ? options.Height : size.Height,
+            };
+        }
         if (options.CoveragePage is not null)
         {
             if (seen.Contains("--scene"))
@@ -248,6 +262,15 @@ public sealed record BenchOptions
         }
         return true;
     }
+
+    public const double DecisionStepSeconds = 4;
+
+    public static (int Width, int Height)? DefaultWindowSize(SceneId scene) => scene switch
+    {
+        SceneId.WindowCount => (400, 300),
+        SceneId.Minimal => (320, 200),
+        _ => null,
+    };
 
     // Native test hooks are read once at startup, so Program.Main sets them before Application.Start. Only immediate
     // modes honor them: Composition has no device-lost hook, and S22 captures the screen instead. A value already in the
