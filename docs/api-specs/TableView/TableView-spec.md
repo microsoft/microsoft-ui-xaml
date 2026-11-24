@@ -964,7 +964,9 @@ Changing a sorted column's key (`SortMemberPath`, `DisplayMemberBinding` or `Cus
 - From a `Sorting` handler for that column, is used by that sort. If the handler cancels the sort (or a clear), the key is not applied: the column keeps the new key and the arrow, and the rows keep their order, until the key changes again.
 - From a `Sorted` handler, or for a different column that is still sorted, is applied on the next dispatcher turn as one more `Sorting`/`Sorted` pair (or a clear, if no key is left). A handler that changes the key on every `Sorted` re-sorts once per turn indefinitely; that is an app error. Without a dispatcher, it is applied once, right after the outermost sort.
 
-A cancelled `Sorting` declines a column's current key only when it was the re-sort for that key change, or when its handler changed that column's key before cancelling (for a clear, any sorted column's). Any other cancelled sort or clear leaves a pending key change to be applied on the next dispatcher turn. A declined key is not applied while the column's key stays at it: assigning the same key again is ignored, but changing it to any other key — including back to the key the rows are sorted by — ends the decline. Moving the column within the table, or replacing it with itself, keeps the decline; removing it or moving it to another TableView discards it.
+A cancelled `Sorting` declines a column's current key only when it was the re-sort for that key change, or when its handler changed that column's key before cancelling (for a clear, any sorted column's). Any other cancelled sort or clear leaves a pending key change to be applied on the next dispatcher turn. A declined key is not applied while the column's key stays at it: assigning the same key again is ignored, but changing it to any other key — including back to the key the rows are sorted by — ends the decline, even if the key is changed back while the column is out of the table. Moving the column within the table, or replacing it with itself, keeps the decline; removing it or moving it to another TableView discards it. `SortByColumn(column, column.SortDirection)` applies a declined or otherwise pending key in place with one `Sorting`/`Sorted` pair; once the rows are sorted by the column's current key, it is a no-op.
+
+A sorted column removed from `Columns` and re-inserted (or set into `Columns` in place of another column) in the same dispatcher turn keeps its sort. A key change made while it was out of the table is applied on the next dispatcher turn as one `Sorting`/`Sorted` pair in the existing direction, unless the key is still the declined one.
 
 An exception thrown by a `Sorting` or `Sorted` handler during a deferred re-sort surfaces through the XAML `UnhandledException` path. A deferred change is skipped if the column has since moved to another TableView or is no longer sorted.
 
@@ -972,7 +974,7 @@ A cancelled sort whose `Sorting` handler removed the column's key leaves the col
 
 `DisplayMemberBinding` is compared by instance: setting it to the `Binding` it already holds is ignored, so editing that `Binding`'s `Path` in place neither refreshes the cells nor re-sorts. Assign a new `Binding` instead.
 
-A derived column that overrides `GetSortMemberPathCore` is read when a sort is applied and when headers are built; TableView is not notified when the override's result changes. If it changes, set `SortMemberPath`, or re-sort explicitly (`SortByColumn(column, None)` then `SortByColumn(column, direction)`); header sortability is re-evaluated at the next header rebuild.
+A derived column that overrides `GetSortMemberPathCore` is read when a sort is applied and when headers are built; TableView is not notified when the override's result changes. If it changes, set `SortMemberPath`, or re-sort explicitly with `SortByColumn(column, column.SortDirection)`; header sortability is re-evaluated at the next header rebuild.
 
 ### Resizing columns
 

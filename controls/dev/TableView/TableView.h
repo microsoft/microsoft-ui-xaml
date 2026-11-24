@@ -226,6 +226,8 @@ struct TableViewSourceSortBinding
     winrt::hstring MemberPath;
     // The comparer the installed axis ranked with, compared by identity only.
     winrt::ITableViewSortComparer ComparerIdentity{ nullptr };
+    // The trigger's sort-key generation when the axis was installed.
+    uint32_t SortKeyGeneration{ 0 };
     winrt::hstring AxisToken;
     winrt::TableViewKeySelector KeySelector{ nullptr };
     std::shared_ptr<ShapingHelpers::CustomSortRankAdapter> CustomSortState;
@@ -1105,7 +1107,11 @@ private:
         winrt::hstring MemberPath;
         // Weak: the decline must not keep the app's comparer alive. Dead means expired.
         winrt::weak_ref<winrt::ITableViewSortComparer> Comparer;
+        // Only for a comparer that can't be weakly referenced; compared, never called.
+        winrt::ITableViewSortComparer StrongComparer{ nullptr };
         bool HasComparer{ false };
+        // Any later key change, even one made while the column was out of the table, ends the decline.
+        uint32_t Generation{ 0 };
     };
     std::vector<DeclinedSortKey> m_declinedSortKeys;
     uint32_t m_sortTransitionDepth{ 0 };
