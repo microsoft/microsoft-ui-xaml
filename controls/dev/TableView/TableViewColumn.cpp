@@ -414,8 +414,9 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                     });
             }
         }
-        // A change still pending when the column left never reached the cells its rows kept.
-        if (m_cellContentChangePending && (owner.XamlRoot() || owner.IsLoaded()))
+        // A change still pending when the column left never reached the cells its rows kept, also
+        // those of an unloaded table.
+        if (m_cellContentChangePending)
         {
             winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, false /* resetAutoWidth */);
         }
