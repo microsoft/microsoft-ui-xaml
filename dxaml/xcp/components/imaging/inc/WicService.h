@@ -24,6 +24,10 @@ public:
         return *instance;
     }    
 
+    // Called from DLL_PROCESS_DETACH, like ThreadPoolService::DetachFactories, so the final release of the D2D factory
+    // (and the WARP device SVG decodes created on it) doesn't run from this static's destructor during process exit.
+    static void DetachD2DFactory();
+
     // Since this is a singleton, caller can use the IWICImagingFactory without incurring
     // the cost of ref counting.  However, caller should never release the object without
     // also doing an AddRef.
@@ -68,6 +72,7 @@ private:
     WicService(const WicService&) = delete;
     WicService& operator=(const WicService&) = delete;
 
+    static bool s_hasInstance;
     wrl::ComPtr<IWICImagingFactory> m_spIWICFactory;
     wrl::ComPtr<ID2D1Factory1> m_d2dFactory;
 };

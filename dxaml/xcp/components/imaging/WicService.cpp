@@ -15,6 +15,8 @@
 #include "Switcher.h"
 #include "OrientationSupportedLegacy.h"
 
+bool WicService::s_hasInstance = false;
+
 WicService::WicService()
 {
     IFCFAILFAST(CoCreateInstance(
@@ -24,6 +26,16 @@ WicService::WicService()
         IID_PPV_ARGS(&m_spIWICFactory)));
 
     IFCFAILFAST(D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, m_d2dFactory.GetAddressOf()));
+
+    s_hasInstance = true;
+}
+
+void WicService::DetachD2DFactory()
+{
+    if (s_hasInstance)
+    {
+        GetInstance().m_d2dFactory.Detach();
+    }
 }
 
 const wrl::ComPtr<IWICImagingFactory>& WicService::GetFactory()

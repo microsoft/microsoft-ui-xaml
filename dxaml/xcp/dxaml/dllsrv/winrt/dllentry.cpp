@@ -11,6 +11,8 @@
 #include <DependencyLocator.h>
 #include <CStaticLock.h>
 #include "ThreadPoolService.h"
+#include <wincodec.h>
+#include "WicService.h"
 #include <TraceLoggingInterop.h>
 #include <RuntimeEnabledFeatures.h>
 #include <XamlTraceLogging.h>
@@ -179,6 +181,7 @@ void DeinitializeDll()
     }
 
     ThreadPoolService::DetachFactories();
+    WicService::DetachD2DFactory();
 
     BackgroundTaskFrameworkContext::GlobalDeinit();
 
