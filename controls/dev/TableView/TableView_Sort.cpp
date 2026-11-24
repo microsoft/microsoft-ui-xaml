@@ -175,12 +175,14 @@ void TableView::RerankCustomSortAfterReclaim()
         return;
     }
     auto const column = m_sortedColumns.front().get();
-    // A key changed meanwhile, possibly declined, is the sort-key reconcile's to raise Sorting for.
-    if (!column || !column.CustomSortComparer() ||
-        !IsSameSortKey(EffectiveSortKey(column), m_tableViewSourceSort.MemberPath, m_tableViewSourceSort.ComparerIdentity))
+    // Only the installed comparer re-ranks here; a key changed meanwhile, possibly declined, is the
+    // sort-key reconcile's to raise Sorting for.
+    auto const installedComparer = m_tableViewSourceSort.ComparerIdentity;
+    if (!column || !installedComparer)
     {
         return;
     }
+    const bool keyChanged = !IsSameSortKey(EffectiveSortKey(column), m_tableViewSourceSort.MemberPath, installedComparer);
     const auto direction = column.SortDirection();
     if (direction == winrt::SortDirection::None || !CanApplySortTo(direction))
     {
@@ -191,7 +193,7 @@ void TableView::RerankCustomSortAfterReclaim()
     try
     {
         // A rerank after reclaim is control-driven, not a user sort, so it carries no TiP operation.
-        if (SyncTableViewSourceSort(column, direction, 0) && preservedSelection)
+        if (SyncTableViewSourceSort(column, direction, 0, false, keyChanged ? installedComparer : nullptr) && preservedSelection)
         {
             ApplySelection(FindEntryIndexForDataItem(preservedSelection));
         }
@@ -884,7 +886,8 @@ bool TableView::SyncTableViewSourceSort(
     const winrt::TableViewColumn& trigger,
     winrt::SortDirection direction,
     uint64_t tipGeneration,
-    bool explicitClear)
+    bool explicitClear,
+    const winrt::ITableViewSortComparer& installedComparer)
 {
     auto tableViewSource = ShapingSourceInternal();
     if (!tableViewSource)
@@ -930,7 +933,7 @@ bool TableView::SyncTableViewSourceSort(
     // path, which a Sorting handler may have changed or emptied since the axis was installed.
     if (trigger && direction != winrt::SortDirection::None)
     {
-        if (const auto customComparer = trigger.CustomSortComparer())
+        if (const auto customComparer = installedComparer ? installedComparer : trigger.CustomSortComparer())
         {
             keySelector = GetTableViewSourceSortKeySelector(L"");
             m_tableViewSourceSort.ComparerIdentity = customComparer;
@@ -1063,7 +1066,7 @@ bool TableView::SyncTableViewSourceSort(
     else
     {
         m_tableViewSourceSort.AxisToken = sortAxisToken;
-        if (trigger)
+        if (trigger && !installedComparer)
         {
             m_tableViewSourceSort.SortKeyGeneration = winrt::get_self<TableViewColumn>(trigger)->SortKeyGenerationInternal();
         }

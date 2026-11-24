@@ -1085,7 +1085,9 @@ private:
     // TableViewSource, or the trigger column resolves no sort key.
     // explicitClear: the app or user asked to clear, so a clear also removes app-declared axes.
     // Any other clear (a column leaving, CanUserSortColumns turning off) removes only this table's axis.
-    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false);
+    // installedComparer: re-ranks the installed axis with it rather than the trigger's current key.
+    bool SyncTableViewSourceSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, uint64_t tipGeneration, bool explicitClear = false,
+        const winrt::ITableViewSortComparer& installedComparer = nullptr);
     // reapply: a key reconcile offering the column's current key; re-sorts even in the same
     // direction, and a cancel declines that key.
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort = true, bool reapply = false);
