@@ -691,26 +691,26 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
-                Log.Comment("Verify that Tab keeps focus inside the open " + paneDisplayMode + " pane when the menu list is its only tab stop");
+                Log.Comment("Verify that the menu list stays a single tab stop in the open " + paneDisplayMode + " pane when it is the pane's only tab stop");
                 RemoveSelectionOnHierarchicalMarkupPage();
                 new ComboBox(FindElement.ByName("PaneDisplayModeCombobox")).SelectItemByName(paneDisplayMode);
                 Wait.ForIdle();
 
+                // The pane traps Tab, so focus re-enters the list at its first item going forward and at its last item going back.
                 OpenPaneAndExpandItem("Menu Item 1");
                 PressTabFrom("Menu Item 1", ModifierKey.None);
-                VerifyFocusStaysInMenuListOfOpenPane("Tab from Menu Item 1");
+                VerifyFocusedItemInOpenPane("Menu Item 1", "Tab from Menu Item 1");
 
                 OpenPaneAndExpandItem("Menu Item 1");
                 PressTabFrom("Menu Item 3", ModifierKey.Shift);
-                VerifyFocusStaysInMenuListOfOpenPane("Shift+Tab from Menu Item 3");
+                VerifyFocusedItemInOpenPane("Menu Item 29 (Selectable)", "Shift+Tab from Menu Item 3");
             }
         }
 
-        private static void VerifyFocusStaysInMenuListOfOpenPane(string action)
+        private void VerifyFocusedItemInOpenPane(string itemName, string action)
         {
-            string focusedElementName = GetFocusedElementName();
-            Verify.IsTrue(focusedElementName.StartsWith("Menu Item"), action + " should keep focus inside the open pane, but focus is on " + focusedElementName);
-            Verify.AreEqual("Opened", new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText);
+            VerifyFocusedElement(itemName, action);
+            WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
         }
 
         [TestMethod]
@@ -763,14 +763,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             Verify.AreEqual("No Item Selected", new TextBlock(FindElement.ByName("SelectedItemLabel")).DocumentText);
         }
 
-        private static void OpenPaneAndExpandItem(string itemName)
+        private void OpenPaneAndExpandItem(string itemName)
         {
             if (new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText != "Opened")
             {
                 new Button(FindElement.ById("TogglePaneButton")).Invoke();
                 Wait.ForIdle();
             }
-            Verify.AreEqual("Opened", new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText);
+            WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
             ExpandItem(itemName);
         }
 
