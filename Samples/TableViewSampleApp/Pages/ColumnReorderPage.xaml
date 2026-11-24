@@ -14,7 +14,7 @@
         Snippet="ColumnReorder"
         StretchExample="True"
         TryIt="Drag the Department header past Role, then focus a header and press Ctrl+Shift+Right. Freeze one or two columns and try to drag a column in front of them. Turn on RightToLeft and drag again. Start a drag and press Esc."
-        WhatToLookFor="A translucent copy of the header follows the pointer, and a 4 px line marks where the column will land. Each move adds an entry to the ColumnReordered log, newest first. Frozen columns stay in front, a cancelled drag logs nothing, and under RightToLeft the keys and the drag follow reading order.">
+        WhatToLookFor="The header follows the pointer and the headers it passes slide over to open the gap where it will land; the rows move on the drop. Each move adds an entry to the ColumnReordered log, newest first. Frozen columns stay in front, a cancelled drag logs nothing, and under RightToLeft the keys and the drag follow reading order.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->

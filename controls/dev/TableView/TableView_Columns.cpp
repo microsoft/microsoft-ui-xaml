@@ -74,6 +74,10 @@ void TableView::RefreshFrozenColumns()
     if (auto headerHost = m_headerHost.get())
     {
         TableViewCellsPanel::ApplyFrozenColumnLayout(headerHost, horizontalOffset, leadingFrozenWidth);
+        if (m_columnReorder && m_columnReorder->dragging)
+        {
+            ApplyColumnReorderPreview(*m_columnReorder);
+        }
     }
 
     // Re-pin realized rows.

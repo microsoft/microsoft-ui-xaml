@@ -60,29 +60,6 @@
                                             BorderThickness="0,0,0,1"
                                             IsHitTestVisible="False"
                                             AutomationProperties.AccessibilityView="Raw" />
-                                    <Border x:Name="PART_ColumnReorderDragVisual"
-                                            x:Load="False"
-                                            Visibility="Collapsed"
-                                            HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            IsHitTestVisible="False"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            Opacity="{ThemeResource TableViewColumnReorderDragVisualOpacity}"
-                                            Background="{ThemeResource TabularSurfaceHeaderBackgroundBrush}"
-                                            BorderBrush="{ThemeResource TableViewColumnReorderDragVisualBorderBrush}"
-                                            BorderThickness="1">
-                                        <Image Stretch="Fill" />
-                                    </Border>
-                                    <Rectangle x:Name="PART_ColumnReorderIndicator"
-                                               x:Load="False"
-                                               Visibility="Collapsed"
-                                               HorizontalAlignment="Left"
-                                               IsHitTestVisible="False"
-                                               Margin="{ThemeResource TableViewColumnReorderIndicatorMargin}"
-                                               Width="{ThemeResource TableViewColumnReorderIndicatorWidth}"
-                                               RadiusX="{ThemeResource TableViewColumnReorderIndicatorCornerRadius}"
-                                               RadiusY="{ThemeResource TableViewColumnReorderIndicatorCornerRadius}"
-                                               Fill="{ThemeResource TableViewColumnReorderIndicatorBrush}" />
                                 </Grid>
                             </Border>
                             <ScrollViewer x:Name="PART_BodyScroller"

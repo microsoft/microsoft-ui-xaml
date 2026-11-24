@@ -1785,13 +1785,19 @@ private:
         // The header band scrolled; the drag ends without a drop.
         bool stale{ false };
         double headerOffset{ 0.0 };
-        // Pointer-to-source-header offset and source width, for the floating header.
+        // The source header's grab offset, left edge and width.
         double grabOffset{ 0.0 };
+        double sourceLeft{ 0.0 };
         double sourceWidth{ 0.0 };
         double bandEdge{ -std::numeric_limits<double>::infinity() };
         ColumnReorderSlots slots;
-        // Leading and trailing edge of each of slots.others.
+        // Leading and trailing edge, and header cell, of each of slots.others.
         std::vector<std::pair<double, double>> edges;
+        std::vector<winrt::weak_ref<winrt::FrameworkElement>> cells;
+        winrt::weak_ref<winrt::FrameworkElement> source{ nullptr };
+        // The running slide of each of cells.
+        struct Slide { float from{ 0.0f }; float to{ 0.0f }; std::chrono::steady_clock::time_point start{}; };
+        std::vector<Slide> slides;
     };
 
     void HookColumnReorderInput();
@@ -1800,7 +1806,7 @@ private:
     bool TryHandleHeaderColumnReorderKey(const winrt::KeyRoutedEventArgs& args);
     bool BeginColumnReorderDrag();
     bool UpdateColumnReorderDrag(double translationX);
-    void PlaceColumnReorderDragVisual(const ColumnReorderDragState& state);
+    void ApplyColumnReorderPreview(ColumnReorderDragState& state);
     void EndColumnReorderDrag(bool commit);
     static int32_t ColumnReorderSlotAt(const ColumnReorderDragState& state);
     bool ConsumeColumnReorderTap();
@@ -1810,8 +1816,6 @@ private:
     bool TryReorderColumn(const winrt::TableViewColumn& column, int32_t slot);
 
     std::optional<ColumnReorderDragState> m_columnReorder;
-    tracker_ref<winrt::Rectangle> m_columnReorderIndicator{ this };
-    tracker_ref<winrt::Border> m_columnReorderDragVisual{ this };
     DragEscapeHook m_columnReorderEscape;
     winrt::weak_ref<winrt::TableViewColumn> m_movingColumn{ nullptr };
     bool m_suppressHeaderTap{ false };

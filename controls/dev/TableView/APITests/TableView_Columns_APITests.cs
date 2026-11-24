@@ -9,7 +9,6 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
@@ -1869,7 +1868,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             try
             {
                 ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.75));
-                RunOnUIThread.Execute(() => Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), "No drag starts during an edit."));
+                RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "No drag starts during an edit."));
             }
             finally
             {
@@ -1930,8 +1929,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a mouse drag in LTR and RTL shows the 4px line at the reading-order drop edge and the floating header under the pointer, commits on release, and that Esc, a Columns change, losing capture and unloading each cancel the drag.")]
-        public void VerifyDragIndicatorCommitAndCancel()
+        [TestProperty("Description", "Verifies a mouse drag in LTR and RTL moves the dragged header with the pointer and slides the header it passes over by the dragged header's width, commits on release with every header back at Translation 0, and that Esc, a Columns change, losing capture and unloading each cancel the drag and reset every header.")]
+        public void VerifyDragPreviewCommitAndCancel()
         {
             foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             {
@@ -1954,33 +1953,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 DragHeader(tableView, onDrag: () =>
                 {
-                    var indicator = (Rectangle)tableView.FindVisualChildByName("PART_ColumnReorderIndicator");
-                    Verify.AreEqual(Visibility.Visible, indicator.Visibility, "Dragging Name past the middle of Role shows the indicator.");
-                    var role = VisualBounds(GetHeaderCell(tableView, 1));
-                    var line = VisualBounds(indicator);
-                    var edge = flowDirection == FlowDirection.RightToLeft ? role.Left : role.Right;
-                    Log.Comment($"Role {role}, indicator {line}.");
-                    Verify.AreEqual(4.0, line.Width, "The indicator is 4px wide.");
-                    Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - edge), 3.0, "The indicator marks the edge Role shares with City.");
-
-                    // Pressed at Name's middle, dragged to 3/4 of Role: the floating header is Name's size, centred on the pointer less the drag threshold.
-                    var name = VisualBounds(GetHeaderCell(tableView, 0));
-                    var visual = VisualBounds(DragVisual(tableView));
-                    var roleCell = GetHeaderCell(tableView, 1);
-                    var pointer = roleCell.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(roleCell.ActualWidth * 0.75, 0)).X;
-                    Log.Comment($"Name {name}, floating header {visual}, pointer {pointer}.");
-                    Verify.AreEqual(Visibility.Visible, DragVisual(tableView).Visibility, "The floating header shows while dragging.");
-                    Verify.IsLessThan(Math.Abs(visual.Width - name.Width) + Math.Abs(visual.Height - name.Height), 1.0, "The floating header has the source header's size.");
-                    Verify.IsLessThan(Math.Abs(((visual.Left + visual.Right) / 2) - pointer), 6.0, "The floating header follows the pointer, keeping the grab offset.");
+                    var name = GetHeaderCell(tableView, 0);
+                    var role = GetHeaderCell(tableView, 1);
+                    var city = GetHeaderCell(tableView, 2);
+                    // Pressed at Name's middle, dragged to 1/4 of Role, short of its middle: entering Role is enough.
+                    var travel = (name.ActualWidth * 0.5) + (role.ActualWidth * 0.25);
+                    Log.Comment($"Translations: Name {name.Translation.X}, Role {role.Translation.X}, City {city.Translation.X}; pointer travel {travel}.");
+                    Verify.IsLessThan(Math.Abs(role.Translation.X + name.ActualWidth), 0.5, "Role slides into Name's slot by Name's width as soon as the pointer enters it.");
+                    Verify.AreEqual(0f, city.Translation.X, "City, which Name has not passed, stays.");
+                    Verify.IsLessThan(Math.Abs(name.Translation.X - travel), 6.0, "Name follows the pointer, keeping the grab offset.");
+                    Verify.AreEqual(0f, name.Translation.Y, "The drag is horizontal only.");
                 });
                 RunOnUIThread.Execute(() =>
                 {
                     VerifyOrder(tableView, "Role,Name,City", "after the drop");
                     Verify.AreEqual(1, reordered);
-                    Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), "The drop hides the indicator.");
-                    Verify.AreEqual(Visibility.Collapsed, DragVisual(tableView).Visibility, "The drop hides the floating header.");
+                    Verify.IsFalse(PreviewShown(tableView), "After the drop every header is back at Translation 0.");
                 });
-
                 var cancels = new (string name, Action action)[]
                 {
                     ("Esc", () => ReorderInput.SendChord(ReorderInput.VkEscape)),
@@ -1990,15 +1979,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
                 foreach (var (cancelName, cancel) in cancels)
                 {
-                    DragHeader(tableView, onDrag: () => Verify.AreEqual(Visibility.Visible, IndicatorVisibility(tableView), $"Precondition: dragging before {cancelName}."),
+                    DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), $"Precondition: dragging before {cancelName}."),
                         cancel: () =>
                         {
                             cancel();
                             IdleSynchronizer.Wait();
                             RunOnUIThread.Execute(() =>
                             {
-                                Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), $"{cancelName} must cancel the drag.");
-                                Verify.AreEqual(Visibility.Collapsed, DragVisual(tableView)?.Visibility ?? Visibility.Collapsed, $"{cancelName} must hide the floating header.");
+                                Verify.IsFalse(PreviewShown(tableView), $"{cancelName} must cancel the drag and put every header back at Translation 0.");
                             });
                         });
                 }
@@ -2091,11 +2079,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
-            DragHeader(tableView, onDrag: () => Verify.AreEqual(Visibility.Visible, IndicatorVisibility(tableView), "Precondition: dragging."),
+            DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging."),
                 cancel: () =>
                 {
                     ScrollBodyTo(tableView, ScrollAxis.Horizontal, 100);
-                    RunOnUIThread.Execute(() => Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), "A body scroll must cancel the drag."));
+                    RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "A body scroll must cancel the drag and reset every header."));
                 });
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
@@ -2106,7 +2094,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies that with the table scrolled, a column dragged over the frozen band drops at the first visible scrolling position, past a column hidden under the band.")]
+        [TestProperty("Description", "Verifies that with the table scrolled, a column dragged over the frozen band stops at the band's edge, slides only the visible scrolling headers it passed, never moves the frozen header, and drops at the first visible scrolling position, past a column hidden under the band.")]
         public void VerifyDragOverFrozenBandSkipsHiddenColumns()
         {
             TableView tableView = null;
@@ -2128,20 +2116,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
+            float pin = 0;
+            RunOnUIThread.Execute(() => pin = GetHeaderCell(tableView, 0).Translation.X);
             try
             {
-                // Over the band, left of A's midpoint: without the clamp this drops before the hidden A.
+                // Over the band: without the clamp this drops before the hidden A.
                 ReorderInput.PressAndDrag(HeaderPoint(tableView, 4, 0.5), HeaderPoint(tableView, 0, 0.1));
                 RunOnUIThread.Execute(() =>
                 {
                     tableView.UpdateLayout();
-                    var indicator = (Rectangle)tableView.FindVisualChildByName("PART_ColumnReorderIndicator");
-                    var line = VisualBounds(indicator);
-                    var band = VisualBounds(GetHeaderCell(tableView, 0));
-                    var visual = VisualBounds(DragVisual(tableView));
-                    Log.Comment($"Band {band}, indicator {line}, floating header {visual}.");
-                    Verify.IsLessThan(Math.Abs(((line.Left + line.Right) / 2) - band.Right), 2.0, "The indicator sits at the frozen band's edge.");
-                    Verify.IsLessThan(Math.Abs(visual.Left - band.Right), 1.0, "The floating header stops at the frozen band's edge.");
+                    var shifts = Enumerable.Range(0, 6).Select(i => GetHeaderCell(tableView, i).Translation.X).ToArray();
+                    Log.Comment($"Pin {pin}; translations {string.Join(",", shifts)}.");
+                    Verify.AreEqual(pin, shifts[0], "The frozen header keeps its pin.");
+                    Verify.AreEqual("0,150,150,0", string.Join(",", new[] { shifts[1], shifts[2], shifts[3], shifts[5] }), "B and C slide over by D's width; the hidden A and E stay.");
+                    // D starts at 4 * 150 - offset in the row and stops at the band's 150px edge.
+                    Verify.IsLessThan((double)Math.Abs(shifts[4] - (150 - ((4 * 150) - pin))), 1.0, "D stops at the frozen band's edge.");
                 });
             }
             finally
@@ -2149,9 +2138,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 ReorderInput.LeftUp();
             }
             SettleLayout(tableView);
-            RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,A,D,B,C,E", "after dropping D over the frozen band"));
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,A,D,B,C,E", "after dropping D over the frozen band");
+                Verify.IsFalse(PreviewShown(tableView), "After the drop every scrolling header is back at Translation 0.");
+                Verify.AreEqual(pin, GetHeaderCell(tableView, 0).Translation.X, "The frozen header keeps its pin after the drop.");
+            });
         }
-
         [TestMethod]
         [TestProperty("Description", "Verifies replacing Columns during a header drag cancels the drag.")]
         public void VerifyReplacingColumnsCancelsDrag()
@@ -2170,12 +2163,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
-            DragHeader(tableView, onDrag: () => Verify.AreEqual(Visibility.Visible, IndicatorVisibility(tableView), "Precondition: dragging."),
+            DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging."),
                 cancel: () =>
                 {
                     RunOnUIThread.Execute(() => tableView.SetValue(TableView.ColumnsProperty, new List<TableViewColumn>(tableView.Columns)));
                     IdleSynchronizer.Wait();
-                    RunOnUIThread.Execute(() => Verify.AreEqual(Visibility.Collapsed, IndicatorVisibility(tableView), "Replacing Columns must cancel the drag."));
+                    RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "Replacing Columns must cancel the drag and reset every header."));
                 });
             SettleLayout(tableView);
             RunOnUIThread.Execute(() =>
@@ -2357,12 +2350,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Drags header 0 past the middle of header 1, runs onDrag on the UI thread, then cancel (if any), then releases.
+        // Drags header 0 a quarter into header 1, runs onDrag on the UI thread, then cancel (if any), then releases.
         private static void DragHeader(TableView tableView, Action onDrag, Action cancel = null)
         {
             try
             {
-                ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.75));
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.25));
                 RunOnUIThread.Execute(() =>
                 {
                     tableView.UpdateLayout();
@@ -2416,15 +2409,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return point;
         }
 
-        // Loaded on the first drag. Call on the UI thread.
-        private static Border DragVisual(TableView tableView) => tableView.FindVisualChildByName("PART_ColumnReorderDragVisual") as Border;
-
-        // The indicator is loaded on the first drag. Call on the UI thread.
-        private static Visibility IndicatorVisibility(TableView tableView)
-            => (tableView.FindVisualChildByName("PART_ColumnReorderIndicator") as Rectangle)?.Visibility ?? Visibility.Collapsed;
-
-        private static global::Windows.Foundation.Rect VisualBounds(FrameworkElement element)
-            => element.TransformToVisual(null).TransformBounds(new global::Windows.Foundation.Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        // A reorder drag moves scrolling headers by Translation; frozen ones keep their pin. Call on the UI thread.
+        private static bool PreviewShown(TableView tableView)
+            => GetHeaderHost(tableView).Children.Any(cell => cell.Translation.X != 0 &&
+                ((cell as FrameworkElement)?.Tag as TableViewColumn)?.FrozenEdge != TableViewFrozenEdge.Leading);
 
         private static string HeaderTabStops(TableView tableView)
             => string.Join(",", GetHeaderHost(tableView).Children.OfType<Control>().Select(header => header.IsTabStop));

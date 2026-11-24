@@ -982,8 +982,6 @@ try
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     CancelColumnReorderDrag();
     m_suppressHeaderTap = false;
-    m_columnReorderIndicator.set(nullptr);
-    m_columnReorderDragVisual.set(nullptr);
     HookColumnReorderInput();
     // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
     // has all three, so a missing one is the app's template.
@@ -3480,6 +3478,11 @@ void TableView::RebuildHeaders()
 
 void TableView::RebuildHeadersCore()
 {
+    // The reorder preview lives on the old header cells.
+    if (m_columnReorder && m_columnReorder->dragging)
+    {
+        QueueCancelColumnReorderDrag();
+    }
     m_headerSortSpaceArmedColumn = nullptr;
     auto const removedFocusColumn = m_headerFocusRemovedColumn.get();
     auto const fallbackFocusColumn = m_headerFocusFallbackColumn.get();

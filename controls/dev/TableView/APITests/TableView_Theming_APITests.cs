@@ -273,42 +273,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
-        [TestProperty("Description", "Verifies the column reorder line uses the accent colours in Light and Dark and the system highlight colour under high contrast, is 4px wide with a 2px radius and a 4px inset, and that the floating header's border follows the theme and uses the system highlight colour under high contrast.")]
-        public void VerifyColumnReorderIndicatorResources()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                EnsureTabularControlsResources();
-                var resources = new TabularControlsResources();
-                var highContrast = (ResourceDictionary)resources.ThemeDictionaries["HighContrast"];
-                var brush = highContrast["TableViewColumnReorderIndicatorBrush"] as SolidColorBrush;
-                Verify.IsNotNull(brush, "The HighContrast dictionary must define the indicator as a SolidColorBrush.");
-                Verify.AreEqual((Color)Application.Current.Resources["SystemColorHighlightColor"], brush.Color,
-                    "Under high contrast the indicator must use SystemColorHighlightColor.");
-                foreach (var (theme, color) in new[] { ("Light", "SystemAccentColorDark1"), ("Default", "SystemAccentColorLight2") })
-                {
-                    var themed = ((ResourceDictionary)resources.ThemeDictionaries[theme])["TableViewColumnReorderIndicatorBrush"] as SolidColorBrush;
-                    Verify.IsNotNull(themed, $"The {theme} dictionary must define the indicator as a SolidColorBrush.");
-                    Verify.AreEqual((Color)Application.Current.Resources[color], themed.Color, $"The {theme} indicator must use {color}.");
-                }
-                Verify.AreEqual(4.0, (double)resources["TableViewColumnReorderIndicatorWidth"], "The line is 4px in every theme.");
-                Verify.AreEqual(2.0, (double)resources["TableViewColumnReorderIndicatorCornerRadius"], "The line's corners are rounded by 2px.");
-                Verify.AreEqual(new Thickness(0, 4, 0, 4), (Thickness)resources["TableViewColumnReorderIndicatorMargin"], "The line is inset 4px top and bottom.");
-                Verify.IsLessThan(Math.Abs(0.8 - (double)resources["TableViewColumnReorderDragVisualOpacity"]), 0.001, "The floating header is 80% opaque.");
-
-                var border = highContrast["TableViewColumnReorderDragVisualBorderBrush"] as SolidColorBrush;
-                Verify.IsNotNull(border, "The HighContrast dictionary must define the floating header's border brush.");
-                Verify.AreEqual((Color)Application.Current.Resources["SystemColorHighlightColor"], border.Color,
-                    "Under high contrast the floating header's border must use SystemColorHighlightColor.");
-                var light = ((ResourceDictionary)resources.ThemeDictionaries["Light"])["TableViewColumnReorderDragVisualBorderBrush"] as SolidColorBrush;
-                var dark = ((ResourceDictionary)resources.ThemeDictionaries["Default"])["TableViewColumnReorderDragVisualBorderBrush"] as SolidColorBrush;
-                Verify.IsNotNull(light, "The Light dictionary must define the floating header's border brush.");
-                Verify.IsNotNull(dark, "The Default dictionary must define the floating header's border brush.");
-                Verify.AreNotEqual(border.Color, light.Color, "High contrast overrides the themed border.");
-            });
-        }
-
         // Gridline and outer-frame values mirror Common_themeresources_any.xaml.
         [TestMethod]
         public void VerifyGridLineAndOuterBorderBrushDefaults()
