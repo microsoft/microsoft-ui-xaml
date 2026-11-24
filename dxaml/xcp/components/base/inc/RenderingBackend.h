@@ -78,10 +78,10 @@ namespace RenderingBackend
     // True when the process renders with an immediate-mode painter (effective mode is not Composition). Cached.
     bool IsImmediateModeActive() noexcept;
 
-    // S27: once a window has been hidden or minimized past the background-resource timeout (CCoreServices::OnSuspend),
-    // immediate backends release their per-window painters and swap chains and trim the device; the next visible frame
-    // recreates them with full damage. Composition keeps its own offer/reclaim path. WINUI_IMMEDIATE_TRIM_HIDDEN=0
-    // (or false/off) disables the trim for A/B measurement; anything else, or unset, enables it.
+    // S27: while an island's host is not visible (minimized or hidden; XamlRoot.IsHostVisible false), immediate backends
+    // skip painting it and, after ImmediateRenderer::c_trimHiddenDelayMs, release its painter and swap chain and trim the
+    // device; the next visible frame recreates them with full damage. Composition is unaffected.
+    // WINUI_IMMEDIATE_TRIM_HIDDEN=0 (or false/off) disables this for A/B measurement; anything else, or unset, enables it.
     constexpr const wchar_t* TrimWhenHiddenVariableName = L"WINUI_IMMEDIATE_TRIM_HIDDEN";
     bool ParseTrimWhenHiddenSetting(_In_opt_z_ const wchar_t* text) noexcept;
     bool ShouldTrimWhenHidden(Mode mode, bool settingEnabled) noexcept;

@@ -51,10 +51,13 @@ public:
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
 
-    // S27: the window is hidden or minimized (CCoreServices::OnSuspend). Releases every island's painter, swap chain and
-    // cached bitmaps, detaches the swap chains from their sprites and trims the device, which is kept for a fast resume.
-    // The next RenderIsland recreates them with full damage. Returns the number of islands released.
-    uint32_t TrimHidden() noexcept;
+    // S27: called by the render walk instead of RenderIsland while the island's host is not visible (minimized or
+    // hidden; XamlRoot.IsHostVisible is false). Once it has been hidden for c_trimHiddenDelayMs, the island's painter,
+    // swap chain and cached bitmaps are released, the swap chain is detached from its sprite and the device is trimmed
+    // (the device is kept for a fast restore). The next RenderIsland recreates them with full damage. Returns the
+    // milliseconds until the trim is due (the caller schedules a frame then), or 0 once the island is trimmed.
+    static constexpr uint32_t c_trimHiddenDelayMs = 2000;
+    uint32_t OnIslandHidden(_In_ CXamlIslandRoot* island) noexcept;
 
     // S11/S16 per-window fallback (ImmediateRenderer.Fallback.cpp): an island whose walk found Composition-only
     // content is rendered by HWWalk from then on. ConsumeFallbackRedraw is true once, for the first HWWalk pass, which
@@ -172,6 +175,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Device> m_device;
     bool m_deviceTraced = false;
     std::unordered_map<CXamlIslandRoot*, std::unique_ptr<IslandState>> m_islands;
+    // S27: islands whose host is not visible, with the time (QPC microseconds) they were first seen hidden.
+    std::unordered_map<CXamlIslandRoot*, int64_t> m_hiddenSinceUs;
     std::unordered_set<std::wstring> m_reportedUnsupported;
     uint32_t m_elementsVisited = 0;
     // > 0 while walking a secret LTE target (the focus rect canvas).

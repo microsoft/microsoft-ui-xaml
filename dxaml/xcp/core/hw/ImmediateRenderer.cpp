@@ -658,32 +658,41 @@ void ImmediateRenderer::ReleaseResources() noexcept
     m_deviceTraced = false;
 }
 
-uint32_t ImmediateRenderer::TrimHidden() noexcept
+uint32_t ImmediateRenderer::OnIslandHidden(_In_ CXamlIslandRoot* island) noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
-    const uint32_t released = static_cast<uint32_t>(m_islands.size());
-    for (auto& entry : m_islands)
+    const int64_t now = QpcMicroseconds();
+    const int64_t since = m_hiddenSinceUs.try_emplace(island, now).first->second;
+    const int64_t elapsedMs = (now - since) / 1000;
+    if (elapsedMs < c_trimHiddenDelayMs)
     {
-        IslandState& state = *entry.second;
-        for (auto& popup : state.popups)
+        return static_cast<uint32_t>(c_trimHiddenDelayMs - elapsedMs);
+    }
+
+    auto found = m_islands.find(island);
+    if (found == m_islands.end())
+    {
+        return 0;
+    }
+    IslandState& state = *found->second;
+    for (auto& popup : state.popups)
+    {
+        if (popup.surface->sprite)
         {
-            if (popup.surface->sprite)
-            {
-                DetachWindowedPopupVisual(popup.popup.get(), popup.surface->sprite.Get());
-            }
-        }
-        // The sprite stays the island's root until the next frame hosts a new one; dropping its brush releases the
-        // composition surface's reference to the swap chain buffers now.
-        if (state.sprite)
-        {
-            IGNOREHR(state.sprite->put_Brush(nullptr));
-        }
-        if (state.painter)
-        {
-            IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+            DetachWindowedPopupVisual(popup.popup.get(), popup.surface->sprite.Get());
         }
     }
-    m_islands.clear();
+    // The sprite stays the island's root until the next visible frame hosts a new one; dropping its brush releases the
+    // composition surface's reference to the swap chain buffers now.
+    if (state.sprite)
+    {
+        IGNOREHR(state.sprite->put_Brush(nullptr));
+    }
+    if (state.painter)
+    {
+        IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+    }
+    m_islands.erase(found);
 
     if (m_device)
     {
@@ -697,14 +706,17 @@ uint32_t ImmediateRenderer::TrimHidden() noexcept
             dxgiDevice->Trim();
         }
     }
-    return released;
+    return 0;
 }
-
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
 {
     PruneFallenBack(dcompTreeHost);
     auto& renderData = dcompTreeHost->GetXamlIslandRenderData();
     std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
+    for (auto it = m_hiddenSinceUs.begin(); it != m_hiddenSinceUs.end();)
+    {
+        it = renderData.find(it->first) == renderData.end() ? m_hiddenSinceUs.erase(it) : std::next(it);
+    }
     for (auto it = m_islands.begin(); it != m_islands.end();)
     {
         if (renderData.find(it->first) == renderData.end())
@@ -3812,6 +3824,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
     }
 
     std::lock_guard<std::recursive_mutex> independentLock(m_independent->mutex);
+    m_hiddenSinceUs.erase(island);
     if (FAILED(m_independent->renderThreadLoss))
     {
         OnDeviceLost(m_independent->renderThreadLoss, frameNumber);

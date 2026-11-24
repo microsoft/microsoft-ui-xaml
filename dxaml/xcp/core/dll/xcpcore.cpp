@@ -7201,6 +7201,22 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                 bool islandForceRedraw = forceRedraw;
                 if (m_immediateRenderer != nullptr && !m_immediateRenderer->IsFallenBack(xamlIslandRoot))
                 {
+                    if (xamlIslandRoot->IsActive() && !xamlIslandRoot->IsVisible() && RenderingBackend::IsTrimWhenHiddenEnabled())
+                    {
+                        // S27: nothing of a minimized or hidden window is seen, so it is not painted; after a short
+                        // delay its swap chain and painter are released. CXamlIslandRoot requests a frame when the
+                        // host becomes visible again, which recreates them with full damage.
+                        const uint32_t trimInMs = m_immediateRenderer->OnIslandHidden(xamlIslandRoot);
+                        if (trimInMs > 0)
+                        {
+                            if (ITickableFrameScheduler* frameScheduler = GetBrowserHost() ? GetBrowserHost()->GetFrameScheduler() : nullptr)
+                            {
+                                IFC_RETURN(frameScheduler->RequestAdditionalFrame(trimInMs, RequestFrameReason::AfterResume));
+                            }
+                        }
+                        xamlIslandRoot->PropagateNWClean();
+                        continue;
+                    }
                     if (xamlIslandRoot->IsActive())
                     {
                         const HRESULT paintHr = m_immediateRenderer->RenderIsland(dcompTreeHost, xamlIslandRoot, m_uFrameNumber);
@@ -7713,12 +7729,6 @@ _Check_return_ HRESULT CCoreServices::OnSuspend(bool isTriggeredByResourceTimer,
         }
 
         IFC(PauseDCompAnimationsOnSuspend());
-
-        // S27: immediate backends release their window-sized swap chains and painters while the window is not visible.
-        if (m_immediateRenderer != nullptr && RenderingBackend::IsTrimWhenHiddenEnabled())
-        {
-            m_immediateRenderer->TrimHidden();
-        }
 
         // The notification behavior of the IHM (Input Pane) is somewhat odd.  If we suspend and the input
         // pane is hidden, we don't ever get notified that it is gone.  That means when we are brought back

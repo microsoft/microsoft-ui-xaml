@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <RenderingBackend.h>
 #include <RenderingResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
 
@@ -390,6 +391,13 @@ void CXamlIslandRoot::OnStateChanged()
 
             CCoreServices* coreServices = GetContext();
             IFCFAILFAST(coreServices->OnVisibilityChanged(false /* isStartingUp */, false /* freezeDWMSnapshotIfHidden */));
+        }
+
+        // S27: immediate backends stop painting a hidden island and release its swap chain after a delay; a frame
+        // starts that timer on hide and repaints (full damage) on show.
+        if (RenderingBackend::IsTrimWhenHiddenEnabled())
+        {
+            GetContext()->RequestAdditionalFrame(RequestFrameReason::AfterResume);
         }
     }
 
