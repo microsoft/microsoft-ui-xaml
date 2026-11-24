@@ -81,12 +81,12 @@ public sealed class SnapshotViewerData
         token.ThrowIfCancellationRequested();
         await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
             64 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        if (file.Length is <= 0 or > TapProtocol.MaximumSnapshotBytes)
+        if (file.Length is <= 0 or > TreeSnapshotCodec.MaximumSavedSnapshotBytes)
             throw new InvalidDataException("Saved snapshot exceeds its bounded JSON size.");
         var bytes = new byte[checked((int)file.Length)];
         await file.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
-        var document = TreeSnapshotCodec.Decode(bytes, expectedProcess, expectedCaptureId, token);
+        var document = TreeSnapshotCodec.DecodeSaved(bytes, expectedProcess, expectedCaptureId, token);
         return new SnapshotViewerData(document, token);
     }
 
@@ -94,7 +94,7 @@ public sealed class SnapshotViewerData
     {
         ArgumentNullException.ThrowIfNull(document);
         token.ThrowIfCancellationRequested();
-        return new(TreeSnapshotCodec.Decode(JsonSerializer.SerializeToUtf8Bytes(document,
+        return new(TreeSnapshotCodec.DecodeSaved(JsonSerializer.SerializeToUtf8Bytes(document,
             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }), null, null, token), token);
     }
 

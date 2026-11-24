@@ -11743,6 +11743,19 @@ VisualTree* CCoreServices::GetMainVisualTree()
     return m_pMainVisualTree;
 }
 
+// Called before an add. If the container is full and at least half of its entries are expired, removes the
+// expired entries instead of letting the container grow. The scan only happens when the container would
+// reallocate anyway, so adds stay amortized constant time.
+template <typename Container, typename IsExpired>
+static void RemoveExpiredBeforeGrowth(Container& container, IsExpired isExpired)
+{
+    if (!container.empty() && container.size() == container.capacity() &&
+        static_cast<std::size_t>(std::count_if(container.begin(), container.end(), isExpired)) * 2 >= container.size())
+    {
+        container.erase(std::remove_if(container.begin(), container.end(), isExpired), container.end());
+    }
+}
+
 void CCoreServices::AddMutableStyleValueChangedListener(
     _In_ CStyle* const pStyle,
     xref::weakref_ptr<CFrameworkElement>& elementWeakRef)
@@ -11752,8 +11765,18 @@ void CCoreServices::AddMutableStyleValueChangedListener(
 
     if (pStyle->HasMutableSetters(false /* considerBasedOnStyle */) || shouldStoreSourceInfo)
     {
-        auto& associatedElements = m_appliedStyleTables.emplace(xref::get_weakref(pStyle), std::vector<xref::weakref_ptr<CFrameworkElement>>()).first->second;
-        associatedElements.emplace_back(elementWeakRef);
+        // Entries for destroyed elements and Styles are only removed when the element's Style is replaced or a
+        // mutable Setter changes. Clean them up when a table would otherwise grow.
+        auto styleWeakRef = xref::get_weakref(pStyle);
+        auto entry = m_appliedStyleTables.find(styleWeakRef);
+        if (entry == m_appliedStyleTables.end())
+        {
+            RemoveExpiredBeforeGrowth(m_appliedStyleTables, [](const auto& styleEntry) { return styleEntry.first.expired(); });
+            entry = m_appliedStyleTables.emplace(std::move(styleWeakRef), std::vector<xref::weakref_ptr<CFrameworkElement>>()).first;
+        }
+
+        RemoveExpiredBeforeGrowth(entry->second, [](const auto& element) { return element.expired(); });
+        entry->second.emplace_back(elementWeakRef);
     }
 
     // Recursively add the BasedOn Styles
