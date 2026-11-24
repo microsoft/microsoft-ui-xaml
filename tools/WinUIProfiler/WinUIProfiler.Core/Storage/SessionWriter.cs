@@ -406,24 +406,25 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
         // Retention mutates cached indexes as well as SQL rows. A rollback must stop Run, not resume with stale caches.
         // Once retention starts, finish the write rather than cancelling after deleting older history.
-        TrimIfNeeded(snapshot.IncomingBytes);
+        using var transaction = connection.BeginTransaction();
+        var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction);
         try
         {
-            if ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
+            if ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
                 snapshot.IncomingBytes > LimitBytes * TrimAt)
                 throw new IOException("The snapshot cannot fit within the session file's size limit.");
-            using var transaction = connection.BeginTransaction();
             Sql.Execute(connection, """
                 INSERT INTO TreeSnapshots (CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc, Document)
                 VALUES ($id, $saved, $path, $start, $end, $document)
                 """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
                 ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
                 ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
+            var committedBytes = Sql.Scalar(connection, "PRAGMA page_count", transaction) * pageSize;
             transaction.Commit();
-            Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+            Interlocked.Exchange(ref fileBytes, committedBytes);
             snapshot.Completion.TrySetResult();
         }
-        catch (Exception error) when (error is SqliteException or IOException)
+        catch (Exception error) when (!trimmed && (error is SqliteException or IOException))
         {
             Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
             snapshot.Completion.TrySetException(error);
@@ -611,67 +612,68 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
     // or no event can be deleted. Whole tree captures also participate by their end QPC. The call stacks and code
     // addresses no sample has any more go with them.
-    private void TrimIfNeeded(long incomingBytes)
+    private bool TrimIfNeeded(long incomingBytes, SqliteTransaction? transaction = null)
     {
-        while ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
+        var trimmed = false;
+        while ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
             incomingBytes > LimitBytes * TrimAt)
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
-            long? firstEvent = oldest != 0 && newest > oldest ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1") : null;
-            var firstSample = cpu.FirstQpc();
-            var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1");
+            long? firstEvent = oldest != 0 && newest > oldest
+                ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1", transaction) : null;
+            var firstSample = cpu.FirstQpc(transaction);
+            var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1", transaction);
             long? firstSnapshot = snapshotTimes.Count == 0 ? null : snapshotTimes[0];
             if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
                 (firstSample is null || firstSnapshot <= firstSample))
             {
-                TrimSnapshot();
+                TrimSnapshot(transaction);
             }
             else if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
             {
-                TrimEvents(oldest, newest);
+                TrimEvents(oldest, newest, transaction);
             }
-            else if (firstSample is null || !TrimSamples(firstEvent))
+            else if (firstSample is null || !TrimSamples(firstEvent, transaction))
             {
-                if (firstSnapshot is null) return;
-                TrimSnapshot();
+                if (firstSnapshot is null) return trimmed;
+                TrimSnapshot(transaction);
             }
+            trimmed = true;
         }
+        return trimmed;
     }
 
-    private void TrimSnapshot() => Sql.Execute(connection, """
+    private void TrimSnapshot(SqliteTransaction? transaction) => Sql.Execute(connection, """
         DELETE FROM TreeSnapshots WHERE CaptureId =
             (SELECT CaptureId FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1)
-        """);
+        """, transaction);
 
     // Deletes the oldest events, with the CPU samples from before the first event left.
-    private void TrimEvents(long oldest, long newest)
+    private void TrimEvents(long oldest, long newest, SqliteTransaction? transaction)
     {
         var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
-        long qpc;
-        using (var transaction = connection.BeginTransaction())
+        var current = transaction ?? connection.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        objects.Trim(cutoff, current);
+        frames.Trim(cutoff, current);
+        graphics.Trim(cutoff, current);
+        Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", current, ("$cutoff", cutoff));
+        // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+        // process's first event from the cutoff, or else the cutoff's.
+        var qpc = Sql.Scalar(connection, """
+            SELECT COALESCE(
+                (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                    AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+            """, current, ("$cutoff", cutoff));
+        Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", current,
+            ("$cutoff", cutoff), ("$qpc", qpc));
+        if (cpu.Trim(qpc, current) > 0)
         {
-            objects.Trim(cutoff, transaction);
-            frames.Trim(cutoff, transaction);
-            graphics.Trim(cutoff, transaction);
-            Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-            // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
-            // process's first event from the cutoff, or else the cutoff's.
-            qpc = Sql.Scalar(connection, """
-                SELECT COALESCE(
-                    (SELECT Qpc FROM Events WHERE Seq >= $cutoff
-                        AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
-                    (SELECT Qpc FROM Events WHERE Seq = $cutoff))
-                """, transaction, ("$cutoff", cutoff));
-            Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
-                ("$cutoff", cutoff), ("$qpc", qpc));
-            if (cpu.Trim(qpc, transaction) > 0)
-            {
-                cpu.Prune(transaction);
-            }
-
-            transaction.Commit();
+            cpu.Prune(current);
         }
+        owned?.Commit();
 
         Interlocked.Exchange(ref oldestSequence, cutoff);
         Interlocked.Exchange(ref completeFromQpc, qpc);
@@ -679,16 +681,17 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
     // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
     // event it keeps. Returns false when none was deleted.
-    private bool TrimSamples(long? firstEvent)
+    private bool TrimSamples(long? firstEvent, SqliteTransaction? transaction)
     {
-        using var transaction = connection.BeginTransaction();
-        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, transaction) == 0)
+        var current = transaction ?? connection.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, current) == 0)
         {
             return false;
         }
 
-        cpu.Prune(transaction);
-        transaction.Commit();
+        cpu.Prune(current);
+        owned?.Commit();
         return true;
     }
 

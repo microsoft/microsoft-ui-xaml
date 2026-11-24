@@ -20,6 +20,8 @@ internal static class SnapshotStorageTests
             await RoundTripAsync(Path.Combine(directory, "roundtrip.sqlite"));
             await RetentionAsync(Path.Combine(directory, "retention.sqlite"));
             await RetentionFailureAsync(Path.Combine(directory, "retention-failure.sqlite"));
+            await AtomicRetentionAsync(Path.Combine(directory, "insert-rollback.sqlite"), failInsert: true);
+            await AtomicRetentionAsync(Path.Combine(directory, "fit-rollback.sqlite"), failInsert: false);
             await EscapedDocumentAsync(Path.Combine(directory, "escaped.sqlite"));
             await ProcessRoutingAsync(directory);
             await StartupFailureAsync(directory);
@@ -29,7 +31,7 @@ internal static class SnapshotStorageTests
             foreach (var file in Directory.GetFiles(directory)) File.Delete(file);
             Directory.Delete(directory);
         }
-        Console.WriteLine("Passed: SQLite snapshots, escaped documents, comparisons, retention failures and JSON-only startup fallback.");
+        Console.WriteLine("Passed: SQLite snapshots, escaped documents, comparisons, atomic retention and JSON-only startup fallback.");
     }
 
     private static SessionStart Source(int pid = 42) => new(pid, $"Snapshots{pid}", Created, 1000, 0, SessionCoverage.Connection);
@@ -273,6 +275,69 @@ internal static class SnapshotStorageTests
             "Expanded exports and database-only comparisons must validate stored documents, not transferred byte lengths.");
     }
 
+    private static async Task AtomicRetentionAsync(string path, bool failInsert)
+    {
+        using var writer = SessionWriter.Create(path, Source(), 1024 * 1024);
+        if (failInsert)
+        {
+            for (var i = 1; i <= 1000; i++)
+                writer.Process(i, new(1000 + i, i, 42, 7, XamlProvider.Xaml, true, "ElementEnteredTree", 0,
+                    [new("ElementId", (long)i), new("PeerHandle", 0x1000L + i), new("Text", new string('x', 256))]));
+            for (var i = 1; i <= 10; i++)
+                writer.PostSample(new(i, 42, 7, [new(null, 0x1234)]), wait: true);
+        }
+        else
+        {
+            // The last event cannot be trimmed. It fits alone, but not alongside the incoming snapshot.
+            writer.Process(1, new(1000, 1, 42, 7, XamlProvider.Xaml, true, "Tick", 0, [new("Text", new string('x', 530_000))]));
+        }
+        var retained = Capture(0);
+        await writer.SaveSnapshotAsync(retained, path + ".json");
+        var rejected = Capture(2_000_000, padding: new string('x', 48_000));
+        rejected = rejected with
+        {
+            XamlNodes = rejected.XamlNodes.Concat(Enumerable.Range(1, 8).Select(i =>
+                rejected.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i })).ToArray()
+        };
+        using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
+        {
+            connection.Open();
+            Require((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) *
+                Sql.Scalar(connection, "PRAGMA page_size") + TreeSnapshotCodec.Encode(rejected).LongLength > writer.LimitBytes * 0.9,
+                "The rejected save must require retention, not just fail without deleting any history.");
+            if (failInsert)
+                Sql.Execute(connection, """
+                    CREATE TRIGGER FailSnapshot BEFORE INSERT ON TreeSnapshots
+                    BEGIN
+                        SELECT CASE
+                            WHEN (SELECT COUNT(*) FROM Events) = 1000 OR (SELECT COUNT(*) FROM CpuSamples) <> 0
+                                OR (SELECT COUNT(*) FROM TreeSnapshots) <> 0
+                            THEN RAISE(ABORT, 'fixture did not trim snapshots, samples and events')
+                            ELSE RAISE(ABORT, 'injected atomic insertion failure')
+                        END;
+                    END
+                    """);
+        }
+        Exception error = failInsert
+            ? await ThrowsAsync<SqliteException>(() => writer.SaveSnapshotAsync(rejected, path + ".json")
+                .WaitAsync(TimeSpan.FromSeconds(10)))
+            : await ThrowsAsync<IOException>(() => writer.SaveSnapshotAsync(rejected, path + ".json")
+                .WaitAsync(TimeSpan.FromSeconds(10)));
+        writer.Close("Test complete");
+        using var restored = SessionFile.Open(path);
+        Require(SessionFile.ReadTreeSnapshots(path).SingleOrDefault()?.CaptureId == retained.CaptureId &&
+            Sql.Scalar(restored, "SELECT COUNT(*) FROM Events") == (failInsert ? 1000 : 1) &&
+            Sql.Scalar(restored, "SELECT COUNT(*) FROM Objects") == (failInsert ? 1000 : 0) &&
+            Sql.Scalar(restored, "SELECT COUNT(*) FROM CpuSamples") == (failInsert ? 10 : 0) &&
+            Sql.Scalar(restored, "SELECT COUNT(*) FROM CallStacks") == (failInsert ? 1 : 0) &&
+            Sql.Scalar(restored, "SELECT COUNT(*) FROM CodeAddresses") == (failInsert ? 1 : 0) &&
+            SessionFile.ReadInfo(path).CompleteFromSeq is null,
+            "An insertion or final-fit rejection must roll back all retention, including snapshots, events, objects and CPU stacks.");
+        Require(ReferenceEquals(writer.Failure, error) &&
+            error.Message.Contains(failInsert ? "injected atomic insertion failure" : "cannot fit"),
+            "A rollback after retention must stop the writer rather than reuse its modified cached indexes.");
+    }
+
     private static async Task StartupFailureAsync(string directory)
     {
         using (var group = new ProcessRecordingGroup([Source() with { ProcessName = "StartupFailure" }], 42, null, directory))
@@ -309,6 +374,14 @@ internal static class SnapshotStorageTests
             var error = await ThrowsAsync<IOException>(() => group.SaveSnapshotAsync(Capture(200), jsonPath, default));
             Require(error.InnerException is SqliteException && error.Message.Contains(jsonPath),
                 "Active-recording SQL failures must remain visible and identify the saved export.");
+            using (var connection = new SqliteConnection($"Data Source={group.SnapshotRecordingPath};Pooling=False"))
+            {
+                connection.Open();
+                Sql.Execute(connection, "DROP TRIGGER FailSnapshot");
+            }
+            await group.SaveSnapshotAsync(Capture(300), jsonPath, default);
+            Require(SessionFile.ReadTreeSnapshots(group.SnapshotRecordingPath!).Count == 1,
+                "An insertion failure without retention must remain recoverable.");
         }
     }
 
