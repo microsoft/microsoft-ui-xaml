@@ -3,14 +3,15 @@
 
 namespace WinUIProfiler.Engine.Storage;
 
-// The session file: one SQLite database per connection or recorded trace. Its views are the shared queries: the app, the
+// The session file: one event database per connection or recorded trace, with CPU data in a companion (CpuSchema).
+// Its views are the shared queries: the app, the
 // CLI and AI agents read the same rows from them (see the README). Each view's comment, inside its definition, is kept
 // in sqlite_master; QueryCatalog lists them. Times are in ms from the start of the recording.
 internal static class SessionSchema
 {
-    // Stored in PRAGMA user_version; readers reject other versions. Not bumped while the format still changes in
-    // development.
-    internal const int Version = 1;
+    // Version 1 stored CPU data inline; readers still accept it.
+    internal const int Version = 2;
+    internal const int LegacyVersion = 1;
 
     internal const string Create = """
         CREATE TABLE SessionInfo (
@@ -36,7 +37,8 @@ internal static class SessionSchema
             ProcessStartQpc INTEGER,   -- a recorded trace's process creation, from the kernel's process start event, if recorded
             LauncherProcessId INTEGER, -- the process that created the target, when known: its parent for a launch from
                                        -- the app, or for a recorded trace the parent the kernel's process start event names
-            LauncherName TEXT);        -- its executable name without .exe, when known
+            LauncherName TEXT,         -- its executable name without .exe, when known
+            CpuDatabaseVersion INTEGER); -- null without CPU data; otherwise the required .sqlite.cpu companion version
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
             Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider
@@ -467,62 +469,6 @@ internal static class SessionSchema
             AND k.ThreadId = (SELECT ThreadId FROM TickList ORDER BY TickId LIMIT 1)
         ORDER BY k.TickId
         LIMIT 10;
-        CREATE TABLE Modules (         -- the images and drivers the CPU samples' stacks ran in (CpuSampleIndex)
-            ModuleId INTEGER PRIMARY KEY,
-            ProcessId INTEGER NOT NULL, -- -1 for a driver in the kernel's address space
-            FilePath TEXT NOT NULL,
-            Name TEXT NOT NULL,        -- the file name, such as Microsoft.UI.Xaml.dll
-            ImageBase INTEGER NOT NULL, -- addresses are stored as signed 64-bit values
-            ImageSize INTEGER NOT NULL,
-            TimeDateStamp INTEGER,
-            PdbName TEXT,              -- the PDB identity the trace recorded, or that symbolizing read from the image
-            PdbGuid TEXT,
-            PdbAge INTEGER,
-            SymbolStatus TEXT,         -- set by symbolizing: Resolved, NotFound, NoIdentity, Portable or Error
-            SymbolFile TEXT);          -- the PDB symbolizing used, or why it found none
-        CREATE TABLE CodeAddresses (   -- each code address of the stored call stacks
-            AddressId INTEGER PRIMARY KEY,
-            ModuleId INTEGER REFERENCES Modules (ModuleId), -- null when no module was loaded at the address
-            Address INTEGER NOT NULL,
-            Rva INTEGER,               -- the offset in its module
-            Function TEXT);            -- set by symbolizing
-        CREATE TABLE CallStacks (      -- the stored call stacks as a tree from their root frames: a stack is its leaf node
-            StackId INTEGER PRIMARY KEY,
-            ParentId INTEGER,          -- the caller's node; null for a root frame
-            AddressId INTEGER NOT NULL REFERENCES CodeAddresses (AddressId));
-        CREATE TABLE CpuSamples (      -- the kernel's CPU samples of the target's threads
-            Qpc INTEGER NOT NULL,
-            ProcessId INTEGER NOT NULL,
-            ThreadId INTEGER NOT NULL,
-            StackId INTEGER NOT NULL REFERENCES CallStacks (StackId)); -- the leaf frame of its call stack
-        CREATE INDEX CpuSamplesByThread ON CpuSamples (ThreadId, Qpc);
-        CREATE TABLE CpuSampling (     -- one row when the session sampled CPU, or tried to
-            IntervalMs REAL,           -- the time each sample stands for
-            Samples INTEGER NOT NULL,
-            Dropped INTEGER NOT NULL,  -- samples a live session could not store in time
-            CompressedStacks INTEGER NOT NULL, -- 1 when the trace's stacks were compressed: those samples have only their leaf frame
-            SymbolPath TEXT,           -- the symbol path of the last symbolizing
-            SymbolizedUtc TEXT,
-            Note TEXT);                -- why samples are missing or partial, when known
-        CREATE VIEW CpuFrames AS
-        -- Every node of the sampled call stacks with its frame. A sample's stack is its leaf node (CpuSamples.StackId),
-        -- and ParentId leads to the caller, up to the root frame. Frame is Module!Function, or Module!0xRva until
-        -- symbolized; ? for an address outside every known module.
-        SELECT c.StackId, c.ParentId, a.AddressId, a.ModuleId, COALESCE(m.Name, '?') AS Module, a.Function, a.Rva, a.Address,
-            COALESCE(m.Name, '?') || '!' || COALESCE(a.Function, printf('0x%X', COALESCE(a.Rva, a.Address))) AS Frame
-        FROM CallStacks c JOIN CodeAddresses a ON a.AddressId = c.AddressId LEFT JOIN Modules m ON m.ModuleId = a.ModuleId;
-        CREATE VIEW CpuSampleDetails AS
-        -- Every CPU sample with its time and the frame it was in; StackId leads to its callers (CpuFrames).
-        SELECT x.rowid AS SampleId, (x.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms, x.ProcessId, x.ThreadId, x.StackId,
-            f.Module, f.Function, f.Frame
-        FROM CpuSamples x CROSS JOIN SessionInfo s JOIN CpuFrames f ON f.StackId = x.StackId;
-        CREATE VIEW HotFunctions AS
-        -- Where each sampled thread spent CPU time: its samples by the frame they were in (exclusive), most first, and the
-        -- time they stand for at the sampling interval.
-        SELECT d.ThreadId, d.Module, d.Frame, COUNT(*) AS Samples, COUNT(*) * (SELECT IntervalMs FROM CpuSampling) AS Ms
-        FROM CpuSampleDetails d
-        GROUP BY d.ThreadId, d.Frame
-        ORDER BY Samples DESC;
         CREATE VIEW GraphicsLifetimes AS
         -- Observed DirectX lifetimes, scoped to SessionInfo.ProcessId. Null starts/stops are unknown, not time zero.
         -- EndMs can be an upper bound from handle reuse; DurationMs requires actual, ordered Start and Stop events.
