@@ -9681,10 +9681,8 @@ _Check_return_ HRESULT CCoreServices::OnDisplayStatusChanged(bool isDisplayOn)
     {
         m_isDisplayOn = isDisplayOn;
 
-        if (m_pNWWindowRenderTarget)
-        {
-            IFC_RETURN(EnableRender(IsXamlVisible() && m_isDisplayOn));
-        }
+        // Nothing is presented while the display is off, so handle it like a hidden window.
+        IFC_RETURN(OnVisibilityChanged(false /* isStartingUp */, false /* freezeDWMSnapshotIfHidden */));
     }
 
     return S_OK;
@@ -9855,6 +9853,7 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
         DCompTreeHost *pDCompTreeHostNoRef = m_pNWWindowRenderTarget->GetDCompTreeHost();
 
         const bool isXamlVisible = IsXamlVisible();
+        const bool isShown = isXamlVisible && m_isDisplayOn;
 
         TraceCCoreServicesSetWindowVisibilityInfo(isXamlVisible);
 
@@ -9870,11 +9869,11 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
         // proactively to get the first first frame ready as early as possible.
         if (isXamlVisible || !isStartingUp)
         {
-            IFC_RETURN(EnableRender(isXamlVisible && m_isDisplayOn));
+            IFC_RETURN(EnableRender(isShown));
         }
 
         // Start timer to offer resources while the app is running in the background.
-        if (!isXamlVisible)
+        if (!isShown)
         {
             // Freeze the DWM snapshot immediately on window invisibility.
             // Freezing at this time is more optimal than waiting for the resource timer,
@@ -9887,7 +9886,7 @@ _Check_return_ HRESULT CCoreServices::OnVisibilityChanged(bool isStartingUp, boo
             // while processing the WM_DESTROY. In such a case CoreApplicationView
             // processes the suspend before Deinitializing itself. But since the window
             // is already destroyed, taking its snapshot doesn't make sense.
-            if (m_pNWWindowRenderTarget != nullptr && freezeDWMSnapshotIfHidden)
+            if (m_pNWWindowRenderTarget != nullptr && freezeDWMSnapshotIfHidden && !isXamlVisible)
             {
                 if (pDCompTreeHostNoRef != nullptr &&
                     GetHostSite() != nullptr &&
@@ -9951,14 +9950,15 @@ CCoreServices::OnBackgroundResourceTimeout(
     )
 {
     CDispatcherTimer *pTimerNoRef = static_cast<CDispatcherTimer*>(pSender);
+    CCoreServices* core = pTimerNoRef->GetContext();
 
     // Since the event is raised asynchronously, check if the window became visible again after the
     // event was raised but before it was handled.
-    if (!pTimerNoRef->GetContext()->IsXamlVisible() && g_backgroundResourceTimerEnabled )
+    if ((!core->IsXamlVisible() || !core->m_isDisplayOn) && g_backgroundResourceTimerEnabled )
     {
         // If the timer fired and the window is still in the background, treat the app like it suspended.
         // This will release expensive resources, but will allow the app logic to continue to run.
-        IFC_RETURN(pTimerNoRef->GetContext()->OnSuspend(true /* isTriggeredByResourceTimer */, true /* allowOfferResources */));
+        IFC_RETURN(core->OnSuspend(true /* isTriggeredByResourceTimer */, true /* allowOfferResources */));
     }
 
     IFC_RETURN(pTimerNoRef->WorkComplete());
