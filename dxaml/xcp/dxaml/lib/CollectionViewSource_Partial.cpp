@@ -74,6 +74,10 @@ DirectUI::CollectionViewSource::OnPropertyChanged2(
     case KnownPropertyIndex::CollectionViewSource_IsLiveGroupingRequested:
         IFC(ApplyLiveShapingToView());
         break;
+
+    case KnownPropertyIndex::CollectionViewSource_Culture:
+        IFC(OnCultureChanged(args));
+        break;
     }
 
 Cleanup:

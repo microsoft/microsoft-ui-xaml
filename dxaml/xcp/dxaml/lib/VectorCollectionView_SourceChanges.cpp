@@ -253,7 +253,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
     auto isSkipped = [this, change, index](UINT sourceIndex) { return IsSortDirtyAfterSourceChange(change, index, sourceIndex); };
 
     *pIsApplied = false;
-    if (!pRoot)
+    if (!pRoot || pRoot->HasMultiGroupItems())
     {
         return S_OK;
     }
@@ -267,6 +267,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
     // App code (Filter, property getters, converters, comparers, NamesMatch) runs only here, before anything is
     // raised; the insertion is planned for the tree as the removal leaves it.
     bool isInPlace = false;
+    bool isInMultipleGroups = false;
     if (change != wfc::CollectionChange_ItemRemoved)
     {
         IFC_RETURN(m_tpSourceList->GetAt(index, spItem.ReleaseAndGetAddressOf()));
@@ -286,7 +287,13 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
                 }
 
                 IFC_RETURN(spSort->comparer.EvaluateKeys(spItem.Get(), &keys));
-                IFC_RETURN(pRoot->GetGroupNames(spItem.Get(), &names));
+                bool hasCollectionName = false;
+                IFC_RETURN(pRoot->GetGroupNames(spItem.Get(), &names, &hasCollectionName));
+                if (hasCollectionName)
+                {
+                    isInMultipleGroups = true;
+                    return S_OK;
+                }
                 if (hasOld)
                 {
                     bool isInOldGroup = false;
@@ -307,7 +314,7 @@ _Check_return_ HRESULT VectorCollectionView::ProcessGroupedCollectionChanged(wfc
         }
         IFC_RETURN(hr);
 
-        if (sourceChangeCount != m_sourceListChangeCount)
+        if (sourceChangeCount != m_sourceListChangeCount || isInMultipleGroups)
         {
             return S_OK;
         }

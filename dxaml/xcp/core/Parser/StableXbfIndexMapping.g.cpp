@@ -4513,6 +4513,7 @@ namespace Parser
         KnownPropertyIndex::PropertyGroupDescription_PropertyName,
         KnownPropertyIndex::PropertyGroupDescription_StringComparison,
         KnownPropertyIndex::GroupDescription_GroupNames,
+        KnownPropertyIndex::CollectionViewSource_Culture,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -4665,6 +4666,7 @@ namespace Parser
         StableXbfPropertyIndex::CalendarViewTemplateSettings_WeekDay5,
         StableXbfPropertyIndex::CalendarViewTemplateSettings_WeekDay6,
         StableXbfPropertyIndex::CalendarViewTemplateSettings_WeekDay7,
+        StableXbfPropertyIndex::CollectionViewSource_Culture,
         StableXbfPropertyIndex::CollectionViewSource_GroupDescriptions,
         StableXbfPropertyIndex::CollectionViewSource_IsLiveFilteringRequested,
         StableXbfPropertyIndex::CollectionViewSource_IsLiveGroupingRequested,

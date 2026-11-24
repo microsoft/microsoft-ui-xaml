@@ -301,11 +301,13 @@ namespace DirectUI::ShapingEngine
         public InternalList,
         public xaml_data::ICustomPropertyProvider,
         public xaml_data::ICollectionViewGroup,
+        public xaml_data::ICollectionViewGroup2,
         public xaml_data::INotifyPropertyChanged
     {
         BEGIN_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
             INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICustomPropertyProvider)
             INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICollectionViewGroup)
+            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICollectionViewGroup2)
             INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::INotifyPropertyChanged)
         END_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
 
@@ -619,6 +621,33 @@ namespace DirectUI::ShapingEngine
             return S_OK;
         }
 
+        // ICollectionViewGroup2 (WPF: CollectionViewGroup)
+        IFACEMETHODIMP get_Name(_Outptr_result_maybenull_ IInspectable** ppValue) override
+        {
+            ARG_VALIDRETURNPOINTER(ppValue);
+            return m_tpKey.CopyTo(ppValue);
+        }
+
+        IFACEMETHODIMP get_Items(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override
+        {
+            ARG_VALIDRETURNPOINTER(ppValue);
+            return get_GroupItems(ppValue);
+        }
+
+        IFACEMETHODIMP get_ItemCount(_Out_ INT32* pValue) override
+        {
+            ARG_VALIDRETURNPOINTER(pValue);
+            *pValue = static_cast<INT32>(LeafCount());
+            return S_OK;
+        }
+
+        IFACEMETHODIMP get_IsBottomLevel(_Out_ BOOLEAN* pValue) override
+        {
+            ARG_VALIDRETURNPOINTER(pValue);
+            *pValue = IsBottomLevel();
+            return S_OK;
+        }
+
         // ICustomPropertyProvider
         IFACEMETHODIMP get_Type(_Out_ wxaml_interop::TypeName* pValue) override
         {
@@ -691,6 +720,10 @@ namespace DirectUI::ShapingEngine
             else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup)))
             {
                 *ppObject = static_cast<xaml_data::ICollectionViewGroup*>(this);
+            }
+            else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)))
+            {
+                *ppObject = static_cast<xaml_data::ICollectionViewGroup2*>(this);
             }
             else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::INotifyPropertyChanged)))
             {
@@ -1658,10 +1691,14 @@ namespace DirectUI::ShapingEngine
             SetPtrValue(m_tpSubgroupList, pList);
         }
 
-        _Check_return_ HRESULT GetGroupNames(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pNames)
+        _Check_return_ HRESULT GetGroupNames(_In_opt_ IInspectable* pItem, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pNames, _Out_opt_ bool* pHasCollectionName = nullptr)
         {
             pNames->clear();
             pNames->resize(m_levels.size());
+            if (pHasCollectionName)
+            {
+                *pHasCollectionName = false;
+            }
             for (size_t level = 0; level < m_levels.size(); ++level)
             {
                 const auto& groupLevel = m_levels[level];
@@ -1673,14 +1710,85 @@ namespace DirectUI::ShapingEngine
                 if (groupLevel.pCustomDescription)
                 {
                     IFC_RETURN(groupLevel.pCustomDescription->GroupNameFromItemCoreProtected(pItem, static_cast<INT>(level), m_culture.Get(), (*pNames)[level].ReleaseAndGetAddressOf()));
-                    continue;
+                }
+                else
+                {
+                    IFC_RETURN(EvaluateKey(groupLevel.selector, pItem, (*pNames)[level].ReleaseAndGetAddressOf()));
+                    IFC_RETURN(ConvertGroupName(groupLevel.pConverter, static_cast<INT>(level), m_culture.Get(), (*pNames)[level]));
                 }
 
-                IFC_RETURN(EvaluateKey(groupLevel.selector, pItem, (*pNames)[level].ReleaseAndGetAddressOf()));
-                IFC_RETURN(ConvertGroupName(groupLevel.pConverter, static_cast<INT>(level), m_culture.Get(), (*pNames)[level]));
+                if (pHasCollectionName && IsCollectionName((*pNames)[level].Get()))
+                {
+                    *pHasCollectionName = true;
+                }
             }
 
             return S_OK;
+        }
+
+        // WPF: a group name that is a collection (ICollection there; here an iterable that is not a string) puts the
+        // item in a group for each of its names.
+        static bool IsCollectionName(_In_opt_ IInspectable* pName)
+        {
+            return pName && (ctl::is<xaml_interop::IBindableIterable>(pName)
+                || ctl::is<wfc::IIterable<IInspectable*>>(pName)
+                || ctl::is<wfc::IIterable<HSTRING>>(pName));
+        }
+
+        static _Check_return_ HRESULT GetCollectionNames(_In_ IInspectable* pName, _Out_ std::vector<ctl::ComPtr<IInspectable>>* pNames)
+        {
+            pNames->clear();
+            ctl::ComPtr<wfc::IIterable<IInspectable*>> spIterable;
+            if (auto spBindable = ctl::query_interface_cast<xaml_interop::IBindableIterable>(pName))
+            {
+                // IBindableIterable is v-table compatible with IIterable<IInspectable*> (CollectionViewManager).
+                spIterable = reinterpret_cast<wfc::IIterable<IInspectable*>*>(spBindable.Get());
+            }
+            else
+            {
+                spIterable = ctl::query_interface_cast<wfc::IIterable<IInspectable*>>(pName);
+            }
+
+            if (spIterable)
+            {
+                ctl::ComPtr<wfc::IIterator<IInspectable*>> spIterator;
+                boolean hasCurrent = false;
+                IFC_RETURN(spIterable->First(spIterator.ReleaseAndGetAddressOf()));
+                IFC_RETURN(spIterator->get_HasCurrent(&hasCurrent));
+                while (hasCurrent)
+                {
+                    ctl::ComPtr<IInspectable> spName;
+                    IFC_RETURN(spIterator->get_Current(spName.ReleaseAndGetAddressOf()));
+                    pNames->push_back(std::move(spName));
+                    IFC_RETURN(spIterator->MoveNext(&hasCurrent));
+                }
+                return S_OK;
+            }
+
+            if (auto spStrings = ctl::query_interface_cast<wfc::IIterable<HSTRING>>(pName))
+            {
+                ctl::ComPtr<wfc::IIterator<HSTRING>> spIterator;
+                boolean hasCurrent = false;
+                IFC_RETURN(spStrings->First(spIterator.ReleaseAndGetAddressOf()));
+                IFC_RETURN(spIterator->get_HasCurrent(&hasCurrent));
+                while (hasCurrent)
+                {
+                    wrl_wrappers::HString value;
+                    ctl::ComPtr<IInspectable> spName;
+                    IFC_RETURN(spIterator->get_Current(value.GetAddressOf()));
+                    IFC_RETURN(DirectUI::PropertyValue::CreateFromString(value.Get(), spName.ReleaseAndGetAddressOf()));
+                    pNames->push_back(std::move(spName));
+                    IFC_RETURN(spIterator->MoveNext(&hasCurrent));
+                }
+            }
+            return S_OK;
+        }
+
+        // Some item is in more than one group. It has no single leaf group, so the incremental paths recompute instead
+        // (WPF tracks each item's groups).
+        bool HasMultiGroupItems() const
+        {
+            return m_hasMultiGroupItems;
         }
 
         _Check_return_ HRESULT NamesMatch(UINT level, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch) const
@@ -1887,32 +1995,96 @@ namespace DirectUI::ShapingEngine
 
         // A recompute adds the items in sorted order; a new group goes after the existing ones (WPF: loading).
         // Only the bottom-level groups get the item now; FinishLoading gives the groups above them their leaves.
-        _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex, UINT slot)
+        _Check_return_ HRESULT AddLoading(_In_opt_ IInspectable* pItem, const std::vector<ctl::ComPtr<IInspectable>>& names, UINT sourceIndex, UINT slot, bool hasCollectionName = false)
         {
+            if (hasCollectionName)
+            {
+                UINT placements = 0;
+                CollectionViewGroupInternal* pLastGroup = nullptr;
+                IFC_RETURN(AddLoadingToSubgroups(this, 0, pItem, names, sourceIndex, slot, &placements, &pLastGroup));
+                if (placements == 1)
+                {
+                    SetLeafGroup(sourceIndex, pLastGroup);
+                }
+                else if (placements > 1)
+                {
+                    m_hasMultiGroupItems = true;
+                }
+                return S_OK;
+            }
+
             CollectionViewGroupInternal* pGroup = this;
             for (UINT level = 0; level < LevelCount(); ++level)
             {
-                CollectionViewGroupInternal* pSubgroup = nullptr;
-                IFC_RETURN(FindSubgroup(pGroup, level, names[level].Get(), &pSubgroup));
-                if (!pSubgroup)
-                {
-                    ctl::ComPtr<CollectionViewGroupInternal> spSubgroup;
-                    UINT position = static_cast<UINT>(pGroup->Subgroups().size());
-                    IFC_RETURN(CreateGroup(names[level].Get(), pGroup, level, spSubgroup.ReleaseAndGetAddressOf()));
-                    if (HasGroupOrder(level) && !IsGroupOrderVariable(level))
-                    {
-                        IFC_RETURN(FindOrderedSubgroupPosition(pGroup, level, spSubgroup.Get(), nullptr /* pRemoved */, &position));
-                    }
-                    IFC_RETURN(pGroup->InsertSubgroup(position, spSubgroup.Get(), false /* isRaised */));
-                    pSubgroup = spSubgroup.Get();
-                }
-                pGroup = pSubgroup;
+                IFC_RETURN(FindOrCreateLoadingSubgroup(pGroup, level, names[level].Get(), &pGroup));
             }
 
             pGroup->SourceIndices().push_back(sourceIndex);
             pGroup->KeySlots().push_back(slot);
             IFC_RETURN(pGroup->InsertLeaf(pGroup->LeafCount(), pItem, false /* isRaised */));
             SetLeafGroup(sourceIndex, pGroup);
+            return S_OK;
+        }
+
+        _Check_return_ HRESULT FindOrCreateLoadingSubgroup(_In_ CollectionViewGroupInternal* pGroup, UINT level, _In_opt_ IInspectable* pName, _Outptr_ CollectionViewGroupInternal** ppSubgroup)
+        {
+            CollectionViewGroupInternal* pSubgroup = nullptr;
+            IFC_RETURN(FindSubgroup(pGroup, level, pName, &pSubgroup));
+            if (!pSubgroup)
+            {
+                ctl::ComPtr<CollectionViewGroupInternal> spSubgroup;
+                UINT position = static_cast<UINT>(pGroup->Subgroups().size());
+                IFC_RETURN(CreateGroup(pName, pGroup, level, spSubgroup.ReleaseAndGetAddressOf()));
+                if (HasGroupOrder(level) && !IsGroupOrderVariable(level))
+                {
+                    IFC_RETURN(FindOrderedSubgroupPosition(pGroup, level, spSubgroup.Get(), nullptr /* pRemoved */, &position));
+                }
+                IFC_RETURN(pGroup->InsertSubgroup(position, spSubgroup.Get(), false /* isRaised */));
+                pSubgroup = spSubgroup.Get();
+            }
+            *ppSubgroup = pSubgroup;
+            return S_OK;
+        }
+
+        // WPF: CollectionViewGroupRoot.AddToSubgroups while loading, with a name that is a collection at some level.
+        // The bottom-level groups share the item's sort key slot.
+        _Check_return_ HRESULT AddLoadingToSubgroups(
+            _In_ CollectionViewGroupInternal* pGroup,
+            UINT level,
+            _In_opt_ IInspectable* pItem,
+            const std::vector<ctl::ComPtr<IInspectable>>& names,
+            UINT sourceIndex,
+            UINT slot,
+            _Inout_ UINT* pPlacements,
+            _Inout_ CollectionViewGroupInternal** ppLastGroup)
+        {
+            if (level == LevelCount())
+            {
+                pGroup->SourceIndices().push_back(sourceIndex);
+                pGroup->KeySlots().push_back(slot);
+                IFC_RETURN(pGroup->InsertLeaf(pGroup->LeafCount(), pItem, false /* isRaised */));
+                ++*pPlacements;
+                *ppLastGroup = pGroup;
+                return S_OK;
+            }
+
+            auto pName = names[level].Get();
+            if (!IsCollectionName(pName))
+            {
+                CollectionViewGroupInternal* pSubgroup = nullptr;
+                IFC_RETURN(FindOrCreateLoadingSubgroup(pGroup, level, pName, &pSubgroup));
+                IFC_RETURN(AddLoadingToSubgroups(pSubgroup, level + 1, pItem, names, sourceIndex, slot, pPlacements, ppLastGroup));
+                return S_OK;
+            }
+
+            std::vector<ctl::ComPtr<IInspectable>> collectionNames;
+            IFC_RETURN(GetCollectionNames(pName, &collectionNames));
+            for (const auto& spName : collectionNames)
+            {
+                CollectionViewGroupInternal* pSubgroup = nullptr;
+                IFC_RETURN(FindOrCreateLoadingSubgroup(pGroup, level, spName.Get(), &pSubgroup));
+                IFC_RETURN(AddLoadingToSubgroups(pSubgroup, level + 1, pItem, names, sourceIndex, slot, pPlacements, ppLastGroup));
+            }
             return S_OK;
         }
 
@@ -2160,6 +2332,7 @@ namespace DirectUI::ShapingEngine
         wrl_wrappers::HString m_culture;
         // The bottom-level group of each source item the view shows, by source index (null: filtered out).
         std::vector<CollectionViewGroupInternal*> m_leafGroups;
+        bool m_hasMultiGroupItems = false;
     };
 
     // Where an item joins the group tree (WPF: CollectionViewGroupRoot.AddToSubgroups).

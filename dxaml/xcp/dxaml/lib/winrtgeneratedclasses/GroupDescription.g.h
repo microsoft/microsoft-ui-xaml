@@ -36,6 +36,13 @@ namespace ctl
         IFACEMETHOD(NamesMatch)(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult) override { return This()->NamesMatch(pGroupName, pItemName, pResult); }
     };
     template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(OnPropertyChanged)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgs* pE) override { return This()->OnPropertyChanged(pE); }
+    };
+    template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides, impl_type> final
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides, impl_type>
     {
@@ -50,11 +57,13 @@ namespace ctl
 namespace DirectUI
 {
     class GroupDescription;
+    class PropertyChangedEventArgs;
 
     class __declspec(novtable) GroupDescriptionGenerated:
         public DirectUI::DependencyObject
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IGroupDescription, GroupDescriptionGenerated >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected, GroupDescriptionGenerated >
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides, GroupDescriptionGenerated >
 #endif
     {
@@ -65,6 +74,7 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(GroupDescriptionGenerated, DirectUI::DependencyObject)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(GroupDescriptionGenerated, ABI::Microsoft::UI::Xaml::Data::IGroupDescription)
+            INTERFACE_ENTRY(GroupDescriptionGenerated, ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected)
             INTERFACE_ENTRY(GroupDescriptionGenerated, ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides)
 #else
             INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
@@ -102,6 +112,7 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE NamesMatch(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
         _Check_return_ HRESULT STDMETHODCALLTYPE NamesMatchCore(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
         _Check_return_ HRESULT NamesMatchCoreProtected(_In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ BOOLEAN* pResult);
+        _Check_return_ HRESULT STDMETHODCALLTYPE OnPropertyChanged(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventArgs* pE);
 
 
     protected:

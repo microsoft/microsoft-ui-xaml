@@ -459,12 +459,12 @@ bool TableView::RaiseSortingAndCheckCanceled(
 bool TableView::CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const
 {
     // A SortMemberPath becomes a SortDescription; a CustomSortComparer becomes the view's CustomSort.
-    return m_collectionViewShaping && (direction == winrt::SortDirection::None || CanSortColumn(column));
+    return m_collectionViewShaping && m_collectionViewShaping.CanSort() && (direction == winrt::SortDirection::None || CanSortColumn(column));
 }
 
 bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool explicitClear)
 {
-    if (!m_collectionViewShaping)
+    if (!m_collectionViewShaping || !m_collectionViewShaping.CanSort())
     {
         return false;
     }

@@ -317,6 +317,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verify a GroupDescription subclass groups through its GroupNameFromItem and NamesMatch overrides, as in WPF")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(CollectionViewSourceWpfParityMembers)
+                TEST_METHOD_PROPERTY(L"Description", L"Verify the WPF members CanSort/CanFilter/CanGroup, IsDefaultView, the Culture DependencyProperty, ICollectionViewGroup2, collection group names and GroupDescription.OnPropertyChanged")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(CollectionViewSourceGroupNames)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify GroupDescription.GroupNames groups come first, in order, and stay when empty, as in WPF")
             END_TEST_METHOD()

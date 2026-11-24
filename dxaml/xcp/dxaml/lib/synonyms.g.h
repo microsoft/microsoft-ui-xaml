@@ -538,9 +538,11 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Data::IFilterEventArgs IFilterEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Data::IGroupDescription IGroupDescription;
     typedef ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionOverrides IGroupDescriptionOverrides;
+    typedef ABI::Microsoft::UI::Xaml::Data::IGroupDescriptionProtected IGroupDescriptionProtected;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionView ICollectionView;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewFactory ICollectionViewFactory;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup ICollectionViewGroup;
+    typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup2 ICollectionViewGroup2;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewLiveShaping ICollectionViewLiveShaping;
     typedef ABI::Microsoft::UI::Xaml::Data::ICollectionViewShaping ICollectionViewShaping;
     typedef ABI::Microsoft::UI::Xaml::Data::ICustomProperty ICustomProperty;
