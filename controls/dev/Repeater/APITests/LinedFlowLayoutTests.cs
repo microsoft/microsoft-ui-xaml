@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using Windows.Foundation;
 using Common;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
@@ -729,6 +731,252 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             finally
             {
                 // Always stop the layouts' measure timers, even when an assertion fails (PC-LFL-TIMER).
+                DetachLayouts();
+            }
+        }
+
+        // Scenario: host an ItemsRepeater with LinedFlowLayout inside a zero-height ScrollPresenter (scrollViewport == 0.0,
+        //           leaving m_firstFrozenItemIndex and m_lastFrozenItemIndex at -1), mutate both a middle item's width and
+        //           the first item's width across separate layout passes, re-measure with unchanged widths, and then expand
+        //           the viewport to a non-zero height.
+        // Expected: every zero-viewport measure pass succeeds without crashing, measures the full still-sized realized item
+        //           range, and lays out the updated item widths once the viewport becomes non-zero.
+        // A failure means: ComputeFrozenItemsAndLayout clamped (-1, -1) to the first realized item or passed -1 into
+        //           MeasureItemRangeRegularPath when the frozen range was empty.
+        [TestMethod]
+        [TestProperty("Description", "Verifies LinedFlowLayout handles item desired-width changes while viewport height is 0 without crashing.")]
+        public void VerifyDesiredWidthChangeWhileViewportZeroDoesNotCrash()
+        {
+            try
+            {
+                ObservableCollection<UIElement> items = null;
+                ItemsRepeater repeater = null;
+                ScrollPresenter scrollPresenter = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var layout = KeepAlive(new LinedFlowLayout()
+                    {
+                        ItemsStretch = LinedFlowLayoutItemsStretch.Fill,
+                        LineHeight = c_lineHeight,
+                        LineSpacing = 5.0,
+                        MinItemSpacing = 5.0
+                    });
+
+                    items = new ObservableCollection<UIElement>();
+                    for (int i = 0; i < 13; i++)
+                    {
+                        items.Add(new Border()
+                        {
+                            Width = 90.0,
+                            MinWidth = 70.0,
+                            Height = c_lineHeight
+                        });
+                    }
+
+                    repeater = new ItemsRepeater()
+                    {
+                        Layout = layout,
+                        ItemsSource = items,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    _repeaters.Add(repeater);
+
+                    scrollPresenter = new ScrollPresenter()
+                    {
+                        Content = repeater,
+                        ContentOrientation = ScrollingContentOrientation.Vertical,
+                        Width = 500.0,
+                        Height = 0.0
+                    };
+
+                    Content = scrollPresenter;
+                    Content.UpdateLayout();
+
+                    // 1. Mutate a middle item while scrollViewport == 0.0 so EnsureAndMeasureItemRange must cover
+                    //    the full still-sized realized range rather than clamping (-1, -1) to (0, 0).
+                    //    With 4 items on the 500px row (90 + 220 + 90 + 90 + 15 = 505), LinedFlowLayout shrinks
+                    //    item 5 slightly (~218px), well above its previous ~121px stretched width.
+                    ((Border)items[5]).Width = 220.0;
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+                    Verify.IsGreaterThanOrEqual(items[5].DesiredSize.Width, 200.0, "Item 5 is measured during zero-viewport relayout.");
+
+                    // 2. Mutate the first realized item while scrollViewport == 0.0.
+                    ((Border)items[0]).Width = 180.0;
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+
+                    // 3. Re-measure with unchanged widths while scrollViewport == 0.0 (reuses oldElementAvailableWidths).
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+
+                    // 4. Expand viewport to non-zero height so lines become visible and arranged.
+                    scrollPresenter.Height = 400.0;
+                });
+
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    var slot0 = LayoutInformation.GetLayoutSlot((FrameworkElement)items[0]);
+                    var slot5 = LayoutInformation.GetLayoutSlot((FrameworkElement)items[5]);
+                    Verify.IsGreaterThanOrEqual(slot0.Width, 180.0 - 0.5, "Item 0 layout slot reflects its updated width.");
+                    Verify.IsGreaterThanOrEqual(slot5.Width, 200.0, "Item 5 layout slot reflects its updated width.");
+
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var element = (FrameworkElement)items[i];
+                        Verify.IsLessThan(Math.Abs(element.ActualHeight - c_lineHeight), 0.5, $"Item {i} ActualHeight matches LineHeight.");
+                        var offset = GetOffset(element, repeater);
+                        Verify.IsFalse(double.IsNaN(offset.X) || double.IsNaN(offset.Y), $"Item {i} has finite layout slot.");
+                        Verify.IsGreaterThanOrEqual(offset.X, -0.5, $"Item {i} X is non-negative.");
+                        Verify.IsGreaterThanOrEqual(offset.Y, -0.5, $"Item {i} Y is non-negative.");
+                    }
+                });
+            }
+            finally
+            {
+                DetachLayouts();
+            }
+        }
+
+        // Scenario: scroll a virtualizing ScrollPresenter + ItemsRepeater with LinedFlowLayout so m_firstSizedLineIndex > 0,
+        //           collapse viewport height to 0 (setting m_firstFrozenLineIndex = -1 while m_firstSizedLineIndex > 0),
+        //           mutate a realized item's width and shift scroll offset while height is 0 (both without and with partial
+        //           ItemsInfoRequested sizing), then restore viewport height.
+        // Expected: neither the width mutation nor the scroll-offset shift crashes or indexes out-of-bounds line vectors,
+        //           and the resized item's arranged layout slot reflects its updated width once the viewport is restored.
+        // A failure means: partial pre/post-frozen relayout ran without a valid frozen line anchor when m_firstSizedLineIndex > 0.
+        [TestMethod]
+        [TestProperty("Description", "Verifies LinedFlowLayout handles collapsing a scrolled viewport to height 0 with item width and scroll changes.")]
+        public void VerifyScrolledViewportCollapseAndWidthChangeDoesNotCrash()
+        {
+            try
+            {
+                ObservableCollection<UIElement> items = null;
+                ItemsRepeater repeater = null;
+                LinedFlowLayout layout = null;
+                ScrollPresenter scrollPresenter = null;
+                var scrollCompletedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    layout = KeepAlive(new LinedFlowLayout()
+                    {
+                        ItemsStretch = LinedFlowLayoutItemsStretch.Fill,
+                        LineHeight = c_lineHeight,
+                        LineSpacing = 5.0,
+                        MinItemSpacing = 5.0
+                    });
+
+                    items = new ObservableCollection<UIElement>();
+                    // 150 items (~44 lines at ~3.45 items/line, ~2415px extent) exceeds GetSizedItemsRectHeight's
+                    // 20-line floor (1100px) so scrolling to y=1200 puts m_firstSizedLineIndex strictly > 0.
+                    for (int i = 0; i < 150; i++)
+                    {
+                        items.Add(new Border()
+                        {
+                            Width = 110.0,
+                            MinWidth = 60.0,
+                            Height = c_lineHeight
+                        });
+                    }
+
+                    repeater = new ItemsRepeater()
+                    {
+                        Layout = layout,
+                        ItemsSource = items,
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+                    _repeaters.Add(repeater);
+
+                    scrollPresenter = new ScrollPresenter()
+                    {
+                        Content = repeater,
+                        ContentOrientation = ScrollingContentOrientation.Vertical,
+                        Width = 400.0,
+                        Height = 160.0
+                    };
+
+                    Content = scrollPresenter;
+                });
+
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollPresenter.ScrollCompleted += (s, e) => scrollCompletedEvent.Set();
+                    scrollPresenter.ScrollTo(0.0, 1200.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                });
+                Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Initial ScrollTo completed.");
+                SettleLayout();
+
+                Border mutatedItem = null;
+                int mutatedIndex = -1;
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsNull(Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(items[0]), "Leading items are virtualized out after scrolling.");
+
+                    // Pick the middle realized item so it sits inside the scrolled range while m_firstSizedLineIndex > 0.
+                    var realizedItems = items.Where(e => Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(e) == repeater).Cast<Border>().ToList();
+                    Verify.IsGreaterThan(realizedItems.Count, 0, "Found realized items in the scrolled range.");
+                    mutatedItem = realizedItems[realizedItems.Count / 2];
+                    mutatedIndex = items.IndexOf(mutatedItem);
+
+                    // Collapse viewport to 0 while scrolled down (m_firstSizedLineIndex > 0, m_firstFrozenLineIndex == -1).
+                    scrollPresenter.Height = 0.0;
+                    Content.UpdateLayout();
+
+                    if (mutatedItem != null)
+                    {
+                        mutatedItem.Width = 240.0;
+                    }
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+
+                    // Shift scroll offset while viewport height remains 0 so sized-line bounds shift without a frozen anchor.
+                    scrollCompletedEvent.Reset();
+                    scrollPresenter.ScrollTo(0.0, 800.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                });
+                Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Zero-viewport ScrollTo completed.");
+                SettleLayout();
+
+                // Also exercise the regular-path partial ItemsInfoRequested branch (m_itemsInfoFirstIndex != -1)
+                // when sized-line bounds shift while viewport height is 0.
+                RunOnUIThread.Execute(() =>
+                {
+                    layout.ItemsInfoRequested += (s, args) => SetAspectRatios(args, idx => ((Border)items[idx]).Width);
+                    layout.InvalidateItemsInfo();
+                    Content.UpdateLayout();
+
+                    scrollCompletedEvent.Reset();
+                    scrollPresenter.ScrollTo(0.0, 1200.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                });
+                Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Zero-viewport ItemsInfoRequested ScrollTo completed.");
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    // Restore viewport height and bring the mutated item into view to verify its arranged layout slot.
+                    scrollPresenter.Height = 160.0;
+                    Content.UpdateLayout();
+                    repeater.GetOrCreateElement(mutatedIndex).StartBringIntoView(new BringIntoViewOptions { AnimationDesired = false });
+                });
+                SettleLayout();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreSame(repeater, Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(mutatedItem), "Mutated item is realized in the restored viewport.");
+                    var slot = LayoutInformation.GetLayoutSlot(mutatedItem);
+                    Verify.IsGreaterThanOrEqual(slot.Width, 200.0, "Mutated scrolled item layout slot reflects updated width.");
+                    Verify.IsLessThan(Math.Abs(slot.Height - c_lineHeight), 0.5, "Mutated scrolled item slot height matches LineHeight.");
+                });
+            }
+            finally
+            {
                 DetachLayouts();
             }
         }
