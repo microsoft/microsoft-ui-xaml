@@ -20,6 +20,12 @@ namespace
         _In_ wfc::IIterable<IInspectable*>* source,
         _In_ wfc::IVector<IInspectable*>* itemsView)
     {
+        // A source used as is by UpdateItemsView is its own items view, not a wrapper.
+        if (ctl::are_equal(source, itemsView))
+        {
+            return false;
+        }
+
         // CollectionViewManager::GetVectorFromSource uses an IObservableVector<IInspectable*> source
         // as is and wraps any other such source in a BindableObservableVectorWrapper.
         if (ctl::is<wfc::IObservableVector<IInspectable*>>(source))
@@ -27,7 +33,6 @@ namespace
             return false;
         }
 
-        ASSERT(!ctl::are_equal(source, itemsView));
         return static_cast<BindableObservableVectorWrapper*>(itemsView)->IsProjectingRangeChange();
     }
 }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 namespace DirectUI { namespace Components {
 
@@ -24,11 +25,14 @@ namespace DirectUI { namespace Components {
         static bool IsValid(
             std::uint32_t sourceSize,
             std::int32_t index,
+            std::uint32_t oldCount,
             std::uint32_t newCount)
         {
+            // The largest view, before any change is applied, must not overflow its size.
             return index >= 0 &&
                 newCount <= sourceSize &&
-                static_cast<std::uint32_t>(index) <= sourceSize - newCount;
+                static_cast<std::uint32_t>(index) <= sourceSize - newCount &&
+                oldCount <= std::numeric_limits<std::uint32_t>::max() - (sourceSize - newCount);
         }
 
         CollectionRangeChangeView(

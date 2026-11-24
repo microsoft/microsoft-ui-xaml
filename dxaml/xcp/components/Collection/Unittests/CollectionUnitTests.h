@@ -31,6 +31,14 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             TEST_METHOD_PROPERTY(L"Description", L"Rejects invalid Move indices, empty ranges, and inconsistent item counts.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(RangeViewValidatesRanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Rejects invalid range changes, including old counts that overflow the view size.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RangeViewMapsReplace)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the intermediate views of a multi-item Replace.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(MoveViewHandlesLargeIndices)
             TEST_METHOD_PROPERTY(L"Description", L"Validates Move projection arithmetic near the vector size limit.")
         END_TEST_METHOD()

@@ -722,7 +722,7 @@ BindableObservableVectorWrapper::ProcessCollectionRangeChange(
     // Without a valid range, or after a nested change, the intermediate states cannot be
     // described consistently, so reconcile with a Reset.
     if (m_sourceChangedDuringProjection ||
-        !Components::CollectionRangeChangeView::IsValid(sourceSize, index, newCount))
+        !Components::CollectionRangeChangeView::IsValid(sourceSize, index, oldCount, newCount))
     {
         resetRequired = true;
         goto Cleanup;

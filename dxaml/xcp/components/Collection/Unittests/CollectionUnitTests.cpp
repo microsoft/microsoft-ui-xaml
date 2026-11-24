@@ -6,6 +6,7 @@
 #include "CollectionUnitTests.h"
 #include <XamlLogging.h>
 #include <CollectionMoveView.h>
+#include <CollectionRangeChangeView.h>
 #include <numeric>
 #include <vector>
 
@@ -117,6 +118,60 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         VERIFY_IS_FALSE(CollectionMoveView::IsValid(4, 0, 3, 2, 2));
         VERIFY_IS_FALSE(CollectionMoveView::IsValid(4, 0, 0, 5, 5));
         VERIFY_IS_FALSE(CollectionMoveView::IsValid(UINT32_MAX, 1, 0, UINT32_MAX, UINT32_MAX));
+    }
+
+    void CollectionUnitTests::RangeViewValidatesRanges()
+    {
+        using DirectUI::Components::CollectionRangeChangeView;
+
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(4, 1, 1, 2));
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(4, 0, 0, 4));
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(0, 0, 3, 0));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(4, -1, 1, 1));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(4, 0, 1, 5));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(4, 3, 1, 2));
+
+        // The view of the source before the change would be larger than the vector size limit.
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(4, 0, UINT32_MAX - 4u, 0));
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(4, 0, UINT32_MAX - 2u, 2));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(4, 0, UINT32_MAX - 3u, 0));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(4, 0, UINT32_MAX, 2));
+        VERIFY_IS_FALSE(CollectionRangeChangeView::IsValid(UINT32_MAX, 0, 1, 0));
+    }
+
+    void CollectionUnitTests::RangeViewMapsReplace()
+    {
+        using DirectUI::Components::CollectionRangeChangeView;
+
+        // A, B, C becomes A, X, Y, C: B is replaced by X, then Y is inserted.
+        VERIFY_IS_TRUE(CollectionRangeChangeView::IsValid(4, 1, 1, 2));
+        CollectionRangeChangeView view(4, 1, 1, 2);
+
+        VERIFY_ARE_EQUAL(3u, view.GetSize());
+        auto location = view.GetLocation(1);
+        VERIFY_IS_TRUE(location.isOldItem);
+        VERIFY_ARE_EQUAL(0u, location.index);
+        location = view.GetLocation(2);
+        VERIFY_IS_FALSE(location.isOldItem);
+        VERIFY_ARE_EQUAL(3u, location.index);
+
+        view.ReplaceNext();
+        VERIFY_ARE_EQUAL(3u, view.GetSize());
+        location = view.GetLocation(1);
+        VERIFY_IS_FALSE(location.isOldItem);
+        VERIFY_ARE_EQUAL(1u, location.index);
+        location = view.GetLocation(2);
+        VERIFY_IS_FALSE(location.isOldItem);
+        VERIFY_ARE_EQUAL(3u, location.index);
+
+        view.InsertNext();
+        VERIFY_ARE_EQUAL(4u, view.GetSize());
+        location = view.GetLocation(2);
+        VERIFY_IS_FALSE(location.isOldItem);
+        VERIFY_ARE_EQUAL(2u, location.index);
+        location = view.GetLocation(3);
+        VERIFY_IS_FALSE(location.isOldItem);
+        VERIFY_ARE_EQUAL(3u, location.index);
     }
 
     void CollectionUnitTests::MoveViewHandlesLargeIndices()
