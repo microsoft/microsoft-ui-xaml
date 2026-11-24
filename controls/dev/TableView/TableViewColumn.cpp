@@ -246,18 +246,8 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
-        winrt::get_self<TableView>(owner)->RefreshHeaderSortability(*this);
-    }
-
-    // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
-    // the active direction rather than leaving the rows in the old comparer's order.
-    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None)
-    {
-        auto const direction = SortDirection();
-        auto ownerImpl = winrt::get_self<TableView>(owner);
-        // Force a re-sort: SortByColumn no-ops when the column already carries this direction.
-        ownerImpl->SortByColumn(*this, winrt::SortDirection::None);
-        ownerImpl->SortByColumn(*this, direction);
+        // Re-sorts a sorted column in the new comparer's order rather than leaving the old one.
+        winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*this);
     }
 }
 
@@ -328,7 +318,7 @@ void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Dat
     if (auto const owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
-        winrt::get_self<TableView>(owner)->OnColumnSortPathChanged(*this);
+        winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*this);
     }
 }
 
@@ -383,7 +373,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                             winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
                             if (isSortPath)
                             {
-                                winrt::get_self<TableView>(owner)->OnColumnSortPathChanged(*strongThis);
+                                winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*strongThis);
                             }
                         }
                     });
