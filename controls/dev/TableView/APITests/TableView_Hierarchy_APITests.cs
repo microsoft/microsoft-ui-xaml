@@ -574,6 +574,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a Replace with the same object (a refresh) updates its row in place, for a leaf and for an expanded parent, without rebuilding the tree.")]
+        public void VerifySameObjectReplaceRefreshesRowInPlace()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
+
+            Toggle(tableView, "Ada", true);
+            var actions = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                GetRowsRepeater(tableView).ItemsSourceView.CollectionChanged += (s, e) => actions.Add(e.Action.ToString());
+                list[0] = list[0];
+                list[2] = list[2];
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Replace,Replace", string.Join(",", actions), "Each row is refreshed in place.");
+                VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "after refreshing Ada and Cy");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies unsorted siblings follow source order after a Move.")]
         public void VerifyMoveKeepsSiblingOrderBySource()
         {
