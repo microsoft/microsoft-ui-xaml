@@ -233,7 +233,12 @@ namespace DirectUI
         TrackerPtr<wfc::IVector<T>> m_tpCollectionRef;
     };
 
+    // A TrackerCollection's storage: a TrackerPtrVector, or a type with the same members (StableTrackerPtrVector in
+    // VectorCollectionView_ShapingInternal.h).
     template <typename T>
+    using DefaultTrackerCollectionStorage = TrackerPtrVector<typename std::remove_pointer<typename wf::Internal::GetAbiType<typename wfc::IVector<T>::T_complex>::type>::type>;
+
+    template <typename T, typename TStorage = DefaultTrackerCollectionStorage<T>>
     class __declspec(novtable) TrackerCollection:
         public wfc::IIterable<T>,
         public wfc::IVector<T>,
@@ -484,7 +489,7 @@ namespace DirectUI
 
     private:
 
-        TrackerPtrVector<T_type> m_vector;
+        TStorage m_vector;
     };
 
     template <typename T>
@@ -620,16 +625,17 @@ namespace DirectUI
         TrackerPtrVector<THandler> m_handlers;
     };
 
-    template <typename T>
+    template <typename T, typename TStorage = DefaultTrackerCollectionStorage<T>>
     class __declspec(novtable) ObservableTrackerCollection:
         public wfc::IObservableVector<T>,
-        public TrackerCollection<T>
+        public TrackerCollection<T, TStorage>
     {
     protected:
+        using BaseCollection = TrackerCollection<T, TStorage>;
 
-        BEGIN_INTERFACE_MAP(ObservableTrackerCollection<T>, TrackerCollection<T>)
+        BEGIN_INTERFACE_MAP(ObservableTrackerCollection<T>, BaseCollection)
             INTERFACE_ENTRY(ObservableTrackerCollection<T>, wfc::IObservableVector<T>)
-        END_INTERFACE_MAP(ObservableTrackerCollection<T>, TrackerCollection<T>)
+        END_INTERFACE_MAP(ObservableTrackerCollection<T>, BaseCollection)
 
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override
         {
@@ -639,7 +645,7 @@ namespace DirectUI
             }
             else
             {
-                RRETURN(TrackerCollection<T>::QueryInterfaceImpl(iid, ppObject));
+                RRETURN(BaseCollection::QueryInterfaceImpl(iid, ppObject));
             }
 
             this->AddRefOuter();
@@ -650,7 +656,7 @@ namespace DirectUI
         ObservableTrackerCollection() = default;
 
     public:
-        using T_abi = typename TrackerCollection<T>::T_abi;
+        using T_abi = typename BaseCollection::T_abi;
 
         // IObservableVector<T>
         IFACEMETHODIMP add_VectorChanged(_In_ wfc::VectorChangedEventHandler<T> *handler, _Out_ EventRegistrationToken *token) override
@@ -673,7 +679,7 @@ namespace DirectUI
             UINT size = this->Size();
             IFCEXPECTRC(index < size, E_BOUNDS);
 
-            IFC(TrackerCollection<T>::SetAt(index, item));
+            IFC(BaseCollection::SetAt(index, item));
 
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index));
 
@@ -689,7 +695,7 @@ namespace DirectUI
             UINT size = this->Size();
             IFCEXPECTRC(index <= size, E_BOUNDS);
 
-            IFC(TrackerCollection<T>::InsertAt(index, item));
+            IFC(BaseCollection::InsertAt(index, item));
 
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index));
 
@@ -705,7 +711,7 @@ namespace DirectUI
             UINT size = this->Size();
             IFCEXPECTRC(index < size, E_BOUNDS);
 
-            IFC(TrackerCollection<T>::RemoveAt(index));
+            IFC(BaseCollection::RemoveAt(index));
 
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index));
 
@@ -718,7 +724,7 @@ namespace DirectUI
         {
             HRESULT hr = S_OK;
 
-            IFC(TrackerCollection<T>::Append(item));
+            IFC(BaseCollection::Append(item));
 
             IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, this->Size() - 1));
 
@@ -744,7 +750,7 @@ namespace DirectUI
         {
             HRESULT hr = S_OK;
 
-            TrackerCollection<T>::Clear();
+            BaseCollection::Clear();
 
             IFC(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
 
@@ -759,7 +765,7 @@ namespace DirectUI
         {
             m_handlers.ReferenceTrackerWalk(static_cast<EReferenceTrackerWalkType>(walkType));
 
-            TrackerCollection<T>::OnReferenceTrackerWalk(walkType);
+            BaseCollection::OnReferenceTrackerWalk(walkType);
         }
 
         virtual _Check_return_ HRESULT RaiseVectorChanged(_In_ wfc::CollectionChange action, UINT index)
@@ -795,11 +801,13 @@ namespace DirectUI
             wfc::IVectorChangedEventArgs> m_handlers;
     };
 
-    template <typename T>
-    class __declspec(novtable) ReadOnlyObservableTrackerCollection : public ObservableTrackerCollection<T>
+    template <typename T, typename TStorage = DefaultTrackerCollectionStorage<T>>
+    class __declspec(novtable) ReadOnlyObservableTrackerCollection : public ObservableTrackerCollection<T, TStorage>
     {
     public:
-        using T_abi = typename ObservableTrackerCollection<T>::T_abi;
+        using BaseObservable = ObservableTrackerCollection<T, TStorage>;
+        using BaseCollection = TrackerCollection<T, TStorage>;
+        using T_abi = typename BaseObservable::T_abi;
 
         // Override of the writting methods to fail
         IFACEMETHODIMP SetAt(_In_ unsigned index, _In_opt_ T_abi item) override
@@ -825,43 +833,43 @@ namespace DirectUI
         // Internal methods to be able to write to the collection from inside
         _Check_return_ HRESULT InternalSetAt(_In_ unsigned index, _In_opt_ T_abi item)
         {
-            RRETURN(ObservableTrackerCollection<T>::SetAt(index, item));
+            RRETURN(BaseObservable::SetAt(index, item));
         }
 
         _Check_return_ HRESULT InternalInsertAt(_In_ unsigned index, _In_opt_ T_abi item)
         {
-            RRETURN(ObservableTrackerCollection<T>::InsertAt(index, item));
+            RRETURN(BaseObservable::InsertAt(index, item));
         }
 
         _Check_return_ HRESULT InternalRemoveAt(_In_ unsigned index)
         {
-            RRETURN(ObservableTrackerCollection<T>::RemoveAt(index));
+            RRETURN(BaseObservable::RemoveAt(index));
         }
 
         _Check_return_ HRESULT InternalAppend(_In_ T_abi item)
         {
-            RRETURN(ObservableTrackerCollection<T>::Append(item));
+            RRETURN(BaseObservable::Append(item));
         }
 
         _Check_return_ HRESULT InternalRemoveAtEnd()
         {
-            RRETURN(ObservableTrackerCollection<T>::RemoveAtEnd());
+            RRETURN(BaseObservable::RemoveAtEnd());
         }
 
         _Check_return_ HRESULT InternalClear()
         {
-            RRETURN(ObservableTrackerCollection<T>::Clear());
+            RRETURN(BaseObservable::Clear());
         }
 
         // Replaces the contents and raises a single Reset.
         template <typename TItem>
         _Check_return_ HRESULT InternalReplaceAll(_In_ const std::vector<TItem>& items)
         {
-            IFC_RETURN(TrackerCollection<T>::Clear());
+            IFC_RETURN(BaseCollection::Clear());
             this->Reserve(static_cast<uint32_t>(items.size()));
             for (const auto& item : items)
             {
-                IFC_RETURN(TrackerCollection<T>::Append(item.Get()));
+                IFC_RETURN(BaseCollection::Append(item.Get()));
             }
             RRETURN(this->RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
         }
