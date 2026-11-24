@@ -14,7 +14,6 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
 
     <!-- Must track $(WindowsTargetPlatformVersion): Microsoft.Windows.SDK.cpp.targets errors out if the
          package's UWP version does not match the TargetPlatformVersion implied by $(TargetFramework). -->

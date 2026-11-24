@@ -45,7 +45,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Include="Axe.Windows" Version="1.1.7" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="Microsoft.Windows.Apps.Test" Version="1.0.181205002" />
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="Microsoft.Windows.SDK.cpp" Version="$(MicrosoftWindowsSDKCppNugetPackageVersion)" />
