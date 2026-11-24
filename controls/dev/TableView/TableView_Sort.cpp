@@ -18,6 +18,7 @@
 #include "GroupedEntry.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewSource.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
@@ -386,8 +387,35 @@ bool TableView::IsActiveSourceOwnedByOther() const
     return m_activeSourceReleased && winrt::get_self<::TableViewSource>(source)->IsOwnedByOther(*this);
 }
 
+void TableView::RefreshHeaderSortability(const winrt::TableViewColumn& column)
+{
+    // The chevron and the click handler are stamped at header-build time.
+    auto const host = m_headerHost.get();
+    if (!host || !column)
+    {
+        return;
+    }
+
+    for (auto const& child : host.Children())
+    {
+        auto const header = child.try_as<winrt::TableViewColumnHeader>();
+        auto const headerImpl = header ? winrt::get_self<TableViewColumnHeader>(header) : nullptr;
+        if (headerImpl && headerImpl->Column() == column)
+        {
+            if (headerImpl->IsSortableInternal() != IsColumnUserSortableInternal(column))
+            {
+                QueueRebuildHeaders();
+            }
+            return;
+        }
+    }
+}
+
 void TableView::OnColumnSortPathChanged(const winrt::TableViewColumn& column)
 {
+    // Queued first so it still runs when a Sorting or Sorted handler throws.
+    RefreshHeaderSortability(column);
+
     // Only a sort this table installed for the column is keyed on its path; a comparer ignores the path.
     if (!column || column.SortDirection() == winrt::SortDirection::None || column.CustomSortComparer() ||
         m_tableViewSourceSort.AxisToken.empty() ||

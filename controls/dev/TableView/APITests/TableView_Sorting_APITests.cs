@@ -262,6 +262,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies giving a keyless column a DisplayMemberBinding makes its header sortable.")]
+        public void VerifySettingDisplayMemberBindingMakesHeaderSortable()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                tableView.Columns.Add(new TableViewColumn { Header = "Value" });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(FindSortIndicator(tableView, 0), "Baseline: a column with no sort key must not offer a sort affordance.");
+                tableView.Columns[0].DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNotNull(FindSortIndicator(tableView, 0), "A column that gained a sort key must offer a sort affordance.");
+                InvokeHeader(tableView, 0);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "Invoking the header must sort the column.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the rows must be sorted by the new binding path");
+            });
+        }
+
         #endregion
 
         #region 7.2 Programmatic sort state
