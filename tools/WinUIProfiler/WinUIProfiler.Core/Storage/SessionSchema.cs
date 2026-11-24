@@ -141,6 +141,67 @@ internal static class SessionSchema
             PRIMARY KEY (SourceId, TargetId, Kind, StartSeq)) WITHOUT ROWID;
         CREATE INDEX GraphicsLinkTargets ON GraphicsLinks (TargetId, SourceId);
         CREATE INDEX GraphicsLinkEnds ON GraphicsLinks (EndSeq);
+        CREATE TABLE TreeSnapshots (
+            CaptureId TEXT PRIMARY KEY,
+            SavedUtc TEXT NOT NULL,
+            JsonPath TEXT NOT NULL,    -- the independent JSON export; not needed to read the stored capture
+            StartQpc INTEGER NOT NULL,
+            EndQpc INTEGER NOT NULL,
+            Document TEXT NOT NULL);  -- the complete validated JSON, including unknown properties and exact UInt64 tokens
+        CREATE INDEX TreeSnapshotsByTime ON TreeSnapshots (EndQpc, CaptureId);
+        CREATE VIEW SnapshotSummary AS
+        -- Captures retained in this recording. All nodes and counters are read from Document, never from later ETW state.
+        SELECT CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc,
+            Document ->> '$.schemaVersion' AS SchemaVersion,
+            Document ->> '$.processId' AS ProcessId,
+            Document ->> '$.creationTimeFileTime' AS CreationTimeFileTime,
+            Document ->> '$.qpcFrequency' AS QpcFrequency,
+            json_array_length(Document, '$.roots') AS Roots,
+            json_array_length(Document, '$.xamlNodes') AS XamlNodes,
+            json_array_length(Document, '$.compositionNodes') AS CompositionNodes,
+            json_array_length(Document, '$.correlations') AS Correlations,
+            Document -> '$.limitations' AS Limitations,
+            Document ->> '$.resourceSnapshot.status' AS ResourceStatus,
+            Document ->> '$.resourceSnapshot.hResult' AS ResourceHResult,
+            Document ->> '$.resourceSnapshot.startQpc' AS ResourceStartQpc,
+            Document ->> '$.resourceSnapshot.endQpc' AS ResourceEndQpc,
+            Document ->> '$.resourceSnapshot.values.allocCount' AS AllocCount,
+            Document ->> '$.resourceSnapshot.values.allocSize' AS AllocSize,
+            Document ->> '$.resourceSnapshot.values.allocatedMemory' AS AllocatedMemory,
+            Document ->> '$.resourceSnapshot.values.outstandingAllocCount' AS OutstandingAllocCount,
+            Document ->> '$.resourceSnapshot.values.outstandingAllocSize' AS OutstandingAllocSize
+        FROM TreeSnapshots;
+        CREATE VIEW SnapshotRoots AS
+        -- Root IDs are capture-local decimal text. ThreadId and XamlRootAddress identify roots across captures.
+        SELECT s.CaptureId, r.value -> '$.id' AS RootId, r.value ->> '$.threadId' AS ThreadId,
+            r.value ->> '$.startQpc' AS StartQpc, r.value ->> '$.endQpc' AS EndQpc,
+            r.value ->> '$.xamlRootAddress' AS XamlRootAddress
+        FROM TreeSnapshots s, json_each(s.Document, '$.roots') r;
+        CREATE VIEW SnapshotNodes AS
+        -- IDs are exact decimal text, scoped by CaptureId and Tree, not persistent object identities.
+        -- Properties stays JSON so UInt64 values, nested values and explicit nulls are not coerced to SQLite REAL.
+        SELECT s.CaptureId, 'Xaml' AS Tree, n.value -> '$.id' AS NodeId, n.value -> '$.rootId' AS RootId,
+            CASE WHEN n.value ->> '$.parentId' IS NOT NULL THEN n.value -> '$.parentId' END AS ParentId,
+            n.value ->> '$.childIndex' AS ChildIndex, n.value ->> '$.type' AS Type, n.value ->> '$.name' AS Name,
+            n.value ->> '$.objectAddress' AS ObjectAddress, n.value ->> '$.diagnosticsHandle' AS DiagnosticsHandle,
+            NULL AS VisualAddress, n.value -> '$.properties' AS Properties
+        FROM TreeSnapshots s, json_each(s.Document, '$.xamlNodes') n
+        UNION ALL
+        SELECT s.CaptureId, 'Composition', n.value -> '$.id', n.value -> '$.rootId',
+            CASE WHEN n.value ->> '$.parentId' IS NOT NULL THEN n.value -> '$.parentId' END,
+            n.value ->> '$.childIndex', n.value ->> '$.type', NULL,
+            n.value ->> '$.objectAddress', NULL, n.value ->> '$.visualAddress', n.value -> '$.properties'
+        FROM TreeSnapshots s, json_each(s.Document, '$.compositionNodes') n;
+        CREATE VIEW SnapshotCorrelations AS
+        -- Captured XAML-to-Composition links; both node IDs are capture-local decimal text.
+        SELECT s.CaptureId, c.value -> '$.xamlNodeId' AS XamlNodeId, c.value -> '$.visualNodeId' AS VisualNodeId
+        FROM TreeSnapshots s, json_each(s.Document, '$.correlations') c;
+        CREATE VIEW SnapshotResources AS
+        -- Graphics counters are exact unsigned decimal text. Empty/missing captures do not imply measured zero.
+        SELECT s.CaptureId, r.value ->> '$.index' AS ResourceIndex,
+            r.value -> '$.totalCreated' AS TotalCreated, r.value -> '$.totalDestroyed' AS TotalDestroyed,
+            r.value -> '$.liveCount' AS LiveCount
+        FROM TreeSnapshots s, json_each(s.Document, '$.resourceSnapshot.values.resources') r;
         CREATE VIEW EventDetails AS
         -- Every event, readable: its type, its fields by name, the tick it belongs to (TickId, Bucket) and the UI elements and
         -- visuals it mentions. An event outside every tick is in bucket Other.
@@ -406,6 +467,62 @@ internal static class SessionSchema
             AND k.ThreadId = (SELECT ThreadId FROM TickList ORDER BY TickId LIMIT 1)
         ORDER BY k.TickId
         LIMIT 10;
+        CREATE TABLE Modules (         -- the images and drivers the CPU samples' stacks ran in (CpuSampleIndex)
+            ModuleId INTEGER PRIMARY KEY,
+            ProcessId INTEGER NOT NULL, -- -1 for a driver in the kernel's address space
+            FilePath TEXT NOT NULL,
+            Name TEXT NOT NULL,        -- the file name, such as Microsoft.UI.Xaml.dll
+            ImageBase INTEGER NOT NULL, -- addresses are stored as signed 64-bit values
+            ImageSize INTEGER NOT NULL,
+            TimeDateStamp INTEGER,
+            PdbName TEXT,              -- the PDB identity the trace recorded, or that symbolizing read from the image
+            PdbGuid TEXT,
+            PdbAge INTEGER,
+            SymbolStatus TEXT,         -- set by symbolizing: Resolved, NotFound, NoIdentity, Portable or Error
+            SymbolFile TEXT);          -- the PDB symbolizing used, or why it found none
+        CREATE TABLE CodeAddresses (   -- each code address of the stored call stacks
+            AddressId INTEGER PRIMARY KEY,
+            ModuleId INTEGER REFERENCES Modules (ModuleId), -- null when no module was loaded at the address
+            Address INTEGER NOT NULL,
+            Rva INTEGER,               -- the offset in its module
+            Function TEXT);            -- set by symbolizing
+        CREATE TABLE CallStacks (      -- the stored call stacks as a tree from their root frames: a stack is its leaf node
+            StackId INTEGER PRIMARY KEY,
+            ParentId INTEGER,          -- the caller's node; null for a root frame
+            AddressId INTEGER NOT NULL REFERENCES CodeAddresses (AddressId));
+        CREATE TABLE CpuSamples (      -- the kernel's CPU samples of the target's threads
+            Qpc INTEGER NOT NULL,
+            ProcessId INTEGER NOT NULL,
+            ThreadId INTEGER NOT NULL,
+            StackId INTEGER NOT NULL REFERENCES CallStacks (StackId)); -- the leaf frame of its call stack
+        CREATE INDEX CpuSamplesByThread ON CpuSamples (ThreadId, Qpc);
+        CREATE TABLE CpuSampling (     -- one row when the session sampled CPU, or tried to
+            IntervalMs REAL,           -- the time each sample stands for
+            Samples INTEGER NOT NULL,
+            Dropped INTEGER NOT NULL,  -- samples a live session could not store in time
+            CompressedStacks INTEGER NOT NULL, -- 1 when the trace's stacks were compressed: those samples have only their leaf frame
+            SymbolPath TEXT,           -- the symbol path of the last symbolizing
+            SymbolizedUtc TEXT,
+            Note TEXT);                -- why samples are missing or partial, when known
+        CREATE VIEW CpuFrames AS
+        -- Every node of the sampled call stacks with its frame. A sample's stack is its leaf node (CpuSamples.StackId),
+        -- and ParentId leads to the caller, up to the root frame. Frame is Module!Function, or Module!0xRva until
+        -- symbolized; ? for an address outside every known module.
+        SELECT c.StackId, c.ParentId, a.AddressId, a.ModuleId, COALESCE(m.Name, '?') AS Module, a.Function, a.Rva, a.Address,
+            COALESCE(m.Name, '?') || '!' || COALESCE(a.Function, printf('0x%X', COALESCE(a.Rva, a.Address))) AS Frame
+        FROM CallStacks c JOIN CodeAddresses a ON a.AddressId = c.AddressId LEFT JOIN Modules m ON m.ModuleId = a.ModuleId;
+        CREATE VIEW CpuSampleDetails AS
+        -- Every CPU sample with its time and the frame it was in; StackId leads to its callers (CpuFrames).
+        SELECT x.rowid AS SampleId, (x.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms, x.ProcessId, x.ThreadId, x.StackId,
+            f.Module, f.Function, f.Frame
+        FROM CpuSamples x CROSS JOIN SessionInfo s JOIN CpuFrames f ON f.StackId = x.StackId;
+        CREATE VIEW HotFunctions AS
+        -- Where each sampled thread spent CPU time: its samples by the frame they were in (exclusive), most first, and the
+        -- time they stand for at the sampling interval.
+        SELECT d.ThreadId, d.Module, d.Frame, COUNT(*) AS Samples, COUNT(*) * (SELECT IntervalMs FROM CpuSampling) AS Ms
+        FROM CpuSampleDetails d
+        GROUP BY d.ThreadId, d.Frame
+        ORDER BY Samples DESC;
         CREATE VIEW GraphicsLifetimes AS
         -- Observed DirectX lifetimes, scoped to SessionInfo.ProcessId. Null starts/stops are unknown, not time zero.
         -- EndMs can be an upper bound from handle reuse; DurationMs requires actual, ordered Start and Stop events.
@@ -477,11 +594,27 @@ internal static class SessionSchema
                 'SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex'),
             ('LaunchSummary', 'When the first 10 ticks that drew ended, from process start or recording start', 'Position',
                 'SELECT * FROM LaunchSummary'),
+            ('CpuSampleDetails', 'Every CPU sample of the target''s threads: its time, thread and the frame it was in', 'SampleId',
+                'SELECT Ms, Frame, StackId FROM CpuSampleDetails WHERE ThreadId = :thread AND Ms BETWEEN :from AND :to ORDER BY Ms'),
+            ('HotFunctions', 'CPU samples by thread and the frame they were in, most first', 'ThreadId, then Frame',
+                'SELECT Frame, Samples, Ms FROM HotFunctions WHERE ThreadId = :thread LIMIT 20'),
+            ('CpuFrames', 'The sampled call stacks: each node''s frame and its caller''s node', 'StackId',
+                'WITH RECURSIVE s (Node, Depth) AS (SELECT :stack, 0 UNION ALL SELECT f.ParentId, s.Depth + 1 FROM s JOIN CpuFrames f ON f.StackId = s.Node WHERE f.ParentId IS NOT NULL) SELECT s.Depth, f.Frame FROM s JOIN CpuFrames f ON f.StackId = s.Node ORDER BY s.Depth'),
             ('GraphicsLifetimes', 'Observed DirectX lifetimes, unknown endpoints, handle reuse and capture completeness', 'GraphicsObjectId',
                 'SELECT * FROM GraphicsLifetimes WHERE Kind = ''Texture2D'' ORDER BY FirstSeq'),
             ('GraphicsResourceAllocations', 'Time-bounded process-local resource and allocation correlations',
                 'ResourceId, DeviceAllocationId, AdapterAllocationId, StartSeq',
                 'SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq'),
+            ('SnapshotSummary', 'Stored tree captures, resource status and signed allocator counters', 'CaptureId',
+                'SELECT * FROM SnapshotSummary ORDER BY EndQpc'),
+            ('SnapshotRoots', 'Captured XamlRoots and their thread identities and time intervals', 'CaptureId, RootId',
+                'SELECT * FROM SnapshotRoots WHERE CaptureId = :capture'),
+            ('SnapshotNodes', 'Captured XAML and Composition nodes with complete JSON properties', 'CaptureId, Tree, NodeId',
+                'SELECT * FROM SnapshotNodes WHERE CaptureId = :capture AND Tree = ''Xaml'''),
+            ('SnapshotCorrelations', 'Captured object-to-visual links', 'CaptureId, XamlNodeId, VisualNodeId',
+                'SELECT * FROM SnapshotCorrelations WHERE CaptureId = :capture'),
+            ('SnapshotResources', 'Captured graphics counters as exact unsigned decimal text', 'CaptureId, ResourceIndex',
+                'SELECT * FROM SnapshotResources WHERE CaptureId = :capture'),
             ('QueryCatalog', 'This list', 'Name', 'SELECT * FROM QueryCatalog');
         """;
 }

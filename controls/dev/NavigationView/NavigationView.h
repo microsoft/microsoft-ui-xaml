@@ -102,6 +102,9 @@ public:
 
     void OnNavigationViewItemClicked(const winrt::NavigationViewItem& sender);
 
+    // Used by NavigationViewItemPresenter when a new template replaces its SelectionIndicator
+    void OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator);
+
     // Used by NavigationViewItem for the closed compact layout of PaneFooter/PaneCustomContent items
     bool IsInLeftPaneFooterOrCustomContent(const winrt::NavigationViewItemBase& nvib);
 
@@ -148,6 +151,8 @@ private:
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi);
+    bool IsContainerInMenuItemsTree(const winrt::NavigationViewItemBase& nvib);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
@@ -297,11 +302,13 @@ private:
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
     void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
+    void AnimateSelectionChangedToSelectedItem();
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
     void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
-    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
+    static winrt::DependencyProperty GetAnimatedSelectionIndicatorProperty();
+    void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation = true);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 
@@ -475,6 +482,10 @@ private:
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
     bool m_initialListSizeStateSet{ false };
+    // True when the last measure gave NavigationView unlimited height (for example inside a vertical StackPanel).
+    bool m_isHeightUnconstrained{ false };
+    // Height NavigationView was offered in the last measure; it can be arranged shorter (non-Stretch VerticalAlignment).
+    double m_lastMeasureAvailableHeight{ 0.0 };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 

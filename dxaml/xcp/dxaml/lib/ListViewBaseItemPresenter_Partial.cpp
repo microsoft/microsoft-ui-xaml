@@ -917,6 +917,20 @@ ListViewBaseItemPresenter::VisitAnimationCommand(_In_ ListViewBaseItemAnimationC
 
         IFC(chrome->LockLayersForAnimation(pCommand, &shouldProceed));
 
+        // A higher-priority animation, such as an item's drag and drop state during a reorder, owns the layers.
+        // A shown indicator is already in the tree, but a hidden one is only removed when its fade-out completes,
+        // so snap to the hidden state instead of leaving the indicator on an unselected item.
+        if (!shouldProceed && !pCommand->m_selected)
+        {
+            if (m_selectionIndicatorAnimation.tpStoryboard)
+            {
+                IFC(m_selectionIndicatorAnimation.tpStoryboard.Cast<Storyboard>()->remove_Completed(m_selectionIndicatorCompletedToken));
+                IFC(ClearAnimation(&m_selectionIndicatorAnimation));
+            }
+
+            IFC(chrome->RemoveSelectionIndicatorIfHidden());
+        }
+
         if (shouldProceed)
         {
             ctl::ComPtr<Storyboard> storyboard;
@@ -1017,12 +1031,29 @@ ListViewBaseItemPresenter::VisitAnimationCommand(_In_ ListViewBaseItemAnimationC
     }
     else
     {
+        // Stopping the storyboard restores the indicator's opacity, so finish an interrupted fade-out.
+        const bool wasHiding =
+            m_selectionIndicatorAnimation.pCommand &&
+            !static_cast<ListViewBaseItemAnimationCommand_SelectionIndicatorVisibility*>(m_selectionIndicatorAnimation.pCommand)->m_selected;
+
         if (pCommand == m_selectionIndicatorAnimation.pCommand)
         {
             pCommand = nullptr;
         }
 
+        // Unhook completion like the other paths that clear this animation. A Completed event that was already
+        // queued would otherwise still reach OnSelectionIndicatorCompleted and remove the indicator a second time.
+        if (m_selectionIndicatorAnimation.tpStoryboard)
+        {
+            IFC(m_selectionIndicatorAnimation.tpStoryboard.Cast<Storyboard>()->remove_Completed(m_selectionIndicatorCompletedToken));
+        }
+
         IFC(ClearAnimation(&m_selectionIndicatorAnimation));
+
+        if (wasHiding)
+        {
+            IFC(chrome->RemoveSelectionIndicatorIfHidden());
+        }
     }
 
 Cleanup:

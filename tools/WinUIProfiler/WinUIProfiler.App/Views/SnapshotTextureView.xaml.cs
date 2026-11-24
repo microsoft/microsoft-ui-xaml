@@ -8,6 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 using WinUIProfiler.App.ViewModels;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Processing;
+using WinUIProfiler.Engine.Snapshots;
 using WinUIProfiler.Engine.Storage;
 
 namespace WinUIProfiler.App.Views;

@@ -9,6 +9,7 @@ using namespace Microsoft::UI::Xaml::Controls;
 using namespace ::Windows::Foundation::Collections;
 using namespace ::Tests::Tools::Shared; 
 
+std::atomic<unsigned int> CustomUserControl::m_constructionCount{0};
 DependencyProperty^ CustomUserControl::m_CustomIntProperty = nullptr;
 DependencyProperty^ CustomUserControl::m_CustomDoubleProperty = nullptr;
 DependencyProperty^ CustomUserControl::m_CustomUnknownProperty = nullptr;
@@ -25,6 +26,12 @@ CustomUserControl::CustomUserControl()
         ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/CustomUserControl.xaml"),
         Primitives::ComponentResourceLocation::Application);
     CustomUserCollection = ref new Platform::Collections::Vector<DependencyObject^>();
+    ++m_constructionCount;
+}
+
+unsigned int CustomUserControl::GetConstructionCount()
+{
+    return m_constructionCount.load();
 }
 
 void CustomUserControl::RegisterDependencyProperties()

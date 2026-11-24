@@ -240,6 +240,9 @@ void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<win
         case winrt::Collections::CollectionChange::ItemRemoved:
             flyout.Items().RemoveAt(index);
             break;
+        case winrt::Collections::CollectionChange::ItemChanged:
+            flyout.Items().SetAt(index, Items().GetAt(index));
+            break;
         case winrt::Collections::CollectionChange::Reset:
             flyout.Items().Clear();
             for (const auto& item : Items())

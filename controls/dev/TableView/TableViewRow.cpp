@@ -12,6 +12,7 @@
 #include "TableViewTextColumn.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewRowAutomationPeer.h"
+#include "TableViewAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewCell.h"
@@ -80,11 +81,7 @@ namespace
         }
     }
 
-    bool IsKeyDown(winrt::VirtualKey key)
-    {
-        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-    }
+    using TableViewDetails::IsKeyDown;
 
     // Collects tab stops BELOW a cell wrapper (the wrapper is owned by SetCellsTabStopInternal).
     // Keeps descending past a found tab stop: a focusable container can hold more.
@@ -347,7 +344,43 @@ void TableViewRow::SetTerminalGridLineSuppression(TerminalGridLineSuppressionSta
 
 winrt::AutomationPeer TableViewRow::OnCreateAutomationPeer()
 {
-    return winrt::make<TableViewRowAutomationPeer>(*this);
+    auto const peer = winrt::make<TableViewRowAutomationPeer>(*this);
+    SyncItemAutomationPeer(peer, true);
+    return peer;
+}
+
+void TableViewRow::SyncItemAutomationPeer(winrt::AutomationPeer const& rowPeer, bool newBinding)
+{
+    if (auto const current = rowPeer.EventsSource(); current && current != m_itemAutomationPeer.get())
+    {
+        return;
+    }
+
+    auto const owner = GetOwningTableView();
+    if (!owner || m_inRecyclePool)
+    {
+        rowPeer.EventsSource(nullptr);
+    }
+    else if (newBinding || !rowPeer.EventsSource())
+    {
+        // Re-prepared for the same item: restore its element, which the kept cells are parented to.
+        auto binding = newBinding ? nullptr : m_itemAutomationPeer.get();
+        if (!binding)
+        {
+            binding = TableViewAutomationPeer::CreateRowItemPeerInternal(owner, *this);
+            m_itemAutomationPeer = winrt::make_weak(binding);
+        }
+        rowPeer.EventsSource(binding);
+    }
+    else
+    {
+        return;
+    }
+
+    if (auto const peer = rowPeer.try_as<winrt::TableViewRowAutomationPeer>())
+    {
+        winrt::get_self<TableViewRowAutomationPeer>(peer)->ResetReportedHierarchyState();
+    }
 }
 
 // Typed accessor for the owning TableView.
@@ -875,10 +908,9 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
         args.Key() == winrt::VirtualKey::Tab &&
         // Ctrl+Tab is app-level navigation and Alt is the resize chord; neither is a band move.
         !IsKeyDown(winrt::VirtualKey::Control) &&
-        !IsKeyDown(winrt::VirtualKey::Menu) &&
-        IsGridLevelFocusInternal())
+        !IsKeyDown(winrt::VirtualKey::Menu))
     {
-        SuppressCellContentTabStopsForTabWalkInternal();
+        PrepareTabWalkFromCellInternal();
     }
 
     // Unmodified only: Ctrl+arrow is focus-without-select; Shift/Alt chords belong to the app.
@@ -913,6 +945,14 @@ void TableViewRow::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 void TableViewRow::EnableRowFocusInternal()
 {
     IsTabStop(true);
+}
+
+void TableViewRow::PrepareTabWalkFromCellInternal()
+{
+    if (IsGridLevelFocusInternal())
+    {
+        SuppressCellContentTabStopsForTabWalkInternal();
+    }
 }
 
 void TableViewRow::OnRowGotFocus(winrt::DependencyObject const& focusedElement)
@@ -1021,6 +1061,11 @@ bool TableViewRow::SetOwningTableViewInternal(winrt::TableView const& owner, boo
     // Observe the new owner's Columns vector (no-op on recycle-out when owner is null).
     AttachColumnsSubscription(owner);
 
+    if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::TableViewRowAutomationPeer>())
+    {
+        SyncItemAutomationPeer(rowPeer, true);
+    }
+
     if (!rebuildCells)
     {
         // Without the rebuild, pooled cell peers would keep their item index and advertise VirtualizedItem.
@@ -1048,7 +1093,10 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     auto const rowPeer = winrt::FrameworkElementAutomationPeer::FromElement(*this)
         .try_as<winrt::TableViewRowAutomationPeer>();
     auto* const peerImpl = rowPeer ? winrt::get_self<TableViewRowAutomationPeer>(rowPeer) : nullptr;
-    if (peerImpl && !peerImpl->CanReuseForRowItem(*this, owner))
+    auto const rowItem = winrt::get_self<TableView>(owner)->UnwrapEditingDataItem(DataContext());
+    if (peerImpl
+        ? !peerImpl->CanReuseForRowItem(*this, owner)
+        : (rowItem && HasCellAutomationPeers(rowItem)))
     {
         // Cell providers are bound to their element, so replace the cells only if a cell peer exists;
         // otherwise keep them and let them restamp from the inherited DataContext.
@@ -1060,15 +1108,25 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
                 ResetCellAutomationNames();
                 host.Children().Clear();
             }
-            peerImpl->DropCellPeerCache();
+            if (peerImpl)
+            {
+                peerImpl->DropCellPeerCache();
+            }
             chromeRefreshed = RebuildCells(false /* updateExistingCellPeerItems */);
         }
         else
         {
-            peerImpl->DropCellPeerCache();
+            if (peerImpl)
+            {
+                peerImpl->DropCellPeerCache();
+            }
             chromeRefreshed = skipRebuild ? false : RebuildCells();
         }
-        peerImpl->TrackCurrentRowItem(*this, owner);
+        if (peerImpl)
+        {
+            peerImpl->TrackCurrentRowItem(*this, owner);
+            SyncItemAutomationPeer(rowPeer, true);
+        }
         return chromeRefreshed;
     }
 
@@ -1077,6 +1135,7 @@ bool TableViewRow::EnsureOwningTableViewInternal(winrt::TableView const& owner, 
     if (peerImpl)
     {
         peerImpl->TrackCurrentRowItem(*this, owner);
+        SyncItemAutomationPeer(rowPeer, false);
     }
 
     return chromeRefreshed;
@@ -1125,7 +1184,8 @@ void TableViewRow::OnDataContextChanged(
         return;
     }
     m_cellsInvalidated = false;
-    const bool rebuilt = RebuildCells();
+    // A pooled row taking a new item must not retarget held cell peers to it.
+    const bool rebuilt = RebuildCells(!m_inRecyclePool /* updateExistingCellPeerItems */);
     m_cellsRebuiltForDataContext = rebuilt && !m_cellsInvalidated && dataItem && DataContext() == dataItem;
 }
 
@@ -1893,7 +1953,7 @@ void TableViewRow::UpdateCellPeerItems(winrt::IInspectable const& dataItem)
     }
 }
 
-bool TableViewRow::HasCellAutomationPeers() const
+bool TableViewRow::HasCellAutomationPeers(winrt::IInspectable const& otherThanItem) const
 {
     if (auto const host = m_cellsHost.get())
     {
@@ -1901,9 +1961,17 @@ bool TableViewRow::HasCellAutomationPeers() const
         {
             try
             {
-                if (TableViewCell::TryGetExistingPeer(cell))
+                if (auto const peer = TableViewCell::TryGetExistingPeer(cell))
                 {
-                    return true;
+                    if (!otherThanItem)
+                    {
+                        return true;
+                    }
+                    if (auto const cellPeer = peer.try_as<winrt::TableViewCellAutomationPeer>();
+                        cellPeer && winrt::get_self<TableViewCellAutomationPeer>(cellPeer)->IsTrackingOtherItem(otherThanItem))
+                    {
+                        return true;
+                    }
                 }
             }
             catch (...)
@@ -2873,7 +2941,11 @@ bool TableViewRow::BeginCellEdit(const winrt::TableViewColumn& column, const win
     return true;
 }
 
-void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<HRESULT>* displayFailure, bool* applicationFault)
+void TableViewRow::EndCellEdit(
+    winrt::TableViewEditAction action,
+    std::optional<HRESULT>* displayFailure,
+    bool* applicationFault,
+    winrt::TableViewColumn const& focusColumn)
 {
     auto const cellWrapper = m_editingCellWrapper.get();
     auto const weakPeer = m_editingAutomationPeer;
@@ -2936,7 +3008,30 @@ void TableViewRow::EndCellEdit(winrt::TableViewEditAction action, std::optional<
             // Closing edit returns to cell level, so re-arm cells before restoring focus.
             SetCellLevelInternal(true);
 
-            if (!cellWrapper.Focus(restoreState))
+            // A Tab move to a cell in this row lands there directly, so a screen reader hears one
+            // focus change for the cell instead of a pass through the cell just left.
+            winrt::UIElement handoffCell{ nullptr };
+            // A CellEditEnding handler can lock the target, and a locked cell with a context flyout
+            // still takes focus, so check editability as TryMoveEditToAdjacentCell does.
+            auto const owner = GetOwningTableView();
+            if (focusColumn && owner && IsVisibleColumn(focusColumn) &&
+                winrt::get_self<TableView>(owner)->IsColumnCellEditableInternal(focusColumn))
+            {
+                if (auto const host = m_cellsHost.get())
+                {
+                    for (auto const& child : host.Children())
+                    {
+                        if (child && child != cellWrapper && GetCellOwningColumn(child) == focusColumn)
+                        {
+                            handoffCell = child;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            const bool handedOff = handoffCell && handoffCell.Focus(restoreState);
+            if (!handedOff && !cellWrapper.Focus(restoreState))
             {
                 SetCellLevelInternal(false);
                 Focus(restoreState);

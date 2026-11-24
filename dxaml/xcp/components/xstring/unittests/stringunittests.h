@@ -104,6 +104,11 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(FloatFallbackConversion)
+                TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(EnumFromString)
                 TEST_METHOD_PROPERTY(L"Classification", L"Integration")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")

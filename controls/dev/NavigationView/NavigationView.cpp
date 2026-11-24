@@ -954,7 +954,7 @@ void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const wi
         m_moveTopNavOverflowItemOnFlyoutClose = false;
 
         auto const selectedIndex = m_selectionModel.SelectedIndex();
-        if (selectedIndex.GetSize() > 0)
+        if (selectedIndex && selectedIndex.GetSize() > 0)
         {
             if (auto const firstContainer = GetContainerForIndex(selectedIndex.GetAt(1), false /*infooter*/))
             {
@@ -1020,7 +1020,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
                     if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
                     {
                         // Remove selection indication if we are not in the middle of an ongoing animation
-                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f, false /* forAnimation */);
                         m_activeIndicator.set(nullptr);
                     }
                     m_selectionModel.DeselectAt(indexPathFromModel);
@@ -1179,6 +1179,27 @@ winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(const wi
     return nullptr;
 }
 
+bool NavigationView::IsContainerInMenuItemsTree(const winrt::NavigationViewItemBase& nvib)
+{
+    // Same walk as GetIndexPathForContainer: the container must end up under a root menu repeater, directly or through
+    // the flyout of a root menu item.
+    auto parent = winrt::VisualTreeHelper::GetParent(nvib);
+    while (parent)
+    {
+        if (IsRootItemsRepeater(parent))
+        {
+            return true;
+        }
+        if (IsRootGridOfFlyout(parent))
+        {
+            auto const owner = m_lastItemExpandedIntoFlyout.get();
+            return owner && IsRootItemsRepeater(GetParentItemsRepeaterForContainer(owner));
+        }
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+    }
+    return false;
+}
+
 winrt::NavigationViewItem NavigationView::GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib)
 {
     // TODO: This scenario does not find parent items when in a flyout, which causes problems if item if first loaded
@@ -1243,7 +1264,11 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
         if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
         {
             child = nvi;
-            parent = IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get();
+            // The flyout's owner can be a footer item, so continue from the root repeater that actually hosts it.
+            auto const ownerRepeater = GetParentItemsRepeaterForContainer(nvi);
+            parent = ownerRepeater && (ownerRepeater == m_leftNavFooterMenuRepeater.get() || ownerRepeater == m_topNavFooterMenuRepeater.get()) ?
+                ownerRepeater :
+                (IsTopNavigationView() ? m_topNavRepeater.get() : m_leftNavRepeater.get());
         }
     }
 
@@ -1339,6 +1364,10 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
 
             SetNavigationViewItemRevokers(nvi);
+
+            // A new or recycled container (e.g. after a PaneDisplayMode switch re-sources the repeaters) doesn't know
+            // whether its item is an ancestor of the selected item, so recompute IsChildSelected from the selection model.
+            UpdateIsChildSelectedForPreparedContainer(nvi);
 
             auto item = MenuItemFromContainer(nvi);
 
@@ -1449,6 +1478,18 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     m_layoutUpdatedToken.revoke();
     m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
 
+    const double previousMeasureAvailableHeight = m_lastMeasureAvailableHeight;
+    m_lastMeasureAvailableHeight = availableSize.Height;
+    const bool isHeightUnconstrained = availableSize.Height == std::numeric_limits<float>::infinity();
+    // Also update when only a finite height changes: a non-Stretch NavigationView can keep its size under the old menu
+    // limit, so neither SizeChanged handler would refresh it.
+    if (m_isHeightUnconstrained != isHeightUnconstrained || previousMeasureAvailableHeight != m_lastMeasureAvailableHeight)
+    {
+        m_isHeightUnconstrained = isHeightUnconstrained;
+        // Runs before the pane is measured below, so the new limits apply to this pass.
+        UpdatePaneLayout();
+    }
+
     return __super::MeasureOverride(availableSize);
 }
 
@@ -1467,9 +1508,41 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
 
     if (m_OrientationChangedPendingAnimation)
     {
-        m_OrientationChangedPendingAnimation = false;
-        AnimateSelectionChanged(SelectedItem());
+        if (!SelectedItem())
+        {
+            // The selection was cleared after the PaneDisplayMode change, so there's nothing to restore. Don't consult the
+            // selection model here: it can still hold an old index path.
+            m_OrientationChangedPendingAnimation = false;
+            AnimateSelectionChanged(nullptr);
+        }
+        // Layout can run before the new pane has realized the selected item's container, e.g. while the NavigationView is in a
+        // collapsed subtree. Keep the restore pending then; MeasureOverride hooks this handler again on the next measure.
+        else if (FindLowestLevelContainerToDisplaySelectionIndicator() || NavigationViewItemOrSettingsContentFromData(SelectedItem()))
+        {
+            m_OrientationChangedPendingAnimation = false;
+            AnimateSelectionChangedToSelectedItem();
+        }
     }
+}
+
+void NavigationView::OnSelectionIndicatorReplaced(const winrt::UIElement& oldIndicator, const winrt::UIElement& newIndicator)
+{
+    // An item that shows the selection indicator got a new template, e.g. because its presenter style switched between the
+    // Left and Top pane styles after a PaneDisplayMode change. The new indicator starts hidden. If no pending PaneDisplayMode
+    // animation is going to pick it up, move the indicator state over now so the selected item doesn't lose its indicator.
+    if (!oldIndicator || oldIndicator == newIndicator || oldIndicator != m_activeIndicator.get() || m_OrientationChangedPendingAnimation)
+    {
+        return;
+    }
+
+    // The running selection animation targets the old indicator's visual, so finish it first; otherwise the outgoing
+    // indicator keeps animating next to the replacement.
+    if (m_prevIndicator || m_nextIndicator)
+    {
+        OnAnimationComplete(nullptr, nullptr);
+    }
+    m_activeIndicator.set(newIndicator);
+    ResetElementAnimationProperties(newIndicator, 1.0f, false /* forAnimation */);
 }
 
 void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt::SizeChangedEventArgs const& args)
@@ -1631,6 +1704,24 @@ void NavigationView::UpdatePaneLayout()
 {
     if (!IsTopNavigationView())
     {
+        if (m_isHeightUnconstrained)
+        {
+            // With unlimited height the pane rows size to their content, so there is no height to share between the
+            // menu and footer items. The limits below are computed from the current row height, which here comes from
+            // the content itself: capping the menu at it would only let it grow a few pixels per layout pass while it
+            // expands (#8291).
+            if (const auto& menuItemsScrollViewer = m_menuItemsScrollViewer.get())
+            {
+                menuItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            if (const auto& footerItemsScrollViewer = m_footerItemsScrollViewer.get())
+            {
+                footerItemsScrollViewer.ClearValue(winrt::FrameworkElement::MaxHeightProperty());
+            }
+            winrt::VisualStateManager::GoToState(*this, c_separatorCollapsedStateName, false);
+            return;
+        }
+
         const auto totalAvailableHeight = [this]() {
             if (const auto &paneContentRow = m_itemsContainerRow.get())
             {
@@ -1642,7 +1733,12 @@ void NavigationView::UpdatePaneLayout()
                     }
                     return 0.0;
                 }();
-                return paneContentRow.ActualHeight() - itemsContainerMargin;
+                // When NavigationView is arranged shorter than it was offered (VerticalAlignment Top/Center/Bottom), the
+                // row is only as tall as its content. Count the unused height too, otherwise the cap below would only let
+                // the menu grow a few pixels per layout pass (#8291).
+                const double actualHeight = ActualHeight();
+                const double unusedHeight = actualHeight > 0 ? std::max(0.0, m_lastMeasureAvailableHeight - actualHeight) : 0.0;
+                return paneContentRow.ActualHeight() + unusedHeight - itemsContainerMargin;
             }
             return 0.0;
         }();
@@ -2122,6 +2218,20 @@ winrt::float2 c_frame1point2 = winrt::float2(1.0f, 0.2f);
 winrt::float2 c_frame2point1 = winrt::float2(0.1f, 0.9f);
 winrt::float2 c_frame2point2 = winrt::float2(0.2f, 1.0f);
 
+void NavigationView::AnimateSelectionChangedToSelectedItem()
+{
+    // A selected child inside a collapsed parent shows its indicator on the parent.
+    auto const container = FindLowestLevelContainerToDisplaySelectionIndicator();
+    if (container && !container.IsSelected() && container.IsChildSelected())
+    {
+        AnimateSelectionChanged(container);
+    }
+    else
+    {
+        AnimateSelectionChanged(SelectedItem());
+    }
+}
+
 // Please clear the field m_lastSelectedItemPendingAnimationInTopNav when calling this method to prevent garbage value and incorrect animation
 // when the layout is invalidated as it's called in OnLayoutUpdated.
 void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem)
@@ -2146,7 +2256,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         {
             if (prevIndicator && prevIndicator != m_prevIndicator.get())
             {
-                ResetElementAnimationProperties(prevIndicator, 0.0f);
+                ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
             }
             haveValidAnimation = true;
         }
@@ -2240,8 +2350,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem
         else if (prevIndicator != nextIndicator)
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
-            ResetElementAnimationProperties(prevIndicator, 0.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 0.0f, false /* forAnimation */);
+            ResetElementAnimationProperties(nextIndicator, 1.0f, false /* forAnimation */);
         }
 
         m_activeIndicator.set(nextIndicator);
@@ -2367,13 +2477,33 @@ void NavigationView::OnAnimationComplete(const winrt::IInspectable& /*sender*/, 
     m_nextIndicator.set(nullptr);
 }
 
-void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity)
+winrt::DependencyProperty NavigationView::GetAnimatedSelectionIndicatorProperty()
+{
+    static GlobalDependencyProperty s_AnimatedSelectionIndicatorProperty =
+        InitializeDependencyProperty(
+            L"AnimatedSelectionIndicator",
+            winrt::name_of<bool>(),
+            winrt::name_of<winrt::NavigationView>(),
+            true /* isAttached */,
+            winrt::box_value(false));
+
+    return s_AnimatedSelectionIndicatorProperty;
+}
+
+void NavigationView::ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity, bool forAnimation)
 {
     if (element)
     {
         element.Opacity(desiredOpacity);
-        if (winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(element))
+        const auto animatedIndicatorProperty = GetAnimatedSelectionIndicatorProperty();
+        const bool wasAnimated = winrt::unbox_value<bool>(element.GetValue(animatedIndicatorProperty));
+        if (forAnimation || wasAnimated)
         {
+            const auto visual = winrt::ElementCompositionPreview::GetElementVisual(element);
+            if (!wasAnimated)
+            {
+                element.SetValue(animatedIndicatorProperty, winrt::box_value(true));
+            }
             visual.Offset(winrt::float3(0.0f, 0.0f, 0.0f));
             visual.Scale(winrt::float3(1.0f, 1.0f, 1.0f));
             visual.Opacity(desiredOpacity);
@@ -2545,6 +2675,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 return;
             }
             m_selectionModel.ClearSelection();
+            // A deferred move of an overflow item (see OnFlyoutClosing) would act on the path that was just dropped.
+            m_moveTopNavOverflowItemOnFlyoutClose = false;
         }
     }
 
@@ -2688,6 +2820,38 @@ void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const
     if (generation == m_selectionChangeGeneration && nextIP && nextIP.GetSize() > 0)
     {
         UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
+    }
+}
+
+void NavigationView::UpdateIsChildSelectedForPreparedContainer(const winrt::NavigationViewItem& nvi)
+{
+    bool isChildSelected = false;
+    auto const selectedIndex = m_selectionModel.SelectedIndex();
+    // Only a selection below the top level (block, index, child...) can make an item child-selected. Items nested under a
+    // NavigationViewItem in PaneFooter, PaneHeader, PaneCustomContent or Content aren't in the menu index space.
+    // The model's path can be stale (e.g. SelectedItem was cleared or set to an item outside the menu while the old
+    // selection had no realized container), so only use it while it still resolves to SelectedItem.
+    auto const selectedItem = SelectedItem();
+    if (selectedItem && selectedIndex && selectedIndex.GetSize() > 2 && m_selectionModel.SelectedItem() == selectedItem && IsContainerInMenuItemsTree(nvi))
+    {
+        auto const ip = GetIndexPathForContainer(nvi);
+        if (ip.GetSize() >= 2 && ip.GetSize() < selectedIndex.GetSize())
+        {
+            isChildSelected = true;
+            for (int i = 0; i < ip.GetSize(); i++)
+            {
+                if (ip.GetAt(i) != selectedIndex.GetAt(i))
+                {
+                    isChildSelected = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (nvi.IsChildSelected() != isChildSelected)
+    {
+        nvi.IsChildSelected(isChildSelected);
     }
 }
 
@@ -4566,7 +4730,7 @@ void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::
         // Make sure the SelectionModel m_selectionModel and actual selection are in sync. An item may have been selected
         // while the ItemsRepeater was still unloaded. Thus m_selectionModel still does not know about that selection.
         UpdateSelectionModelSelectionForSelectedItem(item);
-        AnimateSelectionChanged(item);
+        AnimateSelectionChangedToSelectedItem();
     }
 }
 
@@ -4691,6 +4855,12 @@ void NavigationView::UpdatePaneDisplayMode()
     if (auto selectedItem = SelectedItem())
     {
         m_OrientationChangedPendingAnimation = true;
+
+        // OnLayoutUpdated plays the pending animation, but it's only hooked in MeasureOverride and unhooks itself after one call.
+        // A synchronous layout pass above (e.g. the footer repeater's UpdateLayout() when switching to a left mode) can already
+        // have raised LayoutUpdated before this flag was set. Hook it again so the indicator is restored after the next layout pass.
+        m_layoutUpdatedToken.revoke();
+        m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
     }
 }
 
@@ -5693,17 +5863,23 @@ winrt::UIElement NavigationView::GetContainerForIndex(int index, bool inFooter)
             const auto irIndex = inFooter ? index : m_topDataProvider.ConvertOriginalIndexToIndex(index);
 
         // Get the container of the first item
-        if (auto const container = ir.TryGetElement(irIndex))
+        if (ir)
         {
-            return container;
+            if (auto const container = ir.TryGetElement(irIndex))
+            {
+                return container;
+            }
         }
     }
     else
     {
-        if (auto container = inFooter ? m_leftNavFooterMenuRepeater.get().TryGetElement(index)
-            : m_leftNavRepeater.get().TryGetElement(index))
+        // A custom template may not have MenuItemsHost or FooterMenuItemsHost.
+        if (auto const ir = inFooter ? m_leftNavFooterMenuRepeater.get() : m_leftNavRepeater.get())
         {
-            return container.try_as<winrt::NavigationViewItemBase>();
+            if (auto container = ir.TryGetElement(index))
+            {
+                return container.try_as<winrt::NavigationViewItemBase>();
+            }
         }
     }
     return nullptr;
@@ -5845,6 +6021,12 @@ void NavigationView::ChangeIsExpandedNavigationViewItem(const winrt::NavigationV
 
 winrt::NavigationViewItem NavigationView::FindLowestLevelContainerToDisplaySelectionIndicator()
 {
+    // With nothing selected, never light an ancestor from a stale selection model path.
+    if (!SelectedItem())
+    {
+        return nullptr;
+    }
+
     auto indexIntoIndex = 1;
     auto const selectedIndex = m_selectionModel.SelectedIndex();
     if (selectedIndex && selectedIndex.GetSize() > 1)
