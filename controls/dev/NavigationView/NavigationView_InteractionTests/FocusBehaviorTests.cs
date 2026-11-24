@@ -628,6 +628,187 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void TabNavigationWithoutSelectionLeavesExpandedMenuItemsTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                RemoveSelectionOnHierarchicalMarkupPage();
+                ExpandItem("Menu Item 1");
+
+                Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
+                Button getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
+                UIObject menuItem1 = FindElement.ByName("Menu Item 1");
+
+                Log.Comment("Verify that the expanded menu list is a single tab stop when tabbing in from TogglePaneButton");
+                togglePaneButton.SetFocus();
+                Wait.ForIdle();
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(menuItem1.HasKeyboardFocus);
+                KeyboardHelper.PressKey(Key.Tab);
+                Wait.ForIdle();
+                Verify.IsTrue(getSelectItemButton.HasKeyboardFocus, "Tab from an expanded Menu Item 1 should leave the menu list, but focus is on " + GetFocusedElementName());
+
+                Log.Comment("Verify that Tab and Shift+Tab from a child item leave the menu list");
+                PressTabFrom("Menu Item 3", ModifierKey.None);
+                Verify.IsTrue(getSelectItemButton.HasKeyboardFocus, "Tab from Menu Item 3 should leave the menu list, but focus is on " + GetFocusedElementName());
+                PressTabFrom("Menu Item 3", ModifierKey.Shift);
+                Verify.IsTrue(togglePaneButton.HasKeyboardFocus, "Shift+Tab from Menu Item 3 should leave the menu list, but focus is on " + GetFocusedElementName());
+            }
+        }
+
+        [TestMethod]
+        public void TabNavigationWithoutSelectionLeavesExpandedMenuItemsInLeftCompactTest()
+        {
+            VerifyTabNavigationWithoutSelectionInOpenOverlayPane("LeftCompact");
+        }
+
+        [TestMethod]
+        public void TabNavigationWithoutSelectionLeavesExpandedMenuItemsInLeftMinimalTest()
+        {
+            VerifyTabNavigationWithoutSelectionInOpenOverlayPane("LeftMinimal");
+        }
+
+        private void VerifyTabNavigationWithoutSelectionInOpenOverlayPane(string paneDisplayMode)
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Verify Tab navigation without a selection in " + paneDisplayMode + " with the pane open and Settings visible");
+                new CheckBox(FindElement.ByName("Settings Item Visibility")).Check();
+                Wait.ForIdle();
+                RemoveSelectionOnHierarchicalMarkupPage();
+                new ComboBox(FindElement.ByName("PaneDisplayModeCombobox")).SelectItemByName(paneDisplayMode);
+                Wait.ForIdle();
+
+                OpenPaneAndExpandItem("Menu Item 1");
+                PressTabFrom("Menu Item 1", ModifierKey.None);
+                VerifyFocusedElement("Settings", "Tab from Menu Item 1");
+
+                OpenPaneAndExpandItem("Menu Item 1");
+                PressTabFrom("Menu Item 3", ModifierKey.Shift);
+                VerifyFocusedElement("Settings", "Shift+Tab from Menu Item 3");
+            }
+
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Verify that Tab keeps focus inside the open " + paneDisplayMode + " pane when the menu list is its only tab stop");
+                RemoveSelectionOnHierarchicalMarkupPage();
+                new ComboBox(FindElement.ByName("PaneDisplayModeCombobox")).SelectItemByName(paneDisplayMode);
+                Wait.ForIdle();
+
+                OpenPaneAndExpandItem("Menu Item 1");
+                PressTabFrom("Menu Item 1", ModifierKey.None);
+                VerifyFocusStaysInMenuListOfOpenPane("Tab from Menu Item 1");
+
+                OpenPaneAndExpandItem("Menu Item 1");
+                PressTabFrom("Menu Item 3", ModifierKey.Shift);
+                VerifyFocusStaysInMenuListOfOpenPane("Shift+Tab from Menu Item 3");
+            }
+        }
+
+        private static void VerifyFocusStaysInMenuListOfOpenPane(string action)
+        {
+            string focusedElementName = GetFocusedElementName();
+            Verify.IsTrue(focusedElementName.StartsWith("Menu Item"), action + " should keep focus inside the open pane, but focus is on " + focusedElementName);
+            Verify.AreEqual("Opened", new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText);
+        }
+
+        [TestMethod]
+        public void TabNavigationWithoutSelectionLeavesExpandedMenuItemsSourceItemsTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView DataBinding Test" }))
+            {
+                new Button(FindElement.ByName("GetSelectedItemLabelButton")).Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("No Item Selected", new TextBlock(FindElement.ByName("SelectedItemLabel")).DocumentText);
+
+                ExpandItem("Menu Item 1");
+
+                PressTabFrom("Menu Item 1", ModifierKey.None);
+                VerifyFocusedElement("Settings", "Tab from Menu Item 1");
+
+                PressTabFrom("Menu Item 3", ModifierKey.None);
+                VerifyFocusedElement("Settings", "Tab from Menu Item 3");
+
+                PressTabFrom("Menu Item 3", ModifierKey.Shift);
+                Verify.IsTrue(new Button(FindElement.ById("TogglePaneButton")).HasKeyboardFocus, "Shift+Tab from Menu Item 3 should leave the menu list, but focus is on " + GetFocusedElementName());
+            }
+        }
+
+        [TestMethod]
+        public void TabNavigationWithoutSelectionLeavesExpandedFooterMenuItemsTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                new Button(FindElement.ByName("AddExpandableItemToFooterButton")).Invoke();
+                Wait.ForIdle();
+                RemoveSelectionOnHierarchicalMarkupPage();
+                ExpandItem("Footer Parent");
+
+                PressTabFrom("Footer Parent", ModifierKey.None);
+                VerifyFocusedElement("GetSelectedItemLabelButton", "Tab from Footer Parent");
+
+                PressTabFrom("Footer Child 1", ModifierKey.Shift);
+                string focusedElementName = GetFocusedElementName();
+                Verify.IsTrue(focusedElementName.StartsWith("Menu Item"), "Shift+Tab from Footer Child 1 should move to the menu list, but focus is on " + focusedElementName);
+            }
+        }
+
+        private static void RemoveSelectionOnHierarchicalMarkupPage()
+        {
+            new Button(FindElement.ByName("RemoveSelectionButton")).Invoke();
+            Wait.ForIdle();
+            new Button(FindElement.ByName("GetSelectedItemLabelButton")).Invoke();
+            Wait.ForIdle();
+            Verify.AreEqual("No Item Selected", new TextBlock(FindElement.ByName("SelectedItemLabel")).DocumentText);
+        }
+
+        private static void OpenPaneAndExpandItem(string itemName)
+        {
+            if (new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText != "Opened")
+            {
+                new Button(FindElement.ById("TogglePaneButton")).Invoke();
+                Wait.ForIdle();
+            }
+            Verify.AreEqual("Opened", new TextBlock(FindElement.ByName("PaneOpenedOrClosedEvent")).DocumentText);
+            ExpandItem(itemName);
+        }
+
+        private static void ExpandItem(string itemName)
+        {
+            FindElement.ByName(itemName).SetFocus();
+            Wait.ForIdle();
+            AutomationElement itemPeer = AutomationElement.FocusedElement;
+            Verify.AreEqual(itemName, itemPeer.Current.Name);
+            var expandCollapsePattern = (ExpandCollapsePattern)itemPeer.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+            if (expandCollapsePattern.Current.ExpandCollapseState != ExpandCollapseState.Expanded)
+            {
+                expandCollapsePattern.Expand();
+                Wait.ForIdle();
+            }
+            Verify.AreEqual(ExpandCollapseState.Expanded, expandCollapsePattern.Current.ExpandCollapseState);
+        }
+
+        private static void PressTabFrom(string itemName, ModifierKey modifier)
+        {
+            FindElement.ByName(itemName).SetFocus();
+            Wait.ForIdle();
+            Verify.AreEqual(itemName, GetFocusedElementName());
+            KeyboardHelper.PressKey(Key.Tab, modifier, 1);
+            Wait.ForIdle();
+        }
+
+        private static void VerifyFocusedElement(string expectedName, string action)
+        {
+            Verify.AreEqual(expectedName, GetFocusedElementName(), action);
+        }
+
+        private static string GetFocusedElementName()
+        {
+            return AutomationElement.FocusedElement?.Current.Name ?? string.Empty;
+        }
+
+        [TestMethod]
         public void CanDoSelectionChangedOfItemTemplate()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView ItemTemplate Test" }))

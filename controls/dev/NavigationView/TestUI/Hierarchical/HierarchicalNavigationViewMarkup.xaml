@@ -100,6 +100,7 @@
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
                 <Button Content="Add Child Item to MenuItem19" Click="AddChildItemToMI19"/>
                 <Button Content="Add Item to Footer" x:Name="AddItemToFooterButton" AutomationProperties.Name="AddItemToFooterButton" Click="AddItemToFooter"/>
+                <Button Content="Add Expandable Item to Footer" x:Name="AddExpandableItemToFooterButton" AutomationProperties.Name="AddExpandableItemToFooterButton" Click="AddExpandableItemToFooter"/>
                 <TextBlock x:Name="IsChildSelectedLabel" AutomationProperties.Name="IsChildSelectedLabel" Text="uninitialized"/>
                 <Button AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
