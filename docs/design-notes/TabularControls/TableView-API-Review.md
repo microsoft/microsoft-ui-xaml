@@ -90,7 +90,8 @@ Data shaping (sort levels, group order, refresh and deferral, re-entrancy, rollb
 | `TableViewColumn.SortDirection` (settable (proposed; not in this IDL)) | `SortDirection`, `None` | **Display only.** Set by the control on a column sort; settable by the app, including in XAML or before the column is added (honoured when it joins `Columns`; the last added wins). |
 | `TableViewColumn.SortMemberPath` | `String` | Path for a column sort; empty → `GetSortMemberPathCore()` (the base falls back to `DisplayMemberBinding`'s path). |
 | `TableViewColumn.SortCycle` | `TableViewSortCycle`, `AscendingDescending` | Header/`ToggleSortDirection` cycle; `*None` variants add a step back to source order. |
-| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and arrow stay, `Sorting` was raised and `Sorted` is not; the fault is logged. |
+| `TableViewColumn.CustomSortComparer` | `ITableViewSortComparer` | `Int32 Compare(Object left, Object right)`; wins over the path; must be pure. An exception from it is contained: that pair compares equal, the sort and arrow commit and `Sorted` is raised; the fault is logged as an app fault. |
+| Changing a sorted column's key (`SortMemberPath`, `DisplayMemberBinding`, `CustomSortComparer`) | — | Re-sorts the column in place, or clears its sort when no key is left; see [the spec's "Sort keys" section](../../api-specs/TableView/TableView-spec.md#sort-keys). |
 | `SortByColumn(column, direction)` | `Boolean` | Declares the control's sort axis. `None` clears. |
 | `ToggleSortDirection(column)` | `Boolean` | Advances the column's `SortCycle`. |
 | `TableView.ClearSort()` | `Boolean` | Clears the column sort and, with it, every sort axis on the source. `false` when no column is sorted. |
