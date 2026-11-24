@@ -1,0 +1,2 @@
+# Official MCP Python SDK; the offline analyzer itself remains standard-library-only.
+mcp==1.26.0

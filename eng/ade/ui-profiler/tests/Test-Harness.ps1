@@ -156,9 +156,151 @@ for line in sys.stdin:
         $fake.Dispose()
     }
     $passed++
+    $knowledge = Join-Path $temp 'knowledge'
+    $launcher = Join-Path $knowledge 'tools\WinUIProfiler\scripts\Start-McpServer.ps1'
+    New-Item -ItemType Directory -Force (Split-Path $launcher -Parent) | Out-Null
+    [IO.File]::WriteAllText($launcher, '# synthetic metadata fixture; never executed')
+    $assembly = Join-Path $temp 'WinUIProfiler.Mcp.dll'
+    $configuration = New-ProfilerMcpConfiguration $knowledge (Get-Command python -ErrorAction Stop).Path `
+        -NativeAssembly $assembly
+    $serialized = $configuration | ConvertTo-Json -Depth 8 | ConvertFrom-Json
+    Expect ($serialized.mcpServers.'winui-profiler'.args -is [array]) 'Native MCP args must remain a JSON array.'
+    Expect ($serialized.mcpServers.'winui-profiler'.args.Count -eq 1 -and
+        $serialized.mcpServers.'winui-profiler'.args[0] -eq $assembly) 'Native MCP deployment argument was altered.'
+    $passed++
+    $independent = Join-Path $temp 'independent-budgets'
+    Reserve-Capture (Join-Path $independent 'baseline') 'original-source'
+    Reserve-Capture (Join-Path $independent 'trials\first\candidate') 'first-candidate'
+    Reserve-Capture (Join-Path $independent 'trials\second\candidate') 'second-candidate'
+    Expect-Failure { Reserve-Capture (Join-Path $independent 'baseline') 'original-source' }
+    Expect-Failure { Reserve-Capture (Join-Path $independent 'trials\first\candidate') 'first-candidate' }
+    Expect-Failure { Reserve-Capture (Join-Path $independent 'trials\second\candidate') 'second-candidate' }
+    $passed++
+
+    $selectionError = $null
+    try {
+        & "$PSScriptRoot\..\scripts\Start-Investigation.ps1" -Phase Run `
+            -Directory (Join-Path $temp 'uninitialized-selection') -RecommendationId @('first', 'FIRST')
+    } catch { $selectionError = $_.Exception.Message }
+    Expect ($selectionError -eq 'Recommendation ids must be unique; no trial has been started.') `
+        'Duplicate trial ids were not rejected before reading context or starting a trial.'
+    $passed++
+
+    $recommendationsPath = Join-Path $temp 'recommendations.json'
+    $entry = @{ id = 'first'; title = 'Synthetic first recommendation'; verdict = 'propose'; summary = 'Synthetic fixture.'
+        observations = @('Synthetic evidence, not an actual capture.'); hypotheses = @('Independent variants.')
+        risks = @('Do not interpret this fixture as a generated fix.'); files = @(@{ path = 'a.cs'; change = 'Fixture.' }) }
+    $second = $entry.Clone(); $second.id = 'second'
+    $unsupported = $entry.Clone(); $unsupported.id = 'unsupported'; $unsupported.verdict = 'insufficient-evidence'; $unsupported.files = @()
+    Write-JsonFile $recommendationsPath @{ schema = 'ui-profiler/recommendations/v1'; summary = 'Synthetic report contract.'
+        recommendations = @($entry, $second, $unsupported); risks = @('No app recording.') }
+    $trialDirectory = Join-Path $temp 'trials\first'
+    $syntheticContext = Join-Path $trialDirectory 'pack\knowledge\trial-context.json'
+    $syntheticProposal = Join-Path $trialDirectory 'ade-run.json'
+    New-Item -ItemType Directory -Force (Split-Path $syntheticContext -Parent) | Out-Null
+    $shared = @{ path = $recommendationsPath; sha256 = Get-Sha256 $recommendationsPath }
+    $reportContext = [pscustomobject]@{ directory = $temp; originalRevision = 'synthetic-revision'
+        originalRepository = $source; originalSourceSha256 = 'synthetic-source'; request = $shared; contracts = $shared
+        baseline = @{ path = $before.database.path; sha256 = Get-Sha256 $before.database.path }
+        recommendations = $shared
+        trials = @(); report = $null }
+    $trialContext = @{ schema = 'ui-profiler/trial/v1'; strategy = 'independent'; recommendationId = 'first'
+        directory = $trialDirectory; investigationDirectory = $temp; originalRepository = $source
+        originalRevision = $reportContext.originalRevision; originalSourceSha256 = $reportContext.originalSourceSha256
+        request = $shared; contracts = $shared; recommendations = $shared; baseline = $reportContext.baseline }
+    Write-JsonFile $syntheticContext $trialContext
+    Write-JsonFile $syntheticProposal @{ fixture = $true; status = 'AwaitingApproval'
+        runId = 'synthetic-test-only'; proposalSha256 = ('f' * 64) }
+    $reportContext.trials = @(@{ id = 'first'; directory = $trialDirectory
+            context = @{ path = $syntheticContext; sha256 = Get-Sha256 $syntheticContext }
+            proposal = @{ path = $syntheticProposal; sha256 = Get-Sha256 $syntheticProposal }
+            runId = 'synthetic-test-only'; proposalSha256 = ('f' * 64) })
+    $outcomePath = Join-Path $trialDirectory 'outcome.json'
+    $outcome = @{ schema = 'ui-profiler/trial-outcome/v1'; recommendationId = 'first'; state = 'failed'
+        baselineSha256 = $reportContext.baseline.sha256; contextSha256 = Get-Sha256 $syntheticContext
+        proposalSha256 = ('f' * 64); adeRun = 'synthetic-test-only'; error = 'Explicit synthetic failure'; comparison = $null; counts = $null
+        adeChecksPassed = $false; chainVerified = $false; originalRepositoryUnchanged = $true }
+    Write-JsonFile $outcomePath $outcome
+    $report = Write-RecommendationReport $reportContext
+    $reportContext.report = @{ path = $report.path; sha256 = $report.sha256 }
+    $verified = Assert-RecommendationReport $reportContext
+    Expect ($verified.rows.Count -eq 3 -and $verified.rows[0].state -eq 'failed' -and
+        $verified.rows[1].state -eq 'pending' -and $verified.rows[2].state -eq 'insufficient-evidence') `
+        'Report omitted failed, pending or unsupported recommendations.'
+    [IO.File]::AppendAllText($outcomePath, 'tampered')
+    Expect-Failure { Assert-RecommendationReport $reportContext }
+    $outcome.state = 'verified-comparison'
+    Write-JsonFile $outcomePath $outcome
+    Expect-Failure { Write-RecommendationReport $reportContext }
+    $passed++
+
+    $trialContext.recommendationId = 'second'
+    Write-JsonFile $syntheticContext $trialContext
+    $reportContext.trials[0].context.sha256 = Get-Sha256 $syntheticContext
+    Expect-Failure { Assert-TrialReference $reportContext $reportContext.trials[0] }
+    $trialContext.recommendationId = 'first'
+    Write-JsonFile $syntheticContext $trialContext
+    $reportContext.trials[0].context.sha256 = Get-Sha256 $syntheticContext
+    $reportContext.trials[0].runId = 'different-synthetic-run'
+    Expect-Failure { Assert-TrialReference $reportContext $reportContext.trials[0] }
+    $reportContext.trials[0].runId = 'synthetic-test-only'
+    $reportContext.trials[0].directory = Join-Path $temp 'trials\second'
+    Expect-Failure { Assert-TrialReference $reportContext $reportContext.trials[0] }
+    $reportContext.trials[0].directory = $trialDirectory
+    [void](Assert-TrialReference $reportContext $reportContext.trials[0])
+    $passed++
+
+    $baselinePath = Join-Path $temp 'report-baseline.json'
+    $candidatePath = Join-Path $trialDirectory 'report-candidate.json'
+    Write-JsonFile $baselinePath (New-Fixture 'report-baseline' 20)
+    Write-JsonFile $candidatePath (New-Fixture 'report-candidate' 15)
+    $reportContext.baseline = @{ path = $baselinePath; sha256 = Get-Sha256 $baselinePath }
+    $trialContext.baseline = $reportContext.baseline
+    Write-JsonFile $syntheticContext $trialContext
+    $reportContext.trials[0].context.sha256 = Get-Sha256 $syntheticContext
+    $comparisonPath = Join-Path $trialDirectory 'comparison.json'
+    $tableComparison = @{
+        schema = 'ui-profiler/comparison/v2'; baseline = $reportContext.baseline
+        candidate = @{ path = $candidatePath; sha256 = Get-Sha256 $candidatePath }
+        metrics = @(
+            @{ family = 'memory'; scope = 'synthetic'; metric = 'peakWorkingSet'; unit = 'MiB'
+                baseline = 40; candidate = 30; delta = -10; primary = $true; status = 'available'; change = 'lower' },
+            @{ family = 'gpu'; scope = 'synthetic'; metric = 'missingUsage'; unit = 'MiB'
+                baseline = $null; candidate = $null; delta = $null; primary = $true; status = 'unavailable'; change = 'unknown' },
+            @{ family = 'cpu'; scope = 'synthetic'; metric = 'secondary-detail'; unit = '%'
+                baseline = 1; candidate = 2; delta = 1; primary = $false; status = 'available'; change = 'higher' })
+    }
+    Write-JsonFile $comparisonPath $tableComparison
+    $outcome.baselineSha256 = $reportContext.baseline.sha256
+    $outcome.contextSha256 = $reportContext.trials[0].context.sha256
+    $outcome.state = 'verified-comparison'
+    $outcome.adeChecksPassed = $true
+    $outcome.chainVerified = $true
+    $outcome.comparison = @{ path = $comparisonPath; sha256 = Get-Sha256 $comparisonPath }
+    $outcome.counts = @{ improved = 1; regressed = 1; unavailable = 1 }
+    Write-JsonFile $outcomePath $outcome
+    $report = Write-RecommendationReport $reportContext
+    $reportContext.report = @{ path = $report.path; sha256 = $report.sha256 }
+    $verified = Assert-RecommendationReport $reportContext
+    $markdown = [IO.File]::ReadAllText((Join-Path $temp 'recommendations-report.md'))
+    Expect ($verified.rows[0].state -eq 'verified-comparison' -and $verified.rows[0].summaryMetrics.Count -eq 2) `
+        'Successful trial did not retain primary metrics.'
+    Expect ($markdown.Contains('| 40 | 30 | -10 | available / lower |') -and
+        $markdown.Contains('| unavailable | unavailable | unavailable | unavailable / unknown |') -and
+        !$markdown.Contains('secondary-detail') -and $markdown.Contains($comparisonPath)) `
+        'Aggregate Markdown lost observed deltas, missing-data states or its full-comparison reference.'
+    $tableComparison.baseline = $tableComparison.candidate
+    Write-JsonFile $comparisonPath $tableComparison
+    $outcome.comparison.sha256 = Get-Sha256 $comparisonPath
+    Write-JsonFile $outcomePath $outcome
+    Expect-Failure { Write-RecommendationReport $reportContext }
+    $passed++
     Write-Output "$passed focused harness tests passed; zero captures."
     & python -B "$PSScriptRoot\Test-Analysis.py"
     if ($LASTEXITCODE -ne 0) { throw 'Multidimensional evidence tests failed.' }
+    & python -B "$PSScriptRoot\Test-AgentContracts.py"
+    if ($LASTEXITCODE -ne 0) { throw 'Agent/tool contract tests failed.' }
+    & "$PSScriptRoot\Test-Contracts.ps1"
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
 }

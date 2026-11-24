@@ -4,7 +4,9 @@ param(
     [Parameter(Mandatory)][int]$ProcessId,
     [Parameter(Mandatory)][long]$CreationTimeFileTime,
     [Parameter(Mandatory)][string]$ScenarioPath,
-    [Parameter(Mandatory)][string]$OutputPath
+    [Parameter(Mandatory)][string]$OutputPath,
+    [string]$ExpectedExecutable,
+    [switch]$Inspect
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -23,6 +25,7 @@ public static class ScenarioWindow {
 $scenario = Get-Content -LiteralPath $ScenarioPath -Raw | ConvertFrom-Json
 $target = Get-Process -Id $ProcessId
 if ($target.StartTime.ToUniversalTime().ToFileTimeUtc() -ne $CreationTimeFileTime) { throw 'Target PID was reused.' }
+if ($ExpectedExecutable -and $target.MainModule.FileName -ne $ExpectedExecutable) { throw 'Target executable changed.' }
 $audit = [ordered]@{
     state = 'running'; qpcFrequency = [Diagnostics.Stopwatch]::Frequency
     startedQpc = 0L; endedQpc = 0L; window = $null; steps = @()
@@ -52,7 +55,10 @@ function Find-TargetElement($Selector) {
     $wait = [Diagnostics.Stopwatch]::StartNew()
     while ($wait.Elapsed.TotalSeconds -lt 15) {
         $matches = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
-        if ($matches.Count -gt 0) { return $matches[0] }
+        $index = $Selector.PSObject.Properties['index']
+        if ($null -ne $index -and $matches.Count -gt [int]$index.Value) { return $matches[[int]$index.Value] }
+        if ($null -eq $index -and $matches.Count -gt 1) { throw 'Ambiguous UI selector; specify an observed index.' }
+        if ($null -eq $index -and $matches.Count -eq 1) { return $matches[0] }
         Start-Sleep -Milliseconds 50
     }
     throw "UI element missing: $($Selector | ConvertTo-Json -Compress)"
@@ -89,6 +95,35 @@ try {
     $audit.window = @{
         width = [int]$bounds.Width; height = [int]$bounds.Height
         dpi = [ScenarioWindow]::GetDpiForWindow($handle); threadId = $threadId
+    }
+    if ($Inspect) {
+        $conditions = [System.Windows.Automation.AndCondition]::new(
+            [System.Windows.Automation.PropertyCondition]::new(
+                [System.Windows.Automation.AutomationElement]::ProcessIdProperty, $ProcessId),
+            [System.Windows.Automation.PropertyCondition]::new(
+                [System.Windows.Automation.AutomationElement]::IsOffscreenProperty, $false))
+        $visible = $root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $conditions)
+        $elements = @(
+            for ($i = 0; $i -lt [Math]::Min(512, $visible.Count); $i++) {
+                $element = $visible[$i]
+                $current = $element.Current
+                @{
+                    name = $current.Name; automationId = $current.AutomationId; className = $current.ClassName
+                    controlType = $current.ControlType.ProgrammaticName.Replace('ControlType.', '')
+                    offscreen = $current.IsOffscreen; enabled = $current.IsEnabled
+                    patterns = @($element.GetSupportedPatterns() | ForEach-Object ProgrammaticName)
+                }
+            }
+        )
+        $observation = @{
+            schema = 'ui-profiler/ui-observation/v1'; state = 'complete'
+            processId = $ProcessId; creationTimeFileTime = $CreationTimeFileTime
+            executable = $target.MainModule.FileName; window = $audit.window
+            observedUtc = [DateTime]::UtcNow.ToString('O'); elements = $elements
+            totalVisible = $visible.Count; truncated = $visible.Count -gt 512
+        }
+        [IO.File]::WriteAllText($OutputPath, ($observation | ConvertTo-Json -Depth 20), [Text.UTF8Encoding]::new($false))
+        return
     }
     $audit.startedQpc = [Diagnostics.Stopwatch]::GetTimestamp()
     foreach ($step in $scenario.steps) {

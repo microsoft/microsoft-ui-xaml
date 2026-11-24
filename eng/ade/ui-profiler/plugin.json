@@ -8,5 +8,14 @@
   },
   "keywords": ["ade", "ui-profiler", "bug-fix", "feature", "research", "work-types", "agentic-loop"],
   "skills": "skills/",
-  "agents": "agents/"
+  "agents": "agents/",
+  "mcpServers": {
+    "ui-profiler-harness": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["${PLUGIN_ROOT}\\pack\\tools\\Harness-Mcp.py"],
+      "timeout": 1800000,
+      "tools": ["*"]
+    }
+  }
 }
