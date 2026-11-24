@@ -494,6 +494,8 @@ public:
     static bool SameInspectableIdentity(winrt::IInspectable const& lhs, winrt::IInspectable const& rhs);
 
     bool IsActiveSourceOwnedByOther() const;
+    // Refused or released to another table: no sort can be applied until the source is reclaimed.
+    bool IsSortHeldByOtherOwner() const { return m_awaitedSource.get() || IsActiveSourceOwnedByOther(); }
 
     // ----- Selection (TableView_Selection.cpp) -----
     // SelectionModel owns the selected index and reconciles it across collection changes; this
