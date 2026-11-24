@@ -342,6 +342,80 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Times how long the UI thread takes to release views and groups the GC found unreachable: many small grouped views (over copies, or live over one shared source), and one view with many groups.")]
+        public void BenchTeardown()
+        {
+            var baseline = DrainAfterCollect();
+            Report("Teardown.Baseline", 0, baseline);
+            foreach (var live in new[] { false, true })
+            {
+                foreach (var views in new[] { 100, 400, 1600 })
+                {
+                    var created = 0.0;
+                    RunOnUIThread.Execute(() => created = Time(() => CreateGroupedViews(views, 60, live)));
+                    var drained = DrainAfterCollect();
+                    var name = live ? "Teardown.LiveViewsOverOneSource" : "Teardown.ViewsOverCopies";
+                    Report($"{name}.Create", views, created);
+                    Report($"{name}.Drain", views, drained);
+                    Report($"{name}.DrainPerView", views, (drained - baseline) / views);
+                }
+            }
+            foreach (var n in s_sizes)
+            {
+                RunOnUIThread.Execute(() => CreateGroupedViews(1, n, live: false, team: nameof(BenchRow.Team1k)));
+                Report("Teardown.OneView1kGroups.Drain", n, DrainAfterCollect());
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void CreateGroupedViews(int views, int n, bool live, string team = nameof(BenchRow.Team10))
+        {
+            var rows = MakeRows(n, seed: 9);
+            for (var i = 0; i < views; i++)
+            {
+                var cvs = new CollectionViewSource { Source = live ? (object)rows : rows.ToList() };
+                cvs.SortDescriptions.Add(new SortDescription(nameof(BenchRow.Score), CollectionViewSortDirection.Ascending));
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription(team));
+                cvs.GroupDescriptions.Add(new PropertyGroupDescription(nameof(BenchRow.Bucket)));
+                var view = cvs.View;
+                if (live)
+                {
+                    var liveShaping = (ICollectionViewLiveShaping)view;
+                    liveShaping.IsLiveSorting = true;
+                    liveShaping.IsLiveGrouping = true;
+                }
+                Verify.IsGreaterThan(view.CollectionGroups.Count, 0);
+            }
+        }
+
+        // From the first GC until the UI thread is idle, retrying IdleSynchronizer's 10 s wait.
+        private static double DrainAfterCollect()
+        {
+            var stopwatch = Stopwatch.StartNew();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            for (var attempt = 1; attempt <= 12; attempt++)
+            {
+                string error;
+                try
+                {
+                    error = IdleSynchronizer.TryWait();
+                }
+                catch (global::System.Runtime.InteropServices.COMException ex)
+                {
+                    error = ex.Message;
+                }
+                if (string.IsNullOrEmpty(error))
+                {
+                    break;
+                }
+                Log.Comment($"idle wait {attempt} failed after {stopwatch.ElapsedMilliseconds} ms: {error}");
+            }
+            return stopwatch.Elapsed.TotalMilliseconds;
+        }
+
         private static ObservableCollection<BenchRow> MakeRows(int n, int seed)
         {
             var random = new Random(seed);

@@ -4788,7 +4788,11 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
             twoWayHolder->Tag = static_cast<CollectionViewStringComparison>(99);
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::OrdinalIgnoreCase, twoWayBound->StringComparison);
-            LOG_OUTPUT(L"Source after the rejected value: %s", twoWayHolder->Tag ? twoWayHolder->Tag->ToString()->Data() : L"(null)");
+            VERIFY_IS_NOT_NULL(twoWayHolder->Tag);
+            const auto twoWaySource = safe_cast<CollectionViewStringComparison>(twoWayHolder->Tag);
+            LOG_OUTPUT(L"Source after the rejected value: %d", static_cast<int>(twoWaySource));
+            VERIFY_IS_TRUE(twoWaySource == static_cast<CollectionViewStringComparison>(99) || twoWaySource == CollectionViewStringComparison::OrdinalIgnoreCase,
+                L"The source keeps the rejected value or receives the restored one, once; nothing else is written.");
             twoWayHolder->Tag = CollectionViewStringComparison::CurrentCultureIgnoreCase;
             VERIFY_ARE_EQUAL(CollectionViewStringComparison::CurrentCultureIgnoreCase, twoWayBound->StringComparison);
 
