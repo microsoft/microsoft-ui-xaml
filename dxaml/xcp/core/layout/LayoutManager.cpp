@@ -296,17 +296,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 XamlTelemetry::MeasureEnd(pRoot);
             });
 
-            if (StoreLayoutCycleWarningContexts())
+            if (StoreLayoutCycleWarningContexts() && LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
             {
-                extraInfoEntries[extraInfoIndex].append(L" Launching Measure Pass.");
-
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
+                if (extraInfoEntries[extraInfoIndex].empty())
                 {
-                    std::wstring trace;
-                    trace.assign(L"[LayoutCycleTracing] ");
-                    trace.append(extraInfoEntries[extraInfoIndex]);
-                    DisplayReleaseMessage(trace.c_str());
+                    extraInfoEntries[extraInfoIndex].assign(L"Layout Iteration Countdown: ");
+                    extraInfoEntries[extraInfoIndex].append(std::to_wstring(count));
+                    extraInfoEntries[extraInfoIndex].append(L".");
                 }
+                extraInfoEntries[extraInfoIndex].append(L" Launching Measure Pass.");
+                std::wstring trace;
+                trace.assign(L"[LayoutCycleTracing] ");
+                trace.append(extraInfoEntries[extraInfoIndex]);
+                DisplayReleaseMessage(trace.c_str());
             }
 
             IFC(pRoot->Measure(m_arrangeRect.Size()));
@@ -328,17 +330,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 XamlTelemetry::ArrangeEnd(pRoot);
             });
 
-            if (StoreLayoutCycleWarningContexts())
+            if (StoreLayoutCycleWarningContexts() && LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
             {
-                extraInfoEntries[extraInfoIndex].append(L" Launching Arrange Pass.");
-
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
+                if (extraInfoEntries[extraInfoIndex].empty())
                 {
-                    std::wstring trace;
-                    trace.assign(L"[LayoutCycleTracing] ");
-                    trace.append(extraInfoEntries[extraInfoIndex]);
-                    DisplayReleaseMessage(trace.c_str());
+                    extraInfoEntries[extraInfoIndex].assign(L"Layout Iteration Countdown: ");
+                    extraInfoEntries[extraInfoIndex].append(std::to_wstring(count));
+                    extraInfoEntries[extraInfoIndex].append(L".");
                 }
+                extraInfoEntries[extraInfoIndex].append(L" Launching Arrange Pass.");
+                std::wstring trace;
+                trace.assign(L"[LayoutCycleTracing] ");
+                trace.append(extraInfoEntries[extraInfoIndex]);
+                DisplayReleaseMessage(trace.c_str());
             }
 
             IFC(pRoot->Arrange(m_arrangeRect));
@@ -353,17 +357,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 TraceFireEffectiveViewportChangedEnd();
             });
 
-            if (StoreLayoutCycleWarningContexts())
+            if (StoreLayoutCycleWarningContexts() && LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
             {
-                extraInfoEntries[extraInfoIndex].append(L" Launching EffectiveViewport Pass.");
-
-                if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
+                if (extraInfoEntries[extraInfoIndex].empty())
                 {
-                    std::wstring trace;
-                    trace.assign(L"[LayoutCycleTracing] ");
-                    trace.append(extraInfoEntries[extraInfoIndex]);
-                    DisplayReleaseMessage(trace.c_str());
+                    extraInfoEntries[extraInfoIndex].assign(L"Layout Iteration Countdown: ");
+                    extraInfoEntries[extraInfoIndex].append(std::to_wstring(count));
+                    extraInfoEntries[extraInfoIndex].append(L".");
                 }
+                extraInfoEntries[extraInfoIndex].append(L" Launching EffectiveViewport Pass.");
+                std::wstring trace;
+                trace.assign(L"[LayoutCycleTracing] ");
+                trace.append(extraInfoEntries[extraInfoIndex]);
+                DisplayReleaseMessage(trace.c_str());
             }
 
             m_horizontalViewports.clear();
@@ -398,17 +404,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                     XamlTelemetry::FireSizeChangedEnd(pRoot);
                 });
 
-                if (StoreLayoutCycleWarningContexts())
+                if (StoreLayoutCycleWarningContexts() && LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                 {
-                    extraInfoEntries[extraInfoIndex].append(L" Raising SizeChanged Events.");
-
-                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
+                    if (extraInfoEntries[extraInfoIndex].empty())
                     {
-                        std::wstring trace;
-                        trace.assign(L"[LayoutCycleTracing] ");
-                        trace.append(extraInfoEntries[extraInfoIndex]);
-                        DisplayReleaseMessage(trace.c_str());
+                        extraInfoEntries[extraInfoIndex].assign(L"Layout Iteration Countdown: ");
+                        extraInfoEntries[extraInfoIndex].append(std::to_wstring(count));
+                        extraInfoEntries[extraInfoIndex].append(L".");
                     }
+                    extraInfoEntries[extraInfoIndex].append(L" Raising SizeChanged Events.");
+                    std::wstring trace;
+                    trace.assign(L"[LayoutCycleTracing] ");
+                    trace.append(extraInfoEntries[extraInfoIndex]);
+                    DisplayReleaseMessage(trace.c_str());
                 }
 
                 RaiseSizeChangedEvents();
@@ -427,17 +435,19 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                     XamlTelemetry::FireLayoutUpdatedEnd(pRoot);
                 });
 
-                if (StoreLayoutCycleWarningContexts())
+                if (StoreLayoutCycleWarningContexts() && LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
                 {
-                    extraInfoEntries[extraInfoIndex].append(L" Raising LayoutUpdated Events.");
-
-                    if (LayoutCycleDebugSettings::ShouldTrace(DirectUI::LayoutCycleTracingLevel::Low))
+                    if (extraInfoEntries[extraInfoIndex].empty())
                     {
-                        std::wstring trace;
-                        trace.assign(L"[LayoutCycleTracing] ");
-                        trace.append(extraInfoEntries[extraInfoIndex]);
-                        DisplayReleaseMessage(trace.c_str());
+                        extraInfoEntries[extraInfoIndex].assign(L"Layout Iteration Countdown: ");
+                        extraInfoEntries[extraInfoIndex].append(std::to_wstring(count));
+                        extraInfoEntries[extraInfoIndex].append(L".");
                     }
+                    extraInfoEntries[extraInfoIndex].append(L" Raising LayoutUpdated Events.");
+                    std::wstring trace;
+                    trace.assign(L"[LayoutCycleTracing] ");
+                    trace.append(extraInfoEntries[extraInfoIndex]);
+                    DisplayReleaseMessage(trace.c_str());
                 }
 
                 IGNOREHR(FxCallbacks::JoltHelper_RaiseEvent(
