@@ -134,7 +134,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [CodeGen(partial: true)]
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Guids(ClassGuid = "6b1f247b-5cc4-480c-bf46-182dcd94c8da")]
-    public sealed class PivotHeaderPanel : Controls.Canvas
+    public class PivotHeaderPanel : Controls.Canvas
     {
     }
 
