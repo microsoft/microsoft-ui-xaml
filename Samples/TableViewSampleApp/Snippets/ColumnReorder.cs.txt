@@ -1,0 +1,5 @@
+private void OnColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+{
+    // Raised after a user move; OldIndex and NewIndex are positions in Columns.
+    Log.Insert(0, string.Format(CultureInfo.CurrentCulture, "{0}: {1} -> {2}", args.Column.Header, args.OldIndex, args.NewIndex));
+}

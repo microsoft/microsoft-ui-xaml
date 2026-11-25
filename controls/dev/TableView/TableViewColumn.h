@@ -143,3 +143,29 @@ private:
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
     uint32_t m_automationIdentity{ 0 };
 };
+
+namespace TableViewDetails
+{
+    inline bool IsColumnOwnedBy(winrt::TableView const& owner, winrt::TableViewColumn const& column)
+    {
+        return column && winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == owner;
+    }
+
+    // The leading-frozen prefix: unowned columns are skipped and the first owned non-Leading column ends it.
+    template <typename Columns, typename Fn>
+    void ForEachLeadingFrozenColumn(winrt::TableView const& owner, Columns const& columns, Fn&& fn)
+    {
+        for (auto const& column : columns)
+        {
+            if (!IsColumnOwnedBy(owner, column))
+            {
+                continue;
+            }
+            if (column.FrozenEdge() != winrt::TableViewFrozenEdge::Leading)
+            {
+                break;
+            }
+            fn(column);
+        }
+    }
+}
