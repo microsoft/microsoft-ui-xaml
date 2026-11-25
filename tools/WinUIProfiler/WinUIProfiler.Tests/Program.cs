@@ -15,6 +15,20 @@ using WinUIProfiler.Contracts;
 using WinUIProfiler.Cli;
 using XamlTimeline;
 
+if (args is ["--storyboard-tests"])
+{
+    StoryboardTests.Run();
+    return;
+}
+
+if (args is ["--storyboard-trace-integration", var storyboardTrace, var storyboardPid, var storyboardControl, var storyboardControlPid])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Storyboard integration requires Windows.");
+    StoryboardTraceIntegration.Run(storyboardTrace, int.Parse(storyboardPid, System.Globalization.CultureInfo.InvariantCulture),
+        storyboardControl, int.Parse(storyboardControlPid, System.Globalization.CultureInfo.InvariantCulture));
+    return;
+}
+
 if (args is ["--cli-tests", var suite])
 {
     if (suite == "live") await CliLiveTests.RunAsync();
@@ -56,6 +70,8 @@ if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, 
         disabledTrace, int.Parse(disabledPid, System.Globalization.CultureInfo.InvariantCulture));
     return;
 }
+
+StoryboardTests.Run();
 
 const long element = 0x1234;
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
