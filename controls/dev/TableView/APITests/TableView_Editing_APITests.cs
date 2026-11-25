@@ -2692,6 +2692,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a cell-content change held by an open edit applies once a forced close ends the edit.")]
+        public void VerifyCellContentChangeAppliesAfterForcedClose()
+        {
+            var items = new ObservableCollection<EditablePerson>(MakeEditableItems());
+            var tableView = LoadEditableTable(items);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() =>
+                ((TableViewTextColumn)tableView.Columns[1]).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the change is held by the open edit.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 1), "Precondition: the regeneration waits for the edit to close.");
+                items.Remove(edited);
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a removed item must not receive the pending value");
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("Diego", GetCellText(tableView, 0, 1), "Once the forced close ends the edit, the held change must apply."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing the Binding of the column being edited ends the edit, as a rebuild of its row does, and regenerates its cells.")]
+        public void VerifyBindingChangeOfEditedColumnEndsEdit()
+        {
+            VerifyContentChangeOfEditedColumnEndsEdit(
+                column => column.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay },
+                "Designer");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing the CellEditingTemplate of the column being edited ends the edit, as a rebuild of its row does.")]
+        public void VerifyCellEditingTemplateChangeOfEditedColumnEndsEdit()
+        {
+            VerifyContentChangeOfEditedColumnEndsEdit(column => column.CellEditingTemplate = MakeCustomEditorTemplate(), null);
+        }
+
+        // The open editor was generated from the edited column's previous content, so it cannot wait.
+        private void VerifyContentChangeOfEditedColumnEndsEdit(Action<TableViewTextColumn> change, string expectedCellText)
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() => change((TableViewTextColumn)tableView.Columns[0]));
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit.");
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Log.Comment($"CellEditEnding action: {actions[0]}, item Name: {items[0].Name}");
+                Verify.AreEqual(expectedCellText ?? items[0].Name, GetCellText(tableView, 0, 0), "The edited column must show its regenerated content.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies filtering the edited item out of the projection force-closes the edit as a Cancel and writes nothing to it.")]
         public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOut()
         {

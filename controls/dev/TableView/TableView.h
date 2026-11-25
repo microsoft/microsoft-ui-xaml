@@ -562,6 +562,7 @@ public:
     void DrainCoalescedEditReshape();
     // Re-requests the cell regenerations an open edit held back.
     void ReleaseCellRegenerationsAfterEdit();
+    void HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column);
     void QueueDeferredEditReshapeDrain();
     void FlushDeferredEditReshapes();
     // In a catch: reports the deferred reshape that threw as a recovered app fault.
