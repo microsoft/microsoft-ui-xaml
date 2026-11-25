@@ -31,9 +31,18 @@ namespace Diagnostics
     {
         if (m_children == nullptr)
         {
+            // Resolve once: the backing object is held weakly for tree roots, so it can already
+            // be destroyed. There are no children to discover in that case, and passing an empty
+            // pointer to the interop would fail-fast.
+            const auto backingObject = GetBackingObject();
+            if (!backingObject)
+            {
+                return;
+            }
+
             auto interop = GetInterop();
             wrl::ComPtr<IInspectable> children;
-            IFCFAILFAST(interop->GetChildren(GetBackingObject().Get(), &children));
+            IFCFAILFAST(interop->GetChildren(backingObject.Get(), &children));
             if (children)
             {
                 m_children = GetRuntimeCollection(children.Get(), shared_from_this());
@@ -114,7 +123,18 @@ namespace Diagnostics
     wrl::ComPtr<xaml::IUIElement> RuntimeElement::GetBackingElement() const
     {
         wrl::ComPtr<xaml::IUIElement> backingElement;
-        IFCFAILFAST(GetBackingObject().As(&backingElement));
+
+        // Resolve once: tree roots hold their backing object weakly, so it can already be gone.
+        // Return an empty pointer rather than failing fast -- callers treat this like any other
+        // non-UIElement backing. ComPtr::As dereferences the held pointer, so it must not run on
+        // an empty ComPtr.
+        const auto backingObject = GetBackingObject();
+        if (!backingObject)
+        {
+            return nullptr;
+        }
+
+        IFCFAILFAST(backingObject.As(&backingElement));
         return backingElement;
     }
 
