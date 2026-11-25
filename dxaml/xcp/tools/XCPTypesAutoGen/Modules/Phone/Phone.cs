@@ -383,9 +383,9 @@ namespace Microsoft.UI.Xaml.Controls
     [TypeFlags(IsCreateableFromXAML = false)]
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "8e14ff78-2883-4eb5-9152-cb01c37d50d7")]
-    public sealed class DatePickerFlyoutPresenter : Controls.Control
+    public class DatePickerFlyoutPresenter : Controls.Control
     {
-        internal DatePickerFlyoutPresenter() { }
+        public DatePickerFlyoutPresenter() { }
 
         [PropertyInitialization(PropertyInitializationType.CallbackRetrievedValue)]
         public Windows.Foundation.Boolean IsDefaultShadowEnabled { get; set; }
