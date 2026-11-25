@@ -334,6 +334,19 @@
   <data name="TraceSummaryProcessFormat" xml:space="preserve"><value>Trace: {0} | PID {1}</value></data>
   <data name="LiveMetricsTab.Header" xml:space="preserve"><value>Live metrics</value></data>
   <data name="FramesTab.Header" xml:space="preserve"><value>Frames</value></data>
+  <data name="DllsTab.Header" xml:space="preserve"><value>Dlls</value></data>
+  <data name="DllsLoadTime.Text" xml:space="preserve"><value>Load time (ms)</value></data>
+  <data name="DllsFaultCount.Text" xml:space="preserve"><value>Hard faults</value></data>
+  <data name="DllsPath.Text" xml:space="preserve"><value>DLL path</value></data>
+  <data name="DllsList.AutomationProperties.Name" xml:space="preserve"><value>Recorded DLL loads</value></data>
+  <data name="DllsDescription.Text" xml:space="preserve"><value>Load times are relative to the recording start. Hard faults count observed page faults in each mapped DLL. A dash means no fault data was recorded.</value></data>
+  <data name="DllsReadError.Title" xml:space="preserve"><value>Couldn't read DLL loads</value></data>
+  <data name="DllsNoSession" xml:space="preserve"><value>Start or open a recording to see DLL loads.</value></data>
+  <data name="DllsNoLoads" xml:space="preserve"><value>No DLL loads were observed in this recording.</value></data>
+  <data name="DllsSearch.PlaceholderText" xml:space="preserve"><value>Search DLL paths</value></data>
+  <data name="DllsSearch.AutomationProperties.Name" xml:space="preserve"><value>Search DLL paths</value></data>
+  <data name="DllsNoMatches" xml:space="preserve"><value>No DLL paths match your search.</value></data>
+  <data name="DllsUnavailable" xml:space="preserve"><value>This session file predates DLL load recording.</value></data>
   <data name="OpenSessionFile.Content" xml:space="preserve"><value>Open session file...</value></data>
   <data name="FramesReadError.Title" xml:space="preserve"><value>Could not read the session file</value></data>
   <data name="FramesNoFile" xml:space="preserve"><value>No session file. Connect to a target, open a recorded trace, or open a saved session file.</value></data>

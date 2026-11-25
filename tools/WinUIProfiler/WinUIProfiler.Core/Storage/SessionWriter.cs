@@ -599,7 +599,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 insertEvent.Parameters["$payload"].Value = payloads[i];
                 insertEvent.ExecuteNonQuery();
                 // The indexes describe the target's objects and UI threads.
-                if (!launcher)
+                if (!launcher && profilerEvent.Provider is not (XamlProvider.KernelProcess or XamlProvider.KernelImage or XamlProvider.KernelMemory))
                 {
                     objects.Add(sequence, typeId, profilerEvent, transaction);
                     frames.Add(sequence, typeId, profilerEvent, transaction);

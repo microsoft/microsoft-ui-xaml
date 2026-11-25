@@ -23,7 +23,11 @@ public enum XamlProvider
     // A provider from the marker configuration; the event's Marker names it.
     Marker,
     // Devices, buffers and textures (Microsoft-Windows-Direct3D11).
-    Direct3D11
+    Direct3D11,
+    // Image mappings and hard page faults for the target process.
+    KernelProcess,
+    KernelImage,
+    KernelMemory
 }
 
 public static class XamlProviders
@@ -36,6 +40,8 @@ public static class XamlProviders
     public static readonly Guid Direct3D11 = new("db6f6ddb-ac77-4e88-8253-819df9bbf140");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
     public static readonly Guid Win32k = new("8c416c79-d49b-4f01-a467-e56d3aa8234c");
+    internal static readonly Guid KernelProcess = new("22fb2cd6-0e7b-422b-a0c7-2fad1fd0e716");
+    private static readonly Guid SystemTrace = new("9e814aad-3204-11d2-9a82-006008a86939");
 
     // The XAML providers, whose events are all read. Graphics and Win32k events are matched by ID in XamlEventSubscription.
     private static readonly Dictionary<Guid, XamlProvider> XamlProviderIds = new()
@@ -54,7 +60,8 @@ public static class XamlProviders
 
     // Whether the profiler reads the provider's events anyway.
     public static bool IsBuiltIn(Guid providerId) =>
-        providerId == Direct3D11 || providerId == DxgKrnl || providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
+        providerId == Direct3D11 || providerId == DxgKrnl || providerId == Win32k || providerId == KernelProcess ||
+        XamlProviderIds.ContainsKey(providerId);
 
     // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
     public static Guid IdOf(XamlProvider provider) => provider switch
@@ -67,6 +74,8 @@ public static class XamlProviders
         XamlProvider.Direct3D11 => Direct3D11,
         XamlProvider.DxgKrnl => DxgKrnl,
         XamlProvider.Win32k => Win32k,
+        XamlProvider.KernelProcess => KernelProcess,
+        XamlProvider.KernelImage or XamlProvider.KernelMemory => SystemTrace,
         _ => Guid.Empty
     };
 
@@ -81,6 +90,8 @@ public static class XamlProviders
         XamlProvider.Direct3D11 => "Microsoft-Windows-Direct3D11",
         XamlProvider.DxgKrnl => "Microsoft-Windows-DxgKrnl",
         XamlProvider.Win32k => "Microsoft-Windows-Win32k",
+        XamlProvider.KernelProcess => "Microsoft-Windows-Kernel-Process",
+        XamlProvider.KernelImage or XamlProvider.KernelMemory => "Windows Kernel Trace",
         _ => "Marker"
     };
 }

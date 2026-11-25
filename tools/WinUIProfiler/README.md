@@ -97,6 +97,14 @@ the launcher with git (see `WinUIProfiler.Launcher\README.md`). The host's nativ
 is staged beside the executable. Distribute the complete output directory,
 not the executable alone.
 
+The **Dlls** tab lists image loads observed during a live launch or attach, or in an
+imported ETL. It reads the session SQLite file's `DllLoads` view. `LoadTimeMs` is
+the image mapping timestamp relative to the recording start, not a load duration.
+`FaultCount` counts retained hard page faults within that mapping's address range
+and observed lifetime. Live hard-fault capture requires administrator rights; an
+ETL must include kernel hard-fault events. A dash means no hard-fault data for the
+target was recorded. DLLs already loaded before capture are not listed.
+
 Run the event compatibility, DirectX capture/storage and snapshot resource regression checks from this directory:
 
 ```powershell

@@ -135,6 +135,17 @@ internal static class XamlEventSubscription
                 return;
             }
 
+            if (data.ProviderGuid == XamlProviders.KernelProcess)
+            {
+                if ((int)data.ID is 5 or 6 && PayloadProcessId(data, "ProcessID") is { } owner &&
+                    (processId is null || owner == processId))
+                {
+                    match(data, XamlProvider.KernelProcess, null, owner);
+                }
+
+                return;
+            }
+
             MarkerProviderSettings? marker = null;
             if (!XamlProviders.TryGet(data.ProviderGuid, out var provider))
             {

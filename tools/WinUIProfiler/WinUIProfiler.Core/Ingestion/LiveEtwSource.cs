@@ -174,6 +174,7 @@ public sealed class LiveEtwSource : IDisposable
             var direct3DEnabled = EnableProviders(session, options, launcherOptions, enabled);
             var gpuMemoryEnabled = EnableGpuMemory(session);
             EnableFocus(session);
+            EnableImages(session);
             return new(session, enabled, direct3DEnabled, gpuMemoryEnabled);
         }
         catch
@@ -264,6 +265,20 @@ public sealed class LiveEtwSource : IDisposable
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             Trace.TraceWarning($"Could not enable the kernel's window focus events: {error.Message}");
+        }
+    }
+
+    private static void EnableImages(TraceEventSession session)
+    {
+        try
+        {
+            // Kernel providers do not accept process scope filters. Filter by payload PID when reading instead.
+            session.EnableProvider(XamlProviders.KernelProcess, TraceEventLevel.Informational, 0x40,
+                new TraceEventProviderOptions { EventIDsToEnable = [5, 6] });
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Could not enable the kernel's image load and unload events: {error.Message}");
         }
     }
 

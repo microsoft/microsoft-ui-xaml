@@ -220,6 +220,36 @@ internal static class SessionSchema
                 FROM ObjectEvents m JOIN Objects o ON o.ObjectId = m.ObjectId WHERE m.Seq = e.Seq) AS Mentions,
             e.Payload
         FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId CROSS JOIN SessionInfo s LEFT JOIN FrameEvents r ON r.Seq = e.Seq;
+        CREATE VIEW DllLoads AS
+        -- One row per observed DLL mapping. LoadTimeMs is a timestamp, not a duration. FaultCount counts retained hard
+        -- faults in this mapping's address range and lifetime, or is null if no hard-fault events were recorded.
+        WITH ImageEvents AS MATERIALIZED (
+            SELECT e.Seq, e.Qpc,
+                (t.Provider = 'KernelProcess' AND t.EventId = 5 OR t.Provider = 'KernelImage' AND t.Opcode = 10) AS IsLoad,
+                json_extract(d.Fields, '$.ImageName') AS DllPath,
+                json_extract(d.Fields, '$.ImageBase') AS ImageBase,
+                json_extract(d.Fields, '$.ImageSize') AS ImageSize
+            FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId JOIN EventDetails d ON d.Seq = e.Seq
+            WHERE NOT t.Launcher AND (
+                t.Provider = 'KernelImage' AND t.Opcode IN (2, 10) OR
+                t.Provider = 'KernelProcess' AND t.EventId IN (5, 6) AND NOT EXISTS (
+                    SELECT 1 FROM EventTypes c JOIN Events ce ON ce.TypeId = c.TypeId
+                    WHERE c.Provider = 'KernelImage' AND c.Opcode = 10 AND NOT c.Launcher))
+        ), Mappings AS (
+            SELECT *, LEAD(Qpc) OVER (PARTITION BY ImageBase ORDER BY Qpc, Seq) AS EndQpc
+            FROM ImageEvents WHERE ImageBase > 0
+        ), Faults AS MATERIALIZED (
+            SELECT e.Qpc, json_extract(e.Payload, '$[0]') AS Address
+            FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId
+            WHERE t.Provider = 'KernelMemory' AND t.Opcode = 32 AND NOT t.Launcher
+        )
+        SELECT m.Seq, m.Qpc, (m.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS LoadTimeMs, m.DllPath,
+            CASE WHEN EXISTS (SELECT 1 FROM Faults) THEN (
+                SELECT COUNT(*) FROM Faults f WHERE f.Qpc >= m.Qpc AND (m.EndQpc IS NULL OR f.Qpc < m.EndQpc)
+                    AND f.Address >= m.ImageBase AND f.Address - m.ImageBase < m.ImageSize
+            ) END AS FaultCount
+        FROM Mappings m CROSS JOIN SessionInfo s
+        WHERE m.IsLoad AND m.ImageSize > 0 AND m.DllPath LIKE '%.dll';
         CREATE VIEW TickEvents AS
         -- The events of each tick (EventDetails' columns), read through the tick's index: a tick's events are
         -- SELECT ... FROM TickEvents WHERE TickId = :tick ORDER BY Seq.
@@ -540,6 +570,8 @@ internal static class SessionSchema
                 'SELECT * FROM FrameList WHERE InInteresting ORDER BY ListIndex'),
             ('LaunchSummary', 'When the first 10 ticks that drew ended, from process start or recording start', 'Position',
                 'SELECT * FROM LaunchSummary'),
+            ('DllLoads', 'Observed DLL paths, load timestamps, and attributed hard page faults', 'Seq',
+                'SELECT LoadTimeMs, FaultCount, DllPath FROM DllLoads ORDER BY Qpc, Seq'),
             ('CpuSampleDetails', 'Every CPU sample of the target''s threads: its time, thread and the frame it was in', 'SampleId',
                 'SELECT Ms, Frame, StackId FROM CpuSampleDetails WHERE ThreadId = :thread AND Ms BETWEEN :from AND :to ORDER BY Ms'),
             ('HotFunctions', 'CPU samples by thread and the frame they were in, most first', 'ThreadId, then Frame',
