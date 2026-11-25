@@ -25,6 +25,8 @@ TitleBar::TitleBar()
 
     m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &TitleBar::OnSizeChanged });
     m_flowDirectionChangedRevoker = RegisterPropertyChanged(*this, winrt::FrameworkElement::FlowDirectionProperty(), { this, &TitleBar::OnFlowDirectionChanged });
+    m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &TitleBar::OnLoaded });
+    m_unloadedRevoker = Unloaded(winrt::auto_revoke, { this, &TitleBar::OnUnloaded });
 }
 
 TitleBar::~TitleBar()
@@ -33,12 +35,8 @@ TitleBar::~TitleBar()
 
     m_sizeChangedRevoker.revoke();
     m_flowDirectionChangedRevoker.revoke();
-
-    if (m_inputActivationChangedToken.value)
-    {
-        m_inputActivationListener.InputActivationChanged(m_inputActivationChangedToken);
-        m_inputActivationChangedToken.value = 0;
-    }
+    m_loadedRevoker.revoke();
+    m_unloadedRevoker.revoke();
 
     const auto appWindow = TryGetAppWindow();
     if (appWindow)
@@ -46,6 +44,8 @@ TitleBar::~TitleBar()
         // Safely restore default if the window title still matches what we last applied
         ResetTitle(Title());
     }
+
+    ReleaseWindowResources();
 }
 
 winrt::AutomationPeer TitleBar::OnCreateAutomationPeer()
@@ -64,13 +64,7 @@ void TitleBar::OnApplyTemplate()
     m_leftPaddingColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(s_leftPaddingColumnName, controlProtected));
     m_rightPaddingColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(s_rightPaddingColumnName, controlProtected));
 
-    auto appWindowId = GetAppWindowId();
-
-    if (appWindowId.Value != 0)
-    {
-        m_inputActivationListener = winrt::Microsoft::UI::Input::InputActivationListener::GetForWindowId(appWindowId);
-        m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged({ this, &TitleBar::OnInputActivationChanged });
-    }
+    EnsureInputActivationListener(GetAppWindowId());
 
     UpdateHeight();
     UpdatePadding();
@@ -85,6 +79,38 @@ void TitleBar::OnApplyTemplate()
     UpdateInteractableElementsList();
     UpdateDragRegion();
     UpdateIconRegion();
+}
+
+void TitleBar::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    m_isUnloaded = false;
+    EnsureInputActivationListener(GetAppWindowId());
+    UpdatePadding();
+    UpdateWindowTitle();
+    UpdateIcon();
+    UpdateDragRegion();
+    UpdateIconRegion();
+    if (m_inputActivationListener)
+    {
+        OnInputActivationChanged(m_inputActivationListener, nullptr);
+    }
+}
+
+void TitleBar::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    // A queued Unloaded can arrive after the element has already been reparented and loaded.
+    if (IsLoaded())
+    {
+        return;
+    }
+
+    // Restore the title we replaced before forgetting this window's default title.
+    ResetTitle(Title());
+
+    // XamlRoot can still identify the old window after Unloaded.
+    m_isUnloaded = true;
+    ReleaseWindowResources();
+    m_lastAppWindowId = {};
 }
 
 void TitleBar::HandleTitleChange(const winrt::hstring& oldTitle, const winrt::hstring& newTitle)
@@ -201,6 +227,11 @@ void TitleBar::OnFlowDirectionChanged(const winrt::DependencyObject& /*sender*/,
 
 void TitleBar::OnInputActivationChanged(const winrt::InputActivationListener& sender, const winrt::InputActivationListenerActivationChangedEventArgs& args)
 {
+    if (sender != m_inputActivationListener)
+    {
+        return;
+    }
+
     bool isDeactivated = sender.State() == winrt::InputActivationState::Deactivated;
 
     TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"isDeactivated:", isDeactivated);
@@ -258,7 +289,10 @@ void TitleBar::OnWindowRectChanged(const winrt::InputNonClientPointerSource& sen
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    UpdateIconRegion();
+    if (sender == m_inputNonClientPointerSource)
+    {
+        UpdateIconRegion();
+    }
 }
 
 void TitleBar::OnBackButtonClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -301,12 +335,11 @@ void TitleBar::UpdateIcon()
 
         if (const auto& nonClientPointerSource = GetInputNonClientPointerSource())
         {
-            m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ this, &TitleBar::OnWindowRectChanged });
-        }
-        else if (m_inputNonClientPointerSource)
-        {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
+            // Setting a new IconSource must not stack another registration on the same source.
+            if (!m_windowRectChangedToken.value)
+            {
+                m_windowRectChangedToken = nonClientPointerSource.WindowRectChanged({ get_weak(), &TitleBar::OnWindowRectChanged });
+            }
         }
 
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
@@ -316,10 +349,9 @@ void TitleBar::UpdateIcon()
     {
         m_iconLayoutUpdatedRevoker.revoke();
 
-        if (m_inputNonClientPointerSource)
+        if (m_inputNonClientPointerSource && m_windowRectChangedToken.value)
         {
-            m_inputNonClientPointerSource.WindowRectChanged(m_windowRectChangedToken);
-            m_windowRectChangedToken.value = 0;
+            m_inputNonClientPointerSource.WindowRectChanged(std::exchange(m_windowRectChangedToken, {}));
         }
 
         templateSettings->IconElement(nullptr);
@@ -486,6 +518,12 @@ void TitleBar::UpdateTitle()
 
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, titleText.c_str());
 
+    UpdateWindowTitle();
+    GoToState(titleText.empty() ? s_titleTextCollapsedVisualStateName : s_titleTextVisibleVisualStateName, false);
+}
+
+void TitleBar::UpdateWindowTitle()
+{
     const auto appWindow = TryGetAppWindow();
 
     // Capture default title once.
@@ -495,15 +533,9 @@ void TitleBar::UpdateTitle()
         m_hasDefaultAppWindowTitle = true;
     }
 
-    if (titleText.empty())
-    {
-        // Do not set appWindow.Title here. Reset is handled by ResetTitle via OnPropertyChanged.
-        GoToState(s_titleTextCollapsedVisualStateName, false);
-        return;
-    }
-
+    const auto titleText = Title();
     // Only set the window title if it actually needs to change.
-    if (appWindow)
+    if (appWindow && !titleText.empty())
     {
         const auto currentTitle = appWindow.Title();
         if (currentTitle != titleText)
@@ -511,8 +543,6 @@ void TitleBar::UpdateTitle()
             appWindow.Title(titleText);
         }
     }
-
-    GoToState(s_titleTextVisibleVisualStateName, false);
 }
 
 void TitleBar::ResetTitle(winrt::hstring const& lastAppliedTitle)
@@ -913,7 +943,7 @@ winrt::WindowId TitleBar::GetAppWindowId()
 {
     winrt::WindowId appWindowId{};
 
-    if (auto xamlRoot = XamlRoot())
+    if (auto xamlRoot = m_isUnloaded ? nullptr : XamlRoot())
     {
         if (auto contentIslandEnvironment = xamlRoot.ContentIslandEnvironment())
         {
@@ -925,12 +955,55 @@ winrt::WindowId TitleBar::GetAppWindowId()
     {
         m_lastAppWindowId = appWindowId;
 
-        m_inputNonClientPointerSource = nullptr;
-
-        m_appWindow = nullptr;
+        // Objects bound to the previous window are stale; release them now rather than whenever this TitleBar dies.
+        ReleaseWindowResources();
     }
 
     return appWindowId;
+}
+
+void TitleBar::EnsureInputActivationListener(winrt::WindowId const& appWindowId)
+{
+    if (!m_inputActivationListener && appWindowId.Value != 0)
+    {
+        m_inputActivationListener = winrt::InputActivationListener::GetForWindowId(appWindowId);
+        m_inputActivationChangedToken = m_inputActivationListener.InputActivationChanged(
+            { get_weak(), &TitleBar::OnInputActivationChanged });
+    }
+}
+
+void TitleBar::ReleaseInputActivationListener() noexcept
+{
+    const auto token = std::exchange(m_inputActivationChangedToken, {});
+    if (auto listener = std::exchange(m_inputActivationListener, nullptr))
+    {
+        if (token.value)
+        {
+            listener.InputActivationChanged(token);
+        }
+    }
+}
+
+void TitleBar::ReleaseInputNonClientPointerSource() noexcept
+{
+    const auto token = std::exchange(m_windowRectChangedToken, {});
+    if (auto source = std::exchange(m_inputNonClientPointerSource, nullptr))
+    {
+        if (token.value)
+        {
+            source.WindowRectChanged(token);
+        }
+    }
+}
+
+void TitleBar::ReleaseWindowResources() noexcept
+{
+    ReleaseInputActivationListener();
+    ReleaseInputNonClientPointerSource();
+    m_appWindow = nullptr;
+    m_previousPassthroughRects.clear();
+    m_hasDefaultAppWindowTitle = false;
+    m_defaultAppWindowTitle = {};
 }
 
 winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSource()
@@ -941,6 +1014,7 @@ winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSour
     {
         m_inputNonClientPointerSource = winrt::InputNonClientPointerSource::GetForWindowId(appWindowId);
     }
+    EnsureInputActivationListener(appWindowId);
 
     return m_inputNonClientPointerSource;
 }

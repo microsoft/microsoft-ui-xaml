@@ -1181,6 +1181,116 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyDetachedTitleBarDoesNotUpdateItsPreviousWindow()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar()
+            {
+                Title = "Attached title",
+                IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
+            }))
+            {
+                var titleBar = host.DetachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    var previousWindowTitle = host.Window.AppWindow.Title;
+                    titleBar.Title = "Detached title";
+                    titleBar.IconSource = new SymbolIconSource() { Symbol = Symbol.Mail };
+                    titleBar.RecomputeDragRegions();
+                    Verify.AreEqual(previousWindowTitle, host.Window.AppWindow.Title,
+                        "A detached TitleBar must not change its previous window");
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyReloadedTitleBarRestoresOriginalWindowTitle()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar() { Title = "Initial title" }))
+            {
+                var titleBar = host.DetachTitleBar();
+                RunOnUIThread.Execute(() => titleBar.Title = "Reloaded title");
+                host.AttachTitleBar();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("Reloaded title", host.Window.AppWindow.Title);
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual(HostWindowTitle, host.Window.AppWindow.Title,
+                        "Reloading in the same window must not lose the original window title");
+                    Verify.AreEqual("TitleTextCollapsed", GetCurrentState(titleBar, "TitleTextGroup"));
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyReloadedTitleBarKeepsExternallySetWindowTitle()
+        {
+            using (var host = new TitleBarWindowHost(() => new TitleBar() { Title = "Control title" }))
+            {
+                RunOnUIThread.Execute(() => host.Window.AppWindow.Title = "App owned title");
+                var titleBar = host.DetachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual("App owned title", host.Window.AppWindow.Title,
+                        "Unloading must not overwrite a title set directly by the app");
+                    titleBar.Title = "Reloaded title";
+                });
+                host.AttachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual("App owned title", host.Window.AppWindow.Title);
+                    titleBar.Title = "Another control title";
+                });
+
+                host.DetachTitleBar();
+                RunOnUIThread.Execute(() => host.Window.AppWindow.Title = "Title changed while detached");
+                host.AttachTitleBar();
+                RunOnUIThread.Execute(() =>
+                {
+                    titleBar.Title = string.Empty;
+                    Verify.AreEqual("Title changed while detached", host.Window.AppWindow.Title);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void VerifyReparentedTitleBarUsesNewWindow()
+        {
+            using (var firstHost = new TitleBarWindowHost(() => new TitleBar()
+            {
+                Title = "Control title",
+                IconSource = new SymbolIconSource() { Symbol = Symbol.Home },
+                IsBackButtonVisible = true,
+            }))
+            {
+                var titleBar = firstHost.DetachTitleBar();
+                using (var secondHost = new TitleBarWindowHost(() => titleBar, windowTitle: "Second window"))
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual("Control title", secondHost.Window.AppWindow.Title,
+                            "Loading an existing TitleBar into a different window must apply its title");
+                        titleBar.RecomputeDragRegions();
+                        VerifyRegionRects(secondHost.GetRegionRects(NonClientRegionKind.Passthrough),
+                            GetTemplatePart(titleBar, "PART_BackButton"));
+
+                        titleBar.Title = string.Empty;
+                        Verify.AreEqual("Second window", secondHost.Window.AppWindow.Title,
+                            "Clearing Title must restore the new window's default, not the old window's title");
+                    });
+                    firstHost.CloseWindow();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        titleBar.Title = "Still attached";
+                        Verify.AreEqual("Still attached", secondHost.Window.AppWindow.Title,
+                            "Closing the previous window must not detach the TitleBar from its new window");
+                    });
+                }
+            }
+        }
+
         // Scenario: close the TitleBar's window, then clear/change Title and clear IconSource on the TitleBar that is
         //           still alive.
         // Expected: nothing throws; the TitleBar is detached (XamlRoot is null) and its own visual states still follow
@@ -1330,13 +1440,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             public Window Window { get; private set; }
             public TitleBar TitleBar { get; private set; }
 
-            public TitleBarWindowHost(Func<TitleBar> createTitleBar, Func<UIElement> createContent = null)
+            public TitleBarWindowHost(Func<TitleBar> createTitleBar, Func<UIElement> createContent = null, string windowTitle = HostWindowTitle)
             {
                 var loaded = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Window = new Window() { Title = HostWindowTitle, ExtendsContentIntoTitleBar = true };
+                    Window = new Window() { Title = windowTitle, ExtendsContentIntoTitleBar = true };
                 });
 
                 try
@@ -1345,7 +1455,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     RunOnUIThread.Execute(() =>
                     {
-                        Verify.AreEqual(HostWindowTitle, Window.AppWindow.Title);
+                        Verify.AreEqual(windowTitle, Window.AppWindow.Title);
 
                         // XAML objects must be created on the UI thread.
                         TitleBar = createTitleBar();
@@ -1383,6 +1493,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // InputNonClientPointerSource reports "no regions" as a null array.
                 return InputNonClientPointerSource.GetForWindowId(Window.AppWindow.Id).GetRegionRects(kind) ?? Array.Empty<RectInt32>();
+            }
+
+            public TitleBar DetachTitleBar()
+            {
+                using (var unloaded = new AutoResetEvent(false))
+                {
+                    RoutedEventHandler handler = (sender, args) => unloaded.Set();
+                    try
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            TitleBar.Unloaded += handler;
+                            Window.SetTitleBar(null);
+                            ((Grid)Window.Content).Children.Remove(TitleBar);
+                        });
+                        Verify.IsTrue(unloaded.WaitOne(DefaultWaitTimeInMS), "Waiting for TitleBar.Unloaded");
+                    }
+                    finally
+                    {
+                        RunOnUIThread.Execute(() => TitleBar.Unloaded -= handler);
+                    }
+                }
+                IdleSynchronizer.Wait();
+                return TitleBar;
+            }
+
+            public void AttachTitleBar()
+            {
+                using (var loaded = new AutoResetEvent(false))
+                {
+                    RoutedEventHandler handler = (sender, args) => loaded.Set();
+                    try
+                    {
+                        RunOnUIThread.Execute(() =>
+                        {
+                            TitleBar.Loaded += handler;
+                            ((Grid)Window.Content).Children.Add(TitleBar);
+                            Window.SetTitleBar(TitleBar);
+                        });
+                        Verify.IsTrue(loaded.WaitOne(DefaultWaitTimeInMS), "Waiting for TitleBar.Loaded");
+                    }
+                    finally
+                    {
+                        RunOnUIThread.Execute(() => TitleBar.Loaded -= handler);
+                    }
+                }
+                WaitForLayout();
             }
 
             public void ActivateAndWait()
