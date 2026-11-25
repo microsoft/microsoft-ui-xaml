@@ -445,7 +445,7 @@ private:
     void UpdateViewportClip(const winrt::Size& viewport);
     void OnContentSizeChanged(
         const winrt::UIElement& content);
-    void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
+    void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged, bool zoomFactorChanged = false);
     void OnContentLayoutOffsetChanged(ScrollPresenterDimension dimension);
 
     void ChangeOffsetsPrivate(
