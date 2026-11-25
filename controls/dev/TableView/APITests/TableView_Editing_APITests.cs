@@ -2998,6 +2998,70 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change made by a CellEditEnding handler during CancelEdit lets the cancel finish, writes nothing, and applies the Binding afterwards.")]
+        public void VerifyBindingSetByCellEditEndingDuringCancelKeepsCancel()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Cancel, changeTemplate: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CellEditingTemplate change made by a CellEditEnding handler during CancelEdit lets the cancel finish and writes nothing.")]
+        public void VerifyEditingTemplateSetByCellEditEndingDuringCancelKeepsCancel()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Cancel, changeTemplate: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change made by a CellEditEnding handler during CommitEdit lets the commit finish once and applies the Binding afterwards.")]
+        public void VerifyBindingSetByCellEditEndingDuringCommitCommitsOnce()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Commit, changeTemplate: false);
+        }
+
+        private void VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction action, bool changeTemplate)
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            DataTemplate editor = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = (TableViewTextColumn)tableView.Columns[0];
+                editor = MakeCustomEditorTemplate();
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (changeTemplate) { name.CellEditingTemplate = editor; }
+                    else { name.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay }; }
+                    Verify.IsTrue(tableView.IsEditing, "The change must not close the edit under the handler.");
+                };
+
+                Verify.IsTrue(action == TableViewEditAction.Commit ? tableView.CommitEdit() : tableView.CancelEdit(), "The edit must close with its own action.");
+                Verify.IsFalse(tableView.IsEditing, "The edit must close.");
+                Verify.AreEqual(action == TableViewEditAction.Commit ? "Zed" : "Asha", items[0].Name, "Only a commit may write the pending value.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(action, actions[0], "The close must keep its action.");
+                Verify.IsFalse(tableView.IsEditing, "No edit may be left open.");
+                if (changeTemplate)
+                {
+                    Verify.IsTrue(ReferenceEquals(editor, tableView.Columns[0].CellEditingTemplate), "The new template must be kept.");
+                    Verify.AreEqual(0, FindVisualChildrenByType<ToggleSwitch>(GetProjectedRow(tableView, 0)).Count(), "The display cell must return.");
+                    Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "The display cell must show the item.");
+                }
+                else
+                {
+                    Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the new Binding.");
+                    Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the new Binding.");
+                }
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies reassigning a column whose Binding change is held does not end an edit of that column opened after the change.")]
         public void VerifyColumnReassignKeepsEditOpenedAfterHeldChange()
         {

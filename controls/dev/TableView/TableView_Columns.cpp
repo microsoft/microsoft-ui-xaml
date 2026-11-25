@@ -551,9 +551,10 @@ void TableView::EndEditOfChangedColumn(const winrt::TableViewColumn& column)
         }
         return;
     }
-    // App code run by the close in progress (a setter, ConvertBack, a PropertyChanged handler) made
-    // the change: that close ends the edit, and the regeneration waits for it.
-    if (m_editValueTransferDepth > 0)
+    // App code run by the close in progress (a CellEditEnding handler, a setter, ConvertBack, a
+    // PropertyChanged handler) made the change: that close ends the edit with its own action, and
+    // the regeneration waits for it.
+    if (m_editState == EditState::Ending || m_editValueTransferDepth > 0)
     {
         return;
     }
@@ -564,9 +565,9 @@ void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool
 {
     auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
 
-    // Regenerating would force the open edit closed. An edit of the changed column was already
-    // ended by the change, so any edit open now began after it, or is a Tab move: keep the change
-    // pending until it closes.
+    // Regenerating would force the open edit closed. A change to the edited column ended its edit
+    // unless a close was already in progress, so any edit open now began after the change, is a Tab
+    // move, or is still closing: keep the change pending until it closes.
     if (IsEditing() || m_tabEditMovePending)
     {
         columnImpl->QueueCellContentChangeInternal(resetAutoWidth);
