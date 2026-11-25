@@ -257,6 +257,11 @@ void CImageBase::OnItemChanged()
             ReleaseFallbackBrush();
             CUIElement::NWSetContentDirty(this, DirtyFlags::Render);
         }
+        else
+        {
+            // Same picture kept for now; the new item's own source may still come next.
+            m_itemChanged = true;
+        }
     }
     else if (m_pBackgroundBrush && m_pBackgroundBrush->GetHardwareSurface() != nullptr)
     {
