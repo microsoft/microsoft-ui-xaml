@@ -289,7 +289,7 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanResize())
+    if (!column || !column.CanUserResize())
     {
         return false;
     }
@@ -2114,11 +2114,7 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_reshapeFocusArmedThisTurn)
-    {
-        return;
-    }
-    if (m_pendingReshapeFocusRow >= 0)
+    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
     {
         CancelReshapeFocusRestore();
     }
@@ -2886,7 +2882,10 @@ void TableView::OnBodyBringIntoViewRequested(const winrt::BringIntoViewRequested
         // the request arrives for a container focus has already left, whose position may now be
         // a recycled or estimated one; honoring it scrolled the body back to the top.
         const auto requested = args.TargetRect();
-        const bool focusPadded = requested.Y < 0.0f || requested.Y + requested.Height > target.ActualHeight();
+        // Sub-pixel layout rounding of the rect must not read as focus padding.
+        constexpr double c_layoutRoundingTolerance = 0.5;
+        const bool focusPadded = requested.Y < -c_layoutRoundingTolerance ||
+            requested.Y + requested.Height > target.ActualHeight() + c_layoutRoundingTolerance;
         if (focusPadded && !IsBodyFocusInContainer(bodyItem))
         {
             args.Handled(true);
@@ -3971,7 +3970,7 @@ bool TableView::ScrollBodyHorizontallyInternal(bool forward, bool toEdge, winrt:
     // A focused non-frozen element stays in view: an edge scroll stops short, and a step is refused.
     auto const element = keepInView.try_as<winrt::FrameworkElement>();
     auto const column = element ? element.Tag().try_as<winrt::TableViewColumn>() : nullptr;
-    if (element && !(column && column.FrozenEdge() != winrt::TableViewFrozenEdge::None))
+    if (element && !(column && column.FrozenEdge() == winrt::TableViewFrozenEdge::Leading))
     {
         auto const bounds = element.TransformToVisual(scroller).TransformBounds({ 0.0f, 0.0f, static_cast<float>(element.ActualWidth()), 0.0f });
         const double left = offset + bounds.X;

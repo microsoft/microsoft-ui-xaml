@@ -2664,6 +2664,34 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a cell-content change while an edit is open keeps the edit open and regenerates the cells once it closes.")]
+        public void VerifyCellContentChangeWaitsForOpenEdit()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+                ((TableViewTextColumn)tableView.Columns[1]).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "A cell-content change must not close the open edit.");
+                Verify.AreEqual(0, actions.Count, "A cell-content change must not raise CellEditEnding.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 1), "The regeneration must wait for the edit to close.");
+                Verify.IsTrue(tableView.CommitEdit(), "The held edit must commit.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Zed", items[0].Name, "The commit must write the pending value.");
+                Verify.AreEqual("Zed", GetCellText(tableView, 0, 1), "Once the edit closes, the changed column must regenerate.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies filtering the edited item out of the projection force-closes the edit as a Cancel and writes nothing to it.")]
         public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOut()
         {

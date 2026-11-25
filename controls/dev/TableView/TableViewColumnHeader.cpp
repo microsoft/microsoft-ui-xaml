@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewColumnHeader.h"
 #include "TableView.h"
+#include "TableViewColumn.h"
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "SharedHelpers.h"
@@ -56,14 +57,15 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    auto const table = m_table.get();
-    auto const column = m_column.get();
-    if (!table || !column)
+    // A header whose column has left its table, or that a rebuild replaced, gets the base peer, as
+    // the public constructor would reject it.
+    auto const header = get_strong().as<winrt::TableViewColumnHeader>();
+    if (!TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(header))
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(*this, table, column);
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(header);
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }

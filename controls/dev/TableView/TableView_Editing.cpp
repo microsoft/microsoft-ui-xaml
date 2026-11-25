@@ -1284,6 +1284,7 @@ void TableView::DrainCoalescedEditReshape()
     // safe even inside a layout pass.
     if (!IsEditing())
     {
+        ReleaseCellRegenerationsAfterEdit();
         if (auto const source = m_activeSource.get())
         {
             winrt::get_self<::TableViewSource>(source)->ResumeHeldLiveShaping();

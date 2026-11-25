@@ -237,8 +237,8 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"CanResize", L"Boolean", statics.CanResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserResize", L"Boolean", statics.CanUserResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellContextFlyout", L"Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase", statics.CellContextFlyoutProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
@@ -320,8 +320,8 @@ Entry c_typeEntries[] =
                 /* Arg 2 - CreateFromString func */ 
                 (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
                 {
-                    if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Standard") return box_value(winrt::TableViewDensity::Standard);
+                    if (fromString == L"Compact") return box_value(winrt::TableViewDensity::Compact);
                     if (fromString == L"Comfortable") return box_value(winrt::TableViewDensity::Comfortable);
                     throw winrt::hresult_invalid_argument();
                 });
@@ -363,7 +363,6 @@ Entry c_typeEntries[] =
                 {
                     if (fromString == L"None") return box_value(winrt::TableViewFrozenEdge::None);
                     if (fromString == L"Leading") return box_value(winrt::TableViewFrozenEdge::Leading);
-                    if (fromString == L"Trailing") return box_value(winrt::TableViewFrozenEdge::Trailing);
                     throw winrt::hresult_invalid_argument();
                 });
 

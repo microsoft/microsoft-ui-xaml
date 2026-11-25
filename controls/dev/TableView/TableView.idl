@@ -7,7 +7,6 @@ enum TableViewFrozenEdge
 {
     None = 0,
     Leading = 1,
-    Trailing = 2,
 };
 
 [MUX_PREVIEW]
@@ -41,8 +40,8 @@ enum TableViewGridLinesVisibility
 [webhosthidden]
 enum TableViewDensity
 {
-    Compact = 0,
-    Standard = 1,
+    Standard = 0,
+    Compact = 1,
     Comfortable = 2,
 };
 
@@ -109,7 +108,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     [MUX_DEFAULT_VALUE("true")]
-    Boolean CanResize { get; set; };
+    Boolean CanUserResize { get; set; };
 
     [MUX_DEFAULT_VALUE("120.0")]
     Double ActualWidth { get; };
@@ -147,8 +146,8 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout { get; set; };
 
     overridable String GetSortMemberPathCore();
-    Microsoft.UI.Xaml.FrameworkElement GenerateElement(Object dataItem);
     overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+    protected void NotifyCellContentChanged();
 
     static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
@@ -158,7 +157,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty CanResizeProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
@@ -436,7 +435,7 @@ unsealed runtimeclass TableViewCellAutomationPeer
       Microsoft.UI.Xaml.Automation.Provider.ITableItemProvider,
       Microsoft.UI.Xaml.Automation.Provider.IValueProvider
 {
-    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement cell, MU_XC_NAMESPACE.TableViewRow row, MU_XC_NAMESPACE.TableViewColumn column, Int32 columnIndex);
+    TableViewCellAutomationPeer(Microsoft.UI.Xaml.FrameworkElement owner);
 }
 
 [MUX_PREVIEW]
@@ -445,7 +444,7 @@ unsealed runtimeclass TableViewColumnHeaderAutomationPeer
     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer,
       Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
 {
-    TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableView owner, MU_XC_NAMESPACE.TableViewColumn column);
+    TableViewColumnHeaderAutomationPeer(MU_XC_NAMESPACE.TableViewColumnHeader owner);
 }
 
 [MUX_PREVIEW]

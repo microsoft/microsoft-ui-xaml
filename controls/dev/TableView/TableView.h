@@ -354,6 +354,7 @@ public:
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
+    void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
@@ -559,6 +560,8 @@ public:
     void QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    // Re-requests the cell regenerations an open edit held back.
+    void ReleaseCellRegenerationsAfterEdit();
     void QueueDeferredEditReshapeDrain();
     void FlushDeferredEditReshapes();
     // In a catch: reports the deferred reshape that threw as a recovered app fault.
@@ -887,6 +890,8 @@ private:
     // replay order matches arrival order.
     std::deque<DeferredEditReshape> m_pendingEditReshapes;
     std::deque<DeferredEditReshape> m_reshapesAfterEditCloses;
+    // Columns whose posted cell regeneration found an edit open; regenerated once it closes.
+    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_cellRegenerationsAfterEdit;
     bool m_editReshapeDrainQueued{ false };
     TableViewTip::Operation m_failedEditReshapeOperation{ TableViewTip::Operation::Sort };
 
@@ -1561,9 +1566,9 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
-    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Hash of the hold inputs a user resize does not change: the viewport width, the Columns identities,
+    // and each column's authored Width, MinWidth (and whether it is local), MaxWidth, Visibility and
+    // CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);
