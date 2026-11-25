@@ -2800,8 +2800,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an older held change released by an edit close does not cancel a newer change to the same column.")]
-        public void VerifyReleasedHeldChangeDoesNotCancelNewerChange()
+        [TestProperty("Description", "Verifies an edit opened after a held change is released, but before the release runs, ends on a newer change and every row shows the newest content.")]
+        public void VerifyNewerChangeOfColumnEditedBeforeHeldReleaseApplies()
         {
             var items = MakeEditableItems();
             var tableView = LoadEditableTable(items);
@@ -2851,6 +2851,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("[Designer]", GetCellText(tableView, 0, 1), "The newer change must apply, not the released older one.");
                 Verify.AreEqual("[Engineer]", GetCellText(tableView, 1, 1), "The newer change must apply to the edited row too.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change of the edited column made after its editor is generated abandons the opening edit and writes nothing.")]
+        public void VerifyBindingChangeWhileEditorOpensAbandonsEdit()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            int beginnings = 0, endings = 0;
+            bool armed = false, changed = false;
+            TableViewTextColumn name = null;
+            Action change = () =>
+            {
+                if (armed && !changed)
+                {
+                    changed = true;
+                    name.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                }
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = (TableViewTextColumn)tableView.Columns[0];
+                // The editor's binding copies the converter, so it runs while the editor is generated.
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new CallbackConverter(change) };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "Precondition: the column shows Name.");
+                tableView.BeginningEdit += (s, e) => { beginnings++; armed = true; };
+                tableView.CellEditEnding += (s, e) => endings++;
+                tableView.GettingFocus += (s, e) => { if (e.NewFocusedElement is TextBox) { change(); } };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Zed");
+                Verify.IsTrue(changed, "Precondition: the Binding changed after BeginningEdit, while the editor was opening.");
+                Verify.IsNotNull(error, "The abandoned edit must not accept the value.");
+                Verify.IsFalse(tableView.IsEditing, "The opening edit must be abandoned.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "The edit must stay abandoned.");
+                Verify.AreEqual(1, beginnings, "BeginningEdit is raised once for the abandoned open.");
+                Verify.AreEqual(0, endings, "An edit that never opened raises no CellEditEnding.");
+                Verify.AreEqual(0, FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Count(), "The display cell must return.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cell must show the new Binding's value.");
+                Verify.AreEqual("Asha", items[0].Name, "The old Binding's property must not be written.");
+                Verify.AreEqual("Designer", items[0].Role, "The new Binding's property must not be written.");
+            });
+        }
+
+        private sealed class CallbackConverter : IValueConverter
+        {
+            private readonly Action m_onConvert;
+
+            public CallbackConverter(Action onConvert) { m_onConvert = onConvert; }
+
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                m_onConvert();
+                return value;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
         }
 
         [TestMethod]

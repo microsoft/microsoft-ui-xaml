@@ -1348,6 +1348,7 @@ void TableView::ResetPendingBeginEdit()
     m_editUneditedValue.set(nullptr);
     m_editState = EditState::None;
     m_abandonPendingBeginEdit = false;
+    m_pendingBeginEditGeneratingEditor = false;
 }
 
 bool TableView::BeginEdit()
@@ -1409,6 +1410,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         m_currentEditRow.set(nullptr);
         m_editState = EditState::Beginning;
         m_abandonPendingBeginEdit = false;
+        m_pendingBeginEditGeneratingEditor = false;
         m_editSourceWritten = false;
 
         // Only a throw reaches here still Beginning; without this unwind IsEditing would stay true and
@@ -1449,6 +1451,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         // close an edit that is still Beginning, so OnRowElementClearing raises this flag instead and
         // the checks below unwind rather than promoting to Editing over a recycled row.
         const bool allowed = RaiseBeginningEdit(item, column, tip);
+        m_pendingBeginEditGeneratingEditor = allowed && !m_abandonPendingBeginEdit;
         if (!allowed || m_abandonPendingBeginEdit || !TryBeginEditVisual(item, column))
         {
             tip.Ignore(!allowed ? TableViewTip::IgnoreReason::Vetoed :
@@ -1466,7 +1469,7 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
 
         // The column primes its own editor and hands back whatever it needs to revert. Done here rather
         // than in the row so the returned value has an owner for the lifetime of the edit.
-        if (auto const row = m_currentEditRow.get())
+        if (auto const row = m_currentEditRow.get(); row && !m_abandonPendingBeginEdit)
         {
             if (auto const editingElement = winrt::get_self<TableViewRow>(row)->GetEditingElement())
             {
@@ -1491,6 +1494,19 @@ bool TableView::BeginEdit(winrt::IInspectable const& item, winrt::TableViewColum
         if (m_abandonPendingBeginEdit || !m_currentEditRow.get())
         {
             tip.Ignore(TableViewTip::IgnoreReason::Stale);
+            // A content change of the edited column abandons an editor that is already in the tree.
+            if (auto const row = m_currentEditRow.get())
+            {
+                m_currentEditRow.set(nullptr);
+                try
+                {
+                    winrt::get_self<TableViewRow>(row)->EndCellEdit(winrt::TableViewEditAction::Cancel);
+                }
+                catch (...)
+                {
+                    TVDiag::LogRetailF(L"[TableView] Abandoning an opening edit could not restore the display cell.");
+                }
+            }
             ResetPendingBeginEdit();
             DrainCoalescedEditReshape();
             return false;

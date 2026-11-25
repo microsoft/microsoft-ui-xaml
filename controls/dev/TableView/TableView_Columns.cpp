@@ -531,13 +531,23 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
 
 // The open editor writes through the content being replaced, so a change to the edited column ends
 // its edit at once, as the synchronous row rebuild did (TableViewRow::RebuildCellsCore, hence the
-// layout-pass close). An edit still Beginning has no editor yet and opens from the new content.
+// layout-pass close). A change from a BeginningEdit handler comes before the editor is generated,
+// so the edit opens from the new content; a later one abandons the opening edit.
 void TableView::EndEditOfChangedColumn(const winrt::TableViewColumn& column)
 {
-    if (column && IsEditing() && m_editState != EditState::Beginning && m_currentEditColumn.get() == column)
+    if (!column || !IsEditing() || m_currentEditColumn.get() != column)
     {
-        TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
+        return;
     }
+    if (m_editState == EditState::Beginning)
+    {
+        if (m_pendingBeginEditGeneratingEditor)
+        {
+            m_abandonPendingBeginEdit = true;
+        }
+        return;
+    }
+    TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
 }
 
 void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth)

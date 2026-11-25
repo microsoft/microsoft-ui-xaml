@@ -866,9 +866,12 @@ private:
     bool m_editSourceWritten{ false };
 
     // True while a forced teardown arrived during the Beginning window, where EndCurrentEdit cannot
-    // close the edit. BeginEdit re-checks it and unwinds instead of promoting to Editing over a row
-    // that has already been recycled onto a different item.
+    // close the edit, or the edited column's content changed after its editor began generating.
+    // BeginEdit re-checks it and unwinds instead of promoting to Editing.
     bool m_abandonPendingBeginEdit{ false };
+
+    // True once BeginningEdit has returned and the editor is being generated from the column.
+    bool m_pendingBeginEditGeneratingEditor{ false };
 
     // True only while a queued reshape is replaying, so the drain is not re-entered by it.
     bool m_isApplyingCoalescedEditReshape{ false };
