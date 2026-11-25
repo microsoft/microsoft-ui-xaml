@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Microsoft.Identity.Client.Broker": {
+        "type": "Direct",
+        "requested": "[4.92.0, 4.92.0]",
+        "resolved": "4.92.0",
+        "contentHash": "9tJPOC77rIiRZHREdRRgOV6aJcqB/9fs6f6fhxu65emrD+Q5HWTjOskMS75/n1HEh/ng3qotXFSpYyNEyqWs+Q==",
+        "dependencies": {
+          "Microsoft.Identity.Client": "4.92.0",
+          "Microsoft.Identity.Client.NativeInterop": "0.20.7"
+        }
+      },
+      "Microsoft.Identity.Client": {
+        "type": "Transitive",
+        "resolved": "4.92.0",
+        "contentHash": "mvzvyZ0pG8gODD8+76u1HfpHzHk/Df8ylLdrrJImWdbAcV0PUx41Q/S3eojIAhH9T+upRf2cxKRli9208GC3Bw==",
+        "dependencies": {
+          "Microsoft.IdentityModel.Abstractions": "8.14.0"
+        }
+      },
+      "Microsoft.Identity.Client.NativeInterop": {
+        "type": "Transitive",
+        "resolved": "0.20.7",
+        "contentHash": "87gvxuPdaU3V8nOGk4iUQ4tp5gP/Y+4DYncHuBlix6gQjNBpyzLjmwo97PaE0huUrl0PkTtyJU5gA+BLKtL+dw=="
+      },
+      "Microsoft.IdentityModel.Abstractions": {
+        "type": "Transitive",
+        "resolved": "8.14.0",
+        "contentHash": "iwbCpSjD3ehfTwBhtSNEtKPK0ICun6ov7Ibx6ISNA9bfwIyzI2Siwyi9eJFCJBwxowK9xcA1mj+jBWiigeqgcQ=="
+      }
+    }
+  }
+}

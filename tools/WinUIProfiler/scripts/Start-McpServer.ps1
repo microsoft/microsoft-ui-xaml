@@ -122,11 +122,11 @@ function Add-SourceFiles([string] $Directory, [System.Collections.Generic.List[s
     }
 }
 
-# Hashes everything the build reads from this folder (the server and Core projects, the shared build
-# files and this script) together with the dotnet and SDK that build it.
+# Hashes everything the build reads from this folder (the server, Core and Telemetry projects, the shared
+# build files and this script) together with the dotnet and SDK that build it.
 function Get-SourceHash([string[]] $Inputs) {
     $files = New-Object 'System.Collections.Generic.List[string]'
-    foreach ($name in @('WinUIProfiler.Core', 'WinUIProfiler.Mcp')) {
+    foreach ($name in @('WinUIProfiler.Core', 'WinUIProfiler.Mcp', 'WinUIProfiler.Telemetry')) {
         Add-SourceFiles (Join-Path $toolRoot $name) $files
     }
 
