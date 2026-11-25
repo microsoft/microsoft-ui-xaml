@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  WPR profiles for the immediate-rendering comparative runs (docs\design-notes\immediate-rendering-backends-test-plan.md).
+
+    wpr -start ImmediateRendering.wprp!Timing -filemode   W1-W4, S1, R1*, E1: CPU sampling + CSwitch, frame/paint markers.
+    wpr -start ImmediateRendering.wprp!Memory -filemode   M1-M8: adds the XAML profiler provider (DComp surface memory,
+                                                          graphics resource lifetime) and VirtualAlloc / reference set.
+                                                          Heap allocations (with stacks) for processes opted in with
+                                                          'wpr -heaptracingconfig RenderBench.exe enable' (GDI+ heap).
+    wpr -start ImmediateRendering.wprp!Gpu    -filemode   W3, M3, W5: DxgKrnl GPU utilization + VidMm memory, DXGI/D3D11 rundown, GpuPaintTime, DWM.
+
+  Timing runs deliberately exclude Microsoft-Windows-XAML-Profiler, which is verbose and would perturb frame timing.
+  The analyzer only needs Microsoft-WinUI-RenderingBackend, Microsoft-WinUI-RenderBench and kernel process start; the
+  other providers are for drill-down in WPA.
+-->
+<WindowsPerformanceRecorder Version="1.0" Author="Microsoft Corporation" Copyright="Microsoft Corporation" Company="Microsoft Corporation">
+  <Profiles>
+    <SystemCollector Id="SystemCollector_IR" Name="NT Kernel Logger">
+      <BufferSize Value="1024" />
+      <Buffers Value="256" />
+    </SystemCollector>
+
+    <EventCollector Id="EventCollector_IR" Name="ImmediateRenderingCollector">
+      <BufferSize Value="1024" />
+      <Buffers Value="256" />
+    </EventCollector>
+
+    <!-- Appended by immediate-rendering-gdiplus: heap tracing collector (see the heap tracing block below). -->
+    <HeapEventCollector Id="HeapEventCollector_IR" Name="ImmediateRenderingHeapCollector">
+      <BufferSize Value="1024" />
+      <Buffers Value="128" />
+    </HeapEventCollector>
+
+    <SystemProvider Id="SystemProvider_IR_Base">
+      <Keywords>
+        <Keyword Value="CpuConfig" />
+        <Keyword Value="Loader" />
+        <Keyword Value="ProcessThread" />
+      </Keywords>
+    </SystemProvider>
+
+    <SystemProvider Id="SystemProvider_IR_Timing" Base="SystemProvider_IR_Base">
+      <Keywords Operation="Add">
+        <Keyword Value="SampledProfile" />
+        <Keyword Value="CSwitch" />
+        <Keyword Value="ReadyThread" />
+      </Keywords>
+      <Stacks>
+        <Stack Value="SampledProfile" />
+        <Stack Value="CSwitch" />
+        <Stack Value="ReadyThread" />
+      </Stacks>
+    </SystemProvider>
+
+    <SystemProvider Id="SystemProvider_IR_Memory" Base="SystemProvider_IR_Base">
+      <Keywords Operation="Add">
+        <Keyword Value="Memory" />
+        <Keyword Value="MemoryInfo" />
+        <Keyword Value="MemoryInfoWS" />
+        <Keyword Value="VirtualAllocation" />
+        <Keyword Value="ReferenceSet" />
+        <Keyword Value="VAMap" />
+        <Keyword Value="Session" />
+        <!-- Required by ReferenceSet. -->
+        <Keyword Value="FileIO" />
+        <Keyword Value="FileIOInit" />
+        <Keyword Value="Filename" />
+      </Keywords>
+      <Stacks>
+        <Stack Value="VirtualAllocation" />
+        <!-- Appended by immediate-rendering-gdiplus: attribute heap growth (GDI+ is a CPU, heap-backed painter). -->
+        <Stack Value="HeapAllocation" />
+        <Stack Value="HeapReallocation" />
+      </Stacks>
+    </SystemProvider>
+
+    <SystemProvider Id="SystemProvider_IR_Gpu" Base="SystemProvider_IR_Base">
+      <Keywords Operation="Add">
+        <Keyword Value="SampledProfile" />
+        <Keyword Value="CSwitch" />
+      </Keywords>
+    </SystemProvider>
+
+    <!-- Native seam: BackendSelected, DeviceInfo, FrameBegin/End, RenderWalkStats, Paint*, ResourceInventory, DeviceLost (WARNING). -->
+    <EventProvider Id="EventProvider_RenderingBackend" Name="d18ce99c-dd66-5390-18da-068546739801" Level="5" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0xF" />
+      </Keywords>
+    </EventProvider>
+
+    <!-- Harness: Microsoft-WinUI-RenderBench (RunStarted, Phase*, SceneReady, InputInjected, MemorySample, ...). -->
+    <EventProvider Id="EventProvider_RenderBench" Name="114b4a9f-4cba-5c88-a321-355d52c822e6" Level="5" NonPagedMemory="true" />
+
+    <!-- Microsoft-Windows-XAML-Profiler: DCompSurfaceMemoryChanged, GraphicsResourceCreated/Destroyed (Composition M6). -->
+    <EventProvider Id="EventProvider_XamlProfiler" Name="a1b2c3d4-e5f6-4a5b-9c8d-7e6f5a4b3c2d" Level="5" NonPagedMemory="true" />
+
+    <EventProvider Id="EventProvider_KernelProcess" Name="Microsoft-Windows-Kernel-Process" Level="4" NonPagedMemory="true">
+      <Keywords>
+        <!-- WINEVENT_KEYWORD_PROCESS -->
+        <Keyword Value="0x10" />
+      </Keywords>
+    </EventProvider>
+
+    <EventProvider Id="EventProvider_DxgKrnl_Base" Name="Microsoft-Windows-DxgKrnl" Level="4" NonPagedMemory="true">
+      <Keywords>
+        <!-- Base: present and flip events. -->
+        <Keyword Value="0x1" />
+      </Keywords>
+    </EventProvider>
+
+    <!-- D2D-HW branch: W3 (GPU time) and M3 (GPU memory) in WPA's GPU Utilization and GPU memory tables. Keywords are the
+         built-in WPR GPU profile's 0x277 plus Memory: Base 0x1 | Profiler 0x2 (DMA packets, GPU queue) | References 0x4 |
+         Cdd 0x20 | Resource 0x40 | Memory 0x80 (VidMm allocations, residency) | Power 0x200. Rundown at start and save
+         records adapters, devices and allocations that already exist. -->
+    <EventProvider Id="EventProvider_DxgKrnl_Detailed" Name="Microsoft-Windows-DxgKrnl" Level="5" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0x2F7" />
+      </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0x2F7" />
+      </CaptureStateOnStart>
+      <CaptureStateOnSave Timeout="30">
+        <Keyword Value="0x2F7" />
+      </CaptureStateOnSave>
+    </EventProvider>
+
+    <!-- D2D-HW branch: DXGI and D3D11 object rundown (as in the built-in GPU profile) so WPA can name the device and
+         adapter behind each GPU queue. -->
+    <EventProvider Id="EventProvider_Dxgi" Name="Microsoft-Windows-DXGI" Level="6" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0xF" />
+      </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0xF" />
+      </CaptureStateOnStart>
+    </EventProvider>
+
+    <EventProvider Id="EventProvider_D3D11" Name="Microsoft-Windows-Direct3D11" Level="6" NonPagedMemory="true">
+      <Keywords>
+        <Keyword Value="0xF" />
+      </Keywords>
+      <CaptureStateOnStart Timeout="30">
+        <Keyword Value="0xF" />
+      </CaptureStateOnStart>
+    </EventProvider>
+
+    <EventProvider Id="EventProvider_DwmCore" Name="Microsoft-Windows-Dwm-Core" Level="4" NonPagedMemory="true" />
+
+    <!-- ==== Begin: heap tracing (appended by immediate-rendering-gdiplus) ====
+         GDI+ keeps its bitmaps, paths and glyph caches in the process heap, so M2/M8 growth needs heap attribution.
+         HeapProcessId 0 traces processes opted in via "wpr -heaptracingconfig RenderBench.exe enable"
+         (scripts\Run-RenderBench.ps1 does this for -Profile Memory). Only the Memory profile enables it. -->
+    <HeapEventProvider Id="HeapEventProvider_IR_OptedIn">
+      <HeapProcessIds>
+        <HeapProcessId Value="0" />
+      </HeapProcessIds>
+    </HeapEventProvider>
+    <!-- ==== End: heap tracing ==== -->
+
+    <Profile Id="Timing.Verbose.File" Name="Timing" Description="RenderBench timing: CPU, frames, paint" DetailLevel="Verbose" LoggingMode="File">
+      <Collectors>
+        <SystemCollectorId Value="SystemCollector_IR">
+          <SystemProviderId Value="SystemProvider_IR_Timing" />
+        </SystemCollectorId>
+        <EventCollectorId Value="EventCollector_IR">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_RenderingBackend" />
+            <EventProviderId Value="EventProvider_RenderBench" />
+            <EventProviderId Value="EventProvider_KernelProcess" />
+            <EventProviderId Value="EventProvider_DxgKrnl_Base" />
+            <EventProviderId Value="EventProvider_DwmCore" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+
+    <Profile Id="Memory.Verbose.File" Name="Memory" Description="RenderBench memory: commit, surfaces, graphics resources" DetailLevel="Verbose" LoggingMode="File">
+      <Collectors>
+        <SystemCollectorId Value="SystemCollector_IR">
+          <SystemProviderId Value="SystemProvider_IR_Memory" />
+        </SystemCollectorId>
+        <EventCollectorId Value="EventCollector_IR">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_RenderingBackend" />
+            <EventProviderId Value="EventProvider_RenderBench" />
+            <EventProviderId Value="EventProvider_KernelProcess" />
+            <EventProviderId Value="EventProvider_XamlProfiler" />
+            <EventProviderId Value="EventProvider_DxgKrnl_Base" />
+          </EventProviders>
+        </EventCollectorId>
+        <!-- Appended by immediate-rendering-gdiplus: heap tracing. -->
+        <HeapEventCollectorId Value="HeapEventCollector_IR">
+          <HeapEventProviders>
+            <HeapEventProviderId Value="HeapEventProvider_IR_OptedIn" />
+          </HeapEventProviders>
+        </HeapEventCollectorId>
+      </Collectors>
+    </Profile>
+
+    <Profile Id="Gpu.Verbose.File" Name="Gpu" Description="RenderBench GPU: GPU utilization, GPU memory, GPU paint time, DWM" DetailLevel="Verbose" LoggingMode="File">
+      <Collectors>
+        <SystemCollectorId Value="SystemCollector_IR">
+          <SystemProviderId Value="SystemProvider_IR_Gpu" />
+        </SystemCollectorId>
+        <EventCollectorId Value="EventCollector_IR">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_RenderingBackend" />
+            <EventProviderId Value="EventProvider_RenderBench" />
+            <EventProviderId Value="EventProvider_KernelProcess" />
+            <EventProviderId Value="EventProvider_DxgKrnl_Detailed" />
+            <EventProviderId Value="EventProvider_Dxgi" />
+            <EventProviderId Value="EventProvider_D3D11" />
+            <EventProviderId Value="EventProvider_DwmCore" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>

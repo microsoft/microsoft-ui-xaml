@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="[3.2.8]" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.WinUI" Version="[2.3.9]" />
+    <!-- WinUI 2.3.9 asks for >= 2.1.8, which the feed doesn't carry; pin the resolved version so NU1603 doesn't fire. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="[2.1.9]" />
+  </ItemGroup>
+</Project>

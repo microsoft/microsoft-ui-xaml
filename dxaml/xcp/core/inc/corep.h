@@ -46,6 +46,7 @@ struct DisplayListener;
 struct RenderStateListener;
 class CSwapChainBackgroundPanel;
 class CSwapChainPanel;
+class ImmediateRenderer;
 struct IXcpInputPaneHandler;
 class CInputPaneHandler;
 class CUIElement;
@@ -1803,6 +1804,10 @@ public:
     // This mechanism is not necessary if the render walk was smarter about releasing old content. See
     // Task 26308130: Render walk should better tolerate errors - don't release old content until new content is ready
     bool                     m_skippedSubmittingFrameDueToRenderingError { false };
+
+    // Immediate-rendering prototype: created on the first frame when WINUI_RENDERING_BACKEND selects an immediate mode;
+    // stays null (no cost) in Composition mode. Owned; deleted in the destructor.
+    ImmediateRenderer*       m_immediateRenderer { nullptr };
 
     bool                     m_allowTransitionTargetsToBeCreated;
 

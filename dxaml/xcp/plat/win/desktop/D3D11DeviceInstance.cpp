@@ -9,6 +9,7 @@
 
 #include "precomp.h"
 #include <RenderingResourceDiagnostics.h>
+#include <RenderingBackend.h>
 #include <XamlProfilerTracing.h>
 
 #include "D3D11DeviceInstance.h"
@@ -540,6 +541,12 @@ CD3D11DeviceInstance::InitializeState()
     // Save the LUID in m_adapterLuid
     // After this point, the UI Thread may read this value
     m_adapterLuid.set(&adapterLuid);
+
+    RenderingBackend::TraceDeviceInfo(
+        RenderingBackend::Mode::Composition,
+        (static_cast<uint64_t>(static_cast<uint32_t>(adapterLuid.HighPart)) << 32) | adapterLuid.LowPart,
+        m_fIsWarpDevice,
+        static_cast<uint32_t>(m_featureLevel));
 
     // Check if we want to do multi-stage texture uploads.  This should never be used for WARP.
     if (!m_fIsWarpDevice && (m_featureLevel < D3D_FEATURE_LEVEL_10_0))
