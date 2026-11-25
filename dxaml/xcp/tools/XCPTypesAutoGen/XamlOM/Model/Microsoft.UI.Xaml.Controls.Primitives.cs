@@ -785,7 +785,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 2)]
     [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [Guids(ClassGuid = "ab84a122-f289-4c08-9c1b-6589d5189a29")]
-    public sealed class Popup
+    public class Popup
      : Microsoft.UI.Xaml.FrameworkElement
     {
         [RequiresMultipleAssociationCheck]
