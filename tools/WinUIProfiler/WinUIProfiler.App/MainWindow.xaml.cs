@@ -15,7 +15,9 @@ using WinUIProfiler.App.Views;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
+using WinUIProfiler.Engine.Symbols;
 using WinUIProfiler.Engine.Target;
+using WinUITools.Telemetry;
 
 namespace WinUIProfiler.App;
 
@@ -48,6 +50,10 @@ public sealed partial class MainWindow : Window
     private ProfilerCommandLine commandLine = ProfilerCommandLine.Empty;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
+    // The tabs the user has opened, and the usage sessions of the connection or trace reading and of an opened file.
+    private readonly HashSet<string> viewsOpened = [];
+    private UsageSession? recordingUsage;
+    private UsageSession? fileUsage;
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
     public MainWindow()
     {
@@ -61,9 +67,17 @@ public sealed partial class MainWindow : Window
         AppWindow.Closing += AppWindow_Closing;
         FramesPanel.Owner = AppWindow.Id;
         ObjectsPanel.Owner = AppWindow.Id;
+        CpuPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
         LaunchPanel.Source = session;
+        CpuPanel.Source = session;
+        session.Opened += Session_Opened;
+        if (UsageTelemetry.TakeNotice() is { } notice)
+        {
+            TelemetryNotice.Message = notice;
+            TelemetryNotice.IsOpen = true;
+        }
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -90,6 +104,11 @@ public sealed partial class MainWindow : Window
     public void ApplyCommandLine(ProfilerCommandLine value)
     {
         ArgumentNullException.ThrowIfNull(value);
+        if (value.SymbolPath is { } symbolPath)
+        {
+            SymbolPathText.Text = symbolPath;
+        }
+
         if (value.Kind is not { } kind)
         {
             return;
@@ -97,7 +116,7 @@ public sealed partial class MainWindow : Window
 
         Root.Loaded += Apply;
 
-        void Apply(object sender, RoutedEventArgs args)
+        async void Apply(object sender, RoutedEventArgs args)
         {
             Root.Loaded -= Apply;
             // Changing the mode clears the target, so the target is set after it.
@@ -105,12 +124,11 @@ public sealed partial class MainWindow : Window
             commandLine = value;
             TargetText.Text = value.Target;
             ArgumentsText.Text = value.Arguments;
-            Trust.IsChecked = Trust.IsChecked == true || value.TrustLocalBinaries;
             UpdateTargetSummary();
             Refresh();
             if (value.Connect)
             {
-                Connect_Click(ConnectButton, new RoutedEventArgs());
+                await ConnectAsync(value.TrustLocalBinaries);
             }
         }
     }
@@ -142,7 +160,13 @@ public sealed partial class MainWindow : Window
         model.PropertyChanged -= Model_PropertyChanged;
         foreach (var viewer in snapshotWindows.Values.ToArray()) viewer.Close();
         foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
+        await model.CancelSymbolsAsync();
         await model.DisconnectAsync();
+        // A SessionEnded event waits for its SessionStarted, which may still be naming the target. Queuing and sending
+        // the last events takes at most 2 seconds.
+        var sent = Task.WhenAll(EndRecordingUsage(force: true), EndFileUsage())
+            .ContinueWith(_ => UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2)), TaskScheduler.Default).Unwrap();
+        await Task.WhenAny(sent, Task.Delay(TimeSpan.FromSeconds(2)));
         closeAllowed = true;
         Close();
     }
@@ -162,6 +186,58 @@ public sealed partial class MainWindow : Window
         {
             ToolTipService.SetToolTip(line, details);
         }
+    }
+
+    // The session's CPU samples and how many of their functions the symbol path named. Sampling errors and trace notes
+    // come from the engine as whole sentences, so they're shown as they are.
+    private (string Text, string? Details) CpuLine()
+    {
+        if (model.CpuSampling is not { } sampling)
+        {
+            return (model.CpuSamplingError ?? string.Empty, null);
+        }
+
+        if (sampling.Samples == 0)
+        {
+            return ((sampling.Note ?? model.CpuSamplingError) ?? Text("CpuNoSamples"), null);
+        }
+
+        string text;
+        var details = Text("CpuSamplesDetails");
+        if (model.Symbolizing && model.SymbolsFrom is { } from)
+        {
+            text = Format("SymbolsPending", sampling.Samples, from);
+        }
+        else if (model.SymbolsError is { } error)
+        {
+            text = Format("SymbolsFailed", sampling.Samples, error);
+        }
+        else if (model.Symbols is { } symbols)
+        {
+            text = Format("SymbolsFormat", sampling.Samples, symbols.Resolved + symbols.Skipped, symbols.Modules, symbols.Named,
+                symbols.Addresses);
+            details = Format("SymbolsDetailsFormat", symbols.SymbolPath, symbols.NotFound, symbols.NoIdentity, symbols.Portable,
+                symbols.Failed) + "\n" + details;
+        }
+        else
+        {
+            text = Format("CpuSamplesFormat", sampling.Samples);
+        }
+
+        return (text, sampling.Note is { } note ? details + "\n" + note : details);
+    }
+
+    // Checks the symbol path's form before the session starts, so a typo fails now instead of after the recording.
+    private string? ReadSymbolPath()
+    {
+        var text = SymbolPathText.Text.Trim();
+        if (text.Length == 0)
+        {
+            return null;
+        }
+
+        _ = SymbolPaths.Normalize(text);
+        return text;
     }
     // Not used in trace mode.
     private TargetLaunchKind Kind => Mode.SelectedIndex switch
@@ -194,7 +270,7 @@ public sealed partial class MainWindow : Window
             (ArgumentsText, "ArgumentsAutomation"),
             (WorkingDirectoryText, "DirectoryAutomation"),
             (Endpoint, "EndpointAutomation"),
-            (Trust, "TrustAutomation"),
+            (SymbolPathText, "SymbolPathAutomation"),
             (TraceProcessList, "TraceProcessAutomation"),
             (TraceProgress, "TraceProgressAutomation"),
             (SnapshotButton, "SnapshotAutomation"),
@@ -202,7 +278,8 @@ public sealed partial class MainWindow : Window
             (ConnectionStatus, "StatusAutomation"),
             (ConnectionIdentity, "IdentityAutomation"),
             (EtwSummary, "EtwAutomation"),
-            (RecordingSummary, "RecordingAutomation")
+            (RecordingSummary, "RecordingAutomation"),
+            (CpuSummary, "CpuAutomation")
         })
         {
             AutomationProperties.SetName(pair.Element, Text(pair.Key));
@@ -227,7 +304,7 @@ public sealed partial class MainWindow : Window
         }
 
         LaunchOptions.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
-        Trust.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
+        TrustNotice.Visibility = trace ? Visibility.Collapsed : Visibility.Visible;
         TraceOptions.Visibility = trace ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -265,6 +342,7 @@ public sealed partial class MainWindow : Window
         refreshing = true;
         try
         {
+            _ = EndRecordingUsage(force: false);
             var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
             if (settingsFoldedFor != model.CanConnect)
             {
@@ -279,7 +357,7 @@ public sealed partial class MainWindow : Window
                 TargetText,
                 Browse,
                 Endpoint,
-                Trust
+                SymbolPathText
             })
             {
                 control.IsEnabled = idle;
@@ -408,6 +486,15 @@ public sealed partial class MainWindow : Window
                         recording.LimitBytes / 1024 / 1024, recording.CompleteFromSeconds ?? 0),
                     recording is null ? null : Format("RecordingDetailsFormat", recording.Path, recording.LimitBytes / 1024 / 1024));
             }
+
+            var (cpuText, cpuDetails) = CpuLine();
+            CpuSummary.Visibility = cpuText.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+            SetLine(CpuSummary, cpuText, cpuDetails);
+
+            // The CPU tab names a recording's functions from the symbol path while it records, and reads the session file
+            // again once the symbol path has named them in it; it doesn't read a file while that file is being named.
+            CpuPanel.SymbolPath = model.SymbolPath;
+            CpuPanel.SymbolizingPath = model.SymbolizingPath;
 
             // A trace's session file grows while it is read, so the tabs follow it as they follow a connection's.
             session.ShowRecording(recording?.Path, model.State is "Connected" or "TraceReading" or "TraceStopping");
@@ -580,9 +667,12 @@ public sealed partial class MainWindow : Window
             : Format("TraceSummaryFormat", Path.GetFileName(target.Trim('"')));
     }
 
-    private async void Connect_Click(object sender, RoutedEventArgs args)
+    private async void Connect_Click(object sender, RoutedEventArgs args) => await ConnectAsync(trustLocalBinaries: true);
+
+    private async Task ConnectAsync(bool trustLocalBinaries)
     {
-        if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
+        // While the window closes it can still be clicked, and nothing would disconnect a connection started then.
+        if (closing || !model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
         if (TraceMode)
         {
             await OpenTraceAsync();
@@ -599,12 +689,13 @@ public sealed partial class MainWindow : Window
                 throw new ArgumentException(Text("InvalidEndpoint"));
             }
 
+            model.SymbolPath = ReadSymbolPath();
             var options = new TargetConnectionOptions(Kind,
 TargetText.Text.Trim(),
 ArgumentsText.Text,
 WorkingDirectoryText.Text,
 Path.Combine(AppContext.BaseDirectory, "ConnectionPayloads"),
-Trust.IsChecked == true,
+trustLocalBinaries,
 checked((ushort)Endpoint.Value),
 selectedTarget?.CreationTimeFileTime,
 SessionsDirectory,
@@ -619,6 +710,8 @@ PrivateRuntime);
 
                 model.ReportProgress(value);
             }));
+            _ = EndFileUsage();
+            recordingUsage = UsageSession.Start("online", () => TelemetryTarget.ForTarget(options.Kind, options.Target));
             session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
@@ -645,9 +738,12 @@ PrivateRuntime);
         if (scannedTrace is not { } path || SelectedTraceProcess is not { } process) return;
         snapshot = null;
         Tabs.SelectedItem = FramesTab;
-        session.BeginRecording();
         try
         {
+            model.SymbolPath = ReadSymbolPath();
+            _ = EndFileUsage();
+            recordingUsage = UsageSession.Start("offline", () => TelemetryTarget.ForProcessName(process.Name));
+            session.BeginRecording();
             await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
         catch (Exception error)
@@ -666,6 +762,61 @@ PrivateRuntime);
         connectionGeneration++;
         DisconnectButton.IsEnabled = false;
         await model.DisconnectAsync();
+    }
+
+    // Reports each tab the first time the user opens it; the tab shown at startup was not opened by the user.
+    private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        if (args.RemovedItems.Count == 0 || !UsageTelemetry.IsEnabled)
+        {
+            return;
+        }
+
+        var selected = Tabs.SelectedItem;
+        var view = ReferenceEquals(selected, LaunchTab) ? "Launch" : ReferenceEquals(selected, FramesTab) ? "Frames" :
+            ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" :
+            ReferenceEquals(selected, CpuTab) ? "Cpu" : null;
+        if (view is not null && viewsOpened.Add(view))
+        {
+            UsageTelemetry.Track("Profiler.ViewOpened", new Dictionary<string, string> { ["view"] = view });
+        }
+    }
+
+    private void Session_Opened(object? sender, string path)
+    {
+        if (closing)
+        {
+            return;
+        }
+
+        _ = EndFileUsage();
+        fileUsage = UsageSession.Start("offline", () => TelemetryTarget.ForSessionFile(path));
+    }
+
+    // Ends the usage session of the connection or trace reading once the model is idle again, or when the window closes.
+    private Task EndRecordingUsage(bool force)
+    {
+        if (recordingUsage is not { } usage || !force && !model.CanConnect)
+        {
+            return Task.CompletedTask;
+        }
+
+        recordingUsage = null;
+        return usage.End(model.State switch
+        {
+            "Failed" or "TraceFailed" => "failed",
+            "TraceFinished" => "completed",
+            "TraceStopped" => "cancelled",
+            _ => model.WasConnected ? "completed" : "cancelled",
+        });
+    }
+
+    // An opened session file stays shown until the next file, connection or trace reading replaces it.
+    private Task EndFileUsage()
+    {
+        var usage = fileUsage;
+        fileUsage = null;
+        return usage?.End("completed") ?? Task.CompletedTask;
     }
 
     private async void Snapshot_Click(object sender, RoutedEventArgs args) => await TakeSnapshotAsync();
@@ -745,7 +896,7 @@ PrivateRuntime);
         if (CompareSelectedSnapshots is null) return;
         CompareSelectedSnapshots.IsEnabled = SnapshotDiffBefore.SelectedItem is SnapshotHistoryEntry before &&
             SnapshotDiffAfter.SelectedItem is SnapshotHistoryEntry after && before.CaptureId != after.CaptureId &&
-            SnapshotDiffData.CanCompare(before, after);
+            WinUIProfiler.Engine.Snapshots.SnapshotDiffData.CanCompare(before.Process, after.Process);
     }
 
     private void CompareSnapshots_Click(object sender, RoutedEventArgs args)
@@ -810,6 +961,35 @@ PrivateRuntime);
         catch (Exception error)
         {
             model.ReportError(error);
+        }
+    }
+
+    // The usage events of one profiling session: SessionStarted when the user starts it, SessionEnded with its outcome.
+    private sealed class UsageSession
+    {
+        private readonly long started = Stopwatch.GetTimestamp();
+        private readonly string mode;
+        // Naming the target reads files and package manifests, so SessionStarted is sent from the thread pool.
+        private readonly Task startSent;
+
+        private UsageSession(string mode, Func<string> targetApp)
+        {
+            this.mode = mode;
+            startSent = Task.Run(() => UsageTelemetry.Track("Profiler.SessionStarted",
+                new Dictionary<string, string> { ["mode"] = mode, ["targetApp"] = targetApp() }));
+        }
+
+        // Null while telemetry is off; targetApp is only computed while it is on.
+        public static UsageSession? Start(string mode, Func<string> targetApp) =>
+            UsageTelemetry.IsEnabled ? new UsageSession(mode, targetApp) : null;
+
+        // Sends SessionEnded once SessionStarted is sent; completes when both are queued.
+        public Task End(string outcome)
+        {
+            var duration = Stopwatch.GetElapsedTime(started).TotalSeconds;
+            return startSent.ContinueWith(_ => UsageTelemetry.Track("Profiler.SessionEnded",
+                new Dictionary<string, string> { ["mode"] = mode, ["outcome"] = outcome },
+                new Dictionary<string, double> { ["durationSec"] = duration }), TaskScheduler.Default);
         }
     }
 }

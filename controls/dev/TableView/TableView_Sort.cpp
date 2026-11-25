@@ -1247,32 +1247,8 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
     m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, column });
 }
 
-void TableView::AnnounceSortChange(const winrt::hstring& announcement){
-    if (announcement.empty())
-    {
-        return;
-    }
-
-    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::Notification))
-    {
-        return;
-    }
-
-    try
-    {
-        // RaiseNotificationEvent rather than a live region: there is no announcement-only element
-        // in the template, and a notification carries its own text without one.
-        if (auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
-        {
-            peer.RaiseNotificationEvent(
-                winrt::AutomationNotificationKind::ActionCompleted,
-                winrt::AutomationNotificationProcessing::MostRecent,
-                announcement,
-                L"TableViewSortChanged");
-        }
-    }
-    catch (...)
-    {
-        // No peer, or UIA is unavailable on this host: the sort itself already applied.
-    }
+// A notification rather than a live region: there is no announcement-only element in the template.
+void TableView::AnnounceSortChange(const winrt::hstring& announcement)
+{
+    RaiseTableViewNotification(*this, winrt::AutomationNotificationKind::ActionCompleted, [&announcement]() { return announcement; }, L"TableViewSortChanged");
 }

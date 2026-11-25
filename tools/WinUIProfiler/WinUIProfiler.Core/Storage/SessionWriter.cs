@@ -9,8 +9,11 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Data.Sqlite;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Processing;
+using WinUIProfiler.Engine.Target;
 
 namespace WinUIProfiler.Engine.Storage;
 
@@ -57,14 +60,31 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // object indexes.
     private const int RowOverheadBytes = 100;
 
-    private readonly BlockingCollection<(long Sequence, ProfilerEvent Event)> queue = new(16_384);
+    // How often the background connection asks SQLite to move WAL pages into the database. PASSIVE does not wait for
+    // locks held by the writer or readers, so it runs independently of batch commits.
+    private static readonly TimeSpan CheckpointInterval = TimeSpan.FromMilliseconds(250);
+
+    private readonly BlockingCollection<QueueItem> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand insertType;
+    // Runs PRAGMA wal_checkpoint(PASSIVE) on its own connection and thread, off the writer's commit path.
+    private Thread? checkpointThread;
+    private readonly ManualResetEventSlim checkpointStop = new();
+    private volatile bool checkpointsFailed;
+    private bool automaticCheckpointsRestored;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
+    private SqliteConnection? cpuConnection;
+    private CpuSampleIndex? cpu;
+    // What SetCpuSampling gave, stored when the file is closed.
+    private CpuSamplingResult? cpuSampling;
+    private long droppedSamples;
     private readonly int processId;
+    private readonly SessionStart source;
+    private readonly long emptyFileBytes;
+    private long emptyCpuBytes;
     // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode,
     // launcher, ETW ID and version. Usually one layout each; a field that is sometimes null gives a second.
     private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool, int?, int?), List<EventLayout>> types = [];
@@ -92,6 +112,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         LimitBytes = limitBytes;
         this.connection = connection;
         processId = start.ProcessId;
+        source = start;
         derivesFrequency = start.QpcFrequency is null;
         qpcFrequency = start.QpcFrequency ?? 0;
         startQpc = start.StartQpc ?? 0;
@@ -116,8 +137,97 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects = new(connection);
         frames = new(connection);
         graphics = new(connection);
+        emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
-        writer.Start();
+        try
+        {
+            StartCheckpointing();
+            RestoreAutomaticCheckpointsIfNeeded();
+            writer.Start();
+        }
+        catch
+        {
+            StopCheckpointing();
+            checkpointStop.Dispose();
+            throw;
+        }
+    }
+
+    // Automatic checkpointing is off on the writer's own connection (Create). A separate connection and thread ask for
+    // a PASSIVE checkpoint every CheckpointInterval, which does not wait for locks held by the writer or a reader. If
+    // this fails, the writer restores automatic checkpointing so the WAL file still stays bounded.
+    private void StartCheckpointing()
+    {
+        try
+        {
+            var thread = new Thread(RunCheckpoints)
+            {
+                IsBackground = true,
+                Name = "WinUIProfiler WAL checkpoint"
+            };
+            thread.Start();
+            checkpointThread = thread;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Starting the background WAL checkpoint failed; restoring automatic checkpointing: {error.Message}");
+            checkpointsFailed = true;
+            checkpointThread = null;
+        }
+    }
+
+    private void RunCheckpoints()
+    {
+        try
+        {
+            using var background = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = Path,
+                Mode = SqliteOpenMode.ReadWrite,
+                Pooling = false
+            }.ToString());
+            background.Open();
+            while (!checkpointStop.Wait(CheckpointInterval))
+            {
+                Sql.Execute(background, "PRAGMA wal_checkpoint(PASSIVE)");
+            }
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"The background WAL checkpoint stopped; the writer will restore automatic checkpointing: {error.Message}");
+            checkpointsFailed = true;
+        }
+    }
+
+    // SQLite's own default (SQLITE_DEFAULT_WAL_AUTOCHECKPOINT), used so a writer connection behaves as it would
+    // without this feature once the background checkpoint can no longer run.
+    // Called during construction while the writer has no queued work, or on the writer thread. The checkpoint thread
+    // reports failure through checkpointsFailed; it never uses the writer connection concurrently.
+    private void RestoreAutomaticCheckpointsIfNeeded()
+    {
+        if (!checkpointsFailed || automaticCheckpointsRestored)
+        {
+            return;
+        }
+
+        try
+        {
+            Sql.Execute(connection, "PRAGMA wal_autocheckpoint = 1000;");
+            automaticCheckpointsRestored = true;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            throw new IOException("The background WAL checkpoint failed, and automatic checkpointing could not be restored.", error);
+        }
+    }
+
+    // Stops and joins the background checkpoint thread, if it is running, before a final checkpoint. Call before
+    // the writer connection's own wal_checkpoint(TRUNCATE) so the two connections never checkpoint at once.
+    private void StopCheckpointing()
+    {
+        checkpointStop.Set();
+        checkpointThread?.Join();
+        checkpointThread = null;
     }
 
     public string Path { get; }
@@ -153,6 +263,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             throw new IOException($"The session file already exists: {path}");
         }
 
+        if (File.Exists(CpuSchema.PathFor(path)))
+        {
+            throw new IOException($"The CPU database already exists: {CpuSchema.PathFor(path)}");
+        }
+
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
         var connection = new SqliteConnection(new SqliteConnectionStringBuilder
         {
@@ -166,8 +281,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             connection.Open();
             // WAL lets readers open the file while it is written, and a crash leaves it consistent up to the last
-            // batch. NORMAL skips the flush on every commit; the file is still never corrupted.
-            Sql.Execute(connection, "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;");
+            // batch. NORMAL skips the flush on every commit; the file is still never corrupted. Automatic checkpointing
+            // is off on this connection (wal_autocheckpoint = 0); StartCheckpointing runs that work from a separate
+            // connection and thread instead.
+            Sql.Execute(connection, "PRAGMA auto_vacuum = INCREMENTAL; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA wal_autocheckpoint = 0;");
             using (var transaction = connection.BeginTransaction())
             {
                 Sql.Execute(connection, SessionSchema.Create, transaction);
@@ -220,9 +337,87 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         if (failure is null)
         {
-            queue.Add((sequence, profilerEvent));
+            queue.Add(new(sequence, profilerEvent, null));
         }
     }
+
+    // Stores a CPU sample of the target, in its own transactions. A recorded trace's reader waits while the writer is
+    // behind; live sampling doesn't (wait false), so the kernel session's buffers don't fill: the sample is dropped and
+    // counted instead. After a failure or once the file is closing, samples are no longer stored.
+    internal void PostSample(CompletedSample sample, bool wait)
+    {
+        if (failure is not null || Volatile.Read(ref closed) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            if (wait)
+            {
+                queue.Add(new(0, null, sample));
+            }
+            else if (!queue.TryAdd(new(0, null, sample)))
+            {
+                Interlocked.Increment(ref droppedSamples);
+            }
+        }
+        catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException)
+        {
+            // Closed meanwhile.
+        }
+    }
+
+    // What the CPU sampling recorded, or why there is none (summary null), stored in the CpuSampling row when the file is
+    // closed. Without a call, the file has no CpuSampling row: the session didn't sample.
+    internal void SetCpuSampling(CpuSamplingSummary? summary, string? note) =>
+        Interlocked.Exchange(ref cpuSampling, new(summary, note));
+
+    private sealed record CpuSamplingResult(CpuSamplingSummary? Summary, string? Note);
+
+    internal async Task SaveSnapshotAsync(TreeSnapshotDocument snapshot, string jsonPath, CancellationToken token = default)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentException.ThrowIfNullOrWhiteSpace(jsonPath);
+        if (!System.IO.Path.IsPathFullyQualified(jsonPath))
+            throw new ArgumentException("Snapshot export path must be absolute.", nameof(jsonPath));
+        token.ThrowIfCancellationRequested();
+        ObjectDisposedException.ThrowIf(Volatile.Read(ref closed) != 0, this);
+        if (failure is { } error) throw new IOException("The session writer has stopped.", error);
+        var legacy = snapshot.SchemaVersion == 2;
+        var bytes = TreeSnapshotCodec.Encode(snapshot);
+        snapshot = TreeSnapshotCodec.DecodeSaved(bytes, token: token);
+        if (snapshot.ProcessId != processId || source.ProcessCreatedUtc?.ToFileTimeUtc() != snapshot.CreationTimeFileTime)
+            throw new InvalidDataException("The snapshot belongs to a different process instance than the recording.");
+        if (source.EtlPath is not null || source.QpcFrequency != snapshot.QpcFrequency ||
+            source.StartQpc is not { } start || snapshot.StartQpc < start)
+            throw new InvalidDataException("The snapshot does not belong to the recording's live QPC clock.");
+        // Normalize legacy documents just as the JSON reader does, before exposing them through the shared views.
+        if (legacy) bytes = TreeSnapshotCodec.Encode(snapshot);
+        var incomingBytes = bytes.LongLength + 4 * pageSize + RowOverheadBytes;
+        if (emptyFileBytes + Interlocked.Read(ref emptyCpuBytes) + incomingBytes > LimitBytes * TrimAt)
+            throw new IOException("The snapshot exceeds the session file's size limit.");
+        var request = new SnapshotWrite(snapshot.CaptureId, snapshot.StartQpc, snapshot.EndQpc,
+            DateTime.UtcNow, jsonPath, Encoding.UTF8.GetString(bytes), incomingBytes, token);
+        try
+        {
+            await Task.Run(() => queue.Add(new(0, null, null, request), token), token).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ObjectDisposedException)
+        {
+            throw new ObjectDisposedException(nameof(SessionWriter), ex.Message);
+        }
+        await request.Completion.Task.ConfigureAwait(false);
+    }
+
+    private sealed record SnapshotWrite(Guid CaptureId, long StartQpc, long EndQpc, DateTime SavedUtc,
+        string JsonPath, string Document, long IncomingBytes, CancellationToken Token)
+    {
+        internal TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private readonly record struct QueueItem(long Sequence, ProfilerEvent? Event, CompletedSample? Sample,
+        SnapshotWrite? Snapshot = null);
 
     // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
     // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
@@ -237,13 +432,16 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private void Run()
     {
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
+        var samples = new List<CompletedSample>();
+        var snapshots = new List<SnapshotWrite>();
         try
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
-                batch.Add(first);
+                Add(first);
+                RestoreAutomaticCheckpointsIfNeeded();
                 var started = Stopwatch.GetTimestamp();
-                while (batch.Count < BatchSize)
+                while (batch.Count + samples.Count + snapshots.Count < BatchSize)
                 {
                     var remaining = BatchInterval - Stopwatch.GetElapsedTime(started);
                     if (remaining <= TimeSpan.Zero || !queue.TryTake(out var next, remaining))
@@ -251,21 +449,221 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                         break;
                     }
 
-                    batch.Add(next);
+                    Add(next);
                 }
 
-                Write(batch);
-                batch.Clear();
+                if (batch.Count > 0)
+                {
+                    Write(batch);
+                    batch.Clear();
+                }
+
+                if (samples.Count > 0)
+                {
+                    WriteSamples(samples);
+                    samples.Clear();
+                }
+                foreach (var snapshot in snapshots) WriteSnapshot(snapshot);
+                snapshots.Clear();
             }
         }
         catch (Exception error)
         {
             Trace.TraceError($"Session recording stopped: {error}");
             failure = error;
+            foreach (var snapshot in snapshots) snapshot.Completion.TrySetException(error);
             // Keep taking so a producer waiting in Process is released; nothing more is stored.
-            foreach (var _ in queue.GetConsumingEnumerable())
+            foreach (var item in queue.GetConsumingEnumerable())
             {
+                item.Snapshot?.Completion.TrySetException(error);
             }
+        }
+
+        void Add(QueueItem item)
+        {
+            if (item.Snapshot is { } snapshot)
+            {
+                snapshots.Add(snapshot);
+            }
+            else if (item.Sample is { } sample)
+            {
+                samples.Add(sample);
+            }
+            else
+            {
+                batch.Add((item.Sequence, item.Event!));
+            }
+        }
+    }
+
+    private void WriteSnapshot(SnapshotWrite snapshot)
+    {
+        if (snapshot.Token.IsCancellationRequested)
+        {
+            snapshot.Completion.TrySetCanceled(snapshot.Token);
+            return;
+        }
+        // A duplicate capture must not evict existing history while making room.
+        if (Sql.Scalar(connection, "SELECT COUNT(*) FROM TreeSnapshots WHERE CaptureId = $id",
+            null, ("$id", snapshot.CaptureId.ToString("D"))) != 0)
+        {
+            snapshot.Completion.TrySetException(new IOException($"Snapshot {snapshot.CaptureId:D} is already stored."));
+            return;
+        }
+        // Retention mutates cached indexes as well as SQL rows. A rollback must stop Run, not resume with stale caches.
+        // Once retention starts, finish the write rather than cancelling after deleting older history.
+        var originalOldest = Interlocked.Read(ref oldestSequence);
+        var originalCompleteFrom = Interlocked.Read(ref completeFromQpc);
+        var committed = false;
+        try
+        {
+            using var transaction = connection.BeginTransaction();
+            using var cpuTransaction = cpuConnection?.BeginTransaction();
+            var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction, cpuTransaction);
+            try
+            {
+                if (DatabaseBytes(excludeFreePages: true, transaction, cpuTransaction) +
+                    snapshot.IncomingBytes > LimitBytes * TrimAt)
+                    throw new IOException("The snapshot cannot fit within the session file's size limit.");
+                Sql.Execute(connection, """
+                    INSERT INTO TreeSnapshots (CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc, Document)
+                    VALUES ($id, $saved, $path, $start, $end, $document)
+                    """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
+                    ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
+                    ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
+                var committedBytes = DatabaseBytes(excludeFreePages: false, transaction, cpuTransaction);
+                // Keep main's capture and event retention atomic. CPU cleanup commits only after its cutoff is visible.
+                transaction.Commit();
+                committed = true;
+                cpuTransaction?.Commit();
+                Interlocked.Exchange(ref fileBytes, committedBytes);
+                snapshot.Completion.TrySetResult();
+            }
+            catch (Exception error) when (!committed && !trimmed && (error is SqliteException or IOException))
+            {
+                Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
+                snapshot.Completion.TrySetException(error);
+            }
+        }
+        catch (Exception error) when (committed && (error is SqliteException or IOException))
+        {
+            // Both transaction scopes have ended: count main's saved snapshot and CPU's rolled-back cleanup.
+            RefreshFileBytesAfterFailure();
+            throw;
+        }
+        finally
+        {
+            if (!committed)
+            {
+                Interlocked.Exchange(ref oldestSequence, originalOldest);
+                Interlocked.Exchange(ref completeFromQpc, originalCompleteFrom);
+            }
+        }
+    }
+
+    private void WriteSamples(List<CompletedSample> samples)
+    {
+        var index = EnsureCpuDatabase();
+        try
+        {
+            TrimIfNeeded(index.IncomingBytes(samples));
+            using var transaction = cpuConnection!.BeginTransaction();
+            foreach (var sample in samples)
+            {
+                index.Add(sample, transaction);
+            }
+
+            transaction.Commit();
+        }
+        catch (Exception error) when (error is SqliteException or IOException)
+        {
+            RefreshFileBytesAfterFailure();
+            throw;
+        }
+
+        Interlocked.Exchange(ref fileBytes, DatabaseBytes());
+    }
+
+    private CpuSampleIndex EnsureCpuDatabase()
+    {
+        if (cpu is not null)
+        {
+            return cpu;
+        }
+
+        var path = CpuSchema.PathFor(Path);
+        // Reserve only a new file: never overwrite a companion left by another recording.
+        using (new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+        }
+
+        cpuConnection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadWrite,
+            Pooling = false,
+            ForeignKeys = false
+        }.ToString());
+        cpuConnection.Open();
+        Sql.Execute(cpuConnection, $"""
+            PRAGMA page_size = {pageSize}; PRAGMA auto_vacuum = INCREMENTAL;
+            PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL;
+            """);
+        // WAL cannot atomically commit both databases. Flush initialization before main can advertise the companion.
+        using (var transaction = cpuConnection.BeginTransaction())
+        {
+            using var session = connection.CreateCommand();
+            session.CommandText = "SELECT SessionId FROM SessionInfo";
+            Sql.Execute(cpuConnection, CpuSchema.Create, transaction);
+            Sql.Execute(cpuConnection, $"PRAGMA user_version = {CpuSchema.Version}", transaction);
+            Sql.Execute(cpuConnection, "INSERT INTO CpuSessionInfo (SessionId) VALUES ($id)", transaction,
+                ("$id", (string)session.ExecuteScalar()!));
+            transaction.Commit();
+        }
+
+        using (var transaction = connection.BeginTransaction())
+        {
+            Sql.Execute(connection, "UPDATE main.SessionInfo SET CpuDatabaseVersion = $version", transaction,
+                ("$version", CpuSchema.Version));
+            transaction.Commit();
+        }
+
+        Sql.Execute(cpuConnection, "PRAGMA synchronous = NORMAL;");
+        Interlocked.Exchange(ref emptyCpuBytes, Sql.Scalar(cpuConnection, "PRAGMA page_count") * pageSize);
+        cpu = new(cpuConnection);
+        if (Interlocked.Read(ref completeFromQpc) is var cutoff and not 0)
+        {
+            using var transaction = cpuConnection.BeginTransaction();
+            cpu.Trim(cutoff, transaction);
+            transaction.Commit();
+        }
+
+        return cpu;
+    }
+
+    private long DatabaseBytes(bool excludeFreePages = false, SqliteTransaction? transaction = null,
+        SqliteTransaction? cpuTransaction = null)
+    {
+        var pages = Sql.Scalar(connection, "PRAGMA page_count", transaction) -
+            (excludeFreePages ? Sql.Scalar(connection, "PRAGMA freelist_count", transaction) : 0);
+        if (cpuConnection is not null)
+        {
+            pages += Sql.Scalar(cpuConnection, "PRAGMA page_count", cpuTransaction) -
+                (excludeFreePages ? Sql.Scalar(cpuConnection, "PRAGMA freelist_count", cpuTransaction) : 0);
+        }
+
+        return pages * pageSize;
+    }
+
+    private void RefreshFileBytesAfterFailure()
+    {
+        try
+        {
+            Interlocked.Exchange(ref fileBytes, DatabaseBytes());
+        }
+        catch (Exception sizeError) when (sizeError is SqliteException or IOException)
+        {
+            Trace.TraceWarning($"Could not refresh recording size after a failed write: {sizeError}");
         }
     }
 
@@ -319,7 +717,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
 
         Interlocked.Exchange(ref newestSequence, batch[^1].Sequence);
-        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+        Interlocked.Exchange(ref fileBytes, DatabaseBytes());
     }
 
     private long TypeId(ProfilerEvent profilerEvent, bool launcher)
@@ -430,43 +828,112 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
-    // Deletes the oldest events until the stored data plus the incoming batch fits under the trim point.
-    private void TrimIfNeeded(long incomingBytes)
+    // Deletes the oldest data until what's stored plus the incoming batch fits under the trim point: the oldest events, with
+    // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
+    // or no event can be deleted. Whole tree captures also participate by their end QPC. The call stacks and code
+    // addresses no sample has any more go with them.
+    private bool TrimIfNeeded(long incomingBytes, SqliteTransaction? transaction = null, SqliteTransaction? cpuTransaction = null)
     {
-        while ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize +
-            incomingBytes > LimitBytes * TrimAt)
+        var trimmed = false;
+        while (DatabaseBytes(excludeFreePages: true, transaction, cpuTransaction) + incomingBytes > LimitBytes * TrimAt)
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
-            if (oldest == 0 || newest <= oldest)
+            long? firstEvent = oldest != 0 && newest > oldest
+                ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1", transaction) : null;
+            var firstSample = cpu?.FirstQpc(cpuTransaction);
+            var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1", transaction);
+            long? firstSnapshot = snapshotTimes.Count == 0 ? null : snapshotTimes[0];
+            if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
+                (firstSample is null || firstSnapshot <= firstSample))
             {
-                return;
+                TrimSnapshot(transaction);
             }
-
-            var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
-            long qpc;
-            using (var transaction = connection.BeginTransaction())
+            else if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
             {
-                objects.Trim(cutoff, transaction);
-                frames.Trim(cutoff, transaction);
-                graphics.Trim(cutoff, transaction);
-                Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", transaction, ("$cutoff", cutoff));
-                // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
-                // process's first event from the cutoff, or else the cutoff's.
-                qpc = Sql.Scalar(connection, """
-                    SELECT COALESCE(
-                        (SELECT Qpc FROM Events WHERE Seq >= $cutoff
-                            AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
-                        (SELECT Qpc FROM Events WHERE Seq = $cutoff))
-                    """, transaction, ("$cutoff", cutoff));
-                Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", transaction,
-                    ("$cutoff", cutoff), ("$qpc", qpc));
-                transaction.Commit();
+                TrimEvents(oldest, newest, transaction, cpuTransaction);
             }
-
-            Interlocked.Exchange(ref oldestSequence, cutoff);
-            Interlocked.Exchange(ref completeFromQpc, qpc);
+            else if (firstSample is null || !TrimSamples(firstEvent, cpuTransaction))
+            {
+                if (firstSnapshot is null) break;
+                TrimSnapshot(transaction);
+            }
+            trimmed = true;
         }
+
+        // Freed pages in one database cannot hold the other's next batch. Return them to the filesystem when needed
+        // so the shared limit still bounds the two database files, not just their used pages.
+        if (cpuConnection is not null && DatabaseBytes(excludeFreePages: false, transaction, cpuTransaction) + incomingBytes > LimitBytes * TrimAt)
+        {
+            Sql.Execute(connection, "PRAGMA incremental_vacuum;", transaction);
+            Sql.Execute(cpuConnection, "PRAGMA incremental_vacuum;", cpuTransaction);
+        }
+
+        return trimmed;
+    }
+
+    private void TrimSnapshot(SqliteTransaction? transaction) => Sql.Execute(connection, """
+        DELETE FROM TreeSnapshots WHERE CaptureId =
+            (SELECT CaptureId FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1)
+        """, transaction);
+
+    // Deletes the oldest events, with the CPU samples from before the first event left.
+    private void TrimEvents(long oldest, long newest, SqliteTransaction? transaction, SqliteTransaction? cpuTransaction)
+    {
+        var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
+        var current = transaction ?? connection.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        objects.Trim(cutoff, current);
+        frames.Trim(cutoff, current);
+        graphics.Trim(cutoff, current);
+        Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", current, ("$cutoff", cutoff));
+        // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
+        // process's first event from the cutoff, or else the cutoff's.
+        var qpc = Sql.Scalar(connection, """
+            SELECT COALESCE(
+                (SELECT Qpc FROM Events WHERE Seq >= $cutoff
+                    AND TypeId IN (SELECT TypeId FROM EventTypes WHERE Launcher = 0) ORDER BY Seq LIMIT 1),
+                (SELECT Qpc FROM Events WHERE Seq = $cutoff))
+            """, current, ("$cutoff", cutoff));
+        Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", current,
+            ("$cutoff", cutoff), ("$qpc", qpc));
+        owned?.Commit();
+
+        Interlocked.Exchange(ref oldestSequence, cutoff);
+        Interlocked.Exchange(ref completeFromQpc, qpc);
+        // Main's committed boundary is authoritative even if this subsequent cleanup fails.
+        if (cpu is not null)
+        {
+            using var ownedCpu = cpuTransaction is null ? cpuConnection!.BeginTransaction() : null;
+            var currentCpu = cpuTransaction ?? ownedCpu!;
+            if (cpu.Trim(qpc, currentCpu) > 0)
+            {
+                cpu.Prune(currentCpu);
+            }
+
+            ownedCpu?.Commit();
+        }
+    }
+
+    // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
+    // event it keeps. Returns false when none was deleted.
+    private bool TrimSamples(long? firstEvent, SqliteTransaction? transaction)
+    {
+        if (cpu is null)
+        {
+            return false;
+        }
+
+        var current = transaction ?? cpuConnection!.BeginTransaction();
+        using var owned = transaction is null ? current : null;
+        if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, current) == 0)
+        {
+            return false;
+        }
+
+        cpu.Prune(current);
+        owned?.Commit();
+        return true;
     }
 
     // Stores the remaining events, records how the session ended and closes the file. Call after the last Process call.
@@ -484,14 +951,28 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             if (failure is null)
             {
                 StoreProcessStart(null);
+                if (Interlocked.Exchange(ref cpuSampling, null) is { } sampling)
+                {
+                    var index = EnsureCpuDatabase();
+                    using var transaction = cpuConnection!.BeginTransaction();
+                    index.Finish(sampling.Summary, Interlocked.Read(ref droppedSamples), sampling.Note, transaction);
+                    transaction.Commit();
+                }
+
                 Sql.Execute(connection,
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),
                     ("$lost", lostByEtw), ("$dropped", droppedByProfiler));
-                // Moves the write-ahead log into the database and leaves WAL mode, so the .sqlite file stands alone and
-                // can be opened read-only without its -wal and -shm files.
+                // Stop the background checkpoint before checkpointing both files, so they can be copied without their
+                // -wal and -shm files.
+                StopCheckpointing();
+                if (cpu is not null)
+                {
+                    Sql.Execute(cpuConnection!, "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;");
+                }
+
                 Sql.Execute(connection, "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;");
-                Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+                Interlocked.Exchange(ref fileBytes, DatabaseBytes());
             }
         }
         catch (Exception error) when (error is SqliteException or IOException)
@@ -501,10 +982,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
         finally
         {
+            StopCheckpointing();
+            checkpointStop.Dispose();
             json.Dispose();
             objects.Dispose();
             frames.Dispose();
             graphics.Dispose();
+            cpu?.Dispose();
+            cpuConnection?.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();

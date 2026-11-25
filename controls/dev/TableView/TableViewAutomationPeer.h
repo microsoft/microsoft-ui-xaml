@@ -71,6 +71,8 @@ public:
         winrt::TableView const& tableView,
         winrt::TableViewColumn const& column);
 
+    static winrt::AutomationPeer CreateRowItemPeerInternal(winrt::TableView const& table, winrt::TableViewRow const& row);
+
 private:
     // One peer per column, kept alive for as long as the column stays in Columns(). Each call
     // to GetColumnHeaders must hand back the same provider for a given column.

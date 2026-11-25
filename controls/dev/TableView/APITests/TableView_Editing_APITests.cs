@@ -1995,11 +1995,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     return;
                 }
 
+                var flyoutClosed = new global::System.Threading.ManualResetEvent(false);
                 RunOnUIThread.Execute(() =>
                 {
                     holdClose = false;
+                    flyout.Closed += (s, e) => flyoutClosed.Set();
                     flyout.Hide();
                 });
+                Verify.IsTrue(flyoutClosed.WaitOne(TimeSpan.FromSeconds(5)), "The flyout must finish closing.");
                 IdleSynchronizer.Wait();
 
                 var completed = (Open: false, Editing: false, Attempts: 0, Name: (string)null);
@@ -2055,6 +2058,183 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 popup.IsOpen = false;
             });
             IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a focus-loss commit queued for an edit that ends before it runs does not commit or disturb a replacement edit opened in the same UI turn.")]
+        [TestProperty("data:EndAction", "{Cancel, Commit}")]
+        public void VerifyStaleFocusLossCommitSkipsReplacementEdit()
+        {
+            bool commitFirst = ((string)TestContext.DataRow["EndAction"]).Trim() == "Commit";
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            string replacementName = null;
+            int replacementCommitAttempts = 0;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+
+            RunOnUIThread.Execute(() =>
+            {
+                GetEditorTextBox(tableView, items[0]).Text = "Bea";
+                items[1].RejectPrefix = InvalidPrefix;
+                replacementName = items[1].Name;
+
+                // Focus leaving the editor posts the focus-loss commit rather than committing now.
+                Verify.IsTrue(focusSink.Focus(FocusState.Programmatic), "Precondition: focus moves off the editor.");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the focus-loss commit is still queued.");
+
+                Verify.IsTrue(commitFirst ? tableView.CommitEdit() : tableView.CancelEdit(), "The first edit must close.");
+                CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 0), InvalidPrefix + "Held");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the replacement edit is open before the queued commit runs.");
+
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (e.EditAction == TableViewEditAction.Commit)
+                    {
+                        replacementCommitAttempts++;
+                    }
+                };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, replacementCommitAttempts, "The first edit's queued commit must not try to commit the replacement edit.");
+                Verify.IsTrue(tableView.IsEditing, "The replacement edit must stay open.");
+                Verify.AreEqual(1, FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[1])).Count,
+                    "The replacement editor must stay on the second row.");
+                Verify.AreEqual(replacementName, items[1].Name, "The replacement edit must not write to its item.");
+                Verify.AreEqual(commitFirst ? "Bea" : "Asha", items[0].Name, "Only the first edit's own close decides its value.");
+                tableView.CancelEdit();
+            });
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Tab that moved focus into an editor-owned flyout is not replayed as a Tab departure when the flyout later closes onto the editing cell.")]
+        public void VerifyEditorFlyoutCloseDoesNotReplayEntryTab()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            Button focusSink = null;
+            TextBox editor = null;
+            Flyout flyout = null;
+            Button flyoutButton = null;
+            bool moved = false;
+            bool holdClose = true;
+            var closed = new global::System.Threading.ManualResetEvent(false);
+            int commitAttempts = 0;
+
+            OpenEditHeldByValidator(out tableView, out items, out focusSink);
+            try
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    editor = GetEditorTextBox(tableView, items[0]);
+                    editor.Text = "Bea";
+                    tableView.CellEditEnding += (s, e) =>
+                    {
+                        if (e.EditAction == TableViewEditAction.Commit)
+                        {
+                            commitAttempts++;
+                        }
+                    };
+                    flyoutButton = new Button { Content = "Inside" };
+                    flyout = new Flyout { Content = flyoutButton };
+                    FlyoutBase.SetAttachedFlyout(editor, flyout);
+                    FlyoutBase.ShowAttachedFlyout(editor);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(editor.Focus(FocusState.Keyboard), "Precondition: the editor takes focus back.");
+
+                    // Model a Tab from the editor that lands in its flyout.
+                    TypedEventHandler<UIElement, LosingFocusEventArgs> redirect = (s, e) =>
+                    {
+                        if (e.Direction == FocusNavigationDirection.Next)
+                        {
+                            e.TrySetNewFocusedElement(flyoutButton);
+                        }
+                    };
+                    editor.LosingFocus += redirect;
+                    try
+                    {
+                        moved = FocusManager.TryMoveFocus(FocusNavigationDirection.Next,
+                            new FindNextElementOptions { SearchRoot = tableView.XamlRoot.Content });
+                    }
+                    finally
+                    {
+                        editor.LosingFocus -= redirect;
+                    }
+                });
+                IdleSynchronizer.Wait();
+
+                var entered = (InFlyout: false, Open: false, Editing: false);
+                RunOnUIThread.Execute(() => entered = (
+                    flyoutButton.FocusState != FocusState.Unfocused, flyout.IsOpen, tableView.IsEditing));
+                Verify.IsTrue(moved, "Precondition: Tab must move focus.");
+                Verify.IsTrue(entered.InFlyout, "Precondition: the Tab must land inside the editor's flyout.");
+                Verify.IsTrue(entered.Open, "Precondition: the flyout stays open.");
+                Verify.IsTrue(entered.Editing, "Focus inside the editor's flyout must keep the edit open.");
+                if (!moved || !entered.InFlyout || !entered.Open || !entered.Editing)
+                {
+                    return;
+                }
+
+                // Dismissing the flyout drops focus on the editing cell, as Escape or a light dismiss can.
+                // Hold the close so focus is on the cell, not handed back to the editor, when it completes.
+                RunOnUIThread.Execute(() =>
+                {
+                    flyout.Closing += (s, e) => e.Cancel = holdClose;
+                    flyout.Hide();
+                    GetCellPeer(tableView, items[0], columnIndex: 0).SetFocus();
+                });
+                IdleSynchronizer.Wait();
+
+                var dismissed = (Open: false, FocusOnCell: false, Attempts: 0);
+                RunOnUIThread.Execute(() => dismissed = (
+                    flyout.IsOpen,
+                    ReferenceEquals(GetRowCell(GetRowForItem(tableView, items[0]), 0), FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    commitAttempts));
+                Verify.IsTrue(dismissed.Open, "Precondition: the flyout close is still held.");
+                Verify.IsTrue(dismissed.FocusOnCell, "Precondition: focus is on the editing cell.");
+                Verify.AreEqual(0, dismissed.Attempts, "Leaving the flyout must not commit before it closes.");
+                if (!dismissed.Open || !dismissed.FocusOnCell)
+                {
+                    return;
+                }
+
+                // The close finishes after its animation, so wait for Closed rather than idle.
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout.Closed += (s, e) => closed.Set();
+                    flyout.Hide();
+                });
+                Verify.IsTrue(closed.WaitOne(TimeSpan.FromSeconds(5)), "The flyout must close.");
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.AreEqual(0, commitAttempts, "Closing the flyout must not replay the Tab that entered it as a commit.");
+                    Verify.IsTrue(tableView.IsEditing, "The edit must stay open.");
+                    Verify.AreNotEqual(FocusState.Unfocused, editor.FocusState, "Focus must return to the editor.");
+                    Verify.AreEqual("Asha", items[0].Name, "The pending value must not reach the item.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    holdClose = false;
+                    flyout?.Hide();
+                    tableView.CancelEdit();
+                });
+                IdleSynchronizer.Wait();
+            }
         }
 
         // Opens an edit on the first item that stays open because its value fails validation.
@@ -3003,6 +3183,256 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
+    }
+
+    // FocusManager.TryMoveFocus never raises the Tab KeyDown that moves an edit between cells, so these
+    // tests inject real key presses. The test app must be the foreground window to receive them.
+    internal static class InjectedKeyboard
+    {
+        private const byte VkShift = 0x10;
+        private const byte VkMenu = 0x12;
+        private const uint KeyEventKeyUp = 0x2;
+        private const int SwRestore = 9;
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool IsIconic(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hwnd, int command);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hwnd);
+
+        [global::System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, UIntPtr extraInfo);
+
+        internal static void PressTab(bool shift = false) => Press(0x09, shift);
+
+        internal static void PressF2() => Press(0x71, false);
+
+        // Called off the UI thread; waits for idle so the key's handlers have run.
+        private static void Press(byte virtualKey, bool shift)
+        {
+            Verify.IsTrue(TryTakeForeground(), "The test app must be the foreground window to receive injected keys.");
+            if (shift)
+            {
+                keybd_event(VkShift, 0, 0, UIntPtr.Zero);
+            }
+            keybd_event(virtualKey, 0, 0, UIntPtr.Zero);
+            keybd_event(virtualKey, 0, KeyEventKeyUp, UIntPtr.Zero);
+            if (shift)
+            {
+                keybd_event(VkShift, 0, KeyEventKeyUp, UIntPtr.Zero);
+            }
+
+            // A Tab move to an off-screen row lands over several layout passes and posted callbacks.
+            for (int i = 0; i < 4; i++)
+            {
+                IdleSynchronizer.Wait();
+                global::System.Threading.Thread.Sleep(100);
+            }
+        }
+
+        private static bool IsForegroundOurs()
+        {
+            GetWindowThreadProcessId(GetForegroundWindow(), out uint processId);
+            return processId == (uint)global::System.Diagnostics.Process.GetCurrentProcess().Id;
+        }
+
+        // Windows refuses SetForegroundWindow from a background process; an Alt press lifts that lock.
+        internal static bool TryTakeForeground()
+        {
+            IntPtr window = global::System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+            for (int attempt = 0; attempt < 3 && window != IntPtr.Zero && !IsForegroundOurs(); attempt++)
+            {
+                keybd_event(VkMenu, 0, 0, UIntPtr.Zero);
+                keybd_event(VkMenu, 0, KeyEventKeyUp, UIntPtr.Zero);
+                global::System.Threading.Thread.Sleep(100);
+
+                if (IsIconic(window))
+                {
+                    ShowWindow(window, SwRestore);
+                }
+                BringWindowToTop(window);
+                SetForegroundWindow(window);
+                global::System.Threading.Thread.Sleep(500);
+            }
+
+            if (IsForegroundOurs())
+            {
+                return true;
+            }
+            GetWindowThreadProcessId(GetForegroundWindow(), out uint owner);
+            Log.Warning($"Could not take the foreground (window 0x{window.ToInt64():X}); process {owner} keeps it.");
+            return false;
+        }
+    }
+
+    [TestClass]
+    public class TableViewTabEditMoveTests : TableViewApiTestBase
+    {
+        private static bool IsSelfOrDescendant(DependencyObject element, DependencyObject ancestor)
+        {
+            for (var current = element; current != null; current = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(current))
+            {
+                if (ReferenceEquals(current, ancestor))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Some lab machines never grant the foreground, or never deliver injected keys to the app;
+        // the tests cannot run there.
+        private bool CanInjectKeys()
+        {
+            if (!InjectedKeyboard.TryTakeForeground())
+            {
+                Log.Result(TestResult.Skipped, "The test app could not take the foreground, so injected keys cannot reach it.");
+                return false;
+            }
+
+            bool delivered = false;
+            RunOnUIThread.Execute(() =>
+            {
+                var probe = new Button { Content = "Probe" };
+                var host = new StackPanel();
+                host.Children.Add(probe);
+                host.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler((s, e) => delivered |= e.Key == global::Windows.System.VirtualKey.F2), true);
+                LoadContent(host);
+                probe.Focus(FocusState.Keyboard);
+            });
+            IdleSynchronizer.Wait();
+            InjectedKeyboard.PressF2();
+            if (!delivered)
+            {
+                Log.Result(TestResult.Skipped, "Injected keys do not reach the test app on this machine.");
+            }
+            return delivered;
+        }
+
+        // A Button ahead of the table gives focus somewhere outside the body to go.
+        private (TableView Table, List<EditablePerson> Items, Button Outside) CreateTableAfterButton(int count)
+        {
+            TableView table = null;
+            List<EditablePerson> items = null;
+            Button outside = null;
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems(Enumerable.Range(0, count).Select(i => "P" + i).ToArray());
+                table = CreateEditableTable(items);
+                table.IsReadOnly = false;
+                outside = new Button { Content = "Outside" };
+                var host = new StackPanel();
+                host.Children.Add(outside);
+                host.Children.Add(table);
+                LoadContent(host);
+            });
+            SettleLayout(table);
+            return (table, items, outside);
+        }
+
+        private static void OpenEditor(TableView table, object item, int columnIndex)
+        {
+            RunOnUIThread.Execute(() => GetCellPeer(table, item, columnIndex).SetFocus());
+            IdleSynchronizer.Wait();
+            InjectedKeyboard.PressF2();
+            RunOnUIThread.Execute(() => Verify.IsTrue(table.IsEditing, "Precondition: F2 must open the editor."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Shift+Tab move to a realized row above the viewport selects nothing when GettingFocus redirects it out of the table.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyRedirectedOffscreenTabMoveDoesNotSelectTargetRow()
+        {
+            if (!CanInjectKeys())
+            {
+                return;
+            }
+
+            var (table, items, outside) = CreateTableAfterButton(60);
+            double rowHeight = 0;
+            RunOnUIThread.Execute(() => rowHeight = ((FrameworkElement)GetRowsRepeater(table).TryGetElement(0)).ActualHeight);
+            // Row 19 sits just above the viewport but stays realized in the repeater's cache, so the move
+            // focuses it at once and then waits for it to scroll into view.
+            ScrollBodyTo(table, ScrollAxis.Vertical, 20 * rowHeight);
+            OpenEditor(table, items[20], 0);
+
+            bool redirected = false;
+            int selectedBefore = -2;
+            RunOnUIThread.Execute(() =>
+            {
+                selectedBefore = table.SelectedIndex;
+                var targetRow = GetRowsRepeater(table).TryGetElement(19);
+                Verify.IsNotNull(targetRow, "Precondition: row 19 must be realized above the viewport.");
+                table.GettingFocus += (s, e) =>
+                {
+                    if (!redirected && e.NewFocusedElement is DependencyObject next && IsSelfOrDescendant(next, targetRow))
+                    {
+                        redirected = e.TrySetNewFocusedElement(outside);
+                    }
+                };
+            });
+
+            InjectedKeyboard.PressTab(shift: true);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot);
+                Log.Comment($"redirected={redirected} selected {selectedBefore} -> {table.SelectedIndex} editing={table.IsEditing}");
+                Verify.IsTrue(redirected, "Precondition: the move must try to focus row 19.");
+                Verify.IsTrue(ReferenceEquals(focused, outside), "Focus must stay where GettingFocus sent it.");
+                Verify.IsFalse(table.IsEditing, "No editor may open once focus leaves the table.");
+                Verify.AreEqual(selectedBefore, table.SelectedIndex, "Selection must not move to a row focus never reached.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Tab keeps focus on the edited cell when a CellEditEnding handler locks the target column, even though a context flyout keeps that cell focusable.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyTabToColumnLockedDuringCommitStaysOnEditedCell()
+        {
+            if (!CanInjectKeys())
+            {
+                return;
+            }
+
+            var (table, items, _) = CreateTableAfterButton(3);
+            RunOnUIThread.Execute(() =>
+            {
+                var role = table.Columns[1];
+                role.CellContextFlyout = new MenuFlyout { Items = { new MenuFlyoutItem { Text = "Copy" } } };
+                table.CellEditEnding += (s, e) =>
+                {
+                    if (e.EditAction == TableViewEditAction.Commit && ReferenceEquals(e.Column, table.Columns[0]))
+                    {
+                        role.IsReadOnly = true;
+                    }
+                };
+            });
+            OpenEditor(table, items[0], 0);
+
+            InjectedKeyboard.PressTab();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = FocusManager.GetFocusedElement(table.XamlRoot);
+                var row = GetRowForItem(table, items[0]);
+                Verify.IsFalse(table.IsEditing, "No editor may open in the locked column.");
+                Verify.IsFalse(ReferenceEquals(focused, GetRowCell(row, 1)), "Focus must not move to the locked Role cell.");
+                Verify.IsTrue(ReferenceEquals(focused, GetRowCell(row, 0)), "Focus must return to the Name cell that was edited.");
+            });
+        }
     }
 
     // GH #12354: swapping the display TextBlock for the built-in TextBox editor must not move the text.

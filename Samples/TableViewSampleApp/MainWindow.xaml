@@ -101,6 +101,7 @@
                 <muxc:NavigationViewItemHeader Content="Columns"/>
                 <muxc:NavigationViewItem Tag="ColumnLayout" Content="Column layout &amp; sizing"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE799;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="ColumnLifecycle" Content="Column lifecycle"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8B7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
+                <muxc:NavigationViewItem Tag="ColumnReorder" Content="Column reordering"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8AB;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItem Tag="HeadersVisibility" Content="Headers visibility"><muxc:NavigationViewItem.Icon><muxc:FontIcon Glyph="&#xE8A7;"/></muxc:NavigationViewItem.Icon></muxc:NavigationViewItem>
                 <muxc:NavigationViewItemSeparator/>
                 <muxc:NavigationViewItemHeader Content="Rows &amp; cells"/>

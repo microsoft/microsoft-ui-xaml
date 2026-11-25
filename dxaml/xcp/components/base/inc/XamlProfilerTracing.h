@@ -31,7 +31,7 @@ class XamlProfilerLogging : public wil::TraceLoggingProvider
         (0xa1b2c3d4, 0xe5f6, 0x4a5b, 0x9c, 0x8d, 0x7e, 0x6f, 0x5a, 0x4b, 0x3c, 0x2d));
 
 public:
-    ~XamlProfilerLogging();
+    ~XamlProfilerLogging() override;
 };
 
 // Instrumentation is compiled in all configurations.
@@ -78,6 +78,22 @@ public:
         bool,     IncludesGutters,
         bool,     RequestAtlas,
         bool,     IsAlphaMask,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Reports a transient BeginDraw update texture. Atlased surfaces may share this resource;
+    // its interface is not retained after the observation. OffsetX/OffsetY identify the
+    // gutter-excluded content origin within the update texture.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(DCompSurfaceTextureObserved,
+        uint64_t, SurfaceId,
+        uint64_t, ResourceId,
+        uint32_t, Width,
+        uint32_t, Height,
+        uint32_t, MipLevels,
+        uint32_t, ArraySize,
+        uint32_t, Format,
+        uint32_t, SampleCount,
+        int32_t,  OffsetX,
+        int32_t,  OffsetY,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,

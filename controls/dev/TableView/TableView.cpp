@@ -964,17 +964,25 @@ try
         m_bodyScrollerViewChangedToken = {};
         m_bodyScrollerSizeChangedRevoker.revoke();
     }
+    m_bodyManipulationStartedRevoker.revoke();
+    m_bodyManipulationCompletedRevoker.revoke();
+    m_bodyManipulating = false;
+    m_headerScrollerViewChangedRevoker.revoke();
 
     // Reset resolved-on-Loaded refs so re-templating re-resolves them against the new tree.
     m_headerRow.set(nullptr);
     m_headerScroller.set(nullptr);
     m_bodyScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     m_bodyBringIntoViewRevoker.revoke();
     m_rowsRepeater.set(GetTemplateChild(hstring{ s_RowsRepeaterPartName }).try_as<winrt::ItemsRepeater>());
     m_headerRow.set(GetTemplateChild(hstring{ s_HeaderRowPartName }).try_as<winrt::FrameworkElement>());
     m_headerHost.set(GetTemplateChild(hstring{ s_HeaderHostPartName }).try_as<winrt::Panel>());
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
+    CancelColumnReorderDrag();
+    m_suppressHeaderTap = false;
+    HookColumnReorderInput();
     // Every part is looked up as optional, so nothing else reports a template without one. TableView's own template
     // has all three, so a missing one is the app's template.
     if (!m_rowsRepeater.get() || !m_headerRow.get() || !m_headerHost.get())
@@ -1189,6 +1197,24 @@ void TableView::OnHeaderHostLoaded(const winrt::IInspectable& /*sender*/, const 
         m_headerScroller.set(scroller);
         // Header pans can transiently desync; reverse-sync can clamp when header/body extents differ.
         UpdateHeaderVisibility();
+        if (scroller)
+        {
+            m_headerScrollerViewChangedRevoker = scroller.ViewChanged(winrt::auto_revoke,
+                [weakThis = get_weak()](winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const&)
+                {
+                    if (auto const strongThis = weakThis.get())
+                    {
+                        // The drag's geometry is stale once the band scrolls.
+                        if (auto const& drag = strongThis->m_columnReorder;
+                            drag && drag->dragging && std::abs(sender.as<winrt::ScrollViewer>().HorizontalOffset() - drag->headerOffset) >= 0.5)
+                        {
+                            strongThis->QueueCancelColumnReorderDrag();
+                        }
+                        strongThis->UpdateHeaderScrollOffset();
+                    }
+                });
+        }
+        StartHeaderScrollAnimation();
     }
 }
 
@@ -1239,10 +1265,29 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
                     }
                 });
 
+            m_bodyManipulationStartedRevoker = bodyScroller.DirectManipulationStarted(winrt::auto_revoke,
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->m_bodyManipulating = true;
+                        strongThis->QueueCancelColumnReorderDrag();
+                    }
+                });
+            m_bodyManipulationCompletedRevoker = bodyScroller.DirectManipulationCompleted(winrt::auto_revoke,
+                [weakThis](auto const&, auto const&)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        strongThis->m_bodyManipulating = false;
+                    }
+                });
+
             // Resolve during the next table measure now that the viewport is known (initial layout).
             InvalidateMeasure();
             RefreshFrozenColumns();
             QueueTerminalGridLineRefresh();
+            StartHeaderScrollAnimation();
         }
     }
 }
@@ -1306,20 +1351,94 @@ void TableView::OnBodyScrollerViewChanged(
         QueueTerminalGridLineRefresh();
     }
 
-    auto headerScroller = m_headerScroller.get();
-    if (!headerScroller)
+    SyncHeaderScroller();
+}
+
+void TableView::SyncHeaderScroller()
+{
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (!headerScroller || !bodyScroller || headerScroller == bodyScroller)
     {
         return;
     }
 
-    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5)
+    // ChangeView applies on the next layout pass, so HorizontalOffset can still read an older position.
+    const double bodyHOffset = bodyScroller.HorizontalOffset();
+    if (std::abs(headerScroller.HorizontalOffset() - bodyHOffset) < 0.5 && std::abs(m_headerRequestedOffset - bodyHOffset) < 0.5)
     {
-        // Skip near-equal offsets to avoid ViewChanged ping-pong.
         return;
     }
-
-    // Instant tracking keeps header and body visually glued.
+    m_headerRequestedOffset = bodyHOffset;
     headerScroller.ChangeView(bodyHOffset, nullptr, nullptr, true);
+}
+
+// Translation carries the band the rest of the way while the body pans on the compositor; it is 0 at rest.
+void TableView::StartHeaderScrollAnimation()
+{
+    auto const headerHost = m_headerHost.get();
+    auto const headerScroller = m_headerScroller.get();
+    auto const bodyScroller = m_bodyScroller.get();
+    if (m_headerScrollOffset || !headerHost || !headerScroller || !bodyScroller || headerScroller == bodyScroller)
+    {
+        return;
+    }
+
+    CancelColumnReorderDrag();
+    SyncHeaderScroller();
+    // ChangeView raises ViewChanging synchronously, and a handler can re-template or unload the TableView.
+    if (m_headerScrollOffset || m_headerHost.get() != headerHost || m_headerScroller.get() != headerScroller ||
+        m_bodyScroller.get() != bodyScroller)
+    {
+        return;
+    }
+
+    try
+    {
+        auto const bodyProperties = winrt::ElementCompositionPreview::GetScrollViewerManipulationPropertySet(bodyScroller);
+        auto const compositor = bodyProperties.Compositor();
+        auto offset = compositor.CreatePropertySet();
+        offset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        auto const animation = compositor.CreateExpressionAnimation(L"Vector3(body.Translation.X + header.X, 0, 0)");
+        animation.SetReferenceParameter(L"body", bodyProperties);
+        animation.SetReferenceParameter(L"header", offset);
+        animation.Target(L"Translation");
+        headerHost.StartAnimation(animation);
+        m_headerScrollAnimation = animation;
+        m_headerScrollOffset = offset;
+        m_bodyManipulationProperties = bodyProperties;
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] Starting the header scroll animation failed.");
+    }
+}
+
+void TableView::UpdateHeaderScrollOffset()
+{
+    if (auto const headerScroller = m_headerScroller.get(); headerScroller && m_headerScrollOffset)
+    {
+        try
+        {
+            m_headerScrollOffset.InsertScalar(L"X", static_cast<float>(headerScroller.HorizontalOffset()));
+        }
+        catch (...)
+        {
+            StopHeaderScrollAnimation();
+        }
+    }
+}
+
+void TableView::StopHeaderScrollAnimation()
+{
+    if (auto const headerHost = m_headerHost.get(); headerHost && m_headerScrollAnimation)
+    {
+        // Unlike StopAnimation, setting Translation cancels without writing the last animated value back.
+        try { headerHost.Translation({ 0.0f, 0.0f, 0.0f }); } catch (...) {}
+    }
+    m_headerScrollAnimation = nullptr;
+    m_headerScrollOffset = nullptr;
+    m_bodyManipulationProperties = nullptr;
 }
 
 winrt::AutomationPeer TableView::OnCreateAutomationPeer()
@@ -1425,6 +1544,7 @@ void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyProper
     {
         // Hidden headers are inactive; restore the tab stops stamped while they were hidden.
         RefreshHeaderTabStopsInternal();
+        SyncHeaderScroller();
     }
     InvalidateMeasure();
     QueueTerminalGridLineRefresh();
@@ -2046,11 +2166,12 @@ void TableView::AdoptItemsSource(bool reclaimActiveSource)
             }
         });
         AttachSourceTip(tableViewSource);
-        // Live reshape must not end the user's edit; DrainCoalescedEditReshape resumes it.
+        // Live reshape must not end the user's edit, nor re-aim focus away from a Tab move still
+        // waiting for its row; DrainCoalescedEditReshape and EndPendingTabEditMove resume it.
         sourceImpl->SetLiveShapingHold([weakThis]()
         {
             auto strongThis = weakThis.get();
-            return strongThis && strongThis->IsEditing();
+            return strongThis && (strongThis->IsEditing() || strongThis->IsTabEditMovePending());
         });
         // CustomSortComparer ranks are frozen at header sort; re-place the edited row.
         sourceImpl->SetLiveItemChangedHook([weakThis](winrt::IInspectable const& item, bool reshapePending)
@@ -2134,6 +2255,8 @@ void TableView::RefreshRowsPipeline()
     if (m_tableViewSourceRowMetadata != previousRowMetadata)
     {
         ++m_rowMetadataGeneration;
+        m_pendingGroupExpansionStates.clear();
+        m_groupAutomationElements.clear();
     }
 
     if (auto repeater = m_rowsRepeater.get())
@@ -3355,6 +3478,11 @@ void TableView::RebuildHeaders()
 
 void TableView::RebuildHeadersCore()
 {
+    // The reorder preview lives on the old header cells.
+    if (m_columnReorder && m_columnReorder->dragging)
+    {
+        QueueCancelColumnReorderDrag();
+    }
     m_headerSortSpaceArmedColumn = nullptr;
     auto const removedFocusColumn = m_headerFocusRemovedColumn.get();
     auto const fallbackFocusColumn = m_headerFocusFallbackColumn.get();
@@ -3637,7 +3765,12 @@ void TableView::RebuildHeadersCore()
                     }
                     if (auto strongThis = weakThis.get())
                     {
-                        if (strongThis->ToggleSortDirection(column))
+                        // A press that became a reorder drag is not a click.
+                        if (strongThis->ConsumeColumnReorderTap())
+                        {
+                            args.Handled(true);
+                        }
+                        else if (strongThis->ToggleSortDirection(column))
                         {
                             args.Handled(true);
                         }
@@ -3961,10 +4094,15 @@ void TableView::QueueRebuildHeaders()
 
     m_rebuildHeadersQueued = true;
     auto weakThis = get_weak();
-    if (!dispatcher.TryEnqueue([weakThis]()
+    if (!dispatcher.TryEnqueue([weakThis, generation = m_rebuildHeadersQueueGeneration]()
         {
             if (auto strongThis = weakThis.get())
             {
+                // A user reorder already ran this rebuild.
+                if (generation != strongThis->m_rebuildHeadersQueueGeneration)
+                {
+                    return;
+                }
                 strongThis->m_rebuildHeadersQueued = false;
                 try
                 {
@@ -4082,6 +4220,7 @@ void TableView::OnTableViewUnloaded()
     m_xamlRootChangedRevoker.revoke();
     m_layoutRasterizationScale = 0.0;
     CancelColumnResizeDrag();
+    CancelColumnReorderDrag();
     m_headerSortSpaceArmedColumn = nullptr;
     IgnoreTipInitializationUnloadedBeforeRender();
     IgnoreTip(TableViewTip::IgnoreReason::Unloaded);
@@ -4167,8 +4306,13 @@ void TableView::OnTableViewUnloaded()
         }
     }
     m_bodyScrollerSizeChangedRevoker.revoke();
+    m_bodyManipulationStartedRevoker.revoke();
+    m_bodyManipulationCompletedRevoker.revoke();
+    m_bodyManipulating = false;
+    m_headerScrollerViewChangedRevoker.revoke();
     m_bodyScroller.set(nullptr);
     m_headerScroller.set(nullptr);
+    StopHeaderScrollAnimation();
 
     // Drop the ThemeSettings subscription and instance so a subsequent Loaded re-creates it against
     // the (possibly different) window's WindowId. IsHighContrast falls back to AccessibilitySettings

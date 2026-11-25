@@ -49,7 +49,7 @@
     <FrameworkUdkPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2'))</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2'))</IxpTransportPackageVersion>
     <BasePackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2'))</BasePackageVersion>
-    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2m'))</WinUIDetailsNugetVersion>
+    <WinUIDetailsNugetVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.7.1-dev.experimental23'))</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
     <FoundationPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2'))</FoundationPackageVersion>
     <IXPPackageVersion>$([MSBuild]::ValueOrDefault('$(WindowsAppSDKVersionPinned)', '2.6.6-dev.experimental2'))</IXPPackageVersion>

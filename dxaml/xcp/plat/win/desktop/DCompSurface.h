@@ -238,6 +238,8 @@ private:
 
     void TraceSurfaceInit(DXGI_FORMAT format);
 
+    void TraceSurfaceTextureObserved(_In_ IUnknown* updateObject, const POINT& offset) noexcept;
+
     _Check_return_ HRESULT CopySubresource(
         _In_ const XRECT& destRect,
         _In_ SystemMemoryBits *pSource

@@ -80,7 +80,7 @@
 
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)'=='Release' and '$(XamlDisableWholeProgramOptimization)' != 'true'" Label="Configuration">
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
 

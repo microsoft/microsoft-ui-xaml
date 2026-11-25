@@ -1734,9 +1734,8 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
 
         wh->WindowContent = rootGrid;
 
-        // Because the subtree is collapsed, the Border/ImageBrush won't render, which then won't go through
-        // CImageSource::ReloadReleasedSoftwareImage -> ImageSurfaceWrapper::SetKeepSystemMemory. We'll decode only a
-        // hardware surface.
+        // Because the subtree is collapsed, the Border/ImageBrush won't render, so the image decodes to a hardware surface
+        // only.
     });
 
     LOG_OUTPUT(L"> Waiting for BitmapImage.Opened.");
@@ -1756,15 +1755,9 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
     {
         LOG_OUTPUT(L"> Making subtree visible.");
         rootGrid->Visibility = xaml::Visibility::Visible;
-
-        //
-        // The BitmapImage now needs a software surface due to BaseContentRenderer::MaskPartEnsureRealizationTexture's
-        // partHasContent check. CImageSource::ReloadReleasedSoftwareImage tracks the image so the decode is requested
-        // after the render walk, and DecodeToRenderSize decodes the software surface.
-        //
     });
 
-    // The software decode reuses a request that WaitForIdle doesn't count, so wait until the border draws.
+    // Wait until the border draws.
     const auto deadline = std::chrono::steady_clock::now() + Event::GetDefaultTimeout();
     do
     {

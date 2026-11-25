@@ -10,7 +10,7 @@ using WinUIProfiler.Mcp.Tools;
 namespace WinUIProfiler.Mcp.Sessions;
 
 /// <summary>
-/// A session file, with when it was last written and its size, both counting its write-ahead log when the log isn't empty.
+/// A session file, with its size and last write across the main and CPU databases and their nonempty write-ahead logs.
 /// </summary>
 internal sealed record SessionFileEntry(string Path, DateTime LastWrittenUtc, long Bytes);
 
@@ -68,15 +68,17 @@ internal static class SessionCatalog
                     var file = new FileInfo(path);
                     var written = file.LastWriteTimeUtc;
                     var bytes = file.Length;
-                    var log = new FileInfo(path + "-wal");
-
-                    // An empty log holds no writes: a checkpoint empties one only once its writes are in the file. Reading
-                    // a file left in WAL mode, as a recording that didn't end normally leaves one, creates an empty log
-                    // beside it that a read-only connection can't remove, and its time would make the file the newest.
-                    if (log.Exists && log.Length > 0)
+                    var cpuPath = SessionFile.CpuDatabasePath(path);
+                    foreach (var extraPath in new[] { path + "-wal", cpuPath, cpuPath + "-wal" })
                     {
-                        written = log.LastWriteTimeUtc > written ? log.LastWriteTimeUtc : written;
-                        bytes += log.Length;
+                        var extra = new FileInfo(extraPath);
+                        // Reading a database left in WAL mode can create an empty log. It holds no writes and must
+                        // not make an older recording the newest.
+                        if (extra.Exists && extra.Length > 0)
+                        {
+                            written = extra.LastWriteTimeUtc > written ? extra.LastWriteTimeUtc : written;
+                            bytes += extra.Length;
+                        }
                     }
 
                     entries.Add(new(path, written, bytes));

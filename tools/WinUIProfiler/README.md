@@ -3,7 +3,8 @@
 A standalone, unpackaged, Windows App SDK and .NET self-contained WinUI 3
 application. Launch a packaged application by AUMID, launch an unpackaged
 executable, or attach to a running process. Browse buttons supplement manual
-entry. Connecting requires explicit trust of the local injection binaries.
+entry. Connecting from the UI automatically uses the bundled local injector
+and TAP binaries, which run native code in the selected app.
 
 The architecture-matched native injector loads a public `IXamlDiagnostics` TAP
 into the selected target. A local, same-user named pipe verifies the process
@@ -55,8 +56,9 @@ the kernel's GPU memory, allocation and window focus events for it, to a session
 them from a recorded trace (`.etl`) into a session file. The Launch tab shows
 the launch's milestones, including an app's own (see
 [Launch timeline](#launch-timeline)), the Frames tab its UI-thread ticks and
-the regions of interest in them, and the Objects tab its UI elements and
-composition visuals.
+the regions of interest in them, the Objects tab its UI elements and
+composition visuals, and the CPU tab its sampled call stacks (see
+[CPU sampling and symbols](#cpu-sampling-and-symbols)).
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime. It
 replaces the target's WinUI runtime only when it launches the target with
@@ -134,10 +136,26 @@ phases, processed lifetimes and kernel-allocation links.
 It owns and stops only its unique test ETW session
 and deletes its temporary recording.
 
+To validate the opt-in surface-to-texture producer against real app captures, start
+recording before launching the same WinUI workload twice, with Direct3D11 and the
+default XAML provider enabled. Enable `Microsoft-Windows-XAML-Profiler` at Verbose level only for the first capture:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --surface-texture-integration enabled.etl <enabled-pid> disabled.etl <disabled-pid>
+```
+
+This verifies the real `DCompSurfaceTextureObserved` payload, requires every observation
+to join surface-initialization and Direct3D11 resource events, and checks the active-rendering
+control without the opt-in provider. Offsets identify the gutter-excluded content origin.
+Observations describe transient update textures, not exclusive surface or element GPU bytes.
+The test reads existing ETLs and does not require elevated capture permissions.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
-endpoint, check the trust box, then connect. Connection status shows the actual
-target PID, creation time, runtime path and latest hello. Errors and timeouts
-remain visible; connecting to a non-WinUI process cannot produce graph samples.
+endpoint, then connect. The target settings include a note that connecting
+trusts the bundled injector and TAP binaries to run native code in the target.
+Connection status shows the actual target PID, creation time, runtime path and
+latest hello. Errors and timeouts remain visible; connecting to a non-WinUI
+process cannot produce graph samples.
 The selected target must expose WinUI diagnostics, use a compatible runtime and
 have matching architecture and access rights. Access denial is reported, not
 silently elevated. A target whose UI thread is too busy to take the TAP request
@@ -159,7 +177,10 @@ PowerShell 7.4 or later:
 ```
 
 Use `-ExePath`, with optional `-Arguments`, for an unpackaged app, and `-Aumid`
-for a full-trust packaged app (`Get-StartApps` lists AUMIDs). The script:
+for a full-trust packaged app (`Get-StartApps` lists AUMIDs). `-SymbolPath`,
+such as `'D:\out;srv*C:\Symbols*https://msdl.microsoft.com/download/symbols'`,
+names the functions in the sampled CPU call stacks when each session ends (see
+[CPU sampling and symbols](#cpu-sampling-and-symbols)). The script:
 
 1. Builds the profiler with `Build-App.ps1` (Release, for this machine's
    architecture) when this checkout has no build. It first runs
@@ -216,8 +237,9 @@ directly:
 | `--runtime-source <folder>` | The original runtime folder, whose MUX requests are redirected. |
 | `--redirect-controls` | Also load MUXC from the staged runtime. |
 | `--launch-directory <folder>` | Where each launch writes its results, in `<n>` subfolders. |
-| `--trust-local-binaries` | Checks the trust box. |
-| `--connect` | Connects once the window opens. |
+| `--trust-local-binaries` | Authorizes the bundled local injector and TAP for command-line auto-connect. |
+| `--symbol-path <path>` | Fills in **Symbol path**. It can be used alone, with any connection mode. |
+| `--connect` | Connects once the window opens; requires `--trust-local-binaries`. |
 
 `--private-runtime`, `--runtime-source` and `--launch-directory` go together,
 as full paths. Each launch runs the launcher from `<n>\native` in the launch
@@ -297,6 +319,73 @@ not reloaded on startup. Missing or invalid snapshot files produce visible error
 The trees and resource counters do not require a recording database, heap capture,
 or MUX changes. The **Textures** section uses the snapshot's original ETW
 recording, when one is available.
+
+When the connection has a recording database, each successful capture is also
+committed to its `TreeSnapshots` table before capture completion is reported.
+The complete validated JSON is stored in `Document`, independently of the
+export file. This includes both trees, root intervals, correlations, properties,
+limitations and resource capture status/counters. A database write failure is
+reported with the path of the JSON that was saved; it is not reported as a
+successful database capture. Connections without a database still export JSON.
+If ETW fails to start after creating a recording file, captures also remain
+JSON-only; the failed recording is kept for diagnostics, not used for snapshots.
+Saved documents have separate size bounds from native transfers because JSON
+escaping can expand icon, emoji and other text. They remain subject to the
+recording's actual byte budget and the same schema and identity validation.
+
+Start with `SnapshotSummary`, or find the snapshot views in `QueryCatalog`:
+
+```sql
+SELECT CaptureId, SavedUtc, JsonPath, EndQpc, XamlNodes, CompositionNodes,
+       ResourceStatus, OutstandingAllocSize
+FROM SnapshotSummary ORDER BY EndQpc;
+
+SELECT * FROM SnapshotNodes WHERE CaptureId = :capture AND Tree = 'Xaml';
+SELECT * FROM SnapshotRoots WHERE CaptureId = :capture;
+SELECT * FROM SnapshotCorrelations WHERE CaptureId = :capture;
+SELECT * FROM SnapshotResources WHERE CaptureId = :capture;
+```
+
+`SnapshotNodes.Properties` retains the complete property JSON, including
+unknown/nested properties and explicit nulls. For example, compare opacity on
+objects present in both captures from the same database:
+
+```sql
+WITH Nodes AS MATERIALIZED (
+    SELECT * FROM SnapshotNodes WHERE CaptureId IN (:before, :after)),
+Roots AS MATERIALIZED (
+    SELECT * FROM SnapshotRoots WHERE CaptureId IN (:before, :after))
+SELECT b.Tree, b.ObjectAddress, b.Type,
+       b.Properties -> '$.opacity' AS BeforeOpacity,
+       a.Properties -> '$.opacity' AS AfterOpacity
+FROM Nodes b
+JOIN Roots br ON br.CaptureId = b.CaptureId AND br.RootId = b.RootId
+JOIN Nodes a ON a.Tree = b.Tree
+    AND a.ObjectAddress = b.ObjectAddress AND a.Type = b.Type
+JOIN Roots ar ON ar.CaptureId = a.CaptureId AND ar.RootId = a.RootId
+    AND ar.ThreadId = br.ThreadId AND ar.XamlRootAddress = br.XamlRootAddress
+WHERE b.CaptureId = :before AND a.CaptureId = :after
+    AND (b.Properties -> '$.opacity') IS NOT (a.Properties -> '$.opacity');
+```
+
+The views expand snapshot JSON on demand. When joining them, materialize the
+capture-filtered rows once as above; otherwise SQLite can repeatedly parse the
+documents for each candidate node, making comparisons of real trees very slow.
+
+Node/root IDs are capture-local, not cross-capture identities. The example
+matches root thread/address and object address/type, as the tree comparison
+does; addresses alone cannot prove continuous lifetimes between captures.
+IDs and unsigned graphics counters are exposed as exact decimal **text**,
+not SQLite REAL or signed integers. Use `->` to preserve large numeric property
+tokens; calculate full-range unsigned counter deltas with decimal arithmetic
+outside SQLite. Signed allocator counters remain integers, with `-1` unavailable.
+The existing session size limit includes snapshot documents: rolling retention
+can delete whole oldest captures as well as events/samples, but never parts of a
+capture. JSON exports are not deleted. Older databases have no stored snapshots.
+Snapshot insertion and event/snapshot retention share a main-database
+transaction. CPU retention is staged on its own writer connection and commits
+after main: a rejected main write rolls back both, while a later CPU commit
+failure stops recording and leaves main's committed capture and cutoff intact.
 
 In snapshot viewers and comparisons, expand **Textures** inside
 **Resource allocations**, after the existing resource groups. The section lists
@@ -467,7 +556,8 @@ session file, with no events lost or dropped.
 
 Reading ETW live, or recording a trace, needs an elevated process, or
 membership in the local Performance Log Users group. Reading a trace file does
-not.
+not. Live CPU sampling needs an elevated process; see
+[CPU sampling and symbols](#cpu-sampling-and-symbols).
 
 ### Live, from the app
 
@@ -507,7 +597,7 @@ launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
-Events go through a queue of 131,072 events to one processing thread that runs
+Events go through a queue of 262,144 events to one processing thread that runs
 the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
@@ -533,6 +623,21 @@ receives to a SQLite file, one per process in a connection or one per trace read
 `<date>-<time>-<process>-<pid>.sqlite`. A writer thread commits a batch every
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
+
+CPU samples, call-stack nodes, code addresses, modules and symbol results live
+in a separate `<session>.sqlite.cpu` SQLite database, created only when CPU
+sampling records data or a sampling result. `SessionInfo.CpuDatabaseVersion`
+identifies recordings with a companion. The app and `cpu`/`symbolize` CLI
+commands attach it automatically; event-only reads do not open or require it.
+Keep both files together with their original names when copying a CPU recording.
+CPU reads report missing or mismatched companions rather than silently omitting
+samples. Older version-1 recordings with inline CPU tables remain supported.
+Session listings count both databases and their nonempty WAL files for total
+size and latest recording activity, without opening the CPU database.
+The CPU schema and matching `SessionId` are committed and flushed before the
+main database advertises the companion. WAL commits are atomic per database,
+not across both files. The recording clock stays only in main `SessionInfo`;
+CPU samples retain raw QPC timestamps on that same clock.
 
 Startup members share one ETW session, but not process-local object/frame/graphics
 indexes or metric histories. The ETW lost-event count describes the shared
@@ -612,15 +717,30 @@ unsigned JSON numbers too. When querying a handle, use JSON's `->` operator
 to retain its exact JSON text; `json_extract`/`->>` can round integers above
 SQLite's signed 64-bit range.
 
-A session file is limited to 500 MB. Before a batch would take it past the
-limit, the oldest events are deleted, `SessionInfo.CompleteFromSeq` records the
-first event still stored, and the connection panel says from when the file is
-complete. Closed graphics history leaves with its raw evidence; open graphics
+A recording has a shared 500 MB limit across its event and CPU databases. Before a batch would
+take it past the limit, the oldest data is deleted: the oldest events, with the
+CPU samples from before the first event left, or else, when samples are older
+than every event, the oldest samples. The call stacks and code addresses no
+sample has any more go with them. `SessionInfo.CompleteFromSeq` records the
+first event still stored, the connection panel says from when the file is
+complete, and `CpuSampling.Note` says when samples were deleted. Closed
+graphics history leaves with its raw evidence; open graphics
 lifetimes and referenced parent devices retain continuity and are marked
-`Trimmed` when evidence has been removed. While recording, the file is in WAL mode, so it can be read at the
-same time, for example with the CLI; when the session ends, it is left as a
-single `.sqlite` file. A write error stops the recording, keeps what was saved,
+`Trimmed` when evidence has been removed. Freed pages are reclaimed when one
+database needs the space released by the other. While recording, both files
+use WAL mode, so they can be read at the same time, for example with the CLI.
+The event writer's connection disables automatic checkpoints: a separate connection
+and thread run `PRAGMA wal_checkpoint(PASSIVE)` every 250 ms, keeping that
+checkpoint work off the event batch commit path. Disk contention can still affect
+both threads. The thread stops before the final checkpoint.
+When the session ends, each database is checkpointed and no longer needs its
+`-wal` and `-shm` files. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
+Event trimming commits its coverage boundary before CPU cleanup. If that
+cleanup fails or is interrupted, CPU readers omit samples before the committed
+`CompleteFromQpc` and report their omission. CPU-only trimming records a loss
+flag in `CpuSessionInfo` with the deletion, so it remains visible even if the
+recording's final sampling summary could not be written.
 
 ETW timestamps an event separately in each session that receives it, so the
 same event recorded by `logman` and by the app differs by a few microseconds.
@@ -641,6 +761,24 @@ from them. Each view's description is inside its definition, so
 `SELECT * FROM QueryCatalog` lists the views with an example query each.
 Times are in ms from the start of the recording.
 
+`CpuFrames` and raw `HotFunctions` live in the companion
+(`Storage\CpuSchema.cs`). The profiler installs connection-local `CpuSamples`,
+`CpuSampleDetails` and `HotFunctions` views that use main `SessionInfo`'s
+clock and retained event boundary. In an external SQLite connection to
+`session.sqlite`, attach the CPU file and apply that same boundary and clock
+when querying samples or correlating them with XAML events:
+
+```sql
+ATTACH DATABASE 'session.sqlite.cpu' AS cpu;
+SELECT x.rowid AS SampleId, x.ThreadId, f.Frame,
+       (x.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms
+FROM main.SessionInfo s
+JOIN cpu.CpuSessionInfo c ON c.SessionId = s.SessionId
+JOIN cpu.CpuSamples x ON s.CompleteFromQpc IS NULL OR x.Qpc >= s.CompleteFromQpc
+JOIN cpu.CpuFrames f ON f.StackId = x.StackId;
+SELECT sql FROM cpu.sqlite_master WHERE type = 'view';
+```
+
 | View | Rows | Used by |
 | --- | --- | --- |
 | `EventDetails` | Every event, with its fields by name (JSON object), its tick and bucket, and the UI elements and visuals it mentions | The events of a region or row |
@@ -650,6 +788,9 @@ Times are in ms from the start of the recording.
 | `InterestingRowEvents` | The events of each interesting row | Agents |
 | `FrameList` | The Frames tab's list in order, with what each Show choice keeps (`InInteresting`, `InSlow`) | The Frames tab, `frames --list` |
 | `LaunchSummary` | When the first 10 ticks that drew ended, from process start or recording start | The Frames tab |
+| `CpuSampleDetails` | Every CPU sample of the target's threads: its time, thread and the frame it was in | `cpu`, agents |
+| `HotFunctions` | Each thread's CPU samples by the frame they were in, most first, with the time they stand for | `cpu`, agents |
+| `CpuFrames` | Every node of the sampled call stacks, with its frame and its caller's node | `cpu`, agents |
 | `GraphicsLifetimes` | Process-local graphics lifetimes, observed/unknown endpoints, reuse bounds, trimming and capture-loss counts | SQLite analysis |
 | `GraphicsResourceAllocations` | Resource → device allocation → optional adapter allocation, restricted to overlapping observed link intervals | SQLite analysis |
 | `QueryCatalog` | The views and an example query each | Agents |
@@ -911,7 +1052,7 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli processes xaml.etl                      # event counts of the processes with XAML events, to find the PID
 & $cli summary xaml.etl --pid <pid>            # event counts for that process
 & $cli dump xaml.etl --pid <pid> --name CoreServices_Frame --max 20   # the events themselves
-& $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500]  # a session file from the trace
+& $cli record xaml.etl --pid <pid> --out session.sqlite [--limit-mb 500] [--symbol-path <path>]  # a session file from the trace
 & $cli summary session.sqlite                  # a session file holds one process; --pid is optional
 & $cli objects session.sqlite --type Button    # UI elements and visuals (--kind element|visual), with first/last seen and event counts
 & $cli timeline session.sqlite --object <id>   # the events that mention one object, with their frames (or --address 0x...)
@@ -922,7 +1063,55 @@ $cli = '.\WinUIProfiler.Cli\bin\Release\net10.0\WinUIProfiler.Cli.exe'
 & $cli interesting session.sqlite --region <id> --json   # one region and its rows, as JSON
 & $cli launch xaml.etl --pid <pid> [--markers markers.json]   # the launch timeline, as in the Launch tab
 & $cli launch session.sqlite                   # the same, from a session file
+& $cli symbolize session.sqlite --symbol-path <path> [--force]   # names the functions in the CPU call stacks
+& $cli cpu session.sqlite [--thread <tid>] [--top 30] [--json]   # the hottest functions, per thread and in all
 ```
+
+All these commands accept `--json`, including full event fields for `dump`,
+`timeline` and `frames --frame`. JSON is written only to standard output;
+diagnostics go to standard error. Enum values are strings. Null still means
+unknown or unavailable, not zero. Integer tokens retain their full signed or
+unsigned 64-bit values; consumers must not round them through floating-point
+numbers. Existing human-readable output remains the default. `launch` still
+analyzes a recorded launch, and `record` still imports an ETL; use `live` to
+launch or attach to a running application.
+
+The `events` command exposes the same event drill-down and linked object IDs as
+the app's tick, region and interesting-row selections:
+
+```powershell
+& $cli info session.sqlite --json
+& $cli frames session.sqlite --frame 1 --offset 0 --count 100 --json
+& $cli events session.sqlite --frame 1 --bucket Xaml --filter Measure --count 100 --json
+& $cli events session.sqlite --region 2 --count 100 --json
+& $cli interesting session.sqlite --json
+& $cli events session.sqlite --row 3 --thread 100 --json
+& $cli events session.sqlite --thread 100 --first-seq 3 --last-seq 9 --json
+& $cli timeline session.sqlite --object 1 --offset 100 --count 100 --json
+& $cli dump session.sqlite --offset 100 --count 100 --json
+```
+
+Replace the example IDs with values returned by the corresponding query.
+`--row` is an interesting row's `StartSeq`, scoped by its `ThreadId`; use an
+explicit sequence range if multiple spans start there. A region automatically
+selects its UI thread and sequence range. `events` returns bucket labels,
+complete fields, object mentions, and pagination metadata; use each mention's
+`ObjectId` with `timeline`. Its default page size is 1000. `--count 0` reads
+all matches. `dump`, `timeline`, and `frames --frame` also accept `--offset`
+and `--count`; without them their original limits are unchanged. `dump` accepts
+either the existing `--max` or `--count`, not both.
+
+`info` reports coverage, recording state, retained event bounds, and ETW loss
+and profiler drops separately. Queries can read a SQLite session while the
+live profiler is still writing it. A page and its separately read total can
+change between queries while recording; use the returned IDs to navigate
+rather than assuming an immutable list.
+
+Exit codes are 0 for success, 2 for invalid usage, 3 for input/connection/storage
+errors, and 4 for cancellation. Use `--help` for the command families.
+
+A `logman` trace of these providers has no CPU samples; see
+[CPU sampling and symbols](#cpu-sampling-and-symbols) for a trace that has them.
 
 The app reads a trace too (`Ingestion\TraceReplay.cs`). Select **Recorded
 trace (.etl)** as the connection mode, then type the trace's path or browse for
@@ -968,6 +1157,115 @@ from the trace, and the Launch, Frames and Objects tabs follow it as it grows.
   about a second, and reading the app's 101,281 events less than two.
 - A trace has no running process, so there are no live metrics or tree
   snapshots for it.
+
+## Headless live profiling and snapshot analysis
+
+The CLI uses the same connection, sampling, recording, snapshot and comparison
+engines as the desktop app. It does not load WinUI or open a profiler window.
+Live commands require Windows, compatible x64/ARM64 payloads, a target exposing
+WinUI diagnostics, appropriate process/ETW permissions, and explicit trust in
+the local binaries. Offline queries do not require native connection payloads.
+
+Build and stage the complete console frontend from this directory:
+
+```powershell
+.\scripts\Build-Cli.ps1 -Configuration Release -Platform x64
+$cli = '.\artifacts\cli\win-x64\Release\WinUIProfiler.Cli.exe'
+# Add -Publish for a self-contained deployment, or -OutputDirectory for another destination.
+& $cli targets processes --json
+& $cli targets apps --json
+& $cli live --exe 'C:\Apps\MyApp\MyApp.exe' --trust-local-binaries --duration 30 --json
+& $cli live --aumid 'Contoso.App_abcdefghijklm!App' --trust-local-binaries --interactive
+& $cli live --pid 1234 --trust-local-binaries --session-directory C:\Captures\Run1 `
+    --snapshot-directory C:\Captures\Run1\Snapshots --snapshot-interval 10 --duration 60 --json
+```
+
+Distribute the whole build/publish output, including `ConnectionPayloads`,
+`NativeLauncher` and `WinUIProfiler.Native.dll`. `Build-App.ps1` and
+`Build-Cli.ps1` share native payload building/staging and hash verification.
+Use `-Platform ARM64` for an ARM64 host; both target TAP/injector and launcher
+architectures are staged. Packaged-app discovery uses Windows' inbox
+`Get-StartApps`, filtered to packaged AUMIDs.
+
+Specify exactly one target. `--arguments` passes an unpackaged app's command
+line; `--working-directory` selects its initial directory. Attach can also take
+`--creation-time` with the FILETIME returned by process discovery, preventing a
+reused PID from selecting another process. `--endpoint` chooses the TAP endpoint
+(default 1). `--payload-directory` overrides the executable-relative payload
+directory, and `--markers` selects the same marker configuration as the app.
+
+`live` keeps one foreground connection, automatically captures the initial
+snapshot, and emits metrics until the target exits, the duration expires, or
+Ctrl+C is pressed. `--interactive` also accepts `status`, `snapshot` and `stop`
+lines on stdin. These commands reuse the same authenticated connection rather
+than repeatedly attaching. Stopping disconnects and finalizes recording; it
+does not terminate the target. Read the reported recording path with the
+analysis commands, including while recording continues in another terminal.
+
+With `--json`, live output is NDJSON: one `{"type":"...","data":...}` record per
+line. Types include `status`, `metrics`, `snapshot` and final `summary`.
+Target discovery uses a `targets` envelope. Status and summary expose recording
+and snapshot paths, connection health and unavailable telemetry. Diagnostics
+remain on stderr; ETW/recording failure is not reported as a successful complete
+capture. Samples include their timestamps, units and unavailable reasons.
+
+For private WinUI DLLs, prepare and launch headlessly using the existing script:
+
+```powershell
+.\scripts\Profile-App.ps1 -MuxPath D:\out\Microsoft.UI.Xaml.dll `
+    -MuxcPath D:\out\Microsoft.UI.Xaml.Controls.dll -ExePath C:\Apps\MyApp\MyApp.exe `
+    -Headless -Duration 30 -Json -SessionDirectory C:\Captures\PrivateRun
+```
+
+Headless preparation requires an already elevated shell instead of a UAC
+relaunch that loses console I/O. It retains the staged runtime and never
+terminates the target on exit; remove that staging only after the target exits.
+For an already prepared runtime, `live` accepts `--private-runtime`,
+`--runtime-source`, `--launch-directory`, optional `--redirect-controls` and
+`--launcher-directory`. See the private-runtime section for compatibility limits.
+
+Capture, inspect and compare snapshots without the desktop app:
+
+```powershell
+& $cli snapshot capture --pid 1234 --trust-local-binaries --out C:\Captures\Before.json --json
+# Change the target's UI, then capture again.
+& $cli snapshot capture --pid 1234 --trust-local-binaries --out C:\Captures\After.json --json
+& $cli snapshot list C:\Captures --json
+& $cli snapshot tree C:\Captures\Before.json --tree xaml --depth 3 --json
+& $cli snapshot node C:\Captures\Before.json --tree xaml --node 1 --json
+& $cli snapshot matches C:\Captures\Before.json --tree xaml --node 1 --json
+& $cli snapshot diff C:\Captures\Before.json C:\Captures\After.json --changes added,removed --json
+& $cli snapshot diff C:\Captures\Before.json C:\Captures\After.json --tree composition --properties changed --json
+& $cli snapshot resources C:\Captures\Before.json C:\Captures\After.json --json
+& $cli snapshot history C:\Captures\After.json --tree xaml --node 1 --session C:\Captures\session.sqlite --json
+```
+
+Capture requires a new output file and saves atomically without overwriting an
+existing capture. Node IDs are positive decimal IDs local to a capture and
+tree, not object addresses. Tree depth defaults to unlimited; depth zero shows
+only starting nodes. `node` includes all captured properties, including values
+the UI hides as defaults. `matches` provides cross-tree IDs instead of requiring
+a click. Tree/diff JSON is flat and acyclic, retaining parent, child, root and
+matching IDs for reconstructing or navigating arbitrarily deep hierarchies.
+
+Diffs require the same process instance. They expose added, removed, property,
+moved and reordered changes; `--changes` accepts comma-separated categories,
+`all`, or `unchanged`. Ancestor context and correlated nodes are preserved, with
+explicit context flags, so added/removed results can still navigate both trees.
+`--node ID --side before|after` selects a merged comparison subtree (default
+side `after`). `--properties all|changed` controls property details; presence
+flags distinguish a missing property from a captured JSON null.
+
+`resources` accepts one snapshot or a before/after pair. Counter values and
+deltas retain full precision; unsupported lifetimes and unavailable captures
+remain explicit rather than becoming zero. `history` resolves a node using
+its root's capture-end QPC, validated process identity, and the proper XAML or
+composition address domain. A matching session with no retained correlation
+returns `status: "unavailable"` and a null object ID, not an invented match.
+
+`snapshot list` validates top-level JSON files, retaining malformed entries
+with their errors and returning exit code 3 when any cannot be read. Its file
+timestamp is the last-write UTC time, not an inferred capture UTC time.
 
 ## Launch timeline
 
@@ -1226,6 +1524,129 @@ wpr -stop launch.etl
 & $cli launch launch.etl --pid <pid>
 ```
 
+## CPU sampling and symbols
+
+Each session's separate CPU database holds the target's sampled CPU call stacks, as WPA's
+**CPU Usage (Sampled)** shows them. The functions in them are named from a
+symbol path you give.
+
+Where the samples come from:
+
+- **Live:** while connected, the profiler runs its own real-time kernel session.
+  It samples every processor's call stack every millisecond, as WPR's CPU
+  profile does, and keeps the target's samples. The kernel allows this only to
+  an elevated (administrator) profiler. Unelevated, the profiler says so and
+  records events only.
+- **From a trace file:** `record` and the App's trace import keep the target's
+  samples when the trace has them. That takes a CPU profile with stacks, such
+  as WPR's `GeneralProfile` or `CPU`, started with a file-mode WPR profile of
+  the providers in `providers.txt`, say `xaml.wprp`, from an elevated prompt:
+  `wpr -start CPU -start xaml.wprp -filemode`. Give that profile's collector
+  large buffers, as the `logman` command's `-bs` and `-nb` do, or ETW loses
+  events. The `logman` trace above has no samples. A trace whose stacks were
+  compressed (stack keys) keeps only each sample's leaf frame. A trace's
+  samples are matched to the target by process ID alone, so if another process
+  had that ID earlier or later in the trace, its samples are kept too; live
+  sampling also checks that a sample is from after the target's creation.
+
+A module's PDB identity (PDB name, GUID and age) is the one the trace recorded.
+When it recorded none, it's read from the module's file, if that is still the
+image that was loaded (same time stamp and size). The samples are stored in:
+
+| Table or view | What it holds |
+| --- | --- |
+| `CpuSessionInfo` | The main recording's `SessionId` and a durable `Trimmed` flag for CPU sampling loss; no separate recording clock |
+| `CpuSampling` | One row: the time each sample stands for (`IntervalMs`), the `Samples` and `Dropped` counts, whether stacks were compressed, the last symbol path, and why samples are missing or partial (`Note`) |
+| `CpuSamples` | Each sample's time, process, thread and call stack (`StackId`, its leaf frame) |
+| `CallStacks`, `CodeAddresses` | The call stacks as a tree from their root frames, and each frame's address, offset in its module (`Rva`) and `Function` |
+| `Modules` | The images and drivers the stacks ran in (`ProcessId` -1 for a driver), their PDB identity, and `SymbolStatus`: `Resolved`, `NotFound` (no location in the path has the PDB), `NoIdentity` (no PDB identity was recorded or read), `Portable` (managed code, whose portable PDBs have no native function names) or `Error`. `SymbolFile` is the PDB used, or why none was found. |
+| `CpuFrames`, `CpuSampleDetails`, `HotFunctions` | The [shared views](#shared-queries-views). A frame is `Module!Function`, or `Module!0xRva` until it's named. |
+
+The symbol path takes WPA's forms, separated by `;`. Only the locations in it
+are searched: `_NT_SYMBOL_PATH` is never read, and no server is added. What the
+profiler stores or shows of the path, such as `CpuSampling.SymbolPath` and its
+messages, leaves out a URL's user name, password, query (such as a SAS token)
+and fragment; searching uses the path as given.
+
+| Element | Searches |
+| --- | --- |
+| `D:\out\bin` or `\\server\share\symbols` | The folder, flat and as a symbol store |
+| `srv*C:\Symbols*https://msdl.microsoft.com/download/symbols` | The server, downloading into `C:\Symbols` |
+| `srv*https://msdl.microsoft.com/download/symbols` | The server, downloading into the path's cache: the first `cache*dir` or `srv*dir*server`, else the first local `srv*dir`, else `%TEMP%\SymbolCache` |
+| `srv*C:\Symbols*\\server\share*https://server` | Each location in turn, downloading into `C:\Symbols` |
+| `cache*C:\Symbols` | The folder as a symbol store; it's also the path's cache |
+| `https://server/symbols` | The server |
+
+`http://symweb` is read as `https://symweb.azurefd.net`, which needs an Azure
+CLI sign-in (`az login`): the profiler gets its token from
+`az account get-access-token`. Other servers get your Windows credentials. A
+server that doesn't answer within 30 seconds, or a share within 10, isn't asked
+again. The first run downloads the PDBs and can take minutes; the cache makes
+later runs fast.
+
+To name the functions:
+
+- **App:** fill in **Symbol path** before connecting or opening a trace, or
+  pass `--symbol-path`. While the session records, or the trace is read, the
+  **CPU** tab names the functions of the stacks it shows, in memory, as their
+  PDBs are found (see [CPU tab](#cpu-tab)). When the session or the trace's
+  reading ends, the functions are named in the session file in the background,
+  and after a private-runtime startup handoff in each of its processes' files,
+  the displayed one first. The **CPU** line shows the samples and how many
+  modules and code addresses were named, and its tooltip has the details.
+  Closing the window stops naming; modules already done stay named.
+- **Script:** `Profile-App.ps1 -SymbolPath <path>` passes the path to the App.
+  Include the folder with your private DLLs' PDBs, such as `D:\out`. The script
+  resolves relative folders from the current folder and expands environment
+  variables, which an elevated relaunch wouldn't have, before passing it on.
+- **CLI:** `record --symbol-path <path>` names them once the session file is
+  written. `symbolize session.sqlite --symbol-path <path>` names them in an
+  existing session file. Run again, it skips the modules already named, so
+  another path can fill in the rest; `--force` names them all again.
+  `cpu session.sqlite` prints the threads by samples, the functions with the
+  most samples, exclusive (running) and inclusive (anywhere on the stack), and
+  each module's PDB: its name, GUID and age, or, once symbols were looked up,
+  the PDB used or why none was found. The UI thread, the one XAML ticked
+  frames on, is marked. `--thread <tid>` keeps one thread,
+  `--top <count>` sets the length of each list (30), and `--json` prints JSON.
+
+### CPU tab
+
+The App's **CPU** tab (`Views\CpuView.xaml`) shows the session file's call
+stacks, as WPA's CPU Usage (Sampled) does. While a session records, or a trace
+is read, it shows the stacks saved so far; it counts the saved samples every 5
+seconds, showing the first ones as they come and offering newer ones in the
+notice, so the lists don't change while they're read. With a symbol path, it
+names their functions meanwhile, module by module, the module with the most
+samples first, and shows the names as they're found; there's no need to
+disconnect. The names are kept in memory, since the recording writes the file
+meanwhile, and the downloaded PDBs stay in the path's cache, so naming them in
+the file when the session ends is quick. Without a symbol path, the functions
+show as `Module!0xRva`. It reads the stacks again when the recording or the
+trace's reading ends, and once the functions are named in the file.
+**Open session file...** shows a saved one, and **Refresh** reads it again,
+say after the CLI's `symbolize` or for a recording's newer samples, whose
+functions are then named.
+
+- The left list has the sampled functions, hottest first. **Self** is the share
+  of the samples running the function itself (exclusive), **Total** the share
+  with it anywhere on the stack (inclusive). The search box filters it by
+  function or module, and the order is by self or total. Addresses the symbol
+  path didn't name (`Module!0xRva`) are dimmed.
+- The right tree is the **call tree** of all the samples, from the threads'
+  outermost frames down, or, for the function selected on the left, its
+  **callers** (what called it, out to the thread's start) or **callees** (what
+  it called), merged over all its calls. Selecting a function shows its
+  callers. Each node has its total and self share and, once the recording or
+  the trace's reading ends, the CPU milliseconds its samples stand for. The
+  heaviest path, the children with at least half of the samples, opens with
+  the tree; a node's children past 300 are summed into one row.
+- The thread list keeps one thread's samples, busiest first. The UI thread,
+  the one XAML ticked frames on, is listed as **UI thread**.
+- The notice above the lists says why there are no stacks, that a recording
+  has newer samples than those shown, or that the functions are addresses
+  until a symbol path names them.
+
 ## Copilot plugin
 
 This folder is also a plugin for GitHub Copilot CLI, `winui-profiler`. It
@@ -1304,6 +1725,37 @@ check the plugin's manifests and skills. To list the server's tools:
 dotnet build .\WinUIProfiler.Mcp\WinUIProfiler.Mcp.csproj -c Release
 & '.\WinUIProfiler.Mcp\bin\Release\net10.0\WinUIProfiler.Mcp.exe' --listtools
 ```
+
+## Data collection
+
+The app, `WinUIProfiler.Cli` and the MCP server send a few usage events to
+Microsoft, to show the WinUI team how many people use the profiler and which
+features they use. Events go to the WinUI tools telemetry endpoint with a
+Microsoft Entra token, which Windows gives a signed-in Microsoft work account
+without a prompt. Where Windows has no such account, nothing is sent. An event
+that cannot be sent at once is kept in `%LOCALAPPDATA%\WinUITools\pending` and
+sent by a later run; saved events are dropped after two days. No key
+ships with the tools. The endpoint records no location. It records a keyed hash
+of the sender's Entra object ID, so that one person's use counts once across
+machines and tools. Set `WINUI_TOOLS_TELEMETRY_OPTOUT=1` to turn it off.
+
+When it is on, the first run shows a notice (in the app, or on standard error
+for the CLI), and the tools send these events, each with the tool's version and
+a random install ID kept in `%LOCALAPPDATA%\WinUITools\install-id`:
+
+| Event | When | Values |
+| --- | --- | --- |
+| `Profiler.SessionStarted` | A connection, a trace reading or an opened session file starts | Online or offline, and the target app |
+| `Profiler.SessionEnded` | It ends | Completed, cancelled or failed, and its duration |
+| `Profiler.ViewOpened` | The user first opens a tab | The tab |
+| `Profiler.CliCommand` | A CLI command ends | The command, its outcome and duration |
+| `Profiler.McpToolCall` | An MCP tool call ends | The tool, its outcome and duration |
+
+The target app is named only when it is a Microsoft app; for any other app, the
+event holds a short hash of its executable's name. The events never hold source
+code, XAML, file paths, user or machine names, prompts, model output, event
+contents, call stacks, exception messages, or MCP tool arguments or results.
+`WINUI_TOOLS_CHANNEL` names how the tool was obtained, `unknown` by default.
 
 ## Limitations
 

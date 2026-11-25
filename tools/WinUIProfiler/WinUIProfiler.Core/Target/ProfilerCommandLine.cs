@@ -1,13 +1,18 @@
+using WinUIProfiler.Engine.Symbols;
+
 namespace WinUIProfiler.Engine.Target;
 
-// The profiler's command line: the app to launch, optionally with private WinUI DLLs, and whether to connect at once.
+// The profiler's command line: the app to launch, optionally with private WinUI DLLs, and whether to connect at once. The
+// symbol path, which may be given alone, is where the recording's CPU samples are symbolized from.
 public sealed record ProfilerCommandLine(TargetLaunchKind? Kind, string Target, string Arguments, string? PrivateRuntime,
-    string? RuntimeSource, bool RedirectControls, string? LaunchDirectory, bool TrustLocalBinaries, bool Connect)
+    string? RuntimeSource, bool RedirectControls, string? LaunchDirectory, bool TrustLocalBinaries, bool Connect,
+    string? SymbolPath = null)
 {
     public static ProfilerCommandLine Empty { get; } = new(null, "", "", null, null, false, null, false, false);
 
     private static readonly string[] Values =
-        ["--launch-exe", "--launch-aumid", "--arguments", "--private-runtime", "--runtime-source", "--launch-directory"];
+        ["--launch-exe", "--launch-aumid", "--arguments", "--private-runtime", "--runtime-source", "--launch-directory",
+            "--symbol-path"];
     private static readonly string[] Flags = ["--redirect-controls", "--trust-local-binaries", "--connect"];
 
     public static ProfilerCommandLine Parse(IReadOnlyList<string> arguments)
@@ -48,6 +53,19 @@ public sealed record ProfilerCommandLine(TargetLaunchKind? Kind, string Target, 
         var privateRuntime = Value("--private-runtime");
         var runtimeSource = Value("--runtime-source");
         var launchDirectory = Value("--launch-directory");
+        var symbolPath = Value("--symbol-path");
+        if (symbolPath is not null)
+        {
+            try
+            {
+                _ = SymbolPaths.Normalize(symbolPath);
+            }
+            catch (ArgumentException error)
+            {
+                throw new ArgumentException($"--symbol-path: {error.Message}", error);
+            }
+        }
+
         if (executable is not null && applicationId is not null)
         {
             throw new ArgumentException("Use --launch-exe or --launch-aumid, not both.");
@@ -55,7 +73,7 @@ public sealed record ProfilerCommandLine(TargetLaunchKind? Kind, string Target, 
 
         if (executable is null && applicationId is null)
         {
-            return options.Count == 0 ? Empty :
+            return options.Count == (symbolPath is null ? 0 : 1) ? Empty with { SymbolPath = symbolPath } :
                 throw new ArgumentException("The options need an app: --launch-exe <path> or --launch-aumid <AUMID>.");
         }
 
@@ -83,7 +101,7 @@ public sealed record ProfilerCommandLine(TargetLaunchKind? Kind, string Target, 
 
         return new(executable is null ? TargetLaunchKind.Packaged : TargetLaunchKind.Unpackaged, (applicationId ?? executable)!,
             Value("--arguments") ?? "", privateRuntime, runtimeSource, options.ContainsKey("--redirect-controls"), launchDirectory,
-            options.ContainsKey("--trust-local-binaries"), options.ContainsKey("--connect"));
+            options.ContainsKey("--trust-local-binaries"), options.ContainsKey("--connect"), symbolPath);
     }
 
     public PrivateRuntimeLaunch? GetPrivateRuntime(string launcherDirectory) => PrivateRuntime is null

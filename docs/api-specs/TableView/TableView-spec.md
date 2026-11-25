@@ -530,6 +530,7 @@ Editing starts only from user input in this release. There is no programmatic wa
 | `F2` | Begins editing the current cell |
 | `Enter` | Commits and closes the editor |
 | `Esc` | Cancels and discards the editor |
+| `Tab` / `Shift+Tab` | Commits and edits the next / previous editable cell; past the last (first), focus leaves the table |
 | Moving focus outside the editor and its owned flyouts/popups | Attempts to commit after focus settles; validation or an edit-ending handler can keep the edit open |
 | Moving focus within the editor or into an editor-owned flyout/popup | Keeps editing; focus-loss commit is re-evaluated after the flyout/popup closes |
 
@@ -539,6 +540,14 @@ the editor. These remain part of the editing interaction even though their popup
 is outside the editor's visual tree. An unrelated popup is not part of the editor and
 does not postpone focus-loss commit. Escape consumed by the editor, or used to dismiss
 its own menu, does not also cancel the cell edit.
+
+While `Tab` moves an edit, a vetoed or failed commit keeps the editor open, and selection follows a move to another row. In more detail:
+
+- Cells are visited in logical column order. Collapsed columns and cells that cannot be edited (read-only table or column, or no editor) are skipped.
+- Past the last (first) editable cell of a row, the edit wraps to the first (last) editable cell of the next (previous) data row; group headers are skipped. Past the last (first) row, the commit still runs and focus leaves the table as a `Tab` from the focused cell would.
+- A target row outside the viewport is scrolled into view, and its editor opens once focus lands on it. Until then, another `Tab` or `Shift+Tab` is ignored, `Escape` keeps the focus move but does not open the editor, and any other key drops the pending editor. Live shaping of the committed value waits until the next editor opens (and then until it closes) or the move is dropped, so the re-shape cannot pull focus away from the target.
+- `Tab` is left to the editor when the editor (or a control inside it) handles it, when focus is in an editor-owned flyout/popup, or when a multi-control editor still has a tab stop in that direction. `Ctrl+Tab` and `Alt+Tab` are never intercepted.
+- A `CellEditEnding` handler that moves focus off the edited record ends the move; the next editor does not open.
 
 The data item needs settable properties, and should raise `PropertyChanged` so the display cell refreshes once the edit closes.
 
@@ -758,13 +767,13 @@ replacing that template gives the app responsibility for those parts.
 | `IsExpandable` | `Boolean` DP | Whether this header can expand. |
 | `ToggleRequested` | event (`TableViewGroupHeaderToggleRequestedEventArgs`) | Raised when the band is activated. The args carry `GroupKey`, so a handler that re-enters and mutates the header still sees the key that was actually activated. |
 
-Template parts. Code looks up `PART_ContentPresenter` and `PART_GridLineBorder`, and degrades without either. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
+Template parts. Code looks up `PART_ContentPresenter`, `PART_ExpanderGutter` and `PART_GridLineBorder`, and degrades without any of them. The default visual states, however, target `PART_Root`, `PART_ContentPresenter` and `PART_ExpanderIcon` by name, so a template that keeps those state definitions must declare all three:
 
 | Part | Type | Purpose |
 |---|---|---|
 | `PART_Root` | `Border` | The band. `CommonStates` sets its independent `Background` and interaction `BorderBrush` for `PointerOver` and `Pressed`. |
 | `PART_ContentPresenter` | `ContentPresenter` | The app-customizable content region, showing `ContentTemplate` over the `TableViewGroupInfo`. `CommonStates` sets its `Foreground` and `HighContrastAdjustment`. |
-| `PART_ExpanderGutter` | `Border` | Reserves the chevron column so header content stays aligned with the rows below. It keeps its width when the chevron hides. |
+| `PART_ExpanderGutter` | `Border` | Optional. Reserves the chevron column so header content stays aligned with the rows below. It keeps its width when the chevron hides. Elements inside it are left out of the header's UIA children, since `ExpandCollapse` already reports the chevron's state. |
 | `PART_ExpanderIcon` | `FontIcon` | Glyph driven by `ExpansionStates`, not by code; hidden by `NotExpandable`; recoloured by `CommonStates`. |
 | `PART_GridLineBorder` | `Border` | Optional. Renders the border chrome; on the last row the control clears its bottom edge so it does not double the table's own border. |
 
@@ -1098,6 +1107,197 @@ An unavailable pooled group-header automation peer rejects `ShowContextMenu` wit
 `ElementNotAvailable`, just as it rejects a row-coordinate query. It cannot open either
 its retained menu or the table fallback.
 
+## Reordering columns
+
+> **Proposed — gated on API review.** Tracked by ADO 64665234 ("TableView: unable to reorder
+> columns"), filed by Task Manager, which needs a user-controlled column order that it can persist
+> across sessions.
+
+`Columns` is an `IVector`, so an app can already reorder columns in code by removing a column and
+inserting it elsewhere. What was missing is the user gesture, and an event that tells the app the
+user changed the order so it can save it. Reordering is opt-in, like `DataGrid.CanUserReorderColumns`
+in the Windows Community Toolkit, because a table whose column order is part of its meaning
+(a ledger, a comparison) should not become draggable on upgrade.
+
+```xml
+<tabular:TableView x:Name="Processes"
+                   CanUserReorderColumns="True"
+                   ColumnReordered="OnColumnReordered">
+    <tabular:TableViewTextColumn x:Name="NameColumn" Header="Name" Binding="{Binding Name}"
+                                 FrozenEdge="Leading" />
+    <tabular:TableViewTextColumn x:Name="PidColumn" Header="PID" Binding="{Binding Pid}" />
+    <tabular:TableViewTextColumn x:Name="CpuColumn" Header="CPU" Binding="{Binding Cpu}" />
+    <tabular:TableViewTextColumn x:Name="MemoryColumn" Header="Memory" Binding="{Binding Memory}" />
+</tabular:TableView>
+```
+
+A frozen column moves only among the frozen columns, so the single frozen Name column above stays
+first; that is how an app pins a column in place.
+
+```csharp
+// Save the order whenever the user changes it, keyed by something stable (not the header text,
+// which is localized).
+void OnColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+{
+    Settings.ColumnOrder = string.Join(",", sender.Columns.Select(c => (string)c.Tag));
+}
+
+// Restore it at startup, before the table loads, with the ordinary collection operations. Keep only
+// saved keys that still name a column, once each, so a column removed or renamed in a later version
+// does not shift the rest.
+void RestoreColumnOrder(TableView table, IReadOnlyList<string> savedOrder)
+{
+    var known = savedOrder.Distinct()
+        .Select(key => table.Columns.FirstOrDefault(c => (string)c.Tag == key))
+        .Where(column => column is not null)
+        .ToList();
+    for (int target = 0; target < known.Count; target++)
+    {
+        int current = table.Columns.IndexOf(known[target]);
+        if (current != target)
+        {
+            table.Columns.RemoveAt(current);
+            table.Columns.Insert(target, known[target]);
+        }
+    }
+}
+```
+
+There is no column-resized event. To persist widths as well, an app registers a change callback for
+each column's `Width` (`RegisterPropertyChangedCallback(TableViewColumn.WidthProperty, ...)`), which
+fires for a user resize as for a change in code.
+
+### API
+
+| Member | Kind | Default | Description |
+|---|---|---|---|
+| `TableView.CanUserReorderColumns` | `Boolean` DP | `false` | Lets the user reorder columns by dragging a header or with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd>. Does not affect changes the app makes to `Columns`. |
+| `TableView.ColumnReordered` | event | | Raised after a user reorder has been applied to `Columns`. |
+| `TableViewColumnReorderedEventArgs` | class | | `Column`, `OldIndex`, `NewIndex` (read-only). |
+
+`OldIndex` and `NewIndex` are indexes in `Columns`, including collapsed columns: `NewIndex` is where
+the column is after the move, so `Columns[NewIndex] == Column` inside `ColumnReordered`. They are not
+UI Automation column indexes, which count visible columns only.
+
+The property name follows `CanUserSortColumns` and `CanUserResizeColumns`. The event name matches the
+Toolkit `DataGrid`'s `ColumnReordered`, with indexes added because the Toolkit's `DisplayIndex` is not
+a TableView concept: in TableView the position in `Columns` is the display order.
+
+```idl
+[MUX_PREVIEW, webhosthidden]
+runtimeclass TableViewColumnReorderedEventArgs
+{
+    TableViewColumn Column { get; };
+    Int32 OldIndex { get; };
+    Int32 NewIndex { get; };
+};
+
+unsealed runtimeclass TableView
+{
+    // ...
+    Boolean CanUserReorderColumns;                         // default false
+    event Windows.Foundation.TypedEventHandler<TableView, TableViewColumnReorderedEventArgs> ColumnReordered;
+    static Microsoft.UI.Xaml.DependencyProperty CanUserReorderColumnsProperty { get; };
+};
+```
+
+**No `MoveColumn` method.** A user reorder is applied to `Columns` as a remove followed by an insert
+of the same column, which is also how an app moves a column in code, so the two paths cannot drift
+apart.
+
+### Behavior
+
+- **Gesture.** Press on a header and drag it horizontally. The drag starts once the system's gesture
+  threshold is passed, the same manipulation path the resize gripper uses, so mouse (left button),
+  touch and pen behave alike. As in File Explorer and Task Manager, the header itself follows the
+  pointer, and as soon as the pointer enters a neighbouring header, that header slides over by the dragged
+  header's width to open the gap where it will land, with the timing of ListView's reorder hints. Only the header row moves; the rows follow on the drop. Releasing drops the column there. A press that never passes the threshold is still a click, so it sorts as before.
+- **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
+  capture, unloading the table, a pan of the table body or a horizontal scroll, replacing `Columns`, or a
+  change to `Columns` or to a column's `Visibility` or `FrozenEdge` cancels without changing anything.
+  A drag does not start while the body is being panned.
+- **Coexistence.** A press on the resize gripper or on interactive header content (a `Button`, a
+  `CheckBox`) is theirs and never starts a reorder, and a drag never sorts the column it moved. The
+  right button and press-and-hold open the context menu as before. While reorder is on, the header
+  row takes horizontal touch manipulations and leaves vertical pans to an ancestor `ScrollViewer`.
+- **Frozen columns.** A column never crosses the frozen boundary: a frozen column can be reordered
+  only among the frozen columns, and a scrolling column only among the scrolling ones. A move that
+  would change any column's frozen state (including bringing a non-prefix `FrozenEdge="Leading"`
+  column into the frozen prefix) is not offered, and the dragged header stops at the boundary. When the
+  table is scrolled, a scrolling column hidden under the frozen band is not a drop target. Only
+  `Leading` columns freeze, so a `Trailing` column moves as a scrolling column.
+- **Collapsed columns** keep their place in `Columns` and are never a drop target. A moved column is
+  inserted directly before the visible column it is dropped in front of, or directly after the last
+  visible column.
+- **Right-to-left.** The gesture and the keys follow the reading order: under
+  `FlowDirection="RightToLeft"` dragging a header to the left moves it towards the end, and
+  <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd> moves it one position later.
+- **Widths.** The moved column keeps its `Width`, `ActualWidth` and, for an `Auto` column, the
+  width it has grown to. `*` columns keep their share, and the locked-column holds that a user resize
+  put in place (see [Resizing columns](#resizing-columns)) are kept.
+- **Sorting.** The sort follows the column: a sorted column keeps its `SortDirection` and the row
+  order is unchanged. `Sorting`/`Sorted` are not raised.
+- **Editing.** While a cell edit is open, a drag does not start and the keys move nothing; the edit
+  is never committed implicitly. Commit or cancel the edit first.
+- **Focus.** A focused body cell keeps focus when its column moves, and the body's column cursor stays
+  on its column.
+- **High Contrast.** The dragged header keeps its pressed look for the whole drag, with the High Contrast pressed brushes, and needs no others.
+- **Events.** `ColumnReordered` is raised once, after the move and its announcement; if a handler
+  throws, the move stays applied. A gesture that drops a column back where it was raises nothing.
+  Changes the app makes to `Columns` do not raise it.
+
+### Keyboard
+
+| Key | On | Behavior |
+|---|---|---|
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd> / <kbd>Right</kbd> | A focused column header | Moves the column one visible position earlier / later in reading order. Focus stays on the moved header. While `CanUserReorderColumns` is `true` the key is consumed on any header, so at an end or at the frozen boundary nothing moves. |
+| <kbd>Esc</kbd> | During a pointer drag | Cancels the drag. |
+
+A header that can move is actionable, so while `CanUserReorderColumns` is `true` it takes keyboard
+focus even when it cannot be sorted or resized (a header with no position it may move to does not) (see the
+[keyboard focus model](../../design-notes/TabularControls/TableView-functional-spec.md#keyboard-focus-and-accessibility-model)).
+The chord does not collide with existing header keys: bare arrows move between headers and
+<kbd>Alt</kbd>+arrows resize.
+
+### UI Automation
+
+- The moved header's `HeaderItem` takes its new place in `ITableProvider.GetColumnHeaders` and the
+  header row's children, and every cell's `GridItem.Column` follows, because both are computed from
+  `Columns`. The grid raises one `StructureChanged` for the move, through the existing batching for
+  `Columns` changes.
+- After a user reorder the table raises one UIA notification (`ActionCompleted`, `MostRecent`,
+  activity ID `TableViewColumnMoved`): "Moved {header} to column {n} of {count}", where {header} is
+  the header item's UIA name (so an icon-only header's `AutomationProperties.Name`) and both numbers
+  count visible columns.
+- There is no UIA pattern for moving a header: `Transform.CanMove` stays `false` on the header peer
+  (`Transform` there means resize). Assistive technology uses the keyboard chord.
+
+### Deferred
+
+Not in this proposal; each can be added later without changing the API above.
+
+- **Auto-scroll** while dragging near the ends of a wide table. Until then a column moves within the
+  visible headers per drag, and the keys reach any position.
+- **Committing an open edit** on a move. A move is refused while editing instead.
+- **Pen- and touch-specific handling** (barrel button, press-and-hold arbitration beyond the
+  framework's gesture recognizer).
+- **`MoveColumn(column, newIndex)`** and **"Move left/right" menu commands** on
+  <kbd>Shift</kbd>+<kbd>F10</kbd>.
+
+### Open questions
+
+1. **Is this v1?** The functional spec lists reorder for v1; the API-review spec draft (#12387) moves
+   it to "Not in this release" and asks (Q5) whether a drag gesture or `MoveColumn` is required for
+   v1. Task Manager's request argues for the gesture plus the event; `MoveColumn` is not needed for it.
+2. **Should a programmatic move raise `ColumnReordered`?** Proposed: no, matching `DataGrid`, which
+   raises it only for user gestures; the app already knows about its own changes.
+3. **Locked-column holds.** A user reorder keeps the holds that a user resize put on locked `*`
+   columns, though the held column may now sit after the column that was resized. Is that the right
+   model, or should the holds be re-derived for the new order?
+4. **Cancelability and per-column locking (API review, #12387 Q5).** Does v1 need a cancelable
+   `ColumnReordering` event (with its re-entrancy rules) or a per-column `TableViewColumn.CanReorder`?
+   Neither is in this proposal; `ColumnReordered` is raised after the move and is not a veto.
+
 ## TableViewTextColumn class
 
 A column that generates a data-bound `TextBlock` for each cell, and a `TextBox` when the cell is edited.
@@ -1358,9 +1558,12 @@ Header `IsEnabled` reflects the owning table's effective state and disabled cont
 The preview `TableViewCellAutomationPeer(cell, row, column, columnIndex)` constructor validates its arguments and throws `E_INVALIDARG` (`ArgumentException` in .NET) when `cell`, `row` or `column` is null, when `columnIndex` is negative, or — when `row` belongs to a `TableView` — when `column` belongs to a different table or `columnIndex` is not less than that table's `Columns.Count`. `columnIndex` is only a fallback: `IGridItemProvider.Column` is computed live from the row's visible cells, and the constructor argument is reported only when the row has no cell host. Peers the control creates for its own cells do not go through this check.
 A column header exposes the Transform pattern (required by UIA for a resizable `HeaderItem`) while `CanUserResizeColumns` and the column's `CanResize` are both true. `CanResize` follows the same rule as the resize gripper's visibility, so it reports `false` for a pinned column (`MinWidth` equal to `MaxWidth`, or a Star column with no later resizable Star column to trade width with) and raises a property-changed event when that changes. `Resize(width, height)` takes `width` in physical pixels, the units of `BoundingRectangle`, and converts it to DIPs with the `XamlRoot.RasterizationScale`. It runs the same resize path as a pointer drag or Alt+Arrow, so it honors `MinWidth` / `MaxWidth` and the viewport bounds and announces the new width; `height` is ignored. `CanMove` and `CanRotate` are `false`, and `Move` / `Rotate` fail with `UIA_E_INVALIDOPERATION`.
 
-`ScrollItem` is not implemented explicitly — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a row or cell into view after reaching it through `IGridProvider.GetItem`.
+`ScrollItem` is not implemented explicitly on cells — `FrameworkElementAutomationPeer` already supplies a `ScrollItemAdapter` for every peer, so a client can bring a cell into view after reaching it through `IGridProvider.GetItem`. A row's UIA element (below) is not a `FrameworkElementAutomationPeer`, so it implements `ScrollItem` itself.
 
-`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's own peer when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's peer, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
+A realized row's UIA element is the element of one binding of that row to an item, not the row's own peer. Rows are recycled, so each time a row is bound to an item (prepared, recycled to another item, or moved to another table) it gets a new element, installed as its peer's `EventsSource`; an `EventsSource` the app installed on the row's peer is left in place. A client that holds the element across a scroll, sort, filter, collapse or source change never sees it start describing a different item: once the row is cleared or rebound, every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`, and the client re-queries to reach the row's current element. While the binding is current, the element forwards to the row's peer its name, bounds, focus, enabled state, culture, children (the row's cells), tree navigation, `PositionInSet`, `SizeOfSet`, `Level` and the `AutomationProperties` set on the row (such as `ItemStatus`, `FullDescription` and `HelpText`); it serves `SelectionItem`, `ExpandCollapse` and `ScrollItem` itself, so a held pattern object goes stale with it. `IItemContainerProvider.FindItemByProperty` accepts a current row element as `startAfter` and returns null for a stale one rather than restarting from the first item.
+
+A realized group header's UIA element is likewise not the header's own peer, but it belongs to the **group** rather than to one binding: the table keeps one element per group and installs it as the `EventsSource` of whichever header shows that group, so a client that holds it keeps the same element when the group's header is toggled, recycled away and later shown again, even by another pooled header. The table keeps these elements for up to 256 groups: once it holds that many, it drops the elements of groups no header shows, so a held element of an off-screen group can stay unavailable and the group gets a new element when it is shown again. While no header shows the group (scrolled out, filtered, or the group is gone), every member of the held element, including pattern objects obtained from it, fails with `UIA_E_ELEMENTNOTAVAILABLE`; it never describes or toggles a different group. While its group is shown, the element forwards to the header's peer its name, bounds, focus, enabled state, culture, children, tree navigation and the `AutomationProperties` set on the header, and serves `ExpandCollapse`, `GridItem` and `ScrollItem` itself. Replacing the source, or reshaping it into a new projection, starts a new set of group elements; elements held from the old projection stay unavailable. `FindItemByProperty` accepts a group's current element as `startAfter`, as it does a row's.
+`Selection`/`SelectionItem` are advertised only while `SelectionMode` allows selection — advertising them while it is `None` would tell an AT client the grid is selectable when every `Select()` would be refused. `CanSelectMultiple` is `false` and `IsSelectionRequired` is `false`. `GetSelection()` returns the selected row's current UIA element when that row is realized. Otherwise it returns a container-free data-item peer for the selected item, without realizing the row: a `DataItem` named from its text columns' values, else from the item (a name the app gives the row, or template-column text, appears only once the row is realized), off screen with an empty bounding rectangle, offering `SelectionItem` and, until the row is realized, `VirtualizedItem`, whose `Realize()` creates the row and brings it into view. It has the same parent as realized rows. Once the row is realized, the data-item peer forwards its name, bounds, focus, enabled state, culture and patterns (including `ScrollItem`) to the row's peer (not its children: cells are reached through the row), but it remains a separate element with its own `RuntimeId`; `GetSelection()` then returns the row's current UIA element, and returns the same data-item peer again if the row scrolls back out. While the same row stays selected, repeated calls return the same data-item peer: it follows the selected occurrence of an item that appears more than once, and a boxed value (which has no identity of its own) is tied to its row index and stops being available once that row is no longer selected. A data-item peer whose item has left the source fails with `UIA_E_ELEMENTNOTAVAILABLE` and no longer offers `SelectionItem`.
 
 Selected null source entries also receive index-based data-item providers; repeated reads preserve
 provider identity without realizing the row, and deselection makes the provider unavailable.
@@ -1697,7 +1900,7 @@ Added here:
 - Vetoable events `BeginningEdit` and `CellEditEnding`. `CellEditEnding` is synchronous, so handlers must set `Cancel` before returning.
 - Rollback for a cancelled cell edit by using `UpdateSourceTrigger=Explicit`; the source is unchanged until commit, so cancelling discards the editor and re-displays the original value.
 - Validation via `INotifyDataErrorInfo`, scoped to the property the column edits. The edited property is derived from the column's `Binding` rather than authored separately, so it stays one concept with the base column's `SortMemberPath`.
-- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
+- Gestures: double-click/double-tap, `F2`, `Enter`, `Esc`, `Tab` / `Shift+Tab` (commit and edit the next / previous editable cell), and commit when focus leaves the editor and its owned flyouts/popups. Focus-loss commit is re-evaluated after an editor-owned flyout/popup closes. The pointer gesture is handled by `TableViewRow`, which owns its cells and can therefore resolve which cell a press landed on; the control keeps the edit state machine.
 
 ### Editing is cell-scoped in this release
 
@@ -1747,7 +1950,7 @@ The display-only base delivered previously:
 These ship additively in a later change — they are part of v1, not non-goals:
 
 - Row selection: multiple/extended (Ctrl/Shift range selection). **Single selection ships here.**
-- Column resize and reorder.
+- Column reorder by the user: proposed in [Reordering columns](#reordering-columns), pending API review. Column resize has shipped.
 
 ## Non-goals (out of scope for v1)
 

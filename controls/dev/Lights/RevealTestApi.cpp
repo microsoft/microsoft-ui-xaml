@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "MUXControlsFactory.h"
 #include "RevealTestApi.h"
 #include "RevealHoverLight.h"
 #include "RevealBorderLight.h"

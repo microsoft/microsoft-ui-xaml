@@ -95,8 +95,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 #endif
         }
 
-        // Must run on the UI thread. Uses no Control, because every styled element adds to
-        // CCoreServices::m_appliedStyleTables, which isn't pruned.
+        // Must run on the UI thread. Uses no Control so this resource test is not affected by the
+        // intentionally bounded high-water storage of CCoreServices::m_appliedStyleTables.
         void ResolveResourceTests::VerifyGenerationsDoNotAccumulate(const std::function<void()>& createGeneration)
         {
             constexpr unsigned int generationCount = 64;

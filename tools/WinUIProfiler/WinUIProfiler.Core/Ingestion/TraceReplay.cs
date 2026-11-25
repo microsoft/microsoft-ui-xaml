@@ -50,10 +50,13 @@ public sealed class TraceReplay : IAsyncDisposable
     private readonly Timer changed;
     private readonly double durationMilliseconds;
     private readonly LaunchWatcher launch;
+    private readonly StackSampleCollector stacks;
 
     // Used only on the reader thread.
     private long lastQpc = long.MinValue;
     private bool halted;
+    // Set while the samples read before Stop are given to the writer, after the reading halted.
+    private bool draining;
 
     private int state;
     private int lostEvents;
@@ -88,6 +91,8 @@ public sealed class TraceReplay : IAsyncDisposable
                 }
             }, PostLauncherEvent);
             XamlEventSubscription.Match(source, processId, markers, OnEvent, OnOtherProcessEvent);
+            // The process's sampled CPU stacks, when the trace has them (a WPR CPU profile).
+            stacks = new(source, (id, _) => id == processId, OnSample);
             changed = new(_ => OnInterval(), null, ChangedInterval, ChangedInterval);
             new Thread(Read) { IsBackground = true, Name = "WinUIProfiler trace reader" }.Start();
         }
@@ -227,6 +232,20 @@ public sealed class TraceReplay : IAsyncDisposable
                 launch.Complete();
             }
 
+            // The samples whose stacks were still awaited.
+            if (FlushesPendingSamples(halted, StopRequested, failure is not null || pipeline.Failure is not null || writer.Failure is not null))
+            {
+                draining = true;
+                try
+                {
+                    stacks.Flush();
+                }
+                finally
+                {
+                    draining = false;
+                }
+            }
+
             // The trace was read to its end unless Stop, damage or a failure ended the reading.
             readAll = failure is null && !halted;
             Volatile.Write(ref lostEvents, source.EventsLost);
@@ -320,6 +339,30 @@ public sealed class TraceReplay : IAsyncDisposable
         }
     }
 
+    // Whether the samples still awaiting their stacks are stored when the reading ends: at the trace's end or its damage,
+    // and on Stop, which keeps the samples read before it as it keeps the events, but not after a failure.
+    internal static bool FlushesPendingSamples(bool halted, bool stopRequested, bool failed) => !halted || (stopRequested && !failed);
+
+    // A CPU sample of the process with its stack. Waits while the writer is behind, as events do.
+    private void OnSample(CompletedSample sample)
+    {
+        if (halted && !draining)
+        {
+            return;
+        }
+
+        try
+        {
+            writer.PostSample(sample, wait: true);
+        }
+        catch (Exception error)
+        {
+            failure ??= error;
+            draining = false;
+            Halt();
+        }
+    }
+
     // Waits while the pipeline is full, also after Stop: the events already queued are processed before the file is
     // closed anyway. An event that could not be processed or stored ends the reading.
     private void Post(ProfilerEvent profilerEvent)
@@ -363,6 +406,8 @@ public sealed class TraceReplay : IAsyncDisposable
         var final = failure is not null ? TraceReplayState.Failed : readAll ? TraceReplayState.Finished : TraceReplayState.Stopped;
         try
         {
+            var sampling = stacks.Summary;
+            writer.SetCpuSampling(sampling, StackSampleCollector.TraceNote(sampling));
             writer.Close(final switch
             {
                 TraceReplayState.Finished => "End of trace",

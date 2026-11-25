@@ -68,6 +68,7 @@ namespace TableViewTelemetry
             case TableViewTip::Operation::CancelEdit: return 9;
             case TableViewTip::Operation::GroupExpansion: return 10;
             case TableViewTip::Operation::HierarchyExpansion: return 11;
+            case TableViewTip::Operation::ColumnReorder: return 12;
             default: return std::nullopt;
             }
         }
@@ -79,7 +80,8 @@ namespace TableViewTelemetry
             {
                 auto const operation = static_cast<TableViewTip::Operation>(value);
                 auto const reports = TableViewTip::IsTrackedOperation(operation) ||
-                    operation == TableViewTip::Operation::Setup || operation == TableViewTip::Operation::HeaderRefresh;
+                    operation == TableViewTip::Operation::Setup || operation == TableViewTip::Operation::HeaderRefresh ||
+                    operation == TableViewTip::Operation::ColumnReorder;
                 auto const slot = DiagnosticSlot(operation);
                 if (reports != slot.has_value() || (slot && (*slot + 1) * c_errorBitsPerSlot > c_errorMaskBits))
                 {

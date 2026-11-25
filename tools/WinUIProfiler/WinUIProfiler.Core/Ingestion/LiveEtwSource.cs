@@ -23,7 +23,7 @@ public sealed class LiveEtwSource : IDisposable
     private const ulong Direct3D11Keywords = 0x6;
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
-    private const string SessionPrefix = "WinUIProfiler-";
+    internal const string SessionPrefix = "WinUIProfiler-";
     // Win32kTraceLogging, a provider of the default marker configuration.
     private static readonly Guid Win32kTraceLogging = new("487d6e37-1b9d-46d3-a8fd-54ce8bdf8a53");
 
@@ -304,8 +304,9 @@ public sealed class LiveEtwSource : IDisposable
 
     // A session outlives a profiler that crashed or was killed, and keeps the providers enabled in the processes
     // it filters on (for a launch, every new process with that executable name). Sessions are named
-    // WinUIProfiler-<profiler process ID>-<unique ID>; stop those whose profiler process no longer exists.
-    private static void StopAbandonedSessions()
+    // WinUIProfiler-<profiler process ID>-<unique ID>, as KernelSampleSession's are too; stop those whose profiler
+    // process no longer exists.
+    internal static void StopAbandonedSessions()
     {
         foreach (var name in TraceEventSession.GetActiveSessionNames())
         {

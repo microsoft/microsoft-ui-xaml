@@ -703,6 +703,40 @@ winrt::TreeViewNode ViewModel::GetRemovedChildTreeViewNodeByIndex(winrt::TreeVie
     return GetNodeAt(childIndexInFlatTree);
 }
 
+// Returns the flat tree index for the child that was just inserted at childIndex of an expanded parent.
+// The child goes right after its previous sibling and that sibling's visible descendants. Children are
+// often added one at a time, for example when an ItemsSource is filled, so this avoids walking all the
+// earlier siblings for each new child.
+unsigned int ViewModel::GetInsertedChildIndexInFlatTree(winrt::TreeViewNode const& parentNode, unsigned int childIndex)
+{
+    const unsigned int firstChildIndex = GetNextIndexInFlatTree(parentNode);
+    if (childIndex > 0)
+    {
+        auto previousSibling = parentNode.Children().GetAt(childIndex - 1);
+        unsigned int previousSiblingIndex = 0;
+        // App code can move a node while its old row is still in the view, for example from a HasChildren callback,
+        // and IndexOfNode returns the first of its rows. Its row under this parent comes after the parent's row.
+        if (IndexOfNode(previousSibling, previousSiblingIndex) && previousSiblingIndex >= firstChildIndex)
+        {
+            const unsigned int previousSiblingDescendantCount = previousSibling.IsExpanded() ? CountDescendants(previousSibling) : 0;
+            return previousSiblingIndex + 1 + previousSiblingDescendantCount;
+        }
+    }
+
+    // There is no previous sibling, or its row is not under this parent. Count from the parent instead.
+    unsigned int flatIndex = firstChildIndex + childIndex;
+    for (unsigned int i = 0; i < childIndex; i++)
+    {
+        auto childNode = parentNode.Children().GetAt(i);
+        if (childNode.IsExpanded())
+        {
+            flatIndex += CountDescendants(childNode);
+        }
+    }
+
+    return flatIndex;
+}
+
 int ViewModel::CountDescendants(const winrt::TreeViewNode& value)
 {
     int descendantCount = 0;
@@ -993,38 +1027,17 @@ void ViewModel::TreeViewNodeVectorChanged(winrt::TreeViewNode const& sender, win
         break;
     }
 
-    // We will find the correct index of insertion by first checking if the
-    // node we are inserting into is expanded. If it is we will start walking
-    // down the tree and counting the open items. This is to ensure we place
-    // the inserted item in the correct index. If along the way we bump into
-    // the item being inserted, we insert there then return, because we don't
-    // need to do anything further.
+    // If the parent is expanded, add the new child and its visible descendants to the view.
     case (winrt::CollectionChange::ItemInserted):
     {
         auto targetNode = sender.as<winrt::TreeViewNode>().Children().GetAt(index).as<winrt::TreeViewNode>();
 
         auto parentNode = targetNode.Parent();
-        const unsigned int nextNodeIndex = GetNextIndexInFlatTree(parentNode);
-        int allOpenedDescendantsCount = 0;
-
         if (parentNode.IsExpanded())
         {
-            for (unsigned int i = 0; i < parentNode.Children().Size(); i++)
-            {
-                auto childNode = parentNode.Children().GetAt(i).as<winrt::TreeViewNode>();
-                if (childNode == targetNode)
-                {
-                    AddNodeToView(targetNode, nextNodeIndex + i + allOpenedDescendantsCount);
-                    if (targetNode.IsExpanded())
-                    {
-                        AddNodeDescendantsToView(targetNode, nextNodeIndex + i, allOpenedDescendantsCount);
-                    }
-                }
-                else if (childNode.IsExpanded())
-                {
-                    allOpenedDescendantsCount += CountDescendants(childNode);
-                }
-            }
+            const unsigned int targetIndex = GetInsertedChildIndexInFlatTree(parentNode, index);
+            AddNodeToView(targetNode, targetIndex);
+            AddNodeDescendantsToView(targetNode, targetIndex, 0);
         }
 
         break;
