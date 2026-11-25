@@ -190,11 +190,6 @@ private:
     // This delta is negative, except in rare cases like seeking ahead of the time manager's clock.
     XDOUBLE m_rTimeDelta            = XDOUBLE_MAX;
 
-    uint64_t m_profilerId = 0;
-    uint64_t m_profilerRun = 0;
-    uint64_t m_profilerLastObservation = 0;
-    uint32_t m_profilerLastState = UINT32_MAX;
-
     // Callback we invoke to notify the test framework that we started a storyboard.
     static std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* s_storyboardStartedCallback;
 };

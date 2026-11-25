@@ -53,7 +53,11 @@ public:
     // Shared cached ETW state; querying must not initialize the provider on allocation paths.
     static void SetProfilerEnabled(bool enabled) noexcept;
     static bool IsProfilerEnabled() noexcept;
-    static uint64_t NextStoryboardId() noexcept;
+    static void BeginStoryboard(_In_ const void* storyboard);
+    static bool TryGetStoryboardState(
+        _In_ const void* storyboard, uint32_t stateKey, bool observation, bool destroyed,
+        _Out_ uint64_t& storyboardId, _Out_ uint64_t& runId);
+    static void ForgetStoryboard(_In_ const void* storyboard);
 
     // XAML bookkeeping only: neither an active clock nor an independent animation proves presentation.
     DEFINE_TRACELOGGING_EVENT_PARAM10(StoryboardActivity,

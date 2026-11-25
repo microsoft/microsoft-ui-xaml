@@ -23,6 +23,7 @@ using namespace DirectUI;
 CStoryboard::~CStoryboard()
 {
     TraceProfilerState(L"Destroyed");
+    XamlProfilerTracing::ForgetStoryboard(static_cast<CDependencyObject*>(this));
     // This storyboard has been deleted prior to the transition completed event being fired.
     // Cleanup after the transition object...
 
@@ -41,30 +42,19 @@ void CStoryboard::TraceProfilerState(_In_z_ PCWSTR operation, bool observation, 
     }
 
     const bool destroyed = wcscmp(operation, L"Destroyed") == 0;
-    if (destroyed && m_profilerId == 0)
-    {
-        return;
-    }
-
     const bool independent = observation ? independentAnimation : HasIndependentAnimation();
     const auto stateKey = static_cast<uint32_t>(m_clockState)
         | (static_cast<uint32_t>(m_fIsPaused) << 8)
         | (static_cast<uint32_t>(m_fIsStopped) << 9)
         | (static_cast<uint32_t>(independent) << 10)
         | (static_cast<uint32_t>(IsInTimeManager()) << 11);
-    const auto now = GetTickCount64();
-    if (observation && m_profilerId != 0 && stateKey == m_profilerLastState
-        && now - m_profilerLastObservation < 1000)
+    uint64_t storyboardId;
+    uint64_t runId;
+    if (!XamlProfilerTracing::TryGetStoryboardState(
+        static_cast<CDependencyObject*>(this), stateKey, observation, destroyed, storyboardId, runId))
     {
         return;
     }
-
-    if (m_profilerId == 0)
-    {
-        m_profilerId = XamlProfilerTracing::NextStoryboardId();
-    }
-    m_profilerLastState = stateKey;
-    m_profilerLastObservation = now;
 
     PCWSTR state = L"NotStarted";
     if (destroyed)
@@ -109,9 +99,9 @@ void CStoryboard::TraceProfilerState(_In_z_ PCWSTR operation, bool observation, 
     }
 
     XamlProfilerTracing::StoryboardActivity(
-        m_profilerId,
+        storyboardId,
         reinterpret_cast<uint64_t>(static_cast<CDependencyObject*>(this)),
-        m_profilerRun,
+        runId,
         operation,
         label,
         state,
@@ -472,7 +462,7 @@ _Check_return_ HRESULT CStoryboard::ResumePrivate()
 // Starts the current Storyboard from the beginning.  Overrides any previous stops/pauses/seeks.
 _Check_return_ HRESULT CStoryboard::BeginPrivate(bool fIsTopLevel)
 {
-    ++m_profilerRun;
+    XamlProfilerTracing::BeginStoryboard(static_cast<CDependencyObject*>(this));
     TraceProfilerState(L"BeginRequested");
     auto cleanupGuard = wil::scope_exit([&]
     {
@@ -1138,16 +1128,27 @@ _Check_return_ HRESULT CStoryboard::Stop()
 // Wrapper to Begin the Storyboard
 _Check_return_ HRESULT CStoryboard::Begin()
 {
+    const auto traceRejectedBegin = [this]
+    {
+        XamlProfilerTracing::BeginStoryboard(static_cast<CDependencyObject*>(this));
+        TraceProfilerState(L"BeginRequested");
+        TraceProfilerState(L"BeginFailed");
+    };
     CTimeManager* pTimeManager = NULL;
     auto core = GetContext();
 
     pTimeManager = core->GetTimeManager();
+    if (pTimeManager == nullptr)
+    {
+        traceRejectedBegin();
+    }
     IFCPTR_RETURN(pTimeManager);
 
     // Make sure only root storyboards get called on this
     // if Begin is called on a non-timeMgr rooted SB, then it must be unparented
     if (!IsTopLevelStoryboard() && GetTimingParent() != NULL)
     {
+        traceRejectedBegin();
         if (CTimeManager::ShouldFailFast())
         {
             IFCFAILFAST(static_cast<HRESULT>(E_NER_INVALID_OPERATION));

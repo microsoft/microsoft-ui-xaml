@@ -23,8 +23,94 @@
 #include "CompositeTransform3D.h"
 #include "Timespan.h"
 #include <KeySpline.h>
+#include <XamlProfilerTracing.h>
+#include <thread>
 
 namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Animation {
+
+void StoryboardUnitTests::ProfilerBookkeepingIsOptIn()
+{
+    int identity;
+    const bool enabled = XamlProfilerTracing::IsProfilerEnabled();
+    auto cleanup = wil::scope_exit([&]
+    {
+        XamlProfilerTracing::ForgetStoryboard(&identity);
+        XamlProfilerTracing::SetProfilerEnabled(enabled);
+    });
+    uint64_t id;
+    uint64_t run;
+    XamlProfilerTracing::SetProfilerEnabled(false);
+    XamlProfilerTracing::BeginStoryboard(&identity);
+    XamlProfilerTracing::SetProfilerEnabled(true);
+    VERIFY_IS_FALSE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, false, true, id, run));
+
+    VERIFY_IS_TRUE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, true, false, id, run));
+    const auto firstId = id;
+    VERIFY_ARE_NOT_EQUAL(0ull, firstId);
+    VERIFY_ARE_EQUAL(0ull, run); // Capture started after any unobserved Begin attempts.
+
+    XamlProfilerTracing::BeginStoryboard(&identity);
+    VERIFY_IS_TRUE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, false, false, id, run));
+    VERIFY_ARE_EQUAL(firstId, id);
+    VERIFY_ARE_EQUAL(1ull, run);
+
+    XamlProfilerTracing::SetProfilerEnabled(false);
+    XamlProfilerTracing::BeginStoryboard(&identity);
+    VERIFY_IS_FALSE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, false, false, id, run));
+    XamlProfilerTracing::SetProfilerEnabled(true);
+    VERIFY_IS_TRUE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, true, false, id, run));
+    VERIFY_ARE_EQUAL(firstId, id);
+    VERIFY_ARE_EQUAL(2ull, run);
+
+    XamlProfilerTracing::SetProfilerEnabled(false);
+    XamlProfilerTracing::ForgetStoryboard(&identity);
+    XamlProfilerTracing::SetProfilerEnabled(true);
+    VERIFY_IS_FALSE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, false, true, id, run));
+    XamlProfilerTracing::BeginStoryboard(&identity);
+    VERIFY_IS_TRUE(XamlProfilerTracing::TryGetStoryboardState(&identity, 1, false, false, id, run));
+    VERIFY_ARE_NOT_EQUAL(firstId, id);
+    VERIFY_ARE_EQUAL(1ull, run);
+}
+
+void StoryboardUnitTests::ProfilerBookkeepingAcrossThreads()
+{
+    int identities[4]{};
+    uint64_t ids[4]{};
+    bool valid[4]{true, true, true, true};
+    const bool enabled = XamlProfilerTracing::IsProfilerEnabled();
+    auto cleanup = wil::scope_exit([&]
+    {
+        for (auto& identity : identities) XamlProfilerTracing::ForgetStoryboard(&identity);
+        XamlProfilerTracing::SetProfilerEnabled(enabled);
+    });
+    XamlProfilerTracing::SetProfilerEnabled(true);
+    std::thread workers[4];
+    for (size_t index = 0; index < ARRAYSIZE(workers); ++index)
+    {
+        workers[index] = std::thread([&, index]
+        {
+            for (uint64_t attempt = 1; attempt <= 100; ++attempt)
+            {
+                XamlProfilerTracing::BeginStoryboard(&identities[index]);
+                uint64_t id;
+                uint64_t run;
+                if (!XamlProfilerTracing::TryGetStoryboardState(&identities[index], 1, false, false, id, run)
+                    || run != attempt || (ids[index] != 0 && ids[index] != id))
+                {
+                    valid[index] = false;
+                }
+                ids[index] = id;
+            }
+        });
+    }
+    for (auto& worker : workers) worker.join();
+    for (size_t index = 0; index < ARRAYSIZE(workers); ++index)
+    {
+        VERIFY_IS_TRUE(valid[index]);
+        VERIFY_ARE_NOT_EQUAL(0ull, ids[index]);
+        for (size_t other = 0; other < index; ++other) VERIFY_ARE_NOT_EQUAL(ids[index], ids[other]);
+    }
+}
 
 void StoryboardUnitTests::SimpleStoryboards()
 {
