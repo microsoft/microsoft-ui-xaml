@@ -481,9 +481,13 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
         return;
     }
 
-    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
-
     EndEditOfChangedColumn(column);
+    ScheduleColumnCellRegeneration(column, resetAutoWidth);
+}
+
+void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth)
+{
+    auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
 
     // Regenerating cells inside measure or arrange would mutate the tree being laid out. Layout can
     // measure a dirty cell without passing through any of this control's overrides, so once the

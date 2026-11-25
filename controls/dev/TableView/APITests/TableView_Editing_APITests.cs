@@ -2997,6 +2997,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies reassigning a column whose Binding change is held does not end an edit of that column opened after the change.")]
+        public void VerifyColumnReassignKeepsEditOpenedAfterHeldChange()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            TableViewTextColumn role = null;
+            bool veto = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                role = (TableViewTextColumn)tableView.Columns[1];
+                tableView.CellEditEnding += (s, e) => e.Cancel = e.Cancel || veto;
+                role.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 1), "Precondition: the change waits for the Name edit.");
+                Verify.IsTrue(tableView.CommitEdit(), "Precondition: the Name edit commits.");
+                actions.Clear();
+
+                // Opened from the new Binding; the vetoed commit keeps it open.
+                veto = true;
+                CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 1), "Ops");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the Role column edit stays open.");
+                actions.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 1), "Precondition: the change still waits for the Role column edit.");
+                tableView.Columns[1] = role;
+                Verify.IsTrue(tableView.IsEditing, "Reassigning the column must not end an edit opened after its change.");
+                Verify.AreEqual(0, actions.Count, "Reassigning the column must not raise CellEditEnding.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The edit must stay open after the reassignment settles.");
+                Verify.AreEqual(0, actions.Count, "No CellEditEnding may be raised.");
+                Verify.AreEqual("Diego", items[1].Name, "Nothing may be committed.");
+                veto = false;
+                Verify.IsTrue(tableView.CancelEdit(), "The edit must stay cancelable.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "The edit must close.");
+                Verify.AreEqual("Diego", items[1].Name, "The cancel must write nothing.");
+                Verify.AreEqual("[Zed]", GetCellText(tableView, 0, 1), "Once the edit closes, the held change must apply.");
+                Verify.AreEqual("[Diego]", GetCellText(tableView, 1, 1), "The held change must apply to the edited row too.");
+            });
+        }
+
         private sealed class CallbackConverter : IValueConverter
         {
             private readonly Action m_onConvert;
