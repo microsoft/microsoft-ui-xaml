@@ -97,15 +97,18 @@ namespace DirectUI
     // fold together.  This is significant for binary size in Microsoft.UI.Xaml.dll so change this only with great
     // care.
     class __declspec(novtable) MenuFlyoutSubItemFactory:
-       public ctl::BetterCoreObjectActivationFactory
+       public ctl::BetterAggregableCoreObjectActivationFactory
+        , public ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItemFactory
         , public ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItemStatics
     {
-        BEGIN_INTERFACE_MAP(MenuFlyoutSubItemFactory, ctl::BetterCoreObjectActivationFactory)
+        BEGIN_INTERFACE_MAP(MenuFlyoutSubItemFactory, ctl::BetterAggregableCoreObjectActivationFactory)
+            INTERFACE_ENTRY(MenuFlyoutSubItemFactory, ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItemFactory)
             INTERFACE_ENTRY(MenuFlyoutSubItemFactory, ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItemStatics)
-        END_INTERFACE_MAP(MenuFlyoutSubItemFactory, ctl::BetterCoreObjectActivationFactory)
+        END_INTERFACE_MAP(MenuFlyoutSubItemFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
+        IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IMenuFlyoutSubItem** ppInstance);
 
         // Static properties.
 

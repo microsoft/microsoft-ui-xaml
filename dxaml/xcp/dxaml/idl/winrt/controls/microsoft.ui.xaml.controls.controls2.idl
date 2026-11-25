@@ -1931,10 +1931,10 @@ namespace Microsoft.UI.Xaml.Controls
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [contentproperty("Items")]
-    runtimeclass MenuFlyoutSubItem
+    unsealed runtimeclass MenuFlyoutSubItem
         : Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase
     {
-        MenuFlyoutSubItem();
+        [method_name("CreateInstance")] MenuFlyoutSubItem();
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase> Items{ get; };
         String Text;
         Microsoft.UI.Xaml.Controls.IconElement Icon;
