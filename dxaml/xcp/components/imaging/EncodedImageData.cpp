@@ -10,6 +10,7 @@
 #include <windowrendertarget.h>
 #include <windowsgraphicsdevicemanager.h>
 #include <d3d11device.h>
+#include <D2DAccelerated.h>
 #include "D3D11SharedDeviceGuard.h"
 #include <GraphicsUtility.h>
 #include "RawData.h"
@@ -75,15 +76,48 @@ _Check_return_ HRESULT EncodedImageData::Parse(_In_opt_ CD3D11Device* graphicsDe
 
             XRECT maxBounds = { 0, 0, static_cast<int>(round(maxRootSize.Width)), static_cast<int>(round(maxRootSize.Height)) };
 
-            IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(graphicsDevice->EnsureD2DResources());
+            HRESULT hr = graphicsDevice->EnsureD2DResources();
+            if (!GraphicsUtility::IsDeviceLostError(hr))
+            {
+                IFCFAILFAST(hr);
 
-            CD3D11SharedDeviceGuard guard;
-            IFC_RETURN(graphicsDevice->TakeLockAndCheckDeviceLost(&guard));
-            auto d2dDeviceContextNoRef = graphicsDevice->GetD2DDeviceContext(&guard);
-            ctl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
-            IFCFAILFAST(ctl::do_query_interface(d2dDeviceContext5, d2dDeviceContextNoRef));
+                CD3D11SharedDeviceGuard guard;
+                hr = graphicsDevice->TakeLockAndCheckDeviceLost(&guard);
+                if (SUCCEEDED(hr))
+                {
+                    auto d2dDeviceContextNoRef = graphicsDevice->GetD2DDeviceContext(&guard);
+                    ctl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
+                    IFCFAILFAST(ctl::do_query_interface(d2dDeviceContext5, d2dDeviceContextNoRef));
 
-            IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
+                    IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                // The device is lost, e.g. while the display driver is locked. A failed parse is never retried, so read
+                // the SVG on a software target instead, as SvgImageDecoder::DecodeFrame does. EnsureD2DResources has
+                // already created the factory, and the decode recovers from the lost device.
+                wrl::ComPtr<IWICBitmap> wicBitmap;
+                IFC_RETURN(WicService::GetInstance().GetFactory()->CreateBitmap(
+                    1,
+                    1,
+                    GUID_WICPixelFormat32bppPBGRA,
+                    WICBitmapCreateCacheOption::WICBitmapCacheOnDemand,
+                    wicBitmap.ReleaseAndGetAddressOf()));
+
+                const auto renderTargetProperties = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_SOFTWARE);
+                wrl::ComPtr<ID2D1RenderTarget> renderTarget;
+                IFC_RETURN(graphicsDevice->GetD2DFactory()->GetFactory()->CreateWicBitmapRenderTarget(
+                    wicBitmap.Get(),
+                    &renderTargetProperties,
+                    renderTarget.ReleaseAndGetAddressOf()));
+
+                wrl::ComPtr<ID2D1DeviceContext5> d2dDeviceContext5;
+                IFC_RETURN(renderTarget.As(&d2dDeviceContext5));
+
+                IFC_RETURN(ParseSvg(d2dDeviceContext5.Get(), maxBounds));
+            }
         }
     }
     else
