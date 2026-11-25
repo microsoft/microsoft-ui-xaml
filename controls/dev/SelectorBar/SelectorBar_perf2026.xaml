@@ -45,6 +45,7 @@
     <Style TargetType="controls:SelectorBarItem" BasedOn="{StaticResource DefaultSelectorBarItemStyle}"/>
 
     <Style x:Key="DefaultSelectorBarItemStyle" TargetType="controls:SelectorBarItem">
+        <Setter Property="Background" Value="{ThemeResource SelectorBarItemBackground}"/>
         <Setter Property="BackgroundSizing" Value="OuterBorderEdge"/>
         <Setter Property="Foreground" Value="{ThemeResource SelectorBarItemForeground}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource SelectorBarItemBorderBrush}"/>
@@ -101,6 +102,7 @@
                                 </VisualState>
                                 <VisualState x:Name="SelectedPointerOver">
                                     <VisualState.Setters>
+                                        <Setter Target="PART_ContainerRoot.Background" Value="{ThemeResource SelectorBarItemBackgroundSelected}" />
                                         <Setter Target="PART_TextVisual.Foreground" Value="{ThemeResource SelectorBarItemForegroundPointerOver}" />
                                         <Setter Target="PART_IconVisual.Foreground" Value="{ThemeResource SelectorBarItemForegroundPointerOver}" />
                                     </VisualState.Setters>
@@ -116,6 +118,7 @@
                                 </VisualState>
                                 <VisualState x:Name="SelectedPressed">
                                     <VisualState.Setters>
+                                        <Setter Target="PART_ContainerRoot.Background" Value="{ThemeResource SelectorBarItemBackgroundSelected}" />
                                         <Setter Target="PART_TextVisual.Foreground" Value="{ThemeResource SelectorBarItemForegroundPointerOver}" />
                                         <Setter Target="PART_IconVisual.Foreground" Value="{ThemeResource SelectorBarItemForegroundPointerOver}" />
                                     </VisualState.Setters>
