@@ -7,6 +7,7 @@
 #include "ImageAvailableCallback.h"
 #include "ImageCopyParams.h"
 #include "SoftwareBitmapSource.h"
+#include <RenderingBackend.h>
 
 // NOTE: Functions that intialize/use core need to be in core/core/elements
 
@@ -17,6 +18,13 @@ _Check_return_ HRESULT CSoftwareBitmapSource::ReloadSource(bool forceCopyToSoftw
     xref_ptr<ImageCopyParams> imageCopyParams;
 
     auto imageCopyCallback = make_xref<ImageAvailableCallback<CSoftwareBitmapSource>>(this, &CSoftwareBitmapSource::OnSoftwareBitmapImageAvailable);
+
+    if (RenderingBackend::IsImmediateModeActive())
+    {
+        // Immediate painters read CPU pixels. Keep them from this copy: once SetBitmapAsync completes the app may
+        // close its SoftwareBitmap, so a later copy from it fails with RO_E_CLOSED.
+        m_pImageSurfaceWrapper->SetKeepSystemMemory();
+    }
 
     IFC(PrepareCopyParams(forceCopyToSoftwareSurface, imageCopyParams));
 
