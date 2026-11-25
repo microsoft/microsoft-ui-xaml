@@ -18,16 +18,6 @@ using namespace Microsoft::UI::Xaml::Tests::Common;
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Framework { namespace Layout {
 
-    ref class InvalidateViewportHelper : public xaml::FrameworkElement
-    {
-        public:
-        // InvalidateViewport is protected. So in order to call it we create a subclass
-        // of FrameworkElement and invoke InvalidateViewport from there
-        static void InvalidateViewport(xaml::FrameworkElement^ element)
-        {
-            element->InvalidateViewport();
-        }
-    };
     bool LayoutManagerIntegrationTests::ClassSetup()
     {
         CommonTestSetupHelper::CommonTestClassSetup();
@@ -198,7 +188,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         eventFired = false;
         RunOnUIThread([&]()
         {
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
 
             eventReg0.Detach();
             eventReg1.Detach();
@@ -225,7 +215,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             transform->TranslateY = 50.0;
             transform->ScaleX = 2.0;
             transform->ScaleY = 2.0;
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
 
             eventReg0.Detach();
             eventReg0.Attach(
@@ -348,7 +338,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             eventReg1.Detach();
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
         });
         TestServices::WindowHelper->WaitForIdle();
 
@@ -360,14 +350,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             eventReg0.Detach();
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
         });
         TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"Invalidate the viewport once more.");
         RunOnUIThread([&]()
         {
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
         });
         TestServices::WindowHelper->WaitForIdle();
     }
@@ -436,7 +426,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             scale->ScaleY = 0.0;
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
         });
         TestServices::WindowHelper->WaitForIdle();
 
@@ -451,7 +441,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             scale->ScaleY = 1.0;
-            InvalidateViewportHelper::InvalidateViewport(vuc);
+            vuc->InvalidateViewport();
         });
         TestServices::WindowHelper->WaitForIdle();
 
@@ -468,13 +458,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             // Calling InvalidateViewport on an element that has been
             // registered as a scroller should succeed.
             ViewportUserControl^ scroller = ref new ViewportUserControl;
-            InvalidateViewportHelper::InvalidateViewport(scroller);
+            scroller->InvalidateViewport();
 
             // Calling InvalidateViewport on an element that has *not* been
             // registered as a scroller should throw an exception.
             Border^ nonScroller = ref new Border;
             VERIFY_THROWS_WINRT(
-                InvalidateViewportHelper::InvalidateViewport(nonScroller),
+                nonScroller->InvalidateViewport(),
                 Platform::Exception^);
         });
     }
