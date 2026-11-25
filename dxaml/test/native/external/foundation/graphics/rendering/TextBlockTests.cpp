@@ -16,6 +16,8 @@
 #include <WUCRenderingScopeGuard.h>
 #include <ChangeDPI.h>
 #include <TestComparisonGuards.h>
+#include <collection.h>
+#include <ppltasks.h>
 
 using namespace ::Windows::UI;
 using namespace Microsoft::UI::Text;
@@ -1922,6 +1924,150 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_IS_TRUE(!(textBlock->IsTextSelectionEnabled));
             });
             TestServices::WindowHelper->WaitForIdle();
+        }
+
+        void TextBlockTests::ZoomedTextTexturePayloadIsBounded()
+        {
+            VerifyZoomedTextSurfaces(ZoomedTextContent::Plain);
+        }
+
+        void TextBlockTests::ZoomedTextBatchesShareTextureBudget()
+        {
+            VerifyZoomedTextSurfaces(ZoomedTextContent::MultipleBrushes);
+        }
+
+        void TextBlockTests::ZoomedColorGlyphTexturePayloadIsBounded()
+        {
+            VerifyZoomedTextSurfaces(ZoomedTextContent::ColorGlyph);
+        }
+
+        void TextBlockTests::VerifyZoomedTextSurfaces(ZoomedTextContent content)
+        {
+            RunOnUIThread([&]() { TestServices::WindowHelper->WindowContent = nullptr; });
+            WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /* resizeWindow */);
+            auto windowHelper = TestServices::WindowHelper;
+            windowHelper->SetWindowSizeOverrideWithWindowScale(wf::Size(800, 600), 1.0f);
+            const bool multipleBrushes = content == ZoomedTextContent::MultipleBrushes;
+
+            wchar_t temporaryPath[MAX_PATH]{};
+            const DWORD pathLength = GetTempPathW(ARRAYSIZE(temporaryPath), temporaryPath);
+            VERIFY_IS_TRUE(pathLength > 0 && pathLength < ARRAYSIZE(temporaryPath));
+            GUID folderId{};
+            VERIFY_SUCCEEDED(CoCreateGuid(&folderId));
+            wchar_t folderName[40]{};
+            VERIFY_IS_TRUE(StringFromGUID2(folderId, folderName, ARRAYSIZE(folderName)) > 0);
+            const std::wstring folderPath = std::wstring(temporaryPath) + L"TextRealization-" + folderName;
+            VERIFY_IS_TRUE(CreateDirectoryW(folderPath.c_str(), nullptr));
+            auto folder = concurrency::create_task(::Windows::Storage::StorageFolder::GetFolderFromPathAsync(
+                ref new Platform::String(folderPath.c_str()))).get();
+            TestCleanupWrapper cleanup([&]()
+            {
+                windowHelper->ResetWindowContentAndWaitForIdle();
+                concurrency::create_task(folder->DeleteAsync(::Windows::Storage::StorageDeleteOption::PermanentDelete)).get();
+            });
+
+            TextBlock^ textBlock;
+            RunOnUIThread([&]()
+            {
+                textBlock = ref new TextBlock();
+                textBlock->FontSize = 30;
+                textBlock->FontFamily = ref new FontFamily(L"Segoe UI");
+                if (multipleBrushes)
+                {
+                    for (uint32_t i = 0; i < 64; ++i)
+                    {
+                        auto run = ref new Run();
+                        run->Text = L"W";
+                        run->Foreground = ref new SolidColorBrush(i % 2 == 0 ?
+                            ColorHelper::FromArgb(255, 255, 0, 0) : ColorHelper::FromArgb(255, 0, 0, 255));
+                        textBlock->Inlines->Append(run);
+                    }
+                }
+                else if (content == ZoomedTextContent::ColorGlyph)
+                {
+                    textBlock->FontFamily = ref new FontFamily(L"Gecko Emoji");
+                    textBlock->IsColorFontEnabled = true;
+                    textBlock->Text = L"\xD83D\xDE04";
+                }
+                else
+                {
+                    textBlock->Text = L"jSampleText";
+                    textBlock->FontStyle = ::Windows::UI::Text::FontStyle::Italic;
+                    textBlock->FlowDirection = FlowDirection::RightToLeft;
+                }
+                auto scale = ref new ScaleTransform();
+                // Many small batches exercise aggregate payload without depending on virtual-surface support.
+                scale->ScaleX = multipleBrushes ? 60 : 1000;
+                scale->ScaleY = scale->ScaleX;
+                textBlock->RenderTransform = scale;
+                auto root = ref new Canvas();
+                root->Children->Append(textBlock);
+                windowHelper->WindowContent = root;
+            });
+            windowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                auto roots = ref new Platform::Collections::Vector<Platform::Object^>();
+                windowHelper->GetElementRenderedVisuals(textBlock, roots);
+                VERIFY_IS_TRUE(roots->Size > 0);
+                MockDComp::FileNameInfo fileNameInfo;
+                fileNameInfo.pathAndTestName = ref new Platform::String((folderPath + L"\\text").c_str());
+                fileNameInfo.variation = nullptr;
+                fileNameInfo.extension = L"xml";
+                auto mockDevice = safe_cast<MockDComp::IMockDCompDevice2^>(windowHelper->MockDCompDevice);
+                ::Windows::Foundation::Collections::IIterable<unsigned int>^ surfaceIds;
+                mockDevice->SaveToFile(roots->GetView(), fileNameInfo, MockDComp::AnimationComparison::NoComparison,
+                    MockDComp::SurfaceComparison::ReferencedOnly, MockDComp::SaveToFileOptions::None, &surfaceIds);
+            });
+
+            uint64_t texels = 0;
+            uint32_t surfaceCount = 0;
+            bool hasColorGlyphPixels = false;
+            const auto files = concurrency::create_task(folder->GetFilesAsync()).get();
+            for (auto file : files)
+            {
+                if (_wcsicmp(file->FileType->Data(), L".png") != 0)
+                {
+                    continue;
+                }
+                auto stream = concurrency::create_task(file->OpenAsync(::Windows::Storage::FileAccessMode::Read)).get();
+                auto decoder = concurrency::create_task(::Windows::Graphics::Imaging::BitmapDecoder::CreateAsync(stream)).get();
+                const uint32_t width = decoder->PixelWidth;
+                const uint32_t height = decoder->PixelHeight;
+                WEX::Logging::Log::Comment(WEX::Common::String().Format(L"Glyph surface: %u x %u", width, height));
+                texels += static_cast<uint64_t>(width) * height;
+                ++surfaceCount;
+                if (content == ZoomedTextContent::ColorGlyph)
+                {
+                    auto pixelData = concurrency::create_task(decoder->GetPixelDataAsync(
+                        ::Windows::Graphics::Imaging::BitmapPixelFormat::Rgba8,
+                        ::Windows::Graphics::Imaging::BitmapAlphaMode::Straight,
+                        ref new ::Windows::Graphics::Imaging::BitmapTransform(),
+                        ::Windows::Graphics::Imaging::ExifOrientationMode::IgnoreExifOrientation,
+                        ::Windows::Graphics::Imaging::ColorManagementMode::DoNotColorManage)).get();
+                    const auto pixels = pixelData->DetachPixelData();
+                    for (uint32_t pixel = 0; pixel + 3 < pixels->Length; pixel += 4)
+                    {
+                        if (pixels[pixel + 3] != 0 && (pixels[pixel] != pixels[pixel + 1] || pixels[pixel + 1] != pixels[pixel + 2]))
+                        {
+                            hasColorGlyphPixels = true;
+                            break;
+                        }
+                    }
+                }
+                decoder = nullptr;
+                delete stream;
+            }
+            VERIFY_IS_TRUE(surfaceCount > 0);
+            VERIFY_IS_TRUE(content != ZoomedTextContent::ColorGlyph || hasColorGlyphPixels);
+            const uint32_t bytesPerPixel = content == ZoomedTextContent::ColorGlyph ? 4 : 1;
+            WEX::Logging::Log::Comment(WEX::Common::String().Format(L"Glyph payload: %I64u bytes", texels * bytesPerPixel));
+            VERIFY_IS_TRUE(texels * bytesPerPixel <= 64ull * 1024 * 1024);
+            if (multipleBrushes)
+            {
+                VERIFY_IS_TRUE(surfaceCount >= 2);
+            }
         }
 
         void TextBlockTests::DCompValidationHelper(
