@@ -1953,11 +1953,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    // User column reorder: CanUserReorderColumns, ColumnReordered and the Ctrl+Shift+Left/Right chord. The chord
-    // is the only programmatic route to a user reorder, and the product reads the modifiers from the keyboard
-    // state, so the tests inject real input.
+    // User column reorder: CanUserReorderColumns, ColumnReordered and the Ctrl+Shift+Left/Right chord. The product reads
+    // the chord's modifiers from the keyboard state and the drag from the header row's manipulation, so the tests in this
+    // file inject real input and skip where it cannot reach the test window; TableView_ColumnReorder_APITests.cs drives
+    // the drag through TableViewTestHooks instead.
     [TestClass]
-    public class TableViewColumnReorderTests : TableViewApiTestBase
+    public partial class TableViewColumnReorderTests : TableViewApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Verifies reorder is opt-in, header tab stops are unchanged while it is off, and a header with somewhere to move becomes actionable.")]
