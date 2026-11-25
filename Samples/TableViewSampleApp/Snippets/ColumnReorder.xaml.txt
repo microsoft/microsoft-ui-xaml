@@ -1,0 +1,16 @@
+<tv:TableView
+    x:Name="PeopleTable"
+    AutomationProperties.Name="People with reorderable columns"
+    ItemsSource="{x:Bind People}"
+    CanUserReorderColumns="True"
+    ColumnReordered="OnColumnReordered"
+    SelectionMode="Single">
+    <tv:TableViewTextColumn Header="ID" Width="64" Binding="{Binding EmployeeId}"/>
+    <tv:TableViewTextColumn Header="First name" Width="160" Binding="{Binding FirstName}"/>
+    <tv:TableViewTextColumn Header="Last name" Width="160" Binding="{Binding LastName}"/>
+    <tv:TableViewTextColumn Header="Department" Width="140" Binding="{Binding Department}"/>
+    <tv:TableViewTextColumn Header="Role" Width="*" MinWidth="140" Binding="{Binding Role}"/>
+    <tv:TableViewTextColumn Header="Office" Width="120" Binding="{Binding Office}"/>
+    <tv:TableViewTextColumn Header="Email" Width="220" Binding="{Binding Email}"/>
+    <tv:TableViewTextColumn Header="Joined" Width="110" Binding="{Binding JoinDateText}"/>
+</tv:TableView>

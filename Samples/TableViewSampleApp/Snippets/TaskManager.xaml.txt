@@ -42,9 +42,10 @@
     x:Name="ProcessTable"
     AutomationProperties.Name="Processes"
     ItemsSource="{x:Bind Source}"
+    CanUserReorderColumns="{x:Bind ReorderColumnsToggle.IsOn, Mode=OneWay}"
     SelectionMode="Single">
     <!-- SortMemberPath names the raw value behind each template; a cell is announced by its value. -->
-    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name"/>
+    <tv:TableViewTemplateColumn Header="Name" Width="*" MinWidth="140" CellTemplate="{StaticResource ProcessNameTemplate}" SortMemberPath="Name" FrozenEdge="Leading"/>
     <tv:TableViewTemplateColumn Header="Status" Width="130" CellTemplate="{StaticResource ProcessStatusTemplate}" SortMemberPath="StatusText"/>
     <tv:TableViewTemplateColumn x:Name="CpuColumn" Header="CPU" Width="100" CellTemplate="{StaticResource CpuHeatTemplate}" SortMemberPath="CpuPercent"/>
     <tv:TableViewTemplateColumn x:Name="MemoryColumn" Header="Memory" Width="100" CellTemplate="{StaticResource MemoryHeatTemplate}" SortMemberPath="MemoryMB"/>

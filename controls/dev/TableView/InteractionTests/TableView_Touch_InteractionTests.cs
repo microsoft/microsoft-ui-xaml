@@ -287,6 +287,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // Lines are paired by index, so a header a whole column behind cannot pair with the wrong line.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a touch pan of the body during a header mouse drag cancels the drag, so releasing the mouse moves nothing.")]
+        public void BodyPanCancelsHeaderDrag()
+        {
+            using (var setup = new TestSetupHelper(new[] { PageName, NavigateToTouchButton }))
+            {
+                UIObject tableView = GetTable(TouchScrollingTable);
+                UIObject name = tableView == null ? null : FindColumnHeader(tableView, TouchScrollFirstHeader);
+                UIObject city = tableView == null ? null : FindColumnHeader(tableView, "TouchScrollCity");
+                if (name == null || city == null)
+                {
+                    Verify.Fail("The TouchScrollName or TouchScrollCity header was not found.");
+                    return;
+                }
+
+                string HeaderOrder()
+                {
+                    ElementCache.Clear();
+                    return string.Join(",", GetHeaderHost(GetTable(TouchScrollingTable)).Children.Select(header => header.Name));
+                }
+                string before = HeaderOrder();
+                var start = CentreOf(name);
+                var target = city.BoundingRectangle;
+                var end = new Point(target.Left + (target.Width * 3 / 4), start.Y);
+                var bounds = tableView.BoundingRectangle;
+                try
+                {
+                    PointerInput.Move(start);
+                    PointerInput.Press(PointerButtons.Primary);
+                    Wait.ForIdle();
+                    for (int step = 1; step <= 4; step++)
+                    {
+                        PointerInput.Move(new Point(start.X + ((end.X - start.X) * step / 4), start.Y));
+                        Wait.ForIdle();
+                    }
+                    InputHelper.Pan(tableView, new Point(bounds.Left + (bounds.Width / 2), bounds.Top + (bounds.Height * 3 / 4)), PanDistance, Direction.North);
+                }
+                finally
+                {
+                    PointerInput.Release(PointerButtons.Primary);
+                    Wait.ForIdle();
+                }
+
+                Log.Comment("Order: {0} -> {1}; offsets {2}.", before, HeaderOrder(), ReadSettledTouchScrollOffsets());
+                Verify.IsGreaterThan(ReadScrollOffsetComponent(ReadSettledTouchScrollOffsets(), "V"), 0.0, "Precondition: the touch pan must scroll the body.");
+                Verify.AreEqual(before, HeaderOrder(), "A body pan must cancel the header drag, so the drop moves nothing.");
+            }
+        }
+
         private static double MaxSkew(List<double> headerLines, List<double> bodyLines)
             => headerLines.Count == 0 || headerLines.Count != bodyLines.Count
                 ? double.PositiveInfinity
