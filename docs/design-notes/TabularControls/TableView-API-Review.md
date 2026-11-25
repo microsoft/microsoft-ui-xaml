@@ -230,7 +230,7 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 |---|---|---|---|
 | Header sort, cancellable event | `Sorting` (`Cancel`) / `Sorted` | WPF/WCT `Sorting` (`Handled`); w-ahmad `Sorting` (`Handled`). | P (`Cancel` follows the WinUI -ing event idiom) |
 | App-owned sort with arrow | settable display-only `SortDirection` (proposed; not in this IDL) | WCT `SortDirection` settable and cosmetic only; WPF settable; w-ahmad settable; AG Grid SSRM, TanStack `manualSorting`, MUI `sortingMode="server"`. | P |
-| Gate naming / scope | `CanSort` (`CanUserSort` proposed), `CanUserSortColumns`: user input only (proposed; not in this IDL: `CanSort` also gates `SortByColumn`, and turning either off clears the sort) | WPF `CanUserSort`/`CanUserSortColumns`. | P |
+| Gate naming / scope | `CanSort` (`CanUserSort` proposed), `CanUserSortColumns`: `CanSort` also gates `SortByColumn`, and turning either off clears the sort (proposed; not in this IDL: user input only, keeping the active sort) | WPF `CanUserSort`/`CanUserSortColumns`. | P |
 | Sort cycle | `SortCycle` incl. tri-state | WPF/AG Grid cycles (unv.). | P (tri-state is an addition) |
 | Multi-column header sort | none (single axis) | WPF Shift+click; w-ahmad Ctrl+click; AG Grid Shift; TanStack/MUI modifier. | G |
 | Sort direction enum | `SortDirection { None, Ascending, Descending }` | WPF/WCT/ACV `ListSortDirection { Ascending = 0, Descending = 1 }`, no `None`. | I |
@@ -297,7 +297,7 @@ Data-shaping parity is reviewed with the proposed data-shaping surface. The one 
 | `Width : GridLength` | XAML-native `Pixel`/`Auto`/`*`. Auto semantics differ from `Grid` (grow-only, realized rows); see §6. |
 | Per-column `FrozenEdge` instead of `FrozenColumnCount` | Leaves room for trailing pinning per column. |
 | Display-only settable `SortDirection` (proposed; not in this IDL) | Separates sort state (arrow) from sort execution, as WCT/AG Grid/TanStack/MUI do. |
-| `CanUser*` gate user input only | WPF naming and semantics; programmatic APIs are the app's own decision. |
+| `CanUser*` gate user input only | WPF naming and semantics; programmatic APIs are the app's own decision. True of the resize gates today; for the sort gates it is proposed (§2.3). |
 | Containers and columns unsealed | WinUI container convention (`ItemContainer`, `TreeViewItem`); sealing later is breaking. |
 | No row headers, no column virtualization | Target is ~5–50 columns; row headers out of scope (`HeadersVisibility` has no `Row`). |
 
