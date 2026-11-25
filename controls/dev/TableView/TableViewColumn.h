@@ -100,6 +100,7 @@ public:
     }
     void SetCellContentChangePostedInternal(bool posted) noexcept { m_cellContentChangePosted = posted; }
     bool HasPendingCellContentChangeInternal() const noexcept { return m_cellContentChangePending; }
+    bool IsCellContentChangePostedInternal() const noexcept { return m_cellContentChangePosted; }
     // Bumped by every take, so a post that a regeneration has already covered does nothing.
     uint32_t CellContentChangeGenerationInternal() const noexcept { return m_cellContentChangeGeneration; }
     bool TakeQueuedCellContentChangeInternal() noexcept

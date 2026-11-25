@@ -50,6 +50,11 @@ winrt::Microsoft::UI::Xaml::Data::Binding TableViewTextColumn::Binding()
 
 void TableViewTextColumn::Binding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
 {
+    // Before the swap, so the close validates the property the open editor writes.
+    if (auto const owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->EndEditOfChangedColumn(*this);
+    }
     m_binding.set(value);
     // Rebuild realized cells so the new Binding is applied; virtualized rows pick it up when realized.
     NotifyCellContentChangedInternal(true /* resetAutoWidth */);

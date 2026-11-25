@@ -355,6 +355,7 @@ public:
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
     void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
+    void EndEditOfChangedColumn(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
