@@ -339,7 +339,7 @@
   <data name="DllsFaultCount.Text" xml:space="preserve"><value>Hard faults</value></data>
   <data name="DllsPath.Text" xml:space="preserve"><value>DLL path</value></data>
   <data name="DllsList.AutomationProperties.Name" xml:space="preserve"><value>Recorded DLL loads</value></data>
-  <data name="DllsDescription.Text" xml:space="preserve"><value>Load times are relative to the recording start. Hard faults count observed page faults in each mapped DLL. A dash means no fault data was recorded.</value></data>
+  <data name="DllsDescription.Text" xml:space="preserve"><value>Load times are relative to the recording start. Hard faults count recorded hard page faults in each mapped DLL. A dash means capture was unavailable or could not be confirmed.</value></data>
   <data name="DllsReadError.Title" xml:space="preserve"><value>Couldn't read DLL loads</value></data>
   <data name="DllsNoSession" xml:space="preserve"><value>Start or open a recording to see DLL loads.</value></data>
   <data name="DllsNoLoads" xml:space="preserve"><value>No DLL loads were observed in this recording.</value></data>

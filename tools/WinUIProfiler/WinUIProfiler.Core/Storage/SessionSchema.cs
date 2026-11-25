@@ -38,7 +38,8 @@ internal static class SessionSchema
             LauncherProcessId INTEGER, -- the process that created the target, when known: its parent for a launch from
                                        -- the app, or for a recorded trace the parent the kernel's process start event names
             LauncherName TEXT,         -- its executable name without .exe, when known
-            CpuDatabaseVersion INTEGER); -- null without CPU data; otherwise the required .sqlite.cpu companion version
+            CpuDatabaseVersion INTEGER, -- null without CPU data; otherwise the required .sqlite.cpu companion version
+            HardFaultCaptureEnabled INTEGER NOT NULL DEFAULT 0);
         CREATE TABLE EventTypes (
             TypeId INTEGER PRIMARY KEY,
             Provider TEXT NOT NULL,    -- a XamlProvider name, such as Xaml, XamlDiagnostics or DxgKrnl; Marker for a marker provider
@@ -222,7 +223,7 @@ internal static class SessionSchema
         FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId CROSS JOIN SessionInfo s LEFT JOIN FrameEvents r ON r.Seq = e.Seq;
         CREATE VIEW DllLoads AS
         -- One row per observed DLL mapping. LoadTimeMs is a timestamp, not a duration. FaultCount counts retained hard
-        -- faults in this mapping's address range and lifetime, or is null if no hard-fault events were recorded.
+        -- faults in this mapping's address range and lifetime, or is null if capture is unknown or unavailable.
         WITH ImageEvents AS MATERIALIZED (
             SELECT e.Seq, e.Qpc,
                 (t.Provider = 'KernelProcess' AND t.EventId = 5 OR t.Provider = 'KernelImage' AND t.Opcode = 10) AS IsLoad,
@@ -244,7 +245,7 @@ internal static class SessionSchema
             WHERE t.Provider = 'KernelMemory' AND t.Opcode = 32 AND NOT t.Launcher
         )
         SELECT m.Seq, m.Qpc, (m.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS LoadTimeMs, m.DllPath,
-            CASE WHEN EXISTS (SELECT 1 FROM Faults) THEN (
+            CASE WHEN s.HardFaultCaptureEnabled OR EXISTS (SELECT 1 FROM Faults) THEN (
                 SELECT COUNT(*) FROM Faults f WHERE f.Qpc >= m.Qpc AND (m.EndQpc IS NULL OR f.Qpc < m.EndQpc)
                     AND f.Address >= m.ImageBase AND f.Address - m.ImageBase < m.ImageSize
             ) END AS FaultCount

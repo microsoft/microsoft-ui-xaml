@@ -274,6 +274,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     internal void SetCpuSampling(CpuSamplingSummary? summary, string? note) =>
         Interlocked.Exchange(ref cpuSampling, new(summary, note));
 
+    internal void MarkHardFaultCaptureEnabled() => queue.Add(new(0, null, null, HardFaultCaptureEnabled: true));
+
     private sealed record CpuSamplingResult(CpuSamplingSummary? Summary, string? Note);
 
     internal async Task SaveSnapshotAsync(TreeSnapshotDocument snapshot, string jsonPath, CancellationToken token = default)
@@ -318,7 +320,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     }
 
     private readonly record struct QueueItem(long Sequence, ProfilerEvent? Event, CompletedSample? Sample,
-        SnapshotWrite? Snapshot = null);
+        SnapshotWrite? Snapshot = null, bool HardFaultCaptureEnabled = false);
 
     // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
     // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
@@ -381,7 +383,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
         void Add(QueueItem item)
         {
-            if (item.Snapshot is { } snapshot)
+            if (item.HardFaultCaptureEnabled)
+            {
+                Sql.Execute(connection, "UPDATE SessionInfo SET HardFaultCaptureEnabled = 1");
+            }
+            else if (item.Snapshot is { } snapshot)
             {
                 snapshots.Add(snapshot);
             }

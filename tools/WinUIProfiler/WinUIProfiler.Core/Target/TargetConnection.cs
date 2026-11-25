@@ -495,6 +495,7 @@ History);
         try
         {
             cpu.StartReading(group.IsRecorded, group.PostSample, group.Post);
+            group.MarkHardFaultCaptureEnabled();
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {

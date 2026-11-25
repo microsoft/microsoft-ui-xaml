@@ -32,6 +32,14 @@ internal static class DllRecordingTests
                     Check(SpinWait.SpinUntil(() => SessionFile.ReadDllLoads(path) is { Count: 2 } loads &&
                         loads.All(load => load.FaultCount is null), TimeSpan.FromSeconds(5)), "Live rows before fault data");
 
+                    if (provider == XamlProvider.KernelProcess)
+                    {
+                        writer.MarkHardFaultCaptureEnabled();
+                        Check(SpinWait.SpinUntil(() => SessionFile.ReadDllLoads(path) is { Count: 2 } loads &&
+                            loads.All(load => load.FaultCount == 0), TimeSpan.FromSeconds(5)),
+                            "Enabled live capture without faults shows zero before the recording closes");
+                    }
+
                     Fault(109, 0x1000);
                     Fault(115, 0x1000);
                     Fault(115, 0x2000);
@@ -85,6 +93,7 @@ internal static class DllRecordingTests
             {
                 etw.StartReading(child.Id, null, group.Post);
                 kernel.StartReading(group.IsRecorded, group.PostSample, group.Post);
+                group.MarkHardFaultCaptureEnabled();
                 await child.StandardOutput.ReadToEndAsync();
                 await child.WaitForExitAsync();
                 etw.Dispose();
@@ -96,6 +105,8 @@ internal static class DllRecordingTests
                 {
                     throw new InvalidOperationException("Expected real DLL loads captured before process launch and saved to SQLite.");
                 }
+
+                Check(rows.All(row => row.FaultCount >= 0), "Live capture reports counts even when no hard faults occurred");
 
                 Console.WriteLine($"Captured {rows.Count} live DLL loads ({rows.Count(row => row.FaultCount.HasValue)} with hard-fault data).");
             }

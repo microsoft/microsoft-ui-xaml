@@ -102,8 +102,9 @@ imported ETL. It reads the session SQLite file's `DllLoads` view. `LoadTimeMs` i
 the image mapping timestamp relative to the recording start, not a load duration.
 `FaultCount` counts retained hard page faults within that mapping's address range
 and observed lifetime. Live hard-fault capture requires administrator rights; an
-ETL must include kernel hard-fault events. A dash means no hard-fault data for the
-target was recorded. DLLs already loaded before capture are not listed.
+ETL must include kernel hard-fault events. A live recording with hard-fault capture
+enabled shows zero when no faults were observed for a DLL. A dash means capture
+was unavailable or could not be confirmed. DLLs already loaded before capture are not listed.
 
 Run the event compatibility, DirectX capture/storage and snapshot resource regression checks from this directory:
 
