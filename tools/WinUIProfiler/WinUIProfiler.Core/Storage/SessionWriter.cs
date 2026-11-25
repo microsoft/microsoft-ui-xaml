@@ -432,8 +432,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
-                RestoreAutomaticCheckpointsIfNeeded();
                 Add(first);
+                RestoreAutomaticCheckpointsIfNeeded();
                 var started = Stopwatch.GetTimestamp();
                 while (batch.Count + samples.Count + snapshots.Count < BatchSize)
                 {
