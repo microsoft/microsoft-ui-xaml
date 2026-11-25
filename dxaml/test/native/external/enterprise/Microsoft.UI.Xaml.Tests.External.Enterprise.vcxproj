@@ -41,6 +41,7 @@
         <ClInclude Include="datavirtualization\ISelectionInfoIntegrationTests.h" />
         <ClInclude Include="datavirtualization\ItemIndexRangeIntegrationTests.h" />
         <ClInclude Include="ItemsControl\ItemsControlIntegrationTests.h" />
+        <ClInclude Include="ItemsControl\GroupItemIntegrationTests.h" />
         <ClInclude Include="GridView\GridViewIntegrationTests.h" />
         <ClInclude Include="ListView\ListViewIntegrationTests.h" />
         <ClInclude Include="rangeselection\RangeSelectionIntegrationTests.h" />
@@ -57,6 +58,7 @@
         <ClCompile Include="datavirtualization\IItemsRangeInfoIntegrationTests.cpp" />
         <ClCompile Include="datavirtualization\ISelectionInfoIntegrationTests.cpp" />
         <ClCompile Include="ItemsControl\ItemsControlIntegrationTests.cpp" />
+        <ClCompile Include="ItemsControl\GroupItemIntegrationTests.cpp" />
         <ClCompile Include="GridView\GridViewIntegrationTests.cpp" />
         <ClCompile Include="ListView\ListViewIntegrationTests.cpp" />
         <ClCompile Include="rangeselection\RangeSelectionIntegrationTests.cpp" />

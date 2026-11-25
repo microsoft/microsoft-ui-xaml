@@ -7,6 +7,7 @@ using System.Threading;
 using MUXControlsTestApp.Utilities;
 
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using WEX.TestExecution;
@@ -17,6 +18,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class RatingControlTests : ApiTestBase
     {
+        [TestMethod]
+        public void VerifyCompositionSetupPreservesOpacityTransition()
+        {
+            RatingControl ratingControl = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                ratingControl = new RatingControl();
+                Content = ratingControl;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var transition = new ScalarTransition();
+                ratingControl.OpacityTransition = transition;
+                ratingControl.Value = 3;
+                ratingControl.MaxRating = 7;
+                Content.UpdateLayout();
+
+                Verify.AreEqual(transition, ratingControl.OpacityTransition);
+                Verify.AreEqual(3.0, ratingControl.Value);
+                Verify.AreEqual(7, ratingControl.MaxRating);
+            });
+        }
+
         [TestMethod]
         public void VerifyDefaultsAndBasicSetting()
         {

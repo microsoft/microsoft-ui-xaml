@@ -107,8 +107,7 @@ void RatingControl::OnApplyTemplate()
     m_fontFamilyChangedToken.value = RegisterPropertyChangedCallback(
         winrt::Control::FontFamilyProperty(), { this, &RatingControl::OnFontFamilyChanged });
 
-    winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
-    winrt::Compositor comp = visual.Compositor();
+    winrt::Compositor comp = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
     m_sharedPointerPropertySet = comp.CreatePropertySet();
 

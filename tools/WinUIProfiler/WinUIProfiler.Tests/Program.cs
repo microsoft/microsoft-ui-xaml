@@ -19,7 +19,11 @@ if (args is ["--cli-tests", var suite])
 {
     if (suite == "live") await CliLiveTests.RunAsync();
     else if (suite == "queries") CliQueryTests.Run();
-    else if (suite == "snapshots") await SnapshotDiffTests.RunAsync();
+    else if (suite == "snapshots")
+    {
+        await SnapshotDiffTests.RunAsync();
+        await SnapshotStorageTests.RunAsync();
+    }
     else throw new ArgumentException("Use --cli-tests live|queries|snapshots.");
     return;
 }
@@ -42,6 +46,14 @@ if (args is ["--graphics-probe"])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");
     GraphicsCaptureIntegration.ExerciseDirect3D();
+    return;
+}
+
+if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, var disabledTrace, var disabledPid])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Surface texture integration requires Windows.");
+    SurfaceTextureTraceIntegration.Run(enabledTrace, int.Parse(enabledPid, System.Globalization.CultureInfo.InvariantCulture),
+        disabledTrace, int.Parse(disabledPid, System.Globalization.CultureInfo.InvariantCulture));
     return;
 }
 
@@ -1378,10 +1390,12 @@ finally
 }
 Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
 
+SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
 await SnapshotDiffTests.RunAsync();
+await SnapshotStorageTests.RunAsync();
 SnapshotTextureTests.Run();
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");

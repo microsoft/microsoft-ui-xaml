@@ -141,6 +141,67 @@ internal static class SessionSchema
             PRIMARY KEY (SourceId, TargetId, Kind, StartSeq)) WITHOUT ROWID;
         CREATE INDEX GraphicsLinkTargets ON GraphicsLinks (TargetId, SourceId);
         CREATE INDEX GraphicsLinkEnds ON GraphicsLinks (EndSeq);
+        CREATE TABLE TreeSnapshots (
+            CaptureId TEXT PRIMARY KEY,
+            SavedUtc TEXT NOT NULL,
+            JsonPath TEXT NOT NULL,    -- the independent JSON export; not needed to read the stored capture
+            StartQpc INTEGER NOT NULL,
+            EndQpc INTEGER NOT NULL,
+            Document TEXT NOT NULL);  -- the complete validated JSON, including unknown properties and exact UInt64 tokens
+        CREATE INDEX TreeSnapshotsByTime ON TreeSnapshots (EndQpc, CaptureId);
+        CREATE VIEW SnapshotSummary AS
+        -- Captures retained in this recording. All nodes and counters are read from Document, never from later ETW state.
+        SELECT CaptureId, SavedUtc, JsonPath, StartQpc, EndQpc,
+            Document ->> '$.schemaVersion' AS SchemaVersion,
+            Document ->> '$.processId' AS ProcessId,
+            Document ->> '$.creationTimeFileTime' AS CreationTimeFileTime,
+            Document ->> '$.qpcFrequency' AS QpcFrequency,
+            json_array_length(Document, '$.roots') AS Roots,
+            json_array_length(Document, '$.xamlNodes') AS XamlNodes,
+            json_array_length(Document, '$.compositionNodes') AS CompositionNodes,
+            json_array_length(Document, '$.correlations') AS Correlations,
+            Document -> '$.limitations' AS Limitations,
+            Document ->> '$.resourceSnapshot.status' AS ResourceStatus,
+            Document ->> '$.resourceSnapshot.hResult' AS ResourceHResult,
+            Document ->> '$.resourceSnapshot.startQpc' AS ResourceStartQpc,
+            Document ->> '$.resourceSnapshot.endQpc' AS ResourceEndQpc,
+            Document ->> '$.resourceSnapshot.values.allocCount' AS AllocCount,
+            Document ->> '$.resourceSnapshot.values.allocSize' AS AllocSize,
+            Document ->> '$.resourceSnapshot.values.allocatedMemory' AS AllocatedMemory,
+            Document ->> '$.resourceSnapshot.values.outstandingAllocCount' AS OutstandingAllocCount,
+            Document ->> '$.resourceSnapshot.values.outstandingAllocSize' AS OutstandingAllocSize
+        FROM TreeSnapshots;
+        CREATE VIEW SnapshotRoots AS
+        -- Root IDs are capture-local decimal text. ThreadId and XamlRootAddress identify roots across captures.
+        SELECT s.CaptureId, r.value -> '$.id' AS RootId, r.value ->> '$.threadId' AS ThreadId,
+            r.value ->> '$.startQpc' AS StartQpc, r.value ->> '$.endQpc' AS EndQpc,
+            r.value ->> '$.xamlRootAddress' AS XamlRootAddress
+        FROM TreeSnapshots s, json_each(s.Document, '$.roots') r;
+        CREATE VIEW SnapshotNodes AS
+        -- IDs are exact decimal text, scoped by CaptureId and Tree, not persistent object identities.
+        -- Properties stays JSON so UInt64 values, nested values and explicit nulls are not coerced to SQLite REAL.
+        SELECT s.CaptureId, 'Xaml' AS Tree, n.value -> '$.id' AS NodeId, n.value -> '$.rootId' AS RootId,
+            CASE WHEN n.value ->> '$.parentId' IS NOT NULL THEN n.value -> '$.parentId' END AS ParentId,
+            n.value ->> '$.childIndex' AS ChildIndex, n.value ->> '$.type' AS Type, n.value ->> '$.name' AS Name,
+            n.value ->> '$.objectAddress' AS ObjectAddress, n.value ->> '$.diagnosticsHandle' AS DiagnosticsHandle,
+            NULL AS VisualAddress, n.value -> '$.properties' AS Properties
+        FROM TreeSnapshots s, json_each(s.Document, '$.xamlNodes') n
+        UNION ALL
+        SELECT s.CaptureId, 'Composition', n.value -> '$.id', n.value -> '$.rootId',
+            CASE WHEN n.value ->> '$.parentId' IS NOT NULL THEN n.value -> '$.parentId' END,
+            n.value ->> '$.childIndex', n.value ->> '$.type', NULL,
+            n.value ->> '$.objectAddress', NULL, n.value ->> '$.visualAddress', n.value -> '$.properties'
+        FROM TreeSnapshots s, json_each(s.Document, '$.compositionNodes') n;
+        CREATE VIEW SnapshotCorrelations AS
+        -- Captured XAML-to-Composition links; both node IDs are capture-local decimal text.
+        SELECT s.CaptureId, c.value -> '$.xamlNodeId' AS XamlNodeId, c.value -> '$.visualNodeId' AS VisualNodeId
+        FROM TreeSnapshots s, json_each(s.Document, '$.correlations') c;
+        CREATE VIEW SnapshotResources AS
+        -- Graphics counters are exact unsigned decimal text. Empty/missing captures do not imply measured zero.
+        SELECT s.CaptureId, r.value ->> '$.index' AS ResourceIndex,
+            r.value -> '$.totalCreated' AS TotalCreated, r.value -> '$.totalDestroyed' AS TotalDestroyed,
+            r.value -> '$.liveCount' AS LiveCount
+        FROM TreeSnapshots s, json_each(s.Document, '$.resourceSnapshot.values.resources') r;
         CREATE VIEW EventDetails AS
         -- Every event, readable: its type, its fields by name, the tick it belongs to (TickId, Bucket) and the UI elements and
         -- visuals it mentions. An event outside every tick is in bucket Other.
@@ -544,6 +605,16 @@ internal static class SessionSchema
             ('GraphicsResourceAllocations', 'Time-bounded process-local resource and allocation correlations',
                 'ResourceId, DeviceAllocationId, AdapterAllocationId, StartSeq',
                 'SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq'),
+            ('SnapshotSummary', 'Stored tree captures, resource status and signed allocator counters', 'CaptureId',
+                'SELECT * FROM SnapshotSummary ORDER BY EndQpc'),
+            ('SnapshotRoots', 'Captured XamlRoots and their thread identities and time intervals', 'CaptureId, RootId',
+                'SELECT * FROM SnapshotRoots WHERE CaptureId = :capture'),
+            ('SnapshotNodes', 'Captured XAML and Composition nodes with complete JSON properties', 'CaptureId, Tree, NodeId',
+                'SELECT * FROM SnapshotNodes WHERE CaptureId = :capture AND Tree = ''Xaml'''),
+            ('SnapshotCorrelations', 'Captured object-to-visual links', 'CaptureId, XamlNodeId, VisualNodeId',
+                'SELECT * FROM SnapshotCorrelations WHERE CaptureId = :capture'),
+            ('SnapshotResources', 'Captured graphics counters as exact unsigned decimal text', 'CaptureId, ResourceIndex',
+                'SELECT * FROM SnapshotResources WHERE CaptureId = :capture'),
             ('QueryCatalog', 'This list', 'Name', 'SELECT * FROM QueryCatalog');
         """;
 }

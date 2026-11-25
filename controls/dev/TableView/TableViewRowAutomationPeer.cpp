@@ -698,7 +698,12 @@ winrt::AutomationPeer TableViewRowAutomationPeer::GetOrCreateCellPeer(
     }
     // GetChildren normally establishes this relationship, but Grid.GetItem can be
     // the first and only acquisition route. Connect that same peer before publishing it.
-    peer.SetParent(*this);
+    winrt::AutomationPeer parent = EventsSource();
+    if (!parent)
+    {
+        parent = *this;
+    }
+    peer.SetParent(parent);
     m_cellPeerCache.emplace_back(this, cell, peer);
     return peer;
 }
@@ -898,6 +903,13 @@ void TableViewRowAutomationPeer::RaiseHierarchyPositionChanged()
     {
         // best-effort: the tree may be tearing down.
     }
+}
+
+void TableViewRowAutomationPeer::ResetReportedHierarchyState()
+{
+    m_lastReportedLevel = -1;
+    m_lastReportedPositionInSet = -1;
+    m_lastReportedSizeOfSet = -1;
 }
 
 // ----- IAutomationPeerOverrides3 -----

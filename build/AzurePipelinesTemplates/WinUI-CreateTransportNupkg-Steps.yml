@@ -238,6 +238,7 @@ steps:
       # section is standalone-only). Monobuild nupkg signing is done centrally in the Pack stage.
       - template: WinUI-EsrpCodeSigning-Wrapper.yml
         parameters:
+          IsOfficial: ${{ parameters.IsOfficial }}
           IsMonobuild: ${{ parameters.IsMonobuild }}
           InnerParams:
             FolderPath: '${{ parameters.nupkgOutputDir }}'
@@ -329,6 +330,7 @@ steps:
       # replaces the former nupkg ESRP in the monorepo WinUI-Build-Stage.yml Pack job.
       - template: WinUI-EsrpCodeSigning-Wrapper.yml
         parameters:
+          IsOfficial: ${{ parameters.IsOfficial }}
           IsMonobuild: ${{ parameters.IsMonobuild }}
           InnerParams:
             FolderPath: '${{ parameters.nupkgOutputDir }}'

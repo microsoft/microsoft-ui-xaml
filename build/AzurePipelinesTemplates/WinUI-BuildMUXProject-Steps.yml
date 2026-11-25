@@ -422,16 +422,21 @@ steps:
   # localized .mui that come from Microsoft.Internal.WinUILocalizationResources (split from a
   # differently-versioned binary). Windows silently rejects a mismatched .mui and falls back to
   # UltimateFallbackLanguage (en-US), so every non-English string renders in English. Re-stamp each
-  # .mui with the unified version and the checksum of the binary it sits beside, before signing.
+  # .mui with the unified version, WinUI source revision, and checksum before signing.
+  # Windows can also read the visible version properties from these localized satellites.
   - ${{ if eq(parameters.IsMonobuild, 'true') }}:
     - task: PowerShell@2
-      displayName: 'Stamp localized .mui versions and checksums against the built binaries'
+      displayName: 'Stamp localized .mui versions, source revisions, and checksums'
       inputs:
         targetType: inline
         script: |
           Set-StrictMode -Version 2.0
           $ErrorActionPreference = 'Stop'
           $root = '${{ parameters.buildArtifactsDirectory }}'
+          $sourceRevision = & git -C '$(Build.SourcesDirectory)' rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $sourceRevision -notmatch '^[0-9a-fA-F]{40}$') {
+              throw 'Could not resolve the WinUI source revision for localized version metadata.'
+          }
 
           $muirct = Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\bin' -Recurse -Filter 'muirct.exe' -ErrorAction SilentlyContinue |
                     Where-Object { $_.FullName -match '\\x64\\' } | Sort-Object FullName -Descending | Select-Object -First 1
@@ -456,7 +461,7 @@ steps:
                   foreach ($langDir in $langDirs) {
                       $mui = Join-Path $langDir.FullName "$dllName.mui"
                       if (-not (Test-Path $mui)) { continue }
-                      & '$(Build.SourcesDirectory)\build\PipelineScripts\Set-LocalizedResourceVersion.ps1' -Path $mui -Version '$(WindowsAppSDKBinaryVersion)' | Out-Null
+                      & '$(Build.SourcesDirectory)\build\PipelineScripts\Set-LocalizedResourceVersion.ps1' -Path $mui -Version '$(WindowsAppSDKBinaryVersion)' -SourceRevision $sourceRevision | Out-Null
                       if ((Get-MuiChecksum $mui) -eq $want) { $alreadyOk++; continue }
                       & $muirct.FullName -c $dll.FullName -e $mui 2>&1 | Out-Null
                       if ((Get-MuiChecksum $mui) -eq $want) {
@@ -626,6 +631,7 @@ steps:
   - ${{ if eq(parameters.signOutput, true) }}:
     - template: WinUI-EsrpCodeSigning-Wrapper.yml
       parameters:
+        IsOfficial: ${{ parameters.IsOfficial }}
         IsMonobuild: ${{ parameters.IsMonobuild }}
         InnerParams:
           FolderPath: '$(ob_outputDirectory)'

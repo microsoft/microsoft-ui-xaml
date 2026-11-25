@@ -82,6 +82,7 @@
         $(MSBuildThisFileDirectory)\timepickerflyout;
         $(MSBuildThisFileDirectory)\toggleswitch;
         $(MSBuildThisFileDirectory)\tooltip;
+        $(MSBuildThisFileDirectory)\treeview;
         $(MSBuildThisFileDirectory)\uielement;
         $(MSBuildThisFileDirectory)\usercontrol;
         $(MSBuildThisFileDirectory)\variablesizedwrapgrid;
@@ -142,6 +143,7 @@
     <ClInclude Include="grid\GridIntegrationTests.h" />
     <ClInclude Include="hub\HubAutomationIntegrationTests.h" />
     <ClInclude Include="hub\HubIntegrationTests.h" />
+    <ClInclude Include="hub\HubSectionFocusAndAutomationTests.h" />
     <ClInclude Include="hyperlinkbutton\HyperlinkButtonIntegrationTests.h" />
     <ClInclude Include="iconsourceelement\IconSourceElementIntegrationTests.h" />
     <ClInclude Include="itemscontrol\ItemsControlIntegrationTests.h" />
@@ -154,6 +156,7 @@
     <ClInclude Include="listviewbaseheaderitem\ListViewBaseHeaderItemIntegrationTests.h" />
     <ClInclude Include="listviewbaseitem\ListViewBaseItemAutomationIntegrationTests.h" />
     <ClInclude Include="listviewbaseitem\ListViewBaseItemIntegrationTests.h" />
+    <ClInclude Include="listviewbaseitem\ListViewBaseItemPresenterAnimationTests.h" />
     <ClInclude Include="menuflyout\MenuFlyoutAutomationIntegrationTests.h" />
     <ClInclude Include="menuflyout\MenuFlyoutIntegrationTests.h" />
     <ClInclude Include="moco\Employee.h" />
@@ -203,6 +206,7 @@
     <ClInclude Include="toggleswitch\ToggleSwitchAutomationIntegrationTests.h" />
     <ClInclude Include="toggleswitch\ToggleSwitchIntegrationTests.h" />
     <ClInclude Include="tooltip\ToolTipIntegrationTests.h" />
+    <ClInclude Include="treeview\TreeViewIntegrationTests.h" />
     <ClInclude Include="uielement\UIElementIntegrationTests.h" />
     <ClInclude Include="usercontrol\UserControlIntegrationTests.h" />
     <ClInclude Include="variablesizedwrapgrid\VariableSizedWrapGridIntegrationTests.h" />
@@ -256,6 +260,7 @@
     <ClCompile Include="grid\GridIntegrationTests.cpp" />
     <ClCompile Include="hub\HubIntegrationTests.cpp" />
     <ClCompile Include="hub\HubAutomationIntegrationTests.cpp" />
+    <ClCompile Include="hub\HubSectionFocusAndAutomationTests.cpp" />
     <ClCompile Include="hyperlinkbutton\HyperlinkButtonIntegrationTests.cpp" />
     <ClCompile Include="iconsourceelement\IconSourceElementIntegrationTests.cpp" />
     <ClCompile Include="itemscontrol\ItemsControlIntegrationTests.cpp" />
@@ -268,6 +273,7 @@
     <ClCompile Include="listviewbaseheaderitem\ListViewBaseHeaderItemIntegrationTests.cpp" />
     <ClCompile Include="listviewbaseitem\ListViewBaseItemIntegrationTests.cpp" />
     <ClCompile Include="listviewbaseitem\ListViewBaseItemAutomationIntegrationTests.cpp" />
+    <ClCompile Include="listviewbaseitem\ListViewBaseItemPresenterAnimationTests.cpp" />
     <ClCompile Include="menuflyout\MenuFlyoutIntegrationTests.cpp" />
     <ClCompile Include="menuflyout\MenuFlyoutAutomationIntegrationTests.cpp" />
     <ClCompile Include="moco\MoCoIntegrationTests.cpp" />
@@ -316,6 +322,7 @@
     <ClCompile Include="toggleswitch\ToggleSwitchIntegrationTests.cpp" />
     <ClCompile Include="toggleswitch\ToggleSwitchAutomationIntegrationTests.cpp" />
     <ClCompile Include="tooltip\ToolTipIntegrationTests.cpp" />
+    <ClCompile Include="treeview\TreeViewIntegrationTests.cpp" />
     <ClCompile Include="uielement\UIElementIntegrationTests.cpp" />
     <ClCompile Include="usercontrol\UserControlIntegrationTests.cpp" />
     <ClCompile Include="variablesizedwrapgrid\VariableSizedWrapGridIntegrationTests.cpp" />

@@ -156,6 +156,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifySelectionIndicatorRemovedWhenDeselectedInDragState)
+            TEST_METHOD_PROPERTY(L"Description", L"Changes the selection of a single-selection ListView while its items are in drag and drop states, as during a reorder drop, and verifies that only the selected item keeps a selection indicator.")
+            TEST_METHOD_PROPERTY(L"RegressionBug", L"https://github.com/microsoft/microsoft-ui-xaml/issues/8271")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyLVIPWorksWithVSM)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that ListViewItemPresenter goes to visual states declared in the template.")
         END_TEST_METHOD()     

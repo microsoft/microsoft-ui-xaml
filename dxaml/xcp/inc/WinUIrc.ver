@@ -68,6 +68,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+#ifdef WINDOWSAPPSDK_UNIFIED_BINARY_VERSION
+            VALUE "Comments",        "SourceRevision=" STRINGIZE(WINUI_SOURCE_REVISION_ID)
+#endif
             VALUE "CompanyName",     WINDOWSAPPSDK_COMPANY_NAME
             VALUE "FileDescription", VER_INTERNALNAME_STR
             VALUE "FileVersion",     VER_FILEVERSION_STR BUILD_MACHINE_TAG

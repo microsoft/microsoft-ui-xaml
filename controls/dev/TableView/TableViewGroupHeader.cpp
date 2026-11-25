@@ -9,8 +9,10 @@
 #include "TableViewGroupHeaderToggleRequestedEventArgs.h"
 #include "TableViewGroupInfo.h"
 #include "TableViewGroupHeaderAutomationPeer.h"
+#include "TableViewAutomationHelpers.h"
 
 static constexpr std::wstring_view s_GridLineBorderPartName{ L"PART_GridLineBorder"sv };
+static constexpr std::wstring_view s_ExpanderGutterPartName{ L"PART_ExpanderGutter"sv };
 
 TableViewGroupHeader::TableViewGroupHeader()
 {
@@ -50,9 +52,190 @@ TableViewGroupHeader::TableViewGroupHeader()
         });
 }
 
+namespace
+{
+    class TableViewGroupBindingAutomationPeer :
+        public TableViewBindingAutomationPeerT<TableViewGroupBindingAutomationPeer, winrt::IExpandCollapseProvider, winrt::IGridItemProvider, winrt::IScrollItemProvider>
+    {
+    public:
+        explicit TableViewGroupBindingAutomationPeer(winrt::TableViewGroupHeader const& header) : m_header(winrt::make_weak(header)) {}
+
+        // Served here so a held pattern object follows the group, not whichever group the header shows later.
+        winrt::IInspectable GetPatternCore(winrt::PatternInterface const& pattern)
+        {
+            auto const peer = HeaderPeer();
+            return pattern == winrt::PatternInterface::ExpandCollapse || pattern == winrt::PatternInterface::GridItem ||
+                    pattern == winrt::PatternInterface::ScrollItem
+                ? winrt::IInspectable{ *this } : peer.GetPattern(pattern);
+        }
+        winrt::hstring GetNameCore() { return HeaderPeer().GetName(); }
+        int32_t GetCultureCore() { return HeaderPeer().GetCulture(); }
+        winrt::hstring GetClassNameCore() { return HeaderPeer().GetClassName(); }
+        winrt::AutomationControlType GetAutomationControlTypeCore() { return HeaderPeer().GetAutomationControlType(); }
+        winrt::hstring GetLocalizedControlTypeCore() { return HeaderPeer().GetLocalizedControlType(); }
+        bool IsEnabledCore() { return HeaderPeer().IsEnabled(); }
+        void SetFocusCore() { HeaderPeer().SetFocus(); }
+        void ShowContextMenuCore() { HeaderPeer().ShowContextMenu(); }
+        winrt::IVector<winrt::AutomationPeer> GetChildrenCore() { return HeaderPeer().GetChildren(); }
+        // Children are reached through this element so they parent to it, not to the pooled header's peer.
+        winrt::IInspectable NavigateCore(winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection const& direction)
+        {
+            using Direction = winrt::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection;
+            auto const peer = HeaderPeer();
+            return direction == Direction::FirstChild || direction == Direction::LastChild
+                ? __super::NavigateCore(direction) : peer.Navigate(direction);
+        }
+
+        winrt::ExpandCollapseState ExpandCollapseState() { return HeaderPeer().as<winrt::IExpandCollapseProvider>().ExpandCollapseState(); }
+        void Expand() { HeaderPeer().as<winrt::IExpandCollapseProvider>().Expand(); }
+        void Collapse() { HeaderPeer().as<winrt::IExpandCollapseProvider>().Collapse(); }
+
+        int32_t Row() { return HeaderPeer().as<winrt::IGridItemProvider>().Row(); }
+        int32_t Column() { return HeaderPeer().as<winrt::IGridItemProvider>().Column(); }
+        int32_t RowSpan() { return HeaderPeer().as<winrt::IGridItemProvider>().RowSpan(); }
+        int32_t ColumnSpan() { return HeaderPeer().as<winrt::IGridItemProvider>().ColumnSpan(); }
+        winrt::IRawElementProviderSimple ContainingGrid() { return HeaderPeer().as<winrt::IGridItemProvider>().ContainingGrid(); }
+
+        void ScrollIntoView()
+        {
+            HeaderPeer();
+            winrt::BringIntoViewOptions options;
+            options.AnimationDesired(false);
+            m_header.get().StartBringIntoView(options);
+        }
+
+        void Retarget(winrt::TableViewGroupHeader const& header) { m_header = winrt::make_weak(header); }
+
+        template <typename Forward, typename T>
+        T ForwardToContainerPeer(Forward&& forward, T const&)
+        {
+            return static_cast<T>(forward(HeaderPeer()));
+        }
+
+        winrt::UIElement TryBoundContainer() { return TryBoundHeader().first; }
+
+    private:
+        winrt::AutomationPeer HeaderPeer()
+        {
+            auto const bound = TryBoundHeader();
+            if (!bound.first)
+            {
+                ThrowElementNotAvailable();
+            }
+            return bound.second;
+        }
+
+        std::pair<winrt::TableViewGroupHeader, winrt::AutomationPeer> TryBoundHeader()
+        {
+            auto const header = m_header.get();
+            auto const table = header ? winrt::get_self<TableViewGroupHeader>(header)->GetOwningTableView() : nullptr;
+            auto const repeater = table ? winrt::get_self<TableView>(table)->GetRowsRepeaterInternal() : nullptr;
+            auto const peer = repeater ? winrt::FrameworkElementAutomationPeer::FromElement(header) : nullptr;
+            if (!IsEventsSourceOf(peer) || repeater.GetElementIndex(header) < 0)
+            {
+                return { nullptr, nullptr };
+            }
+            return { header, peer };
+        }
+
+        winrt::weak_ref<winrt::TableViewGroupHeader> m_header{ nullptr };
+    };
+}
+
 winrt::AutomationPeer TableViewGroupHeader::OnCreateAutomationPeer()
 {
-    return winrt::make<TableViewGroupHeaderAutomationPeer>(*this);
+    auto const peer = winrt::make<TableViewGroupHeaderAutomationPeer>(*this);
+    SyncGroupAutomationPeerInternal(peer, true, GetGroupIdentity());
+    return peer;
+}
+
+void TableViewGroupHeader::SyncGroupAutomationPeerInternal(
+    winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity)
+{
+    // An EventsSource the app installed wins; only replace or clear the binding this header installed.
+    if (auto const current = headerPeer.EventsSource(); current && current != m_groupBinding.get())
+    {
+        return;
+    }
+
+    auto const owner = GetOwningTableView();
+    if (!m_groupEntry.get())
+    {
+        headerPeer.EventsSource(nullptr);
+    }
+    else if (!groupIdentity.empty() && owner)
+    {
+        auto* const tableView = winrt::get_self<TableView>(owner);
+        auto binding = tableView->GetGroupAutomationElementInternal(groupIdentity);
+        if (binding)
+        {
+            winrt::get_self<TableViewGroupBindingAutomationPeer>(binding.as<winrt::IExpandCollapseProvider>())->Retarget(*this);
+        }
+        else
+        {
+            binding = winrt::make<TableViewGroupBindingAutomationPeer>(*this);
+            tableView->SetGroupAutomationElementInternal(groupIdentity, binding);
+        }
+        m_groupBinding = winrt::make_weak(binding);
+        if (headerPeer.EventsSource() != binding)
+        {
+            headerPeer.EventsSource(binding);
+        }
+    }
+    else if (newBinding)
+    {
+        auto const binding = winrt::make<TableViewGroupBindingAutomationPeer>(*this);
+        m_groupBinding = winrt::make_weak(binding);
+        headerPeer.EventsSource(binding);
+    }
+    else if (!headerPeer.EventsSource())
+    {
+        auto binding = m_groupBinding.get();
+        if (!binding)
+        {
+            binding = winrt::make<TableViewGroupBindingAutomationPeer>(*this);
+            m_groupBinding = winrt::make_weak(binding);
+        }
+        headerPeer.EventsSource(binding);
+    }
+}
+
+bool TableViewGroupHeader::HasContentAutomationPeersInternal()
+{
+    std::vector<winrt::DependencyObject> pending;
+    if (auto const root = ContentTemplateRoot())
+    {
+        pending.push_back(root);
+    }
+    while (!pending.empty())
+    {
+        auto const element = std::move(pending.back());
+        pending.pop_back();
+        if (auto const uie = element.try_as<winrt::UIElement>(); uie && winrt::FrameworkElementAutomationPeer::FromElement(uie))
+        {
+            return true;
+        }
+        const int32_t count = winrt::VisualTreeHelper::GetChildrenCount(element);
+        for (int32_t i = 0; i < count; ++i)
+        {
+            pending.push_back(winrt::VisualTreeHelper::GetChild(element, i));
+        }
+    }
+    return false;
+}
+
+bool TableViewGroupHeader::IsExpanderPartInternal(winrt::DependencyObject element)
+{
+    auto const gutter = m_expanderGutter.get();
+    winrt::DependencyObject const self = *this;
+    for (; gutter && element && element != self; element = winrt::VisualTreeHelper::GetParent(element))
+    {
+        if (element == gutter)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 winrt::Size TableViewGroupHeader::MeasureOverride(winrt::Size const& availableSize)
@@ -176,7 +359,7 @@ void TableViewGroupHeader::OnApplyTemplate()
     m_rowChrome.set(GetTemplateChild(L"PART_RowChrome").try_as<winrt::FrameworkElement>());
     m_contentHost.set(GetTemplateChild(L"PART_ContentHost").try_as<winrt::Border>());
     m_contentPresenter.set(GetTemplateChild(L"PART_ContentPresenter").try_as<winrt::ContentPresenter>());
-    m_expanderGutter.set(GetTemplateChild(L"PART_ExpanderGutter").try_as<winrt::Border>());
+    m_expanderGutter.set(GetTemplateChild(hstring{ s_ExpanderGutterPartName }).try_as<winrt::Border>());
 
     // A group header's ContextFlyout (set through a TableViewGroupHeader Style) stays closed while
     // a cell is editing.
@@ -367,15 +550,35 @@ void TableViewGroupHeader::RaiseExpandCollapseStateChanged(winrt::ExpandCollapse
         return;
     }
 
-    // FromElement only: no live peer means no listener, so creating one purely to announce would
-    // materialize automation objects a client never asked for.
-    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
-
-    if (auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr)
+    // Deferred: the header is not reachable from the window yet during a repeater re-prepare.
+    auto const queue = DispatcherQueue();
+    if (!queue)
     {
-        winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer)->RaiseExpandCollapseAutomationEvent(
-            oldState, newState);
+        return;
     }
+    // Bound to the current group's element so a header recycled while queued does not raise it.
+    queue.TryEnqueue([weakThis = get_weak(), groupBinding = m_groupBinding, oldState, newState]()
+    {
+        auto const strongThis = weakThis.get();
+        auto const binding = groupBinding.get();
+        if (!strongThis || !binding || !strongThis->m_groupEntry.get())
+        {
+            return;
+        }
+
+        auto const peer = winrt::FrameworkElementAutomationPeer::FromElement(*strongThis);
+        auto const headerPeer = peer ? peer.try_as<winrt::TableViewGroupHeaderAutomationPeer>() : nullptr;
+        if (!headerPeer || headerPeer.EventsSource() != binding)
+        {
+            return;
+        }
+
+        auto const self = winrt::get_self<TableViewGroupHeaderAutomationPeer>(headerPeer);
+        if (self->ExpandCollapseState() == newState)
+        {
+            self->RaiseExpandCollapseAutomationEvent(oldState, newState);
+        }
+    });
 }
 
 void TableViewGroupHeader::UpdateVisualStates(bool useTransitions)
