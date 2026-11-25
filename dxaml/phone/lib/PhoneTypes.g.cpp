@@ -1174,14 +1174,15 @@ Cleanup:
 _Check_return_ HRESULT 
 DatePickerFlyoutItemGenerated::RuntimeClassInitialize()
 {
-    RRETURN(InitializeImpl());
+    RRETURN(InitializeImpl(nullptr));
 }
 
 _Check_return_ HRESULT
-DatePickerFlyoutItemGenerated::InitializeImpl()
+DatePickerFlyoutItemGenerated::InitializeImpl(_In_opt_ IInspectable* pOuter)
 {
     HRESULT hr = S_OK;
 
+    UNREFERENCED_PARAMETER(pOuter);
 
     // When types are created internally there is no guarantee that
     // the factory has been previously instantiated. 
@@ -1341,6 +1342,20 @@ void DatePickerFlyoutItemFactory::ClearProperties()
         s_SecondaryTextProperty.Reset();
 }
 
+IFACEMETHODIMP DatePickerFlyoutItemFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItem** ppInstance)
+{
+    HRESULT hr = S_OK;
+
+    IFC((pctl::AggregableComObject<
+            ABI::Microsoft::UI::Xaml::Controls::DatePickerFlyoutItem,
+            ABI::Microsoft::UI::Xaml::Controls::IDatePickerFlyoutItem>::CreateInstance(
+            pOuter,
+            ppInner,
+            ppInstance)));
+
+Cleanup:
+    RRETURN(hr);
+}
 // Static properties.
 
 // Dependency properties initializing functions

@@ -454,9 +454,9 @@ namespace Microsoft.UI.Xaml.Controls
     [PropertyChange(PropertyChangeCallbackType.NoCallback)]
     [Implements(typeof(Microsoft.UI.Xaml.Data.ICustomPropertyProvider))]
     [Guids(ClassGuid = "50461953-ba4e-4cd8-aea0-1d79215db0bc")]
-    public sealed class DatePickerFlyoutItem : DependencyObject
+    public class DatePickerFlyoutItem : DependencyObject
     {
-        internal DatePickerFlyoutItem() { }
+        public DatePickerFlyoutItem() { }
 
         public Windows.Foundation.String PrimaryText
         {
