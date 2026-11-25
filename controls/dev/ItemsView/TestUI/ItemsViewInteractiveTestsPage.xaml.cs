@@ -543,6 +543,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 _fullLogs.Add(ex.ToString());
+                txtStatus.Text = "InsertItems. Failed: " + ex.Message;
             }
         }
 
@@ -567,97 +568,75 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 _fullLogs.Add(ex.ToString());
+                txtStatus.Text = "RemoveItems. Failed: " + ex.Message;
             }
         }
 
         private void InsertItem(int index)
         {
-            try
+            if (itemsView != null && cmbItemsSource != null)
             {
-                if (itemsView != null && cmbItemsSource != null)
+                switch (cmbItemsSource.SelectedIndex)
                 {
-                    switch (cmbItemsSource.SelectedIndex)
-                    {
-                        case 1:                            
-                            if (_lstEntities != null)
+                    case 1:
+                        if (_lstEntities != null)
+                        {
+                            int rank = _lstEntities.Count;
+                            Entity entity = new Entity
                             {
-                                int rank = _lstEntities.Count;
-                                Entity entity = new Entity
-                                {
-                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
-                                    Description = rank + " - " + _lorem.Substring(0, rank)
-                                };
+                                ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                Description = rank + " - " + _lorem.Substring(0, rank)
+                            };
 
-                                _lstEntities.Insert(index, entity);
-                            }
-                            break;
-                        case 2:
-                            if (_lstLargeEntities != null)
+                            _lstEntities.Insert(index, entity);
+                        }
+                        break;
+                    case 2:
+                        if (_lstLargeEntities != null)
+                        {
+                            int rank = _lstLargeEntities.Count;
+                            Entity entity = new Entity
                             {
-                                int rank = _lstLargeEntities.Count;
-                                Entity entity = new Entity
-                                {
-                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
-                                    Description = rank + " - " + _lorem.Substring(0, rank % 50 + 1)
-                                };
+                                ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                Description = rank + " - " + _lorem.Substring(0, rank % 50 + 1)
+                            };
 
-                                _lstLargeEntities.Insert(index, entity);
-                            }
-                            break;
-                        case 3:
-                            if (_colEntities != null)
+                            _lstLargeEntities.Insert(index, entity);
+                        }
+                        break;
+                    case 3:
+                        if (_colEntities != null)
+                        {
+                            int rank = _colEntities.Count;
+                            Entity entity = new Entity
                             {
-                                int rank = _colEntities.Count;
-                                Entity entity = new Entity
-                                {
-                                    ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
-                                    Description = rank + " - " + _lorem.Substring(0, 2 * rank)
-                                };
+                                ImageUri = new Uri(string.Format("ms-appx:///Images/recipe{0}.png", rank % 8 + 1)),
+                                Description = rank + " - " + _lorem.Substring(0, 2 * rank)
+                            };
 
-                                _colEntities.Insert(index, entity);
-                            }
-                            break;
-                    }
+                            _colEntities.Insert(index, entity);
+                        }
+                        break;
                 }
-            }
-            catch (Exception ex)
-            {
-                _fullLogs.Add(ex.ToString());
             }
         }
 
         private void RemoveItem(int index)
         {
-            try
+            if (itemsView != null && cmbItemsSource != null)
             {
-                if (itemsView != null && cmbItemsSource != null)
+                switch (cmbItemsSource.SelectedIndex)
                 {
-                    switch (cmbItemsSource.SelectedIndex)
-                    {
-                        case 1:
-                            if (_lstEntities != null)
-                            {
-                                _lstEntities.RemoveAt(index);
-                            }
-                            break;
-                        case 2:
-                            if (_lstLargeEntities != null)
-                            {
-                                _lstLargeEntities.RemoveAt(index);
-                            }
-                            break;
-                        case 3:
-                            if (_colEntities != null)
-                            {
-                                _colEntities.RemoveAt(index);
-                            }
-                            break;
-                    }
+                    case 1:
+                        _lstEntities?.RemoveAt(index);
+                        break;
+                    case 2:
+                        _lstLargeEntities?.RemoveAt(index);
+                        break;
+                    case 3:
+                        _colEntities?.RemoveAt(index);
+                        break;
                 }
-            }
-            catch (Exception ex)
-            {
-                _fullLogs.Add(ex.ToString());
             }
         }
 
