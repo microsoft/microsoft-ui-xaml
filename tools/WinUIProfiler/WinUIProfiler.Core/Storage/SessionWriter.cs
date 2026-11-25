@@ -60,10 +60,19 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // object indexes.
     private const int RowOverheadBytes = 100;
 
+    // How often the background connection asks SQLite to move WAL pages into the database. PASSIVE does not wait for
+    // locks held by the writer or readers, so it runs independently of batch commits.
+    private static readonly TimeSpan CheckpointInterval = TimeSpan.FromMilliseconds(250);
+
     private readonly BlockingCollection<QueueItem> queue = new(16_384);
     private readonly SqliteConnection connection;
     private readonly SqliteCommand insertEvent;
     private readonly SqliteCommand insertType;
+    // Runs PRAGMA wal_checkpoint(PASSIVE) on its own connection and thread, off the writer's commit path.
+    private Thread? checkpointThread;
+    private readonly ManualResetEventSlim checkpointStop = new();
+    private volatile bool checkpointsFailed;
+    private bool automaticCheckpointsRestored;
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
@@ -130,6 +139,85 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
+        StartCheckpointing();
+        RestoreAutomaticCheckpointsIfNeeded();
+    }
+
+    // Automatic checkpointing is off on the writer's own connection (Create). A separate connection and thread ask for
+    // a PASSIVE checkpoint every CheckpointInterval, which does not wait for locks held by the writer or a reader. If
+    // this fails, the writer restores automatic checkpointing so the WAL file still stays bounded.
+    private void StartCheckpointing()
+    {
+        try
+        {
+            var thread = new Thread(RunCheckpoints)
+            {
+                IsBackground = true,
+                Name = "WinUIProfiler WAL checkpoint"
+            };
+            thread.Start();
+            checkpointThread = thread;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"Starting the background WAL checkpoint failed; restoring automatic checkpointing: {error.Message}");
+            checkpointsFailed = true;
+            checkpointThread = null;
+        }
+    }
+
+    private void RunCheckpoints()
+    {
+        try
+        {
+            using var background = new SqliteConnection(new SqliteConnectionStringBuilder
+            {
+                DataSource = Path,
+                Mode = SqliteOpenMode.ReadWrite,
+                Pooling = false
+            }.ToString());
+            background.Open();
+            while (!checkpointStop.Wait(CheckpointInterval))
+            {
+                Sql.Execute(background, "PRAGMA wal_checkpoint(PASSIVE)");
+            }
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            Trace.TraceWarning($"The background WAL checkpoint stopped; the writer will restore automatic checkpointing: {error.Message}");
+            checkpointsFailed = true;
+        }
+    }
+
+    // SQLite's own default (SQLITE_DEFAULT_WAL_AUTOCHECKPOINT), used so a writer connection behaves as it would
+    // without this feature once the background checkpoint can no longer run.
+    // Called during construction while the writer has no queued work, or on the writer thread. The checkpoint thread
+    // reports failure through checkpointsFailed; it never uses the writer connection concurrently.
+    private void RestoreAutomaticCheckpointsIfNeeded()
+    {
+        if (!checkpointsFailed || automaticCheckpointsRestored)
+        {
+            return;
+        }
+
+        try
+        {
+            Sql.Execute(connection, "PRAGMA wal_autocheckpoint = 1000;");
+            automaticCheckpointsRestored = true;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException)
+        {
+            throw new IOException("The background WAL checkpoint failed, and automatic checkpointing could not be restored.", error);
+        }
+    }
+
+    // Stops and joins the background checkpoint thread, if it is running, before a final checkpoint. Call before
+    // the writer connection's own wal_checkpoint(TRUNCATE) so the two connections never checkpoint at once.
+    private void StopCheckpointing()
+    {
+        checkpointStop.Set();
+        checkpointThread?.Join();
+        checkpointThread = null;
     }
 
     public string Path { get; }
@@ -178,8 +266,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             connection.Open();
             // WAL lets readers open the file while it is written, and a crash leaves it consistent up to the last
-            // batch. NORMAL skips the flush on every commit; the file is still never corrupted.
-            Sql.Execute(connection, "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;");
+            // batch. NORMAL skips the flush on every commit; the file is still never corrupted. Automatic checkpointing
+            // is off on this connection (wal_autocheckpoint = 0); StartCheckpointing runs that work from a separate
+            // connection and thread instead.
+            Sql.Execute(connection, "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA wal_autocheckpoint = 0;");
             using (var transaction = connection.BeginTransaction())
             {
                 Sql.Execute(connection, SessionSchema.Create, transaction);
@@ -333,6 +423,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
+                RestoreAutomaticCheckpointsIfNeeded();
                 Add(first);
                 var started = Stopwatch.GetTimestamp();
                 while (batch.Count + samples.Count + snapshots.Count < BatchSize)
@@ -736,8 +827,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),
                     ("$lost", lostByEtw), ("$dropped", droppedByProfiler));
-                // Moves the write-ahead log into the database and leaves WAL mode, so the .sqlite file stands alone and
-                // can be opened read-only without its -wal and -shm files.
+                // Stops the background checkpoint connection/thread first, so the two connections never checkpoint at
+                // the same time: this is now the only one left, and it moves the write-ahead log into the database and
+                // leaves WAL mode, so the .sqlite file stands alone and can be opened read-only without its -wal and
+                // -shm files.
+                StopCheckpointing();
                 Sql.Execute(connection, "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;");
                 Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
             }
@@ -749,6 +843,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
         finally
         {
+            StopCheckpointing();
+            checkpointStop.Dispose();
             json.Dispose();
             objects.Dispose();
             frames.Dispose();

@@ -12,9 +12,9 @@ namespace WinUIProfiler.Engine.Processing;
 // dropped (ForTrace, PostBlocking).
 public sealed class EventPipeline : IDisposable
 {
-    // About 42 MB at the ~320 bytes per event measured on a real trace; holds more than a second of a
-    // startup burst (75,757 events in one second of a WinUI 3 Gallery launch were measured).
-    public const int DefaultCapacity = 131_072;
+    // About 84 MB at the ~320 bytes per event measured on a real trace. The larger queue absorbs burst traffic while
+    // the storage writer catches up; it does not replace passive checkpointing, which keeps WAL work off commit.
+    public const int DefaultCapacity = 262_144;
 
     private readonly BlockingCollection<ProfilerEvent> queue;
     private readonly IReadOnlyList<IEventProcessor> processors;

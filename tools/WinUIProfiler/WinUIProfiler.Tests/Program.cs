@@ -1383,6 +1383,7 @@ finally
 Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSON and legacy recordings remain lossless.");
 
 GraphicsIndexTests.Run();
+EventPipelineTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
 await SnapshotDiffTests.RunAsync();

@@ -579,7 +579,7 @@ launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
-Events go through a queue of 131,072 events to one processing thread that runs
+Events go through a queue of 262,144 events to one processing thread that runs
 the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
@@ -694,7 +694,11 @@ complete, and `CpuSampling.Note` says when samples were deleted. Closed
 graphics history leaves with its raw evidence; open graphics
 lifetimes and referenced parent devices retain continuity and are marked
 `Trimmed` when evidence has been removed. While recording, the file is in WAL mode, so it can be read at the
-same time, for example with the CLI; when the session ends, it is left as a
+same time, for example with the CLI. The writer's own connection disables automatic checkpoints: a separate
+connection and thread run `PRAGMA wal_checkpoint(PASSIVE)` every 250 ms, keeping checkpoint work off the batch
+commit path. Disk contention can still affect both threads, but a checkpoint no longer runs inside a writer commit.
+That thread stops before the final checkpoint. When the session
+ends, the write-ahead log is moved into the database and the file is left as a
 single `.sqlite` file. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
 
