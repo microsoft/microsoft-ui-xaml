@@ -138,9 +138,18 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         cpu = new(connection);
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
-        writer.Start();
-        StartCheckpointing();
-        RestoreAutomaticCheckpointsIfNeeded();
+        try
+        {
+            StartCheckpointing();
+            RestoreAutomaticCheckpointsIfNeeded();
+            writer.Start();
+        }
+        catch
+        {
+            StopCheckpointing();
+            checkpointStop.Dispose();
+            throw;
+        }
     }
 
     // Automatic checkpointing is off on the writer's own connection (Create). A separate connection and thread ask for
