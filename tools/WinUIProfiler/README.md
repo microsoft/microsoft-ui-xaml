@@ -150,6 +150,17 @@ control without the opt-in provider. Offsets identify the gutter-excluded conten
 Observations describe transient update textures, not exclusive surface or element GPU bytes.
 The test reads existing ETLs and does not require elevated capture permissions.
 
+Fresh `VisualSurfaceChanged` events carry `VisualId`, `SurfaceId`, `Role`, and
+`UIElementId`, in that order. The element ID is the core UI element pointer
+already held by the renderer, not its WinRT identity. Role 0 is the brush and
+role 1 is the mask. A zero surface clears that role while retaining the current
+element; unlinking a primitive clears both roles with zero surface and element
+IDs. Reused primitives report their new element with their new bindings.
+The producer does not walk the XAML, visual, or composition tree to obtain this
+identity, and adds no separate ownership event. The integration check now needs
+fresh captures containing this four-field contract; it does not infer owners
+for older captures.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, then connect. The target settings include a note that connecting
 trusts the bundled injector and TAP binaries to run native code in the target.
