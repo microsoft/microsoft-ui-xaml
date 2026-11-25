@@ -168,6 +168,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewStatics statics = GetFactory<winrt::ITableViewStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableView");
                     {
                         xamlType.AddDPMember(L"AlternatingRowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.AlternatingRowBackgroundProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserReorderColumns", L"Boolean", statics.CanUserReorderColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserResizeColumns", L"Boolean", statics.CanUserResizeColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserSortColumns", L"Boolean", statics.CanUserSortColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ColumnHeaderStyle", L"Microsoft.UI.Xaml.Style", statics.ColumnHeaderStyleProperty(), false /* isContent */);

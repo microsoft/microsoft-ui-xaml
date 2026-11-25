@@ -282,6 +282,8 @@ internal static class QueryTests
         (string Read, int Statements, Action Run)[] reads =
         [
             ("ReadInfo", 1, () => SessionFile.ReadInfo(path)),
+            ("ReadProcessName", 1, () => Expect.Equal(SessionFixtures.ProcessName, SessionFile.ReadProcessName(path),
+                "The process name ReadProcessName reads")),
             ("Read", 3, () => SessionFile.Read(path, _ => { })),
             ("ReadObjects", 2, () => SessionFile.ReadObjects(path)),
             ("ReadObjects of a kind", 2, () => SessionFile.ReadObjects(path, ObjectKind.Visual)),

@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
 using Microsoft.UI.Xaml.Data;
@@ -12,13 +13,16 @@ using MUXControlsTestApp.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Windows.Foundation.Collections;
+using Windows.Graphics;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 
 using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewTestHelpers;
+using static Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.TableViewEditingTestHelpers;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -1946,6 +1950,1184 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             GenerateCount++;
             return new TextBlock { Text = _prefix };
+        }
+    }
+
+    // User column reorder: CanUserReorderColumns, ColumnReordered and the Ctrl+Shift+Left/Right chord. The chord
+    // is the only programmatic route to a user reorder, and the product reads the modifiers from the keyboard
+    // state, so the tests inject real input.
+    [TestClass]
+    public class TableViewColumnReorderTests : TableViewApiTestBase
+    {
+        [TestMethod]
+        [TestProperty("Description", "Verifies reorder is opt-in, header tab stops are unchanged while it is off, and a header with somewhere to move becomes actionable.")]
+        public void VerifyReorderDefaultsAndHeaderTabStops()
+        {
+            TableView tableView = null;
+            string baseline = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" }, width: 600);
+                tableView.CanUserSortColumns = false;
+                tableView.CanUserResizeColumns = false;
+                tableView.Columns[2].HeaderContextFlyout = new MenuFlyout();
+                Verify.IsFalse(tableView.CanUserReorderColumns, "CanUserReorderColumns must default to false.");
+                Verify.IsNotNull(TableView.CanUserReorderColumnsProperty);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                baseline = HeaderTabStops(tableView);
+                Verify.AreEqual("False,False,True", baseline, "Precondition: only the header with a context menu is actionable.");
+                Verify.AreEqual(DependencyProperty.UnsetValue, GetHeaderHost(tableView).ReadLocalValue(UIElement.ManipulationModeProperty));
+                tableView.CanUserReorderColumns = true;
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("True,True,True", HeaderTabStops(tableView), "Every header that can move is actionable.");
+                Verify.AreEqual(ManipulationModes.System | ManipulationModes.TranslateX, GetHeaderHost(tableView).ManipulationMode,
+                    "The header row takes horizontal manipulations and leaves vertical pans to the system.");
+                var moveText = TableViewLocalizationTestHelpers.TryResolve(TableViewLocalizationTestHelpers.RequireTableViewResourceMap(), "TableViewColumnMoveHelpText");
+                Verify.IsFalse(string.IsNullOrEmpty(moveText), "TableViewColumnMoveHelpText must resolve.");
+                Verify.AreEqual(moveText, FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText(),
+                    "A movable header's help text is the move keys.");
+                tableView.CanUserReorderColumns = false;
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(baseline, HeaderTabStops(tableView), "Turning reorder off must restore the original tab stops.");
+                Verify.AreEqual(DependencyProperty.UnsetValue, GetHeaderHost(tableView).ReadLocalValue(UIElement.ManipulationModeProperty),
+                    "Turning reorder off must restore the header row's ManipulationMode.");
+                var moveText = TableViewLocalizationTestHelpers.TryResolve(TableViewLocalizationTestHelpers.RequireTableViewResourceMap(), "TableViewColumnMoveHelpText");
+                Verify.IsFalse(FrameworkElementAutomationPeer.CreatePeerForElement(GetHeaderCell(tableView, 0)).GetHelpText().Contains(moveText),
+                    "Without reorder the help text does not mention the move keys.");
+                tableView.CanUserReorderColumns = true;
+                tableView.Columns[1].Visibility = Visibility.Collapsed;
+                tableView.Columns[2].Visibility = Visibility.Collapsed;
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(((Control)GetHeaderCell(tableView, 0)).IsTabStop, "A header with nowhere to move stays inactive.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Ctrl+Shift+Right/Left moves the focused header's column one position, raises ColumnReordered with Columns indexes after the move, keeps focus on the moved header, and does nothing when reorder is off.")]
+        public void VerifyCtrlShiftArrowMovesFocusedHeader()
+        {
+            TableView tableView = null;
+            TableViewColumn name = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                name = tableView.Columns[0];
+                tableView.ColumnReordered += (s, e) => events.Add($"{e.Column.Header}:{e.OldIndex}->{e.NewIndex}:{s.Columns.IndexOf(e.Column)}");
+                LoadContent(tableView);
+            });
+
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            FocusHeader(tableView, 0);
+            ReorderInput.Send(right: true);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Role,Name,City", "after Ctrl+Shift+Right");
+                Verify.AreEqual("Name:0->1:1", string.Join("|", events), "ColumnReordered must follow the move, with Columns indexes.");
+                VerifyHeaderFocused(tableView, name, "after the move");
+                VerifyEveryRowMatchesHeaders(tableView, "after the move");
+            });
+
+            ReorderInput.Send(right: true);
+            ReorderInput.Send(right: true);
+            ReorderInput.Send(right: false);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Role,Name,City", "after two presses (the last at the end) and one back");
+                Verify.AreEqual(3, events.Count, "A press at the end moves nothing and raises nothing.");
+                VerifyHeaderFocused(tableView, name, "after the presses");
+                tableView.CanUserReorderColumns = false;
+                tableView.CanUserSortColumns = true;
+            });
+
+            FocusHeader(tableView, 1);
+            ReorderInput.Send(right: true);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Role,Name,City", "with CanUserReorderColumns=false");
+                Verify.AreEqual(3, events.Count);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the chord keeps a column on its side of the frozen boundary and frozen columns reorder among themselves.")]
+        public void VerifyChordRespectsFrozenBoundary()
+        {
+            RunChordSteps(new[] { "Name", "Role", "City", "Team" }, tableView =>
+                {
+                    tableView.Columns[0].FrozenEdge = TableViewFrozenEdge.Leading;
+                    tableView.Columns[1].FrozenEdge = TableViewFrozenEdge.Leading;
+                },
+                (2, false, "Name,Role,City,Team"),
+                (1, true, "Name,Role,City,Team"),
+                (-1, false, "Role,Name,City,Team"),
+                (3, false, "Role,Name,Team,City"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies collapsed columns keep their place and are skipped: a move lands past the next visible column.")]
+        public void VerifyChordSkipsCollapsedColumns()
+        {
+            RunChordSteps(new[] { "Name", "Hidden", "Role", "City" }, tableView => tableView.Columns[1].Visibility = Visibility.Collapsed,
+                (0, true, "Hidden,Role,Name,City"),
+                (-1, false, "Hidden,Name,Role,City"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the chord follows reading order under FlowDirection=RightToLeft.")]
+        public void VerifyChordMirrorsUnderRightToLeft()
+        {
+            RunChordSteps(new[] { "Name", "Role", "City" }, tableView => tableView.FlowDirection = FlowDirection.RightToLeft,
+                (0, false, "Role,Name,City"),
+                (-1, true, "Name,Role,City"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a moved column keeps its sort direction and the row order, raises no Sorting, and that Pixel, Auto and Star widths, including a locked Star column's resize hold, are unchanged.")]
+        public void VerifySortAndWidthsFollowReorderedColumn()
+        {
+            TableView tableView = null;
+            TableViewColumn role = null;
+            double[] widths = null;
+            List<object> rowsBefore = null;
+            int sorting = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.CanUserSortColumns = true;
+                tableView.CanUserResizeColumns = true;
+                tableView.Columns[0].Width = new GridLength(1, GridUnitType.Star);
+                tableView.Columns[0].CanUserResize = false;
+                tableView.Columns[1].Width = GridLength.Auto;
+                tableView.Columns[2].Width = new GridLength(90);
+                role = tableView.Columns[1];
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.SortByColumn(role, SortDirection.Ascending), "Precondition: Role sorts.");
+                // Resizing next to the locked Star column makes it hold its width.
+                var gripper = RequireGripper(tableView, 2);
+                gripper.BeginDrag();
+                gripper.TryDrag(40.0);
+                gripper.EndDrag(false);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                widths = tableView.Columns.Select(c => c.ActualWidth).ToArray();
+                rowsBefore = GetProjectedItems(tableView);
+                tableView.Sorting += (s, e) => sorting++;
+            });
+
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            FocusHeader(tableView, 1);
+            ReorderInput.Send(right: false);
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Role,Name,City", "after the move");
+                Verify.AreEqual(SortDirection.Ascending, role.SortDirection, "The sort must follow the moved column.");
+                Verify.AreEqual(0, sorting, "A reorder must not raise Sorting.");
+                Verify.IsTrue(rowsBefore.SequenceEqual(GetProjectedItems(tableView)), "The row order must not change.");
+                var byHeader = new[] { "Name", "Role", "City" }.Select(h => tableView.Columns.First(c => (string)c.Header == h).ActualWidth).ToArray();
+                for (int i = 0; i < widths.Length; i++)
+                {
+                    Verify.AreEqual(widths[i], byHeader[i], $"Column {i} must keep its ActualWidth.");
+                }
+                Verify.AreEqual(GridUnitType.Auto, role.Width.GridUnitType, "A reorder must not rewrite Width.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an open edit refuses a keyboard move and a drag without committing it, and that the chord works once the edit closes.")]
+        public void VerifyOpenEditRefusesReorder()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            bool veto = true;
+            int reordered = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.Columns.Add(MakeTextColumn("Team", bound: false));
+                tableView.IsReadOnly = false;
+                tableView.CanUserReorderColumns = true;
+                tableView.CanUserSortColumns = false;
+                tableView.CanUserResizeColumns = false;
+                tableView.CellEditEnding += (s, e) => e.Cancel = veto;
+                tableView.ColumnReordered += (s, e) => reordered++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Zed");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the vetoed commit keeps the edit open.");
+            });
+
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            FocusHeader(tableView, 1);
+            ReorderInput.Send(right: true);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The chord must not commit or cancel the edit.");
+                VerifyOrder(tableView, "Name,Role,Team", "after the chord during an edit");
+            });
+
+            try
+            {
+                SnapshotHeaders(tableView);
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.75));
+                RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "No drag starts during an edit."));
+            }
+            finally
+            {
+                ReorderInput.LeftUp();
+            }
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "A drag must not touch the edit.");
+                VerifyOrder(tableView, "Name,Role,Team", "after a drag during an edit");
+                Verify.AreEqual(0, reordered);
+                veto = false;
+                Verify.IsTrue(tableView.CommitEdit(), "Precondition: the edit commits.");
+            });
+
+            FocusHeader(tableView, 1);
+            ReorderInput.Send(right: true);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,Team,Role", "once the edit has closed");
+                Verify.AreEqual(1, reordered);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a throwing ColumnReordered handler leaves the move applied and a later move still works.")]
+        public void VerifyThrowingColumnReorderedHandlerKeepsMove()
+        {
+            TableView tableView = null;
+            Microsoft.UI.Xaml.UnhandledExceptionEventHandler onUnhandled = (s, e) => e.Handled = true;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.ColumnReordered += (s, e) => throw new InvalidOperationException("ColumnReordered fault");
+                Application.Current.UnhandledException += onUnhandled;
+                LoadContent(tableView);
+            });
+
+            try
+            {
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                FocusHeader(tableView, 0);
+                ReorderInput.Send(right: true);
+                ReorderInput.Send(right: true);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Role,City,Name", "after two moves whose ColumnReordered handler threw");
+                    VerifyHeaderFocused(tableView, tableView.Columns[2], "after the faults");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.UnhandledException -= onUnhandled);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies in LTR and RTL that the dragged header follows the pointer above the header it enters, which slides over, and that a drop or any cancel puts every header back.")]
+        public void VerifyDragPreviewCommitAndCancel()
+        {
+            foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                Log.Comment($"FlowDirection {flowDirection}.");
+                TableView tableView = null;
+                int reordered = 0;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateReorderTable("Name", "Role", "City");
+                    tableView.FlowDirection = flowDirection;
+                    tableView.ColumnReordered += (s, e) => reordered++;
+                    LoadContent(tableView);
+                });
+
+                SettleLayout(tableView);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                DragHeader(tableView, onDrag: () =>
+                {
+                    var name = GetHeaderCell(tableView, 0);
+                    var role = GetHeaderCell(tableView, 1);
+                    var city = GetHeaderCell(tableView, 2);
+                    // Pressed at Name's middle, dragged to 1/4 of Role, short of its middle: entering Role is enough.
+                    var travel = (name.ActualWidth * 0.5) + (role.ActualWidth * 0.25);
+                    Log.Comment($"Translations: Name {name.Translation.X}, Role {role.Translation.X}, City {city.Translation.X}; pointer travel {travel}.");
+                    Verify.IsLessThan(Math.Abs(role.Translation.X + name.ActualWidth), 0.5, "Role slides into Name's slot by Name's width as soon as the pointer enters it.");
+                    Verify.AreEqual(0f, city.Translation.X, "City, which Name has not passed, stays.");
+                    Verify.IsLessThan(Math.Abs(name.Translation.X - travel), 6.0, "Name follows the pointer, keeping the grab offset.");
+                    Verify.AreEqual(0f, name.Translation.Y, "The drag is horizontal only.");
+                    Verify.AreEqual(2, Canvas.GetZIndex(name), "The dragged header paints above the others.");
+                    Verify.AreEqual("Pressed", CurrentState(name, "CommonStates"), "The dragged header stays Pressed under the header row's capture.");
+                });
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Role,Name,City", "after the drop");
+                    Verify.AreEqual(1, reordered);
+                    Verify.IsFalse(PreviewShown(tableView), "After the drop every header is back at Translation 0.");
+                });
+                var cancels = new (string name, Action action)[]
+                {
+                    ("Esc", () => ReorderInput.SendChord(ReorderInput.VkEscape)),
+                    ("a Columns change", () => RunOnUIThread.Execute(() => tableView.Columns.Add(MakeTextColumn("Team", bound: false)))),
+                    ("losing capture", () => RunOnUIThread.Execute(() => GetHeaderHost(tableView).ReleasePointerCaptures())),
+                    ("a width change", () => RunOnUIThread.Execute(() => tableView.Columns[2].Width = new GridLength(tableView.Columns[2].ActualWidth + 20))),
+                    ("a Density change", () => RunOnUIThread.Execute(() => tableView.Density = tableView.Density == TableViewDensity.Compact ? TableViewDensity.Standard : TableViewDensity.Compact)),
+                    ("unloading", () => RunOnUIThread.Execute(() => Content = null)),
+                };
+                foreach (var (cancelName, cancel) in cancels)
+                {
+                    FrameworkElement source = null;
+                    DragHeader(tableView, onDrag: () =>
+                        {
+                            Verify.IsTrue(PreviewShown(tableView), $"Precondition: dragging before {cancelName}.");
+                            source = GetHeaderCell(tableView, 0);
+                        },
+                        cancel: () =>
+                        {
+                            cancel();
+                            IdleSynchronizer.Wait();
+                            RunOnUIThread.Execute(() =>
+                            {
+                                Verify.IsFalse(PreviewShown(tableView), $"{cancelName} must cancel the drag and put every header back at Translation 0.");
+                                Verify.AreEqual("Normal", CurrentState(source, "CommonStates"), $"{cancelName} must take the dragged header out of Pressed.");
+                            });
+                        });
+                }
+
+                RunOnUIThread.Execute(() => LoadContent(tableView));
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Role,Name,City,Team", "after the canceled drags");
+                    Verify.AreEqual(1, reordered, "A canceled drag moves nothing.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a VectorChanged subscriber that changes Columns between the move's RemoveAt and InsertAt is safe: a column put back stops the move with no ColumnReordered, and the moving column is never lost: after an unrelated insert, removal or a clear it is still inserted.")]
+        public void VerifyColumnsChangedDuringMoveIsSafe()
+        {
+            foreach (var (mode, focus, expected, events) in new[]
+                {
+                    // The emptied vector is still Columns, so Name goes back in.
+                    ("clear", 0, "Name", 1),
+                    ("put back", 0, "Name,Role,City", 0),
+                    ("add", 0, "Role,Name,City,Team", 1),
+                    // Role's target index is now past the end; it lands last instead of being lost.
+                    ("remove another", 1, "Name,Role", 1),
+                })
+            {
+                Log.Comment($"The subscriber does: {mode}.");
+                TableView tableView = null;
+                int reordered = 0;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateReorderTable("Name", "Role", "City");
+                    tableView.ColumnReordered += (s, e) => reordered++;
+                    LoadContent(tableView);
+                    var moving = tableView.Columns[focus];
+                    bool acted = false;
+                    ((IObservableVector<TableViewColumn>)tableView.Columns).VectorChanged += (s, e) =>
+                    {
+                        if (acted || e.CollectionChange != CollectionChange.ItemRemoved)
+                        {
+                            return;
+                        }
+                        acted = true;
+                        switch (mode)
+                        {
+                            case "clear": s.Clear(); break;
+                            case "put back": s.Insert(0, moving); break;
+                            case "remove another": s.RemoveAt(s.IndexOf(s.First(c => (string)c.Header == "City"))); break;
+                            default: s.Add(MakeTextColumn("Team", bound: false)); break;
+                        }
+                    };
+                });
+
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                FocusHeader(tableView, focus);
+                ReorderInput.Send(right: true);
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, expected, $"after the subscriber's {mode}");
+                    Verify.AreEqual(events, reordered, $"ColumnReordered after the subscriber's {mode}.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies scrolling the body during a header drag cancels the drag and leaves the order unchanged.")]
+        public void VerifyBodyScrollCancelsDrag()
+        {
+            TableView tableView = null;
+            int reordered = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City", "Team");
+                foreach (var column in tableView.Columns)
+                {
+                    column.Width = new GridLength(250);
+                }
+                tableView.ColumnReordered += (s, e) => reordered++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging."),
+                cancel: () =>
+                {
+                    ScrollBodyTo(tableView, ScrollAxis.Horizontal, 100);
+                    RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "A body scroll must cancel the drag and reset every header."));
+                });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,Role,City,Team", "after the canceled drag");
+                Verify.AreEqual(0, reordered);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies in LTR and RTL that with the table scrolled, a column dragged over the frozen band stops at its edge, leaves the frozen header pinned and drops past a column hidden under the band.")]
+        public void VerifyDragOverFrozenBandSkipsHiddenColumns()
+        {
+            foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                Log.Comment($"FlowDirection {flowDirection}.");
+                var tableView = CreateScrolledFrozenTable(flowDirection, frozen: 1);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                float pin = 0;
+                RunOnUIThread.Execute(() => pin = GetHeaderCell(tableView, 0).Translation.X);
+                SnapshotHeaders(tableView);
+                try
+                {
+                    // Over the band: without the clamp this drops before the hidden A.
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, 4, 0.5), HeaderPoint(tableView, 0, 0.1));
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.UpdateLayout();
+                        var shifts = Enumerable.Range(0, 6).Select(i => GetHeaderCell(tableView, i).Translation.X).ToArray();
+                        Log.Comment($"Pin {pin}; translations {string.Join(",", shifts)}.");
+                        Verify.AreEqual(pin, shifts[0], "The frozen header keeps its pin.");
+                        Verify.AreEqual("0,150,150,0", string.Join(",", new[] { shifts[1], shifts[2], shifts[3], shifts[5] }), "B and C slide over by D's width; the hidden A and E stay.");
+                        // D starts at 4 * 150 - offset in the row and stops at the band's 150px edge.
+                        Verify.IsLessThan((double)Math.Abs(shifts[4] - (150 - ((4 * 150) - pin))), 1.0, "D stops at the frozen band's edge.");
+                    });
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, "Name,A,D,B,C,E", "after dropping D over the frozen band");
+                    Verify.IsFalse(PreviewShown(tableView), "After the drop every header is back at its pin or 0.");
+                    // D now starts at 300 in the panel; 200 px scrolled, its first 50 px are under the 150 px band.
+                    var clip = (GetHeaderCell(tableView, 2).Clip as RectangleGeometry)?.Rect;
+                    Verify.IsNotNull(clip, "The partly hidden D is clipped out of the frozen band after the drop.");
+                    Verify.AreEqual("50,100", $"{clip?.X},{clip?.Width}", "D's clip starts at the band's edge.");
+                });
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies in LTR and RTL that with the table scrolled, a frozen column dragged among the frozen columns moves its neighbour by its width from the pin, and that Esc puts both back.")]
+        public void VerifyFrozenSourceDragKeepsPins()
+        {
+            foreach (var flowDirection in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
+            {
+                Log.Comment($"FlowDirection {flowDirection}.");
+                var tableView = CreateScrolledFrozenTable(flowDirection, frozen: 2);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                float pin = 0;
+                RunOnUIThread.Execute(() => pin = GetHeaderCell(tableView, 0).Translation.X);
+                Verify.IsGreaterThan(pin, 0f, "Precondition: the frozen headers are pinned against the scroll.");
+                SnapshotHeaders(tableView);
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
+                    RunOnUIThread.Execute(() =>
+                    {
+                        tableView.UpdateLayout();
+                        var shifts = Enumerable.Range(0, 6).Select(i => GetHeaderCell(tableView, i).Translation.X).ToArray();
+                        Log.Comment($"Pin {pin}; translations {string.Join(",", shifts)}.");
+                        Verify.IsLessThan((double)Math.Abs(shifts[0] - (pin + 150)), 0.5, "Name slides into A's slot from its pin.");
+                        Verify.IsLessThan((double)Math.Abs(shifts[1] - (pin - 150)), 1.0, "A stops at the row's leading edge, in Name's slot.");
+                        Verify.AreEqual("0,0,0,0", string.Join(",", shifts.Skip(2)), "The scrolling headers stay.");
+                        Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, 1)), "The dragged header paints above the frozen band.");
+                    });
+                    ReorderInput.SendChord(ReorderInput.VkEscape);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsFalse(PreviewShown(tableView), "Esc puts the frozen headers back at the pin and ZIndex 1.");
+                        Verify.AreEqual("Normal", CurrentState(GetHeaderCell(tableView, 1), "CommonStates"), "Esc takes A out of Pressed.");
+                    });
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,A,B,C,D,E", "after the canceled drag"));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header on either side that the pointer enters and then leaves slides back to 0 while the drag goes on.")]
+        public void VerifyEnteredNeighbourSlidesBack()
+        {
+            // Dragged header, neighbour entered, and the pointer's way back into the dragged header's slot.
+            foreach (var (dragged, neighbour, back) in new[] { (0, 1, 0.75), (1, 0, 0.25) })
+            {
+                Log.Comment($"Dragging header {dragged} into header {neighbour} and back.");
+                TableView tableView = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView = CreateReorderTable("Name", "Role", "City");
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+                SnapshotHeaders(tableView);
+                // Measured before the drag moves the dragged header.
+                var backPoint = HeaderPoint(tableView, dragged, back);
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, dragged, 0.5), HeaderPoint(tableView, neighbour, 1 - back));
+                    RunOnUIThread.Execute(() => Verify.AreNotEqual(0f, GetHeaderCell(tableView, neighbour).Translation.X, "Precondition: the neighbour slid over."));
+                    ReorderInput.MoveTo(backPoint);
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.AreEqual(0f, GetHeaderCell(tableView, neighbour).Translation.X, "Leaving the neighbour slides it back.");
+                        Verify.AreEqual(2, Canvas.GetZIndex(GetHeaderCell(tableView, dragged)), "The drag goes on.");
+                    });
+                    ReorderInput.SendChord(ReorderInput.VkEscape);
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => VerifyOrder(tableView, "Name,Role,City", "after the canceled drag"));
+            }
+        }
+        // Name, A..E at 150px with the first columns frozen, scrolled by 200px. A is then under the band.
+        private TableView CreateScrolledFrozenTable(FlowDirection flowDirection, int frozen)
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "A", "B", "C", "D", "E");
+                tableView.FlowDirection = flowDirection;
+                foreach (var column in tableView.Columns)
+                {
+                    column.Width = new GridLength(150);
+                }
+                for (int i = 0; i < frozen; i++)
+                {
+                    tableView.Columns[i].FrozenEdge = TableViewFrozenEdge.Leading;
+                }
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            ScrollBodyTo(tableView, ScrollAxis.Horizontal, 200);
+            return tableView;
+        }
+        [TestMethod]
+        [TestProperty("Description", "Verifies replacing Columns during a header drag cancels the drag.")]
+        public void VerifyReplacingColumnsCancelsDrag()
+        {
+            TableView tableView = null;
+            int reordered = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.ColumnReordered += (s, e) => reordered++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging."),
+                cancel: () =>
+                {
+                    RunOnUIThread.Execute(() => tableView.SetValue(TableView.ColumnsProperty, new List<TableViewColumn>(tableView.Columns)));
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() => Verify.IsFalse(PreviewShown(tableView), "Replacing Columns must cancel the drag and reset every header."));
+                });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Name,Role,City", string.Join(",", tableView.Columns.Select(c => (string)c.Header)));
+                Verify.AreEqual(0, reordered);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies dragging the column of the focused body cell keeps focus on that cell, and arrows and F2 then act on the moved order.")]
+        public void VerifyBodyFocusFollowsMovedColumn()
+        {
+            TableView tableView = null;
+            List<EditablePerson> items = null;
+            var edited = new List<string>();
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeEditableItems();
+                tableView = CreateEditableTable(items);
+                tableView.Columns.Add(MakeTextColumn("Team", bound: false));
+                tableView.IsReadOnly = false;
+                tableView.CanUserReorderColumns = true;
+                tableView.CanUserSortColumns = false;
+                tableView.CanUserResizeColumns = false;
+                tableView.BeginningEdit += (s, e) => { edited.Add((string)e.Column.Header); e.Cancel = true; };
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+
+            string FocusedCell()
+            {
+                string result = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    var row = GetRowForItem(tableView, items[0]);
+                    for (int i = 0; i < tableView.Columns.Count; i++)
+                    {
+                        if (GetCellPeer(row, i).HasKeyboardFocus())
+                        {
+                            result = (string)tableView.Columns[i].Header;
+                        }
+                    }
+                });
+                return result;
+            }
+
+            RunOnUIThread.Execute(() => GetCellPeer(tableView, items[0], 1).SetFocus());
+            IdleSynchronizer.Wait();
+            Verify.AreEqual("Role", FocusedCell(), "Precondition: the Role cell has focus.");
+            try
+            {
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
+                Verify.AreEqual("Role", FocusedCell(), "A header drag does not take focus.");
+            }
+            finally
+            {
+                ReorderInput.LeftUp();
+            }
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyOrder(tableView, "Role,Name,Team", "after the drag"));
+            Verify.AreEqual("Role", FocusedCell(), "The moved column's cell keeps focus.");
+
+            object focusedBefore = null;
+            var stateBefore = FocusState.Unfocused;
+            RunOnUIThread.Execute(() =>
+            {
+                var focused = (UIElement)FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Verify.AreNotEqual(FocusState.Keyboard, focused.FocusState, "A mouse drag must not restore focus as keyboard focus.");
+                focusedBefore = focused;
+                stateBefore = focused.FocusState;
+            });
+            try
+            {
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 1, 0.5), HeaderPoint(tableView, 0, 0.25));
+            }
+            finally
+            {
+                ReorderInput.LeftUp();
+            }
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,Role,Team", "after dragging another column");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as UIElement;
+                Log.Comment($"Focused after moving Name: {((focused as FrameworkElement)?.Tag as TableViewColumn)?.Header}, same element {ReferenceEquals(focusedBefore, focused)}, {focused?.FocusState}.");
+                Verify.AreEqual(stateBefore, focused?.FocusState ?? FocusState.Unfocused, "Moving another column keeps the focus state.");
+            });
+            Verify.AreEqual("Role", FocusedCell(), "Moving another column keeps focus on the Role cell.");
+
+            ReorderInput.SendChord(ReorderInput.VkLeft);
+            Verify.AreEqual("Name", FocusedCell(), "Left moves to the previous column in the new order.");
+            ReorderInput.SendChord(0x71 /* F2 */);
+            Verify.AreEqual("Name", string.Join(",", edited), "F2 edits the focused column.");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a ColumnReordered handler that removes the focused body cell's column, whether that column moved or another did, leaves no focus or cursor on a missing column.")]
+        public void VerifyReorderHandlerRemovingFocusedColumnIsSafe()
+        {
+            foreach (var dragged in new[] { 0, 1 })
+            {
+                TableView tableView = null;
+                List<EditablePerson> items = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    items = MakeEditableItems();
+                    tableView = CreateEditableTable(items);
+                    tableView.Columns.Add(MakeTextColumn("Team", bound: false));
+                    tableView.IsReadOnly = false;
+                    tableView.CanUserReorderColumns = true;
+                    tableView.CanUserSortColumns = false;
+                    tableView.CanUserResizeColumns = false;
+                    var role = tableView.Columns[1];
+                    tableView.ColumnReordered += (s, e) => s.Columns.Remove(role);
+                    LoadContent(tableView);
+                });
+                SettleLayout(tableView);
+                if (!InputReachesTable(tableView))
+                {
+                    return;
+                }
+
+                RunOnUIThread.Execute(() => GetCellPeer(tableView, items[0], 1).SetFocus());
+                IdleSynchronizer.Wait();
+                try
+                {
+                    ReorderInput.PressAndDrag(HeaderPoint(tableView, dragged, 0.5), HeaderPoint(tableView, 2, 0.75));
+                }
+                finally
+                {
+                    ReorderInput.LeftUp();
+                }
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyOrder(tableView, dragged == 0 ? "Team,Name" : "Name,Team", $"after dragging column {dragged} and removing Role");
+                    var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as FrameworkElement;
+                    var focusedColumn = focused?.Tag as TableViewColumn;
+                    Log.Comment($"Focused: {focused?.GetType().Name} {focusedColumn?.Header}.");
+                    Verify.IsTrue(focusedColumn == null || tableView.Columns.Contains(focusedColumn), "Focus is not on a removed column.");
+                });
+            }
+        }
+
+        private void RunChordSteps(string[] headers, Action<TableView> setup, params (int focus, bool right, string expected)[] steps)
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable(headers);
+                setup(tableView);
+                LoadContent(tableView);
+            });
+
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            try
+            {
+                foreach (var (focus, right, expected) in steps)
+                {
+                    if (focus >= 0)
+                    {
+                        FocusHeader(tableView, focus);
+                    }
+                    ReorderInput.Send(right);
+                    RunOnUIThread.Execute(() => VerifyOrder(tableView, expected, $"after Ctrl+Shift+{(right ? "Right" : "Left")}"));
+                }
+            }
+            finally
+            {
+                ReorderInput.ReleaseModifiers();
+            }
+        }
+
+        // Drags header 0 a quarter into header 1, runs onDrag on the UI thread, then cancel (if any), then releases.
+        private static void DragHeader(TableView tableView, Action onDrag, Action cancel = null)
+        {
+            SnapshotHeaders(tableView);
+            try
+            {
+                ReorderInput.PressAndDrag(HeaderPoint(tableView, 0, 0.5), HeaderPoint(tableView, 1, 0.25));
+                RunOnUIThread.Execute(() =>
+                {
+                    tableView.UpdateLayout();
+                    onDrag();
+                });
+                cancel?.Invoke();
+            }
+            finally
+            {
+                ReorderInput.LeftUp();
+            }
+        }
+
+        // These tests drive real input. Some CI agents never deliver synthetic input to the test window; there the
+        // tests report Skipped instead of failing on input that did not arrive.
+        private static bool InputReachesTable(TableView tableView)
+        {
+            int moves = 0;
+            var handler = new PointerEventHandler((s, e) => moves++);
+            RunOnUIThread.Execute(() => tableView.AddHandler(UIElement.PointerMovedEvent, handler, true));
+            var point = HeaderPoint(tableView, 0, 0.5);
+            if (!ReorderInput.EnsureForeground(point))
+            {
+                Log.Result(TestResult.Skipped, "The test window cannot take the foreground on this machine, so keys would not reach it.");
+                return false;
+            }
+            ReorderInput.MoveTo(new PointInt32(point.X + 4, point.Y));
+            ReorderInput.MoveTo(point);
+            int seen = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.RemoveHandler(UIElement.PointerMovedEvent, handler);
+                seen = moves;
+            });
+            if (seen == 0)
+            {
+                Log.Result(TestResult.Skipped, "Synthetic input does not reach the test window on this machine.");
+                return false;
+            }
+            return true;
+        }
+
+        private static PointInt32 HeaderPoint(TableView tableView, int index, double fraction)
+        {
+            PointInt32 point = default;
+            RunOnUIThread.Execute(() =>
+            {
+                var cell = GetHeaderCell(tableView, index);
+                point = ReorderInput.ToScreen(cell, cell.ActualWidth * fraction, cell.ActualHeight / 2);
+            });
+            return point;
+        }
+
+        // Header Translation.X and ZIndex before the drag. Call on the UI thread.
+        private static (float x, int z)[] s_headersBeforeDrag = Array.Empty<(float, int)>();
+
+        private static void SnapshotHeaders(TableView tableView)
+            => RunOnUIThread.Execute(() => s_headersBeforeDrag = GetHeaderHost(tableView).Children.Select(cell => (cell.Translation.X, Canvas.GetZIndex(cell))).ToArray());
+
+        // Whether any header has moved off its pre-drag Translation or ZIndex. Call on the UI thread.
+        private static bool PreviewShown(TableView tableView)
+            => GetHeaderHost(tableView).Children.Select((cell, i) => (cell, before: i < s_headersBeforeDrag.Length ? s_headersBeforeDrag[i] : (0f, 0)))
+                .Any(p => p.cell.Translation.X != p.before.Item1 || Canvas.GetZIndex(p.cell) != p.before.Item2);
+
+        private static string CurrentState(FrameworkElement control, string groupName)
+            => VisualStateManager.GetVisualStateGroups((FrameworkElement)VisualTreeHelper.GetChild(control, 0)).FirstOrDefault(g => g.Name == groupName)?.CurrentState?.Name;
+
+        private static string HeaderTabStops(TableView tableView)
+            => string.Join(",", GetHeaderHost(tableView).Children.OfType<Control>().Select(header => header.IsTabStop));
+
+        private static TableView CreateReorderTable(params string[] headers)
+        {
+            var tableView = CreateTableView(headers: headers, width: 600);
+            tableView.CanUserReorderColumns = true;
+            tableView.CanUserSortColumns = false;
+            tableView.CanUserResizeColumns = false;
+            return tableView;
+        }
+
+        private static void FocusHeader(TableView tableView, int index)
+        {
+            SettleLayout(tableView);
+            ReorderInput.EnsureForeground(HeaderPoint(tableView, index, 0.5));
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(GetHeaderCell(tableView, index).Focus(FocusState.Keyboard), $"Precondition: header {index} takes keyboard focus.");
+            });
+            IdleSynchronizer.Wait();
+
+            // Window activation can land after SetForegroundWindow returns; wait until a key press reaches the table.
+            int keys = 0;
+            int seen = 0;
+            var handler = new KeyEventHandler((s, e) => keys++);
+            RunOnUIThread.Execute(() => tableView.AddHandler(UIElement.KeyDownEvent, handler, true));
+            for (int attempt = 0; attempt < 10 && seen == 0; attempt++)
+            {
+                ReorderInput.SendChord(ReorderInput.VkControl);
+                RunOnUIThread.Execute(() => seen = keys);
+                if (seen == 0)
+                {
+                    global::System.Threading.Thread.Sleep(200);
+                }
+            }
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.RemoveHandler(UIElement.KeyDownEvent, handler);
+                Verify.IsTrue(seen > 0, "Precondition: keyboard input reaches the table.");
+                Verify.IsTrue(GetHeaderCell(tableView, index).FocusState != FocusState.Unfocused, $"Precondition: header {index} still has focus.");
+            });
+        }
+
+        private static void VerifyOrder(TableView tableView, string expected, string context)
+        {
+            Verify.AreEqual(expected, string.Join(",", tableView.Columns.Select(c => (string)c.Header)), $"Columns order {context}.");
+            Verify.AreEqual(expected, string.Join(",", GetHeaderColumns(tableView).Select(c => (string)c.Header)), $"Header order {context}.");
+        }
+
+        private static void VerifyHeaderFocused(TableView tableView, TableViewColumn column, string context)
+        {
+            var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as FrameworkElement;
+            Verify.IsNotNull(focused, $"Focus must stay in the header band {context}.");
+            Verify.IsTrue(ReferenceEquals(column, focused.Tag) && ReferenceEquals(GetHeaderHost(tableView), VisualTreeHelper.GetParent(focused)),
+                $"The moved column's header must hold focus {context}.");
+        }
+    }
+
+    // Real input through SendInput, so the product's keyboard-state reads and pointer routing see it.
+    // The test window has to be in the foreground.
+    internal static class ReorderInput
+    {
+        internal const ushort VkShift = 0x10;
+        internal const ushort VkControl = 0x11;
+        internal const ushort VkMenu = 0x12;
+        internal const ushort VkEscape = 0x1B;
+        internal const ushort VkLeft = 0x25;
+        internal const ushort VkRight = 0x27;
+
+        private const uint InputMouse = 0;
+        private const uint InputKeyboard = 1;
+        private const uint KeyEventExtendedKey = 0x1;
+        private const uint KeyEventKeyUp = 0x2;
+        private const uint MouseEventMove = 0x1;
+        private const uint MouseEventLeftDown = 0x2;
+        private const uint MouseEventLeftUp = 0x4;
+        private const uint MouseEventVirtualDesk = 0x4000;
+        private const uint MouseEventAbsolute = 0x8000;
+        private const int SmXVirtualScreen = 76;
+        private const int SmYVirtualScreen = 77;
+        private const int SmCxVirtualScreen = 78;
+        private const int SmCyVirtualScreen = 79;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct KeyboardInput
+        {
+            public ushort Vk;
+            public ushort Scan;
+            public uint Flags;
+            public uint Time;
+            public IntPtr ExtraInfo;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MouseInput
+        {
+            public int Dx;
+            public int Dy;
+            public uint MouseData;
+            public uint Flags;
+            public uint Time;
+            public IntPtr ExtraInfo;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        private struct InputUnion
+        {
+            [FieldOffset(0)] public MouseInput Mouse;
+            [FieldOffset(0)] public KeyboardInput Keyboard;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeInput
+        {
+            public uint Type;
+            public InputUnion Data;
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern uint SendInput(uint count, NativeInput[] inputs, int size);
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        private static NativeInput Key(ushort vk, bool up) => new NativeInput
+        {
+            Type = InputKeyboard,
+            Data = new InputUnion
+            {
+                Keyboard = new KeyboardInput
+                {
+                    Vk = vk,
+                    Flags = (up ? KeyEventKeyUp : 0) | (vk == VkLeft || vk == VkRight ? KeyEventExtendedKey : 0),
+                },
+            },
+        };
+
+        private static NativeInput Mouse(uint flags, int dx = 0, int dy = 0) => new NativeInput
+        {
+            Type = InputMouse,
+            Data = new InputUnion { Mouse = new MouseInput { Dx = dx, Dy = dy, Flags = flags } },
+        };
+
+        private static void SendAll(params NativeInput[] inputs)
+        {
+            Verify.AreEqual((uint)inputs.Length, SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeInput>()),
+                "SendInput must inject all of the input; the test window has to be in the foreground.");
+            IdleSynchronizer.Wait();
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr WindowFromPoint(PointInt32 point);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetAncestor(IntPtr window, uint flags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr window);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
+
+        // SendInput keys go to the foreground window, which the test window need not be on a CI agent.
+        // Returns whether the test window is in the foreground.
+        internal static bool EnsureForeground(PointInt32 point)
+        {
+            IntPtr window = GetAncestor(WindowFromPoint(point), 2 /* GA_ROOT */);
+            GetWindowThreadProcessId(window, out uint processId);
+            if (window == IntPtr.Zero || processId != (uint)global::System.Environment.ProcessId)
+            {
+                return false;
+            }
+            if (GetForegroundWindow() == window)
+            {
+                return true;
+            }
+            // A synthesized key press lets this process take the foreground.
+            SendAll(Key(VkMenu, false), Key(VkMenu, true));
+            SetForegroundWindow(window);
+            IdleSynchronizer.Wait();
+            Log.Comment($"Test window brought to the foreground: {GetForegroundWindow() == window}.");
+            return GetForegroundWindow() == window;
+        }
+
+        // Ctrl+Shift+Left/Right.
+        internal static void Send(bool right) => SendChord(right ? VkRight : VkLeft, VkControl, VkShift);
+
+        internal static void SendChord(ushort key, params ushort[] modifiers)
+        {
+            try
+            {
+                SendAll(modifiers.Select(modifier => Key(modifier, false)).Concat(new[] { Key(key, false), Key(key, true) }).ToArray());
+            }
+            finally
+            {
+                SendInput((uint)modifiers.Length, Enumerable.Reverse(modifiers).Select(modifier => Key(modifier, true)).ToArray(), Marshal.SizeOf<NativeInput>());
+                IdleSynchronizer.Wait();
+            }
+        }
+
+        // A failed step must not leave a modifier down for the next test.
+        internal static void ReleaseModifiers()
+        {
+            var ups = new[] { VkControl, VkShift, VkMenu }.Select(vk => Key(vk, true)).ToArray();
+            SendInput((uint)ups.Length, ups, Marshal.SizeOf<NativeInput>());
+            IdleSynchronizer.Wait();
+        }
+
+        // A point in element coordinates as a screen pixel. Call on the UI thread.
+        internal static PointInt32 ToScreen(UIElement element, double x, double y)
+            => element.XamlRoot.CoordinateConverter.ConvertLocalToScreen(
+                element.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(x, y)));
+
+        internal static void MoveTo(PointInt32 point)
+        {
+            int left = GetSystemMetrics(SmXVirtualScreen);
+            int top = GetSystemMetrics(SmYVirtualScreen);
+            int width = Math.Max(2, GetSystemMetrics(SmCxVirtualScreen));
+            int height = Math.Max(2, GetSystemMetrics(SmCyVirtualScreen));
+            SendAll(Mouse(MouseEventMove | MouseEventAbsolute | MouseEventVirtualDesk,
+                (int)((point.X - left) * 65535L / (width - 1)),
+                (int)((point.Y - top) * 65535L / (height - 1))));
+        }
+
+        internal static void LeftDown() => SendAll(Mouse(MouseEventLeftDown));
+
+        internal static void LeftUp() => SendAll(Mouse(MouseEventLeftUp));
+
+        // Presses at from and moves to to in steps, leaving the button down.
+        internal static void PressAndDrag(PointInt32 from, PointInt32 to, int steps = 4)
+        {
+            EnsureForeground(from);
+            MoveTo(from);
+            LeftDown();
+            for (int step = 1; step <= steps; step++)
+            {
+                MoveTo(new PointInt32(from.X + ((to.X - from.X) * step / steps), from.Y + ((to.Y - from.Y) * step / steps)));
+            }
         }
     }
 }

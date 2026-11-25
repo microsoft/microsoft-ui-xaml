@@ -1392,11 +1392,13 @@ Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSO
 
 SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
+EventPipelineTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
 await SnapshotDiffTests.RunAsync();
 await SnapshotStorageTests.RunAsync();
 SnapshotTextureTests.Run();
+UsageTelemetryTests.Run();
 Expect(WinUIProfiler.Tests.Mcp.McpTestRunner.Run(Console.Out) == 0, "The MCP server's tests must pass.");
 Console.WriteLine("Passed: the MCP server's tools, plugin manifests and skills.");
 
@@ -1539,6 +1541,10 @@ var cpuLivePath = Path.ChangeExtension(cpuPath, "live.sqlite");
 var cpuTrimPath = Path.ChangeExtension(cpuPath, "trim.sqlite");
 var cpuPlacePath = Path.ChangeExtension(cpuPath, "place.sqlite");
 var cpuLatePath = Path.ChangeExtension(cpuPath, "late.sqlite");
+var cpuLegacyPath = Path.ChangeExtension(cpuPath, "legacy.sqlite");
+var cpuClockPath = Path.ChangeExtension(cpuPath, "clock.sqlite");
+var cpuBudgetPath = Path.ChangeExtension(cpuPath, "budget.sqlite");
+var cpuReservedPath = Path.ChangeExtension(cpuPath, "reserved.sqlite");
 var cpuSymbols = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-Symbols-{Guid.NewGuid():N}");
 try
 {
@@ -1556,6 +1562,53 @@ try
     }
 
     WriteCpuSession(cpuPath, CpuModule());
+    using (var main = SessionFile.Open(cpuPath))
+    {
+        Expect(Sql.Scalar(main, """
+            SELECT COUNT(*) FROM sqlite_master WHERE name IN ('Modules', 'CodeAddresses', 'CallStacks', 'CpuSamples', 'CpuSampling')
+            """) == 0 && Sql.Scalar(main, "SELECT COUNT(*) FROM pragma_database_list") == 1,
+            "The main database must neither contain nor open the CPU tables for event-only reads.");
+    }
+
+    using (var separate = new SqliteConnection($"Data Source={CpuSchema.PathFor(cpuPath)};Mode=ReadOnly;Pooling=False"))
+    {
+        separate.Open();
+        Expect(Sql.Scalar(separate, "SELECT COUNT(*) FROM CpuSamples") == 4 &&
+            Sql.Scalar(separate, "SELECT MIN(Qpc) FROM CpuSamples") == 1_000 &&
+            Sql.Scalar(separate, "SELECT COUNT(*) FROM pragma_table_info('CpuSessionInfo') WHERE name IN ('StartQpc', 'QpcFrequency')") == 0,
+            "The separate CPU database must hold raw sample timestamps without duplicating the recording clock.");
+    }
+
+    // Build an older inline recording from the same rows, without a companion.
+    SessionWriter.Create(cpuLegacyPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose();
+    using (var legacy = new SqliteConnection($"Data Source={cpuLegacyPath};Pooling=False"))
+    {
+        legacy.Open();
+        CpuSchema.Attach(legacy, CpuSchema.PathFor(cpuPath));
+        foreach (var table in new[] { "Modules", "CodeAddresses", "CallStacks", "CpuSamples", "CpuSampling" })
+        {
+            Sql.Execute(legacy, $"CREATE TABLE main.{table} AS SELECT * FROM cpu.{table}");
+        }
+
+        using var view = legacy.CreateCommand();
+        view.CommandText = "SELECT sql FROM cpu.sqlite_master WHERE name = 'CpuFrames'";
+        Sql.Execute(legacy, (string)view.ExecuteScalar()!);
+        Sql.Execute(legacy, "ALTER TABLE SessionInfo DROP COLUMN CpuDatabaseVersion; PRAGMA main.user_version = 1;");
+    }
+
+    Directory.CreateDirectory(cpuSymbols);
+    Expect(CpuProfileReader.Read(cpuLegacyPath) is { Samples: 4, Modules: [{ Name: "Test.dll", Addresses: 4 }] } &&
+        CpuProfileReader.ReadStacks(cpuLegacyPath)?.TopDown().Samples == 4 &&
+        SessionSymbolizer.Symbolize(cpuLegacyPath, cpuSymbols) is { Modules: 1, NoIdentity: 1 },
+        "Older inline CPU recordings must remain readable and symbolizable without a companion database.");
+
+    File.WriteAllText(CpuSchema.PathFor(cpuReservedPath), "An existing companion.");
+    ExpectThrows<IOException>(() => SessionWriter.Create(cpuReservedPath,
+        new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose(),
+        "An existing companion must not be reused by a new recording.");
+    Expect(!File.Exists(cpuReservedPath) && File.ReadAllText(CpuSchema.PathFor(cpuReservedPath)) == "An existing companion.",
+        "Rejecting an existing companion must leave it untouched and not create the main database.");
+
     var cpuProfile = CpuProfileReader.Read(cpuPath, top: 10);
     Expect(cpuProfile is { Samples: 4, ThreadId: null, Sampling: { IntervalMs: 1.0, Samples: 4, Dropped: 0, SymbolPath: null } },
         "The CPU sampling row and every stored sample must be read back.");
@@ -1571,7 +1624,7 @@ try
         "The sampled module must be listed with its code addresses.");
     Expect(CpuProfileReader.Read(cpuPath, threadId: 6) is { ThreadId: 6, Samples: 1, Exclusive: [{ Frame: "Test.dll!0x1200" }] },
         "A thread's profile must keep only its own samples.");
-    using (var cpuConnection = SessionFile.Open(cpuPath))
+    using (var cpuConnection = SessionFile.Open(cpuPath, includeCpu: true))
     {
         Expect(Sql.Scalar(cpuConnection, "SELECT Samples FROM HotFunctions WHERE ThreadId = 5 AND Frame = 'Test.dll!0x1100'") == 2 &&
             Sql.Scalar(cpuConnection, "SELECT COUNT(*) FROM CpuSampleDetails") == 4,
@@ -1636,7 +1689,6 @@ try
         "A frame's code address must find the frame again in a later read, once its function is named.");
 
     // The module's binary is gone and the trace didn't name its PDB: nothing can be searched for.
-    Directory.CreateDirectory(cpuSymbols);
     var symbolized = SessionSymbolizer.Symbolize(cpuPath, cpuSymbols);
     Expect(symbolized is { Modules: 1, NoIdentity: 1, Resolved: 0, Failed: 0, Named: 0 } &&
         CpuProfileReader.Read(cpuPath) is { Modules: [{ Status: "NoIdentity" }], Sampling: { SymbolPath: not null, SymbolizedUtc: not null } },
@@ -1655,6 +1707,24 @@ try
     identified.PdbGuid = Guid.Parse("0f6b9c1e-8d3a-4a5b-9c7d-2e1f3a4b5c6d");
     identified.PdbAge = 1;
     WriteCpuSession(cpuIdentityPath, identified);
+    var cpuBackup = CpuSchema.PathFor(cpuPath) + ".saved";
+    File.Move(CpuSchema.PathFor(cpuPath), cpuBackup);
+    try
+    {
+        Expect(SessionFile.ReadInfo(cpuPath).ProcessId == 1,
+            "Missing CPU data must not prevent reading the main profiling database.");
+        ExpectThrows<FileNotFoundException>(() => CpuProfileReader.Read(cpuPath),
+            "A missing CPU companion must be reported, not treated as a recording without samples.");
+        File.Copy(CpuSchema.PathFor(cpuIdentityPath), CpuSchema.PathFor(cpuPath));
+        ExpectThrows<InvalidDataException>(() => CpuProfileReader.Read(cpuPath),
+            "Another recording's CPU companion must not be accepted.");
+    }
+    finally
+    {
+        File.Delete(CpuSchema.PathFor(cpuPath));
+        File.Move(cpuBackup, CpuSchema.PathFor(cpuPath));
+    }
+
     Expect(SessionSymbolizer.Symbolize(cpuIdentityPath, cpuSymbols) is { Modules: 1, NotFound: 1, Failed: 0, Named: 0 } &&
         CpuProfileReader.Read(cpuIdentityPath) is { Modules: [{ Status: "NotFound" }] },
         "A PDB that isn't on the symbol path must be reported as not found.");
@@ -1671,8 +1741,35 @@ try
         "A canceled symbolizing must leave the file as it was, readable.");
 
     SessionWriter.Create(cpuEmptyPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)).Dispose();
-    Expect(CpuProfileReader.Read(cpuEmptyPath) is null && CpuProfileReader.ReadStacks(cpuEmptyPath) is null,
-        "A session that didn't sample CPU must have no CPU profile.");
+    Expect(CpuProfileReader.Read(cpuEmptyPath) is null && CpuProfileReader.ReadStacks(cpuEmptyPath) is null &&
+        !File.Exists(CpuSchema.PathFor(cpuEmptyPath)),
+        "A session that didn't sample CPU must have no CPU profile or companion database.");
+
+    using (var clockWriter = SessionWriter.Create(cpuClockPath, new(1, "CpuTests", null, null, null, SessionCoverage.Trace)))
+    {
+        clockWriter.PostSample(new(1_000_000, 1, 5, [new(CpuModule(), cpuBase + 0x1100)]), wait: true);
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (CpuProfileReader.ReadSampling(cpuClockPath)?.Samples != 1 && DateTime.UtcNow < deadline)
+        {
+            Thread.Sleep(50);
+        }
+
+        Expect(CpuProfileReader.ReadSampling(cpuClockPath)?.Samples == 1,
+            "The CPU database must be created before the event clock is established for this regression.");
+        clockWriter.Process(1, new(1_000_000, 1000, 1, 5, XamlProvider.Xaml, true, "Clock", 0, []));
+        clockWriter.Process(2, new(2_000_000, 2000, 1, 5, XamlProvider.Xaml, true, "Clock", 0, []));
+        clockWriter.SetCpuSampling(new(1.0, false, 1, []), null);
+        clockWriter.Close("Test complete");
+        Expect(clockWriter.Failure is null, "Updating the CPU recording's clock must succeed.");
+    }
+
+    using (var clock = SessionFile.Open(cpuClockPath, includeCpu: true))
+    {
+        Expect(Sql.Scalar(clock, "SELECT StartQpc FROM main.SessionInfo") == 1_000_000 &&
+            Sql.Scalar(clock, "SELECT QpcFrequency FROM main.SessionInfo") == 1_000_000 &&
+            Sql.Scalar(clock, "SELECT CAST(Ms AS INTEGER) FROM CpuSampleDetails") == 0,
+            "CPU timestamps must use the canonical trace clock even when it is derived after CPU sampling started.");
+    }
 
     // A recording's samples are read before it ends, while it has no CpuSampling row yet.
     using (var liveWriter = SessionWriter.Create(cpuLivePath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace)))
@@ -1879,9 +1976,9 @@ try
     }
 
     var trimmedSampling = CpuProfileReader.ReadSampling(cpuTrimPath);
-    using (var trimConnection = SessionFile.Open(cpuTrimPath))
+    using (var trimConnection = SessionFile.Open(cpuTrimPath, includeCpu: true))
     {
-        Expect(trimFailure is null && new FileInfo(cpuTrimPath).Length <= 1024 * 1024 &&
+        Expect(trimFailure is null && new FileInfo(cpuTrimPath).Length + new FileInfo(CpuSchema.PathFor(cpuTrimPath)).Length <= 1024 * 1024 &&
             trimmedSampling is { Samples: > 0 and < trimSamples, Note: CpuSampleIndex.TrimmedNote } &&
             Sql.Scalar(trimConnection, "SELECT MIN(Qpc) FROM CpuSamples") >= 2_000 &&
             Sql.Scalar(trimConnection, "SELECT MAX(Qpc) FROM CpuSamples") == 1_000 + trimSamples,
@@ -1931,7 +2028,7 @@ try
         lateFailure = lateWriter.Failure;
     }
 
-    using (var lateConnection = SessionFile.Open(cpuLatePath))
+    using (var lateConnection = SessionFile.Open(cpuLatePath, includeCpu: true))
     {
         Expect(lateFailure is null && Sql.Scalar(lateConnection, "SELECT CompleteFromQpc FROM SessionInfo") > 1_000 &&
             Sql.Scalar(lateConnection, "SELECT COUNT(*) FROM CpuSamples WHERE Qpc < (SELECT CompleteFromQpc FROM SessionInfo)") == 0 &&
@@ -1939,6 +2036,29 @@ try
             Sql.Scalar(lateConnection, "SELECT COUNT(*) FROM CodeAddresses WHERE Rva = 0x1200") == 0 &&
             CpuProfileReader.ReadSampling(cpuLatePath) is { Samples: 1, Note: CpuSampleIndex.TrimmedNote },
             "A sample that comes after trimming, from before the time the file is complete from, must not be stored.");
+    }
+
+    using (var budgetWriter = SessionWriter.Create(cpuBudgetPath, new(1, "CpuTests", null, 1_000_000, 0, SessionCoverage.Trace),
+        limitBytes: 1024 * 1024))
+    {
+        var budgetModule = CpuModule();
+        for (var sample = 0; sample < 12_000; sample++)
+        {
+            budgetWriter.PostSample(new(1_000 + sample, 1, 5,
+                [new(budgetModule, cpuBase + 0x100 + (ulong)sample)]), wait: true);
+        }
+
+        for (var index = 0; index < 500; index++)
+        {
+            budgetWriter.Process(index + 1, new(1_000_000 + index, index, 1, 5, XamlProvider.Xaml, true, "Budget", 0,
+                [new("Padding", new string('x', 1_000))]));
+        }
+
+        budgetWriter.SetCpuSampling(new(1.0, false, 12_000, [budgetModule]), null);
+        budgetWriter.Close("Test complete");
+        var bytes = new FileInfo(cpuBudgetPath).Length + new FileInfo(CpuSchema.PathFor(cpuBudgetPath)).Length;
+        Expect(budgetWriter.Failure is null && bytes <= budgetWriter.LimitBytes && budgetWriter.Status.FileBytes == bytes,
+            "CPU pages freed to make room for events must not leave the combined files over their shared size limit.");
     }
 
     // An address outside every module known when its sample was stored goes to the module the trace's end named, if that
@@ -1965,8 +2085,10 @@ try
 }
 finally
 {
-    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath, cpuTrimPath, cpuPlacePath, cpuLatePath }
-        .SelectMany(cpuSession => new[] { cpuSession, cpuSession + "-wal", cpuSession + "-shm", cpuSession + "-journal" }))
+    foreach (var cpuFile in new[] { cpuPath, cpuIdentityPath, cpuEmptyPath, cpuLivePath, cpuTrimPath, cpuPlacePath, cpuLatePath,
+        cpuLegacyPath, cpuClockPath, cpuBudgetPath, cpuReservedPath }
+        .SelectMany(cpuSession => new[] { cpuSession, CpuSchema.PathFor(cpuSession) })
+        .SelectMany(database => new[] { database, database + "-wal", database + "-shm", database + "-journal" }))
     {
         File.Delete(cpuFile);
     }
@@ -1977,6 +2099,8 @@ finally
     }
 }
 Console.WriteLine("Passed: CPU samples read back by thread, frame and call tree, symbolizing reports modules it can't name, and live naming names only what was asked for; trimming keeps stacks whole, and late modules get their addresses.");
+
+CpuStorageFailureTests.Run();
 
 // The live kernel session keeps the samples from before it's read, and gives the sink the target's complete samples.
 KernelSampleSession? liveCpu = null;

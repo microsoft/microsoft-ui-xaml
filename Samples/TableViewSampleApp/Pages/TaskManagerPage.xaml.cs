@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
@@ -13,6 +14,7 @@ using TableViewSampleApp.Controls;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
+using TableViewSampleApp.Services;
 using SortDirection = Microsoft.UI.Xaml.Controls.Tabular.SortDirection;
 using TableView = Microsoft.UI.Xaml.Controls.Tabular.TableView;
 using TableViewColumn = Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn;
@@ -50,6 +52,11 @@ public sealed partial class TaskManagerPage : SamplePageBase
 
         _timer.Tick += OnTimerTick;
 
+        // <snippet>
+        RestoreColumnOrder(AppSettings.LoadColumnOrder(ColumnOrderSetting));
+        ProcessTable.ColumnReordered += OnProcessTableColumnReordered;
+        // </snippet>
+
         UpdateTotals();
         InitializeSample(Status, Shaping.Attach(ProcessTable, Source, (row, key) => ProcessData.GroupKeyOf(row as ProcessItem, key), ProcessData.ParentProcess));
         TrackTimer(_timer, () => LiveUpdatesToggle.IsOn);
@@ -62,6 +69,64 @@ public sealed partial class TaskManagerPage : SamplePageBase
     // <snippet>
     public TableViewSource Source { get; }
     // </snippet>
+
+    // ---- Column order -------------------------------------------------------------------
+
+    private const string ColumnOrderSetting = "TaskManagerColumns";
+
+    // <snippet>
+    private Task _columnOrderSave = Task.CompletedTask;
+
+    // The order is read on the UI thread; the file is written off it, one save after another.
+    private void QueueColumnOrderSave(IReadOnlyList<string> order)
+    {
+        _columnOrderSave = _columnOrderSave.ContinueWith(previous =>
+        {
+            if (previous.Exception is { } error)
+            {
+                System.Diagnostics.Debug.WriteLine($"Saving the column order failed: {error.InnerException?.Message}");
+            }
+            AppSettings.SaveColumnOrder(ColumnOrderSetting, order);
+        }, TaskScheduler.Default);
+    }
+
+    // Keyed by header text, which this sample does not localize; a real app keys on something stable.
+    private void OnProcessTableColumnReordered(TableView sender, TableViewColumnReorderedEventArgs args)
+    {
+        QueueColumnOrderSave(sender.Columns.Select(c => c.Header as string).ToList());
+        SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} to column {1}; order saved", args.Column.Header, args.NewIndex + 1));
+    }
+
+    private void RestoreColumnOrder(IReadOnlyList<string> order)
+    {
+        // Known columns only, once each: a stale or repeated saved name must not shift the rest.
+        // Frozen columns keep their leading prefix; the saved order applies to the columns after it.
+        int frozen = ProcessTable.Columns.TakeWhile(c => c.FrozenEdge == TableViewFrozenEdge.Leading).Count();
+        var known = order.Distinct()
+            .Select(header => ProcessTable.Columns.FirstOrDefault(c => c.Header as string == header))
+            .Where(column => column is not null && column.FrozenEdge != TableViewFrozenEdge.Leading)
+            .ToList();
+        for (int i = 0; i < known.Count; i++)
+        {
+            int target = frozen + i;
+            int current = ProcessTable.Columns.IndexOf(known[i]);
+            if (current != target)
+            {
+                ProcessTable.Columns.RemoveAt(current);
+                ProcessTable.Columns.Insert(target, known[i]);
+            }
+        }
+    }
+    // </snippet>
+
+    private void OnResetColumnOrderClick(object sender, RoutedEventArgs e)
+    {
+        RestoreColumnOrder(DefaultColumnOrder);
+        QueueColumnOrderSave(DefaultColumnOrder);
+        SetLastAction("Column order -> reset");
+    }
+
+    private static readonly string[] DefaultColumnOrder = { "Name", "Status", "CPU", "Memory", "Disk", "Network" };
 
     // ---- Live data ----------------------------------------------------------------------
 

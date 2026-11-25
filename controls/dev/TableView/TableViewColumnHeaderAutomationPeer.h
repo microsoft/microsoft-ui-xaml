@@ -62,6 +62,7 @@ public:
     void ShowContextMenuCore();
 
     bool IsTableViewOwned();
+    hstring HelpTextForInternal(bool movable);
 
     // True for a header the table has attached to one of its columns and not since replaced.
     static bool DescribesColumnHeader(winrt::TableViewColumnHeader const& header);
@@ -71,6 +72,7 @@ private:
     bool IsHeaderReplaced();
     void ThrowIfHeaderReplaced();
     bool IsSortableColumn();
+    hstring GetSortAndToolTipHelpText();
     bool IsResizableColumn();
     int32_t GetColumnIndex();
 

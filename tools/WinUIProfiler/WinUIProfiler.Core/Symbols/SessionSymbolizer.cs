@@ -177,28 +177,12 @@ public static class SessionSymbolizer
 
     private static SqliteConnection Open(string path)
     {
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException("The session file was not found.", path);
-        }
-
-        var connection = new SqliteConnection(new SqliteConnectionStringBuilder
-        {
-            DataSource = path,
-            Mode = SqliteOpenMode.ReadWrite,
-            Pooling = false
-        }.ToString());
+        var connection = SessionFile.Open(path, includeCpu: true, mode: SqliteOpenMode.ReadWrite);
         try
         {
-            connection.Open();
-            var version = Sql.Scalar(connection, "PRAGMA user_version");
-            if (version != SessionSchema.Version)
-            {
-                throw new InvalidDataException(
-                    $"'{path}' is not a WinUI Profiler session file of version {SessionSchema.Version} (found version {version}).");
-            }
-
-            if (Sql.Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'CodeAddresses'") == 0)
+            if (Sql.Scalar(connection, """
+                SELECT COUNT(*) FROM pragma_table_list WHERE schema IN ('main', 'cpu') AND type = 'table' AND name = 'CodeAddresses'
+                """) == 0)
             {
                 throw new InvalidDataException($"'{path}' was written by an earlier WinUI Profiler, without CPU samples.");
             }

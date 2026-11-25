@@ -163,7 +163,7 @@ public sealed class LiveSymbolNamer : IDisposable
 
         Dictionary<long, List<SessionSymbolizer.StoredAddress>> addresses;
         List<SessionSymbolizer.StoredModule> stored;
-        using (var connection = SessionFile.Open(SessionPath))
+        using (var connection = SessionFile.Open(SessionPath, includeCpu: true))
         {
             addresses = SessionSymbolizer.ReadAddresses(connection);
             stored = SessionSymbolizer.ReadModules(connection);

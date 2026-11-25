@@ -95,6 +95,12 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         get; private set;
     }
     public TraceReplayStatus? TraceStatus => replay?.Status ?? finalTrace;
+    // Whether the last connection was established. It stays set after the connection ends, until the next connection or
+    // trace reading starts.
+    public bool WasConnected
+    {
+        get; private set;
+    }
 
     public Task ConnectAsync(TargetConnectionOptions options, IProgress<ConnectionProgress> progress)
     {
@@ -110,6 +116,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
     private async Task ConnectCoreAsync(TargetConnectionOptions options, IProgress<ConnectionProgress> progress)
     {
         IsBusy = true;
+        WasConnected = false;
         state = "Launching";
         detail = options.Target;
         errorMessage = "";
@@ -134,6 +141,8 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
                 cancellation.Token.ThrowIfCancellationRequested();
             }
             connection = candidate;
+            // ConnectAsync returns once the target is connected, so this holds even if it exits before the next refresh.
+            WasConnected = true;
             History = candidate.History;
             candidate.Changed += Connection_Changed;
             if (History is not null)
@@ -188,6 +197,7 @@ public sealed class LiveSessionViewModel : INotifyPropertyChanged
         IReadOnlyCollection<MarkerProviderSettings> markers)
     {
         IsBusy = true;
+        WasConnected = false;
         state = "TraceOpening";
         detail = "";
         errorMessage = "";
