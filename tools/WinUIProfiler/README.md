@@ -289,10 +289,15 @@ and exclude earlier creations; they are not scoped to the captured tree nodes.
 All-zero slots are omitted: an empty graphics section can mean unsupported or disabled
 tracking, or no observed creations, not that no graphics resources exist.
 
-As soon as a connection succeeds after the genuine TAP hello, the app
+After a connection succeeds with the genuine TAP hello, the app
 automatically captures and saves an **Initial snapshot** as the first snapshot
-of that connection. Manual capture is disabled until this initial attempt
-finishes. A failed initial capture is reported without failing the connection;
+of that connection, no earlier than two seconds after the target process
+started. Connection time counts toward this delay; attaching to an older app
+does not add another delay. The live CLI uses the same timing. This is a launch
+delay, not a guarantee that rendering or asynchronous app initialization has
+finished. Manual capture is disabled until this initial attempt finishes, but
+later manual snapshots and explicit CLI captures are not delayed.
+A failed initial capture is reported without failing the connection;
 **Take tree snapshot** remains available to retry or capture later states.
 Each reconnect takes its own initial snapshot, retaining earlier history.
 

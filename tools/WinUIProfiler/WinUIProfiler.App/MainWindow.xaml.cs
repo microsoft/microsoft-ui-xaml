@@ -756,7 +756,9 @@ PrivateRuntime);
             var process = connection.Scope?.Process ?? throw new InvalidOperationException(Text("SnapshotRequiresConnection"));
             var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "WinUIProfiler", "Snapshots");
-            var saved = await connection.TakeSnapshotAsync(directory, cancellation.Token);
+            var saved = isInitial
+                ? await connection.TakeInitialSnapshotAsync(directory, cancellation.Token)
+                : await connection.TakeSnapshotAsync(directory, cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
             if (closing || !ReferenceEquals(connection, model.Connection)) return;
             snapshot = saved;

@@ -44,7 +44,8 @@ internal static class LiveCommands
                     "  [--redirect-controls] [--launcher-directory PATH]\n" +
                     "Live options: --duration SECONDS --snapshot-interval SECONDS --snapshot-directory PATH\n" +
                     "  --interactive (stdin: status, snapshot, stop) --json (NDJSON)\n" +
-                    "Live captures an initial snapshot automatically. Stopping never terminates the target.\n" +
+                    "Live captures an initial snapshot no earlier than two seconds after app launch.\n" +
+                    "Stopping never terminates the target.\n" +
                     "Exit codes: 0 complete, 2 usage, 3 failed/incomplete, 4 canceled.").ConfigureAwait(false);
                 return 0;
             }
@@ -252,7 +253,7 @@ internal static class LiveCommands
             if (options.Duration is { } seconds) sessionStop.CancelAfter(TimeSpan.FromSeconds(seconds));
             if (startupProgress is not null) await startupProgress.ConfigureAwait(false);
             await DrainProgressAsync(progress, options.Json, output, error, sessionStop.Token).ConfigureAwait(false);
-            await CaptureAsync().ConfigureAwait(false);
+            await CaptureAsync(isInitial: true).ConfigureAwait(false);
             if (!options.Capture)
             {
                 var watch = Stopwatch.StartNew();
@@ -302,13 +303,15 @@ internal static class LiveCommands
                         Task.Delay(100, sessionStop.Token)).ConfigureAwait(false);
                 }
             }
-            async Task CaptureAsync()
+            async Task CaptureAsync(bool isInitial = false)
             {
                 sessionStop.Token.ThrowIfCancellationRequested();
                 // Stop the connection first: canceling TAP alone can release a queued heartbeat onto a closed pipe.
                 var saved = options.Capture
                     ? await connection.TakeSnapshotToFileAsync(options.OutputPath!, CancellationToken.None).ConfigureAwait(false)
-                    : await connection.TakeSnapshotAsync(options.SnapshotDirectory, CancellationToken.None).ConfigureAwait(false);
+                    : isInitial
+                        ? await connection.TakeInitialSnapshotAsync(options.SnapshotDirectory, CancellationToken.None).ConfigureAwait(false)
+                        : await connection.TakeSnapshotAsync(options.SnapshotDirectory, CancellationToken.None).ConfigureAwait(false);
                 snapshots++;
                 snapshotPaths.Add(saved.Path);
                 await WriteAsync(output, options.Json, "snapshot", saved, sessionStop.Token).ConfigureAwait(false);
@@ -499,6 +502,7 @@ internal static class LiveCommands
         string? EtwError { get; }
         RecordingStatus? Recording { get; }
         string? RecordingError { get; }
+        Task<SavedTreeSnapshot> TakeInitialSnapshotAsync(string directory, CancellationToken token);
         Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken token);
         Task<SavedTreeSnapshot> TakeSnapshotToFileAsync(string path, CancellationToken token);
     }
@@ -517,6 +521,8 @@ internal static class LiveCommands
         public string? EtwError => connection.EtwError;
         public RecordingStatus? Recording => connection.Recording;
         public string? RecordingError => connection.RecordingError;
+        public Task<SavedTreeSnapshot> TakeInitialSnapshotAsync(string directory, CancellationToken token) =>
+            connection.TakeInitialSnapshotAsync(directory, token);
         public Task<SavedTreeSnapshot> TakeSnapshotAsync(string directory, CancellationToken token) => connection.TakeSnapshotAsync(directory, token);
         public Task<SavedTreeSnapshot> TakeSnapshotToFileAsync(string path, CancellationToken token) => connection.TakeSnapshotToFileAsync(path, token);
         public ValueTask DisposeAsync() => connection.DisposeAsync();
