@@ -5655,7 +5655,7 @@ namespace Microsoft.UI.Xaml.Controls
     [NativeName("CBorder")]
     [ContentProperty("Child")]
     [Guids(ClassGuid = "112ecdb8-acd6-4fb5-b8c8-f223d7cd94bf")]
-    public sealed class Border
+    public class Border
      : Microsoft.UI.Xaml.FrameworkElement
     {
 
