@@ -597,7 +597,7 @@ launch starts at connection when activation returns a packaged app that was
 already running, when the app declares no executable, or when the launched
 process runs a different executable than its manifest declares.
 
-Events go through a queue of 131,072 events to one processing thread that runs
+Events go through a queue of 262,144 events to one processing thread that runs
 the event processors (`Processing\EventPipeline.cs`) in arrival order, numbering
 the events 1, 2, 3... Today the processors count events
 (`Processing\EventCounter.cs`) and save them (`Storage\SessionWriter.cs`).
@@ -729,6 +729,10 @@ lifetimes and referenced parent devices retain continuity and are marked
 `Trimmed` when evidence has been removed. Freed pages are reclaimed when one
 database needs the space released by the other. While recording, both files
 use WAL mode, so they can be read at the same time, for example with the CLI.
+The event writer's connection disables automatic checkpoints: a separate connection
+and thread run `PRAGMA wal_checkpoint(PASSIVE)` every 250 ms, keeping that
+checkpoint work off the event batch commit path. Disk contention can still affect
+both threads. The thread stops before the final checkpoint.
 When the session ends, each database is checkpointed and no longer needs its
 `-wal` and `-shm` files. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
