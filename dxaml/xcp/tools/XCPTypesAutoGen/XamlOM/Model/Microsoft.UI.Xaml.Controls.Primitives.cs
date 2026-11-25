@@ -2517,7 +2517,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
     [ControlPattern]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IOrientedPanel))]
     [Guids(ClassGuid = "b6927e47-7e23-4d44-a729-1517febe8049")]
-    public sealed class CalendarPanel
+    public class CalendarPanel
         : Microsoft.UI.Xaml.Controls.ModernCollectionBasePanel
     {
 
