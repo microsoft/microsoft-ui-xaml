@@ -154,6 +154,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             L"Verify collection is created with collection initialization syntax ")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CustomSelectorsApplySelectionFromMarkupAfterItems)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify custom Selector subclasses inherit ISupportInitialize so a markup SelectedIndex is applied after inline items are added (GitHub #8257).")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(XClassSelectorRootsApplySelectionFromMarkup)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify markup-compiled x:Class roots that are Selectors get paired BeginInit/EndInit and apply a markup SelectedIndex.")
+        END_TEST_METHOD()
+
     private:
         Platform::String^ m_VsmNameScopingXaml;
         struct VsmTestStruct

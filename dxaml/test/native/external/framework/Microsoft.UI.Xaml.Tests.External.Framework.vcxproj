@@ -131,6 +131,15 @@
     <ClInclude Include="customTypes\ParserTests.CustomButton.h">
       <DependentUpon>customTypes\DummyIdlForInclusionInXamlTypeinfo.idl</DependentUpon>
     </ClInclude>
+    <ClInclude Include="customTypes\ParserTests.CustomSelectors.h">
+      <DependentUpon>customTypes\DummyIdlForInclusionInXamlTypeinfo.idl</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="customTypes\BuiltInListViewRoot.xaml.h">
+      <DependentUpon>customTypes\BuiltInListViewRoot.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="customTypes\CustomListViewRoot.xaml.h">
+      <DependentUpon>customTypes\CustomListViewRoot.xaml</DependentUpon>
+    </ClInclude>
     <ClInclude Include="customTypes\ParserTests_CustomTypes.xaml.h">
       <DependentUpon>customTypes\ParserTests_CustomTypes.xaml</DependentUpon>
     </ClInclude>
@@ -216,6 +225,9 @@
     <ClCompile Include="customTypes\ObjectOwnedDPs.cpp" />
     <ClCompile Include="customTypes\Oski.xaml.cpp" />
     <ClCompile Include="customTypes\ParserTests.CustomButton.cpp" />
+    <ClCompile Include="customTypes\ParserTests.CustomSelectors.cpp" />
+    <ClCompile Include="customTypes\BuiltInListViewRoot.xaml.cpp" />
+    <ClCompile Include="customTypes\CustomListViewRoot.xaml.cpp" />
     <ClCompile Include="customTypes\ParserTests_CustomTypes.xaml.cpp" />
     <ClCompile Include="customTypes\UserControlWithUnresolveableStaticResource.xaml.cpp" />
     <ClCompile Include="customTypes\RootCustomResourceDialog.xaml.cpp" />
@@ -265,6 +277,8 @@
     <Page Include="customTypes\ParserTests_CustomTypes.xaml" />
     <Page Include="customTypes\UserControlWithUnresolveableStaticResource.xaml" />
     <Page Include="customTypes\RootCustomResourceDialog.xaml" />
+    <Page Include="customTypes\BuiltInListViewRoot.xaml" />
+    <Page Include="customTypes\CustomListViewRoot.xaml" />
     <Page Include="customTypes\UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml" />
     <Page Include="customTypes\XDeferCustomPageEvents.xaml" />
     <Page Include="customTypes\XDeferCustomPageNested.xaml" />
