@@ -2905,6 +2905,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding set by a source PropertyChanged handler during the close a Binding change forces is kept over the older outer request.")]
+        public void VerifyBindingSetDuringForcedCloseWins()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            Binding newer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = (TableViewTextColumn)tableView.Columns[0];
+                newer = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                items[0].PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(EditablePerson.Name) && name.Binding != newer)
+                    {
+                        name.Binding = newer;
+                    }
+                };
+
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit at once.");
+                Verify.AreEqual("Zed", items[0].Name, "Precondition: the close committed the pending value.");
+                Verify.IsTrue(ReferenceEquals(newer, name.Binding), "The Binding set during the close is newer and must be kept.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Commit, actions[0], "A valid pending value must be committed.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the newest Binding.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the newest Binding.");
+            });
+        }
+
         private sealed class CallbackConverter : IValueConverter
         {
             private readonly Action m_onConvert;
