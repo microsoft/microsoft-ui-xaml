@@ -79,6 +79,12 @@ internal static class Program
     private static async Task RunServerAsync()
     {
         UsageTelemetry.Initialize("profiler", "mcp", ServerVersion.Value, onByDefault: true);
+        // Standard output carries the MCP protocol, so the first-run notice goes to standard error with the host's logs.
+        if (UsageTelemetry.TakeNotice() is { } notice)
+        {
+            Console.Error.WriteLine(notice);
+        }
+
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         AddServer(builder.Services).WithStdioServerTransport();

@@ -6,9 +6,9 @@ using System.Net;
 using System.Text.Json.Nodes;
 using WinUITools.Telemetry;
 
-// The usage telemetry helper: off without an endpoint unless on by default, off when opted out, the Application
-// Insights envelope with the common properties first and the sign-in token instead of a key, one install ID and one
-// notice for each user, and no waiting, throwing or standard output.
+// The usage telemetry helper: off without an endpoint unless on by default, off when opted out or pointed at another
+// host, the Application Insights envelope with the common properties first and the sign-in token instead of a key, a
+// bounded channel, one install ID and one notice for each user, and no waiting, throwing or standard output.
 internal static class UsageTelemetryTests
 {
     private const string EndpointVariable = "WINUI_TOOLS_TELEMETRY_ENDPOINT";
@@ -27,8 +27,10 @@ internal static class UsageTelemetryTests
         {
             OffWithoutEndpoint();
             OffWhenOptedOutOrInvalid();
+            OffForAnotherHost();
             OnByDefault();
             SendsTheEnvelope();
+            BoundsTheChannel();
             NeverWaitsForTheNetwork();
         }
         finally
@@ -42,9 +44,9 @@ internal static class UsageTelemetryTests
         }
 
         Expect(standardOutput.ToString().Length == 0, "Usage telemetry must not write to standard output.");
-        Console.WriteLine("Passed: usage telemetry is off without an endpoint unless on by default, and when opted out, " +
-            "sends one envelope per event with the sign-in token, and never waits for the network, throws or writes to " +
-            "standard output.");
+        Console.WriteLine("Passed: usage telemetry is off without an endpoint unless on by default, when opted out and " +
+            "for another host, sends one envelope per event with the sign-in token and a bounded channel, and never " +
+            "waits for the network, throws or writes to standard output.");
     }
 
     private static void OffWithoutEndpoint()
@@ -83,6 +85,25 @@ internal static class UsageTelemetryTests
         }
 
         Environment.SetEnvironmentVariable(OptOutVariable, null);
+    }
+
+    // Outside tests, which replace the network, a setting cannot send the events and the sign-in token to another host.
+    private static void OffForAnotherHost()
+    {
+        var folder = NewFolder();
+        try
+        {
+            Environment.SetEnvironmentVariable(EndpointVariable, Endpoint);
+            UsageTelemetry.Reset();
+            UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler: null, Token, onByDefault: true);
+            Expect(!UsageTelemetry.IsEnabled && !Directory.Exists(folder),
+                "Usage telemetry must stay off for an endpoint on another host than the WinUI tools endpoint.");
+        }
+        finally
+        {
+            UsageTelemetry.Reset();
+            Delete(folder);
+        }
     }
 
     // The profiler's tools are on by default: without any setting they send to the WinUI tools endpoint over https.
@@ -165,6 +186,39 @@ internal static class UsageTelemetryTests
             UsageTelemetry.Reset();
             Environment.SetEnvironmentVariable(ChannelVariable, null);
             Delete(folder);
+        }
+    }
+
+    // A channel names a release; a path, spaces or a long value are sent as "unknown".
+    private static void BoundsTheChannel()
+    {
+        foreach (var (channel, sent) in new[]
+        {
+            ("stable-1.2_x", "stable-1.2_x"),
+            (@"C:\Users\name", "unknown"),
+            (new string('a', 65), "unknown"),
+        })
+        {
+            var folder = NewFolder();
+            try
+            {
+                Environment.SetEnvironmentVariable(EndpointVariable, Endpoint);
+                Environment.SetEnvironmentVariable(ChannelVariable, channel);
+                var handler = new RecordingHandler(hang: false);
+                UsageTelemetry.Reset();
+                UsageTelemetry.Initialize("profiler", "cli", "0.1.0", folder, handler, Token);
+                UsageTelemetry.Track("Profiler.CliCommand");
+                UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+                Expect(handler.Requests.Count == 1 &&
+                    (string?)JsonNode.Parse(handler.Requests[0].Body)!["data"]!["baseData"]!["properties"]!["channel"] == sent,
+                    $"The channel '{channel}' must be sent as '{sent}'.");
+            }
+            finally
+            {
+                UsageTelemetry.Reset();
+                Environment.SetEnvironmentVariable(ChannelVariable, null);
+                Delete(folder);
+            }
         }
     }
 

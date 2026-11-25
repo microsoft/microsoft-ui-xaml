@@ -152,7 +152,8 @@ public static class UsageTelemetry
         {
             var address = Environment.GetEnvironmentVariable(EndpointVariable);
             if (IsEnabled || Environment.GetEnvironmentVariable(OptOutVariable) == "1" ||
-                !TryParse(string.IsNullOrWhiteSpace(address) && onByDefault ? Endpoint : address, out var endpoint))
+                !TryParse(string.IsNullOrWhiteSpace(address) && onByDefault ? Endpoint : address, handler is not null,
+                    out var endpoint))
             {
                 return;
             }
@@ -163,7 +164,6 @@ public static class UsageTelemetry
             }
 
             var version = string.IsNullOrWhiteSpace(toolVersion) ? "unknown" : toolVersion.Split('+')[0];
-            var channel = Environment.GetEnvironmentVariable(ChannelVariable);
             var client = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: false);
             client.Timeout = SendTimeout;
             var session = new Session(client, endpoint, token ?? SignIn(), installId, Guid.NewGuid().ToString(), folder,
@@ -172,7 +172,7 @@ public static class UsageTelemetry
                     ["tool"] = tool,
                     ["component"] = component,
                     ["toolVersion"] = version,
-                    ["channel"] = string.IsNullOrWhiteSpace(channel) ? "unknown" : channel,
+                    ["channel"] = Channel(Environment.GetEnvironmentVariable(ChannelVariable)),
                     ["isCI"] = IsSet("TF_BUILD") || IsSet("GITHUB_ACTIONS") ? "true" : "false",
                 });
             Volatile.Write(ref current, session);
@@ -198,6 +198,12 @@ public static class UsageTelemetry
 
     private static bool IsSet(string variable) => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(variable));
 
+    // A channel names a release, such as "stable"; any other value is sent as "unknown".
+    private static string Channel(string? value) =>
+        value is { Length: > 0 and <= 64 } && value.All(c => char.IsAsciiLetterOrDigit(c) || c is '.' or '_' or '-')
+            ? value
+            : "unknown";
+
     // Runs work in the background, where FlushAsync can wait for it.
     private static void Start(Func<Task> work)
     {
@@ -218,8 +224,9 @@ public static class UsageTelemetry
         }
     }
 
-    // The endpoint's track URL, from its https base address.
-    private static bool TryParse(string? address, [NotNullWhen(true)] out Uri? endpoint)
+    // The endpoint's track URL, from its https base address. Outside tests (anyHost) only the WinUI tools endpoint is
+    // accepted, because a setting that named another host would send it the events and the sign-in token.
+    private static bool TryParse(string? address, bool anyHost, [NotNullWhen(true)] out Uri? endpoint)
     {
         endpoint = null;
         var text = address?.Trim();
@@ -229,7 +236,8 @@ public static class UsageTelemetry
         }
 
         if (!Uri.TryCreate(text.EndsWith('/') ? text : text + "/", UriKind.Absolute, out var root) ||
-            root.Scheme != Uri.UriSchemeHttps)
+            root.Scheme != Uri.UriSchemeHttps ||
+            !(anyHost || string.Equals(root.Host, new Uri(Endpoint).Host, StringComparison.OrdinalIgnoreCase)))
         {
             return false;
         }
@@ -403,7 +411,9 @@ public static class UsageTelemetry
 
     // The same, for an endpoint setting; for tests.
     internal static string SavedFolder(string folder, string endpoint) =>
-        TryParse(endpoint, out var uri) ? SavedFolder(folder, uri) : throw new ArgumentException("Not an endpoint.", nameof(endpoint));
+        TryParse(endpoint, anyHost: true, out var uri)
+            ? SavedFolder(folder, uri)
+            : throw new ArgumentException("Not an endpoint.", nameof(endpoint));
 
     // Deletes the file of an event that was sent or refused, and keeps one that may be sent later as name.pending.
     private static void Settle(string? path, Outcome outcome)

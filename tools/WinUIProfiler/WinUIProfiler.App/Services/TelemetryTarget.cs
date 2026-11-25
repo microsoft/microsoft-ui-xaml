@@ -78,10 +78,16 @@ internal static class TelemetryTarget
             ? Path.GetFileNameWithoutExtension(path)
             : Hash(path);
 
-    // The first 12 hex digits of the SHA-256 of the lowercase executable name. Process names have no extension.
+    // The first 12 hex digits of the SHA-256 of the lowercase executable name, or "unknown" without a file name.
+    // Process names have no extension.
     private static string Hash(string name)
     {
-        var executable = Path.GetFileName(name).ToLowerInvariant();
+        var executable = Path.GetFileName(name.Trim()).ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(executable))
+        {
+            return "unknown";
+        }
+
         if (!executable.EndsWith(".exe", StringComparison.Ordinal))
         {
             executable += ".exe";
