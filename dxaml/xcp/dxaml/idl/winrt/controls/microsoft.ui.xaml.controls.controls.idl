@@ -1659,10 +1659,10 @@ namespace Microsoft.UI.Xaml.Controls
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass RichTextBlockOverflow
+    unsealed runtimeclass RichTextBlockOverflow
         : Microsoft.UI.Xaml.FrameworkElement
     {
-        RichTextBlockOverflow();
+        [method_name("CreateInstance")] RichTextBlockOverflow();
         Microsoft.UI.Xaml.Controls.RichTextBlockOverflow OverflowContentTarget;
         Microsoft.UI.Xaml.Thickness Padding;
         Microsoft.UI.Xaml.Controls.RichTextBlock ContentSource{ get; };
