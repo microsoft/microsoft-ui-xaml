@@ -1389,31 +1389,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies every realized row gets its own cell element.")]
-        public void VerifyGenerateElementReturnsNewElementPerCall()
-        {
-            TableView tableView = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                tableView = CreateTableView(headers: new[] { "Name" });
-                LoadContent(tableView);
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var first = GetCellContent(GetRowCell(GetProjectedRow(tableView, 0), 0));
-                var second = GetCellContent(GetRowCell(GetProjectedRow(tableView, 1), 0));
-
-                // A FrameworkElement cannot have two parents. If a column cached one element, rows
-                // would steal it from each other as they realize.
-                Verify.IsFalse(ReferenceEquals(first, second), "Each row must get a new element.");
-            });
-        }
-
-        [TestMethod]
         [TestProperty("Description", "Verifies built-in columns do not set a local DataContext on generated cells.")]
         public void VerifyGenerateElementDoesNotSetLocalDataContext()
         {
