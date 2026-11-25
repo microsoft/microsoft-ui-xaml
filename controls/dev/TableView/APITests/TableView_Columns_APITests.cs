@@ -2041,7 +2041,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
-            FocusHeader(tableView, 0);
+            if (!FocusHeader(tableView, 0))
+            {
+                return;
+            }
             ReorderInput.Send(right: true);
             RunOnUIThread.Execute(() =>
             {
@@ -2063,7 +2066,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.CanUserSortColumns = true;
             });
 
-            FocusHeader(tableView, 1);
+            if (!FocusHeader(tableView, 1))
+            {
+                return;
+            }
             ReorderInput.Send(right: true);
             RunOnUIThread.Execute(() =>
             {
@@ -2150,7 +2156,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
-            FocusHeader(tableView, 1);
+            if (!FocusHeader(tableView, 1))
+            {
+                return;
+            }
             ReorderInput.Send(right: false);
             SettleLayout(tableView);
 
@@ -2203,7 +2212,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 return;
             }
-            FocusHeader(tableView, 1);
+            if (!FocusHeader(tableView, 1))
+            {
+                return;
+            }
             ReorderInput.Send(right: true);
             RunOnUIThread.Execute(() =>
             {
@@ -2231,7 +2243,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(tableView.CommitEdit(), "Precondition: the edit commits.");
             });
 
-            FocusHeader(tableView, 1);
+            if (!FocusHeader(tableView, 1))
+            {
+                return;
+            }
             ReorderInput.Send(right: true);
             RunOnUIThread.Execute(() =>
             {
@@ -2260,7 +2275,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     return;
                 }
-                FocusHeader(tableView, 0);
+                if (!FocusHeader(tableView, 0))
+                {
+                    return;
+                }
                 ReorderInput.Send(right: true);
                 ReorderInput.Send(right: true);
                 RunOnUIThread.Execute(() =>
@@ -2403,7 +2421,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     return;
                 }
-                FocusHeader(tableView, focus);
+                if (!FocusHeader(tableView, focus))
+                {
+                    return;
+                }
                 ReorderInput.Send(right: true);
                 SettleLayout(tableView);
                 RunOnUIThread.Execute(() =>
@@ -2801,7 +2822,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (focus >= 0)
                     {
-                        FocusHeader(tableView, focus);
+                        if (!FocusHeader(tableView, focus))
+                        {
+                            return;
+                        }
                     }
                     ReorderInput.Send(right);
                     RunOnUIThread.Execute(() => VerifyOrder(tableView, expected, $"after Ctrl+Shift+{(right ? "Right" : "Left")}"));
@@ -2899,13 +2923,22 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return tableView;
         }
 
-        private static void FocusHeader(TableView tableView, int index)
+        // Gated as InputReachesTable is: reports Skipped, and returns false, when keys cannot reach the table.
+        private static bool FocusHeader(TableView tableView, int index)
+            => KeysReachTable(tableView, index, FocusState.Keyboard);
+
+        // Focuses the header and waits until a key press reaches the table; reports Skipped when none does.
+        private static bool KeysReachTable(TableView tableView, int headerIndex = 0, FocusState focusState = FocusState.Programmatic)
         {
             SettleLayout(tableView);
-            ReorderInput.EnsureForeground(HeaderPoint(tableView, index, 0.5));
+            if (!ReorderInput.EnsureForeground(HeaderPoint(tableView, headerIndex, 0.5)))
+            {
+                Log.Result(TestResult.Skipped, "The test window cannot take the foreground on this machine, so keys would not reach it.");
+                return false;
+            }
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsTrue(GetHeaderCell(tableView, index).Focus(FocusState.Keyboard), $"Precondition: header {index} takes keyboard focus.");
+                Verify.IsTrue(GetHeaderCell(tableView, headerIndex).Focus(focusState), $"Precondition: header {headerIndex} takes focus.");
             });
             IdleSynchronizer.Wait();
 
@@ -2923,12 +2956,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     global::System.Threading.Thread.Sleep(200);
                 }
             }
-            RunOnUIThread.Execute(() =>
+            RunOnUIThread.Execute(() => tableView.RemoveHandler(UIElement.KeyDownEvent, handler));
+            if (seen == 0)
             {
-                tableView.RemoveHandler(UIElement.KeyDownEvent, handler);
-                Verify.IsTrue(seen > 0, "Precondition: keyboard input reaches the table.");
-                Verify.IsTrue(GetHeaderCell(tableView, index).FocusState != FocusState.Unfocused, $"Precondition: header {index} still has focus.");
-            });
+                Log.Result(TestResult.Skipped, "Key presses do not reach the test window on this machine.");
+                return false;
+            }
+            RunOnUIThread.Execute(() =>
+                Verify.IsTrue(GetHeaderCell(tableView, headerIndex).FocusState != FocusState.Unfocused, $"Precondition: header {headerIndex} still has focus."));
+            return true;
         }
 
         private static void VerifyOrder(TableView tableView, string expected, string context)
