@@ -747,7 +747,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "dfe8786a-b69e-4138-9bc6-8cc643ba04b4")]
-    public sealed class Thumb
+    public class Thumb
      : Microsoft.UI.Xaml.Controls.Control
     {
         public Windows.Foundation.Boolean IsDragging
