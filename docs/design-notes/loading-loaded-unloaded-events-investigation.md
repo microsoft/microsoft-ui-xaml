@@ -3,6 +3,56 @@
 Assistant-maintained investigation, TODOs, and experiments. The concise handwritten note remains in
 [loading-loaded-unloaded-events.md](loading-loaded-unloaded-events.md).
 
+## Already covered by the handwritten proposal
+
+Comparison as of 2026-11-25. The handwritten proposal owns the contract described below; this file
+retains supporting source evidence and tracks implementation work. "Covered" means documented,
+not implemented or validated. Legacy Loaded/Unloaded behavior remains separate from the new pair.
+
+| Topic already described | Handwritten section | Supporting material in this investigation |
+| --- | --- | --- |
+| Existing Loading, Loaded, Unloaded scheduling and IsLoaded's pending-Loaded dependency | [Existing events](loading-loaded-unloaded-events.md#loading--loaded--unloaded-events) | [Loading consumers](#loading-consumers), [legacy compatibility analysis](#compatibility-consequences) |
+| Add Loaded2/Unloaded2 rather than changing the legacy pair | [Loaded2 / Unloaded2](loading-loaded-unloaded-events.md#loaded2--unloaded2) | [Primary-feature TODOs](#primary-feature-todos) |
+| Delay direct handler execution until the post-layout, pre-render tick checkpoint; avoid Enter/Leave and Popup.Close reentrancy | [Timing](loading-loaded-unloaded-events.md#timing---delayed-synchronous) | [Inline versus tick call-order evidence](#compatibility-of-inline-versus-tick-delivery) |
+| Post-layout timing makes template/layout output potentially available, not guaranteed for collapsed elements | [Timing](loading-loaded-unloaded-events.md#timing---delayed-synchronous) | [Confirmed AutoSuggestBox counterexample](#autosuggestbox-confirmed-false-positive-readiness), [layout-output audit](#layout-output-consumers-initial-calculations-and-change-coverage) |
+| Preserve pending Loaded2 across Leave and deliver historical attachment/departure occurrences in order, even while currently detached | [Differences](loading-loaded-unloaded-events.md#differences-with-loaded--unloaded) | [Concern 4 and recipient-retention details](#delayed-sync-reassessment-2026-11-24) |
+| Defer historical parent/root context and generation counters; current properties do not identify historical context or whether notifications have caught up | [Potential future expansion](loading-loaded-unloaded-events.md#potential-future-expansion) | No generation ID required on current evidence. An event-side ID alone cannot check freshness; an element-side current value would also be needed. |
+
+These are no longer unanswered design questions in this investigation. The detailed audit below
+includes earlier alternatives and legacy-handler assumptions; those do not override the handwritten
+proposal's choice of a new, ordered, delayed pair.
+
+## Not yet covered by the handwritten proposal
+
+These are additional findings, implementation requirements, or optional follow-ups, not edits requested
+for the handwritten note.
+
+| Topic not yet described | Current finding or direction | Detail / tracking |
+| --- | --- | --- |
+| Unified lifecycle drain and relayout (concern 5) | Use one ordered Loaded2/Unloaded2 queue. Append handler-generated occurrences and drain both kinds; process layout-generated occurrences before rendering too. | [Primary-feature TODOs](#primary-feature-todos) |
+| Retain recipients, not just queue entries (implementation part of concern 4) | Leave disables registrations. Keeping a pending occurrence alone does not bypass today's active-handler filter; retain eligible recipients for the new path. Pairing is per occurrence, not a requirement that every subscriber listen to both events. | [Delayed-sync reassessment](#delayed-sync-reassessment-2026-11-24) |
+| Request a frame for pending events | Removal can happen in input/async work outside a tick; delivery must request a tick rather than depend on unrelated rendering. | [Primary-feature TODOs](#primary-feature-todos) |
+| Preserve actual Leave's transition/keep-alive gates | Popup.Close can return while its child remains in unloading storage. Actual Leave waits for retention reasons to finish; moving notification delivery must not bypass that gate. | [Transition versus queue timing](#compatibility-of-inline-versus-tick-delivery) |
+| IsLoaded usability inside Loaded2 | IsLoaded depends on legacy Loaded delivery. Ensure suitable legacy-before-new ordering, or revise the property with compatibility assessment; include handler-driven mutations. XamlRoot alone is not proof of live attachment. | [Primary-feature TODOs](#primary-feature-todos) |
+| Current root association can survive detachment | Live-tree Leave deactivates the element without clearing its cached weak visual-tree association. Use a reliable current-attachment check alongside XamlRoot for presentation work. | Getter path: UIElement_Partial.cpp:3229 -> XamlRoot_Partial.cpp:219 -> VisualTree.cpp:1397; tree storage/deactivation: depends.cpp:818,1256,4073 |
+| Control migration and rapid-reentry policy (concerns 1-3) | Ordered notifications do not rewind tree mutations or layout/property work. ItemsRepeater needs reset/reconnection adaptation; ScrollPresenter needs viewport/cancellation policy; ColorSpectrum needs generation/cancellation policy. | [Reassessment](#delayed-sync-reassessment-2026-11-24), [control checklist](#control-adaptation-checklist) |
+| Close-completion consumers | ContentDialog, flyout handoff, and ApplicationBarService need eligible completion notifications even when listeners were attached only for closing. Their obligations are operation-driven, not necessarily setup performed in Loaded. | [Closure work](#two-distinct-kinds-of-closure-work), [call-order traces](#compatibility-of-inline-versus-tick-delivery) |
+| Separate dependency-complete initialization | IsInitialized/InitializedChanged remains a candidate mechanism; Loaded2 does not guarantee template/dependency readiness. Hard descendant dependencies, retemplating, external retry notifications, and API reporting rules need separate design. | [Initialization proposal](#proposed-initialization-api-scope-dependencies-and-naming), [ASB reproduction](#autosuggestbox-confirmed-false-positive-readiness) |
+| Loading / x:Bind timing | Generated Loading handlers initialize bindings. Moving initialization to live entry can sample app data earlier, especially for OneTime bindings; first measure is normally deferred but can be forced explicitly. | [Loading consumers](#loading-consumers) |
+| Optional inline timing and flyout staging work | Inline Enter/Leave callbacks and late popup child Enter/Leave remain experiments, not the primary contract. Stage-before-Hide is an independent latest-request-wins improvement, not required for delayed Unloaded2. | [Six experiments](#experiment-backlog) |
+| Detailed consumer evidence | Loaded/Unloaded responsibility buckets, subscriber inventory, layout/VSM invalidation paths, and source-backed failure traces are supporting research rather than additional API promises. | [Audit](#control-subscriber-and-compatibility-audit-2026-11-19), [Unloaded buckets](#unloaded-scenario-breakdown-2026-11-23), [source references](#source-references) |
+
+The [implementation backlog](#primary-feature-todos) separates contract work already described by the
+handwritten proposal from additional work it has not described. All six primary-feature TODOs and six
+experiments remain pending. No product implementation is recorded here.
+
+## Supporting evidence and earlier design exploration
+
+The following sections preserve the detailed investigation. Statements about changing the legacy
+events or trying inline delivery are historical alternatives, not changes to the current additive
+Loaded2/Unloaded2 proposal. New-event delivery is post-layout/pre-render; IsInitialized and inline
+delivery are separate experiments. Only the AutoSuggestBox case below records a runtime reproduction.
+
 ## Control subscriber and compatibility audit (2026-11-19)
 
 This section records a static source investigation of production code in `dxaml\xcp`, `dxaml\phone`, and
@@ -121,11 +171,10 @@ The discussion now consolidates the observed Loaded buckets into two primary mec
    (bucket 3), not a separate fundamental mechanism. WebView2 is a concrete root/host example.
    This includes the scenario behind item 5 of the [Reactor wishlist][reactor-wishlist], independently of its proposed API.
 
-**Resume point (2026-11-24):** the working direction is to split Loaded's current responsibilities,
-not remove Loaded wholesale. Introduce the initialization mechanism described below; the entered-tree
-mechanism will **probably retain the public name Loaded**. "Entered" describes that responsibility,
-not a decision to add another public event. Retaining the name does not yet settle delivery timing,
-ordering, pairing, or compatibility with existing handlers.
+**Earlier initialization exploration:** splitting dependency-complete initialization from attachment
+remains useful, but is not part of the handwritten Loaded2/Unloaded2 contract. The initial naming
+discussion considered retaining Loaded; the current proposal instead adds Loaded2/Unloaded2 and keeps
+legacy behavior intact.
 
 When continuing this design, start from **initialized versus entered**: required local/subtree readiness
 belongs to IsInitialized/InitializedChanged; attachment/context reconciliation and per-entry actions
@@ -133,18 +182,12 @@ belong to the Loaded/entered mechanism. Controls doing both will need to coordin
 The reporting/invalidation API, subtree enforcement, and treatment of owned popup/detached dependencies
 remain open. This note records an investigation and candidate design, not an implemented product change.
 
-**Primary feature:** add delayed, tick-dispatched Loaded2/Unloaded2, preserving legacy Loaded/Unloaded
-semantics. Handlers execute synchronously at a pre-render checkpoint, rather than inline during
-Enter/Leave or through ordinary dispatcher delivery. The earlier analysis below uses Loaded/Unloaded
-as shorthand for the proposed lifecycle responsibilities; new behavior belongs to the new event pair.
-The originating Leave, collection removal,
-and Popup.Close operations should finish before handlers run. Input/async handlers can initiate removal
-outside a frame; request a tick to deliver the pending event, as Loaded already does. Preserve the existing
-transition/keep-alive gate on actual Leave. This is not a proposal to wait until after rendering or DComp
-submission. Exact Unloaded/Loaded ordering, remove/re-add behavior, and processing of newly generated
-events/layout work remain to be designed. Existing IsLoaded teardown guards are stale-event workarounds
-for today's asynchronous Unloaded versus tick-delivered Loaded, not fundamental reasons Unloaded must
-remain asynchronous.
+**Contract already covered:** see the handwritten proposal's
+[timing](loading-loaded-unloaded-events.md#timing---delayed-synchronous) and
+[differences](loading-loaded-unloaded-events.md#differences-with-loaded--unloaded) sections.
+New occurrences preserve live Enter/Leave order, including transient attachments; pending Loaded2
+survives Leave. The additional queue-draining, frame-request, recipient-retention, IsLoaded integration,
+and transition-gate work is tracked [above](#not-yet-covered-by-the-handwritten-proposal).
 
 **U6 flyout handoff:** no further flyout-specific blocker was identified for delayed-sync delivery after
 Popup.Close finishes. Presenter Unloaded raises the old flyout's Closed, clears the open-flyout slot, and
@@ -153,15 +196,16 @@ rendering, preserving A.Closed -> B.Opening -> B.Loaded/Opened ordering. Deferre
 stage-after-Hide code finish staging, and avoids reopening the same popup while its old Close still has
 it registered in the open-popup list.
 
-**Required stage-before-Hide TODO:** record B as staged before calling A.Hide.
+**Independent stage-before-Hide experiment:** record B as staged before calling A.Hide.
 If A.Closing requests C, the newer C should replace B instead of the older B request overwriting C after
 Hide returns. If Hide fails or Closing is canceled, B should remain staged as the outstanding request;
 that does not guarantee eventual opening if A never closes. Staging is a single latest-request-wins slot,
-not a FIFO queue. This improvement is useful even with delayed-sync Unloaded.
+not a FIFO queue. This improvement is useful even with delayed-sync Unloaded, but is not required
+for the new event pair: delayed completion lets the existing Hide-then-stage sequence finish first.
 
-Preserving pending Loaded2 across Leave and staging the replacement flyout before Hide are required
-[primary-feature TODOs](#primary-feature-todos), not optional experiments.
-The five items in the [experiment backlog](#experiment-backlog) remain pending. Inline Loaded-on-enter,
+Preserving pending Loaded2 across Leave is a required
+[primary-feature TODO](#primary-feature-todos), not an optional experiment.
+The six items in the [experiment backlog](#experiment-backlog) remain pending. Inline Loaded-on-enter,
 late Enter in Popup.Open, and coordinated end-of-Leave Unloaded/late child Leave in Popup.Close are
 exploratory follow-ups, not prerequisites for the delayed-sync Unloaded first step. The current placement
 of bookkeeping after child removal does not prove that all of it must remain there; any future reordering
@@ -705,9 +749,10 @@ the remaining compatibility consequences.
 #### Delayed-sync reassessment (2026-11-24)
 
 This supersedes the dispatch-flag-only/inline assumptions when evaluating the preferred first step.
-Assume Unloaded runs synchronously at a tick checkpoint after the triggering removal stack unwinds;
-preserve actual Leave/transition gates, order each departing attachment's Unloaded before a subsequent
-Loaded, remove the stale-event IsLoaded workarounds, and stage a replacement flyout before Hide.
+For the current additive proposal, apply the findings to Unloaded2/Loaded2: preserve actual
+Leave/transition gates, dispatch after the triggering removal stack unwinds, and preserve occurrence
+order. Existing out-of-order workarounds need control-side adaptation. Stage-before-Hide is an
+independent experiment, not a prerequisite.
 No implementation or runtime reproduction was performed for this reassessment.
 
 **What no longer counts as a blocker:** callback execution inside Leave, ContentDialog clearing Child
@@ -744,8 +789,9 @@ unloads before the relevant setup. A pre-layout checkpoint avoids the ordinary p
 but is not a universal cure: explicit ApplyTemplate/UpdateLayout and property-driven work can run
 before tick. In particular, "new work" cannot always be identified by whether new Loaded has fired.
 
-**Event occurrence/recipient policy is part of the change.** Correct ordering does not automatically
-mean strictly paired, alternating callbacks. Existing [DisableEvents][event-disable-loaded] removes
+**Covered occurrence contract; additional recipient implementation work.**
+The handwritten proposal preserves ordered attachment/departure occurrences. Existing
+[DisableEvents][event-disable-loaded] removes
 pending Loaded on departure. An element can therefore leave before its first Loaded is delivered.
 ContentDialog/ApplicationBarService can attach Unloaded specifically for close completion, without a
 corresponding earlier Loaded handler. Do not silently drop such Unloaded notifications to force balanced
@@ -782,18 +828,23 @@ in resource release (U1), detach/ownership (U2), cancellation (U3), interaction 
 dismissal (U5), override restoration (U7), or telemetry (U8). U6 flyout and ContentDialog completion fit
 the delayed boundary, as does ApplicationBarService when final Leave gates remain intact. Removal of
 the stale-event guards is not itself a compatibility failure; the specific rapid-reentry assumptions
-above are what still need adjustment. Relative timing versus DispatcherQueue work, input, and async
-continuations changes observably, but no additional source-demonstrated control failure requiring that
-old interleaving was found in the audited paths.
+above are what still need adjustment. Migrated handlers observe different timing relative to
+DispatcherQueue work, input, and async continuations. Legacy Unloaded subscribers keep their existing
+delivery path under the additive proposal.
 
 **Bottom line:** no further intrinsic need for ordinary asynchronous Unloaded was found. There is
-concrete work beyond removing IsLoaded checks and swapping the staging lines, concentrated in
+concrete work beyond removing IsLoaded checks, concentrated in
 rapid-reentry state repair and the lifecycle checkpoint's occurrence/order/layout contract.
 
 ### Primary-feature TODOs
 
 These are required work for delayed, tick-dispatched Loaded2/Unloaded2, not optional experiments.
 All remain pending; this is tracking only, not authorization to implement or run builds/tests.
+
+#### Contract already described; implementation pending
+
+The handwritten proposal already specifies these behaviors. The source-level implementation and
+validation details below remain work, including eligible-recipient retention and frame requests.
 
 - [ ] **Add delayed-async Loaded2.** Add the new attachment notification without changing legacy
   Loaded semantics. Record attachment occurrences and deliver them at the safe pre-render tick
@@ -812,14 +863,9 @@ All remain pending; this is tracking only, not authorization to implement or run
   Cover same-parent/root re-entry, root migration, handler-driven mutations, and ContentDialog/
   ApplicationBarService completion, with and without transition-delayed Leave. Pairing concerns
   occurrences, not requiring every recipient to subscribe to both events. No generation ID.
-- [ ] **Stage the replacement flyout before hiding the current flyout.** In
-  [CheckAndHandleOpenFlyout][flyout-stage-after-hide], move
-  `SetStagedFlyout(this, m_tpPlacementTarget.Get())` before `openFlyout->Hide()`.
-  Keep B staged if A's Hide fails or Closing is canceled. If A.Closing requests C, C replaces B,
-  honoring chronological latest-request-wins rather than allowing older B to overwrite C.
-  Cover immediate and transition-delayed removal, same-flyout retargeting, and reentrant replacement.
-  Delayed delivery after Popup.Close returns avoids the inline open-popup-list conflict; stage-before-
-  Hide does not by itself make inline same-popup reopening safe.
+
+#### Additional work not yet described in the handwritten proposal
+
 - [ ] **Drain Loaded2 and Unloaded2 identically in one ordered lifecycle queue (concern 5).**
   Dispatch the next occurrence synchronously, append handler-generated occurrences to the tail,
   and continue until neither kind remains. Neither event gets special priority.
@@ -861,14 +907,23 @@ unrelated IsLoaded checks that legitimately gate live-tree-dependent work.
 | [ ] | [ResizeGripper][resize-unloaded] | Remove the stale-Unloaded IsLoaded guard while preserving drag cancellation, pointer-capture release, and interaction reset. |
 | [ ] | [TableView][table-unloaded] | Remove the stale-Unloaded IsLoaded guard while preserving source ownership, repeater/scroller state, subscriptions, interactions, and session teardown/re-entry work. This control is in the adjacent Tabular DLL. |
 
-FlyoutBase's stage-before-Hide reorder is also a required primary-feature TODO for chronological
-latest-request-wins behavior. It addresses a distinct policy issue from the inline Close conflict,
-which delayed delivery after Close returns avoids.
+FlyoutBase's stage-before-Hide reorder is an independent experiment for chronological latest-request-wins
+behavior, not a prerequisite for delayed-sync Loaded2/Unloaded2. Delayed delivery after Close returns
+allows the current Hide-then-stage order and avoids the inline Close conflict.
 
 ### Experiment backlog
 
 These are pending experiments, not implemented changes or completed validation.
+None is required by the handwritten delayed-sync event contract.
 
+- [ ] **Stage the replacement flyout before hiding the current flyout.** In
+  [CheckAndHandleOpenFlyout][flyout-stage-after-hide], move
+  `SetStagedFlyout(this, m_tpPlacementTarget.Get())` before `openFlyout->Hide()`.
+  Keep B staged if A's Hide fails or Closing is canceled. If A.Closing requests C, C replaces B,
+  honoring chronological latest-request-wins rather than allowing older B to overwrite C.
+  Cover immediate and transition-delayed removal, same-flyout retargeting, and reentrant replacement.
+  This fixes an independent staging-policy issue; delayed-sync Unloaded2 works with the existing
+  Hide-then-stage order. Staging first does not by itself make inline same-popup reopening safe.
 - [ ] **Prototype the IsInitialized mechanism.** Explore the proposed
   FrameworkElement.IsInitialized/InitializedChanged contract for dependency-complete initialization,
   distinct from live-tree entry. Include required subtree dependencies, readiness invalidation after
@@ -904,6 +959,10 @@ These are pending experiments, not implemented changes or completed validation.
 
 ### Compatibility consequences
 
+This is supporting analysis of the legacy consumers and earlier alternatives. The new proposal does
+not move legacy Loaded/Unloaded; these risks guide handler migration or the optional experiments.
+The timing/ordering decisions themselves are already described in the handwritten note.
+
 #### Preserve the post-layout, pre-render role of Loaded
 
 The core deliberately raises Loaded after layout, before rendering, and performs layout again if handlers
@@ -911,8 +970,9 @@ changed the tree. [Dispatch point][loaded-dispatch].
 
 Moving Loaded earlier can expose missing nested template parts, stale bindings, unavailable host objects,
 incorrect geometry, unrealized selection containers, or visual states overwritten by later template binding.
-Focus initialization and popup placement depend on this readiness. The refresh adapter explicitly throws
-when the expected content parent is absent.
+Focus initialization and popup placement use this opportunity for readiness. It is not a guarantee:
+collapsed/unmeasured elements and elements added during the drain may lack template/layout output.
+The refresh adapter explicitly throws when the expected content parent is absent.
 
 Moving Loaded later, past rendering, instead risks a wrong first frame or a visible correction.
 Changing ordering also deserves separate review: NavigationViewItem's handler explicitly expects its base
@@ -997,8 +1057,9 @@ Evaluate these independently:
 4. State: what `IsLoaded`, active-tree membership, parent relationships, and host identity mean during callbacks.
 
 The first compatibility hotspots are ItemsRepeater accounting, popup/dialog completion, host rebinding,
-generated binding initialization, and existing `IsLoaded` guards. This audit does not select a new event
-contract or establish that a broad behavior change is safe.
+generated binding initialization, and existing `IsLoaded` guards. The handwritten proposal now selects
+an additive event contract; this audit supplies migration evidence, not proof that all migrated
+handlers or optional timing changes are safe.
 
 ### Related GitHub reports
 
