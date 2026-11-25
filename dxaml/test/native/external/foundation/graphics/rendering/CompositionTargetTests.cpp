@@ -660,11 +660,11 @@ void CompositionTargetTests::RenderingNeedsVisibleWindowAndDisplayOn()
     const auto& wh = TestServices::WindowHelper;
     ::Windows::Foundation::EventRegistrationToken renderedEventToken = {};
 
+    // Only touched on the UI thread. Declared before cleanup so it outlives the Rendered handler.
+    int renderedCount = 0;
+
     TestCleanupWrapper cleanup([&]()
     {
-        wh->SimulateXamlVisibilityChanged(true);
-        wh->SimulateDisplayStatusChanged(true);
-
         if (renderedEventToken.Value != 0)
         {
             RunOnUIThread([&]()
@@ -672,6 +672,9 @@ void CompositionTargetTests::RenderingNeedsVisibleWindowAndDisplayOn()
                 CompositionTarget::Rendered::remove(renderedEventToken);
             });
         }
+
+        wh->SimulateXamlVisibilityChanged(true);
+        wh->SimulateDisplayStatusChanged(true);
 
         wh->ResetWindowContentAndWaitForIdle();
     });
@@ -693,8 +696,6 @@ void CompositionTargetTests::RenderingNeedsVisibleWindowAndDisplayOn()
     });
     wh->WaitForIdle();
 
-    // Only touched on the UI thread.
-    int renderedCount = 0;
     RunOnUIThread([&]()
     {
         renderedEventToken = CompositionTarget::Rendered::add(
