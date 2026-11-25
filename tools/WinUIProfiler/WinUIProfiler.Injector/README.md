@@ -26,6 +26,16 @@ The explicit trust switch authorizes loading those caller-supplied native
 binaries; the helper does not verify their signatures. It does not terminate,
 suspend, or modify the target outside the diagnostics initialization call.
 
+A packaged app's install folder (`C:\Program Files\WindowsApps\...`) grants
+execute only to that package's own processes, through a `WIN://SYSAPPID`
+conditional ACE; other processes can read its files but not map them as
+images. So for an app that carries its own Windows App SDK runtime, loading
+its `Microsoft.Internal.FrameworkUdk.dll` fails with `ERROR_ACCESS_DENIED`.
+The helper then copies that verified DLL into a new
+`%TEMP%\WinUIProfiler-<GUID>` folder, calls the copy's initializer, and
+deletes the copy afterwards. The path checked against the target's loaded
+modules is still the original one.
+
 Standard output is one JSON result:
 
 ```json

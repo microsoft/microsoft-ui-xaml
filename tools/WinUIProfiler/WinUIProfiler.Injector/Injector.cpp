@@ -112,6 +112,58 @@ namespace
         return hasRuntime && hasUdk ? S_OK : HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
     }
 
+    // Files in a packaged app's install folder grant execute only to that package (a WIN://SYSAPPID
+    // conditional ACE), so this unpackaged helper can read, but not map, a self-contained app's FrameworkUdk.
+    // In that case the initializer runs from a private copy in a new per-run directory.
+    class InitializerModule final
+    {
+    public:
+        InitializerModule() noexcept = default;
+        InitializerModule(const InitializerModule&) = delete;
+        InitializerModule& operator=(const InitializerModule&) = delete;
+        ~InitializerModule()
+        {
+            if (module) FreeLibrary(module);
+            if (!copy.empty()) DeleteFileW(copy.c_str());
+            if (!directory.empty()) RemoveDirectoryW(directory.c_str());
+        }
+
+        HMODULE Get() const noexcept { return module; }
+
+        HRESULT Load(const std::wstring& udk)
+        {
+            module = LoadLibraryExW(udk.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+            if (module) return S_OK;
+            const DWORD error = GetLastError();
+            if (error != ERROR_ACCESS_DENIED) return HRESULT_FROM_WIN32(error);
+
+            std::vector<wchar_t> temp(MAX_PATH + 1);
+            const DWORD length = GetTempPathW(static_cast<DWORD>(temp.size()), temp.data());
+            if (!length) return HRESULT_FROM_WIN32(GetLastError());
+            if (length >= temp.size()) return HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE);
+            GUID id{};
+            HRESULT result = CoCreateGuid(&id);
+            if (FAILED(result)) return result;
+            wchar_t name[40]{};
+            if (!StringFromGUID2(id, name, ARRAYSIZE(name))) return E_UNEXPECTED;
+            std::wstring candidate = std::wstring(temp.data(), length) + L"WinUIProfiler-" + name;
+            if (!CreateDirectoryW(candidate.c_str(), nullptr)) return HRESULT_FROM_WIN32(GetLastError());
+            directory = std::move(candidate);
+            candidate = directory + L"\\Microsoft.Internal.FrameworkUdk.dll";
+            if (!CopyFileW(udk.c_str(), candidate.c_str(), TRUE)) return HRESULT_FROM_WIN32(GetLastError());
+            copy = std::move(candidate);
+            result = VerifyImage(copy);
+            if (FAILED(result)) return result;
+            module = LoadLibraryExW(copy.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+            return module ? S_OK : HRESULT_FROM_WIN32(GetLastError());
+        }
+
+    private:
+        HMODULE module{};
+        std::wstring directory;
+        std::wstring copy;
+    };
+
     HRESULT Inject(int argc, wchar_t** argv, const char*& phase)
     {
         phase = "arguments/trust";
@@ -162,20 +214,18 @@ namespace
         if (FAILED(result)) return result;
         phase = "FrameworkUdk diagnostics initializer";
         const auto compact = WinUIProfiler::Tap::EncodeBootstrap(bootstrap);
-        HMODULE module = LoadLibraryExW(udk.c_str(), nullptr,
-            LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
-        if (!module) return HRESULT_FROM_WIN32(GetLastError());
-        const FARPROC address = GetProcAddress(module, "InitializeXamlDiagnosticsEx");
+        InitializerModule module;
+        result = module.Load(udk);
+        if (FAILED(result)) return result;
+        const FARPROC address = GetProcAddress(module.Get(), "InitializeXamlDiagnosticsEx");
         using Initialize = HRESULT(WINAPI*)(LPCWSTR, DWORD, LPCWSTR, LPCWSTR, CLSID, LPCWSTR);
         Initialize initialize{};
         static_assert(sizeof(initialize) == sizeof(address));
         std::memcpy(&initialize, &address, sizeof(initialize));
-        if (!initialize) { FreeLibrary(module); return HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND); }
+        if (!initialize) return HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND);
         wchar_t port[64]{};
         swprintf_s(port, L"WinUIVisualDiagConnection%u", endpoint);
-        result = initialize(port, bootstrap.Target.Pid, L"", tap.c_str(), WinUIProfiler::Tap::ClassId, compact.c_str());
-        FreeLibrary(module);
-        return result;
+        return initialize(port, bootstrap.Target.Pid, L"", tap.c_str(), WinUIProfiler::Tap::ClassId, compact.c_str());
     }
 }
 
