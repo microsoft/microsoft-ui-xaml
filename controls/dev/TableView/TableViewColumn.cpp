@@ -552,13 +552,8 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                     });
             }
         }
-        // A change still pending when the column left never reached the cells its rows kept, also
-        // those of an unloaded table. It is not new content: an edit open now was generated after it,
-        // so it is rescheduled, and holds for that edit, rather than ending it.
-        if (m_cellContentChangePending)
-        {
-            winrt::get_self<TableView>(owner)->ScheduleColumnCellRegeneration(*this, false /* resetAutoWidth */);
-        }
+        // A change still pending when the column left is rescheduled by the new owner once it has
+        // updated its column tracking (TableView::ScheduleReattachedColumnCellRegeneration).
         return true;
     }
     else

@@ -357,7 +357,9 @@ public:
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
     // Posts (or, outside a live tree, runs) the regeneration without ending the edited column's edit.
-    void ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth);
+    void ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth, bool postOffTree = false);
+    void ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column);
+    void ScheduleReattachedColumnCellRegenerations();
     void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
     void RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column);
     void EndEditOfChangedColumn(const winrt::TableViewColumn& column);

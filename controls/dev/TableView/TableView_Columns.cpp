@@ -191,6 +191,7 @@ void TableView::OnColumnsPropertyChanged(const winrt::DependencyPropertyChangedE
         // Inline Reset semantics because IVectorChangedEventArgs cannot be synthesized here.
         DetachAllColumnOwners();
         TrackColumnsFromVector(newColumns);
+        ScheduleReattachedColumnCellRegenerations();
         RebuildHeaders();
         // Columns replaced: recompute Auto widths for the new set and re-pin frozen columns.
         ResetColumnDesiredWidths();
@@ -236,6 +237,7 @@ void TableView::OnColumnsVectorChanged(
         ExpireLockedColumnHolds();
     }
 
+    winrt::TableViewColumn reattached{ nullptr };
     switch (change)
     {
     case winrt::CollectionChange::ItemInserted:
@@ -256,6 +258,7 @@ void TableView::OnColumnsVectorChanged(
                         colImpl->ResetDesiredWidthInternal();
                     }
                     RestoreSortOfMovedColumn(col);
+                    reattached = col;
                 }
                 else
                 {
@@ -312,6 +315,7 @@ void TableView::OnColumnsVectorChanged(
                             newColImpl->ResetDesiredWidthInternal();
                         }
                         RestoreSortOfMovedColumn(newCol);
+                        reattached = newCol;
                     }
                     else
                     {
@@ -331,6 +335,15 @@ void TableView::OnColumnsVectorChanged(
         TrackColumnsFromVector(sender);
         break;
     }
+    }
+
+    if (change == winrt::CollectionChange::Reset)
+    {
+        ScheduleReattachedColumnCellRegenerations();
+    }
+    else
+    {
+        ScheduleReattachedColumnCellRegeneration(reattached);
     }
 
     QueueRebuildHeaders();
@@ -496,7 +509,7 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
     ScheduleColumnCellRegeneration(column, resetAutoWidth);
 }
 
-void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth)
+void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth, bool postOffTree)
 {
     auto* const columnImpl = winrt::get_self<TableViewColumn>(column);
 
@@ -504,7 +517,7 @@ void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& col
     // measure a dirty cell without passing through any of this control's overrides, so once the
     // table is in a live tree the regeneration is always posted. At most one post per column; the
     // reset requests are OR'ed into it.
-    if (XamlRoot() || IsLoaded())
+    if (postOffTree || XamlRoot() || IsLoaded())
     {
         if (columnImpl->QueueCellContentChangeInternal(resetAutoWidth))
         {
@@ -542,6 +555,32 @@ void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& col
     }
 
     RegenerateColumnCells(column, resetAutoWidth);
+}
+
+// A change still pending when a column left never reached the cells its rows kept, also those of an
+// unloaded table. It is not new content: an edit open now was generated after it, so it is
+// rescheduled, and holds for that edit, rather than ending it. It runs app code, so it is posted even
+// off a live tree, after the Columns change is tracked; it is queued before the rows' own rebuild,
+// which then restamps the regenerated cells.
+void TableView::ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column)
+{
+    auto* const columnImpl = column ? winrt::get_self<TableViewColumn>(column) : nullptr;
+    if (!columnImpl || !columnImpl->HasPendingCellContentChangeInternal())
+    {
+        return;
+    }
+    if (auto const owner = columnImpl->GetOwningTableView(); owner && winrt::get_self<TableView>(owner) == this)
+    {
+        ScheduleColumnCellRegeneration(column, false /* resetAutoWidth */, true /* postOffTree */);
+    }
+}
+
+void TableView::ScheduleReattachedColumnCellRegenerations()
+{
+    for (auto const& tracked : m_trackedColumns)
+    {
+        ScheduleReattachedColumnCellRegeneration(tracked.get());
+    }
 }
 
 // The open editor writes through the content being replaced, so a change to the edited column ends

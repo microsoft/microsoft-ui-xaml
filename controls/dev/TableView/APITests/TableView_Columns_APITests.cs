@@ -1802,6 +1802,111 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a column re-added with a pending change to a table outside the live tree regenerates its retained cells once, after the Columns change is tracked, not inside it.")]
+        public void VerifyPendingChangeReaddedOffTreeRegeneratesOnceAfterColumnsChange()
+        {
+            TableView tableView = null;
+            ProbeContentColumn column = null;
+            StackPanel host = null;
+            int rowCount = 0;
+            int before = 0;
+
+            LoadOffTreeProbeTable(out tableView, out column, out host);
+            RunOnUIThread.Execute(() =>
+            {
+                rowCount = GetRealizedRows(tableView).Count;
+                Verify.IsGreaterThan(rowCount, 0, "Precondition: the unloaded table keeps its realized rows.");
+                tableView.Columns.RemoveAt(1);
+                column.Change("B");
+                before = column.GenerateCount;
+                tableView.Columns.Insert(1, column);
+                Verify.AreEqual(before, column.GenerateCount, "No cell may be regenerated inside the Columns change.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(rowCount, column.GenerateCount - before, "Every retained cell of the column must be regenerated exactly once.");
+                VerifyColumnShows(tableView, 1, "B", "in the unloaded table");
+                host.Children.Add(tableView);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() => VerifyColumnShows(tableView, 1, "B", "once the table is back in the tree"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GenerateElementCore that changes Columns while a re-added column's pending change regenerates leaves the column tracking consistent.")]
+        public void VerifyColumnsChangeFromReaddedColumnRegenerationKeepsTracking()
+        {
+            TableView tableView = null;
+            ProbeContentColumn column = null;
+            StackPanel host = null;
+            TableViewColumn extra = null;
+
+            LoadOffTreeProbeTable(out tableView, out column, out host);
+            RunOnUIThread.Execute(() =>
+            {
+                extra = MakeTextColumn("Extra");
+                tableView.Columns.RemoveAt(1);
+                column.Change("B");
+                column.OnGenerate = () =>
+                {
+                    column.OnGenerate = null;
+                    tableView.Columns.Insert(0, extra);
+                };
+                tableView.Columns.Insert(1, column);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(column.OnGenerate, "Precondition: the regeneration ran the app's Columns change.");
+                host.Children.Add(tableView);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, tableView.Columns.Count);
+                VerifyHeaderColumns(tableView, tableView.Columns.ToList(), "after the Columns change from GenerateElementCore");
+                VerifyEveryRowMatchesHeaders(tableView, "after the Columns change from GenerateElementCore");
+                VerifyColumnShows(tableView, 2, "B", "after the Columns change from GenerateElementCore");
+                // A misordered tracking list would detach another column here.
+                tableView.Columns.RemoveAt(2);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderColumns(tableView, tableView.Columns.ToList(), "after removing the re-added column");
+                VerifyEveryRowMatchesHeaders(tableView, "after removing the re-added column");
+            });
+        }
+
+        // A loaded table with a probe column, then taken out of the tree with its realized rows kept.
+        private void LoadOffTreeProbeTable(out TableView tableView, out ProbeContentColumn column, out StackPanel host)
+        {
+            TableView table = null;
+            ProbeContentColumn probe = null;
+            StackPanel panel = null;
+            RunOnUIThread.Execute(() =>
+            {
+                probe = new ProbeContentColumn { Header = "P" };
+                table = CreateTableView(headers: new[] { "Name" });
+                table.Columns.Add(probe);
+                panel = new StackPanel();
+                panel.Children.Add(table);
+                LoadContent(panel);
+            });
+            SettleLayout(table);
+            RunOnUIThread.Execute(() => panel.Children.Remove(table));
+            IdleSynchronizer.Wait();
+            tableView = table;
+            column = probe;
+            host = panel;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies NotifyCellContentChanged called while only a cell's content is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
         public void VerifyNotifyCellContentChangedDuringMeasureIsDeferred()
         {
@@ -2044,6 +2149,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             _column.OnCellArrange();
             return base.ArrangeOverride(finalSize);
+        }
+    }
+
+    // A derived column that counts generations and can run app code from GenerateElementCore.
+    internal sealed partial class ProbeContentColumn : TableViewColumn
+    {
+        private string _text = "A";
+
+        public int GenerateCount { get; private set; }
+
+        internal Action OnGenerate;
+
+        public void Change(string text)
+        {
+            _text = text;
+            NotifyCellContentChanged();
+        }
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            GenerateCount++;
+            OnGenerate?.Invoke();
+            return new TextBlock { Text = _text };
         }
     }
 
