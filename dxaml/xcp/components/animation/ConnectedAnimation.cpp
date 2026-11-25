@@ -824,7 +824,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface, visualSurface.Get());
     }
 
     // Assign our source visual to it and set its properties.
@@ -878,7 +878,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
         IFC_RETURN(pDCompTreeHostNoRef->GetCompositor()->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
         }
         IFC_RETURN(surfaceBrush.As(&info.surfaceBrush));
         surfaceBrush->put_Stretch(createClipped ? WUComp::CompositionStretch_None : WUComp::CompositionStretch_Fill);
@@ -1044,7 +1044,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     IFC_RETURN(effectFactory->CreateBrush(&crossfadeEffectBrush));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush, crossfadeEffectBrush.Get());
     }
     IFC_RETURN(crossfadeEffectBrush->SetSourceParameter(wrl_wrappers::HStringReference(L"source1").Get(), m_source.surfaceBrush.Get()));
     IFC_RETURN(crossfadeEffectBrush->SetSourceParameter(wrl_wrappers::HStringReference(L"source2").Get(), m_destination.surfaceBrush.Get()));
@@ -1079,7 +1079,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(&tempVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, tempVisual.Get());
         }
         IFC_RETURN(tempVisual.As(&visual));
         wfn::Vector2 visualSize = { m_source.unclippedRect.Width, m_source.unclippedRect.Height };
@@ -1097,7 +1097,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&visualSurface));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface, visualSurface.Get());
         }
         IFC_RETURN(visualSurface->put_SourceVisual(visual.Get()));
 
@@ -1122,7 +1122,7 @@ _Check_return_ HRESULT CConnectedAnimation::ConvertSourceBrushToClipped()
         IFC_RETURN(compositorNoRef->CreateSurfaceBrushWithSurface(surface.Get(), &surfaceBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
         }
         surfaceBrush->put_Stretch(WUComp::CompositionStretch_None);
 

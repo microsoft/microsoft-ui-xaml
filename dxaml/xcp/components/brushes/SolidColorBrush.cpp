@@ -90,7 +90,7 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
             IFCFAILFAST(compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
             }
             IFCFAILFAST(colorBrush.As(&m_wucBrush));
 

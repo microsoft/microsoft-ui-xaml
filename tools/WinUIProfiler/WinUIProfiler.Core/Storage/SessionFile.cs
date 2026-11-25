@@ -18,6 +18,11 @@ public sealed record SessionFileInfo(int ProcessId, string? ProcessName, string 
     long? CompleteFromSeq, int? LostByEtw, long? DroppedByProfiler, long LimitBytes, long UIElements, long Visuals, long Frames,
     double? ProcessStartMilliseconds, int? LauncherProcessId = null, string? LauncherName = null);
 
+public enum CompositionResourceView { Summary, Links, Lifetimes, Evidence }
+
+public sealed record CompositionResourceResult(SessionFileInfo Session, CompositionResourceView View,
+    IReadOnlyList<string> Columns, IReadOnlyList<object?[]> Rows, long Total, int Offset, long? NextOffset);
+
 // The kinds of objects the session file indexes (SessionSchema's Objects.Kind).
 public enum ObjectKind
 {
@@ -85,6 +90,47 @@ public static partial class SessionFile
     {
         using var connection = Open(path);
         return ReadSession(connection, null).Info;
+    }
+
+    public static CompositionResourceResult ReadCompositionResources(string path, CompositionResourceView view,
+        int offset = 0, int count = 1000, CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        ArgumentOutOfRangeException.ThrowIfLessThan(count, -1);
+        cancellationToken.ThrowIfCancellationRequested();
+        var (name, order) = view switch
+        {
+            CompositionResourceView.Summary => ("CompositionResourceSummary", "ResourceKind, ResourceName"),
+            CompositionResourceView.Links => ("CompositionResourceLinks", "WinUICreateQpc, WinUICreateSeq"),
+            CompositionResourceView.Lifetimes => ("CompositionResourceLifetimes", "CreateQpc, ResourceId"),
+            CompositionResourceView.Evidence => ("CompositionResourceEvidence", "Qpc, Seq"),
+            _ => throw new ArgumentOutOfRangeException(nameof(view))
+        };
+        using var connection = Open(path);
+        using var transaction = connection.BeginTransaction(deferred: true);
+        if (Sql.Scalar(connection, """
+            SELECT COUNT(*) FROM sqlite_master WHERE type = 'view' AND name = 'CompositionResourceSummary'
+            """, transaction) == 0)
+        {
+            throw new InvalidDataException("This recording predates the Composition resource index. Record it again.");
+        }
+        var info = ReadSession(connection, transaction).Info;
+        using var totalCommand = Command(connection, transaction, $"SELECT COUNT(*) FROM {name}");
+        var total = (long)totalCommand.ExecuteScalar()!;
+        SessionQueries.Report(totalCommand, 1);
+        using var command = Command(connection, transaction, $"SELECT * FROM {name} ORDER BY {order} LIMIT $count OFFSET $offset",
+            ("$count", count), ("$offset", offset));
+        using var reader = command.ExecuteReader();
+        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
+        List<object?[]> rows = [];
+        while (reader.Read())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            rows.Add(Enumerable.Range(0, reader.FieldCount)
+                .Select(index => reader.IsDBNull(index) ? null : reader.GetValue(index)).ToArray());
+        }
+        SessionQueries.Report(command, rows.Count);
+        return new(info, view, columns, rows, total, offset, offset + (long)rows.Count < total ? offset + (long)rows.Count : null);
     }
 
     // Delivers the stored events in Seq order. RelativeMilliseconds is measured from the start of the recording.

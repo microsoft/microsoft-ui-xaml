@@ -144,7 +144,7 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(compositor->CreateContainerVisual(propertyContainerVisual.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, propertyContainerVisual.Get());
     }
 
     ctl::ComPtr<WUComp::IVisual> propertyVisual;

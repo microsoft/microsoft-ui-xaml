@@ -1322,7 +1322,7 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerVisual.Get());
         }
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
@@ -2377,7 +2377,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(windowCV.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, windowCV.Get());
         }
         IFCFAILFAST(windowCV.As(&windowV));
         m_contentIslandRootVisual = windowV;
@@ -2388,7 +2388,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         IFCFAILFAST(compositorNoRef->CreateContainerVisual(animationCV.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, animationCV.Get());
         }
         IFCFAILFAST(animationCV.As(&animationV));
         m_animationRootVisual = animationV;
@@ -2426,7 +2426,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             IFCFAILFAST(compositorNoRef->CreateColorBrush(&debugColor_cb));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, debugColor_cb.Get());
             }
             IFCFAILFAST(debugColor_cb->put_Color(ColorUtils::GetWUColor(0x8800ff00)));
 
@@ -2437,7 +2437,7 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             IFCFAILFAST(compositorNoRef->CreateSpriteVisual(&debugVisual));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, debugVisual.Get());
             }
             IFCFAILFAST(debugVisual->put_Brush(debugColor_b.Get()));
             m_windowedPopupDebugVisual.Reset();

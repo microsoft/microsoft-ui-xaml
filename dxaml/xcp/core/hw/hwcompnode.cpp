@@ -1071,7 +1071,7 @@ HWCompMediaNode::SetMedia(
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
             }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
@@ -1138,7 +1138,7 @@ _Check_return_ HRESULT HWCompMediaNode::EnsureVisual(_In_opt_ DCompTreeHost* pDC
         IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, m_spriteVisual.get());
         }
     }
     return S_OK;
@@ -1263,7 +1263,7 @@ HWCompSwapChainNode::SetSwapChain(
             IFC_RETURN(compositorNoRef->CreateColorBrush(&colorBrush));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
             }
             IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
             IFC_RETURN(colorBrush.As(&brush));
@@ -1287,7 +1287,7 @@ HWCompSwapChainNode::SetSwapChain(
             IFC_RETURN(compositorNoRef->CreateSurfaceBrush(&surfaceBrush));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
             }
             IFC_RETURN(surfaceBrush->put_Surface(surface.Get()));
             IFC_RETURN(surfaceBrush.As(&brush));
@@ -1392,7 +1392,7 @@ _Check_return_ HRESULT HWCompSwapChainNode::EnsureVisual(_In_opt_ DCompTreeHost*
             IFC_RETURN(compositorNoRef->CreateSpriteVisual(m_spriteVisual.ReleaseAndGetAddressOf()));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, m_spriteVisual.get());
             }
         }
     }

@@ -106,7 +106,7 @@ Microsoft::WRL::ComPtr<WUComp::ISpriteVisual> RevealFocusSource::BuildRevealFocu
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
         }
 
         // Remove existing targets from the lights
@@ -406,7 +406,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionEffectBrush> RevealFocusSource::Creat
     IFCFAILFAST(effectFactory->CreateBrush(&compEffectBrush));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::EffectBrush, compEffectBrush.Get());
     }
 
     return compEffectBrush;
@@ -438,7 +438,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> RevealFocusSource::Crea
     IFCFAILFAST(compositor->CreateSurfaceBrushWithSurface(surfacePeerAsSurface.Get(), &surfaceBrush));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
     }
     // TODO 15394150: is this necessary to stretch?
     IFCFAILFAST(surfaceBrush->put_Stretch(WUComp::CompositionStretch_Fill));
@@ -466,7 +466,7 @@ Microsoft::WRL::ComPtr<WUComp::ICompositionBrush> RevealFocusSource::CreateEffec
         IFCFAILFAST(compositor2->CreateNineGridBrush(&nineGrid));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush, nineGrid.Get());
         }
         IFCFAILFAST(nineGrid->put_IsCenterHollow(true));
     }

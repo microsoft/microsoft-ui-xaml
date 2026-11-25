@@ -56,7 +56,7 @@ namespace RenderingResourceDiagnostics
         Counters g_counters[ResourceKindCount];
     }
 
-    bool LogResourceCreated(ResourceKind kind) noexcept
+    bool LogResourceCreated(ResourceKind kind, IUnknown* resourceNoRef) noexcept
     {
         if (!XamlProfilerTracing::IsProfilerEnabled())
         {
@@ -70,7 +70,16 @@ namespace RenderingResourceDiagnostics
         {
             counters.live.fetch_add(1, std::memory_order_relaxed);
         }
-        XamlProfilerTracing::GraphicsResourceCreated(index, ResourceNames[index], HasLifetime(index));
+        uint64_t publicObjectId = 0;
+        if (resourceNoRef != nullptr)
+        {
+            Microsoft::WRL::ComPtr<IUnknown> identity;
+            if (SUCCEEDED(resourceNoRef->QueryInterface(IID_PPV_ARGS(&identity))))
+            {
+                publicObjectId = reinterpret_cast<uint64_t>(identity.Get());
+            }
+        }
+        XamlProfilerTracing::GraphicsResourceCreated(index, ResourceNames[index], HasLifetime(index), publicObjectId);
         return true;
     }
 

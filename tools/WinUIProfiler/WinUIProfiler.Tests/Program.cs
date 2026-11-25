@@ -15,6 +15,19 @@ using WinUIProfiler.Contracts;
 using WinUIProfiler.Cli;
 using XamlTimeline;
 
+if (args is ["--composition-resource-tests"])
+{
+    CompositionResourceTests.Run();
+    return;
+}
+
+if (args is ["--composition-resource-integration", var compositionTrace, var compositionPid])
+{
+    CompositionResourceTests.ValidateTrace(compositionTrace,
+        int.Parse(compositionPid, System.Globalization.CultureInfo.InvariantCulture));
+    return;
+}
+
 if (args is ["--cli-tests", var suite])
 {
     if (suite == "live") await CliLiveTests.RunAsync();
@@ -1356,8 +1369,9 @@ try
         Expect(CliApplication.Run(["processes", graphicsPath], output, error, CancellationToken.None) == 0,
             "The CLI must list a recorded graphics session successfully.");
         var columns = output.ToString().Split(Environment.NewLine)[0].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-        Expect(columns.Count(column => column == "Direct3D11") == 1 && columns.Count(column => column == "DxgKrnl") == 1,
-            "CLI summaries must label Direct3D11 separately rather than duplicate the DxgKrnl column.");
+        Expect(columns.Count(column => column == "Direct3D11") == 1 && columns.Count(column => column == "DxgKrnl") == 1 &&
+            columns.Count(column => column == "DirectComposition") == 1 && columns.Count(column => column == "CompositionDiagnostics") == 1,
+            "CLI summaries must label each built-in graphics/Composition provider separately.");
         output.GetStringBuilder().Clear();
         Expect(CliApplication.Run(["dump", graphicsPath, "--max", "1"], output, error, CancellationToken.None) == 0 &&
             output.ToString().Contains("Direct3D11", StringComparison.Ordinal) &&
@@ -1392,6 +1406,7 @@ Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSO
 
 SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
+CompositionResourceTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
 await SnapshotDiffTests.RunAsync();

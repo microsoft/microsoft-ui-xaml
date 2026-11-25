@@ -134,7 +134,7 @@ _Check_return_ HRESULT AlphaMask::Impl::Ensure(_In_ CUIElement* pUIElement)
         IFCFAILFAST(spCompositor->CreateSurfaceBrush(m_spCompositionSurfaceBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, m_spCompositionSurfaceBrush.Get());
         }
 
         // It is not safe to assume we can create a DComp surface at this time as it's possible the D3D device

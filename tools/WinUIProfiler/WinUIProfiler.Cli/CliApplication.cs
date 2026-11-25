@@ -78,6 +78,8 @@ internal static partial class CliApplication
                                                   [--bucket Xaml|Composition|Other] [--filter <text>]
                                                   [--offset <count>] [--count <count>] [--json]
           WinUIProfiler.Cli info <session.sqlite> [--json]
+          WinUIProfiler.Cli composition-resources <session.sqlite> [--view summary|links|lifetimes|evidence]
+                                 [--offset <count>] [--count <count>] [--json]
           WinUIProfiler.Cli live --help
           WinUIProfiler.Cli targets --help
           WinUIProfiler.Cli snapshot --help
@@ -85,6 +87,9 @@ internal static partial class CliApplication
           events     Prints a page of a tick's, region's or interesting row's events, with linked objects.
                      --count defaults to 1000; 0 reads all. --row is StartSeq from 'interesting'.
           info       Prints session identity, coverage, retention and recording health.
+          composition-resources  Joins WinUI creation observations to native resource generations using explicit
+                     public COM identities. Counts resource releases, not final object destruction or leaks.
+                     --view defaults to summary; --count defaults to 1000 (0 = all).
 
           --json prints query results as JSON. Live sessions stream newline-delimited JSON.
           dump, timeline and frames --frame accept --offset and --count (0 = all).
@@ -134,7 +139,7 @@ internal static partial class CliApplication
             return SnapshotCommands.RunAsync(args, output, error, cancellationToken).GetAwaiter().GetResult();
         }
 
-        if (args.Length > 0 && args[0] is "events" or "info")
+        if (args.Length > 0 && args[0] is "events" or "info" or "composition-resources")
         {
             return QueryCommands(args, output, error, cancellationToken);
         }
@@ -471,8 +476,8 @@ internal static partial class CliApplication
         // has its process's launcher's events too.
         var launcherProcessId = options.IsSessionFile ? SessionFile.ReadInfo(options.InputPath).LauncherProcessId : null;
         var selected = counts
-            .Where(entry => options.IsSessionFile || entry.Value.Sum() > entry.Value[(int)XamlProvider.DxgKrnl] +
-                entry.Value[(int)XamlProvider.Direct3D11] + entry.Value[(int)XamlProvider.Win32k] + entry.Value[(int)XamlProvider.Marker])
+            .Where(entry => options.IsSessionFile || providers.Any(provider =>
+                XamlProviders.TryGet(XamlProviders.IdOf(provider), out _) && entry.Value[(int)provider] > 0))
             .OrderByDescending(entry => entry.Value.Sum()).ToList();
         if (options.Json)
         {
@@ -1224,7 +1229,7 @@ internal static partial class CliApplication
         XamlProvider.Win32k => "Win32k",
         XamlProvider.Marker => "Marker",
         XamlProvider.Direct3D11 => "Direct3D11",
-        _ => "DxgKrnl"
+        _ => provider.ToString()
     };
 
     // A marker event shows its provider's name.

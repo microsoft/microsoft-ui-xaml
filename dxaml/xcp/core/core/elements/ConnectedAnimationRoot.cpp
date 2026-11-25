@@ -59,7 +59,7 @@ _Check_return_ HRESULT CConnectedAnimationRoot::CreateConnectedAnimationVisual(_
         IFC_RETURN(GetContext()->m_pNWWindowRenderTarget->GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&tempVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, tempVisual.Get());
         }
         IFC_RETURN(tempVisual.As(&visual));
         SetDebugTag(visual.Get(), s_connectedAnimationSnapshotVisualTag);

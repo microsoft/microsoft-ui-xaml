@@ -21,6 +21,7 @@ public sealed class LiveEtwSource : IDisposable
     private const ulong GpuResourceKeyword = 0x40;
     // Microsoft-Windows-Direct3D11 Devices (0x2) and Resources (0x4).
     private const ulong Direct3D11Keywords = 0x6;
+    private const ulong CompositionResourceKeyword = 0x1;
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
     internal const string SessionPrefix = "WinUIProfiler-";
@@ -208,6 +209,8 @@ public sealed class LiveEtwSource : IDisposable
 
         var enabled = EnableDirect3D(
             () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options), direct3DEnabled);
+        EnableComposition((provider, filters) =>
+            session.EnableProvider(provider, TraceEventLevel.Verbose, CompositionResourceKeyword, filters), options);
 
         foreach (var marker in markers)
         {
@@ -215,6 +218,27 @@ public sealed class LiveEtwSource : IDisposable
                 marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
         }
         return enabled;
+    }
+
+    internal static void EnableComposition(Action<Guid, TraceEventProviderOptions> enable, TraceEventProviderOptions options)
+    {
+        foreach (var provider in new[] { XamlProviders.DirectComposition, XamlProviders.CompositionDiagnostics })
+        {
+            try
+            {
+                // Do not mutate the XAML/marker filters. TraceLogging uses one event ID for all names.
+                enable(provider, new()
+                {
+                    ProcessIDFilter = options.ProcessIDFilter,
+                    ProcessNameFilter = options.ProcessNameFilter,
+                    EventIDsToEnable = provider == XamlProviders.DirectComposition ? [1, 30] : null
+                });
+            }
+            catch (Exception error) when (error is not OutOfMemoryException)
+            {
+                Trace.TraceWarning($"Could not enable Composition resource evidence from {provider}: {error.Message}");
+            }
+        }
     }
 
     internal static bool EnableDirect3D(Action enable, bool previouslyEnabled = false)

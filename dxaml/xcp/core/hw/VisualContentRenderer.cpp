@@ -586,7 +586,7 @@ VisualContentRenderer::EnsureSpriteVisual(
         IFC_RETURN(pCompositor->CreateSpriteVisual(&spContentVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spContentVisual.Get());
         }
         VERIFYHR(spContentVisual.As(&spVisual));
     }
@@ -638,7 +638,7 @@ void VisualContentRenderer::EnsureShapeVisual(
         IFCFAILFAST(GetCompositor5()->CreateShapeVisual(&shapeVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual, shapeVisual.Get());
         }
         shapeVisual.As(&visual);
     }

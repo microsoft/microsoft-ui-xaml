@@ -96,10 +96,11 @@ public:
         int32_t,  OffsetY,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceCreated,
+    DEFINE_TRACELOGGING_EVENT_PARAM4(GraphicsResourceCreated,
         uint32_t, ResourceKind,
         PCWSTR,   ResourceName,
         bool,     HasLifetime,
+        uint64_t, PublicObjectId,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     DEFINE_TRACELOGGING_EVENT_PARAM3(GraphicsResourceDestroyed,

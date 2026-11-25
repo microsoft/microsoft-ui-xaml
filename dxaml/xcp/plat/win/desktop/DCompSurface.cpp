@@ -175,7 +175,7 @@ DCompSurface::InitializeSurface(
             ));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VirtualCompositionSurface, m_pVirtualCompositionSurface);
         }
 
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
@@ -192,7 +192,7 @@ DCompSurface::InitializeSurface(
             ));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface, m_pCompositionSurface);
         }
 
         //NOTE: If this is a shared surface this may inflate reported memory footprint.

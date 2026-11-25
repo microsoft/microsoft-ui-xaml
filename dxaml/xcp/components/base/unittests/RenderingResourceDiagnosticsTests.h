@@ -16,6 +16,7 @@ namespace RenderingResourceDiagnosticsTests
         TEST_METHOD_CLEANUP(Cleanup);
 
         TEST_METHOD(RuntimeEnablement);
+        TEST_METHOD(CreationIdentityQueries);
         TEST_METHOD(LifetimeAcrossRuntimeChanges);
         TEST_METHOD(WrapperLifetime);
         TEST_METHOD(IndependentCategories);

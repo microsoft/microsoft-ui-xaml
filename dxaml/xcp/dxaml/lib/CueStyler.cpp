@@ -751,7 +751,7 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
         IFC_RETURN(m_compositor->CreateContainerVisual(&containerVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerVisual.Get());
         }
         IFCFAILFAST(containerVisual.As(&containerVisualAsVisual));
         IFC_RETURN(static_cast<CUIElement*>(underTextBlock->GetHandle())->SetHandInVisual(containerVisualAsVisual.Get()));
@@ -820,7 +820,7 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     IFC_RETURN(compositorVisualSurface->CreateVisualSurface(&captionCVS));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface, captionCVS.Get());
     }
 
     // Get wrapper containers so they can be configured for CVS rendering (at TopWrapper)
@@ -845,7 +845,7 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     IFCFAILFAST(m_compositor->CreateSurfaceBrushWithSurface(captionCompositionSurface.Get(), &captionSurfaceBrush));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, captionSurfaceBrush.Get());
     }
     captionSurfaceBrush->put_Stretch(WUComp::CompositionStretch::CompositionStretch_Fill);
     wrl::ComPtr<WUComp::ICompositionBrush> captionCompositionBrush;
@@ -855,7 +855,7 @@ _Check_return_ HRESULT CCueStyler::SetTextBlockEffect(_In_ TextBlock* pTextBlock
     IFC_RETURN(m_compositor->CreateSpriteVisual(&renderCaptionVisual));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, renderCaptionVisual.Get());
     }
     IFCFAILFAST(renderCaptionVisual.As(&renderCaptionVisualAsVisual));
     IFC_RETURN(renderCaptionVisualAsVisual->put_Size(topWrapperVisualSize));
@@ -924,7 +924,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> CCueStyler::CreateMaskBrush(_In_ WUComp::
     IFCFAILFAST(m_compositor2->CreateMaskBrush(maskBrush.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush, maskBrush.Get());
     }
     IFCFAILFAST(maskBrush->put_Mask(surfaceBrush));
     IFCFAILFAST(maskBrush->put_Source(colorBrush));
@@ -942,7 +942,7 @@ _Check_return_ HRESULT CCueStyler::ApplyRaisedStyle(_In_ WUComp::ICompositionBru
         IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x99ffffff)));
         IFCFAILFAST(colorBrush.As(&m_whiteBrush60));
@@ -954,7 +954,7 @@ _Check_return_ HRESULT CCueStyler::ApplyRaisedStyle(_In_ WUComp::ICompositionBru
         IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
@@ -1001,7 +1001,7 @@ _Check_return_ HRESULT CCueStyler::ApplyDepressedStyle(_In_ WUComp::IComposition
         IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0x33000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush20));
@@ -1013,7 +1013,7 @@ _Check_return_ HRESULT CCueStyler::ApplyDepressedStyle(_In_ WUComp::IComposition
         IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
@@ -1058,7 +1058,7 @@ _Check_return_ HRESULT CCueStyler::ApplyUniformStyle(_In_ WUComp::ICompositionBr
         IFC_RETURN(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFC_RETURN(colorBrush->put_Color(ColorUtils::GetWUColor(0xff000000)));
         IFCFAILFAST(colorBrush.As(&m_blackBrush));
@@ -1185,7 +1185,7 @@ _Check_return_ HRESULT CCueStyler::CreateVisualAndAdd(
     IFC_RETURN(m_compositor->CreateSpriteVisual(&spriteVisual));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
     }
     IFC_RETURN(spriteVisual->put_Brush(brush));
 

@@ -150,6 +150,41 @@ control without the opt-in provider. Offsets identify the gutter-excluded conten
 Observations describe transient update textures, not exclusive surface or element GPU bytes.
 The test reads existing ETLs and does not require elevated capture permissions.
 
+### Composition resource release correlation
+
+`GraphicsResourceCreated.PublicObjectId` records the temporary canonical public
+`IUnknown` identity at existing WinUI Composition creation sites. It does not
+change `VisualId`, retain an object, or replace the WinUI wrapper counters.
+Instance correlation requires a runtime that emits the self-describing
+`CompositionResourceIdentity` event with `PublicObjectId`, `ChannelId`,
+`ResourceHandle` and `ResourcePointer`. The profiler reads that event and
+DirectComposition resource creation/release events at Verbose, diagnostic
+keyword `0x1`, filtered to the selected process.
+
+```powershell
+WinUIProfiler.Cli composition-resources session.sqlite
+WinUIProfiler.Cli composition-resources session.sqlite --view links --json
+WinUIProfiler.Cli composition-resources session.sqlite --view lifetimes --count 100
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --composition-resource-tests
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --composition-resource-integration capture.etl <pid>
+```
+
+`CompositionResourceSummary` counts only retained WinUI creation observations.
+`CompositionResourceLinks` requires explicit public identity evidence, not
+ownership of the same compositor/channel. `CompositionResourceLifetimes` bounds
+resource generations by QPC and the channel/handle, with an exact native owner
+pointer required for release. Pointer/handle reuse, ambiguous identities,
+duplicate WinUI observations, malformed events and old producers remain explicit.
+All normalized evidence is trimmed with the raw recording.
+
+**Released resources are not final COM-object destruction or GPU retirement.**
+`ReleaseNotObserved` is neither a live count nor leak evidence. Missing native
+events, loss, attach-after-creation and trimming limit completeness; reports
+include session health. Legacy surface interfaces without a resource-owning
+identity association remain unmatched rather than being assigned an internal
+resource by type or compositor. The native views can also include app-created
+resources; only the WinUI links and summary attribute them to WinUI.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, then connect. The target settings include a note that connecting
 trusts the bundled injector and TAP binaries to run native code in the target.

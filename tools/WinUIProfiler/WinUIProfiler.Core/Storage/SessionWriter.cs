@@ -67,6 +67,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
+    private readonly CompositionResourceIndex compositionResources;
     private readonly CpuSampleIndex cpu;
     // What SetCpuSampling gave, stored when the file is closed.
     private CpuSamplingResult? cpuSampling;
@@ -126,6 +127,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects = new(connection);
         frames = new(connection);
         graphics = new(connection);
+        compositionResources = new(connection);
         cpu = new(connection);
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
@@ -474,7 +476,17 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             EventPayload.Write(json, batch[i].Event.Fields);
             json.Flush();
             payloads[i] = Encoding.UTF8.GetString(payload.WrittenSpan);
-            incomingBytes += payload.WrittenCount + RowOverheadBytes + GraphicsIndex.EstimatedBytes(batch[i].Event);
+            incomingBytes += payload.WrittenCount + RowOverheadBytes + GraphicsIndex.EstimatedBytes(batch[i].Event) +
+                CompositionResourceIndex.EstimatedBytes(batch[i].Event);
+        }
+
+        // Leave room for retained history when normalized evidence makes a batch large relative to the limit.
+        if (batch.Count > 1 && incomingBytes > (LimitBytes * TrimAt - emptyFileBytes) / 2)
+        {
+            var split = batch.Count / 2;
+            Write(batch.GetRange(0, split));
+            Write(batch.GetRange(split, batch.Count - split));
+            return;
         }
 
         TrimIfNeeded(incomingBytes);
@@ -499,6 +511,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     objects.Add(sequence, typeId, profilerEvent, transaction);
                     frames.Add(sequence, typeId, profilerEvent, transaction);
                     graphics.Add(sequence, typeId, profilerEvent, transaction);
+                    compositionResources.Add(sequence, profilerEvent, transaction);
                 }
             }
 
@@ -673,6 +686,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects.Trim(cutoff, current);
         frames.Trim(cutoff, current);
         graphics.Trim(cutoff, current);
+        compositionResources.Trim(cutoff, current);
         Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", current, ("$cutoff", cutoff));
         // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
         // process's first event from the cutoff, or else the cutoff's.
@@ -753,6 +767,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             objects.Dispose();
             frames.Dispose();
             graphics.Dispose();
+            compositionResources.Dispose();
             cpu.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();

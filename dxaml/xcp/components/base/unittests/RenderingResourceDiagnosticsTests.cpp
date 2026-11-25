@@ -12,6 +12,47 @@ namespace RenderingResourceDiagnosticsTests
 {
     using namespace RenderingResourceDiagnostics;
 
+    namespace
+    {
+        struct __declspec(uuid("4EE02D85-EBE1-480D-977A-5B38160D76DB")) ITestPrimary : IUnknown {};
+        struct __declspec(uuid("CC2EC1B0-4654-49E7-975A-064DB39AB39A")) ITestSecondary : IUnknown {};
+
+        class IdentityObject final : public ITestPrimary, public ITestSecondary
+        {
+        public:
+            HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void** result) override
+            {
+                ++queries;
+                *result = nullptr;
+                if (failQuery || !InlineIsEqualGUID(iid, __uuidof(IUnknown)))
+                {
+                    return E_NOINTERFACE;
+                }
+                *result = static_cast<ITestPrimary*>(this);
+                AddRef();
+                return S_OK;
+            }
+
+            ULONG STDMETHODCALLTYPE AddRef() override
+            {
+                ++addRefs;
+                return ++references;
+            }
+
+            ULONG STDMETHODCALLTYPE Release() override
+            {
+                ++releases;
+                return --references;
+            }
+
+            ULONG references = 1;
+            uint32_t queries = 0;
+            uint32_t addRefs = 0;
+            uint32_t releases = 0;
+            bool failQuery = false;
+        };
+    }
+
     bool CounterTests::Setup()
     {
         (void)XamlProfilerLogging::Provider();
@@ -78,6 +119,32 @@ namespace RenderingResourceDiagnosticsTests
         VERIFY_ARE_EQUAL(before.created + 2, reenabled.created);
         VERIFY_ARE_EQUAL(before.destroyed + 2, reenabled.destroyed);
         VERIFY_ARE_EQUAL(before.live, reenabled.live);
+    }
+
+    void CounterTests::CreationIdentityQueries()
+    {
+        IdentityObject object;
+        const auto before = Read(ResourceKind::SpriteVisual);
+        XamlProfilerTracing::SetProfilerEnabled(false);
+        VERIFY_IS_FALSE(LogResourceCreated(ResourceKind::SpriteVisual, static_cast<ITestSecondary*>(&object)));
+        VERIFY_ARE_EQUAL(uint32_t{0}, object.queries);
+
+        XamlProfilerTracing::SetProfilerEnabled(true);
+        VERIFY_IS_TRUE(LogResourceCreated(ResourceKind::SpriteVisual, static_cast<ITestSecondary*>(&object)));
+        VERIFY_ARE_EQUAL(uint32_t{1}, object.queries);
+        VERIFY_ARE_EQUAL(uint32_t{1}, object.addRefs);
+        VERIFY_ARE_EQUAL(uint32_t{1}, object.releases);
+        VERIFY_ARE_EQUAL(ULONG{1}, object.references);
+
+        object.failQuery = true;
+        VERIFY_IS_TRUE(LogResourceCreated(ResourceKind::SpriteVisual, static_cast<ITestSecondary*>(&object)));
+        VERIFY_ARE_EQUAL(uint32_t{2}, object.queries);
+        VERIFY_ARE_EQUAL(uint32_t{1}, object.addRefs);
+        VERIFY_ARE_EQUAL(uint32_t{1}, object.releases);
+        VERIFY_IS_TRUE(LogResourceCreated(ResourceKind::SpriteVisual));
+        VERIFY_ARE_EQUAL(uint32_t{2}, object.queries);
+        VERIFY_ARE_EQUAL(before.created + 3, Read(ResourceKind::SpriteVisual).created);
+        VERIFY_ARE_EQUAL(uint64_t{0}, Read(ResourceKind::SpriteVisual).live);
     }
 
     void CounterTests::WrapperLifetime()

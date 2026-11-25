@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+struct IUnknown;
+
 namespace RenderingResourceDiagnostics
 {
     // Values identify persisted XamlResourceSnapshot graphics slots; append new kinds.
@@ -54,7 +56,8 @@ namespace RenderingResourceDiagnostics
     bool TryGetSnapshot(uint32_t index, Snapshot& snapshot) noexcept;
 
     // Wrappers retain the result so only observed creations have a matching destruction.
-    bool LogResourceCreated(ResourceKind kind) noexcept;
+    // PublicObjectId is the temporary canonical public IUnknown identity, not an IVisual address.
+    bool LogResourceCreated(ResourceKind kind, IUnknown* resourceNoRef = nullptr) noexcept;
 
     // Finish an observed lifetime even if profiling was disabled after creation.
     void LogResourceDestroyed(ResourceKind kind) noexcept;

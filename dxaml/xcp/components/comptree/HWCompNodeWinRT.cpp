@@ -377,7 +377,7 @@ void HWCompTreeNodeWinRT::CreateWUCSpineVisual(_In_ DCompTreeHost* dcompTreeHost
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerVisual.Get());
     }
     IFCFAILFAST(containerVisual->QueryInterface(IID_PPV_ARGS(visual)));
 
@@ -1472,7 +1472,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         IFCFAILFAST(compositorVisualSurface->CreateVisualSurface(&dropShadowVS));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::VisualSurface, dropShadowVS.Get());
         }
         dropShadowVS->put_SourceVisual(dropShadowVisual.Get());
 
@@ -1489,7 +1489,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSurfaceBrushWithSurface(dropShadowSurface.Get(), &dropShadowSurfaceBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, dropShadowSurfaceBrush.Get());
         }
         dropShadowSurfaceBrush->put_Stretch(ixp::CompositionStretch_Fill); // required for use as CompositionNineGridBrush source
         wrl::ComPtr<ixp::ICompositionBrush> dropShadowBrush;
@@ -1681,7 +1681,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateColorBrushWithColor({ 255, 0, 0, 0 }, &rectFillColor));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, rectFillColor.Get());
     }
     wrl::ComPtr<ixp::ICompositionBrush> fillBrush;
     IFCFAILFAST(rectFillColor.As(&fillBrush));
@@ -1723,7 +1723,7 @@ void HWCompTreeNodeWinRT::CreateDropShadowVisual(_In_ DCompTreeHost *dcompTreeHo
     IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateContainerVisual(&shadowVisualContainer));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, shadowVisualContainer.Get());
     }
     wrl::ComPtr<ixp::IVisualCollection> shadowVisualCollection;
     shadowVisualContainer->get_Children(&shadowVisualCollection);
@@ -1804,7 +1804,7 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeShapeVisual(_In_ DCompTreeHos
     IFCFAILFAST(dcompTreeHost->GetCompositor5()->CreateShapeVisual(&shapeVisual));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ShapeVisual, shapeVisual.Get());
     }
 
     wrl::ComPtr<wfc::IVector<ixp::CompositionShape*>> shapeCollection;
@@ -1824,7 +1824,7 @@ wrl::ComPtr<ixp::IVisual> HWCompTreeNodeWinRT::MakeLayerVisual(_In_ DCompTreeHos
     IFCFAILFAST(dcompTreeHost->GetCompositor2()->CreateLayerVisual(&layerVisual));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual, layerVisual.Get());
     }
 
     wrl::ComPtr<ixp::ILayerVisual2> layerVisual2;
@@ -2681,7 +2681,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         IFCFAILFAST(compositor->CreateSpriteVisual(&spriteVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
         }
         VERIFYHR(spriteVisual.As(&m_dmanipHitTestVisual));
 
@@ -2716,7 +2716,7 @@ void HWCompTreeNodeWinRT::EnsureDManipHitTestVisual(_In_ DCompTreeHost *dcompTre
         IFCFAILFAST(compositor->CreateColorBrush(&transparentBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, transparentBrush.Get());
         }
         IFCFAILFAST(transparentBrush->put_Color(ColorUtils::GetWUColor(0x00000000)));
         wrl::ComPtr<WUComp::ICompositionBrush> brush;
@@ -4145,7 +4145,7 @@ void HWCompTreeNodeWinRT::EnsureDropShadowVisual(_In_ DCompTreeHost* dcompTreeHo
         IFCFAILFAST(dcompTreeHost->GetCompositor()->CreateSpriteVisual(dropShadowSpriteVisual.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, dropShadowSpriteVisual.Get());
         }
         dropShadowSpriteVisual.As(&m_dropShadowSpriteVisual);
         InsertWUCSpineVisual(m_dropShadowParentVisual.Get(), m_dropShadowSpriteVisual.Get());

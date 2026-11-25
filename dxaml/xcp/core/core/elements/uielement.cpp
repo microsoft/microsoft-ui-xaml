@@ -7402,7 +7402,7 @@ _Check_return_ HRESULT CUIElement::EnsureHandOffVisual(
             IFC_RETURN(GetDCompTreeHost()->GetCompositor2()->CreateLayerVisual(&layerHandOffVisual));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LayerVisual, layerHandOffVisual.Get());
             }
             IFCFAILFAST(layerHandOffVisual.As(&spHandOffVisual));
         }
@@ -7412,7 +7412,7 @@ _Check_return_ HRESULT CUIElement::EnsureHandOffVisual(
             IFC_RETURN(GetDCompTreeHost()->GetCompositor()->CreateContainerVisual(handOffVisual.ReleaseAndGetAddressOf()));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, handOffVisual.Get());
             }
             IFCFAILFAST(handOffVisual.As(&spHandOffVisual));
 

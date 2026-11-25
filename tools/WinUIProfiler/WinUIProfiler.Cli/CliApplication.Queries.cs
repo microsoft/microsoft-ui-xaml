@@ -17,6 +17,7 @@ internal static partial class CliApplication
 
     private static int QueryCommands(string[] args, TextWriter output, TextWriter error, CancellationToken token)
     {
+        if (args[0] == "composition-resources") return CompositionResources(args, output, error, token);
         EventQuery query;
         try
         {
@@ -194,6 +195,79 @@ internal static partial class CliApplication
         options.Get(name) is not { } text ? null
             : long.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out var value) && value > 0
                 ? value : throw new ArgumentException($"{name} must be a positive integer.");
+
+    private static int CompositionResources(string[] args, TextWriter output, TextWriter error, CancellationToken token)
+    {
+        if (args is [_, "--help"])
+        {
+            output.WriteLine(Usage);
+            return 0;
+        }
+        string path;
+        bool json;
+        CompositionResourceView view;
+        int offset, count;
+        try
+        {
+            var options = CommandArguments.Parse(args.Skip(1), ["--view", "--offset", "--count"], ["--json"]);
+            options.RequirePositionals(1);
+            path = Path.GetFullPath(options.Positionals[0]);
+            json = options.Has("--json");
+            view = (options.Get("--view") ?? "summary").ToLowerInvariant() switch
+            {
+                "summary" => CompositionResourceView.Summary,
+                "links" => CompositionResourceView.Links,
+                "lifetimes" => CompositionResourceView.Lifetimes,
+                "evidence" => CompositionResourceView.Evidence,
+                _ => throw new ArgumentException("--view must be summary, links, lifetimes or evidence.")
+            };
+            offset = options.Integer("--offset", 0);
+            count = options.Integer("--count", 1000);
+        }
+        catch (ArgumentException exception)
+        {
+            error.WriteLine(exception.Message);
+            error.WriteLine(Usage);
+            return 2;
+        }
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            var result = SessionFile.ReadCompositionResources(path, view, offset, count == 0 ? -1 : count, token);
+            const string limitation = "Resource release is not final COM destruction or GPU retirement. " +
+                "Missing release observations are not live counts or leak evidence.";
+            if (json)
+            {
+                WriteJson(new { Limitation = limitation, Result = result }, output);
+            }
+            else
+            {
+                output.WriteLine(limitation);
+                WriteSessionInfo(result.Session, output);
+                output.WriteLine($"Lost by ETW: {result.Session.LostByEtw?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}; " +
+                    $"dropped by profiler: {result.Session.DroppedByProfiler?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
+                output.WriteLine(string.Join('\t', result.Columns));
+                foreach (var row in result.Rows)
+                {
+                    output.WriteLine(string.Join('\t', row.Select(value =>
+                        value is null ? "<unknown>" : Convert.ToString(value, CultureInfo.InvariantCulture))));
+                }
+                output.WriteLine($"{result.Rows.Count} of {result.Total} rows, from offset {result.Offset}.");
+            }
+            return 0;
+        }
+        catch (OperationCanceledException)
+        {
+            error.WriteLine("Cancelled.");
+            return 4;
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or
+            Microsoft.Data.Sqlite.SqliteException or InvalidOperationException)
+        {
+            error.WriteLine($"Could not query '{path}': {exception.Message}");
+            return 3;
+        }
+    }
 
     private static void WriteJson<T>(T value, TextWriter output) => output.WriteLine(JsonSerializer.Serialize(value, JsonOptions));
 }

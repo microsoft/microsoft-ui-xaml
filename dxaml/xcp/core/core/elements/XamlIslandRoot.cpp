@@ -248,7 +248,7 @@ _Check_return_ HRESULT CXamlIslandRoot::InitializeContentIsland()
     IFCFAILFAST(pCompositor->CreateContainerVisual(&containerRootVisual));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerRootVisual.Get());
     }
 
     ctl::ComPtr<ixp::IVisual> rootVisual;

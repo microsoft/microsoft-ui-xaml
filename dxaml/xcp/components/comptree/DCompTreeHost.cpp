@@ -604,7 +604,7 @@ DCompTreeHost::EnsureResources() noexcept
             {
                 if (XamlProfilerTracing::IsProfilerEnabled())
                 {
-                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface);
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::CompositionSurface, p8BitSupportCheckSurface);
                 }
                 m_hasNative8BitSurfaceSupport = TRUE;
                 ReleaseInterface(p8BitSupportCheckSurface);
@@ -793,7 +793,7 @@ DCompTreeHost::SetTargetWindowUWP(HWND targetHwnd)
                 IFCFAILFAST(m_spCompositor->CreateContainerVisual(&containerRootVisual));
                 if (XamlProfilerTracing::IsProfilerEnabled())
                 {
-                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerRootVisual.Get());
                 }
 
                 wrl::ComPtr<ixp::IVisual> rootVisual;
@@ -837,7 +837,7 @@ DCompTreeHost::SetTargetHelper()
     IFCFAILFAST(GetCompositor()->CreateContainerVisual(m_hwndVisual.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, m_hwndVisual.Get());
     }
 
     // Mark this visual as a standard visual root to differentiate it from the root of Xaml Islands.
@@ -862,14 +862,14 @@ DCompTreeHost::SetTargetHelper()
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerVisual.Get());
         }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual1));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual1.Get()));
         IFCFAILFAST(GetCompositor()->CreateContainerVisual(containerVisual.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, containerVisual.Get());
         }
         IFCFAILFAST(containerVisual.As(&m_mockDCompDummyVisual2));
         IFC_RETURN(childCollection->InsertAtTop(m_mockDCompDummyVisual2.Get()));
@@ -935,7 +935,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
             IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
             }
             IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
             wrl::ComPtr<WUComp::ICompositionBrush> brush;
@@ -945,7 +945,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
             IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
             if (XamlProfilerTracing::IsProfilerEnabled())
             {
-                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+                RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
             }
             IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
             IFCFAILFAST(spriteVisual.As(&renderData.m_disconnectedRootVisual));
@@ -968,7 +968,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         IFCFAILFAST(GetCompositor()->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
         }
         IFCFAILFAST(colorBrush->put_Color(ColorUtils::GetWUColor(backgroundColor)));
         IFCFAILFAST(colorBrush.As(&brush));
@@ -977,7 +977,7 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(&spriteVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
         }
         IFCFAILFAST(spriteVisual->put_Brush(brush.Get()));
         IFCFAILFAST(spriteVisual.As(&m_disconnectedHWndVisual));
@@ -1297,7 +1297,7 @@ _Check_return_ HRESULT DCompTreeHost::CreateContainerVisual(_Outptr_ WUComp::ICo
     IFC_RETURN(GetCompositor()->CreateContainerVisual(spContainerVisual.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, spContainerVisual.get());
     }
 
     if (VisualDebugTagsEnabled())
@@ -1685,7 +1685,7 @@ void DCompTreeHost::UpdateUIThreadCounters(
     IFCFAILFAST(GetCompositor()->CreateSurfaceBrush(&surfaceBrush))
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
     }
     IFCFAILFAST(surfaceBrush->put_HorizontalAlignmentRatio(0));
     IFCFAILFAST(surfaceBrush->put_VerticalAlignmentRatio(0));
@@ -1765,7 +1765,7 @@ void DCompTreeHost::ShowUIThreadCounters()
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
                 if (XamlProfilerTracing::IsProfilerEnabled())
                 {
-                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual);
+                    RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ContainerVisual, hostVisual.Get());
                 }
 
                 // mark this as our FrameCount/Root host.
@@ -1794,7 +1794,7 @@ void DCompTreeHost::ShowUIThreadCounters()
         IFCFAILFAST(GetCompositor()->CreateSpriteVisual(spriteVisual.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, spriteVisual.Get());
         }
         IFCFAILFAST(spriteVisual.As(&m_frameRateVisual));
 

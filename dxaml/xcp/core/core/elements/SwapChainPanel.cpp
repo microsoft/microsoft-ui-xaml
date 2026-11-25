@@ -598,7 +598,7 @@ wrl::ComPtr<ixp::ISpriteVisual> CSwapChainPanel::GetOrEnsureSwapChainVisual()
         IFCFAILFAST(GetDCompTreeHost()->GetCompositor()->CreateSpriteVisual(&m_swapChainVisual));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SpriteVisual, m_swapChainVisual.Get());
         }
     }
     return m_swapChainVisual;

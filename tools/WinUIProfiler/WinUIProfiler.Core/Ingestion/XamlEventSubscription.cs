@@ -31,6 +31,10 @@ internal static class XamlEventSubscription
     // and D3D11CoreCreateDevice, KMDDeviceCreate and UMDDeviceCreate Start/Stop (20-25).
     internal static bool IsDirect3D11Event(int eventId) => eventId is >= 3 and <= 17 or >= 20 and <= 25;
 
+    internal static bool IsCompositionEvent(Guid providerId, int eventId, bool traceLogging, string name) =>
+        providerId == XamlProviders.DirectComposition && !traceLogging && eventId is 1 or 30 ||
+        providerId == XamlProviders.CompositionDiagnostics && traceLogging && name == "CompositionResourceIdentity";
+
     // DxgKrnl AdapterAllocation Start/Stop/DCStart (33-35) and DeviceAllocation Start/Stop/DCStart (36-38)
     // carry their owner in hProcessId, including when another process writes the event.
     internal static string? DxgKrnlProcessField(int eventId) => eventId switch
@@ -130,6 +134,18 @@ internal static class XamlEventSubscription
                 if ((int)data.ID == FocusChange && (processId is null || data.ProcessID == processId))
                 {
                     match(data, XamlProvider.Win32k, null, data.ProcessID);
+                }
+
+                return;
+            }
+
+            if (data.ProviderGuid == XamlProviders.DirectComposition || data.ProviderGuid == XamlProviders.CompositionDiagnostics)
+            {
+                if (IsCompositionEvent(data.ProviderGuid, (int)data.ID, (int)data.Channel == TraceLoggingChannel,
+                    data.EventName) && (processId is null || data.ProcessID == processId))
+                {
+                    match(data, data.ProviderGuid == XamlProviders.DirectComposition
+                        ? XamlProvider.DirectComposition : XamlProvider.CompositionDiagnostics, null, data.ProcessID);
                 }
 
                 return;

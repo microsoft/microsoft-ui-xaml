@@ -215,7 +215,7 @@ wrl::ComPtr<WUComp::ICompositionMaskBrush> WUCBrushManager::GetMaskBrush(
         IFCFAILFAST(m_compositor2->CreateMaskBrush(&maskBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::MaskBrush, maskBrush.Get());
         }
     }
 
@@ -320,7 +320,7 @@ wrl::ComPtr<WUComp::ICompositionNineGridBrush> WUCBrushManager::GetNineGridBrush
         IFCFAILFAST(m_compositor2->CreateNineGridBrush(&nineGridBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::NineGridBrush, nineGridBrush.Get());
         }
     }
 
@@ -358,7 +358,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetSurfaceBrush(
         IFCFAILFAST(m_compositor->CreateSurfaceBrush(&surfaceBrush));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::SurfaceBrush, surfaceBrush.Get());
         }
 
         // Reset the default alignment properties to what we need them to be
@@ -430,7 +430,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> WUCBrushManager::GetColorBrush(_In_ CSoli
                     IFCFAILFAST(m_compositor->CreateColorBrush(colorBrush.ReleaseAndGetAddressOf()));
                     if (XamlProfilerTracing::IsProfilerEnabled())
                     {
-                        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush);
+                        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::ColorBrush, colorBrush.Get());
                     }
                     transition.m_wucBrush = colorBrush;
                 }

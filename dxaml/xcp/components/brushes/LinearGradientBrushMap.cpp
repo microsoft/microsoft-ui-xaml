@@ -20,7 +20,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> LinearGradientBrushMap::GetBrush(
         IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush, linearGradientBrush.Get());
         }
 
         wrl::ComPtr<WUComp::ICompositionBrush> gradientAsCBrush;

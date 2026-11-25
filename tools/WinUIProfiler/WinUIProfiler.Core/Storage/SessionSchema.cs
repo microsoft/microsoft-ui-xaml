@@ -605,6 +605,12 @@ internal static class SessionSchema
             ('GraphicsResourceAllocations', 'Time-bounded process-local resource and allocation correlations',
                 'ResourceId, DeviceAllocationId, AdapterAllocationId, StartSeq',
                 'SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq'),
+            ('CompositionResourceSummary', 'Retained WinUI-attributed resource creation/release observations and unmatched evidence',
+                'ResourceKind, ResourceName', 'SELECT * FROM CompositionResourceSummary'),
+            ('CompositionResourceLinks', 'Exact public COM identity links from WinUI creations to native resource generations',
+                'WinUICreateSeq', 'SELECT * FROM CompositionResourceLinks ORDER BY WinUICreateQpc, WinUICreateSeq'),
+            ('CompositionResourceLifetimes', 'Native handle generations, resource release and unknown endpoints; not final COM destruction',
+                'ResourceId', 'SELECT * FROM CompositionResourceLifetimes ORDER BY CreateQpc, ResourceId'),
             ('SnapshotSummary', 'Stored tree captures, resource status and signed allocator counters', 'CaptureId',
                 'SELECT * FROM SnapshotSummary ORDER BY EndQpc'),
             ('SnapshotRoots', 'Captured XamlRoots and their thread identities and time intervals', 'CaptureId, RootId',
@@ -616,5 +622,5 @@ internal static class SessionSchema
             ('SnapshotResources', 'Captured graphics counters as exact unsigned decimal text', 'CaptureId, ResourceIndex',
                 'SELECT * FROM SnapshotResources WHERE CaptureId = :capture'),
             ('QueryCatalog', 'This list', 'Name', 'SELECT * FROM QueryCatalog');
-        """;
+        """ + CompositionResourceIndex.Schema;
 }

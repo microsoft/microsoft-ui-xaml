@@ -83,7 +83,7 @@ _Check_return_ HRESULT CLinearGradientBrush::EnsurePrimaryWUCBrush(_In_ WUComp::
     IFC_RETURN(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
     if (XamlProfilerTracing::IsProfilerEnabled())
     {
-        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+        RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush, linearGradientBrush.Get());
     }
     IFC_RETURN(linearGradientBrush.As(&m_wucBrush));
 
@@ -157,7 +157,7 @@ wrl::ComPtr<WUComp::ICompositionBrush> CLinearGradientBrush::GetWUCBrush(
         IFCFAILFAST(compositor->CreateLinearGradientBrush(linearGradientBrush.ReleaseAndGetAddressOf()));
         if (XamlProfilerTracing::IsProfilerEnabled())
         {
-            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush);
+            RenderingResourceDiagnostics::LogResourceCreated(RenderingResourceDiagnostics::ResourceKind::LinearGradientBrush, linearGradientBrush.Get());
         }
         IFCFAILFAST(linearGradientBrush.As(&brush));
         ApplyWUCBrushProperties(compositor, brush.Get(), brushBounds, brushTransform);
