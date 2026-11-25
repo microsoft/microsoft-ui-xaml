@@ -216,7 +216,8 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
 }
 
 // Whether item is the selected item. A boxed value (e.g. an int from a C# List<int>) is a new object on every read,
-// so the item is also matched by its index in the source that holds the selection.
+// so the item is also matched by value: equal values have the same first index in the source that holds the selection,
+// which also matches when a later one of several equal values is selected.
 bool SelectionModel::IsSelectedItem(const winrt::IInspectable& item)
 {
     std::shared_ptr<SelectionNode> selectedNode;
@@ -239,7 +240,27 @@ bool SelectionModel::IsSelectedItem(const winrt::IInspectable& item)
         if (auto const source = selectedNode->ItemsSourceView())
         {
             const int selectedIndex = selectedNode->SelectedIndices().at(0);
-            return source.GetAt(selectedIndex) == item || source.IndexOf(item) == selectedIndex;
+            if (selectedIndex < 0 || selectedIndex >= source.Count())
+            {
+                return false;
+            }
+
+            auto const selectedItem = source.GetAt(selectedIndex);
+            if (selectedItem == item)
+            {
+                return true;
+            }
+
+            try
+            {
+                const int itemIndex = source.IndexOf(item);
+                return itemIndex >= 0 && itemIndex == source.IndexOf(selectedItem);
+            }
+            catch (winrt::hresult_not_implemented const&)
+            {
+                // A custom ItemsSourceView may not implement IndexOfCore, so only the identity check applies.
+                return false;
+            }
         }
     }
     return false;
