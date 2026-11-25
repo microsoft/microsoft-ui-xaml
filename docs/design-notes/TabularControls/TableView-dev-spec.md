@@ -208,6 +208,8 @@ Reorder is opt-in (`CanUserReorderColumns`, default `false`) and lives in `Table
 
 **Keyboard.** `Ctrl+Shift+Left/Right` on a header moves it by one visible position, mirrored under RTL. It runs after the resize chord and before header navigation, which ignores `Ctrl`. While reorder is enabled, the chord is consumed on any header, moved or not, so it cannot fall through to focus navigation.
 
+**Testing.** `TableViewTestHooks` (private namespace, `MUX_INTERNAL`) runs the press, `ManipulationDelta` and `ManipulationCompleted` steps without a pointer, as a touch drag does (nothing is captured), so API tests can move, preview and cancel a drag deterministically. Tests that need the real pointer or keyboard path inject input and report Skipped where it cannot reach the test window.
+
 ## Row virtualization and recycling
 
 On recycle, `ItemsRepeater` re-points a row's `DataContext`, and cells update **reactively** through inheritance and bindings. Cells are never re-stamped, because changing a live cell during the repeater's measure re-enters layout and fails fast.

@@ -1783,6 +1783,11 @@ public:
     bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
     void CancelColumnReorderDrag();
     void QueueCancelColumnReorderDrag();
+    // For TableViewTestHooks: a press on the column's header and its manipulation, without a pointer.
+    bool BeginColumnReorderDragForTesting(const winrt::TableViewColumn& column);
+    bool UpdateColumnReorderDragForTesting(double translationX) { return UpdateColumnReorderDrag(translationX); }
+    bool CompleteColumnReorderDragForTesting(double translationX);
+    bool IsColumnReorderDraggingForTesting() const noexcept { return m_columnReorder && m_columnReorder->dragging; }
 
 private:
     // The visible owned columns other than the moving one; own is its slot among them, [min, max] the allowed slots.
