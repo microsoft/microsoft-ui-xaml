@@ -44,7 +44,7 @@ internal static class LiveCommands
                     "  [--redirect-controls] [--launcher-directory PATH]\n" +
                     "Live options: --duration SECONDS --snapshot-interval SECONDS --snapshot-directory PATH\n" +
                     "  --interactive (stdin: status, snapshot, stop) --json (NDJSON)\n" +
-                    "Live captures an initial snapshot no earlier than two seconds after app launch.\n" +
+                    "Live waits two seconds after connecting before capturing its initial snapshot.\n" +
                     "Stopping never terminates the target.\n" +
                     "Exit codes: 0 complete, 2 usage, 3 failed/incomplete, 4 canceled.").ConfigureAwait(false);
                 return 0;

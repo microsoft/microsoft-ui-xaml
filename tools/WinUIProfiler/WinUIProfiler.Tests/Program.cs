@@ -35,6 +35,12 @@ if (args is ["--startup-integration", var nativeDirectory])
     return;
 }
 
+if (args is ["--snapshot-delay-integration", var profilerExecutable])
+{
+    await CliLiveTests.RunSnapshotDelayIntegrationAsync(Path.GetFullPath(profilerExecutable));
+    return;
+}
+
 if (args is ["--graphics-integration"])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Graphics integration requires Windows.");

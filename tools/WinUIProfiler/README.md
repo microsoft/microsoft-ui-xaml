@@ -119,6 +119,19 @@ Review regressions also cover late endpoints in closed history, promoted device
 creation bounds, stale rundown, explicit bridge clearing, independent allocation
 links, partial correlation intervals, fieldless JSON and CLI provider labels.
 
+After building the desktop profiler, verify the initial snapshot delay against
+a real target with:
+
+```powershell
+$profiler = (Get-Content .\WinUIProfiler.App\obj\ProfilerAppOutput.x64.Release.txt -Raw).Trim()
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --snapshot-delay-integration (Join-Path $profiler 'WinUIProfiler.App.exe')
+```
+
+This opens a separate profiler instance as the test target, connects twice,
+and verifies that each initial capture waits two seconds after connecting,
+including the reconnect to the already-running process. It closes only that
+test instance and deletes its temporary captures.
+
 For an opt-in live DirectX smoke test, run:
 
 ```powershell
@@ -289,13 +302,13 @@ and exclude earlier creations; they are not scoped to the captured tree nodes.
 All-zero slots are omitted: an empty graphics section can mean unsupported or disabled
 tracking, or no observed creations, not that no graphics resources exist.
 
-After a connection succeeds with the genuine TAP hello, the app
-automatically captures and saves an **Initial snapshot** as the first snapshot
-of that connection, no earlier than two seconds after the target process
-started. Connection time counts toward this delay; attaching to an older app
-does not add another delay. The live CLI uses the same timing. This is a launch
-delay, not a guarantee that rendering or asynchronous app initialization has
-finished. Manual capture is disabled until this initial attempt finishes, but
+After a connection succeeds with the genuine TAP hello, the app waits a full
+two seconds before automatically capturing and saving an **Initial snapshot**
+as the first snapshot of that connection. Startup and connection time do not
+count toward this delay; attaching to an older app also waits the full two
+seconds. The live CLI uses the same timing. This is a post-connection delay,
+not a guarantee that rendering or asynchronous app initialization has finished.
+Manual capture is disabled until this initial attempt finishes, but
 later manual snapshots and explicit CLI captures are not delayed.
 A failed initial capture is reported without failing the connection;
 **Take tree snapshot** remains available to retry or capture later states.

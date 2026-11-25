@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using WinUIProfiler.Cli;
 using WinUIProfiler.Contracts;
@@ -52,21 +53,6 @@ internal static class CliLiveTests
                 else File.WriteAllBytes(path, original);
             }
         });
-        await Check("initial snapshot launch clock", () =>
-        {
-            if (!OperatingSystem.IsWindows()) return Task.CompletedTask;
-            var launched = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var creation = launched.ToFileTimeUtc();
-            Require(TargetConnection.GetInitialSnapshotDelay(creation, launched.AddMilliseconds(1500)) == TimeSpan.FromMilliseconds(500),
-                "Connection time must count toward the initial snapshot's two-second launch delay.");
-            Require(TargetConnection.GetInitialSnapshotDelay(creation, launched.AddSeconds(2)) == TimeSpan.Zero &&
-                TargetConnection.GetInitialSnapshotDelay(creation, launched.AddSeconds(10)) == TimeSpan.Zero,
-                "A completed launch delay or an older attached process must not wait another two seconds.");
-            Require(TargetConnection.GetInitialSnapshotDelay(null, launched) == TimeSpan.FromSeconds(2) &&
-                TargetConnection.GetInitialSnapshotDelay(creation, launched.AddSeconds(-10)) == TimeSpan.FromSeconds(2),
-                "An unknown creation time or a backward clock adjustment must use a bounded two-second delay.");
-            return Task.CompletedTask;
-        });
         await Check("initial snapshot waits, manual snapshot does not", async () =>
         {
             var connection = new Connection();
@@ -84,7 +70,7 @@ internal static class CliLiveTests
             {
                 await waiting.Task.WaitAsync(TimeSpan.FromSeconds(3));
                 Require(connection.CaptureCount == 0 && !run.IsCompleted,
-                    "The automatic initial snapshot must not reach capture before its launch delay completes.");
+                    "The automatic initial snapshot must not reach capture before its post-connection delay completes.");
             }
             finally
             {
@@ -92,10 +78,10 @@ internal static class CliLiveTests
                 await run;
             }
             Require(connection.InitialSnapshotCount == 1,
-                "A subsequent manual snapshot must not repeat the initial launch delay.");
+                "A subsequent manual snapshot must not repeat the initial post-connection delay.");
         });
         foreach (var external in new[] { false, true })
-            await Check($"initial launch delay {(external ? "cancellation" : "duration")}", async () =>
+            await Check($"initial post-connection delay {(external ? "cancellation" : "duration")}", async () =>
             {
                 using var stop = new CancellationTokenSource();
                 var connection = new Connection();
@@ -113,7 +99,7 @@ internal static class CliLiveTests
                     if (external) stop.Cancel();
                     await run;
                     Require(connection.CaptureCount == 0,
-                        "Stopping during the launch delay must not request a target snapshot.");
+                        "Stopping during the post-connection delay must not request a target snapshot.");
                 }
                 finally
                 {
@@ -121,11 +107,11 @@ internal static class CliLiveTests
                     await run;
                 }
             });
-        await Check("explicit snapshot bypasses launch delay", async () =>
+        await Check("explicit snapshot bypasses post-connection delay", async () =>
         {
             var connection = new Connection
             {
-                InitialSnapshotDelay = _ => throw new InvalidOperationException("An explicit capture must not wait for launch.")
+                InitialSnapshotDelay = _ => throw new InvalidOperationException("An explicit capture must not wait after connecting.")
             };
             await Run(connection, Options() with { Capture = true, OutputPath = "capture.json" }, 0, 1);
             Require(connection.InitialSnapshotCount == 0, "An explicit snapshot must use the immediate capture path.");
@@ -310,6 +296,55 @@ internal static class CliLiveTests
         {
             try { await test(); Console.WriteLine($"Passed: live CLI {name}."); }
             catch (Exception error) { failures.Add(new InvalidOperationException(name, error)); Console.WriteLine($"FAILED: live CLI {name}: {error.Message}"); }
+        }
+    }
+
+    internal static async Task RunSnapshotDelayIntegrationAsync(string executable)
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Snapshot timing integration requires Windows.");
+        var applicationDirectory = Path.GetDirectoryName(executable)!;
+        var directory = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-SnapshotDelay-{Guid.NewGuid():N}");
+        using var target = Process.Start(new ProcessStartInfo(executable)
+        {
+            UseShellExecute = false,
+            WorkingDirectory = applicationDirectory
+        }) ?? throw new IOException("The snapshot timing test target did not start.");
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var options = new TargetConnectionOptions(TargetLaunchKind.Attach,
+                target.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), "", null,
+                Path.Combine(applicationDirectory, "ConnectionPayloads"), true,
+                ExpectedCreationTimeFileTime: target.StartTime.ToFileTimeUtc());
+            foreach (var scenario in new[] { "newly started target", "already-running target" })
+            {
+                await using var connection = await TargetConnection.ConnectAsync(options, null, timeout.Token);
+                var connected = Stopwatch.GetTimestamp();
+                var saved = await connection.TakeInitialSnapshotAsync(directory, timeout.Token);
+                using var snapshot = JsonDocument.Parse(await File.ReadAllTextAsync(saved.Path, timeout.Token));
+                var captureStarted = snapshot.RootElement.GetProperty("startQpc").GetInt64();
+                var seconds = (captureStarted - connected) / (double)Stopwatch.Frequency;
+                Require(seconds >= 1.95,
+                    $"The {scenario}'s initial snapshot started only {seconds:F3}s after connection; expected a full two-second wait.");
+                Console.WriteLine($"Passed: {scenario} initial snapshot started {seconds:F3}s after connection.");
+            }
+        }
+        finally
+        {
+            try
+            {
+                target.Refresh();
+                if (!target.HasExited)
+                {
+                    if (!target.CloseMainWindow()) throw new IOException($"Could not close the test target (PID {target.Id}).");
+                    using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    await target.WaitForExitAsync(shutdown.Token);
+                }
+            }
+            finally
+            {
+                if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+            }
         }
     }
 

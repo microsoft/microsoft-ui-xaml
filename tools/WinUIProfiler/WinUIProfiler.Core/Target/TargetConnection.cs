@@ -577,18 +577,6 @@ History);
         return TakeSnapshotCoreAsync(Path.GetDirectoryName(path)!, path, cancellationToken);
     }
 
-    internal static TimeSpan GetInitialSnapshotDelay(long? creationTimeFileTime, DateTime utcNow)
-    {
-        var delay = TimeSpan.FromSeconds(2);
-        if (creationTimeFileTime is > 0)
-        {
-            var remaining = DateTime.FromFileTimeUtc(creationTimeFileTime.Value) + delay - utcNow;
-            if (remaining <= TimeSpan.Zero) return TimeSpan.Zero;
-            if (remaining < delay) return remaining;
-        }
-        return delay;
-    }
-
     private async Task<SavedTreeSnapshot> TakeSnapshotCoreAsync(string directory, string? outputPath, CancellationToken cancellationToken,
         bool isInitial = false)
     {
@@ -608,8 +596,7 @@ History);
         var token = cancellation.Token;
         if (isInitial)
         {
-            // Connection time counts toward the launch delay; an older attached process does not wait.
-            await Task.Delay(GetInitialSnapshotDelay(Scope?.Process.CreationTimeFileTime, DateTime.UtcNow), token).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(2), token).ConfigureAwait(false);
         }
         var sessionPath = recordings?.SnapshotRecordingPath;
         TreeSnapshotDocument snapshot;
