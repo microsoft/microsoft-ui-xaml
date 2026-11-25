@@ -2080,6 +2080,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a click on a header focuses that header, so Ctrl+Shift+Right then moves the clicked column and not the first one.")]
+        public void VerifyChordMovesClickedHeader()
+        {
+            TableView tableView = null;
+            TableViewColumn role = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.CanUserSortColumns = true;
+                role = tableView.Columns[1];
+                LoadContent(tableView);
+            });
+
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+            ReorderInput.MoveTo(HeaderPoint(tableView, 1, 0.5));
+            ReorderInput.LeftDown();
+            ReorderInput.LeftUp();
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyHeaderFocused(tableView, role, "after a click on it");
+                Verify.AreEqual(FocusState.Pointer, ((Control)FocusManager.GetFocusedElement(tableView.XamlRoot)).FocusState, "A click focuses the header by pointer.");
+            });
+
+            if (!KeysReachTable(tableView, 1, focusHeader: false))
+            {
+                return;
+            }
+            ReorderInput.Send(right: true);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Name,City,Role", "after a click on Role and Ctrl+Shift+Right");
+                VerifyHeaderFocused(tableView, role, "after the move");
+            });
+        }
+        [TestMethod]
         [TestProperty("Description", "Verifies the chord keeps a column on its side of the frozen boundary and frozen columns reorder among themselves.")]
         public void VerifyChordRespectsFrozenBoundary()
         {
@@ -3027,8 +3067,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static bool FocusHeader(TableView tableView, int index)
             => KeysReachTable(tableView, index, FocusState.Keyboard);
 
-        // Focuses the header and waits until a key press reaches the table; reports Skipped when none does.
-        private static bool KeysReachTable(TableView tableView, int headerIndex = 0, FocusState focusState = FocusState.Programmatic)
+        // Focuses the header, unless focusHeader is false, and waits until a key press reaches the table; reports Skipped when none does.
+        private static bool KeysReachTable(TableView tableView, int headerIndex = 0, FocusState focusState = FocusState.Programmatic, bool focusHeader = true)
         {
             SettleLayout(tableView);
             if (!ReorderInput.EnsureForeground(HeaderPoint(tableView, headerIndex, 0.5)))
@@ -3036,11 +3076,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Result(TestResult.Skipped, "The test window cannot take the foreground on this machine, so keys would not reach it.");
                 return false;
             }
-            RunOnUIThread.Execute(() =>
+            if (focusHeader)
             {
-                Verify.IsTrue(GetHeaderCell(tableView, headerIndex).Focus(focusState), $"Precondition: header {headerIndex} takes focus.");
-            });
-            IdleSynchronizer.Wait();
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(GetHeaderCell(tableView, headerIndex).Focus(focusState), $"Precondition: header {headerIndex} takes focus.");
+                });
+                IdleSynchronizer.Wait();
+            }
 
             // Window activation can land after SetForegroundWindow returns; wait until a key press reaches the table.
             int keys = 0;
