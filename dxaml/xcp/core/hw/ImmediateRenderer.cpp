@@ -660,7 +660,7 @@ void ImmediateRenderer::ReleaseResources() noexcept
 
 // gdilayers: releases painter layers and scratch (GDI+) left idle for ~2 s after the island stopped needing them, so a
 // one-off large layer does not stay resident. Returns the delay to request another walk for the next trim, or 0 when
-// nothing is held or a walk at or before that time is already requested.
+// nothing is held.
 uint32_t ImmediateRenderer::TrimIdleResources(_In_ CXamlIslandRoot* island) noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
@@ -699,16 +699,8 @@ uint32_t ImmediateRenderer::TrimIdleResources(_In_ CXamlIslandRoot* island) noex
             trim(*popup.surface);
         }
     }
-    if (nextMs == 0)
-    {
-        return 0;
-    }
-    const uint64_t dueTick = now + nextMs;
-    if (m_trimRequestedTick > now && m_trimRequestedTick <= dueTick + c_trimSlackMs)
-    {
-        return 0;
-    }
-    m_trimRequestedTick = dueTick;
+    // Requested on every walk: any earlier walk clears the pending-walk flag, so a request from a previous frame cannot
+    // be relied on (the frame scheduler keeps the earliest pending request).
     return nextMs;
 }
 
@@ -3624,8 +3616,17 @@ static void ReplayCommands(
                 layerPushed.push_back(c.opacity < 1.0f);
                 if (c.opacity < 1.0f)
                 {
-                    // gdilayers: the group's device bounds let GDI+ size the layer to the group, not the window.
-                    painter.PushOpacityLayerWithBounds(c.opacity, c.deviceBounds);
+                    // gdilayers: the group's device bounds let GDI+ size the layer to the group, not the window. Only
+                    // when they are current: the render thread moves animated layers outside the recorded bounds of
+                    // their enclosing groups (see skipGroups), so it pushes unbounded layers.
+                    if (skipGroups)
+                    {
+                        painter.PushOpacityLayerWithBounds(c.opacity, c.deviceBounds);
+                    }
+                    else
+                    {
+                        painter.PushOpacityLayer(c.opacity);
+                    }
                 }
             }
             else if (c.type == CommandType::PushGeometryClip)

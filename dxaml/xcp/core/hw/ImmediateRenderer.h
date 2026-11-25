@@ -61,8 +61,7 @@ public:
 
     // gdilayers: called by the render walk after RenderIsland (when hidden-window trim is enabled). Releases painter
     // layers and scratch surfaces idle for ~2 s; returns the milliseconds after which the caller should request a walk
-    // for the next trim, or 0 when nothing is held or such a walk is already requested.
-    static constexpr uint32_t c_trimSlackMs = 250;
+    // for the next trim, or 0 when nothing is held.
     uint32_t TrimIdleResources(_In_ CXamlIslandRoot* island) noexcept;
 
     // S11/S16 per-window fallback (ImmediateRenderer.Fallback.cpp): an island whose walk found Composition-only
@@ -183,8 +182,6 @@ private:
     std::unordered_map<CXamlIslandRoot*, std::unique_ptr<IslandState>> m_islands;
     // S27: islands whose host is not visible, with the time (QPC microseconds) they were first seen hidden.
     std::unordered_map<CXamlIslandRoot*, int64_t> m_hiddenSinceUs;
-    // gdilayers: GetTickCount64 of the walk requested for the next idle trim (TrimIdleResources).
-    uint64_t m_trimRequestedTick = 0;
     std::unordered_set<std::wstring> m_reportedUnsupported;
     uint32_t m_elementsVisited = 0;
     // > 0 while walking a secret LTE target (the focus rect canvas).
