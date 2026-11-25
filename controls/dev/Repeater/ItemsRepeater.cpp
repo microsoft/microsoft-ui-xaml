@@ -36,6 +36,25 @@ ItemsRepeater::ItemsRepeater()
     LayoutUpdated({ this, &ItemsRepeater::OnLayoutUpdated });
 }
 
+ItemsRepeater::~ItemsRepeater()
+{
+    ResetItemTemplateWrapper();
+}
+
+void ItemsRepeater::ResetItemTemplateWrapper() noexcept
+{
+    if (m_ownsItemTemplateWrapper)
+    {
+        if (auto const itemTemplateWrapper = m_itemTemplateWrapper.try_as<ItemTemplateWrapper>())
+        {
+            itemTemplateWrapper->ResetTracking();
+        }
+    }
+
+    m_itemTemplateWrapper = nullptr;
+    m_ownsItemTemplateWrapper = false;
+}
+
 #pragma region IUIElementOverrides
 
 winrt::AutomationPeer ItemsRepeater::OnCreateAutomationPeer()
@@ -650,13 +669,21 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     // implications, so keeping the logic as it is for now. For example, ownership
     // of the items is with Repeater today because the wrapper is doing the
     // recycling as opposed to the DataTemplate.
+    auto const setItemTemplateWrapper = [this](
+        winrt::IElementFactory const& newItemTemplateWrapper,
+        bool ownsItemTemplateWrapper)
+        {
+            ResetItemTemplateWrapper();
+            m_itemTemplateWrapper = newItemTemplateWrapper;
+            m_ownsItemTemplateWrapper = ownsItemTemplateWrapper;
+        };
+
     if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
     {
         auto wrapper = winrt::make_self<ItemTemplateWrapper>(dataTemplate);
-        // Enable reference tracking so the XAML tracker can detect and break the
-        // RecyclePool cycle. See ItemTemplateWrapper::EnableTracking for details.
         wrapper->EnableTracking(this);
-        m_itemTemplateWrapper = wrapper.as<winrt::IElementFactory>();
+        auto wrapperInterface = wrapper.as<winrt::IElementFactory>();
+        setItemTemplateWrapper(wrapperInterface, true);
         if (auto content = dataTemplate.LoadContent().as<winrt::FrameworkElement>())
         {
             // Due to bug https://github.com/microsoft/microsoft-ui-xaml/issues/3057, we need to get the framework
@@ -666,7 +693,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
             children.Append(content);
             children.RemoveAtEnd();
         }
-        else
+        else if (m_itemTemplateWrapper == wrapperInterface)
         {
             // We have a DataTemplate which is empty, so we need to set it to true
             m_isItemTemplateEmpty = true;
@@ -674,14 +701,13 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     }
     else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
     {
-        // No EnableTracking needed: the wrapper holds the selector, not individual
-        // DataTemplates. The RecyclePool cycle doesn't form because there's no
-        // persistent reference from the wrapper to any DataTemplate with a pool.
-        m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(selector);
+        auto wrapper = winrt::make_self<ItemTemplateWrapper>(selector);
+        wrapper->EnableTracking(this);
+        setItemTemplateWrapper(wrapper.as<winrt::IElementFactory>(), true);
     }
     else if (auto customElementFactory = newValue.try_as<winrt::IElementFactory>())
     {
-        m_itemTemplateWrapper = customElementFactory;
+        setItemTemplateWrapper(customElementFactory, false);
     }
     else
     {

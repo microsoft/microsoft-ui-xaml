@@ -152,6 +152,7 @@ void ViewManager::RecycleWithoutOwner(bool recycleWithoutOwner)
 // Luckily when we create the items, we store whether we were the once setting the DataContext.
 void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
+    auto const elementFactory = m_owner->ItemTemplateShim();
     m_owner->OnElementClearing(element);
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
@@ -166,7 +167,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         }
     }
 
-    if (m_owner->ItemTemplateShim())
+    if (elementFactory)
     {
         if (!m_ElementFactoryRecycleArgs)
         {
@@ -187,7 +188,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
             context.Parent(*m_owner);
         }
 
-        m_owner->ItemTemplateShim().RecycleElement(context);
+        elementFactory.RecycleElement(context);
 
         context.Element(nullptr);
         context.Parent(nullptr);

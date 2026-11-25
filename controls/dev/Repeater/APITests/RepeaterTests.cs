@@ -830,6 +830,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 "ItemsRepeater should be collected after recycling elements and removal.");
         }
 
+        [TestMethod]
+        public void VerifyRepeaterWithDataTemplateSelectorDoesNotLeak()
+        {
+            WeakReference repeaterWeakRef = null;
+            WeakReference selectorWeakRef = null;
+            WeakReference templateWeakRef = null;
+            var data = new ObservableCollection<int>(Enumerable.Range(0, 5));
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = CreateDataTemplateWithContent(@"<TextBlock Text='{Binding}' Height='50' />");
+                var selector = new MySelector
+                {
+                    TemplateOdd = template,
+                    TemplateEven = template
+                };
+                var repeater = new ItemsRepeater
+                {
+                    ItemsSource = data,
+                    ItemTemplate = selector,
+                };
+
+                repeaterWeakRef = new WeakReference(repeater);
+                selectorWeakRef = new WeakReference(selector);
+                templateWeakRef = new WeakReference(template);
+                Content = repeater;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = (ItemsRepeater)repeaterWeakRef.Target;
+                Verify.IsNotNull(repeater.TryGetElement(0), "Element 0 should be realized.");
+                data.Clear();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            for (int i = 0;
+                i < 5 &&
+                (repeaterWeakRef.IsAlive || selectorWeakRef.IsAlive || templateWeakRef.IsAlive);
+                i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                IdleSynchronizer.Wait();
+            }
+
+            Verify.IsFalse(repeaterWeakRef.IsAlive,
+                "ItemsRepeater should be collected after its selector templates are recycled.");
+            Verify.IsFalse(selectorWeakRef.IsAlive,
+                "DataTemplateSelector should be collected with the repeater.");
+            Verify.IsFalse(templateWeakRef.IsAlive,
+                "The selector's DataTemplate should be collected with the repeater.");
+        }
+
         // Verifies that an ItemsRepeater using a RecyclingElementFactory (the
         // DataTemplateSelector equivalent) can be garbage collected after
         // elements are recycled and the repeater is removed from the tree.
