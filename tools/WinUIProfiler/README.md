@@ -136,6 +136,20 @@ phases, processed lifetimes and kernel-allocation links.
 It owns and stops only its unique test ETW session
 and deletes its temporary recording.
 
+To validate the opt-in surface-to-texture producer against real app captures, start
+recording before launching the same WinUI workload twice, with Direct3D11 and the
+default XAML provider enabled. Enable `Microsoft-Windows-XAML-Profiler` at Verbose level only for the first capture:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --surface-texture-integration enabled.etl <enabled-pid> disabled.etl <disabled-pid>
+```
+
+This verifies the real `DCompSurfaceTextureObserved` payload, requires every observation
+to join surface-initialization and Direct3D11 resource events, and checks the active-rendering
+control without the opt-in provider. Offsets identify the gutter-excluded content origin.
+Observations describe transient update textures, not exclusive surface or element GPU bytes.
+The test reads existing ETLs and does not require elevated capture permissions.
+
 Select a mode and target, optionally arguments/working directory and diagnostics
 endpoint, then connect. The target settings include a note that connecting
 trusts the bundled injector and TAP binaries to run native code in the target.
@@ -368,6 +382,10 @@ outside SQLite. Signed allocator counters remain integers, with `-1` unavailable
 The existing session size limit includes snapshot documents: rolling retention
 can delete whole oldest captures as well as events/samples, but never parts of a
 capture. JSON exports are not deleted. Older databases have no stored snapshots.
+Snapshot insertion and event/snapshot retention share a main-database
+transaction. CPU retention is staged on its own writer connection and commits
+after main: a rejected main write rolls back both, while a later CPU commit
+failure stops recording and leaves main's committed capture and cutoff intact.
 
 In snapshot viewers and comparisons, expand **Textures** inside
 **Resource allocations**, after the existing resource groups. The section lists
@@ -606,6 +624,21 @@ receives to a SQLite file, one per process in a connection or one per trace read
 2,000 events or 250 ms; if it falls behind, the processing thread waits for it,
 so events are still only dropped at the queue.
 
+CPU samples, call-stack nodes, code addresses, modules and symbol results live
+in a separate `<session>.sqlite.cpu` SQLite database, created only when CPU
+sampling records data or a sampling result. `SessionInfo.CpuDatabaseVersion`
+identifies recordings with a companion. The app and `cpu`/`symbolize` CLI
+commands attach it automatically; event-only reads do not open or require it.
+Keep both files together with their original names when copying a CPU recording.
+CPU reads report missing or mismatched companions rather than silently omitting
+samples. Older version-1 recordings with inline CPU tables remain supported.
+Session listings count both databases and their nonempty WAL files for total
+size and latest recording activity, without opening the CPU database.
+The CPU schema and matching `SessionId` are committed and flushed before the
+main database advertises the companion. WAL commits are atomic per database,
+not across both files. The recording clock stays only in main `SessionInfo`;
+CPU samples retain raw QPC timestamps on that same clock.
+
 Startup members share one ETW session, but not process-local object/frame/graphics
 indexes or metric histories. The ETW lost-event count describes the shared
 session; queue drops and stored-event counts are per process. A bootstrap that
@@ -684,7 +717,7 @@ unsigned JSON numbers too. When querying a handle, use JSON's `->` operator
 to retain its exact JSON text; `json_extract`/`->>` can round integers above
 SQLite's signed 64-bit range.
 
-A session file is limited to 500 MB, CPU samples included. Before a batch would
+A recording has a shared 500 MB limit across its event and CPU databases. Before a batch would
 take it past the limit, the oldest data is deleted: the oldest events, with the
 CPU samples from before the first event left, or else, when samples are older
 than every event, the oldest samples. The call stacks and code addresses no
@@ -693,14 +726,21 @@ first event still stored, the connection panel says from when the file is
 complete, and `CpuSampling.Note` says when samples were deleted. Closed
 graphics history leaves with its raw evidence; open graphics
 lifetimes and referenced parent devices retain continuity and are marked
-`Trimmed` when evidence has been removed. While recording, the file is in WAL mode, so it can be read at the
-same time, for example with the CLI. The writer's own connection disables automatic checkpoints: a separate
-connection and thread run `PRAGMA wal_checkpoint(PASSIVE)` every 250 ms, keeping checkpoint work off the batch
-commit path. Disk contention can still affect both threads, but a checkpoint no longer runs inside a writer commit.
-That thread stops before the final checkpoint. When the session
-ends, the write-ahead log is moved into the database and the file is left as a
-single `.sqlite` file. A write error stops the recording, keeps what was saved,
+`Trimmed` when evidence has been removed. Freed pages are reclaimed when one
+database needs the space released by the other. While recording, both files
+use WAL mode, so they can be read at the same time, for example with the CLI.
+The event writer's connection disables automatic checkpoints: a separate connection
+and thread run `PRAGMA wal_checkpoint(PASSIVE)` every 250 ms, keeping that
+checkpoint work off the event batch commit path. Disk contention can still affect
+both threads. The thread stops before the final checkpoint.
+When the session ends, each database is checkpointed and no longer needs its
+`-wal` and `-shm` files. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
+Event trimming commits its coverage boundary before CPU cleanup. If that
+cleanup fails or is interrupted, CPU readers omit samples before the committed
+`CompleteFromQpc` and report their omission. CPU-only trimming records a loss
+flag in `CpuSessionInfo` with the deletion, so it remains visible even if the
+recording's final sampling summary could not be written.
 
 ETW timestamps an event separately in each session that receives it, so the
 same event recorded by `logman` and by the app differs by a few microseconds.
@@ -720,6 +760,24 @@ from them. Each view's description is inside its definition, so
 `SELECT sql FROM sqlite_master WHERE type = 'view'` shows it, and
 `SELECT * FROM QueryCatalog` lists the views with an example query each.
 Times are in ms from the start of the recording.
+
+`CpuFrames` and raw `HotFunctions` live in the companion
+(`Storage\CpuSchema.cs`). The profiler installs connection-local `CpuSamples`,
+`CpuSampleDetails` and `HotFunctions` views that use main `SessionInfo`'s
+clock and retained event boundary. In an external SQLite connection to
+`session.sqlite`, attach the CPU file and apply that same boundary and clock
+when querying samples or correlating them with XAML events:
+
+```sql
+ATTACH DATABASE 'session.sqlite.cpu' AS cpu;
+SELECT x.rowid AS SampleId, x.ThreadId, f.Frame,
+       (x.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS Ms
+FROM main.SessionInfo s
+JOIN cpu.CpuSessionInfo c ON c.SessionId = s.SessionId
+JOIN cpu.CpuSamples x ON s.CompleteFromQpc IS NULL OR x.Qpc >= s.CompleteFromQpc
+JOIN cpu.CpuFrames f ON f.StackId = x.StackId;
+SELECT sql FROM cpu.sqlite_master WHERE type = 'view';
+```
 
 | View | Rows | Used by |
 | --- | --- | --- |
@@ -1468,7 +1526,7 @@ wpr -stop launch.etl
 
 ## CPU sampling and symbols
 
-Session files also hold the target's sampled CPU call stacks, as WPA's
+Each session's separate CPU database holds the target's sampled CPU call stacks, as WPA's
 **CPU Usage (Sampled)** shows them. The functions in them are named from a
 symbol path you give.
 
@@ -1497,6 +1555,7 @@ image that was loaded (same time stamp and size). The samples are stored in:
 
 | Table or view | What it holds |
 | --- | --- |
+| `CpuSessionInfo` | The main recording's `SessionId` and a durable `Trimmed` flag for CPU sampling loss; no separate recording clock |
 | `CpuSampling` | One row: the time each sample stands for (`IntervalMs`), the `Samples` and `Dropped` counts, whether stacks were compressed, the last symbol path, and why samples are missing or partial (`Note`) |
 | `CpuSamples` | Each sample's time, process, thread and call stack (`StackId`, its leaf frame) |
 | `CallStacks`, `CodeAddresses` | The call stacks as a tree from their root frames, and each frame's address, offset in its module (`Rva`) and `Function` |

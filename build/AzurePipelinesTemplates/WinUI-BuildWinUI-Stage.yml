@@ -29,6 +29,11 @@ parameters:
   # exclusions. Only for dependency binaries the pipeline redistributes but does not sign itself.
   # Empty (default) = default exclusions only.
   codeSignValidationExcludes: []
+  # When true, build ONLY x86 chk (Debug_x86) regardless of pipelineKind. Used by the focused
+  # WinUI-CodeCoverage pipeline so it can keep pipelineKind Nightly (known-good payload/CodeQL
+  # semantics) while building a single flavor. Default false leaves every other pipeline
+  # unchanged.
+  collectCodeCoverage: false
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -56,23 +61,31 @@ stages:
       maxParallel: 10
       # The matrix of this job must stay the same as the BuildScenarioApps job in build\AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
       matrix:
-        ${{ if in( parameters.pipelineKind, 'BuildAndTest') }}:
+        # Focused code-coverage build: a single x86 chk flavor. Suppresses the multi-flavor
+        # legs below (see the ne() guards) so nothing else builds.
+        ${{ if eq(parameters.collectCodeCoverage, true) }}:
+          Debug_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+        ${{ if and(in( parameters.pipelineKind, 'BuildAndTest'), ne(parameters.collectCodeCoverage, true)) }}:
           build:
             shouldPgo: false
             # buildPlatform and normalizedConfiguration are set at queue time for this pipeline
-        ${{ if in( parameters.pipelineKind, 'Localization') }}:
+        ${{ if and(in( parameters.pipelineKind, 'Localization'), ne(parameters.collectCodeCoverage, true)) }}:
           Release_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
             normalizedConfiguration: 'fre'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'PR-2') }}:
+        ${{ if and(in( parameters.pipelineKind, 'PR-2'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x64:
             buildPlatform: 'x64'
             buildOutput: 'amd64'
             normalizedConfiguration: 'chk'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'GitHubPR') }}:
+        ${{ if and(in( parameters.pipelineKind, 'GitHubPR'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
@@ -98,7 +111,7 @@ stages:
             buildOutput: 'arm64ec'
             normalizedConfiguration: 'fre'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'Official', 'Nightly', 'PR', 'Preview') }}:
+        ${{ if and(in( parameters.pipelineKind, 'Official', 'Nightly', 'PR', 'Preview'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
@@ -124,13 +137,13 @@ stages:
             buildOutput: 'arm64ec'
             normalizedConfiguration: 'fre'
             shouldPgo: false
-        ${{ if eq( parameters.pipelineKind, 'QuickPR') }}:
+        ${{ if and(eq( parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x86:
             buildPlatform: 'x86'
             buildOutput: 'x86'
             normalizedConfiguration: 'chk'
             shouldPgo: false
-        ${{ if in( parameters.pipelineKind, 'Nightly', 'Preview') }}:
+        ${{ if and(in( parameters.pipelineKind, 'Nightly', 'Preview'), ne(parameters.collectCodeCoverage, true)) }}:
           Debug_x64:
             buildPlatform: 'x64'
             buildOutput: 'amd64'
@@ -159,6 +172,14 @@ stages:
       # and the "Guardian: Post Analysis" task still analyzes the logs produced by our explicit PREfast scan as usual.
       ob_sdl_prefast_enabled: false
       ob_sdl_binskim_enabled: false
+      # Code coverage: MUXC's Debug configuration links without the CV/FIXUP debug streams that
+      # static native instrumentation requires, so Microsoft.UI.Xaml.Controls.dll cannot be
+      # instrumented out of a stock chk build. Opt that leg into the extra link options. Empty for
+      # every other pipeline, so their linker flags are unchanged.
+      ${{ if eq(parameters.collectCodeCoverage, true) }}:
+        coverageLinkMSBuildArg: '/p:EnableCodeCoverageLinkOptions=true'
+      ${{ else }}:
+        coverageLinkMSBuildArg: ''
       ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
         ob_sdl_apiscan_enabled: true
         ob_sdl_apiscan_softwareFolder: '$(Build.SourcesDirectory)\BuildOutput\APIScanTarget'
@@ -187,7 +208,7 @@ stages:
 
     - template: WinUI-BuildMUXProject-Steps.yml
       parameters:
-        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" $(prereleaseTagMSBuildOption)'
+        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" $(prereleaseTagMSBuildOption) $(coverageLinkMSBuildArg)'
         pipelineKind: ${{ parameters.pipelineKind }}
         buildScenarioApps: ${{ parameters.buildScenarioApps }}
         signOutput: ${{ parameters.signOutput }}

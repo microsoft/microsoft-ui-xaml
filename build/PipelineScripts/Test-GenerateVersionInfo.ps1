@@ -22,13 +22,16 @@ $generator = Join-Path $RepoRoot 'build\PipelineScripts\GenerateVersionInfo.ps1'
 $resourceTemplate = Join-Path $RepoRoot 'dxaml\xcp\inc\WinUIrc.ver'
 $testRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('WinUIVersionInfo-' + [guid]::NewGuid().ToString('N'))
 $originalBinaryVersion = $env:WindowsAppSDKBinaryVersion
+$defaultSourceRevision = '0123456789abcdef0123456789abcdef01234567'
 
 function Test-VersionResource
 {
     Param(
         [string]$Name,
         [string]$Version,
-        [string[]]$ExpectedVersions
+        [string[]]$ExpectedVersions,
+        [string]$SourceRevision = $defaultSourceRevision,
+        [string]$ExpectedComments = ''
     )
 
     $directory = Join-Path $testRoot $Name
@@ -39,7 +42,7 @@ function Test-VersionResource
     Copy-Item -LiteralPath $resourceTemplate -Destination (Join-Path $directory 'WinUIrc.ver')
     [System.IO.File]::WriteAllLines((Join-Path $directory 'WinUISourceRevision.h'), @(
         '#define WINUI_BUILD_MACHINE fixture_machine',
-        '#define WINUI_SOURCE_REVISION_ID fixture_revision'
+        "#define WINUI_SOURCE_REVISION_ID $SourceRevision"
     ))
     [System.IO.File]::WriteAllLines((Join-Path $directory 'VersionInfo.rc'), @(
         '#define VER_INTERNALNAME_STR "VersionInfo.dll"',
@@ -74,7 +77,11 @@ function Test-VersionResource
             throw "$Name $($fields[$index]): expected '$($ExpectedVersions[$index])', got '$($actualVersions[$index])'."
         }
     }
-    Write-Output "PASS: $Name native fixed/string file/product versions."
+    if ($info.Comments -cne $ExpectedComments)
+    {
+        throw "$Name Comments: expected '$ExpectedComments', got '$($info.Comments)'."
+    }
+    Write-Output "PASS: $Name native fixed/string file/product versions and source revision."
 }
 
 try
@@ -82,11 +89,16 @@ try
     [System.IO.Directory]::CreateDirectory($testRoot) | Out-Null
     foreach ($version in @('102.6.6.21', '102.6.6.0', '65535.65535.65535.65535'))
     {
-        Test-VersionResource -Name $version -Version $version -ExpectedVersions @($version, $version, $version, $version)
+        Test-VersionResource -Name $version -Version $version -ExpectedVersions @($version, $version, $version, $version) `
+            -ExpectedComments "SourceRevision=$defaultSourceRevision"
     }
+    $otherSourceRevision = '89abcdef0123456789abcdef0123456789abcdef'
+    Test-VersionResource -Name 'DifferentSourceRevision' -Version '102.6.6.21' `
+        -ExpectedVersions @('102.6.6.21', '102.6.6.21', '102.6.6.21', '102.6.6.21') `
+        -SourceRevision $otherSourceRevision -ExpectedComments "SourceRevision=$otherSourceRevision"
     $standaloneVersions = @(
         '3.3.0.0',
-        '3.3.0.0 (fixture_machine-fixture_revision)',
+        "3.3.0.0 (fixture_machine-$defaultSourceRevision)",
         '3.0.0.0',
         '3.0'
     )
@@ -188,7 +200,7 @@ public static class LocalizedResourceFixture
         {
             throw "Localized fixed/string file/product versions did not converge to '$version'."
         }
-        foreach ($field in @('OriginalFilename', 'LegalCopyright', 'Language'))
+        foreach ($field in @('Comments', 'OriginalFilename', 'LegalCopyright', 'Language'))
         {
             if ($info.$field -cne $localizedInfo.$field)
             {
@@ -201,6 +213,25 @@ public static class LocalizedResourceFixture
         }
         Write-Output "PASS: localized MUI version '$version' preserves translated metadata."
     }
+    foreach ($revision in @($defaultSourceRevision, $otherSourceRevision))
+    {
+        & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary `
+            -Version '102.7.3.0' -SourceRevision $revision | Out-Null
+        $info = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary)
+        if ($info.Comments -cne "SourceRevision=$revision" -or $info.FileVersion -cne '102.7.3.0' -or
+            $info.ProductVersion -cne '102.7.3.0' -or
+            [LocalizedResourceFixture]::ReadString($localizedBinary) -cne 'Lokalisierte Zeichenfolge')
+        {
+            throw 'Stamping the localized source revision did not preserve versions and translated resources.'
+        }
+        Write-Output "PASS: localized MUI source revision '$revision' is added or updated."
+    }
+    & (Join-Path $PSScriptRoot 'Set-LocalizedResourceVersion.ps1') -Path $localizedBinary -Version '102.7.3.41' | Out-Null
+    if ([System.Diagnostics.FileVersionInfo]::GetVersionInfo($localizedBinary).Comments -cne "SourceRevision=$otherSourceRevision")
+    {
+        throw 'Stamping only a localized version discarded the source revision.'
+    }
+    Write-Output 'PASS: version-only localized stamping preserves the source revision.'
 
     $invalidVersions = @(
         @{ Version = "10$([char]0x0662).6.6.21"; Message = 'is not a numeric four-part version' },

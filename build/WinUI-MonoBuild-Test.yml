@@ -173,7 +173,6 @@ extends:
       parameters:
         componentName: 'WinUI'
         sourceBuildId: ${{ parameters.sourceBuildId }}
-        retryParentTestGate: ${{ eq(parameters.sourcePipeline, 'Monobuild-Official') }}
         dependsOn:
           - RunTests
           - RunStaticTests

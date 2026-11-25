@@ -14,7 +14,6 @@
 #include <FileLoader.h>
 #include <TestCleanupWrapper.h>
 #include <MUX-ETWEvents.h>
-#include <ETWWaiterProxy.h>
 #include <WUCRenderingScopeGuard.h>
 #include <ImageEventWaitingContext.h>
 
@@ -1275,9 +1274,8 @@ void SoftwareBitmapSourceTests::DeviceLost(bool isSoftwareBitmap)
 // Covers this specific scenario:
 // 1. Use an image control with an SBS (this will cause it to decode to hardware and throwaway the software)
 // 2. Remove the image control and trim the hardware resources.
-// 3. Reload the image in an ellipse so it must load software and hardware resources.
-// This causes the image to reload the content for software rendering which wasn't working properly because
-// the hardware resources weren't available.
+// 3. Reload the image in an ellipse so it must reload the trimmed hardware resources from the SoftwareBitmap.
+// This scenario wasn't working properly because the hardware resources weren't available.
 void SoftwareBitmapSourceTests::TFS_6246592()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1342,13 +1340,8 @@ void SoftwareBitmapSourceTests::TFS_6246592()
     });
     TestServices::WindowHelper->WaitForIdle();
 
-    // Put the image back in as an ellipse so that it reloads the software surface
-    ETWWaiterProxy imageEtwWaiter;
-
-    imageEtwWaiter.Start(
-        WINDOWS_UI_XAML_ETW_PROVIDER,
-        ImageUpdateHardwareResourcesEnd_value);
-
+    // Put the image back in as an ellipse. The ellipse uploads the SoftwareBitmap to a hardware surface off-thread,
+    // which WaitForIdle waits for.
     RunOnUIThread([&]()
     {
         auto ellipse = ref new xaml_shapes::Ellipse();
@@ -1365,7 +1358,6 @@ void SoftwareBitmapSourceTests::TFS_6246592()
         rootPanel->Children->Append(ellipse);
     });
     TestServices::WindowHelper->WaitForIdle();
-    imageEtwWaiter.WaitForDefault();
 
     TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::XmlOrder);
     TestServices::Utilities->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);

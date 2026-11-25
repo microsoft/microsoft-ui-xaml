@@ -76,13 +76,15 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
-    private readonly CpuSampleIndex cpu;
+    private SqliteConnection? cpuConnection;
+    private CpuSampleIndex? cpu;
     // What SetCpuSampling gave, stored when the file is closed.
     private CpuSamplingResult? cpuSampling;
     private long droppedSamples;
     private readonly int processId;
     private readonly SessionStart source;
     private readonly long emptyFileBytes;
+    private long emptyCpuBytes;
     // Event types written so far, by provider (and marker provider), kind (TraceLogging or manifest), name, opcode,
     // launcher, ETW ID and version. Usually one layout each; a field that is sometimes null gives a second.
     private readonly Dictionary<(XamlProvider, Guid, bool, string, int, bool, int?, int?), List<EventLayout>> types = [];
@@ -135,7 +137,6 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects = new(connection);
         frames = new(connection);
         graphics = new(connection);
-        cpu = new(connection);
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         try
@@ -262,6 +263,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             throw new IOException($"The session file already exists: {path}");
         }
 
+        if (File.Exists(CpuSchema.PathFor(path)))
+        {
+            throw new IOException($"The CPU database already exists: {CpuSchema.PathFor(path)}");
+        }
+
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
         var connection = new SqliteConnection(new SqliteConnectionStringBuilder
         {
@@ -278,7 +284,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             // batch. NORMAL skips the flush on every commit; the file is still never corrupted. Automatic checkpointing
             // is off on this connection (wal_autocheckpoint = 0); StartCheckpointing runs that work from a separate
             // connection and thread instead.
-            Sql.Execute(connection, "PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA wal_autocheckpoint = 0;");
+            Sql.Execute(connection, "PRAGMA auto_vacuum = INCREMENTAL; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA wal_autocheckpoint = 0;");
             using (var transaction = connection.BeginTransaction())
             {
                 Sql.Execute(connection, SessionSchema.Create, transaction);
@@ -389,7 +395,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         // Normalize legacy documents just as the JSON reader does, before exposing them through the shared views.
         if (legacy) bytes = TreeSnapshotCodec.Encode(snapshot);
         var incomingBytes = bytes.LongLength + 4 * pageSize + RowOverheadBytes;
-        if (emptyFileBytes + incomingBytes > LimitBytes * TrimAt)
+        if (emptyFileBytes + Interlocked.Read(ref emptyCpuBytes) + incomingBytes > LimitBytes * TrimAt)
             throw new IOException("The snapshot exceeds the session file's size limit.");
         var request = new SnapshotWrite(snapshot.CaptureId, snapshot.StartQpc, snapshot.EndQpc,
             DateTime.UtcNow, jsonPath, Encoding.UTF8.GetString(bytes), incomingBytes, token);
@@ -512,10 +518,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         try
         {
             using var transaction = connection.BeginTransaction();
-            var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction);
+            using var cpuTransaction = cpuConnection?.BeginTransaction();
+            var trimmed = TrimIfNeeded(snapshot.IncomingBytes, transaction, cpuTransaction);
             try
             {
-                if ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
+                if (DatabaseBytes(excludeFreePages: true, transaction, cpuTransaction) +
                     snapshot.IncomingBytes > LimitBytes * TrimAt)
                     throw new IOException("The snapshot cannot fit within the session file's size limit.");
                 Sql.Execute(connection, """
@@ -524,17 +531,25 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     """, transaction, ("$id", snapshot.CaptureId.ToString("D")),
                     ("$saved", snapshot.SavedUtc.ToString("O", CultureInfo.InvariantCulture)), ("$path", snapshot.JsonPath),
                     ("$start", snapshot.StartQpc), ("$end", snapshot.EndQpc), ("$document", snapshot.Document));
-                var committedBytes = Sql.Scalar(connection, "PRAGMA page_count", transaction) * pageSize;
+                var committedBytes = DatabaseBytes(excludeFreePages: false, transaction, cpuTransaction);
+                // Keep main's capture and event retention atomic. CPU cleanup commits only after its cutoff is visible.
                 transaction.Commit();
                 committed = true;
+                cpuTransaction?.Commit();
                 Interlocked.Exchange(ref fileBytes, committedBytes);
                 snapshot.Completion.TrySetResult();
             }
-            catch (Exception error) when (!trimmed && (error is SqliteException or IOException))
+            catch (Exception error) when (!committed && !trimmed && (error is SqliteException or IOException))
             {
                 Trace.TraceError($"Saving tree snapshot {snapshot.CaptureId:D} failed: {error}");
                 snapshot.Completion.TrySetException(error);
             }
+        }
+        catch (Exception error) when (committed && (error is SqliteException or IOException))
+        {
+            // Both transaction scopes have ended: count main's saved snapshot and CPU's rolled-back cleanup.
+            RefreshFileBytesAfterFailure();
+            throw;
         }
         finally
         {
@@ -548,18 +563,108 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
     private void WriteSamples(List<CompletedSample> samples)
     {
-        TrimIfNeeded(cpu.IncomingBytes(samples));
-        using (var transaction = connection.BeginTransaction())
+        var index = EnsureCpuDatabase();
+        try
         {
+            TrimIfNeeded(index.IncomingBytes(samples));
+            using var transaction = cpuConnection!.BeginTransaction();
             foreach (var sample in samples)
             {
-                cpu.Add(sample, transaction);
+                index.Add(sample, transaction);
             }
 
             transaction.Commit();
         }
+        catch (Exception error) when (error is SqliteException or IOException)
+        {
+            RefreshFileBytesAfterFailure();
+            throw;
+        }
 
-        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+        Interlocked.Exchange(ref fileBytes, DatabaseBytes());
+    }
+
+    private CpuSampleIndex EnsureCpuDatabase()
+    {
+        if (cpu is not null)
+        {
+            return cpu;
+        }
+
+        var path = CpuSchema.PathFor(Path);
+        // Reserve only a new file: never overwrite a companion left by another recording.
+        using (new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+        }
+
+        cpuConnection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Mode = SqliteOpenMode.ReadWrite,
+            Pooling = false,
+            ForeignKeys = false
+        }.ToString());
+        cpuConnection.Open();
+        Sql.Execute(cpuConnection, $"""
+            PRAGMA page_size = {pageSize}; PRAGMA auto_vacuum = INCREMENTAL;
+            PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL;
+            """);
+        // WAL cannot atomically commit both databases. Flush initialization before main can advertise the companion.
+        using (var transaction = cpuConnection.BeginTransaction())
+        {
+            using var session = connection.CreateCommand();
+            session.CommandText = "SELECT SessionId FROM SessionInfo";
+            Sql.Execute(cpuConnection, CpuSchema.Create, transaction);
+            Sql.Execute(cpuConnection, $"PRAGMA user_version = {CpuSchema.Version}", transaction);
+            Sql.Execute(cpuConnection, "INSERT INTO CpuSessionInfo (SessionId) VALUES ($id)", transaction,
+                ("$id", (string)session.ExecuteScalar()!));
+            transaction.Commit();
+        }
+
+        using (var transaction = connection.BeginTransaction())
+        {
+            Sql.Execute(connection, "UPDATE main.SessionInfo SET CpuDatabaseVersion = $version", transaction,
+                ("$version", CpuSchema.Version));
+            transaction.Commit();
+        }
+
+        Sql.Execute(cpuConnection, "PRAGMA synchronous = NORMAL;");
+        Interlocked.Exchange(ref emptyCpuBytes, Sql.Scalar(cpuConnection, "PRAGMA page_count") * pageSize);
+        cpu = new(cpuConnection);
+        if (Interlocked.Read(ref completeFromQpc) is var cutoff and not 0)
+        {
+            using var transaction = cpuConnection.BeginTransaction();
+            cpu.Trim(cutoff, transaction);
+            transaction.Commit();
+        }
+
+        return cpu;
+    }
+
+    private long DatabaseBytes(bool excludeFreePages = false, SqliteTransaction? transaction = null,
+        SqliteTransaction? cpuTransaction = null)
+    {
+        var pages = Sql.Scalar(connection, "PRAGMA page_count", transaction) -
+            (excludeFreePages ? Sql.Scalar(connection, "PRAGMA freelist_count", transaction) : 0);
+        if (cpuConnection is not null)
+        {
+            pages += Sql.Scalar(cpuConnection, "PRAGMA page_count", cpuTransaction) -
+                (excludeFreePages ? Sql.Scalar(cpuConnection, "PRAGMA freelist_count", cpuTransaction) : 0);
+        }
+
+        return pages * pageSize;
+    }
+
+    private void RefreshFileBytesAfterFailure()
+    {
+        try
+        {
+            Interlocked.Exchange(ref fileBytes, DatabaseBytes());
+        }
+        catch (Exception sizeError) when (sizeError is SqliteException or IOException)
+        {
+            Trace.TraceWarning($"Could not refresh recording size after a failed write: {sizeError}");
+        }
     }
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
@@ -612,7 +717,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
 
         Interlocked.Exchange(ref newestSequence, batch[^1].Sequence);
-        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+        Interlocked.Exchange(ref fileBytes, DatabaseBytes());
     }
 
     private long TypeId(ProfilerEvent profilerEvent, bool launcher)
@@ -727,17 +832,16 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     // the CPU samples from before the first event left, or else the oldest CPU samples, when they're older than every event
     // or no event can be deleted. Whole tree captures also participate by their end QPC. The call stacks and code
     // addresses no sample has any more go with them.
-    private bool TrimIfNeeded(long incomingBytes, SqliteTransaction? transaction = null)
+    private bool TrimIfNeeded(long incomingBytes, SqliteTransaction? transaction = null, SqliteTransaction? cpuTransaction = null)
     {
         var trimmed = false;
-        while ((Sql.Scalar(connection, "PRAGMA page_count", transaction) - Sql.Scalar(connection, "PRAGMA freelist_count", transaction)) * pageSize +
-            incomingBytes > LimitBytes * TrimAt)
+        while (DatabaseBytes(excludeFreePages: true, transaction, cpuTransaction) + incomingBytes > LimitBytes * TrimAt)
         {
             var oldest = Interlocked.Read(ref oldestSequence);
             var newest = Interlocked.Read(ref newestSequence);
             long? firstEvent = oldest != 0 && newest > oldest
                 ? Sql.Scalar(connection, "SELECT Qpc FROM Events ORDER BY Seq LIMIT 1", transaction) : null;
-            var firstSample = cpu.FirstQpc(transaction);
+            var firstSample = cpu?.FirstQpc(cpuTransaction);
             var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1", transaction);
             long? firstSnapshot = snapshotTimes.Count == 0 ? null : snapshotTimes[0];
             if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
@@ -747,15 +851,24 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             }
             else if (firstEvent is { } eventQpc && (firstSample is null || eventQpc <= firstSample))
             {
-                TrimEvents(oldest, newest, transaction);
+                TrimEvents(oldest, newest, transaction, cpuTransaction);
             }
-            else if (firstSample is null || !TrimSamples(firstEvent, transaction))
+            else if (firstSample is null || !TrimSamples(firstEvent, cpuTransaction))
             {
-                if (firstSnapshot is null) return trimmed;
+                if (firstSnapshot is null) break;
                 TrimSnapshot(transaction);
             }
             trimmed = true;
         }
+
+        // Freed pages in one database cannot hold the other's next batch. Return them to the filesystem when needed
+        // so the shared limit still bounds the two database files, not just their used pages.
+        if (cpuConnection is not null && DatabaseBytes(excludeFreePages: false, transaction, cpuTransaction) + incomingBytes > LimitBytes * TrimAt)
+        {
+            Sql.Execute(connection, "PRAGMA incremental_vacuum;", transaction);
+            Sql.Execute(cpuConnection, "PRAGMA incremental_vacuum;", cpuTransaction);
+        }
+
         return trimmed;
     }
 
@@ -765,7 +878,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         """, transaction);
 
     // Deletes the oldest events, with the CPU samples from before the first event left.
-    private void TrimEvents(long oldest, long newest, SqliteTransaction? transaction)
+    private void TrimEvents(long oldest, long newest, SqliteTransaction? transaction, SqliteTransaction? cpuTransaction)
     {
         var cutoff = oldest + Math.Max(1, (newest - oldest + 1) / TrimFraction);
         var current = transaction ?? connection.BeginTransaction();
@@ -784,21 +897,34 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             """, current, ("$cutoff", cutoff));
         Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromSeq = $cutoff, CompleteFromQpc = $qpc", current,
             ("$cutoff", cutoff), ("$qpc", qpc));
-        if (cpu.Trim(qpc, current) > 0)
-        {
-            cpu.Prune(current);
-        }
         owned?.Commit();
 
         Interlocked.Exchange(ref oldestSequence, cutoff);
         Interlocked.Exchange(ref completeFromQpc, qpc);
+        // Main's committed boundary is authoritative even if this subsequent cleanup fails.
+        if (cpu is not null)
+        {
+            using var ownedCpu = cpuTransaction is null ? cpuConnection!.BeginTransaction() : null;
+            var currentCpu = cpuTransaction ?? ownedCpu!;
+            if (cpu.Trim(qpc, currentCpu) > 0)
+            {
+                cpu.Prune(currentCpu);
+            }
+
+            ownedCpu?.Commit();
+        }
     }
 
     // Deletes the oldest CPU samples, but none from firstEvent's time on, so the file keeps every sample from the first
     // event it keeps. Returns false when none was deleted.
     private bool TrimSamples(long? firstEvent, SqliteTransaction? transaction)
     {
-        var current = transaction ?? connection.BeginTransaction();
+        if (cpu is null)
+        {
+            return false;
+        }
+
+        var current = transaction ?? cpuConnection!.BeginTransaction();
         using var owned = transaction is null ? current : null;
         if (cpu.TrimOldest(Math.Max(1, cpu.Samples / TrimFraction), firstEvent, current) == 0)
         {
@@ -827,8 +953,9 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 StoreProcessStart(null);
                 if (Interlocked.Exchange(ref cpuSampling, null) is { } sampling)
                 {
-                    using var transaction = connection.BeginTransaction();
-                    cpu.Finish(sampling.Summary, Interlocked.Read(ref droppedSamples), sampling.Note, transaction);
+                    var index = EnsureCpuDatabase();
+                    using var transaction = cpuConnection!.BeginTransaction();
+                    index.Finish(sampling.Summary, Interlocked.Read(ref droppedSamples), sampling.Note, transaction);
                     transaction.Commit();
                 }
 
@@ -836,13 +963,16 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                     "UPDATE SessionInfo SET EndedUtc = $ended, EndReason = $reason, LostByEtw = $lost, DroppedByProfiler = $dropped",
                     null, ("$ended", DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture)), ("$reason", endReason),
                     ("$lost", lostByEtw), ("$dropped", droppedByProfiler));
-                // Stops the background checkpoint connection/thread first, so the two connections never checkpoint at
-                // the same time: this is now the only one left, and it moves the write-ahead log into the database and
-                // leaves WAL mode, so the .sqlite file stands alone and can be opened read-only without its -wal and
-                // -shm files.
+                // Stop the background checkpoint before checkpointing both files, so they can be copied without their
+                // -wal and -shm files.
                 StopCheckpointing();
+                if (cpu is not null)
+                {
+                    Sql.Execute(cpuConnection!, "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;");
+                }
+
                 Sql.Execute(connection, "PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;");
-                Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+                Interlocked.Exchange(ref fileBytes, DatabaseBytes());
             }
         }
         catch (Exception error) when (error is SqliteException or IOException)
@@ -858,7 +988,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             objects.Dispose();
             frames.Dispose();
             graphics.Dispose();
-            cpu.Dispose();
+            cpu?.Dispose();
+            cpuConnection?.Dispose();
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();

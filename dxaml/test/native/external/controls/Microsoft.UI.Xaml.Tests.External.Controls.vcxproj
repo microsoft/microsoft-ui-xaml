@@ -82,6 +82,7 @@
         $(MSBuildThisFileDirectory)\timepickerflyout;
         $(MSBuildThisFileDirectory)\toggleswitch;
         $(MSBuildThisFileDirectory)\tooltip;
+        $(MSBuildThisFileDirectory)\treeview;
         $(MSBuildThisFileDirectory)\uielement;
         $(MSBuildThisFileDirectory)\usercontrol;
         $(MSBuildThisFileDirectory)\variablesizedwrapgrid;
@@ -205,6 +206,7 @@
     <ClInclude Include="toggleswitch\ToggleSwitchAutomationIntegrationTests.h" />
     <ClInclude Include="toggleswitch\ToggleSwitchIntegrationTests.h" />
     <ClInclude Include="tooltip\ToolTipIntegrationTests.h" />
+    <ClInclude Include="treeview\TreeViewIntegrationTests.h" />
     <ClInclude Include="uielement\UIElementIntegrationTests.h" />
     <ClInclude Include="usercontrol\UserControlIntegrationTests.h" />
     <ClInclude Include="variablesizedwrapgrid\VariableSizedWrapGridIntegrationTests.h" />
@@ -320,6 +322,7 @@
     <ClCompile Include="toggleswitch\ToggleSwitchIntegrationTests.cpp" />
     <ClCompile Include="toggleswitch\ToggleSwitchAutomationIntegrationTests.cpp" />
     <ClCompile Include="tooltip\ToolTipIntegrationTests.cpp" />
+    <ClCompile Include="treeview\TreeViewIntegrationTests.cpp" />
     <ClCompile Include="uielement\UIElementIntegrationTests.cpp" />
     <ClCompile Include="usercontrol\UserControlIntegrationTests.cpp" />
     <ClCompile Include="variablesizedwrapgrid\VariableSizedWrapGridIntegrationTests.cpp" />
