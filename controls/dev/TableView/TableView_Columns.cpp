@@ -512,6 +512,12 @@ void TableView::OnColumnCellTemplateChanged(const winrt::TableViewColumn& column
                 {
                     winrt::get_self<TableView>(owner)->RegenerateColumnCells(liveColumn, false /* resetAutoWidth */);
                 }
+                else
+                {
+                    // The owner went away without releasing the column; keep the change pending for
+                    // the next owner, which can post again.
+                    liveColumnImpl->InvalidateCellContentChangePostInternal();
+                }
             });
         // Without a post (teardown) the change stays pending for the next regeneration.
         columnImpl->SetCellContentChangePostedInternal(posted);
