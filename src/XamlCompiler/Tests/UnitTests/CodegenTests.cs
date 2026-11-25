@@ -352,6 +352,13 @@ namespace UnitTests
             DiffCodegen(@"Basic\CppWinRT\Simple\generated");
         }
 
+        // A C++ desktop app that doesn't set AppContainerApplication must get an STA wWinMain (#11028).
+        [TestMethod]
+        public void Codegen_BasicCppWinRTNoAppContainerProperty()
+        {
+            DiffCodegen(@"Basic\CppWinRT\NoAppContainerProperty\generated");
+        }
+
         [TestMethod]
         public void Codegen_BasicCS()
         {
