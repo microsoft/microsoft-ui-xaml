@@ -1260,7 +1260,8 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(IsPremultiplied(image.At(50, 25), 255, 255, 255, 255, 1));
         VERIFY_IS_TRUE(IsPremultiplied(image.At(950, 730), 128, 128, 128, 255, 3), L"nested rounded clip inside the hinted group");
         VERIFY_IS_TRUE(IsPremultiplied(image.At(995, 755), 128, 128, 128, 255, 3), L"drawn in the group outside the nested clip");
-        VERIFY_IS_TRUE(IsPremultiplied(image.At(911, 711), 255, 255, 255, 255, 1), L"outside the nested rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(910, 710), 255, 255, 255, 255, 1), L"outside the nested rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(913, 713), 128, 128, 128, 255, 3), L"inside the nested rounded corner's arc");
         VERIFY_IS_TRUE(IsPremultiplied(image.At(905, 705), 255, 255, 255, 255, 1));
 
         // Partial damage further bounds the layer.
