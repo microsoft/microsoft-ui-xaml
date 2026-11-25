@@ -308,6 +308,7 @@ ERROR_GENERICXAML_INVALID_FILEPROTOCOL "Invalid URI scheme, only the file:// URI
 
 ERROR_FRAME_NAVIGATING "The BackStack or ForwardStack cannot be changed while navigating."
 ERROR_PAGESTACK_ENTRY_OWNED "The PageStackEntry being added belongs to another frame."
+ERROR_FRAME_INVALID_NAVIGATION_DESTINATION "Cannot navigate to type '%s'. The destination type must derive from Microsoft.UI.Xaml.Controls.Page. See https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.frame.navigate" // %s is the requested destination type. {Locked="Microsoft.UI.Xaml.Controls.Page"} {Locked="https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.frame.navigate"}
 
 ERROR_HUB_DEFAULT_SECTION_INDEX_OUT_OF_RANGE "Hub.DefaultSectionIndex must be less than the size of Hub.Sections"
 

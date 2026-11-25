@@ -88,7 +88,13 @@ PageStackEntry::PrepareContent(
 
     // Query for IPage from IInspectable(Content).
     pIPage = ctl::query_interface<IPage>(pContentIInspectable);
-    IFCPTR(pIPage);    
+    if (!pIPage)
+    {
+        IFC(ErrorHelper::OriginateErrorUsingFormattedResourceID(
+            E_INVALIDARG,
+            ERROR_FRAME_INVALID_NAVIGATION_DESTINATION,
+            XSTRING_PTR_EPHEMERAL_FROM_HSTRING(m_descriptor.Get())));
+    }
     pPage = static_cast<Page *>(pIPage);
         
     IFC(GetFrame(&pIFrame));
