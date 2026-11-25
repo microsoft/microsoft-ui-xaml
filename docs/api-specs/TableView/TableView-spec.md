@@ -1201,9 +1201,23 @@ unsealed runtimeclass TableView
 };
 ```
 
-**No `MoveColumn` method.** A user reorder is applied to `Columns` as a remove followed by an insert
-of the same column, which is also how an app moves a column in code, so the two paths cannot drift
-apart.
+**No `MoveColumn` method.** A user reorder is applied to `Columns` as `RemoveAt` followed by
+`InsertAt` of the same column, the same calls an app makes to move a column in code. Both keep the
+column's sort, but they are not the same path: while a user move runs, the control treats that remove
+and insert as one move, and keeps state that an app's `Columns.RemoveAt` + `Insert` loses:
+
+| | User move | App `RemoveAt` + `Insert` |
+|---|---|---|
+| An `Auto` column's width | Kept at the width it has grown to | Measured again from its content |
+| Resize holds on locked `*` columns | Kept | Ended, as by any `Columns` change |
+| The moved column's header cell | Kept, so a focused header keeps focus | Released and built again; focus on it moves to a neighbouring header |
+| A focused body cell in the moved column | Keeps focus | Can lose focus |
+| The body's column cursor | Follows its column | Not moved with its column |
+| UIA notification, `ColumnReordered` | Raised | Not raised |
+
+An app that moves columns in code, such as the sample's "Reset column order" command, therefore gets
+the second column. A public `MoveColumn` with the user-move behavior is deferred (see
+[Deferred](#deferred)).
 
 ### Behavior
 
@@ -1212,10 +1226,23 @@ apart.
   touch and pen behave alike. As in File Explorer and Task Manager, the header itself follows the
   pointer, and as soon as the pointer enters a neighbouring header, that header slides over by the dragged
   header's width to open the gap where it will land, with the timing of ListView's reorder hints. Only the header row moves; the rows follow on the drop. Releasing drops the column there. A press that never passes the threshold is still a click, so it sorts as before.
-- **Canceling.** <kbd>Esc</kbd> (wherever focus is; a drag does not move focus), a lost pointer
-  capture, unloading the table, a pan of the table body or a horizontal scroll, replacing `Columns`, or a
-  change to `Columns` or to a column's `Visibility` or `FrozenEdge` cancels without changing anything.
-  A drag does not start while the body is being panned.
+- **Canceling.** A drag ends without changing anything on:
+  - <kbd>Esc</kbd>, wherever focus is (a drag does not move focus);
+  - a lost pointer capture or a canceled pointer, unloading the table, or applying a new template;
+  - turning `CanUserReorderColumns` off;
+  - replacing `Columns` or any change to it, or a change to a column's `Visibility` or `FrozenEdge`;
+  - a change to the header layout the drag measured when it started: a visible column's
+    `ActualWidth` changing by half a pixel or more (a gripper or keyboard resize, a `Width` set in
+    code, an `Auto` column growing), the frozen band's width changing, or the horizontal scroll offset
+    changing by half a pixel or more (scrolling or panning the body, or scrolling the header row);
+  - anything that builds the header cells again, such as a change to `Density`,
+    `CanUserSortColumns`, `CanUserResizeColumns` or `ColumnHeaderStyle`, a column's `Header`,
+    `HeaderTemplate`, `HeaderStyle`, `CanUserSort` or `CanUserResize`, or the theme.
+
+  Changes that can arrive during layout (scrolling, panning, a width change or a header rebuild)
+  end the drag on the next UI tick instead of at once; the drag ignores the pointer until then. A drag
+  does not start while the body is being panned or while the header row has not caught up with the
+  body's scroll offset.
 - **Coexistence.** A press on the resize gripper or on interactive header content (a `Button`, a
   `CheckBox`) is theirs and never starts a reorder, and a drag never sorts the column it moved. The
   right button and press-and-hold open the context menu as before. While reorder is on, the header
