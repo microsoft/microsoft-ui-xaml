@@ -71,6 +71,8 @@ public sealed record DrawnFrame(long TickId, int ThreadId, double EndMillisecond
 // reported to SessionQueries once its rows are read.
 public static partial class SessionFile
 {
+    public static string CpuDatabasePath(string path) => CpuSchema.PathFor(path);
+
     public static (uint ProcessId, long? CreationTimeFileTime) ReadProcessIdentity(string path)
     {
         using var connection = Open(path);
@@ -675,8 +677,8 @@ public static partial class SessionFile
         return command;
     }
 
-    // Opens a session file read-only, checking it is one this version reads.
-    internal static SqliteConnection Open(string path)
+    // Event reads do not open the potentially large CPU database. CPU reads attach it on demand.
+    internal static SqliteConnection Open(string path, bool includeCpu = false, SqliteOpenMode mode = SqliteOpenMode.ReadOnly)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         if (!File.Exists(path))
@@ -687,14 +689,14 @@ public static partial class SessionFile
         var connection = new SqliteConnection(new SqliteConnectionStringBuilder
         {
             DataSource = path,
-            Mode = SqliteOpenMode.ReadOnly,
+            Mode = mode,
             Pooling = false
         }.ToString());
         try
         {
             connection.Open();
             var version = Sql.Scalar(connection, "PRAGMA user_version");
-            if (version != SessionSchema.Version)
+            if (version != SessionSchema.Version && version != SessionSchema.LegacyVersion)
             {
                 throw new InvalidDataException(
                     $"'{path}' is not a WinUI Profiler session file of version {SessionSchema.Version} (found version {version}).");
@@ -705,6 +707,33 @@ public static partial class SessionFile
             {
                 throw new InvalidDataException(
                     $"'{path}' was written by an earlier WinUI Profiler, without the shared views. Record it again.");
+            }
+
+            if (includeCpu && version == SessionSchema.Version &&
+                Sql.Scalar(connection, "SELECT COUNT(*) FROM SessionInfo WHERE CpuDatabaseVersion IS NOT NULL") != 0)
+            {
+                var cpuVersion = Sql.Scalar(connection, "SELECT CpuDatabaseVersion FROM SessionInfo");
+                if (cpuVersion != CpuSchema.Version)
+                {
+                    throw new InvalidDataException($"'{path}' requires an unsupported CPU database version: {cpuVersion}.");
+                }
+
+                var cpuPath = CpuSchema.PathFor(path);
+                if (!File.Exists(cpuPath))
+                {
+                    throw new FileNotFoundException($"The session's CPU database was not found: {cpuPath}", cpuPath);
+                }
+
+                CpuSchema.Attach(connection, cpuPath);
+                if (Sql.Scalar(connection, "PRAGMA cpu.user_version") != cpuVersion ||
+                    Sql.Scalar(connection, """
+                        SELECT COUNT(*) FROM cpu.CpuSessionInfo c JOIN main.SessionInfo s ON c.SessionId = s.SessionId
+                        """) != 1)
+                {
+                    throw new InvalidDataException($"'{cpuPath}' is not the CPU database for session '{path}' or has an unsupported version.");
+                }
+
+                Sql.Execute(connection, CpuSchema.ReadViews);
             }
 
             return connection;
