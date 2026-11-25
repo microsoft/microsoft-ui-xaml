@@ -6132,7 +6132,7 @@ namespace Microsoft.UI.Xaml.Controls
 
     [NativeName("CItemsPanelTemplate")]
     [Guids(ClassGuid = "421f4b9a-6327-4501-a8f2-1a53f8b0387d")]
-    public sealed class ItemsPanelTemplate
+    public class ItemsPanelTemplate
      : Microsoft.UI.Xaml.FrameworkTemplate
     {
         public ItemsPanelTemplate() { }
