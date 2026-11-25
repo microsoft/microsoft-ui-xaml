@@ -1392,6 +1392,7 @@ Console.WriteLine("Passed: graphics IDs, original ETW identities, full-width JSO
 
 SurfaceTextureTraceIntegration.RunRegressionTests();
 GraphicsIndexTests.Run();
+EventPipelineTests.Run();
 await CliLiveTests.RunAsync();
 CliQueryTests.Run();
 await SnapshotDiffTests.RunAsync();
