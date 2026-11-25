@@ -4,6 +4,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Data.Sqlite;
 using WinUIProfiler.Engine.Events;
+using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Storage;
 
 internal static class CpuStorageFailureTests
@@ -12,7 +13,7 @@ internal static class CpuStorageFailureTests
     {
         var directory = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-CpuFailures-{Guid.NewGuid():N}");
         Directory.CreateDirectory(directory);
-        var paths = new[] { "initialize", "publish", "clock", "retention", "finish" }
+        var paths = new[] { "initialize", "publish", "clock", "retention", "samples", "finish" }
             .Select(name => Path.Combine(directory, name + ".sqlite")).ToArray();
         try
         {
@@ -20,8 +21,9 @@ internal static class CpuStorageFailureTests
             PublicationFailure(paths[1]);
             CanonicalClock(paths[2]);
             RetentionFailure(paths[3]);
-            TrimmedFinishFailure(paths[4]);
-            Console.WriteLine("Passed: CPU WAL failures preserve ordered publication, canonical timing, retained samples and loss notes.");
+            SampleWriteFailure(paths[4]);
+            TrimmedFinishFailure(paths[5]);
+            Console.WriteLine("Passed: CPU WAL failures preserve ordered publication, canonical timing, retained samples, storage sizes and loss notes.");
         }
         finally
         {
@@ -110,20 +112,53 @@ internal static class CpuStorageFailureTests
             "Failed CPU cleanup must leave the committed event boundary authoritative, filter stale samples and report their omission.");
     }
 
+    private static void SampleWriteFailure(string path)
+    {
+        using var fault = new WriteFault(path, cpu: true);
+        using var writer = Create(path, limitBytes: 1024 * 1024);
+        Events(writer, first: 1, count: 500, padding: 1_000);
+        Wait(writer, () => writer.Status.StoredEvents == 500);
+        Sample(writer, 1_000_000);
+        Wait(writer, () => CpuProfileReader.ReadSampling(path)?.Samples == 1 && writer.Status.FileBytes == SavedBytes());
+        var originalStatus = writer.Status;
+        var sample = new CompletedSample(2_000_000, 1, 5, [new(null, 0xDEF0)]);
+        // One large stack forces event retention regardless of how the writer batches queued samples.
+        sample = sample with { Frames = Enumerable.Repeat(sample.Frames[0], 8_000).ToArray() };
+        fault.Arm();
+        writer.PostSample(sample, wait: true);
+        Expect(SpinWait.SpinUntil(() => writer.Failure is not null, TimeSpan.FromSeconds(10)),
+            "The sample commit must reach the injected CPU WAL failure.");
+        var error = writer.Failure;
+        var failedStatus = writer.Status;
+        writer.Close("Test complete");
+        Failed(writer, fault);
+        var bytes = SavedBytes();
+        Expect(bytes < originalStatus.FileBytes && writer.Status.StoredEvents < 500,
+            "Event retention must commit and reclaim pages before the CPU sample write fails.");
+        Expect(failedStatus.FileBytes == bytes && writer.Status.FileBytes == bytes,
+            $"A failed sample commit must report {bytes} committed bytes, not {failedStatus.FileBytes}.");
+        Expect(ReferenceEquals(writer.Failure, error) && CpuProfileReader.ReadSampling(path) is { Samples: 1 },
+            "Size refresh and Close must preserve the original error and the last committed CPU samples.");
+
+        long SavedBytes()
+        {
+            using var connection = SessionFile.Open(path, includeCpu: true);
+            return (Sql.Scalar(connection, "PRAGMA main.page_count") + Sql.Scalar(connection, "PRAGMA cpu.page_count")) *
+                Sql.Scalar(connection, "PRAGMA main.page_size");
+        }
+    }
+
     private static void TrimmedFinishFailure(string path)
     {
         using var fault = new WriteFault(path, cpu: true);
         using var writer = Create(path, limitBytes: 1024 * 1024);
+        Expect(!LastSampleWritten(), "Polling must allow a recording whose CPU database has not been published yet.");
         for (var index = 0; index < 16_000; index++)
         {
             writer.PostSample(new(1_000 + index, 1, 5, [new(null, 0xABC0UL + (ulong)index)]), wait: true);
         }
 
-        Wait(writer, () =>
-        {
-            using var connection = SessionFile.Open(path, includeCpu: true);
-            return Sql.Scalar(connection, "SELECT MAX(Qpc) FROM CpuSamples") == 16_999;
-        });
+        Wait(writer, LastSampleWritten);
         Expect(CpuProfileReader.ReadSampling(path) is { Samples: > 0 and < 16_000, Note: CpuSampleIndex.TrimmedNote },
             "Committed CPU-only trimming must report lost samples even before finalization.");
         writer.SetCpuSampling(new(1.0, false, 16_000, []), null);
@@ -132,6 +167,13 @@ internal static class CpuStorageFailureTests
         Failed(writer, fault);
         Expect(CpuProfileReader.ReadSampling(path) is { Samples: > 0 and < 16_000, Note: CpuSampleIndex.TrimmedNote },
             "A failed finalization must not lose the durable CPU trimming note.");
+
+        bool LastSampleWritten()
+        {
+            using var connection = SessionFile.Open(path, includeCpu: true);
+            return Sql.Scalar(connection, "SELECT COUNT(*) FROM pragma_database_list WHERE name = 'cpu'") != 0 &&
+                Sql.Scalar(connection, "SELECT MAX(Qpc) FROM cpu.CpuSamples") == 16_999;
+        }
     }
 
     private static SessionWriter Create(string path, long limitBytes = SessionWriter.DefaultLimitBytes) =>

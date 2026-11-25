@@ -448,15 +448,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         catch (Exception error) when (committed && (error is SqliteException or IOException))
         {
             // Both transaction scopes have ended: count main's saved snapshot and CPU's rolled-back cleanup.
-            try
-            {
-                Interlocked.Exchange(ref fileBytes, DatabaseBytes());
-            }
-            catch (Exception sizeError) when (sizeError is SqliteException or IOException)
-            {
-                Trace.TraceWarning($"Could not refresh recording size after CPU rollback: {sizeError}");
-            }
-
+            RefreshFileBytesAfterFailure();
             throw;
         }
         finally
@@ -472,15 +464,21 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private void WriteSamples(List<CompletedSample> samples)
     {
         var index = EnsureCpuDatabase();
-        TrimIfNeeded(index.IncomingBytes(samples));
-        using (var transaction = cpuConnection!.BeginTransaction())
+        try
         {
+            TrimIfNeeded(index.IncomingBytes(samples));
+            using var transaction = cpuConnection!.BeginTransaction();
             foreach (var sample in samples)
             {
                 index.Add(sample, transaction);
             }
 
             transaction.Commit();
+        }
+        catch (Exception error) when (error is SqliteException or IOException)
+        {
+            RefreshFileBytesAfterFailure();
+            throw;
         }
 
         Interlocked.Exchange(ref fileBytes, DatabaseBytes());
@@ -555,6 +553,18 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
 
         return pages * pageSize;
+    }
+
+    private void RefreshFileBytesAfterFailure()
+    {
+        try
+        {
+            Interlocked.Exchange(ref fileBytes, DatabaseBytes());
+        }
+        catch (Exception sizeError) when (sizeError is SqliteException or IOException)
+        {
+            Trace.TraceWarning($"Could not refresh recording size after a failed write: {sizeError}");
+        }
     }
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
