@@ -5,9 +5,11 @@ description: >-
   WinUI 3 app's performance from it with the winui-profiler tools: how the
   launch went, UI-thread ticks and slow ticks, regions of interest
   (navigations, flyouts and dialogs opening, focus changes), and the UI
-  elements and composition visuals the events mention. Use it when someone
+  elements, composition visuals and observed GPU texture/allocation links.
+  Use it when someone
   asks why a WinUI app is slow to start or draws slowly, what a tick did, what
-  happened around a navigation or to an element, or what a session holds, and
+  happened around a navigation or to an element, which GPU textures an element
+  references, or what a session holds, and
   for /winui-profiler:analyze-session [session.sqlite | folder].
 user-invocable: true
 ---
@@ -16,8 +18,9 @@ user-invocable: true
 
 The WinUI Profiler app (`tools/WinUIProfiler` in the microsoft-ui-xaml
 repository) records one WinUI 3 process into a session file. Its processors
-store each UI thread's ticks, the regions of interest, and the UI elements
-and composition visuals the events mention. The winui-profiler tools read
+store each UI thread's ticks, the regions of interest, the UI elements and
+composition visuals the events mention, and graphics resource lifetimes.
+The winui-profiler tools read these and explicit GPU association events,
 them, even while the app is still recording, and never change the file.
 
 ## Pick the session
@@ -78,6 +81,11 @@ stop and call nothing else until the user asks a question:
 | When did layout passes, navigations or focus changes happen? | `frames`, view `rows` with `type` |
 | Which elements and visuals were there? | `objects`, view `types`, then `list` |
 | What happened to one element or visual? | `objects`, view `history` |
+| What GPU memory evidence is available? | `memory`, view `summary` |
+| Which elements reference the largest known GPU allocations? | `memory`, view `elements` |
+| Which textures and allocations does one element reference? | `memory`, view `element` with its `objectId` or core element `address` from `objects` |
+| Which process textures were observed, including ones without an element link? | `memory`, view `textures` |
+| How did GPU texture/allocation references change over time? | The needed `memory` views at two `atMs` values on `session.timeBase` |
 
 ## How I got this
 
@@ -161,13 +169,26 @@ Rules:
 - **Limits.** One process per session. A session file is limited to 500 MB:
   past it, the oldest events are deleted, and the summary says from which
   event the file is complete.
+- **GPU memory.** `memory` follows explicit element/visual/surface/update-texture
+  events without tree snapshots. Element attribution needs a runtime emitting
+  `WucVisualElementChanged`, rendering during collection, and the surface
+  events; older recordings can still give process texture/allocation data.
+  Honor the returned coverage, unresolved-link statuses and retention notes.
+  A texture is an observed transient `BeginDraw` update resource, not proof
+  of persistent backing storage or exclusive element ownership. Atlases and
+  allocations can be shared: subtotals deduplicate adapter allocations, but
+  never add per-element subtotals together. Bytes are exact decimal strings;
+  missing sizes are null, and known-byte subtotals exclude them. Missing links
+  do not mean zero GPU usage. Report changes as recorded references and known
+  linked bytes, not resident VRAM, complete GPU usage or proof of a leak.
 
 ## What the tools can't answer
 
 These aren't stored, so say so, and don't estimate them from other data:
 
-- the events' field values, and counts of raw events by provider;
-- GPU memory, CPU samples and call stacks, context switches and thread waits;
+- arbitrary event fields, and counts of raw events by provider;
+- resident or exclusive per-element GPU memory, CPU samples and call stacks,
+  context switches and thread waits;
 - the XAML and composition trees;
 - the Launch tab's milestones from the marker configuration, such as an app's
   own markers (a marker event fired on a UI thread shows only among its

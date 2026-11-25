@@ -1603,10 +1603,11 @@ functions are then named.
 This folder is also a plugin for GitHub Copilot CLI, `winui-profiler`. It
 answers questions about session files from what the app's processors stored:
 how the launch went, UI-thread ticks and slow ticks, regions of interest, and
-the UI elements and composition visuals the events mention. Its MCP server,
+the UI elements, composition visuals and GPU texture/allocation relationships
+the events mention. Its MCP server,
 `WinUIProfiler.Mcp`, reads session files with `SessionFile` and the views
 above, where they are and without changing them, even while the app is still
-recording one. It never returns the events' field values. It doesn't read
+recording one. It doesn't expose arbitrary raw events or their payloads. It doesn't read
 traces: read a trace into a session file first, with **Open trace** or the
 CLI's `record` command (see "Recorded, from a trace file" above).
 
@@ -1636,12 +1637,45 @@ that no session has started for 30 days.
 | `launch` | `milestones`, `frames` | How the launch went, from `LaunchSummary`, `InterestingRows` and `Ticks`, and how soon the first frames drew |
 | `frames` | `summary`, `slowest`, `regions`, `rows`, `tick` | Each UI thread's ticks, as the Frames tab shows them: the slowest, the regions of interest and their rows, and what one tick did |
 | `objects` | `types`, `list`, `history` | The UI elements and visuals, as the Objects tab shows them, and what happened to one |
+| `memory` | `summary`, `elements`, `element`, `textures` | Observed element-to-visual-to-surface-to-update-texture links and time-scoped texture/allocation data, without tree snapshots |
 
 One skill, `analyze-session`, tells Copilot how to use the tools. Copilot
 reads it for questions about a WinUI app's performance, and
 `/winui-profiler:analyze-session [session.sqlite | folder]` runs it to
 summarize a session or list a folder's sessions. When no session file is
 given, the tools use the newest one in `%LOCALAPPDATA%\WinUIProfiler\Sessions`.
+
+### GPU memory attribution
+
+Start with `memory` view `summary` to check coverage and process texture totals.
+View `elements` ranks elements by known linked allocation bytes; `element`
+follows one element's explicit visual, brush/mask surface, observed texture
+and device/adapter allocation links. Select it with an `objectId` or core
+element `address` from `objects`; a reused address lists candidate lifetimes
+instead of choosing one. View `textures` also includes process textures with
+no observed element link.
+
+All four views accept `atMs` on `session.timeBase`; omit it for the latest
+stored event. Reads use one SQLite transaction, including during recording.
+Use two times to inspect changes; requests for deleted history or a time
+outside the stored recording fail explicitly. Element attribution requires
+a runtime that emits `WucVisualElementChanged` when rendering primitives,
+plus `VisualSurfaceChanged` and `DCompSurfaceTextureObserved`. Older captures
+still support process texture analysis when Direct3D11 events and the graphics
+index are present. No tree snapshot is required, and no new tables are added.
+Association events are subject to the same rolling retention as other events;
+missing history is not reconstructed.
+
+The reported textures are observed `BeginDraw` update resources, not proof
+of a surface's persistent backing storage or exclusive element ownership.
+Atlases and allocations can be shared. Each subtotal deduplicates adapter
+allocations, but **do not add per-element subtotals together**. Bytes are exact
+decimal strings, and unavailable sizes stay null; known-byte subtotals exclude
+unknown allocations. Neither an unobserved element nor an unresolved link
+means zero GPU usage. These results are not resident VRAM measurements or
+proof of a leak. Arbitrary app-created composition content is not attributed.
+
+### Query provenance
 
 Each tool's result also says how it got its answer. Copilot doesn't write SQL:
 each view runs fixed statements, then sorts, groups, counts and pages their
@@ -1660,7 +1694,7 @@ shows each call with its `queries` and `computed`, copied as returned, so the
 answer can be checked by running the statements.
 
 The plugin answers only what a processor stores. It doesn't answer questions
-about the events' field values, GPU memory, CPU samples, call stacks, thread
+about arbitrary event fields, resident GPU memory, CPU samples, call stacks, thread
 waits or the XAML and composition trees; tools for them come with the
 processors that store them. Its `launch` milestones are its own, from
 `LaunchSummary`, `InterestingRows` and `Ticks`, not the Launch tab's: it

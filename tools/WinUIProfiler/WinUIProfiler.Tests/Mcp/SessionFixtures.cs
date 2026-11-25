@@ -14,7 +14,7 @@ namespace WinUIProfiler.Tests.Mcp;
 /// event (<see cref="XamlProvider.Marker"/>), and null for the others.
 /// </summary>
 internal sealed record FixtureEvent(double Milliseconds, int ThreadId, XamlProvider Provider, bool TraceLogging, string Name,
-    int Opcode, IReadOnlyList<EventField> Fields, MarkerProvider? Marker = null);
+    int Opcode, IReadOnlyList<EventField> Fields, MarkerProvider? Marker = null, int? EventId = null, int? Version = null);
 
 /// <summary>
 /// Session files for the tests. The app's own SessionWriter writes them, so its indexes build the frames and objects
@@ -157,13 +157,13 @@ internal sealed class FixtureRecording : IDisposable
     private long sequence;
 
     internal FixtureRecording(string path, SessionCoverage coverage = SessionCoverage.ProcessStart, string? etlPath = null,
-        double? processStartMs = null)
+        double? processStartMs = null, long limitBytes = SessionWriter.DefaultLimitBytes)
     {
         // A recording from process start knows when the process was created: here, just before the recording started.
         DateTime? created = coverage == SessionCoverage.Trace ? null : DateTime.UtcNow.AddMilliseconds(-50);
         startQpc = Stopwatch.GetTimestamp();
         Writer = SessionWriter.Create(path, new SessionStart(SessionFixtures.ProcessId, SessionFixtures.ProcessName, created,
-            Stopwatch.Frequency, startQpc, coverage, etlPath));
+            Stopwatch.Frequency, startQpc, coverage, etlPath), limitBytes);
         if (processStartMs is { } ms)
         {
             // As a trace's reader stores it, with the process that created this one.
@@ -180,7 +180,8 @@ internal sealed class FixtureRecording : IDisposable
         foreach (var item in events)
         {
             Writer.Process(++sequence, new ProfilerEvent(Qpc(item.Milliseconds), item.Milliseconds, SessionFixtures.ProcessId,
-                item.ThreadId, item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields, item.Marker));
+                item.ThreadId, item.Provider, item.TraceLogging, item.Name, item.Opcode, item.Fields, item.Marker,
+                item.EventId, item.Version));
         }
     }
 

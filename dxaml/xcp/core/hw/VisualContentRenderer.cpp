@@ -816,6 +816,13 @@ _Check_return_ HRESULT VisualContentRenderer::LinkVisual(
 
     TargetByLights(brush1, brush2, visual);
 
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        XamlProfilerTracing::WucVisualElementChanged(
+            reinterpret_cast<uint64_t>(visual),
+            reinterpret_cast<uint64_t>(m_pUIElementNoRef));
+    }
+
     return S_OK;
 }
 
@@ -901,6 +908,10 @@ void VisualContentRenderer::UnparentVisual(_In_ WUComp::IVisual* visual)
 void VisualContentRenderer::UnlinkVisual(_In_ WUComp::IVisual * visual)
 {
     UnparentVisual(visual);
+    if (XamlProfilerTracing::IsProfilerEnabled())
+    {
+        XamlProfilerTracing::WucVisualElementChanged(reinterpret_cast<uint64_t>(visual), 0);
+    }
     ReleaseInterface(visual);
 }
 

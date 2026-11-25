@@ -19,6 +19,7 @@ internal static class McpTestRunner
             .Concat(ValueTests.Tests)
             .Concat(SessionToolTests.Tests)
             .Concat(FrameToolTests.Tests).Concat(LaunchToolTests.Tests).Concat(ObjectToolTests.Tests)
+            .Concat(MemoryToolTests.Tests)
             .Concat(QueryTests.Tests);
 
     public static int Run(TextWriter output)
