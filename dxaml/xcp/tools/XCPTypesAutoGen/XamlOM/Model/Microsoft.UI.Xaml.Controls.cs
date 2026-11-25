@@ -2518,6 +2518,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Guids(ClassGuid = "c4d89a08-d1fc-4c96-9e52-8033e4803cf2")]
     [CodeGen(partial: true)]
     [NativeName("CImage")]
+    [ContentProperty("Source")]
     public sealed class Image
      : Microsoft.UI.Xaml.FrameworkElement
     {
