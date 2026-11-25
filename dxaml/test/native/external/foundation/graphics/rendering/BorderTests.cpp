@@ -1032,6 +1032,11 @@ void BorderTests::AllBorderBorder()
         border->BorderBrush = ref new SolidColorBrush(ColorHelper::FromArgb(128, 255, 0, 0));
         border->BorderThickness = xaml::Thickness({ 40,40,40,40 });
         border->CornerRadius = xaml::CornerRadiusHelper::FromUniformRadius(10); // Total border thickness is 80, which is greater than the height of 60.
+
+        // Thin line drawn with a border, where the total border thickness equals the height
+        border = MakeBorder(rootCanvas, 100, 2, 220, 0);
+        border->BorderBrush = ref new SolidColorBrush(ColorHelper::FromArgb(255, 255, 0, 0));
+        border->BorderThickness = xaml::Thickness({ 1,1,1,1 });
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);

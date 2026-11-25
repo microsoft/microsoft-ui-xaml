@@ -968,7 +968,7 @@ BaseContentRenderer::BorderHWRenderHelper(
             ));
     }
 
-    // Draw the border as a hollow ninegrid if we're not using the background as the border.
+    // Draw the border if we're not using the background as the border.
     // Check the thickness directly, because rounded corners make the nine grid insets non-zero.
     if (!canUseBackgroundAsBorder && borderBrush != nullptr && CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()))
     {
@@ -981,10 +981,11 @@ BaseContentRenderer::BorderHWRenderHelper(
         //
         XTHICKNESS ninegrid;
         const bool canDrawWithNinegrid = HWWalk::GetNinegridForBorderElement(pFrameworkElement, false /* forceIntegerInsets */, &ninegrid);
-        ASSERT(canDrawWithNinegrid);
 
         if (CBorder::HasNonZeroThickness(ninegrid))
         {
+            // Without a nine grid the border thickness covers the whole element, so there's no hollow center and the
+            // border is a solid rectangle (see CFrameworkElement::CreateBorderGeometriesAndBrushClipsCommon).
             BrushParams emptyBrushParams;
             IFC_RETURN(GeneralImageRenderContent(
                 bounds,
@@ -992,9 +993,9 @@ BaseContentRenderer::BorderHWRenderHelper(
                 borderBrush,
                 emptyBrushParams,
                 pFrameworkElement,
-                &ninegrid /* pNinegrid */,
+                canDrawWithNinegrid ? &ninegrid : nullptr /* pNinegrid */,
                 nullptr /* pShapeHwTexture */,
-                TRUE /* fIsHollow */
+                canDrawWithNinegrid /* fIsHollow */
             ));
         }
     }
