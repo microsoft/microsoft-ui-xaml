@@ -53,6 +53,21 @@ public:
     // Shared cached ETW state; querying must not initialize the provider on allocation paths.
     static void SetProfilerEnabled(bool enabled) noexcept;
     static bool IsProfilerEnabled() noexcept;
+    static uint64_t NextStoryboardId() noexcept;
+
+    // XAML bookkeeping only: neither an active clock nor an independent animation proves presentation.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(StoryboardActivity,
+        uint64_t, StoryboardId,
+        uint64_t, ObjectAddress,
+        uint64_t, RunId,
+        PCWSTR,   Operation,
+        PCWSTR,   Name,
+        PCWSTR,   State,
+        bool,     IsPaused,
+        bool,     HasIndependentAnimation,
+        bool,     IsInTimeManager,
+        uint32_t, ChildCount,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     static void NotifyChildInserted(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);
     static void NotifyChildRemoved(_In_opt_ IUnknown* parentVisual, _In_opt_ IUnknown* childVisual);

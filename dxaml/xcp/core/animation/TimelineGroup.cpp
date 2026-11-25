@@ -280,6 +280,11 @@ _Check_return_ HRESULT CTimelineGroup::OnAddToTimeManager()
         IFC_RETURN(hrError);
     }
 
+    if (GetTypeIndex() == KnownTypeIndex::Storyboard)
+    {
+        static_cast<CStoryboard*>(this)->TraceProfilerState(L"Registered");
+    }
+
     return S_OK;
 }
 
@@ -304,6 +309,11 @@ _Check_return_ HRESULT CTimelineGroup::OnRemoveFromTimeManager()
             ReleaseInterface(pTimeline);
         }
         IFC_RETURN(hrError);
+    }
+
+    if (GetTypeIndex() == KnownTypeIndex::Storyboard)
+    {
+        static_cast<CStoryboard*>(this)->TraceProfilerState(L"Unregistered");
     }
 
     return S_OK;

@@ -13,6 +13,7 @@
 #include <VisualTransitionCompletedData.h>
 #include <UIThreadScheduler.h>
 #include "TimeSpan.h"
+#include <XamlProfilerTracing.h>
 
 using namespace DirectUI;
 
@@ -21,6 +22,7 @@ using namespace DirectUI;
 
 CStoryboard::~CStoryboard()
 {
+    TraceProfilerState(L"Destroyed");
     // This storyboard has been deleted prior to the transition completed event being fired.
     // Cleanup after the transition object...
 
@@ -29,6 +31,94 @@ CStoryboard::~CStoryboard()
         delete m_pLayoutTransitionCompletedData;
         m_pLayoutTransitionCompletedData = NULL;
     }
+}
+
+void CStoryboard::TraceProfilerState(_In_z_ PCWSTR operation, bool observation, bool independentAnimation)
+{
+    if (!XamlProfilerTracing::IsProfilerEnabled())
+    {
+        return;
+    }
+
+    const bool destroyed = wcscmp(operation, L"Destroyed") == 0;
+    if (destroyed && m_profilerId == 0)
+    {
+        return;
+    }
+
+    const bool independent = observation ? independentAnimation : HasIndependentAnimation();
+    const auto stateKey = static_cast<uint32_t>(m_clockState)
+        | (static_cast<uint32_t>(m_fIsPaused) << 8)
+        | (static_cast<uint32_t>(m_fIsStopped) << 9)
+        | (static_cast<uint32_t>(independent) << 10)
+        | (static_cast<uint32_t>(IsInTimeManager()) << 11);
+    const auto now = GetTickCount64();
+    if (observation && m_profilerId != 0 && stateKey == m_profilerLastState
+        && now - m_profilerLastObservation < 1000)
+    {
+        return;
+    }
+
+    if (m_profilerId == 0)
+    {
+        m_profilerId = XamlProfilerTracing::NextStoryboardId();
+    }
+    m_profilerLastState = stateKey;
+    m_profilerLastObservation = now;
+
+    PCWSTR state = L"NotStarted";
+    if (destroyed)
+    {
+        state = L"Destroyed";
+    }
+    else if (m_fIsStopped || m_clockState == DirectUI::ClockState::Stopped)
+    {
+        state = L"Stopped";
+    }
+    else if (m_fIsPaused)
+    {
+        state = L"Paused";
+    }
+    else if (m_clockState == DirectUI::ClockState::Active)
+    {
+        state = L"Active";
+    }
+    else if (m_clockState == DirectUI::ClockState::Filling)
+    {
+        state = L"Filling";
+    }
+
+    // Labels are bounded display context, never lifetime or run identities.
+    wchar_t label[129]{};
+    if (!destroyed && m_strName.GetCount() != 0)
+    {
+        const auto text = m_strName.GetBuffer();
+        const bool truncated = m_strName.GetCount() > 128;
+        auto count = truncated ? 125u : m_strName.GetCount();
+        if (truncated && text[count - 1] >= 0xD800 && text[count - 1] <= 0xDBFF)
+        {
+            --count;
+        }
+        memcpy(label, text, count * sizeof(wchar_t));
+        if (truncated)
+        {
+            label[count++] = L'.';
+            label[count++] = L'.';
+            label[count] = L'.';
+        }
+    }
+
+    XamlProfilerTracing::StoryboardActivity(
+        m_profilerId,
+        reinterpret_cast<uint64_t>(static_cast<CDependencyObject*>(this)),
+        m_profilerRun,
+        operation,
+        label,
+        state,
+        !!m_fIsPaused,
+        independent,
+        IsInTimeManager(),
+        destroyed || m_pChild == nullptr ? 0u : m_pChild->GetCount());
 }
 
 // Overridden just to fire ETW events and signal animation tracking.
@@ -287,6 +377,7 @@ _Check_return_ HRESULT CStoryboard::ComputeStateImpl(
     }
 
     *pHasIndependentAnimation = hasIndependentAnimation;
+    TraceProfilerState(L"Observed", true, hasIndependentAnimation);
 
     return S_OK;
 }
@@ -299,6 +390,7 @@ _Check_return_ HRESULT CStoryboard::PausePrivate()
         // When paused, the parent time no longer moves forward during ComputeState.
         m_fIsPaused = TRUE;
         m_fIsResuming = FALSE;
+        TraceProfilerState(L"PauseRequested");
 
         // There's no need to notify the time manager of a timing change for pausing here, since the pause is
         // handled on the next tick.  If the storyboard was independent and is paused on the next tick, it'll be
@@ -339,6 +431,7 @@ _Check_return_ HRESULT CStoryboard::ResumePrivate()
         // When resumed, the time delta from the parent timeline will be adjusted on the next tick.
         m_fIsPaused = FALSE;
         m_fIsResuming = TRUE;
+        TraceProfilerState(L"ResumeRequested");
 
         TraceResumeStoryboardInfo((XUINT64)static_cast<CDependencyObject*>(this));
 
@@ -379,11 +472,14 @@ _Check_return_ HRESULT CStoryboard::ResumePrivate()
 // Starts the current Storyboard from the beginning.  Overrides any previous stops/pauses/seeks.
 _Check_return_ HRESULT CStoryboard::BeginPrivate(bool fIsTopLevel)
 {
+    ++m_profilerRun;
+    TraceProfilerState(L"BeginRequested");
     auto cleanupGuard = wil::scope_exit([&]
     {
         // Reset our state if we fail to begin so that completed doesn't fire on error
         m_fIsStopped = TRUE;
         m_IsCompletedEventFired = TRUE;
+        TraceProfilerState(L"BeginFailed");
     });
 
     auto core = GetContext();
@@ -507,6 +603,7 @@ _Check_return_ HRESULT CStoryboard::BeginPrivate(bool fIsTopLevel)
     InitializeIteration();
 
     cleanupGuard.release();
+    TraceProfilerState(L"Begin");
 
     return S_OK;
 }
@@ -529,6 +626,7 @@ _Check_return_ HRESULT CStoryboard::StopPrivate()
         auto core = GetContext();
 
         m_clockState = DirectUI::ClockState::Stopped;
+        TraceProfilerState(L"StopRequested");
 
         if (core->GetTimeManager()->IsRunning())
         {

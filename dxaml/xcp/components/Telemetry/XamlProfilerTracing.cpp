@@ -9,6 +9,7 @@
 // Keep the atomic's definition in one translation unit; PCHs can give std::atomic
 // different alignment annotations that conflict during link-time code generation.
 static std::atomic<bool> g_profilerEnabled{false};
+static std::atomic<uint64_t> g_nextStoryboardId{0};
 
 namespace
 {
@@ -68,6 +69,11 @@ void XamlProfilerTracing::SetProfilerEnabled(bool enabled) noexcept
 bool XamlProfilerTracing::IsProfilerEnabled() noexcept
 {
     return g_profilerEnabled.load(std::memory_order_relaxed);
+}
+
+uint64_t XamlProfilerTracing::NextStoryboardId() noexcept
+{
+    return g_nextStoryboardId.fetch_add(1, std::memory_order_relaxed) + 1;
 }
 
 void XamlProfilerTracing::NotifyChildInserted(
