@@ -17,6 +17,7 @@ using WinUIProfiler.Engine.Ingestion;
 using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Symbols;
 using WinUIProfiler.Engine.Target;
+using WinUITools.Telemetry;
 
 namespace WinUIProfiler.App;
 
@@ -49,6 +50,10 @@ public sealed partial class MainWindow : Window
     private ProfilerCommandLine commandLine = ProfilerCommandLine.Empty;
     private readonly Dictionary<Guid, SnapshotViewerWindow> snapshotWindows = [];
     private readonly Dictionary<(Guid Before, Guid After), SnapshotDiffWindow> snapshotDiffWindows = [];
+    // The tabs the user has opened, and the usage sessions of the connection or trace reading and of an opened file.
+    private readonly HashSet<string> viewsOpened = [];
+    private UsageSession? recordingUsage;
+    private UsageSession? fileUsage;
     public ObservableCollection<SnapshotHistoryEntry> Snapshots { get; } = [];
     public MainWindow()
     {
@@ -67,6 +72,12 @@ public sealed partial class MainWindow : Window
         ObjectsPanel.Source = session;
         LaunchPanel.Source = session;
         CpuPanel.Source = session;
+        session.Opened += Session_Opened;
+        if (UsageTelemetry.TakeNotice() is { } notice)
+        {
+            TelemetryNotice.Message = notice;
+            TelemetryNotice.IsOpen = true;
+        }
         FramesPanel.ObjectRequested += (_, mention) =>
         {
             Tabs.SelectedItem = ObjectsTab;
@@ -151,6 +162,11 @@ public sealed partial class MainWindow : Window
         foreach (var viewer in snapshotDiffWindows.Values.ToArray()) viewer.Close();
         await model.CancelSymbolsAsync();
         await model.DisconnectAsync();
+        // A SessionEnded event waits for its SessionStarted, which may still be naming the target. Queuing and sending
+        // the last events takes at most 2 seconds.
+        var sent = Task.WhenAll(EndRecordingUsage(force: true), EndFileUsage())
+            .ContinueWith(_ => UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2)), TaskScheduler.Default).Unwrap();
+        await Task.WhenAny(sent, Task.Delay(TimeSpan.FromSeconds(2)));
         closeAllowed = true;
         Close();
     }
@@ -326,6 +342,7 @@ public sealed partial class MainWindow : Window
         refreshing = true;
         try
         {
+            _ = EndRecordingUsage(force: false);
             var idle = model.CanConnect && !initialSnapshotPending && snapshotOperation is null;
             if (settingsFoldedFor != model.CanConnect)
             {
@@ -654,7 +671,8 @@ public sealed partial class MainWindow : Window
 
     private async Task ConnectAsync(bool trustLocalBinaries)
     {
-        if (!model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
+        // While the window closes it can still be clicked, and nothing would disconnect a connection started then.
+        if (closing || !model.CanConnect || initialSnapshotPending || snapshotOperation is not null) return;
         if (TraceMode)
         {
             await OpenTraceAsync();
@@ -692,6 +710,8 @@ PrivateRuntime);
 
                 model.ReportProgress(value);
             }));
+            _ = EndFileUsage();
+            recordingUsage = UsageSession.Start("online", () => TelemetryTarget.ForTarget(options.Kind, options.Target));
             session.BeginRecording();
             await model.ConnectAsync(options, progress);
             if (!closing && generation == connectionGeneration && model.Connection?.State == "Connected")
@@ -721,6 +741,8 @@ PrivateRuntime);
         try
         {
             model.SymbolPath = ReadSymbolPath();
+            _ = EndFileUsage();
+            recordingUsage = UsageSession.Start("offline", () => TelemetryTarget.ForProcessName(process.Name));
             session.BeginRecording();
             await model.OpenTraceAsync(path, process, SessionsDirectory, LaunchPanel.LoadConfig().Providers);
         }
@@ -740,6 +762,61 @@ PrivateRuntime);
         connectionGeneration++;
         DisconnectButton.IsEnabled = false;
         await model.DisconnectAsync();
+    }
+
+    // Reports each tab the first time the user opens it; the tab shown at startup was not opened by the user.
+    private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs args)
+    {
+        if (args.RemovedItems.Count == 0 || !UsageTelemetry.IsEnabled)
+        {
+            return;
+        }
+
+        var selected = Tabs.SelectedItem;
+        var view = ReferenceEquals(selected, LaunchTab) ? "Launch" : ReferenceEquals(selected, FramesTab) ? "Frames" :
+            ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" :
+            ReferenceEquals(selected, CpuTab) ? "Cpu" : null;
+        if (view is not null && viewsOpened.Add(view))
+        {
+            UsageTelemetry.Track("Profiler.ViewOpened", new Dictionary<string, string> { ["view"] = view });
+        }
+    }
+
+    private void Session_Opened(object? sender, string path)
+    {
+        if (closing)
+        {
+            return;
+        }
+
+        _ = EndFileUsage();
+        fileUsage = UsageSession.Start("offline", () => TelemetryTarget.ForSessionFile(path));
+    }
+
+    // Ends the usage session of the connection or trace reading once the model is idle again, or when the window closes.
+    private Task EndRecordingUsage(bool force)
+    {
+        if (recordingUsage is not { } usage || !force && !model.CanConnect)
+        {
+            return Task.CompletedTask;
+        }
+
+        recordingUsage = null;
+        return usage.End(model.State switch
+        {
+            "Failed" or "TraceFailed" => "failed",
+            "TraceFinished" => "completed",
+            "TraceStopped" => "cancelled",
+            _ => model.WasConnected ? "completed" : "cancelled",
+        });
+    }
+
+    // An opened session file stays shown until the next file, connection or trace reading replaces it.
+    private Task EndFileUsage()
+    {
+        var usage = fileUsage;
+        fileUsage = null;
+        return usage?.End("completed") ?? Task.CompletedTask;
     }
 
     private async void Snapshot_Click(object sender, RoutedEventArgs args) => await TakeSnapshotAsync();
@@ -884,6 +961,35 @@ PrivateRuntime);
         catch (Exception error)
         {
             model.ReportError(error);
+        }
+    }
+
+    // The usage events of one profiling session: SessionStarted when the user starts it, SessionEnded with its outcome.
+    private sealed class UsageSession
+    {
+        private readonly long started = Stopwatch.GetTimestamp();
+        private readonly string mode;
+        // Naming the target reads files and package manifests, so SessionStarted is sent from the thread pool.
+        private readonly Task startSent;
+
+        private UsageSession(string mode, Func<string> targetApp)
+        {
+            this.mode = mode;
+            startSent = Task.Run(() => UsageTelemetry.Track("Profiler.SessionStarted",
+                new Dictionary<string, string> { ["mode"] = mode, ["targetApp"] = targetApp() }));
+        }
+
+        // Null while telemetry is off; targetApp is only computed while it is on.
+        public static UsageSession? Start(string mode, Func<string> targetApp) =>
+            UsageTelemetry.IsEnabled ? new UsageSession(mode, targetApp) : null;
+
+        // Sends SessionEnded once SessionStarted is sent; completes when both are queued.
+        public Task End(string outcome)
+        {
+            var duration = Stopwatch.GetElapsedTime(started).TotalSeconds;
+            return startSent.ContinueWith(_ => UsageTelemetry.Track("Profiler.SessionEnded",
+                new Dictionary<string, string> { ["mode"] = mode, ["outcome"] = outcome },
+                new Dictionary<string, double> { ["durationSec"] = duration }), TaskScheduler.Default);
         }
     }
 }

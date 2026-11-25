@@ -1773,9 +1773,8 @@ CImageSource::ReloadReleasedSoftwareImage()
 
         IFC_RETURN(RedecodeEncodedImage(TRUE));
 
-        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the alpha mask
-        // path only requests a decode once the software surface exists. Track the image so the decode is requested
-        // after this frame.
+        // RedecodeEncodedImage leaves a DecodeToRenderSize image for the render walk to request, but the caller may not
+        // be rendered. Track the image so the decode is requested after this frame.
         if (m_fDecodeToRenderSize)
         {
             IFC_RETURN(GetContext()->StartTrackingImageForRenderWalk(this));

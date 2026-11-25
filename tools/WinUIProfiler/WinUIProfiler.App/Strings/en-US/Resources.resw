@@ -524,4 +524,5 @@
   <data name="CpuViewNotSymbolized" xml:space="preserve"><value>Functions are shown as module!0xaddress. To name them, fill in Symbol path (a folder, a share, or srv*C:\Symbols*https://msdl.microsoft.com/download/symbols) before connecting or opening the trace, or run: WinUIProfiler.Cli symbolize &lt;session.sqlite&gt; --symbol-path &lt;path&gt;, then Refresh.</value></data>
   <data name="CpuViewFunctionToolTipFormat" xml:space="preserve"><value>{0}&#10;Self: {1:N0} samples ({2})&#10;Total: {3:N0} samples ({4})</value></data>
   <data name="CpuViewNodeToolTipFormat" xml:space="preserve"><value>{0}&#10;{1:N0} samples ({2})</value></data>
+  <data name="TelemetryNotice.Title" xml:space="preserve"><value>Usage data</value></data>
 </root>

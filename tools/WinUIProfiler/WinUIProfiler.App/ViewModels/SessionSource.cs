@@ -12,6 +12,9 @@ public sealed class SessionSource
 
     public event EventHandler? Changed;
 
+    // Raised when the user opens a session file, with its path.
+    public event EventHandler<string>? Opened;
+
     public string? Path { get; private set; }
 
     // True while the connection still writes the file.
@@ -35,6 +38,7 @@ public sealed class SessionSource
     {
         following = false;
         Set(path, false);
+        Opened?.Invoke(this, path);
     }
 
     // A new connection or trace replaces the file shown, even one the user opened, before its own file exists.
