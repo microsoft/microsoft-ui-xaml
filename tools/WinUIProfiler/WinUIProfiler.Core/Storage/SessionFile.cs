@@ -89,6 +89,16 @@ public static partial class SessionFile
         return ReadSession(connection, null).Info;
     }
 
+    // The recorded process's name, without the counts ReadInfo computes, which scan a large file.
+    public static string? ReadProcessName(string path)
+    {
+        using var connection = Open(path);
+        using var command = Command(connection, null, "SELECT ProcessName FROM SessionInfo");
+        var name = command.ExecuteScalar();
+        SessionQueries.Report(command, name is null ? 0 : 1);
+        return name as string;
+    }
+
     // Delivers the stored events in Seq order. RelativeMilliseconds is measured from the start of the recording.
     public static long Read(string path, Action<ProfilerEvent> sink, CancellationToken cancellationToken = default)
     {
