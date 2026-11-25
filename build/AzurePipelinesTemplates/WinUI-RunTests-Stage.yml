@@ -2,6 +2,27 @@
 # Licensed under the MIT License.
 parameters:
   pipelineKind: ''
+  # Instrument the product DLL(s) and collect coverage on this stage's test slices for
+  # coverageTestOS, then merge and publish. Default false so Nightly, PR and any other consumer of
+  # this stage are unaffected; when true, only one test job runs (on coverageTestOS; the regular
+  # 25H2/23H2/RS5 jobs are skipped) and a MergeCodeCoverage job is appended.
+  collectCodeCoverage: false
+  # Which single OS the coverage pass runs on (Win10-RS5, Win10-22H2, Win11-23H2 or Win11-25H2).
+  # Drives both the instrumented payload and the test job. Only used when collectCodeCoverage is true.
+  coverageTestOS: 'Win10-RS5'
+  # Which product DLL(s) to instrument, as a LIST (one entry per DLL) - not a space-separated
+  # string. Only used when collectCodeCoverage is true. Defaults to just the framework/core DLL
+  # for this focused pass. Each module gets its own independent session id/collector,
+  # auto-generated and auto-discovered - no session id parameter is needed here.
+  coverageModules:
+  - 'Microsoft.ui.xaml.dll'
+  # Module stems (coverageModules entries with the .dll extension stripped) whose raw per-slice
+  # coverage should be merged independently of one another. Must stay in sync with
+  # coverageModules. Only used when collectCodeCoverage is true.
+  coverageModuleStems:
+  - 'Microsoft.ui.xaml'
+  # Code Coverage tab layout: PerModuleFolders or Combined (see WinUI-MergeCodeCoverage-Job.yml).
+  coverageTabLayout: 'PerModuleFolders'
 
 stages:
 - stage: RunTests
@@ -15,15 +36,19 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
       testPayloadArtifactName: 'TestPayload'
+      collectCodeCoverage: ${{ parameters.collectCodeCoverage }}
+      coverageTestOS: ${{ parameters.coverageTestOS }}
+      coverageModules: ${{ parameters.coverageModules }}
 
-  - template: WinUI-RunTestPassOnPipeline-Job.yml
-    parameters:
-      runTestJobName: RunTests25H2
-      dependsOn: CreateTestPayload
-      testOS: 'Win11-25H2'
-      testPayloadArtifactName: 'TestPayload'
+  - ${{ if ne(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTests25H2
+        dependsOn: CreateTestPayload
+        testOS: 'Win11-25H2'
+        testPayloadArtifactName: 'TestPayload'
 
-  - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+  - ${{ if and(ne(parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTests23H2
@@ -31,9 +56,32 @@ stages:
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
 
+  - ${{ if and(ne(parameters.pipelineKind, 'QuickPR'), ne(parameters.collectCodeCoverage, true)) }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
         runTestJobName: RunTestsRS5
         dependsOn: CreateTestPayload
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
+
+  # Coverage mode: a single test job on coverageTestOS, regardless of pipelineKind. The job name
+  # follows the existing RunTests<OS> convention (Win10-RS5 -> RunTestsRS5), so the default stays
+  # RunTestsRS5. The other OS jobs above are skipped in coverage mode, so the name cannot collide.
+  - ${{ if eq(parameters.collectCodeCoverage, true) }}:
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTests${{ replace(replace(parameters.coverageTestOS, 'Win10-', ''), 'Win11-', '') }}
+        dependsOn: CreateTestPayload
+        testOS: ${{ parameters.coverageTestOS }}
+        testPayloadArtifactName: 'TestPayload'
+        collectCodeCoverage: true
+
+  # Coverage merge: gather the coverage test job's per-slice .coverage files for every module
+  # stem, merge them, and publish combined + per-DLL reports. Only runs when coverage is on.
+    - template: WinUI-MergeCodeCoverage-Job.yml
+      parameters:
+        runTestJobName: MergeCodeCoverage
+        dependsOn:
+          - RunTests${{ replace(replace(parameters.coverageTestOS, 'Win10-', ''), 'Win11-', '') }}
+        coverageModuleStems: ${{ parameters.coverageModuleStems }}
+        coverageTabLayout: ${{ parameters.coverageTabLayout }}
