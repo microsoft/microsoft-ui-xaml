@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Private.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
@@ -2800,6 +2801,105 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsTrue(focusedColumn == null || tableView.Columns.Contains(focusedColumn), "Focus is not on a removed column.");
                 });
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies with sorting on that a header drag sorts nothing and raises no Sorting, and that a click on a header afterwards still sorts.")]
+        public void VerifyDragDoesNotSortButALaterClickDoes()
+        {
+            TableView tableView = null;
+            TableViewColumn name = null;
+            int sorting = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.CanUserSortColumns = true;
+                name = tableView.Columns[0];
+                tableView.Sorting += (s, e) => sorting++;
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            if (!InputReachesTable(tableView))
+            {
+                return;
+            }
+
+            DragHeader(tableView, onDrag: () => Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging."));
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyOrder(tableView, "Role,Name,City", "after the drag");
+                Verify.AreEqual(0, sorting, "A drag raises no Sorting.");
+                Verify.IsTrue(tableView.Columns.All(c => c.SortDirection == SortDirection.None), "A drag sorts nothing.");
+            });
+
+            // Past the double-click time, so the click is a Tapped of its own.
+            global::System.Threading.Thread.Sleep(800);
+            ReorderInput.MoveTo(HeaderPoint(tableView, 1, 0.5));
+            ReorderInput.LeftDown();
+            ReorderInput.LeftUp();
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, sorting, "A click after the drag sorts.");
+                Verify.AreEqual(SortDirection.Ascending, name.SortDirection, "The clicked header sorts.");
+                VerifyOrder(tableView, "Role,Name,City", "after the click");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies Esc, through DragEscapeHook, cancels a gripper resize and restores the column's Width, and cancels a header reorder drag, while reorder is on.")]
+        public void VerifyEscapeCancelsGripperResizeAndReorderDrag()
+        {
+            TableView tableView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateReorderTable("Name", "Role", "City");
+                tableView.CanUserResizeColumns = true;
+                tableView.Columns[0].Width = new GridLength(150);
+                LoadContent(tableView);
+            });
+            SettleLayout(tableView);
+            if (!KeysReachTable(tableView))
+            {
+                return;
+            }
+
+            ResizeGripper gripper = null;
+            RunOnUIThread.Execute(() =>
+            {
+                gripper = RequireGripper(tableView, 0);
+                gripper.BeginDrag();
+                gripper.TryDrag(40.0);
+            });
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(gripper.IsDragging, "Precondition: the gripper is dragging.");
+                Verify.IsGreaterThan(tableView.Columns[0].Width.Value, 180.0, "Precondition: the drag widened the column.");
+            });
+            ReorderInput.SendChord(ReorderInput.VkEscape);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(gripper.IsDragging, "Esc ends the gripper drag.");
+                Verify.AreEqual(new GridLength(150), tableView.Columns[0].Width, "Esc restores the Width the drag started from.");
+                Verify.AreEqual("Name,Role,City", string.Join(",", tableView.Columns.Select(c => (string)c.Header)), "A resize moves nothing.");
+
+                SnapshotHeaders(tableView);
+                Verify.IsTrue(TableViewTestHooks.BeginColumnReorderDrag(tableView, tableView.Columns[0]), "Precondition: a reorder drag starts.");
+                TableViewTestHooks.UpdateColumnReorderDrag(tableView, 60.0);
+                tableView.UpdateLayout();
+                Verify.IsTrue(PreviewShown(tableView), "Precondition: dragging.");
+            });
+            ReorderInput.SendChord(ReorderInput.VkEscape);
+            SettleLayout(tableView);
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(TableViewTestHooks.IsColumnReorderDragging(tableView), "Esc ends the reorder drag.");
+                Verify.IsFalse(PreviewShown(tableView), "Esc puts every header back.");
+                VerifyOrder(tableView, "Name,Role,City", "after Esc");
+            });
         }
 
         private void RunChordSteps(string[] headers, Action<TableView> setup, params (int focus, bool right, string expected)[] steps)
