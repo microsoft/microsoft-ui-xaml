@@ -73,6 +73,11 @@ internal static class StoryboardTests
             Write(destroyedOnly, Event(1, 1, 1, "Destroyed", "Destroyed"));
             Check(SessionFile.ReadStoryboards(destroyedOnly).Storyboards is [{ ChildCount: null, BeginObserved: false }],
                 "Destruction-only history has no measured child count, not zero children.");
+            var lateCapture = Path.Combine(root, "late-capture.sqlite");
+            Write(lateCapture, Event(1, 1, 0, "Observed", "Active"));
+            Check(SessionFile.ReadStoryboards(lateCapture) is
+                { HistoryIncomplete: true, Storyboards: [{ RunId: 0, BeginObserved: false, State: "Active" }] },
+                "Lazy profiler enrollment may first observe generation zero; it must not invent a captured Begin.");
 
             var reordered = Path.Combine(root, "reordered.sqlite");
             Write(reordered, Event(3, 1, 1, "PauseRequested", "Paused", name: "Latest", paused: true),

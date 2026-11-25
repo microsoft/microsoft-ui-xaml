@@ -10,7 +10,8 @@ using WinUIProfiler.Engine.Storage;
 internal static class StoryboardTraceIntegration
 {
     // The enabled workload begins nested storyboards, pauses/resumes/stops/restarts a root, attempts an invalid
-    // Begin, and begins a storyboard whose x:Name exceeds 128 characters. The control runs the same workload.
+    // Begin, rejects a public Begin on the nested storyboard, and begins a storyboard with a long x:Name.
+    // The control runs the same workload.
     [SupportedOSPlatform("windows")]
     internal static void Run(string enabledTrace, int enabledPid, string disabledTrace, int disabledPid)
     {
@@ -40,6 +41,16 @@ internal static class StoryboardTraceIntegration
         Check(activity.Any(value => Field(value, "Name") == "RootPulse")
             && activity.Any(value => Field(value, "Name") == "NestedPulse"),
             "Both root and nested storyboards must have attribution.");
+        var nested = activity.Where(value => Field(value, "Name") == "NestedPulse").ToArray();
+        var rejected = nested.Where(value => Field(value, "Operation") == "BeginFailed").ToArray();
+        Check(rejected.Length == 1 && RunId(rejected[0]) == 2,
+            "The public wrapper's rejected nested Begin must advance the tracked generation exactly once.");
+        Check(nested.Any(value => RunId(value) == 2 && Field(value, "Operation") == "BeginRequested")
+            && !nested.Any(value => RunId(value) == 2 && Field(value, "Operation") == "Begin")
+            && nested.Any(value => RunId(value) == 2 && Field(value, "Operation") == "Observed"
+                && Field(value, "State") == "Active")
+            && nested.Any(value => RunId(value) == 3 && Field(value, "Operation") == "Begin"),
+            "A rejected Begin must report the attempt/failure without stopping the clock or double-counting later Begins.");
         Check(activity.Any(value => Field(value, "Name") is { Length: 128 } name && name.EndsWith("...", StringComparison.Ordinal)),
             "The native producer must bound long x:Name labels.");
 
@@ -65,7 +76,7 @@ internal static class StoryboardTraceIntegration
             Check(!result.HistoryIncomplete && result.Storyboards.All(row => row.State == "Destroyed"),
                 "Known failed Begins must not invent missing successful Begins, and destruction must be observed.");
             Console.WriteLine($"Passed: {activity.Length} native storyboard observations, nested attribution, restart generations, " +
-                "pause/resume/stop, failed Begin, bounded names, SQLite projection and disabled-provider control.");
+                "pause/resume/stop, failed and wrapper-rejected Begins, bounded names, SQLite projection and disabled-provider control.");
         }
         finally
         {
@@ -91,6 +102,14 @@ internal static class StoryboardTraceIntegration
     private static string Field(ProfilerEvent value, string name) =>
         value.Fields.Single(field => field.Name == name).Value as string
             ?? throw new InvalidDataException($"Missing native string field {name}.");
+
+    private static ulong RunId(ProfilerEvent value) =>
+        value.Fields.Single(field => field.Name == "RunId").Value switch
+        {
+            ulong run => run,
+            long run when run >= 0 => (ulong)run,
+            _ => throw new InvalidDataException("Missing or invalid native RunId.")
+        };
 
     private static void Check(bool condition, string message)
     {

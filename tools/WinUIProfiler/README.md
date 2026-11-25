@@ -75,6 +75,9 @@ It shows each storyboard lifetime's most recently observed run, its bounded
 child count, thread, last operation, and first/last observation times.
 The framework uses a process-local lifetime ID, separate from the object address,
 and increments its run ID for each Begin attempt, including failed attempts.
+Tracking is allocated only after profiling observes the storyboard. A storyboard
+first observed mid-run has run ID zero and an uncaptured Begin; already-tracked
+lifetimes retain their identity and advance generations across provider disable/re-enable.
 Reusing an address does not merge storyboards, and beginning again does not
 inherit the previous run's captured Begin.
 
@@ -124,7 +127,8 @@ For native producer validation, record the same workload twice: once with the
 profiler and default XAML providers enabled, and once with only the default XAML
 provider. The workload should begin `RootPulse` containing `NestedPulse`,
 pause/resume/stop/restart the root, exercise an invalid `FailedBegin`, animate a
-storyboard with an `x:Name` longer than 128 characters, and release the
+storyboard with an `x:Name` longer than 128 characters, reject a public `Begin`
+on the still-parented `NestedPulse` after the root's first Begin, and release the
 storyboards before exiting. Then run:
 
 ```powershell
@@ -133,8 +137,10 @@ dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --story
 
 This opt-in check uses real ETW decoding, generic SQLite persistence, and the
 same reader as the UI; it verifies nested attribution, lifecycle operations,
-bounded labels, run generations and the disabled-provider control. It does not
-run as part of the ordinary managed suite.
+bounded labels, run generations and the disabled-provider control. It also checks
+that a public wrapper rejection advances the attempt generation without reporting
+success or stopping the existing clock. It does not run as part of the ordinary
+managed suite.
 
 ## Build and run
 
