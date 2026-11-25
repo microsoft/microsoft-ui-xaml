@@ -6849,7 +6849,7 @@ namespace Microsoft.UI.Xaml.Controls
     [Comment("WrapGrid provides the default layout experience for the GridView control.")]
     [Implements(typeof(Microsoft.UI.Xaml.Controls.IKeyboardNavigationPanel))]
     [Guids(ClassGuid = "7892a18c-f5ca-4485-8b11-a1cd6462aa5b")]
-    public sealed class WrapGrid
+    public class WrapGrid
      : Microsoft.UI.Xaml.Controls.Primitives.OrientedVirtualizingPanel
     {
         [Comment("The width of each item in the WrapGrid.  If unspecified, the width of the first item in the WrapGrid will be used for all other items.")]
