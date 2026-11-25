@@ -23,9 +23,6 @@ namespace DirectUI
         ctl::ComPtr<IInspectable> spSender;
     };
 
-    // Drops a default view from CollectionViewSource.GetDefaultView's table (CollectionViewSource_Shaping.cpp).
-    void UnregisterDefaultView(_In_ VectorCollectionView* pView);
-
     // PropertyGroupDescription.NamesMatch and GroupNameFromItem, as the view evaluates them
     // (VectorCollectionView_Shaping.cpp).
     _Check_return_ HRESULT ShapingNamesMatch(xaml_data::CollectionViewStringComparison comparison, _In_opt_ IInspectable* pGroupName, _In_opt_ IInspectable* pItemName, _Out_ bool* pMatch);
@@ -98,9 +95,6 @@ namespace DirectUI
         // Shaping engine (VectorCollectionView_Shaping.cpp). EnableShaping makes the view answer
         // ICollectionViewShaping; pHost is the CollectionViewSource that publishes it as View.
         _Check_return_ HRESULT EnableShaping(_In_ CollectionViewSource* pHost);
-
-        // A default view (CollectionViewSource.GetDefaultView): shapes with its own rules, no host.
-        _Check_return_ HRESULT EnableDefaultViewShaping();
 
         // The view presents its own output list (it was shaped; WPF: UsesLocalArray).
         bool IsShaped() const
@@ -316,7 +310,6 @@ namespace DirectUI
         ctl::EventPtr<VectorChangedEventCallback> m_epVectorChangedHandler;
 
         bool m_isShapingEnabled = false;
-        bool m_isDefaultView = false;
         ctl::WeakRefPtr m_hostRef;
         ctl::ComPtr<IFilterEventSource> m_spFilterEvents;
 

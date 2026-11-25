@@ -4077,13 +4077,6 @@ namespace Framework { namespace DataBinding {
             VERIFY_IS_TRUE(shaping->CanFilter);
             VERIFY_IS_TRUE(shaping->CanGroup);
 
-            LOG_OUTPUT(L"IsDefaultView: true for null and for GetDefaultView's view, false for a CollectionViewSource's View.");
-            auto list = MakeShapingSource();
-            auto defaultView = CollectionViewSource::GetDefaultView(list);
-            VERIFY_IS_TRUE(CollectionViewSource::IsDefaultView(nullptr));
-            VERIFY_IS_TRUE(CollectionViewSource::IsDefaultView(defaultView));
-            VERIFY_IS_FALSE(CollectionViewSource::IsDefaultView(cvs->View));
-
             LOG_OUTPUT(L"Culture is a DependencyProperty, as in WPF; set through it, it reaches the view.");
             cvs->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
             VERIFY_IS_NOT_NULL(CollectionViewSource::CultureProperty);
@@ -4948,41 +4941,6 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(7, safe_cast<int32>(group->GroupNameFromItem(item, 0, nullptr)));
             VERIFY_IS_TRUE(group->NamesMatch(7, 7));
             VERIFY_IS_FALSE(group->NamesMatch(7, 8));
-        });
-    }
-
-    void BindingIntegrationTests::CollectionViewSourceGetDefaultView()
-    {
-        TestCleanupWrapper cleanup;
-        RunOnUIThread([]()
-        {
-            auto source = MakeShapingSource(); // b1 d2 a1 c0
-            VERIFY_IS_NULL(CollectionViewSource::GetDefaultView(nullptr));
-
-            LOG_OUTPUT(L"One view per source, shared by every caller.");
-            auto view = CollectionViewSource::GetDefaultView(source);
-            VERIFY_IS_NOT_NULL(view);
-            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(source) == view);
-            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(view) == view);
-            VERIFY_IS_FALSE(CollectionViewSource::GetDefaultView(MakeShapingSource()) == view);
-            VERIFY_ARE_STRINGS_EQUAL(L"bdac", ShapingNamesOf(view)->Data());
-
-            LOG_OUTPUT(L"It shapes with its own rules, and starts and stops grouping in place.");
-            auto shaping = safe_cast<ICollectionViewShaping^>(view);
-            VERIFY_IS_TRUE(shaping->SourceCollection == source);
-            shaping->SortDescriptions->Append(ref new SortDescription(L"StringProperty", CollectionViewSortDirection::Ascending));
-            VERIFY_ARE_STRINGS_EQUAL(L"abcd", ShapingNamesOf(view)->Data());
-            shaping->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
-            VERIFY_IS_TRUE(CollectionViewSource::GetDefaultView(source) == view);
-            VERIFY_ARE_STRINGS_EQUAL(L"1:ab 0:c 2:d", DescribeGroups(view->CollectionGroups).c_str());
-            shaping->GroupDescriptions->Clear();
-            VERIFY_IS_NULL(view->CollectionGroups);
-
-            LOG_OUTPUT(L"A CollectionViewSource over the same source has its own view.");
-            auto cvs = ref new CollectionViewSource();
-            cvs->Source = source;
-            VERIFY_IS_FALSE(cvs->View == view);
-            VERIFY_ARE_EQUAL(0u, safe_cast<ICollectionViewShaping^>(cvs->View)->SortDescriptions->Size);
         });
     }
 

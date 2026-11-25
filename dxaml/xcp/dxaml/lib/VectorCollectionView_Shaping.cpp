@@ -79,19 +79,6 @@ _Check_return_ HRESULT VectorCollectionView::ApplyShapingRules(
     return S_OK;
 }
 
-_Check_return_ HRESULT VectorCollectionView::EnableDefaultViewShaping()
-{
-    ctl::ComPtr<wfc::IVector<xaml_data::SortDescription*>> spSortDescriptions;
-    ctl::ComPtr<wfc::IVector<xaml_data::GroupDescription*>> spGroupDescriptions;
-
-    m_isShapingEnabled = true;
-    m_isDefaultView = true;
-    SetPtrValue(m_tpSourceList, m_tpSource.Get());
-    IFC_RETURN(CreateShapingDescriptions(spSortDescriptions.ReleaseAndGetAddressOf(), spGroupDescriptions.ReleaseAndGetAddressOf()));
-    IFC_RETURN(ApplyShapingRules(spSortDescriptions.Get(), spGroupDescriptions.Get(), nullptr /* pFilter */, nullptr /* pCustomSort */, nullptr /* culture */));
-    return S_OK;
-}
-
 void VectorCollectionView::SetSourceCollection(_In_opt_ IInspectable* pSource)
 {
     SetPtrValue(m_tpSourceCollection, pSource);

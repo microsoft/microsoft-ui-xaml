@@ -669,21 +669,6 @@ namespace Microsoft.UI.Xaml.Data
 
         [VelocityFeature("Feature_ExperimentalApi")]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static Microsoft.UI.Xaml.Data.ICollectionView GetDefaultView([Optional] Windows.Foundation.Object source)
-        {
-            return null;
-        }
-
-        // WPF's CollectionViewSource.IsDefaultView.
-        [VelocityFeature("Feature_ExperimentalApi")]
-        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static Windows.Foundation.Boolean IsDefaultView([Optional] Microsoft.UI.Xaml.Data.ICollectionView view)
-        {
-            return default(Windows.Foundation.Boolean);
-        }
-
-        [VelocityFeature("Feature_ExperimentalApi")]
-        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public void Refresh()
         {
         }
