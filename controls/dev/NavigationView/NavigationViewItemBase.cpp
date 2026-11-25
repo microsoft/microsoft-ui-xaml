@@ -24,6 +24,15 @@ void NavigationViewItemBase::OnLoaded(winrt::IInspectable const&, winrt::RoutedE
     {
         SetNavigationViewParent(SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this));
     }
+    else if (!IsInNavigationViewOwnedRepeater())
+    {
+        // The item may have been moved to a different NavigationView. Keep the current reference if no ancestor is found
+        // (for example when the item is hosted in a popup).
+        if (auto const navigationView = SharedHelpers::GetAncestorOfType<winrt::NavigationView>(*this))
+        {
+            SetNavigationViewParent(navigationView);
+        }
+    }
 }
 
 NavigationViewRepeaterPosition NavigationViewItemBase::Position() const
@@ -73,6 +82,52 @@ winrt::SplitView NavigationViewItemBase::GetSplitView() const
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
+    OnNavigationViewItemBaseParentChanged();
+}
+
+void NavigationViewItemBase::SetNavigationViewParentForItems(const winrt::IInspectable& items, const winrt::NavigationView& navigationView)
+{
+    for (auto const& menuItem : GetMenuItems(items))
+    {
+        if (auto const item = menuItem.try_as<winrt::NavigationViewItemBase>())
+        {
+            // An item that already has this owner has propagated it to its children, so only new items are walked.
+            auto const itemImpl = winrt::get_self<NavigationViewItemBase>(item);
+            if (itemImpl->GetNavigationView() != navigationView)
+            {
+                itemImpl->SetNavigationViewParent(navigationView);
+            }
+        }
+    }
+}
+
+// Vectors are read directly because each new ItemsSourceView subscribes to, and later unsubscribes from, its source.
+std::vector<winrt::IInspectable> NavigationViewItemBase::GetMenuItems(const winrt::IInspectable& items)
+{
+    std::vector<winrt::IInspectable> menuItems;
+    if (auto const vector = items.try_as<winrt::IVector<winrt::IInspectable>>())
+    {
+        auto const size = vector.Size();
+        menuItems.reserve(size);
+        for (uint32_t i = 0; i < size; i++)
+        {
+            menuItems.push_back(vector.GetAt(i));
+        }
+    }
+    else if (items)
+    {
+        auto itemsSourceView = items.try_as<winrt::ItemsSourceView>();
+        if (!itemsSourceView)
+        {
+            itemsSourceView = winrt::ItemsSourceView(items);
+        }
+        menuItems.reserve(itemsSourceView.Count());
+        for (int i = 0; i < itemsSourceView.Count(); i++)
+        {
+            menuItems.push_back(itemsSourceView.GetAt(i));
+        }
+    }
+    return menuItems;
 }
 
 void NavigationViewItemBase::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

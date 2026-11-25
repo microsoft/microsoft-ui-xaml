@@ -43,7 +43,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(Zoom)
                 TEST_METHOD_PROPERTY(L"Description", L"Zooms a ListView and validates the DComp tree with DManip-on-DComp enabled")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // DManip transform off by 1 pixel
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP Test: Some tests show input differences in RS4 and 19H1
             END_TEST_METHOD()
 

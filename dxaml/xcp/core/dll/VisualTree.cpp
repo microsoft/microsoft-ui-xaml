@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 
 #include "ConnectedAnimationRoot.h"
 #include <ContentRoot.h>
@@ -434,7 +435,7 @@ _Check_return_ HRESULT VisualTree::SetPublicRootVisual(
         goto Cleanup;
     }
 
-    TracePutRootVisualBegin();
+    XamlTelemetry::PutRootVisualBegin(pRoot);
 
     // If the public root visual changes, we need to remove and re-add the existing roots so that
     // they use the new public visual as namescope owner if needed, but we don't want to release them.
@@ -520,7 +521,7 @@ Cleanup:
         RECORDFAILURE(ResetRoots(nullptr));
     }
 
-    TracePutRootVisualEnd();
+    XamlTelemetry::PutRootVisualEnd(pRoot);
 
     return hr;
 }

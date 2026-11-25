@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(RenderTransforms)
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Passes first iteration but fails the rest - two different masks in masters near the end
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
@@ -88,7 +88,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(MultiElementPlateauScaleChange)
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Zoom scale not applied
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         END_TEST_METHOD()
 

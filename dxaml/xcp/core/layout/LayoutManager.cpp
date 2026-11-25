@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "InputServices.h"
 
 #include <EffectiveViewportChangedEventArgs.h>
@@ -248,7 +249,7 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
 
     m_isInUpdateLayout = TRUE;
 
-    TraceLayoutBegin();
+    XamlTelemetry::LayoutBegin(pRoot);
 
     XUINT32 count = MaxLayoutIterations;
     std::wstring extraInfoEntries[WarningLayoutIterations];
@@ -289,10 +290,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
                 m_arrangeRect.Height = (XFLOAT) controlHeight;
             }
 
-            TraceMeasureBegin();
+            XamlTelemetry::MeasureBegin(pRoot);
             auto scopeGuard = wil::scope_exit([&]
             {
-                TraceMeasureEnd();
+                XamlTelemetry::MeasureEnd(pRoot);
             });
 
             if (StoreLayoutCycleWarningContexts())
@@ -321,10 +322,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
         }
         else if (pRoot->GetRequiresArrange())
         {
-            TraceArrangeBegin();
+            XamlTelemetry::ArrangeBegin(pRoot);
             auto scopeGuard = wil::scope_exit([&]
             {
-                TraceArrangeEnd();
+                XamlTelemetry::ArrangeEnd(pRoot);
             });
 
             if (StoreLayoutCycleWarningContexts())
@@ -391,10 +392,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire any size changed events
             if (!m_sizeChangedQueue.empty())
             {
-                TraceFireSizeChangedBegin();
+                XamlTelemetry::FireSizeChangedBegin(pRoot);
                 auto scopeGuard = wil::scope_exit([&]
                 {
-                    TraceFireSizeChangedEnd();
+                    XamlTelemetry::FireSizeChangedEnd(pRoot);
                 });
 
                 if (StoreLayoutCycleWarningContexts())
@@ -420,10 +421,10 @@ CLayoutManager::UpdateLayout(XUINT32 controlWidth, XUINT32 controlHeight)
             // Fire layout updated events
             if (m_nLayoutUpdatedSubscriberCounter != 0)
             {
-                TraceFireLayoutUpdatedBegin();
+                XamlTelemetry::FireLayoutUpdatedBegin(pRoot);
                 auto scopeGuard = wil::scope_exit([&]
                 {
-                    TraceFireLayoutUpdatedEnd();
+                    XamlTelemetry::FireLayoutUpdatedEnd(pRoot);
                 });
 
                 if (StoreLayoutCycleWarningContexts())
@@ -485,7 +486,7 @@ Cleanup:
 
     m_isInUpdateLayout = FALSE;
 
-    TraceLayoutEnd();
+    XamlTelemetry::LayoutEnd(pRoot);
 
     // Firing a UIAutomation automation properties change check
     if (m_bUIAClientsListeningToProperty)
@@ -616,7 +617,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
 
         for (auto& item : tmp.m_vector)
         {
-            TraceIndividualSizeChangedBegin();
+            XamlTelemetry::IndividualSizeChangedBegin(item.m_pElement);
 
             if (auto layoutStorage = item.m_pElement->GetLayoutStorage())
             {
@@ -629,7 +630,7 @@ void CLayoutManager::RaiseSizeChangedEvents()
                     args));
             }
 
-            TraceIndividualSizeChangedEnd(UINT64(item.m_pElement));
+            XamlTelemetry::IndividualSizeChangedEnd(item.m_pElement);
         }
 
         tmp.m_vector.clear();
@@ -890,6 +891,10 @@ CLayoutManager::RealizeRegisteredLayoutTransitions()
     // fill the groups dictionary with layoutslots
     for(const auto& element: m_elementsWithDeferredTransitions)
     {
+        if (XamlProfilerTracing::IsEnabled() && XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO))
+        {
+            XamlTelemetry::RealizeTransition(element.get());
+        }
         LayoutTransitionStorage* pStorage = element->GetLayoutTransitionStorage();
         IFCEXPECT(pStorage);
         ASSERT(!pStorage->m_registeredTransitions.empty()); // should have unregistered with deferredtransitions though.

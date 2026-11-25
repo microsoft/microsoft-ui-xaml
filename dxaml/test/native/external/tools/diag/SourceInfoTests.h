@@ -19,7 +19,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 TEST_CLASS_PROPERTY(L"__ExecutionUnit", L"e22a917c-ad18-4a09-bff9-d3ca3e5ee0b8")
                 TEST_CLASS_PROPERTY(L"Classification", L"Integration")
                 TEST_CLASS_PROPERTY(L"IsolationLevel", L"Class")
-                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_CLASS_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_CLASS_PROPERTY(L"HelixWorkItemCreation", L"CreateWorkItemPerTestClass")
             END_TEST_CLASS()
 
@@ -84,6 +84,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifySourceInfoDesignModeV2)
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
                 TEST_METHOD_PROPERTY(L"UAP:AppXManifest", L"AppxManifest.DesignMode.xml")
             END_TEST_METHOD()

@@ -41,6 +41,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully add items to the ItemsControl via its ItemsSource property.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(InvalidItemsSourceHasHelpfulError)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the HRESULT and diagnostic for a non-iterable ItemsSource.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanSetEmptyAndClearItemsSource)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates empty, populated, and null ItemsSource values.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanGetContainersFromItems)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that we can successfully get containers from the items they hold.")
         END_TEST_METHOD()

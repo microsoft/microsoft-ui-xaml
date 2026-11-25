@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Facts = Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared.TableViewVirtualizationPageFacts;
 
@@ -126,6 +127,67 @@ namespace MUXControlsTestApp
             if (_items.Count > 0)
             {
                 _items.RemoveAt(0);
+            }
+        }
+
+        private void OnShowScrollerlessTableClick(object sender, RoutedEventArgs e)
+        {
+            if (ScrollerlessTable.ItemsSource == null)
+            {
+                ScrollerlessTable.ItemsSource = Enumerable.Range(0, Facts.ScrollerlessItemCount)
+                    .Select(i => new TableViewVirtualizationItem(i)).ToList();
+                ScrollerlessTable.GotFocus += (s, args) => QueueScrollerlessRefresh();
+                ScrollerlessTable.LayoutUpdated += (s, args) => RefreshScrollerlessReadout();
+                ScrollerlessAppScroller.ViewChanged += (s, args) => QueueScrollerlessRefresh();
+            }
+
+            ScrollerlessHost.Visibility = Visibility.Visible;
+            ScrollerlessTable.UpdateLayout();
+
+            var repeater = FindDescendantByName<ItemsRepeater>(ScrollerlessTable, "PART_RowsRepeater");
+            (repeater?.TryGetElement(0) as Control)?.Focus(FocusState.Keyboard);
+            QueueScrollerlessRefresh();
+        }
+
+        private void QueueScrollerlessRefresh()
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, RefreshScrollerlessReadout);
+        }
+
+        private void RefreshScrollerlessReadout()
+        {
+            TableViewRow focusedRow = null;
+            for (var node = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject; node != null; node = VisualTreeHelper.GetParent(node))
+            {
+                if (node is TableViewRow row)
+                {
+                    focusedRow = row;
+                    break;
+                }
+            }
+
+            var item = focusedRow?.DataContext as TableViewVirtualizationItem;
+            bool inView = false;
+            if (focusedRow != null)
+            {
+                try
+                {
+                    double top = focusedRow.TransformToVisual(ScrollerlessAppScroller).TransformPoint(new Windows.Foundation.Point(0, 0)).Y;
+                    inView = top >= -0.5 && top + focusedRow.ActualHeight <= ScrollerlessAppScroller.ViewportHeight + 0.5;
+                }
+                catch (global::System.ArgumentException)
+                {
+                }
+            }
+
+            string text =
+                Facts.FocusedField + "=" + (item == null ? Facts.NoneValue : item.Id.ToString(CultureInfo.InvariantCulture)) + ";" +
+                Facts.InViewField + "=" + inView + ";" +
+                Facts.OffsetField + "=" + ScrollerlessAppScroller.VerticalOffset.ToString("F0", CultureInfo.InvariantCulture);
+
+            if (ScrollerlessReadout.Text != text)
+            {
+                ScrollerlessReadout.Text = text;
             }
         }
 

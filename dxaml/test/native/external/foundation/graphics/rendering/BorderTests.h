@@ -58,21 +58,26 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RoundedCornersLayoutRounding)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // SetWindowSizeOverrideWithWindowScale doesn't work in islands mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RoundedCornersLayoutRounding2)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // SetWindowSizeOverrideWithWindowScale doesn't work in islands mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RoundedCornersLayoutRounding3)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // SetWindowSizeOverrideWithWindowScale doesn't work in islands mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RoundedCornersWithNoChildren)
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(RoundedCornersZeroBorderThickness)
+        TEST_METHOD_PROPERTY(L"Description", L"A BorderBrush with rounded corners and a zero BorderThickness draws no outline visual.")
+        TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(RasterizationScale)
@@ -80,7 +85,7 @@ public:
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(NineGridOptimization)
-        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // SetWindowSizeOverrideWithWindowScale doesn't work in islands mode
+        TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // TODO 36060166: Re-enable after fixing unreliability.
     END_TEST_METHOD()
 

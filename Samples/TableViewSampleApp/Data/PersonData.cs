@@ -21,6 +21,7 @@ public static class PersonData
     private const int Seed = 8163;
     private const int FirstEmployeeId = 1001;
     private const int ReportsPerManager = 4;
+    private const int MentorRoots = 8;
 
     private static readonly string[] s_firstNames =
     {
@@ -148,6 +149,7 @@ public static class PersonData
                 AvatarPath = p.AvatarPath,
                 EmployeeId = p.EmployeeId,
                 ManagerId = p.ManagerId,
+                MentorId = p.MentorId,
                 Office = p.Office,
             });
         }
@@ -184,6 +186,7 @@ public static class PersonData
                 EmployeeId = firstId + i,
                 // Each block of 1,000 repeats the canonical org chart under its own ids.
                 ManagerId = p.ManagerId is { } managerId ? firstId + (i - (i % seed.Count)) + (managerId - FirstEmployeeId) : null,
+                MentorId = p.MentorId is { } mentorId ? firstId + (i - (i % seed.Count)) + (mentorId - FirstEmployeeId) : null,
                 Office = p.Office,
             });
         }
@@ -253,6 +256,9 @@ public static class PersonData
                 // Index-derived, no extra Random draws, so existing values are unchanged.
                 EmployeeId = FirstEmployeeId + i,
                 ManagerId = managerId,
+                // Mentors cross departments and take about 2.5 mentees each; a mentor always has a
+                // lower index, so the mentor tree has no cycles and every Take(n) prefix is complete.
+                MentorId = i < MentorRoots ? null : FirstEmployeeId + ((i - MentorRoots) * 2 / 5),
                 Office = Offices[(i * 7 + 3) % Offices.Count],
                 // Every 4th person has a photo; the rest show initials, so both states appear.
                 AvatarPath = (i % 4 == 0) ? $"ms-appx:///Assets/avatar{(i / 4) % 3 + 1}.png" : null,

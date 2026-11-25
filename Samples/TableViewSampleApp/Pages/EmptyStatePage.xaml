@@ -11,9 +11,7 @@
 
     <Page.Resources>
         <!-- snippet -->
-        <!-- EmptyTemplate content is TEXT + SHAPES only. A FontIcon inside the
-             EmptyTemplate crashes at startup (known issue), so the empty-state
-             glyph is drawn with an Ellipse and Rectangles instead of a FontIcon. -->
+        <!-- Text and shapes only: a FontIcon inside an EmptyTemplate crashes at startup (known issue). -->
         <DataTemplate x:Key="EmptyStateTemplate" x:DataType="system:Object">
             <StackPanel
                 HorizontalAlignment="Center"
@@ -68,11 +66,11 @@
                 EmptyTemplate="{StaticResource EmptyStateTemplate}"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn Header="Photo" Width="{StaticResource ColWidthAvatar}" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="{StaticResource ColMinWidthStar}" Binding="{Binding FullName}"/>
-                <tv:TableViewTemplateColumn Header="Department" Width="{StaticResource ColWidthChip}" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTemplateColumn Header="Active" Width="{StaticResource ColWidthBoolean}" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
-                <tv:TableViewTemplateColumn Header="Join date" Width="{StaticResource ColWidthCalendarDate}" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
+                <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+                <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+                <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+                <tv:TableViewTemplateColumn Header="Join date" Width="170" CellTemplate="{StaticResource JoinCalendarDateTemplate}" SortMemberPath="JoinDate"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>

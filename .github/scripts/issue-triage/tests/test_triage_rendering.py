@@ -29,6 +29,21 @@ class DetailsParser(HTMLParser):
 
 
 class DecoratedCommentTests(TriageFixture):
+    def test_thank_you_is_first_visible_line_for_bugs_features_and_questions(self):
+        greeting = "Thank you for taking the time to file this issue and help improve WinUI."
+        for kind in ("BUG", "FEATURE", "OTHER"):
+            with self.subTest(kind=kind):
+                evidence = {**self.evidence, "issue_kind": kind}
+                result = t.validate(agent_output(
+                    evidence, issue_kind=kind,
+                    reproduction="SUFFICIENT" if kind == "BUG" else "NOT_APPLICABLE",
+                ), evidence)
+                body = t.render(result, evidence, MAPPING)
+                self.assertTrue(body.startswith(t.MARKER + "\n\n" + greeting + "\n\n## "))
+                self.assertEqual(body.count(greeting), 1)
+                self.assertEqual(body.count(t.MARKER), 1)
+                self.assertNotIn("@reporter", body)
+
     def test_marker_remains_first_and_layout_uses_audience_sections(self):
         body = t.render(self.result(), self.evidence, MAPPING)
         self.assertTrue(body.startswith(t.MARKER + "\n"))
@@ -39,6 +54,8 @@ class DecoratedCommentTests(TriageFixture):
         self.assertIn("**\U0001f41e Bug**", body)
         self.assertIn("WinUI maintainers make final decisions", body)
         self.assertIn("never closes issues automatically", body)
+        self.assertIn("Routing at assessment time (existing labels preserved)", body)
+        self.assertIn("later maintainer label changes take precedence", body)
         self.assertNotIn("For the issue author", body)
 
     def test_author_request_is_visible_before_team_investigation(self):

@@ -153,6 +153,136 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
         }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies clearing a column on an unloaded table leaves the sort of the shared TableViewSource its new owner shows.")]
+        public void VerifyUnloadedTableClearKeepsSharedSourceSort()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource shared = null;
+            StackPanel host = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                shared = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => shared.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table.");
+                host.Children.Remove(first);
+                second = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "precondition: the new owner shows the source sort");
+                first.SortByColumn(first.Columns[0], SortDirection.None);
+                Verify.AreEqual(SortDirection.None, first.Columns[0].SortDirection, "The unloaded table clears its own column.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "a table that released the shared source must not clear the sort its new owner shows");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a clear made before the table first loads still holds after it loads.")]
+        public void VerifyClearBeforeLoadedStaysCleared()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(TableViewSource.From(MakeShapedPeople()), headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Descending), "Precondition: the unloaded table sorts.");
+                Verify.IsTrue(tableView.ClearSort(), "Precondition: the unloaded table clears its sort.");
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "The cleared column must stay cleared once the table loads.");
+                VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name), "the rows must stay in source order");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies sorting an unloaded table leaves the shared TableViewSource its new owner shows unchanged.")]
+        public void VerifyUnloadedTableSortKeepsSharedSourceOrder()
+        {
+            TableView first = null;
+            TableView second = null;
+            TableViewSource shared = null;
+            StackPanel host = null;
+            int sortingCount = 0;
+            int sortedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                shared = TableViewSource.From(MakeShapedPeople());
+                first = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host = new StackPanel();
+                host.Children.Add(first);
+                LoadContent(host);
+            });
+
+            SettleLayout(first);
+            RunOnUIThread.Execute(() => shared.Sort("Name", SortDirection.Descending));
+            SettleLayout(first);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "Precondition: the source sort lights the first table.");
+                host.Children.Remove(first);
+                second = CreateTableView(shared, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                host.Children.Add(second);
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "precondition: the new owner shows the source sort");
+                first.Sorting += (s, e) => sortingCount++;
+                first.Sorted += (s, e) => sortedCount++;
+                Verify.IsFalse(first.SortByColumn(first.Columns[0], SortDirection.Ascending),
+                    "A sort the shared source cannot take must report failure.");
+            });
+
+            SettleLayout(second);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(second, person => person.Name),
+                    "a table that released the shared source must not re-sort the rows its new owner shows");
+                Verify.AreEqual(SortDirection.Descending, second.Columns[0].SortDirection, "The new owner keeps its indicator.");
+                Verify.AreEqual(0, sortingCount, "A refused sort must not raise Sorting.");
+                Verify.AreEqual(0, sortedCount, "A refused sort must not raise Sorted.");
+                Verify.AreEqual(SortDirection.Descending, first.Columns[0].SortDirection, "A refused sort leaves the column state unchanged.");
+            });
+        }
     }
 
     [TestClass]
@@ -188,6 +318,57 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(Visibility.Collapsed, siblingGripper.Visibility,
                     "A canceled drag must still apply the availability change it held back.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies unloading the table mid-drag cancels the resize and restores Width, and that a new drag works after the table is re-added.")]
+        public void VerifyUnloadMidDragRevertsWidthAndAllowsANewDrag()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateResizableTable(
+                    ("Name", new GridLength(150.0, GridUnitType.Pixel)),
+                    ("Role", new GridLength(150.0, GridUnitType.Pixel)));
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = RequireGripper(tableView, 0);
+                gripper.BeginDrag();
+                gripper.TryDrag(40.0);
+                Verify.AreEqual(190.0, tableView.Columns[0].Width.Value, "Precondition: the drag must have written a width.");
+
+                Content = null;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(new GridLength(150.0, GridUnitType.Pixel), tableView.Columns[0].Width,
+                    "Unloading mid-drag must cancel the resize and restore the authored Width.");
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var gripper = RequireGripper(tableView, 0);
+                Verify.IsFalse(gripper.IsDragging, "No drag may survive the unload.");
+
+                gripper.BeginDrag();
+                gripper.TryDrag(20.0);
+                gripper.EndDrag(false);
+
+                Verify.AreEqual(new GridLength(170.0, GridUnitType.Pixel), tableView.Columns[0].Width,
+                    "A new drag after re-adding the table must resize from the restored width.");
             });
         }
     }

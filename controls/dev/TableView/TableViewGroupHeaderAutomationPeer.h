@@ -28,9 +28,13 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
     winrt::hstring GetNameCore();
+    winrt::IVector<winrt::AutomationPeer> GetChildrenCore();
 
     // Lands keyboard focus for UIA SetFocus; see the definition.
     void SetFocusCore();
+
+    // No menu while a cell is editing.
+    void ShowContextMenuCore();
 
     // IExpandCollapseProvider
     void Expand();

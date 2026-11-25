@@ -231,7 +231,14 @@ IFACEMETHODIMP PrintDocumentSource::GetPreviewPageCollection(
 
     // This call make come in on a worker thread, post it on the UI-thread since we need to access our objects.
 
+    IFCPTR(docPageCollection);
+    *docPageCollection = nullptr;
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return E_UNEXPECTED;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
     IFC(ctl::make(&spContext));
@@ -270,6 +277,11 @@ IFACEMETHODIMP PrintDocumentSource::Paginate(
     ctl::ComPtr<wgr::Printing::IPrintTaskOptionsCore> spPrintTaskOptionsCore = NULL;
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return E_UNEXPECTED;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
     if (docSettings)
     {
@@ -314,6 +326,11 @@ IFACEMETHODIMP PrintDocumentSource::MakePage(
     // This call make come in on a worker thread, post it on the UI-thread since we need to access our objects.
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return E_UNEXPECTED;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
     IFC(ctl::ComObject<PrintDocumentInvokeContext>::CreateInstance(spContext.GetAddressOf()));
@@ -349,6 +366,11 @@ HRESULT PrintDocumentSource::MakeDocument(
     ctl::ComPtr<wgr::Printing::IPrintTaskOptionsCore> spPrintTaskOptionsCore = NULL;
 
     IFC(ctl::resolve_weakref(m_pPrintDocument, pPrintDocument));
+    if (!pPrintDocument)
+    {
+        return E_UNEXPECTED;
+    }
+
     spPrintDocumentDO = static_cast<PrintDocument*>(pPrintDocument);
 
     // MakeDocument may be called on a worker therad. We post a dispatcher callback to do most of our
@@ -376,4 +398,3 @@ Cleanup:
     RRETURN(hr);
 
 }
-

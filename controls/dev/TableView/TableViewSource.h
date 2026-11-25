@@ -6,11 +6,13 @@
 #include "pch.h"
 #include "common.h"
 
+#include <functional>
 #include <memory>
+#include <optional>
 
 #include "TableViewSource.g.h"
 #include "TableViewRowInfo.h"
-#include "TableViewTip.h"
+#include "TableViewTipTypes.h"
 
 class ShapedItemsSource;
 
@@ -93,6 +95,15 @@ public:
     // this to decide how to interpret a row DataContext, so reporting intent here would make them
     // read a flat item as a GroupedEntry.
     bool IsGrouped() const;
+    // What the app declared on this source, not the projection in effect (unlike IsGrouped), read without calling
+    // app code (TableView_Instance).
+    bool HasFilter() const;
+    bool HasGroupBy() const;
+    bool HasParentBy() const;
+    // Rows before the filter (every node for a tree), and data rows after it, without group headers and whatever is
+    // expanded. Neither reads app code.
+    uint32_t SourceRowCount() const;
+    uint32_t DataRowCount() const;
     // True when `item` (by object identity) is in the shaped, filtered rows, regardless of group or
     // node expansion. Header rows never match.
     bool ContainsShapedItem(winrt::IInspectable const& item) const;
@@ -111,6 +122,12 @@ public:
     bool SetOwningTableView(winrt::IInspectable const& owner);
     // Detaches `owner`; a no-op when another TableView owns this source.
     void ReleaseOwningTableView(winrt::IInspectable const& owner);
+    // True when a TableView other than `candidate` owns this source.
+    bool IsOwnedByOther(winrt::IInspectable const& candidate) const
+    {
+        auto const owner = m_owningTableView.get();
+        return owner && owner != candidate;
+    }
     // A refused TableView waits here. On release, waiters run in order until one claims the
     // source; each waiter that runs is dropped. Keyed by the waiter's identity, one entry each.
     void AddOwnerReleasedHandler(winrt::IInspectable const& waiter, std::function<void()> handler);
@@ -122,7 +139,8 @@ public:
     // unchanged and only the order moved.
     void SetShapingChangedHandler(std::function<void(bool)> handler) { m_shapingChanged = std::move(handler); }
     using ShapingTipCompleted = std::function<void(TableViewTip::Operation, uint64_t, bool failed,
-        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind)>;
+        std::optional<TableViewTip::IgnoreReason>, std::optional<HRESULT>, TableViewTip::AppFaultKind,
+        TableViewTip::ContainedFaults)>;
     void SetShapingTipHandlers(
         winrt::IInspectable const& owner,
         std::function<uint64_t(TableViewTip::Operation, bool)> begin,
@@ -137,10 +155,53 @@ public:
     // Lets the owner drop comparer ranks for rows that left the source (see
     // ShapedItemsSource::SetRowsReleasedHook).
     void SetRowsReleasedHook(std::function<void(winrt::IInspectable const&, std::vector<winrt::IInspectable> const&)> hook);
+    // Lets the owner learn that live shaping reacted to an item change (see
+    // ShapedItemsSource::SetLiveItemReshapeHandler).
+    void SetLiveItemReshapeHandler(std::function<void()> handler);
     // False when sorting would fail because the rows include a null item or one object twice.
     bool CanApplySort() const;
 
 private:
+    // The engine's copies of an app delegate reach it through one of these, not through a strong
+    // ref: a delegate whose closure captures this source would otherwise form a cycle across the
+    // native boundary that the GC cannot see, so neither would ever be collected (#12474). The
+    // tracker_ref lets the GC walk this source's edge to the delegate instead.
+    struct TrackedDelegateBase
+    {
+        virtual ~TrackedDelegateBase() = default;
+        virtual void Release() noexcept = 0;
+    };
+    template <typename D>
+    struct TrackedDelegate final : TrackedDelegateBase
+    {
+        TrackedDelegate(ITrackerHandleManager const* owner, D const& value, std::shared_ptr<bool> obsolete) :
+            m_value(owner, value), m_obsolete(std::move(obsolete)) {}
+        // Null when the GC already collected the target or this source is gone; either way the
+        // source is unreachable, so its engine's remaining work is obsolete.
+        D Get() const
+        {
+            auto value = m_value.template safe_get<D>();
+            if (!value)
+            {
+                *m_obsolete = true;
+            }
+            return value;
+        }
+        void Release() noexcept override { auto const released = std::move(m_value); }
+        tracker_ref<D> m_value;
+        std::shared_ptr<bool> m_obsolete;
+    };
+    template <typename D>
+    std::shared_ptr<TrackedDelegate<D>> Track(D const& value)
+    {
+        // The engine's copies are the only owners, so a cleared or replaced delegate goes with them.
+        std::erase_if(m_trackedDelegates, [](auto const& tracked) { return tracked.expired(); });
+        auto tracked = std::make_shared<TrackedDelegate<D>>(this, value, m_obsolete);
+        m_trackedDelegates.push_back(tracked);
+        return tracked;
+    }
+    std::function<winrt::IInspectable(winrt::IInspectable const&)> MakeKeySelector(winrt::TableViewKeySelector const& key);
+
     struct ShapingTip;
     struct ShapingTipHandlers
     {
@@ -158,6 +219,9 @@ private:
     // structure-changed event that a programmatic reshape has no other trigger for.
     void NotifyOwnerShapingChanged(bool reorderOnly);
 
+    // Weak, so it can release the tracker handles of engine copies that outlive this source.
+    std::vector<std::weak_ptr<TrackedDelegateBase>> m_trackedDelegates{};
+    std::shared_ptr<bool> m_obsolete{ std::make_shared<bool>(false) };
     std::shared_ptr<ShapedItemsSource> m_engine{};
     // Weak, and typed as IInspectable rather than TableView: this slot exists only to detect a
     // second owner binding, and the owning TableView references this source through its
@@ -171,8 +235,6 @@ private:
     ShapingTip* m_shapingTip{};
     uint64_t m_ownerGeneration{};
     uint32_t m_notificationDepth{};
-    bool m_hasFilter{};
-    bool m_hasGroup{};
     struct OwnerReleasedWaiter
     {
         winrt::weak_ref<winrt::IInspectable> Waiter;

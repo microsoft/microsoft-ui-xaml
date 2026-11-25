@@ -12,5 +12,8 @@ namespace winrt::Simple::implementation
 
         void OnLaunched(Microsoft::UI::Xaml::LaunchActivatedEventArgs const&);
         void OnNavigationFailed(IInspectable const&, Microsoft::UI::Xaml::Navigation::NavigationFailedEventArgs const&);
+
+    private:
+        Microsoft::UI::Xaml::Window m_window{ nullptr };
     };
 }

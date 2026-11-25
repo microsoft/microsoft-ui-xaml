@@ -236,9 +236,10 @@ void SvgImageSourceTests::UriSource()
             svgImageSourceOpenedEvent->Set();
         }));
 
-        svgImageSource->UriSource = testUri;
+        // Set the rasterization dimensions before UriSource so the initial load uses the requested surface size.
         svgImageSource->RasterizePixelWidth = 100;
         svgImageSource->RasterizePixelHeight = 100;
+        svgImageSource->UriSource = testUri;
     });
     svgImageSourceOpenedEvent->WaitForDefault();
     TestServices::WindowHelper->SynchronouslyTickUIThread(2);
@@ -787,8 +788,8 @@ void SvgImageSourceTests::DocumentWidthHeight()
         // - ImageBrush, explicit height on Border
         // - ImageBrush, explicit width/height on Border
         //
-        // Note: There's a bug here - Xaml will use the size of the root of the Xaml tree to decode, rather than respect the natural size of the SVG.
-        // Xaml doesn't correctly infer natural size from SVG image
+        // An SVG with an absolute width and height that fit within the root-derived box uses them as its natural size.
+        // Other SVGs, including those with only one dimension, still use the size of the root of the Xaml tree.
         //
 
         Canvas^ meet = ref new Canvas();

@@ -10,6 +10,14 @@
     <Import_RootNamespace>NavigationView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewDragPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -51,6 +59,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common\NavigationViewStackPanelHostPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -135,6 +147,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewDragPage.xaml.cs">
+      <DependentUpon>NavigationViewDragPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewPointerFocusPage.xaml.cs">
+      <DependentUpon>NavigationViewPointerFocusPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewInfoBadge.xaml.cs">
       <DependentUpon>NavigationViewInfoBadge.xaml</DependentUpon>
     </Compile>
@@ -167,6 +185,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMenuItemStretchPage.xaml.cs">
       <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewStackPanelHostPage.xaml.cs">
+      <DependentUpon>NavigationViewStackPanelHostPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationViewMinimalPage.xaml.cs">
       <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>

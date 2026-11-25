@@ -30,7 +30,11 @@
 #endif
 
 // This creates a "Build Machine Tag" to be added to the file version
+#ifdef WINDOWSAPPSDK_UNIFIED_BINARY_VERSION
+#define BUILD_MACHINE_TAG ""
+#else
 #define BUILD_MACHINE_TAG " (" STRINGIZE(WINUI_BUILD_MACHINE) "-" STRINGIZE(WINUI_SOURCE_REVISION_ID) ")"
+#endif
 
 #ifndef VER_FILETYPE
 #define VER_FILETYPE                VFT_DLL
@@ -64,6 +68,9 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+#ifdef WINDOWSAPPSDK_UNIFIED_BINARY_VERSION
+            VALUE "Comments",        "SourceRevision=" STRINGIZE(WINUI_SOURCE_REVISION_ID)
+#endif
             VALUE "CompanyName",     WINDOWSAPPSDK_COMPANY_NAME
             VALUE "FileDescription", VER_INTERNALNAME_STR
             VALUE "FileVersion",     VER_FILEVERSION_STR BUILD_MACHINE_TAG

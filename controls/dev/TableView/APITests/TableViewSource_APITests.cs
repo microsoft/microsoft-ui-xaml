@@ -783,6 +783,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies Sort(keySelector, None) removes the axis keyed by that delegate instance, a None for an unknown delegate leaves the sort unchanged, and ClearSort removes every key-selector axis.")]
+        public void VerifyKeySelectorSortNoneFollowsDelegateIdentity()
+        {
+            TableView tableView = null;
+            TableViewSource source = null;
+            List<ShapedPerson> items = null;
+            TableViewKeySelector byLength = o => Person(o).Name.Length;
+            var byLengthAscending = new List<string> { "Mei", "Asha", "Rafa", "Ines", "Owen", "Diego" };
+
+            RunOnUIThread.Execute(() =>
+            {
+                items = MakeShapedPeople();
+                source = TableViewSource.From(items).Sort(byLength, SortDirection.Ascending);
+                tableView = CreateShapedTable(source);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, byLengthAscending, "baseline: sorted by name length");
+                TableViewKeySelector sameKeyOtherInstance = o => Person(o).Name.Length;
+                source.Sort(sameKeyOtherInstance, SortDirection.None);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, byLengthAscending, "None with a delegate that keys no axis must leave the sort unchanged");
+                source.Sort(byLength, SortDirection.None);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "None with the same delegate instance must remove its axis");
+                source.Sort(byLength, SortDirection.Ascending).Sort(o => Person(o).Role, SortDirection.Descending);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var labels = GetProjectedLabels(tableView, includeCount: true);
+                Verify.IsTrue(labels.First() == "Mei" && labels.Last() == "Diego", "Precondition: two key-selector axes, name length primary.");
+                source.ClearSort();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyProjection(tableView, items.Select(p => p.Name).ToList(), "ClearSort must remove every key-selector axis");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies SortDirection.None removes that axis rather than seeding a stage.")]
         public void VerifySortDirectionNoneRemovesThatAxis()
         {

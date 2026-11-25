@@ -69,6 +69,57 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         ItemsControlHelper::VerifyContainersAndItems<xaml_controls::ItemsControl, ContentPresenter>(itemsControl, s_itemCount);
     }
 
+    void ItemsControlIntegrationTests::InvalidItemsSourceHasHelpfulError()
+    {
+        RunOnUIThread([&]()
+        {
+            auto verifyInvalidSource = [](xaml_controls::ItemsControl^ itemsControl)
+            {
+                VERIFY_THROWS_SPECIFIC_WINRT(
+                    itemsControl->ItemsSource = L"Not a collection",
+                    Platform::InvalidArgumentException^,
+                    [](Platform::InvalidArgumentException^ exception)
+                    {
+                        VERIFY_ARE_EQUAL(E_INVALIDARG, exception->HResult);
+                        auto message = exception->Message;
+                        LOG_OUTPUT(L"ItemsSource error message: \"%s\"", message ? message->Data() : L"(null)");
+                        return message != nullptr && wcsstr(message->Data(),
+                            L"The value of 'ItemsControl.ItemsSource' must be null or implement IBindableIterable or IIterable<IInspectable>.") != nullptr;
+                    });
+            };
+
+            verifyInvalidSource(ref new xaml_controls::ItemsControl());
+            verifyInvalidSource(ref new xaml_controls::ComboBox());
+            verifyInvalidSource(ref new xaml_controls::ListView());
+        });
+    }
+
+    void ItemsControlIntegrationTests::CanSetEmptyAndClearItemsSource()
+    {
+        RunOnUIThread([&]()
+        {
+            auto verifyValidSources = [](xaml_controls::ItemsControl^ itemsControl)
+            {
+                auto source = ref new Platform::Collections::Vector<Platform::Object^>();
+                itemsControl->ItemsSource = source;
+                VERIFY_ARE_EQUAL(0u, itemsControl->Items->Size);
+                VERIFY_ARE_EQUAL(source, itemsControl->ItemsSource);
+
+                source->Append(L"Item");
+                VERIFY_ARE_EQUAL(1u, itemsControl->Items->Size);
+                VERIFY_ARE_EQUAL(source->GetAt(0), itemsControl->Items->GetAt(0));
+
+                itemsControl->ItemsSource = nullptr;
+                VERIFY_IS_NULL(itemsControl->ItemsSource);
+                VERIFY_ARE_EQUAL(0u, itemsControl->Items->Size);
+            };
+
+            verifyValidSources(ref new xaml_controls::ItemsControl());
+            verifyValidSources(ref new xaml_controls::ComboBox());
+            verifyValidSources(ref new xaml_controls::ListView());
+        });
+    }
+
     void ItemsControlIntegrationTests::CanGetContainersFromItems()
     {
         TestCleanupWrapper cleanup;

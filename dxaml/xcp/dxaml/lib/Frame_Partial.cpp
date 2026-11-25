@@ -10,6 +10,7 @@
 //      cache size is 10.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "Frame.g.h"
 #include "Page.g.h"
 #include "NavigationFailedEventArgs.g.h"
@@ -827,7 +828,7 @@ Frame::RaiseNavigated(
     IFC(GetNavigatedEventSourceNoRef(&pEventSource));
     IFC(pEventSource->Raise(ctl::as_iinspectable(this), spINavigationEventArgs.Get()));
 
-    TraceFrameNavigatedInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
+    XamlTelemetry::FrameNavigated(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
 
 Cleanup:
     RRETURN(hr);
@@ -858,7 +859,7 @@ Frame::RaiseNavigating(
 
     IFC(spINavigatingCancelEventArgs->get_Cancel(pIsCanceled));
 
-    TraceFrameNavigatingInfo(WindowsGetStringRawBuffer(descriptor, NULL), static_cast<const unsigned char>(navigationMode));
+    XamlTelemetry::FrameNavigating(GetHandle(), WindowsGetStringRawBuffer(descriptor, NULL), static_cast<uint8_t>(navigationMode));
 
 Cleanup:
     RRETURN(hr);

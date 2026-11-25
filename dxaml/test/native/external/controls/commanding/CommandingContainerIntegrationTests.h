@@ -26,13 +26,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateCommandingContainerProvidesCommandTarget)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that CommandingContainer provides the correct command target when a button is clicked that is a peer to a target.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
         
         BEGIN_TEST_METHOD(ValidateCommandingContainerProvidesListCommandTarget)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that CommandingContainer provides the correct list command target when a command is invoked on a list item.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
         
         BEGIN_TEST_METHOD(ValidateCommandingContainerTracksContext)

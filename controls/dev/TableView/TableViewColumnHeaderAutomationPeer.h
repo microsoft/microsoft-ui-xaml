@@ -12,7 +12,7 @@
 // Cached/public peers are owned by the TableView so headers can be enumerated before the
 // templates realize; realized header cells use the same per-column identity.
 class TableViewColumnHeaderAutomationPeer :
-    public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
+    public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT, winrt::ITransformProvider>
 {
 public:
     TableViewColumnHeaderAutomationPeer(winrt::TableView const& owner, winrt::TableViewColumn const& column);
@@ -23,6 +23,9 @@ public:
     hstring GetClassNameCore();
     hstring GetNameCore();
     bool IsEnabledCore();
+    // Only an actionable header takes keyboard focus; see TableView::IsHeaderCellActionableInternal.
+    bool IsKeyboardFocusableCore();
+    void SetFocusCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
     hstring GetAutomationIdCore();
     // Reports the column's current sort state, so a screen-reader user can tell a sorted header
@@ -35,6 +38,16 @@ public:
 
     // IInvokeProvider
     void Invoke();
+
+    // ITransformProvider. Offered whenever the column opts in to resizing; CanResize then tracks
+    // whether the gripper is currently usable (for example a pinned Star column reports false).
+    bool CanMove();
+    bool CanResize();
+    bool CanRotate();
+    void Move(double x, double y);
+    void Resize(double width, double height);
+    void Rotate(double degrees);
+
     // Complements the distinct RuntimeId: AT announces "column i of n" for spatial context.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
@@ -44,12 +57,16 @@ public:
     winrt::Windows::Foundation::Rect GetBoundingRectangleCore();
     winrt::Windows::Foundation::Point GetClickablePointCore();
     bool IsOffscreenCore();
+    // A TableView-owned peer has no element of its own: forward to the realized header, or do
+    // nothing, rather than raise the request on the TableView and open its menu.
+    void ShowContextMenuCore();
 
     bool IsTableViewOwned();
 
 private:
     winrt::FrameworkElement GetHeaderElement();
     bool IsSortableColumn();
+    bool IsResizableColumn();
     int32_t GetColumnIndex();
 
     winrt::weak_ref<winrt::TableViewColumn> m_column{ nullptr };

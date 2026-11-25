@@ -38,7 +38,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateUIElementTree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UIElement tree of the SplitView control in its various configurations.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
@@ -47,7 +47,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(ValidateLightDismissBehavior)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the SplitView control Overlay and CompactOverlay modes support light dismiss, whereas Inline and CompactInline modes do not.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: UtilitiesRoutineHelper::IsOneCore does not return true on OneCore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True") // Disabled due to #38065901
         END_TEST_METHOD()
 
@@ -149,7 +149,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateOverlayUIETree)
             TEST_METHOD_PROPERTY(L"Description", L"Validates UIElement tree with an overlay-enabled SplitView.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Move windowed popups to lifted input
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
@@ -171,7 +171,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(CanDragFromPane)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that we can drag an item from the SplitView pane to another location.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // TODO: 31563479 - Mouse input helper doesn't work on OneCore
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             TEST_METHOD_PROPERTY(L"Ignore", L"True")
         END_TEST_METHOD()
 

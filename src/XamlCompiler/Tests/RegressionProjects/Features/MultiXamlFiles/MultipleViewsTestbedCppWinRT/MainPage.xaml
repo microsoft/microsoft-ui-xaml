@@ -15,6 +15,13 @@
                 <TextBlock Text="I am Landscape"/>
                 <TextBlock x:Name="DisplayText"/>
                 <Button x:Name="MyControl" Content="MyControl" Click="MyControl_Click"/>
+                <Grid x:Name="DeferredContent" x:Load="False">
+                    <Grid.Resources>
+                        <x:String x:Name="SharedText">Landscape value</x:String>
+                        <x:String x:Name="EmptySharedText"></x:String>
+                        <x:String x:Name="ViewText">Landscape string</x:String>
+                    </Grid.Resources>
+                </Grid>
             </StackPanel>
         </Viewbox>
     </Grid>

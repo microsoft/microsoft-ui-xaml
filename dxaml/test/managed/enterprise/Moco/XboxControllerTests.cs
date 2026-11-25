@@ -29,7 +29,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("UAP:Praid", "XamlManagedTAEFTests")]
         [TestProperty("IsolationLevel", "Class")]
@@ -1940,6 +1940,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
+        [TestProperty("Hosting:Mode", "UAP")]
         public void ScrollViewer2DNavigation()
         {
             ScrollViewer sv = null;
@@ -2037,7 +2038,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void ScrollViewer2DPageNavigationHiDpi()
         {
@@ -2239,7 +2240,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         [TestProperty("Ignore", "TRUE")]    // [DCPPTest] Xaml tests are failing because Xaml no longer applies the plateau scale
         public void ScrollViewerEngagementHiDpi()
@@ -2347,7 +2348,7 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
 
         [TestMethod]
-        [TestProperty("Hosting:Mode", "UAP")] // fails in WPF mode due to rendering scopeguard not working in WPF yet
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("HasAssociatedMasterFile", "True")]
         public void ListBoxEngagement()
         {
@@ -2872,4 +2873,3 @@ namespace Microsoft.UI.Xaml.Tests.Enterprise.Moco
         }
     }
 }
-

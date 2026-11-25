@@ -7,6 +7,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Tabular;
+using Microsoft.UI.Xaml.Media;
 using TableViewSampleApp.Data;
 using TableViewSampleApp.Helpers;
 using TableViewSampleApp.Models;
@@ -49,22 +50,26 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
             });
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(InitialRows);
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Grid lines and banding ---------------------------------------------------------
 
+    // <snippet>
     private void OnGridLinesChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="3") before the table exists.
-        if (PeopleTable is null || GridLinesText is null)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="3") before the table exists. // snippet:skip
+        if (PeopleTable is null || GridLinesText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        PeopleTable.GridLinesVisibility = SampleShaping.SelectedTag(GridLinesSelector, "All") switch
+        PeopleTable.GridLinesVisibility = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag switch
         {
             "None" => TableViewGridLinesVisibility.None,
             "Horizontal" => TableViewGridLinesVisibility.Horizontal,
@@ -73,21 +78,103 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         };
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "GridLinesVisibility -> {0}", PeopleTable.GridLinesVisibility));
     }
+    // </snippet>
 
+    // <snippet>
     private void OnRowBandingChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (PeopleTable is null || RowBandingText is null)
-        {
-            return;
-        }
+        if (PeopleTable is null || RowBandingText is null) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        var custom = SampleShaping.SelectedTag(RowBandingSelector, "default") == "custom";
+        var custom = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "custom";
         PeopleTable.Style = custom ? (Style)Resources["CustomBandingTableViewStyle"] : null;
         SetLastAction(custom
             ? "Row banding -> custom RowBackground / AlternatingRowBackground"
             : "Row banding -> default theme");
     }
     // </snippet>
+
+    // ---- Header lines -------------------------------------------------------------------
+
+    private void OnHeaderLinesChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (PeopleTable is null || HeaderLinesText is null)
+        {
+            return;
+        }
+
+        var mode = SampleShaping.SelectedTag(HeaderLinesSelector, "default");
+        SetHeaderLinesResources(mode == "brush");
+        SetColumnSeparatorsHidden(mode == "style");
+        SetLastAction(mode switch
+        {
+            "brush" => "Header lines -> hidden: column separators and the line under the header row",
+            "style" => "Header lines -> column separators hidden; the line under the header row stays",
+            _ => "Header lines -> shown",
+        });
+    }
+
+    // <snippet>
+    private void SetColumnSeparatorsHidden(bool hidden)
+    {
+        PeopleTable.ColumnHeaderStyle = hidden ? (Style)Resources["NoColumnSeparatorsHeaderStyle"] : null;
+    }
+    // </snippet>
+
+    private const string HeaderSeparatorBrushKey = "TabularSurfaceHeaderSeparatorBrush";
+
+    // Demo plumbing; an app declares the brush in XAML. {ThemeResource} resolves when a template is
+    // applied, so a runtime switch re-applies the table's template and then restores the scroll.
+    private void SetHeaderLinesResources(bool hidden)
+    {
+        var overrides = (ResourceDictionary)Resources["HiddenHeaderLinesResources"];
+        var tableResources = PeopleTable.Resources;
+        if (hidden == tableResources.ContainsKey(HeaderSeparatorBrushKey))
+        {
+            return;
+        }
+
+        foreach (var (key, value) in overrides)
+        {
+            if (hidden)
+            {
+                tableResources[key] = value;
+            }
+            else
+            {
+                tableResources.Remove(key);
+            }
+        }
+
+        var scroller = FindBodyScroller(PeopleTable);
+        var horizontal = scroller?.HorizontalOffset ?? 0;
+        var vertical = scroller?.VerticalOffset ?? 0;
+        PeopleTable.Template = null;
+        PeopleTable.ClearValue(Control.TemplateProperty);
+        PeopleTable.UpdateLayout();
+        FindBodyScroller(PeopleTable)?.ChangeView(horizontal, vertical, null, disableAnimation: true);
+    }
+
+    private static ScrollViewer? FindBodyScroller(DependencyObject parent)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ScrollViewer { Name: "PART_BodyScroller" } scroller)
+            {
+                return scroller;
+            }
+
+            if (FindBodyScroller(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
 
     // ---- In-cell edits ------------------------------------------------------------------
 
@@ -123,10 +210,9 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         var person = People[2];
         SetLastAction(SampleShaping.SelectItem(PeopleTable, person)
             ? string.Format(CultureInfo.CurrentCulture, "Selected {0}", person.FullName)
-            : string.Format(CultureInfo.CurrentCulture, "{0} has no row on screen (collapsed group?); expand the groups first.", person.FullName));
+            : string.Format(CultureInfo.CurrentCulture, "{0} has no displayed row (collapsed group?); expand the groups first.", person.FullName));
     }
 
-    // <snippet>
     private void OnMoveToNextGroupClick(object sender, RoutedEventArgs e)
     {
         if (PeopleTable.SelectedItem is not Person person)
@@ -138,7 +224,7 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         // Moves along the key the Group key selector names, so the row always changes group
         // when grouped (and the same value changes when flat).
         var key = Shaping.SelectedKey;
-        var from = SampleShaping.KeyOf(person, key); // snippet:skip
+        var from = SampleShaping.KeyOf(person, key);
         using (BeginBulkUpdate())
         {
             switch (key)
@@ -160,7 +246,6 @@ public sealed partial class GridLinesVisibilityPage : SamplePageBase
         ReapplyIfGroupedOn(key);
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, SampleShaping.KeyOf(person, key)));
     }
-    // </snippet>
 
     private void OnAddPersonClick(object sender, RoutedEventArgs e)
     {

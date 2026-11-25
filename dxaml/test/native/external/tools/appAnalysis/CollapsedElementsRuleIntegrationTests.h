@@ -43,7 +43,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VerifyDoesntFlagWhenUsingEnC)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies that the description contains the name of the collapsed element.")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 

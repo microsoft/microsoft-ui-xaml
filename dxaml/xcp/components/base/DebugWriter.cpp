@@ -145,7 +145,8 @@ void DisplayDebugMessage(
 {
     va_list(vargs);
     va_start(vargs, pMessage);
-    return DisplayDebugMessageV(type, level, pFileName, iLine, iValue, pTestString, pMessage, vargs);
+    DisplayDebugMessageV(type, level, pFileName, iLine, iValue, pTestString, pMessage, vargs);
+    va_end(vargs);
 }
 
 void DisplayDebugMessageV(

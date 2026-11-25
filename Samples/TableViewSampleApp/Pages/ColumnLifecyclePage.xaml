@@ -14,7 +14,7 @@
         Snippet="ColumnLifecycle"
         StretchExample="True"
         TryIt="Tick Shift to show the hidden column, then untick Salary. Pick Department in Column and press Move right twice. Press Add Join date column: a full date picker column appears at the end and the table scrolls sideways. Switch Shaping to Grouped and repeat: the columns and the group headers do not affect each other."
-        WhatToLookFor="When a column moves, its width, template and sort setting move with it. A hidden column comes back in its old place. The Active checkbox and the date and time pickers keep their values through every move, because each cell is bound to the row, not to the column's position. The default columns fit the window; after Add Join date column the table scrolls sideways on purpose.">
+        WhatToLookFor="When a column moves, its width, template and sort setting move with it. A hidden column comes back in its old place. The Active checkbox and the date and time pickers keep their values through every move, because each cell is bound to the row, not to the column's position. With the navigation pane open, the default columns fit the window: Name (2*) and Role (*) are star-sized, so they share the width the fixed columns leave, and hiding one gives its share to the other. After Add Join date column the table scrolls sideways on purpose.">
 
         <controls:SamplePresenter.Example>
             <!-- snippet -->
@@ -27,21 +27,21 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="{StaticResource ColWidthAvatar}"
+                <tv:TableViewTemplateColumn x:Name="ColAvatar" Header="Photo" Width="56"
                                              CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
-                <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="{StaticResource ColWidthShortName}"
+                <tv:TableViewTextColumn x:Name="ColName" Header="Name" Width="2*" MinWidth="120"
                                          Binding="{Binding FullName}"/>
-                <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="{StaticResource ColWidthChip}"
+                <tv:TableViewTemplateColumn x:Name="ColDepartment" Header="Department" Width="130"
                                              CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
-                <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="{StaticResource ColMinWidthStar}"
+                <tv:TableViewTextColumn x:Name="ColRole" Header="Role" Width="*" MinWidth="140"
                                          Binding="{Binding Role}"/>
-                <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="{StaticResource ColWidthNumber}"
+                <tv:TableViewTextColumn x:Name="ColSalary" Header="Salary" Width="100"
                                          Binding="{Binding Salary, Converter={StaticResource SalaryTextConverter}}"/>
-                <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="{StaticResource ColWidthBoolean}"
+                <tv:TableViewTemplateColumn x:Name="ColActive" Header="Active" Width="84"
                                              CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"
                                              HeaderToolTip="Whether the person is currently on staff. Editable."/>
                 <!-- Starts hidden: TableViewColumn.Visibility, not removal from the vector. -->
-                <tv:TableViewTemplateColumn x:Name="ColShift" Header="Shift" Width="{StaticResource ColWidthTimeCompact}"
+                <tv:TableViewTemplateColumn x:Name="ColShift" Header="Shift" Width="150"
                                              CellTemplate="{StaticResource ShiftTimeCompactTemplate}" SortMemberPath="ShiftStart"
                                              Visibility="Collapsed"
                                              HeaderToolTip="Start of the daily shift, 24-hour clock. Editable."/>

@@ -998,8 +998,8 @@ void ImplicitAnimationTests::HideAnimation6WUCFull()
 
     RunOnUIThread([&]()
     {
-        LOG_OUTPUT(L"Setting Window Content to null, no animation is triggered");
-        wh->WindowContent = nullptr;
+        LOG_OUTPUT(L"Replacing Window Content, no animation is triggered");
+        wh->WindowContent = ref new Canvas();
     });
     wh->WaitForIdle();
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::NoComparison);
@@ -8069,4 +8069,3 @@ Microsoft::UI::Composition::Compositor^ ImplicitAnimationTests::GetCompositor()
 }
 
 }}}}}}
-

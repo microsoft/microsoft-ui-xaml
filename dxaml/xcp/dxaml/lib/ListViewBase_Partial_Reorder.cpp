@@ -170,7 +170,6 @@ _Check_return_ HRESULT ListViewBase::OnDragGesture(
                 if (useWinRtDragDrop)
                 {
                     ctl::WeakRefPtr wpThis;
-                    UINT pointerId = 0;
                     ctl::ComPtr<DragVisual> spDragVisual;
 
                     IFC(ctl::AsWeak(this, &wpThis));
@@ -203,43 +202,6 @@ _Check_return_ HRESULT ListViewBase::OnDragGesture(
                         }
                         RRETURN(hr);
                     });
-
-                    IFC(pointer->get_PointerId(&pointerId));
-
-                    mui::PointerDeviceType deviceType;
-                    IFC(pointer->get_PointerDeviceType(&deviceType));
-                    
-                    const bool isMouse = (deviceType == mui::PointerDeviceType_Mouse);
-
-                    AppPolicyWindowingModel policy = AppPolicyWindowingModel_None;
-                    LONG status = AppPolicyGetWindowingModel(GetCurrentThreadEffectiveToken(), &policy);
-                    if (status != ERROR_SUCCESS)
-                    {
-                        IFC(E_FAIL);
-                    }
-
-                    if (!isMouse && policy != AppPolicyWindowingModel_Universal)
-                    {
-                        const auto hmod = ::GetModuleHandleA("microsoft.ui.input.dll");
-                        if (hmod == nullptr)
-                        {
-                            IFC(E_FAIL);
-                        }
-                        using LiftedInputCapturePointerIdForDragAndDrop = HRESULT(*)(UINT);
-                        const auto captureForDragAndDrop = reinterpret_cast<LiftedInputCapturePointerIdForDragAndDrop>(::GetProcAddress(hmod, "LiftedInputCapturePointerIdForDragAndDrop"));
-                        if (captureForDragAndDrop)
-                        {
-                            hr = captureForDragAndDrop(pointerId);
-
-                            if (hr == E_ACCESSDENIED)
-                            {
-                                // This means IXP API used for touch and pen drag and drop does not support current scenario, we should cancel in progress drag and return. 
-                                IGNOREHR(DXamlCore::GetCurrent()->GetDragDrop()->CleanupDragDrop());
-                                RRETURN(S_OK);
-                            }
-                            IFC(hr);
-                        }
-                    }
 
                     // Capture the source ListViewBase to be able to get position updates from
                     // WinRT DragDrop component. This is only for M1 when setting DragUI is

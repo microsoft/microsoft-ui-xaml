@@ -19,6 +19,14 @@ Param(
     [string]$MonobuildPinnedVersion = ''
 )
 
+# Report unhandled PowerShell errors as failures instead of letting the command
+# wrapper return the last successful NuGet process's exit code.
+trap
+{
+    Write-Error -ErrorRecord $_ -ErrorAction Continue
+    Exit 1
+}
+
 #
 # Version is read from the VERSION file.
 #
@@ -132,81 +140,278 @@ if ($IXP_Version -eq '' -or $BASE_COMPONENT_VERSION -eq '' -or $FOUNDATION_COMPO
 }
 
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
+# Use an absolute path because .NET ZIP APIs can resolve relative paths against
+# a different working directory than PowerShell's current location.
+$OutputDir = (Resolve-Path -LiteralPath $OutputDir -ErrorAction Stop).Path
 
 # Pass NoWarn=NU5100 to silence warnings for all the native binaries being put
 # into the "runtime-framework\" folder rather than "lib\" or "runtime\".
 $CommonNugetArgs = "-properties `"PackageRoot=$PackageRoot``;Version=$version``;IXP_Version=$IXP_Version``;CsWinRT_Version=$CsWinRT_Version``;WEBVIEW2_Version=$WEBVIEW2_Version``;BASE_COMPONENT_VERSION=$BASE_COMPONENT_VERSION``;FOUNDATION_COMPONENT_VERSION=$FOUNDATION_COMPONENT_VERSION``;IXP_COMPONENT_VERSION=$IXP_COMPONENT_VERSION;NoWarn=NU5100`""
 
-$NugetArgs = "$CommonNugetArgs -OutputDirectory $(Resolve-Path $OutputDir)"
+# Pack into a unique staging directory so unchanged content can be discarded
+# without touching the final archive or installed files and their timestamps
+$StagingDir = Join-Path $OutputDir ("staging-" + [guid]::NewGuid().ToString("N"))
+$StagingDir = (New-Item -ItemType Directory -Path $StagingDir -ErrorAction Stop).FullName
 
-if ($NoPackageAnalysis)
+try
 {
-    $NugetArgs = "$NugetArgs -NoPackageAnalysis"
-}
+    $NugetArgs = "$CommonNugetArgs -OutputDirectory `"$StagingDir`""
 
-$NugetCmdLine = "$env:NUGETCMD pack $Nuspec $NugetArgs"
-Write-Host $NugetCmdLine
-Invoke-Expression $NugetCmdLine
-
-if ($lastexitcode -ne 0)
-{
-    Write-Host "Nuget returned $lastexitcode"
-    Exit $lastexitcode;
-}
-
-
-if ($InstallPackage)
-{
-    $PackageCache = [System.IO.Path]::GetFullPath((Join-Path "$scriptDirectory\..\.." "packages"))
-    $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
-    $PackageId = "Microsoft.WindowsAppSDK.WinUI"
-
-    function Remove-CachedPackage([string]$CacheRoot)
+    if ($NoPackageAnalysis)
     {
-        $PackagePaths = @(
-            (Join-Path $CacheRoot "$PackageId\$version"),
-            (Join-Path $CacheRoot "$PackageId.$version")
-        )
+        $NugetArgs = "$NugetArgs -NoPackageAnalysis"
+    }
 
-        foreach ($PackagePath in $PackagePaths)
+    $NugetCmdLine = "$env:NUGETCMD pack $Nuspec $NugetArgs"
+    Write-Host $NugetCmdLine
+    Invoke-Expression $NugetCmdLine
+
+    if ($lastexitcode -ne 0)
+    {
+        $PackExitCode = $lastexitcode
+        Write-Host "Nuget returned $PackExitCode"
+        Exit $PackExitCode;
+    }
+
+    # Resolve installation caches only when requested; packaging-only calls must
+    # not inspect or invalidate installed packages.
+    if ($InstallPackage)
+    {
+        $PackageCache = [System.IO.Path]::GetFullPath((Join-Path "$scriptDirectory\..\.." "packages"))
+        $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
+        $PackageId = "Microsoft.WindowsAppSDK.WinUI"
+
+        function Remove-CachedPackage([string]$CacheRoot)
         {
-            if (Test-Path $PackagePath)
-            {
-                # Delete the `.nupkg.metadata` first in case of error when subsequently
-                # deleting the rest of the directory; this will prevent Nuget from
-                # erroneously believing that the package is still in a successfully
-                # extracted state.
-                $MetadataPath = Join-Path $PackagePath ".nupkg.metadata"
-                if (Test-Path $MetadataPath)
-                {
-                    Remove-Item $MetadataPath -Force -ErrorAction Stop
-                }
+            $PackagePaths = @(
+                (Join-Path $CacheRoot "$PackageId\$version"),
+                (Join-Path $CacheRoot "$PackageId.$version")
+            )
 
-                Write-Host "Removing stale package: $PackagePath" -ForegroundColor Yellow
-                Remove-Item $PackagePath -Recurse -Force -ErrorAction Stop
+            foreach ($PackagePath in $PackagePaths)
+            {
+                if (Test-Path $PackagePath)
+                {
+                    # Delete the `.nupkg.metadata` first in case of error when subsequently
+                    # deleting the rest of the directory; this will prevent Nuget from
+                    # erroneously believing that the package is still in a successfully
+                    # extracted state.
+                    $MetadataPath = Join-Path $PackagePath ".nupkg.metadata"
+                    if (Test-Path $MetadataPath)
+                    {
+                        Remove-Item $MetadataPath -Force -ErrorAction Stop
+                    }
+
+                    Write-Host "Removing stale package: $PackagePath" -ForegroundColor Yellow
+                    Remove-Item $PackagePath -Recurse -Force -ErrorAction Stop
+                }
             }
         }
+
+        $PackageCaches = @($PackageCache)
+        if ($env:NUGET_PACKAGES)
+        {
+            if (![System.IO.Path]::IsPathRooted($env:NUGET_PACKAGES))
+            {
+                # `nuget.exe` will raise a clear error message if `NUGET_PACKAGES` is not
+                # a rooted path. We will simply ignore it as a potential package cache to be
+                # cleared as we are unable to resolve it ourselves and otherwise let
+                # `nuget.exe`'s own validation logic handle this scenario.
+                Write-Warning "Skipping cleanup for relative NUGET_PACKAGES path: $env:NUGET_PACKAGES"
+            }
+            else
+            {
+                $PackageCaches += [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+            }
+        }
+
+        $PackageCaches = $PackageCaches | Sort-Object -Unique
     }
 
-    $PackageCaches = @($PackageCache)
-    if ($env:NUGET_PACKAGES)
+    # Extract the staged package for comparison, discovering archive and manifest names
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $StagedPackage = Get-ChildItem -LiteralPath $StagingDir -Filter *.nupkg -File -ErrorAction Stop
+    $StagedPackageContents = Join-Path $StagingDir "contents"
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($StagedPackage.FullName, $StagedPackageContents)
+    $ManifestName = (Get-ChildItem -LiteralPath $StagedPackageContents -Filter *.nuspec -File -ErrorAction Stop).Name
+
+    # Map relative payload paths to hashes so comparisons detect added, removed,
+    # renamed, or changed files without depending on their timestamps
+    function Get-PackageFileHashes([string]$Directory)
     {
-        if (![System.IO.Path]::IsPathRooted($env:NUGET_PACKAGES))
+        $Directory = (Resolve-Path -LiteralPath $Directory).Path
+        $Hashes = @{}
+        foreach ($File in Get-ChildItem -LiteralPath $Directory -Recurse -File -Force -ErrorAction Stop)
         {
-            # `nuget.exe` will raise a clear error message if `NUGET_PACKAGES` is not 
-            # a rooted path. We will simply ignore it as a potential package cache to be 
-            # cleared as we are unable to resolve it ourselves and otherwise let 
-            # `nuget.exe`'s own validation logic handle this scenario.
-            Write-Warning "Skipping cleanup for relative NUGET_PACKAGES path: $env:NUGET_PACKAGES"
+            $RelativePath = $File.FullName.Substring($Directory.Length + 1)
+            # Ignore cache/archive bookkeeping. Nuspecs are checked separately
+            # in the nupkgs since legacy installs don't retain extracted copies.
+            if ($RelativePath -match '^(_rels\\|package\\|\[Content_Types\]\.xml$|[^\\]+\.nuspec$|[^\\]+\.nupkg(\.sha512)?$|\.nupkg\.metadata$|\.signature\.p7s$)')
+            {
+                continue
+            }
+            $Hashes[$RelativePath] = (Get-FileHash -LiteralPath $File.FullName -ErrorAction Stop).Hash
         }
-        else
+        return $Hashes
+    }
+
+    # Hash the staged payload and manifest once for both comparisons. Manifest
+    # changes matter because dependencies can change without payload changes.
+    $StagedPackageHashes = Get-PackageFileHashes $StagedPackageContents
+    $StagedManifestHash = (Get-FileHash -LiteralPath "$StagedPackageContents\$ManifestName" -ErrorAction Stop).Hash
+
+    # Compare the existing output archive independently of installed caches.
+    # Extract it and require matching manifest, file paths, and payload hashes.
+    $FinalPackageUnchanged = $false
+    $FinalPackagePath = Join-Path $OutputDir $StagedPackage.Name
+    if (Test-Path $FinalPackagePath)
+    {
+        $ExistingPackageContents = Join-Path $StagingDir "existing"
+        # A damaged old archive is stale, not a reason to block publication.
+        # Other errors, such as denied access, must still fail the script.
+        try
         {
-            $PackageCaches += [System.IO.Path]::GetFullPath($env:NUGET_PACKAGES)
+            [System.IO.Compression.ZipFile]::ExtractToDirectory($FinalPackagePath, $ExistingPackageContents)
+            $ExistingManifestPath = Join-Path $ExistingPackageContents $ManifestName
+            if (Test-Path -LiteralPath $ExistingManifestPath -PathType Leaf -ErrorAction Stop)
+            {
+                $ExistingPackageHashes = Get-PackageFileHashes $ExistingPackageContents
+                $ExistingManifestHash = (Get-FileHash -LiteralPath $ExistingManifestPath -ErrorAction Stop).Hash
+                $FinalPackageUnchanged = ($StagedManifestHash -eq $ExistingManifestHash) -and ($StagedPackageHashes.Count -eq $ExistingPackageHashes.Count)
+                foreach ($RelativePath in $StagedPackageHashes.Keys)
+                {
+                    if ($StagedPackageHashes[$RelativePath] -ne $ExistingPackageHashes[$RelativePath])
+                    {
+                        $FinalPackageUnchanged = $false
+                        break
+                    }
+                }
+            }
+            else
+            {
+                $FinalPackageUnchanged = $false
+                Write-Warning "Replacing package archive '$FinalPackagePath' because it is missing '$ManifestName'."
+            }
+        }
+        catch [System.IO.InvalidDataException]
+        {
+            $FinalPackageUnchanged = $false
+            Write-Warning "Replacing invalid package archive '$FinalPackagePath': $($_.Exception.Message)"
         }
     }
 
-    $PackageCaches = $PackageCaches | Sort-Object -Unique
+    # Decide installation separately: the legacy install must exist, and every
+    # existing cache copy must match, even when the final archive already does.
+    $InstallRequired = $false
+    if ($InstallPackage)
+    {
+        $InstallRequired = !(Test-Path "$PackageCache\$PackageId.$version")
+        # Inspect both modern (ID\version) and legacy (ID.version) cache layouts.
+        $CachedPackagePaths = @()
+        foreach ($CacheRoot in $PackageCaches)
+        {
+            $CachedPackagePaths += "$CacheRoot\$PackageId\$version", "$CacheRoot\$PackageId.$version"
+        }
+        foreach ($CachedPackagePath in $CachedPackagePaths)
+        {
+            if (!(Test-Path $CachedPackagePath)) { continue }
+            $CachedPackageUnchanged = $true
+            # Read the retained archive's manifest because legacy installs omit
+            # extracted nuspecs; dependency-only changes still require a refresh.
+            $CachedArchivePath = Join-Path $CachedPackagePath "$PackageId.$version.nupkg"
+            if (Test-Path $CachedArchivePath)
+            {
+                $CachedArchive = $null
+                try
+                {
+                    $CachedArchive = [System.IO.Compression.ZipFile]::OpenRead($CachedArchivePath)
+                    $CachedManifestEntry = $CachedArchive.GetEntry($ManifestName)
+                    if ($CachedManifestEntry)
+                    {
+                        $CachedManifestPath = Join-Path $StagingDir "cached.nuspec"
+                        [System.IO.Compression.ZipFileExtensions]::ExtractToFile($CachedManifestEntry, $CachedManifestPath, $true)
+                        if ($StagedManifestHash -ne (Get-FileHash -LiteralPath $CachedManifestPath -ErrorAction Stop).Hash)
+                        {
+                            $CachedPackageUnchanged = $false
+                        }
+                    }
+                    else
+                    {
+                        $CachedPackageUnchanged = $false
+                        Write-Warning "Refreshing cached package '$CachedArchivePath' because it is missing '$ManifestName'."
+                    }
+                }
+                catch [System.IO.InvalidDataException]
+                {
+                    $CachedPackageUnchanged = $false
+                    Write-Warning "Refreshing invalid cached package '$CachedArchivePath': $($_.Exception.Message)"
+                }
+                finally
+                {
+                    if ($CachedArchive) { $CachedArchive.Dispose() }
+                }
+            }
+            else
+            {
+                $CachedPackageUnchanged = $false
+            }
 
+            # Modern ID\version caches need the extracted manifest for restore.
+            # Legacy ID.version installs legitimately omit it.
+            if ((Split-Path -Leaf $CachedPackagePath) -eq $version)
+            {
+                $InstalledManifestPath = Join-Path $CachedPackagePath $ManifestName
+                if (!(Test-Path -LiteralPath $InstalledManifestPath -PathType Leaf -ErrorAction Stop))
+                {
+                    $CachedPackageUnchanged = $false
+                }
+                elseif ($StagedManifestHash -ne (Get-FileHash -LiteralPath $InstalledManifestPath -ErrorAction Stop).Hash)
+                {
+                    $CachedPackageUnchanged = $false
+                }
+            }
+
+            # Check installed files as well as the manifest, so missing, extra,
+            # or modified payload files cannot masquerade as an up-to-date cache.
+            $CachedPackageHashes = Get-PackageFileHashes $CachedPackagePath
+            if ($StagedPackageHashes.Count -ne $CachedPackageHashes.Count)
+            {
+                $CachedPackageUnchanged = $false
+            }
+            foreach ($RelativePath in $StagedPackageHashes.Keys)
+            {
+                if ($StagedPackageHashes[$RelativePath] -ne $CachedPackageHashes[$RelativePath])
+                {
+                    $CachedPackageUnchanged = $false
+                    break
+                }
+            }
+
+            $InstallRequired = $InstallRequired -or !$CachedPackageUnchanged
+        }
+    }
+
+    # Publish only changed content. Repairing caches alone must not rewrite the
+    # final archive or disturb its timestamp.
+    if ($FinalPackageUnchanged)
+    {
+        Write-Host "$($StagedPackage.Name) contents unchanged; skipping package replacement."
+    }
+    else
+    {
+        Copy-Item -LiteralPath $StagedPackage.FullName -Destination $OutputDir -Force -ErrorAction Stop
+    }
+}
+finally
+{
+    # Clean up after success, a nonzero NuGet exit, or a terminating invocation error.
+    Remove-Item $StagingDir -Recurse -Force -ErrorAction Stop
+}
+
+# Refresh stale installations only when needed: remove old cache copies, then
+# let NuGet install the package using the configured feeds.
+if ($InstallRequired)
+{
     foreach ($CacheRoot in $PackageCaches)
     {
         Remove-CachedPackage $CacheRoot

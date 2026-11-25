@@ -6,9 +6,6 @@
     <Visual Tag="PrependVisual">
       <Visual Tag="PrimaryVisual" SizeX="400" SizeY="400">
         <Visual Tag="ContentVisual">
-          <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
-            <ColorBrush Color="#ff000000" />
-          </wucSpriteVisual>
           <Visual Tag="PrependVisual" SizeX="400" SizeY="400">
             <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
             <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="400">
@@ -49,7 +46,7 @@
                 <wucSpriteVisual SizeX="50" SizeY="20" BorderMode="Soft" OffsetX="0" OffsetY="20" OffsetZ="0">
                   <ColorBrush Color="rgb {0, 0.502, 0}" />
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="58" SizeY="10" BorderMode="Hard" OffsetX="0" OffsetY="45" OffsetZ="0">
+                <wucSpriteVisual SizeX="60" SizeY="12" BorderMode="Hard" OffsetX="-1" OffsetY="44" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -59,7 +56,7 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="83" SizeY="10" BorderMode="Hard" OffsetX="1" OffsetY="64" OffsetZ="0">
+                <wucSpriteVisual SizeX="85" SizeY="12" BorderMode="Hard" OffsetX="0" OffsetY="63" OffsetZ="0">
                   <MaskBrush>
                     <Source>
                       <ColorBrush Color="#ffffffff" />
@@ -85,7 +82,7 @@
                             <wucSpriteVisual SizeX="46" SizeY="16" BorderMode="Soft" TransparentForInput="True" OffsetX="2" OffsetY="2" OffsetZ="0">
                               <NineGridBrush LeftInset="1" TopInset="1" RightInset="1" BottomInset="1" isCenterHollow="True">
                                 <Source>
-                                  <ColorBrush Color="Argb {0.6, 0, 0, 0}" />
+                                  <ColorBrush Color="Argb {0.702, 0, 0, 0}" />
                                 </Source>
                               </NineGridBrush>
                             </wucSpriteVisual>

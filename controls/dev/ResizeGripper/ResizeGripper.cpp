@@ -31,7 +31,6 @@ ResizeGripper::ResizeGripper()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ResizeGripper);
 
     SetDefaultStyleKey(this);
-    // ProtectedCursor is deliberately NOT set here - see UpdateResizeCursor.
     // Set here rather than in the default style: without it no manipulation is ever raised, so a
     // host whose style failed to load would have no pointer resize at all.
     UpdateManipulationMode();
@@ -44,13 +43,27 @@ ResizeGripper::ResizeGripper()
 // arrive to complete the drag and IsDragging would stay true for the rest of this instance's life.
 void ResizeGripper::OnUnloaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
+    // A re-parent raises Loaded before the stale Unloaded.
+    if (IsLoaded())
+    {
+        return;
+    }
+
     m_isPointerOver = false;
     EndDrag(true /* canceled */);
+    // A press that never became a manipulation has no drag to end but still holds the capture.
+    ReleaseCapturedPointer();
 }
 
 void ResizeGripper::OnIsEnabledChanged(const winrt::IInspectable&, const winrt::DependencyPropertyChangedEventArgs&)
 {
+    if (!IsEnabled())
+    {
+        EndDrag(true /* canceled */);
+        ReleaseCapturedPointer();
+    }
     UpdateVisualState();
+    UpdateResizeCursor();
 }
 
 void ResizeGripper::OnApplyTemplate()
@@ -59,6 +72,7 @@ void ResizeGripper::OnApplyTemplate()
     m_templateApplied = true;
     UpdateOrientationVisualState();
     UpdateVisualState();
+    UpdateResizeCursor();
 }
 
 void ResizeGripper::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
@@ -75,8 +89,7 @@ void ResizeGripper::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     UpdateVisualState();
 }
 
-// Pressed stays on for the whole drag even if the pointer leaves the gripper, because the host
-// captures the pointer and the column keeps resizing.
+// Pressed holds for the whole drag, even after the pointer leaves the gripper.
 void ResizeGripper::UpdateVisualState()
 {
     auto const state =
@@ -100,24 +113,21 @@ void ResizeGripper::UpdateOrientationVisualState()
     winrt::VisualStateManager::GoToState(*this, IsHorizontalDrag() ? L"Horizontal" : L"Vertical", true /* useTransitions */);
 }
 
-// PARKED - deliberately not called. The framework drops ProtectedCursor on the next pointer move,
-// so setting it made the resize shape appear as the pointer arrived and revert immediately, which
-// is a flicker rather than an affordance. Measured: dwell on a divider reads an arrow 40 samples
-// out of 40; re-asserting per pointer move changed nothing. Tracked as ADO 63771830 / related to
-// microsoft-ui-xaml#7062. The shape logic below is correct and stays put: restore the calls in
-// OnPointerEntered and in the DragOrientation branch of OnPropertyChanged once the framework holds
-// the cursor. Until then the hover separator carries the affordance.
-//
-// Owned by the primitive so every host gets the right shape, keyed off the direction of travel.
-// Two guards, both of which cause a visibly wrong or flickering cursor when missed:
-//  - nothing before OnApplyTemplate. Assigning ProtectedCursor that early does not stick
-//    (microsoft-ui-xaml#7062), which is why the shape is resolved on pointer entry instead.
-//  - never reassign the shape already in effect. Handing the input system a brand new
-//    InputSystemCursor makes the pointer visibly reset even when the shape is identical.
+// Assigned once, after OnApplyTemplate: the input system re-reads it on every pointer move, and
+// reassigning the same shape visibly resets the pointer.
 void ResizeGripper::UpdateResizeCursor()
 {
     if (!m_templateApplied)
     {
+        return;
+    }
+
+    if (!IsEnabled())
+    {
+        if (ProtectedCursor())
+        {
+            ProtectedCursor(nullptr);
+        }
         return;
     }
 
@@ -212,7 +222,63 @@ void ResizeGripper::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
     if (IsEnabled())
     {
+        // Mouse only: touch capture would stop an ancestor ScrollViewer panning the cross axis.
+        auto const pointer = args.Pointer();
+        if (pointer.PointerDeviceType() == winrt::PointerDeviceType::Mouse && CapturePointer(pointer))
+        {
+            m_capturedPointer = pointer;
+            m_capturedPointerId = pointer.PointerId();
+            m_isCapturedPointerReleased = false;
+        }
         args.Handled(true);
+    }
+}
+
+void ResizeGripper::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerReleased(args);
+
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
+    {
+        m_isCapturedPointerReleased = true;
+    }
+}
+
+// The release that completes a drag also drops the capture; only a capture lost before it cancels.
+void ResizeGripper::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerCaptureLost(args);
+
+    if (m_capturedPointer && args.Pointer().PointerId() == m_capturedPointerId)
+    {
+        const bool released = m_isCapturedPointerReleased;
+        m_capturedPointer = nullptr;
+        m_isCapturedPointerReleased = false;
+        if (!released)
+        {
+            EndDrag(true /* canceled */);
+        }
+    }
+    UpdateVisualState();
+}
+
+// Best effort: clears our state first, so the PointerCaptureLost this raises is ignored, and skips
+// the release once the gripper has no visual tree to release it from.
+void ResizeGripper::ReleaseCapturedPointer() noexcept
+{
+    auto const pointer = std::exchange(m_capturedPointer, nullptr);
+    m_isCapturedPointerReleased = false;
+
+    // Runs from EndDrag's scope guard, whose destructor is noexcept: nothing may escape.
+    try
+    {
+        if (pointer && XamlRoot())
+        {
+            ReleasePointerCapture(pointer);
+        }
+    }
+    catch (...)
+    {
     }
 }
 
@@ -277,6 +343,7 @@ void ResizeGripper::EndDrag(bool canceled)
     // Clear the flag before raising: a throwing handler would otherwise leave IsDragging stuck
     // true, wedging every later BeginDrag.
     SetValue(s_IsDraggingProperty, box_value(false));
+    auto const releaseCapture = gsl::finally([this]() noexcept { ReleaseCapturedPointer(); });
     UpdateVisualState();
 
     auto eventArgs = winrt::make<::ResizeGripperDragCompletedEventArgs>(totalDelta, canceled);
@@ -359,6 +426,7 @@ void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     {
         UpdateOrientationVisualState();
         UpdateManipulationMode();
+        UpdateResizeCursor();
     }
 }
 

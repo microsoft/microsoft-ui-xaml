@@ -415,6 +415,44 @@ EventProcessor::ProcessEvent(
 
     EVENT_DISPATCH_INFO* eventDispatch = FindEventDispatchInfo(ProviderId, eventInfo);
 
+    // Keep the existing devirtualization rule usable with both older manifest
+    // traces and the replacement self-describing event, without emitting both.
+    constexpr GUID xamlProvider = { 0x531a35ab, 0x63ce, 0x4bcf, { 0xaa, 0x98, 0xf8, 0x8c, 0x7a, 0x89, 0xe4, 0x55 } };
+    if (!eventDispatch && InlineIsEqualGUID(ProviderId, xamlProvider) &&
+        eventInfo.EventId == 0 && eventRecord->EventHeader.EventDescriptor.Opcode == EVENT_TRACE_TYPE_INFO)
+    {
+        bool hasTraceLoggingSchema = false;
+        for (USHORT i = 0; i < eventRecord->ExtendedDataCount; ++i)
+        {
+            if (eventRecord->ExtendedData[i].ExtType == EVENT_HEADER_EXT_TYPE_EVENT_SCHEMA_TL)
+            {
+                hasTraceLoggingSchema = true;
+                break;
+            }
+        }
+
+        const EventInfo legacyObservation = { 378, 1 }; // VirtualizationIsEnabledByLayoutInfo1.
+        if (hasTraceLoggingSchema && (eventDispatch = FindEventDispatchInfo(ProviderId, legacyObservation)))
+        {
+            ULONG size = 0;
+            const ULONG status = TdhGetEventInformation(eventRecord, 0, nullptr, nullptr, &size);
+            if (status != ERROR_INSUFFICIENT_BUFFER)
+            {
+                return HRESULT_FROM_WIN32(status == ERROR_SUCCESS ? ERROR_INVALID_DATA : status);
+            }
+
+            std::unique_ptr<BYTE[]> metadata(new BYTE[size]);
+            auto traceInfo = reinterpret_cast<TRACE_EVENT_INFO*>(metadata.get());
+            IFCSTATUS_RETURN(TdhGetEventInformation(eventRecord, 0, nullptr, traceInfo, &size));
+            if (traceInfo->DecodingSource != DecodingSourceTlg || traceInfo->EventNameOffset == 0 ||
+                wcscmp(reinterpret_cast<const wchar_t*>(metadata.get() + traceInfo->EventNameOffset),
+                    L"VirtualizationIsEnabledByLayout") != 0)
+            {
+                eventDispatch = nullptr;
+            }
+        }
+    }
+
     // if we don't find the dispatch info for this event, return
     if (!eventDispatch)
     {

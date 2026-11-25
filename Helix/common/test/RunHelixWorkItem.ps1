@@ -38,6 +38,15 @@ function Copy-IfExists
     }
 }
 
+. .\TaefHangWatchdog.ps1
+
+# Time limit for each te.exe run, in minutes (0 means none). RunTestPassSliceOnBuildAgent.ps1 sets it for pipeline runs.
+[double]$teHangTimeoutMinutes = 0
+[void][double]::TryParse($env:WINUI_TE_HANG_TIMEOUT_MINUTES, [Globalization.NumberStyles]::Float, [Globalization.CultureInfo]::InvariantCulture, [ref]$teHangTimeoutMinutes)
+
+# The hang watchdog's report, if it had to end a te.exe run.
+$script:teHangReport = $null
+
 # Cleanup any files that may have been left-over from previous runs:
 Delete-IfExists .\*_subresults.json
 Delete-IfExists .\*.wtl
@@ -161,17 +170,40 @@ function Run-Taef
     # Ideally, we would just use '&' or 'Invoke-Expression' here to execute taef. However, powershell unhelpfully modifies the string to add 
     # extra quotes around parts of the arguments which gives the incorrect behavior since the argument string is already exactly as it needs 
     # to be. I was unable to find a way to disable this behavior, so as a workaround we create a .cmd file and invoke that.
-    Out-File -FilePath "run.cmd" -Encoding ascii -InputObject $teCommand
-    if ($isLifetimeStress)
+    Out-File -FilePath "run.cmd" -Encoding ascii -InputObject "@$teCommand"
+
+    # Soak runs are long by design, so they don't get the hang time limit.
+    $useHangWatchdog = ($teHangTimeoutMinutes -gt 0) -and ($soakMinutes -le 0) -and $env:HELIX_WORKITEM_UPLOAD_ROOT
+    if ($useHangWatchdog)
     {
-        # Tee te.exe's output to a log (still streamed to the pipeline) so a crash can be attributed to the
-        # in-flight scenario, and capture its exit code as a crash signal.
-        & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
-        $script:lifetimeTeExitCode = $LASTEXITCODE
+        Start-TaefHangWatchdog -TimeoutMinutes $teHangTimeoutMinutes -DumpFolder $env:HELIX_WORKITEM_UPLOAD_ROOT
     }
-    else
+
+    try
     {
-        & ./run.cmd
+        if ($isLifetimeStress)
+        {
+            # Tee te.exe's output to a log (still streamed to the pipeline) so a crash can be attributed to the
+            # in-flight scenario, and capture its exit code as a crash signal.
+            & ./run.cmd 2>&1 | Tee-Object -FilePath $script:lifetimeTeConsoleLog -Append
+            $script:lifetimeTeExitCode = $LASTEXITCODE
+        }
+        else
+        {
+            & ./run.cmd
+        }
+    }
+    finally
+    {
+        Remove-Item -LiteralPath ".\run.cmd" -Force
+        if ($useHangWatchdog)
+        {
+            $hangReport = Stop-TaefHangWatchdog
+            if ($hangReport)
+            {
+                $script:teHangReport = $hangReport
+            }
+        }
     }
 }
 
@@ -380,6 +412,70 @@ function Copy-Screenshots
     }
 }
 
+function Save-HungTaefLog
+{
+    # Keeps the incomplete log of a te.exe run that the hang watchdog ended, under a name the results conversion
+    # doesn't read.
+    param ([string] $name)
+
+    if (Test-Path .\te.wtl)
+    {
+        Move-Item .\te.wtl $name -Force
+        Copy-Item ".\$name" $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    }
+}
+
+function Add-TaefHangResult
+{
+    # Records the hang as a failed test in testResults.xml, alongside any results that could still be converted.
+    param ([string] $resultsPath, [string] $testnameprefix, [string[]] $report)
+
+    $prefix = ""
+    if ($testnameprefix) { $prefix = "$testnameprefix." }
+    $workItemName = Split-Path $env:HELIX_WORKITEM_UPLOAD_ROOT -Leaf
+
+    $doc = $null
+    if (Test-Path $resultsPath)
+    {
+        [xml]$doc = Get-Content $resultsPath -Raw
+    }
+
+    if (-not $doc -or -not $doc.assemblies)
+    {
+        $runDate = (Get-Date).ToString('yyyy-MM-dd')
+        $runTime = (Get-Date).ToString('HH:mm:ss')
+        [xml]$doc = @"
+<assemblies>
+  <assembly name="MUXControls.Test.dll" test-framework="TAEF" run-date="$runDate" run-time="$runTime" total="0" passed="0" failed="0" skipped="0" time="0" errors="0">
+    <collection total="0" passed="0" failed="0" skipped="0" name="Test collection" time="0" />
+  </assembly>
+</assemblies>
+"@
+    }
+
+    $test = $doc.CreateElement("test")
+    $test.SetAttribute("name", "$prefix$workItemName.TaefHang")
+    $test.SetAttribute("type", $workItemName)
+    $test.SetAttribute("method", "TaefHang")
+    $test.SetAttribute("time", "0")
+    $test.SetAttribute("result", "Fail")
+    $failure = $doc.CreateElement("failure")
+    $message = $doc.CreateElement("message")
+    [void]$message.AppendChild($doc.CreateCDataSection(($report -join "`n")))
+    [void]$failure.AppendChild($message)
+    [void]$test.AppendChild($failure)
+
+    $collection = $doc.SelectSingleNode('//collection')
+    [void]$collection.AppendChild($test)
+    foreach ($scope in @($doc.SelectSingleNode('//assembly'), $collection))
+    {
+        $scope.SetAttribute("total", [string]([int]$scope.GetAttribute("total") + 1))
+        $scope.SetAttribute("failed", [string]([int]$scope.GetAttribute("failed") + 1))
+    }
+
+    $doc.Save($resultsPath)
+}
+
 Write-Host "WorkItemSetupStartTime: $(Get-Date)"
 
 Write-Host "Run Setup If Needed"
@@ -410,6 +506,10 @@ if ($isLifetimeStress -and -not (Test-Path .\te.wtl))
     # te.exe crashed without flushing its log; the non-gating handling below emits a synthetic report.
     Write-Host "Lifetime stress: te.wtl was not produced (TAEF host likely crashed on a native lifetime fault)."
 }
+elseif ($script:teHangReport -and -not (Test-Path .\te.wtl))
+{
+    Write-Host "te.exe was ended by the hang watchdog before it wrote te.wtl."
+}
 else
 {
     Move-Item .\te.wtl te_original.wtl -Force
@@ -422,7 +522,8 @@ Copy-MasterFiles
 Add-Type -Language CSharp -ReferencedAssemblies System.Xml,System.Xml.Linq,System.Runtime.Serialization,System.Runtime.Serialization.Json (Get-Content .\HelixTestHelpers.cs -Raw)
 
 $failedTestQuery = $null
-if (Test-Path (Join-Path (Get-Location) "te_original.wtl"))
+# A run the hang watchdog ended has an incomplete log, so it isn't searched for failed tests to rerun.
+if (-not $script:teHangReport -and (Test-Path (Join-Path (Get-Location) "te_original.wtl")))
 {
     $failedTestQuery = [HelixTestHelpers.FailedTestDetector]::GetFailedTestQuery((Join-Path (Get-Location) "te_original.wtl"))
 }
@@ -439,13 +540,24 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
 
     Write-Host "WorkItemTestRerunEndTime: $(Get-Date)"
 
-    Move-Item .\te.wtl te_rerun.wtl -Force
-    Copy-Item .\te_rerun.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
-    Copy-Screenshots
-    Copy-MasterFiles
+    if ($script:teHangReport)
+    {
+        # The hang watchdog ended the rerun, so its log is incomplete: keep it for diagnosis, but don't parse it.
+        Save-HungTaefLog te_rerun_hung.wtl
+        Copy-Screenshots
+        Copy-MasterFiles
+        $failedTestQuery = $null
+    }
+    else
+    {
+        Move-Item .\te.wtl te_rerun.wtl -Force
+        Copy-Item .\te_rerun.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+        Copy-Screenshots
+        Copy-MasterFiles
 
-    $failedTestQuery = [HelixTestHelpers.FailedTestDetector]::GetFailedTestQuery((Join-Path (Get-Location) "te_rerun.wtl"))
-    Write-Host "failedTestQuery = $failedTestQuery"
+        $failedTestQuery = [HelixTestHelpers.FailedTestDetector]::GetFailedTestQuery((Join-Path (Get-Location) "te_rerun.wtl"))
+        Write-Host "failedTestQuery = $failedTestQuery"
+    }
 }
 
 
@@ -458,8 +570,15 @@ if ($failedTestQuery -and $rerunFailed -and -not $isLifetimeStress)
     Write-Host "WorkItemTestLoopStartTime: $(Get-Date)"
 
     Run-Taef("/testmode:Loop /Loop:9 /LoopTest:1 /isolationlevel:test /select:`"$failedTestQuery`"")
-    Move-Item .\te.wtl te_rerun_multiple.wtl -Force
-    Copy-Item .\te_rerun_multiple.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    if ($script:teHangReport)
+    {
+        Save-HungTaefLog te_rerun_multiple_hung.wtl
+    }
+    else
+    {
+        Move-Item .\te.wtl te_rerun_multiple.wtl -Force
+        Copy-Item .\te_rerun_multiple.wtl $env:HELIX_WORKITEM_UPLOAD_ROOT -Force
+    }
 
     Copy-Screenshots
     Copy-MasterFiles
@@ -487,6 +606,26 @@ if ($isLifetimeStress)
         }
     }
     Set-LifetimeResultsNonGating -resultsPath (Join-Path (Get-Location) "testResults.xml") -testnameprefix $testnameprefix
+}
+elseif ($script:teHangReport)
+{
+    # Keep whatever results can still be read, then add the hang as a failed test. TaefHang.txt tells
+    # RunTestPassSliceOnBuildAgent.ps1 to fail the job once its other work items have run.
+    if (Test-Path .\te_original.wtl)
+    {
+        try
+        {
+            .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl te_rerun_more.wtl testResults.xml $testnameprefix
+        }
+        catch
+        {
+            Write-Host "Couldn't convert te_original.wtl after the hang ($($_.Exception.Message)); reporting only the hang."
+            Delete-IfExists .\testResults.xml
+        }
+    }
+
+    Add-TaefHangResult -resultsPath (Join-Path (Get-Location) "testResults.xml") -testnameprefix $testnameprefix -report $script:teHangReport
+    Set-Content -LiteralPath (Join-Path $env:HELIX_WORKITEM_UPLOAD_ROOT "TaefHang.txt") -Value $script:teHangReport
 }
 else
 {

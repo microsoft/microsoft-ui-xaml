@@ -11,40 +11,16 @@
     </StackPanel>
 </DataTemplate>
 
-<!-- … -->
-
-<!-- Columns are added in code: see BuildColumns. -->
 <tv:TableView
     x:Name="FilterTable"
-    AutomationProperties.AutomationId="FilterTable"
     AutomationProperties.Name="Filtered people"
     ItemsSource="{x:Bind Source}"
     SelectionMode="Single"
-    SelectionChanged="OnTableSelectionChanged"
-    EmptyTemplate="{StaticResource FilterEmptyTemplate}"
-    VerticalAlignment="Stretch"
-    MinHeight="320"/>
-
-<!-- … -->
-
-<controls:RailSection
-    IsFirst="True"
-    Header="Filter"
-    Description="The query and the Active only switch combine into one predicate handed to TableViewSource.Filter. Clearing both calls ClearFilter(); the source instance never changes.">
-    <TextBox
-        x:Name="SearchBox"
-        AutomationProperties.AutomationId="FilterQueryBox"
-        Header="Query"
-        PlaceholderText="Search people"
-        AutomationProperties.HelpText="Matches name, department, role or email."
-        ToolTipService.ToolTip="Matches name, department, role or email."
-        TextChanged="OnSearchChanged"
-        HorizontalAlignment="Stretch"/>
-    <ToggleSwitch
-        x:Name="ActiveOnlyToggle"
-        AutomationProperties.AutomationId="FilterActiveOnlyToggle"
-        Header="Active only"
-        OffContent="Off"
-        OnContent="On"
-        Toggled="OnActiveToggled"/>
-</controls:RailSection>
+    EmptyTemplate="{StaticResource FilterEmptyTemplate}">
+    <tv:TableViewTemplateColumn Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+    <tv:TableViewTextColumn Header="Name" Width="*" MinWidth="140" Binding="{Binding FullName}"/>
+    <!-- A template column sorts by SortMemberPath, the value behind the template. -->
+    <tv:TableViewTemplateColumn Header="Department" Width="130" CellTemplate="{StaticResource DepartmentChipTemplate}" SortMemberPath="Department"/>
+    <tv:TableViewTemplateColumn Header="Role" Width="200" CellTemplate="{StaticResource RoleTextBoxTemplate}" SortMemberPath="Role"/>
+    <tv:TableViewTemplateColumn Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive"/>
+</tv:TableView>

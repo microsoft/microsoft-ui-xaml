@@ -76,7 +76,7 @@
             </Visual>
           </Visual>
           <Visual Tag="PrependVisual">
-            <Visual Tag="PrimaryVisual">
+            <Visual Tag="PrimaryVisual" SizeX="500" SizeY="500">
               <Visual Tag="ContentVisual" />
               <wucSpriteVisual Tag="ConnectedAnimationSnapshotVisual" SizeX="100" SizeY="100">
                 <Clip ClipBottom="0" TransformMatrix="Identity">

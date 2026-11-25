@@ -37,7 +37,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(MediaTransportControlsTest)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies automatic focus when Media Transport controls are showing")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Te.ProcessHost.exe crash
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // _MEDIA_REMOVED_
             END_TEST_METHOD()
 

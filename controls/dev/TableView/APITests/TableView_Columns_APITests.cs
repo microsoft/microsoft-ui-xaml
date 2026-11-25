@@ -25,8 +25,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     // Category 3.1 of the TableView test plan: the Columns collection.
     //
     // These tests assert against two structures the control builds from Columns:
-    //   - PART_HeaderHost, whose children are header cell Grids, each tagged with its column
-    //     (TableView.cpp:1610, headerCell.Tag(column)).
+    //   - PART_HeaderHost, whose children are TableViewColumnHeader controls, each tagged with its column
+    //     (TableView::RebuildHeaders, header.Tag(column)).
     //   - each realized TableViewRow's PART_CellsHost, whose children are Grid cell wrappers,
     //     each tagged with its column (TableViewRow.cpp:762, cellWrapper.Tag(column)).
     // The Tag is the supported way to map a rendered element back to the column that produced it,
@@ -417,6 +417,118 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header rebuild leaves focus where the app moved it while the focused header's Content was being cleared.")]
+        public void VerifyHeaderRebuildKeepsAppFocusMoveFromFocusedHeader()
+        {
+            TableView tableView = null;
+            TextBox external = null;
+            bool moved = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
+                external = new TextBox();
+                var host = new StackPanel();
+                host.Children.Add(external);
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetHeaderCell(tableView, 1) as ContentControl;
+                Verify.IsNotNull(header, "Precondition: the header cell is a ContentControl.");
+                Verify.IsTrue(header.Focus(FocusState.Keyboard), "Precondition: header 1 takes keyboard focus.");
+                header.RegisterPropertyChangedCallback(ContentControl.ContentProperty, (sender, property) =>
+                {
+                    if (!moved && ((ContentControl)sender).Content == null)
+                    {
+                        moved = true;
+                        external.Focus(FocusState.Programmatic);
+                    }
+                });
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(moved, "Precondition: the rebuild cleared the focused header's Content.");
+                Verify.IsTrue(ReferenceEquals(external, FocusManager.GetFocusedElement(tableView.XamlRoot)),
+                    "The rebuild must not pull focus back from where the app moved it.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header rebuild leaves focus where the app moved it, out of the table, while the header's focused Button content is being released.")]
+        [TestProperty("data:Move", "{ContentCallback, LosingFocusRedirect}")]
+        public void VerifyHeaderRebuildKeepsAppFocusMoveFromFocusedHeaderContent()
+        {
+            var move = ((string)TestContext.DataRow["Move"]).Trim();
+            TableView tableView = null;
+            TextBox external = null;
+            Button headerButton = null;
+            bool moved = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
+                headerButton = new Button { Content = "Role" };
+                tableView.Columns[1].Header = headerButton;
+                external = new TextBox();
+                var host = new StackPanel();
+                host.Children.Add(external);
+                host.Children.Add(tableView);
+                LoadContent(host);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetHeaderCell(tableView, 1) as ContentControl;
+                Verify.IsNotNull(header, "Precondition: the header cell is a ContentControl.");
+                Verify.IsTrue(ReferenceEquals(headerButton, header.Content), "Precondition: the header hosts the app's Button.");
+                Verify.IsTrue(headerButton.Focus(FocusState.Keyboard), "Precondition: the header's Button takes keyboard focus.");
+                if (move == "ContentCallback")
+                {
+                    header.RegisterPropertyChangedCallback(ContentControl.ContentProperty, (sender, property) =>
+                    {
+                        if (!moved && ((ContentControl)sender).Content == null)
+                        {
+                            moved = external.Focus(FocusState.Programmatic);
+                        }
+                    });
+                }
+                else
+                {
+                    // The app sends focus out of the table when its header content gives it up.
+                    headerButton.LosingFocus += (sender, args) =>
+                    {
+                        if (!moved)
+                        {
+                            moved = args.TrySetNewFocusedElement(external);
+                        }
+                    };
+                }
+                tableView.CanUserSortColumns = false;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(moved, "Precondition: the app moved focus during the rebuild.");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot);
+                Log.Comment($"Focused after rebuild: {(focused as FrameworkElement)?.GetType().Name}");
+                Verify.IsTrue(ReferenceEquals(external, focused),
+                    "The rebuild must not pull focus back from where the app moved it.");
+            });
+        }
+        [TestMethod]
         [TestProperty("Description", "Verifies a focused header keeps focus across the header rebuild a theme change performs.")]
         public void VerifyHeaderFocusSurvivesThemeChange()
         {
@@ -703,6 +815,166 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's ContentTemplate or ContentTemplateSelector renders a plain string Header, a selector returning no template keeps the trimming TextBlock, and the column's templates still win.")]
+        [TestProperty("data:Setter", "{ContentTemplate, ContentTemplateSelector, NullSelector}")]
+        public void VerifyHeaderStyleContentTemplateAppliesToStringHeader()
+        {
+            var setter = ((string)TestContext.DataRow["Setter"]).Trim();
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var template = CreateTextTemplate("Styled");
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(setter == "ContentTemplate"
+                    ? new Setter(ContentControl.ContentTemplateProperty, template)
+                    : new Setter(ContentControl.ContentTemplateSelectorProperty,
+                        new TestHeaderTemplateSelector { Template = setter == "NullSelector" ? null : template }));
+
+                tableView = CreateTableView(headers: new[] { "Name", "Role", "City" });
+                tableView.ColumnHeaderStyle = style;
+                tableView.Columns[1].HeaderTemplate = CreateTextTemplate("Column");
+                tableView.Columns[2].HeaderTemplateSelector = new TestHeaderTemplateSelector { Template = CreateTextTemplate("Selected") };
+
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                if (setter == "NullSelector")
+                {
+                    var block = header.Content as TextBlock;
+                    Verify.IsNotNull(block, "A selector returning no template must keep the header's own TextBlock.");
+                    Verify.AreEqual(TextTrimming.CharacterEllipsis, block.TextTrimming, "The header text must still ellipsize.");
+                }
+                else
+                {
+                    Verify.AreEqual("Name", header.Content as string, $"{setter}: the string Header must reach the style's template as data.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"),
+                        $"{setter}: the header Style's template must render the string Header.");
+                }
+                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 1)).Any(t => t.Text == "Column"),
+                    $"{setter}: the column's HeaderTemplate must win over the header Style's.");
+                Verify.IsTrue(FindVisualChildrenByType<TextBlock>(GetHeaderCell(tableView, 2)).Any(t => t.Text == "Selected"),
+                    $"{setter}: the column's HeaderTemplateSelector must win over the header Style's.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's selector is asked once, with the string Header and a header container tagged with its column; its template is applied, and a null or throwing result keeps the trimming TextBlock.")]
+        [TestProperty("data:Result", "{Template, Null, Throw}")]
+        public void VerifyHeaderStyleSelectorProbeFallsBackToTrimmingText()
+        {
+            var result = ((string)TestContext.DataRow["Result"]).Trim();
+            TableView tableView = null;
+            RecordingHeaderTemplateSelector selector = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                selector = new RecordingHeaderTemplateSelector { Throw = result == "Throw", Template = result == "Template" ? CreateTextTemplate("Styled") : null };
+                var style = new Style(typeof(TableViewColumnHeader));
+                style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.ColumnHeaderStyle = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Selector calls: " + string.Join("; ", selector.Calls.Select(call => $"{call.Item?.GetType().Name ?? "null"}:{call.Item}")));
+                Verify.AreEqual(1, selector.Calls.Count, $"{result}: the selector must be asked exactly once.");
+                Verify.AreEqual("Name", selector.Calls[0].Item as string, "The selector must be asked about the string Header.");
+                var container = selector.Calls[0].Container as TableViewColumnHeader;
+                Verify.IsNotNull(container, "The selector must receive the header as its container.");
+                Verify.IsTrue(ReferenceEquals(tableView.Columns[0], container.Tag), "The container must already be tagged with its column.");
+
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                if (result == "Template")
+                {
+                    Verify.AreEqual("Name", header.Content as string, "The string Header must reach the selected template as data.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"), "The selected template must render.");
+                    return;
+                }
+                var block = header.Content as TextBlock;
+                Verify.IsNotNull(block, $"{result}: the header must keep its own TextBlock.");
+                Verify.AreEqual(TextTrimming.CharacterEllipsis, block.TextTrimming, "The header text must still ellipsize.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header Style's ContentTemplate and ContentTemplateSelector follow WinUI setter precedence: the last setter in a Style wins, a derived Style wins over BasedOn, and a winning {x:Null} keeps the trimming TextBlock.")]
+        [TestProperty("data:Setters", "{NullSelectorLast, NullTemplateLast, DerivedNullSelector, SelectorLast}")]
+        public void VerifyHeaderStyleContentSettersUseLastMatch()
+        {
+            var setters = ((string)TestContext.DataRow["Setters"]).Trim();
+            TableView tableView = null;
+            RecordingHeaderTemplateSelector selector = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                selector = new RecordingHeaderTemplateSelector { Template = CreateTextTemplate("Styled") };
+                var style = new Style(typeof(TableViewColumnHeader));
+                switch (setters)
+                {
+                    case "NullSelectorLast":
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        break;
+                    case "NullTemplateLast":
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateProperty, CreateTextTemplate("Styled")));
+                        style.Setters.Add(NullSetter("ContentTemplate"));
+                        break;
+                    case "DerivedNullSelector":
+                        var basedOn = new Style(typeof(TableViewColumnHeader));
+                        basedOn.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        style.BasedOn = basedOn;
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        break;
+                    case "SelectorLast":
+                        style.Setters.Add(NullSetter("ContentTemplateSelector"));
+                        style.Setters.Add(new Setter(ContentControl.ContentTemplateSelectorProperty, selector));
+                        break;
+                }
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.ColumnHeaderStyle = style;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = (ContentControl)GetHeaderCell(tableView, 0);
+                if (setters == "SelectorLast")
+                {
+                    Verify.AreEqual(1, selector.Calls.Count, "The last selector setter must be asked once.");
+                    Verify.IsTrue(FindVisualChildrenByType<TextBlock>(header).Any(t => t.Text == "Styled"), "The last selector's template must render.");
+                    return;
+                }
+                Verify.AreEqual(0, selector.Calls.Count, $"{setters}: a selector a later setter replaced must not be asked.");
+                var block = header.Content as TextBlock;
+                Verify.IsNotNull(block, $"{setters}: a winning null setter must keep the header's own TextBlock.");
+                Verify.AreEqual((TextTrimming?)TextTrimming.CharacterEllipsis, block?.TextTrimming, "The header text must still ellipsize.");
+            });
+        }
+
+        // A {x:Null} setter as XAML builds it.
+        private static Setter NullSetter(string property)
+        {
+            var style = (Style)XamlReader.Load(
+                "<Style xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' TargetType='ContentControl'>" +
+                $"<Setter Property='{property}' Value='{{x:Null}}'/></Style>");
+            var setter = (Setter)style.Setters[0];
+            style.Setters.RemoveAt(0);
+            return setter;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies replacing HeaderTemplate on a loaded column rebuilds the header.")]
         public void VerifyHeaderTemplateChangeAfterLoadUpdatesLive()
         {
@@ -882,6 +1154,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             protected override DataTemplate SelectTemplateCore(object item) => Template;
 
             protected override DataTemplate SelectTemplateCore(object item, DependencyObject container) => Template;
+        }
+
+        private sealed class RecordingHeaderTemplateSelector : DataTemplateSelector
+        {
+            public bool Throw { get; set; }
+
+            public DataTemplate Template { get; set; }
+
+            public List<(object Item, DependencyObject Container)> Calls { get; } = new List<(object, DependencyObject)>();
+
+            protected override DataTemplate SelectTemplateCore(object item) => SelectTemplateCore(item, null);
+
+            protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
+            {
+                Calls.Add((item, container));
+                if (Throw)
+                {
+                    throw new InvalidOperationException("Header selector fault");
+                }
+                return Template;
+            }
         }
     }
 

@@ -114,7 +114,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(JupRtblXamlP0)
                 TEST_METHOD_PROPERTY(L"Description", L"Jupiter RichTextBlock - XamlP0 tests (Ported from legacy:JupRtblXamlP0)")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")   // Different text offsets
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
             END_TEST_METHOD()
 

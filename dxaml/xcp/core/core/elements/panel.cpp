@@ -480,7 +480,7 @@ bool CPanel::IsMaskDirty(
         || pHwShapeRealization->MaskNeedsUpdate(
             renderCollapsedMask,
             m_pBackground, m_fNWBackgroundDirty, isFillBrushAnimated, pIsFillForHitTestOnly,
-            GetBorderBrush().get(), m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
+            CBorder::HasNonZeroThickness(GetBorderThickness()) ? GetBorderBrush().get() : nullptr, m_fNWBorderBrushDirty, isStrokeBrushAnimated, pIsStrokeForHitTestOnly);
 }
 
 xref_ptr<CBrush> CPanel::GetBackgroundBrush() const

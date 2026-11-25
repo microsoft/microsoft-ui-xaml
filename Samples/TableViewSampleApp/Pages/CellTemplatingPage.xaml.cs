@@ -29,32 +29,34 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         // </snippet>
         InitializeSample(Status, Shaping.Attach(PeopleTable, Source));
 
-        // <snippet>
         // The editors are two-way bound; the page only observes the model to report each commit.
         TrackItems(People, OnPersonChanged);
         TrackLifetime(
             () => PersonCellTemplates.DetailsOpened += OnDetailsOpened,
             () => PersonCellTemplates.DetailsOpened -= OnDetailsOpened);
-        // </snippet>
     }
 
+    // <snippet>
     public ObservableCollection<Person> People { get; } = PersonData.Take(40);
-
-    public TableViewSource Source { get; }
+    // </snippet>
 
     // <snippet>
+    public TableViewSource Source { get; }
+    // </snippet>
+
     // ---- Join date editor: swap the column's CellTemplate at run time -----------------------
 
+    // <snippet>
     private void OnJoinDateEditorChanged(object sender, SelectionChangedEventArgs e)
     {
-        // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the
-        // compact editor and the column is not attached to the table yet.
-        if (JoinDateColumn is null || !IsLoaded)
-        {
-            return;
-        }
+        // Fires during InitializeComponent (SelectedIndex="0"), when the XAML already shows the // snippet:skip
+        // compact editor and the column is not attached to the table yet. // snippet:skip
+        if (JoinDateColumn is null || !IsLoaded) // snippet:skip
+        { // snippet:skip
+            return; // snippet:skip
+        } // snippet:skip
 
-        var full = SampleShaping.SelectedTag(JoinDateEditorSelector, "calendar") == "datepicker";
+        var full = (string)((ComboBoxItem)((ComboBox)sender).SelectedItem).Tag == "datepicker";
         var resources = Application.Current.Resources;
         JoinDateColumn.CellTemplate = (DataTemplate)resources[full ? "JoinDatePickerTemplate" : "JoinCalendarDateTemplate"];
         JoinDateColumn.Width = new GridLength((double)resources[full ? "ColWidthDatePicker" : "ColWidthCalendarDate"]);
@@ -117,7 +119,6 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "{0} all {1:N0} rows", isActive ? "Checked Active on" : "Unchecked Active on", People.Count));
     }
 
-    // <snippet>
     private void OnChangeDepartmentClick(object sender, RoutedEventArgs e)
     {
         if (PeopleTable.SelectedItem is not Person person)
@@ -126,7 +127,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
             return;
         }
 
-        var from = person.Department; // snippet:skip
+        var from = person.Department;
         var to = SampleShaping.Next(PersonData.Departments, person.Department);
         using (BeginBulkUpdate())
         {
@@ -138,7 +139,6 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         ReapplyIfGroupedOn(nameof(Person.Department));
         SetLastAction(string.Format(CultureInfo.CurrentCulture, "Moved {0} from {1} to {2}", person.FullName, from, to));
     }
-    // </snippet>
 
     private void OnOpenDetailsClick(object sender, RoutedEventArgs e)
     {
@@ -151,7 +151,7 @@ public sealed partial class CellTemplatingPage : SamplePageBase
         // Success is reported by OnDetailsOpened.
         if (!PersonCellTemplates.TryOpenDetails(PeopleTable, person))
         {
-            SetLastAction(string.Format(CultureInfo.CurrentCulture, "The row for {0} is not on screen; scroll to it first.", person.FullName));
+            SetLastAction(string.Format(CultureInfo.CurrentCulture, "The row for {0} is not realized; scroll to it first.", person.FullName));
         }
     }
 }

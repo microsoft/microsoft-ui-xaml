@@ -36,6 +36,7 @@ public:
 
         // The focus rect manager honours this on any focusable UIElement, not just on a Control.
         wrapper.UseSystemFocusVisuals(true);
+        wrapper.FocusVisualMargin(row.FocusVisualMargin());
 
         return wrapper;
     }
@@ -52,6 +53,7 @@ public:
             return peer;
         }
         winrt::AutomationPeer const peer = winrt::make<TableViewCellAutomationPeer>(
+            TableViewCellAutomationPeer::TrustedOwnerTag{},
             get_strong().as<winrt::FrameworkElement>(), m_row.get(), m_column.get(), m_columnIndex);
         m_automationPeer = winrt::make_weak(peer);
         return peer;

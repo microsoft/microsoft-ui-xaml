@@ -4,10 +4,10 @@
     <Visual />
     <Visual />
     <Visual Tag="PrependVisual">
-      <Visual Tag="PrimaryVisual" SizeX="640" SizeY="480">
+      <Visual Tag="PrimaryVisual" SizeX="800" SizeY="600">
         <Visual Tag="ContentVisual">
           <Visual Tag="PrependVisual" SizeX="800" SizeY="600">
-            <Clip ClipLeft="0" ClipTop="0" ClipRight="160" ClipBottom="120" TransformMatrix="Identity" />
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
             <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="800" SizeY="600">
               <TransformMatrix>
                 <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">

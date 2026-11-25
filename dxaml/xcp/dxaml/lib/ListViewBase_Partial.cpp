@@ -751,9 +751,8 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
 
-    // ETW Trace, we want to raise an ETW event here if we can determine that the configuration
-    // does not allow virtualization to happen
-    if (EventEnabledVirtualizationIsEnabledByLayoutInfo())
+    // Trace whether the layout configuration allows virtualization.
+    if (XamlTelemetry::IsEnabled(WINEVENT_LEVEL_INFO, XamlTelemetry::ControlsKeyword))
     {
         BOOLEAN isVirtualizationActive = TRUE;
         ctl::ComPtr<IPanel> spItemsPanel;
@@ -785,13 +784,13 @@ IFACEMETHODIMP ListViewBase::MeasureOverride(
             }
             ctl::ComPtr<xaml::IDependencyObject> spParent;
             IFC(static_cast<ListViewBase*>(this)->get_Parent(&spParent));
-            TraceVirtualizationIsEnabledByLayoutInfo1(
-                isVirtualizationActive,
-                reinterpret_cast<UINT64>(GetHandle()),
+
+            XamlTelemetry::VirtualizationIsEnabledByLayout(
+                GetHandle(),
+                !!isVirtualizationActive,
                 GetHandle()->m_strName.GetBuffer(),
                 GetHandle()->GetClassName().GetBuffer(),
-                (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL"
-            );
+                (spParent) ? static_cast<DependencyObject*>(spParent.Get())->GetHandle()->GetClassName().GetBuffer() : L"NULL");
         } // else if not modern panel, we shouldn't trace it here.
     }
 
@@ -2104,6 +2103,15 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
                             isGroupHeader = supportsGroupHeadersAsTabStops;
                             newFocusIndex = (isGroupHeader ? m_firstAvailableGroupHeaderForFocus : m_firstAvailableItemForFocus);
                         }
+
+                        // Use the eventual focus-entry target so no other item is scrolled into view first.
+                        int tabEntryTargetIndex = -1;
+                        IFC_RETURN(GetTabEntryTargetIndex(isBackward, &tabEntryTargetIndex));
+                        if (tabEntryTargetIndex >= 0)
+                        {
+                            isGroupHeader = false;
+                            newFocusIndex = tabEntryTargetIndex;
+                        }
                     }
                 }
                 else
@@ -2889,7 +2897,17 @@ ListViewBase::OnGettingFocus(_In_ xaml::IUIElement* sender, _In_ xaml_input::IGe
     else if (focusNavigationDirection == xaml_input::FocusNavigationDirection_Next ||
              focusNavigationDirection == xaml_input::FocusNavigationDirection_Previous)
     {
-        focusIndex = GetLastFocusedIndex();
+        if (m_lastFocusedElementType == ElementType::Item)
+        {
+            focusIndex = GetLastFocusedIndex();
+        }
+        else if (m_lastFocusedElementType == ElementType::Other &&
+                 selectionMode != xaml_controls::ListViewSelectionMode_None)
+        {
+            // Selection can establish an item target before any item receives focus.
+            // Otherwise, preserve the initial or restored group-header target.
+            IFC_RETURN(get_SelectedIndex(&focusIndex));
+        }
     }
 
     if (focusIndex != -1)

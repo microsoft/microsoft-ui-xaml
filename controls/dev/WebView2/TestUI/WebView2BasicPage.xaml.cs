@@ -141,7 +141,7 @@ namespace MUXControlsTestApp
             MouseXButton1ClickTest,
             MouseXButton2ClickTest,
             MouseWheelScrollTest,
-            NavigationErrorTest,
+            NavigationHttpErrorTest,
             Focus_BasicTabTest,
             Focus_DisabledParentTest,
             Focus_ReverseTabTest,
@@ -220,7 +220,7 @@ namespace MUXControlsTestApp
             { TestList.MouseXButton1ClickTest, 1 },
             { TestList.MouseXButton2ClickTest, 1 },
             { TestList.MouseWheelScrollTest, 2 },
-            { TestList.NavigationErrorTest, 0 },
+            { TestList.NavigationHttpErrorTest, 0 },
             { TestList.Focus_BasicTabTest, 3 },
             { TestList.Focus_DisabledParentTest, 3 },
             { TestList.Focus_ReverseTabTest, 3 },
@@ -1379,17 +1379,68 @@ namespace MUXControlsTestApp
                 switch (selectedTest)
                 {
 
-                    case TestList.NavigationErrorTest:
+                    case TestList.NavigationHttpErrorTest:
                         {
-                            var task = MyWebView2.GetNavigationCompletedTask();
-                            MyWebView2.Source = new Uri("http://www.test.invalid");
-                            await task;
+                            const string errorUri = "https://www.test.invalid/navigation-http-error";
+                            await MyWebView2.EnsureCoreWebView2Async();
+                            var coreWebView2 = MyWebView2.CoreWebView2;
+                            var navigationCompleted = new TaskCompletionSource<CoreWebView2NavigationCompletedEventArgs>();
+                            ulong? navigationId = null;
+                            bool responseSupplied = false;
 
-                            var testStatus = Status2.Text;
-                            bool result = testStatus.Equals("HostNameNotResolved");
-                            logger.Verify(result,
-                                          string.Format("Test {0}: Expected web error status {1} did not match with received error status {2}",
-                                                        selectedTest, "HostNameNotResolved", testStatus));
+                            void OnWebResourceRequested(CoreWebView2 webview, CoreWebView2WebResourceRequestedEventArgs e)
+                            {
+                                if (e.Request.Uri == errorUri)
+                                {
+                                    // Supply an empty HTTP error response without depending on DNS or the CI proxy.
+                                    e.Response = coreWebView2.Environment.CreateWebResourceResponse(
+                                        null, 502, "Bad Gateway", "Content-Type: text/html\r\nCache-Control: no-store\r\n");
+                                    responseSupplied = true;
+                                }
+                            }
+
+                            void OnErrorNavigationStarting(WebView2 webview, CoreWebView2NavigationStartingEventArgs e)
+                            {
+                                if (e.Uri == errorUri)
+                                {
+                                    navigationId = e.NavigationId;
+                                }
+                            }
+
+                            void OnErrorNavigationCompleted(WebView2 webview, CoreWebView2NavigationCompletedEventArgs e)
+                            {
+                                if (e.NavigationId == navigationId)
+                                {
+                                    navigationCompleted.TrySetResult(e);
+                                }
+                            }
+
+                            coreWebView2.AddWebResourceRequestedFilter(errorUri, CoreWebView2WebResourceContext.Document);
+                            try
+                            {
+                                coreWebView2.WebResourceRequested += OnWebResourceRequested;
+                                MyWebView2.NavigationStarting += OnErrorNavigationStarting;
+                                MyWebView2.NavigationCompleted += OnErrorNavigationCompleted;
+                                Status2.Text = string.Empty;
+                                MyWebView2.Source = new Uri(errorUri);
+                                var result = await navigationCompleted.Task;
+
+                                logger.Verify(responseSupplied, "The test must supply the HTTP error response.");
+                                logger.Verify(!result.IsSuccess, "Navigation to the HTTP error response must fail.");
+                                logger.Verify(result.HttpStatusCode == 502,
+                                    string.Format("Expected HTTP status 502, received {0}.", result.HttpStatusCode));
+                                logger.Verify(result.WebErrorStatus == CoreWebView2WebErrorStatus.Unknown,
+                                    string.Format("Expected web error status Unknown, received {0}.", result.WebErrorStatus));
+                                logger.Verify(Status2.Text == "Unknown",
+                                    string.Format("Expected displayed web error status Unknown, received {0}.", Status2.Text));
+                            }
+                            finally
+                            {
+                                MyWebView2.NavigationStarting -= OnErrorNavigationStarting;
+                                MyWebView2.NavigationCompleted -= OnErrorNavigationCompleted;
+                                coreWebView2.WebResourceRequested -= OnWebResourceRequested;
+                                coreWebView2.RemoveWebResourceRequestedFilter(errorUri, CoreWebView2WebResourceContext.Document);
+                            }
                         }
                         break;
 

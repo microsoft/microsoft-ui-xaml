@@ -6,11 +6,11 @@
 #include <palexports.h>
 #include <palmemory.h>
 #include <PalResourceManager.h>
-#include <shlwapi.h>
 
 #include "FilePathResource.h"
 #include "MRTKnownQualifierNames.h"
 #include "MRTResource.h"
+#include "ResourceMemory.h"
 
 // Creates a CMRTResource for the given resource URI and MRT resource candidate.
 _Check_return_ HRESULT
@@ -50,17 +50,19 @@ CMRTResource::~CMRTResource()
 // that matches the type, and Load() is delegating to the sub-object.
 _Check_return_ HRESULT CMRTResource::Load(_Outptr_ IPALMemory** ppMemory)
 {
+    *ppMemory = nullptr;
+
     switch (m_kind)
     {
         case mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData:
-            // For embedded data type resources, we must load via a stream.
+        {
             IFC_RETURN(EnsureEmbeddedDataResource());
-            IFC_RETURN(GetPALMemoryServices()->CreatePALMemoryFromBuffer(
-                m_embeddedDataBufferSize,
-                m_embeddedDataBuffer,
-                false /* OwnsBuffer */,
-                ppMemory));
+            IFCPTR_RETURN(m_embeddedDataBuffer);
+
+            *ppMemory = make_xref<CResourceMemory>(
+                m_embeddedDataBuffer, m_embeddedDataBufferSize, this).detach();
             break;
+        }
         case mwar::ResourceCandidateKind::ResourceCandidateKind_FilePath:
             // For path type resources, map the file into memory.
             IFC_RETURN(EnsureFilePathResource());
@@ -140,33 +142,6 @@ _Check_return_ HRESULT CMRTResource::TryGetFilePath(_Out_ xstring_ptr* pstrFileP
     return S_OK;
 }
 
-// See IPALResource::TryGetRawStream().
-// If this object represents a MRT embedded data resource, first ensure that
-// the data has been read out into a buffer, then use the buffer to initialize
-// an IStream
-_Check_return_ HRESULT CMRTResource::TryGetRawStream(const PALResources::RawStreamType streamType, _Outptr_result_maybenull_ void** ppStream)
-{
-    *ppStream = nullptr;
-
-    if (m_kind != mwar::ResourceCandidateKind::ResourceCandidateKind_EmbeddedData)
-    {
-        // If our resource type is not EmbeddedData, we can't supply a stream.
-        return S_OK;
-    }
-
-    IFC_RETURN(EnsureEmbeddedDataResource());
-
-    // We only support supplying an IStream.
-    if (streamType == PALResources::RawStreamType::IStream)
-    {
-        IStream* pMemStream = SHCreateMemStream(m_embeddedDataBuffer, m_embeddedDataBufferSize);
-        IFCOOM_RETURN(pMemStream);
-        *ppStream = pMemStream;
-    }
-
-    return S_OK;
-}
-
 // See IPALResource::GetScalePercentage().
 // Returns the scale associated with this resource, if any.
 // If this resource has an MRT resource candidate that has a scale qualifier,
@@ -231,4 +206,3 @@ _Check_return_ HRESULT CMRTResource::EnsureEmbeddedDataResource()
 
     return S_OK;
 }
-

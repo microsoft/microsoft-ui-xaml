@@ -26,7 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CheckTextControlsWavyLines)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the TextBox and RichEditBox controls show red misspelling wavy lines.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // DCPP: CheckTextControlsWavyLines is timing out on ResetWindowContentAndScaleWaitForIdle
             END_TEST_METHOD()
 

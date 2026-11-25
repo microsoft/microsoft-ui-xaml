@@ -17,7 +17,7 @@ void FlowLayoutState::InitializeForContext(
     
     if (m_lineSizeEstimationBuffer.size() == 0)
     {
-        m_lineSizeEstimationBuffer.resize(BufferSize, 0.0f);
+        m_lineSizeEstimationBuffer.resize(BufferSize, c_unmeasuredLineSize);
         m_itemsPerLineEstimationBuffer.resize(BufferSize, 0.0f);
     }
 
@@ -37,14 +37,15 @@ void FlowLayoutState::OnLineArranged(int startIndex, int countInLine, double lin
     if (m_totalLinesMeasured == 0 || startIndex + countInLine != context.ItemCount())
     {
         const int estimationBufferIndex = startIndex % m_lineSizeEstimationBuffer.size();
-        const bool alreadyMeasured = m_lineSizeEstimationBuffer[estimationBufferIndex] != 0;
+        const double bufferedLineSize = m_lineSizeEstimationBuffer[estimationBufferIndex];
+        const bool alreadyMeasured = bufferedLineSize != c_unmeasuredLineSize;
 
         if (!alreadyMeasured)
         {
             ++m_totalLinesMeasured;
         }
 
-        m_totalLineSize -= m_lineSizeEstimationBuffer[estimationBufferIndex];
+        m_totalLineSize -= alreadyMeasured ? bufferedLineSize : 0.0;
         m_totalLineSize += lineSize;
         m_lineSizeEstimationBuffer[estimationBufferIndex] = lineSize;
 

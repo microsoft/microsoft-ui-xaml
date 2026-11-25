@@ -3,7 +3,7 @@ using System;
 namespace XamlTimeline
 {
     /// <summary>
-    /// Matches a <see cref="TelemetryEvent"/> by provider GUID and (optionally) event id / name.
+    /// Matches a <see cref="TelemetryEvent"/> by provider GUID and (optionally) event id, name and opcode.
     /// Provider GUID is the primary key — the provider's friendly name varies between traces.
     /// <see cref="Payload"/> is an optional payload-field filter for this endpoint. Its
     /// <c>${ProcessName}</c> token is substituted at evaluation time, so callers that want
@@ -20,10 +20,13 @@ namespace XamlTimeline
         bool ProcessDependentEnd = false,
         PayloadFilter? Payload = null)
     {
+        public int? Opcode { get; init; }
+        public bool ExactTaskName { get; init; }
+
         private const string ProcessNamePlaceholder = "${ProcessName}";
 
         /// <summary>
-        /// Signature-only match (provider GUID + optional event id / name). Does NOT apply
+        /// Signature-only match (provider GUID + optional event id, name and opcode). Does NOT apply
         /// the <see cref="Payload"/> filter — use it as a cheap pre-filter, then call
         /// <see cref="Matches(TelemetryEvent, string?)"/> to also verify the payload.
         /// </summary>
@@ -39,10 +42,31 @@ namespace XamlTimeline
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(EventName) &&
-                ev.EventName.IndexOf(EventName, StringComparison.OrdinalIgnoreCase) < 0)
+            if (Opcode.HasValue && ev.Opcode != Opcode.Value)
             {
                 return false;
+            }
+
+            if (!string.IsNullOrEmpty(EventName))
+            {
+                if (ExactTaskName)
+                {
+                    var taskName = ev.EventName;
+                    if (taskName.EndsWith("/Start", StringComparison.OrdinalIgnoreCase) ||
+                        taskName.EndsWith("/Stop", StringComparison.OrdinalIgnoreCase))
+                    {
+                        taskName = taskName.Substring(0, taskName.LastIndexOf('/'));
+                    }
+
+                    if (!string.Equals(taskName, EventName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else if (ev.EventName.IndexOf(EventName, StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    return false;
+                }
             }
 
             return true;

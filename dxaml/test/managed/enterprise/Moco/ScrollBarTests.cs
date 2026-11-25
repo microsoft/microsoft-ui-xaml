@@ -71,7 +71,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "True")] // DCPP: Unreliable test: Controls.ScrollBarTests.ScrollBarExpandCollapseWithoutAnimation
         public void ScrollBarExpandCollapseWithoutAnimations()
         {

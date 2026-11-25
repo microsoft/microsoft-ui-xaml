@@ -1730,6 +1730,272 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         ValidateChromeAnimationCommandsLifetime(true /*forceSelectionIndicatorVisualEnabled*/);
     }
 
+    void IntegrationTests::VerifySelectionIndicatorAfterPopupReopen()
+    {
+        TestCleanupWrapper cleanup;
+        RoundedChromeDictionaryHelper dictionaryHelper(true);
+        RuntimeEnabledFeatureOverride featureSelectionIndicatorVisualEnabled;
+        featureSelectionIndicatorVisualEnabled.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceSelectionIndicatorVisualEnabled, true);
+
+        xaml_controls::ListView^ listView = nullptr;
+        xaml_controls::Button^ dropDownButton = nullptr;
+        xaml_primitives::Popup^ popup = nullptr;
+        xaml_media::SolidColorBrush^ indicatorBrush = nullptr;
+        auto clickRegistration = CreateSafeEventRegistration(xaml_controls::Button, Click);
+        auto selectionChangedRegistration = CreateSafeEventRegistration(xaml_controls::ListView, SelectionChanged);
+
+        RunOnUIThread([&]()
+        {
+            // As in the repro, only the ItemsPresenter is disconnected when the popup closes.
+            listView = safe_cast<xaml_controls::ListView^>(xaml_markup::XamlReader::Load(
+                LR"(
+                <ListView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                          Width='200' Height='40' HorizontalAlignment='Left' VerticalAlignment='Top'
+                          SelectionMode='Single'>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.Template>
+                        <ControlTemplate TargetType='ListView'>
+                            <Grid>
+                                <Button x:Name='DropDownButton' Content='Open' Width='200' Height='40'/>
+                                <Popup x:Name='Popup' VerticalOffset='40'>
+                                    <ScrollViewer Width='200' Height='120'>
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Popup>
+                            </Grid>
+                        </ControlTemplate>
+                    </ListView.Template>
+                    <ListViewItem Content='First item' Height='40'/>
+                    <ListViewItem Content='Second item' Height='40'/>
+                </ListView>)"));
+
+            TestServices::WindowHelper->WindowContent = listView;
+            listView->ApplyTemplate();
+            auto templateRoot = safe_cast<FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(listView, 0));
+            dropDownButton = safe_cast<xaml_controls::Button^>(templateRoot->FindName(L"DropDownButton"));
+            popup = safe_cast<xaml_primitives::Popup^>(templateRoot->FindName(L"Popup"));
+            VERIFY_IS_NOT_NULL(dropDownButton);
+            VERIFY_IS_NOT_NULL(popup);
+            indicatorBrush = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
+
+            clickRegistration.Attach(dropDownButton, ref new xaml::RoutedEventHandler(
+                [popup](Platform::Object^, xaml::RoutedEventArgs^)
+            {
+                popup->IsOpen = !popup->IsOpen;
+            }));
+            selectionChangedRegistration.Attach(listView, ref new xaml_controls::SelectionChangedEventHandler(
+                [popup](Platform::Object^, xaml_controls::SelectionChangedEventArgs^)
+            {
+                popup->IsOpen = false;
+            }));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        for (int index = 0; index < 2; ++index)
+        {
+            TestServices::InputHelper->ClickMouseButton(MouseButton::Left, dropDownButton);
+            TestServices::WindowHelper->WaitForIdle();
+
+            xaml_controls::ListViewItem^ item = nullptr;
+            xaml_primitives::ListViewItemPresenter^ presenter = nullptr;
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(popup->IsOpen);
+                item = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(index));
+                VERIFY_IS_NOT_NULL(item);
+                presenter = safe_cast<xaml_primitives::ListViewItemPresenter^>(xaml_media::VisualTreeHelper::GetChild(item, 0));
+                presenter->SelectionIndicatorBrush = indicatorBrush;
+                presenter->SelectionIndicatorPointerOverBrush = indicatorBrush;
+                presenter->SelectionIndicatorPressedBrush = indicatorBrush;
+            });
+
+            auto getIndicator = [&]() -> xaml_controls::Border^
+            {
+                xaml_controls::Border^ indicator = nullptr;
+                const int childCount = xaml_media::VisualTreeHelper::GetChildrenCount(presenter);
+                for (int childIndex = 0; childIndex < childCount; ++childIndex)
+                {
+                    auto border = dynamic_cast<xaml_controls::Border^>(xaml_media::VisualTreeHelper::GetChild(presenter, childIndex));
+                    if (border && border->Background == indicatorBrush)
+                    {
+                        VERIFY_IS_NULL(indicator);
+                        indicator = border;
+                    }
+                }
+                return indicator;
+            };
+
+            TestServices::InputHelper->ClickMouseButton(MouseButton::Left, item);
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(index, listView->SelectedIndex);
+                VERIFY_IS_FALSE(popup->IsOpen);
+                VERIFY_IS_NULL(getIndicator());
+            });
+
+            TestServices::InputHelper->ClickMouseButton(MouseButton::Left, dropDownButton);
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(popup->IsOpen);
+                VERIFY_ARE_EQUAL(index, listView->SelectedIndex);
+                VERIFY_ARE_EQUAL(item, listView->ContainerFromIndex(index));
+                // Check before hover so late background recovery cannot mask missing layout.
+                auto indicator = getIndicator();
+                VERIFY_IS_NOT_NULL(indicator);
+                VERIFY_IS_GREATER_THAN(indicator->ActualWidth, 0.0);
+                VERIFY_IS_GREATER_THAN(indicator->ActualHeight, 6.0);
+            });
+
+            TestServices::InputHelper->MoveMouse(item);
+            TestServices::InputHelper->ClickMouseButton(MouseButton::Left, item);
+            TestServices::WindowHelper->WaitForIdle();
+            RunOnUIThread([&]()
+            {
+                VERIFY_ARE_EQUAL(index, listView->SelectedIndex);
+                VERIFY_IS_TRUE(popup->IsOpen);
+                VERIFY_IS_NOT_NULL(getIndicator());
+            });
+
+            TestServices::InputHelper->ClickMouseButton(MouseButton::Left, dropDownButton);
+            TestServices::WindowHelper->WaitForIdle();
+        }
+    }
+
+    void IntegrationTests::VerifySelectionIndicatorRemovedWhenDeselectedInDragState()
+    {
+        TestCleanupWrapper cleanup;
+        RoundedChromeDictionaryHelper dictionaryHelper(true);
+        RuntimeEnabledFeatureOverride featureSelectionIndicatorVisualEnabled;
+        featureSelectionIndicatorVisualEnabled.Initialize(RuntimeFeatureBehavior::RuntimeEnabledFeature::ForceSelectionIndicatorVisualEnabled, true);
+        // The selection indicator fade-out only has a duration, and so can be interrupted, when animations are enabled.
+        RuntimeEnabledFeatureOverride enableGlobalAnimations(
+            RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableGlobalAnimations, true);
+
+        const int itemCount = 3;
+        xaml_controls::ListView^ listView = nullptr;
+        xaml_media::SolidColorBrush^ indicatorBrush = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            listView = safe_cast<xaml_controls::ListView^>(xaml_markup::XamlReader::Load(
+                LR"(
+                <ListView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                          Width='200' HorizontalAlignment='Left' VerticalAlignment='Top'
+                          SelectionMode='Single' CanDragItems='True' CanReorderItems='True' AllowDrop='True'/>)"));
+
+            auto items = ref new Platform::Collections::Vector<Platform::String^>();
+            for (int index = 0; index < itemCount; ++index)
+            {
+                items->Append(ref new Platform::String(L"Item ") + index.ToString());
+            }
+
+            listView->ItemsSource = items;
+            listView->SelectedIndex = 0;
+            indicatorBrush = ref new xaml_media::SolidColorBrush(Microsoft::UI::Colors::Red);
+            TestServices::WindowHelper->WindowContent = listView;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto getItem = [&](int index)
+        {
+            auto item = safe_cast<xaml_controls::ListViewItem^>(listView->ContainerFromIndex(index));
+            VERIFY_IS_NOT_NULL(item);
+            return item;
+        };
+
+        auto getPresenter = [&](int index)
+        {
+            return safe_cast<xaml_primitives::ListViewItemPresenter^>(xaml_media::VisualTreeHelper::GetChild(getItem(index), 0));
+        };
+
+        auto hasIndicator = [&](int index)
+        {
+            auto presenter = getPresenter(index);
+            const int childCount = xaml_media::VisualTreeHelper::GetChildrenCount(presenter);
+            for (int childIndex = 0; childIndex < childCount; ++childIndex)
+            {
+                auto border = dynamic_cast<xaml_controls::Border^>(xaml_media::VisualTreeHelper::GetChild(presenter, childIndex));
+                if (border && border->Background == indicatorBrush)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        auto verifyOnlySelectedItemHasIndicator = [&](int selectedIndex)
+        {
+            VERIFY_ARE_EQUAL(selectedIndex, listView->SelectedIndex);
+            VERIFY_ARE_EQUAL(1u, listView->SelectedItems->Size);
+            for (int index = 0; index < itemCount; ++index)
+            {
+                LOG_OUTPUT(L"Item %d: IsSelected=%d, has selection indicator=%d", index, getItem(index)->IsSelected, hasIndicator(index));
+                VERIFY_ARE_EQUAL(index == selectedIndex, getItem(index)->IsSelected);
+                VERIFY_ARE_EQUAL(index == selectedIndex, hasIndicator(index));
+            }
+        };
+
+        RunOnUIThread([&]()
+        {
+            for (int index = 0; index < itemCount; ++index)
+            {
+                auto presenter = getPresenter(index);
+                presenter->SelectionIndicatorBrush = indicatorBrush;
+                presenter->SelectionIndicatorPointerOverBrush = indicatorBrush;
+                presenter->SelectionIndicatorPressedBrush = indicatorBrush;
+            }
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            verifyOnlySelectedItemHasIndicator(0);
+        });
+
+        LOG_OUTPUT(L"Changing the selection while all items are in a drag and drop state, as during a reorder drop.");
+        RunOnUIThread([&]()
+        {
+            for (int index = 0; index < itemCount; ++index)
+            {
+                xaml::VisualStateManager::GoToState(getItem(index), L"ReorderingTarget", true);
+            }
+
+            listView->SelectedIndex = 1;
+
+            for (int index = 0; index < itemCount; ++index)
+            {
+                xaml::VisualStateManager::GoToState(getItem(index), L"NotDragging", true);
+            }
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            verifyOnlySelectedItemHasIndicator(1);
+        });
+
+        LOG_OUTPUT(L"Interrupting the deselected item's selection indicator fade-out with a drag and drop state.");
+        RunOnUIThread([&]()
+        {
+            listView->SelectedIndex = 2;
+            xaml::VisualStateManager::GoToState(getItem(1), L"ReorderingTarget", true);
+            xaml::VisualStateManager::GoToState(getItem(1), L"NotDragging", true);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            verifyOnlySelectedItemHasIndicator(2);
+        });
+    }
+
     void IntegrationTests::ValidateChromeAnimationCommandsLifetime(bool forceSelectionIndicatorVisualEnabled)
     {
         RuntimeEnabledFeatureOverride featureSelectionIndicatorVisualEnabled;
@@ -2292,6 +2558,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ::Windows::UI::Color darkSecondary)
     {
         WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(800.0f, 600.0f));
 
         xaml_controls::Primitives::SelectorItem^ item = nullptr;
         xaml_controls::Panel^ rootPanel = nullptr;

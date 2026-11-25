@@ -170,6 +170,12 @@ namespace XamlTimeline
                 stop = ParseMatcher(stopElement);
             }
 
+            if (ParseBool(ExtAttr(element, "ExactTaskName")))
+            {
+                start = start with { ExactTaskName = true };
+                if (stop is not null) stop = stop with { ExactTaskName = true };
+            }
+
             var startPayload = ParsePayload(startElement);
             var stopPayload = stopElement is not null
                 ? ParsePayload(stopElement)
@@ -260,10 +266,22 @@ namespace XamlTimeline
             }
 
             var eventName = OptionalAttr(matcher, "Name");
+            int? opcode = null;
+            var opcodeAttr = matcher.Attribute("Opcode");
+            if (opcodeAttr is not null)
+            {
+                if (!byte.TryParse(opcodeAttr.Value, out var parsedOpcode))
+                {
+                    throw new InvalidDataException(
+                        $"Opcode attribute '{opcodeAttr.Value}' is not a valid event opcode.");
+                }
+
+                opcode = parsedOpcode;
+            }
 
             // Stop-event heuristics (XamlEndHeuristic / ProcessDependentEnd) live in the
             // region's <Metadata> node and are applied by ParseRegion.
-            return new EventMatcher(providerGuid, id, eventName);
+            return new EventMatcher(providerGuid, id, eventName) { Opcode = opcode };
         }
 
         /// <summary>

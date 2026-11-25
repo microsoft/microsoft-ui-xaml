@@ -1,0 +1,52 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.NavigationViewPointerFocusPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp">
+    <ScrollViewer x:Name="InputRoot" AutomationProperties.Name="Input root ScrollViewer" IsTabStop="True" Width="640" Height="480"
+                  HorizontalAlignment="Left" VerticalAlignment="Top"
+                  HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+        <Grid Width="640" Height="480">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <CheckBox x:Name="TopMode" AutomationProperties.Name="Top mode" Content="Top mode" />
+            <CheckBox x:Name="NestedReleaseMode" AutomationProperties.Name="Nested release mode"
+                      Content="Nested release mode" Margin="160,0,0,0" HorizontalAlignment="Left" />
+            <TextBlock x:Name="PointerPressedCount" AutomationProperties.Name="Pointer pressed count"
+                       Text="0" HorizontalAlignment="Right" />
+            <NavigationView x:Name="NavView" Grid.Row="1" PaneDisplayMode="Left" IsSettingsVisible="False">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem Content="First item" AutomationProperties.Name="First item" />
+                    <NavigationViewItem Content="Second item" AutomationProperties.Name="Second item" />
+                </NavigationView.MenuItems>
+            </NavigationView>
+            <StackPanel x:Name="NormalContent" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="24" Spacing="12">
+                <ToggleSwitch x:Name="FocusToggle" AutomationProperties.Name="Focus toggle"
+                              Width="44" MinWidth="0" OnContent="" OffContent="" />
+                <TextBlock x:Name="ToggleState" AutomationProperties.Name="Toggle state" />
+                <Button x:Name="OtherButton" AutomationProperties.Name="Other button" Content="Other button" />
+                <TextBlock x:Name="CaptureTarget" AutomationProperties.Name="Capture target"
+                           Text="Capture target" HorizontalAlignment="Left" />
+                <TextBlock x:Name="CaptureSucceeded" AutomationProperties.Name="Capture succeeded" Text="False" />
+                <ScrollViewer x:Name="FocusScrollViewer" AutomationProperties.Name="Focusable ScrollViewer"
+                              IsTabStop="True" Width="180" Height="100">
+                    <TextBlock Text="Scrollable content" Height="600" />
+                </ScrollViewer>
+            </StackPanel>
+            <StackPanel x:Name="NestedContent" Grid.Row="1" Visibility="Collapsed"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                <Button AutomationProperties.Name="Initial nested focus" Content="Initial nested focus" />
+                <Border x:Name="OuterRelease" Background="LightBlue" Padding="24">
+                    <TextBlock Text="Outer release" />
+                </Border>
+                <Border x:Name="InnerRelease" Background="LightGray" Padding="24">
+                    <TextBlock Text="Inner release" />
+                </Border>
+                <TextBlock x:Name="NestedStatus" AutomationProperties.Name="Nested release status" Text="Idle" />
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</local:TestPage>

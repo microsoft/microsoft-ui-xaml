@@ -32,6 +32,11 @@ namespace TableViewSampleApp.Data;
 /// Draw and fixture data (Country, IsSeeded, NextMatchDate, Kickoff) are derived
 /// from the row index, never from a random draw, so they are identical on every run.
 /// Each group has exactly one seed and four different countries.
+///
+/// Each group's seed also fields a reserve side (B) and an academy side (U21), listed after
+/// the group's four clubs. They share the club's Group and Country but play their own
+/// reserve and youth leagues, so the group-stage sums above hold over the senior clubs only.
+/// ParentId names the club, which gives the Hierarchy shaping modes a parent relation.
 /// </summary>
 public static class LeagueData
 {
@@ -62,6 +67,12 @@ public static class LeagueData
     {
         "Copper Herons", "Jade Lynxes", "Opal Badgers", "Bronze Kestrels", "Silver Ibis", "Umber Jackals",
     };
+
+    /// <summary>A reserve or academy side under its senior club (TableViewSource.ParentBy selectors).</summary>
+    public static ParentRelation ParentClub { get; } = new(
+        "Parent club",
+        row => (row as LeagueTeam)?.Id,
+        row => (row as LeagueTeam)?.ParentId);
 
     /// <summary>Returns a fresh ObservableCollection so each consumer can
     /// mutate its own copy without disturbing shared state.</summary>
@@ -103,6 +114,7 @@ public static class LeagueData
         var i = s_rows.Count + index;
         var team = new LeagueTeam
         {
+            Id = 1000 + index,
             Group = group,
             Team = s_lateEntrants[index % s_lateEntrants.Length],
             Country = Countries[(i * 3) % Countries.Count],
@@ -117,6 +129,8 @@ public static class LeagueData
     {
         Group         = src.Group,
         Team          = src.Team,
+        Id            = src.Id,
+        ParentId      = src.ParentId,
         Country       = src.Country,
         IsSeeded      = src.IsSeeded,
         NextMatchDate = src.NextMatchDate,
@@ -129,7 +143,21 @@ public static class LeagueData
         GoalsAgainst  = src.GoalsAgainst,
     };
 
-    private static readonly IReadOnlyList<LeagueTeam> s_rows = WithFixtures(new[]
+    // Reserve (B) and academy (U21) results, one entry per group in source order (F, A, B, ...).
+    // Each pair differs in points and goal difference, so a sort visibly reorders the two sides.
+    private static readonly (int W, int D, int L, int GF, int GA)[] s_reserveResults =
+    {
+        (3, 1, 2,  9,  7), (2, 2, 2,  6,  6), (4, 0, 2, 10,  6), (1, 3, 2,  5,  7),
+        (3, 2, 1,  8,  5), (2, 1, 3,  7,  9), (5, 0, 1, 13,  4), (1, 1, 4,  3, 10),
+    };
+
+    private static readonly (int W, int D, int L, int GF, int GA)[] s_academyResults =
+    {
+        (4, 1, 1, 12,  4), (1, 2, 3,  4,  8), (2, 3, 1,  7,  5), (3, 0, 3,  9,  8),
+        (0, 4, 2,  4,  6), (4, 2, 0, 11,  3), (2, 0, 4,  5, 11), (3, 1, 2,  7,  4),
+    };
+
+    private static readonly IReadOnlyList<LeagueTeam> s_rows = WithSquads(WithFixtures(new[]
     {
         // Source order = by group (F first), alphabetical by Team within a group, so the
         // default view is visibly unsorted by Points/GD. Within each group:
@@ -182,7 +210,34 @@ public static class LeagueData
         Row("H", "Garnet Bison",      3, 0, 3,  7,  6),  //  9 pts, +1
         Row("H", "Mauve Penguins",    1, 1, 4,  2, 11),  //  4 pts, -9
         Row("H", "Quartz Dragons",    5, 1, 0, 13,  3),  // 16 pts, +10
-    });
+    }));
+
+    // Adds the seed's B and U21 sides after each group's four clubs.
+    private static IReadOnlyList<LeagueTeam> WithSquads(IReadOnlyList<LeagueTeam> clubs)
+    {
+        var rows = new List<LeagueTeam>(clubs.Count + clubs.Count / 2);
+        for (var g = 0; g * 4 < clubs.Count; g++)
+        {
+            var group = clubs.Skip(g * 4).Take(4).ToList();
+            rows.AddRange(group);
+            var seed = group.First(t => t.IsSeeded);
+            rows.Add(Squad(seed, "B", s_reserveResults[g], g * 2));
+            rows.Add(Squad(seed, "U21", s_academyResults[g], g * 2 + 1));
+        }
+
+        return rows;
+    }
+
+    private static LeagueTeam Squad(LeagueTeam club, string suffix, (int W, int D, int L, int GF, int GA) r, int i)
+    {
+        var team = Row(club.Group, club.Team + " " + suffix, r.W, r.D, r.L, r.GF, r.GA);
+        team.Id = 100 + i;
+        team.ParentId = club.Id;
+        team.Country = club.Country;
+        team.NextMatchDate = s_fixtureDates[(i * 7 + 3) % s_fixtureDates.Length];
+        team.Kickoff = s_kickoffs[(i * 7 + 1) % s_kickoffs.Length];
+        return team;
+    }
 
     private static LeagueTeam Row(string group, string team,
                                    int w, int d, int l,
@@ -205,6 +260,7 @@ public static class LeagueData
     {
         for (var i = 0; i < rows.Length; i++)
         {
+            rows[i].Id = i + 1;
             rows[i].Country = Countries[(i * 3) % Countries.Count];
             rows[i].IsSeeded = i % 4 == (i / 4) % 4;
             rows[i].NextMatchDate = s_fixtureDates[(i * 5) % s_fixtureDates.Length];

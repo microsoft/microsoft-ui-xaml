@@ -9758,6 +9758,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Window.PlacementId
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Window.SystemBackdrop
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.

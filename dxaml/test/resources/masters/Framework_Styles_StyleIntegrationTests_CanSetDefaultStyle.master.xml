@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VisualTreeDump>
   <VisualElements>
-    <Element Type="Tests.Native.External.Framework.DefaultStyleControl">
-      <Properties>
-        <Property Name="DefaultStyleKey" Value="Tests.Native.External.Framework.DefaultStyleControl" />
-        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
-      </Properties>
+    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
       <ChildElements>
-        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+        <Element Type="Tests.Native.External.Framework.DefaultStyleControl">
           <Properties>
-            <Property Name="Background" Value="#FFFF0000" />
+            <Property Name="DefaultStyleKey" Value="Tests.Native.External.Framework.DefaultStyleControl" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Properties>
+                <Property Name="Background" Value="#FFFF0000" />
+              </Properties>
+            </Element>
+          </ChildElements>
         </Element>
       </ChildElements>
     </Element>

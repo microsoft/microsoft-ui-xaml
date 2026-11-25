@@ -13,12 +13,12 @@
             <Visual Tag="PrimaryVisual">
               <Visual Tag="ContentVisual">
                 <Visual TransformParentVisualId="1" Tag="PrependVisual">
-                  <Visual Tag="PrimaryVisual" SizeX="54" SizeY="54">
+                  <Visual Tag="PrimaryVisual" SizeX="58" SizeY="58">
                     <TransformMatrix>
-                      <Translate X="100" Y="40" />
+                      <Translate X="96" Y="36" />
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
-                      <wucSpriteVisual SizeX="54" SizeY="54" BorderMode="Soft" TransparentForInput="True">
+                      <wucSpriteVisual SizeX="58" SizeY="58" BorderMode="Soft" TransparentForInput="True">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 1, 0}" />
@@ -32,7 +32,7 @@
                           </Mask>
                         </MaskBrush>
                       </wucSpriteVisual>
-                      <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" TransparentForInput="True" OffsetX="2" OffsetY="2" OffsetZ="0">
+                      <wucSpriteVisual SizeX="54" SizeY="54" BorderMode="Soft" TransparentForInput="True" OffsetX="2" OffsetY="2" OffsetZ="0">
                         <MaskBrush>
                           <Source>
                             <ColorBrush Color="rgb {1, 0, 0}" />

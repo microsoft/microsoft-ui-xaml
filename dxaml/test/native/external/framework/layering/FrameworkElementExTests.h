@@ -34,17 +34,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(DoesPerformLayout)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx's children performs layout.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesRespectMinSize)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its min size.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesRespectMaxSize)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that the FrameworkElementEx respects its max size.")
-            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DoesRespectMargin)

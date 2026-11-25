@@ -60,6 +60,8 @@
   <Target Name="GetCopyToOutputDirectoryItems" />
   <Target Name="GetCopyToPublishDirectoryItems" />
   <Target Name="GetDeployableContentReferenceOutputs" />
+  <Target Name="GetNativeManifest" />
+  <Target Name="GetPackagingOutputs" />
   <Target Name="GetTargetPath" />
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
   <Target Name="SatelliteDllsProjectOutputGroup" />

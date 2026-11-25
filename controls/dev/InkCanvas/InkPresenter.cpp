@@ -731,6 +731,81 @@ muxc::InkSynchronizer InkPresenter::ActivateCustomDrying()
     return m_customDrySynchronizer;
 }
 
+muxc::CoreWetStrokeUpdateSource InkPresenter::GetWetStrokeUpdateSource()
+{
+    {
+        std::scoped_lock lock(m_wetStrokeUpdateSourceLock);
+        if (m_wetStrokeUpdateSource)
+        {
+            return m_wetStrokeUpdateSource;
+        }
+    }
+
+    // Create and attach on the ink thread, the only thread the OS source accepts handlers on. Create can be called
+    // from any thread (an app can call it inside another wet-stroke callback, which runs on the ink thread), and all
+    // first uses end up in this ink-thread work item, which runs one at a time. Checking the cache again inside it
+    // makes every caller get the one source; none replaces another's.
+    muxc::CoreWetStrokeUpdateSource result{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&](inking::InkPresenter const& osPresenter)
+        {
+            std::scoped_lock lock(m_wetStrokeUpdateSourceLock);
+            if (!m_wetStrokeUpdateSource)
+            {
+                auto source = winrt::make<::CoreWetStrokeUpdateSource>(winrt::weak_ref<muxc::InkPresenter>{ *this });
+                winrt::get_self<::CoreWetStrokeUpdateSource>(source)->Attach(inking::Core::CoreWetStrokeUpdateSource::Create(osPresenter));
+                m_wetStrokeUpdateSource = source;
+            }
+            result = m_wetStrokeUpdateSource;
+        },
+        /* pumpMessages */ false);
+
+    if (!result)
+    {
+        InkTelemetry::ReportError(
+            InkTelemetry::ErrorCategory::ApiMisuse,
+            InkTelemetry::Operation::CreateWetStrokeUpdateSource,
+            true /* isRecoverable */,
+            E_ILLEGAL_METHOD_CALL);
+        throw winrt::hresult_error(E_ILLEGAL_METHOD_CALL, L"InkPresenter is not ready for wet stroke updates.");
+    }
+    return result;
+}
+
+// -- CoreWetStrokeUpdateSource mirror --------------------------------------------------------------
+
+muxc::CoreWetStrokeUpdateSource CoreWetStrokeUpdateSource::Create(muxc::InkPresenter const& inkPresenter)
+{
+    if (!inkPresenter)
+    {
+        throw winrt::hresult_invalid_argument(L"inkPresenter");
+    }
+    return winrt::get_self<::InkPresenter>(inkPresenter)->GetWetStrokeUpdateSource();
+}
+
+void CoreWetStrokeUpdateSource::Attach(inking::Core::CoreWetStrokeUpdateSource const& osSource)
+{
+    m_osSource = osSource;
+
+    // Runs on the ink thread inside the OS callback, so handlers see and change the live wet stroke.
+    auto forward = [weakSelf = get_weak()](winrt::event<Handler> CoreWetStrokeUpdateSource::* wetStrokeEvent)
+    {
+        return [weakSelf, wetStrokeEvent](inking::Core::CoreWetStrokeUpdateSource const&, inking::Core::CoreWetStrokeUpdateEventArgs const& args)
+        {
+            if (auto self = weakSelf.get())
+            {
+                (self.get()->*wetStrokeEvent)(*self, args);
+            }
+        };
+    };
+
+    m_osSource.WetStrokeStarting(forward(&CoreWetStrokeUpdateSource::m_wetStrokeStarting));
+    m_osSource.WetStrokeContinuing(forward(&CoreWetStrokeUpdateSource::m_wetStrokeContinuing));
+    m_osSource.WetStrokeStopping(forward(&CoreWetStrokeUpdateSource::m_wetStrokeStopping));
+    m_osSource.WetStrokeCompleted(forward(&CoreWetStrokeUpdateSource::m_wetStrokeCompleted));
+    m_osSource.WetStrokeCanceled(forward(&CoreWetStrokeUpdateSource::m_wetStrokeCanceled));
+}
+
 // -- InkSynchronizer mirror -----------------------------------------------------------------------
 // Owns the OS InkSynchronizer (adopted on the ink thread from the presenter's OS ActivateCustomDrying)
 // and marshals its BeginDry/EndDry onto the ink thread through the owning InkPresenter proxy's work
@@ -1110,9 +1185,9 @@ void InkPresenter::RaiseStrokesErased(winrt::Windows::Foundation::Collections::I
     m_strokesErasedEvent(*this, *winrt::make_self<InkStrokesErasedEventArgs>(strokes));
 }
 
-// Shows/hides the ruler stencil. The InkPresenterRuler is thread-affine to the OS presenter,
-// so it is created on first enable and toggled entirely on the ink thread. m_inkRuler is only
-// ever touched inside these serialized ink-thread work items.
+// Shows/hides the ruler stencil. The InkPresenterRuler is constructed against the OS presenter, so it is
+// created on first enable on the ink thread; m_inkRuler is only assigned inside these serialized
+// ink-thread work items.
 void InkPresenter::SetRulerEnabled(bool enabled)
 {
     // Capture a strong ref to this proxy (rather than raw 'this') so the m_inkRuler member
@@ -1131,10 +1206,7 @@ void InkPresenter::SetRulerEnabled(bool enabled)
         });
 }
 
-// Shows/hides the protractor stencil. Mirrors SetRulerEnabled: the InkPresenterProtractor is
-// thread-affine to the OS presenter, so it is created on first enable and toggled entirely on
-// the ink thread. m_inkProtractor is only ever touched inside these serialized ink-thread work
-// items.
+// Shows/hides the protractor stencil. Mirrors SetRulerEnabled.
 void InkPresenter::SetProtractorEnabled(bool enabled)
 {
     QueueInkPresenterWorkItem(
@@ -1150,3 +1222,43 @@ void InkPresenter::SetProtractorEnabled(bool enabled)
             }
         });
 }
+
+inking::InkPresenterRuler InkPresenter::EnsureRuler()
+{
+    inking::InkPresenterRuler ruler{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&ruler, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkRuler)
+            {
+                strongThis->m_inkRuler = inking::InkPresenterRuler(presenter);
+            }
+            ruler = strongThis->m_inkRuler;
+        },
+        /* pumpMessages */ false);
+    return ruler;
+}
+
+inking::InkPresenterProtractor InkPresenter::EnsureProtractor()
+{
+    inking::InkPresenterProtractor protractor{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&protractor, strongThis = get_strong()](inking::InkPresenter const& presenter)
+        {
+            if (!strongThis->m_inkProtractor)
+            {
+                strongThis->m_inkProtractor = inking::InkPresenterProtractor(presenter);
+            }
+            protractor = strongThis->m_inkProtractor;
+        },
+        /* pumpMessages */ false);
+    return protractor;
+}
+
+// CoreWetStrokeUpdateSource has a static (Create), so it needs an activation factory.
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(CoreWetStrokeUpdateSource)
+}
+
+#include "CoreWetStrokeUpdateSource.g.cpp"

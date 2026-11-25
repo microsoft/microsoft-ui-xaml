@@ -50,7 +50,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD(VerifyPathToBindingProperty)
             TEST_METHOD(VerifyRemovedApplicationResourceError)
             BEGIN_TEST_METHOD(VerifyStateChangeWhenNotInTree)
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
             TEST_METHOD(VerifyPathWithNestedStyles)
             BEGIN_TEST_METHOD(VerifyPathToItemsControlItemContainerStyle)

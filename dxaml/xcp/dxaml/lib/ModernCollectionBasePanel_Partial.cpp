@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ModernCollectionBasePanel.g.h"
 #include "ScrollViewer.g.h"
 #include "GroupStyle.g.h"
@@ -1006,11 +1007,11 @@ _Check_return_ HRESULT ModernCollectionBasePanel::Generate(
     _In_ xaml_controls::LayoutReference referenceInformation,
     _In_ BOOLEAN goForward)
 {
-    TraceGenerateItemsBegin();
+    XamlTelemetry::GenerateItemsBegin(GetHandle());
 
-    auto guard = wil::scope_exit([]()
+    auto guard = wil::scope_exit([&]()
     {
-        TraceGenerateItemsEnd();
+        XamlTelemetry::GenerateItemsEnd(GetHandle());
     });
 
     // needed for Sticky Headers

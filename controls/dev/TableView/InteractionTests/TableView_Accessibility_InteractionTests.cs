@@ -35,6 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     // through in-process page readouts. #11820 fixed the peers, and cell peers are now read safely; see the history
     // note in TableViewInteractionTestHelpers. The older tests are kept as written - their techniques still work.
     [TestClass]
+    [TestProperty("Ignore", "True")] // Disabled pending TableView page leak fix: #12491.
     public class TableViewAccessibilityInteractionTests
     {
         [ClassInitialize]
@@ -160,6 +161,41 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
                     Verify.IsFalse(waiter.TryWait(TimeSpan.FromSeconds(2)), "Collapsing an already-collapsed group changes nothing and must not raise StructureChanged.");
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies pinning and unpinning a column raises a Transform.CanResize property-changed event on its header, so a UIA client's cached value stays current.")]
+        public void ColumnPinChangeRaisesCanResizePropertyChanged()
+        {
+            using (var setup = new TestSetupHelper(PageName))
+            {
+                UIObject score = GetHeader(BasicTable, "Score");
+                var togglePin = FindElement.ById<Button>(ToggleScorePinButton);
+                if (score == null || togglePin == null)
+                {
+                    Verify.Fail("The Score header and/or ToggleScorePinButton were not found on the test page.");
+                    return;
+                }
+
+                UIProperty canResize = UIProperty.Get("Transform.CanResize");
+                Verify.IsTrue(Convert.ToBoolean(score.GetProperty(canResize)), "Precondition: Score starts resizable.");
+
+                using (var waiter = new PropertyChangedEventWaiter(score, Scope.Element, canResize))
+                {
+                    togglePin.InvokeAndWait();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Pinning must raise a CanResize property-changed event.");
+                }
+                Verify.IsFalse(Convert.ToBoolean(score.GetProperty(canResize)), "A pinned column must report CanResize=false.");
+
+                using (var waiter = new PropertyChangedEventWaiter(score, Scope.Element, canResize))
+                {
+                    togglePin.InvokeAndWait();
+                    Wait.ForIdle();
+                    Verify.IsTrue(waiter.TryWait(TimeSpan.FromSeconds(5)), "Unpinning must raise a CanResize property-changed event.");
+                }
+                Verify.IsTrue(Convert.ToBoolean(score.GetProperty(canResize)), "An unpinned column must report CanResize=true.");
             }
         }
 

@@ -23,6 +23,7 @@
 #define WINDOWS_OS_VERSION_RS5                          L"17763"
 #define WINDOWS_OS_VERSION_RS4                          L"17134"
 #define WINDOWS_OS_VERSION_22H2                         L"22621"
+#define WINDOWS_OS_VERSION_23H2                         L"22631"
 #define WINDOWS_OS_VERSION_24H2                         L"26100"
 #define WINDOWS_OS_VERSION_25H2                         L"26200"
 

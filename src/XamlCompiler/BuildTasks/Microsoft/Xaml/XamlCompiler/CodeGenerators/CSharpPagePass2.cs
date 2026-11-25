@@ -234,6 +234,8 @@ this.Write(this.ToStringHelper.ToStringWithCulture(objectInitName));
 
 this.Write(" = ");
 
+this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.UsingCSWinRT && element.Type.IsString() ? "target == null ? null : " : ""));
+
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(";\r\n");
@@ -3342,7 +3344,7 @@ this.Write("        if (obj != null)\r\n        {\r\n");
          }
          List<BindPathStep> stepsWithFallback = new List<BindPathStep>();
          string lastCondition = null;
-         foreach (BindPathStep childStep in (from step in steps where step.IsIncludedInUpdate orderby step.PhaseList select step))
+         foreach (BindPathStep childStep in steps.Where(step => step.IsIncludedInUpdate).OrderBy(step => step.PhaseList, StringComparer.Ordinal))
          {
              if(checkPhaseCondition)
              {

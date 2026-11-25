@@ -4913,6 +4913,27 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         TestServices::WindowHelper->WaitForIdle();
 
+        auto moveMouseAwayAndOver = [&](xaml_controls::AppBarButton^ button)
+        {
+            bool pointerEntered = false;
+
+            for (int attempt = 0; attempt < 3 && !pointerEntered; attempt++)
+            {
+                TestServices::InputHelper->MoveMouse(wf::Point(0, 0));
+                TestServices::WindowHelper->WaitForIdle();
+
+                TestServices::InputHelper->MoveMouse(button);
+                TestServices::WindowHelper->WaitForIdle();
+
+                RunOnUIThread([&]()
+                {
+                    pointerEntered = button->IsPointerOver;
+                });
+            }
+
+            VERIFY_IS_TRUE(pointerEntered);
+        };
+
         FlyoutHelper::OpenFlyout(commandBarFlyout, flyoutButton, FlyoutOpenMethod::Programmatic_ShowAt);
 
         // Since the CommandBar starts with IsOpen already true, we don't get an Opened event the first time.
@@ -4921,13 +4942,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"Moving mouse over MenuFlyoutAppBarButton1, which should open the first menu flyout.");
-        TestServices::InputHelper->MoveMouse(menuFlyoutAppBarButton1);
+        moveMouseAwayAndOver(menuFlyoutAppBarButton1);
         menuFlyout1OpenedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"Clicking on the MenuFlyoutItem, which should close both the menu flyout and the CommandBar.");
         TestServices::InputHelper->LeftMouseClick(menuFlyoutItem1);
         menuFlyoutItem1ClickEvent->WaitForDefault();
+        menuFlyout1ClosedEvent->WaitForDefault();
         commandBarClosedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 
@@ -4939,8 +4961,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         commandBarOpenedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 
+        LOG_OUTPUT(L"Moving mouse over MenuFlyoutAppBarButton1, which should open the first menu flyout.");
+        moveMouseAwayAndOver(menuFlyoutAppBarButton1);
+        menuFlyout1OpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
         LOG_OUTPUT(L"Moving mouse over MenuFlyoutAppBarButton2, which should close the first menu flyout and open the second.");
         TestServices::InputHelper->MoveMouse(menuFlyoutAppBarButton2);
+        TestServices::WindowHelper->SynchronouslyTickUIThread(60);
         menuFlyout1ClosedEvent->WaitForDefault();
         menuFlyout2OpenedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
@@ -4968,7 +4996,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"Moving mouse over MenuFlyoutAppBarButton3, which should open the third menu flyout.");
-        TestServices::InputHelper->MoveMouse(menuFlyoutAppBarButton3);
+        moveMouseAwayAndOver(menuFlyoutAppBarButton3);
         menuFlyout3OpenedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 
@@ -4981,6 +5009,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         LOG_OUTPUT(L"Moving mouse over MenuFlyoutAppBarButton3, which should open the third menu flyout.");
         TestServices::InputHelper->MoveMouse(menuFlyoutAppBarButton3);
+        TestServices::WindowHelper->SynchronouslyTickUIThread(60);
         menuFlyout3OpenedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 

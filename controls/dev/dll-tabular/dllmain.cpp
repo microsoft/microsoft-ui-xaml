@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include "MUXControlsFactory.h"
 #include "RuntimeProfiler.h"
 #include "WinUIrc.ver"
 #include <winstring.h>
@@ -227,7 +228,7 @@ int32_t __stdcall MuxcActivationHandler(
     {
         path.resize(dotPos);
         path += L".dll";
-        HMODULE hModule = LoadLibraryW(path.c_str());
+        HMODULE hModule = LoadLibraryExW(path.c_str(), nullptr, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
         path.resize(path.size() - 4);
 
         if (!hModule)

@@ -18,6 +18,8 @@ namespace MUXControlsTestApp
         {
             LogController.InitializeLogging();
             this.InitializeComponent();
+            NavigateToDragPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewDragPage), 0); };
+            NavigateToPointerFocusPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPointerFocusPage), 0); };
             NavigationViewPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPage), 0); };
             NavigationViewInfoBadgePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewInfoBadgeTestPage), 0); };
             NavigationViewCompactPaneLengthTestPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewCompactPaneLengthTestPage), 0); };
@@ -38,6 +40,7 @@ namespace MUXControlsTestApp
             NavigateToAnimationPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewAnimationPage), 0); };
             NavigateToIsPaneOpenPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewIsPaneOpenPage), 0); };
             NavigateToMinimalPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMinimalPage), 0); };
+            NavigateToStackPanelHostPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewStackPanelHostPage), 0); };
             NavigateToCustomThemeResourcesPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewCustomThemeResourcesPage), 0); };
             NavigationViewBlankPage1.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewBlankPage1), 0); };
             NavigationViewMenuItemStretchPageButton.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMenuItemStretchPage), 0); };

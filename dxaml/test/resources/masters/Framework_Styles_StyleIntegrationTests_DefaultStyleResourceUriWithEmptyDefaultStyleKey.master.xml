@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <VisualTreeDump>
   <VisualElements>
-    <Element Type="Tests.Native.External.Framework.DefaultStyleResourceUriControlWithEmptyDefaultStyleKey">
-      <Properties>
-        <Property Name="DefaultStyleResourceUri" Value="[Windows.Foundation.Uri]" />
-      </Properties>
+    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+      <ChildElements>
+        <Element Type="Tests.Native.External.Framework.DefaultStyleResourceUriControlWithEmptyDefaultStyleKey">
+          <Properties>
+            <Property Name="DefaultStyleResourceUri" Value="[Windows.Foundation.Uri]" />
+          </Properties>
+        </Element>
+      </ChildElements>
     </Element>
   </VisualElements>
 </VisualTreeDump>

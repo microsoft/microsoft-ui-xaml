@@ -34,8 +34,6 @@ namespace XcpAllocation {
     size_t GetAllocationCount();
     size_t GetAllocationSize();
     size_t GetDeallocationCount();
-    size_t GetOutstandingAllocationCount();
-    size_t GetOutstandingAllocationSize();
     uint64_t GetHeapHandle();
     bool IsUsingPrivateHeap();
 

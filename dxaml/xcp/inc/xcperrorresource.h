@@ -305,6 +305,7 @@
 #define ERROR_WINDOW_DESKTOP_WIDTH_HEIGHT_INVALID                                       4156
 #define ERROR_WINDOW_MIN_SIZE_INVALID                                                   4157
 #define ERROR_WINDOW_MAX_SIZE_INVALID                                                   4158
+#define ERROR_PROPERTY_REQUIRES_INTERFACE                                               4159
 
 //
 //

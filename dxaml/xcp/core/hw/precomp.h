@@ -53,3 +53,5 @@
 #include "DCompSurface.h"
 
 #include "MUX-ETWEvents.h"
+
+#include "XamlProfilerTracing.h"

@@ -26,13 +26,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(VerifiesCatchesSyncronousDecode)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when source is set on an image before in live tree.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCatchesImageBrushInEllipse)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when using an image brush for ellipses.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 
@@ -44,25 +44,25 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(VerifyCatchesRedecodeAfterDecodeSizeSpecified)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when we redecode an image after DecodePixelWidth/Height set.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyNoFireAfterPlateauScalingChangedSmaller)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule doesn't fires when we dont redecode due to scaling change where we scaled smaller.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyNoFireAfterPlateauScalingChangedLarger)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires doesn't fire when redecode due to scaling change where we scaled larger.")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(VerifyCatchesSecondIncorrectDecode)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies the ImageDecodingRule fires when we redecode an image synchronously with a new source after it was first "
                                       "decoded correctly.")
                 TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
-                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+                TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
                 TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")
             END_TEST_METHOD()
 

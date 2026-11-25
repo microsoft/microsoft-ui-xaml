@@ -917,7 +917,7 @@ namespace Microsoft.UI.Xaml.Tests.Controls
         [TestMethod]
         [TestProperty("Description", "Verify Hold on grippers invokes Context Menu.")]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         [TestProperty("Ignore", "True")] // WinUI 3: TextBoxTests.VerifyGripperHoldBringsUpContextMenu is unreliable
         public void VerifyGripperHoldBringsUpContextMenu()
         {

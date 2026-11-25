@@ -76,6 +76,8 @@ public:
     // ancestor walk from a detached element silently finds nothing and no-ops.
     void SetOwningTableViewInternal(winrt::TableView const& owner);
     winrt::TableView GetOwningTableView() const;
+    void RefreshDensity();
+    void RefreshGridLines();
     void SetTerminalBottomGridLineSuppression(bool suppress);
 
     // Internal: single-subscription guard for the ToggleRequested handler.
@@ -92,9 +94,21 @@ public:
         return std::exchange(m_gestureFocusState, winrt::FocusState::Unfocused);
     }
 
+    // Internal: the projection entry this header was last prepared for. DataContext carries the
+    // public TableViewGroupInfo once prepared, so a re-prepare that cannot read the projection
+    // falls back to this instead.
+    winrt::IInspectable GroupEntryInternal() const { return m_groupEntry.get(); }
+    void SetGroupEntryInternal(winrt::IInspectable const& entry) { m_groupEntry.set(entry); }
+    void SyncGroupAutomationPeerInternal(winrt::AutomationPeer const& headerPeer, bool newBinding, winrt::hstring const& groupIdentity);
+    bool HasContentAutomationPeersInternal();
+    bool IsExpanderPartInternal(winrt::DependencyObject element);
+
 private:
     void UpdateVisualStates(bool useTransitions);
-    void UpdateTerminalBottomGridLineSuppression();
+    void RefreshContentAlignment();
+    void UpdateDefaultCountOpacity();
+    void TrackDefaultCount(winrt::UIElement const& root);
+    winrt::Size MeasureBand(winrt::Size const& availableSize);
 
     winrt::hstring GetGroupIdentity();
 
@@ -102,8 +116,19 @@ private:
     void SyncExpansionToContent();
 
     winrt::Control::IsEnabledChanged_revoker m_isEnabledChangedRevoker{};
-    winrt::UIElement::GettingFocus_revoker m_gettingFocusRevoker{};
+    winrt::UIElement::ContextRequested_revoker m_templateRootContextRequestedRevoker{};
+    winrt::FlyoutBase::Opening_revoker m_contextFlyoutOpeningRevoker{};
     tracker_ref<winrt::Border> m_gridLineBorder{ this };
+    tracker_ref<winrt::FrameworkElement> m_rowChrome{ this };
+    tracker_ref<winrt::Border> m_contentHost{ this };
+    tracker_ref<winrt::ContentPresenter> m_contentPresenter{ this };
+    tracker_ref<winrt::Border> m_expanderGutter{ this };
+    // The count in the default content template, cached per inspected ContentTemplateRoot.
+    tracker_ref<winrt::TextBlock> m_defaultCount{ this };
+    winrt::weak_ref<winrt::UIElement> m_inspectedContentRoot{ nullptr };
+    tracker_ref<winrt::DataTemplate> m_inspectedContentTemplate{ this };
+    tracker_ref<winrt::IInspectable> m_groupEntry{ this };
+    winrt::weak_ref<winrt::AutomationPeer> m_groupBinding{ nullptr };
 
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
@@ -113,6 +138,14 @@ private:
     winrt::FocusState m_gestureFocusState{ winrt::FocusState::Unfocused };
 
     winrt::weak_ref<winrt::TableView> m_owningTableView{ nullptr };
+    tracker_ref<winrt::Binding> m_densityMinHeightBinding{ this };
+    tracker_ref<winrt::Binding> m_densityFontSizeBinding{ this };
+    tracker_ref<winrt::Binding> m_densityPaddingBinding{ this };
+    tracker_ref<winrt::Style> m_densityStyle{ this };
+    bool m_densityStyleInspected{ false };
+    bool m_styleSetsMinHeight{ false };
+    bool m_styleSetsPadding{ false };
+    bool m_styleSetsFontSize{ false };
 
     // Set to true by PrepareGroupHeaderElement the first time ToggleRequested is subscribed.
     // Guards against double-hooking when the same container is prepared many times after pool

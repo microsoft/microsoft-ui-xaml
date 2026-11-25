@@ -1077,7 +1077,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"<Canvas x:Name='parentCanvas'"
                     L"        xmlns='http://schemas.microsoft.com/client/2007' "
                     L"        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' "
-                    L"        Width='480' Height='600' Background='Orange'>"
+                    L"        Width='480' Height='600' HorizontalAlignment='Left' Background='Orange'>"
                     L"    <Grid x:Name='LayoutRoot' Background='DarkOrchid' Width='480' Height='500'>"
                     L"         <Grid.ColumnDefinitions>"
                     L"             <ColumnDefinition Width='*' />"

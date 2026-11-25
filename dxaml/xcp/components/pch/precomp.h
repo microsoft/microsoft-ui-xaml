@@ -124,3 +124,5 @@
 #endif
 
 #include <dcomp.h>
+
+#include "XamlProfilerTracing.h"

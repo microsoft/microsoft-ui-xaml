@@ -968,4 +968,3 @@ namespace Microsoft.UI.Xaml.Tests.Foundation.Graphics.AccessKeys
         #endregion
     }
 }
-

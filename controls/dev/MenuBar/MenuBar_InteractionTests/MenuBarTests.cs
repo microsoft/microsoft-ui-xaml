@@ -319,8 +319,55 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 VerifyElement.NotFound("New Flyout Item", FindBy.Name);
 
+                FindElement.ById<Button>("ResetFlyoutItemsButton").Invoke();
+                Wait.ForIdle();
+                var fileButtonEC = new ExpandCollapseImplementation(fileButton);
+                Log.Comment($"Flyout state after reset: {fileButtonEC.ExpandCollapseState}");
+                fileButtonEC.Collapse();
+                Wait.ForIdle();
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("Replacement Flyout Item", FindBy.Name);
+                VerifyElement.NotFound("New", FindBy.Name);
+
                 // close flyout
                 fileButton.Invoke(); 
+                Wait.ForIdle();
+            }
+        }
+
+        [TestMethod]
+        public void ReplaceMenuFlyoutItemTest()
+        {
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var fileButton = FindElement.ById<Button>("FileItem");
+                var fileButtonEC = new ExpandCollapseImplementation(fileButton);
+
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("NewItem", FindBy.Name);
+                VerifyElement.Found("Open...", FindBy.Name);
+                VerifyElement.Found("Save", FindBy.Name);
+
+                fileButtonEC.Collapse();
+                Wait.ForIdle();
+                FindElement.ById<Button>("ReplaceFlyoutItemButton").Invoke();
+                Wait.ForIdle();
+
+                fileButton.Invoke();
+                Wait.ForIdle();
+                VerifyElement.Found("Replaced Open Item", FindBy.Name);
+                VerifyElement.NotFound("Open...", FindBy.Name);
+                VerifyElement.Found("NewItem", FindBy.Name);
+                VerifyElement.Found("Save", FindBy.Name);
+
+                fileButtonEC.Collapse();
                 Wait.ForIdle();
             }
         }

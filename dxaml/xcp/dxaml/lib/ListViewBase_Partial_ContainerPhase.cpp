@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "XamlTelemetry.h"
 #include "ListViewBase.g.h"
 #include "SelectorItem.g.h"
 #include "ContainerContentChangingEventArgs.g.h"
@@ -111,7 +112,7 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
     INT itemIndex,
     wf::Size measureSize)
 {
-    TraceSetupCCCBegin(itemIndex);
+    XamlTelemetry::SetupCCCBegin(container ? static_cast<DependencyObject*>(container)->GetHandle() : nullptr, itemIndex, GetHandle());
     ctl::ComPtr<xaml::IDependencyObject> itemAsDO;
 
     // this is being called by modern panels after the prepare has occurred.
@@ -317,7 +318,7 @@ ListViewBase::SetupContainerContentChangingAfterPrepare(
         IFC_RETURN(RegisterWorkFromArgs(argsConcrete.Get()));
     }
 
-    TraceSetupCCCEnd();
+    XamlTelemetry::SetupCCCEnd(container ? static_cast<DependencyObject*>(container)->GetHandle() : nullptr, GetHandle());
     return S_OK;
 }
 
