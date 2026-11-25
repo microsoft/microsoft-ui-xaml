@@ -456,9 +456,10 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
-    runtimeclass LoopingSelector
+    unsealed runtimeclass LoopingSelector
         : Microsoft.UI.Xaml.Controls.Control
     {
+        [method_name("CreateInstance")] LoopingSelector();
         Boolean ShouldLoop;
         Windows.Foundation.Collections.IVector<Object> Items;
         Int32 SelectedIndex;
