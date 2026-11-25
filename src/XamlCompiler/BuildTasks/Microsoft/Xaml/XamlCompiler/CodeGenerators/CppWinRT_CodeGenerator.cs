@@ -121,7 +121,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             {
                 foreach (var child in step.TrackingSteps.OfType<DependencyPropertyStep>())
                 {
-                    yield return $"__int64 tokenDPC_{child.CodeName}{{0}};";
+                    yield return $"std::int64_t tokenDPC_{child.CodeName}{{0}};";
                 }
             }
         }
