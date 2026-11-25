@@ -170,9 +170,10 @@ Rules:
   past it, the oldest events are deleted, and the summary says from which
   event the file is complete.
 - **GPU memory.** `memory` follows explicit element/visual/surface/update-texture
-  events without tree snapshots. Element attribution needs a runtime emitting
-  `WucVisualElementChanged`, rendering during collection, and the surface
-  events; older recordings can still give process texture/allocation data.
+  events without tree snapshots. Element attribution needs a fresh recording
+  with `UIElementId` on `VisualSurfaceChanged`, rendering during collection,
+  and `DCompSurfaceTextureObserved`. `VisualId` is the rendered primitive visual;
+  `UIElementId` is the core element. No separate ownership event is required.
   Honor the returned coverage, unresolved-link statuses and retention notes.
   A texture is an observed transient `BeginDraw` update resource, not proof
   of persistent backing storage or exclusive element ownership. Atlases and

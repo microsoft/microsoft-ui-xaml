@@ -81,30 +81,34 @@ public static partial class SessionFile
                  WHERE r.Seq = e.Seq AND o.Kind = 'Element' LIMIT 1)
             FROM Events e JOIN EventTypes t ON t.TypeId = e.TypeId
             WHERE t.Provider = 'XamlProfiler' AND t.TraceLogging = 1 {launcher} AND e.Qpc <= $qpc
-                AND t.Name IN ('WucVisualElementChanged', 'VisualSurfaceChanged', 'DCompSurfaceInit',
+                AND t.Name IN ('VisualSurfaceChanged', 'DCompSurfaceInit',
                     'DCompSurfaceMemoryChanged', 'DCompSurfaceTextureObserved')
             ORDER BY e.Qpc, e.Seq
             """, [("$qpc", at.Value)], (data, reader) =>
         {
             switch (data.Name)
             {
-                case "WucVisualElementChanged":
-                {
-                    var visual = MemoryHandle(data, "VisualId");
-                    // The renderer reports the new association before this primitive's brush/mask bindings.
-                    // Recycled or pointer-reused visuals must not inherit an earlier primitive's surfaces.
-                    bindings.Remove(visual);
-                    if (MemoryHandle(data, "UIElementId") == 0 || reader.IsDBNull(5))
-                        owners.Remove(visual);
-                    else
-                        owners[visual] = (reader.GetInt64(5), data.TimestampQpc);
-                    break;
-                }
                 case "VisualSurfaceChanged":
                 {
                     var visual = MemoryHandle(data, "VisualId");
                     var role = MemoryUInt(data, "Role");
                     var surface = MemoryHandle(data, "SurfaceId");
+                    var element = MemoryHandle(data, "UIElementId");
+                    if (surface != 0 && element == 0)
+                        throw new InvalidDataException("A nonempty VisualSurfaceChanged binding needs a nonzero UIElementId.");
+                    if (element == 0 || reader.IsDBNull(5))
+                    {
+                        owners.Remove(visual);
+                        bindings.Remove(visual);
+                        break;
+                    }
+                    var objectId = reader.GetInt64(5);
+                    // Both roles report the owner. Reset old roles only when the element lifetime changes.
+                    if (!owners.TryGetValue(visual, out var owner) || owner.ObjectId != objectId)
+                    {
+                        bindings.Remove(visual);
+                        owners[visual] = (objectId, data.TimestampQpc);
+                    }
                     if (surface == 0)
                     {
                         if (bindings.TryGetValue(visual, out var roles))
@@ -189,7 +193,8 @@ public static partial class SessionFile
             SELECT EXISTS (SELECT 1 FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId
                     WHERE t.Provider = 'Direct3D11' AND e.Qpc <= $qpc {launcher}),
                 EXISTS (SELECT 1 FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId
-                    WHERE t.Provider = 'XamlProfiler' AND t.TraceLogging = 1 AND t.Name = 'WucVisualElementChanged'
+                    WHERE t.Provider = 'XamlProfiler' AND t.TraceLogging = 1 AND t.Name = 'VisualSurfaceChanged'
+                        AND instr(',' || t.FieldNames || ',', ',UIElementId,') > 0
                         AND e.Qpc <= $qpc {launcher}),
                 EXISTS (SELECT 1 FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId
                     WHERE t.Provider = 'XamlProfiler' AND t.TraceLogging = 1 AND t.Name = 'VisualSurfaceChanged'

@@ -1659,10 +1659,13 @@ All four views accept `atMs` on `session.timeBase`; omit it for the latest
 stored event. Reads use one SQLite transaction, including during recording.
 Use two times to inspect changes; requests for deleted history or a time
 outside the stored recording fail explicitly. Element attribution requires
-a runtime that emits `WucVisualElementChanged` when rendering primitives,
-plus `VisualSurfaceChanged` and `DCompSurfaceTextureObserved`. Older captures
-still support process texture analysis when Direct3D11 events and the graphics
-index are present. No tree snapshot is required, and no new tables are added.
+a fresh recording with `VisualSurfaceChanged(VisualId, SurfaceId, Role, UIElementId)`
+and `DCompSurfaceTextureObserved`. `VisualId` identifies the rendered primitive
+visual; `UIElementId` is the current core element, not its handout visual.
+A zero surface clears only that brush/mask role for the current element;
+a zero element clears the primitive's ownership, and a new owner cannot
+inherit the old owner's bindings. No separate ownership event or tree
+snapshot is required, and no new tables are added.
 Association events are subject to the same rolling retention as other events;
 missing history is not reconstructed.
 

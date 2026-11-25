@@ -22,6 +22,7 @@ internal static class MemoryToolTests
         new("memory.chain", Chain),
         new("memory.time", Time),
         new("memory.associations", Associations),
+        new("memory.surface-clears", SurfaceClears),
         new("memory.resource-reuse", ResourceReuse),
         new("memory.element-reuse", ElementReuse),
         new("memory.coverage", Coverage),
@@ -83,7 +84,8 @@ internal static class MemoryToolTests
     {
         var events = Events().ToList();
         events.AddRange([
-            Owner(7, Visual, 0), Owner(8, Visual + 1, 0),
+            Bind(7, Visual, 0, 0, 0), Bind(7.1, Visual, 0, 1, 0),
+            Bind(8, Visual + 1, 0, 0, 0), Bind(8.1, Visual + 1, 0, 1, 0),
             Tl(9, UiThread, XamlProvider.Xaml, "End")
         ]);
         var path = WriteMemory(context, events);
@@ -101,11 +103,11 @@ internal static class MemoryToolTests
     {
         var events = Events().ToList();
         events.AddRange([
-            Owner(7, Visual, 0x2000),
-            Bind(8, Visual, Surface, 0),
+            Bind(7, Visual, 0, 0, 0x2000),
+            Bind(8, Visual, Surface, 0, 0x2000),
             Init(9, Surface),
             Observe(9.2, Surface),
-            Bind(9.3, Visual, Surface, 0),
+            Bind(9.3, Visual, Surface, 0, 0x2000),
             Tl(10, UiThread, XamlProvider.XamlProfiler, "DCompSurfaceMemoryChanged",
                 F("SurfaceId", Surface), F("IsAllocation", false)),
             Tl(11, UiThread, XamlProvider.Xaml, "End")
@@ -113,12 +115,34 @@ internal static class MemoryToolTests
         var path = WriteMemory(context, events);
         var reused = Run(() => MemoryTools.Memory(sessionPath: path, address: "0x1000", atMs: 7.5));
         Expect.Equal(0L, reused.Long("total"), "A reassigned visual does not retain its earlier element or surface bindings");
+        Expect.Equal(1L, Run(() => MemoryTools.Memory(sessionPath: path, address: "0x2000", atMs: 7.5)).Long("total"),
+            "The new owner must not inherit the visual's old mask binding");
         Expect.Equal(0L, Run(() => MemoryTools.Memory(sessionPath: path, atMs: 9.1)).Long("observedLinks"),
             "A reused surface address invalidates previous observations and bindings");
         Expect.Equal(1L, Run(() => MemoryTools.Memory(sessionPath: path, atMs: 9.5)).Long("observedLinks"),
             "Only new surface evidence restores the chain");
         Expect.Equal(0L, Run(() => MemoryTools.Memory(sessionPath: path)).Long("observedLinks"),
             "Surface allocation release invalidates its update observations");
+    }
+
+    private static void SurfaceClears(McpTestContext context)
+    {
+        var events = Events().ToList();
+        events.AddRange([
+            Bind(7, Visual, 0, 0, 0x1000),
+            Bind(8, Visual, Surface, 0, 0x1000),
+            Bind(9, Visual, 0, 1, 0x1000),
+            Tl(10, UiThread, XamlProvider.Xaml, "End")
+        ]);
+        var path = WriteMemory(context, events);
+        var mask = Run(() => MemoryTools.Memory(sessionPath: path, address: "0x1000", atMs: 7.5));
+        Expect.Equal(1L, mask.Long("total"), "Clearing the brush preserves the current owner's mask");
+        Expect.Equal("Mask", mask.Items("links").Single().Text("role"), "The surviving surface role");
+        Expect.Equal(2L, Run(() => MemoryTools.Memory(sessionPath: path, address: "0x1000", atMs: 8.5)).Long("total"),
+            "Updating a brush for the same owner must not discard the mask");
+        var brush = Run(() => MemoryTools.Memory(sessionPath: path, address: "0x1000", atMs: 9.5));
+        Expect.Equal(1L, brush.Long("total"), "Clearing the mask preserves the current owner's brush");
+        Expect.Equal("Brush", brush.Items("links").Single().Text("role"), "The restored brush remains attributed");
     }
 
     private static void ResourceReuse(McpTestContext context)
@@ -150,7 +174,7 @@ internal static class MemoryToolTests
         events.AddRange([
             LeftTree(7, 0x1000, 0),
             Enter(8, 0x1000, "Replacement", ButtonType, 202),
-            Owner(8.1, Visual, 0x1000), Bind(8.2, Visual, Surface, 0),
+            Bind(8.2, Visual, Surface, 0, 0x1000),
             Tl(9, UiThread, XamlProvider.Xaml, "End")
         ]);
         var path = WriteMemory(context, events);
@@ -166,11 +190,11 @@ internal static class MemoryToolTests
 
     private static void Coverage(McpTestContext context)
     {
-        var missing = WriteMemory(context, Events().Where(item => item.Name != "WucVisualElementChanged"));
+        var missing = WriteMemory(context, Events().Where(item => item.Name != "VisualSurfaceChanged"));
         var partial = Run(() => MemoryTools.Memory(sessionPath: missing));
-        Expect.Equal(1L, partial.Property("totals").Long("textures"), "Older runtimes still give process textures");
+        Expect.Equal(1L, partial.Property("totals").Long("textures"), "Process textures do not require primitive bindings");
         Expect.Equal(0L, partial.Long("observedLinks"), "No ownership inferred from timing or the visual tree");
-        HasNote(partial, "Element attribution needs a runtime");
+        HasNote(partial, "Element attribution needs a fresh capture");
         var noGpu = Run(() => MemoryTools.Memory(sessionPath: WriteMain(context)));
         HasNote(noGpu, "Missing textures are not zero GPU usage");
         var empty = Write(Path.Combine(context.TempDirectory, "empty.sqlite"), []);
@@ -230,7 +254,10 @@ internal static class MemoryToolTests
         var first = Run(() => MemoryTools.Memory(sessionPath: path));
         Expect.Equal(3L, first.Long("observedLinks"), "Live transaction has the complete initial chain");
         HasNote(first, "still being recorded");
-        recording.Add([Owner(7, Visual, 0), Owner(8, Visual + 1, 0)]);
+        recording.Add([
+            Bind(7, Visual, 0, 0, 0), Bind(7.1, Visual, 0, 1, 0),
+            Bind(8, Visual + 1, 0, 0, 0), Bind(8.1, Visual + 1, 0, 1, 0)
+        ]);
         recording.WaitUntilStored();
         Expect.Equal(0L, Run(() => MemoryTools.Memory(sessionPath: path)).Long("observedLinks"), "A fresh read sees committed updates");
         recording.Close(EndReason);
@@ -251,6 +278,12 @@ internal static class MemoryToolTests
         foreach (var time in new[] { -1d, double.NaN, double.PositiveInfinity })
             Contains(Error(() => MemoryTools.Memory(sessionPath: path, atMs: time)), "Invalid time", "finite and nonnegative");
         Contains(Error(() => MemoryTools.Memory(sessionPath: path, atMs: 999)), "Future time", "outside the stored recording");
+        var missingOwner = Write(Path.Combine(context.TempDirectory, "missing-owner.sqlite"),
+            Events().Select(item => item.Name == "VisualSurfaceChanged"
+            ? item with { Fields = item.Fields.Where(field => field.Name != "UIElementId").ToArray() } : item));
+        Contains(Error(() => MemoryTools.Memory(sessionPath: missingOwner)), "Missing owner field", "UIElementId");
+        var unowned = Write(Path.Combine(context.TempDirectory, "unowned.sqlite"), Events().Append(Bind(7, Visual, Surface, 0, 0)));
+        Contains(Error(() => MemoryTools.Memory(sessionPath: unowned)), "Unowned surface", "nonzero UIElementId");
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         try
@@ -272,16 +305,14 @@ internal static class MemoryToolTests
         Allocation(2.2, 36, 100, 1000, 11),
         Init(3, Surface), Observe(3.1, Surface),
         Init(3.2, Surface + 1), Observe(3.3, Surface + 1),
-        Owner(4, Visual, 0x1000), Bind(4.1, Visual, Surface, 0), Bind(4.2, Visual, Surface + 1, 1),
-        Owner(5, Visual + 1, 0x2000), Bind(5.1, Visual + 1, Surface, 0),
+        Bind(4.1, Visual, Surface, 0, 0x1000), Bind(4.2, Visual, Surface + 1, 1, 0x1000),
+        Bind(5.1, Visual + 1, Surface, 0, 0x2000),
         Tl(6, UiThread, XamlProvider.Xaml, "End")
     ];
 
-    private static FixtureEvent Owner(double ms, ulong visual, ulong element) =>
-        Tl(ms, UiThread, XamlProvider.XamlProfiler, "WucVisualElementChanged", F("VisualId", visual), F("UIElementId", element));
-
-    private static FixtureEvent Bind(double ms, ulong visual, ulong surface, uint role) =>
-        Tl(ms, UiThread, XamlProvider.XamlProfiler, "VisualSurfaceChanged", F("VisualId", visual), F("SurfaceId", surface), F("Role", role));
+    private static FixtureEvent Bind(double ms, ulong visual, ulong surface, uint role, ulong element) =>
+        Tl(ms, UiThread, XamlProvider.XamlProfiler, "VisualSurfaceChanged",
+            F("VisualId", visual), F("SurfaceId", surface), F("Role", role), F("UIElementId", element));
 
     private static FixtureEvent Init(double ms, ulong surface) =>
         Tl(ms, UiThread, XamlProvider.XamlProfiler, "DCompSurfaceInit", F("SurfaceId", surface));
@@ -294,11 +325,13 @@ internal static class MemoryToolTests
     private static FixtureEvent Texture(double ms, int id, uint resource = 11) =>
         Manifest(ms, UiThread, XamlProvider.Direct3D11, id == 13 ? "Texture2D/Stop" : "Texture2D/Start", id == 13 ? 2 : 1,
             F("pID3D11Resource", Resource), F("pID3D11Device", 10UL), F("hKMResource", resource),
-            F("Width", 64u), F("Height", 64u), F("Format", 28u)) with { EventId = id, Version = 0 };
+            F("Width", 64u), F("Height", 64u), F("Format", 28u)) with
+        { EventId = id, Version = 0 };
 
     private static FixtureEvent Allocation(double ms, int id, ulong handle, ulong global, uint resource, ulong size = 0) =>
         Manifest(ms, KernelThread, XamlProvider.DxgKrnl, id < 36 ? "AdapterAllocation" : "DeviceAllocation",
             (id - 33) % 3 + 1, F("hProcessId", (ulong)ProcessId), F("hVidMmAlloc", handle),
             F("hVidMmGlobalAlloc", global), F("hDevice", 10UL), F("pDxgAdapter", 20UL),
-            F("hThunkResource", (ulong)resource), F("allocSize", size)) with { EventId = id, Version = id < 36 ? 3 : 2 };
+            F("hThunkResource", (ulong)resource), F("allocSize", size)) with
+        { EventId = id, Version = id < 36 ? 3 : 2 };
 }

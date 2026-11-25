@@ -24,8 +24,8 @@ internal static class MemoryTools
         "session, at the latest stored event or atMs on its time base. Views: summary (default), elements (ranked by known " +
         "linked allocation bytes), element (a page of one element's explicit links), textures (a page of process texture " +
         "lifetimes open at that time, including those with no element link). Element objectIds and addresses are the same " +
-        "as the objects tool's. Element attribution requires the runtime's WucVisualElementChanged event; older captures " +
-        "still give texture/allocation data and say what is missing. Update textures can be transient and shared atlases: " +
+        "as the objects tool's. Element attribution requires fresh recordings with UIElementId on the runtime's " +
+        "VisualSurfaceChanged event. Update textures can be transient and shared atlases: " +
         "linked allocation bytes are NOT exclusive per-element bytes, resident VRAM, or proof of a leak. Shared adapter " +
         "allocations are counted once within each subtotal; never add per-element subtotals together. Byte amounts are " +
         "exact decimal strings; missing sizes remain null. All results give coverage and limitations.")]
@@ -245,8 +245,8 @@ internal static class MemoryTools
         if (!memory.Coverage.Direct3D)
             notes.Add("No retained Direct3D11 resource events precede this time. Missing textures are not zero GPU usage.");
         if (!memory.Coverage.ElementVisuals)
-            notes.Add("No retained WucVisualElementChanged events precede this time. Element attribution needs a runtime " +
-                "with that bridge and rendering after collection starts; older captures still support process texture analysis.");
+            notes.Add("No retained VisualSurfaceChanged events with UIElementId precede this time. Element attribution needs a " +
+                "fresh capture with the updated runtime, the profiler provider enabled, and rendering after collection starts.");
         if (!memory.Coverage.VisualSurfaces)
             notes.Add("No retained VisualSurfaceChanged events precede this time; visual-to-surface attribution is unavailable.");
         if (!memory.Coverage.SurfaceTextures)

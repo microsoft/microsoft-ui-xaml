@@ -231,12 +231,6 @@ public:
         uint32_t, Role,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    // The element rendering this primitive; a zero element clears the association.
-    DEFINE_TRACELOGGING_EVENT_PARAM2(WucVisualElementChanged,
-        uint64_t, VisualId,
-        uint64_t, UIElementId,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
 };
 
 inline void NTAPI XamlProfilerLogging::Callback(
