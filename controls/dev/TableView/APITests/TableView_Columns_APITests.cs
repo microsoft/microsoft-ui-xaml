@@ -1685,6 +1685,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a GenerateElementCore throw from a posted cell regeneration does not escape to the dispatcher, and a later change still regenerates the column.")]
+        public void VerifyThrowingPostedCellRegenerationIsContained()
+        {
+            TableView tableView = null;
+            FailingContentColumn column = null;
+            int unhandled = 0;
+            Microsoft.UI.Xaml.UnhandledExceptionEventHandler onUnhandled = (s, e) => { unhandled++; e.Handled = true; };
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new FailingContentColumn { Header = "F" };
+                tableView = CreateTableView(headers: new[] { "Name" });
+                tableView.Columns.Add(column);
+                Application.Current.UnhandledException += onUnhandled;
+                LoadContent(tableView);
+            });
+
+            try
+            {
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() => column.Change("B", fail: true));
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsGreaterThan(column.Failures, 0, "Precondition: the posted regeneration must reach the throwing GenerateElementCore.");
+                    Verify.AreEqual(0, unhandled, "A throw from a posted regeneration must not escape to the dispatcher.");
+                    column.Change("C", fail: false);
+                });
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyColumnShows(tableView, 1, "C", "after a change that follows the failed regeneration");
+                    Verify.AreEqual(0, unhandled, "No exception may escape.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.UnhandledException -= onUnhandled);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a GenerateElementCore throw from a cell regeneration released after an edit closes does not escape to the dispatcher, and a later change still regenerates the column.")]
+        public void VerifyThrowingCellRegenerationReleasedAfterEditIsContained()
+        {
+            var items = MakeEditableItems();
+            TableView tableView = null;
+            FailingContentColumn column = null;
+            int unhandled = 0;
+            bool veto = true;
+            Microsoft.UI.Xaml.UnhandledExceptionEventHandler onUnhandled = (s, e) => { unhandled++; e.Handled = true; };
+
+            RunOnUIThread.Execute(() =>
+            {
+                column = new FailingContentColumn { Header = "F" };
+                tableView = CreateTableView(items, headers: new[] { "Name", "Role" }, width: 500, height: 300);
+                tableView.IsReadOnly = false;
+                tableView.Columns.Add(column);
+                tableView.CellEditEnding += (s, e) => e.Cancel = veto;
+                Application.Current.UnhandledException += onUnhandled;
+                LoadContent(tableView);
+            });
+
+            try
+            {
+                SettleLayout(tableView);
+                RunOnUIThread.Execute(() =>
+                {
+                    CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Zed");
+                    veto = false;
+                    Verify.IsTrue(tableView.IsEditing, "Precondition: the vetoed commit keeps the edit open.");
+                    column.Change("B", fail: true);
+                });
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsTrue(tableView.IsEditing, "Precondition: the change waits for the open edit.");
+                    Verify.AreEqual(0, column.Failures, "Precondition: the regeneration is held by the open edit.");
+                    Verify.IsTrue(tableView.CommitEdit(), "The edit must commit.");
+                });
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsGreaterThan(column.Failures, 0, "Precondition: the released regeneration must reach the throwing GenerateElementCore.");
+                    Verify.AreEqual(0, unhandled, "A throw from a released regeneration must not escape to the dispatcher.");
+                    Verify.AreEqual("Zed", items[0].Name, "The commit must write the pending value.");
+                    column.Change("C", fail: false);
+                });
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    VerifyColumnShows(tableView, 2, "C", "after a change that follows the failed regeneration");
+                    Verify.AreEqual(0, unhandled, "No exception may escape.");
+                });
+            }
+            finally
+            {
+                RunOnUIThread.Execute(() => Application.Current.UnhandledException -= onUnhandled);
+            }
+        }
+
+        private static void VerifyColumnShows(TableView tableView, int cellIndex, string text, string context)
+        {
+            var rows = GetRealizedRows(tableView);
+            Verify.IsGreaterThan(rows.Count, 0, $"At least one row should be realized ({context}).");
+            foreach (var row in rows)
+            {
+                Verify.AreEqual(text, (GetCellContent(GetRowCell(row, cellIndex)) as TextBlock)?.Text, $"Every realized cell must show the new content ({context}).");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies NotifyCellContentChanged called while only a cell's content is being measured is deferred: no cell is regenerated inside layout, and repeated calls collapse to one regeneration afterwards.")]
         public void VerifyNotifyCellContentChangedDuringMeasureIsDeferred()
         {
@@ -1927,6 +2044,32 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         {
             _column.OnCellArrange();
             return base.ArrangeOverride(finalSize);
+        }
+    }
+
+    // A derived column whose GenerateElementCore throws while the last change asked it to.
+    internal sealed partial class FailingContentColumn : TableViewColumn
+    {
+        private string _text = "A";
+        private bool _fail;
+
+        public int Failures { get; private set; }
+
+        public void Change(string text, bool fail)
+        {
+            _text = text;
+            _fail = fail;
+            NotifyCellContentChanged();
+        }
+
+        protected override FrameworkElement GenerateElementCore(object dataItem)
+        {
+            if (_fail)
+            {
+                Failures++;
+                throw new InvalidOperationException("GenerateElementCore fault");
+            }
+            return new TextBlock { Text = _text };
         }
     }
 

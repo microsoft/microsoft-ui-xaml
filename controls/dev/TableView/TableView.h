@@ -359,6 +359,7 @@ public:
     // Posts (or, outside a live tree, runs) the regeneration without ending the edited column's edit.
     void ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth);
     void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
+    void RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column);
     void EndEditOfChangedColumn(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so

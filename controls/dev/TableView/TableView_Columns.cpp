@@ -527,7 +527,7 @@ void TableView::ScheduleColumnCellRegeneration(const winrt::TableViewColumn& col
                 // The column may have moved to another table meanwhile; its current owner regenerates.
                 if (auto const owner = liveColumnImpl->GetOwningTableView())
                 {
-                    winrt::get_self<TableView>(owner)->RegenerateColumnCells(liveColumn, false /* resetAutoWidth */);
+                    winrt::get_self<TableView>(owner)->RegenerateColumnCellsFromPost(liveColumn);
                 }
                 else
                 {
@@ -590,9 +590,21 @@ void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool
     resetAutoWidth = columnImpl->TakeQueuedCellContentChangeInternal() || resetAutoWidth;
 
     // Rebuild realized rows so the new CellTemplate is applied; virtualized rows pick it up on realization.
-    ForEachRealizedRow([](winrt::TableViewRow const& row)
+    // GenerateElementCore is app code: a throw from one row does not skip the others.
+    std::exception_ptr failure;
+    ForEachRealizedRow([&failure](winrt::TableViewRow const& row)
     {
-        winrt::get_self<TableViewRow>(row)->RefreshCells();
+        try
+        {
+            winrt::get_self<TableViewRow>(row)->RefreshCells();
+        }
+        catch (...)
+        {
+            if (!failure)
+            {
+                failure = std::current_exception();
+            }
+        }
     });
 
     // The new template can be narrower or wider than the old cells: recompute only THIS column's Auto
@@ -605,6 +617,28 @@ void TableView::RegenerateColumnCells(const winrt::TableViewColumn& column, bool
     }
     InvalidateMeasure();
     RefreshCellFocusLevelsInternal();
+
+    if (failure)
+    {
+        // The change has not reached every cell, so it stays pending for the next regeneration.
+        columnImpl->QueueCellContentChangeInternal(resetAutoWidth);
+        std::rethrow_exception(failure);
+    }
+}
+
+// Posted regenerations run app code (GenerateElementCore) with no caller to receive a throw, so,
+// like TableViewRow::QueueRebuildCells, they never let one escape to the dispatcher.
+void TableView::RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column)
+{
+    try
+    {
+        RegenerateColumnCells(column, false /* resetAutoWidth */);
+    }
+    catch (...)
+    {
+        TVDiag::LogRetailF(L"[TableView] A posted cell regeneration failed (HRESULT 0x%08X).",
+            static_cast<unsigned int>(winrt::to_hresult()));
+    }
 }
 
 void TableView::HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column)
@@ -659,7 +693,7 @@ void TableView::ReleaseCellRegenerationsAfterEdit()
                 }
                 else
                 {
-                    strongThis->RegenerateColumnCells(column, false /* resetAutoWidth */);
+                    strongThis->RegenerateColumnCellsFromPost(column);
                 }
             }
         });
