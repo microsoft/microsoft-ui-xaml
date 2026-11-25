@@ -692,12 +692,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        // Scenario: Single selection (Node mode including null-Content node and reentrant veto, plus Content mode
-        //   with nested items); toggle TreeViewItem.IsSelected (Ctrl + Left Click path) and clear ItemsSource.
-        // Expected: Inside SelectionChanged, SelectedNode/SelectedNodes and SelectedItem/SelectedItems already match
-        //   the newly selected or deselected row, and reentrant handler overrides are preserved.
-        // Failure means: TreeView::OnListControlSelectionChanged raises SelectionChanged before syncing SelectedNode
-        //   from m_listControl.SelectedIndex() and SelectedItem, or overwrites reentrant handler changes afterward.
+        // Scenario: Single selection (Node mode including null-Content node and reentrant veto, Content mode
+        //   with nested items, VectorChanged/SelectedItemProperty reentrant redirects and node removal, and
+        //   child removal/replacement under a selected parent); toggle TreeViewItem.IsSelected and clear ItemsSource.
+        // Expected: SelectionChanged observes updated SelectedNode/SelectedNodes and SelectedItem/SelectedItems;
+        //   reentrant redirects coalesce into one settled notification; removing unselected children in Single mode
+        //   preserves parent selection while removing the selected node clears it.
+        // Failure means: TreeView::OnListControlSelectionChanged or ViewModel::SelectedNodeChildrenChanged failed to
+        //   synchronize or coalesce single-selection state across reentrant callbacks.
         [TestMethod]
         public void TreeViewSelectedNodeInSelectionChangedSingleMode()
         {
@@ -829,6 +831,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var reentrantTvi0 = (TreeViewItem)reentrantTreeView.ContainerFromNode(reentrantNode0);
                 var reentrantTvi1 = (TreeViewItem)reentrantTreeView.ContainerFromNode(reentrantNode1);
 
+                var reentrantNotifications = new List<(object[] Added, object[] Removed, object SelectedItem, TreeViewNode SelectedNode)>();
+                reentrantTreeView.SelectionChanged += (s, e) =>
+                {
+                    reentrantNotifications.Add((e.AddedItems.ToArray(), e.RemovedItems.ToArray(), s.SelectedItem, s.SelectedNode));
+                };
+
                 int vectorCallbackMode = 1; // 1 = clear on first insert, 2 = redirect to node1 on node0 insert
                 var observableSelectedItems = (IObservableVector<object>)reentrantTreeView.SelectedItems;
                 observableSelectedItems.VectorChanged += (s, e) =>
@@ -854,6 +862,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(reentrantTreeView.SelectedItem);
                 Verify.AreEqual(0, reentrantTreeView.SelectedItems.Count);
                 Verify.IsFalse(reentrantTvi0.IsSelected);
+                Verify.AreEqual(0, reentrantNotifications.Count);
 
                 vectorCallbackMode = 2;
                 reentrantTvi0.IsSelected = true;
@@ -863,6 +872,198 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(1, reentrantTreeView.SelectedItems.Count);
                 Verify.IsFalse(reentrantTvi0.IsSelected);
                 Verify.IsTrue(reentrantTvi1.IsSelected);
+                Verify.AreEqual(1, reentrantNotifications.Count);
+                Verify.AreEqual(1, reentrantNotifications[0].Added.Length);
+                Verify.AreEqual(reentrantItems[1], reentrantNotifications[0].Added[0]);
+                Verify.AreEqual(0, reentrantNotifications[0].Removed.Length);
+                Verify.AreEqual(reentrantItems[1], reentrantNotifications[0].SelectedItem);
+                Verify.AreEqual(reentrantNode1, reentrantNotifications[0].SelectedNode);
+
+                // SelectedItem property-changed callback redirecting A -> B must coalesce into a single
+                // SelectionChanged notification for the settled selection rather than raising A last.
+                var redirectTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var redirectItems = CreateTreeViewItemsSource();
+                redirectItems.Add(new TreeViewItemSource { Content = "3" });
+                redirectTreeView.ItemsSource = redirectItems;
+                Content = redirectTreeView;
+                Content.UpdateLayout();
+
+                var redirectNode0 = redirectTreeView.RootNodes[0];
+                var redirectNode1 = redirectTreeView.RootNodes[1];
+                var redirectNode2 = redirectTreeView.RootNodes[2];
+                var redirectTvi0 = (TreeViewItem)redirectTreeView.ContainerFromNode(redirectNode0);
+                var redirectTvi1 = (TreeViewItem)redirectTreeView.ContainerFromNode(redirectNode1);
+                var redirectTvi2 = (TreeViewItem)redirectTreeView.ContainerFromNode(redirectNode2);
+
+                var redirectNotifications = new List<(object[] Added, object[] Removed, object SelectedItem, TreeViewNode SelectedNode)>();
+                redirectTreeView.SelectionChanged += (s, e) =>
+                {
+                    redirectNotifications.Add((e.AddedItems.ToArray(), e.RemovedItems.ToArray(), s.SelectedItem, s.SelectedNode));
+                };
+
+                object redirectTargetItem = redirectItems[1];
+                long selectedItemCallbackToken = redirectTreeView.RegisterPropertyChangedCallback(
+                    TreeView.SelectedItemProperty,
+                    (sender, dp) =>
+                    {
+                        var tv = (TreeView)sender;
+                        if (redirectTargetItem != null && ReferenceEquals(tv.SelectedItem, redirectItems[0]))
+                        {
+                            var target = redirectTargetItem;
+                            redirectTargetItem = null;
+                            tv.SelectedItem = target;
+                        }
+                    });
+
+                try
+                {
+                    // Initial empty -> item0 redirected to item1: single event with Added=[item1], Removed=[].
+                    redirectTvi0.IsSelected = true;
+                    Verify.AreEqual(1, redirectNotifications.Count);
+                    Verify.AreEqual(1, redirectNotifications[0].Added.Length);
+                    Verify.AreEqual(redirectItems[1], redirectNotifications[0].Added[0]);
+                    Verify.AreEqual(0, redirectNotifications[0].Removed.Length);
+                    Verify.AreEqual(redirectItems[1], redirectNotifications[0].SelectedItem);
+                    Verify.AreEqual(redirectNode1, redirectNotifications[0].SelectedNode);
+                    Verify.IsFalse(redirectTvi0.IsSelected);
+                    Verify.IsTrue(redirectTvi1.IsSelected);
+
+                    // Switching item1 -> item0 redirected to item2: single event with Added=[item2], Removed=[item1].
+                    redirectNotifications.Clear();
+                    redirectTargetItem = redirectItems[2];
+                    redirectTvi0.IsSelected = true;
+                    Verify.AreEqual(1, redirectNotifications.Count);
+                    Verify.AreEqual(1, redirectNotifications[0].Added.Length);
+                    Verify.AreEqual(redirectItems[2], redirectNotifications[0].Added[0]);
+                    Verify.AreEqual(1, redirectNotifications[0].Removed.Length);
+                    Verify.AreEqual(redirectItems[1], redirectNotifications[0].Removed[0]);
+                    Verify.AreEqual(redirectItems[2], redirectNotifications[0].SelectedItem);
+                    Verify.AreEqual(redirectNode2, redirectNotifications[0].SelectedNode);
+                    Verify.IsFalse(redirectTvi0.IsSelected);
+                    Verify.IsFalse(redirectTvi1.IsSelected);
+                    Verify.IsTrue(redirectTvi2.IsSelected);
+
+                    // Switching item2 -> item0 redirected back to item2: net selection unchanged, so no SelectionChanged.
+                    redirectNotifications.Clear();
+                    redirectTargetItem = redirectItems[2];
+                    redirectTvi0.IsSelected = true;
+                    Verify.AreEqual(0, redirectNotifications.Count);
+                    Verify.AreEqual(redirectItems[2], redirectTreeView.SelectedItem);
+                    Verify.AreEqual(redirectNode2, redirectTreeView.SelectedNode);
+                    Verify.IsFalse(redirectTvi0.IsSelected);
+                    Verify.IsTrue(redirectTvi2.IsSelected);
+                }
+                finally
+                {
+                    redirectTreeView.UnregisterPropertyChangedCallback(TreeView.SelectedItemProperty, selectedItemCallbackToken);
+                }
+
+                // In Single mode, removing or replacing unselected children of a selected parent inside a selection
+                // callback must not deselect the parent or select replacement children via multi-select aggregation.
+                var singleParentTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var parentNode = new TreeViewNode { Content = "Parent", IsExpanded = true };
+                var childNodeA = new TreeViewNode { Content = "ChildA" };
+                var childNodeB = new TreeViewNode { Content = "ChildB" };
+                parentNode.Children.Add(childNodeA);
+                parentNode.Children.Add(childNodeB);
+                singleParentTreeView.RootNodes.Add(parentNode);
+                Content = singleParentTreeView;
+                Content.UpdateLayout();
+
+                bool removeChildInSelectionCallback = true;
+                var observableSelectedNodes = (IObservableVector<TreeViewNode>)singleParentTreeView.SelectedNodes;
+                observableSelectedNodes.VectorChanged += (s, e) =>
+                {
+                    if (removeChildInSelectionCallback &&
+                        e.CollectionChange == CollectionChange.ItemInserted &&
+                        ReferenceEquals(singleParentTreeView.SelectedNode, parentNode))
+                    {
+                        removeChildInSelectionCallback = false;
+                        parentNode.Children.Remove(childNodeA);
+                    }
+                };
+
+                var parentTvi = (TreeViewItem)singleParentTreeView.ContainerFromNode(parentNode);
+                parentTvi.IsSelected = true;
+                Verify.AreEqual(1, parentNode.Children.Count);
+                Verify.AreEqual(parentNode, singleParentTreeView.SelectedNode);
+                Verify.AreEqual(1, singleParentTreeView.SelectedNodes.Count);
+                Verify.AreEqual(parentNode, singleParentTreeView.SelectedItem);
+                Verify.IsTrue(parentTvi.IsSelected);
+
+                var replacementChild = new TreeViewNode { Content = "ChildReplacement" };
+                parentNode.Children[0] = replacementChild;
+                Verify.AreEqual(parentNode, singleParentTreeView.SelectedNode);
+                Verify.AreEqual(1, singleParentTreeView.SelectedNodes.Count);
+                Verify.AreEqual(parentNode, singleParentTreeView.SelectedItem);
+                Verify.IsTrue(parentTvi.IsSelected);
+
+                // Removing the newly selected root node inside SelectedNodes.VectorChanged must clear selection
+                // rather than leaving SelectedNode/SelectedItem pointing at the detached node.
+                var detachOnSelectTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var detachNode0 = new TreeViewNode { Content = "Detach0" };
+                var detachNode1 = new TreeViewNode { Content = "Detach1" };
+                detachOnSelectTreeView.RootNodes.Add(detachNode0);
+                detachOnSelectTreeView.RootNodes.Add(detachNode1);
+                Content = detachOnSelectTreeView;
+                Content.UpdateLayout();
+
+                int detachSelectionChangedCount = 0;
+                detachOnSelectTreeView.SelectionChanged += (s, e) => detachSelectionChangedCount++;
+                ((IObservableVector<TreeViewNode>)detachOnSelectTreeView.SelectedNodes).VectorChanged += (s, e) =>
+                {
+                    if (e.CollectionChange == CollectionChange.ItemInserted &&
+                        ReferenceEquals(detachOnSelectTreeView.SelectedNode, detachNode0))
+                    {
+                        detachOnSelectTreeView.RootNodes.Remove(detachNode0);
+                    }
+                };
+
+                var detachTvi0 = (TreeViewItem)detachOnSelectTreeView.ContainerFromNode(detachNode0);
+                detachTvi0.IsSelected = true;
+                Verify.IsNull(detachOnSelectTreeView.SelectedNode);
+                Verify.AreEqual(0, detachOnSelectTreeView.SelectedNodes.Count);
+                Verify.IsNull(detachOnSelectTreeView.SelectedItem);
+                Verify.AreEqual(0, detachOnSelectTreeView.SelectedItems.Count);
+                Verify.AreEqual(0, detachSelectionChangedCount);
+
+                // Redirecting via SelectedItem inside SelectedNodes.VectorChanged must keep SelectedNodes and
+                // SelectedItems synchronized and emit one coalesced notification.
+                var crossVectorTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var crossItems = CreateTreeViewItemsSource();
+                crossVectorTreeView.ItemsSource = crossItems;
+                Content = crossVectorTreeView;
+                Content.UpdateLayout();
+
+                int crossEventCount = 0;
+                object crossAddedItem = null;
+                crossVectorTreeView.SelectionChanged += (s, e) =>
+                {
+                    crossEventCount++;
+                    crossAddedItem = e.AddedItems.Count > 0 ? e.AddedItems[0] : null;
+                };
+
+                bool redirectCross = true;
+                ((IObservableVector<TreeViewNode>)crossVectorTreeView.SelectedNodes).VectorChanged += (s, e) =>
+                {
+                    if (redirectCross &&
+                        e.CollectionChange == CollectionChange.ItemInserted &&
+                        ReferenceEquals(crossVectorTreeView.SelectedNode, crossVectorTreeView.RootNodes[0]))
+                    {
+                        redirectCross = false;
+                        crossVectorTreeView.SelectedItem = crossItems[1];
+                    }
+                };
+
+                var crossTvi0 = (TreeViewItem)crossVectorTreeView.ContainerFromNode(crossVectorTreeView.RootNodes[0]);
+                var crossTvi1 = (TreeViewItem)crossVectorTreeView.ContainerFromNode(crossVectorTreeView.RootNodes[1]);
+                crossTvi0.IsSelected = true;
+                Verify.AreEqual(1, crossEventCount);
+                Verify.AreEqual(crossItems[1], crossAddedItem);
+                Verify.AreEqual(crossVectorTreeView.RootNodes[1], crossVectorTreeView.SelectedNode);
+                Verify.AreEqual(crossItems[1], crossVectorTreeView.SelectedItem);
+                Verify.IsFalse(crossTvi0.IsSelected);
+                Verify.IsTrue(crossTvi1.IsSelected);
             });
         }
 

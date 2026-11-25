@@ -310,31 +310,147 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
 {
     if (SelectionMode() == winrt::TreeViewSelectionMode::Single)
     {
-        if (const auto listControl = ListControl())
+        const bool isNestedSync = m_isSyncingSelection;
+        if (isNestedSync)
         {
-            if (const auto viewModel = listControl->ListViewModel())
+            m_coalesceSelectionChange = true;
+        }
+        else
+        {
+            m_coalesceSelectionChange = false;
+        }
+        auto resetCoalesceOnUnwind = gsl::finally([this, isNestedSync]()
+        {
+            if (!isNestedSync)
+            {
+                m_coalesceSelectionChange = false;
+            }
+        });
+
+        const auto listControl = ListControl();
+        const auto viewModel = listControl ? listControl->ListViewModel() : nullptr;
+
+        winrt::TreeViewNode targetNode{ nullptr };
+        winrt::TreeViewNode previousNodeBeforeSync{ nullptr };
+        bool hasKnownPreviousNode{ false };
+
+        {
+            const bool previousSyncingSelection = m_isSyncingSelection;
+            m_isSyncingSelection = true;
+            auto resetSyncing = gsl::finally([this, previousSyncingSelection]()
+            {
+                m_isSyncingSelection = previousSyncingSelection;
+            });
+
+            if (listControl && viewModel)
             {
                 const int selectedIndex = m_listControl.get().SelectedIndex();
-                const auto newSelectedNode = listControl->IsFlatIndexValid(selectedIndex)
+                targetNode = listControl->IsFlatIndexValid(selectedIndex)
                     ? viewModel->GetNodeAt(selectedIndex)
                     : nullptr;
-                if (SelectedNode() != newSelectedNode)
+                const auto currentNode = SelectedNode();
+                if (currentNode != targetNode)
                 {
-                    SelectedNode(newSelectedNode);
+                    if (!isNestedSync && currentNode)
+                    {
+                        previousNodeBeforeSync = currentNode;
+                        hasKnownPreviousNode = true;
+                    }
+
+                    const auto selectedNodes = SelectedNodes();
+                    if (selectedNodes.Size() > 0)
+                    {
+                        selectedNodes.Clear();
+                    }
+                    const int currentSelectedIndex = m_listControl.get().SelectedIndex();
+                    const auto refreshedTargetNode = listControl->IsFlatIndexValid(currentSelectedIndex)
+                        ? viewModel->GetNodeAt(currentSelectedIndex)
+                        : nullptr;
+                    if (SelectionMode() == winrt::TreeViewSelectionMode::Single &&
+                        targetNode &&
+                        refreshedTargetNode == targetNode &&
+                        selectedNodes.Size() == 0)
+                    {
+                        selectedNodes.Append(targetNode);
+                    }
                 }
 
-                // Re-read SelectedNode() so a SelectedNodes/SelectedItems VectorChanged callback that cleared or
-                // redirected selection does not get overwritten when updating SelectedItem.
-                const auto currentSelectedNode = SelectedNode();
-                const auto newSelectedItem = currentSelectedNode ? viewModel->ItemFromNode(currentSelectedNode) : nullptr;
-                if (SelectedItem() != newSelectedItem)
+                if (!isNestedSync)
                 {
-                    SelectedItem(newSelectedItem);
+                    // Synchronize SelectedItem with SelectedNode, repeating if a callback redirects selection.
+                    for (int syncPass = 0; syncPass < 8 && SelectionMode() == winrt::TreeViewSelectionMode::Single; ++syncPass)
+                    {
+                        const auto currentSelectedNode = SelectedNode();
+                        const auto newSelectedItem = currentSelectedNode ? viewModel->ItemFromNode(currentSelectedNode) : nullptr;
+                        if (SelectedItem() == newSelectedItem)
+                        {
+                            break;
+                        }
+
+                        SelectedItem(newSelectedItem);
+                    }
                 }
             }
         }
 
-        RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
+        if (isNestedSync || SelectionMode() != winrt::TreeViewSelectionMode::Single)
+        {
+            return;
+        }
+
+        const auto finalNode = SelectedNode();
+        const bool shouldCoalesce = m_coalesceSelectionChange || (listControl && viewModel && finalNode != targetNode);
+        m_coalesceSelectionChange = false;
+
+        if (!shouldCoalesce)
+        {
+            RaiseSelectionChanged(args.AddedItems(), args.RemovedItems());
+            return;
+        }
+
+        const auto initialRemovedItems = args.RemovedItems();
+        const bool hadRemovedListItem = initialRemovedItems && initialRemovedItems.Size() > 0;
+        const bool hadInitialSelection = hadRemovedListItem || hasKnownPreviousNode;
+        const auto initialItem = hadRemovedListItem
+            ? initialRemovedItems.GetAt(0)
+            : ((hasKnownPreviousNode && viewModel)
+                ? viewModel->ItemFromNode(previousNodeBeforeSync)
+                : static_cast<winrt::IInspectable>(previousNodeBeforeSync));
+
+        const bool hasFinalSelection = finalNode != nullptr;
+        const auto finalItem = (hasFinalSelection && viewModel)
+            ? viewModel->ItemFromNode(finalNode)
+            : static_cast<winrt::IInspectable>(finalNode);
+
+        if (!hadInitialSelection && !hasFinalSelection)
+        {
+            return;
+        }
+
+        if (hadInitialSelection && hasFinalSelection)
+        {
+            const bool sameSelection = hasKnownPreviousNode
+                ? (finalNode == previousNodeBeforeSync)
+                : (finalItem == initialItem);
+            if (sameSelection)
+            {
+                return;
+            }
+        }
+
+        auto addedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (hasFinalSelection)
+        {
+            addedItems.Append(finalItem);
+        }
+
+        auto removedItems = winrt::make<Vector<winrt::IInspectable>>();
+        if (hadInitialSelection)
+        {
+            removedItems.Append(initialItem);
+        }
+
+        RaiseSelectionChanged(addedItems, removedItems);
     }
 }
 

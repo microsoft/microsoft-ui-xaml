@@ -133,6 +133,7 @@ private:
     void UpdateSelectionStateOfDescendants(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
     void UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState SelectionStateBasedOnChildren(winrt::TreeViewNode const& node);
+    void RemoveDetachedSelectedNodes();
     void ClearEventTokenVectors();
     void BeginSelectionChanges();
     void EndSelectionChanges();
