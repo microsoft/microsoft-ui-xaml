@@ -6841,6 +6841,10 @@ CCoreServices::NWDrawTree(
 
                 IFC_DEVICE_LOST_OTHERWISE_FAIL_FAST(hr);
             }
+            else if (m_immediateTrimPending)
+            {
+                TrimImmediateIdleResources(dcompTreeHost);
+            }
 
             // Do the render walks for RenderTargetBitmaps. Each of these render walks creates a new comptree with a new set of
             // primitives and primitive groups. These render walks are specialized such that they do not mess up the
@@ -7184,6 +7188,7 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
             m_immediateRenderer->ResetStats();
         }
         m_immediateVisibilityWalkPending = false;
+        m_immediateTrimPending = false;
 
         for (auto& islandData : dcompTreeHost->GetXamlIslandRenderData())
         {
@@ -7229,12 +7234,12 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                         }
                         if (RenderingBackend::IsTrimWhenHiddenEnabled())
                         {
-                            // gdilayers: pooled painter layers and scratch idle for ~2 s are released; a walk is
-                            // requested for when the next one is due, since an idle window renders no frames.
+                            // gdilayers: pooled painter layers and scratch idle for ~2 s are released. The next trim is
+                            // a tick without a render walk (TrimImmediateIdleResources), so an idle window draws no frame.
                             const uint32_t trimInMs = m_immediateRenderer->TrimIdleResources(xamlIslandRoot);
                             if (trimInMs > 0)
                             {
-                                RequestImmediateVisibilityWalk(trimInMs);
+                                RequestImmediateTrim(trimInMs);
                             }
                         }
                         if (!m_immediateRenderer->IsFallenBack(xamlIslandRoot))
@@ -11557,6 +11562,46 @@ void CCoreServices::RequestImmediateVisibilityWalk(uint32_t delayMs)
         {
             IFCFAILFAST(pFrameScheduler->RequestAdditionalFrame(delayMs, RequestFrameReason::AfterResume));
         }
+    }
+}
+
+void CCoreServices::RequestImmediateTrim(uint32_t delayMs)
+{
+    m_immediateTrimPending = true;
+    IXcpBrowserHost *pBH = GetBrowserHost();
+    if (pBH != nullptr)
+    {
+        ITickableFrameScheduler *pFrameScheduler = pBH->GetFrameScheduler();
+        if (pFrameScheduler != nullptr)
+        {
+            IFCFAILFAST(pFrameScheduler->RequestAdditionalFrame(delayMs, RequestFrameReason::AfterResume));
+        }
+    }
+}
+
+void CCoreServices::TrimImmediateIdleResources(_In_ DCompTreeHost* dcompTreeHost)
+{
+    m_immediateTrimPending = false;
+    if (m_immediateRenderer == nullptr || dcompTreeHost == nullptr || !RenderingBackend::IsTrimWhenHiddenEnabled())
+    {
+        return;
+    }
+    uint32_t nextMs = 0;
+    for (auto& islandData : dcompTreeHost->GetXamlIslandRenderData())
+    {
+        CXamlIslandRoot* xamlIslandRoot = islandData.first;
+        if (xamlIslandRoot && xamlIslandRoot->IsActive() && xamlIslandRoot->IsVisible() && !m_immediateRenderer->IsFallenBack(xamlIslandRoot))
+        {
+            const uint32_t due = m_immediateRenderer->TrimIdleResources(xamlIslandRoot);
+            if (due > 0 && (nextMs == 0 || due < nextMs))
+            {
+                nextMs = due;
+            }
+        }
+    }
+    if (nextMs > 0)
+    {
+        RequestImmediateTrim(nextMs);
     }
 }
 

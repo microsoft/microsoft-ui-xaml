@@ -1987,6 +1987,7 @@ private:
     bool                       m_isRenderEnabled;
     bool                       m_renderStateChanged;
     bool                       m_immediateVisibilityWalkPending = false;
+    bool                       m_immediateTrimPending = false;
     bool                       m_isSuspended;
 
     // Not good enough in XamlIslandRoots mode. If any island is visible, we need to keep ticking.
@@ -2188,6 +2189,9 @@ public:
     // S27: an island's host visibility changed, or a hidden island's trim is due. The frame then runs the render walk
     // even if no element is dirty, so the immediate renderer can stop painting, release or repaint the island.
     void RequestImmediateVisibilityWalk(uint32_t delayMs);
+    // gdilayers: requests a tick (not a render walk, so no frame is drawn) to release idle painter layers.
+    void RequestImmediateTrim(uint32_t delayMs);
+    void TrimImmediateIdleResources(_In_ DCompTreeHost* dcompTreeHost);
 
     _Check_return_ HRESULT UpdateFontScale(_In_ XFLOAT newFontScale);
     XFLOAT GetFontScale();
