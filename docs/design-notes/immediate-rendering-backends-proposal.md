@@ -401,12 +401,37 @@ The decision scenarios (S24-S32) measured these cost curves on a GPU-less VM. Se
 - Tray and background apps, using the hidden-window trim added for the immediate path.
 
 **Where Composition wins:**
-- Large windows: GDI+ costs 5-12 MB per megapixel and crosses Composition at about 2 MP.
+- Large windows: Composition's cost hardly depends on window area. GDI+ now pays about 4 MB per megapixel, which is
+  its 4 B/px back buffer. Before the bounded layers below it paid 5-12 MB per megapixel. It crosses Comp (Lifted) at
+  about 4.7 MP, up from about 2 MP.
 - Many windows: Comp (System) adds 0.4 MB per window.
 - Continuous full-window animation on CPU-only machines: about 0.5 s/s of CPU, against 1.25 s/s for GDI+ and 3.3 s/s
   for D2D-SW.
 
 Navigation churn and resize storms don't differentiate the backends.
+
+### GDI+ bounded layers
+
+Opacity groups, rounded clips, geometry clips and perspective in GDI+ are painted through an offscreen PARGB layer.
+Before this change, each nesting depth allocated a full-window layer, plus a full-window mask for rotated rounded clips.
+They were kept until the next resize. That cost 1-3 extra window-sized buffers, about 8 MB per megapixel in S24.
+
+- **Bounds-sized:** each layer and mask covers only `record.bounds`, which is the current clip ∩ the frame damage.
+  For opacity groups painted on the UI thread, it also intersects the group's device bounds plus 2 px
+  (`ImmediatePainter::PushOpacityLayerWithBounds`; D2D ignores the hint).
+  - Drawing into a layer offsets the world transform by the layer origin.
+  - PopLayer blends the layer back at its rect.
+  - Pixel code (backdrop blur, invert, rounded mask, perspective sampling) addresses surfaces through their own rect.
+  - Render-thread replays don't use the hint, because their group bounds may be stale.
+- **Pooled:** each nesting depth keeps one surface. Its capacity is rounded up to 64 px and capped at the target size.
+- **Trimmed:** layers, the mask, the shadow scratch and blur buffers are released after 2 s unused. A layer whose
+  capacity is more than 2x its recent peak is released too.
+  - The trim runs from a frame tick that does no render walk, so an idle window draws no frames.
+  - It is controlled by `WINUI_IMMEDIATE_TRIM_HIDDEN`, like the hidden-window trim.
+- **Measurable:** `ResourceInventory::layerBytes` (also included in `surfaceBytes`).
+
+Results are in the test plan, under
+[GDI+ bounded layers](immediate-rendering-backends-test-plan.md#gdi-bounded-layers).
 
 ## Evaluation plan
 
