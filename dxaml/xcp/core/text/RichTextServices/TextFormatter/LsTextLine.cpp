@@ -1073,6 +1073,14 @@ Result::Enum LsTextLine::Format(
         m_pPreviousLineBreak = pPreviousLineBreak;
         AddRefInterface(m_pPreviousLineBreak);
         pLsPreviousLineBreak = pPreviousLineBreak->GetLsBreakRecord();
+
+        // Context-identity invariant: the break record we are about to feed to LsCreateLine below
+        // is bound to the LS context that produced it, which is owned by the previous break's
+        // formatter. That formatter must be the one formatting this line - otherwise LsCreateLine
+        // would receive this formatter's context paired with a foreign break record. This is
+        // guaranteed by the caller selecting the originating formatter when it acquires a formatter
+        // (see BlockLayoutHelpers::GetTextFormatter, which prefers the previous break's formatter).
+        ASSERT(pPreviousLineBreak->GetTextFormatter() == m_pTextFormatter);
     }
 
     ASSERT(!m_pTextFormatter->m_lsHostContext.hasMultiCharacterClusters);
@@ -1419,7 +1427,7 @@ Result::Enum LsTextLine::CreateLineBreak(
             ASSERT(m_pTextLineBreak == NULL);
             if (pLsLineBreak)
             {
-                IFC_OOM_RTS(m_pTextLineBreak = new LsTextLineBreak(m_pTextFormatter->m_pLsContext, pLsLineBreak));
+                IFC_OOM_RTS(m_pTextLineBreak = new LsTextLineBreak(m_pTextFormatter, pLsLineBreak));
             }
             else
             {
