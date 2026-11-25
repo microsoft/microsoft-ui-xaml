@@ -364,6 +364,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify successful page navigation");
                 var buttonNavigateToGridView = FindElement.ById("navigateToGridView");
                 Verify.IsNotNull(buttonNavigateToGridView, "GridViewPage is expected to be loaded.");
+
+                // Return from GridViewPage so TestSetupHelper.Dispose() navigates back to MainPage
+                // instead of leaving the app on CommonStylesPage.
+                TestSetupHelper.GoBack();
             }
         }
 
@@ -393,24 +397,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ListViewTabEntryTargetsSelectedItemWithoutScrollingNeighbor()
         {
-            foreach (bool neverFocused in new[] { false, true })
-            foreach (bool vertical in new[] { false, true })
-            foreach (bool fromAfterList in new[] { false, true })
-            foreach (string position in new[] { "Leading with padding", "Trailing with padding" })
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
             {
-                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                foreach (bool neverFocused in new[] { false, true })
+                foreach (bool vertical in new[] { false, true })
+                foreach (bool fromAfterList in new[] { false, true })
+                foreach (string position in new[] { "Leading with padding", "Trailing with padding" })
+                {
+                    VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                }
             }
         }
 
         [TestMethod]
         public void ListViewTabEntryPreservesFocusPadding()
         {
-            foreach (bool neverFocused in new[] { false, true })
-            foreach (bool vertical in new[] { false, true })
-            foreach (bool fromAfterList in new[] { false, true })
-            foreach (string position in new[] { "Leading", "Trailing" })
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
             {
-                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                foreach (bool neverFocused in new[] { false, true })
+                foreach (bool vertical in new[] { false, true })
+                foreach (bool fromAfterList in new[] { false, true })
+                foreach (string position in new[] { "Leading", "Trailing" })
+                {
+                    VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                }
             }
         }
 
@@ -418,26 +428,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ListViewFocusEntryStillPadsHiddenSelectedItem()
         {
-            foreach (bool neverFocused in new[] { false, true })
-            foreach (bool vertical in new[] { false, true })
-            foreach (bool fromAfterList in new[] { false, true })
-            foreach (string position in new[] { "Before", "After", "Partial" })
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
             {
-                VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                foreach (bool neverFocused in new[] { false, true })
+                foreach (bool vertical in new[] { false, true })
+                foreach (bool fromAfterList in new[] { false, true })
+                foreach (string position in new[] { "Before", "After", "Partial" })
+                {
+                    VerifyListViewFocusEntry(vertical, fromAfterList, position, neverFocused);
+                }
             }
         }
 
         [TestMethod]
         public void ListViewTabEntryIgnoresUnfocusableSelectedItem()
         {
-            foreach (bool fromAfterList in new[] { false, true })
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
             {
-                using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+                // Five items with a cache keep every container realized, so the disabled selected item is known to be unfocusable.
+                SetFocusEntryCheckBox("FiveItems", true);
+                new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+
+                foreach (bool fromAfterList in new[] { false, true })
                 {
                     Log.Comment($"Unfocusable selected item: fromAfterList={fromAfterList}.");
-                    // Five items with a cache keep every container realized, so the disabled selected item is known to be unfocusable.
-                    new CheckBox(FindElement.ById("FiveItems")).Check();
-                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
                     new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
                     Wait.ForIdle();
 
@@ -469,18 +483,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ListViewTabReentryWithDifferentSelectedAndLastFocusedItems()
         {
-            foreach (bool focusableChildren in new[] { false, true })
-            foreach (bool fromAfterList in new[] { false, true })
+            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
             {
-                using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+                SetFocusEntryCheckBox("FiveItems", true);
+                new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
+
+                foreach (bool focusableChildren in new[] { false, true })
+                foreach (bool fromAfterList in new[] { false, true })
                 {
                     Log.Comment($"Tab reentry: focusableChildren={focusableChildren}, fromAfterList={fromAfterList}.");
-                    new CheckBox(FindElement.ById("FiveItems")).Check();
-                    new ComboBox(FindElement.ById("CacheLength")).SelectItemByName("2");
-                    if (focusableChildren)
-                    {
-                        new CheckBox(FindElement.ById("FocusableChildren")).Check();
-                    }
+                    SetFocusEntryCheckBox("FocusableChildren", focusableChildren);
                     new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
                     Wait.ForIdle();
 
@@ -527,63 +539,75 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         // Selects item index 10, positions the viewport relative to it, then moves focus into the list with
         // Tab (from before the list) or Shift+Tab (from after it). Focus is redirected to the selected item.
+        // Caller must already be on the "ListView Focus Entry Tests" page.
         private void VerifyListViewFocusEntry(bool vertical, bool fromAfterList, string position, bool neverFocused)
         {
-            using (var setup = new TestSetupHelper("ListView Focus Entry Tests"))
+            Log.Comment($"Focus entry: vertical={vertical}, fromAfterList={fromAfterList}, position={position}, neverFocused={neverFocused}.");
+            SetFocusEntryCheckBox("VerticalScrolling", vertical);
+            SetFocusEntryCheckBox("ResetWithoutFocus", neverFocused);
+            new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
+            Wait.ForIdle();
+            new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
+            new Button(FindElement.ById(fromAfterList ? "PrepareFocusEntryAfter" : "PrepareFocusEntryBefore")).Invoke();
+            Wait.ForIdle();
+
+            int itemSize = vertical ? 100 : 200;
+            int viewportSize = 3 * itemSize;
+            bool alreadyPadded = position == "Leading with padding" || position == "Trailing with padding";
+            double initialOffset =
+                position == "Leading with padding" ? 10 * itemSize - 20 :
+                position == "Trailing with padding" ? 11 * itemSize - viewportSize + 20 :
+                position == "Leading" ? 10 * itemSize :
+                position == "Trailing" ? 11 * itemSize - viewportSize :
+                position == "Before" ? 0 :
+                position == "After" ? 15 * itemSize :
+                10.5 * itemSize;
+            double expectedOffset =
+                alreadyPadded ? initialOffset :
+                position == "Before" || position == "Trailing" ? 11 * itemSize - viewportSize + 20 :
+                10 * itemSize - 20;
+            Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
+                IsFocusEntryOffsetNear(initialOffset) && GetFocusEntryText("FocusEntryChanges") == "0");
+            Verify.IsTrue(IsFocusEntryOffsetNear(initialOffset),
+                $"Expected initial offset {initialOffset}, actual {GetFocusEntryText("FocusEntryOffset")}.");
+            Verify.AreEqual("10", GetFocusEntryText("FocusEntrySelectedIndex"));
+            Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
+            Verify.AreEqual(neverFocused ? "False" : "True", GetFocusEntryText("FocusEntryListEverFocused"),
+                neverFocused
+                    ? "ResetWithoutFocus must leave the recreated ListView unfocused until Tab enters it."
+                    : "Reset without ResetWithoutFocus must focus item 0 before Tab entry.");
+
+            PressTabIntoList(fromAfterList);
+            Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "10");
+            Wait.RetryUntilEvalFuncSuccessOrTimeout(() => IsFocusEntryOffsetNear(expectedOffset));
+            Wait.ForIdle();
+
+            string diagnostics =
+                $"offset={GetFocusEntryText("FocusEntryOffset")}, offset changes={GetFocusEntryText("FocusEntryChanges")}, " +
+                $"offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
+            Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
+            Verify.IsTrue(IsFocusEntryOffsetNear(expectedOffset),
+                $"Expected offset {expectedOffset} after focus entered the list; {diagnostics}.");
+            if (alreadyPadded)
             {
-                Log.Comment($"Focus entry: vertical={vertical}, fromAfterList={fromAfterList}, position={position}, neverFocused={neverFocused}.");
-                if (vertical)
-                {
-                    new CheckBox(FindElement.ById("VerticalScrolling")).Check();
-                }
-                if (neverFocused)
-                {
-                    new CheckBox(FindElement.ById("ResetWithoutFocus")).Check();
-                }
-                new Button(FindElement.ById("ResetFocusEntryList")).Invoke();
-                Wait.ForIdle();
-                new ComboBox(FindElement.ById("FocusEntryPosition")).SelectItemByName(position);
-                new Button(FindElement.ById(fromAfterList ? "PrepareFocusEntryAfter" : "PrepareFocusEntryBefore")).Invoke();
-                Wait.ForIdle();
+                Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
+                    $"Tab entry must not scroll a neighboring item when the selected item already has focus padding; {diagnostics}.");
+            }
+        }
 
-                int itemSize = vertical ? 100 : 200;
-                int viewportSize = 3 * itemSize;
-                bool alreadyPadded = position == "Leading with padding" || position == "Trailing with padding";
-                double initialOffset =
-                    position == "Leading with padding" ? 10 * itemSize - 20 :
-                    position == "Trailing with padding" ? 11 * itemSize - viewportSize + 20 :
-                    position == "Leading" ? 10 * itemSize :
-                    position == "Trailing" ? 11 * itemSize - viewportSize :
-                    position == "Before" ? 0 :
-                    position == "After" ? 15 * itemSize :
-                    10.5 * itemSize;
-                double expectedOffset =
-                    alreadyPadded ? initialOffset :
-                    position == "Before" || position == "Trailing" ? 11 * itemSize - viewportSize + 20 :
-                    10 * itemSize - 20;
-                Wait.RetryUntilEvalFuncSuccessOrTimeout(() =>
-                    IsFocusEntryOffsetNear(initialOffset) && GetFocusEntryText("FocusEntryChanges") == "0");
-                Verify.IsTrue(IsFocusEntryOffsetNear(initialOffset),
-                    $"Expected initial offset {initialOffset}, actual {GetFocusEntryText("FocusEntryOffset")}.");
-                Verify.AreEqual("10", GetFocusEntryText("FocusEntrySelectedIndex"));
-                Verify.AreEqual("-1", GetFocusEntryText("FocusEntryFocusedIndex"));
-
-                PressTabIntoList(fromAfterList);
-                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => GetFocusEntryText("FocusEntryFocusedIndex") == "10");
-                Wait.RetryUntilEvalFuncSuccessOrTimeout(() => IsFocusEntryOffsetNear(expectedOffset));
-                Wait.ForIdle();
-
-                string diagnostics =
-                    $"offset={GetFocusEntryText("FocusEntryOffset")}, offset changes={GetFocusEntryText("FocusEntryChanges")}, " +
-                    $"offset history={GetFocusEntryText("FocusEntryOffsetHistory")}, offset at focus={GetFocusEntryText("FocusEntryOffsetAtFocus")}";
-                Verify.AreEqual("10", GetFocusEntryText("FocusEntryFocusedIndex"), "Focus entering the list must go to the selected item.");
-                Verify.IsTrue(IsFocusEntryOffsetNear(expectedOffset),
-                    $"Expected offset {expectedOffset} after focus entered the list; {diagnostics}.");
-                if (alreadyPadded)
+        private static void SetFocusEntryCheckBox(string automationId, bool isChecked)
+        {
+            var checkBox = new CheckBox(FindElement.ById(automationId));
+            if (isChecked)
+            {
+                if (checkBox.ToggleState != ToggleState.On)
                 {
-                    Verify.AreEqual("0", GetFocusEntryText("FocusEntryChanges"),
-                        $"Tab entry must not scroll a neighboring item when the selected item already has focus padding; {diagnostics}.");
+                    checkBox.Check();
                 }
+            }
+            else if (checkBox.ToggleState != ToggleState.Off)
+            {
+                checkBox.Uncheck();
             }
         }
 
