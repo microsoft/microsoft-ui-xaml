@@ -7882,6 +7882,152 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Verify.IsTrue(isIndicatorLit, "Selection indicator should be on the promoted target.");
         }
 
+        [TestMethod]
+        public void VerifySelectingLaterDuplicateBoxedValueFromTopOverflowWhenFirstIsInPrimary()
+        {
+            VerifySelectingLaterDuplicateBoxedValueFromTopOverflow("FirstDuplicateInPrimary");
+        }
+
+        [TestMethod]
+        public void VerifySelectingLaterDuplicateBoxedValueFromTopOverflowWhenBothAreInOverflow()
+        {
+            VerifySelectingLaterDuplicateBoxedValueFromTopOverflow("BothDuplicatesInOverflow");
+        }
+
+        [TestMethod]
+        public void VerifySettingSelectedItemToDuplicateBoxedValueSelectedInTopOverflow()
+        {
+            VerifySelectingLaterDuplicateBoxedValueFromTopOverflow("SelectedItemSetAfterOverflowSelection");
+        }
+
+        // A C# List<int> item is a new boxed object on every read, and IndexOf returns the first of equal values.
+        // Selecting the later of two equal values from the Top overflow must not drop the selection.
+        private void VerifySelectingLaterDuplicateBoxedValueFromTopOverflow(string scenario)
+        {
+            const int duplicate = 4242424;
+            var items = scenario == "FirstDuplicateInPrimary"
+                ? new List<int> { duplicate, 1111111, 2222222, 3333333, 4444444, 5555555, duplicate }
+                : new List<int> { 1111111, 2222222, 3333333, 4444444, 5555555, duplicate, duplicate };
+            NavigationView navView = null;
+            Button overflowButton = null;
+
+            Func<ItemsRepeater, string> describeRepeater = (repeater) =>
+            {
+                var description = new List<string>();
+                if (repeater == null)
+                {
+                    return "(no repeater)";
+                }
+                for (int i = 0; i < repeater.ItemsSourceView.Count; i++)
+                {
+                    var container = repeater.TryGetElement(i) as NavigationViewItem;
+                    description.Add(string.Format("{0}{1}", repeater.ItemsSourceView.GetAt(i),
+                        container == null ? "(no container)" : (container.IsSelected ? "(selected)" : "")));
+                }
+                return string.Join(", ", description);
+            };
+            Func<ItemsRepeater> getPrimaryRepeater = () => (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(navView, "TopNavMenuItemsHost");
+            Func<ItemsRepeater> getOverflowRepeater = () => (ItemsRepeater)VisualTreeUtils.FindVisualChildByName(
+                ((Flyout)overflowButton.Flyout).Content, "TopNavMenuItemsOverflowHost");
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView {
+                    PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
+                    IsSettingsVisible = false,
+                    IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
+                    Width = 300,
+                    Height = 600,
+                    Content = new Grid { Height = 600 },
+                    MenuItemsSource = items,
+                };
+                Content = navView;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                overflowButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TopNavOverflowButton");
+                Verify.AreEqual(Visibility.Visible, overflowButton.Visibility, "Precondition: items overflow");
+                var primaryItems = getPrimaryRepeater().ItemsSourceView;
+                int duplicatesInPrimary = 0;
+                for (int i = 0; i < primaryItems.Count; i++)
+                {
+                    duplicatesInPrimary += Equals(primaryItems.GetAt(i), duplicate) ? 1 : 0;
+                }
+                Verify.AreEqual(scenario == "FirstDuplicateInPrimary" ? 1 : 0, duplicatesInPrimary,
+                    "Precondition: the expected number of duplicates is in the primary list");
+                (FrameworkElementAutomationPeer.CreatePeerForElement(overflowButton)
+                    .GetPattern(PatternInterface.Invoke) as IInvokeProvider).Invoke();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var overflowRepeater = getOverflowRepeater();
+                Log.Comment("Overflow before selection: " + describeRepeater(overflowRepeater));
+                NavigationViewItem laterDuplicateContainer = null;
+                for (int i = 0; i < overflowRepeater.ItemsSourceView.Count; i++)
+                {
+                    if (Equals(overflowRepeater.ItemsSourceView.GetAt(i), duplicate))
+                    {
+                        laterDuplicateContainer = overflowRepeater.TryGetElement(i) as NavigationViewItem;
+                    }
+                }
+                Verify.IsNotNull(laterDuplicateContainer, "Precondition: the later duplicate is in the open overflow");
+                laterDuplicateContainer.IsSelected = true;
+            });
+            DrainLowPriorityDispatcherWork(navView);
+
+            if (scenario == "SelectedItemSetAfterOverflowSelection")
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("SelectedItem after the overflow selection: " + (navView.SelectedItem ?? "null"));
+                    // What an app does from ItemInvoked: select a new box of the invoked value, which has no container.
+                    navView.SelectedItem = duplicate;
+                });
+                DrainLowPriorityDispatcherWork(navView);
+            }
+
+            Rectangle indicator = null;
+            var timeout = DateTime.Now + TimeSpan.FromSeconds(5);
+            bool isIndicatorLit = false;
+            while (!isIndicatorLit && DateTime.Now < timeout)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    var primaryRepeater = getPrimaryRepeater();
+                    for (int i = 0; i < primaryRepeater.ItemsSourceView.Count && !isIndicatorLit; i++)
+                    {
+                        if (Equals(primaryRepeater.ItemsSourceView.GetAt(i), duplicate) && primaryRepeater.TryGetElement(i) is NavigationViewItem container)
+                        {
+                            indicator = (Rectangle)VisualTreeUtils.FindVisualChildByName(container, "SelectionIndicator");
+                            isIndicatorLit = indicator != null && indicator.Opacity > 0;
+                        }
+                    }
+                });
+                if (!isIndicatorLit)
+                {
+                    Thread.Sleep(100);
+                    IdleSynchronizer.Wait();
+                }
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The existing promotion code finds items by value (first match), so which duplicate ends up selected, and
+                // whether the flyout closes when the first duplicate is already in the primary list, is only logged.
+                Log.Comment("Primary: " + describeRepeater(getPrimaryRepeater()));
+                Log.Comment("Overflow: " + describeRepeater(getOverflowRepeater()));
+                Log.Comment("SelectedItem: " + (navView.SelectedItem ?? "null") + ", overflow flyout open: " + overflowButton.Flyout.IsOpen);
+                Verify.AreEqual(duplicate, navView.SelectedItem);
+            });
+            Verify.IsNotNull(indicator, "A duplicate should be in the primary list.");
+            Verify.IsTrue(isIndicatorLit, "Selection indicator should be on a duplicate in the primary list.");
+        }
+
         private void VerifyClearingSelectedItemClearsSelection(string scenario)
         {
             var (navView, parentItem, childItem, otherItem) = SetupDataBoundHierarchyNavigationView();
