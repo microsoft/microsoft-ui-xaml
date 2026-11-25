@@ -49,6 +49,15 @@ namespace RenderingBackendTests
         TEST_METHOD(BitmapDrawsOneToOneWithClampedEdges);
         TEST_METHOD(ScrollPixelsMovesRowsWithinRect);
         TEST_METHOD(ScrollPixelsPresentsMovedArea);
+
+        // ---- gdilayers ----
+        // Opacity, rounded-clip and geometry-clip layers (and masks) are sized to their bounds, pooled, and trimmed.
+        TEST_METHOD(LayersAreSizedToTheirBounds);
+        TEST_METHOD(OpacityBoundsHintLimitsLayer);
+        TEST_METHOD(NestedLayersAtOffsetsComposite);
+        TEST_METHOD(LayerContentMatchesDirectDrawing);
+        TEST_METHOD(PooledLayersAreReusedAndGrow);
+        TEST_METHOD(IdleTrimReleasesLayersAndScratch);
     };
 
     class ResourceChurnEventTests

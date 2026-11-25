@@ -217,6 +217,8 @@ namespace RenderingBackend
         uint64_t cacheBytes = 0;            // glyph, geometry, brush caches (best estimate)
         uint32_t cachedObjectCount = 0;
         uint64_t uploadBytesThisFrame = 0;  // CPU->GPU or CPU->surface copies attributable to the last frame
+        // ---- gdilayers ----
+        uint64_t layerBytes = 0;            // of surfaceBytes: pooled offscreen layers and masks (CPU painters)
     };
 
     class IImmediatePainter
@@ -355,6 +357,22 @@ namespace RenderingBackend
         // O_rgb = (1 - D_rgb) * S + (1 - S_a) * D_rgb (premultiplied), destination alpha unchanged. An opaque white
         // source inverts the destination.
         virtual void InvertRectangle(const RectF& rect, const ColorF& color) noexcept = 0;
+
+        // ---- gdilayers ----
+        // PushOpacityLayer with a hint: deviceBounds (physical pixels, outside perspective layers) contains everything
+        // drawn in the group, so a painter may size the group's layer to it. Popped with PopOpacityLayer.
+        virtual void PushOpacityLayerWithBounds(float opacity, const RectF& deviceBounds) noexcept
+        {
+            (void)deviceBounds;
+            PushOpacityLayer(opacity);
+        }
+        // Outside a frame: releases pooled transient surfaces (layers, masks, scratch) not used for a while (nowMs is
+        // GetTickCount64 time). Returns the milliseconds until the next release could be due, or 0 when nothing is held.
+        virtual uint32_t TrimTransientResources(uint64_t nowMs) noexcept
+        {
+            (void)nowMs;
+            return 0;
+        }
     };
 
     // Dispatches to the per-backend factories below. Composition is not an immediate painter (E_INVALIDARG).

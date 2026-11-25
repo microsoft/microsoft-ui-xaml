@@ -1149,6 +1149,325 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(IsPremultiplied(presented.At(4, 60), 0, 0, 0, 255, 1));
     }
 
+    // ---- gdilayers ----
+
+    namespace
+    {
+        constexpr uint32_t c_largeWidth = 1024;
+        constexpr uint32_t c_largeHeight = 768;
+        constexpr uint64_t c_largeTargetBytes = static_cast<uint64_t>(c_largeWidth) * c_largeHeight * 4;
+
+        uint32_t MaxChannelDifference(const Image& a, const Image& b, uint32_t& atX, uint32_t& atY)
+        {
+            uint32_t worst = 0;
+            for (uint32_t y = 0; y < a.height; ++y)
+            {
+                for (uint32_t x = 0; x < a.width; ++x)
+                {
+                    const size_t i = (static_cast<size_t>(y) * a.width + x) * 4;
+                    for (int c = 0; c < 4; ++c)
+                    {
+                        const uint32_t d = static_cast<uint32_t>(std::abs(static_cast<int>(a.bytes[i + c]) - static_cast<int>(b.bytes[i + c])));
+                        if (d > worst)
+                        {
+                            worst = d;
+                            atX = x;
+                            atY = y;
+                        }
+                    }
+                }
+            }
+            return worst;
+        }
+    }
+
+    void GdiPlusPainterTests::LayersAreSizedToTheirBounds()
+    {
+        auto painter = CreateGdiPlus(c_largeWidth, c_largeHeight);
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushAxisAlignedClip({ 600, 500, 700, 560 });
+            p.PushOpacityLayer(0.5f);
+            p.FillRectangle({ 0, 0, 1024, 768 }, c_black);
+            p.PopOpacityLayer();
+            p.PopAxisAlignedClip();
+            p.PushRoundedRectangleClip({ 100, 100, 180, 150 }, 8, 8);
+            p.FillRectangle({ 0, 0, 1024, 768 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
+        auto inventory = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"surface %llu (target %llu), layers %llu", inventory.surfaceBytes, c_largeTargetBytes, inventory.layerBytes));
+        VERIFY_IS_TRUE(inventory.surfaceBytes > c_largeTargetBytes, L"a pooled layer is held");
+        VERIFY_ARE_EQUAL(inventory.surfaceBytes - c_largeTargetBytes, inventory.layerBytes, L"layer bytes are the surface bytes beyond the target");
+        VERIFY_IS_TRUE(inventory.layerBytes <= 128ull * 64 * 4, L"one layer sized to the larger bounds (100x60, 64 px buckets), not to the window");
+        auto image = Read(*painter, c_largeWidth, c_largeHeight);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(650, 530), 128, 128, 128, 255, 3), L"50% black composited at the layer's offset");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(600, 500), 128, 128, 128, 255, 3));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(699, 559), 128, 128, 128, 255, 3));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(599, 530), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(700, 559), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(140, 125), 0, 0, 0, 255, 1), L"rounded clip content at its offset");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(100, 125), 0, 0, 0, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(101, 101), 255, 255, 255, 255, 1), L"outside the rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(99, 125), 255, 255, 255, 255, 1));
+
+        // Rotated: the clip shape is rasterized into a mask surface, sized like the layer.
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.SetTransform({ 0.70710678f, 0.70710678f, -0.70710678f, 0.70710678f, 500, 300 });
+            p.PushRoundedRectangleClip({ 0, 0, 60, 60 }, 8, 8);
+            p.FillRectangle({ -100, -100, 200, 200 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
+        inventory = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"rotated: surface %llu, layers %llu", inventory.surfaceBytes, inventory.layerBytes));
+        VERIFY_IS_TRUE(inventory.layerBytes <= 2ull * 128 * 128 * 4, L"layer + mask sized to the ~86x86 clip bounds");
+        image = Read(*painter, c_largeWidth, c_largeHeight);
+        // (30, 30) maps to (500, 342.4); (0, 0) maps to (500, 300) and the arc pulls the corner in to ~(500, 303.3).
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(500, 342), 0, 0, 0, 255, 1), L"rotated clip center");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(500, 370), 0, 0, 0, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(500, 301), 255, 255, 255, 255, 8), L"rotated rounded corner is clipped");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(460, 300), 255, 255, 255, 255, 1));
+    }
+
+    void GdiPlusPainterTests::OpacityBoundsHintLimitsLayer()
+    {
+        auto painter = CreateGdiPlus(c_largeWidth, c_largeHeight);
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushOpacityLayerWithBounds(0.5f, { 10, 10, 50, 40 });
+            p.FillRectangle({ 10, 10, 50, 40 }, c_black);
+            p.PopOpacityLayer();
+            p.PushOpacityLayerWithBounds(0.5f, { 900, 700, 1000, 760 });
+            p.PushRoundedRectangleClip({ 910, 710, 990, 750 }, 6, 6);
+            p.FillRectangle({ 900, 700, 1000, 760 }, c_black);
+            p.PopRoundedRectangleClip();
+            p.FillRectangle({ 990, 750, 1000, 760 }, c_black);
+            p.PopOpacityLayer();
+        });
+        const auto inventory = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"full damage, hinted groups: layers %llu", inventory.layerBytes));
+        VERIFY_IS_TRUE(inventory.layerBytes > 0);
+        VERIFY_IS_TRUE(inventory.layerBytes <= 2ull * 128 * 64 * 4, L"two nested layers sized to the hints, not to the full damage");
+        const auto image = Read(*painter, c_largeWidth, c_largeHeight);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(10, 10), 128, 128, 128, 255, 3));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(49, 39), 128, 128, 128, 255, 3));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(50, 25), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(950, 730), 128, 128, 128, 255, 3), L"nested rounded clip inside the hinted group");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(995, 755), 128, 128, 128, 255, 3), L"drawn in the group outside the nested clip");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(911, 711), 255, 255, 255, 255, 1), L"outside the nested rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(905, 705), 255, 255, 255, 255, 1));
+
+        // Partial damage further bounds the layer.
+        const RectF damage{ 0, 0, 30, 30 };
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushOpacityLayerWithBounds(0.25f, { 10, 10, 50, 40 });
+            p.FillRectangle({ 10, 10, 50, 40 }, c_black);
+            p.PopOpacityLayer();
+        }, &damage, 1);
+        const auto partial = Read(*painter, c_largeWidth, c_largeHeight);
+        VERIFY_IS_TRUE(IsPremultiplied(partial.At(20, 20), 191, 191, 191, 255, 3), L"repainted at 25%");
+        VERIFY_IS_TRUE(IsPremultiplied(partial.At(40, 35), 128, 128, 128, 255, 3), L"outside the damage keeps the 50% frame");
+    }
+
+    void GdiPlusPainterTests::NestedLayersAtOffsetsComposite()
+    {
+        constexpr uint32_t width = 256, height = 192;
+        auto painter = CreateGdiPlus(width, height);
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushAxisAlignedClip({ 30, 20, 200, 150 });
+            p.PushOpacityLayer(0.5f);
+            p.PushRoundedRectangleClip({ 50, 40, 180, 140 }, 12, 12);
+            p.FillRectangle({ 60, 50, 120, 100 }, c_black);
+            p.PushAxisAlignedClip({ 130, 60, 170, 130 });
+            p.PushOpacityLayer(0.5f);
+            p.FillRectangle({ 0, 0, 256, 192 }, { 1, 0, 0, 1 });
+            p.PopOpacityLayer();
+            p.PopAxisAlignedClip();
+            p.PopRoundedRectangleClip();
+            p.FillRectangle({ 20, 140, 60, 160 }, c_black); // in the outer layer, cut by the axis-aligned clip at y = 150
+            p.PopOpacityLayer();
+            p.PopAxisAlignedClip();
+
+            // A layer that runs past the target's bottom-right edge, under a fractional translation.
+            p.SetTransform({ 1, 0, 0, 1, 0.5f, 0.25f });
+            p.PushRoundedRectangleClip({ 210, 160, 300, 250 }, 10, 10);
+            p.FillRectangle({ 0, 0, 400, 400 }, c_black);
+            p.PopRoundedRectangleClip();
+        });
+        const auto image = Read(*painter, width, height);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(90, 75), 128, 128, 128, 255, 3), L"black at 50% in the nested rounded clip");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(150, 100), 191, 191, 255, 255, 3), L"red at 25% in the doubly nested layer");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(129, 100), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(150, 131), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(51, 41), 255, 255, 255, 255, 1), L"outside the rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(45, 145), 128, 128, 128, 255, 3), L"outer layer content");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(45, 150), 255, 255, 255, 255, 1), L"cut by the outer clip");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(25, 145), 255, 255, 255, 255, 1));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(240, 180), 0, 0, 0, 255, 1), L"edge layer content");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(255, 191), 0, 0, 0, 255, 1), L"edge layer reaches the target corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(211, 161), 255, 255, 255, 255, 1), L"edge layer's rounded corner");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(209, 180), 255, 255, 255, 255, 1));
+    }
+
+    void GdiPlusPainterTests::LayerContentMatchesDirectDrawing()
+    {
+        // The same primitives drawn into the target and into (nested) layers at an offset composite to the same pixels:
+        // text, exact and brush (mask-and-shade) gradients, a shadow, a bitmap, backdrop blur, invert, and a rotated clip.
+        constexpr uint32_t width = 256, height = 192;
+        const RectF region{ 37, 23, 229, 171 };
+        const auto bitmap = SolidPixels(16, 16, 0, 160, 255);
+        static const GradientStop stops[] = { { 0, { 1, 0, 0, 1 } }, { 1, { 0, 0, 1, 1 } } };
+        const auto scene = [&](IImmediatePainter& p)
+        {
+            p.FillRectangle(region, c_white);
+            TextStyle style{};
+            style.fontSize = 14;
+            p.DrawText(L"Layers", 6, style, { 45, 28, 140, 50 }, c_black);
+            p.FillRoundedRectangleGradient({ 50, 55, 150, 85 }, 8, 8, LinearGradientDesc{ { 50, 60 }, { 150, 60 }, stops, 2, 1 });
+            BrushDesc radial{};
+            radial.kind = BrushKind::Radial;
+            radial.stops = stops;
+            radial.stopCount = 2;
+            radial.center = { 190, 70 };
+            radial.origin = { 190, 70 };
+            radial.radiusX = radial.radiusY = 25;
+            p.FillRoundedRectangleBrush({ 165, 45, 215, 95 }, 25, 25, radial);
+            p.DrawRoundedRectangleShadow({ 60, 100, 110, 140 }, 6, 6, 8, { 3, 4 }, { 0, 0, 0, 0.5f });
+            p.FillRoundedRectangle({ 60, 100, 110, 140 }, 6, 6, { 0.2f, 0.6f, 0.3f, 1 });
+            p.DrawBitmap(1, { 130, 100, 162, 132 }, nullptr, 1);
+            p.BlurBackdrop({ 125, 95, 170, 140 }, 4, 4, 6);
+            p.InvertRectangle({ 180, 110, 200, 150 }, c_white);
+            p.SetTransform({ 0.8660254f, 0.5f, -0.5f, 0.8660254f, 200, 120 });
+            p.PushRoundedRectangleClip({ 0, 0, 30, 20 }, 5, 5);
+            p.FillRectangle({ -50, -50, 100, 100 }, { 0.5f, 0.1f, 0.7f, 1 });
+            p.PopRoundedRectangleClip();
+            p.SetTransform({});
+        };
+        const auto render = [&](auto&& wrap)
+        {
+            auto painter = CreateGdiPlus(width, height);
+            VERIFY_SUCCEEDED(painter->EnsureBitmap({ 1, 1, 16, 16, 16 * 4, bitmap.data() }));
+            Paint(*painter, [&](IImmediatePainter& p)
+            {
+                p.Clear({ 0.9f, 0.9f, 0.9f, 1 });
+                wrap(p);
+            });
+            return Read(*painter, width, height);
+        };
+        const auto direct = render([&](IImmediatePainter& p)
+        {
+            p.PushAxisAlignedClip(region);
+            scene(p);
+            p.PopAxisAlignedClip();
+        });
+        const auto layered = render([&](IImmediatePainter& p)
+        {
+            p.PushAxisAlignedClip(region);
+            p.PushOpacityLayer(1);
+            scene(p);
+            p.PopOpacityLayer();
+            p.PopAxisAlignedClip();
+        });
+        const auto nested = render([&](IImmediatePainter& p)
+        {
+            p.PushRoundedRectangleClip({ 30, 20, 236, 178 }, 2, 2);
+            p.PushOpacityLayerWithBounds(1, { 37, 23, 229, 171 });
+            p.PushAxisAlignedClip(region);
+            scene(p);
+            p.PopAxisAlignedClip();
+            p.PopOpacityLayer();
+            p.PopRoundedRectangleClip();
+        });
+        uint32_t x = 0, y = 0;
+        uint32_t difference = MaxChannelDifference(direct, layered, x, y);
+        Log::Comment(String().Format(L"direct vs one layer: max channel difference %u at (%u, %u)", difference, x, y));
+        VERIFY_IS_TRUE(difference <= 2);
+        difference = MaxChannelDifference(direct, nested, x, y);
+        Log::Comment(String().Format(L"direct vs nested layers: max channel difference %u at (%u, %u)", difference, x, y));
+        VERIFY_IS_TRUE(difference <= 2);
+        VERIFY_IS_FALSE(IsPremultiplied(direct.At(70, 70), 255, 255, 255, 255, 8), L"the scene drew something");
+    }
+
+    void GdiPlusPainterTests::PooledLayersAreReusedAndGrow()
+    {
+        auto painter = CreateGdiPlus(c_largeWidth, c_largeHeight);
+        if (!painter) return;
+        const auto layered = [](float left, float top, float size)
+        {
+            return [=](IImmediatePainter& p)
+            {
+                p.Clear(c_white);
+                p.PushAxisAlignedClip({ left, top, left + size, top + size });
+                p.PushOpacityLayer(0.5f);
+                p.FillRectangle({ 0, 0, 1024, 768 }, c_black);
+                p.PopOpacityLayer();
+                p.PopAxisAlignedClip();
+            };
+        };
+        Paint(*painter, layered(10, 10, 40));
+        const uint64_t small = painter->GetResourceInventory().layerBytes;
+        Paint(*painter, layered(500, 300, 50));
+        VERIFY_ARE_EQUAL(0u, LastChurn(*painter).created, L"a layer that fits the pooled capacity is reused at another offset");
+        VERIFY_ARE_EQUAL(small, painter->GetResourceInventory().layerBytes);
+        Paint(*painter, layered(100, 100, 300));
+        const uint64_t large = painter->GetResourceInventory().layerBytes;
+        Log::Comment(String().Format(L"layer bytes: small %llu, large %llu", small, large));
+        VERIFY_IS_TRUE(LastChurn(*painter).created > 0, L"a larger layer grows the pooled surface");
+        VERIFY_IS_TRUE(large > small && large <= 320ull * 320 * 4);
+        Paint(*painter, layered(700, 400, 40));
+        VERIFY_ARE_EQUAL(0u, LastChurn(*painter).created, L"the grown layer is reused for smaller bounds");
+        const auto image = Read(*painter, c_largeWidth, c_largeHeight);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(720, 420), 128, 128, 128, 255, 3));
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(741, 420), 255, 255, 255, 255, 1));
+    }
+
+    void GdiPlusPainterTests::IdleTrimReleasesLayersAndScratch()
+    {
+        auto painter = CreateGdiPlus(c_largeWidth, c_largeHeight);
+        if (!painter) return;
+        const auto layered = [](IImmediatePainter& p)
+        {
+            p.Clear(c_white);
+            p.PushOpacityLayer(0.5f);
+            p.FillRectangle({ 10, 10, 50, 50 }, c_black);
+            p.PopOpacityLayer();
+            p.DrawRoundedRectangleShadow({ 100, 100, 600, 500 }, 8, 8, 16, { 0, 4 }, { 0, 0, 0, 0.4f });
+        };
+        Paint(*painter, layered);
+        const auto held = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"held: surface %llu, layers %llu, cache %llu", held.surfaceBytes, held.layerBytes, held.cacheBytes));
+        VERIFY_IS_TRUE(held.surfaceBytes > c_largeTargetBytes);
+
+        const uint64_t now = GetTickCount64();
+        const uint32_t dueIn = painter->TrimTransientResources(now);
+        Log::Comment(String().Format(L"trim right after use: next due in %u ms", dueIn));
+        VERIFY_IS_TRUE(dueIn > 0 && dueIn <= 10000, L"recently used surfaces are kept and a later trim is due");
+        VERIFY_ARE_EQUAL(held.surfaceBytes, painter->GetResourceInventory().surfaceBytes);
+
+        VERIFY_ARE_EQUAL(0u, painter->TrimTransientResources(now + 60000), L"nothing is left to trim");
+        const auto trimmed = painter->GetResourceInventory();
+        Log::Comment(String().Format(L"trimmed: surface %llu, layers %llu, cache %llu", trimmed.surfaceBytes, trimmed.layerBytes, trimmed.cacheBytes));
+        VERIFY_ARE_EQUAL(c_largeTargetBytes, trimmed.surfaceBytes, L"idle layers are released");
+        VERIFY_ARE_EQUAL(0ull, trimmed.layerBytes);
+        VERIFY_IS_TRUE(trimmed.cacheBytes < held.cacheBytes, L"idle scratch is released");
+
+        Paint(*painter, layered);
+        const auto image = Read(*painter, c_largeWidth, c_largeHeight);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(30, 30), 128, 128, 128, 255, 3), L"layers are recreated on demand");
+        VERIFY_IS_TRUE(painter->GetResourceInventory().surfaceBytes > c_largeTargetBytes);
+    }
+
     // ---- ResourceChurn event ----
 
     void ResourceChurnEventTests::TraceResourceChurnIsCallableWithoutListener()
