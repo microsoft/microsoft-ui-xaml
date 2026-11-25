@@ -921,6 +921,13 @@ private:
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
     tracker_ref<winrt::TableViewRow> m_currentEditRow{ this };
+    // The property the open editor writes, fixed when it is generated: a Binding set while the edit
+    // closes must not redirect that edit's validation or rollback.
+    winrt::hstring m_currentEditPropertyPath;
+    winrt::hstring EditingPropertyPathOf(winrt::TableViewColumn const& column);
+    // Nonzero while an edit close transfers, validates or rolls back its value. A content change of the
+    // edited column made by app code it runs does not start another close.
+    uint32_t m_editValueTransferDepth{ 0 };
 
     // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };

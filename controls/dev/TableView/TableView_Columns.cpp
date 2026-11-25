@@ -547,6 +547,12 @@ void TableView::EndEditOfChangedColumn(const winrt::TableViewColumn& column)
         }
         return;
     }
+    // App code run by the close in progress (a setter, ConvertBack, a PropertyChanged handler) made
+    // the change: that close ends the edit, and the regeneration waits for it.
+    if (m_editValueTransferDepth > 0)
+    {
+        return;
+    }
     TerminateEditWithoutVisualRestore(true /* insideLayoutPass */);
 }
 

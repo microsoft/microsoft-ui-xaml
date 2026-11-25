@@ -2942,11 +2942,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding set by ConvertBack during the close a Binding change forces does not close the edit again, and the edit is validated against the property it writes.")]
+        public void VerifyBindingSetByConvertBackDuringForcedCloseDoesNotRecurse()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            TableViewTextColumn name = null;
+            Binding newer = null;
+            bool armed = false;
+            int convertBacks = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = (TableViewTextColumn)tableView.Columns[0];
+                name.Binding = new Binding
+                {
+                    Path = new PropertyPath("Name"),
+                    Mode = BindingMode.OneWay,
+                    Converter = new CallbackConverter(() => { }, () =>
+                    {
+                        // Without the guard every set starts another close, which calls ConvertBack again.
+                        if (armed && tableView.IsEditing)
+                        {
+                            convertBacks++;
+                            newer = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                            name.Binding = newer;
+                        }
+                    }),
+                };
+            });
+            IdleSynchronizer.Wait();
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Only the edited Name property is rejected, so validating Role would wrongly commit.
+                items[0].RejectPrefix = "Z";
+                armed = true;
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit at once.");
+                Verify.AreEqual(1, convertBacks, "The close must transfer the value once.");
+                Verify.IsTrue(ReferenceEquals(newer, name.Binding), "The Binding set during the close must be kept.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Cancel, actions[0], "The edit must be validated against the Name property it writes.");
+                Verify.AreEqual("Asha", items[0].Name, "The rejected value must be rolled back.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the Binding set during the close.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the Binding set during the close.");
+            });
+        }
+
         private sealed class CallbackConverter : IValueConverter
         {
             private readonly Action m_onConvert;
+            private readonly Action m_onConvertBack;
 
-            public CallbackConverter(Action onConvert) { m_onConvert = onConvert; }
+            public CallbackConverter(Action onConvert, Action onConvertBack = null)
+            {
+                m_onConvert = onConvert;
+                m_onConvertBack = onConvertBack;
+            }
 
             public object Convert(object value, Type targetType, object parameter, string language)
             {
@@ -2954,7 +3014,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 return value;
             }
 
-            public object ConvertBack(object value, Type targetType, object parameter, string language) => value;
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                m_onConvertBack?.Invoke();
+                return value;
+            }
         }
 
         [TestMethod]
