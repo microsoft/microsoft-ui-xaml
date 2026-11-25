@@ -25,11 +25,6 @@ VectorCollectionView::~VectorCollectionView()
 
     DetachSourceList();
     ReleaseShapingState();
-
-    if (m_isDefaultView)
-    {
-        UnregisterDefaultView(this);
-    }
 }
 
 

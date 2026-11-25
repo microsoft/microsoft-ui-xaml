@@ -318,7 +318,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CollectionViewSourceWpfParityMembers)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify the WPF members CanSort/CanFilter/CanGroup, IsDefaultView, the Culture DependencyProperty, ICollectionViewGroup2, collection group names and GroupDescription.OnPropertyChanged")
+                TEST_METHOD_PROPERTY(L"Description", L"Verify the WPF members CanSort/CanFilter/CanGroup, the Culture DependencyProperty, ICollectionViewGroup2, collection group names and GroupDescription.OnPropertyChanged")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CollectionViewSourceGroupNames)
@@ -367,10 +367,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(CollectionViewSourceDescriptorPropertySystem)
                 TEST_METHOD_PROPERTY(L"Description", L"Verify a held SortDescription stays sealed and Direction and StringComparison stay valid through SetValue, as through the setters, and GroupNames can be declared in XAML")
-            END_TEST_METHOD()
-
-            BEGIN_TEST_METHOD(CollectionViewSourceGetDefaultView)
-                TEST_METHOD_PROPERTY(L"Description", L"Verify CollectionViewSource.GetDefaultView returns one shared, shapeable view per source that no CollectionViewSource owns")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CollectionViewSourceGroupingKeepsView)

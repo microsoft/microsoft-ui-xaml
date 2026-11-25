@@ -2147,8 +2147,6 @@ namespace Microsoft.UI.Xaml.Data
             static Microsoft.UI.Xaml.DependencyProperty IsLiveSortingRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveFilteringRequestedProperty{ get; };
             static Microsoft.UI.Xaml.DependencyProperty IsLiveGroupingRequestedProperty{ get; };
-            static Microsoft.UI.Xaml.Data.ICollectionView GetDefaultView(Object source);
-            static Boolean IsDefaultView(Microsoft.UI.Xaml.Data.ICollectionView view);
         }
     };
 

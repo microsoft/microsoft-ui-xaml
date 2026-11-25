@@ -310,42 +310,6 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::get_IsLiveGroupingRequeste
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::GetDefaultView(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue)
-{
-    HRESULT hr = S_OK;
-    if (EventEnabledApiFunctionCallStart())
-    {
-        XamlTelemetry::PublicApiCall(true, 0, "CollectionViewSource_GetDefaultView", 0);
-    }
-    ARG_VALIDRETURNPOINTER(ppReturnValue);
-    *ppReturnValue={};
-    IFC(CheckActivationAllowed());
-    IFC(GetDefaultViewImpl(pSource, ppReturnValue));
-Cleanup:
-    if (EventEnabledApiFunctionCallStop())
-    {
-        XamlTelemetry::PublicApiCall(false, 0, "CollectionViewSource_GetDefaultView", hr);
-    }
-    RRETURN(hr);
-}
-IFACEMETHODIMP DirectUI::CollectionViewSourceFactory::IsDefaultView(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue)
-{
-    HRESULT hr = S_OK;
-    if (EventEnabledApiFunctionCallStart())
-    {
-        XamlTelemetry::PublicApiCall(true, 0, "CollectionViewSource_IsDefaultView", 0);
-    }
-    ARG_VALIDRETURNPOINTER(pReturnValue);
-    *pReturnValue={};
-    IFC(CheckActivationAllowed());
-    IFC(IsDefaultViewImpl(pView, pReturnValue));
-Cleanup:
-    if (EventEnabledApiFunctionCallStop())
-    {
-        XamlTelemetry::PublicApiCall(false, 0, "CollectionViewSource_IsDefaultView", hr);
-    }
-    RRETURN(hr);
-}
 
 namespace DirectUI
 {

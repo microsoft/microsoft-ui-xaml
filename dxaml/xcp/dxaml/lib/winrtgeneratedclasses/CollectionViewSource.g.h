@@ -184,8 +184,6 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(GetDefaultView)(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(IsDefaultView)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
 
         // Static events.
 
@@ -203,7 +201,5 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT GetDefaultViewImpl(_In_opt_ IInspectable* pSource, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICollectionView** ppReturnValue); 
-         _Check_return_ HRESULT IsDefaultViewImpl(_In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue); 
     };
 }

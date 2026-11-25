@@ -112,8 +112,6 @@ runtimeclass CollectionViewSource : DependencyObject
         static DependencyProperty IsLiveSortingRequestedProperty { get; };
         static DependencyProperty IsLiveFilteringRequestedProperty { get; };
         static DependencyProperty IsLiveGroupingRequestedProperty { get; };
-        static ICollectionView GetDefaultView(Object source);
-        static Boolean IsDefaultView(ICollectionView view);   // WPF's; true for null
     }
 };
 
@@ -197,12 +195,12 @@ All of these change the experimental API only; the shipped `CollectionViewSource
 | `GroupDescription.GroupNames` (`ObservableCollection<object>`) | `GroupDescription.GroupNames` (`IObservableVector<Object>`) | Explicit groups: at each level they come first, in `GroupNames` order, exist when empty and stay when they empty; other groups follow. A change regroups. A read-only `DependencyProperty`, so markup fills it (`<PropertyGroupDescription.GroupNames><x:Int32>3</x:Int32>...`), as in WPF. |
 | `CollectionView.Culture` / `CollectionViewSource.Culture` (`CultureInfo`) | `Culture` (`String`, a BCP-47 language tag): a `DependencyProperty` on CVS (`CultureProperty`), a property on `ICollectionViewShaping` | Implemented. Strings sort with `CompareStringEx` in that locale; empty means the user's locale (WPF falls back to the element's `xml:lang`). A `String` because `CultureInfo` is not a WinRT type; an invalid tag throws `ArgumentException` from the setter, and is undone (logged as a binding failure) when it comes from markup or a binding. As in WPF the CVS's value is its own: it is applied to each view the CVS creates and to `View` when it changes, and a `Culture` set on the view directly stays the view's. Changing it re-sorts. Group-name matching with `CurrentCulture*` uses the user's locale, as WPF uses `CultureInfo.CurrentCulture`. |
 | `ICollectionView.SourceCollection` (`IEnumerable`) | `ICollectionViewShaping.SourceCollection` (`Object`) | Implemented: the collection the view was created over (the CVS's `Source`, not a wrapper). `ICollectionView` is frozen, so it is on the shaping interface. |
-| `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | static `CollectionViewSource.GetDefaultView(Object)` | One shared, shapeable view per list source (`IVector` / `IBindableVector`), created by `CollectionViewManager` and owned by no CVS, so it starts and stops grouping in place. **Lifetime differs from WPF** (see "Default view lifetime"): the table holds the view weakly, so while anything holds the view every call returns it, and once nothing does the next call creates a new one without the old rules. Keep the view (or use a `CollectionViewSource`). An `ICollectionView` source returns itself (WPF wraps it in a proxy), `null` returns `null`, and a non-list source (`IIterable`, `IVectorView`, `ICollectionViewFactory`) gets a new, unshared view on each call. Views are per UI thread. `ItemsControl` does not show a list through its default view (WPF's does), so rules set on it reach only consumers given the view. |
+| `CollectionViewSource.GetDefaultView(object)` (`ViewManager` default view) | Not added | Skipped by choice: WinUI controls don't use default views; WPF's lifetime isn't GC-safe with native sources (see "Default view lifetime"); use `CollectionViewSource`. Can be added later if `ItemsControl` gains default-view support. |
 | `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
 | `ICollectionView.Groups` (null while not grouping), the view kept when grouping starts or stops, `ItemsControl.IsGrouping` following it | `ICollectionView.CollectionGroups` of a shaping view: null while flat, else **one** `IObservableVector` for the view's lifetime; the view raises `PropertyChanged("CollectionGroups")` and then a `Reset` when grouping starts or stops; ListView, GridView, `ItemsControl` and TableView regroup the same `ItemsSource` | Implemented. A regroup is one `Reset` of `CollectionGroups`, raised once the groups are complete, then one `Reset` of the view (WPF raises `Reset` on `Groups`). WinRT `ICollectionView` has no `GroupDescriptions`, so the null/non-null switch plus `PropertyChanged` is the signal (see "Grouping keeps the view"). |
 | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
 | Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group, and code reads them through `ICollectionViewGroup2` (WPF's `CollectionViewGroup` members). |
-| `ICollectionViewLiveShaping` (implemented by `ListCollectionView`) | `ICollectionViewLiveShaping`, implemented by the view a CVS creates over a vector (and by a default view) | Implemented; see "Live shaping". A separate interface, as in WPF, rather than members on `ICollectionViewShaping`. |
+| `ICollectionViewLiveShaping` (implemented by `ListCollectionView`) | `ICollectionViewLiveShaping`, implemented by the view a CVS creates over a vector | Implemented; see "Live shaping". A separate interface, as in WPF, rather than members on `ICollectionViewShaping`. |
 | `CanChangeLiveSorting` / `CanChangeLiveFiltering` / `CanChangeLiveGrouping` | Same names | Always `true`, as on `ListCollectionView`. |
 | `IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` (`bool?`) | Same names, `IReference<Boolean>` | WPF's `bool?` is WinRT's `IReference<Boolean>` (C# sees `bool?`). As on `ListCollectionView` the value is never null and setting null throws (`ArgumentNullException` in WPF, `E_INVALIDARG` here); the nullable type is kept so a view that cannot tell (WPF's `null`) can implement the interface. Default `false`. |
 | `LiveSortingProperties` / `LiveFilteringProperties` / `LiveGroupingProperties` (`ObservableCollection<string>`) | Same names, `IObservableVector<String>` | Property paths. Empty sorting or grouping lists mean the `SortDescriptions`' or the `PropertyGroupDescription`s' properties (none with a `CustomSort`); filtering observes only the listed paths, as in WPF. A change rebuilds what is observed. |
@@ -219,7 +217,7 @@ behavior), **Deviate** (a better design for WinUI/WinRT, with the reason) or **S
 | WPF | Decision | WinUI | Reason |
 |---|---|---|---|
 | `ICollectionView.CanSort` / `CanFilter` / `CanGroup` | Match | `ICollectionViewShaping.CanSort` / `CanFilter` / `CanGroup`; `true` on the framework's view | Consumers ported from WPF (DataGrid) check them; TableView sorts through the view only when `CanSort` (else it raises `Sorting` only, as for a view without the interface). |
-| `CollectionViewSource.IsDefaultView(ICollectionView)` | Match | static `CollectionViewSource.IsDefaultView` | True for null and for the view `GetDefaultView` returns for its source while that view lives; a view without `SourceCollection` (an app's) is not a default view. |
+| `CollectionViewSource.GetDefaultView(object)` / `IsDefaultView(ICollectionView)` | Skip | `CollectionViewSource` | Skipped by choice: WinUI controls don't use default views; WPF's lifetime isn't GC-safe with native sources (see "Default view lifetime"); use `CollectionViewSource`. Can be added later if `ItemsControl` gains default-view support. |
 | `CollectionViewSource.Culture` (DP) | Match | `Culture` `DependencyProperty` (`CultureProperty`), a `String` | Bindable and settable in markup as in WPF. The CVS keeps its own value and applies it to its views (it used to forward to `View`). |
 | `CollectionViewGroup` (abstract class: `Name`, `Items`, `ItemCount`, `IsBottomLevel`, `PropertyChanged`) | Deviate | `ICollectionViewGroup2` on every group, plus `INotifyPropertyChanged` on computed groups | An interface: groups are created by views, a public composable class would add a framework type and an ABI hop per member for no app use, and the name `CollectionViewGroup` is the framework's internal `IsSourceGrouped` group class. |
 | `GroupDescription.GroupNameFromItem` returning an `ICollection` (item in several groups) | Match (behavior), Deviate (cost) | A group name that is iterable (`IBindableIterable`, `IIterable<Object>`, `IIterable<String>`; a string is not) puts the item in a group for each element; an empty collection in none | WPF tracks each item's groups for incremental changes; here, while any item is in several groups, a source change or live restore on the grouped view recomputes it (one `Reset`). Tags-style grouping is rare and the incremental bookkeeping would cost every grouped view. |
@@ -567,9 +565,11 @@ one managed heap, so the GC collects them together. The WinUI equivalent was con
 - An ephemeron (a `ConditionalWeakTable`: the view lives as long as the source) needs the garbage collector, which
   native code does not have.
 
-So the table stays weak: `GetDefaultView` returns the same view while anything holds it, and a new one once nothing
-does. Apps keep the view they shape (or use a `CollectionViewSource`). Because `ItemsControl` never shows a list
-through its default view, a default view's rules reach only the controls it is given to, unlike WPF's.
+A weakly held default view, the only safe option, would lose its rules after a GC unless the app kept the view, and
+`ItemsControl` never shows a list through a default view, so its rules would reach only the controls it is given to.
+So there is no public default view (A-3, resolved): `CollectionViewSource.GetDefaultView` and `IsDefaultView` are not
+added, and apps shape a list through a `CollectionViewSource`. They can be added later if `ItemsControl` gains
+default-view support.
 
 ### Architecture: the view owns the engine
 
@@ -629,7 +629,6 @@ of their WPF counterparts so the logic can be read side by side with dotnet/wpf.
 | `VectorCollectionView::ProcessGroupedCollectionChanged` | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | A source change on a grouped view. |
 | `VectorCollectionView::PassesFilter` | `CollectionView.PassesFilter` | The CVS's `Filter` event handlers, else the view's `Filter` delegate. |
 | `SortFieldComparer` | `MS.Internal.Data.SortFieldComparer` | Multi-key (or `CustomSort`) comparison in the view's `Culture`, used by the full sort, the incremental placement and the group order. |
-| `GetDefaultViewImpl` (default-view table) | `CollectionViewSource.GetDefaultView` / `ViewManager` | The shared per-source view. |
 | `VectorCollectionView::LiveShapingState` | `MS.Internal.Data.LiveShapingList` | The live paths (`SetLiveShapingProperties`) and one `LiveShapingItem` per source item, in source order. The view keeps its `InternalList`; WPF swaps in a `LiveShapingList`. |
 | `VectorCollectionView::LiveShapingItem` / `LivePropertyObserver` | `MS.Internal.Data.LiveShapingItem` | The dirty flags of one item and a property path listener per live property (WPF binds a DP per property). |
 | `VectorCollectionView::OnLivePropertyChanged` / `RestoreLiveShaping` | `LiveShapingList.OnItemPropertyChanged` / `ListCollectionView.RestoreLiveShaping` | Marks the item, then restores the marked items at the next dispatcher turn. |
@@ -669,9 +668,9 @@ shared view. Editing (`IEditableCollectionView`) is out of scope: TableView does
 
 | Row | Decision | Why |
 |---|---|---|
-| `GetDefaultView` lifetime (#17, A-3) | Deviate (keep) | WPF's lifetime is not GC-safe here (see "Default view lifetime") |
+| `GetDefaultView` lifetime (#17, A-3) | Skip (resolved) | No public default view: WinUI controls don't use default views and WPF's lifetime is not GC-safe here (see "Default view lifetime"); use `CollectionViewSource` |
 | Rules shared with the view, not copied (#7, #8, #34) | Deviate (keep) | One set of rules per CVS: a TableView header sort written on the view is the CVS's rule too, so it survives a new `View` (an `IsSourceGrouped` change); a replaced view keeps a copy, as each WPF view does |
-| No view cache in `CollectionViewManager::GetViewRecord` (#186) | Deviate (keep, documented) | Each CVS holds its `View` and `ItemsControl` never shows a default view, so a cache would have nothing to share; a CVS whose `Source` goes back to an earlier collection gets a new view (currency on the first item), where WPF reuses the old one. A cache would also need the GC-safe lifetime A-3 lacks |
+| No view cache in `CollectionViewManager::GetViewRecord` (#186) | Deviate (keep, documented) | Each CVS holds its `View` and `ItemsControl` never shows a default view, so a cache would have nothing to share; a CVS whose `Source` goes back to an earlier collection gets a new view (currency on the first item), where WPF reuses the old one. A cache would also need a GC-safe lifetime (see A-3) |
 | Internal names that differ (#162 `ProcessGroupedCollectionChanged`, #169 `Plan`/`ApplyGroupedInsertion`, #178 `LiveShapingState`) | Deviate (keep) | The code is shaped differently (plan before raising, for exception safety; no `LiveShapingList` swapped in); WPF's names would claim a parity the structure lacks. The table above maps them |
 
 **Other missing WPF semantics:**
@@ -1078,10 +1077,6 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
 - **Group objects.** A group is an internal `CollectionViewGroupInternal` that implements `ICollectionViewGroup`,
   `ICollectionViewGroup2` (`Name`, `Items`, `ItemCount`, `IsBottomLevel`) and `ICustomPropertyProvider` (so bindings
   see `Key` too). A group `CustomSort` gets the names, not the groups, as before.
-- **Default-view table.** `GetDefaultView` keeps a per-thread table of weak references; a view removes its own entry
-  when it is destroyed.
-- **Default-view lifetime.** Weaker than WPF's (see "Default view lifetime"); a WPF port that sets rules on
-  `GetDefaultView(list)` without keeping the view loses them after a GC.
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
   It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
 - **API shape.** The `GroupDescription` base, the CVS `Filter` event and the enum names were settled in the
@@ -1127,7 +1122,7 @@ Generated outputs were hand-edited to match the generator. Run `dxaml\xcp\runcod
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/SortDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/PropertyGroupDescription.g.h/.g.cpp` (new) | Full class + factory | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/FilterEventArgs.g.h/.g.cpp` (new) | Event args class | Yes |
-| `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_Filter` event index (340), `GroupDescription_GroupNames` property index (2490), `CollectionViewSource_Culture` property index (2491), `GetDefaultView` / `IsDefaultView` method indexes, the enum | Yes (appended entries only) |
+| `Indexes.g.h`, `StableXbfIndexes.g.h`, `StableXbfIndexMapping.g.cpp`, `StableEventIndexes.g.csv`, `EnumDefs.g.h` | `CollectionViewSource_Filter` event index (340), `GroupDescription_GroupNames` property index (2490), `CollectionViewSource_Culture` property index (2491), the enum | Yes (appended entries only) |
 | `dxaml/xcp/dxaml/lib/Factories.g.cpp` | 2 forward declarations + 2 activation entries | Yes (ordering) |
 | `dxaml/xcp/dxaml/lib/synonyms.g.h` | 5 typedefs (with `ICollectionViewShaping` and `ICollectionViewLiveShaping`) | Yes |
 | `dxaml/xcp/dxaml/lib/winrtgeneratedclasses/Aggregate.g.cpp` | 2 includes | Yes |
@@ -1200,7 +1195,7 @@ WPF-parity additions, one test each in the same class:
 - `CollectionViewSourceCultureAndStringComparison`: `Culture` re-sorts (`sv-SE` vs `en-US`), an invalid tag throws;
   `Ordinal` vs `OrdinalIgnoreCase` group names.
 - `CollectionViewShapingSourceCollection`, `CollectionViewSourceFilterEvent` (the `Filter` event alone, over the
-  view's `Filter` delegate, back to the delegate), `CollectionViewSourceGetDefaultView` (shared per source, shapes in place, not the CVS's view).
+  view's `Filter` delegate, back to the delegate).
 
 Live shaping (phase B), one test each in the same class. Each change is made, the dispatcher runs, and the view is
 checked:

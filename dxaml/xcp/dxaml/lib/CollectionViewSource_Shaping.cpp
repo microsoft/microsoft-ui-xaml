@@ -185,17 +185,6 @@ namespace
         return S_OK;
     }
 
-    // One shared default view per list source, held weakly (WPF: ViewManager's default views). Views are per
-    // thread; a view removes its entry when it is destroyed.
-    struct DefaultViewEntry
-    {
-        IUnknown* pSourceIdentity = nullptr;
-        VectorCollectionView* pView = nullptr;
-        ctl::WeakRefPtr viewRef;
-    };
-
-    thread_local std::vector<DefaultViewEntry> t_defaultViews;
-
     template <typename T, typename TOwner>
     _Check_return_ HRESULT SetDescriptionsOwner(_In_ wfc::IVector<T>* pCollection, _In_ TOwner* pOwner)
     {
@@ -988,119 +977,7 @@ _Check_return_ HRESULT CollectionViewSource::RaiseFilterEvent(_In_ IFilterEventS
     return S_OK;
 }
 
-// WPF: CollectionViewSource.GetDefaultView. The view is shared per source while anything holds it, and no
-// CollectionViewSource owns it.
-_Check_return_ HRESULT CollectionViewSourceFactory::GetDefaultViewImpl(_In_opt_ IInspectable* pSource, _Outptr_result_maybenull_ xaml_data::ICollectionView** ppReturnValue)
-{
-    ctl::ComPtr<IUnknown> spIdentity;
-    ctl::ComPtr<xaml_data::ICollectionView> spView;
-    ctl::ComPtr<xaml_data::ICollectionViewFactory> spFactory;
-    bool isShapeable = false;
-
-    *ppReturnValue = nullptr;
-    if (!pSource)
-    {
-        return S_OK;
-    }
-
-    if (ctl::is<xaml_data::ICollectionView>(pSource))
-    {
-        IFC_RETURN(ctl::do_query_interface(*ppReturnValue, pSource));
-        return S_OK;
-    }
-
-    IFC_RETURN(pSource->QueryInterface(IID_PPV_ARGS(spIdentity.ReleaseAndGetAddressOf())));
-
-    t_defaultViews.erase(std::remove_if(t_defaultViews.begin(), t_defaultViews.end(), [&spView, &spIdentity](DefaultViewEntry& entry)
-    {
-        ctl::ComPtr<xaml_data::ICollectionView> spCandidate;
-        IGNOREHR(entry.viewRef.As(&spCandidate));
-        if (!spCandidate)
-        {
-            return true;
-        }
-        if (entry.pSourceIdentity == spIdentity.Get())
-        {
-            spView = std::move(spCandidate);
-        }
-        return false;
-    }), t_defaultViews.end());
-
-    if (!spView)
-    {
-        if (SUCCEEDED(pSource->QueryInterface(IID_PPV_ARGS(spFactory.ReleaseAndGetAddressOf()))))
-        {
-            IFC_RETURN(spFactory->CreateView(spView.ReleaseAndGetAddressOf()));
-        }
-        else
-        {
-            IFC_RETURN(CollectionViewManager::CreateNewView(pSource, false /* isShapingRequested */, spView.ReleaseAndGetAddressOf(), &isShapeable));
-        }
-
-        BOOLEAN isCurrentValid = FALSE;
-        IFC_RETURN(spView->MoveCurrentToFirst(&isCurrentValid));
-
-        // Only a list source's view (WPF: ListCollectionView) is shared and shapeable.
-        if (isShapeable)
-        {
-            auto pView = AsShapingView(spView.Get());
-            pView->SetSourceCollection(pSource);
-            IFC_RETURN(pView->EnableDefaultViewShaping());
-
-            DefaultViewEntry entry;
-            entry.pSourceIdentity = spIdentity.Get();
-            entry.pView = pView;
-            IFC_RETURN(ctl::AsWeak(spView.Get(), &entry.viewRef));
-            t_defaultViews.push_back(std::move(entry));
-        }
-    }
-
-    *ppReturnValue = spView.Detach();
-    return S_OK;
-}
-
-void DirectUI::UnregisterDefaultView(_In_ VectorCollectionView* pView)
-{
-    t_defaultViews.erase(std::remove_if(t_defaultViews.begin(), t_defaultViews.end(), [pView](const DefaultViewEntry& entry)
-    {
-        return entry.pView == pView;
-    }), t_defaultViews.end());
-}
-
-// WPF: CollectionViewSource.IsDefaultView; true for null, as in WPF. A view is the default view of its source while
-// GetDefaultView returns it.
-_Check_return_ HRESULT CollectionViewSourceFactory::IsDefaultViewImpl(_In_opt_ xaml_data::ICollectionView* pView, _Out_ BOOLEAN* pReturnValue)
-{
-    *pReturnValue = TRUE;
-    if (!pView)
-    {
-        return S_OK;
-    }
-
-    ctl::ComPtr<IUnknown> spIdentity;
-    IFC_RETURN(pView->QueryInterface(IID_PPV_ARGS(spIdentity.ReleaseAndGetAddressOf())));
-    *pReturnValue = FALSE;
-    for (auto& entry : t_defaultViews)
-    {
-        ctl::ComPtr<xaml_data::ICollectionView> spCandidate;
-        IGNOREHR(entry.viewRef.As(&spCandidate));
-        if (!spCandidate)
-        {
-            continue;
-        }
-
-        ctl::ComPtr<IUnknown> spCandidateIdentity;
-        IFC_RETURN(spCandidate.As(&spCandidateIdentity));
-        if (spCandidateIdentity.Get() == spIdentity.Get())
-        {
-            *pReturnValue = TRUE;
-            break;
-        }
-    }
-    return S_OK;
-}
-
-// Collections for a view no CollectionViewSource owns (a default view).
+// Collections for a view no CollectionViewSource owns (one detached from its host).
 _Check_return_ HRESULT VectorCollectionView::CreateShapingDescriptions(
     _Outptr_ wfc::IVector<xaml_data::SortDescription*>** ppSortDescriptions,
     _Outptr_ wfc::IVector<xaml_data::GroupDescription*>** ppGroupDescriptions)

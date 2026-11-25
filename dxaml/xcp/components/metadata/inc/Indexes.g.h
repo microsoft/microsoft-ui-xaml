@@ -4047,8 +4047,6 @@ enum class KnownMethodIndex: UINT16
     CollectionViewGroup_GetCustomProperty,
     CollectionViewGroup_GetIndexedProperty,
     CollectionViewGroup_GetStringRepresentation,
-    CollectionViewSource_GetDefaultView,
-    CollectionViewSource_IsDefaultView,
     CollectionViewSource_Refresh,
     CollectionViewSource_DeferRefresh,
     GroupDescription_GroupNameFromItem,
