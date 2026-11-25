@@ -304,7 +304,7 @@ namespace RenderingBackend
         virtual void PopGeometryClip() noexcept = 0;
 
         // 3D (PlaneProjection, Matrix3DProjection, Transform3D, 3D facades). Drawing between push and pop goes to an
-        // offscreen layer in layer DIPs (the transform is reset to identity; the layer is the target's size, so only
+        // offscreen layer in layer DIPs (the transform is reset to identity; the layer is at most the target's size, so only
         // `bounds`, which must fit in it, is kept). On pop, the layer content inside `bounds` is composited through
         // `matrix` (row-vector 4x4, D2D1_MATRIX_4X4_F layout, layer DIPs -> DIPs of the transform active at push;
         // x' = (x*m11 + y*m21 + m41) / w, w = x*m14 + y*m24 + m44) and then through that transform, under the clips and

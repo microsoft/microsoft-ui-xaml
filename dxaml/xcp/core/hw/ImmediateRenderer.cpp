@@ -658,6 +658,60 @@ void ImmediateRenderer::ReleaseResources() noexcept
     m_deviceTraced = false;
 }
 
+// gdilayers: releases painter layers and scratch (GDI+) left idle for ~2 s after the island stopped needing them, so a
+// one-off large layer does not stay resident. Returns the delay to request another walk for the next trim, or 0 when
+// nothing is held or a walk at or before that time is already requested.
+uint32_t ImmediateRenderer::TrimIdleResources(_In_ CXamlIslandRoot* island) noexcept
+{
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
+    auto found = m_islands.find(island);
+    if (found == m_islands.end())
+    {
+        return 0;
+    }
+    const uint64_t now = GetTickCount64();
+    uint32_t nextMs = 0;
+    const auto trim = [&](IslandState& state)
+    {
+        if (!state.painter)
+        {
+            return;
+        }
+        const auto before = state.painter->GetResourceInventory();
+        const uint32_t due = state.painter->TrimTransientResources(now);
+        const auto after = state.painter->GetResourceInventory();
+        if (after.surfaceBytes != before.surfaceBytes || after.cacheBytes != before.cacheBytes)
+        {
+            TraceResourceInventory(state.painter->GetDeviceIdentity().mode, after.surfaceBytes, after.cacheBytes,
+                after.cachedObjectCount, 0);
+        }
+        if (due > 0 && (nextMs == 0 || due < nextMs))
+        {
+            nextMs = due;
+        }
+    };
+    IslandState& state = *found->second;
+    trim(state);
+    for (auto& popup : state.popups)
+    {
+        if (popup.surface)
+        {
+            trim(*popup.surface);
+        }
+    }
+    if (nextMs == 0)
+    {
+        return 0;
+    }
+    const uint64_t dueTick = now + nextMs;
+    if (m_trimRequestedTick > now && m_trimRequestedTick <= dueTick + c_trimSlackMs)
+    {
+        return 0;
+    }
+    m_trimRequestedTick = dueTick;
+    return nextMs;
+}
+
 uint32_t ImmediateRenderer::OnIslandHidden(_In_ CXamlIslandRoot* island) noexcept
 {
     std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
@@ -3570,7 +3624,8 @@ static void ReplayCommands(
                 layerPushed.push_back(c.opacity < 1.0f);
                 if (c.opacity < 1.0f)
                 {
-                    painter.PushOpacityLayer(c.opacity);
+                    // gdilayers: the group's device bounds let GDI+ size the layer to the group, not the window.
+                    painter.PushOpacityLayerWithBounds(c.opacity, c.deviceBounds);
                 }
             }
             else if (c.type == CommandType::PushGeometryClip)

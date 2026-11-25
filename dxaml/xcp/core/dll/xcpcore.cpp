@@ -7227,6 +7227,16 @@ _Check_return_ HRESULT CCoreServices::RenderWalk(
                         {
                             RequestAdditionalFrame(RequestFrameReason::DeviceLost);
                         }
+                        if (RenderingBackend::IsTrimWhenHiddenEnabled())
+                        {
+                            // gdilayers: pooled painter layers and scratch idle for ~2 s are released; a walk is
+                            // requested for when the next one is due, since an idle window renders no frames.
+                            const uint32_t trimInMs = m_immediateRenderer->TrimIdleResources(xamlIslandRoot);
+                            if (trimInMs > 0)
+                            {
+                                RequestImmediateVisibilityWalk(trimInMs);
+                            }
+                        }
                         if (!m_immediateRenderer->IsFallenBack(xamlIslandRoot))
                         {
                             xamlIslandRoot->PropagateNWClean();

@@ -52,8 +52,15 @@ namespace Gdiplus
 //   (ClearType's per-channel coverage cannot be stored in it).
 // - Damage and clips: the Graphics clip is the union over damage rects of (damage rect intersected with the current
 //   axis-aligned clip), in device pixels. Clear uses Graphics::Clear, which replaces pixels inside the clip.
-// - Opacity groups: children are drawn into a pooled full-size PARGB layer, then blended once with DrawImage and an
+// - Opacity groups: children are drawn into a pooled PARGB layer, then blended once with DrawImage and an
 //   ImageAttributes color matrix that scales alpha.
+// - Layers (gdilayers): each nesting depth has one pooled layer that holds only the layer's bounds (current clip,
+//   intersected with the damage bounds and, for PushOpacityLayerWithBounds, the group's device bounds), not the whole
+//   target. Its capacity grows in 64-pixel buckets and is reused while it fits; drawing into it is translated by the
+//   bounds' top-left (SetWorldTransform/SetDeviceTransform), and pixel code addresses it with Surface::At (device
+//   coordinates). The rounded-clip mask is pooled the same way. TrimTransientResources releases layers, the mask and
+//   the shadow/blur scratch once unused for 2 s (and layers much larger than what they served recently);
+//   ResourceInventory::layerBytes reports the layers and the mask.
 // - Resources: brushes, pens, fonts, font families, the string format, layers, and the image attributes are cached; an
 //   identical second frame creates none (GetLastFrameResourceChurn reports 0 created / 0 destroyed). Caches are
 //   bounded, so steady-state frames do not grow ResourceInventory::cachedObjectCount.
@@ -332,6 +339,13 @@ namespace RenderingBackend
             constexpr uint64_t c_maxShadowMaskBytes = 4 << 20;
             constexpr uint64_t c_maxShadowPixels = 16 << 20;
             constexpr uint64_t c_releaseScratchBytes = 4 << 20; // larger scratch surfaces are freed at EndFrame
+            // ---- gdilayers ----
+            constexpr uint32_t c_layerBucket = 64;         // pooled layer and mask capacity granularity (pixels per axis)
+            constexpr int32_t c_layerHintInflate = 2;      // PushOpacityLayerWithBounds: antialiasing margin (pixels)
+            constexpr uint64_t c_transientIdleMs = 2000;   // pooled surfaces and scratch unused this long are released
+            // A pooled surface whose capacity exceeds this multiple of the largest bounds it served in the last trim
+            // window is released, so one large frame does not pin a large layer.
+            constexpr uint64_t c_layerShrinkRatio = 2;
             constexpr float c_maxSigma = 128;                   // physical pixels
             constexpr size_t c_maxGlyphOutlines = 2048;
             constexpr uint64_t c_maxGlyphOutlineBytes = 2 << 20;
@@ -553,6 +567,7 @@ namespace RenderingBackend
             {
                 AxisAlignedClip,
                 OpacityLayer,
+                BoundedOpacityLayer,  // ---- gdilayers ---- layer + the bounds hint as a clip
                 RoundedClip,          // layer + antialiased mask
                 RoundedClipAsAxisClip, // square and pixel-aligned: no layer needed
                 // ---- clips3d ----
@@ -561,12 +576,27 @@ namespace RenderingBackend
                 PerspectiveLayer,
             };
 
-            // A PARGB bitmap over a painter-owned buffer, with its Graphics. Used for the target and opacity layers.
+            // A PARGB bitmap over a painter-owned buffer, with its Graphics. Used for the target, layers and masks.
             struct Surface
             {
                 std::vector<uint8_t> pixels;
                 std::unique_ptr<Gdiplus::Bitmap> bitmap;
                 std::unique_ptr<Gdiplus::Graphics> graphics;
+                // ---- gdilayers ----
+                // Allocated size; layers and masks reuse a larger allocation for smaller bounds.
+                uint32_t capacityWidth = 0, capacityHeight = 0;
+                // Device pixels the surface holds, mapped to its pixel (0, 0): the whole target for the target, the layer
+                // bounds for a layer or mask. Drawing into it is translated by (-rect.left, -rect.top).
+                PixelRect rect;
+                uint64_t lastUsedMs = 0;                       // pooled surfaces: GetTickCount64 of the last frame using it
+                uint32_t peakWidth = 0, peakHeight = 0;        // pooled surfaces: largest bounds since the last trim
+
+                size_t Stride() const noexcept { return static_cast<size_t>(capacityWidth) * 4; }
+                // Device pixel (x, y), which must be inside rect.
+                uint8_t* At(int32_t x, int32_t y) noexcept
+                {
+                    return pixels.data() + static_cast<size_t>(y - rect.top) * Stride() + static_cast<size_t>(x - rect.left) * 4;
+                }
             };
 
             struct LayerRecord
@@ -651,6 +681,9 @@ namespace RenderingBackend
                 surface.bitmap.reset();
                 surface.pixels.clear();
                 surface.pixels.shrink_to_fit();
+                surface.capacityWidth = surface.capacityHeight = 0;
+                surface.rect = {};
+                surface.peakWidth = surface.peakHeight = 0;
             }
 
             struct FontKey
@@ -710,8 +743,10 @@ namespace RenderingBackend
                         IFC_RETURN(m_swapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, desc.Flags));
                     }
 
-                    // Layers are sized to the target; drop them and let the next frame recreate what it needs.
-                    m_frameDestroyed += 2 * static_cast<uint32_t>(m_layers.size());
+                    // Pooled layers and the mask are clamped to the target's size; drop them and let the next frame recreate
+                    // what it needs.
+                    m_frameDestroyed += 2 * static_cast<uint32_t>(std::count_if(m_layers.begin(), m_layers.end(),
+                        [](const std::unique_ptr<Surface>& layer) { return layer && layer->bitmap; }));
                     m_layers.clear();
                     if (m_mask.bitmap)
                     {
@@ -745,6 +780,7 @@ namespace RenderingBackend
                     m_frameDestroyed = 0;
                     m_presentFull = m_forceFullFrame;
                     m_forceFullFrame = false;
+                    m_frameTickMs = GetTickCount64();
 
                     const PixelRect full{ 0, 0, static_cast<int32_t>(m_width), static_cast<int32_t>(m_height) };
                     m_damage.clear();
@@ -906,7 +942,7 @@ namespace RenderingBackend
                     UpdateDeviceTransform();
                     if (m_inFrame)
                     {
-                        Record(Current().SetTransform(m_transform.get()));
+                        SetWorldTransform(Current());
                     }
                 }
 
@@ -922,13 +958,48 @@ namespace RenderingBackend
                     PushLayer(record);
                 }
 
+                // ---- gdilayers ----
+                // The hint (inflated for antialiasing) is pushed as a clip, so the layer and every layer nested in it are
+                // sized to it. Inside a perspective layer the caller's device bounds are outside the layer's pixel space,
+                // so the hint is ignored there.
+                void PushOpacityLayerWithBounds(float opacity, const RectF& deviceBounds) noexcept override
+                {
+                    if (!m_inFrame)
+                    {
+                        return;
+                    }
+                    if (!m_perspective.empty() || !std::isfinite(deviceBounds.left) || !std::isfinite(deviceBounds.top) ||
+                        !std::isfinite(deviceBounds.right) || !std::isfinite(deviceBounds.bottom) ||
+                        !(deviceBounds.right >= deviceBounds.left) || !(deviceBounds.bottom >= deviceBounds.top))
+                    {
+                        PushOpacityLayer(opacity);
+                        return;
+                    }
+                    const PixelRect hint{ ToPixel(std::floor(deviceBounds.left)) - c_layerHintInflate, ToPixel(std::floor(deviceBounds.top)) - c_layerHintInflate,
+                        ToPixel(std::ceil(deviceBounds.right)) + c_layerHintInflate, ToPixel(std::ceil(deviceBounds.bottom)) + c_layerHintInflate };
+                    m_clipStack.push_back(Intersect(CurrentClip(), hint));
+                    m_stack.push_back(StackEntry::BoundedOpacityLayer);
+                    LayerRecord record{};
+                    record.opacity = opacity;
+                    PushLayer(record);
+                }
+
                 void PopOpacityLayer() noexcept override
                 {
-                    if (!m_inFrame || m_stack.empty() || m_stack.back() != StackEntry::OpacityLayer)
+                    if (!m_inFrame || m_stack.empty())
+                    {
+                        return;
+                    }
+                    const StackEntry entry = m_stack.back();
+                    if (entry != StackEntry::OpacityLayer && entry != StackEntry::BoundedOpacityLayer)
                     {
                         return;
                     }
                     m_stack.pop_back();
+                    if (entry == StackEntry::BoundedOpacityLayer)
+                    {
+                        m_clipStack.pop_back();
+                    }
                     PopLayer();
                 }
 
@@ -1454,10 +1525,10 @@ namespace RenderingBackend
                     if (space.axisAligned)
                     {
                         // Identity transform, integer rects, nearest-neighbor sampling, and half pixel offset: a 1:1 copy.
-                        Record(graphics.ResetTransform());
+                        SetDeviceTransform(graphics);
                         Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(originX, originY, static_cast<INT>(w), static_cast<INT>(h)),
                             0, 0, static_cast<INT>(w), static_cast<INT>(h), Gdiplus::UnitPixel, nullptr));
-                        Record(graphics.SetTransform(m_transform.get()));
+                        SetWorldTransform(graphics);
                         m_stats.paintedPixels += VisibleArea({ originX, originY, originX + static_cast<int32_t>(w), originY + static_cast<int32_t>(h) });
                     }
                     else
@@ -1486,7 +1557,9 @@ namespace RenderingBackend
                     {
                         return;
                     }
-                    const PixelRect region = Intersect(Intersect(DeviceBounds(rect, 0), CurrentClip()), m_damageBounds);
+                    Surface& surface = CurrentSurface();
+                    // A layer holds only its bounds: the blur reads clamp at its edge like at the target's.
+                    const PixelRect region = Intersect(Intersect(Intersect(DeviceBounds(rect, 0), CurrentClip()), m_damageBounds), surface.rect);
                     if (region.IsEmpty())
                     {
                         return;
@@ -1495,18 +1568,17 @@ namespace RenderingBackend
                     const float sigmaY = std::min(blurRadius / 2 * space.ay, c_maxSigma);
                     const int32_t padX = static_cast<int32_t>(std::ceil(3 * sigmaX)) + 1;
                     const int32_t padY = static_cast<int32_t>(std::ceil(3 * sigmaY)) + 1;
-                    const PixelRect source = Intersect({ region.left - padX, region.top - padY, region.right + padX, region.bottom + padY }, FullTarget());
+                    const PixelRect source = Intersect({ region.left - padX, region.top - padY, region.right + padX, region.bottom + padY }, surface.rect);
                     const int32_t sw = source.right - source.left;
                     const int32_t sh = source.bottom - source.top;
 
-                    Surface& surface = CurrentSurface();
                     surface.graphics->Flush(Gdiplus::FlushIntentionSync);
-                    const size_t stride = static_cast<size_t>(m_width) * 4;
                     const size_t blurStride = static_cast<size_t>(sw) * 4;
                     m_blurPixels.resize(blurStride * sh);
+                    m_blurUsedMs = m_frameTickMs;
                     for (int32_t y = 0; y < sh; ++y)
                     {
-                        memcpy(m_blurPixels.data() + y * blurStride, surface.pixels.data() + (source.top + y) * stride + static_cast<size_t>(source.left) * 4, blurStride);
+                        memcpy(m_blurPixels.data() + y * blurStride, surface.At(source.left, source.top + y), blurStride);
                     }
                     GaussianBlur(m_blurPixels.data(), sw, sh, static_cast<ptrdiff_t>(blurStride), 4, sigmaX, sigmaY, m_blurLine);
 
@@ -1552,7 +1624,7 @@ namespace RenderingBackend
                         const PixelRect area = Intersect(damage, region);
                         for (int32_t y = area.top; y < area.bottom; ++y)
                         {
-                            uint8_t* destination = surface.pixels.data() + y * stride + static_cast<size_t>(area.left) * 4;
+                            uint8_t* destination = surface.At(area.left, y);
                             const uint8_t* blurred = m_blurPixels.data() + (y - source.top) * blurStride + static_cast<size_t>(area.left - source.left) * 4;
                             for (int32_t x = area.left; x < area.right; ++x, destination += 4, blurred += 4)
                             {
@@ -1625,13 +1697,12 @@ namespace RenderingBackend
                         std::clamp(color.r, 0.0f, 1.0f) * a * 255, a * 255 };
                     Surface& surface = CurrentSurface();
                     surface.graphics->Flush(Gdiplus::FlushIntentionSync);
-                    const size_t stride = static_cast<size_t>(m_width) * 4;
                     for (const PixelRect& damage : m_damage)
                     {
-                        const PixelRect area = Intersect(damage, region);
+                        const PixelRect area = Intersect(Intersect(damage, region), surface.rect);
                         for (int32_t y = area.top; y < area.bottom; ++y)
                         {
-                            uint8_t* destination = surface.pixels.data() + y * stride + static_cast<size_t>(area.left) * 4;
+                            uint8_t* destination = surface.At(area.left, y);
                             for (int32_t x = area.left; x < area.right; ++x, destination += 4)
                             {
                                 const uint32_t coverage = coverageAt(x, y);
@@ -1721,7 +1792,8 @@ namespace RenderingBackend
                         switch (m_stack.back())
                         {
                             case StackEntry::AxisAlignedClip: PopAxisAlignedClip(); break;
-                            case StackEntry::OpacityLayer: PopOpacityLayer(); break;
+                            case StackEntry::OpacityLayer:
+                            case StackEntry::BoundedOpacityLayer: PopOpacityLayer(); break;
                             case StackEntry::GeometryClip:
                             case StackEntry::GeometryClipAsAxisClip: PopGeometryClip(); break;
                             case StackEntry::PerspectiveLayer: PopPerspectiveLayer(); break;
@@ -1772,8 +1844,13 @@ namespace RenderingBackend
                 ResourceInventory GetResourceInventory() const noexcept override
                 {
                     ResourceInventory inventory{};
-                    const uint64_t surfaceBytes = static_cast<uint64_t>(m_width) * m_height * 4;
-                    inventory.surfaceBytes = surfaceBytes * (1 + m_layers.size() + (m_mask.bitmap ? 1 : 0));
+                    uint64_t layerBytes = m_mask.pixels.size();
+                    for (const auto& layer : m_layers)
+                    {
+                        layerBytes += layer ? layer->pixels.size() : 0;
+                    }
+                    inventory.layerBytes = layerBytes;
+                    inventory.surfaceBytes = m_target.pixels.size() + layerBytes;
                     const uint32_t families = static_cast<uint32_t>(m_fontFamilies.size());
                     const uint32_t singletons = (m_stringFormat ? 1 : 0) + (m_imageAttributes ? 1 : 0) + (m_path ? 1 : 0) + (m_transform ? 1 : 0) +
                         (m_bitmapAttributes ? 1 : 0) + (m_gdiInterop ? 1 : 0);
@@ -1804,6 +1881,76 @@ namespace RenderingBackend
                         m_ramp.capacity() * sizeof(uint32_t) + (m_flatPoints.capacity() + m_figurePoints.capacity() + m_dashPoints.capacity()) * sizeof(Gdiplus::PointF);
                     inventory.uploadBytesThisFrame = m_uploadBytes;
                     return inventory;
+                }
+
+                // ---- gdilayers ----
+                uint32_t TrimTransientResources(uint64_t nowMs) noexcept override
+                {
+                    if (m_inFrame)
+                    {
+                        return static_cast<uint32_t>(c_transientIdleMs);
+                    }
+                    uint64_t nextDue = UINT64_MAX;
+                    const auto idle = [&](uint64_t lastUsedMs) noexcept
+                    {
+                        if (nowMs >= lastUsedMs + c_transientIdleMs)
+                        {
+                            return true;
+                        }
+                        nextDue = std::min(nextDue, lastUsedMs + c_transientIdleMs - nowMs);
+                        return false;
+                    };
+                    const bool windowEnded = nowMs >= m_trimWindowStartMs + c_transientIdleMs;
+                    const auto trimPooled = [&](Surface& surface) noexcept
+                    {
+                        if (!surface.bitmap)
+                        {
+                            return;
+                        }
+                        bool release = idle(surface.lastUsedMs);
+                        if (!release && windowEnded)
+                        {
+                            const uint64_t peak = static_cast<uint64_t>(LayerBucket(surface.peakWidth, m_width)) * LayerBucket(surface.peakHeight, m_height);
+                            release = static_cast<uint64_t>(surface.capacityWidth) * surface.capacityHeight > c_layerShrinkRatio * peak;
+                        }
+                        if (release)
+                        {
+                            ReleaseSurface(surface);
+                        }
+                        else if (windowEnded)
+                        {
+                            surface.peakWidth = surface.peakHeight = 0;
+                        }
+                    };
+                    for (auto& layer : m_layers)
+                    {
+                        if (layer)
+                        {
+                            trimPooled(*layer);
+                        }
+                    }
+                    while (!m_layers.empty() && (!m_layers.back() || !m_layers.back()->bitmap))
+                    {
+                        m_layers.pop_back();
+                    }
+                    trimPooled(m_mask);
+                    if (windowEnded)
+                    {
+                        m_trimWindowStartMs = nowMs;
+                    }
+                    if (m_shadowScratch.bitmap && idle(m_shadowScratchUsedMs))
+                    {
+                        ReleaseSurface(m_shadowScratch);
+                        m_shadowScratchWidth = m_shadowScratchHeight = 0;
+                    }
+                    if ((m_blurPixels.capacity() > 0 || m_blurLine.capacity() > 0) && idle(m_blurUsedMs))
+                    {
+                        m_blurPixels.clear();
+                        m_blurPixels.shrink_to_fit();
+                        m_blurLine.clear();
+                        m_blurLine.shrink_to_fit();
+                    }
+                    return nextDue == UINT64_MAX ? 0 : static_cast<uint32_t>(std::max<uint64_t>(nextDue, 1));
                 }
 
                 HRESULT SetPresentationSwapChain(IDXGISwapChain1* swapChain) noexcept override
@@ -2722,17 +2869,20 @@ namespace RenderingBackend
                     }
 
                     Gdiplus::Graphics& graphics = Current();
-                    Record(graphics.ResetTransform());
+                    SetDeviceTransform(graphics);
                     Record(graphics.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(area.left, area.top, static_cast<INT>(width), static_cast<INT>(height)),
                         0, 0, static_cast<INT>(width), static_cast<INT>(height), Gdiplus::UnitPixel, nullptr));
                     graphics.Flush(Gdiplus::FlushIntentionSync);
-                    Record(graphics.SetTransform(m_transform.get()));
+                    SetWorldTransform(graphics);
                 }
 
             private:
                 HRESULT CreateSurface(uint32_t width, uint32_t height, Surface& surface) noexcept
                 {
                     surface.pixels.assign(static_cast<size_t>(width) * height * 4, 0);
+                    surface.capacityWidth = width;
+                    surface.capacityHeight = height;
+                    surface.rect = { 0, 0, static_cast<int32_t>(width), static_cast<int32_t>(height) };
                     surface.bitmap.reset(new Gdiplus::Bitmap(static_cast<INT>(width), static_cast<INT>(height), static_cast<INT>(width * 4),
                         PixelFormat32bppPARGB, surface.pixels.data()));
                     IFC_RETURN(CheckCreated(surface.bitmap));
@@ -2800,8 +2950,46 @@ namespace RenderingBackend
                     return S_OK;
                 }
 
-                // Children of an opacity group or rounded clip draw into a pooled full-size layer (one per nesting depth),
-                // cleared inside its bounds (current clip intersected with the damage bounds).
+                // ---- gdilayers ----
+                // Rounds a pooled surface dimension up to the bucket, capped at the target's dimension.
+                static uint32_t LayerBucket(uint32_t need, uint32_t limit) noexcept
+                {
+                    const uint32_t rounded = need > UINT32_MAX - c_layerBucket ? need : (need + c_layerBucket - 1) / c_layerBucket * c_layerBucket;
+                    return std::max(need, std::min(rounded, limit));
+                }
+
+                // Makes `surface` hold the device pixels in `bounds` (its origin moves to bounds' top-left): reuses the
+                // pooled bitmap when its capacity fits and grows it (in buckets, never shrinking here) otherwise.
+                bool EnsurePooledSurface(Surface& surface, const PixelRect& bounds) noexcept
+                {
+                    const uint32_t needWidth = static_cast<uint32_t>(std::max(1, bounds.right - bounds.left));
+                    const uint32_t needHeight = static_cast<uint32_t>(std::max(1, bounds.bottom - bounds.top));
+                    if (!surface.bitmap || needWidth > surface.capacityWidth || needHeight > surface.capacityHeight)
+                    {
+                        const uint32_t width = LayerBucket(std::max(needWidth, surface.capacityWidth), m_width);
+                        const uint32_t height = LayerBucket(std::max(needHeight, surface.capacityHeight), m_height);
+                        if (surface.bitmap)
+                        {
+                            m_frameDestroyed += 2;
+                        }
+                        ReleaseSurface(surface);
+                        const HRESULT hr = CreateSurface(width, height, surface);
+                        if (FAILED(hr))
+                        {
+                            ReleaseSurface(surface);
+                            Fail(hr);
+                            return false;
+                        }
+                    }
+                    surface.rect = { bounds.left, bounds.top, bounds.left + static_cast<int32_t>(needWidth), bounds.top + static_cast<int32_t>(needHeight) };
+                    surface.lastUsedMs = m_frameTickMs;
+                    surface.peakWidth = std::max(surface.peakWidth, needWidth);
+                    surface.peakHeight = std::max(surface.peakHeight, needHeight);
+                    return true;
+                }
+
+                // Children of an opacity group or rounded clip draw into a pooled layer (one per nesting depth) holding
+                // only the layer's bounds (current clip intersected with the damage bounds), cleared before use.
                 void PushLayer(LayerRecord record) noexcept
                 {
                     record.bounds = Intersect(CurrentClip(), m_damageBounds);
@@ -2809,14 +2997,16 @@ namespace RenderingBackend
                     if (SUCCEEDED(m_frameHr) && depth == m_layers.size())
                     {
                         auto layer = std::unique_ptr<Surface>(new (std::nothrow) Surface());
-                        HRESULT hr = layer ? CreateSurface(m_width, m_height, *layer) : E_OUTOFMEMORY;
-                        if (SUCCEEDED(hr))
+                        if (layer)
                         {
                             m_layers.push_back(std::move(layer));
                         }
-                        Fail(hr);
+                        else
+                        {
+                            Fail(E_OUTOFMEMORY);
+                        }
                     }
-                    record.active = SUCCEEDED(m_frameHr) && depth < m_layers.size();
+                    record.active = SUCCEEDED(m_frameHr) && depth < m_layers.size() && EnsurePooledSurface(*m_layers[depth], record.bounds);
                     m_layerStack.push_back(record);
                     if (record.active)
                     {
@@ -2877,10 +3067,10 @@ namespace RenderingBackend
                     const PixelRect& b = record.bounds;
                     const INT width = b.right - b.left;
                     const INT height = b.bottom - b.top;
-                    Record(parent.ResetTransform());
-                    Record(parent.DrawImage(layer.bitmap.get(), Gdiplus::Rect(b.left, b.top, width, height), b.left, b.top, width, height,
-                        Gdiplus::UnitPixel, attributes));
-                    Record(parent.SetTransform(m_transform.get()));
+                    SetDeviceTransform(parent);
+                    Record(parent.DrawImage(layer.bitmap.get(), Gdiplus::Rect(b.left, b.top, width, height), b.left - layer.rect.left, b.top - layer.rect.top,
+                        width, height, Gdiplus::UnitPixel, attributes));
+                    SetWorldTransform(parent);
                     m_stats.paintedPixels += VisibleArea(b);
                 }
 
@@ -2985,10 +3175,11 @@ namespace RenderingBackend
                     const uint32_t scratchStride = m_shadowScratchWidth;
                     uint32_t* out = reinterpret_cast<uint32_t*>(m_shadowScratch.pixels.data());
                     const uint32_t* in = reinterpret_cast<const uint32_t*>(layer.pixels.data());
-                    const int32_t layerStride = static_cast<int32_t>(m_width);
+                    const int32_t layerStride = static_cast<int32_t>(layer.capacityWidth);
                     auto texel = [&](int32_t x, int32_t y) -> uint32_t
                     {
-                        return (x < src.left || y < src.top || x >= src.right || y >= src.bottom) ? 0u : in[y * layerStride + x];
+                        return (x < src.left || y < src.top || x >= src.right || y >= src.bottom) ? 0u
+                            : in[(y - layer.rect.top) * layerStride + (x - layer.rect.left)];
                     };
                     for (uint32_t row = 0; row < hgt; ++row)
                     {
@@ -3031,10 +3222,10 @@ namespace RenderingBackend
                         }
                     }
 
-                    Record(parent.ResetTransform());
+                    SetDeviceTransform(parent);
                     Record(parent.DrawImage(m_shadowScratch.bitmap.get(), Gdiplus::Rect(destination.left, destination.top, static_cast<INT>(w), static_cast<INT>(hgt)),
                         0, 0, static_cast<INT>(w), static_cast<INT>(hgt), Gdiplus::UnitPixel, nullptr));
-                    Record(parent.SetTransform(m_transform.get()));
+                    SetWorldTransform(parent);
                     m_stats.paintedPixels += VisibleArea(destination);
                 }
 
@@ -3045,12 +3236,11 @@ namespace RenderingBackend
                 bool ApplyRoundedMask(Surface& layer, const LayerRecord& record) noexcept
                 {
                     const PixelRect& b = record.bounds;
-                    const size_t stride = static_cast<size_t>(m_width) * 4;
                     auto scaleRows = [&](auto&& coverageAt)
                     {
                         for (int32_t y = b.top; y < b.bottom; ++y)
                         {
-                            uint8_t* destination = layer.pixels.data() + y * stride + static_cast<size_t>(b.left) * 4;
+                            uint8_t* destination = layer.At(b.left, y);
                             for (int32_t x = b.left; x < b.right; ++x, destination += 4)
                             {
                                 const uint32_t alpha = coverageAt(x, y);
@@ -3081,15 +3271,9 @@ namespace RenderingBackend
                         return true;
                     }
 
-                    if (!m_mask.bitmap)
+                    if (!EnsurePooledSurface(m_mask, b))
                     {
-                        const HRESULT hr = CreateSurface(m_width, m_height, m_mask);
-                        if (FAILED(hr))
-                        {
-                            ReleaseSurface(m_mask);
-                            Fail(hr);
-                            return false;
-                        }
+                        return false;
                     }
                     Gdiplus::SolidBrush* brush = GetBrush({ 1, 1, 1, 1 });
                     if (!brush)
@@ -3098,12 +3282,13 @@ namespace RenderingBackend
                     }
                     Gdiplus::Graphics& mask = *m_mask.graphics;
                     Record(mask.ResetTransform());
-                    Record(mask.SetClip(Gdiplus::Rect(b.left, b.top, b.right - b.left, b.bottom - b.top), Gdiplus::CombineModeReplace));
+                    Record(mask.SetClip(Gdiplus::Rect(0, 0, b.right - b.left, b.bottom - b.top), Gdiplus::CombineModeReplace));
                     Record(mask.Clear(Gdiplus::Color(0, 0, 0, 0)));
 
-                    // Borrow m_transform for the push-time transform, then restore the current one.
+                    // Borrow m_transform for the push-time transform (moved to the mask's origin), then restore the current one.
                     m_transform->SetElements(t.m11 * s, t.m12 * s, t.m21 * s, t.m22 * s, t.dx * s, t.dy * s);
                     Record(mask.SetTransform(m_transform.get()));
+                    Record(mask.TranslateTransform(static_cast<Gdiplus::REAL>(-b.left), static_cast<Gdiplus::REAL>(-b.top), Gdiplus::MatrixOrderAppend));
                     UpdateDeviceTransform();
                     if (record.maskPath)
                     {
@@ -3122,7 +3307,7 @@ namespace RenderingBackend
                     {
                         return false;
                     }
-                    scaleRows([&](int32_t x, int32_t y) { return static_cast<uint32_t>(m_mask.pixels[y * stride + static_cast<size_t>(x) * 4 + 3]); });
+                    scaleRows([&](int32_t x, int32_t y) { return static_cast<uint32_t>(m_mask.At(x, y)[3]); });
                     return true;
                 }
 
@@ -3517,7 +3702,7 @@ namespace RenderingBackend
                         }
                         Record(graphics.TranslateTransform(m_glyphPositions[index].X, m_glyphPositions[index].Y, Gdiplus::MatrixOrderPrepend));
                         Record(graphics.FillPath(brush, path));
-                        Record(graphics.SetTransform(m_transform.get()));
+                        SetWorldTransform(graphics);
                     }
                 }
 
@@ -3616,20 +3801,19 @@ namespace RenderingBackend
                 // per-channel coverage can be blended without an alpha channel.
                 bool IsOpaqueUnder(const PixelRect& bounds) noexcept
                 {
-                    const PixelRect area = Intersect(Intersect(bounds, CurrentClip()), FullTarget());
+                    Surface& surface = CurrentSurface();
+                    const PixelRect area = Intersect(Intersect(Intersect(bounds, CurrentClip()), FullTarget()), surface.rect);
                     if (area.IsEmpty())
                     {
                         return false;
                     }
-                    Surface& surface = CurrentSurface();
                     surface.graphics->Flush(Gdiplus::FlushIntentionSync);
-                    const size_t stride = static_cast<size_t>(m_width) * 4;
                     for (int32_t y = area.top; y < area.bottom; ++y)
                     {
-                        const uint8_t* row = surface.pixels.data() + y * stride + 3;
+                        const uint8_t* row = surface.At(area.left, y) + 3;
                         for (int32_t x = area.left; x < area.right; ++x)
                         {
-                            if (row[static_cast<size_t>(x) * 4] != 255)
+                            if (row[static_cast<size_t>(x - area.left) * 4] != 255)
                             {
                                 return false;
                             }
@@ -3685,6 +3869,7 @@ namespace RenderingBackend
                             row[x] = static_cast<uint8_t>(RoundedRectCoverage(shape, rx, ry, x, y));
                         }
                     }
+                    m_blurUsedMs = m_frameTickMs;
                     GaussianBlur(mask.alpha.data(), static_cast<int32_t>(width), static_cast<int32_t>(height), static_cast<ptrdiff_t>(width), 1,
                         sigmaX, sigmaY, m_blurLine);
 
@@ -3709,6 +3894,7 @@ namespace RenderingBackend
                 // PARGB scratch the colored shadow is composited from; grows to the largest shadow drawn.
                 bool EnsureShadowScratch(uint32_t width, uint32_t height) noexcept
                 {
+                    m_shadowScratchUsedMs = m_frameTickMs;
                     if (m_shadowScratch.bitmap && width <= m_shadowScratchWidth && height <= m_shadowScratchHeight)
                     {
                         return true;
@@ -4020,12 +4206,12 @@ namespace RenderingBackend
                             0, 0, static_cast<INT>(w), static_cast<INT>(h), Gdiplus::UnitPixel, nullptr));
                         graphics.Flush(Gdiplus::FlushIntentionSync);
                     };
-                    Record(graphics.ResetTransform());
+                    SetDeviceTransform(graphics);
                     corner(l, t, xl, yt);
                     corner(xr, t, r, yt);
                     corner(l, yb, xl, b);
                     corner(xr, yb, r, b);
-                    Record(graphics.SetTransform(m_transform.get()));
+                    SetWorldTransform(graphics);
                     return true;
                 }
 
@@ -4144,7 +4330,8 @@ namespace RenderingBackend
                 // device space; then the DIP-to-pixel transform is restored.
                 void ApplyState(Gdiplus::Graphics& graphics) noexcept
                 {
-                    Record(graphics.ResetTransform());
+                    // Clip rects are device pixels: the device transform maps them to a layer's own pixels.
+                    SetDeviceTransform(graphics);
                     const PixelRect clip = CurrentClip();
                     bool any = false;
                     for (const PixelRect& damage : m_damage)
@@ -4164,7 +4351,49 @@ namespace RenderingBackend
                         // Nothing is visible; drawing is skipped (CanDraw), so a rejected empty clip is not a failure.
                         graphics.SetClip(Gdiplus::Rect(0, 0, 0, 0), Gdiplus::CombineModeReplace);
                     }
+                    SetWorldTransform(graphics);
+                }
+
+                // ---- gdilayers ----
+                // Device pixel of the top-left of the surface `graphics` draws into (pooled layers and the mask hold only
+                // their bounds; the target, redirects, and scratch surfaces start at the device origin).
+                POINT OriginOf(const Gdiplus::Graphics& graphics) const noexcept
+                {
+                    for (const auto& layer : m_layers)
+                    {
+                        if (layer && layer->graphics.get() == &graphics)
+                        {
+                            return { layer->rect.left, layer->rect.top };
+                        }
+                    }
+                    if (m_mask.graphics.get() == &graphics)
+                    {
+                        return { m_mask.rect.left, m_mask.rect.top };
+                    }
+                    return { 0, 0 };
+                }
+
+                void ApplyWorldOrigin(Gdiplus::Graphics& graphics) noexcept
+                {
+                    const POINT origin = OriginOf(graphics);
+                    if (origin.x != 0 || origin.y != 0)
+                    {
+                        Record(graphics.TranslateTransform(static_cast<Gdiplus::REAL>(-origin.x), static_cast<Gdiplus::REAL>(-origin.y), Gdiplus::MatrixOrderAppend));
+                    }
+                }
+
+                // The DIP-to-device transform, moved to the surface's origin.
+                void SetWorldTransform(Gdiplus::Graphics& graphics) noexcept
+                {
                     Record(graphics.SetTransform(m_transform.get()));
+                    ApplyWorldOrigin(graphics);
+                }
+
+                // Device pixels 1:1, moved to the surface's origin.
+                void SetDeviceTransform(Gdiplus::Graphics& graphics) noexcept
+                {
+                    Record(graphics.ResetTransform());
+                    ApplyWorldOrigin(graphics);
                 }
 
                 bool CanDraw() const noexcept
@@ -4424,6 +4653,11 @@ namespace RenderingBackend
                 uint32_t m_shadowScratchWidth = 0, m_shadowScratchHeight = 0;
                 std::vector<uint8_t> m_blurPixels;
                 std::vector<uint32_t> m_blurLine;
+                // ---- gdilayers ---- idle trim (TrimTransientResources)
+                uint64_t m_frameTickMs = 0;          // GetTickCount64 at BeginFrame
+                uint64_t m_shadowScratchUsedMs = 0;
+                uint64_t m_blurUsedMs = 0;
+                uint64_t m_trimWindowStartMs = 0;    // start of the window whose peak bounds size pooled surfaces
 
                 Microsoft::WRL::ComPtr<IDXGISwapChain1> m_swapChain;
                 Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
