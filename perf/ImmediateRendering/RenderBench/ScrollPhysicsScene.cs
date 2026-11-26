@@ -25,6 +25,10 @@ namespace RenderBench;
 //   that differed from the previous one, and the readback count, while the UI thread sleeps; one readback takes ~50 ms on
 //   a GPU-less VM), BlockDManipUpdates and OffsetJumpAfterBlock; the unblocked flick reports the same values for the
 //   200 ms after the same delay (the sampler's reference).
+//   ---- scrollgaps ---- Every step also reports MotionBlitFrames/MotionRepaintFrames (stats frames during motion that
+//   presented through a scroll blit vs a repaint; gap 5). overpan (ScrollViewer) and sv-overpan (ScrollView) drag the
+//   content down past the top extent and release; a background thread reads a screen column for the gutter above row 0
+//   (rows "<step>-screen" in trajectory.csv: ms, -gutter DIPs) and the step reports OverpanMaxPx and OverpanScreenSamples.
 // The trajectory of every step is written to trajectory.csv next to --screenshot (step,ms since input,offset,zoom).
 sealed class ScrollPhysicsScene : DecisionScene, IScene
 {
@@ -33,7 +37,7 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
     public static readonly string[] Steps =
     [
         "wheel-1", "wheel-3", "flick", "pinch", "pgdn", "snap", "bringintoview", "changeview", "sv-wheel", "sv-flick",
-        "flick-blocked",
+        "flick-blocked", "overpan", "sv-overpan",
     ];
 
     readonly ScrollViewer _viewer;
@@ -131,6 +135,17 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
             return -1;
         }
         return ReadShared(_statsPath).Count(l => l.Length > 0 && char.IsDigit(l[0]));
+    }
+
+    // ---- scrollgaps ---- frames [from, to) of the stats file (WINUI_IMMEDIATE_STATS, frame lines only) that blitted
+    // (blits column > 0) and that repainted without a blit.
+    (int Blit, int Repaint) StatsBlitFrames(int from, int to)
+    {
+        if (_statsPath is null || !File.Exists(_statsPath) || from < 0)
+        {
+            return (-1, -1);
+        }
+        return RenderBench.Analysis.ScrollPhysicsAnalysis.CountBlitFrames(ReadShared(_statsPath), from, to);
     }
 
     static List<string> ReadShared(string path)
@@ -275,6 +290,8 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         bool injected = true;
         int blockChanges = -1, blockTicks = -1;
         double blockJump = double.NaN;
+        double overpanMax = double.NaN;
+        int overpanSamples = -1;
         var at = Center(target);
         switch (name)
         {
@@ -321,6 +338,27 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
                 host.MarkInput("changeview", "ScrollViewer", programmatic: true);
                 _viewer.ChangeView(null, 2400, null, disableAnimation: false);
                 break;
+            case "overpan":
+            case "sv-overpan":
+            {
+                // ---- scrollgaps ---- a fast downward drag at offset 0 pulls the content past its top (overpan) and
+                // releases into the bounce back. XAML's offsets stay clamped at 0; the screen shows the gutter, so the
+                // content's top edge is read back from the screen (EdgeSampler) in every mode.
+                host.MarkInput("touch", target.GetType().Name, programmatic: false);
+                using var edges = new EdgeSampler(host, target);
+                injected = await InputInjection.DragAsync(host.Window, Center(target, -60), 0, 200, steps: 6);
+                await Task.Delay(1200);
+                edges.Stop();
+                double maxEdge = 0;
+                foreach (var (ticks, edge) in edges.Edges)
+                {
+                    _csv.Add(string.Create(CultureInfo.InvariantCulture, $"{name}-screen,{Ms(recorder.InputTicks, ticks):F1},{-edge:F2},1"));
+                    if (!double.IsNaN(edge)) maxEdge = Math.Max(maxEdge, edge);
+                }
+                overpanMax = maxEdge;
+                overpanSamples = edges.Edges.Count;
+                break;
+            }
             case "flick-blocked":
             {
                 host.MarkInput("touch", "ScrollViewer", programmatic: false);
@@ -412,6 +450,15 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
             Value("BlockDManipUpdates", blockTicks);
             Value("OffsetJumpAfterBlock", blockJump);
         }
+        // ---- scrollgaps ----
+        var (blitFrames, repaintFrames) = StatsBlitFrames(statsBefore, statsSettled);
+        Value("MotionBlitFrames", blitFrames);
+        Value("MotionRepaintFrames", repaintFrames);
+        if (name is "overpan" or "sv-overpan")
+        {
+            Value("OverpanMaxPx", overpanMax);
+            Value("OverpanScreenSamples", overpanSamples);
+        }
         Console.Error.WriteLine(string.Create(CultureInfo.InvariantCulture,
             $"S33 {name}: injected={injected} samples={samples.Count} motion={motionMs:F0}ms final={finalOffset:F1} zoom={finalZoom:F3} idleTicks={CountTicks(idleFromUs, idleToUs)} block={blockChanges}/{blockTicks}/{blockJump:F1}"));
         await Hold(seconds: 0.2);
@@ -489,6 +536,65 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         public int Samples => _samples;
 
         public void Dispose() => _stop.Dispose();
+    }
+
+    // ---- scrollgaps ---- Reads the viewport's top 200 DIPs (one 1-pixel column at a third of its width) from the screen
+    // as fast as readbacks allow and records where Row 0 (RGB 60,60,60) starts: the overpan gutter height in DIPs (0
+    // when not overpanned, NaN when Row 0 is not visible).
+    sealed class EdgeSampler : IDisposable
+    {
+        readonly ManualResetEventSlim _stop = new();
+        readonly Thread _thread;
+        public readonly List<(long Ticks, double Edge)> Edges = [];
+
+        public EdgeSampler(ISceneHost host, FrameworkElement target)
+        {
+            double scale = GetDpiForWindow(host.Hwnd) / 96.0;
+            var origin = target.TransformToVisual(null).TransformPoint(new Point(target.ActualWidth / 3, 0));
+            var client = new ScreenPoint();
+            ClientToScreen(host.Hwnd, ref client);
+            int x = client.X + (int)(origin.X * scale);
+            int top = client.Y + (int)Math.Ceiling(origin.Y * scale);
+            int height = (int)(Math.Min(200, target.ActualHeight) * scale);
+            _thread = new Thread(() =>
+            {
+                nint screen = GetDC(0);
+                nint memory = CreateCompatibleDC(screen);
+                nint bitmap = CreateCompatibleBitmap(screen, 1, height);
+                nint old = SelectObject(memory, bitmap);
+                // 32bpp: 4 bytes per 1-pixel row (scanlines are WORD aligned).
+                var bits = new byte[height * 4];
+                while (!_stop.IsSet)
+                {
+                    BitBlt(memory, 0, 0, 1, height, screen, x, top, 0x00CC0020 /* SRCCOPY */);
+                    long ticks = Stopwatch.GetTimestamp();
+                    GetBitmapBits(bitmap, bits.Length, bits);
+                    double edge = RenderBench.Analysis.ScrollPhysicsAnalysis.OverpanEdge(bits, scale, (60, 60, 60));
+                    lock (Edges)
+                    {
+                        Edges.Add((ticks, edge));
+                    }
+                    Thread.Sleep(1);
+                }
+                SelectObject(memory, old);
+                DeleteObject(bitmap);
+                DeleteDC(memory);
+                ReleaseDC(0, screen);
+            }) { IsBackground = true };
+            _thread.Start();
+        }
+
+        public void Stop()
+        {
+            _stop.Set();
+            _thread.Join();
+        }
+
+        public void Dispose()
+        {
+            if (!_stop.IsSet) Stop();
+            _stop.Dispose();
+        }
     }
 
     // Samples the screen for ms while the UI thread sleeps (block) or awaits (free); returns the screen changes and the

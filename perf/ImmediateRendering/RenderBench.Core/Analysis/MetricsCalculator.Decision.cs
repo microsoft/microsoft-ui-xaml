@@ -13,6 +13,7 @@ public static partial class MetricsCalculator
     [
         "Injected", "Samples", "MotionMs", "UpdateHz", "P95IntervalMs", "FinalOffset", "FinalZoom", "MotionCpuMsPerSecond",
         "IdleCpuMsPerSecond", "IdleDManipUpdates", "MotionDManipUpdates", "BlockScreenChanges", "BlockScreenSamples", "BlockDManipUpdates", "OffsetJumpAfterBlock",
+        "MotionBlitFrames", "MotionRepaintFrames", "OverpanMaxPx", "OverpanScreenSamples", // ---- scrollgaps ----
     ];
 
     // Least-squares fit of y = slope * x + intercept; null with fewer than two distinct x values.
