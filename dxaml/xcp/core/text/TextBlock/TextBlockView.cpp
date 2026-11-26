@@ -407,7 +407,7 @@ int TextBlockView::GetCharacterIndex(int position)
     int characterIndex = 0;
 
     // Correct out of bound indexes to valid ones
-    if (position < PlaceHolderPositionsForInlines)
+    if (position < static_cast<int>(PlaceHolderPositionsForInlines))
     {
         characterIndex = 0;
     }
