@@ -2121,6 +2121,7 @@ void TableView::ArmReshapeFocusAttempt()
 
 void TableView::CancelReshapeFocusRestore()
 {
+    ReleaseReshapeFocusAnchor();
     m_pendingReshapeFocusRow = -1;
     m_pendingBodyFocusItem = nullptr;
     EndPendingTabEditMove();
@@ -2318,6 +2319,7 @@ bool TableView::TryLandReshapeFocus()
         {
             return false;
         }
+        m_reshapeFocusAnchor = winrt::make_weak(element);
     }
 
     if (!IsRowElementArranged(element))
@@ -2353,6 +2355,10 @@ bool TableView::TryLandReshapeFocus()
         const bool scrolling = IsBodyScrollInFlight() || ScrollBodyToRowElement(element, m_pendingReshapeFocusAlign);
         m_reshapeFocusWaitForLayout = scrolling || m_pendingBodyFocusFromKeyboard;
     }
+
+    // Focus is aimed; an anchor left in place keeps the repeater realizing only around it, which
+    // blanks the rest of the viewport until something else releases it.
+    ReleaseReshapeFocusAnchor();
     return false;
 }
 
@@ -2825,6 +2831,14 @@ void TableView::ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor)
     options.AnimationDesired(false);
     options.TargetRect(winrt::Rect{});
     target.StartBringIntoView(options);
+}
+
+void TableView::ReleaseReshapeFocusAnchor()
+{
+    if (auto const anchor = std::exchange(m_reshapeFocusAnchor, {}).get())
+    {
+        ReleaseRowsRepeaterAnchor(anchor);
+    }
 }
 
 // XAML pads a keyboard-focus bring-into-view by 20 DIPs (or the focus visual margin), so focusing a
@@ -3457,6 +3471,8 @@ bool TableView::FocusRowElementInternal(
     // far jumps (key-repeat PageDown) left focus on such a container after the repeater re-indexed
     // it off-screen.
     auto element = repeater.TryGetElement(rowIndex);
+    winrt::UIElement madeAnchor{ nullptr };
+    auto releaseMadeAnchor = ReleaseRowsRepeaterAnchorOnExit(madeAnchor);
     if (!element)
     {
         if (ScrollBodyToIndex(rowIndex, alignRatio))
@@ -3465,6 +3481,7 @@ bool TableView::FocusRowElementInternal(
             return true;
         }
         element = repeater.GetOrCreateElement(rowIndex);
+        madeAnchor = element;
     }
     if (!element || !element.try_as<winrt::Control>())
     {

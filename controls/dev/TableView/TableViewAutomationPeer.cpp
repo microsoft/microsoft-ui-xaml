@@ -892,6 +892,8 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
     }
 
     winrt::UIElement element{ nullptr };
+    winrt::UIElement madeAnchor{ nullptr };
+    auto releaseMadeAnchor = impl->ReleaseRowsRepeaterAnchorOnExit(madeAnchor);
     try
     {
         element = repeater.TryGetElement(row);
@@ -910,6 +912,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::GetItem(int32_t row, i
         try
         {
             element = repeater.GetOrCreateElement(row);
+            madeAnchor = element;
         }
         catch (...)
         {
@@ -1451,11 +1454,14 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
         }
 
         auto rowElement = repeater.TryGetElement(i);
+        winrt::UIElement madeAnchor{ nullptr };
+        auto releaseMadeAnchor = impl->ReleaseRowsRepeaterAnchorOnExit(madeAnchor);
         if (!rowElement)
         {
             try
             {
                 rowElement = repeater.GetOrCreateElement(i);
+                madeAnchor = rowElement;
             }
             catch (...)
             {

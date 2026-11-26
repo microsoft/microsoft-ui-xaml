@@ -798,7 +798,14 @@ bool TableView::FocusContainerByIdentity(
         return true;
     }
 
-    auto element = repeater.GetOrCreateElement(index);
+    auto element = repeater.TryGetElement(index);
+    winrt::UIElement madeAnchor{ nullptr };
+    auto releaseMadeAnchor = ReleaseRowsRepeaterAnchorOnExit(madeAnchor);
+    if (!element)
+    {
+        element = repeater.GetOrCreateElement(index);
+        madeAnchor = element;
+    }
     if (!element)
     {
         return true;

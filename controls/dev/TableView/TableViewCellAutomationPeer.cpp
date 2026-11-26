@@ -881,12 +881,14 @@ void TableViewCellAutomationPeer::RealizeCore()
     }
 
     winrt::UIElement element{ nullptr };
+    bool madeAnchor = false;
     try
     {
         element = repeater.TryGetElement(rowIndex);
         if (!element)
         {
             element = repeater.GetOrCreateElement(rowIndex);
+            madeAnchor = true;
         }
     }
     catch (...)
@@ -900,6 +902,10 @@ void TableViewCellAutomationPeer::RealizeCore()
         // row, this provider cannot describe it, so fail rather than report a realized element.
         if (!IsTrackedRow(row, tableView) || row != m_row.get() || !IsOwnerCurrentCellOfRow(row))
         {
+            if (madeAnchor)
+            {
+                tableImpl->ReleaseRowsRepeaterAnchor(element);
+            }
             ThrowElementNotAvailable();
         }
 

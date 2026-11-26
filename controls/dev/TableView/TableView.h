@@ -387,6 +387,25 @@ public:
     winrt::ScrollViewer GetBodyScrollerInternal() const { return m_bodyScroller.get(); }
     // Releases the rows repeater's layout anchor, made by GetOrCreateElement(anchor's index), without scrolling.
     void ReleaseRowsRepeaterAnchor(winrt::UIElement const& anchor);
+    // Releases madeAnchor (if set by then) when the scope ends. Only a StartBringIntoView releases an
+    // anchor GetOrCreateElement made; left behind, the repeater keeps realizing around its index and
+    // the viewport goes blank. madeAnchor must outlive the returned guard.
+    [[nodiscard]] auto ReleaseRowsRepeaterAnchorOnExit(winrt::UIElement const& madeAnchor)
+    {
+        return gsl::finally([this, &madeAnchor]() noexcept
+        {
+            if (madeAnchor)
+            {
+                try
+                {
+                    ReleaseRowsRepeaterAnchor(madeAnchor);
+                }
+                catch (...)
+                {
+                }
+            }
+        });
+    }
 
     // Test hook for moving keyboard focus into the body at a row index; false for invalid indexes
     // or before rows exist. Focus lands at whichever LEVEL the cursor is on - the ROW container by
@@ -1438,6 +1457,7 @@ private:
     void CancelReshapeFocusRestore();
     void CancelReshapeFocusRestoreForUserInput();
     bool TryLandReshapeFocus();
+    void ReleaseReshapeFocusAnchor();
     bool IsBodyFocusAtRow(int32_t rowIndex) const;
     bool IsBodyFocusInContainer(winrt::UIElement const& container) const;
     bool IsInUnrealizedBodyContainer(winrt::DependencyObject const& element) const;
@@ -1480,6 +1500,9 @@ private:
     bool m_pendingBodyFocusFromKeyboard{ false };
     // Where a pending keyboard move started (the header for Down); focus still there does not cancel it.
     winrt::weak_ref<winrt::DependencyObject> m_pendingBodyFocusOrigin{ nullptr };
+    // The container a restore realized with GetOrCreateElement, which made it the repeater's layout
+    // anchor; held until released so the repeater does not keep realizing around it alone.
+    winrt::weak_ref<winrt::UIElement> m_reshapeFocusAnchor{ nullptr };
     int32_t m_reshapeFocusAttemptsLeft{ 0 };
     // Set for the turn a restore is armed in; that turn's input triggered the re-shape.
     bool m_reshapeFocusArmedThisTurn{ false };
