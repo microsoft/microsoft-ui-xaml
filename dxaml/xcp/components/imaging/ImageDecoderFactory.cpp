@@ -53,7 +53,7 @@ _Check_return_ HRESULT CreateDecoder(
             IFCFAILFAST(hr);
 
             // The decoder should take a reference on the factory.
-            ctl::ComPtr<ID2D1Factory1> d2dFactory(deviceNoRef->GetD2DFactory()->GetFactory());
+            ctl::ComPtr<ID2D1Factory1> d2dFactory(WicService::GetInstance().GetD2DFactory().Get());
 
             decoder = std::make_unique<SvgImageDecoder>(std::move(d2dFactory));
         }
