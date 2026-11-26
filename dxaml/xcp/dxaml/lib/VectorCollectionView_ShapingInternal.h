@@ -84,6 +84,7 @@ namespace DirectUI::ShapingEngine
     // A diagnostics event (VectorCollectionView_Shaping.cpp) for a contained failure that is not reported.
     void TraceContainedFailure(HRESULT hr, HRESULT capturedHr, bool hasErrorInfo);
 
+#if DBG
     // chk only (SafeStableSort): a CustomSort contradicted the order the sort produced. Not a failure: the view keeps
     // that order, so this is only traced (the event above, with E_INVALIDARG) and written to the debugger.
     inline void TraceInconsistentOrder()
@@ -91,6 +92,7 @@ namespace DirectUI::ShapingEngine
         TraceContainedFailure(E_INVALIDARG, S_OK, false);
         ::OutputDebugStringW(L"CollectionView: the CustomSort returned inconsistent results (it does not define an order, or the items changed while the view sorted); the view keeps the order the sort produced.\n");
     }
+#endif
 
     // A source change or a live restore no app caller waits for: the first failure of app code during it, with the
     // error info the app's code left (its message and stack), reported once the view is consistent again.
@@ -523,9 +525,10 @@ namespace DirectUI::ShapingEngine
         public xaml_data::INotifyPropertyChanged
     {
     protected:
-        // Not BEGIN_INTERFACE_MAP: ICollectionViewGroup2 is reported only while the experimental API is enabled, as
-        // CollectionViewGroup reports it (the feature is a run-time check). Read once, so QueryInterfaceImpl and GetIids
-        // agree for the group's lifetime.
+        // Not BEGIN_INTERFACE_MAP: ICollectionViewGroup2 is reported when Feature_ExperimentalApi is enabled, as
+        // CollectionViewGroup reports it. In C++ that is a compile-time true in every build (FeatureFlags.h), so stable
+        // answers it too, as generated experimental interfaces do; only the stable WinMD omits it. Read once, so
+        // QueryInterfaceImpl and GetIids agree for the group's lifetime.
         INT GetImplementedIIDsCount() override
         {
             return (m_isGroup2Exposed ? 4 : 3) + InternalList::GetImplementedIIDsCount();
@@ -1437,8 +1440,8 @@ namespace DirectUI::ShapingEngine
     // failure: its permutation is kept, as WPF's Array.Sort keeps one (it throws only when introsort happens to run
     // past the range, which cannot happen here). A comparer that never returns 0 (a > b ? 1 : -1) is the common case:
     // equal items are then "before" each other both ways, a tie. Already-ordered runs are joined with one comparison,
-    // so a sorted input costs about 2n comparisons and no comparison is made after the merge (in chk, a final pass
-    // traces an order the comparer contradicts outright; see TraceInconsistentOrder).
+    // so a sorted input costs about 2n comparisons and no comparison is made after the merge (in chk under a debugger, a
+    // final pass traces an order the comparer contradicts outright; see TraceInconsistentOrder).
     template <typename T, typename IsBefore>
     _Check_return_ HRESULT SafeStableSort(_Inout_ std::vector<T>& items, IsBefore&& isBefore)
     {
@@ -1495,15 +1498,19 @@ namespace DirectUI::ShapingEngine
         }
 
 #if DBG
-        // Diagnostics only (chk): a neighbour the comparer puts strictly before the one the merge placed first, and not
-        // also after it (a tie). Its failures are ignored; the sort already succeeded.
-        for (size_t i = 1; i < count; ++i)
+        // Diagnostics only (chk, and only under a debugger, where the trace is read): a neighbour the comparer puts
+        // strictly before the one the merge placed first, and not also after it (a tie). Gated on the debugger so a chk
+        // run calls the app's comparer exactly as fre does (the same call count and side effects, and no comparer
+        // failure a caller counts). Its failures are ignored, and the error info they left is cleared so a later
+        // ContainedFailureReport on this thread cannot capture it; the sort already succeeded.
+        for (size_t i = 1; ::IsDebuggerPresent() && i < count; ++i)
         {
             bool isLaterFirst = false;
             bool isEarlierFirst = false;
             if (FAILED(isBefore(items[order[i]], items[order[i - 1]], &isLaterFirst)) ||
                 (isLaterFirst && FAILED(isBefore(items[order[i - 1]], items[order[i]], &isEarlierFirst))))
             {
+                ::RoClearError();
                 break;
             }
             if (isLaterFirst && !isEarlierFirst)

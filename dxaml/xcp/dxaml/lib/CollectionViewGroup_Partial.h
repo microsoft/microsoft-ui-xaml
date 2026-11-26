@@ -26,9 +26,10 @@ namespace DirectUI
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
-        // GetIids reports ICollectionViewGroup2 when QueryInterfaceImpl answers it (the feature is a run-time check, so
-        // it cannot be a static interface-map entry). Both read m_isGroup2Exposed, so GetIids sizes and fills its array
-        // from one answer.
+        // GetIids reports ICollectionViewGroup2 when QueryInterfaceImpl answers it; both read m_isGroup2Exposed, so GetIids
+        // sizes and fills its array from one answer. Feature_ExperimentalApi::IsEnabled() is a compile-time true in C++
+        // in every build (FeatureFlags.h), so this answers in stable too, as generated experimental interfaces do: only
+        // the IDL feature hides the interface from the stable WinMD.
         INT GetImplementedIIDsCount() override;
         void CopyIIDsToArray(INT first, IID* pResult) override;
 

@@ -272,7 +272,8 @@ bool TableView::IsInstalledSortKeyFor(const winrt::TableViewColumn& column) cons
         {
             return false;
         }
-        // Read once: the view may be the app's. A direction flipped on the view is the app's sort too.
+        // Read once: the view may be the app's. A direction flipped on the view is the app's sort too. (A direction the
+        // app, a style or a binding writes to the column already made the sort display-only: m_sortDisplaySetByApp.)
         auto const description = descriptions.GetAt(0);
         auto const direction = column.SortDirection();
         auto const expected = direction == winrt::SortDirection::Descending
@@ -912,19 +913,17 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
     }
     catch (...)
     {
-        // A view that rejects the column's comparer as inconsistent (E_INVALIDARG from its sort: the platform view keeps
-        // an inconsistent order instead, but an app's view may not) is handled as a comparer that threw: contained, so
-        // a header tap never throws out of the input handler.
-        const HRESULT hr = winrt::to_hresult();
-        if (!faults->count && customSort && hr == E_INVALIDARG)
-        {
-            faults->count = 1;
-            faults->firstError = hr;
-        }
+        // Only a comparer that threw is contained (the view's sort ended and left its rows), so a header tap never
+        // throws out of the input handler. Any other failure of the view (DeferRefresh, the CustomSort setter, Close
+        // re-running a Filter or a group converter) propagates whatever its HRESULT: an inconsistent comparer is not a
+        // failure of the platform view (it keeps the order its sort produced), so no E_INVALIDARG is read as the
+        // comparer's.
         if (!faults->count)
         {
             throw;
         }
+        TVDiag::LogRetailF(L"[TableView] The column's CustomSortComparer failed (HRESULT 0x%08X) while the CollectionView sorted; keeping the previous sort.",
+            static_cast<unsigned int>(faults->firstError));
 
         // A comparer that threw leaves the view's rows as they were; put its sort back too, so the
         // previous sort and arrow stay, as on any other source.

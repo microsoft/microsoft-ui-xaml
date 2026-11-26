@@ -525,6 +525,144 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an app that flips the Direction of the table's SortDescription in place on its view (no SortDescriptions change is raised) makes the sort the app's: a later change to the column's sort key starts no sort and the view keeps the flipped description. Kept is the control: the same key change re-sorts the table's own sort.")]
+        [TestProperty("data:Flip", "{Flipped, Kept}")]
+        public void VerifyKeyChangeAfterDirectionFlippedOnViewDoesNotReSort()
+        {
+            var flipped = ((string)TestContext.DataRow["Flip"]).Trim() == "Flipped";
+            TableView tableView = null;
+            AppShapingView view = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                view = new AppShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(view);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, view.SortDescriptions.Count, "Precondition: the table wrote one SortDescription.");
+                if (flipped)
+                {
+                    // In place: the SortDescription is a DependencyObject, and the app's vector raises nothing for it.
+                    view.SortDescriptions[0].Direction = CollectionViewSortDirection.Descending;
+                    view.Refresh();
+                }
+                tableView.Sorting += (sender, args) => events.Add($"Sorting:{args.Direction}");
+                tableView.Columns[0].SortMemberPath = "Role";
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                if (flipped)
+                {
+                    Verify.AreEqual(0, events.Count, $"The key change starts no sort over the app's flipped sort: {string.Join(", ", events)}");
+                    Verify.AreEqual(1, view.SortDescriptions.Count);
+                    Verify.AreEqual("Name", view.SortDescriptions[0].PropertyName, "The app's description is kept.");
+                    Verify.AreEqual(CollectionViewSortDirection.Descending, view.SortDescriptions[0].Direction, "The app's direction is kept.");
+                    VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToArray(), RowValues(tableView, person => person.Name), "the rows keep the app's order");
+                }
+                else
+                {
+                    Verify.AreEqual("Sorting:Ascending", string.Join(", ", events), "Control: the key change re-sorts the table's own sort once.");
+                    Verify.AreEqual("Role", view.SortDescriptions[0].PropertyName, "Control: the new key is written to the view.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an ArgumentException from an app view's DeferRefresh, during a sort through a column's CustomSortComparer, is not taken for a comparer fault: it propagates as the view's failure, and the comparer is never called.")]
+        public void VerifyAppViewArgumentExceptionIsNotBlamedOnComparer()
+        {
+            TableView tableView = null;
+            AppShapingView view = null;
+            var comparer = new LengthThenOrdinalComparer();
+
+            RunOnUIThread.Execute(() =>
+            {
+                view = new AppShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(view);
+                tableView.Columns[0].CustomSortComparer = comparer;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                view.DeferRefreshException = new ArgumentException("The app's view rejects the change.");
+                try
+                {
+                    Verify.AreEqual("ArgumentException", ThrownTypeName(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)),
+                        "The view's own ArgumentException propagates like any other failure of the view.");
+                }
+                finally
+                {
+                    view.DeferRefreshException = null;
+                }
+                Verify.AreEqual(0, comparer.CompareCount, "The comparer was never called, so nothing is attributed to it.");
+                Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "No arrow is lit for a sort that did not happen.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CollectionViewSource Filter that throws while a column with a CustomSortComparer sorts the view propagates out of SortByColumn whatever its type: an ArgumentException (E_INVALIDARG) is not contained as a comparer fault, as an InvalidOperationException is not.")]
+        [TestProperty("data:Exception", "{ArgumentException, InvalidOperationException}")]
+        public void VerifyThrowingFilterDuringComparerSortPropagates()
+        {
+            var exceptionName = ((string)TestContext.DataRow["Exception"]).Trim();
+            TableView tableView = null;
+            CollectionViewSource source = null;
+            var throwFromFilter = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = MakeShapingView(MakeShapedPeople());
+                ((ICollectionViewShaping)source.View).Filter = item =>
+                {
+                    if (throwFromFilter)
+                    {
+                        throw exceptionName == "ArgumentException"
+                            ? new ArgumentException("Filter fault")
+                            : new InvalidOperationException("Filter fault");
+                    }
+                    return true;
+                };
+                tableView = CreateSortTable(source.View);
+                tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                throwFromFilter = true;
+                try
+                {
+                    Verify.AreEqual(exceptionName, ThrownTypeName(() => tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending)),
+                        "The Filter's exception propagates out of SortByColumn.");
+                }
+                finally
+                {
+                    throwFromFilter = false;
+                }
+            });
+
+            SettleLayout(tableView);
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Sorting handler that changes the sort key and cancels the key-change re-sort keeps the order, and the dropped change never re-sorts later.")]
         public void VerifyCancellingSortingHandlerKeyChangeIsDropped()
         {
