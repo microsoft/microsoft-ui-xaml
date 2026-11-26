@@ -155,9 +155,14 @@ void TableView::TrackColumnsFromVector(winrt::IObservableVector<winrt::TableView
 }
 
 // A column that arrives already showing a direction is lit as if the app had just set it; the
-// last one to arrive wins, as with consecutive writes.
+// last one to arrive wins, as with consecutive writes. A column already lit is one the table put
+// back after a move (RestoreSortOfMovedColumn), with its own or the app's sort as before.
 void TableView::AdoptColumnSortDirection(winrt::TableViewColumn const& column)
 {
+    if (std::any_of(m_sortedColumns.begin(), m_sortedColumns.end(), [&column](auto const& sorted) { return sorted.get() == column; }))
+    {
+        return;
+    }
     if (auto const direction = column.SortDirection(); direction != winrt::SortDirection::None)
     {
         OnColumnSortDirectionSetByApp(column, direction);

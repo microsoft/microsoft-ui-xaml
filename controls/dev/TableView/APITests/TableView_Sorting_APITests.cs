@@ -396,6 +396,135 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a TwoWay binding on a column's SortDirection survives the table's own sort, which writes through it to the source, and that the source's later value is shown display only.")]
+        public void VerifyTwoWaySortDirectionBindingSurvivesSort()
+        {
+            TableView tableView = null;
+            var model = new SortDirectionModel();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                BindingOperations.SetBinding(tableView.Columns[0], TableViewColumn.SortDirectionProperty,
+                    new Binding { Source = model, Path = new PropertyPath(nameof(SortDirectionModel.Direction)), Mode = BindingMode.TwoWay });
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, model.Direction, "The sort wrote its direction through the binding.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the rows are sorted");
+                model.Direction = SortDirection.Descending;
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "The binding is still in place: the source's value is shown.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "a direction the app sets is display only");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that after the app sets the sorted column's SortDirection (display only), a change to the column's key neither raises Sorting nor reshapes: the sort is the app's.")]
+        public void VerifyKeyChangeAfterAppSetDirectionDoesNotReSort()
+        {
+            TableView tableView = null;
+            TableViewColumn column = null;
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateTableViewShell(MakeShapedPeople(), 600, 700);
+                column = new TableViewColumn { Header = "Value", DisplayMemberBinding = new Binding { Path = new PropertyPath("Name") } };
+                tableView.Columns.Add(column);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(column, SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                column.SortDirection = SortDirection.Descending;
+                tableView.Sorting += (sender, args) => events.Add($"Sorting:{args.Direction}");
+                tableView.Sorted += (sender, args) => events.Add($"Sorted:{args.Direction}");
+                column.DisplayMemberBinding = new Binding { Path = new PropertyPath("Role") };
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, events.Count, $"A key change on a direction the app set raises nothing: {string.Join(", ", events)}");
+                Verify.AreEqual(SortDirection.Descending, column.SortDirection, "The app's direction stays.");
+                VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the rows keep the order they had");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies that once the app sets the view's CustomSort itself, a change to the sorted column's key does not overwrite it.")]
+        [TestProperty("data:Key", "{SortMemberPath, CustomSortComparer}")]
+        public void VerifyKeyChangeKeepsAppCustomSortOnView()
+        {
+            var key = ((string)TestContext.DataRow["Key"]).Trim();
+            TableView tableView = null;
+            CollectionViewSource source = null;
+            CollectionViewComparer appSort = (left, right) => string.CompareOrdinal(((ShapedPerson)left).Role, ((ShapedPerson)right).Role);
+            var events = new List<string>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                source = MakeShapingView(MakeShapedPeople());
+                tableView = CreateSortTable(source.View);
+                if (key == "CustomSortComparer")
+                {
+                    tableView.Columns[0].CustomSortComparer = new LengthThenOrdinalComparer();
+                }
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() => Verify.IsTrue(tableView.SortByColumn(tableView.Columns[0], SortDirection.Ascending), "Baseline: the column must sort."));
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                ((ICollectionViewShaping)source.View).CustomSort = appSort;
+                tableView.Sorting += (sender, args) => events.Add($"Sorting:{args.Direction}");
+                if (key == "CustomSortComparer")
+                {
+                    tableView.Columns[0].CustomSortComparer = new ReverseNameComparer();
+                }
+                else
+                {
+                    tableView.Columns[0].SortMemberPath = "Role";
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(0, events.Count, $"{key}: the key change starts no sort: {string.Join(", ", events)}");
+                var roles = RowValues(tableView, person => person.Role);
+                VerifySequence(roles.OrderBy(role => role, StringComparer.Ordinal).ToList(), roles, $"{key}: the rows keep the app's CustomSort (by Role)");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a Sorting handler that changes the sort key and cancels the key-change re-sort keeps the order, and the dropped change never re-sorts later.")]
         public void VerifyCancellingSortingHandlerKeyChangeIsDropped()
         {
@@ -3139,6 +3268,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         public int Compare(object left, object right)
             => string.CompareOrdinal((right as ShapedPerson)?.Name, (left as ShapedPerson)?.Name);
+    }
+
+    // A source for a TwoWay SortDirection binding.
+    internal sealed class SortDirectionModel : global::System.ComponentModel.INotifyPropertyChanged
+    {
+        private SortDirection _direction;
+
+        public SortDirection Direction
+        {
+            get => _direction;
+            set
+            {
+                if (_direction != value)
+                {
+                    _direction = value;
+                    PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(nameof(Direction)));
+                }
+            }
+        }
+
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 
     internal sealed class LengthThenOrdinalComparer : ITableViewSortComparer

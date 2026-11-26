@@ -1232,10 +1232,13 @@ private:
     {
         m_sortedColumnPendingRemoval = nullptr;
         m_sortedColumnPendingRemovalDeclined.reset();
+        m_sortedColumnPendingRemovalAppLit = false;
     }
     winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
     winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
     std::optional<DeclinedSortKey> m_sortedColumnPendingRemovalDeclined;
+    // The leaving column's direction was one the app only displayed.
+    bool m_sortedColumnPendingRemovalAppLit{ false };
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected

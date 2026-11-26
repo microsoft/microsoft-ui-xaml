@@ -310,7 +310,9 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 
     // The control's own write must not read as the app setting the displayed direction.
     m_isSettingSortStateInternal = true;
-    auto const resetGuard = gsl::finally([this]() { m_isSettingSortStateInternal = false; });
+    auto const resetGuard = wil::scope_exit([this]() noexcept { m_isSettingSortStateInternal = false; });
+    // WinUI has no SetCurrentValue (WPF's DataGrid writes SortDirection with it): a TwoWay binding takes the write and
+    // stays, a OneWay binding or a style setter is replaced by this local value (documented on SortDirection).
     SetValue(s_SortDirectionProperty, winrt::box_value(direction));
 }
 

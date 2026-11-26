@@ -179,7 +179,9 @@ bool TableView::RunSortTransition(F&& transition)
 
 // Posted rather than run inline so a follow-up re-sort never runs inside, or recurses from, the
 // sort whose handler changed the key. A handler that changes the key on every Sorted keeps
-// re-sorting once per turn; that is an app error. Only the synchronous pass can throw.
+// re-sorting once per turn; that is an app error. Both passes run app Sorting/Sorted handlers that
+// can throw: the synchronous pass throws to the caller, and the posted one through the dispatcher
+// to Application.UnhandledException, as any posted sort does (the spec's Sorting/Sorted section).
 void TableView::ScheduleSortKeyReconcile(bool allowSynchronous)
 {
     if (!m_sortKeysDirty || m_sortTransitionDepth || m_reconcilingSortKeys || m_sortKeyReconcileQueued)
@@ -244,8 +246,34 @@ void TableView::ReconcileSortKeys()
 
 bool TableView::IsInstalledSortKeyFor(const winrt::TableViewColumn& column) const
 {
-    // The app's own sort on the view (it wrote SortDescriptions or CustomSort itself) is not keyed on a column.
-    return column && m_collectionViewSortByTable && m_installedSortKey && m_installedSortKey->Column.get() == column;
+    // The app's own sort on the view (it wrote SortDescriptions or CustomSort itself) is not keyed on a column,
+    // and neither is a direction the app only displayed: that sort is the app's, so a key change never re-sorts it.
+    if (!column || !m_collectionViewShaping || !m_collectionViewSortByTable || !m_installedSortKey || m_sortDisplaySetByApp ||
+        m_installedSortKey->Column.get() != column)
+    {
+        return false;
+    }
+
+    // The view still sorts with what this table wrote. An app that set the view's CustomSort itself raised no
+    // SortDescriptions change, so this is checked here rather than tracked.
+    try
+    {
+        auto const customSort = m_collectionViewShaping.CustomSort();
+        if (m_collectionViewCustomSort)
+        {
+            return customSort == m_collectionViewCustomSort;
+        }
+        if (customSort)
+        {
+            return false;
+        }
+        auto const descriptions = m_collectionViewShaping.SortDescriptions();
+        return descriptions.Size() == 1 && descriptions.GetAt(0) && descriptions.GetAt(0).PropertyName() == m_installedSortKey->MemberPath;
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 void TableView::ReconcileSortKey(const winrt::TableViewColumn& column)
@@ -1303,6 +1331,7 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
     {
         pendingDeclined = *declined;
     }
+    const bool wasAppLit = wasSorted && m_sortDisplaySetByApp;
     if (!PurgeColumnFromSortState(column))
     {
         return;
@@ -1313,6 +1342,7 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
         m_sortedColumnPendingRemoval = winrt::make_weak(column);
         m_sortedColumnPendingRemovalDirection = direction;
         m_sortedColumnPendingRemovalDeclined = std::move(pendingDeclined);
+        m_sortedColumnPendingRemovalAppLit = wasAppLit;
     }
     QueueClearSortAfterColumnRemoval();
 }
@@ -1327,14 +1357,18 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
     auto declined = std::exchange(m_sortedColumnPendingRemovalDeclined, std::nullopt);
 
     // A sort applied since the removal replaced this one. A column that lost its sort key while
-    // detached never told the table; one lit only by the app's source sort keeps it, as when attached.
-    if (!m_sortedColumns.empty() || (!CanSortColumn(column) && !IsSortLitOnlyByApp()))
+    // detached never told the table; one lit only by the app keeps it, as when attached.
+    const bool wasAppLit = std::exchange(m_sortedColumnPendingRemovalAppLit, false);
+    if (!m_sortedColumns.empty() || (!CanSortColumn(column) && !wasAppLit))
     {
         return;
     }
 
     winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(m_sortedColumnPendingRemovalDirection);
     m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, column });
+    // The table's own sort stays the table's (AdoptColumnSortDirection skips a column already lit), and a
+    // direction the app only displayed stays display only.
+    m_sortDisplaySetByApp = wasAppLit;
     if (declined)
     {
         m_declinedSortKeys.push_back(std::move(*declined));
