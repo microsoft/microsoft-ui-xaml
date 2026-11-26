@@ -10,6 +10,7 @@
 #include <TestCleanupWrapper.h>
 #include <TreeHelper.h>
 #include <ControlHelper.h>
+#include <DisableErrorReportingScopeGuard.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -25,6 +26,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             int startedCount = 0;
             int deltaCount = 0;
             int completedCount = 0;
+            int canceledCount = 0;
             bool lastCompletedCanceled = false;
             double lastCompletedHorizontalChange = -1.0;
             double lastCompletedVerticalChange = -1.0;
@@ -61,6 +63,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 [log, dragCompletedEvent](Platform::Object^, xaml_primitives::DragCompletedEventArgs^ args)
                 {
                     ++log->completedCount;
+                    if (args->Canceled)
+                    {
+                        ++log->canceledCount;
+                    }
                     log->lastCompletedCanceled = args->Canceled;
                     log->lastCompletedHorizontalChange = args->HorizontalChange;
                     log->lastCompletedVerticalChange = args->VerticalChange;
@@ -430,15 +436,49 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     void ThumbControlIntegrationTests::DragStartedHandlerFailureCancelsDrag()
     {
         TestCleanupWrapper cleanup;
+        // The handler's failure leaves Thumb::OnPointerPressed and is reported to the app as unhandled.
+        DisableErrorReportingScopeGuard disableErrors;
+
+        struct UnhandledLog
+        {
+            int count = 0;
+            HRESULT lastHResult = S_OK;
+        };
 
         xaml_primitives::Thumb^ thumb = nullptr;
         auto log = std::make_shared<DragLog>();
         auto failingStartedCount = std::make_shared<int>(0);
+        auto unhandled = std::make_shared<UnhandledLog>();
         auto completedEvent = std::make_shared<Event>();
         ::Windows::Foundation::EventRegistrationToken failingToken = {};
+        ::Windows::Foundation::EventRegistrationToken unhandledToken = {};
+
+        // Mark the reported error handled, so the app does not fail-fast, and remove the handler on any exit.
+        auto removeUnhandledHandler = wil::scope_exit([&unhandledToken]()
+        {
+            try
+            {
+                RunOnUIThread([&unhandledToken]()
+                {
+                    if (unhandledToken.Value != 0)
+                    {
+                        xaml::Application::Current->UnhandledException -= unhandledToken;
+                    }
+                });
+            }
+            catch (...) {}
+        });
 
         RunOnUIThread([&]()
         {
+            unhandledToken = xaml::Application::Current->UnhandledException += ref new xaml::UnhandledExceptionEventHandler(
+                [unhandled](Platform::Object^, xaml::UnhandledExceptionEventArgs^ args)
+                {
+                    ++unhandled->count;
+                    unhandled->lastHResult = args->Exception.Value;
+                    args->Handled = true;
+                });
+
             thumb = CreateThumbInRootGrid();
             AttachDragLog(thumb, log, std::make_shared<Event>(), completedEvent);
             failingToken = thumb->DragStarted += ref new xaml_primitives::DragStartedEventHandler(
@@ -455,16 +495,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         completedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
 
+        int failedStarts = 0;
         RunOnUIThread([&]()
         {
-            // The failed DragStarted cancels the drag that the press started.
-            VERIFY_ARE_EQUAL(1, *failingStartedCount);
-            VERIFY_ARE_EQUAL(1, log->completedCount);
-            VERIFY_IS_TRUE(log->lastCompletedCanceled);
+            thumb->DragStarted -= failingToken;
+            failedStarts = *failingStartedCount;
+            LOG_OUTPUT(L"DragStarted failed %d time(s); DragCompleted %d (canceled %d); unhandled errors %d.",
+                failedStarts, log->completedCount, log->canceledCount, unhandled->count);
+
+            // Every drag start whose DragStarted failed is canceled again (DragCompleted with Canceled=true), the
+            // Thumb is not left dragging, no DragDelta is raised, and each failure reaches the app.
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(failedStarts, 1);
+            VERIFY_ARE_EQUAL(failedStarts, log->completedCount);
+            VERIFY_ARE_EQUAL(failedStarts, log->canceledCount);
             VERIFY_ARE_EQUAL(0, log->deltaCount);
             VERIFY_IS_FALSE(thumb->IsDragging);
-
-            thumb->DragStarted -= failingToken;
+            VERIFY_ARE_EQUAL(failedStarts, unhandled->count);
+            VERIFY_ARE_EQUAL(E_FAIL, unhandled->lastHResult);
         });
 
         LOG_OUTPUT(L"Drag again without the failing handler.");
@@ -474,11 +521,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
-            VERIFY_ARE_EQUAL(1, *failingStartedCount);
-            VERIFY_ARE_EQUAL(2, log->completedCount);
+            VERIFY_ARE_EQUAL(failedStarts, *failingStartedCount);
+            VERIFY_ARE_EQUAL(failedStarts + 1, log->completedCount);
+            VERIFY_ARE_EQUAL(failedStarts, log->canceledCount);
             VERIFY_IS_FALSE(log->lastCompletedCanceled);
             VERIFY_IS_GREATER_THAN(log->deltaCount, 0);
             VERIFY_IS_FALSE(thumb->IsDragging);
+            VERIFY_ARE_EQUAL(failedStarts, unhandled->count);
         });
     }
 
