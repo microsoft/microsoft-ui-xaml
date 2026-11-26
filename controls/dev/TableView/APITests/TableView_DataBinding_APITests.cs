@@ -1447,28 +1447,23 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies an app's grouped ICollectionView whose group contains itself loads: the cycle is followed once, so the subgroups are shown without unbounded recursion and no row is shown twice.")]
+        [TestProperty("Description", "Verifies an app's grouped ICollectionView whose group contains itself loads: the cycle is followed once, so exactly the top group and its one real subgroup are shown, with every leaf row once.")]
         public void VerifyAppViewGroupThatContainsItselfLoads()
         {
             TableView tableView = null;
+            List<object> people = null;
 
             RunOnUIThread.Execute(() =>
             {
-                var people = MakeShapedPeople().Cast<object>().ToList();
-                var leaf = new AppViewGroup { Group = "Leaf" };
-                foreach (var person in people)
-                {
-                    leaf.GroupItems.Add(person);
-                }
+                people = MakeShapedPeople().Cast<object>().ToList();
+                // A leaf as a platform group is: its Group is its items, so its rows are shown.
+                var leaf = AppViewGroup.WithItems(null, people);
+                leaf.Group = leaf.GroupItems;
                 var cycle = new AppViewGroup { Group = "Cycle" };
                 cycle.GroupItems.Add(cycle);
                 cycle.GroupItems.Add(leaf);
                 // A top-level group whose Group is a group with subgroups: a multi-level view, as CollectionViewSource's.
-                var top = new AppViewGroup { Group = cycle };
-                foreach (var person in people)
-                {
-                    top.GroupItems.Add(person);
-                }
+                var top = AppViewGroup.WithItems(cycle, people);
                 var groups = new AppObservableVector<object>();
                 groups.Add(top);
                 tableView = CreateBindingTable(new AppCollectionView(people, groups));
@@ -1479,12 +1474,188 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var elements = GetProjectedElements(tableView);
-                var headers = elements.OfType<TableViewGroupHeader>().Count();
-                var rows = elements.OfType<TableViewRow>().Select(row => row.DataContext).ToList();
+                var projected = GetProjectedItems(tableView);
+                var rows = projected.OfType<ShapedPerson>().ToList();
+                var headers = projected.Count - rows.Count;
                 Log.Comment($"Projected: {headers} group headers, {rows.Count} rows.");
-                Verify.IsGreaterThan(headers, 0, "The groups are shown.");
+                // The top group (whose Group is Cycle) and Leaf. Cycle inside itself is skipped as visited; without that
+                // check each level repeats Cycle and Leaf until the depth cap.
+                Verify.AreEqual(2, headers, "The top group and its one real subgroup are shown.");
+                Verify.AreEqual(people.Count, rows.Count, "Every leaf row is shown once.");
                 Verify.AreEqual(rows.Count, rows.Distinct().Count(), "No row is shown twice.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app's grouped ICollectionView with a chain of distinct groups deeper than 64 levels loads: the walk stops at 64 levels below the top group, which is shown as a leaf, so 65 headers are shown and nothing deeper.")]
+        public void VerifyAppViewGroupChainDeeperThanCapIsTruncated()
+        {
+            const int depth = 70;
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople().Cast<object>().ToList();
+                // levels[i]'s only subgroup is levels[i + 1]; the deepest holds the people.
+                var levels = Enumerable.Range(0, depth + 1).Select(i => new AppViewGroup { Group = $"Level {i}" }).ToList();
+                for (var i = 0; i < depth; i++)
+                {
+                    levels[i].GroupItems.Add(levels[i + 1]);
+                }
+                foreach (var person in people)
+                {
+                    levels[depth].GroupItems.Add(person);
+                }
+                var top = AppViewGroup.WithItems(levels[0], people);
+                var groups = new AppObservableVector<object>();
+                groups.Add(top);
+                tableView = CreateBindingTable(new AppCollectionView(people, groups));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var projected = GetProjectedItems(tableView);
+                var rows = projected.OfType<ShapedPerson>().Count();
+                Log.Comment($"Projected: {projected.Count - rows} group headers, {rows} rows.");
+                // The top group (level 0) and levels[1..64]; levels[64] is shown as a leaf (its Group is a string, so it has
+                // no rows), and levels[65..70] and the people below them are not reached.
+                Verify.AreEqual(65, projected.Count - rows, "The top group and 64 levels of subgroups are shown.");
+                Verify.AreEqual(0, rows, "Nothing below the cap is shown.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app's multi-level group whose GroupItems hands out a new subgroup object on every GetAt shows every subgroup and every leaf row: a subgroup is never mistaken for one already visited.")]
+        public void VerifyAppViewGroupWithProjectedSubgroupsShowsEveryLeaf()
+        {
+            TableView tableView = null;
+            List<object> people = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople().Cast<object>().ToList();
+                var byRole = people.GroupBy(person => ((ShapedPerson)person).Role)
+                    .Select(group => (Key: group.Key, Items: group.ToList()))
+                    .ToList();
+                var top = AppViewGroup.WithItems(new ProjectingAppViewGroup("All", byRole), people);
+                var groups = new AppObservableVector<object>();
+                groups.Add(top);
+                tableView = CreateBindingTable(new AppCollectionView(people, groups));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Collected between the reads, so a freed subgroup's address can be handed to the next one.
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                tableView.CollapseAllGroups();
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var projected = GetProjectedItems(tableView);
+                var rows = projected.OfType<ShapedPerson>().ToList();
+                Verify.AreEqual(1 + 3, projected.Count - rows.Count, "The top group and one subgroup per role are shown.");
+                VerifySequence(people.Cast<ShapedPerson>().OrderBy(person => person.Role == "Designer" ? 0 : person.Role == "Engineer" ? 1 : 2)
+                        .Select(person => person.Name).ToList(),
+                    rows.Select(person => person.Name).ToList(), "every leaf row, in subgroup order");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an app's grouped ICollectionView (INotifyPropertyChanged) that swaps its CollectionGroups and raises PropertyChanged(\"CollectionGroups\") from a group getter while TableView reads the groups (ExpandAllGroups, CollapseAllGroups, a group's items changing) does not crash, and the rows end up showing the new groups.")]
+        [TestProperty("data:Trigger", "{ExpandAllGroups, CollapseAllGroups, GroupItemsChanged}")]
+        public void VerifyAppViewSwappingGroupsWhileTheyAreReadShowsNewGroups()
+        {
+            var trigger = ((string)TestContext.DataRow["Trigger"]).Trim();
+            TableView tableView = null;
+            AppCollectionView view = null;
+            List<object> people = null;
+            var hooks = new List<HookedAppViewGroup>();
+            AppViewGroup firstGroup = null;
+            var swaps = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                people = MakeShapedPeople().Cast<object>().ToList();
+                // One group per department; each group's Group is a group whose GroupItems getter is app code the rows'
+                // rebuild calls.
+                var groups = new AppObservableVector<object>();
+                foreach (var department in people.GroupBy(person => ((ShapedPerson)person).DepartmentName))
+                {
+                    var hook = new HookedAppViewGroup(department.Key, department);
+                    hooks.Add(hook);
+                    var group = AppViewGroup.WithItems(hook, department);
+                    firstGroup ??= group;
+                    groups.Add(group);
+                }
+                view = new AppCollectionView(people, groups);
+                tableView = CreateBindingTable(view);
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            if (trigger == "ExpandAllGroups")
+            {
+                RunOnUIThread.Execute(() => tableView.CollapseAllGroups());
+                SettleLayout(tableView);
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(3, GroupHeaderCount(tableView), "Precondition: one header per department.");
+                Action swap = () =>
+                {
+                    if (swaps++ > 0)
+                    {
+                        return;
+                    }
+                    // New groups, one per role, while the old ones are being walked.
+                    var byRole = new AppObservableVector<object>();
+                    foreach (var role in people.GroupBy(person => ((ShapedPerson)person).Role))
+                    {
+                        byRole.Add(AppViewGroup.WithItems(role.Key, role));
+                    }
+                    view.ReplaceGroups(byRole);
+                };
+                foreach (var hook in hooks)
+                {
+                    hook.OnGroupItemsRead = swap;
+                }
+
+                switch (trigger)
+                {
+                    case "ExpandAllGroups":
+                        tableView.ExpandAllGroups();
+                        break;
+                    case "CollapseAllGroups":
+                        tableView.CollapseAllGroups();
+                        break;
+                    default:
+                        firstGroup.GroupItems.RemoveAt(0);
+                        break;
+                }
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, swaps, $"{trigger}: the groups were swapped from inside the rows' rebuild.");
+                VerifySequence(new[] { "Designer", "Engineer", "Architect" }, GroupKeys(tableView), $"{trigger}: the rows show the new groups");
+                var rows = GetProjectedItems(tableView).OfType<ShapedPerson>().Count();
+                Verify.AreEqual(trigger == "CollapseAllGroups" ? 0 : people.Count, rows,
+                    $"{trigger}: the new groups' rows follow the expansion state");
             });
         }
 
@@ -2004,6 +2175,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public int DeferredRefreshCount { get; private set; }
 
+        // Thrown by DeferRefresh while set (an app view that rejects a change).
+        public Exception DeferRefreshException { get; set; }
+
         public event EventHandler<object> CurrentChanged { add { } remove { } }
         public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
         public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged;
@@ -2048,6 +2222,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public IDisposable DeferRefresh()
         {
+            if (DeferRefreshException != null)
+            {
+                throw DeferRefreshException;
+            }
             m_deferLevel++;
             return new Deferral(this);
         }
@@ -2177,20 +2355,132 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     {
         public object Group { get; set; }
         public global::Windows.Foundation.Collections.IObservableVector<object> GroupItems { get; } = new AppObservableVector<object>();
+
+        internal static AppViewGroup WithItems(object group, IEnumerable<object> items)
+        {
+            var viewGroup = new AppViewGroup { Group = group };
+            foreach (var item in items)
+            {
+                viewGroup.GroupItems.Add(item);
+            }
+            return viewGroup;
+        }
+    }
+
+    // An app's group whose GroupItems getter runs app code (OnGroupItemsRead) each time it is read.
+    internal sealed partial class HookedAppViewGroup : ICollectionViewGroup
+    {
+        private readonly global::Windows.Foundation.Collections.IObservableVector<object> m_items = new AppObservableVector<object>();
+
+        public HookedAppViewGroup(string name, IEnumerable<object> items)
+        {
+            Group = name;
+            foreach (var item in items)
+            {
+                m_items.Add(item);
+            }
+        }
+
+        public Action OnGroupItemsRead { get; set; }
+
+        public object Group { get; }
+
+        public global::Windows.Foundation.Collections.IObservableVector<object> GroupItems
+        {
+            get
+            {
+                OnGroupItemsRead?.Invoke();
+                return m_items;
+            }
+        }
+
+        public override string ToString() => (string)Group;
+    }
+
+    // An app's group whose subgroups are projected: GroupItems hands out a new AppViewGroup object on every GetAt (a
+    // lazily materializing vector), so no subgroup object outlives the read that made it.
+    internal sealed partial class ProjectingAppViewGroup : ICollectionViewGroup
+    {
+        public ProjectingAppViewGroup(string name, IList<(string Key, List<object> Items)> subgroups)
+        {
+            Group = name;
+            GroupItems = new ProjectingGroupVector(subgroups);
+        }
+
+        public object Group { get; }
+        public global::Windows.Foundation.Collections.IObservableVector<object> GroupItems { get; }
+
+        private sealed partial class ProjectingGroupVector : global::Windows.Foundation.Collections.IObservableVector<object>
+        {
+            private readonly IList<(string Key, List<object> Items)> m_subgroups;
+
+            public ProjectingGroupVector(IList<(string Key, List<object> Items)> subgroups)
+            {
+                m_subgroups = subgroups;
+            }
+
+            public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged { add { } remove { } }
+
+            public object this[int index]
+            {
+                get
+                {
+                    // A leaf as a platform group is: its Group is its items.
+                    var subgroup = AppViewGroup.WithItems(null, m_subgroups[index].Items);
+                    subgroup.Group = subgroup.GroupItems;
+                    return subgroup;
+                }
+                set => throw new NotSupportedException();
+            }
+
+            public int Count => m_subgroups.Count;
+            public bool IsReadOnly => true;
+            public int IndexOf(object item) => -1;
+            public bool Contains(object item) => false;
+            public void CopyTo(object[] array, int arrayIndex)
+            {
+                for (var i = 0; i < Count; i++)
+                {
+                    array[arrayIndex + i] = this[i];
+                }
+            }
+            public IEnumerator<object> GetEnumerator()
+            {
+                for (var i = 0; i < Count; i++)
+                {
+                    yield return this[i];
+                }
+            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public void Insert(int index, object item) => throw new NotSupportedException();
+            public void RemoveAt(int index) => throw new NotSupportedException();
+            public void Add(object item) => throw new NotSupportedException();
+            public void Clear() => throw new NotSupportedException();
+            public bool Remove(object item) => throw new NotSupportedException();
+        }
     }
 
     // An app's own read-only ICollectionView over a fixed list (like a toolkit view): no
-    // ICollectionViewShaping, it never changes, and it has the groups it is given (none by default).
-    internal sealed partial class AppCollectionView : ICollectionView
+    // ICollectionViewShaping, its items never change, and it has the groups it is given (none by default).
+    // ReplaceGroups swaps them and raises PropertyChanged("CollectionGroups"), as a view that starts or stops grouping.
+    internal sealed partial class AppCollectionView : ICollectionView, global::System.ComponentModel.INotifyPropertyChanged
     {
         private readonly List<object> m_items;
-        private readonly global::Windows.Foundation.Collections.IObservableVector<object> m_groups;
+        private global::Windows.Foundation.Collections.IObservableVector<object> m_groups;
         private int m_current;
 
         public AppCollectionView(IEnumerable<object> items, global::Windows.Foundation.Collections.IObservableVector<object> groups = null)
         {
             m_items = items.ToList();
             m_groups = groups;
+        }
+
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+
+        public void ReplaceGroups(global::Windows.Foundation.Collections.IObservableVector<object> groups)
+        {
+            m_groups = groups;
+            PropertyChanged?.Invoke(this, new global::System.ComponentModel.PropertyChangedEventArgs(nameof(CollectionGroups)));
         }
 
         public event EventHandler<object> CurrentChanged { add { } remove { } }

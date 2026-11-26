@@ -160,8 +160,16 @@ private:
         // GroupItems are its subgroups above the bottom level.
         winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup Inner{ nullptr };
     };
-    // Follows the view's CollectionGroups object; true when it changed (the view started or stopped grouping).
-    bool AttachViewGroups();
+    // Follows the view's CollectionGroups object and updates the rows when it changed (the view started or stopped
+    // grouping). Deferred (m_attachViewGroupsPending) while the groups are being attached, read or published or the
+    // rows updated: those walks run app code that can raise PropertyChanged("CollectionGroups").
+    void AttachViewGroups();
+    // True when the CollectionGroups object changed.
+    bool AttachViewGroupsNow();
+    bool IsBusyWithGroups() const noexcept;
+    bool CanAttachViewGroupsInUpdate() const noexcept;
+    // Runs a deferred AttachViewGroups (and its Update) once nothing that defers it is on the stack.
+    void RunPendingAttachViewGroups();
     void OnViewGroupsChanged(winrt::Windows::Foundation::Collections::CollectionChange change);
     void ReadViewGroupsNow() noexcept;
     void ReadViewGroups();
@@ -290,7 +298,11 @@ private:
     // The view's CollectionGroups; null when the view is not grouped.
     winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> m_viewGroups{ nullptr };
     winrt::event_token m_viewGroupsChangedToken{};
+    // Replaced while app code runs (a group VectorChanged reread): loops that call app code iterate a copy.
     std::vector<ViewGroup> m_groups;
+    bool m_attachingViewGroups{ false };
+    bool m_attachViewGroupsPending{ false };
+    bool m_runningPendingAttach{ false };
     bool m_readingGroups{ false };
     bool m_readGroupsPending{ false };
     bool m_readGroupsQueued{ false };

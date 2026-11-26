@@ -207,7 +207,7 @@ void TableViewRowFlattener::Start()
 {
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
     m_isShapingView = static_cast<bool>(m_view.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewShaping>());
-    AttachViewGroups();
+    AttachViewGroupsNow();
 
     // A shaping view keeps its identity when it starts or stops grouping (WPF): CollectionGroups turns
     // non-null or null and PropertyChanged("CollectionGroups") is raised before the view's Reset.
@@ -219,10 +219,7 @@ void TableViewRowFlattener::Start()
             {
                 if (auto strongThis = weakThis.lock(); strongThis && args.PropertyName() == L"CollectionGroups")
                 {
-                    if (strongThis->AttachViewGroups())
-                    {
-                        strongThis->Update();
-                    }
+                    strongThis->AttachViewGroups();
                 }
             });
     }
@@ -240,9 +237,49 @@ void TableViewRowFlattener::Start()
     Update();
 }
 
-bool TableViewRowFlattener::AttachViewGroups()
+bool TableViewRowFlattener::IsBusyWithGroups() const noexcept
+{
+    return m_attachingViewGroups || m_readingGroups || m_groupRowsInFlight || m_updating;
+}
+
+void TableViewRowFlattener::AttachViewGroups()
+{
+    // Deferred while app code (a GroupItems/Key getter, a group enumerator, a row handler) runs inside a walk of
+    // m_groups or the rows: replacing them now would free what the outer loop is reading.
+    m_attachViewGroupsPending = true;
+    RunPendingAttachViewGroups();
+}
+
+void TableViewRowFlattener::RunPendingAttachViewGroups()
+{
+    if (!m_attachViewGroupsPending || m_runningPendingAttach || IsBusyWithGroups())
+    {
+        return;
+    }
+
+    // A loop, not recursion: an app that swaps its groups again while they are read leaves the flag set again.
+    auto const keepAlive = weak_from_this().lock();
+    if (!keepAlive)
+    {
+        return;
+    }
+    m_runningPendingAttach = true;
+    auto const done = wil::scope_exit([this]() noexcept { m_runningPendingAttach = false; });
+    while (m_attachViewGroupsPending && !IsBusyWithGroups())
+    {
+        if (AttachViewGroupsNow())
+        {
+            Update();
+        }
+    }
+}
+
+bool TableViewRowFlattener::AttachViewGroupsNow()
 {
     std::weak_ptr<TableViewRowFlattener> weakThis = weak_from_this();
+    m_attachViewGroupsPending = false;
+    m_attachingViewGroups = true;
+    auto const done = wil::scope_exit([this]() noexcept { m_attachingViewGroups = false; });
     try
     {
         auto const groups = m_view.CollectionGroups();
@@ -345,11 +382,22 @@ void TableViewRowFlattener::Update()
             m_updatePending = false;
             // A rebuild reads every item, so it covers any tree change still waiting for the next turn.
             m_treeUpdatePending = false;
+            // A CollectionGroups change raised by app code during the last pass: attached here, between passes.
+            if (CanAttachViewGroupsInUpdate())
+            {
+                AttachViewGroupsNow();
+            }
             UpdateCore();
-        } while (m_updatePending);
+        } while (m_updatePending || CanAttachViewGroupsInUpdate());
     }
 
     RaiseRowsChanged();
+    RunPendingAttachViewGroups();
+}
+
+bool TableViewRowFlattener::CanAttachViewGroupsInUpdate() const noexcept
+{
+    return m_attachViewGroupsPending && !m_attachingViewGroups && !m_readingGroups && !m_groupRowsInFlight;
 }
 
 void TableViewRowFlattener::SetKind(Kind kind, winrt::ItemsSourceView const& rows)
@@ -927,9 +975,11 @@ winrt::hstring TableViewRowFlattener::IdentityForKey(winrt::IInspectable const& 
 
 std::unordered_map<uintptr_t, winrt::hstring> TableViewRowFlattener::GroupIdentityByItem() const
 {
-    // Read now: a view may move items between its groups without replacing a group.
+    // Read now: a view may move items between its groups without replacing a group. A copy: enumerating a group runs
+    // app code, which can replace m_groups (a re-read of the view's groups).
     std::unordered_map<uintptr_t, winrt::hstring> identityByItem;
-    for (auto const& group : m_groups)
+    auto const groups = m_groups;
+    for (auto const& group : groups)
     {
         auto const items = group.Items ? ShapingHelpers::EnumerateInspectableItems(group.Items) : group.Snapshot;
         for (auto const& member : items)
@@ -1073,6 +1123,7 @@ void TableViewRowFlattener::ReadViewGroups()
     {
         OnViewGroupSetChanged();
     }
+    RunPendingAttachViewGroups();
 }
 
 void TableViewRowFlattener::OnViewGroupSetChanged()
@@ -1115,8 +1166,11 @@ std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupS
     std::vector<GroupSlice> slices;
     if (m_groupSource == GroupSource::ViewGroups)
     {
-        slices.reserve(m_groups.size());
-        for (auto const& group : m_groups)
+        // A copy: the group enumerators and GroupItems/Group/Key getters below are app code, which can replace m_groups
+        // (a re-read of the view's groups). That re-read schedules its own rebuild of the rows.
+        auto const groups = m_groups;
+        slices.reserve(groups.size());
+        for (auto const& group : groups)
         {
             GroupSlice slice{ group.Identity, group.Key };
             if (group.Items)
@@ -1170,12 +1224,14 @@ void TableViewRowFlattener::AppendSubgroupSlices(
         std::unordered_set<winrt::hstring> Identities;
     };
     std::vector<Frame> stack;
-    std::unordered_set<uintptr_t> visited;
+    // Holds each visited group for the walk, so an app vector that hands out a new group object per GetAt cannot free one
+    // and reuse its address for a different subgroup (which would then be skipped as visited).
+    std::unordered_map<uintptr_t, ICollectionViewGroup> visited;
 
     // Appends the slice; a group whose items are groups also opens a frame for its subgroups.
     auto const open = [&stack, &visited, &slices](ICollectionViewGroup const& current, GroupSlice&& currentSlice)
     {
-        visited.insert(CanonicalAddress(current));
+        visited.emplace(CanonicalAddress(current), current);
         auto const children = current.GroupItems();
         auto const firstChild = (children && children.Size() > 0) ? children.GetAt(0) : nullptr;
         if (!firstChild || !firstChild.try_as<ICollectionViewGroup>() || stack.size() >= c_maxGroupDepth)
@@ -1238,7 +1294,9 @@ std::vector<winrt::IInspectable> TableViewRowFlattener::ReadGroupItems(winrt::hs
         {
             if (group.Identity == groupIdentity)
             {
-                return group.Items ? ShapingHelpers::EnumerateInspectableItems(group.Items) : group.Snapshot;
+                // Copied before the enumeration (app code) can replace m_groups.
+                auto const items = group.Items;
+                return items ? ShapingHelpers::EnumerateInspectableItems(items) : group.Snapshot;
             }
         }
     }
@@ -1333,18 +1391,21 @@ void TableViewRowFlattener::RebuildGroupRows()
 
         m_groupRows.ReplaceAll(built);
     } while (runPending);
+
+    RunPendingAttachViewGroups();
 }
 
 void TableViewRowFlattener::UnsubscribeFromGroupItems()
 {
-    for (auto& subscription : m_groupItemsSubscriptions)
+    // Moved out first: a revoke runs app code (the vector's remove_VectorChanged), which can re-enter.
+    auto subscriptions = std::exchange(m_groupItemsSubscriptions, {});
+    for (auto& subscription : subscriptions)
     {
         if (subscription.Items && subscription.Token.value)
         {
             ShapingHelpers::SafeRevokeWith([&] { subscription.Items.VectorChanged(subscription.Token); });
         }
     }
-    m_groupItemsSubscriptions.clear();
 }
 
 bool TableViewRowFlattener::IsGroupExpanded(winrt::hstring const& groupIdentity) const
@@ -1424,6 +1485,10 @@ void TableViewRowFlattener::OnGroupExpansionChanged(ShapingHelpers::RowExpansion
     if (runPending || !applied)
     {
         RebuildGroupRows();
+    }
+    else
+    {
+        RunPendingAttachViewGroups();
     }
 }
 
@@ -2609,8 +2674,16 @@ bool TableViewRowFlattener::InsertTreeRows(
     uint32_t insertAt = static_cast<uint32_t>(index);
     for (size_t i = 0; i < items.size(); ++i)
     {
-        if (!IsSameTree(generation, rows) || index < 0 || insertAt > m_nodeRows.size() || insertAt > rows.Size())
+        if (!IsSameTree(generation, rows))
         {
+            return false;
+        }
+        if (index < 0 || insertAt > m_nodeRows.size() || insertAt > rows.Size())
+        {
+            // The same tree, out of step with this splice: unreachable while same-tree re-entrancy is deferred
+            // (m_treeRowsInFlight). Every caller runs inside that guard, so a pending rebuild converges the rows.
+            MUX_ASSERT(false);
+            m_treeRowsPending = true;
             return false;
         }
         m_nodeRows.insert(m_nodeRows.begin() + insertAt, nodeRows[i]);
@@ -2629,8 +2702,15 @@ bool TableViewRowFlattener::RemoveTreeRows(int32_t index, int32_t count)
     auto const rows = m_treeRows;
     for (int32_t i = index + count - 1; i >= index; --i)
     {
-        if (!IsSameTree(generation, rows) || i < 0 || static_cast<size_t>(i) >= m_nodeRows.size() || static_cast<uint32_t>(i) >= rows.Size())
+        if (!IsSameTree(generation, rows))
         {
+            return false;
+        }
+        if (i < 0 || static_cast<size_t>(i) >= m_nodeRows.size() || static_cast<uint32_t>(i) >= rows.Size())
+        {
+            // As in InsertTreeRows: the same tree out of step with this splice converges through a rebuild.
+            MUX_ASSERT(false);
+            m_treeRowsPending = true;
             return false;
         }
         m_nodeRows.erase(m_nodeRows.begin() + i);
