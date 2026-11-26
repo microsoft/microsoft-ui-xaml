@@ -2056,6 +2056,14 @@ namespace DirectUI::ShapingEngine
         // item in a group for each of its names.
         static bool IsCollectionName(_In_opt_ IInspectable* pName)
         {
+            // A boxed .NET string is also iterable (its chars, through its projection), so exclude strings first.
+            auto spValue = ctl::query_interface_cast<wf::IPropertyValue>(pName);
+            wf::PropertyType type = wf::PropertyType_Empty;
+            if (spValue && SUCCEEDED(spValue->get_Type(&type)) && type == wf::PropertyType_String)
+            {
+                return false;
+            }
+
             return pName && (ctl::is<xaml_interop::IBindableIterable>(pName)
                 || ctl::is<wfc::IIterable<IInspectable*>>(pName)
                 || ctl::is<wfc::IIterable<HSTRING>>(pName));
