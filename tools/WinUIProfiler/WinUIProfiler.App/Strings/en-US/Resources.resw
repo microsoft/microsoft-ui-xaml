@@ -525,4 +525,46 @@
   <data name="CpuViewFunctionToolTipFormat" xml:space="preserve"><value>{0}&#10;Self: {1:N0} samples ({2})&#10;Total: {3:N0} samples ({4})</value></data>
   <data name="CpuViewNodeToolTipFormat" xml:space="preserve"><value>{0}&#10;{1:N0} samples ({2})</value></data>
   <data name="TelemetryNotice.Title" xml:space="preserve"><value>Usage data</value></data>
+  <data name="StoryboardsTab.Header" xml:space="preserve"><value>Storyboards</value></data>
+  <data name="StoryboardsAtTime.Header" xml:space="preserve"><value>Inspect at time (ms)</value></data>
+  <data name="StoryboardsAtTime.PlaceholderText" xml:space="preserve"><value>Latest observations</value></data>
+  <data name="StoryboardsAtTime.AutomationProperties.Name" xml:space="preserve"><value>Storyboard inspection time in milliseconds; leave empty for latest observations</value></data>
+  <data name="StoryboardsRefresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="StoryboardsNotice.AutomationProperties.Name" xml:space="preserve"><value>Storyboard observation limitations</value></data>
+  <data name="StoryboardsSummary.AutomationProperties.Name" xml:space="preserve"><value>Storyboard observation counts</value></data>
+  <data name="StoryboardsActiveOnly.Content" xml:space="preserve"><value>Active or paused at last observation only</value></data>
+  <data name="StoryboardsList.AutomationProperties.Name" xml:space="preserve"><value>Last-observed storyboard runs</value></data>
+  <data name="StoryboardsEmpty" xml:space="preserve"><value>No storyboard observations at this time. Capture with storyboard instrumentation enabled; no records do not prove that no animations were running.</value></data>
+  <data name="StoryboardsFilteredEmpty" xml:space="preserve"><value>No last-observed storyboards match this filter. This does not establish that no animations were running.</value></data>
+  <data name="StoryboardsNoFile" xml:space="preserve"><value>Open a recording or connect to a target to inspect storyboards.</value></data>
+  <data name="StoryboardsUnnamed" xml:space="preserve"><value>Unnamed storyboard</value></data>
+  <data name="StoryboardsIdentityFormat" xml:space="preserve"><value>ID {0:X} | run {1} | object 0x{2:X} | thread {3}</value></data>
+  <data name="StoryboardsObservedFormat" xml:space="preserve"><value>First observed {0:N3} ms | last observed {1:N3} ms</value></data>
+  <data name="StoryboardsFlagsFormat" xml:space="preserve"><value>Independent animation: {0} | in time manager: {1} | children (last observed): {2}</value></data>
+  <data name="StoryboardsUnknown" xml:space="preserve"><value>Not captured</value></data>
+  <data name="StoryboardsOperationFormat" xml:space="preserve"><value>Last event: {0} | {1}</value></data>
+  <data name="StoryboardsSummaryFormat" xml:space="preserve"><value>{0:N0} storyboard lifetimes shown | {1:N0} observations | most recent observed run per lifetime</value></data>
+  <data name="StoryboardsCaveat" xml:space="preserve"><value>Last-observed XAML bookkeeping, not a current activity census. Active clocks and independent animations do not prove displayed frames, explain compositor waits, or establish a V-sync leak.</value></data>
+  <data name="StoryboardsPartial" xml:space="preserve"><value>History is partial: a Begin was not captured, records were trimmed, or events were lost. Unobserved transitions remain unknown.</value></data>
+  <data name="StoryboardsLimited" xml:space="preserve"><value>Only the 500 most recently observed lifetimes are retained in this view; omitted lifetimes may still have activity.</value></data>
+  <data name="StoryboardsYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="StoryboardsNo" xml:space="preserve"><value>No</value></data>
+  <data name="StoryboardsBeginObserved" xml:space="preserve"><value>Begin captured</value></data>
+  <data name="StoryboardsBeginMissing" xml:space="preserve"><value>Begin not captured</value></data>
+  <data name="StoryboardsStateNotStarted" xml:space="preserve"><value>Not started</value></data>
+  <data name="StoryboardsStateStopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="StoryboardsStateActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StoryboardsStateFilling" xml:space="preserve"><value>Filling</value></data>
+  <data name="StoryboardsStatePaused" xml:space="preserve"><value>Paused</value></data>
+  <data name="StoryboardsStateDestroyed" xml:space="preserve"><value>Destroyed</value></data>
+  <data name="StoryboardsOperationBeginRequested" xml:space="preserve"><value>Begin requested</value></data>
+  <data name="StoryboardsOperationBegin" xml:space="preserve"><value>Begin</value></data>
+  <data name="StoryboardsOperationBeginFailed" xml:space="preserve"><value>Begin failed</value></data>
+  <data name="StoryboardsOperationRegistered" xml:space="preserve"><value>Registered</value></data>
+  <data name="StoryboardsOperationUnregistered" xml:space="preserve"><value>Unregistered</value></data>
+  <data name="StoryboardsOperationPauseRequested" xml:space="preserve"><value>Pause requested</value></data>
+  <data name="StoryboardsOperationResumeRequested" xml:space="preserve"><value>Resume requested</value></data>
+  <data name="StoryboardsOperationStopRequested" xml:space="preserve"><value>Stop requested</value></data>
+  <data name="StoryboardsOperationObserved" xml:space="preserve"><value>Observed</value></data>
+  <data name="StoryboardsOperationDestroyed" xml:space="preserve"><value>Destroyed</value></data>
 </root>

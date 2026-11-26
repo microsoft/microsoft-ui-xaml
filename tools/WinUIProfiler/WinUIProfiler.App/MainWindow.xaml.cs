@@ -68,10 +68,12 @@ public sealed partial class MainWindow : Window
         FramesPanel.Owner = AppWindow.Id;
         ObjectsPanel.Owner = AppWindow.Id;
         CpuPanel.Owner = AppWindow.Id;
+        StoryboardsPanel.Owner = AppWindow.Id;
         FramesPanel.Source = session;
         ObjectsPanel.Source = session;
         LaunchPanel.Source = session;
         CpuPanel.Source = session;
+        StoryboardsPanel.Source = session;
         session.Opened += Session_Opened;
         if (UsageTelemetry.TakeNotice() is { } notice)
         {
@@ -775,7 +777,7 @@ PrivateRuntime);
         var selected = Tabs.SelectedItem;
         var view = ReferenceEquals(selected, LaunchTab) ? "Launch" : ReferenceEquals(selected, FramesTab) ? "Frames" :
             ReferenceEquals(selected, ObjectsTab) ? "Objects" : ReferenceEquals(selected, LiveMetricsTab) ? "LiveMetrics" :
-            ReferenceEquals(selected, CpuTab) ? "Cpu" : null;
+            ReferenceEquals(selected, CpuTab) ? "Cpu" : ReferenceEquals(selected, StoryboardsTab) ? "Storyboards" : null;
         if (view is not null && viewsOpened.Add(view))
         {
             UsageTelemetry.Track("Profiler.ViewOpened", new Dictionary<string, string> { ["view"] = view });

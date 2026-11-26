@@ -59,10 +59,88 @@ the launch's milestones, including an app's own (see
 the regions of interest in them, the Objects tab its UI elements and
 composition visuals, and the CPU tab its sampled call stacks (see
 [CPU sampling and symbols](#cpu-sampling-and-symbols)).
+The Storyboards tab shows last-observed animation bookkeeping from an instrumented
+WinUI runtime (see [Storyboard observations](#storyboard-observations)).
 There is no heap capture or instrumented-product
 dependency in the app yet. The profiler UI uses its pinned SDK runtime. It
 replaces the target's WinUI runtime only when it launches the target with
 private WinUI DLLs (see "Profile an app with private WinUI DLLs").
+
+## Storyboard observations
+
+The **Storyboards** tab reads `StoryboardActivity` TraceLogging events from
+`Microsoft-Windows-XAML-Profiler`, for live recordings and saved session files.
+It shows each storyboard lifetime's most recently observed run, its bounded
+`x:Name`, clock/paused state, independent-animation and time-manager flags,
+child count, thread, last operation, and first/last observation times.
+The framework uses a process-local lifetime ID, separate from the object address,
+and increments its run ID for each Begin attempt, including failed attempts.
+Tracking is allocated only after profiling observes the storyboard. A storyboard
+first observed mid-run has run ID zero and an uncaptured Begin; already-tracked
+lifetimes retain their identity and advance generations across provider disable/re-enable.
+Reusing an address does not merge storyboards, and beginning again does not
+inherit the previous run's captured Begin.
+
+Leave **Inspect at time (ms)** empty for the latest observations, or enter a
+recording-relative time, such as a tick's time from the Frames tab. Only events
+at or before that time contribute. The optional active/paused filter is based
+on the **last observation**, not a guarantee of current activity. At most the
+500 most recently observed lifetimes are displayed; a notice reports omissions.
+
+These are XAML bookkeeping observations, **not displayed-frame attribution or
+a V-sync leak detector**. An independent animation or active clock does not
+establish a compositor wait's cause. Unchanged activity is observed at most
+once per second per storyboard on existing natural ticks; instrumentation does
+not schedule ticks or take a complete rundown. A missing Begin, rolling retention,
+event loss or a display limit makes history partial. No observations, including
+in older recordings or from an uninstrumented runtime, do not prove inactivity.
+First/last observation times are not animation start/stop times.
+
+The reader projects existing raw stored events without a session schema change:
+
+```csharp
+var observations = SessionFile.ReadStoryboards(path, atMilliseconds: 1500);
+```
+
+Its producer contract is `StoryboardActivity` with fields `StoryboardId`
+(`UInt64`), `ObjectAddress` (`UInt64`), `RunId` (`UInt64`), `Operation` (`String`),
+`Name` (`String`, at most 128 UTF-16 code units), `State` (`String`), `IsPaused`
+(`Boolean`), `HasIndependentAnimation` (`Boolean`), `IsInTimeManager` (`Boolean`)
+and `ChildCount` (`UInt32`). Operations distinguish `BeginRequested`, successful
+`Begin`, `BeginFailed`, `Registered`, `Unregistered`, `PauseRequested`,
+`ResumeRequested`, `StopRequested`, `Observed` and `Destroyed`. Registration
+records successful recursive time-manager callbacks, not proof the outer
+operation or a compositor action completed. Destruction carries identity and
+local flags without walking targets or children; its empty name does not erase
+an earlier label. Its child-count placeholder is not a measurement: the reader
+retains an earlier observed child count, or shows **Not captured**. Missing or
+unsupported required payload fields produce an
+explicit read error rather than invented values.
+
+Run the focused storage/projection regressions from this directory:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --storyboard-tests
+```
+
+For native producer validation, record the same workload twice: once with the
+profiler and default XAML providers enabled, and once with only the default XAML
+provider. The workload should begin `RootPulse` containing `NestedPulse`,
+pause/resume/stop/restart the root, exercise an invalid `FailedBegin`, animate a
+storyboard with an `x:Name` longer than 128 characters, reject a public `Begin`
+on the still-parented `NestedPulse` after the root's first Begin, and release the
+storyboards before exiting. Then run:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --storyboard-trace-integration enabled.etl <enabled-pid> disabled.etl <disabled-pid>
+```
+
+This opt-in check uses real ETW decoding, generic SQLite persistence, and the
+same reader as the UI; it verifies nested attribution, lifecycle operations,
+bounded labels, run generations and the disabled-provider control. It also checks
+that a public wrapper rejection advances the attempt generation without reporting
+success or stopping the existing clock. It does not run as part of the ordinary
+managed suite.
 
 ## Build and run
 

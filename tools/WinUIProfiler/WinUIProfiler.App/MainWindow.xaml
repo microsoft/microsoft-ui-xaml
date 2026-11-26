@@ -171,6 +171,9 @@
             <TabViewItem x:Name="CpuTab" x:Uid="CpuTab" IsClosable="False">
                 <views:CpuView x:Name="CpuPanel" />
             </TabViewItem>
+            <TabViewItem x:Name="StoryboardsTab" x:Uid="StoryboardsTab" IsClosable="False">
+                <views:StoryboardsView x:Name="StoryboardsPanel" />
+            </TabViewItem>
         </TabView>
     </Grid>
 </Window>
