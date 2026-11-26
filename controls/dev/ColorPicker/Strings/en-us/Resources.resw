@@ -287,7 +287,15 @@
   </data>
   <data name="HelpTextMoreButton" xml:space="preserve">
     <value>Invoke to show or hide the text entry fields.</value>
-    <comment>The help text associated with the "more" button.</comment>
+    <comment>[Deprecated, use HelpTextMoreButtonCollapsed/HelpTextMoreButtonExpanded.] The help text associated with the "more" button.</comment>
+  </data>
+  <data name="HelpTextMoreButtonCollapsed" xml:space="preserve">
+    <value>Invoke to show the text entry fields.</value>
+    <comment>The help text associated with the "more" button when it's collapsed (showing "More").</comment>
+  </data>
+  <data name="HelpTextMoreButtonExpanded" xml:space="preserve">
+    <value>Invoke to hide the text entry fields.</value>
+    <comment>The help text associated with the "more" button when it's expanded (showing "Less").</comment>
   </data>
   <data name="TextMoreButtonLabelCollapsed" xml:space="preserve">
     <value>More</value>
