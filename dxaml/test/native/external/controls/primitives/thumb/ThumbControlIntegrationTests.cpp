@@ -507,9 +507,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 failedStarts, log->completedCount, log->canceledCount, unhandled->count);
 
             // Every drag start whose DragStarted failed is canceled again (DragCompleted with Canceled=true), the
-            // Thumb is not left dragging and no DragDelta is raised. Whether the failure also reaches
-            // Application.UnhandledException depends on the host (0 or 1 report per failed start was observed), so only
-            // check that a report never exceeds the failures and carries the handler's E_FAIL.
+            // Thumb is not left dragging and no DragDelta is raised. DXamlCore::FireEvent passes every failure to
+            // ErrorHelper::ReportUnhandledError, but that goes through RoReportUnhandledError and CoreApplication's
+            // FinalUnhandledErrorDetected, so Application.UnhandledException saw 0 or 1 report per failed start across
+            // runs. Only check that a report never exceeds the failures and carries the handler's E_FAIL; this test
+            // does not prove that the failure is propagated rather than swallowed.
             VERIFY_IS_GREATER_THAN_OR_EQUAL(failedStarts, 1);
             VERIFY_ARE_EQUAL(failedStarts, log->completedCount);
             VERIFY_ARE_EQUAL(failedStarts, log->canceledCount);
