@@ -39,6 +39,7 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(DManipTickStartsWhenViewportMoves);
         TEST_METHOD(DManipTickStopsWhenIdle);
         TEST_METHOD(DManipTickingReplacesInertiaJumpAndTween);
+        TEST_METHOD(DManipPresentLeadFollowsFrameInterval);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

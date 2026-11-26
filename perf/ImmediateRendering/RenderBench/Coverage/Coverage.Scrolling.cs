@@ -128,6 +128,9 @@ public static class ScrollingCoveragePages
                 {
                     throw new InvalidOperationException("Mouse wheel did not scroll the ScrollViewer.");
                 }
+                // DManip's wheel inertia is not an OS-animation setting: it spans frames in every mode (immediate modes
+                // tick DManip from the frame loop).
+                progress.AssertMoved("ScrollViewer mouse wheel");
             },
         };
     }
@@ -165,6 +168,112 @@ public static class ScrollingCoveragePages
                 if (scrollViewer.VerticalOffset <= 0 || scrollViewer.HorizontalOffset <= 0)
                 {
                     throw new InvalidOperationException("Touch pan did not scroll the ScrollViewer.");
+                }
+            },
+        };
+    }
+
+    // Keyboard PgDn: ScrollViewer asks DManip for an animated bring-into-viewport (Composition and immediate modes alike).
+    [CoveragePage(Family, "ScrollViewer-KeyboardPageDown")]
+    public static CoveragePage ScrollViewerKeyboardPageDown(CoverageContext context)
+    {
+        var scrollViewer = CreateScrollViewer(zoom: false);
+        scrollViewer.IsTabStop = true;
+        return new CoveragePage
+        {
+            Root = Frame(scrollViewer),
+            Exercise = async () =>
+            {
+                var progress = new OffsetProgress();
+                scrollViewer.Focus(FocusState.Keyboard);
+                await Task.Delay(100);
+                if (!await WaitScrollViewerAsync(scrollViewer, progress, () => Task.FromResult(InputInjection.Key(0x22 /*VK_NEXT*/))))
+                {
+                    return; // No input desktop: the page then compares the unscrolled view.
+                }
+                if (scrollViewer.VerticalOffset <= 0)
+                {
+                    throw new InvalidOperationException("PgDn did not scroll the ScrollViewer.");
+                }
+                progress.AssertAnimated("ScrollViewer PgDn");
+            },
+        };
+    }
+
+    // StartBringIntoView(AnimationDesired) runs DManip's animated bring-into-viewport.
+    [CoveragePage(Family, "ScrollViewer-BringIntoView-Animated")]
+    public static CoveragePage ScrollViewerBringIntoViewAnimated(CoverageContext context)
+    {
+        var scrollViewer = CreateScrollViewer(zoom: false);
+        var canvas = (Canvas)scrollViewer.Content;
+        var target = canvas.Children[9 * 12 + 7];
+        return new CoveragePage
+        {
+            Root = Frame(scrollViewer),
+            Exercise = async () =>
+            {
+                var progress = new OffsetProgress();
+                await WaitScrollViewerAsync(scrollViewer, progress, () =>
+                {
+                    target.StartBringIntoView(new BringIntoViewOptions { AnimationDesired = true, HorizontalAlignmentRatio = 0, VerticalAlignmentRatio = 0 });
+                    return Task.FromResult(true);
+                });
+                progress.AssertAnimated("ScrollViewer.StartBringIntoView");
+            },
+        };
+    }
+
+    // Mouse wheel over a ScrollView: InteractionTracker input redirection (immediate modes: island hit-test proxy).
+    [CoveragePage(Family, "ScrollView-MouseWheel")]
+    public static CoveragePage ScrollViewMouseWheel(CoverageContext context)
+    {
+        var scrollView = new ScrollView { Content = CreateChecker(), Width = 360, Height = 240 };
+        return new CoveragePage
+        {
+            Root = Frame(scrollView),
+            Exercise = async () =>
+            {
+                var progress = new OffsetProgress();
+                var center = scrollView.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(180, 120));
+                if (!await WaitScrollViewAsync(scrollView, progress, () => Task.FromResult(InputInjection.Wheel(context.Window, center, -360))))
+                {
+                    return;
+                }
+                if (scrollView.VerticalOffset <= 0)
+                {
+                    throw new InvalidOperationException("Mouse wheel did not scroll the ScrollView.");
+                }
+                progress.AssertMoved("ScrollView mouse wheel");
+            },
+        };
+    }
+
+    // Touch pan of a ScrollView: TryRedirectForManipulation hands the contact to the InteractionTracker.
+    [CoveragePage(Family, "ScrollView-TouchPan")]
+    public static CoveragePage ScrollViewTouchPan(CoverageContext context)
+    {
+        var scrollView = new ScrollView
+        {
+            Content = CreateChecker(),
+            Width = 360,
+            Height = 240,
+            HorizontalScrollMode = ScrollingScrollMode.Enabled,
+            HorizontalScrollBarVisibility = ScrollingScrollBarVisibility.Auto,
+        };
+        return new CoveragePage
+        {
+            Root = Frame(scrollView),
+            Exercise = async () =>
+            {
+                var progress = new OffsetProgress();
+                var origin = scrollView.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(250, 200));
+                if (!await WaitScrollViewAsync(scrollView, progress, () => InputInjection.DragAsync(context.Window, origin, -150, -150, steps: 20)))
+                {
+                    return;
+                }
+                if (scrollView.VerticalOffset <= 0 || scrollView.HorizontalOffset <= 0)
+                {
+                    throw new InvalidOperationException("Touch pan did not scroll the ScrollView.");
                 }
             },
         };
@@ -437,6 +546,14 @@ public static class ScrollingCoveragePages
             Intermediate++;
         }
 
+        public void AssertMoved(string what)
+        {
+            if (Intermediate < 3)
+            {
+                throw new InvalidOperationException($"{what}: only {Intermediate} intermediate view values.");
+            }
+        }
+
         public void AssertAnimated(string what)
         {
             // With OS animations off (common on VMs) every animated view change jumps in Composition too.
@@ -482,6 +599,66 @@ public static class ScrollingCoveragePages
         finally
         {
             scrollViewer.ViewChanged -= handler;
+        }
+    }
+
+    // Starts input and waits for the final (non-intermediate) ViewChanged; false when the input could not be injected.
+    private static async Task<bool> WaitScrollViewerAsync(ScrollViewer scrollViewer, OffsetProgress progress, Func<Task<bool>> start)
+    {
+        var done = new TaskCompletionSource();
+        EventHandler<ScrollViewerViewChangedEventArgs> handler = (_, e) =>
+        {
+            progress.Record(scrollViewer.VerticalOffset + scrollViewer.HorizontalOffset);
+            if (!e.IsIntermediate) done.TrySetResult();
+        };
+        scrollViewer.ViewChanged += handler;
+        try
+        {
+            if (!await start())
+            {
+                return false;
+            }
+            await done.Task.WaitAsync(Timeout);
+            await Task.Delay(300);
+            return true;
+        }
+        finally
+        {
+            scrollViewer.ViewChanged -= handler;
+        }
+    }
+
+    // Starts input and waits until the ScrollView moved and then stayed still for 500 ms (InteractionTracker input has no
+    // completion event); false when the input could not be injected.
+    private static async Task<bool> WaitScrollViewAsync(ScrollView scrollView, OffsetProgress progress, Func<Task<bool>> start)
+    {
+        long lastChange = 0;
+        Windows.Foundation.TypedEventHandler<ScrollView, object> viewChanged = (_, _) =>
+        {
+            progress.Record(scrollView.VerticalOffset + scrollView.HorizontalOffset);
+            lastChange = Environment.TickCount64;
+        };
+        scrollView.ViewChanged += viewChanged;
+        try
+        {
+            long begin = Environment.TickCount64;
+            if (!await start())
+            {
+                return false;
+            }
+            while (Environment.TickCount64 - begin < Timeout.TotalMilliseconds)
+            {
+                await Task.Delay(50);
+                if (lastChange != 0 && Environment.TickCount64 - lastChange > 500)
+                {
+                    break;
+                }
+            }
+            return true;
+        }
+        finally
+        {
+            scrollView.ViewChanged -= viewChanged;
         }
     }
 

@@ -432,6 +432,19 @@ namespace ImmediateRenderingPolicyTests
         }
     }
 
+    void PolicyTests::DManipPresentLeadFollowsFrameInterval()
+    {
+        // First tick of a motion (or after a stall): assume one 60 Hz frame until presentation.
+        VERIFY_ARE_EQUAL(16u, DManipPresentLeadMs(0, 1000000));
+        VERIFY_ARE_EQUAL(16u, DManipPresentLeadMs(1000000, 1250000));
+        // Steady ticking: the frame is shown about one tick interval later (33 ms at 30 Hz), clamped to [8, 50].
+        VERIFY_ARE_EQUAL(33u, DManipPresentLeadMs(1000000, 1033000));
+        VERIFY_ARE_EQUAL(8u, DManipPresentLeadMs(1000000, 1002000));
+        VERIFY_ARE_EQUAL(50u, DManipPresentLeadMs(1000000, 1080000));
+        // Clock going backwards is treated as a new motion.
+        VERIFY_ARE_EQUAL(16u, DManipPresentLeadMs(1000000, 900000));
+    }
+
     void PolicyTests::DManipTickingReplacesInertiaJumpAndTween()
     {
         // Immediate + ticking: inertia animates (no jump to its end) and animated ChangeView uses DManip's animation.

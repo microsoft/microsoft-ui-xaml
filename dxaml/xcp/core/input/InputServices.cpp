@@ -8665,6 +8665,16 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
     FILE* const log = GetDManipLogFile();
     std::vector<IPALDirectManipulationService*> ticked;
     uint32_t moving = 0;
+    static const int s_leadOverrideMs = []
+    {
+        wchar_t value[8] = {};
+        const DWORD length = GetEnvironmentVariableW(ImmediateRenderingPolicy::DManipLeadVariableName, value, ARRAYSIZE(value));
+        return (length > 0 && length < ARRAYSIZE(value)) ? _wtoi(value) : -1;
+    }();
+    const int64_t nowUs = DManipLogMicroseconds();
+    const XUINT32 presentLeadMs = s_leadOverrideMs >= 0
+        ? static_cast<XUINT32>(s_leadOverrideMs)
+        : ImmediateRenderingPolicy::DManipPresentLeadMs(m_lastImmediateDManipTickUs, nowUs);
     for (XUINT32 i = 0; i < m_pViewports->size(); ++i)
     {
         CDMViewport* pViewport = nullptr;
@@ -8693,7 +8703,7 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
         ++moving;
         if (std::find(ticked.begin(), ticked.end(), spService.get()) == ticked.end())
         {
-            IFC_RETURN(spService->TickUpdateManager());
+            IFC_RETURN(spService->TickUpdateManager(presentLeadMs));
             ticked.push_back(spService.get());
             ++m_immediateDManipUpdates;
         }
@@ -8708,10 +8718,11 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
 
     if (log && moving > 0)
     {
-        fprintf(log, "tick %lld %lu %u %zu %llu\n", static_cast<long long>(DManipLogMicroseconds()), GetCurrentThreadId(),
-            moving, ticked.size(), static_cast<unsigned long long>(m_immediateDManipUpdates));
+        fprintf(log, "tick %lld %lu %u %zu %llu %u\n", static_cast<long long>(DManipLogMicroseconds()), GetCurrentThreadId(),
+            moving, ticked.size(), static_cast<unsigned long long>(m_immediateDManipUpdates), presentLeadMs);
         fflush(log);
     }
+    m_lastImmediateDManipTickUs = ticked.empty() ? 0 : nowUs;
     if (moving > 0)
     {
         // Keep frames coming while DManip moves even if XAML's queued status still says Ready.

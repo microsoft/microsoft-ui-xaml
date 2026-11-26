@@ -189,6 +189,14 @@ namespace ImmediateRenderingPolicy
     // one moving viewport. False when every viewport is Ready/Enabled/Disabled, so a settled window costs nothing.
     bool ShouldTickDManip(bool immediateMode, bool tickingEnabled, _In_reads_(count) const DManipStatus* statuses, uint32_t count) noexcept;
 
+    // Milliseconds between an immediate Update tick and the present that shows its transform, reported to DManip as the
+    // frame info provider's composition time (the DComp manipulation compositor reports its own next composition time,
+    // so without a lead immediate trajectories trail Composition by one frame). Derived from the previous tick of the
+    // same motion: the tick interval clamped to [8, 50] ms, or 16 ms for a motion's first tick or after a >100 ms stall.
+    // WINUI_IMMEDIATE_DMANIP_LEAD_MS overrides it (0 restores the zero lead for A/B).
+    constexpr const wchar_t* DManipLeadVariableName = L"WINUI_IMMEDIATE_DMANIP_LEAD_MS";
+    uint32_t DManipPresentLeadMs(int64_t previousTickMicroseconds, int64_t nowMicroseconds) noexcept;
+
     // Without ticking an inertial viewport whose element has no composition peer never progresses, so XAML jumps it to
     // the inertia end (CInputServices::StopInertialViewportWithoutCompositorPeer). With immediate ticking it animates.
     bool ShouldStopPeerlessInertia(bool immediateMode, bool tickingEnabled) noexcept;

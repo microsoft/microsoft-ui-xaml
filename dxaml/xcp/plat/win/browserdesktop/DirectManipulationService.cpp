@@ -3048,9 +3048,10 @@ Cleanup:
 // stays bound (viewports are created with its frame info provider and in automatic update mode); it only ticks
 // content bound to DComp visuals, which immediate islands never create, so without this call inertia and animated
 // ZoomToRect never progress. Spike diagnostic: WINUI_IMMEDIATE_DMANIP_FRAMEINFO=0 passes a null frame info provider
-// (DManip then samples the current time) instead of the compositor's.
+// (DManip then samples the current time) instead of the compositor's. presentLeadMs temporarily replaces the provider's
+// composition delta so DManip evaluates the transform for the time the frame is presented, like DComp does.
 _Check_return_ HRESULT
-CDirectManipulationService::TickUpdateManager()
+CDirectManipulationService::TickUpdateManager(XUINT32 presentLeadMs)
 {
     if (m_pDMUpdateManager == nullptr)
     {
@@ -3062,7 +3063,11 @@ CDirectManipulationService::TickUpdateManager()
         const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_DMANIP_FRAMEINFO", value, ARRAYSIZE(value));
         return !(length > 0 && length < ARRAYSIZE(value) && value[0] == L'0');
     }();
-    IFC_RETURN(m_pDMUpdateManager->Update(s_useFrameInfo ? m_pDMFrameInfoProvider : nullptr));
+    const XUINT32 previousDelta = m_deltaCompositionTime;
+    m_deltaCompositionTime = presentLeadMs;
+    const HRESULT hr = m_pDMUpdateManager->Update(s_useFrameInfo ? m_pDMFrameInfoProvider : nullptr);
+    m_deltaCompositionTime = previousDelta;
+    IFC_RETURN(hr);
     return S_OK;
 }
 

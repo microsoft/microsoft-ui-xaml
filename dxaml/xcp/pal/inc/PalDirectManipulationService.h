@@ -92,8 +92,9 @@ struct IPALDirectManipulationService : public IObject
 
     // ---- DManip ticking (scroll physics) ----
     // Immediate rendering backends: advance DirectManipulation (inertia, animated ZoomToRect, contact updates) by one
-    // frame, the job of the DComp manipulation compositor in Composition. No-op when the service has no update manager.
-    virtual _Check_return_ HRESULT TickUpdateManager() = 0;
+    // frame, the job of the DComp manipulation compositor in Composition. presentLeadMs is the expected delay until the
+    // resulting frame is presented (reported as the frame's composition time). No-op without an update manager.
+    virtual _Check_return_ HRESULT TickUpdateManager(XUINT32 presentLeadMs) = 0;
 
     virtual _Check_return_ HRESULT EnsureSharedContentTransform(_In_ ixp::ICompositor* compositor, _In_ IObject* pContent, _In_ XDMContentType contentType, _Outptr_result_nullonfailure_ IUnknown** sharedPrimaryTransform, _Outptr_result_maybenull_ IUnknown** sharedSecondaryTransform) = 0;
     virtual _Check_return_ HRESULT ReleaseSharedContentTransform(_In_ IObject* pContent, _In_ XDMContentType contentType) = 0;
