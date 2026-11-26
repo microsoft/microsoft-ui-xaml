@@ -93,6 +93,7 @@ class CStyle;
 class CCustomTypeFactory;
 class CAutomationPeer;
 class CPopupRoot;
+class CPopup;
 class CDataTemplate;
 class CControlTemplate;
 class CTileBrush;
@@ -2192,6 +2193,8 @@ public:
     // gdilayers: requests a tick (not a render walk, so no frame is drawn) to release idle painter layers.
     void RequestImmediateTrim(uint32_t delayMs);
     void TrimImmediateIdleResources(_In_ DCompTreeHost* dcompTreeHost);
+    // ---- scrollgaps ---- a windowed popup is releasing its window's visual tree.
+    void OnImmediateWindowedPopupReleasing(_In_ CPopup* popup);
 
     _Check_return_ HRESULT UpdateFontScale(_In_ XFLOAT newFontScale);
     XFLOAT GetFontScale();

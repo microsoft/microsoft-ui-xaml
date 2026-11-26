@@ -1460,6 +1460,13 @@ wrl::ComPtr<ixp::IPointerPoint> CPopup::GetPreviousPointerPoint()
 // Release DComp resources associated with windowed popup
 void CPopup::ReleaseDCompResourcesForWindowedPopup()
 {
+    // ---- scrollgaps ---- immediate rendering parents ScrollPresenter hand-off visuals (hit-test proxies) under the
+    // window's tree; take them out before the window's island can close and dispose them with it.
+    if (GetContext())
+    {
+        GetContext()->OnImmediateWindowedPopupReleasing(this);
+    }
+
     if (m_publicRootVisual)
     {
        m_publicRootVisual.Reset();

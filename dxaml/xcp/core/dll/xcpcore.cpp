@@ -11579,6 +11579,15 @@ void CCoreServices::RequestImmediateTrim(uint32_t delayMs)
     }
 }
 
+// ---- scrollgaps ----
+void CCoreServices::OnImmediateWindowedPopupReleasing(_In_ CPopup* popup)
+{
+    if (m_immediateRenderer != nullptr)
+    {
+        m_immediateRenderer->OnWindowedPopupReleasing(popup);
+    }
+}
+
 void CCoreServices::TrimImmediateIdleResources(_In_ DCompTreeHost* dcompTreeHost)
 {
     m_immediateTrimPending = false;

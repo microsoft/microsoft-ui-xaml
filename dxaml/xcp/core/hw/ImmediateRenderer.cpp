@@ -935,6 +935,28 @@ void ImmediateRenderer::OnIslandRemoved(_In_ CXamlIslandRoot* island) noexcept
     m_islands.erase(found); // ~IslandState removes the hit proxies
 }
 
+// ---- scrollgaps ---- closing a windowed popup can close its window's ContentIsland (and dispose the visuals in it)
+// before the next walk prunes the popup, so the ScrollPresenter hand-off visuals parented there are removed now: XAML
+// failfasts (RO_E_CLOSED) detaching from a disposed hand-off visual.
+void ImmediateRenderer::OnWindowedPopupReleasing(_In_ CPopup* popup) noexcept
+{
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
+    for (auto& island : m_islands)
+    {
+        for (auto& entry : island.second->popups)
+        {
+            if (entry.popup.get() == popup && entry.surface)
+            {
+                for (auto& proxy : entry.surface->hitProxies)
+                {
+                    entry.surface->RemoveHitProxy(proxy.second);
+                }
+                entry.surface->hitProxies.clear();
+            }
+        }
+    }
+}
+
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
 {
     PruneFallenBack(dcompTreeHost);

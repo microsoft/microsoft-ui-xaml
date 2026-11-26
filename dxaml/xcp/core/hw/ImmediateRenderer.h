@@ -52,6 +52,7 @@ public:
     // Composition tree is disposed with it, and the ScrollPresenter hand-off visuals parented under it as hit-test
     // proxies must be detached first (XAML detaches from them when the elements are destroyed later).
     void OnIslandRemoved(_In_ CXamlIslandRoot* island) noexcept;
+    void OnWindowedPopupReleasing(_In_ CPopup* popup) noexcept; // ---- scrollgaps ----
 
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
