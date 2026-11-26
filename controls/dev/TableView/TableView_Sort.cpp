@@ -268,7 +268,18 @@ bool TableView::IsInstalledSortKeyFor(const winrt::TableViewColumn& column) cons
             return false;
         }
         auto const descriptions = m_collectionViewShaping.SortDescriptions();
-        return descriptions.Size() == 1 && descriptions.GetAt(0) && descriptions.GetAt(0).PropertyName() == m_installedSortKey->MemberPath;
+        if (descriptions.Size() != 1)
+        {
+            return false;
+        }
+        // Read once: the view may be the app's. A direction flipped on the view is the app's sort too.
+        auto const description = descriptions.GetAt(0);
+        auto const direction = column.SortDirection();
+        auto const expected = direction == winrt::SortDirection::Descending
+            ? winrt::Microsoft::UI::Xaml::Data::CollectionViewSortDirection::Descending
+            : winrt::Microsoft::UI::Xaml::Data::CollectionViewSortDirection::Ascending;
+        return description && direction != winrt::SortDirection::None &&
+            description.PropertyName() == m_installedSortKey->MemberPath && description.Direction() == expected;
     }
     catch (...)
     {

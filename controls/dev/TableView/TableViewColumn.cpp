@@ -313,6 +313,16 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
     auto const resetGuard = wil::scope_exit([this]() noexcept { m_isSettingSortStateInternal = false; });
     // WinUI has no SetCurrentValue (WPF's DataGrid writes SortDirection with it): a TwoWay binding takes the write and
     // stays, a OneWay binding or a style setter is replaced by this local value (documented on SortDirection).
+#ifdef DBG
+    if (auto const expression = ReadLocalValue(s_SortDirectionProperty).try_as<winrt::Microsoft::UI::Xaml::Data::BindingExpression>())
+    {
+        auto const binding = expression.ParentBinding();
+        if (binding && binding.Mode() != winrt::Microsoft::UI::Xaml::Data::BindingMode::TwoWay)
+        {
+            TVDiag::DbgLogF(L"[TableView] The table's sort replaces a non-TwoWay binding on TableViewColumn.SortDirection; bind it TwoWay to keep it.");
+        }
+    }
+#endif
     SetValue(s_SortDirectionProperty, winrt::box_value(direction));
 }
 
