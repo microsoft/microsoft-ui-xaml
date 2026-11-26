@@ -578,6 +578,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             auto toggleButtonIids = GetReportedIids(reinterpret_cast<IInspectable*>(toggleButton));
             VERIFY_IS_TRUE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButton^)));
             VERIFY_IS_TRUE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButtonOverrides^)));
+            VERIFY_IS_FALSE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButtonFactory^)));
             VERIFY_IS_FALSE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButtonStatics^)));
 
             LOG_OUTPUT(L"The ToggleButton activation factory reports IToggleButtonFactory and IToggleButtonStatics.");
@@ -589,6 +590,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_TRUE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButtonFactory^)));
             VERIFY_IS_TRUE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButtonStatics^)));
             VERIFY_IS_FALSE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButton^)));
+            VERIFY_IS_FALSE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButtonOverrides^)));
         });
     }
 
