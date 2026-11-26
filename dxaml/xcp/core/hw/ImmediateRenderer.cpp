@@ -4348,11 +4348,22 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
     std::vector<RectF> damage;
     if (!fullDamage)
     {
+        // ---- scrollgaps ---- diagnostic: WINUI_IMMEDIATE_STATS_DAMAGE=1 (with WINUI_IMMEDIATE_STATS) logs raw damage
+        // rects larger than a quarter of the island with the element and the reason ("# damage ...").
+        static const bool s_logDamage = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS_DAMAGE", nullptr, 0) != 0;
+        const CUIElement* damageOwner = nullptr;
+        const char* damageReason = "strip";
         auto add = [&](const RectF& r)
         {
             if (IsEmptyRect(r))
             {
                 return;
+            }
+            if (s_logDamage && statsFile && (r.right - r.left) * (r.bottom - r.top) * 4 > surface.right * surface.bottom)
+            {
+                const xstring_ptr name = damageOwner ? damageOwner->GetClassName() : xstring_ptr();
+                fwprintf(statsFile, L"# damage %s %S %.0f,%.0f,%.0f,%.0f\n", name.IsNullOrEmpty() ? L"-" : name.GetBuffer(), damageReason,
+                    r.left, r.top, r.right, r.bottom);
             }
             if (damage.size() < c_maxRawDamageRects)
             {
@@ -4409,6 +4420,9 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             const ElementRecord& now = entry.second;
             auto found = state.records.find(entry.first);
             const ElementRecord* old = found != state.records.end() ? &found->second : nullptr;
+            damageOwner = entry.first;
+            damageReason = !s_logDamage ? "" : !old ? "new" : (old->signature != now.signature ? "changed" : (old->scroller != now.scroller ? "scroller"
+                : (!RectsEqual(old->relBounds, now.relBounds) ? "relmoved" : (movedWithBlit(now) ? "blitted" : (!RectsEqual(old->bounds, now.bounds) ? "moved" : "unmoved")))));
 
             if (now.hasContent || (old && old->hasContent))
             {
@@ -4446,6 +4460,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             if (now.hasGroup || (old && old->hasGroup))
             {
                 const bool same = old && old->hasGroup && now.hasGroup && old->groupSignature == now.groupSignature;
+                damageReason = s_logDamage ? (same ? "group-corners" : "group") : "";
                 if (!same)
                 {
                     if (old && old->hasGroup) addOld(old->groupBounds);
@@ -4475,6 +4490,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                 }
             }
         }
+        damageReason = "removed";
+        damageOwner = nullptr; // the element may be gone
         for (const auto& entry : state.records)
         {
             if (list.records.find(entry.first) == list.records.end())
