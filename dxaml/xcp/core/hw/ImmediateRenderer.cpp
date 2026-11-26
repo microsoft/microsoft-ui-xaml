@@ -3561,7 +3561,9 @@ void ImmediateRenderer::Walk(
         childCtx.contentClip = IntersectRect(childCtx.contentClip, bounds);
     }
 
-    if (type == KnownTypeIndex::ScrollContentPresenter)
+    // ---- scrollgaps ---- MUXC ScrollPresenter (InteractionTracker) is a scroller host too: its content moves through
+    // Translation/Scale facades (ScrollPresenter::ApplyImmediateContentTransform), so whole-pixel motion blits.
+    if (type == KnownTypeIndex::ScrollContentPresenter || (isScrollPresenter && !ctx.has3D))
     {
         ScrollerInfo scroller;
         scroller.presenter = element;
