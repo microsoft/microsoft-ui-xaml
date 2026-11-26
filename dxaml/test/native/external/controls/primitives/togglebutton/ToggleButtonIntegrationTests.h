@@ -63,6 +63,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         BEGIN_TEST_METHOD(DisabledIndeterminateToggleButtonUsesIndeterminateDisabledState)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a disabled indeterminate ToggleButton goes to the IndeterminateDisabled visual state.")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetIidsReportsToggleButtonAndFactoryInterfaces)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that IInspectable::GetIids on a ToggleButton and on its activation factory reports IToggleButton and IToggleButtonOverrides, and IToggleButtonFactory and IToggleButtonStatics respectively, and that neither reports the other's interfaces.")
+        END_TEST_METHOD()
     };
 
 } } } } } } }

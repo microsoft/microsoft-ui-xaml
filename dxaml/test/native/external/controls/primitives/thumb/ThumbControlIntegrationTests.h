@@ -47,6 +47,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a Thumb does not start a drag when the press was handled by an element in its template, but does when the press reaches it unhandled.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(GetIidsReportsThumbAndFactoryInterfaces)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that IInspectable::GetIids on a Thumb and on its activation factory reports IThumb and IThumbStatics respectively, and that neither reports the other's interface.")
+        END_TEST_METHOD()
     };
 
 } } } } } } }

@@ -127,6 +127,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TestServices::InputHelper->MouseButtonUp(element, dx, dy, MouseButton::Left);
             releaseMouse.release();
         }
+
+        // Returns the interface IDs that IInspectable::GetIids reports for the object.
+        std::vector<GUID> GetReportedIids(IInspectable* object)
+        {
+            ULONG count = 0;
+            IID* iids = nullptr;
+            VERIFY_SUCCEEDED(object->GetIids(&count, &iids));
+            auto freeIids = wil::scope_exit([iids]() { CoTaskMemFree(iids); });
+            return std::vector<GUID>(iids, iids + count);
+        }
+
+        bool ContainsIid(const std::vector<GUID>& iids, const GUID& iid)
+        {
+            return std::find(iids.begin(), iids.end(), iid) != iids.end();
+        }
     }
 
     bool ThumbControlIntegrationTests::ClassSetup()
@@ -620,6 +635,29 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_FALSE(thumb->IsDragging);
             VERIFY_ARE_EQUAL(1, dragLog->completedCount);
             VERIFY_IS_FALSE(dragLog->lastCompletedCanceled);
+        });
+    }
+
+    void ThumbControlIntegrationTests::GetIidsReportsThumbAndFactoryInterfaces()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"A Thumb reports its IThumb interface.");
+            auto thumb = ref new xaml_primitives::Thumb();
+            auto thumbIids = GetReportedIids(reinterpret_cast<IInspectable*>(thumb));
+            VERIFY_IS_TRUE(ContainsIid(thumbIids, __uuidof(xaml_primitives::IThumb^)));
+            VERIFY_IS_FALSE(ContainsIid(thumbIids, __uuidof(xaml_primitives::IThumbStatics^)));
+
+            LOG_OUTPUT(L"The Thumb activation factory reports IThumbStatics, which is not an instance interface.");
+            Microsoft::WRL::ComPtr<IActivationFactory> factory;
+            VERIFY_SUCCEEDED(RoGetActivationFactory(
+                Microsoft::WRL::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.Primitives.Thumb").Get(),
+                IID_PPV_ARGS(&factory)));
+            auto factoryIids = GetReportedIids(factory.Get());
+            VERIFY_IS_TRUE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IThumbStatics^)));
+            VERIFY_IS_FALSE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IThumb^)));
         });
     }
 

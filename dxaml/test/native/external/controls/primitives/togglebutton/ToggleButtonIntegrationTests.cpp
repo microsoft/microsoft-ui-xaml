@@ -48,6 +48,21 @@ namespace ToggleButtonIntegrationTestTypes {
         int m_onToggleCallCount;
     };
 
+    // Returns the interface IDs that IInspectable::GetIids reports for the object.
+    std::vector<GUID> GetReportedIids(IInspectable* object)
+    {
+        ULONG count = 0;
+        IID* iids = nullptr;
+        VERIFY_SUCCEEDED(object->GetIids(&count, &iids));
+        auto freeIids = wil::scope_exit([iids]() { CoTaskMemFree(iids); });
+        return std::vector<GUID>(iids, iids + count);
+    }
+
+    bool ContainsIid(const std::vector<GUID>& iids, const GUID& iid)
+    {
+        return std::find(iids.begin(), iids.end(), iid) != iids.end();
+    }
+
 } // namespace ToggleButtonIntegrationTestTypes
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Primitives { namespace ToggleButton {
@@ -546,6 +561,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]()
         {
             VERIFY_ARE_EQUAL(Platform::StringReference(L"CheckedDisabled"), commonStates->CurrentState->Name);
+        });
+    }
+
+    void ToggleButtonIntegrationTests::GetIidsReportsToggleButtonAndFactoryInterfaces()
+    {
+        TestCleanupWrapper cleanup;
+
+        RunOnUIThread([&]()
+        {
+            using ToggleButtonIntegrationTestTypes::ContainsIid;
+            using ToggleButtonIntegrationTestTypes::GetReportedIids;
+
+            LOG_OUTPUT(L"A ToggleButton reports IToggleButton and IToggleButtonOverrides.");
+            auto toggleButton = ref new xaml_primitives::ToggleButton();
+            auto toggleButtonIids = GetReportedIids(reinterpret_cast<IInspectable*>(toggleButton));
+            VERIFY_IS_TRUE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButton^)));
+            VERIFY_IS_TRUE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButtonOverrides^)));
+            VERIFY_IS_FALSE(ContainsIid(toggleButtonIids, __uuidof(xaml_primitives::IToggleButtonStatics^)));
+
+            LOG_OUTPUT(L"The ToggleButton activation factory reports IToggleButtonFactory and IToggleButtonStatics.");
+            Microsoft::WRL::ComPtr<IActivationFactory> factory;
+            VERIFY_SUCCEEDED(RoGetActivationFactory(
+                Microsoft::WRL::Wrappers::HStringReference(L"Microsoft.UI.Xaml.Controls.Primitives.ToggleButton").Get(),
+                IID_PPV_ARGS(&factory)));
+            auto factoryIids = GetReportedIids(factory.Get());
+            VERIFY_IS_TRUE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButtonFactory^)));
+            VERIFY_IS_TRUE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButtonStatics^)));
+            VERIFY_IS_FALSE(ContainsIid(factoryIids, __uuidof(xaml_primitives::IToggleButton^)));
         });
     }
 
