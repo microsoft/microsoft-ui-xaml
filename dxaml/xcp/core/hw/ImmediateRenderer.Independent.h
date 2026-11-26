@@ -52,6 +52,11 @@ namespace ImmediateRenderingDetail
         int64_t lastUiQpc = 0;                            // last UI-thread RenderIsland
         uint32_t frames = 0;
         bool paintedFinal = false;
+        // ---- scrollgaps ---- gap 1: translation (DIPs) painted per DisplayList::offThreadScrollers entry, and render
+        // periods since any of them last moved.
+        std::vector<RenderingBackend::PointF> offThreadDeltas;
+        uint32_t offThreadStillPeriods = 0;
+        bool loggedScrollers = false;
     };
 
     struct AnimationBinding

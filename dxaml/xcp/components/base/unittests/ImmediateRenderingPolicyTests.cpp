@@ -524,6 +524,43 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_NOT_EQUAL(QuantizeRelativeClipEdge(100.0f, 40.0f), QuantizeRelativeClipEdge(100.0f, 0.0f));
     }
 
+    void PolicyTests::OffThreadScrollIsOptIn()
+    {
+        // ---- scrollgaps ---- gap 1: WINUI_IMMEDIATE_OFFTHREAD_SCROLL=1 only.
+        VERIFY_IS_FALSE(IsOffThreadScrollEnabled(nullptr));
+        VERIFY_IS_FALSE(IsOffThreadScrollEnabled(L""));
+        VERIFY_IS_FALSE(IsOffThreadScrollEnabled(L"0"));
+        VERIFY_IS_FALSE(IsOffThreadScrollEnabled(L"yes"));
+        VERIFY_IS_TRUE(IsOffThreadScrollEnabled(L"1"));
+    }
+
+    void PolicyTests::OffThreadOverscanGrowsViewport()
+    {
+        // The walk clip of a moving scroller's content: the viewport plus `extent` viewports on every side.
+        const RectF overscan = ComputeOffThreadOverscanClip(RectF{ 10, 20, 110, 220 }, 0.5f);
+        VERIFY_ARE_EQUAL(-40.0f, overscan.left);
+        VERIFY_ARE_EQUAL(-80.0f, overscan.top);
+        VERIFY_ARE_EQUAL(160.0f, overscan.right);
+        VERIFY_ARE_EQUAL(320.0f, overscan.bottom);
+        const RectF empty = ComputeOffThreadOverscanClip(RectF{ 10, 20, 10, 220 }, 0.5f);
+        VERIFY_IS_TRUE(empty.right <= empty.left);
+    }
+
+    void PolicyTests::OffThreadScrollDeltaIsTranslationOnly()
+    {
+        PointF delta{ 99, 99 };
+        // Content moved up by 37.3 DIPs at scale 1.5: whole device pixels (like the scrolled content's snapped origin).
+        VERIFY_IS_TRUE(ComputeOffThreadScrollDelta(0, -100, 1, 0, -137.3f, 1, 500, 500, 1.5f, &delta));
+        VERIFY_ARE_EQUAL(0.0f, delta.x);
+        VERIFY_ARE_EQUAL(std::round(-37.3f * 1.5f) / 1.5f, delta.y);
+        // Clamped to the overscan so the viewport never shows unwalked content.
+        VERIFY_IS_TRUE(ComputeOffThreadScrollDelta(0, 0, 1, 30, -900, 1, 20, 500, 1, &delta));
+        VERIFY_ARE_EQUAL(20.0f, delta.x);
+        VERIFY_ARE_EQUAL(-500.0f, delta.y);
+        // A zoom change is not a translation of the cached content.
+        VERIFY_IS_FALSE(ComputeOffThreadScrollDelta(0, 0, 1, 0, -10, 1.25f, 500, 500, 1, &delta));
+    }
+
     void PolicyTests::DamageCoalescingKeepsThinStripsThin()
     {
         using RenderingBackend::RectF;

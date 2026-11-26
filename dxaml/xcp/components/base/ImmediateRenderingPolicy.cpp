@@ -737,6 +737,37 @@ namespace ImmediateRenderingPolicy
         return std::llround((static_cast<double>(edge) - origin) * 256.0);
     }
 
+    bool IsOffThreadScrollEnabled(_In_opt_z_ const wchar_t* value) noexcept
+    {
+        return value != nullptr && value[0] == L'1' && value[1] == L'\0';
+    }
+
+    RectF ComputeOffThreadOverscanClip(const RectF& viewport, float extent) noexcept
+    {
+        const float width = viewport.right - viewport.left;
+        const float height = viewport.bottom - viewport.top;
+        if (!(width > 0) || !(height > 0))
+        {
+            return RectF{};
+        }
+        return RectF{ viewport.left - width * extent, viewport.top - height * extent, viewport.right + width * extent, viewport.bottom + height * extent };
+    }
+
+    bool ComputeOffThreadScrollDelta(float tx0, float ty0, float zoom0, float tx, float ty, float zoom, float maxDx, float maxDy,
+        float scale, _Out_ PointF* delta) noexcept
+    {
+        *delta = {};
+        if (std::fabs(zoom - zoom0) > 1e-4f * std::max(1.0f, std::fabs(zoom0)) || !(scale > 0))
+        {
+            return false;
+        }
+        const float dx = std::min(maxDx, std::max(-maxDx, tx - tx0));
+        const float dy = std::min(maxDy, std::max(-maxDy, ty - ty0));
+        delta->x = std::round(dx * scale) / scale;
+        delta->y = std::round(dy * scale) / scale;
+        return true;
+    }
+
     // ---- imaging ----
 
     uint32_t ComputeNineGridCells(const RectF& dest, float sourceWidth, float sourceHeight, const NineGridInsets& insets,

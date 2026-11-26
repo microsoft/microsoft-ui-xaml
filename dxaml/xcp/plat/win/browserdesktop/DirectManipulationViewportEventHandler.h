@@ -33,6 +33,20 @@ protected:
 
 public:
     _Check_return_ HRESULT SetDMService(_In_opt_ CDirectManipulationService* pDMService);
+    // ---- scrollgaps ---- delivers status changes queued by OnViewportStatusChanged off the UI thread (UI thread only).
+    _Check_return_ HRESULT ProcessDeferredStatusChanges(_Out_ uint32_t* count);
+
+private:
+    struct DeferredStatusChange
+    {
+        ATL::CComPtr<IDirectManipulationViewport> viewport;
+        DIRECTMANIPULATION_STATUS current;
+        DIRECTMANIPULATION_STATUS previous;
+    };
+    DWORD m_uiThreadId = GetCurrentThreadId();
+    std::atomic<bool> m_deferOffThread{ false }; // set once an immediate-mode UI tick drains the queue
+    SRWLOCK m_deferredLock = SRWLOCK_INIT;
+    std::vector<DeferredStatusChange> m_deferredStatusChanges;
 
 public:
     DECLARE_NOT_AGGREGATABLE(CDirectManipulationViewportEventHandler)

@@ -44,6 +44,9 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(BlitDamageSkipsUniformInterior);
         TEST_METHOD(DamageCoalescingKeepsThinStripsThin);
         TEST_METHOD(UnboundedClipEdgeIgnoresScrollOffset);
+        TEST_METHOD(OffThreadScrollIsOptIn);
+        TEST_METHOD(OffThreadOverscanGrowsViewport);
+        TEST_METHOD(OffThreadScrollDeltaIsTranslationOnly);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

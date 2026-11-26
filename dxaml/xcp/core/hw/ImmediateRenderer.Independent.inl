@@ -35,7 +35,8 @@ namespace II = ImmediateIndependent;
 
 namespace
 {
-    constexpr int64_t c_uiIdleMicroseconds = 34000;   // render thread presents once the UI thread missed ~2 frames
+    constexpr uint32_t c_offThreadStillPeriods = 8;    // ---- scrollgaps ---- render periods a still scroller keeps ticking
+constexpr int64_t c_uiIdleMicroseconds = 34000;   // render thread presents once the UI thread missed ~2 frames
     constexpr auto c_renderThreadPeriod = std::chrono::milliseconds(16);
     constexpr uint32_t c_curveSamples = 64;
     constexpr float c_spinnerDegreesPerSecond = 360.0f;
@@ -474,6 +475,8 @@ void ImmediateRenderer::AppendIndependentDamage(_Inout_ IslandState& state, _Ino
     }
     independent.lastBounds.clear();
     independent.paintedFinal = false;
+    independent.offThreadDeltas.clear();
+    independent.offThreadStillPeriods = 0;
 }
 
 void ImmediateRenderer::OnIslandPresented(_Inout_ IslandState& state, uint32_t frameNumber)
@@ -485,7 +488,21 @@ void ImmediateRenderer::OnIslandPresented(_Inout_ IslandState& state, uint32_t f
         const int64_t elapsed = QpcMicroseconds() - s.lossQpc;
         TraceDeviceRecovered(m_mode, static_cast<uint32_t>(std::max<int64_t>(0, elapsed) / 1000), frameNumber, s.lastLossSimulated, s.lossCount);
     }
-    if (!state.previousWalk.layers.empty())
+    // ---- scrollgaps ---- gap 1
+    const auto& scrollers = state.previousWalk.offThreadScrollers;
+    if (FILE* log = GetOffThreadLogFile(); log != nullptr && (!scrollers.empty() || state.independent.loggedScrollers))
+    {
+        size_t bytes = 0;
+        for (const auto& scroller : scrollers)
+        {
+            bytes += scroller.overscan.capacity() * sizeof(Command);
+        }
+        fprintf(log, "walk %lld %zu %zu %zu\n", static_cast<long long>(QpcMicroseconds()), scrollers.size(), bytes,
+            state.previousWalk.commands.size());
+        fflush(log);
+    }
+    state.independent.loggedScrollers = !scrollers.empty();
+    if (!state.previousWalk.layers.empty() || !scrollers.empty())
     {
         StartRenderThreadIfNeeded();
     }
@@ -554,7 +571,7 @@ void ImmediateRenderer::RenderThreadMain()
         for (auto& entry : m_islands)
         {
             IslandState& state = *entry.second;
-            if (state.previousWalk.layers.empty() || !state.painter || FAILED(s.renderThreadLoss))
+            if ((state.previousWalk.layers.empty() && state.previousWalk.offThreadScrollers.empty()) || !state.painter || FAILED(s.renderThreadLoss))
             {
                 continue;
             }
@@ -638,6 +655,68 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
         damage.push_back(independent.lastBounds[li]);
         damage.push_back(bounds);
         independent.lastBounds[li] = bounds;
+    }
+
+    // ---- scrollgaps ---- gap 1: tick DManip (the UI thread is blocked) and translate each moving scroller's overscan
+    // commands by its transform change since the walk. Status changes this raises are queued for the UI thread
+    // (CDirectManipulationViewportEventHandler::OnViewportStatusChanged).
+    if (!list.offThreadScrollers.empty())
+    {
+        if (independent.offThreadDeltas.size() != list.offThreadScrollers.size())
+        {
+            independent.offThreadDeltas.assign(list.offThreadScrollers.size(), RenderingBackend::PointF{});
+        }
+        bool moved = false;
+        for (size_t si = 0; si < list.offThreadScrollers.size(); ++si)
+        {
+            const DisplayList::OffThreadScroller& scroller = list.offThreadScrollers[si];
+            bool inertial = false;
+            float tx = 0, ty = 0, uncompressedZoom = 1, zoomX = 1, zoomY = 1;
+            if (FAILED(scroller.service->UpdateCompositorContentTransform(scroller.content.get(), 0))
+                || FAILED(scroller.service->GetCompositorContentTransform(scroller.content.get(), scroller.contentType, inertial, tx, ty, uncompressedZoom, zoomX, zoomY)))
+            {
+                continue;
+            }
+            RenderingBackend::PointF d{};
+            if (!ImmediateRenderingPolicy::ComputeOffThreadScrollDelta(scroller.tx0, scroller.ty0, scroller.zoom0, tx, ty, zoomX,
+                    scroller.maxDx, scroller.maxDy, scale, &d))
+            {
+                continue;
+            }
+            if (FILE* log = GetOffThreadLogFile())
+            {
+                fprintf(log, "rt %lld %lu %.1f %.1f %.2f\n", static_cast<long long>(now), GetCurrentThreadId(), d.x, d.y, ty);
+                fflush(log);
+            }
+            RenderingBackend::PointF& last = independent.offThreadDeltas[si];
+            const bool changed = d.x != last.x || d.y != last.y;
+            last = d;
+            if (d.x == 0 && d.y == 0 && !changed)
+            {
+                continue;
+            }
+            const RectF deviceViewport = ToDevice(scroller.viewport, scale);
+            for (uint32_t i = scroller.cmdBegin; i < scroller.cmdEnd && i < commands.size(); ++i)
+            {
+                Command c = scroller.overscan[i - scroller.cmdBegin];
+                if (c.type != CommandType::Nop)
+                {
+                    c.transform.dx += d.x;
+                    c.transform.dy += d.y;
+                    c.clip = IntersectRect(OffsetRect(c.clip, d.x, d.y), scroller.viewport);
+                    c.deviceBounds = IntersectRect(OffsetRect(c.deviceBounds, d.x * scale, d.y * scale), deviceViewport);
+                }
+                commands[i] = c;
+            }
+            if (changed)
+            {
+                moved = true;
+                damage.push_back(deviceViewport);
+            }
+        }
+        independent.offThreadStillPeriods = moved ? 0 : independent.offThreadStillPeriods + 1;
+        // Keep ticking through short pauses (DManip settles to Ready and stops changing the transform).
+        running = running || independent.offThreadStillPeriods < c_offThreadStillPeriods;
     }
 
     const RectF surface{ 0, 0, static_cast<float>(state.width), static_cast<float>(state.height) };

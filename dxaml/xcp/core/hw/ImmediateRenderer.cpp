@@ -44,6 +44,8 @@
 #include <Transform3D.h>
 #include <LocalTransformBuilder.h>
 #include <ImmediateAnimations.h>
+#include <InputServices.h> // ---- scrollgaps ----
+#include "DMViewport.h"
 
 using namespace RenderingBackend;
 using Microsoft::WRL::ComPtr;
@@ -359,6 +361,32 @@ namespace
         ImmediateRenderingPolicy::CoalesceDamageRects(rects, maxCount);
     }
 
+    // ---- scrollgaps ---- gap 1 (ImmediateRenderingPolicy::IsOffThreadScrollEnabled).
+    constexpr float c_offThreadOverscan = 1.0f; // viewports walked beyond each edge of a DManip-moving scroller
+    bool IsOffThreadScrollActive() noexcept
+    {
+        static const bool s_enabled = []
+        {
+            wchar_t value[8] = {};
+            const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_OFFTHREAD_SCROLL", value, ARRAYSIZE(value));
+            return length > 0 && length < ARRAYSIZE(value) && ImmediateRenderingPolicy::IsOffThreadScrollEnabled(value);
+        }();
+        return s_enabled;
+    }
+
+    // WINUI_IMMEDIATE_OFFTHREAD_LOG=<path.txt>: "walk <us> <scrollers> <cachedBytes>" per UI frame that has (or just
+    // dropped) overscan caches; "rt <us> <tid> <dx> <dy> <ty>" per render-thread scroller frame.
+    FILE* GetOffThreadLogFile() noexcept
+    {
+        static FILE* s_file = []() -> FILE*
+        {
+            wchar_t buffer[MAX_PATH] = {};
+            const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_OFFTHREAD_LOG", buffer, ARRAYSIZE(buffer));
+            return length > 0 && length < ARRAYSIZE(buffer) ? _wfsopen(buffer, L"w", _SH_DENYNO) : nullptr;
+        }();
+        return s_file;
+    }
+
     bool IsDeviceLost(HRESULT hr) noexcept
     {
         return hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET || hr == static_cast<HRESULT>(0x8899000CL) /* D2DERR_RECREATE_TARGET */;
@@ -528,6 +556,22 @@ namespace ImmediateRenderingDetail
         };
         std::vector<HitProxyEntry> hitProxies;
 
+        // ---- scrollgaps ---- gap 1: a DManip-moving ScrollViewer's content walked with an overscan clip. The display list
+        // holds [cmdBegin, cmdEnd) clipped to the viewport; `overscan` holds the same commands unclipped, which the
+        // render thread translates by the DManip transform change while the UI thread is blocked.
+        struct OffThreadScroller
+        {
+            uint32_t cmdBegin = 0, cmdEnd = 0;
+            std::vector<Command> overscan;
+            RectF viewport;          // DIPs, island space
+            float maxDx = 0, maxDy = 0; // DIPs: the overscan beyond each edge
+            xref_ptr<IPALDirectManipulationCompositorService> service;
+            xref_ptr<IObject> content;
+            XDMContentType contentType = XcpDMContentTypePrimary;
+            float tx0 = 0, ty0 = 0, zoom0 = 1; // DManip transform the walk painted
+        };
+        std::vector<OffThreadScroller> offThreadScrollers;
+
         ElementRecord& Record(_In_ const CUIElement* element)
         {
             auto result = records.try_emplace(element);
@@ -555,6 +599,9 @@ namespace ImmediateRenderingDetail
         double world4[4][4] = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} }; // element -> island, row vectors
         double layerInverse[3][3] = { {1,0,0}, {0,1,0}, {0,0,1} };             // island DIPs -> layer DIPs
         RectF surface{ -1e7f, -1e7f, 1e7f, 1e7f }; // DIPs: the target (perspective layers are at most this size)
+        // ---- scrollgaps ---- gap 1: inside an overscan walk (clip is beyond the viewport; no subtree reuse).
+        bool overscan = false;
+        RectF overscanViewport;  // DIPs, island space: the moving scroller's real viewport
     };
 }
 
@@ -3002,7 +3049,7 @@ void ImmediateRenderer::Walk(
     {
         ++list.uncacheable;
     }
-    else if (m_previousWalk != nullptr && !parent.scrollerContent && !element->NWNeedsRendering() && ReuseSubtree(element, parent, list))
+    else if (m_previousWalk != nullptr && !parent.scrollerContent && !parent.overscan && !element->NWNeedsRendering() && ReuseSubtree(element, parent, list))
     {
         return;
     }
@@ -3333,7 +3380,8 @@ void ImmediateRenderer::Walk(
         if (!scroller.hasContent)
         {
             scroller.hasContent = true;
-            scroller.viewport = ScaleRect(ctx.clip, ctx.scale);
+            // ---- scrollgaps ---- inside an overscan walk the clip reaches beyond the moving viewport: blit only inside it.
+            scroller.viewport = ScaleRect(parent.overscan ? IntersectRect(ctx.clip, parent.overscanViewport) : ctx.clip, ctx.scale);
             scroller.offsetX = ctx.world.GetDx() * ctx.scale;
             scroller.offsetY = ctx.world.GetDy() * ctx.scale;
             scroller.zoom = ctx.world.GetM11();
@@ -3539,6 +3587,15 @@ void ImmediateRenderer::Walk(
         list.scrollers.push_back(scroller);
         ++list.uncacheable;
     }
+    // ---- scrollgaps ---- gap 1
+    int offThreadIndex = -1;
+    if (type == KnownTypeIndex::ScrollContentPresenter && IsOffThreadScrollActive() && !ctx.has3D && !ctx.inLayer && !ctx.overscan)
+    {
+        offThreadIndex = BeginOffThreadScroller(element, childCtx, list);
+    }
+    const uint32_t offThreadCmdBegin = static_cast<uint32_t>(list.commands.size());
+    const uint32_t offThreadRecordBegin = static_cast<uint32_t>(list.recordOrder.size());
+    const size_t offThreadLayerBegin = list.layers.size();
 
     XUINT32 childCount = 0;
     if (!IsEmptyRect(childCtx.clip))
@@ -3564,6 +3621,10 @@ void ImmediateRenderer::Walk(
         {
             Walk(localTransitionRoot, childCtx, list);
         }
+    }
+    if (offThreadIndex >= 0)
+    {
+        FinishOffThreadScroller(static_cast<uint32_t>(offThreadIndex), offThreadCmdBegin, offThreadRecordBegin, offThreadLayerBegin, ctx.scale, list);
     }
 
     if (!CFocusRectManager::AreHighVisibilityFocusRectsEnabled())
@@ -3603,7 +3664,7 @@ void ImmediateRenderer::Walk(
     closeOuter();
 
     // Leaves are cheap to re-emit; record spans for subtrees only.
-    if (childCount > 0 && !parent.scrollerContent && list.uncacheable == uncacheableBefore && !parent.has3D && !parent.inLayer)
+    if (childCount > 0 && !parent.scrollerContent && list.uncacheable == uncacheableBefore && !parent.has3D && !parent.inLayer && !parent.overscan)
     {
         SubtreeSpan span;
         span.element = element;
@@ -3629,6 +3690,117 @@ void ImmediateRenderer::Walk(
         span.spanBegin = spanBegin;
         list.spanIndex[element] = static_cast<uint32_t>(list.spans.size());
         list.spans.push_back(span);
+    }
+}
+
+// ---- scrollgaps ---- gap 1. A ScrollContentPresenter whose DManip viewport is running or in inertia walks its content
+// with an overscan clip (c_offThreadOverscan viewports beyond each edge), so the render thread can keep translating it
+// while the UI thread is blocked. Requires a pure translation world (DManip units are then island DIPs).
+int ImmediateRenderer::BeginOffThreadScroller(
+    _In_ CUIElement* presenter,
+    _Inout_ WalkContext& childCtx,
+    _Inout_ DisplayList& list)
+{
+    const CMILMatrix& world = childCtx.world;
+    if (!world.IsScaleOrTranslationOnly() || std::fabs(world.GetM11() - 1.0f) > 1e-4f || std::fabs(world.GetM22() - 1.0f) > 1e-4f
+        || IsEmptyRect(childCtx.clip))
+    {
+        return -1;
+    }
+    CCoreServices* core = presenter->GetContext();
+    CInputServices* input = core != nullptr ? core->GetInputServices() : nullptr;
+    if (input == nullptr)
+    {
+        return -1;
+    }
+    CUIElement* content = nullptr;
+    CUIElement** children = nullptr;
+    XUINT32 childCount = 0;
+    presenter->GetChildrenInRenderOrder(&children, &childCount);
+    for (XUINT32 i = 0; i < childCount && content == nullptr; ++i)
+    {
+        if (children[i] != nullptr && children[i]->IsManipulatable())
+        {
+            content = children[i];
+        }
+    }
+    CUIElement* container = content != nullptr ? input->GetPrimaryContentDMContainer(content) : nullptr;
+    CDMViewport* viewport = container != nullptr ? input->GetViewport(container) : nullptr;
+    if (viewport == nullptr)
+    {
+        return -1;
+    }
+    xref_ptr<IPALDirectManipulationService> service;
+    xref_ptr<IObject> compositorContent;
+    xref_ptr<IObject> clipContent;
+    XDMContentType contentType = XcpDMContentTypePrimary;
+    float contentOffsetX = 0, contentOffsetY = 0;
+    if (FAILED(input->GetDirectManipulationServiceAndContent(content, service.ReleaseAndGetAddressOf(), compositorContent.ReleaseAndGetAddressOf(),
+            clipContent.ReleaseAndGetAddressOf(), &contentType, &contentOffsetX, &contentOffsetY))
+        || !service || !compositorContent)
+    {
+        return -1;
+    }
+    XDMViewportStatus status = XcpDMViewportBuilding;
+    if (FAILED(service->GetViewportStatus(viewport, status)) || (status != XcpDMViewportRunning && status != XcpDMViewportInertia))
+    {
+        return -1;
+    }
+    DisplayList::OffThreadScroller scroller;
+    if (FAILED(service->GetCompositorService(scroller.service.ReleaseAndGetAddressOf())) || !scroller.service)
+    {
+        return -1;
+    }
+    bool inertial = false;
+    float uncompressedZoom = 1, zoomY = 1;
+    if (FAILED(scroller.service->GetCompositorContentTransform(compositorContent.get(), contentType, inertial, scroller.tx0, scroller.ty0,
+            uncompressedZoom, scroller.zoom0, zoomY)))
+    {
+        return -1;
+    }
+    scroller.content = std::move(compositorContent);
+    scroller.contentType = contentType;
+    scroller.viewport = childCtx.clip;
+    scroller.maxDx = (childCtx.clip.right - childCtx.clip.left) * c_offThreadOverscan;
+    scroller.maxDy = (childCtx.clip.bottom - childCtx.clip.top) * c_offThreadOverscan;
+    childCtx.overscan = true;
+    childCtx.overscanViewport = childCtx.clip;
+    childCtx.clip = ImmediateRenderingPolicy::ComputeOffThreadOverscanClip(childCtx.clip, c_offThreadOverscan);
+    list.offThreadScrollers.push_back(std::move(scroller));
+    return static_cast<int>(list.offThreadScrollers.size() - 1);
+}
+
+// Keeps the overscan walk's commands for the render thread and clips the display list back to the viewport.
+void ImmediateRenderer::FinishOffThreadScroller(
+    uint32_t index,
+    uint32_t cmdBegin,
+    uint32_t recordBegin,
+    size_t layerBegin,
+    float scale,
+    _Inout_ DisplayList& list)
+{
+    DisplayList::OffThreadScroller& scroller = list.offThreadScrollers[index];
+    scroller.cmdBegin = cmdBegin;
+    scroller.cmdEnd = static_cast<uint32_t>(list.commands.size());
+    scroller.overscan.assign(list.commands.begin() + cmdBegin, list.commands.end());
+    const RectF viewport = scroller.viewport;
+    const RectF deviceViewport = ToDevice(viewport, scale);
+    for (uint32_t i = cmdBegin; i < scroller.cmdEnd; ++i)
+    {
+        Command& c = list.commands[i];
+        c.clip = IntersectRect(c.clip, viewport);
+        c.deviceBounds = IntersectRect(c.deviceBounds, deviceViewport);
+    }
+    for (uint32_t i = recordBegin; i < list.recordOrder.size(); ++i)
+    {
+        ElementRecord& record = list.records[list.recordOrder[i]];
+        record.bounds = IntersectRect(record.bounds, deviceViewport);
+        record.groupBounds = IntersectRect(record.groupBounds, deviceViewport);
+        record.cover = IntersectRect(record.cover, deviceViewport);
+    }
+    for (size_t i = layerBegin; i < list.layers.size(); ++i)
+    {
+        list.layers[i].outerClip = IntersectRect(list.layers[i].outerClip, viewport);
     }
 }
 

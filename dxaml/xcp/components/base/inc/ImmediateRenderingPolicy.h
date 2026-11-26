@@ -222,6 +222,16 @@ namespace ImmediateRenderingPolicy
     // (|edge| >= 1e6) hash as a fixed sentinel: "unbounded minus the scroll offset" must not change as content scrolls.
     int64_t QuantizeRelativeClipEdge(float edge, float origin) noexcept;
 
+    // Gap 1 (opt-in, WINUI_IMMEDIATE_OFFTHREAD_SCROLL=1): while the UI thread is blocked, the render thread ticks DManip
+    // and translates a DManip-moving scroller's content, walked by the last UI frame with an overscan clip.
+    bool IsOffThreadScrollEnabled(_In_opt_z_ const wchar_t* value) noexcept;
+    // The walk clip of a moving scroller's content (DIPs): the viewport grown by `extent` viewports on every side.
+    RenderingBackend::RectF ComputeOffThreadOverscanClip(const RenderingBackend::RectF& viewport, float extent) noexcept;
+    // Translation (DIPs, whole device pixels at `scale`) of the content walked at DManip transform (tx0, ty0, zoom0) to
+    // show transform (tx, ty, zoom), clamped to ±(maxDx, maxDy) (the overscan). False when the zoom changed.
+    bool ComputeOffThreadScrollDelta(float tx0, float ty0, float zoom0, float tx, float ty, float zoom, float maxDx, float maxDy,
+        float scale, _Out_ RenderingBackend::PointF* delta) noexcept;
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

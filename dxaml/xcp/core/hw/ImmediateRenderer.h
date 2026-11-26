@@ -117,6 +117,18 @@ private:
         _In_ CUIElement* element,
         const ImmediateRenderingDetail::WalkContext& parent,
         _Inout_ ImmediateRenderingDetail::DisplayList& list);
+    // ---- scrollgaps ---- gap 1 (WINUI_IMMEDIATE_OFFTHREAD_SCROLL=1): overscan walk of a DManip-moving scroller.
+    int BeginOffThreadScroller(
+        _In_ CUIElement* presenter,
+        _Inout_ ImmediateRenderingDetail::WalkContext& childCtx,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
+    void FinishOffThreadScroller(
+        uint32_t index,
+        uint32_t cmdBegin,
+        uint32_t recordBegin,
+        size_t layerBegin,
+        float scale,
+        _Inout_ ImmediateRenderingDetail::DisplayList& list);
 
     // Emits the element's own drawing. deferBorder: the border stroke is emitted by EmitBorder after the children
     // (CornerRadius-clipped elements draw their border over their clipped children, like Composition mode).
