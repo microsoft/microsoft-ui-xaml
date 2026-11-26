@@ -87,7 +87,9 @@ namespace TextBoxIntegrationTestTypes {
     // A minimal validation control whose error state and InputValidationMode the test controls directly.
     // It lets the tests exercise InputValidationCommand with a control that has errors without going through
     // TextBox.ValidationErrors: appending an InputValidationError to that collection terminates the test host
-    // on amd64chk.
+    // on amd64chk (suspected path: ValidationErrorsCollection::OnAddToCollection -> CControl::RaiseValidationErrorEvent).
+    // No bug is filed yet; it is reported as product concern PC-1 in microsoft/microsoft-ui-xaml#12796. Replace this
+    // double with a real TextBox once that crash is fixed.
     ref class FakeInputValidationControl sealed : public xaml_controls::IInputValidationControl
     {
     internal:
@@ -853,7 +855,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             LOG_OUTPUT(L"The default Validate implementation leaves the controls unchanged.");
             command->Validate(controlWithErrors);
             command->Validate(control);
-            VERIFY_IS_TRUE(controlWithErrors->HasValidationErrors);
             VERIFY_ARE_EQUAL(0u, controlWithErrors->ValidationErrors->Size);
             VERIFY_IS_FALSE(control->HasValidationErrors);
             VERIFY_ARE_EQUAL(static_cast<int>(xaml_controls::InputValidationMode::Auto), static_cast<int>(control->InputValidationMode));

@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "ThumbIntegrationTests.h"
+#include "ThumbControlIntegrationTests.h"
 
 #include <XamlTailored.h>
 #include <TestEvent.h>
@@ -129,19 +129,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         }
     }
 
-    bool ThumbIntegrationTests::ClassSetup()
+    bool ThumbControlIntegrationTests::ClassSetup()
     {
         CommonTestSetupHelper::CommonTestClassSetup();
         return true;
     }
 
-    bool ThumbIntegrationTests::TestSetup()
+    bool ThumbControlIntegrationTests::TestSetup()
     {
         test_infra::TestServices::WindowHelper->InitializeXaml();
         return true;
     }
 
-    bool ThumbIntegrationTests::TestCleanup()
+    bool ThumbControlIntegrationTests::TestCleanup()
     {
         test_infra::TestServices::WindowHelper->ShutdownXaml();
         TestServices::WindowHelper->VerifyTestCleanup();
@@ -151,7 +151,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     //
     // Test Cases
     //
-    void ThumbIntegrationTests::CancelDragWhenNotDraggingIsNoOp()
+    void ThumbControlIntegrationTests::CancelDragWhenNotDraggingIsNoOp()
     {
         TestCleanupWrapper cleanup;
 
@@ -187,7 +187,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ThumbIntegrationTests::CancelDragDuringMouseDragRaisesCanceledDragCompleted()
+    void ThumbControlIntegrationTests::CancelDragDuringMouseDragRaisesCanceledDragCompleted()
     {
         TestCleanupWrapper cleanup;
 
@@ -245,7 +245,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ThumbIntegrationTests::RemovedDragHandlersAreNotInvoked()
+    void ThumbControlIntegrationTests::RemovedDragHandlersAreNotInvoked()
     {
         TestCleanupWrapper cleanup;
 
@@ -341,7 +341,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ThumbIntegrationTests::FocusStatesFollowThumbFocus()
+    void ThumbControlIntegrationTests::FocusStatesFollowThumbFocus()
     {
         TestCleanupWrapper cleanup;
 
@@ -429,7 +429,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ThumbIntegrationTests::ScrollBarThumbDoesNotDragWhenScrollModeDisabled()
+    void ThumbControlIntegrationTests::ScrollBarThumbDoesNotDragWhenScrollModeDisabled()
     {
         TestCleanupWrapper cleanup;
 
@@ -522,7 +522,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void ThumbIntegrationTests::DoesNotStartDragWhenPointerPressedAlreadyHandled()
+    void ThumbControlIntegrationTests::DoesNotStartDragWhenPointerPressedAlreadyHandled()
     {
         TestCleanupWrapper cleanup;
 

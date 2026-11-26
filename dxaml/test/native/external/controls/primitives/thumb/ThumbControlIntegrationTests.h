@@ -7,10 +7,10 @@
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Controls { namespace Primitives { namespace Thumb {
 
-    class ThumbIntegrationTests : public WEX::TestClass<ThumbIntegrationTests>
+    class ThumbControlIntegrationTests : public WEX::TestClass<ThumbControlIntegrationTests>
     {
     public:
-        BEGIN_TEST_CLASS(ThumbIntegrationTests)
+        BEGIN_TEST_CLASS(ThumbControlIntegrationTests)
             TEST_CLASS_PROPERTY(L"BinaryUnderTest", L"Microsoft.UI.Xaml.dll")
             TEST_CLASS_PROPERTY(L"RunAs", L"UAP")
             TEST_CLASS_PROPERTY(L"Classification", L"Integration")
