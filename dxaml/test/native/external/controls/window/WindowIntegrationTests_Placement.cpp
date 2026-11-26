@@ -137,18 +137,26 @@ namespace
     {
         Platform::String^ id;
         Platform::String^ key;
+        Platform::String^ groupKey;
         ::Windows::Foundation::Collections::IPropertySet^ values;
 
         explicit PlacementData(Platform::String^ placementId = nullptr)
         {
             id = placementId ? placementId : CreateUniquePlacementId();
             key = GetPlacementStorageKey(id);
+            std::wstring group(key->Data(), key->Length());
+            group[0] = L'G';
+            groupKey = ref new Platform::String(group.c_str());
             auto settings = ::Microsoft::Windows::Storage::ApplicationData::GetDefault()->LocalSettings;
             values = settings->CreateContainer(L"Microsoft.UI.Xaml.WindowPlacement",
                 ::Microsoft::Windows::Storage::ApplicationDataCreateDisposition::Always)->Values;
             if (HasRecord())
             {
                 values->Remove(key);
+            }
+            if (values->HasKey(groupKey))
+            {
+                values->Remove(groupKey);
             }
         }
 
@@ -157,6 +165,10 @@ namespace
             if (HasRecord())
             {
                 values->Remove(key);
+            }
+            if (values->HasKey(groupKey))
+            {
+                values->Remove(groupKey);
             }
         }
 
@@ -464,6 +476,26 @@ namespace
         VerifyBoundsEqual(expected, RECT{ rect.X, rect.Y, rect.X + rect.Width, rect.Y + rect.Height });
     }
 
+    RECT GetExpectedCascade(xaml::Window^ source)
+    {
+        auto details = source->AppWindow->GetCurrentPlacement();
+        const auto normal = details->NormalRect;
+        const auto work = details->WorkArea;
+        RECT expected{ normal.X, normal.Y, normal.X + normal.Width, normal.Y + normal.Height };
+        const int offset = GetSystemMetricsForDpi(SM_CYCAPTION, details->Dpi) +
+            2 * GetSystemMetricsForDpi(SM_CXSIZEFRAME, details->Dpi);
+        OffsetRect(&expected, offset, offset);
+        if (expected.right > work.X + work.Width)
+        {
+            OffsetRect(&expected, work.X - expected.left, 0);
+        }
+        if (expected.bottom > work.Y + work.Height)
+        {
+            OffsetRect(&expected, 0, work.Y - expected.top);
+        }
+        return expected;
+    }
+
     void VerifyClientSizeInDips(xaml::Window^ window, double width, double height)
     {
         // Check the actual client area in DIPs; property getters can return pending size requests.
@@ -703,7 +735,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
-    void WindowIntegrationTests::WindowPlacementDoesNotCascadeForSharedId()
+    void WindowIntegrationTests::WindowPlacementCascadesForSharedId()
     {
         TestCleanupWrapper cleanup;
         RunOnUIThread([&]()
@@ -713,25 +745,192 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             {
                 LOG_OUTPUT(L"Shared id after saving %s", GetSavedStateName(state));
                 PlacementData data;
-                const RECT savedBounds = SavePlacementFromNewWindow(data, state);
+                VERIFY_IS_FALSE(data.values->HasKey(data.groupKey));
+                SavePlacementFromNewWindow(data, state);
+                VERIFY_IS_TRUE(data.values->HasKey(data.groupKey),
+                    L"The first activated window must initialize the missing cascade group.");
+                VERIFY_IS_NOT_NULL(data.values->Lookup(data.groupKey));
                 WindowAutoCloser liveWindow;
                 liveWindow.Attach(ref new xaml::Window());
                 liveWindow->PlacementId = data.id;
                 liveWindow->Activate();
-                if (IsZoomed(GetHwnd(liveWindow.get())))
+                if (IsZoomed(GetHwnd(liveWindow.get())) || IsIconic(GetHwnd(liveWindow.get())))
                 {
                     ShowWindow(GetHwnd(liveWindow.get()), SW_RESTORE);
                 }
                 MoveAndResizeWindow(liveWindow.get(), { 100, 100 }, { 460, 340 });
+                const RECT expected = GetExpectedCascade(liveWindow.get());
 
                 WindowAutoCloser sameIdWindow;
                 sameIdWindow.Attach(ref new xaml::Window());
                 sameIdWindow->PlacementId = data.id;
+                sameIdWindow->Width = 310;
+                sameIdWindow->Height = 220;
                 sameIdWindow->Activate();
                 const auto hwnd = GetHwnd(sameIdWindow.get());
-                if (IsZoomed(hwnd)) ShowWindow(hwnd, SW_RESTORE);
-                VerifyBoundsEqual(savedBounds, GetWindowBounds(sameIdWindow.get()));
+                VERIFY_IS_FALSE(!!IsZoomed(hwnd));
+                VERIFY_IS_FALSE(!!IsIconic(hwnd));
+                VerifyBoundsEqual(expected, GetWindowBounds(sameIdWindow.get()));
+                const RECT moved = MoveAndResizeWindow(sameIdWindow.get(), { 150, 140 }, { 420, 300 });
+                sameIdWindow->Activate();
+                VerifyBoundsEqual(moved, GetWindowBounds(sameIdWindow.get()));
+
+                WindowAutoCloser third;
+                third.Attach(ref new xaml::Window());
+                third->PlacementId = data.id;
+                const RECT thirdExpected = GetExpectedCascade(sameIdWindow.get());
+                third->Activate();
+                VerifyBoundsEqual(thirdExpected, GetWindowBounds(third.get()));
             }
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlacementCascadeFactory()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            using Details = ::Microsoft::UI::Windowing::AppWindowPlacementDetails;
+            WindowAutoCloser source;
+            source.Attach(ref new xaml::Window());
+            source->Activate();
+            const HWND hwnd = GetHwnd(source.get());
+            for (int state : { 0, 1, 2 })
+            {
+                MoveAndResizeWindow(source.get(), { 90, 80 }, { 420, 300 });
+                if (state == 1) ShowWindow(hwnd, SW_MAXIMIZE);
+                if (state == 2)
+                {
+                    MONITORINFO monitor{ sizeof(monitor) };
+                    VERIFY_IS_TRUE(!!GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitor));
+                    RECT snap = monitor.rcWork;
+                    snap.right = snap.left + (snap.right - snap.left) / 2;
+                    SnapWindowToBounds(hwnd, snap);
+                }
+                const RECT before = GetWindowBounds(source.get());
+                const HWND foreground = GetForegroundWindow();
+                auto details = Details::CreateCascadedFrom(source->AppWindow->Id);
+                VerifyDetailsNormalRect(GetExpectedCascade(source.get()), details);
+                VERIFY_ARE_EQUAL(static_cast<int>(SW_SHOWNORMAL), details->ShowCmd);
+                VERIFY_ARE_EQUAL(static_cast<unsigned int>(::Microsoft::UI::Windowing::PlacementInfo::Resizable),
+                    static_cast<unsigned int>(details->Flags));
+                VERIFY_ARE_EQUAL(0, details->ArrangeRect.Width);
+                VerifyBoundsEqual(before, GetWindowBounds(source.get()));
+                VERIFY_IS_TRUE(foreground == GetForegroundWindow());
+                VERIFY_IS_TRUE(!!IsZoomed(hwnd) == (state == 1));
+                if (state == 2) VERIFY_IS_TRUE(IsWindowSnapped(hwnd));
+                if (state != 0) ShowWindow(hwnd, SW_RESTORE);
+            }
+            MONITORINFO monitor{ sizeof(monitor) };
+            VERIFY_IS_TRUE(!!GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST), &monitor));
+            VERIFY_IS_TRUE(!!SetWindowPos(hwnd, nullptr, monitor.rcWork.right - 420,
+                monitor.rcWork.bottom - 300, 420, 300, SWP_NOZORDER | SWP_NOACTIVATE));
+            auto wrapped = Details::CreateCascadedFrom(source->AppWindow->Id);
+            VERIFY_ARE_EQUAL(monitor.rcWork.left, wrapped->NormalRect.X);
+            VERIFY_ARE_EQUAL(monitor.rcWork.top, wrapped->NormalRect.Y);
+
+            auto expectFailure = [&](::Microsoft::UI::WindowId id)
+            {
+                bool failed = false;
+                try { Details::CreateCascadedFrom(id); }
+                catch (Platform::Exception^ error)
+                {
+                    failed = true;
+                    VERIFY_IS_TRUE(FAILED(error->HResult));
+                }
+                VERIFY_IS_TRUE(failed, L"An unavailable or ineligible cascade source must throw.");
+            };
+            ::Microsoft::UI::WindowId invalid{};
+            expectFailure(invalid);
+            source->AppWindow->Hide();
+            expectFailure(source->AppWindow->Id);
+            source->Activate();
+            ShowWindow(hwnd, SW_MINIMIZE);
+            expectFailure(source->AppWindow->Id);
+            ShowWindow(hwnd, SW_RESTORE);
+            source->AppWindow->SetPresenter(::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+            expectFailure(source->AppWindow->Id);
+            auto closedId = source->AppWindow->Id;
+            source->Close();
+            expectFailure(closedId);
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlacementCascadeEligibility()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            for (auto mode : { xaml::WindowPlacementMode::SaveOnClose, xaml::WindowPlacementMode::Manual })
+            {
+                PlacementData data;
+                const RECT saved = SavePlacementFromNewWindow(data);
+                WindowAutoCloser source;
+                source.Attach(ref new xaml::Window());
+                source->PlacementId = data.id;
+                source->PlacementMode = mode;
+                const RECT explicitBounds = MoveAndResizeWindow(source.get(), { 100, 100 }, { 460, 340 });
+                source->Activate();
+                VerifyBoundsEqual(explicitBounds, GetWindowBounds(source.get()));
+                const RECT cascade = GetExpectedCascade(source.get());
+                for (int state = 0; state < 5; ++state)
+                {
+                    if (state == 1) source->AppWindow->Hide();
+                    if (state == 2) ShowWindow(GetHwnd(source.get()), SW_MINIMIZE);
+                    if (state == 3) source->AppWindow->SetPresenter(::Microsoft::UI::Windowing::AppWindowPresenterKind::FullScreen);
+                    if (state == 4) source->AppWindow->SetPresenter(::Microsoft::UI::Windowing::AppWindowPresenterKind::CompactOverlay);
+                    WindowAutoCloser destination;
+                    destination.Attach(ref new xaml::Window());
+                    destination->PlacementId = data.id;
+                    destination->Activate();
+                    VerifyBoundsEqual(state == 0 ? cascade : saved, GetWindowBounds(destination.get()));
+                    // Keep fallback data fixed while testing source eligibility.
+                    destination->PlacementMode = xaml::WindowPlacementMode::Manual;
+                    destination->Close();
+                    if (state == 1) source->Activate();
+                    if (state == 2) ShowWindow(GetHwnd(source.get()), SW_RESTORE);
+                    if (state == 3 || state == 4)
+                    {
+                        source->AppWindow->SetPresenter(::Microsoft::UI::Windowing::AppWindowPresenterKind::Overlapped);
+                    }
+                }
+            }
+        });
+    }
+
+    void WindowIntegrationTests::WindowPlacementCascadeIdChanges()
+    {
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([&]()
+        {
+            PlacementData original, changed;
+            const RECT originalSaved = SavePlacementFromNewWindow(original);
+            WindowAutoCloser source;
+            source.Attach(ref new xaml::Window());
+            source->PlacementId = original.id;
+            source->Activate();
+            MoveAndResizeWindow(source.get(), { 100, 100 }, { 460, 340 });
+            source->PlacementId = changed.id;
+            const RECT expected = GetExpectedCascade(source.get());
+            WindowAutoCloser otherId;
+            otherId.Attach(ref new xaml::Window());
+            otherId->PlacementId = original.id;
+            otherId->Activate();
+            VerifyBoundsEqual(originalSaved, GetWindowBounds(otherId.get()));
+            WindowAutoCloser matching;
+            matching.Attach(ref new xaml::Window());
+            matching->PlacementId = changed.id;
+            matching->Activate();
+            VerifyBoundsEqual(expected, GetWindowBounds(matching.get()));
+            matching->PlacementId = L"";
+            source->PlacementId = L"";
+
+            WindowAutoCloser fallback;
+            fallback.Attach(ref new xaml::Window());
+            fallback->PlacementId = changed.id;
+            const RECT bounds = MoveAndResizeWindow(fallback.get(), { 160, 150 }, { 420, 300 });
+            fallback->Activate();
+            VerifyBoundsEqual(bounds, GetWindowBounds(fallback.get()));
         });
     }
 
@@ -1596,20 +1795,28 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             bool changeWidth;
             bool changeHeight;
             bool showBeforeActivate;
+            bool cascade;
         } requests[] =
         {
-            { L"width-only", true, false, false },
-            { L"height-only", false, true, false },
-            { L"width-and-height", true, true, false },
-            { L"width-only", true, false, true },
-            { L"height-only", false, true, true },
-            { L"width-and-height", true, true, true },
+            { L"width-only", true, false, false, false },
+            { L"height-only", false, true, false, false },
+            { L"width-and-height", true, true, false, false },
+            { L"width-only", true, false, true, false },
+            { L"height-only", false, true, true, false },
+            { L"width-and-height", true, true, true, false },
+            { L"cascade-width-only", true, false, false, true },
+            { L"cascade-height-only", false, true, false, true },
+            { L"cascade-width-and-height", true, true, false, true },
+            { L"cascade-width-only-shown", true, false, true, true },
+            { L"cascade-height-only-shown", false, true, true, true },
+            { L"cascade-width-and-height-shown", true, true, true, true },
         };
         for (const auto& request : requests)
         {
             LOG_OUTPUT(L"SizeChanged overrides restored size: %s, AppWindow.Show first=%d",
                 request.name, request.showBeforeActivate);
             PlacementData data;
+            WindowAutoCloser source;
             WindowAutoCloser window;
             bool changed = false;
             double width = 0, height = 0;
@@ -1617,6 +1824,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             RunOnUIThread([&]()
             {
                 SavePlacementFromNewWindow(data);
+                if (request.cascade)
+                {
+                    source.Attach(ref new xaml::Window());
+                    source->PlacementId = data.id;
+                    source->Activate();
+                    MoveAndResizeWindow(source.get(), { 100, 100 }, { 520, 380 });
+                }
                 window.Attach(ref new xaml::Window());
                 window->PlacementId = data.id;
                 window->Width = 310;

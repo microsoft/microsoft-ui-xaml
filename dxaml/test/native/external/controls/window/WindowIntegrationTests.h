@@ -99,8 +99,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(WindowPlacementDoesNotCascadeForSharedId)
-            TEST_METHOD_PROPERTY(L"Description", L"A second live window with the same id restores the saved placement without cascading.")
+        BEGIN_TEST_METHOD(WindowPlacementCascadesForSharedId)
+            TEST_METHOD_PROPERTY(L"Description", L"Automatic placement cascades from the topmost live matching window before loading saved placement.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementCascadeFactory)
+            TEST_METHOD_PROPERTY(L"Description", L"The AppWindow cascade factory offsets normal bounds, wraps at the work area, clears state and never moves or activates a window.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementCascadeEligibility)
+            TEST_METHOD_PROPERTY(L"Description", L"Cascading skips hidden, minimized and unsupported presenters; manual modes advertise sources without applying placement.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(WindowPlacementCascadeIdChanges)
+            TEST_METHOD_PROPERTY(L"Description", L"Changing or clearing PlacementId updates cascade membership without restoring again.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
 

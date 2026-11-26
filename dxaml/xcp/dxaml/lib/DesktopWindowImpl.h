@@ -147,6 +147,7 @@ namespace DirectUI
         bool TryGetPresenterKind(_Out_ ixp::AppWindowPresenterKind* kind);
         bool HasOverlappedPresenter();
         void RefreshWindowPlacementEligibility();
+        void RefreshCascadeTag();
         // Saves on close or session end, if the window is eligible (see RefreshWindowPlacementEligibility).
         _Check_return_ HRESULT SaveWindowPlacement();
         // Saves now, with no eligibility check. Does nothing without a PlacementId.

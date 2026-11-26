@@ -1,5 +1,11 @@
 # Automatic window placement (Window.PlacementId)
 
+This document retains the phase-1 design and storage format. For the current cross-layer
+prototype, including best-effort cascading, use
+[the phase-2 scenarios](window-placement-appwindow-alignment-scenarios.md#cascade).
+WinUI now discovers live sources; AppWindow's proposed `CreateCascadedFrom(WindowId)` owns
+cascade geometry. Phase-1 statements below about absent cascading describe that earlier phase.
+
 Automatic window placement (also called "persistence") is WinUI feature that lets the app author
 easily configure the WinUI window so that it opens where the user left it.
 

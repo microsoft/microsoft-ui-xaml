@@ -263,7 +263,7 @@ namespace WindowPlacementApp
                 case PlacementSetup.SaveOnClose:
                 case PlacementSetup.Manual:
                 {
-                    // Same calls that RestoreAndSave makes, written by the app.
+                    // Load and apply saved placement directly, without discovering cascade sources.
                     // SaveOnClose: WinUI saves on close. Manual (spec example 7): only the Save
                     // button saves.
                     PlacementMode = m_options.Setup == PlacementSetup.SaveOnClose ? WindowPlacementMode.SaveOnClose : WindowPlacementMode.Manual;
@@ -431,6 +431,9 @@ namespace WindowPlacementApp
             "9b. Setup Manual: Open window, move it, Close, Open window again. Old rect (no save on close). Save button saves.\n" +
             "10. Setup None: no PlacementId, nothing saved or restored.\n" +
             "11. Clear all data, then Relaunch. OS default position.\n" +
+            "12. Automatic mode: keep a window open, then Open window or Open process with the same PlacementId. " +
+            "The new window cascades from the topmost eligible live source instead of using saved placement. " +
+            "SaveOnClose and Manual windows can be sources, but do not cascade automatically.\n" +
             "\n" +
             "Spec examples (window-placement-spec.md, \"Examples\"). Each runs the same calls as the doc:\n" +
             "Ex1 RestoreAndSave: Setup RestoreAndSave. Move, then Relaunch. Same rect.\n" +

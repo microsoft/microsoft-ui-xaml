@@ -16,7 +16,7 @@ Three modes, set with `Window.PlacementMode`:
 
 | Mode | First `Activate` | Close |
 |---|---|---|
-| `RestoreAndSave` (default) | Loads the saved placement and applies it with `AppWindow.SetCurrentPlacement`. | WinUI saves. |
+| `RestoreAndSave` (default) | Cascades from an eligible matching live window, or loads saved placement, then applies details with `AppWindow.SetCurrentPlacement`. | WinUI saves. |
 | `SaveOnClose` | Applies nothing. The app calls `TryLoadPlacementDetails` and `AppWindow.SetCurrentPlacement` itself. | WinUI saves. |
 | `Manual` | Applies nothing, same as `SaveOnClose`. | WinUI doesn't save. The app calls `SavePlacementDetails`. |
 
@@ -37,7 +37,8 @@ Terms used below:
   different design, fork this doc and keep the names, so the two docs compare scenario by
   scenario. Adding new scenarios is fine.
 
-Cascading is deferred. See [Cascade](#cascade).
+Cascading is included in the release proposal. See [Cascade](#cascade). Earlier results in this
+document do not validate the new 2026-11-25 cascading implementation.
 
 Status key:
 
@@ -83,9 +84,9 @@ window.Activate();
 | `app-restores-fullscreen` | App-managed | Sample app (`--launch-fullscreen`). A manual check covers the hidden full-screen apply. |
 | `restore-snapped` | Supported | `WindowPlacementRestoreSnapped` |
 | `restore-minimized-snapped` | Open | `WindowPlacementDocumentsMinimizedSnappedCaptureLimitations`, `WindowPlacementRestoreMinimizedSnapped` |
-| `cascade-same-process` | Deferred | Not tested |
-| `cascade-new-process` | Deferred | Not tested |
-| `no-cascade-by-default` | Supported | `WindowPlacementDoesNotCascadeForSharedId` |
+| `cascade-same-process` | Open (implementation added; validation pending) | `WindowPlacementCascadesForSharedId`, `WindowPlacementCascadeFactory` |
+| `cascade-new-process` | Open (implementation added; validation pending) | VM cross-process check required |
+| `no-cascade-by-default` | App-managed (automatic behavior changed) | `WindowPlacementCascadeEligibility`: opt out with `SaveOnClose` or `Manual` |
 | `multiple-ids` | Supported | `WindowPlacementSavesUsingCurrentId`, `WindowPlacementIdsAreCaseSensitive` |
 | `app-loads-and-applies` | Supported | `WindowPlacementModes`, manual check |
 | `app-reads-after-activate` | Supported | `WindowPlacementTryLoadPlacementDetails` |
@@ -427,18 +428,40 @@ Scenario `restore-minimized-snapped`
 
 ## Cascade
 
-> **Deferred.** Cut from the first batch to keep it small. Plan: add it back in the WinUI layer
-> (for example `Window.TryCreateCascadedPlacement`) on public AppWindow APIs. No AppWindow change
-> needed. Until then, an app can cascade itself in `SaveOnClose` mode: `GetCurrentPlacement` on the open
-> window, offset `NormalRect`, then `AppWindowPlacementDetails.Create` and `SetCurrentPlacement`.
+Automatic mode tries a live source before loading saved placement. WinUI finds the topmost
+eligible HWND sharing its storage and case-sensitive `PlacementId`, including another process.
+The source must be visible, not cloaked or minimized, on the current virtual desktop, and
+using an Overlapped presenter. Maximized and snapped sources supply normal bounds.
+Full-screen and CompactOverlay windows are not advertised as eligible sources.
+
+`AppWindowPlacementDetails.CreateCascadedFrom(sourceWindow)` returns normal, unsnapped
+details with the source's normal size and display information. PlacementEx offsets the
+normal bounds using DPI-aware caption metrics and wraps at the right/bottom work-area edges.
+The factory moves no window. It throws if the source is invalid, hidden, cloaked, minimized,
+full screen, or cannot be captured. An app in `SaveOnClose` or `Manual` can select its own
+source, call the factory, and apply the result before `Activate`.
+
+WinUI stores a random GUID per store and ID, initialized under a framework-wide per-user,
+session-local mutex. A GUID-named HWND property with a marker value advertises membership;
+it contains no pointer. Eligible windows advertise after first activation in every mode.
+ID and presenter changes update the tag; destruction removes it. A future unpackaged storage
+API need not expose an app identity. Unpackaged support remains unimplemented.
+
+Discovery and placement are best-effort. Failed capture falls back to another source or saved
+placement. Simultaneous launches may overlap. Storage deletion can split existing tags from
+new group membership. Tags are not a security boundary. Cascading replaces pre-activation
+Width/Height just as saved placement does; callback size changes still win.
 
 Scenario `cascade-same-process`
 
-When the app opens a second window with the same id, it shouldn't land exactly on top of the first.
+Sequential opens normally cascade rather than overlap. Simultaneous opens and best-effort
+failures can overlap.
 
 1. Open window A with id "doc" and move it
 2. Open window B with id "doc" while A is visible
-3. Expected: B is offset from A by one caption height, down and to the right, inside the work area
+3. Expected: B has A's normal size and normal state, offset using caption/frame metrics at A's DPI
+4. Move B and activate it again. Assert: it does not cascade or restore a second time
+5. Open C with the same ID. Assert: it cascades from B if B is the topmost eligible source
 
 Scenario `cascade-new-process`
 
@@ -448,8 +471,20 @@ Scenario `no-cascade-by-default`
 
 1. Save a placement for id "doc"
 2. Open window A with id "doc", then move it somewhere else
-3. Open window B with id "doc" in `RestoreAndSave` mode
+3. Open window B with id "doc" in `SaveOnClose` or `Manual` mode and apply the saved details yourself
 4. Assert: B opens at the saved bounds from (1), not offset from A
+
+Additional checks:
+
+- Invalid, destroyed, hidden, minimized and full-screen sources make the factory throw.
+- The factory leaves source bounds, state, visibility and foreground activation unchanged.
+- Offset past the right or bottom work-area edge wraps to the corresponding left or top edge.
+- Hidden, cloaked, minimized, other-desktop and unsupported-presenter windows are not chosen.
+- Matching live sources override saved data; unrelated or case-different IDs do not match.
+- Changing/clearing an ID updates/removes membership without reapplying placement.
+- Manual modes can provide a source but never automatically cascade themselves.
+- Concurrent token initialization in separate processes yields one shared persisted group.
+- Closing a source during discovery falls back without blocking window creation.
 
 ## Multiple ids
 
@@ -483,8 +518,9 @@ The app sets `PlacementMode` = `SaveOnClose`, so WinUI stays out of the way on `
 6. Close window
 7. Assert: WinUI still saves the placement on close. (In `Manual` mode it doesn't.)
 
-`TryLoadPlacementDetails` doesn't change the mode. In `RestoreAndSave` mode, WinUI still applies the
-saved record on `Activate`, even if the app called `TryLoadPlacementDetails` first.
+`TryLoadPlacementDetails` does not change the mode. In `RestoreAndSave`, first `Activate`
+still discovers a live cascade source before loading saved placement, even if the app loaded
+details explicitly.
 
 This example centers the saved size within its saved work area. AppWindow then adapts
 the placement to the current displays.

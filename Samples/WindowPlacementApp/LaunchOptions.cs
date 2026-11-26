@@ -12,13 +12,13 @@ namespace WindowPlacementApp
     public enum PlacementSetup
     {
         // PlacementId + Activate(). PlacementMode is RestoreAndSave (the default), so WinUI
-        // loads, applies, and saves. WinUI always passes isFirstWindow = false, so STARTUPINFO
+        // cascades or loads saved placement, applies it, and saves on close. WinUI passes false, so STARTUPINFO
         // (for example, a shortcut set to "Run: Minimized") is ignored.
         RestoreAndSave,
         // PlacementMode = SaveOnClose. TryLoadPlacementDetails(), then
         // AppWindow.SetCurrentPlacement(details, isFirstWindow), then Activate().
         // WinUI still saves on close. The main window passes isFirstWindow = true, so it
-        // honors STARTUPINFO. Otherwise the same result as RestoreAndSave, written by the app.
+        // honors STARTUPINFO. This saved-data path does not discover live cascade sources.
         SaveOnClose,
         // Spec example 3. Like SaveOnClose, but center the saved rect on its work area before
         // applying it. With nothing saved, Resize to 1200x800.

@@ -207,6 +207,7 @@ void DesktopWindowImpl::OnCreate() noexcept
 
 DesktopWindowImpl::~DesktopWindowImpl()
 {
+    m_windowPlacement.ClearCascadeTag();
     // If the Window instance has been programmatically deleted it may not have closed
     // its members.  Make sure to close if we have not done so.
     if (!m_bIsClosed)
@@ -520,6 +521,7 @@ _Check_return_ HRESULT DesktopWindowImpl::put_PlacementIdImpl(_In_opt_ HSTRING v
     ASSERT(AreNewWindowingApisEnabled());
 
     IFC_RETURN(m_windowPlacement.SetId(value));
+    RefreshCascadeTag();
 
     return S_OK;
 }
@@ -631,6 +633,14 @@ bool DesktopWindowImpl::HasOverlappedPresenter()
     return TryGetPresenterKind(&kind) && kind == ixp::AppWindowPresenterKind_Overlapped;
 }
 
+void DesktopWindowImpl::RefreshCascadeTag()
+{
+    const bool activated = m_placementState == PlacementState::ReadyToSave ||
+        m_placementState == PlacementState::SavingDisabledForPresenter;
+    TRACE_HR_NORETURN(m_windowPlacement.UpdateCascadeTag(m_hwnd.get(),
+        !m_bIsClosed && activated && HasOverlappedPresenter()));
+}
+
 void DesktopWindowImpl::RefreshWindowPlacementEligibility()
 {
     if (m_placementState != PlacementState::ReadyToSave &&
@@ -660,7 +670,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyInitialWindowPlacement()
 
     // Initial placement precedence:
     // 1. PlacementMode is SaveOnClose or Manual: the app owns initial placement. WinUI doesn't apply anything.
-    // 2. Saved placement (RestoreAndSave).
+    // 2. Live cascading, then saved placement (RestoreAndSave).
     TryApplySavedWindowPlacement();
     if (m_bIsClosed)
     {
@@ -704,7 +714,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ApplyPlacementDetails(_In_ ixp::IAppWi
 
 void DesktopWindowImpl::TryApplySavedWindowPlacement()
 {
-    // Saved placement is applied only during the first Window.Activate.
+    // Automatic placement runs only during the first Window.Activate.
     ASSERT(m_placementState == PlacementState::ApplyingInitialPlacement);
 
     if (m_placementMode != xaml::WindowPlacementMode_RestoreAndSave ||
@@ -724,16 +734,28 @@ void DesktopWindowImpl::TryApplySavedWindowPlacement()
 
     PlacementResult result = PlacementResult::None;
     ctl::ComPtr<ixp::IAppWindowPlacementDetails> details;
-    HRESULT hr = m_windowPlacement.TryLoad(&details, &result);
-
+    HRESULT hr = m_windowPlacement.TryCreateCascadedPlacement(m_hwnd.get(), &details);
+    ReportPlacementError(hr, result, false /* saving */);
+    TRACE_HR_NORETURN(hr);
     bool applied = false;
     if (SUCCEEDED(hr) && details)
     {
         hr = ApplyPlacementDetails(details.Get(), &applied);
     }
-
     ReportPlacementError(hr, result, false /* saving */);
     TRACE_HR_NORETURN(hr);
+
+    if (!applied && !m_bIsClosed && HasOverlappedPresenter())
+    {
+        details.Reset();
+        hr = m_windowPlacement.TryLoad(&details, &result);
+        if (SUCCEEDED(hr) && details)
+        {
+            hr = ApplyPlacementDetails(details.Get(), &applied);
+        }
+        ReportPlacementError(hr, result, false /* saving */);
+        TRACE_HR_NORETURN(hr);
+    }
 
     if (m_bIsClosed)
     {
@@ -834,6 +856,7 @@ _Check_return_ HRESULT DesktopWindowImpl::SaveCurrentPlacement()
 
 _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowDestroying(_In_ ixp::IAppWindow*, _In_ IInspectable*)
 {
+    m_windowPlacement.ClearCascadeTag();
     // AppWindow raises Destroying while its presenter and HWND are still valid.
     TRACE_HR_NORETURN(SaveWindowPlacement());
     MarkPlacementSaved();
@@ -918,6 +941,7 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
     {
         m_placementState = PlacementState::SavingDisabledForPresenter;
         RefreshWindowPlacementEligibility();
+        RefreshCascadeTag();
     }
 
     return S_OK;
@@ -1575,6 +1599,7 @@ _Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindo
     if (AreNewWindowingApisEnabled())
     {
         RefreshWindowPlacementEligibility();
+        RefreshCascadeTag();
     }
 
     if (DesktopUtility::IsPriorToWindows11() && m_windowChrome)
@@ -1814,6 +1839,11 @@ LRESULT DesktopWindowImpl::OnMessage(
                 }
                 break;
         }
+    }
+
+    if (uMsg == WM_DESTROY)
+    {
+        m_windowPlacement.ClearCascadeTag();
     }
 
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI

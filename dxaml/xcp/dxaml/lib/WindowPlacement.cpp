@@ -5,9 +5,14 @@
 
 #include "WindowPlacement.h"
 #include "Microsoft.Windows.Storage.h"
+#include <Microsoft.UI.Interop.h>
 #include "StaticStore.h"
 #include <appmodel.h>
+#include <sddl.h>
+#include <shobjidl.h>
 #include <type_traits>
+
+#pragma comment(lib, "advapi32.lib")
 
 #define WINUI_PLACEMENTEX
 #include <PlacementEx\User32Utils.h>
@@ -27,6 +32,32 @@ namespace
     constexpr uint32_t c_recordVersion = 1;
     constexpr uint32_t c_maxRecordSize = 8192;
     constexpr uint32_t c_maxDpi = 9600;
+
+    HRESULT OpenCascadeInitializationMutex(_Out_ wil::unique_handle& mutex)
+    {
+        wil::unique_handle token;
+        IFCEXPECTRC_RETURN(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token), HRESULT_FROM_WIN32(GetLastError()));
+        DWORD size = 0;
+        GetTokenInformation(token.get(), TokenUser, nullptr, 0, &size);
+        IFCEXPECTRC_RETURN(GetLastError() == ERROR_INSUFFICIENT_BUFFER, HRESULT_FROM_WIN32(GetLastError()));
+        std::vector<BYTE> buffer(size);
+        IFCEXPECTRC_RETURN(GetTokenInformation(token.get(), TokenUser, buffer.data(), size, &size), HRESULT_FROM_WIN32(GetLastError()));
+        wil::unique_hlocal_string sid;
+        IFCEXPECTRC_RETURN(ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(buffer.data())->User.Sid, &sid),
+            HRESULT_FROM_WIN32(GetLastError()));
+
+        const std::wstring name = std::wstring(L"Local\\Microsoft.UI.Xaml.WindowPlacement.Initialize.") + sid.get();
+        // Same-user full-trust processes can initialize storage regardless of elevation. Other users cannot.
+        const std::wstring sddl = std::wstring(L"D:P(A;;0x00100001;;;SY)(A;;0x00100001;;;") +
+            sid.get() + L")S:(ML;;NW;;;ME)";
+        wil::unique_hlocal_security_descriptor descriptor;
+        IFCEXPECTRC_RETURN(ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            sddl.c_str(), SDDL_REVISION_1, &descriptor, nullptr), HRESULT_FROM_WIN32(GetLastError()));
+        SECURITY_ATTRIBUTES attributes{ sizeof(attributes), descriptor.get(), FALSE };
+        mutex.reset(CreateMutexExW(&attributes, name.c_str(), 0, SYNCHRONIZE | MUTEX_MODIFY_STATE));
+        IFCEXPECTRC_RETURN(mutex, HRESULT_FROM_WIN32(GetLastError()));
+        return S_OK;
+    }
 
     // These values are stored in version 1 records. Keep their numeric values stable.
     enum class SavedWindowState : uint32_t
@@ -341,8 +372,197 @@ HRESULT WindowPlacement::GetId(_Out_ HSTRING* value)
 HRESULT WindowPlacement::SetId(_In_opt_ HSTRING value)
 {
     IFCEXPECTRC_RETURN(WindowsGetStringLen(value) <= MAX_PATH, E_INVALIDARG);
-    IFC_RETURN(m_id.Set(value));
+    INT32 comparison = 0;
+    IFC_RETURN(WindowsCompareStringOrdinal(m_id.Get(), value, &comparison));
+    if (comparison != 0)
+    {
+        IFC_RETURN(m_id.Set(value));
+        ClearCascadeTag();
+        m_cascadePropertyName.Release();
+    }
 
+    return S_OK;
+}
+
+HRESULT WindowPlacement::EnsureCascadePropertyName()
+{
+    if (!HasId() || !WindowsIsStringEmpty(m_cascadePropertyName.Get()))
+    {
+        return S_OK;
+    }
+
+    wil::unique_handle mutex;
+    IFC_RETURN(OpenCascadeInitializationMutex(mutex));
+    const DWORD wait = WaitForSingleObject(mutex.get(), 5000);
+    IFCEXPECTRC_RETURN(wait == WAIT_OBJECT_0 || wait == WAIT_ABANDONED,
+        wait == WAIT_FAILED ? HRESULT_FROM_WIN32(GetLastError()) : HRESULT_FROM_WIN32(ERROR_TIMEOUT));
+    auto releaseMutex = wil::scope_exit([&]()
+    {
+        if (!ReleaseMutex(mutex.get()))
+        {
+            TRACE_HR_NORETURN(HRESULT_FROM_WIN32(GetLastError()));
+        }
+    });
+
+    IFC_RETURN(EnsureStorage());
+    if (!m_settings)
+    {
+        return S_OK;
+    }
+
+    wchar_t key[19]{};
+    GetPlacementKey(m_id.Get(), key);
+    key[0] = L'G';
+    const auto keyString = wrl_wrappers::HStringReference(key);
+    wrl_wrappers::HString record;
+    wrl::ComPtr<IInspectable> boxed;
+    // ApplicationData can return a null value rather than E_BOUNDS for a missing key.
+    boolean hasGroup = false;
+    IFC_RETURN(m_settings->HasKey(keyString.Get(), &hasGroup));
+    const HRESULT lookup = hasGroup ? m_settings->Lookup(keyString.Get(), &boxed) : E_BOUNDS;
+    if (lookup == E_BOUNDS)
+    {
+        RoClearError();
+        GUID group{};
+        IFC_RETURN(CoCreateGuid(&group));
+        wchar_t text[39]{};
+        IFCEXPECTRC_RETURN(StringFromGUID2(group, text, ARRAYSIZE(text)) == ARRAYSIZE(text), E_UNEXPECTED);
+        const std::wstring value = std::wstring(WindowsGetStringRawBuffer(m_id.Get(), nullptr), WindowsGetStringLen(m_id.Get())) + text;
+        IFC_RETURN(record.Set(value.c_str(), static_cast<UINT32>(value.size())));
+        wrl::ComPtr<wf::IPropertyValueStatics> statics;
+        IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Windows_Foundation_PropertyValue).Get(), &statics));
+        IFC_RETURN(statics->CreateString(record.Get(), &boxed));
+        boolean replaced = false;
+        IFC_RETURN(m_settings->Insert(keyString.Get(), boxed.Get(), &replaced));
+    }
+    else
+    {
+        IFC_RETURN(lookup);
+        IFCEXPECTRC_RETURN(boxed.Get(), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+        wrl::ComPtr<wf::IPropertyValue> value;
+        IFC_RETURN(boxed.As(&value));
+        IFC_RETURN(value->GetString(record.GetAddressOf()));
+    }
+
+    UINT32 length = 0;
+    PCWSTR text = WindowsGetStringRawBuffer(record.Get(), &length);
+    const UINT32 idLength = WindowsGetStringLen(m_id.Get());
+    IFCEXPECTRC_RETURN(length == idLength + 38 &&
+        memcmp(text, WindowsGetStringRawBuffer(m_id.Get(), nullptr), idLength * sizeof(wchar_t)) == 0,
+        HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    GUID group{};
+    IFC_RETURN(IIDFromString(text + idLength, &group));
+    IFCEXPECTRC_RETURN(!IsEqualGUID(group, GUID_NULL), HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
+    const std::wstring property = std::wstring(L"Microsoft.UI.Xaml.WindowPlacement.Cascade.") + (text + idLength);
+    IFC_RETURN(m_cascadePropertyName.Set(property.c_str(), static_cast<UINT32>(property.size())));
+    return S_OK;
+}
+
+void WindowPlacement::ClearCascadeTag()
+{
+    if (m_taggedWindow)
+    {
+        RemovePropW(m_taggedWindow, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr));
+        m_taggedWindow = nullptr;
+    }
+}
+
+HRESULT WindowPlacement::UpdateCascadeTag(HWND hwnd, bool eligible)
+{
+    if (!eligible || !HasId())
+    {
+        ClearCascadeTag();
+        return S_OK;
+    }
+    IFC_RETURN(EnsureCascadePropertyName());
+    if (!WindowsIsStringEmpty(m_cascadePropertyName.Get()) && m_taggedWindow != hwnd)
+    {
+        ClearCascadeTag();
+        IFCEXPECTRC_RETURN(SetPropW(hwnd, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr),
+            reinterpret_cast<HANDLE>(1)), HRESULT_FROM_WIN32(GetLastError()));
+        m_taggedWindow = hwnd;
+    }
+    return S_OK;
+}
+
+HRESULT WindowPlacement::TryCreateCascadedPlacement(HWND destination, _Outptr_result_maybenull_ PlacementDetails** details)
+{
+    *details = nullptr;
+    IFC_RETURN(EnsureCascadePropertyName());
+    if (WindowsIsStringEmpty(m_cascadePropertyName.Get()))
+    {
+        return S_OK;
+    }
+
+    wrl::ComPtr<IVirtualDesktopManager> desktops;
+    IFC_RETURN(CoCreateInstance(CLSID_VirtualDesktopManager, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&desktops)));
+    wrl::ComPtr<windowing::IAppWindowPlacementDetailsStatics> statics;
+    IFC_RETURN(wf::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Windowing_AppWindowPlacementDetails).Get(), &statics));
+
+    struct Search
+    {
+        HWND destination;
+        PCWSTR property;
+        std::vector<HWND> sources;
+    } search{ destination, WindowsGetStringRawBuffer(m_cascadePropertyName.Get(), nullptr), {} };
+    SetLastError(ERROR_SUCCESS);
+    const BOOL enumerated = EnumWindows([](HWND hwnd, LPARAM parameter) -> BOOL
+    {
+        auto& search = *reinterpret_cast<Search*>(parameter);
+        if (hwnd != search.destination && IsWindowVisible(hwnd) && !IsIconic(hwnd) &&
+            GetPropW(hwnd, search.property) == reinterpret_cast<HANDLE>(1))
+        {
+            search.sources.push_back(hwnd);
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>(&search));
+    if (!enumerated)
+    {
+        const DWORD error = GetLastError();
+        IFC_RETURN(error ? HRESULT_FROM_WIN32(error) : E_FAIL);
+    }
+
+    for (HWND hwnd : search.sources)
+    {
+        DWORD cloaked = 0;
+        const HRESULT cloakResult = DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked));
+        TRACE_HR_NORETURN(cloakResult);
+        if (FAILED(cloakResult) || cloaked != 0)
+        {
+            if (FAILED(cloakResult)) RoClearError();
+            continue;
+        }
+        BOOL current = FALSE;
+        const HRESULT desktopResult = desktops->IsWindowOnCurrentVirtualDesktop(hwnd, &current);
+        TRACE_HR_NORETURN(desktopResult);
+        if (FAILED(desktopResult) || !current)
+        {
+            if (FAILED(desktopResult)) RoClearError();
+            continue;
+        }
+        ABI::Microsoft::UI::WindowId id{};
+        const HRESULT idResult = ABI::Microsoft::UI::GetWindowIdFromWindow(hwnd, &id);
+        TRACE_HR_NORETURN(idResult);
+        if (FAILED(idResult))
+        {
+            RoClearError();
+            continue;
+        }
+        if (GetPropW(hwnd, search.property) != reinterpret_cast<HANDLE>(1))
+        {
+            continue;
+        }
+        wrl::ComPtr<PlacementDetails> captured;
+        const HRESULT capture = statics->CreateCascadedFrom(id, &captured);
+        TRACE_HR_NORETURN(capture);
+        if (SUCCEEDED(capture) && captured)
+        {
+            *details = captured.Detach();
+            return S_OK;
+        }
+        RoClearError();
+    }
     return S_OK;
 }
 

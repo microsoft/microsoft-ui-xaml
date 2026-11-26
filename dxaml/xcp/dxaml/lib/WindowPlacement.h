@@ -26,6 +26,12 @@ namespace DirectUI
 
         bool HasId() const { return !WindowsIsStringEmpty(m_id.Get()); }
 
+        _Check_return_ HRESULT UpdateCascadeTag(HWND hwnd, bool eligible);
+        void ClearCascadeTag();
+        _Check_return_ HRESULT TryCreateCascadedPlacement(
+            HWND destination,
+            _Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindowPlacementDetails** details);
+
         // Reads the saved placement for the current id. Returns null when there is no id, no package
         // identity, or no saved placement. The FullScreen flag is removed (WinUI never restores full
         // screen), and AllowSizing is set so AppWindow can shrink a rect that doesn't fit the screen.
@@ -41,8 +47,11 @@ namespace DirectUI
     private:
         // Reopens m_settings. Leaves it null (and returns success) when the app has no package identity.
         _Check_return_ HRESULT EnsureStorage();
+        _Check_return_ HRESULT EnsureCascadePropertyName();
 
         wrl_wrappers::HString m_id;
+        wrl_wrappers::HString m_cascadePropertyName;
+        HWND m_taggedWindow = nullptr;
         wrl::ComPtr<wfc::IMap<HSTRING, IInspectable*>> m_settings;
     };
 
