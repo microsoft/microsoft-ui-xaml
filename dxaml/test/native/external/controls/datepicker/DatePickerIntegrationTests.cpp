@@ -1166,4 +1166,49 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void DatePickerIntegrationTests::ValidateFlyoutButtonCarriesParentNameForVoiceAccess()
+    {
+        TestCleanupWrapper cleanup;
+
+        // The inner FlyoutButton is the only focusable/invokable element, so it must keep the
+        // parent label in its automation name for voice-command experiences (e.g. Voice Access
+        // "click <name>") to target it. The double Narrator announcement (GitHub issue #8296) is
+        // avoided by removing the containing group peer from the Control/Content views rather than
+        // by stripping the button's name.
+        auto datePicker = SetupDatePickerTest();
+
+        RunOnUIThread([&]()
+        {
+            // Give the DatePicker a label, then set a concrete date so the FlyoutButton's
+            // automation name gets refreshed with the label in scope.
+            datePicker->Header = L"DatePickerTest";
+            datePicker->SelectedDate = ref new Platform::Box<wf::DateTime>(CreateDate(10, 15, 2015)->GetDateTime());
+
+            // The DatePicker's own peer must still expose the label (AutomationElement.Name contract)...
+            auto datePickerPeer = Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(datePicker);
+            VERIFY_IS_TRUE(Platform::String::CompareOrdinal("DatePickerTest", datePickerPeer->GetName()) == 0);
+
+            // ...but the group peer must be removed from the Control and Content views so it is not
+            // announced as a second node (which is what caused the duplicate announcement).
+            VERIFY_IS_FALSE(datePickerPeer->IsControlElement());
+            VERIFY_IS_FALSE(datePickerPeer->IsContentElement());
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        auto flyoutButton = GetFlyoutButtonFromDatePicker(datePicker);
+        VERIFY_IS_NOT_NULL(flyoutButton);
+
+        RunOnUIThread([&]()
+        {
+            // The inner FlyoutButton's automation name must contain the parent label so it remains
+            // targetable by name.
+            auto flyoutButtonPeer = Microsoft::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer::CreatePeerForElement(flyoutButton);
+            Platform::String^ flyoutButtonName = flyoutButtonPeer->GetName();
+            LOG_OUTPUT(L"FlyoutButton automation name: \"%s\"", flyoutButtonName != nullptr ? flyoutButtonName->Data() : L"");
+            VERIFY_IS_NOT_NULL(flyoutButtonName);
+            VERIFY_IS_TRUE(wcsstr(flyoutButtonName->Data(), L"DatePickerTest") != nullptr);
+        });
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::DatePicker
