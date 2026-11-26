@@ -537,7 +537,10 @@ CollectionView::ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs
 
     IFC(pArgs->get_CollectionChange(&change));
 
+#ifdef MUX_PRERELEASE
     {
+        // Only a shaped VectorCollectionView handles the change (VectorCollectionView_Currency.cpp); the base, and an
+        // unshaped view, return isHandled = false, so other views keep the code below.
         bool isHandled = false;
         IFC(AdjustCurrencyForChange(pArgs, false /* isRaised */, &isHandled));
         if (isHandled)
@@ -547,6 +550,7 @@ CollectionView::ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs
             goto Cleanup;
         }
     }
+#endif
 
     IFC(RaiseVectorChanged(pArgs));
 

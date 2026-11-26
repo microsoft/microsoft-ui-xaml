@@ -136,17 +136,18 @@ _Check_return_ HRESULT VectorCollectionView::EndRefreshCurrency(_Inout_ Currency
 
     IFC_RETURN(get_CurrentItemImpl(spNowItem.ReleaseAndGetAddressOf()));
     IFC_RETURN(get_CurrentPositionImpl(&nowPosition));
-    if (spNowItem.Get() != pScope->spPlacedItem.Get() || nowPosition != pScope->placedPosition)
+    IFC_RETURN(get_IsCurrentBeforeFirstImpl(&isBeforeFirst));
+    if (isBeforeFirst && pScope->placedPosition >= 0)
     {
-        // A handler of the Reset moved it (a synchronized Selector clears a selection a Reset moved, which moves the
-        // currency off the item): placed again, so the Selector selects the followed item again.
+        // A handler of the Reset moved it before the first item: a synchronized Selector clears a selection a Reset
+        // moved, which moves the currency off the item. Placed again, so the Selector selects the followed item again.
+        // A handler that moved it to an item (MoveCurrentTo) is respected, as in WPF.
         IFC_RETURN(RaiseCurrentChanging());
         IFC_RETURN(SetCurrentIndexAt(pScope->placedPosition, nullptr));
         return S_OK;
     }
 
     // In CollectionView's order: the properties, then CurrentChanged.
-    IFC_RETURN(get_IsCurrentBeforeFirstImpl(&isBeforeFirst));
     IFC_RETURN(get_IsCurrentAfterLastImpl(&isAfterLast));
     if (nowPosition != pScope->position)
     {

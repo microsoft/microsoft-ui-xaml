@@ -494,6 +494,47 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a Reset handler that moves the currency to an item (MoveCurrentTo) is respected, as in WPF, while one that moves it before the first item (a synchronized Selector clearing) gets the followed item back.")]
+        public void VerifyResetHandlerCurrencyMoveSticks()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var cvs = new CollectionViewSource { Source = MakeEngineRows() };
+                var view = cvs.View;
+                cvs.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Ascending)); // Ada Bo Eve Kai Lin
+                Verify.IsTrue(view.MoveCurrentToPosition(2));
+                object target = null;
+                var moveToBeforeFirst = false;
+                view.VectorChanged += (sender, args) =>
+                {
+                    if (args.CollectionChange != CollectionChange.Reset)
+                    {
+                        return;
+                    }
+                    if (moveToBeforeFirst)
+                    {
+                        view.MoveCurrentToPosition(-1);
+                    }
+                    else if (target != null)
+                    {
+                        view.MoveCurrentTo(target);
+                    }
+                };
+
+                target = view.First(item => ((EngineRow)item).Name == "Kai");
+                cvs.SortDescriptions[0] = new SortDescription("Score", CollectionViewSortDirection.Descending); // Bo Kai Lin Eve Ada
+                Verify.AreEqual("Kai", ((EngineRow)view.CurrentItem)?.Name, "The handler's MoveCurrentTo sticks.");
+                Verify.AreEqual(1, view.CurrentPosition);
+
+                target = null;
+                moveToBeforeFirst = true;
+                cvs.SortDescriptions[0] = new SortDescription("Name", CollectionViewSortDirection.Ascending); // Ada Bo Eve Kai Lin
+                Verify.AreEqual("Kai", ((EngineRow)view.CurrentItem)?.Name, "A move before the first item is undone: the view follows the item.");
+                Verify.AreEqual(3, view.CurrentPosition);
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a source Replace that keeps the current item's place on a shaped view makes the replacement current, as WPF does, while an unshaped view keeps CollectionView's contract (the first item).")]
         public void VerifyReplacingTheCurrentItemInPlace()
         {

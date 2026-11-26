@@ -804,9 +804,11 @@ namespace DirectUI
     template <typename T, typename TStorage = DefaultTrackerCollectionStorage<T>>
     class __declspec(novtable) ReadOnlyObservableTrackerCollection : public ObservableTrackerCollection<T, TStorage>
     {
-    public:
+    protected:
         using BaseObservable = ObservableTrackerCollection<T, TStorage>;
         using BaseCollection = TrackerCollection<T, TStorage>;
+
+    public:
         using T_abi = typename BaseObservable::T_abi;
 
         // Override of the writting methods to fail

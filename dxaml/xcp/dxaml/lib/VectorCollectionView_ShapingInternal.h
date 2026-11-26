@@ -2278,7 +2278,10 @@ namespace DirectUI::ShapingEngine
                 }
                 else if (placements > 1)
                 {
+                    // Every later source change and live restore of this root is then a full recompute (O(n log n)
+                    // a change), until a recompute builds a root without such items.
                     m_hasMultiGroupItems = true;
+                    SetLeafGroup(sourceIndex, MultiGroupLeaf());
                 }
                 return S_OK;
             }
@@ -2527,7 +2530,7 @@ namespace DirectUI::ShapingEngine
         {
             *ppGroup = nullptr;
             *pPosition = 0;
-            if (sourceIndex >= m_leafGroups.size() || !m_leafGroups[sourceIndex])
+            if (sourceIndex >= m_leafGroups.size() || !m_leafGroups[sourceIndex] || m_leafGroups[sourceIndex] == MultiGroupLeaf())
             {
                 return false;
             }
@@ -2598,7 +2601,16 @@ namespace DirectUI::ShapingEngine
         std::vector<GroupLevel> m_levels;
         AppReferences m_appReferences;
         wrl_wrappers::HString m_culture;
-        // The bottom-level group of each source item the view shows, by source index (null: filtered out).
+        // m_leafGroups' marker for an item in several groups (a collection-valued group name): not one group, and not
+        // filtered out (null). Never dereferenced.
+        static CollectionViewGroupInternal* MultiGroupLeaf()
+        {
+            static char s_marker;
+            return reinterpret_cast<CollectionViewGroupInternal*>(&s_marker);
+        }
+
+        // The bottom-level group of each source item the view shows, by source index (null: filtered out;
+        // MultiGroupLeaf: in several groups).
         std::vector<CollectionViewGroupInternal*> m_leafGroups;
         bool m_hasMultiGroupItems = false;
     };

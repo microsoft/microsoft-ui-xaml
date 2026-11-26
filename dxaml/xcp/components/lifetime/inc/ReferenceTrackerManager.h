@@ -6,6 +6,7 @@
 #if DBG
 #include "ReferenceTrackerLogging.h"
 #include "XcpAllocation.h"
+#include <unordered_set>
 #endif
 
 #include "vector_set.h"

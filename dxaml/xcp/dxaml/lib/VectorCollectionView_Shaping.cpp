@@ -12,17 +12,18 @@
 
 using namespace DirectUI;
 
+// A local diagnostic event, not telemetry: no Microsoft telemetry keyword or privacy tag, so it is not uploaded and
+// needs no data review; a trace that enables the provider (WPR, xperf) records it. Payload: HRESULTs only.
 void ShapingEngine::TraceContainedFailure(HRESULT hr, HRESULT capturedHr, bool hasErrorInfo)
 {
     TraceLoggingWrite(
         g_hTraceProvider,
         "CollectionViewContainedFailure",
+        TraceLoggingDescription("A CollectionView contained a failure of app code while it applied a change."),
         TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
         TraceLoggingHResult(hr, "HResult"),
         TraceLoggingHResult(capturedHr, "CapturedHResult"),
-        TraceLoggingBoolean(hasErrorInfo, "HasErrorInfo"),
-        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+        TraceLoggingBoolean(hasErrorInfo, "HasErrorInfo"));
 }
 
 HRESULT VectorCollectionView::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
