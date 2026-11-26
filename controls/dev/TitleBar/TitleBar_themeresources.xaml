@@ -95,6 +95,7 @@
     <HorizontalAlignment x:Key="TitleBarLeftHeaderHorizontalAlignment">Left</HorizontalAlignment>
     <VerticalAlignment x:Key="TitleBarLeftHeaderVerticalAlignment">Center</VerticalAlignment>
     <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Center</HorizontalAlignment>
+    <HorizontalAlignment x:Key="TitleBarCompactContentHorizontalAlignment">Left</HorizontalAlignment>
     <VerticalAlignment x:Key="TitleBarContentVerticalAlignment">Center</VerticalAlignment>
     <HorizontalAlignment x:Key="TitleBarRightHeaderHorizontalAlignment">Right</HorizontalAlignment>
     <VerticalAlignment x:Key="TitleBarRightHeaderVerticalAlignment">Center</VerticalAlignment>
