@@ -46,6 +46,14 @@ namespace BindTestbed
                 }
                 obj.Text = value ?? global::System.String.Empty;
             }
+            public static void Set_Microsoft_UI_Xaml_FrameworkElement_Tag(global::Microsoft.UI.Xaml.FrameworkElement obj, global::System.Object value, string targetNullValue)
+            {
+                if (value == null && targetNullValue != null)
+                {
+                    value = (global::System.Object) global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(global::System.Object), targetNullValue);
+                }
+                obj.Tag = value;
+            }
             public static void Set_Microsoft_UI_Xaml_Documents_Run_Text(global::Microsoft.UI.Xaml.Documents.Run obj, global::System.String value, string targetNullValue)
             {
                 if (value == null && targetNullValue != null)
@@ -65,7 +73,9 @@ namespace BindTestbed
             global::Microsoft.UI.Xaml.Markup.IComponentConnector,
             IListAndTemplateTests_Bindings
         {
-            private global::BindTestbedModel.IEmployee dataRoot;
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
             private bool initialized = false;
             private const int NOT_PHASED = (1 << 31);
             private const int DATA_CHANGED = (1 << 30);
@@ -73,20 +83,31 @@ namespace BindTestbed
 
             // Fields for each control that has bindings.
             private global::System.WeakReference obj3;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj5;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj6;
             private global::Microsoft.UI.Xaml.Controls.TextBlock obj4;
 
             // Static fields for each binding's enabled/disabled state
-            private static bool isobj4TextDisabled = false;
+            private static bool isobj5TextDisabled = false;
+            private static bool isobj6TextDisabled = false;
+            private global::System.Collections.Generic.Queue<global::System.Action> UnloadableBindingSourcesToUpdate = new global::System.Collections.Generic.Queue<global::System.Action>();
+
+            private ListAndTemplateTests_obj3_BindingsTracking bindingsTracking;
 
             public ListAndTemplateTests_obj3_Bindings()
             {
+                this.bindingsTracking = new ListAndTemplateTests_obj3_BindingsTracking(this);
             }
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 21 && columnNumber == 32)
+                if (lineNumber == 74 && columnNumber == 53)
                 {
-                    isobj4TextDisabled = true;
+                    isobj5TextDisabled = true;
+                }
+                else if (lineNumber == 75 && columnNumber == 32)
+                {
+                    isobj6TextDisabled = true;
                 }
             }
 
@@ -96,11 +117,1512 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 3: // ListAndTemplateTests.xaml line 20
-                        this.obj3 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
+                    case 3: // ListAndTemplateTests.xaml line 72
+                        this.obj3 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
                         break;
-                    case 4: // ListAndTemplateTests.xaml line 21
+                    case 4: // ListAndTemplateTests.xaml line 73
                         this.obj4 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.UnloadableBindingSourcesToUpdate.Enqueue(new global::System.Action(() =>
+                        {
+                            this.Update_deferredSource(this.obj4, NOT_PHASED);
+                        }));
+                        break;
+                    case 5: // ListAndTemplateTests.xaml line 74
+                        this.obj5 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    case 6: // ListAndTemplateTests.xaml line 75
+                        this.obj6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj3.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                switch (connectionId)
+                {
+                    case 4: // ListAndTemplateTests.xaml line 73
+                    {
+                        if (this.obj4 != null)
+                        {
+                            this.obj4 = null;
+                        }
+                        this.UnloadableBindingSourcesToUpdate.Enqueue(new global::System.Action(() =>
+                        {
+                            this.Update_deferredSource(null, NOT_PHASED);
+                        }));
+                        break;
+                    }
+                    default:
+                    {
+                        throw new global::System.ArgumentException("Invalid connectionId.");
+                    }
+                }
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 75
+                    if (!isobj6TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj6, result, null);
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                do
+                {
+                    var functions = this.PendingFunctionBindings;
+                    this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                    foreach (var function in functions.Values)
+                    {
+                        function.Invoke(phase);
+                    }
+                    while (this.UnloadableBindingSourcesToUpdate.Count > 0)
+                    {
+                        this.UnloadableBindingSourcesToUpdate.Dequeue()();
+                    }
+                }
+                while (this.PendingFunctionBindings.Count > 0 || this.UnloadableBindingSourcesToUpdate.Count > 0);
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                ListAndTemplateTests_obj3_Bindings bindings = this;
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.Update_deferredSource(bindings.obj4, phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                ListAndTemplateTests_obj3_Bindings bindings = this;
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.Update_deferredSource(bindings.obj4, phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_deferredSource(global::Microsoft.UI.Xaml.Controls.TextBlock obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_deferredSource(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_deferredSource_Text(obj.Text, phase);
+                    }
+                }
+            }
+            private void Update_deferredSource_Text(global::System.String obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 74
+                    if (!isobj5TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj5, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj6TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj3_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj3_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj3_BindingsTracking(ListAndTemplateTests_obj3_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj3_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj3_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj3_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_deferredSource(null);
+                }
+
+                public void DependencyPropertyChanged_deferredSource_Text(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
+                {
+                    ListAndTemplateTests_obj3_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        global::Microsoft.UI.Xaml.Controls.TextBlock obj = sender as global::Microsoft.UI.Xaml.Controls.TextBlock;
+                        if (obj != null)
+                        {
+                            bindings.Update_deferredSource_Text(obj.Text, DATA_CHANGED);
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                private global::Microsoft.UI.Xaml.Controls.TextBlock cache_deferredSource = null;
+                private long tokenDPC_deferredSource_Text = 0;
+                public void UpdateChildListeners_deferredSource(global::Microsoft.UI.Xaml.Controls.TextBlock obj)
+                {
+                    if (obj != cache_deferredSource)
+                    {
+                        if (cache_deferredSource != null)
+                        {
+                            cache_deferredSource.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.TextProperty, tokenDPC_deferredSource_Text);
+                            cache_deferredSource = null;
+                        }
+                        if (obj != null)
+                        {
+                            cache_deferredSource = obj;
+                            tokenDPC_deferredSource_Text = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.TextProperty, DependencyPropertyChanged_deferredSource_Text);
+                        }
+                    }
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj8_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool itemBindingsInitialized;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj8;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj9;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj10;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj11;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj9TagDisabled = false;
+            private static bool isobj10TagDisabled = false;
+            private static bool isobj11TextDisabled = false;
+
+            private ListAndTemplateTests_obj8_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj8_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj8_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 66 && columnNumber == 32)
+                {
+                    isobj9TagDisabled = true;
+                }
+                else if (lineNumber == 67 && columnNumber == 32)
+                {
+                    isobj10TagDisabled = true;
+                }
+                else if (lineNumber == 68 && columnNumber == 32)
+                {
+                    isobj11TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 8: // ListAndTemplateTests.xaml line 65
+                        this.obj8 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
+                        break;
+                    case 9: // ListAndTemplateTests.xaml line 66
+                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_9(this.obj9);
+                        break;
+                    case 10: // ListAndTemplateTests.xaml line 67
+                        this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_10(this.obj10);
+                        break;
+                    case 11: // ListAndTemplateTests.xaml line 68
+                        this.obj11 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj8.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        this.itemBindingsInitialized |= this.hasDataRoot;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+                this.itemBindingsInitialized |= this.hasDataRoot;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+                this.itemBindingsInitialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 68
+                    if (!isobj11TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj11, result, null);
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings.Instance, phase);
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BoolSetting(obj.BoolSetting, phase);
+                    }
+                }
+                this.Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings.Instance, phase);
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 66
+                    if (!isobj9TagDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj9, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, phase);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 67
+                    if (!isobj10TagDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj10, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj11TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_9_Tag()
+            {
+                if (this.itemBindingsInitialized && this.hasDataRoot)
+                {
+                    if (this.dataRoot != null)
+                    {
+                        this.dataRoot.BoolSetting = (global::System.Boolean)this.obj9.Tag;
+                    }
+                }
+            }
+            private void UpdateTwoWay_10_Tag()
+            {
+                if (this.initialized)
+                {
+                    if (global::BindTestbedModel.FakeSettings.Instance != null)
+                    {
+                        global::BindTestbedModel.FakeSettings.Instance.BoolSetting = (global::System.Boolean)this.obj10.Tag;
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj8_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj8_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj8_BindingsTracking(ListAndTemplateTests_obj8_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj8_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj8_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj8_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_(null);
+                    UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(null);
+                }
+
+                public void PropertyChanged_(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj8_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                public void UpdateChildListeners_(global::BindTestbedModel.FakeSettings obj)
+                {
+                    ListAndTemplateTests_obj8_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        if (bindings.dataRoot != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)bindings.dataRoot).PropertyChanged -= PropertyChanged_;
+                        }
+                        if (obj != null)
+                        {
+                            bindings.dataRoot = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_;
+                        }
+                    }
+                }
+                public void PropertyChanged_BindTestbedModel_FakeSettings_Instance(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj8_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                private global::BindTestbedModel.FakeSettings cache_BindTestbedModel_FakeSettings_Instance = null;
+                public void UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings obj)
+                {
+                    if (obj != cache_BindTestbedModel_FakeSettings_Instance)
+                    {
+                        if (cache_BindTestbedModel_FakeSettings_Instance != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_BindTestbedModel_FakeSettings_Instance).PropertyChanged -= PropertyChanged_BindTestbedModel_FakeSettings_Instance;
+                            cache_BindTestbedModel_FakeSettings_Instance = null;
+                        }
+                        if (obj != null)
+                        {
+                            cache_BindTestbedModel_FakeSettings_Instance = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_BindTestbedModel_FakeSettings_Instance;
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_9(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_9_Tag();
+                        }
+                    });
+                }
+                public void RegisterTwoWayListener_10(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_10_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj13_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::System.Int32 dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj13;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj13TextDisabled = false;
+            private static bool isobj13TagDisabled = false;
+
+            private ListAndTemplateTests_obj13_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj13_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj13_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 62 && columnNumber == 28)
+                {
+                    isobj13TextDisabled = true;
+                }
+                else if (lineNumber == 62 && columnNumber == 90)
+                {
+                    isobj13TagDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 13: // ListAndTemplateTests.xaml line 62
+                        this.obj13 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj13.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::System.Int32>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::System.Int32>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::System.Int32);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 62
+                    if (!isobj13TextDisabled)
+                    {
+                        if ((this.obj13.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj13.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::System.Int32 obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 62
+                    if (!isobj13TagDisabled)
+                    {
+                        if ((this.obj13.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj13.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), obj, null);
+                        }
+                    }
+                }
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj13TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj13_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj13_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj13_BindingsTracking(ListAndTemplateTests_obj13_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj13_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj13_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj13_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj15_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool itemBindingsInitialized;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj15;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj16;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj17;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj18;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj16TagDisabled = false;
+            private static bool isobj17TagDisabled = false;
+            private static bool isobj18TextDisabled = false;
+
+            private ListAndTemplateTests_obj15_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj15_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj15_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 56 && columnNumber == 44)
+                {
+                    isobj16TagDisabled = true;
+                }
+                else if (lineNumber == 57 && columnNumber == 32)
+                {
+                    isobj17TagDisabled = true;
+                }
+                else if (lineNumber == 58 && columnNumber == 44)
+                {
+                    isobj18TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 15: // ListAndTemplateTests.xaml line 55
+                        this.obj15 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
+                        break;
+                    case 16: // ListAndTemplateTests.xaml line 56
+                        this.obj16 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_16(this.obj16);
+                        break;
+                    case 17: // ListAndTemplateTests.xaml line 57
+                        this.obj17 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    case 18: // ListAndTemplateTests.xaml line 58
+                        this.obj18 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = 1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj15.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        this.itemBindingsInitialized |= this.hasDataRoot;
+                        break;
+                    case 1:
+                        global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj16);
+                        global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering(this.obj18);
+                        nextPhase = -1;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj16);
+                global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering(this.obj18);
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+                this.itemBindingsInitialized |= this.hasDataRoot;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+                this.itemBindingsInitialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 1) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 58
+                    if (!isobj18TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj18, result, null);
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings.Instance, phase);
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0) | (1 << 1))) != 0)
+                    {
+                        this.Update_BoolSetting(obj.BoolSetting, phase);
+                    }
+                }
+                this.Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings.Instance, phase);
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                if ((phase & ((1 << 1) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 56
+                    if (!isobj16TagDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj16, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, phase);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 57
+                    if (!isobj17TagDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj17, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 1) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj18TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_16_Tag()
+            {
+                if (this.itemBindingsInitialized && this.hasDataRoot)
+                {
+                    if (this.dataRoot != null)
+                    {
+                        this.dataRoot.BoolSetting = (global::System.Boolean)this.obj16.Tag;
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj15_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj15_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj15_BindingsTracking(ListAndTemplateTests_obj15_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj15_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj15_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj15_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_(null);
+                    UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(null);
+                }
+
+                public void PropertyChanged_(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj15_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                public void UpdateChildListeners_(global::BindTestbedModel.FakeSettings obj)
+                {
+                    ListAndTemplateTests_obj15_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        if (bindings.dataRoot != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)bindings.dataRoot).PropertyChanged -= PropertyChanged_;
+                        }
+                        if (obj != null)
+                        {
+                            bindings.dataRoot = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_;
+                        }
+                    }
+                }
+                public void PropertyChanged_BindTestbedModel_FakeSettings_Instance(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj15_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BindTestbedModel_FakeSettings_Instance_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                private global::BindTestbedModel.FakeSettings cache_BindTestbedModel_FakeSettings_Instance = null;
+                public void UpdateChildListeners_BindTestbedModel_FakeSettings_Instance(global::BindTestbedModel.FakeSettings obj)
+                {
+                    if (obj != cache_BindTestbedModel_FakeSettings_Instance)
+                    {
+                        if (cache_BindTestbedModel_FakeSettings_Instance != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)cache_BindTestbedModel_FakeSettings_Instance).PropertyChanged -= PropertyChanged_BindTestbedModel_FakeSettings_Instance;
+                            cache_BindTestbedModel_FakeSettings_Instance = null;
+                        }
+                        if (obj != null)
+                        {
+                            cache_BindTestbedModel_FakeSettings_Instance = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_BindTestbedModel_FakeSettings_Instance;
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_16(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_16_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj20_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj20;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj20TagDisabled = false;
+
+            private ListAndTemplateTests_obj20_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj20_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj20_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 52 && columnNumber == 28)
+                {
+                    isobj20TagDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 20: // ListAndTemplateTests.xaml line 52
+                        this.obj20 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        this.bindingsTracking.RegisterTwoWayListener_20((this.obj20.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
                         break;
                     default:
                         break;
@@ -153,7 +1675,2376 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            var rootElement = (this.obj3.Target as global::Microsoft.UI.Xaml.Controls.Grid);
+                            var rootElement = (this.obj20.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                if (newDataRoot != null)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                return false;
+            }
+
+            // Update methods for each path node used in binding steps.
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BoolSetting(obj.BoolSetting, phase);
+                    }
+                }
+            }
+            private void Update_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 52
+                    if (!isobj20TagDisabled)
+                    {
+                        if ((this.obj20.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj20.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), obj, null);
+                        }
+                    }
+                }
+            }
+            private void UpdateTwoWay_20_Tag()
+            {
+                if (this.initialized)
+                {
+                    if (this.dataRoot != null)
+                    {
+                        this.dataRoot.BoolSetting = (global::System.Boolean)(this.obj20.Target as global::Microsoft.UI.Xaml.Controls.TextBlock).Tag;
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj20_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj20_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj20_BindingsTracking(ListAndTemplateTests_obj20_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj20_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj20_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj20_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_(null);
+                }
+
+                public void PropertyChanged_(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj20_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+                public void UpdateChildListeners_(global::BindTestbedModel.FakeSettings obj)
+                {
+                    ListAndTemplateTests_obj20_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        if (bindings.dataRoot != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)bindings.dataRoot).PropertyChanged -= PropertyChanged_;
+                        }
+                        if (obj != null)
+                        {
+                            bindings.dataRoot = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_;
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_20(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_20_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj22_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj22;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj24;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj25;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj23;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj24TagDisabled = false;
+            private static bool isobj25TextDisabled = false;
+
+            private ListAndTemplateTests_obj22_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj22_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj22_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 47 && columnNumber == 59)
+                {
+                    isobj24TagDisabled = true;
+                }
+                else if (lineNumber == 48 && columnNumber == 32)
+                {
+                    isobj25TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 22: // ListAndTemplateTests.xaml line 45
+                        this.obj22 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
+                        break;
+                    case 23: // ListAndTemplateTests.xaml line 46
+                        this.obj23 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    case 24: // ListAndTemplateTests.xaml line 47
+                        this.obj24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        this.bindingsTracking.RegisterTwoWayListener_24(this.obj24);
+                        break;
+                    case 25: // ListAndTemplateTests.xaml line 48
+                        this.obj25 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj22.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 48
+                    if (!isobj25TextDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj25, result, null);
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                ListAndTemplateTests_obj22_Bindings bindings = this;
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.Update_independentSource(bindings.obj23, phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                ListAndTemplateTests_obj22_Bindings bindings = this;
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.Update_independentSource(bindings.obj23, phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_independentSource(global::Microsoft.UI.Xaml.Controls.TextBlock obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_independentSource(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_independentSource_Text(obj.Text, phase);
+                    }
+                }
+            }
+            private void Update_independentSource_Text(global::System.String obj, int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 47
+                    if (!isobj24TagDisabled)
+                    {
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag(this.obj24, obj, null);
+                    }
+                }
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj25TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_24_Tag()
+            {
+                if (this.initialized)
+                {
+                    if (this.obj23 != null)
+                    {
+                        this.obj23.Text = (global::System.String)this.obj24.Tag;
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj22_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj22_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj22_BindingsTracking(ListAndTemplateTests_obj22_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj22_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj22_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj22_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_independentSource(null);
+                }
+
+                public void DependencyPropertyChanged_independentSource_Text(global::Microsoft.UI.Xaml.DependencyObject sender, global::Microsoft.UI.Xaml.DependencyProperty prop)
+                {
+                    ListAndTemplateTests_obj22_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        global::Microsoft.UI.Xaml.Controls.TextBlock obj = sender as global::Microsoft.UI.Xaml.Controls.TextBlock;
+                        if (obj != null)
+                        {
+                            bindings.Update_independentSource_Text(obj.Text, DATA_CHANGED);
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                private global::Microsoft.UI.Xaml.Controls.TextBlock cache_independentSource = null;
+                private long tokenDPC_independentSource_Text = 0;
+                public void UpdateChildListeners_independentSource(global::Microsoft.UI.Xaml.Controls.TextBlock obj)
+                {
+                    if (obj != cache_independentSource)
+                    {
+                        if (cache_independentSource != null)
+                        {
+                            cache_independentSource.UnregisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.TextProperty, tokenDPC_independentSource_Text);
+                            cache_independentSource = null;
+                        }
+                        if (obj != null)
+                        {
+                            cache_independentSource = obj;
+                            tokenDPC_independentSource_Text = obj.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.Controls.TextBlock.TextProperty, DependencyPropertyChanged_independentSource_Text);
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_24(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_24_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj27_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj27;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj27TagDisabled = false;
+
+            private ListAndTemplateTests_obj27_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj27_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj27_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 42 && columnNumber == 28)
+                {
+                    isobj27TagDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 27: // ListAndTemplateTests.xaml line 42
+                        this.obj27 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        this.bindingsTracking.RegisterTwoWayListener_27((this.obj27.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj27.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 42
+                    if (!isobj27TagDisabled)
+                    {
+                        if ((this.obj27.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj27.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    if (!isobj27TagDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_27_Tag()
+            {
+                if (this.initialized)
+                {
+                    global::System.Object p0 = (global::System.String)(this.obj27.Target as global::Microsoft.UI.Xaml.Controls.TextBlock).Tag;
+                    global::BindTestbedModel.FakeSettings.SetFormattedSettingStatic(p0);
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj27_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj27_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj27_BindingsTracking(ListAndTemplateTests_obj27_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj27_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj27_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj27_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+                public void RegisterTwoWayListener_27(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_27_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj29_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj29;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj29TagDisabled = false;
+
+            private ListAndTemplateTests_obj29_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj29_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj29_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 39 && columnNumber == 28)
+                {
+                    isobj29TagDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 29: // ListAndTemplateTests.xaml line 39
+                        this.obj29 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        this.bindingsTracking.RegisterTwoWayListener_29((this.obj29.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj29.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                if (newDataRoot != null)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                return false;
+            }
+
+            private bool TryGet_BoolSetting(out global::System.Boolean val)
+            {
+                global::BindTestbedModel.FakeSettings obj;
+                if (TryGet_(out obj) && obj != null)
+                {
+                    val = obj.BoolSetting;
+                    return true;
+                }
+                else
+                {
+                    val = default(global::System.Boolean);
+                    return false;
+                }
+            }
+
+            private bool TryGet_(out global::BindTestbedModel.FakeSettings val)
+            {
+                val = this.dataRoot;
+                return true;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_M_FormatSetting_1437572574(int phase)
+            {
+                global::System.Boolean p0;
+                if (!TryGet_BoolSetting(out p0)) { return; }
+                global::System.String result = this.dataRoot.FormatSetting(p0);
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 39
+                    if (!isobj29TagDisabled)
+                    {
+                        if ((this.obj29.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj29.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BoolSetting(obj.BoolSetting, phase);
+                        this.Update_M_FormatSetting_1437572574(phase);
+                    }
+                }
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                this.Update_M_FormatSetting_1437572574(phase);
+            }
+            private void Update_M_FormatSetting_1437572574(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    if (!isobj29TagDisabled)
+                    {
+                        this.PendingFunctionBindings["M_FormatSetting_1437572574"] = new InvokeFunctionDelegate(this.Invoke_M_FormatSetting_1437572574); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_29_Tag()
+            {
+                if (this.initialized)
+                {
+                    global::System.Object p0 = (global::System.String)(this.obj29.Target as global::Microsoft.UI.Xaml.Controls.TextBlock).Tag;
+                    global::BindTestbedModel.FakeSettings.SetFormattedSettingStatic(p0);
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj29_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj29_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj29_BindingsTracking(ListAndTemplateTests_obj29_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj29_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj29_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj29_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_(null);
+                }
+
+                public void PropertyChanged_(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj29_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                bindings.Update_M_FormatSetting_1437572574(DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                case "FormatSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_M_FormatSetting_1437572574(DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                public void UpdateChildListeners_(global::BindTestbedModel.FakeSettings obj)
+                {
+                    ListAndTemplateTests_obj29_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        if (bindings.dataRoot != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)bindings.dataRoot).PropertyChanged -= PropertyChanged_;
+                        }
+                        if (obj != null)
+                        {
+                            bindings.dataRoot = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_;
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_29(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_29_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj31_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.FakeSettings dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool itemBindingsInitialized;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj31;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj31TextDisabled = false;
+            private static bool isobj31TagDisabled = false;
+
+            private ListAndTemplateTests_obj31_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj31_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj31_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 35 && columnNumber == 28)
+                {
+                    isobj31TextDisabled = true;
+                }
+                else if (lineNumber == 36 && columnNumber == 28)
+                {
+                    isobj31TagDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 31: // ListAndTemplateTests.xaml line 35
+                        this.obj31 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        this.bindingsTracking.RegisterTwoWayListener_31((this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        this.itemBindingsInitialized |= this.hasDataRoot;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+                this.itemBindingsInitialized |= this.hasDataRoot;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+                this.itemBindingsInitialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::BindTestbedModel.FakeSettings>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::BindTestbedModel.FakeSettings);
+                return false;
+            }
+
+            private bool TryGet_BoolSetting(out global::System.Boolean val)
+            {
+                global::BindTestbedModel.FakeSettings obj;
+                if (TryGet_(out obj) && obj != null)
+                {
+                    val = obj.BoolSetting;
+                    return true;
+                }
+                else
+                {
+                    val = default(global::System.Boolean);
+                    return false;
+                }
+            }
+
+            private bool TryGet_(out global::BindTestbedModel.FakeSettings val)
+            {
+                // A missing value-type item must not resolve successfully as its default value.
+                if (!this.hasDataRoot)
+                {
+                    val = default(global::BindTestbedModel.FakeSettings);
+                    return false;
+                }
+                val = this.dataRoot;
+                return true;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 35
+                    if (!isobj31TextDisabled)
+                    {
+                        if ((this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void Invoke_M_FormatSetting_1437572574(int phase)
+            {
+                global::System.Boolean p0;
+                if (!TryGet_BoolSetting(out p0)) { return; }
+                global::System.String result = this.dataRoot.FormatSetting(p0);
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 35
+                    if (!isobj31TagDisabled)
+                    {
+                        if ((this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_FrameworkElement_Tag((this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::BindTestbedModel.FakeSettings obj, int phase)
+            {
+                this.bindingsTracking.UpdateChildListeners_(obj);
+                if (obj != null)
+                {
+                    if ((phase & (NOT_PHASED | DATA_CHANGED | (1 << 0))) != 0)
+                    {
+                        this.Update_BoolSetting(obj.BoolSetting, phase);
+                        this.Update_M_FormatSetting_1437572574(phase);
+                    }
+                }
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj31TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+            private void Update_BoolSetting(global::System.Boolean obj, int phase)
+            {
+                this.Update_M_FormatSetting_1437572574(phase);
+            }
+            private void Update_M_FormatSetting_1437572574(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
+                {
+                    if (!isobj31TagDisabled)
+                    {
+                        this.PendingFunctionBindings["M_FormatSetting_1437572574"] = new InvokeFunctionDelegate(this.Invoke_M_FormatSetting_1437572574); 
+                    }
+                }
+            }
+            private void UpdateTwoWay_31_Tag()
+            {
+                if (this.itemBindingsInitialized)
+                {
+                    global::System.Object p0 = (global::System.String)(this.obj31.Target as global::Microsoft.UI.Xaml.Controls.TextBlock).Tag;
+                    global::BindTestbedModel.FakeSettings.SetFormattedSettingStatic(p0);
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj31_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj31_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj31_BindingsTracking(ListAndTemplateTests_obj31_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj31_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj31_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj31_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                    UpdateChildListeners_(null);
+                }
+
+                public void PropertyChanged_(object sender, global::System.ComponentModel.PropertyChangedEventArgs e)
+                {
+                    ListAndTemplateTests_obj31_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        string propName = e.PropertyName;
+                        global::BindTestbedModel.FakeSettings obj = sender as global::BindTestbedModel.FakeSettings;
+                        if (global::System.String.IsNullOrEmpty(propName))
+                        {
+                            if (obj != null)
+                            {
+                                bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                bindings.Update_M_FormatSetting_1437572574(DATA_CHANGED);
+                            }
+                        }
+                        else
+                        {
+                            switch (propName)
+                            {
+                                case "BoolSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_BoolSetting(obj.BoolSetting, DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                case "FormatSetting":
+                                {
+                                    if (obj != null)
+                                    {
+                                        bindings.Update_M_FormatSetting_1437572574(DATA_CHANGED);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                        bindings.CompleteUpdate(DATA_CHANGED);
+                    }
+                }
+                public void UpdateChildListeners_(global::BindTestbedModel.FakeSettings obj)
+                {
+                    ListAndTemplateTests_obj31_Bindings bindings = TryGetBindingObject();
+                    if (bindings != null)
+                    {
+                        if (bindings.dataRoot != null)
+                        {
+                            ((global::System.ComponentModel.INotifyPropertyChanged)bindings.dataRoot).PropertyChanged -= PropertyChanged_;
+                        }
+                        if (obj != null)
+                        {
+                            bindings.dataRoot = obj;
+                            ((global::System.ComponentModel.INotifyPropertyChanged)obj).PropertyChanged += PropertyChanged_;
+                        }
+                    }
+                }
+                public void RegisterTwoWayListener_31(global::Microsoft.UI.Xaml.Controls.TextBlock sourceObject)
+                {
+                    sourceObject.RegisterPropertyChangedCallback(global::Microsoft.UI.Xaml.FrameworkElement.TagProperty, (sender, prop) =>
+                    {
+                        var bindingObj = this.TryGetBindingObject();
+                        if (bindingObj != null)
+                        {
+                            bindingObj.UpdateTwoWay_31_Tag();
+                        }
+                    });
+                }
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj32_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::Microsoft.UI.Xaml.DataTemplate dataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj32;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj32TextDisabled = false;
+
+            private ListAndTemplateTests_obj32_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj32_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj32_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 32 && columnNumber == 40)
+                {
+                    isobj32TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 32: // ListAndTemplateTests.xaml line 32
+                        this.obj32 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = 1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj32.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                    case 1:
+                        global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.ResumeRendering((this.obj32.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
+                        nextPhase = -1;
+                        break;
+                }
+                this.UpdateStaticBindings(1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SuspendRendering((this.obj32.Target as global::Microsoft.UI.Xaml.Controls.TextBlock));
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.UpdateStaticBindings(NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                // Every binding path is item-independent; never convert an arbitrary item
+                // to the synthetic DataTemplate type just because it happens to be non-null.
+                this.dataRoot = default(global::Microsoft.UI.Xaml.DataTemplate);
+                return true;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 1) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 32
+                    if (!isobj32TextDisabled)
+                    {
+                        if ((this.obj32.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj32.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::Microsoft.UI.Xaml.DataTemplate obj, int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 1) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj32TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj32_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj32_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj32_BindingsTracking(ListAndTemplateTests_obj32_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj32_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj32_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj32_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj33_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::Microsoft.UI.Xaml.DataTemplate dataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj33;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj33TextDisabled = false;
+
+            private ListAndTemplateTests_obj33_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj33_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj33_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 29 && columnNumber == 28)
+                {
+                    isobj33TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 33: // ListAndTemplateTests.xaml line 29
+                        this.obj33 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj33.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.UpdateStaticBindings(1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.UpdateStaticBindings(NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                // Every binding path is item-independent; never convert an arbitrary item
+                // to the synthetic DataTemplate type just because it happens to be non-null.
+                this.dataRoot = default(global::Microsoft.UI.Xaml.DataTemplate);
+                return true;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 29
+                    if (!isobj33TextDisabled)
+                    {
+                        if ((this.obj33.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj33.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::Microsoft.UI.Xaml.DataTemplate obj, int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj33TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj33_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj33_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj33_BindingsTracking(ListAndTemplateTests_obj33_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj33_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj33_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj33_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj35_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::System.String dataRoot;
+            // A missing item is distinct from default(T) and from independent binding initialization.
+            private bool hasDataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj35;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj35TextDisabled = false;
+
+            private ListAndTemplateTests_obj35_BindingsTracking bindingsTracking;
+
+            public ListAndTemplateTests_obj35_Bindings()
+            {
+                this.bindingsTracking = new ListAndTemplateTests_obj35_BindingsTracking(this);
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 26 && columnNumber == 28)
+                {
+                    isobj35TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 35: // ListAndTemplateTests.xaml line 26
+                        this.obj35 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target));
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+                 else
+                 {
+                    // SetDataRoot detached listeners; restore only sources that do not need an item.
+                    this.UpdateStaticBindings(NOT_PHASED);
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj35.Target as global::Microsoft.UI.Xaml.Controls.TextBlock);
+                            if (rootElement != null)
+                            {
+                                rootElement.DataContextChanged -= this.DataContextChangedHandler;
+                            }
+                        }
+                        this.initialized = true;
+                        break;
+                }
+                this.Update_(global::WinRT.CastExtensions.As<global::System.String>(item), 1 << phase);
+            }
+
+            public void Recycle()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+            }
+
+            // IListAndTemplateTests_Bindings
+
+            public void Initialize()
+            {
+                if (!this.initialized)
+                {
+                    this.Update();
+                }
+            }
+            
+            public void Update()
+            {
+                this.Update_(this.dataRoot, NOT_PHASED);
+                this.initialized = true;
+            }
+
+            public void StopTracking()
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.initialized = false;
+            }
+
+            public void DisconnectUnloadedObject(int connectionId)
+            {
+                throw new global::System.ArgumentException("No unloadable elements to disconnect.");
+            }
+
+            public bool SetDataRoot(global::System.Object newDataRoot)
+            {
+                this.bindingsTracking.ReleaseAllListeners();
+                this.hasDataRoot = newDataRoot != null;
+                if (this.hasDataRoot)
+                {
+                    this.dataRoot = global::WinRT.CastExtensions.As<global::System.String>(newDataRoot);
+                    return true;
+                }
+                // Do not let independent-source notifications retrieve the previous item.
+                this.dataRoot = default(global::System.String);
+                return false;
+            }
+
+            private delegate void InvokeFunctionDelegate(int phase);
+            private global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate> PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+
+            private void Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                global::System.String result = global::BindTestbedModel.DataModel.StaticFunctionOnModelNoArgs();
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    // ListAndTemplateTests.xaml line 26
+                    if (!isobj35TextDisabled)
+                    {
+                        if ((this.obj35.Target as global::Microsoft.UI.Xaml.Controls.TextBlock) != null)
+                        {
+                            XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text((this.obj35.Target as global::Microsoft.UI.Xaml.Controls.TextBlock), result, null);
+                        }
+                    }
+                }
+            }
+
+            private void CompleteUpdate(int phase)
+            {
+                var functions = this.PendingFunctionBindings;
+                this.PendingFunctionBindings = new global::System.Collections.Generic.Dictionary<string, InvokeFunctionDelegate>();
+                foreach (var function in functions.Values)
+                {
+                    function.Invoke(phase);
+                }
+            }
+
+            // Update methods for each path node used in binding steps.
+            // Reconnect static/named sources and dispatch their functions without walking the data root.
+            private void UpdateStaticBindings(int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+                this.initialized = true;
+            }
+            private void Update_(global::System.String obj, int phase)
+            {
+                this.Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(phase);
+                this.CompleteUpdate(phase);
+            }
+            private void Update_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150(int phase)
+            {
+                if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
+                {
+                    if (!isobj35TextDisabled)
+                    {
+                        this.PendingFunctionBindings["BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150"] = new InvokeFunctionDelegate(this.Invoke_BindTestbedModel_DataModel_M_StaticFunctionOnModelNoArgs_371857150); 
+                    }
+                }
+            }
+
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            private class ListAndTemplateTests_obj35_BindingsTracking
+            {
+                private global::System.WeakReference<ListAndTemplateTests_obj35_Bindings> weakRefToBindingObj; 
+
+                public ListAndTemplateTests_obj35_BindingsTracking(ListAndTemplateTests_obj35_Bindings obj)
+                {
+                    weakRefToBindingObj = new global::System.WeakReference<ListAndTemplateTests_obj35_Bindings>(obj);
+                }
+
+                public ListAndTemplateTests_obj35_Bindings TryGetBindingObject()
+                {
+                    ListAndTemplateTests_obj35_Bindings bindingObject = null;
+                    if (weakRefToBindingObj != null)
+                    {
+                        weakRefToBindingObj.TryGetTarget(out bindingObject);
+                        if (bindingObject == null)
+                        {
+                            weakRefToBindingObj = null;
+                            ReleaseAllListeners();
+                        }
+                    }
+                    return bindingObject;
+                }
+
+                public void ReleaseAllListeners()
+                {
+                }
+
+            }
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        private partial class ListAndTemplateTests_obj37_Bindings :
+            global::Microsoft.UI.Xaml.IDataTemplateExtension,
+            global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
+            global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
+            global::Microsoft.UI.Xaml.Markup.IComponentConnector,
+            IListAndTemplateTests_Bindings
+        {
+            private global::BindTestbedModel.IEmployee dataRoot;
+            private bool initialized = false;
+            private const int NOT_PHASED = (1 << 31);
+            private const int DATA_CHANGED = (1 << 30);
+            private bool removedDataContextHandler = false;
+
+            // Fields for each control that has bindings.
+            private global::System.WeakReference obj37;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj38;
+
+            // Static fields for each binding's enabled/disabled state
+            private static bool isobj38TextDisabled = false;
+
+            public ListAndTemplateTests_obj37_Bindings()
+            {
+            }
+
+            public void Disable(int lineNumber, int columnNumber)
+            {
+                if (lineNumber == 21 && columnNumber == 32)
+                {
+                    isobj38TextDisabled = true;
+                }
+            }
+
+            // IComponentConnector
+
+            public void Connect(int connectionId, global::System.Object target)
+            {
+                switch(connectionId)
+                {
+                    case 37: // ListAndTemplateTests.xaml line 20
+                        this.obj37 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
+                        break;
+                    case 38: // ListAndTemplateTests.xaml line 21
+                        this.obj38 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                        break;
+                    default:
+                        break;
+                }
+            }
+                        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
+                        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+                        public global::Microsoft.UI.Xaml.Markup.IComponentConnector GetBindingConnector(int connectionId, object target) 
+                        {
+                            return null;
+                        }
+
+            public void DataContextChangedHandler(global::Microsoft.UI.Xaml.FrameworkElement sender, global::Microsoft.UI.Xaml.DataContextChangedEventArgs args)
+            {
+                 if (this.SetDataRoot(args.NewValue))
+                 {
+                    this.Update();
+                 }
+            }
+
+            // IDataTemplateExtension
+
+            public bool ProcessBinding(uint phase)
+            {
+                throw new global::System.NotImplementedException();
+            }
+
+            public int ProcessBindings(global::Microsoft.UI.Xaml.Controls.ContainerContentChangingEventArgs args)
+            {
+                int nextPhase = -1;
+                ProcessBindings(args.Item, args.ItemIndex, (int)args.Phase, out nextPhase);
+                return nextPhase;
+            }
+
+            public void ResetTemplate()
+            {
+                Recycle();
+            }
+
+            // IDataTemplateComponent
+
+            public void ProcessBindings(global::System.Object item, int itemIndex, int phase, out int nextPhase)
+            {
+                nextPhase = -1;
+                switch(phase)
+                {
+                    case 0:
+                        nextPhase = -1;
+                        this.SetDataRoot(item);
+                        if (!removedDataContextHandler)
+                        {
+                            removedDataContextHandler = true;
+                            var rootElement = (this.obj37.Target as global::Microsoft.UI.Xaml.Controls.Grid);
                             if (rootElement != null)
                             {
                                 rootElement.DataContextChanged -= this.DataContextChangedHandler;
@@ -220,9 +4111,9 @@ namespace BindTestbed
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
                     // ListAndTemplateTests.xaml line 21
-                    if (!isobj4TextDisabled)
+                    if (!isobj38TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj4, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj38, obj, null);
                     }
                 }
             }
@@ -230,7 +4121,7 @@ namespace BindTestbed
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private partial class ListAndTemplateTests_obj19_Bindings :
+        private partial class ListAndTemplateTests_obj53_Bindings :
             global::Microsoft.UI.Xaml.IDataTemplateExtension,
             global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
             global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
@@ -244,21 +4135,21 @@ namespace BindTestbed
             private bool removedDataContextHandler = false;
 
             // Fields for each control that has bindings.
-            private global::System.WeakReference obj19;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj20;
+            private global::System.WeakReference obj53;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj54;
 
             // Static fields for each binding's enabled/disabled state
-            private static bool isobj20TextDisabled = false;
+            private static bool isobj54TextDisabled = false;
 
-            public ListAndTemplateTests_obj19_Bindings()
+            public ListAndTemplateTests_obj53_Bindings()
             {
             }
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 97 && columnNumber == 48)
+                if (lineNumber == 155 && columnNumber == 48)
                 {
-                    isobj20TextDisabled = true;
+                    isobj54TextDisabled = true;
                 }
             }
 
@@ -268,11 +4159,11 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 19: // ListAndTemplateTests.xaml line 96
-                        this.obj19 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
+                    case 53: // ListAndTemplateTests.xaml line 154
+                        this.obj53 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Grid>(target));
                         break;
-                    case 20: // ListAndTemplateTests.xaml line 97
-                        this.obj20 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    case 54: // ListAndTemplateTests.xaml line 155
+                        this.obj54 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
@@ -325,7 +4216,7 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            var rootElement = (this.obj19.Target as global::Microsoft.UI.Xaml.Controls.Grid);
+                            var rootElement = (this.obj53.Target as global::Microsoft.UI.Xaml.Controls.Grid);
                             if (rootElement != null)
                             {
                                 rootElement.DataContextChanged -= this.DataContextChangedHandler;
@@ -391,10 +4282,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 97
-                    if (!isobj20TextDisabled)
+                    // ListAndTemplateTests.xaml line 155
+                    if (!isobj54TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj20, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj54, obj, null);
                     }
                 }
             }
@@ -402,7 +4293,7 @@ namespace BindTestbed
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private partial class ListAndTemplateTests_obj23_Bindings :
+        private partial class ListAndTemplateTests_obj57_Bindings :
             global::Microsoft.UI.Xaml.IDataTemplateExtension,
             global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
             global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
@@ -416,21 +4307,21 @@ namespace BindTestbed
             private bool removedDataContextHandler = false;
 
             // Fields for each control that has bindings.
-            private global::System.WeakReference obj23;
-            private global::Microsoft.UI.Xaml.Documents.Run obj24;
+            private global::System.WeakReference obj57;
+            private global::Microsoft.UI.Xaml.Documents.Run obj58;
 
             // Static fields for each binding's enabled/disabled state
-            private static bool isobj24TextDisabled = false;
+            private static bool isobj58TextDisabled = false;
 
-            public ListAndTemplateTests_obj23_Bindings()
+            public ListAndTemplateTests_obj57_Bindings()
             {
             }
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 82 && columnNumber == 79)
+                if (lineNumber == 140 && columnNumber == 79)
                 {
-                    isobj24TextDisabled = true;
+                    isobj58TextDisabled = true;
                 }
             }
 
@@ -440,11 +4331,11 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 23: // ListAndTemplateTests.xaml line 81
-                        this.obj23 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
+                    case 57: // ListAndTemplateTests.xaml line 139
+                        this.obj57 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
                         break;
-                    case 24: // ListAndTemplateTests.xaml line 82
-                        this.obj24 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Documents.Run>(target);
+                    case 58: // ListAndTemplateTests.xaml line 140
+                        this.obj58 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Documents.Run>(target);
                         break;
                     default:
                         break;
@@ -497,7 +4388,7 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            var rootElement = (this.obj23.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            var rootElement = (this.obj57.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
                             if (rootElement != null)
                             {
                                 rootElement.DataContextChanged -= this.DataContextChangedHandler;
@@ -553,10 +4444,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 82
-                    if (!isobj24TextDisabled)
+                    // ListAndTemplateTests.xaml line 140
+                    if (!isobj58TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Documents_Run_Text(this.obj24, obj.ToString(), null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Documents_Run_Text(this.obj58, obj.ToString(), null);
                     }
                 }
             }
@@ -564,7 +4455,7 @@ namespace BindTestbed
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.UI.Xaml.Markup.Compiler"," 3.0.0.0")]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        private partial class ListAndTemplateTests_obj26_Bindings :
+        private partial class ListAndTemplateTests_obj60_Bindings :
             global::Microsoft.UI.Xaml.IDataTemplateExtension,
             global::Microsoft.UI.Xaml.Markup.IDataTemplateComponent,
             global::Microsoft.UI.Xaml.Markup.IXamlBindScopeDiagnostics,
@@ -578,27 +4469,27 @@ namespace BindTestbed
             private bool removedDataContextHandler = false;
 
             // Fields for each control that has bindings.
-            private global::System.WeakReference obj26;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj27;
-            private global::Microsoft.UI.Xaml.Controls.TextBlock obj28;
+            private global::System.WeakReference obj60;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj61;
+            private global::Microsoft.UI.Xaml.Controls.TextBlock obj62;
 
             // Static fields for each binding's enabled/disabled state
-            private static bool isobj27TextDisabled = false;
-            private static bool isobj28TextDisabled = false;
+            private static bool isobj61TextDisabled = false;
+            private static bool isobj62TextDisabled = false;
 
-            public ListAndTemplateTests_obj26_Bindings()
+            public ListAndTemplateTests_obj60_Bindings()
             {
             }
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 42 && columnNumber == 44)
+                if (lineNumber == 96 && columnNumber == 44)
                 {
-                    isobj27TextDisabled = true;
+                    isobj61TextDisabled = true;
                 }
-                else if (lineNumber == 43 && columnNumber == 44)
+                else if (lineNumber == 97 && columnNumber == 44)
                 {
-                    isobj28TextDisabled = true;
+                    isobj62TextDisabled = true;
                 }
             }
 
@@ -608,14 +4499,14 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 26: // ListAndTemplateTests.xaml line 41
-                        this.obj26 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
+                    case 60: // ListAndTemplateTests.xaml line 95
+                        this.obj60 = new global::System.WeakReference(global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.StackPanel>(target));
                         break;
-                    case 27: // ListAndTemplateTests.xaml line 42
-                        this.obj27 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    case 61: // ListAndTemplateTests.xaml line 96
+                        this.obj61 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
-                    case 28: // ListAndTemplateTests.xaml line 43
-                        this.obj28 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
+                    case 62: // ListAndTemplateTests.xaml line 97
+                        this.obj62 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                         break;
                     default:
                         break;
@@ -668,7 +4559,7 @@ namespace BindTestbed
                         if (!removedDataContextHandler)
                         {
                             removedDataContextHandler = true;
-                            var rootElement = (this.obj26.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
+                            var rootElement = (this.obj60.Target as global::Microsoft.UI.Xaml.Controls.StackPanel);
                             if (rootElement != null)
                             {
                                 rootElement.DataContextChanged -= this.DataContextChangedHandler;
@@ -722,7 +4613,7 @@ namespace BindTestbed
             // Update methods for each path node used in binding steps.
             private void Update_(global::BindTestbedModel.IEmployee obj, int phase)
             {
-                ListAndTemplateTests_obj26_Bindings bindings = this;
+                ListAndTemplateTests_obj60_Bindings bindings = this;
                 if (obj != null)
                 {
                     if ((phase & (NOT_PHASED | (1 << 0))) != 0)
@@ -736,10 +4627,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 42
-                    if (!isobj27TextDisabled)
+                    // ListAndTemplateTests.xaml line 96
+                    if (!isobj61TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj27, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj61, obj, null);
                     }
                 }
             }
@@ -747,10 +4638,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 43
-                    if (!isobj28TextDisabled)
+                    // ListAndTemplateTests.xaml line 97
+                    if (!isobj62TextDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj28, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_TextBlock_Text(this.obj62, obj, null);
                     }
                 }
             }
@@ -770,29 +4661,29 @@ namespace BindTestbed
             private const int DATA_CHANGED = (1 << 30);
 
             // Fields for each control that has bindings.
-            private global::Microsoft.UI.Xaml.Controls.ListView obj6;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj7;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj8;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj9;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj10;
-            private global::Microsoft.UI.Xaml.Controls.Button obj14;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj15;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj16;
-            private global::Microsoft.UI.Xaml.Controls.ListView obj17;
-            private global::Microsoft.UI.Xaml.Controls.Button obj21;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj40;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj41;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj42;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj43;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj44;
+            private global::Microsoft.UI.Xaml.Controls.Button obj48;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj49;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj50;
+            private global::Microsoft.UI.Xaml.Controls.ListView obj51;
+            private global::Microsoft.UI.Xaml.Controls.Button obj55;
 
             // Static fields for each binding's enabled/disabled state
-            private static bool isobj6ItemsSourceDisabled = false;
-            private static bool isobj7ItemsSourceDisabled = false;
-            private static bool isobj8ItemsSourceDisabled = false;
-            private static bool isobj8SelectedIndexDisabled = false;
-            private static bool isobj9ItemsSourceDisabled = false;
-            private static bool isobj10ItemsSourceDisabled = false;
-            private static bool isobj14ContentDisabled = false;
-            private static bool isobj15ItemsSourceDisabled = false;
-            private static bool isobj16ItemsSourceDisabled = false;
-            private static bool isobj17ItemsSourceDisabled = false;
-            private static bool isobj21ContentDisabled = false;
+            private static bool isobj40ItemsSourceDisabled = false;
+            private static bool isobj41ItemsSourceDisabled = false;
+            private static bool isobj42ItemsSourceDisabled = false;
+            private static bool isobj42SelectedIndexDisabled = false;
+            private static bool isobj43ItemsSourceDisabled = false;
+            private static bool isobj44ItemsSourceDisabled = false;
+            private static bool isobj48ContentDisabled = false;
+            private static bool isobj49ItemsSourceDisabled = false;
+            private static bool isobj50ItemsSourceDisabled = false;
+            private static bool isobj51ItemsSourceDisabled = false;
+            private static bool isobj55ContentDisabled = false;
 
             private ListAndTemplateTests_obj1_BindingsTracking bindingsTracking;
 
@@ -803,49 +4694,49 @@ namespace BindTestbed
 
             public void Disable(int lineNumber, int columnNumber)
             {
-                if (lineNumber == 38 && columnNumber == 39)
+                if (lineNumber == 92 && columnNumber == 39)
                 {
-                    isobj6ItemsSourceDisabled = true;
+                    isobj40ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 50 && columnNumber == 114)
+                else if (lineNumber == 104 && columnNumber == 114)
                 {
-                    isobj7ItemsSourceDisabled = true;
+                    isobj41ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 53 && columnNumber == 112)
+                else if (lineNumber == 107 && columnNumber == 112)
                 {
-                    isobj8ItemsSourceDisabled = true;
+                    isobj42ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 53 && columnNumber == 164)
+                else if (lineNumber == 107 && columnNumber == 164)
                 {
-                    isobj8SelectedIndexDisabled = true;
+                    isobj42SelectedIndexDisabled = true;
                 }
-                else if (lineNumber == 56 && columnNumber == 111)
+                else if (lineNumber == 110 && columnNumber == 111)
                 {
-                    isobj9ItemsSourceDisabled = true;
+                    isobj43ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 59 && columnNumber == 121)
+                else if (lineNumber == 113 && columnNumber == 121)
                 {
-                    isobj10ItemsSourceDisabled = true;
+                    isobj44ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 108 && columnNumber == 29)
+                else if (lineNumber == 166 && columnNumber == 29)
                 {
-                    isobj14ContentDisabled = true;
+                    isobj48ContentDisabled = true;
                 }
-                else if (lineNumber == 91 && columnNumber == 118)
+                else if (lineNumber == 149 && columnNumber == 118)
                 {
-                    isobj15ItemsSourceDisabled = true;
+                    isobj49ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 92 && columnNumber == 116)
+                else if (lineNumber == 150 && columnNumber == 116)
                 {
-                    isobj16ItemsSourceDisabled = true;
+                    isobj50ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 93 && columnNumber == 59)
+                else if (lineNumber == 151 && columnNumber == 59)
                 {
-                    isobj17ItemsSourceDisabled = true;
+                    isobj51ItemsSourceDisabled = true;
                 }
-                else if (lineNumber == 78 && columnNumber == 29)
+                else if (lineNumber == 136 && columnNumber == 29)
                 {
-                    isobj21ContentDisabled = true;
+                    isobj55ContentDisabled = true;
                 }
             }
 
@@ -855,35 +4746,35 @@ namespace BindTestbed
             {
                 switch(connectionId)
                 {
-                    case 6: // ListAndTemplateTests.xaml line 38
-                        this.obj6 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 40: // ListAndTemplateTests.xaml line 92
+                        this.obj40 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 7: // ListAndTemplateTests.xaml line 50
-                        this.obj7 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 41: // ListAndTemplateTests.xaml line 104
+                        this.obj41 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 8: // ListAndTemplateTests.xaml line 53
-                        this.obj8 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 42: // ListAndTemplateTests.xaml line 107
+                        this.obj42 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 9: // ListAndTemplateTests.xaml line 56
-                        this.obj9 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 43: // ListAndTemplateTests.xaml line 110
+                        this.obj43 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 10: // ListAndTemplateTests.xaml line 59
-                        this.obj10 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 44: // ListAndTemplateTests.xaml line 113
+                        this.obj44 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 14: // ListAndTemplateTests.xaml line 107
-                        this.obj14 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    case 48: // ListAndTemplateTests.xaml line 165
+                        this.obj48 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         break;
-                    case 15: // ListAndTemplateTests.xaml line 91
-                        this.obj15 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 49: // ListAndTemplateTests.xaml line 149
+                        this.obj49 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 16: // ListAndTemplateTests.xaml line 92
-                        this.obj16 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 50: // ListAndTemplateTests.xaml line 150
+                        this.obj50 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 17: // ListAndTemplateTests.xaml line 93
-                        this.obj17 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
+                    case 51: // ListAndTemplateTests.xaml line 151
+                        this.obj51 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                         break;
-                    case 21: // ListAndTemplateTests.xaml line 78
-                        this.obj21 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    case 55: // ListAndTemplateTests.xaml line 136
+                        this.obj55 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                         break;
                     default:
                         break;
@@ -993,28 +4884,28 @@ namespace BindTestbed
                 this.bindingsTracking.UpdateChildListeners_Model_Employees(obj);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 50
-                    if (!isobj7ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 104
+                    if (!isobj41ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj7, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj41, obj, null);
                     }
-                    // ListAndTemplateTests.xaml line 53
-                    if (!isobj8ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 107
+                    if (!isobj42ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj8, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj42, obj, null);
                     }
-                    // ListAndTemplateTests.xaml line 59
-                    if (!isobj10ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 113
+                    if (!isobj44ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj10, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj44, obj, null);
                     }
                 }
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 38
-                    if (!isobj6ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 92
+                    if (!isobj40ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj6, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj40, obj, null);
                     }
                 }
             }
@@ -1032,10 +4923,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 53
-                    if (!isobj8SelectedIndexDisabled)
+                    // ListAndTemplateTests.xaml line 107
+                    if (!isobj42SelectedIndexDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_Selector_SelectedIndex(this.obj8, obj);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_Primitives_Selector_SelectedIndex(this.obj42, obj);
                     }
                 }
             }
@@ -1055,25 +4946,25 @@ namespace BindTestbed
                 this.bindingsTracking.UpdateChildListeners_Model_ManagerProp_ReportsOC(obj);
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 56
-                    if (!isobj9ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 110
+                    if (!isobj43ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj9, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj43, obj, null);
                     }
-                    // ListAndTemplateTests.xaml line 91
-                    if (!isobj15ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 149
+                    if (!isobj49ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj15, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj49, obj, null);
                     }
-                    // ListAndTemplateTests.xaml line 92
-                    if (!isobj16ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 150
+                    if (!isobj50ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj16, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj50, obj, null);
                     }
-                    // ListAndTemplateTests.xaml line 93
-                    if (!isobj17ItemsSourceDisabled)
+                    // ListAndTemplateTests.xaml line 151
+                    if (!isobj51ItemsSourceDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj17, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ItemsControl_ItemsSource(this.obj51, obj, null);
                     }
                 }
             }
@@ -1081,10 +4972,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED | DATA_CHANGED)) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 107
-                    if (!isobj14ContentDisabled)
+                    // ListAndTemplateTests.xaml line 165
+                    if (!isobj48ContentDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj14, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj48, obj, null);
                     }
                 }
             }
@@ -1092,10 +4983,10 @@ namespace BindTestbed
             {
                 if ((phase & ((1 << 0) | NOT_PHASED )) != 0)
                 {
-                    // ListAndTemplateTests.xaml line 78
-                    if (!isobj21ContentDisabled)
+                    // ListAndTemplateTests.xaml line 136
+                    if (!isobj55ContentDisabled)
                     {
-                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj21, obj, null);
+                        XamlBindingSetters.Set_Microsoft_UI_Xaml_Controls_ContentControl_Content(this.obj55, obj, null);
                     }
                 }
             }
@@ -1312,34 +5203,34 @@ namespace BindTestbed
         {
             switch(connectionId)
             {
-            case 5: // ListAndTemplateTests.xaml line 36
+            case 39: // ListAndTemplateTests.xaml line 90
                 {
                     this.LastName = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.TextBlock>(target);
                 }
                 break;
-            case 7: // ListAndTemplateTests.xaml line 50
+            case 41: // ListAndTemplateTests.xaml line 104
                 {
                     this.FirstListView = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.ListView>(target);
                 }
                 break;
-            case 11: // ListAndTemplateTests.xaml line 62
+            case 45: // ListAndTemplateTests.xaml line 116
                 {
                     this.someButton = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
                 break;
-            case 12: // ListAndTemplateTests.xaml line 116
+            case 46: // ListAndTemplateTests.xaml line 174
                 {
-                    global::Microsoft.UI.Xaml.Controls.Button element12 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
-                    ((global::Microsoft.UI.Xaml.Controls.Button)element12).Click += this.UpdateValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element46 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element46).Click += this.UpdateValuesClick;
                 }
                 break;
-            case 13: // ListAndTemplateTests.xaml line 117
+            case 47: // ListAndTemplateTests.xaml line 175
                 {
-                    global::Microsoft.UI.Xaml.Controls.Button element13 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
-                    ((global::Microsoft.UI.Xaml.Controls.Button)element13).Click += this.ResetValuesClick;
+                    global::Microsoft.UI.Xaml.Controls.Button element47 = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
+                    ((global::Microsoft.UI.Xaml.Controls.Button)element47).Click += this.ResetValuesClick;
                 }
                 break;
-            case 14: // ListAndTemplateTests.xaml line 107
+            case 48: // ListAndTemplateTests.xaml line 165
                 {
                     this.stringPropButton = global::WinRT.CastExtensions.As<global::Microsoft.UI.Xaml.Controls.Button>(target);
                 }
@@ -1372,9 +5263,9 @@ namespace BindTestbed
                     global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element1, bindings);
                 }
                 break;
-            case 3: // ListAndTemplateTests.xaml line 20
+            case 3: // ListAndTemplateTests.xaml line 72
                 {                    
-                    global::Microsoft.UI.Xaml.Controls.Grid element3 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element3 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
                     ListAndTemplateTests_obj3_Bindings bindings = new ListAndTemplateTests_obj3_Bindings();
                     returnValue = bindings;
                     bindings.SetDataRoot(element3.DataContext);
@@ -1383,37 +5274,169 @@ namespace BindTestbed
                     global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element3, bindings);
                 }
                 break;
-            case 19: // ListAndTemplateTests.xaml line 96
+            case 8: // ListAndTemplateTests.xaml line 65
                 {                    
-                    global::Microsoft.UI.Xaml.Controls.Grid element19 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
-                    ListAndTemplateTests_obj19_Bindings bindings = new ListAndTemplateTests_obj19_Bindings();
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element8 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
+                    ListAndTemplateTests_obj8_Bindings bindings = new ListAndTemplateTests_obj8_Bindings();
                     returnValue = bindings;
-                    bindings.SetDataRoot(element19.DataContext);
-                    element19.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element19, bindings);
-                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element19, bindings);
+                    bindings.SetDataRoot(element8.DataContext);
+                    element8.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element8, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element8, bindings);
                 }
                 break;
-            case 23: // ListAndTemplateTests.xaml line 81
+            case 13: // ListAndTemplateTests.xaml line 62
                 {                    
-                    global::Microsoft.UI.Xaml.Controls.StackPanel element23 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
-                    ListAndTemplateTests_obj23_Bindings bindings = new ListAndTemplateTests_obj23_Bindings();
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element13 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj13_Bindings bindings = new ListAndTemplateTests_obj13_Bindings();
                     returnValue = bindings;
-                    bindings.SetDataRoot(element23.DataContext);
-                    element23.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element23, bindings);
-                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element23, bindings);
+                    bindings.SetDataRoot(element13.DataContext);
+                    element13.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element13, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element13, bindings);
                 }
                 break;
-            case 26: // ListAndTemplateTests.xaml line 41
+            case 15: // ListAndTemplateTests.xaml line 55
                 {                    
-                    global::Microsoft.UI.Xaml.Controls.StackPanel element26 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
-                    ListAndTemplateTests_obj26_Bindings bindings = new ListAndTemplateTests_obj26_Bindings();
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element15 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
+                    ListAndTemplateTests_obj15_Bindings bindings = new ListAndTemplateTests_obj15_Bindings();
                     returnValue = bindings;
-                    bindings.SetDataRoot(element26.DataContext);
-                    element26.DataContextChanged += bindings.DataContextChangedHandler;
-                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element26, bindings);
-                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element26, bindings);
+                    bindings.SetDataRoot(element15.DataContext);
+                    element15.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element15, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element15, bindings);
+                }
+                break;
+            case 20: // ListAndTemplateTests.xaml line 52
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element20 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj20_Bindings bindings = new ListAndTemplateTests_obj20_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element20.DataContext);
+                    element20.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element20, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element20, bindings);
+                }
+                break;
+            case 22: // ListAndTemplateTests.xaml line 45
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element22 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
+                    ListAndTemplateTests_obj22_Bindings bindings = new ListAndTemplateTests_obj22_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element22.DataContext);
+                    element22.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element22, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element22, bindings);
+                }
+                break;
+            case 27: // ListAndTemplateTests.xaml line 42
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element27 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj27_Bindings bindings = new ListAndTemplateTests_obj27_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element27.DataContext);
+                    element27.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element27, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element27, bindings);
+                }
+                break;
+            case 29: // ListAndTemplateTests.xaml line 39
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element29 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj29_Bindings bindings = new ListAndTemplateTests_obj29_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element29.DataContext);
+                    element29.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element29, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element29, bindings);
+                }
+                break;
+            case 31: // ListAndTemplateTests.xaml line 35
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element31 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj31_Bindings bindings = new ListAndTemplateTests_obj31_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element31.DataContext);
+                    element31.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element31, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element31, bindings);
+                }
+                break;
+            case 32: // ListAndTemplateTests.xaml line 32
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element32 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj32_Bindings bindings = new ListAndTemplateTests_obj32_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element32.DataContext);
+                    element32.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element32, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element32, bindings);
+                }
+                break;
+            case 33: // ListAndTemplateTests.xaml line 29
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element33 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj33_Bindings bindings = new ListAndTemplateTests_obj33_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element33.DataContext);
+                    element33.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element33, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element33, bindings);
+                }
+                break;
+            case 35: // ListAndTemplateTests.xaml line 26
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.TextBlock element35 = (global::Microsoft.UI.Xaml.Controls.TextBlock)target;
+                    ListAndTemplateTests_obj35_Bindings bindings = new ListAndTemplateTests_obj35_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element35.DataContext);
+                    element35.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element35, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element35, bindings);
+                }
+                break;
+            case 37: // ListAndTemplateTests.xaml line 20
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.Grid element37 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
+                    ListAndTemplateTests_obj37_Bindings bindings = new ListAndTemplateTests_obj37_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element37.DataContext);
+                    element37.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element37, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element37, bindings);
+                }
+                break;
+            case 53: // ListAndTemplateTests.xaml line 154
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.Grid element53 = (global::Microsoft.UI.Xaml.Controls.Grid)target;
+                    ListAndTemplateTests_obj53_Bindings bindings = new ListAndTemplateTests_obj53_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element53.DataContext);
+                    element53.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element53, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element53, bindings);
+                }
+                break;
+            case 57: // ListAndTemplateTests.xaml line 139
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element57 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
+                    ListAndTemplateTests_obj57_Bindings bindings = new ListAndTemplateTests_obj57_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element57.DataContext);
+                    element57.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element57, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element57, bindings);
+                }
+                break;
+            case 60: // ListAndTemplateTests.xaml line 95
+                {                    
+                    global::Microsoft.UI.Xaml.Controls.StackPanel element60 = (global::Microsoft.UI.Xaml.Controls.StackPanel)target;
+                    ListAndTemplateTests_obj60_Bindings bindings = new ListAndTemplateTests_obj60_Bindings();
+                    returnValue = bindings;
+                    bindings.SetDataRoot(element60.DataContext);
+                    element60.DataContextChanged += bindings.DataContextChangedHandler;
+                    global::Microsoft.UI.Xaml.DataTemplate.SetExtensionInstance(element60, bindings);
+                    global::Microsoft.UI.Xaml.Markup.XamlBindingHelper.SetDataTemplateComponent(element60, bindings);
                 }
                 break;
             }

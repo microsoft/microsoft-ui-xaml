@@ -21,6 +21,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public ApiInformation ApiInformation { get; }
         public PhaseAssignment PhaseAssignment { get; }
+        internal bool IsUntypedDataTemplateRoot { get; }
 
         // Set to true if the connection ID element is a named element under a template which is also used in a binding.
         // Needed to rewrite the markup we pass to GenXBF to have a connection ID on it.
@@ -55,6 +56,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             this.LineNumberInfo = new LineNumberInfo(domObject);
             this.ParentFileCodeInfo = fileCodeInfo;
             this.Children = new List<ConnectionIdElement>();
+            // The first visual roots its template universe. Preserve authored typing here:
+            // an explicit x:DataType="DataTemplate" is not the synthetic untyped fallback.
+            var template = domObject.Parent?.Parent;
+            IsUntypedDataTemplateRoot = template != null && DomHelper.IsDerivedFromDataTemplate(template) &&
+                String.IsNullOrEmpty(DomHelper.GetStringValueOfProperty(DomHelper.GetDataTypeMember(template)));
 
             //This has to be set before the BindAssignments are created since it's used in the BindAssignment constructor
             this.DefaultBindMode = DomHelper.GetDefaultBindMode(domObject);
@@ -301,9 +307,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                     return false;
                 }
 
-                XamlType rootElementType = this.BindUniverse.RootElement.Type;
-
-                return rootElementType.IsDerivedFromControlTemplate() || rootElementType.IsDerivedFromDataTemplate();
+                // A DataTemplate universe is rooted at its first visual, not the template.
+                // Include ordinary templates too: named x:Bind sources without bindings
+                // of their own still need connection IDs.
+                return !this.BindUniverse.IsFileRoot;
             }
         }
 
