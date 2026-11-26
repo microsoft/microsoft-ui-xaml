@@ -223,7 +223,8 @@ _Check_return_ HRESULT VisualContentRenderer::GeneralImageRenderContent(
     _In_opt_ CUIElement *pUIElement,
     _In_opt_ const XTHICKNESS *pNinegrid,
     _In_opt_ HWTexture *pShapeHwTexture,
-    _In_ bool fIsHollow)
+    _In_ bool fIsHollow,
+    _In_opt_ CImageBrush *pFallbackBrush)
 {
     XFLOAT brushOpacity = 1.0f;
     XUINT32 brushMask = 0xffffffff;
@@ -262,7 +263,8 @@ _Check_return_ HRESULT VisualContentRenderer::GeneralImageRenderContent(
         &brushMask,
         &hasBrush,
         brushHwTexture.ReleaseAndGetAddressOf(),
-        &brushTextureTransform));
+        &brushTextureTransform,
+        pFallbackBrush));
 
     //
     // NOTE: hasBrush is ignored.  We always create the appropriate WinRT objects, even
