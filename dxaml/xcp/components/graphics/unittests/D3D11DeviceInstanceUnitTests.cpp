@@ -427,6 +427,241 @@ void D3D11DeviceInstanceUnitTests::CheckForStaleD3DDevice()
     VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_RESET, deviceInstance->CheckForStaleD3DDevice());
 }
 
+void D3D11DeviceInstanceUnitTests::AdaptersChangedNotifications()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::WarpAdapterWithOutputs);
+    Microsoft::WRL::ComPtr<IMockDXGIAdapter> warpWithoutOutputs;
+    VERIFY_SUCCEEDED(CreateMockDXGIAdapter(MockDXGIAdapterType::WarpAdapterWithoutOutputs, &warpWithoutOutputs));
+    dxgiMock.Factory->AddAdapter(warpWithoutOutputs.Get());
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, false));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+
+    wil::unique_handle firstEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    wil::unique_handle secondEvent(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(firstEvent.get());
+    VERIFY_IS_NOT_NULL(secondEvent.get());
+    VERIFY_ARE_EQUAL(S_OK, device->RegisterAdaptersChangedEvent(firstEvent.get()));
+    VERIFY_ARE_EQUAL(S_OK, device->RegisterAdaptersChangedEvent(secondEvent.get()));
+    Microsoft::WRL::ComPtr<IMockDXGIFactory> oldFactory = dxgiMock.Factory;
+
+    // Keep the adapter count unchanged and the old D3D device healthy.
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::HardwareAdapter);
+    dxgiMock.Factory->AddAdapter(warpWithoutOutputs.Get());
+    VERIFY_IS_FALSE(device->IsDeviceLost());
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(firstEvent.get(), 0));
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(secondEvent.get(), 0));
+
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+    VERIFY_IS_TRUE(device->IsDeviceLost());
+    // Each UI thread sharing the instance must independently enter recovery.
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+    VERIFY_ARE_EQUAL(size_t{0}, oldFactory->GetAdaptersChangedRegistrationCount());
+    VERIFY_ARE_EQUAL(size_t{2}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+
+    device->UnregisterAdaptersChangedEvent(firstEvent.get());
+    device->UnregisterAdaptersChangedEvent(secondEvent.get());
+    VERIFY_ARE_EQUAL(size_t{0}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedRegistrationRenewal()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    Microsoft::WRL::ComPtr<IMockDXGIAdapter> adapter;
+    VERIFY_SUCCEEDED(CreateMockDXGIAdapter(MockDXGIAdapterType::HardwareAdapter, &adapter));
+    dxgiMock.Factory->AddAdapter(adapter.Get());
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, true));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    VERIFY_ARE_EQUAL(S_OK, device->RegisterAdaptersChangedEvent(event.get()));
+
+    for (int i = 0; i < 2; ++i)
+    {
+        Microsoft::WRL::ComPtr<IMockDXGIFactory> oldFactory = dxgiMock.Factory;
+        dxgiMock.InvalidateCurrentFactory();
+        dxgiMock.Factory->AddAdapter(adapter.Get());
+        VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(event.get(), 0));
+        VERIFY_SUCCEEDED(device->CheckForAdapterChange());
+        VERIFY_IS_FALSE(device->IsDeviceLost());
+        VERIFY_ARE_EQUAL(size_t{0}, oldFactory->GetAdaptersChangedRegistrationCount());
+        VERIFY_ARE_EQUAL(size_t{1}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+        VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(event.get(), 0));
+    }
+
+    device->UnregisterAdaptersChangedEvent(event.get());
+    dxgiMock.InvalidateCurrentFactory();
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(event.get(), 0));
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedRegistrationFallback()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    dxgiMock.Factory->SetSupportsAdaptersChangedEvent(false);
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::WarpAdapterWithOutputs);
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, false));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    VERIFY_ARE_EQUAL(S_FALSE, device->RegisterAdaptersChangedEvent(event.get()));
+    VERIFY_ARE_EQUAL(size_t{0}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->SetSupportsAdaptersChangedEvent(false);
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::HardwareAdapter);
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(event.get(), 0));
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedRegistrationFailure()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    Microsoft::WRL::ComPtr<IMockDXGIAdapter> adapter;
+    VERIFY_SUCCEEDED(CreateMockDXGIAdapter(MockDXGIAdapterType::HardwareAdapter, &adapter));
+    dxgiMock.Factory->AddAdapter(adapter.Get());
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, true));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    dxgiMock.Factory->SetAdaptersChangedRegistrationResult(E_FAIL);
+    VERIFY_ARE_EQUAL(E_FAIL, device->RegisterAdaptersChangedEvent(event.get()));
+    VERIFY_ARE_EQUAL(size_t{0}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+
+    dxgiMock.Factory->SetAdaptersChangedRegistrationResult(S_OK);
+    VERIFY_SUCCEEDED(device->RegisterAdaptersChangedEvent(event.get()));
+    Microsoft::WRL::ComPtr<IMockDXGIFactory> oldFactory = dxgiMock.Factory;
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(adapter.Get());
+    dxgiMock.Factory->SetAdaptersChangedRegistrationResult(E_FAIL);
+    VERIFY_ARE_EQUAL(E_FAIL, device->CheckForAdapterChange());
+    VERIFY_ARE_EQUAL(size_t{1}, oldFactory->GetAdaptersChangedRegistrationCount());
+    VERIFY_ARE_EQUAL(size_t{0}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+
+    dxgiMock.Factory->SetAdaptersChangedRegistrationResult(S_OK);
+    VERIFY_SUCCEEDED(device->CheckForAdapterChange());
+    VERIFY_ARE_EQUAL(size_t{0}, oldFactory->GetAdaptersChangedRegistrationCount());
+    VERIFY_ARE_EQUAL(size_t{1}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+    device->UnregisterAdaptersChangedEvent(event.get());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedRegistrationAfterInvalidation()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::WarpAdapterWithOutputs);
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, false));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::HardwareAdapter);
+
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    VERIFY_SUCCEEDED(device->RegisterAdaptersChangedEvent(event.get()));
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(event.get(), 0));
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+    device->UnregisterAdaptersChangedEvent(event.get());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedReplacementUnavailable()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::WarpAdapterWithOutputs);
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, false));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    VERIFY_SUCCEEDED(device->RegisterAdaptersChangedEvent(event.get()));
+
+    Microsoft::WRL::ComPtr<IMockDXGIAdapter> unavailableAdapter;
+    VERIFY_SUCCEEDED(CreateMockDXGIAdapter(MockDXGIAdapterType::HardwareAdapter, &unavailableAdapter));
+    unavailableAdapter->Remove();
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(unavailableAdapter.Get());
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(event.get(), 0));
+    VERIFY_SUCCEEDED(device->CheckForAdapterChange());
+    VERIFY_IS_FALSE(device->IsDeviceLost());
+    VERIFY_ARE_EQUAL(size_t{1}, dxgiMock.Factory->GetAdaptersChangedRegistrationCount());
+
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::HardwareAdapter);
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(event.get(), 0));
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+    device->UnregisterAdaptersChangedEvent(event.get());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedRegistrationAfterSharedDeviceLost()
+{
+    PlatformServicesMocksHelper platformMock;
+    CreateDXGIFactoryDetour dxgiMock;
+    CreateD3D11DeviceDetour d3dMock;
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::WarpAdapterWithOutputs);
+
+    std::shared_ptr<CD3D11DeviceInstance> device;
+    VERIFY_SUCCEEDED(CD3D11DeviceInstance::GetInstance(device, false));
+    VERIFY_SUCCEEDED(device->EnsureResources());
+    dxgiMock.InvalidateCurrentFactory();
+    dxgiMock.Factory->AddAdapter(MockDXGIAdapterType::HardwareAdapter);
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+    VERIFY_SUCCEEDED(device->RegisterAdaptersChangedEvent(event.get()));
+    VERIFY_ARE_EQUAL(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(event.get(), 0));
+    VERIFY_ARE_EQUAL(DXGI_ERROR_DEVICE_REMOVED, device->CheckForAdapterChange());
+    device->UnregisterAdaptersChangedEvent(event.get());
+}
+
+void D3D11DeviceInstanceUnitTests::AdaptersChangedEventOnMultipleFactories()
+{
+    // Verify the replacement-before-unregister sequence against DXGI, not a mock.
+    wil::unique_hmodule dxgi(LoadLibraryEx(L"dxgi.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+    VERIFY_IS_NOT_NULL(dxgi.get());
+    auto createFactory = reinterpret_cast<CREATEDXGIFACTORY1*>(GetProcAddress(dxgi.get(), "CreateDXGIFactory1"));
+    VERIFY_IS_NOT_NULL(createFactory);
+
+    Microsoft::WRL::ComPtr<IDXGIFactory7> firstFactory;
+    Microsoft::WRL::ComPtr<IDXGIFactory7> secondFactory;
+    VERIFY_SUCCEEDED(createFactory(IID_PPV_ARGS(&firstFactory)));
+    VERIFY_SUCCEEDED(createFactory(IID_PPV_ARGS(&secondFactory)));
+    wil::unique_handle event(CreateEvent(nullptr, FALSE, FALSE, nullptr));
+    VERIFY_IS_NOT_NULL(event.get());
+
+    DWORD firstCookie = 0;
+    VERIFY_SUCCEEDED(firstFactory->RegisterAdaptersChangedEvent(event.get(), &firstCookie));
+    auto unregisterFirst = wil::scope_exit([&]()
+    {
+        VERIFY_SUCCEEDED(firstFactory->UnregisterAdaptersChangedEvent(firstCookie));
+    });
+    DWORD secondCookie = 0;
+    VERIFY_SUCCEEDED(secondFactory->RegisterAdaptersChangedEvent(event.get(), &secondCookie));
+    VERIFY_SUCCEEDED(secondFactory->UnregisterAdaptersChangedEvent(secondCookie));
+}
+
 void D3D11DeviceInstanceUnitTests::CheckForStaleDeviceSubTest(_In_ CreateDXGIFactoryDetour& DXGIMock,
     _In_opt_ IMockDXGIAdapter* adapter1,
     _In_opt_ IMockDXGIAdapter* adapter2,

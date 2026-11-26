@@ -3,7 +3,7 @@
 
 #pragma once
 #include <WexTestClass.h>
-#include "dxgi1_2.h"
+#include <dxgi1_6.h>
 #include "d3d11_2.h"
 #include "XamlLogging.h"
 #include "CreateMockDetourBase.h"
@@ -72,12 +72,15 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
 
     // DXGIFactory Mock
 
-    struct __declspec(uuid("9D20F665-DFC2-4E60-86C5-79F83A97A8BF")) IMockDXGIFactory : public IDXGIFactory1
+    struct __declspec(uuid("9D20F665-DFC2-4E60-86C5-79F83A97A8BF")) IMockDXGIFactory : public IDXGIFactory7
     {
         virtual void InvalidateFactory() = 0;
         virtual LUID AddAdapter(MockDXGIAdapterType type) = 0;
         virtual LUID AddAdapter(IMockDXGIAdapter * adapter) = 0;
         virtual HRESULT GetMockAdapter(LUID luid, IMockDXGIAdapter** ppAdapter) = 0;
+        virtual void SetSupportsAdaptersChangedEvent(bool supported) = 0;
+        virtual void SetAdaptersChangedRegistrationResult(HRESULT result) = 0;
+        virtual size_t GetAdaptersChangedRegistrationCount() = 0;
     };
 
     HRESULT CreateMockDXGIFactory(_Out_ IMockDXGIFactory ** factory);
@@ -113,9 +116,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
 
         void InvalidateCurrentFactory()
         {
-            m_factory->InvalidateFactory();
+            auto previousFactory = m_factory;
             m_factory.Reset();
             IFCFAILFAST(CreateMockDXGIFactory(&m_factory));
+            previousFactory->InvalidateFactory();
         }
 
     private:
