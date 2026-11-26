@@ -18,6 +18,7 @@ No harness, instrumentation event, or result described here exists yet unless st
 - [Measurement pitfalls](#measurement-pitfalls)
 - [Backend decision scenarios (S24-S32)](#backend-decision-scenarios-s24-s32)
 - [GDI+ bounded layers](#gdi-bounded-layers)
+- [S33 scroll physics (DManip ticking)](#s33-scroll-physics-dmanip-ticking)
 
 ## Purpose
 
@@ -735,7 +736,7 @@ immediate mode when all of these hold:
 | F6 Text editing | TextBox (selection, IME composition, scrolling, placeholder, multi-line), PasswordBox, RichEditBox, AutoSuggestBox, NumberBox; exact caret invert | text |
 | F7 Images and icons | Bitmap stretch modes, nine-grid, SVG, animated GIF, BitmapIcon (monochrome), FontIcon, PathIcon, ImageIcon, LoadedImageSurface | imaging |
 | F8 Controls | Every MUX and MUXC control in default, hover-like and disabled states, light and dark | coverage |
-| F9 Scrolling, zoom, input | Animated ChangeView, DManip panning and zoom, ZoomFactor, ScrollView/ScrollPresenter, ItemsView, SwipeControl, RefreshContainer, ParallaxView | scrolling |
+| F9 Scrolling, zoom, input | Animated ChangeView, DManip panning and zoom, ZoomFactor, ScrollView/ScrollPresenter, ItemsView, SwipeControl, RefreshContainer, ParallaxView; dmanip branch adds ScrollViewer-KeyboardPageDown, ScrollViewer-BringIntoView-Animated, ScrollView-MouseWheel and ScrollView-TouchPan (19 pages) | scrolling, dmanip |
 | F10 XAML animations | Storyboards, theme transitions, Scalar/Vector3/Brush transitions, ConnectedAnimation, NavigationView indicator, TeachingTip, ItemsRepeater animator | transitions |
 | F11 Interop | Every interop kind falls back cleanly and then matches Comp | imaging |
 | F12 Popups and dialogs | ContentDialog, Flyout, MenuFlyout, CommandBarFlyout, ToolTip, TeachingTip, ComboBox, CalendarDatePicker; windowed and not | coverage |
@@ -1316,3 +1317,91 @@ Notes:
   runs only (the SteadyStateIsIdle gate and the backend surface MB).
 - The first rerun was invalid because the session was locked (composition captures were uniform). The session was
   moved to the console with `tscon` and the runs restarted.
+
+## S33 scroll physics (DManip ticking)
+
+Branch dmanip (proposal, "DManip ticking (scroll physics)"). Scene code: RenderBench\ScrollPhysicsScene.cs
+(--scene scrollphysics, plan id S33, part of the decision group). Each step resets the view, injects real input,
+records the offset trajectory (ScrollViewer.ViewChanging / ScrollView.ViewChanged with QPC timestamps) until 500 ms
+without change, then idles 1.5 s. The trajectory goes to 	rajectory.csv and the step values to the metrics.
+
+### Steps
+
+| Step | Input |
+|---|---|
+| wheel-1, wheel-3 | 1 and 3 mouse-wheel notches (SendInput) over a ScrollViewer list of 60 px rows |
+| flick | Touch flick with inertia (InjectSyntheticPointerInput, PT_TOUCH) |
+| pinch | Two-contact touch pinch on a zoomable ScrollViewer (MaxZoomFactor 4) |
+| pgdn | Keyboard PgDn with focus in the ScrollViewer |
+| snap | Touch flick over 120 px rows with mandatory snap points |
+| bringintoview | StartBringIntoView with AnimationDesired to a row 2400 px down |
+| changeview | ChangeView(null, 2400, null, false) |
+| sv-wheel, sv-flick | Wheel notch and touch flick on a MUXC ScrollView |
+| flick-blocked | Touch flick; the UI thread sleeps 200 ms during inertia while a sampler thread reads back a viewport column |
+
+### Running
+
+Input injection needs an interactive desktop: on the lab VM the RDP session was moved to the console with
+	scon <id> /dest:console. The OS "Play animations in Windows" setting is off on the VM; DManip then disables inertia
+and animated scrolling in every mode, so S33 runs with it temporarily on (C:\mux-ir\with-animations.ps1, which restores
+it). Helper scripts outside the repo: C:\mux-ir\run-s33.ps1 (per-mode runs with WINUI_IMMEDIATE_DMANIP_LOG and
+WINUI_IMMEDIATE_STATS), C:\mux-ir\analyze-s33.ps1 (fidelity, summary.json), C:\mux-ir\build-html-s33.ps1
+(C:\mux-ir\results\scroll-physics-s33.html).
+
+### Metrics
+
+- **Raw fidelity**: share of 16 ms samples (input-relative timeline, linear interpolation) where the immediate offset is
+  within max(1 px, 2% of the travel) of every Composition run.
+- **Shifted fidelity**: the same after the best constant shift of 0-64 ms (4 ms steps); the shift is the start lag.
+- **Update Hz / p95 interval**: offset updates per second and the p95 interval during motion.
+- **Motion / idle CPU**: process CPU ms/s during motion and during the 1.5 s idle.
+- **DManip updates**: Update calls during motion and after settle (native log).
+
+### Results
+
+Three runs per mode, one session, GPU-less VM (~32 Hz UI and DWM). C = Composition, G = GDI+, D = D2D-SW. "Before" is
+the branch base (d0e3b0f2b), two runs per immediate mode. Results: C:\mux-ir\results\dmanip-s33,
+C:\mux-ir\results\dmanip-s33-before.
+
+| Step | Final offset (zoom) C / G / D | Raw fidelity % C / G / D | Shifted % (lag ms) G / D | Update Hz C / G / D | p95 interval ms C / G / D | Motion CPU ms/s C / G / D | Peak MB C / G / D | Before final G / D |
+|---|---|---|---|---|---|---|---|---|
+| wheel-1 | 90 / 90 / 90 | 88 / 63 / 56 | 69 (4) / 73 (8) | 33 / 35 / 32 | 31.7 / 31.6 / 33.3 | 390 / 377 / 293 | 54 / 48.5 / 56 | 90 / 90 |
+| wheel-3 | 270 / 270 / 270 | 100 / 17 / 17 | 82 (32) / 86 (24) | 32 / 32 / 32 | 31.9 / 31.7 / 31.7 | 161 / 178 / 178 | 54 / 48.5 / 56.4 | 270 / 270 |
+| flick | 1440 / 1440 / 1440 | 5 / 53 / 45 | 53 (0) / 53 (0) | 32 / 32 / 32 | 32.7 / 31.8 / 31.9 | 197 / 215 / 242 | 58 / 52.5 / 60.4 | 1440 / 1470 |
+| pinch | 2.411 / 2.400 / 2.405 | 76 / 73 / 67 | 95 (4) / 91 (4) | 99 / 99 / 99 | 31.1 / 31.1 / 31.1 | 221 / 234 / 218 | 58.7 / 54.8 / 68.1 | 2.397 / 2.364 |
+| pgdn | 601 / 601 / 601 | 100 / 41 / 38 | 97 (32) / 97 (36) | 32 / 32 / 32 | 31.8 / 31.5 / 31.6 | 140 / 132 / 133 | 58.8 / 54.8 / 69.3 | 601 / 601 |
+| snap | 1440 / 1440 / 1440 | 35 / 94 / 60 | 100 (8) / 100 (12) | 32 / 32 / 32 | 31.7 / 31.7 / 31.7 | 159 / 145 / 134 | 61.4 / 54.8 / 70.2 | 1440 / 1440 |
+| bringintoview | 2400 / 2400 / 2400 | 100 / 68 / 71 | 87 (12) / 93 (12) | 32 / 32 / 33 | 31.9 / 31.6 / 31.6 | 142 / 171 / 173 | 62.4 / 55.1 / 70.3 | 2400 / 2400 |
+| changeview | 2400 / 2400 / 2400 | 100 / 77 / 75 | 87 (4) / 88 (4) | 33 / 33 / 32 | 31.7 / 31.7 / 33.2 | 156 / 173 / 162 | 62.4 / 55.1 / 70.3 | 2400 / 2400 |
+| sv-wheel | 48 / 48 / 48 | 28 / 55 / 45 | 72 (4) / 45 (0) | 35 / 30 / 32 | 32.3 / 45.4 / 32.1 | 179 / 321 / 116 | 70.9 / 61.9 / 75 | 0 / 0 |
+| sv-flick | 1072.9 / 1094.4 / 1074.3 | 98 / 79 / 90 | 93 (4) / 97 (4) | 32 / 31 / 31 | 32.3 / 48.5 / 32.7 | 171 / 499 / 149 | 70.9 / 62.1 / 75.6 | 0 / 0 |
+| flick-blocked | 1500 / 1440 / 1500 | 100 / 44 / 97 | 57 (8) / 99 (0) | 26 / 26 / 26 | 31.7 / 36.4 / 32.5 | 171 / 202 / 158 | 71.4 / 62.3 / 77.7 | 1470 / 1500 |
+
+
+- **Finals** match Composition in every step except the pinch zoom (2.400 / 2.405 vs 2.411, within the run-to-run range
+  2.31-2.41) and the ScrollView flick (1094 / 1074 vs 1073: InteractionTracker inertia varies with the injected
+  velocity).
+- **Shape**: immediate motion starts about one UI frame later (StartLag 24-36 ms on wheel-3 and PgDn); after the shift
+  PgDn, snap and the ScrollView flick are 93-100% within tolerance. Raw fidelity of the flick is low in every mode,
+  including Composition run to run (5%), because the injected touch velocity varies.
+- **Before**: offsets jumped (flick deviation ~1050 px, BringIntoView ~1900 px, PgDn 358 px), and ScrollView did not
+  scroll (final 0).
+- **Idle**: 0 DManip updates after settle in every step and mode.
+- **Blocked UI**: Composition changed 6 of 7 screen samples during the 200 ms block, GDI+ and D2D-SW 0 of 7 (ticking
+  runs on the UI thread), followed by a ~470-480 px catch-up.
+- **Memory**: the peaks are cumulative over the scene; GDI+ stays below Composition, D2D-SW above it (WARP).
+- **Sanity subset** (S3, S4, S8, S23, S24, S31; `Run-RenderBench.ps1 -Quick -InputMode programmatic`, pre-change bench
+  `-BenchExe` vs this branch, same session, `C:\mux-ir\results\dmanip-sanity`): all gates pass, and steady private
+  memory rises by at most 1 MB per scene in GDI+ and D2D-SW (Inbox, Reader and DataGrid rerun with 2 repetitions;
+  AppShell D2D-SW was 4.6 MB lower in its single run), which is within noise. Ticking only runs while a viewport is moving, so the steady and idle phases are unaffected.
+
+### Coverage
+
+Run-Coverage.ps1 -Results C:\mux-ir\results\coverage-dmanip-final -DeleteBmps (OS animations off, as the 195-page
+baseline): Composition 199/199, GDI+ 198/199, D2D-SW 198/199 (199/199 each after the rerun). The one failure, F14-theming/focus-highvisibility
+(fidelity 0.0012 vs 0.001 in both immediate modes), passed 3/3 on rerun (coverage-dmanip-final-rerun). F9 with OS
+animations on (coverage-dmanip-f9-animations): 19/19 in each mode. With animations on, four ConnectedAnimation pages
+and two F10 transition pages fail in the immediate modes by timing; the baseline runs with animations off.
+
+The first full run (coverage-dmanip) crashed with 0xC000027B at shutdown on the seven ScrollPresenter pages. This was
+fixed by detaching the hit-test proxies when the island is removed.
