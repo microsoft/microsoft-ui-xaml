@@ -466,6 +466,49 @@ namespace ImmediateRenderingPolicyTests
         }
     }
 
+    void PolicyTests::BlitDamageSkipsUniformInterior()
+    {
+        using RenderingBackend::RectF;
+        auto area = [](const RectF& r) { return (r.right - r.left) * (r.bottom - r.top); };
+        auto intersects = [](const RectF& a, const RectF& b) { return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; };
+        const RectF viewport{ 0, 0, 884, 600 };
+        RectF out[8];
+
+        // A 2px ring (focus rect / rounded Border stroke) around a viewport scrolled 10px up: only the ring's pixels,
+        // before and after the move, are damaged; the uniform interior moved with the blit is not.
+        const RectF ring{ 0, 0, 884, 600 };
+        const RectF hole{ 2, 2, 882, 598 };
+        uint32_t count = GetBlitDamageOutsideCover(ring, hole, viewport, 0, -10, out);
+        VERIFY_IS_TRUE(count > 0 && count <= 8);
+        float total = 0;
+        const RectF interior{ 2, 2, 882, 588 };
+        for (uint32_t i = 0; i < count; i++)
+        {
+            VERIFY_IS_TRUE(out[i].left >= viewport.left && out[i].top >= viewport.top && out[i].right <= viewport.right && out[i].bottom <= viewport.bottom);
+            VERIFY_IS_FALSE(intersects(out[i], interior));
+            total += area(out[i]);
+        }
+        VERIFY_IS_TRUE(total < area(viewport) / 10);
+        // The ring's bottom edge moved up into the interior strip [588, 598): damaged.
+        bool bottom = false;
+        for (uint32_t i = 0; i < count; i++)
+        {
+            bottom |= out[i].top <= 588 && out[i].bottom >= 598;
+        }
+        VERIFY_IS_TRUE(bottom);
+
+        // No uniform interior: the old and the moved bounds inside the blit.
+        count = GetBlitDamageOutsideCover(ring, RectF{}, viewport, 0, -10, out);
+        VERIFY_ARE_EQUAL(2u, count);
+        VERIFY_ARE_EQUAL(area(viewport), area(out[0]));
+        VERIFY_ARE_EQUAL(area(RectF{ 0, 0, 884, 590 }), area(out[1]));
+
+        // Uniform across the whole blit (a background fill): nothing.
+        VERIFY_ARE_EQUAL(0u, GetBlitDamageOutsideCover(RectF{ -10, -10, 900, 700 }, RectF{ -10, -10, 900, 700 }, viewport, 0, -10, out));
+        // Not in the blit at all: nothing.
+        VERIFY_ARE_EQUAL(0u, GetBlitDamageOutsideCover(RectF{ 900, 0, 950, 50 }, RectF{}, viewport, 0, -10, out));
+    }
+
     // ---- imaging ----
 
     void PolicyTests::AppCompositionBrushFallsBack()

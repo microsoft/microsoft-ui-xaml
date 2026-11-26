@@ -204,6 +204,14 @@ namespace ImmediateRenderingPolicy
     // an animated BringIntoViewport). Not for viewports DManip is not running (Building / Disabled / Suspended).
     bool ShouldUpdateDManipAfterInput(bool immediateMode, bool tickingEnabled, bool handled, DManipStatus status) noexcept;
 
+    // Blit damage of an element that did not move while a scroller's pixels were moved by (dx, dy) inside blit (all
+    // physical pixels). cover: where the element draws uniformly (empty: nowhere). A blitted pixel p is wrong only if
+    // p or its source p - d is outside cover, so the damage is (bounds ∪ bounds + d) ∩ blit minus cover ∩ (cover + d).
+    // A ring (rounded Border, focus rect) around a viewport then damages its ring, not the whole viewport.
+    // Writes up to 8 rects; returns the count.
+    uint32_t GetBlitDamageOutsideCover(const RenderingBackend::RectF& bounds, const RenderingBackend::RectF& cover,
+        const RenderingBackend::RectF& blit, int32_t dx, int32_t dy, _Out_writes_to_(8, return) RenderingBackend::RectF* out) noexcept;
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

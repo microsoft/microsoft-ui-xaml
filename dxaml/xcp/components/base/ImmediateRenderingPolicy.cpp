@@ -605,6 +605,44 @@ namespace ImmediateRenderingPolicy
         return status != DManipStatus::Building && status != DManipStatus::Disabled && status != DManipStatus::Suspended;
     }
 
+    uint32_t GetBlitDamageOutsideCover(const RectF& bounds, const RectF& cover, const RectF& blit, int32_t dx, int32_t dy,
+        _Out_writes_to_(8, return) RectF* out) noexcept
+    {
+        auto empty = [](const RectF& r) { return !(r.left < r.right && r.top < r.bottom); };
+        auto intersect = [](const RectF& a, const RectF& b)
+        {
+            return RectF{ std::max(a.left, b.left), std::max(a.top, b.top), std::min(a.right, b.right), std::min(a.bottom, b.bottom) };
+        };
+        const float fx = static_cast<float>(dx);
+        const float fy = static_cast<float>(dy);
+        const RectF movedCover{ cover.left + fx, cover.top + fy, cover.right + fx, cover.bottom + fy };
+        const RectF keep = empty(cover) ? RectF{} : intersect(cover, movedCover);
+        uint32_t count = 0;
+        auto subtract = [&](const RectF& r)
+        {
+            if (empty(r)) return;
+            const RectF k = intersect(r, keep);
+            if (empty(k))
+            {
+                out[count++] = r;
+                return;
+            }
+            const RectF parts[] = {
+                { r.left, r.top, r.right, k.top },
+                { r.left, k.bottom, r.right, r.bottom },
+                { r.left, k.top, k.left, k.bottom },
+                { k.right, k.top, r.right, k.bottom },
+            };
+            for (const RectF& p : parts)
+            {
+                if (!empty(p)) out[count++] = p;
+            }
+        };
+        subtract(intersect(bounds, blit));
+        subtract(intersect({ bounds.left + fx, bounds.top + fy, bounds.right + fx, bounds.bottom + fy }, blit));
+        return count;
+    }
+
     // ---- imaging ----
 
     uint32_t ComputeNineGridCells(const RectF& dest, float sourceWidth, float sourceHeight, const NineGridInsets& insets,

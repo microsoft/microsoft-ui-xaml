@@ -4386,15 +4386,20 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                 }
             }
         };
-        // Unchanged, unmoved drawing inside a blitted viewport was moved by the blit unless it is uniform there.
+        // Unchanged, unmoved drawing inside a blitted viewport was moved by the blit except where it is uniform.
+        // ---- scrollgaps ---- only the non-uniform part (e.g. a rounded Border's ring), not its whole bounds.
         auto addIfBlitted = [&](const ElementRecord& r)
         {
             for (const Blit& b : blits)
             {
                 if (RectsIntersect(r.bounds, b.rect) && !Contains(r.cover, b.rect))
                 {
-                    add(IntersectRect(r.bounds, b.rect));
-                    add(IntersectRect(OffsetRect(r.bounds, static_cast<float>(b.dx), static_cast<float>(b.dy)), b.rect));
+                    RectF parts[8];
+                    const uint32_t count = ImmediateRenderingPolicy::GetBlitDamageOutsideCover(r.bounds, r.cover, b.rect, b.dx, b.dy, parts);
+                    for (uint32_t i = 0; i < count; i++)
+                    {
+                        add(parts[i]);
+                    }
                 }
             }
         };

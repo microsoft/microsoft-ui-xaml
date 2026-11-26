@@ -41,6 +41,7 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(DManipTickingReplacesInertiaJumpAndTween);
         // ---- scrollgaps ----
         TEST_METHOD(DManipUpdatesRightAfterHandledInput);
+        TEST_METHOD(BlitDamageSkipsUniformInterior);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);
