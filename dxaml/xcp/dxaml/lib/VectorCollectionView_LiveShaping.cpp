@@ -978,14 +978,17 @@ namespace
 
 _Check_return_ HRESULT VectorCollectionView::OnLiveShapingRestoreCallback()
 {
-    if (m_spLiveShaping)
-    {
-        m_spLiveShaping->isRestoreQueued = false;
-    }
+    // The restore stays queued while it runs (RestoreLiveShaping), so the changes its own app code makes queue no
+    // other restore.
+    auto spState = m_spLiveShaping;
 
     // Nothing the app called waits for this restore, so a failure of its code is reported; the view stays consistent.
     ContainedFailureReport report;
     const HRESULT hr = RestoreLiveShaping();
+    if (spState)
+    {
+        spState->isRestoreQueued = false;
+    }
     if (IsUncontainedFailure(hr))
     {
         IFC_RETURN(hr);
@@ -1037,6 +1040,14 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
     {
         return S_OK;
     }
+
+    // As in WPF (IsLiveShapingDirty stays set until RestoreLiveShaping ends), a live change made while the view
+    // restores (by a CustomSort or Filter that writes a live property, or a handler of a change the restore raises)
+    // marks its item but queues no restore; the next live change does. Otherwise a comparer that writes the keys it
+    // sorts would restore the view at every dispatcher turn for as long as the view lives.
+    const bool wasRestoreQueued = spState->isRestoreQueued;
+    spState->isRestoreQueued = true;
+    auto restoreQueued = wil::scope_exit([&spState, wasRestoreQueued]() noexcept { spState->isRestoreQueued = wasRestoreQueued; });
 
     // A source change that could not be followed is pending: recompute, which observes the items afresh.
     if (!m_areSourceIndicesValid || !spSort || spState->items.size() != m_sourceListSize)

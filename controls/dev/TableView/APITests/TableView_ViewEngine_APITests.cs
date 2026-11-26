@@ -1238,6 +1238,43 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSort that writes the live sort key it compares does not restore the view at every dispatcher turn: as in WPF, the changes a restore's own app code makes queue no other restore.")]
+        public void VerifyLiveRestoreDoesNotRequeueItsOwnChanges()
+        {
+            ObservableCollection<EngineRow> rows = null;
+            var compares = 0;
+            var comparesAfterRestore = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, 20).Select(i => new EngineRow(i, $"r{i}", i, "X")));
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
+                cvs.LiveSortingProperties.Add("Score");
+                var isWriting = false;
+                ((ICollectionViewShaping)cvs.View).CustomSort = (left, right) =>
+                {
+                    compares++;
+                    var leftRow = (EngineRow)left;
+                    if (isWriting)
+                    {
+                        leftRow.Score = leftRow.Score % 2 == 0 ? leftRow.Score + 1 : leftRow.Score - 1;
+                    }
+                    return leftRow.Score.CompareTo(((EngineRow)right).Score);
+                };
+                isWriting = true;
+                compares = 0;
+                rows[0].Score = 100;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(compares, 0, "Precondition: the restore ran the comparer.");
+                comparesAfterRestore = compares;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() => Verify.AreEqual(comparesAfterRestore, compares, "No other restore runs for the keys the comparer wrote."));
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a CustomSort that never returns 0 (a > b ? 1 : -1, a common app comparer) sorts rows with duplicate keys without an error, on the recompute and on a live restore.")]
         public void VerifyCustomSortThatNeverReturnsZeroSortsDuplicateKeys()
         {

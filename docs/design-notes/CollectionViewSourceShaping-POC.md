@@ -416,7 +416,9 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     incrementally makes the next restore a full recompute.
   - The observation follows the source: an added item is observed, a removed or replaced one is no longer, a recompute
     rebuilds it, and turning the features off or the view's destruction ends it. A property change raised from inside
-    a restore is restored at the next turn.
+    a restore (by its CustomSort, Filter or a handler of a change it raises) marks the item but, as WPF's
+    `IsLiveShapingDirty` stays set until `RestoreLiveShaping` ends, queues no restore: the next live change restores
+    it. Otherwise a comparer that writes the keys it sorts would restore the view at every turn while the view lives.
   - A source change made while a live sort edit waits for its restore is applied incrementally: the binary search
     skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
   - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
