@@ -562,6 +562,9 @@ namespace ImmediateRenderingDetail
         {
             ComPtr<WUComp::IVisual> visual;
             float x = 0, y = 0, scaleX = 1, scaleY = 1;
+            // ---- scrollgaps ---- full element -> island (physical pixels) transform, row vectors (Visual.TransformMatrix):
+            // 3D/perspective ancestors and rotations hit-test like the painted content.
+            float matrix[16] = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         };
         std::vector<HitProxyEntry> hitProxies;
 
@@ -759,8 +762,8 @@ void ImmediateRenderer::SyncHitProxies(_In_ DCompTreeHost* dcompTreeHost, _Inout
             }
         }
         found->second.seen = true;
-        IGNOREHR(found->second.positioner->put_Offset({ entry.x, entry.y, 0 }));
-        IGNOREHR(found->second.positioner->put_Scale({ entry.scaleX, entry.scaleY, 1 }));
+        // ---- scrollgaps ---- the full 4x4 (offset/scale alone lose rotation, skew and perspective).
+        IGNOREHR(found->second.positioner->put_TransformMatrix(*reinterpret_cast<const wfn::Matrix4x4*>(entry.matrix)));
     }
     for (auto it = state.hitProxies.begin(); it != state.hitProxies.end();)
     {
@@ -3157,10 +3160,12 @@ void ImmediateRenderer::Walk(
             CloseGroup(list, ancestorClipIndex, element, parent, parent.world);
         }
     };
+    CMILMatrix proxyLocal(true); // ---- scrollgaps ---- local transform without the hand-off visual's own transform
     {
         using namespace ImmediateRenderingClips3D;
         CMILMatrix local(true);
         (void)element->GetLocalTransform(TransformRetrievalOptions::ImmediateAnimatedValues, &local);
+        proxyLocal = local;
         const float* handOff3D = nullptr;
         if (hasHandOffTransform)
         {
@@ -3293,16 +3298,54 @@ void ImmediateRenderer::Walk(
         probe.active = false;
     }
     // ---- dmanip ---- InteractionTracker hit-test proxy (IslandState::HitProxy).
-    if (hasHandOff && !hasHandOffTransform && !ctx.has3D && !ctx.inLayer && IsScrollPresenter(element))
+    // ---- scrollgaps ---- also under 3D/perspective (full 4x4) and hand-off visual transforms: the positioner holds the
+    // element's transform to the island without the hand-off visual's own transform, which the hand-off visual (the
+    // positioner's child) applies itself.
+    const bool isScrollPresenter = hasHandOff && IsScrollPresenter(element); // ---- scrollgaps ----
+    if (isScrollPresenter)
     {
         DisplayList::HitProxyEntry proxy;
         element->GetStoredHandOffVisual(proxy.visual.ReleaseAndGetAddressOf());
         if (proxy.visual)
         {
-            proxy.x = ctx.world.GetDx() * ctx.scale;
-            proxy.y = ctx.world.GetDy() * ctx.scale;
-            proxy.scaleX = ctx.world.GetM11() * ctx.scale;
-            proxy.scaleY = ctx.world.GetM22() * ctx.scale;
+            using namespace ImmediateRenderingClips3D;
+            double proxy4[4][4];
+            if (!ctx.has3D && !hasHandOffTransform)
+            {
+                From2D(ctx.world, proxy4);
+            }
+            else if (ctx.has3D && !hasHandOffTransform)
+            {
+                memcpy(proxy4, ctx.world4, sizeof(proxy4));
+            }
+            else
+            {
+                double local4[4][4];
+                double parent4[4][4];
+                (void)ComputeLocal4(element, proxyLocal, nullptr, local4);
+                if (parent.has3D)
+                {
+                    memcpy(parent4, parent.world4, sizeof(parent4));
+                }
+                else
+                {
+                    From2D(parent.world, parent4);
+                }
+                Mul4(local4, parent4, proxy4);
+            }
+            for (int row = 0; row < 4; ++row)
+            {
+                proxy4[row][0] *= ctx.scale;
+                proxy4[row][1] *= ctx.scale;
+                for (int column = 0; column < 4; ++column)
+                {
+                    proxy.matrix[row * 4 + column] = static_cast<float>(proxy4[row][column]);
+                }
+            }
+            proxy.x = proxy.matrix[12];
+            proxy.y = proxy.matrix[13];
+            proxy.scaleX = proxy.matrix[0];
+            proxy.scaleY = proxy.matrix[5];
             list.hitProxies.push_back(std::move(proxy));
         }
     }
@@ -4808,7 +4851,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderWindowedPopups(
             return S_OK;
         }
         IFC_RETURN(hr); // device lost: ReleaseResources already dropped islandState
-
+        // ---- scrollgaps ---- ScrollPresenters inside the popup hit-test through the popup window's own sprite.
+        SyncHitProxies(dcompTreeHost, surface);
         if (!windowed.presented)
         {
             windowed.presented = true;

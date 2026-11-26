@@ -279,6 +279,91 @@ public static class ScrollingCoveragePages
         };
     }
 
+    // ---- scrollgaps ---- ScrollView hit-test proxy coverage (gap 4): wheel, then a touch pan, must both scroll the
+    // ScrollView under a perspective projection, with a transform on the ScrollPresenter's own hand-off visual, and inside
+    // a windowed popup. Input is aimed at the transformed ScrollView's center (fixed by the transforms below).
+    [CoveragePage(Family, "ScrollView-Proxy-Perspective")]
+    public static CoveragePage ScrollViewProxyPerspective(CoverageContext context)
+    {
+        var scrollView = new ScrollView { Content = CreateChecker(), Width = 360, Height = 240 };
+        var host = new Grid
+        {
+            Width = 360, Height = 240,
+            Projection = new PlaneProjection { RotationY = 20 }, // about the center: the center stays put
+            Children = { scrollView },
+        };
+        return new CoveragePage
+        {
+            Root = Frame(host),
+            Exercise = () => WheelThenPanAsync(context, scrollView, host, "perspective"),
+        };
+    }
+
+    [CoveragePage(Family, "ScrollView-Proxy-HandOffTransform")]
+    public static CoveragePage ScrollViewProxyHandOffTransform(CoverageContext context)
+    {
+        var scrollView = new ScrollView { Content = CreateChecker(), Width = 360, Height = 240 };
+        var host = new Grid { Width = 360, Height = 240, Children = { scrollView } };
+        scrollView.Loaded += (_, _) =>
+        {
+            // Scale about the center on the ScrollPresenter's hand-off visual (Composition and immediate alike).
+            var visual = Microsoft.UI.Xaml.Hosting.ElementCompositionPreview.GetElementVisual(scrollView.ScrollPresenter);
+            visual.CenterPoint = new System.Numerics.Vector3(180, 120, 0);
+            visual.Scale = new System.Numerics.Vector3(0.8f, 0.8f, 1);
+        };
+        return new CoveragePage
+        {
+            Root = Frame(host),
+            Exercise = () => WheelThenPanAsync(context, scrollView, host, "hand-off transform"),
+        };
+    }
+
+    [CoveragePage(Family, "ScrollView-Proxy-WindowedPopup")]
+    public static CoveragePage ScrollViewProxyWindowedPopup(CoverageContext context)
+    {
+        var scrollView = new ScrollView { Content = CreateChecker(), Width = 360, Height = 240 };
+        var anchor = new Grid { Width = 384, Height = 264 };
+        var popup = new Microsoft.UI.Xaml.Controls.Primitives.Popup
+        {
+            ShouldConstrainToRootBounds = false,
+            Child = new Border { Background = new SolidColorBrush(Colors.White), Padding = new Thickness(12), Child = scrollView },
+        };
+        anchor.Children.Add(popup);
+        return new CoveragePage
+        {
+            Root = Frame(anchor),
+            Exercise = async () =>
+            {
+                popup.IsOpen = true;
+                await Task.Delay(500);
+                await WheelThenPanAsync(context, scrollView, scrollView, "windowed popup");
+            },
+            Detach = () => popup.IsOpen = false,
+        };
+    }
+
+    private static async Task WheelThenPanAsync(CoverageContext context, ScrollView scrollView, FrameworkElement centerOf, string what)
+    {
+        var center = centerOf.TransformToVisual(null).TransformPoint(new Windows.Foundation.Point(centerOf.ActualWidth / 2, centerOf.ActualHeight / 2));
+        var wheel = new OffsetProgress();
+        if (!await WaitScrollViewAsync(scrollView, wheel, () => Task.FromResult(InputInjection.Wheel(context.Window, center, -360))))
+        {
+            return; // No input desktop: the page then compares the unscrolled view.
+        }
+        double afterWheel = scrollView.VerticalOffset;
+        if (afterWheel <= 0)
+        {
+            throw new InvalidOperationException($"Mouse wheel did not scroll the ScrollView ({what}).");
+        }
+        wheel.AssertMoved($"ScrollView mouse wheel ({what})");
+        var pan = new OffsetProgress();
+        await WaitScrollViewAsync(scrollView, pan, () => InputInjection.DragAsync(context.Window, center, 0, -100, steps: 12));
+        if (scrollView.VerticalOffset <= afterWheel)
+        {
+            throw new InvalidOperationException($"Touch pan did not scroll the ScrollView ({what}).");
+        }
+    }
+
     [CoveragePage(Family, "ItemsView-Scrolled")]
     public static CoveragePage ItemsViewScrolled(CoverageContext context)
     {
