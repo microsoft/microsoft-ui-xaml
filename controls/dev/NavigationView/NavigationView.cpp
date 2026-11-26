@@ -3448,6 +3448,14 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                             nvib.IsTabStop(true);
                         }
 
+                        // FindNextElement returns null when nothing outside the root repeater can take focus, and
+                        // TrySetNewFocusedElement rejects null. Redirect to the root repeater instead: it isn't focusable,
+                        // so focus goes to its first item (Tab) or last item (Shift+Tab) and the menu stays one tab stop.
+                        if (!nextElement)
+                        {
+                            nextElement = newRootItemsRepeater;
+                        }
+
                         if (args.TrySetNewFocusedElement(nextElement))
                         {
                             args.Handled(true);
