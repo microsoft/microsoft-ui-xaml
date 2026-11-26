@@ -2757,7 +2757,16 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         }
         else
         {
-            tipRun.Complete(CheckSelectionForTip(prevItem, nextItem));
+            const auto result = CheckSelectionForTip(prevItem, nextItem);
+            // The check looks up containers through the app's items source (e.g. IndexOf), which can select another item.
+            if (generation != m_selectionChangeGeneration)
+            {
+                tipRun.Ignore(NavigationViewTip::SelectionTipReason::superseded);
+            }
+            else
+            {
+                tipRun.Complete(result);
+            }
         }
     }
 }
@@ -2778,12 +2787,10 @@ NavigationViewTip::SelectionTipReason NavigationView::CheckSelectionForTip(const
         {
             if (auto const container = NavigationViewItemOrSettingsContentFromData(item))
             {
-                if (IsSettingsItem(container))
-                {
-                    return container;
-                }
                 // A container with no visual parent is not on screen (for example, a child of a collapsed
-                // parent), so it is not judged. ChangeSelection treats it the same way (isUnrealizedDescendant).
+                // parent, or a hidden Settings item), so it is not judged. ChangeSelection treats it the same
+                // way (isUnrealizedDescendant). Settings gets the same owner and menu checks as any other item,
+                // because an app can move a hidden Settings item into another NavigationView.
                 if (!winrt::VisualTreeHelper::GetParent(container))
                 {
                     return nullptr;
