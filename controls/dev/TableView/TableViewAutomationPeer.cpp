@@ -1401,7 +1401,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                     : winrt::hstring_name_of<winrt::TableViewRow>();
                 if (auto rowElement = repeater.TryGetElement(i))
                 {
-                    if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                    if (auto rowPeer = ElementItemPeer(rowElement))
                     {
                         candidate = rowPeer.GetClassName();
                     }
@@ -1419,7 +1419,7 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
                         : winrt::AutomationControlType::DataItem;
                     if (auto rowElement = repeater.TryGetElement(i))
                     {
-                        if (auto rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
+                        if (auto rowPeer = ElementItemPeer(rowElement))
                         {
                             candidate = rowPeer.GetAutomationControlType();
                         }
@@ -1477,6 +1477,21 @@ winrt::IRawElementProviderSimple TableViewAutomationPeer::FindItemByProperty(
 
             if (auto rowPeer = ElementItemPeer(rowElement))
             {
+                if (property == winrt::AutomationElementIdentifiers::ClassNameProperty() &&
+                    rowPeer.GetClassName() != StringPropertyValue(value))
+                {
+                    continue;
+                }
+                if (property == winrt::AutomationElementIdentifiers::ControlTypeProperty())
+                {
+                    winrt::AutomationControlType requested{};
+                    if (!TryGetControlTypePropertyValue(value, requested) ||
+                        rowPeer.GetAutomationControlType() != requested)
+                    {
+                        continue;
+                    }
+                }
+
                 return ProviderFromPeer(rowPeer);
             }
         }

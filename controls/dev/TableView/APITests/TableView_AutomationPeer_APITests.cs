@@ -1413,6 +1413,144 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies ControlType lookup rechecks a group header's effective peer after realization.")]
+        public void VerifyFindItemByPropertyRechecksUnrealizedGroupControlType() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: false, groupHeader: true, initiallyRealized: false);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ClassName lookup rechecks a group header's effective peer after realization.")]
+        public void VerifyFindItemByPropertyRechecksUnrealizedGroupClassName() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: true, groupHeader: true, initiallyRealized: false);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ControlType lookup uses an already realized group header's effective peer.")]
+        public void VerifyFindItemByPropertyMatchesRealizedGroupControlType() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: false, groupHeader: true, initiallyRealized: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ClassName lookup uses an already realized group header's effective peer.")]
+        public void VerifyFindItemByPropertyMatchesRealizedGroupClassName() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: true, groupHeader: true, initiallyRealized: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ControlType lookup rechecks a data row's effective peer after realization.")]
+        public void VerifyFindItemByPropertyRechecksUnrealizedRowControlType() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: false, groupHeader: false, initiallyRealized: false);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ClassName lookup rechecks a data row's effective peer after realization.")]
+        public void VerifyFindItemByPropertyRechecksUnrealizedRowClassName() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: true, groupHeader: false, initiallyRealized: false);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ControlType lookup uses an already realized data row's effective peer.")]
+        public void VerifyFindItemByPropertyMatchesRealizedRowControlType() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: false, groupHeader: false, initiallyRealized: true);
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies ClassName lookup uses an already realized data row's effective peer.")]
+        public void VerifyFindItemByPropertyMatchesRealizedRowClassName() =>
+            VerifyFindItemByPropertyUsesEffectivePeer(byClassName: true, groupHeader: false, initiallyRealized: true);
+
+        private void VerifyFindItemByPropertyUsesEffectivePeer(bool byClassName, bool groupHeader, bool initiallyRealized)
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateManyGroupsTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = GetRowsRepeater(tableView);
+                var probe = new ProviderPeerProbe();
+                var container = (IItemContainerProvider)RequireTablePeer(tableView).GetPattern(PatternInterface.ItemContainer);
+                var defaultPeer = RowPeerOf(repeater.TryGetElement(groupHeader ? 0 : 1));
+                var expectedType = defaultPeer.GetAutomationControlType();
+                var expectedClass = defaultPeer.GetClassName();
+                var property = byClassName ? AutomationElementIdentifiers.ClassNameProperty : AutomationElementIdentifiers.ControlTypeProperty;
+                object value = byClassName ? (object)expectedClass : (int)expectedType;
+                AutomationPeer customPeer = null;
+                int candidateIndex = groupHeader ? 66 : 67;
+                int expectedIndex = groupHeader ? 77 : 68;
+                int preparedCount = 0;
+                var start = probe.ToProvider(RowPeerOf(repeater.GetOrCreateElement(candidateIndex - 1)));
+                Verify.IsNull(repeater.TryGetElement(candidateIndex), "Precondition: the customized candidate must start unrealized.");
+
+                global::Windows.Foundation.TypedEventHandler<ItemsRepeater, ItemsRepeaterElementPreparedEventArgs> handler = (sender, args) =>
+                {
+                    if (args.Index == candidateIndex)
+                    {
+                        customPeer = new FindItemPropertyPeer((FrameworkElement)args.Element);
+                        FrameworkElementAutomationPeer.CreatePeerForElement(args.Element).EventsSource = customPeer;
+                        preparedCount++;
+                    }
+                };
+                repeater.ElementPrepared += handler;
+                try
+                {
+                    if (initiallyRealized)
+                    {
+                        repeater.GetOrCreateElement(candidateIndex);
+                        Verify.AreSame(customPeer, RowPeerOf(repeater.TryGetElement(candidateIndex)),
+                            "Precondition: the realized candidate must expose the custom peer.");
+                    }
+
+                    var found = container.FindItemByProperty(start, property, value);
+                    Verify.AreEqual(1, preparedCount, "The lookup scenario must customize exactly one candidate.");
+                    Verify.IsNotNull(customPeer, "The candidate must expose the custom property values.");
+                    Verify.IsNotNull(found, "A mismatched effective peer must not hide a later match.");
+                    if (customPeer == null || found == null)
+                    {
+                        return;
+                    }
+                    var foundPeer = probe.ToPeer(found);
+                    var actualType = foundPeer.GetAutomationControlType();
+                    var actualClass = foundPeer.GetClassName();
+                    Verify.AreEqual(expectedType, actualType);
+                    Verify.AreEqual(expectedClass, actualClass);
+                    if (actualType != expectedType || actualClass != expectedClass)
+                    {
+                        return;
+                    }
+                    Verify.AreSame(RowPeerOf(repeater.TryGetElement(expectedIndex)), foundPeer,
+                        "Lookup must skip the customized candidate and return the next matching item.");
+
+                    object customValue = byClassName ? (object)customPeer.GetClassName() : (int)customPeer.GetAutomationControlType();
+                    var customMatch = container.FindItemByProperty(start, property, customValue);
+                    Verify.IsNotNull(customMatch, "The realized candidate must be discoverable by its effective peer's property.");
+                    if (customMatch != null)
+                    {
+                        Verify.AreSame(customPeer, probe.ToPeer(customMatch));
+                    }
+                    var next = container.FindItemByProperty(found, null, null);
+                    Verify.IsNotNull(next, "Enumeration must continue after the matching item.");
+                    if (next != null)
+                    {
+                        Verify.AreSame(RowPeerOf(repeater.TryGetElement(expectedIndex + 1)), probe.ToPeer(next),
+                            "The matching provider must remain an exclusive startAfter anchor.");
+                    }
+                }
+                finally
+                {
+                    repeater.ElementPrepared -= handler;
+                    Content = null;
+                }
+            });
+        }
+
+        private sealed partial class FindItemPropertyPeer : FrameworkElementAutomationPeer
+        {
+            public FindItemPropertyPeer(FrameworkElement owner) : base(owner) { }
+
+            protected override string GetClassNameCore() => nameof(FindItemPropertyPeer);
+            protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a failed candidate realization does not hide a later matching item.")]
         public void VerifyFindItemByPropertyContinuesAfterRealizationFailure() =>
             VerifyFindItemByPropertyContinuesAfterUnavailableCandidate(throwOnRealization: true);
