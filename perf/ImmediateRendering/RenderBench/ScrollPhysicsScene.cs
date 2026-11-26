@@ -42,6 +42,8 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
     readonly StackPanel _rows;
     readonly Grid _root;
     readonly List<string> _csv = ["step,ms,offset,zoom"];
+    readonly List<string> _values = ["step,key,value"];
+    string _step = "";
     readonly string? _statsPath = Environment.GetEnvironmentVariable("WINUI_IMMEDIATE_STATS");
     readonly string? _dmanipPath = Environment.GetEnvironmentVariable("WINUI_IMMEDIATE_DMANIP_LOG");
     ISceneHost? _host;
@@ -202,6 +204,7 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         if (Options.ScreenshotPath is { } shot && Path.GetDirectoryName(Path.GetFullPath(shot)) is { } dir)
         {
             File.WriteAllLines(Path.Combine(dir, "trajectory.csv"), _csv);
+            File.WriteAllLines(Path.Combine(dir, "values.csv"), _values);
         }
     }
 
@@ -213,6 +216,13 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
             e.Visibility = e == target ? Visibility.Visible : Visibility.Collapsed;
         }
         return target;
+    }
+
+    // Also kept for values.csv next to --screenshot (runs without the ETW session).
+    new void Value(string name, double value)
+    {
+        DecisionScene.Value(name, value);
+        _values.Add(string.Create(CultureInfo.InvariantCulture, $"{_step},{name},{value:R}"));
     }
 
     Point Center(FrameworkElement target, double dy = 0) =>
@@ -229,6 +239,7 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         await Frames(2);
 
         host.Step(index, name, 1);
+        _step = name;
         var recorder = new Recorder();
         void Record()
         {

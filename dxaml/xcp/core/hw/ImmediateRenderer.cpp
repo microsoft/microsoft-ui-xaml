@@ -682,14 +682,12 @@ struct ImmediateRenderer::IslandState
 
 namespace
 {
-    // ---- dmanip ---- MUXC ScrollPresenter (core type info carries the short class name).
-    bool IsScrollPresenter(_In_ const CUIElement* element) noexcept
+    // ---- dmanip ---- MUXC ScrollPresenter: a custom type, so the core class info only knows its FrameworkElement base.
+    bool IsScrollPresenter(_In_ CUIElement* element) noexcept
     {
-        const xstring_ptr name = element->GetClassName();
-        static constexpr wchar_t c_suffix[] = L"ScrollPresenter";
-        constexpr size_t suffixLength = ARRAYSIZE(c_suffix) - 1;
-        const size_t length = name.IsNullOrEmpty() ? 0 : name.GetCount();
-        return length >= suffixLength && wcscmp(name.GetBuffer() + length - suffixLength, c_suffix) == 0;
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_scrollPresenter, L"Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter");
+        return element->HasManagedPeer()
+            && SUCCEEDED(FxCallbacks::FrameworkCallbacks_CheckPeerType(element, c_scrollPresenter, FALSE));
     }
 }
 
@@ -754,6 +752,11 @@ void ImmediateRenderer::SyncHitProxies(_In_ DCompTreeHost* dcompTreeHost, _Inout
                 continue;
             }
             found = state.hitProxies.emplace(entry.visual.Get(), std::move(proxy)).first;
+            if (FILE* statsFile = GetStatsFile())
+            {
+                fprintf(statsFile, "# hitproxy add %p at %.1f,%.1f\n", static_cast<void*>(entry.visual.Get()), entry.x, entry.y);
+                fflush(statsFile);
+            }
         }
         found->second.seen = true;
         IGNOREHR(found->second.positioner->put_Offset({ entry.x, entry.y, 0 }));
