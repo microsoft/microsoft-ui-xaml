@@ -286,11 +286,15 @@ void TreeView::OnListControlDragItemsStarting(const winrt::IInspectable& sender,
 
 void TreeView::OnListControlDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
-    const auto newParent = [items = args.Items(), listControl = ListControl(), rootNode = m_rootNode.get()]()
+    const auto newParent = [this, items = args.Items(), listControl = ListControl(), rootNode = m_rootNode.get()]()
     {
         if (listControl && items && items.Size() > 0)
         {
-            if (const auto draggedNode = listControl->NodeFromItem(items.GetAt(0)))
+            // Find the dragged item's node with the whole-tree search, as before, not the visible-rows-first lookup that
+            // selection uses. When the same item object is in the tree twice, the two can pick different nodes, and the
+            // parent reported here should not change.
+            const auto item = items.GetAt(0);
+            if (const auto draggedNode = listControl->IsContentMode() ? GetAssociatedNode(item) : item.try_as<winrt::TreeViewNode>())
             {
                 const auto parentNode = draggedNode.Parent();
                 if (parentNode && parentNode != rootNode)
