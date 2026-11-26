@@ -103,7 +103,8 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnElementPrepared(const winrt::UIElement& element, int index);
-    void OnElementClearing(const winrt::UIElement& element);
+    // Returns true when an ElementClearing handler re-entered the repeater and that change already cleared the element.
+    bool OnElementClearing(const winrt::UIElement& element);
     void OnElementIndexChanged(const winrt::UIElement& element, int oldIndex, int newIndex);
 
     static winrt::DependencyProperty GetVirtualizationInfoProperty()
@@ -176,6 +177,22 @@ private:
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::ItemsRepeaterElementPreparedEventArgs> m_elementPreparedArgs{ this };
     tracker_ref<winrt::ItemsRepeaterElementClearingEventArgs> m_elementClearingArgs{ this };
+    // True while m_elementClearingArgs is passed to ElementClearing handlers.
+    bool m_isRaisingElementClearing{ false };
+    // An ElementClearing event being raised: the handlers to call and the next one to call.
+    struct ElementClearingRaise
+    {
+        using EventSource = event_source<winrt::TypedEventHandler<winrt::ItemsRepeater, winrt::ItemsRepeaterElementClearingEventArgs>>;
+        winrt::UIElement element{ nullptr };
+        winrt::ItemsRepeaterElementClearingEventArgs args{ nullptr };
+        std::shared_ptr<const EventSource::handler_map> handlers;
+        EventSource::handler_map::const_iterator next;
+        // True when a handler re-entered the repeater and that change cleared the element (see OnElementClearing).
+        bool clearedByNestedClear{ false };
+    };
+    void CallElementClearingHandlers(ElementClearingRaise& raise);
+    // ElementClearing events being raised (more than one when a handler re-enters the repeater).
+    std::vector<ElementClearingRaise*> m_elementClearingRaises;
     tracker_ref<winrt::ItemsRepeaterElementIndexChangedEventArgs> m_elementIndexChangedArgs{ this };
 
     // Loaded events fire on the first tick after an element is put into the tree 

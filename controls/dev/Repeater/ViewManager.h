@@ -17,9 +17,9 @@ public:
     ViewManager(ItemsRepeater* owner);
 
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
-    void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
-    void ClearElementToElementFactory(const winrt::UIElement& element);
-    void RecycleWithoutOwner(bool recycleWithoutOwner);
+    // Both return false when an ElementClearing handler re-entered the repeater and that change already cleared the element.
+    bool ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
+    bool ClearElementToElementFactory(const winrt::UIElement& element);
     int GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 
     void PrunePinnedElements();
@@ -88,7 +88,6 @@ private:
     // It has to be an element we own (i.e. a direct child).
     tracker_ref<winrt::UIElement> m_lastFocusedElement;
     bool m_isDataSourceStableResetPending{};
-    bool m_recycleWithoutOwner{ false };
 
     // Event tokens
     winrt::UIElement::GotFocus_revoker m_gotFocus{};

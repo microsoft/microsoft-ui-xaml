@@ -79,6 +79,21 @@ public:
         }
     }
 
+    using handler_map = std::map<int64_t, StorageT>;
+
+    // The handlers, in the order operator() calls them. add() and remove() do not change the returned map
+    // (they swap in a new one), so the caller can call the handlers one by one with invoke().
+    std::shared_ptr<const handler_map> handlers() const
+    {
+        return m_handlers;
+    }
+
+    // Calls one handler from handlers().
+    template <typename... A> void invoke(const StorageT& handler, A const & ... args) const
+    {
+        Impl()->unwrap(handler)(args...);
+    }
+
     explicit operator bool() const noexcept
     {
         return static_cast<bool>(m_handlers) && m_handlers.get()->size() > 0;

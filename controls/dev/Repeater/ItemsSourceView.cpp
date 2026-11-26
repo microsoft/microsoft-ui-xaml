@@ -63,6 +63,10 @@ void ItemsSourceView::CollectionChanged(winrt::event_token const& token)
 void ItemsSourceView::OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
 {
     m_cachedSize = GetSizeCore();
+
+    // A handler can release the last reference to this view (for example, an ItemsRepeater whose ItemsSource is
+    // replaced while it handles this change). Keep the view alive until all the handlers have been called.
+    auto const strongThis = get_strong();
     m_collectionChangedEventSource(*this, args);
 }
 

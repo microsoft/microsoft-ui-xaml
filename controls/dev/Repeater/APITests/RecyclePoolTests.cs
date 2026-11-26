@@ -4,6 +4,7 @@
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 using MUXControlsTestApp.Utilities;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -202,6 +203,139 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.IsNull(recycled1.Parent);
                 var recycled2 = (FrameworkElement)pool.TryGetElement(key1, parent2);
                 Verify.IsNull(recycled2.Parent);
+            });
+        }
+
+        // Scenario: put an element in the pool with an owner Panel, remove the element from that Panel's Children, then
+        //           take it out of the pool for a different owner and for no owner.
+        // Expected: the element is returned without an exception and the former owner's other children are untouched.
+        // A failure means: elements recycled by an ItemsRepeater that then cleared its children (NonVirtualizingLayout
+        //           ItemsSource replacement) throw "ItemsRepeater's child not found in its Children collection." when
+        //           another repeater reuses them.
+        [TestMethod]
+        [TestProperty("Description", "Verifies RecyclePool returns an element whose owner no longer contains it, for another owner and for no owner, without throwing.")]
+        public void ValidateElementNoLongerInOwnerChildrenCanBeTakenByAnotherOwner()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                const string key = "Key";
+                RecyclePool pool = new RecyclePool();
+                var formerOwner = new StackPanel();
+                var otherChild = new Button();
+                var element = new Button();
+                formerOwner.Children.Add(otherChild);
+                formerOwner.Children.Add(element);
+
+                foreach (bool requestWithOwner in new[] { true, false })
+                {
+                    Log.Comment(requestWithOwner ? "Take the element for another owner" : "Take the element without an owner");
+                    pool.PutElement(element, key, formerOwner);
+                    if (formerOwner.Children.Contains(element))
+                    {
+                        formerOwner.Children.Remove(element);
+                    }
+
+                    UIElement recycled = null;
+                    try
+                    {
+                        recycled = requestWithOwner ? pool.TryGetElement(key, new StackPanel()) : pool.TryGetElement(key);
+                    }
+                    catch (COMException e)
+                    {
+                        Verify.Fail("TryGetElement threw: " + e.Message);
+                    }
+
+                    Verify.AreSame(element, recycled);
+                    if (recycled == null)
+                    {
+                        continue;
+                    }
+
+                    Verify.IsNull(((FrameworkElement)recycled).Parent);
+                    Verify.AreEqual(1, formerOwner.Children.Count);
+                    Verify.AreSame(otherChild, formerOwner.Children[0]);
+                    Verify.IsNull(pool.TryGetElement(key), "The pool is empty after the element was taken.");
+                }
+            });
+        }
+
+        // Scenario: two ItemsRepeaters with NonVirtualizingLayouts use RecyclingElementFactory instances that share one
+        //           RecyclePool. The first repeater's ItemsSource is replaced, then the second repeater realizes new items.
+        // Expected: no exception; the second repeater reuses the elements the first one recycled and they become its children.
+        // A failure means: a shared RecyclePool throws when it hands out elements that their former owner already removed
+        //           from its children.
+        [TestMethod]
+        [TestProperty("Description", "Verifies a RecyclePool shared by RecyclingElementFactory instances hands elements recycled by an ItemsSource replacement on a NonVirtualizingLayout repeater to another repeater.")]
+        public void ValidateSharedPoolAfterItemsSourceReplacementWithNonVirtualizingLayout()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                const string recycleKey = "key";
+                var recyclePool = new RecyclePool();
+                var itemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <TextBlock Text='{Binding}' Height='20' />
+                    </DataTemplate>");
+                var itemsB = new ObservableCollection<int>(Enumerable.Range(100, 2));
+
+                var repeaterA = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 3).ToList(),
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                    ItemTemplate = new RecyclingElementFactoryDerived()
+                    {
+                        Templates = { { recycleKey, itemTemplate } },
+                        RecyclePool = recyclePool,
+                        SelectTemplateIdFunc = (object data, UIElement owner) => recycleKey,
+                        ValidateElementIndices = false
+                    }
+                };
+
+                var repeaterB = new ItemsRepeater()
+                {
+                    ItemsSource = itemsB,
+                    Layout = new MyCustomNonVirtualizingStackLayout(),
+                    ItemTemplate = new RecyclingElementFactoryDerived()
+                    {
+                        Templates = { { recycleKey, itemTemplate } },
+                        RecyclePool = recyclePool,
+                        SelectTemplateIdFunc = (object data, UIElement owner) => recycleKey,
+                        ValidateElementIndices = false
+                    }
+                };
+
+                var root = new StackPanel();
+                root.Children.Add(repeaterA);
+                root.Children.Add(repeaterB);
+                Content = root;
+                Content.UpdateLayout();
+
+                var elementsA = Enumerable.Range(0, 3).Select(i => repeaterA.TryGetElement(i)).ToList();
+                foreach (var element in elementsA)
+                {
+                    Verify.IsNotNull(element);
+                }
+
+                Log.Comment("Replace ItemsSource of the first repeater");
+                repeaterA.ItemsSource = new List<int>();
+                Content.UpdateLayout();
+                Verify.AreEqual(0, VisualTreeHelper.GetChildrenCount(repeaterA));
+
+                Log.Comment("Realize new items in the second repeater");
+                itemsB.Add(102);
+                itemsB.Add(103);
+                itemsB.Add(104);
+                Content.UpdateLayout();
+
+                Verify.AreEqual(5, VisualTreeHelper.GetChildrenCount(repeaterB));
+                for (int i = 2; i < 5; i++)
+                {
+                    var element = (TextBlock)repeaterB.TryGetElement(i);
+                    Verify.IsNotNull(element);
+                    Verify.AreEqual((100 + i).ToString(), element.Text);
+                    Verify.AreSame(repeaterB, VisualTreeHelper.GetParent(element));
+                    Verify.IsTrue(elementsA.Contains(element), "The element recycled by the first repeater is reused.");
+                }
             });
         }
 
