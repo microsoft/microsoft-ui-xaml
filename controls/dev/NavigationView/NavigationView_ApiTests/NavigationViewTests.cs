@@ -7677,6 +7677,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies that DisplayModeChanged and PaneOpening, raised when switching from Top to Left, already see the pane length for the current width and OpenPaneLength (ADO 47131770).")]
+        public void VerifyOpenPaneLengthIsUpdatedBeforePaneDisplayModeEvents()
+        {
+            var navView = SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode.Left, 296.0);
+            double? lengthInDisplayModeChanged = null;
+            double? lengthInPaneOpening = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                navView.IsPaneVisible = true;
+                Content.UpdateLayout();
+                VerifyAreClose(296.0, splitView.OpenPaneLength, "Precondition: the visible pane is clamped to the width");
+
+                // Width and OpenPaneLength change while in Top mode, where the pane length isn't updated.
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+                navView.Width = 280.0;
+                navView.OpenPaneLength = 240.0;
+                Content.UpdateLayout();
+                Verify.IsFalse(navView.IsPaneOpen, "Precondition: the pane is closed in Top mode");
+
+                navView.DisplayModeChanged += (s, e) => { lengthInDisplayModeChanged = navView.TemplateSettings.OpenPaneLength; };
+                navView.PaneOpening += (s, e) => { lengthInPaneOpening = navView.TemplateSettings.OpenPaneLength; };
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"OpenPaneLength in DisplayModeChanged={lengthInDisplayModeChanged} in PaneOpening={lengthInPaneOpening} after={navView.TemplateSettings.OpenPaneLength}");
+                Verify.IsTrue(lengthInDisplayModeChanged.HasValue, "Precondition: DisplayModeChanged was raised");
+                Verify.IsTrue(lengthInPaneOpening.HasValue, "Precondition: PaneOpening was raised (Left opens the pane)");
+                VerifyAreClose(240.0, lengthInDisplayModeChanged.Value, "TemplateSettings.OpenPaneLength seen by DisplayModeChanged");
+                VerifyAreClose(240.0, lengthInPaneOpening.Value, "TemplateSettings.OpenPaneLength seen by PaneOpening");
+                VerifyAreClose(240.0, navView.TemplateSettings.OpenPaneLength, "TemplateSettings.OpenPaneLength after the switch");
+            });
+        }
+
         private NavigationView SetupPaneInvisibleNavigationView(NavigationViewPaneDisplayMode paneDisplayMode, double width)
         {
             NavigationView navView = null;
