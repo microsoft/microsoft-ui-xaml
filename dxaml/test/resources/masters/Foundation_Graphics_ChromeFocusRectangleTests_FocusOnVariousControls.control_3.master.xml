@@ -44,9 +44,9 @@
                   <TransformMatrix>
                     <Translate X="10" Y="169" />
                   </TransformMatrix>
-                  <Visual VisualId="2" Tag="PrimaryVisual" SizeX="154" SizeY="63">
+                  <Visual VisualId="2" Tag="PrimaryVisual" SizeX="82" SizeY="63">
                     <Visual Tag="RoundedCornerClipVisual">
-                      <Clip ClipLeft="0" ClipTop="0" ClipRight="154" ClipBottom="63" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
+                      <Clip ClipLeft="0" ClipTop="0" ClipRight="82" ClipBottom="63" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
                       <Visual Tag="ContentVisual">
                         <wucSpriteVisual SizeX="83" SizeY="15" BorderMode="Hard" TransparentForInput="True" OffsetX="-1" OffsetY="4" OffsetZ="0">
                           <MaskBrush>

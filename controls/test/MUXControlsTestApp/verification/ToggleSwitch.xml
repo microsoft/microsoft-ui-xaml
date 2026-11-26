@@ -24,9 +24,9 @@
       FocusVisualSecondaryThickness=1,1,1,1
       Foreground=#E4000000
       Margin=0,0,0,0
-      MinWidth=154
+      MinWidth=48
       Padding=0,0,0,0
-      RenderSize=154,40
+      RenderSize=72,40
       Visibility=Visible
     [Microsoft.UI.Xaml.Controls.Grid]
         Background=[NULL]
@@ -39,7 +39,7 @@
         FocusVisualSecondaryThickness=1,1,1,1
         Margin=0,0,0,0
         Padding=0,0,0,0
-        RenderSize=154,40
+        RenderSize=72,40
         Visibility=Visible
       [Microsoft.UI.Xaml.Controls.Grid]
           Background=[NULL]

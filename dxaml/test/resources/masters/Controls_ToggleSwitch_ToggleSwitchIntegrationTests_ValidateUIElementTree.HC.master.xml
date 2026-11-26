@@ -11,13 +11,12 @@
       <Property Name="RequestedTheme" Value="1" />
       <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
         <Property Name="ActualHeight" Value="600" />
-        <Property Name="ActualWidth" Value="154" />
-        <Property Name="RenderSize" Value="154x600" />
+        <Property Name="ActualWidth" Value="77" />
+        <Property Name="RenderSize" Value="77x600" />
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
-          <Property Name="FocusState" Value="1" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
           <Property Name="FontSize" Value="14" />
@@ -26,23 +25,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Rest Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -52,7 +51,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -253,7 +252,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -263,23 +262,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Hover Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -289,7 +288,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -490,7 +489,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -500,23 +499,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Pressed Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -526,7 +525,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -727,7 +726,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="77" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -738,23 +737,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsEnabled" Value="False" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="77x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="77" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="77x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="77" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Disabled Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -764,7 +763,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="77x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -965,7 +964,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -976,23 +975,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Rest On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -1002,7 +1001,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -1205,7 +1204,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -1216,23 +1215,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Hover On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -1242,7 +1241,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -1445,7 +1444,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -1456,23 +1455,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Pressed On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -1482,7 +1481,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -1685,7 +1684,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="76" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -1697,23 +1696,23 @@
           <Property Name="IsEnabled" Value="False" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="76x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="76" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="76x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="76" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Disabled On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -1723,7 +1722,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="76x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -1927,11 +1926,11 @@
       </Element>
       <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
         <Property Name="ActualHeight" Value="600" />
-        <Property Name="ActualWidth" Value="154" />
-        <Property Name="RenderSize" Value="154x600" />
+        <Property Name="ActualWidth" Value="72" />
+        <Property Name="RenderSize" Value="72x600" />
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -1941,23 +1940,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Rest Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -1967,7 +1966,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -2168,7 +2167,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -2178,23 +2177,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Hover Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -2204,7 +2203,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -2405,7 +2404,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -2415,23 +2414,23 @@
           <Property Name="HorizontalAlignment" Value="0" />
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Pressed Off" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -2441,7 +2440,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -2642,7 +2641,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -2653,23 +2652,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Rest On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -2679,7 +2678,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -2882,7 +2881,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -2893,23 +2892,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Hover On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -2919,7 +2918,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
@@ -3122,7 +3121,7 @@
         </Element>
         <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
           <Property Name="ActualHeight" Value="63" />
-          <Property Name="ActualWidth" Value="154" />
+          <Property Name="ActualWidth" Value="72" />
           <Property Name="CornerRadius" Value="4,4,4,4" />
           <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
           <Property Name="FontFamily" Value="Segoe UI" />
@@ -3133,23 +3132,23 @@
           <Property Name="HorizontalContentAlignment" Value="0" />
           <Property Name="IsOn" Value="True" />
           <Property Name="ManipulationMode" Value="65537" />
-          <Property Name="MinWidth" Value="154" />
-          <Property Name="RenderSize" Value="154x63" />
+          <Property Name="MinWidth" Value="48" />
+          <Property Name="RenderSize" Value="72x63" />
           <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
           <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
           <Property Name="UseSystemFocusVisuals" Value="True" />
           <Property Name="VerticalAlignment" Value="1" />
           <Element Type="Microsoft.UI.Xaml.Controls.Grid">
             <Property Name="ActualHeight" Value="63" />
-            <Property Name="ActualWidth" Value="154" />
+            <Property Name="ActualWidth" Value="72" />
             <Property Name="Background" Value="[NULL]" />
             <Property Name="BorderBrush" Value="[NULL]" />
             <Property Name="BorderThickness" Value="0,0,0,0" />
             <Property Name="CornerRadius" Value="4,4,4,4" />
-            <Property Name="RenderSize" Value="154x63" />
+            <Property Name="RenderSize" Value="72x63" />
             <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
               <Property Name="ActualHeight" Value="19" />
-              <Property Name="ActualWidth" Value="154" />
+              <Property Name="ActualWidth" Value="72" />
               <Property Name="AutomationProperties.AccessibilityView" Value="0" />
               <Property Name="Content" Value="Pressed On" />
               <Property Name="ContentTemplate" Value="[NULL]" />
@@ -3159,7 +3158,7 @@
               <Property Name="IsHitTestVisible" Value="False" />
               <Property Name="Margin" Value="0,0,0,4" />
               <Property Name="Name" Value="HeaderContentPresenter" />
-              <Property Name="RenderSize" Value="154x19" />
+              <Property Name="RenderSize" Value="72x19" />
               <Property Name="TextWrapping" Value="2" />
               <Property Name="VerticalAlignment" Value="0" />
               <Property Name="Visibility" Value="0" />
