@@ -207,55 +207,69 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
-            {
-                anchor = (Button)repeater.TryGetElement(0);
-                Verify.IsNotNull(anchor);
-                Verify.AreNotSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
-                Verify.IsTrue(anchor.Focus(FocusState.Programmatic));
-
-                TypedEventHandler<ScrollView, ScrollingAnchorRequestedEventArgs> anchorRequestedHandler = (sender, args) =>
-                {
-                    args.AnchorElement = anchor;
-                    anchorRequestedCount++;
-                };
-                scrollView.AnchorRequested += anchorRequestedHandler;
-
-                // Switch layout synchronously on the same UI tick before queued GotFocus is dispatched.
-                try
-                {
-                    repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
-
-                    repeater.InvalidateMeasure();
-                    Content.UpdateLayout();
-                }
-                finally
-                {
-                    scrollView.AnchorRequested -= anchorRequestedHandler;
-                }
-
-                Verify.IsGreaterThan(anchorRequestedCount, 0, "The scroller must have supplied the recommended anchor.");
-                Verify.AreSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
-                Verify.AreSame(anchor, repeater.TryGetElement(0));
-                Verify.AreEqual(0, repeater.GetElementIndex(anchor));
-                var bounds = LayoutInformation.GetLayoutSlot(anchor);
-                Verify.IsGreaterThan(bounds.Width, 0.0);
-                Verify.IsGreaterThan(bounds.Height, 0.0);
-                Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The focused anchor must be arranged in the first row.");
-            });
-
-            // Wait for idle so any queued async GotFocus flushes before moving focus away;
-            // a double-pin bug would keep item zero pinned when scrolling away below.
-            IdleSynchronizer.Wait();
-
+            using (var anchorGotFocus = new AutoResetEvent(false))
             using (var outsideGotFocus = new AutoResetEvent(false))
             using (var scrollCompleted = new AutoResetEvent(false))
             {
+                RoutedEventHandler anchorGotFocusHandler = (sender, args) => anchorGotFocus.Set();
                 RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
                 TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) => scrollCompleted.Set();
 
                 try
                 {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        anchor = (Button)repeater.TryGetElement(0);
+                        Verify.IsNotNull(anchor);
+                        Verify.AreNotSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                        anchor.GotFocus += anchorGotFocusHandler;
+                        Verify.IsTrue(anchor.Focus(FocusState.Programmatic));
+
+                        TypedEventHandler<ScrollView, ScrollingAnchorRequestedEventArgs> anchorRequestedHandler = (sender, args) =>
+                        {
+                            args.AnchorElement = anchor;
+                            anchorRequestedCount++;
+                        };
+                        scrollView.AnchorRequested += anchorRequestedHandler;
+
+                        // Switch layout synchronously on the same UI tick before queued GotFocus is dispatched.
+                        try
+                        {
+                            repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
+
+                            repeater.InvalidateMeasure();
+                            Content.UpdateLayout();
+                        }
+                        finally
+                        {
+                            scrollView.AnchorRequested -= anchorRequestedHandler;
+                        }
+
+                        Verify.IsGreaterThan(anchorRequestedCount, 0, "The scroller must have supplied the recommended anchor.");
+                        Verify.AreSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                        Verify.AreSame(anchor, repeater.TryGetElement(0));
+                        Verify.AreEqual(0, repeater.GetElementIndex(anchor));
+                        int containersForFirstItem = 0;
+                        for (int childIndex = 0; childIndex < VisualTreeHelper.GetChildrenCount(repeater); childIndex++)
+                        {
+                            var child = (UIElement)VisualTreeHelper.GetChild(repeater, childIndex);
+                            if (repeater.GetElementIndex(child) == 0)
+                            {
+                                containersForFirstItem++;
+                            }
+                        }
+                        Verify.AreEqual(1, containersForFirstItem, "Only one container may represent item zero.");
+                        var bounds = LayoutInformation.GetLayoutSlot(anchor);
+                        Verify.IsGreaterThan(bounds.Width, 0.0);
+                        Verify.IsGreaterThan(bounds.Height, 0.0);
+                        Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The focused anchor must be arranged in the first row.");
+                    });
+
+                    // Wait explicitly for the queued async GotFocus on anchor before moving focus away,
+                    // so a double-pin bug would keep item zero pinned when scrolling away below.
+                    Verify.IsTrue(anchorGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for queued anchor GotFocus to flush.");
+                    IdleSynchronizer.Wait();
+
                     RunOnUIThread.Execute(() =>
                     {
                         outsideButton.GotFocus += outsideGotFocusHandler;
@@ -283,6 +297,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     RunOnUIThread.Execute(() =>
                     {
+                        if (anchor != null)
+                        {
+                            anchor.GotFocus -= anchorGotFocusHandler;
+                        }
                         outsideButton.GotFocus -= outsideGotFocusHandler;
                         scrollView.ScrollCompleted -= scrollCompletedHandler;
                     });
