@@ -1603,7 +1603,7 @@ void TableViewRow::ApplyHierarchyIndentToCells(double indent)
     const bool isHierarchical = Level() > 0;
     auto const owner = GetOwningTableView();
     auto const ownerImpl = owner ? winrt::get_self<TableView>(owner) : nullptr;
-    const bool alignSectionContent = !isHierarchical && ownerImpl && ownerImpl->IsTableViewSourceGrouped();
+    const bool alignSectionContent = !isHierarchical && ownerImpl && ownerImpl->IsGroupedRowSource();
     const double sectionContentOffset = alignSectionContent
         ? ownerImpl->GetGroupHeaderContentOffset() + ownerImpl->GetDensityGroupHeaderPadding().Left +
             ownerImpl->GetDensityGroupHeaderTextPadding().Left

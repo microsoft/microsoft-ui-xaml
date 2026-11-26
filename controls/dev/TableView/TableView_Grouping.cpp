@@ -695,7 +695,7 @@ std::optional<winrt::ExpandCollapseState> TableView::TryGetGroupExpandCollapseSt
         TableViewRowInfo info{};
         if (m_tableViewSourceRowMetadata &&
             m_tableViewSourceRowMetadata->TryGetIndexForIdentity(identity, index) &&
-            TryGetTableViewSourceRowInfo(index, info) && info.Kind == TableViewRowKind::GroupHeader)
+            TryGetRowInfo(index, info) && info.Kind == TableViewRowKind::GroupHeader)
         {
             return GroupExpandCollapseState(info.IsExpandable, info.IsExpanded);
         }
