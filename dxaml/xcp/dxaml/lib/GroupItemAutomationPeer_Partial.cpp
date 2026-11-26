@@ -77,6 +77,7 @@ IFACEMETHODIMP GroupItemAutomationPeer::GetChildrenCore(_Outptr_ wfc::IVector<xa
     IInspectable* pItem = NULL;
     IDependencyObject* pItemContainerAsDO = NULL;
     BOOLEAN bFoundInChildrenCache = FALSE;
+    ItemsControlAutomationPeer::PeerIdentitySet peerIdentities;
 
     IFCPTR(ppReturnValue);
 
@@ -105,6 +106,7 @@ IFACEMETHODIMP GroupItemAutomationPeer::GetChildrenCore(_Outptr_ wfc::IVector<xa
             IFC(pItemsFromItemsHostPanel->get_Size(&nCount));
             if(nCount > 0)
             {
+                IFC(peerIdentities.Seed(pAPChildren));
                 for(UINT i = 0; i < nCount; i++)
                 {
                     IFC(pItemsFromItemsHostPanel->GetAt(i, &pItemContainer));
@@ -136,7 +138,12 @@ IFACEMETHODIMP GroupItemAutomationPeer::GetChildrenCore(_Outptr_ wfc::IVector<xa
                             {
                                 IFC(ctl::do_query_interface(pItemPeerAsAP, pItemPeer));
                                 IFC(static_cast<AutomationPeer*>(pContainerItemPeer)->put_EventsSource(pItemPeerAsAP));
-                                IFC(pAPChildren->Append(pItemPeerAsAP));
+                                bool added = false;
+                                IFC(peerIdentities.TryAdd(pItemPeerAsAP, added));
+                                if (added)
+                                {
+                                    IFC(pAPChildren->Append(pItemPeerAsAP));
+                                }
                                 if(!bFoundInChildrenCache)
                                 {
                                     IFC(static_cast<ItemsControlAutomationPeer*>(pItemsControlAutomationPeer)->AddItemAutomationPeerToItemPeerStorage(static_cast<ItemAutomationPeer*>(pItemPeer)));
@@ -158,6 +165,8 @@ IFACEMETHODIMP GroupItemAutomationPeer::GetChildrenCore(_Outptr_ wfc::IVector<xa
     pAPChildren = NULL;
 
 Cleanup:
+    // Drop temporary identity references while the raw owner references are still protected.
+    peerIdentities.Clear();
     ReleaseInterface(pOwner);
     ReleaseInterface(pItemsFromItemsHostPanel);
     ReleaseInterface(pItemsHostPanel);

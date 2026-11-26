@@ -211,11 +211,47 @@ Cleanup:
     RRETURN(hr);
 }
 
+_Check_return_ HRESULT ItemsControlAutomationPeer::PeerIdentitySet::TryAdd(_In_ IUnknown* peer, _Out_ bool& added)
+{
+    added = false;
+    ctl::ComPtr<IUnknown> identity;
+    IFC_RETURN(peer->QueryInterface(IID_PPV_ARGS(identity.ReleaseAndGetAddressOf())));
+
+    // Table allocations use the component's existing fail-fast allocator.
+    if (!m_identities)
+    {
+        m_identities.emplace();
+    }
+    auto key = identity.Get();
+    added = m_identities->try_emplace(key, std::move(identity)).second;
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT ItemsControlAutomationPeer::PeerIdentitySet::Seed(
+    _In_ wfc::IVector<xaml_automation_peers::AutomationPeer*>* peers)
+{
+    UINT count = 0;
+    IFC_RETURN(peers->get_Size(&count));
+    for (UINT index = 0; index < count; ++index)
+    {
+        ctl::ComPtr<xaml_automation_peers::IAutomationPeer> peer;
+        IFC_RETURN(peers->GetAt(index, &peer));
+        if (peer)
+        {
+            bool added = false;
+            IFC_RETURN(TryAdd(peer.Get(), added));
+        }
+    }
+    return S_OK;
+}
+
 _Check_return_ HRESULT
 ItemsControlAutomationPeer::GetItemsControlChildrenChildrenHelper(_In_ xaml_controls::IItemsControl* pOwner,
     _In_ wfc::IVector<xaml::UIElement*>* pItemsFromItemsHostPanel,
     _In_ UINT nCount,
-    _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection)
+    _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection,
+    _Inout_ PeerIdentitySet& peerIdentities)
 {
     HRESULT hr = S_OK;
     xaml_automation_peers::IItemAutomationPeer* pItemPeer = NULL;
@@ -252,7 +288,12 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildrenHelper(_In_ xaml_cont
                 {
                     IFC(ctl::do_query_interface(pItemPeerAsAP, pItemPeer));
                     IFC(static_cast<AutomationPeer*>(pContainerItemPeer)->put_EventsSource(pItemPeerAsAP));
-                    IFC(pNewChildrenCollection->Append(pItemPeer));
+                    bool added = false;
+                    IFC(peerIdentities.TryAdd(pItemPeer, added));
+                    if (added)
+                    {
+                        IFC(pNewChildrenCollection->Append(pItemPeer));
+                    }
                 }
             }
         }
@@ -275,7 +316,9 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ItemsControlAutomationPeer::GetModernItemsControlChildrenChildrenHelper(_In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection)
+_Check_return_ HRESULT ItemsControlAutomationPeer::GetModernItemsControlChildrenChildrenHelper(
+    _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection,
+    _Inout_ PeerIdentitySet& peerIdentities)
 {
     HRESULT hr = S_OK;
     INT firstCacheIndex = -1;
@@ -328,7 +371,13 @@ _Check_return_ HRESULT ItemsControlAutomationPeer::GetModernItemsControlChildren
                         {
                             IFC(spItemPeer.As(&spItemPeerAsAP));
                             IFC(spContainerItemPeer.Cast<AutomationPeer>()->put_EventsSource(spItemPeerAsAP.Get()));
-                            IFC(pNewChildrenCollection->Append(spItemPeer.Get()));
+                            // Reused data peers must not appear twice in the sibling chain.
+                            bool added = false;
+                            IFC(peerIdentities.TryAdd(spItemPeer.Get(), added));
+                            if (added)
+                            {
+                                IFC(pNewChildrenCollection->Append(spItemPeer.Get()));
+                            }
                         }
                     }
                 }
@@ -365,6 +414,7 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildren(
         {
             ctl::ComPtr<IModernCollectionBasePanel> spModernPanel;
             ctl::ComPtr<TrackerCollection<xaml::Automation::Peers::ItemAutomationPeer*>> spNewChildrenCollection;
+            PeerIdentitySet peerIdentities;
 
             IFC_RETURN(ctl::make(&spNewChildrenCollection));
 
@@ -398,7 +448,7 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildren(
                                 }
                             }
                         }
-                        IFC_RETURN(GetModernItemsControlChildrenChildrenHelper(spNewChildrenCollection.Get()));
+                        IFC_RETURN(GetModernItemsControlChildrenChildrenHelper(spNewChildrenCollection.Get(), peerIdentities));
                     }
                 }
                 else
@@ -440,7 +490,7 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildren(
                                         IFC_RETURN(spGroupItemItemsFromItemsHostPanel.Get()->get_Size(&nGroupItemCount));
 
                                         IFC_RETURN(GetItemsControlChildrenChildrenHelper(spGroupItemIItemsControl.Cast<ItemsControl>(), spGroupItemItemsFromItemsHostPanel.Get(),
-                                            nGroupItemCount, spNewChildrenCollection.Get()));
+                                            nGroupItemCount, spNewChildrenCollection.Get(), peerIdentities));
 
                                     }
                                 }
@@ -455,7 +505,7 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildren(
                 if (spModernPanel)
                 {
                     UINT nItems = 0;
-                    IFC_RETURN(GetModernItemsControlChildrenChildrenHelper(spNewChildrenCollection.Get()));
+                    IFC_RETURN(GetModernItemsControlChildrenChildrenHelper(spNewChildrenCollection.Get(), peerIdentities));
                     IFC_RETURN(spNewChildrenCollection->get_Size(&nItems));
 
                     for (UINT idx = 0; idx < nItems; idx++)
@@ -508,8 +558,13 @@ ItemsControlAutomationPeer::GetItemsControlChildrenChildren(
                                     ctl::ComPtr<xaml::Automation::Peers::IAutomationPeer> spItemPeerAsAP;
                                     IFC_RETURN(spItemPeer.As(&spItemPeerAsAP));
                                     IFC_RETURN(pContainerItemPeer.Cast<AutomationPeer>()->put_EventsSource(spItemPeerAsAP.Get()));
-                                    IFC_RETURN(pAPChildren->Append(spItemPeerAsAP.Get()));
-                                    IFC_RETURN(spNewChildrenCollection->Append(spItemPeer.Get()));
+                                    bool added = false;
+                                    IFC_RETURN(peerIdentities.TryAdd(spItemPeer.Get(), added));
+                                    if (added)
+                                    {
+                                        IFC_RETURN(pAPChildren->Append(spItemPeerAsAP.Get()));
+                                        IFC_RETURN(spNewChildrenCollection->Append(spItemPeer.Get()));
+                                    }
                                 }
                             }
                         }

@@ -4,6 +4,8 @@
 #pragma once
 
 #include "ItemsControlAutomationPeer.g.h"
+#include <optional>
+#include <unordered_map>
 
 namespace DirectUI
 {
@@ -13,6 +15,22 @@ namespace DirectUI
     PARTIAL_CLASS(ItemsControlAutomationPeer)
     {
         public:
+            class PeerIdentitySet
+            {
+            public:
+                PeerIdentitySet() noexcept = default;
+                PeerIdentitySet(const PeerIdentitySet&) = delete;
+                PeerIdentitySet& operator=(const PeerIdentitySet&) = delete;
+
+                _Check_return_ HRESULT TryAdd(_In_ IUnknown* peer, _Out_ bool& added);
+                _Check_return_ HRESULT Seed(_In_ wfc::IVector<xaml_automation_peers::AutomationPeer*>* peers);
+                void Clear() noexcept { m_identities.reset(); }
+
+            private:
+                // Avoid allocating a table for an empty publication query.
+                std::optional<std::unordered_map<IUnknown*, ctl::ComPtr<IUnknown>>> m_identities;
+            };
+
             // Initializes a new instance of the ButtonAutomationPeer class.
             ItemsControlAutomationPeer();
             ~ItemsControlAutomationPeer() override;
@@ -63,9 +81,12 @@ namespace DirectUI
             _Check_return_ HRESULT GetItemsControlChildrenChildrenHelper(_In_ xaml_controls::IItemsControl* pOwner,
                 _In_ wfc::IVector<xaml::UIElement*>* pItemsFromItemsHostPanel,
                 _In_ UINT nCount,
-                _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection);
+                _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection,
+                _Inout_ PeerIdentitySet& peerIdentities);
 
-            _Check_return_ HRESULT GetModernItemsControlChildrenChildrenHelper(_In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection);
+            _Check_return_ HRESULT GetModernItemsControlChildrenChildrenHelper(
+                _In_ wfc::IVector<xaml_automation_peers::ItemAutomationPeer*>* pNewChildrenCollection,
+                _Inout_ PeerIdentitySet& peerIdentities);
 
             void ClearCacheCollectionUnsafe(_In_ TrackerCollection<xaml_automation_peers::ItemAutomationPeer*>* unsafeTrackerCollection);
 

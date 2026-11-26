@@ -79,6 +79,8 @@ IFACEMETHODIMP ListViewBaseHeaderItemAutomationPeer::GetChildrenCore(_Outptr_ wf
         {
             // Add the children of the header to the automation tree
             IFC_RETURN(FrameworkElementAutomationPeer::GetAutomationPeerChildren(owner.Get(), aPChildren.Get()));
+            ItemsControlAutomationPeer::PeerIdentitySet peerIdentities;
+            IFC_RETURN(peerIdentities.Seed(aPChildren.Get()));
 
             // This is a group, add the group items to the automation tree
             IFC_RETURN(itemsControlAutomationPeerAsAP.As(&itemsControlAutomationPeer));
@@ -134,7 +136,12 @@ IFACEMETHODIMP ListViewBaseHeaderItemAutomationPeer::GetChildrenCore(_Outptr_ wf
                                 ctl::ComPtr<xaml_automation_peers::IAutomationPeer> itemPeerAsAP;
                                 IFC_RETURN(itemPeer.As(&itemPeerAsAP));
                                 IFC_RETURN(containerItemPeer.Cast<AutomationPeer>()->put_EventsSource(itemPeerAsAP.Get()));
-                                IFC_RETURN(aPChildren->Append(itemPeerAsAP.Get()));
+                                bool added = false;
+                                IFC_RETURN(peerIdentities.TryAdd(itemPeerAsAP.Get(), added));
+                                if (added)
+                                {
+                                    IFC_RETURN(aPChildren->Append(itemPeerAsAP.Get()));
+                                }
                                 if (!foundInChildrenCache)
                                 {
                                     IFC_RETURN(itemsControlAutomationPeer.Cast<ItemsControlAutomationPeer>()->AddItemAutomationPeerToItemPeerStorage(itemPeer.Cast<ItemAutomationPeer>()));

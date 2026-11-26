@@ -38,6 +38,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates proper handling in AutomationPeer if corresponding UIElement is dtor'd")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateListViewDuplicateItemPeers)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies duplicate ListView items do not repeat automation peer identities or cycle sibling navigation.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateGridViewDuplicateItemPeers)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies duplicate GridView items preserve terminating automation navigation.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateItemsControlDuplicateItemPeers)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies ItemsControl item-peer publication preserves distinct peers and omits reused peer identities.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateGroupedDuplicateItemPeers)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies grouped item automation peers preserve headers and acyclic sibling navigation.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateAutomationPeerHasFocusInAutomationFocusChangedEvent)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a custom AutomationPeer reports that is has focus when its AutomationFocusChanged event is raised.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
@@ -59,6 +79,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
     private:
+        enum class ItemPeerControl { ListView, GridView, ItemsControl };
+        bool AreSamePeer(Platform::Object^ first, Platform::Object^ second);
+        void ValidateDuplicateItemPeers(ItemPeerControl controlType, bool useStackPanel, bool grouped);
+        void ValidateItemPeerChildren(xaml_automation_peers::AutomationPeer^ peer, bool validateNavigation);
         void ValidateAutomationFocus(Automation::AutomationClient::UIAElementInfo uiaInfo, wrl::ComPtr<AutomationClient::AutomationFocusChangeHandler> spAutomationFocusChangeHandler, bool waitingFocusChange);
     };
 } } } } } }
@@ -66,6 +90,37 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
 namespace Tests { namespace Native { namespace External { namespace Automation { namespace Regression 
 {
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    public ref class RegressionItemAutomationPeer sealed : public xaml_automation_peers::ItemAutomationPeer
+    {
+    public:
+        RegressionItemAutomationPeer(Platform::Object^ item, xaml_automation_peers::ItemsControlAutomationPeer^ parent)
+            : ItemAutomationPeer(item, parent) {}
+    };
+
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    public ref class RegressionItemsControlAutomationPeer sealed : public xaml_automation_peers::ItemsControlAutomationPeer
+    {
+    public:
+        RegressionItemsControlAutomationPeer(xaml_controls::ItemsControl^ owner) : ItemsControlAutomationPeer(owner) {}
+
+    protected:
+        xaml_automation_peers::ItemAutomationPeer^ OnCreateItemAutomationPeer(Platform::Object^ item) override
+        {
+            return ref new RegressionItemAutomationPeer(item, this);
+        }
+    };
+
+    [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+    public ref class RegressionItemsControl sealed : public xaml_controls::ItemsControl
+    {
+    protected:
+        xaml_automation_peers::AutomationPeer^ OnCreateAutomationPeer() override
+        {
+            return ref new RegressionItemsControlAutomationPeer(this);
+        }
+    };
+
     [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
     public ref class CustomAutomationPeer sealed : public xaml_automation_peers::AutomationPeer
     {

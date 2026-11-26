@@ -10,6 +10,8 @@
 #include <TestCleanupWrapper.h>
 #include <UIAutomationHelper.h>
 
+#undef GetClassName // Conflicts with automation peer method of the same name
+
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace Microsoft::UI::Xaml::Tests::Automation;
 using namespace test_infra;
@@ -20,6 +22,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     bool RegressionTests::ClassSetup()
     {
         CommonTestSetupHelper::CommonTestClassSetup();
+        RunOnUIThread([]()
+        {
+            auto runtime = GetModuleHandleW(L"Microsoft.UI.Xaml.dll");
+            VERIFY_IS_NOT_NULL(runtime);
+            std::wstring runtimePath(MAX_PATH, L'\0');
+            for (;;)
+            {
+                auto length = GetModuleFileNameW(runtime, runtimePath.data(), static_cast<DWORD>(runtimePath.size()));
+                VERIFY_IS_TRUE(length > 0);
+                if (length < runtimePath.size())
+                {
+                    break;
+                }
+                runtimePath.resize(runtimePath.size() * 2);
+            }
+            LOG_OUTPUT(L"Runtime under test: %s", runtimePath.c_str());
+        });
         return true;
     }
 
@@ -111,6 +130,246 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 VERIFY_ARE_EQUAL(e->HResult, int(UIA_E_ELEMENTNOTAVAILABLE));
             }
         });
+    }
+
+    void RegressionTests::ValidateListViewDuplicateItemPeers()
+    {
+        ValidateDuplicateItemPeers(ItemPeerControl::ListView, false, false);
+        ValidateDuplicateItemPeers(ItemPeerControl::ListView, true, false);
+    }
+
+    void RegressionTests::ValidateGridViewDuplicateItemPeers()
+    {
+        ValidateDuplicateItemPeers(ItemPeerControl::GridView, false, false);
+        ValidateDuplicateItemPeers(ItemPeerControl::GridView, true, false);
+    }
+
+    void RegressionTests::ValidateItemsControlDuplicateItemPeers()
+    {
+        ValidateDuplicateItemPeers(ItemPeerControl::ItemsControl, true, false);
+    }
+
+    void RegressionTests::ValidateGroupedDuplicateItemPeers()
+    {
+        ValidateDuplicateItemPeers(ItemPeerControl::ListView, false, true);
+        ValidateDuplicateItemPeers(ItemPeerControl::ListView, true, true);
+        ValidateDuplicateItemPeers(ItemPeerControl::GridView, false, true);
+        ValidateDuplicateItemPeers(ItemPeerControl::GridView, true, true);
+    }
+
+    bool RegressionTests::AreSamePeer(Platform::Object^ first, Platform::Object^ second)
+    {
+        if (!first || !second)
+        {
+            return first == second;
+        }
+
+        // Navigate returns IInspectable; compare canonical identities, not projected interface addresses.
+        wrl::ComPtr<IUnknown> firstIdentity;
+        wrl::ComPtr<IUnknown> secondIdentity;
+        VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(first)->QueryInterface(IID_PPV_ARGS(&firstIdentity)));
+        VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(second)->QueryInterface(IID_PPV_ARGS(&secondIdentity)));
+        return firstIdentity.Get() == secondIdentity.Get();
+    }
+
+    void RegressionTests::ValidateItemPeerChildren(xaml_automation_peers::AutomationPeer^ peer, bool validateNavigation)
+    {
+        auto children = peer->GetChildren();
+        VERIFY_IS_NOT_NULL(children);
+        if (!children)
+        {
+            return;
+        }
+
+        for (unsigned int i = 0; i < children->Size; ++i)
+        {
+            auto child = children->GetAt(i);
+            VERIFY_IS_NOT_NULL(child);
+            for (unsigned int j = 0; j < i; ++j)
+            {
+                VERIFY_IS_FALSE(AreSamePeer(child, children->GetAt(j)), L"A logical peer must appear only once among siblings.");
+            }
+            if (child && validateNavigation)
+            {
+                auto previous = i == 0 ? nullptr : children->GetAt(i - 1);
+                auto next = i + 1 == children->Size ? nullptr : children->GetAt(i + 1);
+                VERIFY_IS_TRUE(AreSamePeer(child->GetParent(), peer));
+                VERIFY_IS_TRUE(AreSamePeer(child->Navigate(xaml_automation_peers::AutomationNavigationDirection::PreviousSibling), previous));
+                VERIFY_IS_TRUE(AreSamePeer(child->Navigate(xaml_automation_peers::AutomationNavigationDirection::NextSibling), next));
+            }
+        }
+        if (validateNavigation && children->Size > 0)
+        {
+            VERIFY_IS_TRUE(AreSamePeer(peer->Navigate(xaml_automation_peers::AutomationNavigationDirection::FirstChild), children->GetAt(0)));
+            VERIFY_IS_TRUE(AreSamePeer(peer->Navigate(xaml_automation_peers::AutomationNavigationDirection::LastChild), children->GetAt(children->Size - 1)));
+        }
+    }
+
+    void RegressionTests::ValidateDuplicateItemPeers(ItemPeerControl controlType, bool useStackPanel, bool grouped)
+    {
+        TestCleanupWrapper cleanup;
+        for (int dataSet = 0; dataSet < 3; ++dataSet)
+        {
+            xaml_controls::ItemsControl^ control = nullptr;
+            xaml::Data::CollectionViewSource^ view = nullptr;
+            Platform::Collections::Vector<Platform::Object^>^ items = nullptr;
+            xaml_automation_peers::AutomationPeer^ peer = nullptr;
+            xaml_automation_peers::AutomationPeer^ representative = nullptr;
+
+            RunOnUIThread([&]()
+            {
+                LOG_OUTPUT(L"Item peer case: control=%d, stackPanel=%d, grouped=%d, dataSet=%d", static_cast<int>(controlType), useStackPanel, grouped, dataSet);
+                switch (controlType)
+                {
+                case ItemPeerControl::ListView:
+                    control = ref new xaml_controls::ListView();
+                    break;
+                case ItemPeerControl::GridView:
+                    control = ref new xaml_controls::GridView();
+                    break;
+                case ItemPeerControl::ItemsControl:
+                    control = ref new RegressionItemsControl();
+                    break;
+                }
+                control->Width = 500;
+                control->Height = 600;
+                if (useStackPanel)
+                {
+                    control->ItemsPanel = safe_cast<xaml_controls::ItemsPanelTemplate^>(xaml::Markup::XamlReader::Load(
+                        L"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><StackPanel /></ItemsPanelTemplate>"));
+                }
+
+                auto createItems = [&](const wchar_t* prefix)
+                {
+                    auto result = ref new Platform::Collections::Vector<Platform::Object^>();
+                    const wchar_t* interleaved[] = { L"repeat", L"middle", L"repeat", L"last", L"middle", L"tail" };
+                    for (int i = 0; i < 6; ++i)
+                    {
+                        std::wstring name(prefix);
+                        name += dataSet == 0 ? std::to_wstring(i) : dataSet == 1 ? L"duplicate" : interleaved[i];
+                        result->Append(ref new Platform::String(name.c_str()));
+                    }
+                    return result;
+                };
+                items = createItems(L"");
+                if (grouped)
+                {
+                    auto groups = ref new Platform::Collections::Vector<Platform::Object^>();
+                    groups->Append(createItems(L"first-"));
+                    groups->Append(createItems(L"second-"));
+                    view = ref new xaml::Data::CollectionViewSource();
+                    view->IsSourceGrouped = true;
+                    view->Source = groups;
+                    control->ItemsSource = view->View;
+                    auto style = ref new xaml_controls::GroupStyle();
+                    style->HeaderTemplate = safe_cast<xaml::DataTemplate^>(xaml::Markup::XamlReader::Load(
+                        L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='Group header' /></DataTemplate>"));
+                    control->GroupStyle->Append(style);
+                }
+                else
+                {
+                    control->ItemsSource = items;
+                }
+                auto root = ref new xaml_controls::Grid();
+                root->Children->Append(control);
+                TestServices::WindowHelper->WindowContent = root;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                peer = xaml_automation_peers::FrameworkElementAutomationPeer::CreatePeerForElement(control);
+                VERIFY_IS_NOT_NULL(peer);
+                if (!peer)
+                {
+                    return;
+                }
+                if (dataSet == 1)
+                {
+                    auto provider = dynamic_cast<xaml_automation::Provider::IItemContainerProvider^>(
+                        peer->GetPattern(xaml_automation_peers::PatternInterface::ItemContainer));
+                    VERIFY_IS_NOT_NULL(provider);
+                    if (provider)
+                    {
+                        VERIFY_IS_NOT_NULL(provider->FindItemByProperty(nullptr, nullptr, nullptr));
+                    }
+                }
+
+                ValidateItemPeerChildren(peer, false);
+                // Cache reuse must not reintroduce a repeated peer on subsequent navigation queries.
+                for (int pass = 0; pass < 2; ++pass)
+                {
+                    ValidateItemPeerChildren(peer, true);
+                }
+                auto children = peer->GetChildren();
+                const unsigned int expectedItemCount = dataSet == 0 ? 6u : dataSet == 1 ? 1u : 4u;
+                if (grouped)
+                {
+                    VERIFY_ARE_EQUAL(2u, children->Size);
+                    for (auto child : children)
+                    {
+                        VERIFY_ARE_EQUAL(xaml_automation_peers::AutomationControlType::Group, child->GetAutomationControlType());
+                        ValidateItemPeerChildren(child, false);
+                        ValidateItemPeerChildren(child, true);
+                        auto groupChildren = child->GetChildren();
+                        VERIFY_ARE_EQUAL(expectedItemCount + 1, groupChildren->Size);
+                        VERIFY_ARE_EQUAL(ref new Platform::String(L"Group header"), groupChildren->GetAt(0)->GetName());
+                    }
+                }
+                else
+                {
+                    VERIFY_ARE_EQUAL(expectedItemCount, children->Size);
+                    if (dataSet == 2 && children->Size == 4)
+                    {
+                        const wchar_t* expected[] = { L"repeat", L"middle", L"last", L"tail" };
+                        for (unsigned int i = 0; i < 4; ++i)
+                        {
+                            VERIFY_ARE_EQUAL(ref new Platform::String(expected[i]), children->GetAt(i)->GetName());
+                        }
+                    }
+                    if (children->Size > 0)
+                    {
+                        representative = children->GetAt(0);
+                    }
+                    auto list = dynamic_cast<xaml_controls::ListViewBase^>(control);
+                    if (list)
+                    {
+                        list->SelectedIndex = 0;
+                        auto selection = dynamic_cast<xaml_automation::Provider::ISelectionProvider^>(
+                            peer->GetPattern(xaml_automation_peers::PatternInterface::Selection));
+                        VERIFY_IS_NOT_NULL(selection);
+                        if (selection)
+                        {
+                            auto selected = selection->GetSelection();
+                            VERIFY_IS_NOT_NULL(selected);
+                            if (selected)
+                            {
+                                VERIFY_ARE_EQUAL(1u, selected->Length);
+                            }
+                        }
+                    }
+                    items->RemoveAt(0);
+                    items->Append(L"added tail");
+                }
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                if (!grouped && peer)
+                {
+                    ValidateItemPeerChildren(peer, false);
+                    ValidateItemPeerChildren(peer, true);
+                    if (dataSet != 0 && representative)
+                    {
+                        unsigned int index = 0;
+                        VERIFY_IS_TRUE(peer->GetChildren()->IndexOf(representative, &index), L"A surviving logical peer retains its identity.");
+                    }
+                }
+                TestServices::WindowHelper->WindowContent = nullptr;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+        }
     }
 
     void RegressionTests::VerifyAutomationFocusAfterSuspend()
