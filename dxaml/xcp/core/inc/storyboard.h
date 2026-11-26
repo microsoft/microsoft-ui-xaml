@@ -134,6 +134,9 @@ protected:
     CompositionAnimationConversionResult MakeCompositionAnimationVirtual(_Inout_ CompositionAnimationConversionContext* myContext) override;
 
 private:
+    friend class CTimelineGroup;
+    void TraceProfilerState(_In_z_ PCWSTR operation, bool observation = false, bool independentAnimation = false);
+
     _Check_return_ HRESULT CompleteInternal(
         bool handleInfiniteTimelines,
         bool isSynchronous

@@ -24,6 +24,8 @@ public:
     TEST_METHOD(NestedStoryboards)
     TEST_METHOD(ProgressRingStoryboard)
     TEST_METHOD(ProgressRingStoryboardKeyFrames)
+    TEST_METHOD(ProfilerBookkeepingIsOptIn)
+    TEST_METHOD(ProfilerBookkeepingAcrossThreads)
 };
 
 } } } } } }
