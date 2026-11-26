@@ -234,13 +234,15 @@ namespace DirectUI::ShapingEngine
         class ConstIterator
         {
         public:
-            ConstIterator(typename std::vector<TrackerPtr<T>>::const_iterator slots, std::vector<UINT>::const_iterator position)
-                : m_slots(slots), m_position(position)
+            ConstIterator(typename std::vector<TrackerPtr<T>>::const_iterator slots, UINT slotCount, std::vector<UINT>::const_iterator position)
+                : m_slots(slots), m_slotCount(slotCount), m_position(position)
             {
             }
 
             const TrackerPtr<T>& operator*() const
             {
+                // The order only names allocated slots (RemoveAt frees a slot before the item's release can run code).
+                FAIL_FAST_ASSERT(*m_position < m_slotCount);
                 return *(m_slots + *m_position);
             }
 
@@ -269,52 +271,68 @@ namespace DirectUI::ShapingEngine
 
         private:
             typename std::vector<TrackerPtr<T>>::const_iterator m_slots;
+            UINT m_slotCount = 0;
             std::vector<UINT>::const_iterator m_position;
         };
 
+        // TrackerPtrVector only asserts its index, so every slot is checked here before it is used.
         _Check_return_ HRESULT GetAt(_In_ UINT index, _Outptr_ T** item)
         {
-            IFCCHECK_RETURN(index < m_order.size());
-            IFC_RETURN(m_slots.GetAt(m_order[index], item));
+            UINT slot = 0;
+            IFC_RETURN(SlotAt(index, &slot));
+            IFC_RETURN(m_slots.GetAt(slot, item));
             return S_OK;
         }
 
         _Check_return_ HRESULT GetAsReferenceTrackerUnsafe(_In_ UINT index, _Outptr_ xaml_hosting::IReferenceTrackerInternal** itemNoRef)
         {
-            IFCCHECK_RETURN(index < m_order.size());
-            IFC_RETURN(m_slots.GetAsReferenceTrackerUnsafe(m_order[index], itemNoRef));
+            UINT slot = 0;
+            IFC_RETURN(SlotAt(index, &slot));
+            IFC_RETURN(m_slots.GetAsReferenceTrackerUnsafe(slot, itemNoRef));
             return S_OK;
         }
 
         _Check_return_ HRESULT SetAt(_In_ UINT index, _In_opt_ T* item)
         {
-            IFCCHECK_RETURN(index < m_order.size());
-            IFC_RETURN(m_slots.SetAt(m_order[index], item));
+            UINT slot = 0;
+            IFC_RETURN(SlotAt(index, &slot));
+            // The replaced item is released last, once the list is consistent (see RemoveAt).
+            ctl::ComPtr<T> spReleasedLast;
+            IFC_RETURN(m_slots.GetAt(slot, spReleasedLast.ReleaseAndGetAddressOf()));
+            IFC_RETURN(m_slots.SetAt(slot, item));
             return S_OK;
         }
 
         _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_opt_ T* item)
         {
             IFCEXPECTRC_RETURN(index <= m_order.size(), E_BOUNDS);
-            const UINT slot = AllocateSlot(item);
+            UINT slot = 0;
+            IFC_RETURN(AllocateSlot(item, &slot));
             m_order.insert(m_order.begin() + index, slot);
             return S_OK;
         }
 
+        // TrackerCollection::Append returns nothing; AllocateSlot cannot fail once the slot is checked, so a failure
+        // here is a broken invariant, not an error to recover from.
         void Append(_In_opt_ T* item)
         {
-            m_order.push_back(AllocateSlot(item));
+            UINT slot = 0;
+            IFCFAILFAST(AllocateSlot(item, &slot));
+            m_order.push_back(slot);
         }
 
-        // The item is released after it left the order, as TrackerPtrVector::RemoveAt releases it after the erase:
-        // its release may run code that reads or changes this list.
+        // The item leaves the order and its slot is freed before the item is released, as TrackerPtrVector::RemoveAt
+        // releases it after the erase: the release may run code that reads or changes this list (even Clear it), and
+        // the list is consistent by then. The release is the last thing this does.
         _Check_return_ HRESULT RemoveAt(_In_ UINT index)
         {
-            IFCCHECK_RETURN(index < m_order.size());
-            const UINT slot = m_order[index];
+            UINT slot = 0;
+            IFC_RETURN(SlotAt(index, &slot));
+            ctl::ComPtr<T> spReleasedLast;
+            IFC_RETURN(m_slots.GetAt(slot, spReleasedLast.ReleaseAndGetAddressOf()));
             m_order.erase(m_order.begin() + index);
-            IFC_RETURN(m_slots.SetAt(slot, nullptr));
             m_freeSlots.push_back(slot);
+            IFC_RETURN(m_slots.SetAt(slot, nullptr));
             return S_OK;
         }
 
@@ -333,12 +351,12 @@ namespace DirectUI::ShapingEngine
 
         ConstIterator Begin() const
         {
-            return ConstIterator(m_slots.Begin(), m_order.cbegin());
+            return ConstIterator(m_slots.Begin(), m_slots.Size(), m_order.cbegin());
         }
 
         ConstIterator End() const
         {
-            return ConstIterator(m_slots.Begin(), m_order.cend());
+            return ConstIterator(m_slots.Begin(), m_slots.Size(), m_order.cend());
         }
 
         UINT Size() const
@@ -357,18 +375,37 @@ namespace DirectUI::ShapingEngine
         }
 
     private:
-        UINT AllocateSlot(_In_opt_ T* item)
+        _Check_return_ HRESULT SlotAt(_In_ UINT index, _Out_ UINT* pSlot) const
         {
+            *pSlot = 0;
+            IFCCHECK_RETURN(index < m_order.size());
+            IFCCHECK_RETURN(m_order[index] < m_slots.Size());
+            *pSlot = m_order[index];
+            return S_OK;
+        }
+
+        // A free slot past the end (none should be) is dropped rather than used.
+        _Check_return_ HRESULT AllocateSlot(_In_opt_ T* item, _Out_ UINT* pSlot)
+        {
+            *pSlot = 0;
+            while (!m_freeSlots.empty() && m_freeSlots.back() >= m_slots.Size())
+            {
+                ASSERT(false);
+                m_freeSlots.pop_back();
+            }
+
             if (m_freeSlots.empty())
             {
                 m_slots.Append(item);
-                return m_slots.Size() - 1;
+                *pSlot = m_slots.Size() - 1;
+                return S_OK;
             }
 
             const UINT slot = m_freeSlots.back();
+            IFC_RETURN(m_slots.SetAt(slot, item));
             m_freeSlots.pop_back();
-            VERIFYHR(m_slots.SetAt(slot, item));
-            return slot;
+            *pSlot = slot;
+            return S_OK;
         }
 
         // Grows only by Append, so an item's TrackerPtr moves only when the vector reallocates (amortized O(1)).

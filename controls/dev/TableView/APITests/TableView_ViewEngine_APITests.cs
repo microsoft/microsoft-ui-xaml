@@ -98,6 +98,66 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         private static string GcCounts() => $"gc {GC.CollectionCount(0)}/{GC.CollectionCount(1)}/{GC.CollectionCount(2)}";
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the shaped view's slot storage (StableTrackerPtrVector) under GC stress: random inserts, removes, replaces and moves with full collections between them keep the view equal to a fresh view, and a row removed from the source is released by the view.")]
+        public void VerifySlotStorageUnderGcStress()
+        {
+            CollectGarbageAndWaitForIdle();
+            foreach (var levels in new[] { 0, 1 })
+            {
+                EngineFixture fixture = null;
+                RunOnUIThread.Execute(() => fixture = new EngineFixture(new Random(9001 + levels), levels, isLive: false));
+                for (var round = 0; round < 30; round++)
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        for (var i = 0; i < 10; i++)
+                        {
+                            var op = fixture.ApplyRandomOperation(allowPropertyEdits: false);
+                            fixture.VerifyMatchesFresh($"levels {levels}, round {round}, step {i} ({op})");
+                        }
+                        // The reference tracker walk runs over slots freed by the removes above.
+                        GC.Collect();
+                    });
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
+                RunOnUIThread.Execute(() => fixture.VerifyMatchesFresh($"levels {levels}, after the collections", isNewOracle: true));
+            }
+
+            ObservableCollection<EngineRow> rows = null;
+            CollectionViewSource cvs = null;
+            WeakReference removed = null;
+            RunOnUIThread.Execute(() =>
+            {
+                rows = MakeEngineRows();
+                cvs = new CollectionViewSource { Source = rows };
+                cvs.SortDescriptions.Add(new SortDescription("Score", CollectionViewSortDirection.Ascending));
+                Verify.AreEqual(rows.Count, cvs.View.Count);
+                removed = RemoveLastPresentedRow(rows, cvs.View);
+                rows.Add(new EngineRow(99, "Reuses the slot", 1, "X"));
+            });
+            CollectGarbageAndWaitForIdle();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(removed.IsAlive, "The view released the removed row.");
+                Verify.AreEqual(rows.Count, cvs.View.Count);
+                Verify.AreEqual(string.Join(",", rows.OrderBy(row => row.Score).ThenBy(row => rows.IndexOf(row)).Select(row => row.Id)),
+                    string.Join(",", cvs.View.Select(item => ((EngineRow)item).Id)), "The view is in Score order.");
+            });
+            CollectGarbageAndWaitForIdle();
+        }
+
+        // Not the current item, which the view holds.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static WeakReference RemoveLastPresentedRow(ObservableCollection<EngineRow> rows, ICollectionView view)
+        {
+            var row = (EngineRow)view[view.Count - 1];
+            rows.Remove(row);
+            return new WeakReference(row);
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies random property edits on a live sorted, filtered and grouped view, mixed with source changes, settle into the view a fresh view over the same items shows.")]
         public void VerifyLiveShapingMatchesFreshViewFuzz()
         {
