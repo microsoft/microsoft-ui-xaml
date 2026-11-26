@@ -26,6 +26,8 @@ namespace DirectUI
         // Override OnCreateAutomationPeer()
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ xaml_automation_peers::IAutomationPeer** returnValue) override;
 
+        void NotifyOfDataContextChange(_In_ const DataContextChangedParams& args) override;
+
     private:
         wm::Casting::ICastingSource *m_pCastingSource;
     };

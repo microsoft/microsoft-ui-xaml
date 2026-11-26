@@ -64,7 +64,8 @@ protected:
         _In_opt_ CUIElement *pUIElement,
         _In_opt_ const XTHICKNESS *pNinegrid,
         _In_opt_ HWTexture *pShapeHwTexture,
-        _In_ bool fIsHollow
+        _In_ bool fIsHollow,
+        _In_opt_ CImageBrush *pFallbackBrush = nullptr
         ) override;
 
     _Check_return_ HRESULT CalculateTileBrushTransform(

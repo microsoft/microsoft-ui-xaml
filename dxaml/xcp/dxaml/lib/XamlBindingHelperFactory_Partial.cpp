@@ -6,6 +6,7 @@
 #include "ValueBuffer.h"
 #include "DynamicValueConverter.h"
 #include "UIElement.g.h"
+#include "Image.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -74,7 +75,14 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SuspendRenderingImpl(_
 {
     IFCPTR_RETURN(pTarget);
 
-    static_cast<UIElement*>(pTarget)->GetHandle()->HideElementForSuspendRendering(true);
+    CUIElement* element = static_cast<UIElement*>(pTarget)->GetHandle();
+    element->HideElementForSuspendRendering(true);
+
+    // x:Bind suspends an x:Phase element when its container is recycled, until the phase for the new item runs.
+    if (auto image = do_pointer_cast<CImage>(element))
+    {
+        image->OnItemChanged();
+    }
 
     return S_OK;
 }
