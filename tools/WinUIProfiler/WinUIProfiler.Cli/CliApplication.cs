@@ -40,6 +40,8 @@ internal static partial class CliApplication
           WinUIProfiler.Cli interesting <session.sqlite> [--region <id>] [--json]
           WinUIProfiler.Cli symbolize <session.sqlite> --symbol-path <path> [--force]
           WinUIProfiler.Cli cpu <session.sqlite> [--thread <tid>] [--top <count>] [--json]
+          WinUIProfiler.Cli composition <session.sqlite> [--view winui|native] [--resource <native-resource-id>]
+                                                         [--offset <count>] [--count <count>] [--json]
 
           processes  Counts the events of each process with XAML events, to find the target PID.
                      A session file shows its process.
@@ -72,6 +74,9 @@ internal static partial class CliApplication
           cpu        Prints a session file's CPU samples: the threads by samples, the functions with the most
                      samples, exclusive (running) and inclusive (anywhere on the stack), and each sampled module's
                      symbols. --thread keeps one thread; --top is how many functions each list has (default 30).
+          composition  Shows native resource/proxy generations and matching observed releases, or WinUI creation
+                     counters with inferred sequence associations (the default winui view). --resource filters by
+                     NativeResourceId, not a COM or XAML ID. --count defaults to 1000; 0 reads all.
 
           WinUIProfiler.Cli events <session.sqlite> (--frame <id> | --region <id> | --row <start-seq> --thread <id> |
                                                    --thread <id> --first-seq <seq> --last-seq <seq>)
@@ -91,7 +96,8 @@ internal static partial class CliApplication
           The views are in the session file: any SQLite reader gets the same rows (see the README).
 
           Events are the events of the XAML providers (Microsoft-Windows-XAML, -XAML-Diagnostics
-          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), the kernel's
+          and -XAML-Profiler, Microsoft.UI.Xaml and Microsoft.UI.Xaml.Controls), runtime graphics
+          devices/resources (Direct3D11), native resource creation/release (DComp), the kernel's
           GPU memory usage and budget events (DxgKrnl) and its window focus events (Win32k), the
           marker providers' events of the process, and the launcher providers' events of the
           process that launched it that are part of its launch, which the commands mark as the
@@ -137,6 +143,11 @@ internal static partial class CliApplication
         if (args.Length > 0 && args[0] is "events" or "info")
         {
             return QueryCommands(args, output, error, cancellationToken);
+        }
+
+        if (args.Length > 0 && args[0] == "composition")
+        {
+            return Composition(args, output, error, cancellationToken);
         }
 
         if (args is ["processes" or "summary" or "dump" or "record" or "launch" or "objects" or "timeline" or "frames" or "interesting", "--help"])
@@ -1224,6 +1235,7 @@ internal static partial class CliApplication
         XamlProvider.Win32k => "Win32k",
         XamlProvider.Marker => "Marker",
         XamlProvider.Direct3D11 => "Direct3D11",
+        XamlProvider.DirectComposition => "DComp",
         _ => "DxgKrnl"
     };
 

@@ -23,7 +23,9 @@ public enum XamlProvider
     // A provider from the marker configuration; the event's Marker names it.
     Marker,
     // Devices, buffers and textures (Microsoft-Windows-Direct3D11).
-    Direct3D11
+    Direct3D11,
+    // Native composition resource creation and release (Microsoft-Windows-DirectComposition).
+    DirectComposition
 }
 
 public static class XamlProviders
@@ -34,6 +36,7 @@ public static class XamlProviders
     public static readonly Guid MicrosoftUIXaml = new("2dc72f6e-e4d1-5f58-3245-09a4243799dd");
     public static readonly Guid MicrosoftUIXamlControls = new("21e0ae07-56a7-55b5-12f9-011e6bc08cca");
     public static readonly Guid Direct3D11 = new("db6f6ddb-ac77-4e88-8253-819df9bbf140");
+    public static readonly Guid DirectComposition = new("c44219d0-f344-11df-a5e2-b307dfd72085");
     public static readonly Guid DxgKrnl = new("802ec45a-1e99-4b83-9920-87c98277ba9d");
     public static readonly Guid Win32k = new("8c416c79-d49b-4f01-a467-e56d3aa8234c");
 
@@ -54,7 +57,8 @@ public static class XamlProviders
 
     // Whether the profiler reads the provider's events anyway.
     public static bool IsBuiltIn(Guid providerId) =>
-        providerId == Direct3D11 || providerId == DxgKrnl || providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
+        providerId == Direct3D11 || providerId == DirectComposition || providerId == DxgKrnl ||
+        providerId == Win32k || XamlProviderIds.ContainsKey(providerId);
 
     // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
     public static Guid IdOf(XamlProvider provider) => provider switch
@@ -65,6 +69,7 @@ public static class XamlProviders
         XamlProvider.MicrosoftUIXaml => MicrosoftUIXaml,
         XamlProvider.MicrosoftUIXamlControls => MicrosoftUIXamlControls,
         XamlProvider.Direct3D11 => Direct3D11,
+        XamlProvider.DirectComposition => DirectComposition,
         XamlProvider.DxgKrnl => DxgKrnl,
         XamlProvider.Win32k => Win32k,
         _ => Guid.Empty
@@ -79,6 +84,7 @@ public static class XamlProviders
         XamlProvider.MicrosoftUIXaml => "Microsoft.UI.Xaml",
         XamlProvider.MicrosoftUIXamlControls => "Microsoft.UI.Xaml.Controls",
         XamlProvider.Direct3D11 => "Microsoft-Windows-Direct3D11",
+        XamlProvider.DirectComposition => "Microsoft-Windows-DirectComposition",
         XamlProvider.DxgKrnl => "Microsoft-Windows-DxgKrnl",
         XamlProvider.Win32k => "Microsoft-Windows-Win32k",
         _ => "Marker"

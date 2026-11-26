@@ -6,7 +6,7 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Ingestion;
 
-// Delivers one process's events from the XAML, Direct3D11 and marker providers, and the kernel's GPU memory, allocation
+// Delivers one process's events from the XAML, Direct3D11, DirectComposition and marker providers, and the kernel's GPU memory, allocation
 // and window focus events for it, from a TraceEvent source (an .etl file or a live session), and the launcher providers'
 // events of the process that launched it, when that is known. TraceLogging events carry their own field names and
 // types. Manifest events are decoded with the manifest Windows registers for their provider: system XAML's for
@@ -30,6 +30,9 @@ internal static class XamlEventSubscription
     // Direct3D11: Device Start/Stop/DCStart (3-5), Buffer and Texture1D/2D/3D Start/Stop/DCStart (6-17),
     // and D3D11CoreCreateDevice, KMDDeviceCreate and UMDDeviceCreate Start/Stop (20-25).
     internal static bool IsDirect3D11Event(int eventId) => eventId is >= 3 and <= 17 or >= 20 and <= 25;
+
+    // Both native creation paths use ID 1; the proxy-slot release uses ID 30. Keep each observation, not a deduplicated object.
+    internal static bool IsDirectCompositionEvent(int eventId) => eventId is 1 or 30;
 
     // DxgKrnl AdapterAllocation Start/Stop/DCStart (33-35) and DeviceAllocation Start/Stop/DCStart (36-38)
     // carry their owner in hProcessId, including when another process writes the event.
@@ -101,6 +104,16 @@ internal static class XamlEventSubscription
         IgnoreOtherProviders(source, markerIds);
         source.Dynamic.All += data =>
         {
+            if (data.ProviderGuid == XamlProviders.DirectComposition)
+            {
+                if (IsDirectCompositionEvent((int)data.ID) && (processId is null || data.ProcessID == processId))
+                {
+                    match(data, XamlProvider.DirectComposition, null, data.ProcessID);
+                }
+
+                return;
+            }
+
             if (data.ProviderGuid == XamlProviders.Direct3D11)
             {
                 if (IsDirect3D11Event((int)data.ID) && (processId is null || data.ProcessID == processId))

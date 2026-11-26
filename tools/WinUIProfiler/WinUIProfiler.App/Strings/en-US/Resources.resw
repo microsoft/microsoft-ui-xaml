@@ -525,4 +525,48 @@
   <data name="CpuViewFunctionToolTipFormat" xml:space="preserve"><value>{0}&#10;Self: {1:N0} samples ({2})&#10;Total: {3:N0} samples ({4})</value></data>
   <data name="CpuViewNodeToolTipFormat" xml:space="preserve"><value>{0}&#10;{1:N0} samples ({2})</value></data>
   <data name="TelemetryNotice.Title" xml:space="preserve"><value>Usage data</value></data>
+  <data name="SnapshotCompositionLifetimeHeading.Header" xml:space="preserve"><value>Composition lifetimes (recorded ETW)</value></data>
+  <data name="SnapshotCompositionStatus.AutomationProperties.Name" xml:space="preserve"><value>Snapshot Composition recording status</value></data>
+  <data name="SnapshotCompositionScopeFormat" xml:space="preserve"><value>Process {0}; selected snapshot end QPC {1}. Only evidence at or before this snapshot is shown. Times are from the recording start.</value></data>
+  <data name="SnapshotCompositionEvidenceScope.Text" xml:space="preserve"><value>Process-wide evidence, not selected tree-node ownership. WinUI links are inferred from sequence; native IDs identify resource/proxy generations, not public COM objects. An observed release is not final COM destruction or GPU retirement. A missing release does not prove survival, disuse, or a leak.</value></data>
+  <data name="SnapshotCompositionLoading" xml:space="preserve"><value>Reading Composition evidence for this snapshot...</value></data>
+  <data name="SnapshotCompositionAvailable" xml:space="preserve"><value>Composition evidence through the selected snapshot.</value></data>
+  <data name="SnapshotCompositionNotRecorded" xml:space="preserve"><value>This snapshot has no associated Composition lifetime index. Capture a new snapshot while recording with this profiler.</value></data>
+  <data name="SnapshotCompositionDifferentProcess" xml:space="preserve"><value>The recording does not match this snapshot's process ID and creation time. No lifetime state is shown.</value></data>
+  <data name="SnapshotCompositionDifferentClock" xml:space="preserve"><value>The recording does not have this live snapshot's clock. Trace replay is not assumed to share it.</value></data>
+  <data name="SnapshotCompositionOutsideRecording" xml:space="preserve"><value>This snapshot precedes the recording. No lifetime state is shown.</value></data>
+  <data name="SnapshotCompositionHistoryTrimmed" xml:space="preserve"><value>This snapshot's event history was trimmed. Newer recording state is not substituted.</value></data>
+  <data name="SnapshotCompositionNoEvents" xml:space="preserve"><value>No native Composition events were observed through this snapshot. This does not mean the process had no Composition objects.</value></data>
+  <data name="SnapshotCompositionUnavailable" xml:space="preserve"><value>Composition recording evidence is unavailable.</value></data>
+  <data name="SnapshotCompositionTrimmed" xml:space="preserve"><value>Older evidence was trimmed; counts describe retained observations.</value></data>
+  <data name="SnapshotCompositionNativeSummary.AutomationProperties.Name" xml:space="preserve"><value>Native Composition observations through this snapshot</value></data>
+  <data name="SnapshotCompositionWinUISummary.AutomationProperties.Name" xml:space="preserve"><value>WinUI Composition observations through this snapshot</value></data>
+  <data name="SnapshotCompositionNativeSummaryFormat" xml:space="preserve"><value>Native: {0:N0} creation observations; {1:N0} releases; {2:N0} matched releases; {3:N0} generations with no observed release.</value></data>
+  <data name="SnapshotCompositionWinUISummaryFormat" xml:space="preserve"><value>WinUI: {0:N0} creations; {1:N0} inferred links; {2:N0} ambiguous; {3:N0} unattributed.</value></data>
+  <data name="SnapshotCompositionMode.AutomationProperties.Name" xml:space="preserve"><value>Composition evidence to show</value></data>
+  <data name="SnapshotCompositionNativeMode.Content" xml:space="preserve"><value>Native lifetimes</value></data>
+  <data name="SnapshotCompositionWinUIMode.Content" xml:space="preserve"><value>WinUI creations</value></data>
+  <data name="SnapshotCompositionSearch.PlaceholderText" xml:space="preserve"><value>Search name, ID, pointer, handle, or evidence</value></data>
+  <data name="SnapshotCompositionSearch.AutomationProperties.Name" xml:space="preserve"><value>Search snapshot Composition lifetimes</value></data>
+  <data name="SnapshotCompositionReleasedOnly.Content" xml:space="preserve"><value>Released by snapshot</value></data>
+  <data name="SnapshotCompositionRefresh.Content" xml:space="preserve"><value>Refresh</value></data>
+  <data name="SnapshotCompositionRefresh.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve"><value>Read newly flushed evidence again, keeping this snapshot's timestamp as the cutoff.</value></data>
+  <data name="SnapshotCompositionNameColumn.Text" xml:space="preserve"><value>Name / resource type</value></data>
+  <data name="SnapshotCompositionIdColumn.Text" xml:space="preserve"><value>Native ID</value></data>
+  <data name="SnapshotCompositionCreationColumn.Text" xml:space="preserve"><value>Created (ms)</value></data>
+  <data name="SnapshotCompositionReleaseColumn.Text" xml:space="preserve"><value>Released (ms)</value></data>
+  <data name="SnapshotCompositionEvidenceColumn.Text" xml:space="preserve"><value>Evidence</value></data>
+  <data name="SnapshotCompositionLifetimes.AutomationProperties.Name" xml:space="preserve"><value>Composition lifetimes through the selected snapshot</value></data>
+  <data name="SnapshotCompositionEmpty.Text" xml:space="preserve"><value>No matching lifetime observations for this snapshot.</value></data>
+  <data name="SnapshotCompositionDetailsHeading.Header" xml:space="preserve"><value>Selected lifetime evidence</value></data>
+  <data name="SnapshotCompositionLifetimeDetails.AutomationProperties.Name" xml:space="preserve"><value>Selected native lifetime or inferred WinUI creation evidence</value></data>
+  <data name="SnapshotCompositionSelectLifetime" xml:space="preserve"><value>Select a row to see original pointers, separate channel representations, creation/release event sequence numbers, and attribution confidence.</value></data>
+  <data name="SnapshotCompositionTypeFormat" xml:space="preserve"><value>Native resource type {0}</value></data>
+  <data name="SnapshotCompositionUnknownType" xml:space="preserve"><value>Native resource type not observed</value></data>
+  <data name="SnapshotCompositionReleaseObserved" xml:space="preserve"><value>Release observed</value></data>
+  <data name="SnapshotCompositionReleaseObservedCreationUnknown" xml:space="preserve"><value>Release observed; creation unknown</value></data>
+  <data name="SnapshotCompositionEndNotObserved" xml:space="preserve"><value>End not observed</value></data>
+  <data name="SnapshotCompositionInferredSequence" xml:space="preserve"><value>Inferred (sequence)</value></data>
+  <data name="SnapshotCompositionAmbiguous" xml:space="preserve"><value>Ambiguous</value></data>
+  <data name="SnapshotCompositionUnattributed" xml:space="preserve"><value>Unattributed</value></data>
 </root>
