@@ -754,6 +754,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
             }
         }
 
+        [TestMethod]
+        public void TabNavigationWithoutSelectionWhenMenuIsOnlyTabStopTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Menu Only Tab Stop Test" }))
+            {
+                Log.Comment("No selection, Menu Item 1 expanded, and the menu items are the only tab stops in the window");
+                Log.Comment("The menu is re-entered at its first item on Tab and at its last item on Shift+Tab");
+                PressTabFrom("Menu Item 1", ModifierKey.None);
+                VerifyFocusedElement("Menu Item 1", "Tab from Menu Item 1");
+
+                PressTabFrom("Menu Item 3", ModifierKey.Shift);
+                VerifyFocusedElement("Menu Item 4", "Shift+Tab from Menu Item 3");
+            }
+        }
+
         private static void RemoveSelectionOnHierarchicalMarkupPage()
         {
             new Button(FindElement.ByName("RemoveSelectionButton")).Invoke();
