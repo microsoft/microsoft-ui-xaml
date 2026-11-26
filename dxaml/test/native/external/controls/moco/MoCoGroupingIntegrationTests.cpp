@@ -2260,7 +2260,7 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         }
 #else
         // The stable build keeps the original move, which does not put back an item whose InsertAt failed.
-        LOG_OUTPUT(L"Skipped: the failed-move handling is prerelease only.");
+        WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"The failed-move handling is prerelease only.");
 #endif
     }
 
@@ -2530,7 +2530,7 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
 #else
         // The stable build has no shaping API; its reorder is main's.
-        LOG_OUTPUT(L"Skipped: reorder over a sorted view is refused in prerelease builds only.");
+        WEX::Logging::Log::Result(WEX::Logging::TestResults::Skipped, L"Reorder over a sorted view is refused in prerelease builds only.");
 #endif
     }
 

@@ -1550,70 +1550,78 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() =>
+            try
             {
-                Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
-                tableView.GroupExpanding += (s, e) =>
+                RunOnUIThread.Execute(() =>
                 {
-                    raised++;
-                    if (throwing)
+                    Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                    tableView.GroupExpanding += (s, e) =>
                     {
-                        throw new InvalidOperationException("GroupExpanding handler fault");
+                        raised++;
+                        if (throwing)
+                        {
+                            throw new InvalidOperationException("GroupExpanding handler fault");
+                        }
+                    };
+                    try
+                    {
+                        if (route == "Peer")
+                        {
+                            // Posted to the dispatcher: the handler runs on a later turn, outside this try.
+                            unhandled = new UnhandledErrors();
+                            GetExpandCollapseProvider(tableView, 0).Expand();
+                        }
+                        else
+                        {
+                            tableView.ExpandGroup("Designer");
+                        }
                     }
-                };
-                try
+                    catch (Exception e)
+                    {
+                        escaped = e;
+                    }
+
+                    if (route == "ExpandGroup")
+                    {
+                        Verify.AreEqual(1, raised, "ExpandGroup must raise GroupExpanding synchronously.");
+                    }
+                });
+
+                SettleLayout(tableView);
+
+                RunOnUIThread.Execute(() =>
                 {
                     if (route == "Peer")
                     {
-                        // Posted to the dispatcher: the handler runs on a later turn, outside this try.
-                        unhandled = new UnhandledErrors();
-                        GetExpandCollapseProvider(tableView, 0).Expand();
+                        unhandled.Dispose();
+                        Verify.IsNull(escaped, "Peer: Expand posts the expansion, so nothing is thrown to its caller.");
+                        Verify.AreEqual(1, unhandled.Messages.Count, $"Peer: the handler's exception reaches Application.UnhandledException once: {string.Join(" | ", unhandled.Messages)}");
+                        Verify.IsTrue(unhandled.Messages[0].Contains("GroupExpanding handler fault"), $"Peer: it is the handler's exception: {unhandled.Messages[0]}");
                     }
                     else
                     {
-                        tableView.ExpandGroup("Designer");
+                        Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
+                        Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
                     }
-                }
-                catch (Exception e)
-                {
-                    escaped = e;
-                }
+                    Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
+                    Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: a throwing GroupExpanding stops the expansion.");
+                    var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                    var inTable = false;
+                    for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
+                    {
+                        inTable |= ReferenceEquals(current, tableView);
+                    }
+                    Verify.IsTrue(inTable, $"{route}: focus must stay inside the table.");
 
-                if (route == "ExpandGroup")
-                {
-                    Verify.AreEqual(1, raised, "ExpandGroup must raise GroupExpanding synchronously.");
-                }
-            });
-
-            SettleLayout(tableView);
-
-            RunOnUIThread.Execute(() =>
+                    throwing = false;
+                    tableView.ExpandAllGroups();
+                });
+            }
+            finally
             {
-                if (route == "Peer")
-                {
-                    unhandled.Dispose();
-                    Verify.IsNull(escaped, "Peer: Expand posts the expansion, so nothing is thrown to its caller.");
-                    Verify.AreEqual(1, unhandled.Messages.Count, $"Peer: the handler's exception reaches Application.UnhandledException once: {string.Join(" | ", unhandled.Messages)}");
-                    Verify.IsTrue(unhandled.Messages[0].Contains("GroupExpanding handler fault"), $"Peer: it is the handler's exception: {unhandled.Messages[0]}");
-                }
-                else
-                {
-                    Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
-                    Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
-                }
-                Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
-                Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: a throwing GroupExpanding stops the expansion.");
-                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
-                var inTable = false;
-                for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
-                {
-                    inTable |= ReferenceEquals(current, tableView);
-                }
-                Verify.IsTrue(inTable, $"{route}: focus must stay inside the table.");
-
-                throwing = false;
-                tableView.ExpandAllGroups();
-            });
+                // Detached even when a Verify above failed, so the handler cannot hide a later test's exceptions.
+                RunOnUIThread.Execute(() => unhandled?.Dispose());
+            }
 
             SettleLayout(tableView);
 

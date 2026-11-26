@@ -741,12 +741,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             return row == null ? null : GetCellText(GetRowCell(row, columnIndex));
         }
     }
-    // The default row item: two plain, non-notifying string properties. Tests that need change
-    // notification, validation, or grouping keys use the richer items defined by their own area.
     // Application.UnhandledException while it is attached (handled, so the app keeps running). Create and dispose it on
-    // the UI thread.
+    // the UI thread; Dispose may be called more than once (a test also disposes it in a finally).
     internal sealed class UnhandledErrors : IDisposable
     {
+        private bool m_disposed;
+
         public UnhandledErrors()
         {
             Application.Current.UnhandledException += OnUnhandledException;
@@ -756,7 +756,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         public void Dispose()
         {
-            Application.Current.UnhandledException -= OnUnhandledException;
+            if (!m_disposed)
+            {
+                m_disposed = true;
+                Application.Current.UnhandledException -= OnUnhandledException;
+            }
         }
 
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -766,6 +770,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
+    // The default row item: two plain, non-notifying string properties. Tests that need change
+    // notification, validation, or grouping keys use the richer items defined by their own area.
     internal sealed class Person
     {
         public string Name { get; set; }

@@ -734,38 +734,46 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var armed = false;
             var fired = 0;
             UnhandledErrors unhandled = null;
-            RunOnUIThread.Execute(() =>
+            try
             {
-                VerifyTree(tableView, FullTree, "precondition: every row expanded");
-                unhandled = new UnhandledErrors();
-                Action redeclare = () =>
+                RunOnUIThread.Execute(() =>
                 {
-                    if (!armed)
+                    VerifyTree(tableView, FullTree, "precondition: every row expanded");
+                    unhandled = new UnhandledErrors();
+                    Action redeclare = () =>
                     {
-                        return;
-                    }
-                    armed = false;
-                    fired++;
-                    tableView.ItemKeyPath = "";
-                    tableView.ItemKeyPath = IdPath;
-                };
-                var repeater = GetRowsRepeater(tableView);
-                repeater.ElementClearing += (s, e) => redeclare();
-                repeater.ElementIndexChanged += (s, e) => redeclare();
-                armed = true;
-                // Ada's visible descendants (Ben, Dan, Cy) leave one row at a time; the first notification re-declares.
-                ToggleTreeRow(tableView, "Ada", false);
-            });
-            SettleLayout(tableView);
+                        if (!armed)
+                        {
+                            return;
+                        }
+                        armed = false;
+                        fired++;
+                        tableView.ItemKeyPath = "";
+                        tableView.ItemKeyPath = IdPath;
+                    };
+                    var repeater = GetRowsRepeater(tableView);
+                    repeater.ElementClearing += (s, e) => redeclare();
+                    repeater.ElementIndexChanged += (s, e) => redeclare();
+                    armed = true;
+                    // Ada's visible descendants (Ben, Dan, Cy) leave one row at a time; the first notification re-declares.
+                    ToggleTreeRow(tableView, "Ada", false);
+                });
+                SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() =>
+                RunOnUIThread.Execute(() =>
+                {
+                    unhandled.Dispose();
+                    Verify.AreEqual(1, fired, "A repeater handler re-declared the relation during the collapse.");
+                    Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown: {string.Join(" | ", unhandled.Messages)}");
+                    VerifyTree(tableView, Roots, "a relation declared again starts collapsed");
+                    Verify.AreEqual(3, GetProjectedCount(tableView), "Each root is projected once.");
+                });
+            }
+            finally
             {
-                unhandled.Dispose();
-                Verify.AreEqual(1, fired, "A repeater handler re-declared the relation during the collapse.");
-                Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown: {string.Join(" | ", unhandled.Messages)}");
-                VerifyTree(tableView, Roots, "a relation declared again starts collapsed");
-                Verify.AreEqual(3, GetProjectedCount(tableView), "Each root is projected once.");
-            });
+                // Detached even when a Verify above failed, so the handler cannot hide a later test's exceptions.
+                RunOnUIThread.Execute(() => unhandled?.Dispose());
+            }
             Toggle(tableView, "Ada", true);
             RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "the new tree expands"));
         }
@@ -784,37 +792,45 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             var fired = 0;
             string thrown = null;
             UnhandledErrors unhandled = null;
-            RunOnUIThread.Execute(() =>
+            try
             {
-                VerifyTree(tableView, FullTree, "precondition: every row expanded");
-                unhandled = new UnhandledErrors();
-                Action clear = () =>
+                RunOnUIThread.Execute(() =>
                 {
-                    if (!armed)
+                    VerifyTree(tableView, FullTree, "precondition: every row expanded");
+                    unhandled = new UnhandledErrors();
+                    Action clear = () =>
                     {
-                        return;
-                    }
-                    armed = false;
-                    fired++;
-                    tableView.ItemKeyPath = "";
-                };
-                var repeater = GetRowsRepeater(tableView);
-                repeater.ElementClearing += (s, e) => clear();
-                repeater.ElementIndexChanged += (s, e) => clear();
-                armed = true;
-                // Dan is a visible leaf: the Replace removes its row, then inserts Dov's.
-                thrown = ThrownTypeName(() => list[3] = new TreeEmployee { Id = 8, ManagerId = 2, Name = "Dov", Dept = "Eng" });
-            });
-            SettleLayout(tableView);
+                        if (!armed)
+                        {
+                            return;
+                        }
+                        armed = false;
+                        fired++;
+                        tableView.ItemKeyPath = "";
+                    };
+                    var repeater = GetRowsRepeater(tableView);
+                    repeater.ElementClearing += (s, e) => clear();
+                    repeater.ElementIndexChanged += (s, e) => clear();
+                    armed = true;
+                    // Dan is a visible leaf: the Replace removes its row, then inserts Dov's.
+                    thrown = ThrownTypeName(() => list[3] = new TreeEmployee { Id = 8, ManagerId = 2, Name = "Dov", Dept = "Eng" });
+                });
+                SettleLayout(tableView);
 
-            RunOnUIThread.Execute(() =>
+                RunOnUIThread.Execute(() =>
+                {
+                    unhandled.Dispose();
+                    Verify.AreEqual(1, fired, "A repeater handler cleared the relation during the Replace.");
+                    Verify.AreEqual("no exception", thrown, "The Replace does not throw.");
+                    Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown later: {string.Join(" | ", unhandled.Messages)}");
+                    VerifyTree(tableView, "Ada Ben Cy Dov Eve Fay Gus", "the relation cleared during the Replace");
+                });
+            }
+            finally
             {
-                unhandled.Dispose();
-                Verify.AreEqual(1, fired, "A repeater handler cleared the relation during the Replace.");
-                Verify.AreEqual("no exception", thrown, "The Replace does not throw.");
-                Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown later: {string.Join(" | ", unhandled.Messages)}");
-                VerifyTree(tableView, "Ada Ben Cy Dov Eve Fay Gus", "the relation cleared during the Replace");
-            });
+                // Detached even when a Verify above failed, so the handler cannot hide a later test's exceptions.
+                RunOnUIThread.Execute(() => unhandled?.Dispose());
+            }
         }
 
         #endregion
