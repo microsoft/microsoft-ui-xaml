@@ -650,7 +650,7 @@ shared view. Editing (`IEditableCollectionView`) is out of scope: TableView does
 | After a recompute | Before first / after last kept, else item followed, else first | Same | Match | Batch 1 |
 | `CurrentChanging` on a recompute | One, non-cancelable, before recomputing | Same (was a cancelable one after the `Reset`, up to three pairs with a transient "before first") | Match | Handlers save state with the old currency; selection no longer flickers through "nothing" |
 | Currency when the `Reset` is raised | Already placed | Same (was stale) | Match | A `VectorChanged` handler reads consistent currency |
-| A `Reset` handler moves the currency | Kept (WPF's `Selector` reselects the current item) | Kept when it moved to an item (an app's `MoveCurrentTo`); overruled once, non-cancelable, when it moved before the first item | Deviate (before-first only) | WinUI's `Selector` unselects a moved item on `Reset` and moves currency to "nothing" (before the first item); without this a sort would drop a synchronized ListView's selection. Any other move is the app's and stays (round A, A-9) |
+| A `Reset` handler moves the currency | Kept (WPF's `Selector` reselects the current item) | Kept when it moved to an item (an app's `MoveCurrentTo`); overruled once, non-cancelable, when it moved before the first item | Deviate (before-first only) | WinUI's `Selector` unselects a moved item on `Reset` and moves currency to "nothing" (before the first item); without this a sort would drop a synchronized ListView's selection. Any other move is the app's and stays (round A, A-9); its own `CurrentChanged` is followed by the refresh's, which reports the final currency (round B, B-3) |
 | Order of the currency events | `CurrentChanged`, then `PropertyChanged` | `PropertyChanged`, then `CurrentChanged` | Deviate | `CollectionView`'s order, one order for every view |
 | Live move of the current item | `Move`: currency moves, only `CurrentPosition` raised | Same, over `ItemRemoved` + `ItemInserted` (was two `CurrentChanging`/`CurrentChanged` pairs) | Match | WinRT has no `Move`; the pair is folded back into one |
 | Current item dropped by live filtering | To the item now at its place, or the last | Same (was the first item) | Match | Same rule as a removal |
@@ -1023,7 +1023,7 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   moves its group's tracker pointers. The live restore's cost model keeps `c_nsPerShiftedRow` at the measured 14 ns
   (round A, A-4: batch 6 had lowered it to an estimated 2 ns, which would prefer moves over a `Reset` for about 7×
   more rows, with different focus, scroll and UIA outcomes, before anything was measured).
-  **TODO: recalibrate from bench.** Measure the post-P-2 per-row shift cost with `CollectionViewPerfBenchmarks`
+  **TODO: recalibrate from bench** (bench pending in the PR #12654 pipeline). Measure the post-P-2 per-row shift cost with `CollectionViewPerfBenchmarks`
   (amd64fre) and update `c_nsPerShiftedRow` and the move-versus-`Reset` row counts in Behavior (computed at 14 ns).
 - **P-5.** The tracker shift it listed is gone (P-2). The flat `std::find`, the source-index renumbering and burst
   coalescing are not changed: they are integer scans, and coalescing changes the notifications (out of scope).
@@ -1096,14 +1096,21 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   out", so no future reader of the per-item leaf table mistakes one for the other.
 - **Inconsistent comparers.** An app `CustomSort` (on the view, or a TableView column's `CustomSortComparer`) that is
   not an order, or whose items change while the view sorts, cannot corrupt the view: those sorts use a bounds-safe
-  stable merge sort (`SafeStableSort`) that reads and writes only inside the range whatever the comparer returns, and
-  a final pass over neighbours reports an order it finds inconsistent as `E_INVALIDARG` ("The comparer returned
-  inconsistent results...", WPF's `InvalidOperationException` from `Array.Sort`); the view keeps its previous output,
-  as for a comparer that throws. Detection is best effort: an inconsistency that happens to leave neighbours in order
-  is not reported, and the view then shows that order. `SortDescriptions` compare cached keys with a total order
+  stable merge sort (`SafeStableSort`) that reads and writes only inside the range whatever the comparer returns.
+  Such a comparer is not an error: the view keeps the permutation the sort produced, as WPF's `Array.Sort` keeps one
+  (it throws `InvalidOperationException` only when introsort happens to run past the range, which depends on size and
+  data). The common app comparer that never returns 0 (`a > b ? 1 : -1`, or `a <= b ? -1 : 1`) makes two equal items
+  each "before" the other; that is a tie, and the rows come out in order with ties in some order (round B, B-1/RB-1:
+  round A's final neighbour pass reported it as `E_INVALIDARG`, so any duplicate key failed the sort and a TableView
+  header tap threw). Only a comparer that fails (throws) ends the sort; the view then keeps its previous output. A chk
+  build checks neighbours after the sort and traces an order the comparer contradicts outright (the later neighbour is
+    before the earlier one and not also after it) as the `CollectionViewContainedFailure` event with
+  `E_INVALIDARG` and a debugger message; fre makes no comparison after the merge. TableView also contains an
+  `E_INVALIDARG` that an app's own view raises from a column comparer's sort as a comparer fault (the previous sort
+  stays, no exception from the header). `SortDescriptions` compare cached keys with a total order
   (`CompareSortKeys`, then the unique source index), so they keep `std::stable_sort`; a group `CustomSort` places
-  groups by bounded binary search or scan. Cost: an already-sorted input takes about 2n comparisons (one per run join
-  and the final check); otherwise the final check adds n − 1 to the merge sort's.
+  groups by bounded binary search or scan. Cost: an already-sorted input takes about 2n comparisons (one per run
+  join); otherwise the merge sort's n log n.
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
   It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
 - **API shape.** The `GroupDescription` base, the CVS `Filter` event and the enum names were settled in the
@@ -1139,7 +1146,23 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
 - **Presented-list storage re-entrancy.** `StableTrackerPtrVector` frees a removed item's slot and takes it out of the
   order before the item is released (and `SetAt` releases the replaced item last), so code the release runs, even one
   that clears the list, sees a consistent list; every slot is bounds-checked before use (`TrackerPtrVector` only
-  asserts) and the iterator fails fast on a slot past the end (round A, A-2).
+  asserts) and the iterator fails fast on a slot past the end (round A, A-2). `Clear` takes its items out first and
+  releases them after the list is empty, so a release that inserts into the list does not grow the storage being
+  walked (round B, B-2).
+- **TableView tree re-entrancy (round B, SB-1, SB-2).** The tree rows are published one row at a time, and an
+  `ItemsRepeater` handler of a row change (`ElementClearing`, `ElementIndexChanged`) can release the tree and declare
+  a new one (`ItemKeyPath` cleared and set again) before it returns. Each loop compares a tree generation, bumped by
+  every `SetTreeIndex` and `ClearTreeIndex`, and the rows collection it started on, and checks its index against the
+  node rows before each erase or insert; on a change it stops, and the new tree's pending rebuild publishes its rows.
+  A `Replace` whose removal was interrupted does not go on to insert, and an insert finds no index once the tree is
+  released.
+- **App groups are app objects (round B, SB-3).** TableView reads an app view's nested groups (`GroupItems` that are
+  groups) with an explicit stack: a group seen before (a group that contains itself, or a cycle) is skipped, and
+  levels below 64 are shown as leaves, so a malformed group graph cannot overflow the stack.
+- **`ICollectionViewGroup2` gating.** The view's computed groups (`CollectionViewGroupInternal`) answer
+  `ICollectionViewGroup2` in `QueryInterface` and `GetIids` only while `Feature_ExperimentalApi` is enabled, as
+  `CollectionViewGroup` does; both classes read the feature once, at construction, so `GetIids` sizes and fills its
+  array from one answer (round B, B-6, RB-4).
 - **Failed reorder, prerelease only (round A, RA-3).** When an `InsertAt` fails and the collection is one item short,
   the item is looked for at the insert index by pointer identity, so a boxed value item (a new box on each `GetAt`)
   whose `InsertAt` inserted and then failed while a handler removed another item is inserted again. A failed reorder
