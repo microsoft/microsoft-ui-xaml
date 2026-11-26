@@ -14,8 +14,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableViewColumn.g.cpp"
 
 GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullptr };
-GlobalDependencyProperty TableViewColumnProperties::s_CanResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CanSortProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_CanUserResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellContextFlyoutProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
@@ -50,17 +50,6 @@ void TableViewColumnProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(120.0),
                 nullptr);
     }
-    if (!s_CanResizeProperty)
-    {
-        s_CanResizeProperty =
-            InitializeDependencyProperty(
-                L"CanResize",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::TableViewColumn>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnCanResizePropertyChanged));
-    }
     if (!s_CanSortProperty)
     {
         s_CanSortProperty =
@@ -71,6 +60,17 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnCanSortPropertyChanged));
+    }
+    if (!s_CanUserResizeProperty)
+    {
+        s_CanUserResizeProperty =
+            InitializeDependencyProperty(
+                L"CanUserResize",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanUserResizePropertyChanged));
     }
     if (!s_CellContextFlyoutProperty)
     {
@@ -242,8 +242,8 @@ void TableViewColumnProperties::EnsureProperties()
 void TableViewColumnProperties::ClearProperties()
 {
     s_ActualWidthProperty = nullptr;
-    s_CanResizeProperty = nullptr;
     s_CanSortProperty = nullptr;
+    s_CanUserResizeProperty = nullptr;
     s_CellContextFlyoutProperty = nullptr;
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
@@ -261,7 +261,7 @@ void TableViewColumnProperties::ClearProperties()
     s_WidthProperty = nullptr;
 }
 
-void TableViewColumnProperties::OnCanResizePropertyChanged(
+void TableViewColumnProperties::OnCanSortPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -269,7 +269,7 @@ void TableViewColumnProperties::OnCanResizePropertyChanged(
     winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
 }
 
-void TableViewColumnProperties::OnCanSortPropertyChanged(
+void TableViewColumnProperties::OnCanUserResizePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -370,19 +370,6 @@ double TableViewColumnProperties::ActualWidth()
     return ValueHelper<double>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_ActualWidthProperty));
 }
 
-void TableViewColumnProperties::CanResize(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TableViewColumn*>(this)->SetValue(s_CanResizeProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool TableViewColumnProperties::CanResize()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanResizeProperty));
-}
-
 void TableViewColumnProperties::CanSort(bool value)
 {
     [[gsl::suppress(con)]]
@@ -394,6 +381,19 @@ void TableViewColumnProperties::CanSort(bool value)
 bool TableViewColumnProperties::CanSort()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanSortProperty));
+}
+
+void TableViewColumnProperties::CanUserResize(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_CanUserResizeProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewColumnProperties::CanUserResize()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanUserResizeProperty));
 }
 
 void TableViewColumnProperties::CellContextFlyout(winrt::FlyoutBase const& value)

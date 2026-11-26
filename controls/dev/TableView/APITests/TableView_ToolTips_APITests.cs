@@ -769,7 +769,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(string.Empty, AutomationProperties.GetHelpText(GetHeaderCell(tableView, 0)),
                     "Header tooltips must not publish help text onto the element, where no client would read it.");
 
-                var peer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var peer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
                 Verify.AreEqual("The person's display name", peer.GetHelpText(),
                     "The header peer is the only route a client has to the tooltip text.");
             });
@@ -802,7 +802,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     tableView.SortByColumn(column, direction);
 
-                    var text = new TableViewColumnHeaderAutomationPeer(tableView, column).GetHelpText();
+                    var text = CreateColumnHeaderPeer(tableView, column).GetHelpText();
                     Log.Comment($"HelpText at {direction}: '{text}'");
                     helpTexts.Add(text);
                 }
@@ -841,7 +841,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var duplicatePeer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var duplicatePeer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
                 Verify.AreEqual("Name", duplicatePeer.GetName(), "Precondition: the header name is the string header.");
 
                 var duplicateHelpText = duplicatePeer.GetHelpText();
@@ -849,7 +849,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     $"A tooltip repeating the header name must not be restated as help text; saw '{duplicateHelpText}'.");
 
                 // The second arm is what stops a peer that returns empty unconditionally from passing.
-                Verify.AreEqual("What they do", new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]).GetHelpText(),
+                Verify.AreEqual("What they do", CreateColumnHeaderPeer(tableView, tableView.Columns[1]).GetHelpText(),
                     "A tooltip that adds information must still be reported.");
             });
         }

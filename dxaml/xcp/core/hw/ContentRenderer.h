@@ -21,6 +21,7 @@ class CContentControl;
 class CCoreServices;
 class CSolidColorBrush;
 class CBrush;
+class CImageBrush;
 class CCalendarViewBaseItemChrome;
 class CListViewBaseItemChrome;
 class CMILMatrix;
@@ -170,6 +171,7 @@ public:
         bool allowAnimatedColor // TODO WinRT: Figure out solid color animation story
         ) = 0;
 
+    // pFallbackBrush, if set, is drawn while pBrush (an ImageBrush) has no surface yet; decodes are only requested for pBrush.
     virtual _Check_return_ HRESULT GeneralImageRenderContent(
         _In_ const XRECTF& rect,
         _In_ const XRECTF& brushBounds,
@@ -178,7 +180,8 @@ public:
         _In_opt_ CUIElement *pUIElement,
         _In_opt_ const XTHICKNESS *pNinegrid,
         _In_opt_ HWTexture *pShapeHwTexture,
-        _In_ bool fIsHollow
+        _In_ bool fIsHollow,
+        _In_opt_ CImageBrush *pFallbackBrush = nullptr
         ) = 0;
 
     virtual _Check_return_ HRESULT RenderShape(_In_ CShape *pShapeElement) = 0;

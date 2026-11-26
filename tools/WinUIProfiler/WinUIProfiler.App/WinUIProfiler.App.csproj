@@ -20,10 +20,13 @@
     <RootNamespace>WinUIProfiler.App</RootNamespace>
     <PublishTrimmed>false</PublishTrimmed>
     <DefaultLanguage>en-US</DefaultLanguage>
+    <!-- Keep equal to the version in ..\plugin.json; usage events report it. -->
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <ProjectReference Include="..\WinUIProfiler.Core\WinUIProfiler.Core.csproj" />
+    <ProjectReference Include="..\WinUIProfiler.Telemetry\WinUIProfiler.Telemetry.csproj" />
   </ItemGroup>
   <Target Name="StageSelfContainedRuntime" AfterTargets="Build" DependsOnTargets="CreateWinRTRegistration">
     <ItemGroup>

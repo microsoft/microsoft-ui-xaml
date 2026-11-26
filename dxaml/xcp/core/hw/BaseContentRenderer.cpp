@@ -16,6 +16,15 @@
 #include "HitTestParams.h"
 #include "XamlIslandRoot.h"
 
+// True while an ImageBrush's source can still produce a picture: it has a URI and hasn't finished decoding or failed.
+// An already-failed BitmapImage raises no new ImageFailed, and clearing UriSource keeps the same source object.
+static bool IsImageBrushLoading(_In_ CImageBrush* imageBrush)
+{
+    CImageSource* source = imageBrush->m_pImageSource;
+    bool available = false;
+    return source != nullptr && !source->m_strSource.IsNull() && !source->IsImageDecoded(&available);
+}
+
 BaseContentRenderer::BaseContentRenderer(uint32_t maxTextureSize)
  : m_pRenderDataList(nullptr)
  , m_pRenderParams(nullptr)
@@ -104,14 +113,7 @@ BaseContentRenderer::MaskPartEnsureRealizationTexture(
 
     if (partHasContent)
     {
-        if (pPartBrush->GetTypeIndex() == KnownTypeIndex::ImageBrush)
-        {
-            CImageBrush *pPartImageBrush = static_cast<CImageBrush*>(pPartBrush);
-
-            partHasContent = (pPartImageBrush->GetSoftwareSurface() != nullptr);
-            IFC(pPartImageBrush->ReloadSoftwareSurfaceIfReleased());
-        }
-        else if (!hasBrushAnimation && pPartBrush->GetTypeIndex() == KnownTypeIndex::SolidColorBrush)
+        if (!hasBrushAnimation && pPartBrush->GetTypeIndex() == KnownTypeIndex::SolidColorBrush)
         {
             CSolidColorBrush *pPartSolidColorBrush = static_cast<CSolidColorBrush*>(pPartBrush);
 
@@ -193,7 +195,8 @@ _Check_return_ HRESULT BaseContentRenderer::GetBrushParameters(
     _Out_ XUINT32 *pBrushMask,
     _Out_ bool *pHasBrush,
     _Out_ HWTexture** ppBrushTexture,
-    _Out_opt_ CMILMatrix *pBrushTextureTransform)
+    _Out_opt_ CMILMatrix *pBrushTextureTransform,
+    _In_opt_ CImageBrush *pFallbackBrush)
 {
     HRESULT hr = S_OK;
 
@@ -270,6 +273,13 @@ _Check_return_ HRESULT BaseContentRenderer::GetBrushParameters(
                 myRP.pRenderTarget,
                 pSurfaceCache
                 ));
+
+            // While the source is still loading, draw the fallback (the picture shown before) instead of nothing.
+            if (pFallbackBrush && pTileBrush->GetHardwareSurface() == nullptr && pFallbackBrush->GetHardwareSurface() != nullptr &&
+                IsImageBrushLoading(static_cast<CImageBrush*>(pBrush)))
+            {
+                pTileBrush = pFallbackBrush;
+            }
 
             // Render nothing if the image source has 0 area.
             XRECTF naturalBounds;
@@ -1345,17 +1355,29 @@ _Check_return_ HRESULT BaseContentRenderer::ImageRenderContent(
             pNinegrid = &ninegrid;
         }
 
+        CImageBrush* brush = pImage->GetBackgroundBrush();
+
         BrushParams brushParams;
         IFC_RETURN(GeneralImageRenderContent(
             bounds,
             bounds,
-            pImage->GetBackgroundBrush(),
+            brush,
             brushParams,
             pImage,
             pNinegrid,
             nullptr /* pShapeHwTexture */,
-            false /* fIsHollow */
+            false /* fIsHollow */,
+            pImage->GetFallbackBrush()
             ));
+
+        // Drop the previous picture once it's no longer drawn: the new source has a surface or can't produce one.
+        if (CImageBrush* fallbackBrush = pImage->GetFallbackBrush())
+        {
+            if (brush->GetHardwareSurface() != nullptr || fallbackBrush->GetHardwareSurface() == nullptr || !IsImageBrushLoading(brush))
+            {
+                pImage->ReleaseFallbackBrush();
+            }
+        }
 
         visibility = HWRenderVisibility::Visible;
     }

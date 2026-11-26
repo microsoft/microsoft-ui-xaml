@@ -3,6 +3,7 @@
     AutomationProperties.Name="People, right-to-left"
     ItemsSource="{x:Bind Source}"
     FlowDirection="RightToLeft"
+    CanUserReorderColumns="True"
     SelectionMode="Single">
     <!-- The name columns are plain text so bidi text rendering can be checked. -->
     <tv:TableViewTemplateColumn x:Name="PhotoColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>

@@ -43,7 +43,11 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 
 ### Column capabilities
 - Width + `MinWidth`/`MaxWidth` (`Pixel` exact; `Auto` grows to the widest realized cell within a data set; `*` shares the viewport). — **PR2** · UI resize **PR3**
-- Reorder (drag + `MoveColumn`). — **PR3**
+- User reorder, opt-in through `CanUserReorderColumns`: drag a header, or
+  <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Left</kbd>/<kbd>Right</kbd> on a focused header. Columns stay
+  on their side of the frozen boundary. `ColumnReordered` lets the app persist the order; code
+  reorders through `Columns`, so there is no `MoveColumn`. See
+  [Reordering columns](../../api-specs/TableView/TableView-spec.md#reordering-columns). — **PR3, proposed (API review)**
 - Show/hide via `Visibility`. — **PR2**
 - Sticky (always-visible) header. — **PR2**
 - Single-column sort (`SortByColumn` / header invoke). — **PR3**
@@ -149,6 +153,7 @@ scenarios need at most an app-owned rename of one field, which composes from a
 ### Accessibility (UIA)
 - Grid/Table peers; Row peer (`SelectionItem` + `GridItem`); ColumnHeader peer (`Invoke` → sort). — **PR2** read-only Grid/Table · **PR3** Selection + sort invoke
 - Narrator, keyboard navigation parity, sort announcements. — **PR2** nav · **PR3** sort
+- Column reorder announcement ("Moved {header} to column {n} of {count}") and header order that follows `Columns`. — **PR3, proposed**
 
 ### Keyboard focus and accessibility model
 
@@ -163,7 +168,8 @@ the same order; an empty table's `EmptyTemplate` content is the stop instead (it
 Takes keyboard focus:
 
 - Actionable headers: sort (with a sort key), resize (while the column can actually be resized),
-  context menu, tooltip, or interactive content.
+  reorder (while `CanUserReorderColumns` is true and the column has a position it may move to), context menu,
+  tooltip, or interactive content.
 - Rows.
 - Actionable cells: interactive content (a control, an inline `Hyperlink`, or a nested
   `TableView`), context menu, or tooltip. A plain text cell is not actionable.

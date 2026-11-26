@@ -302,7 +302,7 @@ void TableViewCellsPanel::ApplyFrozenColumnLayout(const winrt::Panel& host, doub
             // Translation X/Y has no visual effect unless enabled on the element first.
             winrt::ElementCompositionPreview::SetIsTranslationEnabled(element, true);
             element.Translation({ static_cast<float>(horizontalOffset), 0.0f, 0.0f });
-            winrt::Canvas::SetZIndex(element, 1);
+            winrt::Canvas::SetZIndex(element, c_frozenZIndex);
             element.Clip(nullptr);
         }
         else

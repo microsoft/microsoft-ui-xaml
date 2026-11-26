@@ -1458,6 +1458,39 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies creating a peer for a removed column's header before layout does not throw and does not describe the removed column.")]
+        public void VerifyRemovedColumnHeaderPeerCreationDoesNotThrow()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var column = tableView.Columns[1];
+                var header = GetColumnHeader(tableView, column);
+                tableView.Columns.Remove(column);
+
+                AutomationPeer peer = null;
+                try
+                {
+                    peer = FrameworkElementAutomationPeer.CreatePeerForElement(header);
+                }
+                catch (Exception e)
+                {
+                    Verify.Fail($"Creating a peer for a removed column's header must not throw: {e.Message}");
+                }
+                Verify.IsNotNull(peer, "The removed column's header must still get a peer.");
+                Verify.IsFalse(peer is TableViewColumnHeaderAutomationPeer, "The header no longer describes a column of its table.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a group header keeps an EventsSource the app installed on its peer when it re-syncs its group's element, as a row does.")]
         public void VerifyGroupHeaderKeepsAppInstalledEventsSource()
         {
@@ -2326,7 +2359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var tablePeer = RequireTablePeer(tableView);
                 var rowPeer = RequireRowPeer(tableView, 0);
                 var cellPeer = GetCellPeer(rowPeer, 0);
-                var headerPeer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var headerPeer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
                 var groupHeaderPeer = GetGroupHeaderPeer(tableView, 0);
 
                 var names = new Dictionary<string, string>
@@ -2686,44 +2719,53 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the public cell peer constructor rejects arguments that cannot describe a cell, and accepts ones that can.")]
-        public void VerifyCellPeerConstructorValidatesArguments()
+        [TestProperty("Description", "Verifies the public cell peer constructor derives row and column from a realized cell element, matching the peer the row exposes.")]
+        public void VerifyCellPeerConstructorFromRealizedCell()
         {
             TableView tableView = null;
-            TableView otherTable = null;
 
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateAutomationTable();
-                otherTable = CreateAutomationTable();
-                var host = new StackPanel();
-                host.Children.Add(tableView);
-                host.Children.Add(otherTable);
-                LoadContent(host);
+                LoadContent(tableView);
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                var row = GetRealizedRows(tableView).First();
-                var cell = GetRowCell(row, 0);
-                var column = tableView.Columns[0];
-                int count = tableView.Columns.Count;
+                var row = GetProjectedRow(tableView, 1);
+                var peer = new TableViewCellAutomationPeer(GetRowCell(row, 1));
+                var gridItem = peer.GetPattern(PatternInterface.GridItem) as IGridItemProvider;
 
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(null, row, column, 0), "A null cell must be rejected.");
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, null, column, 0), "A null row must be rejected.");
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, null, 0), "A null column must be rejected.");
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, -1), "A negative column index must be rejected.");
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, column, count), "A column index past the table's columns must be rejected.");
-                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(cell, row, otherTable.Columns[0], 0), "A column from another table must be rejected.");
+                Verify.IsNotNull(gridItem, "The constructed cell peer must offer GridItem.");
+                Verify.AreEqual(1, gridItem?.Row ?? -1, "The row must be derived from the cell.");
+                Verify.AreEqual(1, gridItem?.Column ?? -1, "The column must be derived from the cell.");
+                Verify.AreEqual(GetCellPeer(row, 1).GetName(), peer.GetName(), "The constructed peer must describe the same cell as the row's child peer.");
+            });
+        }
 
-                var peer = new TableViewCellAutomationPeer(cell, row, column, count - 1);
-                Verify.IsNotNull(peer, "In-range arguments must construct a peer.");
+        [TestMethod]
+        [TestProperty("Description", "Verifies the public cell peer constructor rejects an owner that is not a TableView cell.")]
+        public void VerifyCellPeerConstructorRejectsNonCellOwner()
+        {
+            TableView tableView = null;
 
-                // A row no TableView owns has no column set to check against, so only the index sign is enforced.
-                Verify.IsNotNull(new TableViewCellAutomationPeer(new Grid(), new TableViewRow(), new TableViewTemplateColumn(), 3),
-                    "An unowned row must accept any non-negative index.");
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var row = GetProjectedRow(tableView, 0);
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(new Grid()), "A detached Grid is not a cell.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer(row), "A row is not a cell.");
+                Verify.Throws<ArgumentException>(() => new TableViewCellAutomationPeer((FrameworkElement)GetCellContent(GetRowCell(row, 0))),
+                    "The content inside a cell is not the cell.");
             });
         }
 
@@ -3588,7 +3630,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var peer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var peer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
 
                 // The base implementation would produce the TableView's own name, because the peer's
                 // Owner() is the TableView - so every column would read identically.
@@ -3627,7 +3669,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var peer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var peer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
                 var name = peer.GetName();
 
                 // Spec silent on the fallback ORDER; reasoned from string headers being the documented
@@ -3663,7 +3705,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+                var name = CreateColumnHeaderPeer(tableView, tableView.Columns[0]).GetName();
 
                 Verify.AreEqual("CPU", name, "A templated object header must be named from the rendered template.");
                 Verify.IsFalse(name.Contains(nameof(TitledColumnHeader)),
@@ -3684,7 +3726,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.Columns.Add(new TableViewTemplateColumn
                 {
                     Header = new Border { Width = 20, Height = 12 },
-                    CanResize = true,
+                    CanUserResize = true,
                     CellTemplate = MakeTextCellTemplate("Name"),
                 });
 
@@ -3699,7 +3741,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var gripperName = gripperPeer?.GetName();
                 Verify.IsFalse(string.IsNullOrEmpty(gripperName), "Precondition: the gripper must have a name.");
 
-                var name = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetName();
+                var name = CreateColumnHeaderPeer(tableView, tableView.Columns[0]).GetName();
                 Log.Comment($"Header name: '{name}'; gripper name: '{gripperName}'.");
                 Verify.IsFalse(!string.IsNullOrEmpty(name) && name.Contains(gripperName),
                     $"An unnamed header must not take the resize gripper's name; saw '{name}'.");
@@ -3752,7 +3794,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // the same per-column IUnknown pointer, so if the runtime id collapsed to one value per
                 // owner the generated id would collapse with it.
                 var generatedIds = tableView.Columns
-                    .Select(column => new TableViewColumnHeaderAutomationPeer(tableView, column).GetAutomationId())
+                    .Select(column => CreateColumnHeaderPeer(tableView, column).GetAutomationId())
                     .ToList();
 
                 foreach (var id in generatedIds)
@@ -3793,8 +3835,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 AutomationProperties.SetAutomationId(headerCells[0], "AuthoredNameColumn");
                 tableView.UpdateLayout();
 
-                var authored = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
-                var generated = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]);
+                var authored = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
+                var generated = CreateColumnHeaderPeer(tableView, tableView.Columns[1]);
 
                 // An app that labels its headers for UI automation testing must not find its ids
                 // silently ignored.
@@ -3830,8 +3872,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // that are on a visible-column basis, so this is directly spec-backed rather than
                 // inferred from the count tests. Announcing "column 2 of 3" while only two columns
                 // exist tells the user to look for a column that is not there.
-                var second = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]);
-                var third = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[2]);
+                var second = CreateColumnHeaderPeer(tableView, tableView.Columns[1]);
+                var third = CreateColumnHeaderPeer(tableView, tableView.Columns[2]);
 
                 Verify.AreEqual(1, second.GetPositionInSet(), "The first visible column must report position 1.");
                 Verify.AreEqual(2, second.GetSizeOfSet(), "SizeOfSet must count visible columns only.");
@@ -3861,18 +3903,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // TableView.idl:666-670 declares IInvokeProvider unconditionally; the two gates come from
                 // the sorting contract. Category 7.5 owns the positive path (invoke actually sorts).
                 var column = tableView.Columns[0];
-                Verify.IsNotNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
+                Verify.IsNotNull(CreateColumnHeaderPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be offered when both sort gates are open.");
 
                 // Offering "invoke to sort" on a column the control will not sort is worse than no
                 // affordance: the action appears to succeed and nothing happens.
                 tableView.CanUserSortColumns = false;
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be withheld while CanUserSortColumns is false.");
 
                 tableView.CanUserSortColumns = true;
                 column.CanSort = false;
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, column).GetPattern(PatternInterface.Invoke),
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, column).GetPattern(PatternInterface.Invoke),
                     "Invoke must be withheld while the column's CanSort is false.");
             });
         }
@@ -3894,7 +3936,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
                     "A column with CanSort but no sort key must not offer Invoke.");
                 tableView.CanUserResizeColumns = false;
             });
@@ -4437,7 +4479,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var peers = new (AutomationPeer Peer, string Kind)[]
                 {
                     (FrameworkElementAutomationPeer.CreatePeerForElement(header), "realized"),
-                    (new TableViewColumnHeaderAutomationPeer(tableView, column), "table-owned"),
+                    (CreateColumnHeaderPeer(tableView, column), "table-owned"),
                 };
                 foreach (var (peer, kind) in peers)
                 {
@@ -4483,7 +4525,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView = TableViewSizingTestHelpers.CreateResizableTable(
                     ("First", new GridLength(150.0, GridUnitType.Pixel)),
                     ("Second", new GridLength(150.0, GridUnitType.Pixel)));
-                tableView.Columns[1].CanResize = false;
+                tableView.Columns[1].CanUserResize = false;
                 LoadContent(tableView);
             });
 
@@ -4492,18 +4534,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // UIA requires Transform on a HeaderItem the user can resize.
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                var transform = CreateColumnHeaderPeer(tableView, tableView.Columns[0])
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
                 Verify.IsTrue(transform.CanResize, "A resizable column must report CanResize.");
                 Verify.IsFalse(transform.CanMove, "A column header cannot be moved through Transform.");
                 Verify.IsFalse(transform.CanRotate, "A column header cannot be rotated.");
 
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]).GetPattern(PatternInterface.Transform),
-                    "Transform must be withheld for a column whose CanResize is false.");
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[1]).GetPattern(PatternInterface.Transform),
+                    "Transform must be withheld for a column whose CanUserResize is false.");
 
                 tableView.CanUserResizeColumns = false;
-                Verify.IsNull(new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]).GetPattern(PatternInterface.Transform),
+                Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[0]).GetPattern(PatternInterface.Transform),
                     "Transform must be withheld while CanUserResizeColumns is false.");
             });
         }
@@ -4528,9 +4570,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // Same rule as gripper visibility: the last Star column has no later Star column to trade with.
-                var first = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[0])
+                var first = CreateColumnHeaderPeer(starTable, starTable.Columns[0])
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
-                var last = new TableViewColumnHeaderAutomationPeer(starTable, starTable.Columns[1])
+                var last = CreateColumnHeaderPeer(starTable, starTable.Columns[1])
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(first, "The first Star column opts in to resizing, so Transform must be offered.");
                 Verify.IsNotNull(last, "The pinned Star column still opts in to resizing, so Transform must be offered.");
@@ -4554,7 +4596,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var fixedColumn = pixelTable.Columns[0];
                 fixedColumn.MinWidth = 120.0;
                 fixedColumn.MaxWidth = 120.0;
-                var fixedTransform = new TableViewColumnHeaderAutomationPeer(pixelTable, fixedColumn)
+                var fixedTransform = CreateColumnHeaderPeer(pixelTable, fixedColumn)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(fixedTransform, "A fixed-width column that opts in to resizing still offers Transform.");
                 Verify.IsFalse(fixedTransform.CanResize, "MinWidth == MaxWidth pins the column, so CanResize must be false.");
@@ -4586,7 +4628,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
@@ -4633,7 +4675,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                var transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
@@ -4673,7 +4715,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                var transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
@@ -4704,7 +4746,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                var transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
                 Verify.AreEqual(150.0, column.ActualWidth, "Precondition: the column starts at 150.");
@@ -4744,7 +4786,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                var transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
@@ -4799,7 +4841,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var column = tableView.Columns[0];
-                var transform = new TableViewColumnHeaderAutomationPeer(tableView, column)
+                var transform = CreateColumnHeaderPeer(tableView, column)
                     .GetPattern(PatternInterface.Transform) as ITransformProvider;
                 Verify.IsNotNull(transform, "A resizable column's header must offer the Transform pattern.");
 
@@ -4829,19 +4871,158 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var peer = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0]);
+                var peer = CreateColumnHeaderPeer(tableView, tableView.Columns[0]);
 
                 Verify.AreEqual(AutomationControlType.HeaderItem, peer.GetAutomationControlType(),
                     "HeaderItem is the UIA control type for table column headers.");
 
-                // The peer's Owner() is the TableView, so a base-class GetChildren() would return the
-                // ENTIRE TableView subtree under every column header - the whole grid duplicated once
-                // per column in the AT tree. That specific catastrophe is what the override prevents,
-                // which makes this assertion worth as much as the control-type one.
+                // The peer is owned by the header, so its children are the header's own content, never
+                // the TableView's rows.
                 var children = peer.GetChildren();
-                Verify.AreEqual(0, children == null ? 0 : children.Count,
-                    "A column header peer must be a leaf; otherwise the whole TableView subtree appears under every header.");
+                Verify.IsFalse(children != null && children.Any(child => child is TableViewRowAutomationPeer),
+                    "A column header peer must not expose the TableView's rows.");
             });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the public header peer constructor binds the peer to the header, its column and its table.")]
+        public void VerifyColumnHeaderPeerConstructorDerivesColumnFromHeader()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var header = GetColumnHeader(tableView, tableView.Columns[1]);
+                var peer = new TableViewColumnHeaderAutomationPeer(header);
+
+                Verify.IsTrue(ReferenceEquals(header, peer.Owner), "The constructed peer must be owned by the header.");
+                Verify.AreEqual(AutomationControlType.HeaderItem, peer.GetAutomationControlType(), "The constructed peer is a HeaderItem.");
+                Verify.AreEqual(2, peer.GetPositionInSet(), "The peer must derive its column from the header.");
+
+                var invoke = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(invoke, "A sortable column's constructed peer must offer Invoke.");
+                invoke?.Invoke();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection,
+                    "Invoke on the constructed peer must sort the header's column in its own table.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a header replaced by a header rebuild is detached: its peer's Invoke fails with ElementNotAvailable and a new peer for it is rejected.")]
+        public void VerifyReplacedColumnHeaderIsDetachedFromItsColumn()
+        {
+            TableView tableView = null;
+            TableViewColumnHeader oldHeader = null;
+            TableViewColumnHeaderAutomationPeer oldPeer = null;
+            IInvokeProvider oldInvoke = null;
+            ITransformProvider oldTransform = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                oldHeader = GetColumnHeader(tableView, tableView.Columns[1]);
+                oldPeer = new TableViewColumnHeaderAutomationPeer(oldHeader);
+                oldInvoke = oldPeer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(oldInvoke, "Baseline: a sortable column's header peer must offer Invoke.");
+                oldTransform = oldPeer.GetPattern(PatternInterface.Transform) as ITransformProvider;
+                Verify.IsNotNull(oldTransform, "Baseline: a resizable column's header peer must offer Transform.");
+
+                // Opting another column out of sorting rebuilds every header.
+                tableView.Columns[2].CanSort = false;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(ReferenceEquals(oldHeader, GetColumnHeader(tableView, tableView.Columns[1])),
+                    "Baseline: the rebuild must replace the column's header.");
+                Verify.IsNull(oldHeader.Column, "A replaced header must be detached from its column.");
+
+                VerifyElementNotAvailable(() => oldInvoke.Invoke(), "Invoke on a replaced header's peer");
+                Verify.IsNull(oldPeer.GetPattern(PatternInterface.Invoke), "A replaced header's peer must not offer Invoke.");
+                Verify.IsNull(oldPeer.GetPattern(PatternInterface.Transform), "A replaced header's peer must not offer Transform.");
+                Verify.IsFalse(oldTransform.CanResize, "A replaced header's peer must not report it can resize.");
+                Verify.Throws<ArgumentException>(() => new TableViewColumnHeaderAutomationPeer(oldHeader),
+                    "A peer for a replaced header must be rejected with E_INVALIDARG.");
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection,
+                    "Invoke on a replaced header's peer must not sort the column."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies the TableView peer serves a TableView-owned header peer for a column whose header is not realized yet, with name, AutomationId, help text, ShowContextMenu and Invoke.")]
+        public void VerifyTableOwnedHeaderPeerServesUnrealizedHeader()
+        {
+            TableView tableView = null;
+            TableViewColumn extra = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateAutomationTable();
+                tableView.CanUserSortColumns = true;
+                LoadContent(tableView);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // The header rebuild for a new column is queued, so in this turn its header is not realized.
+                extra = MakeTextTemplateColumn("Extra", "Name");
+                tableView.Columns.Add(extra);
+
+                var tablePeer = new ProviderResolvingTableViewAutomationPeer(tableView);
+                var headers = ((ITableProvider)tablePeer).GetColumnHeaders();
+                Verify.AreEqual(4, headers?.Length ?? 0, "Every visible column must contribute a header provider.");
+
+                var fallback = tablePeer.Resolve(headers[3]) as TableViewColumnHeaderAutomationPeer;
+                Verify.IsNotNull(fallback, "The unrealized column must still get a column header peer.");
+                Verify.IsTrue(fallback.Owner is TableView, "The fallback peer is owned by the TableView.");
+                var children = fallback.GetChildren();
+                Verify.IsTrue(children == null || children.Count == 0, "The fallback peer must not expose its owner TableView's children.");
+                Verify.AreEqual("Extra", fallback.GetName(), "The fallback peer must name the column from its Header.");
+                Verify.IsFalse(string.IsNullOrEmpty(fallback.GetAutomationId()), "The fallback peer must generate an AutomationId.");
+                Verify.IsFalse(string.IsNullOrEmpty(fallback.GetHelpText()), "A sortable column's fallback peer must report its sort state.");
+
+                fallback.ShowContextMenu();
+
+                var invoke = fallback.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                Verify.IsNotNull(invoke, "The fallback peer must offer Invoke for a sortable column.");
+                invoke?.Invoke();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual(SortDirection.Ascending, extra.SortDirection, "Invoke on the fallback peer must sort its column."));
         }
 
         [TestMethod]
@@ -4871,7 +5052,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.SortByColumn(sortable, direction);
                     tableView.UpdateLayout();
 
-                    var text = new TableViewColumnHeaderAutomationPeer(tableView, sortable).GetHelpText();
+                    var text = CreateColumnHeaderPeer(tableView, sortable).GetHelpText();
                     Log.Comment($"Help text for SortDirection.{direction}: '{text}'");
 
                     // Asserted as non-empty and pairwise distinct rather than matched against literals:
@@ -4886,7 +5067,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // A column that cannot be sorted must not announce a sort state - that implies an
                 // affordance which does not exist. Category 14 owns the tooltip/sort-state combination
                 // and its duplicate suppression; there is no tooltip in play here.
-                var notSortable = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[1]).GetHelpText();
+                var notSortable = CreateColumnHeaderPeer(tableView, tableView.Columns[1]).GetHelpText();
                 Verify.IsTrue(string.IsNullOrEmpty(notSortable),
                     $"A non-sortable column must report no sort state; saw '{notSortable}'.");
             });
@@ -5858,5 +6039,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     internal sealed class TitledColumnHeader
     {
         public string Title { get; set; }
+    }
+
+    // Exposes PeerFromProvider so a test can reach the peers behind ITableProvider.GetColumnHeaders.
+    internal sealed partial class ProviderResolvingTableViewAutomationPeer : TableViewAutomationPeer
+    {
+        public ProviderResolvingTableViewAutomationPeer(TableView owner) : base(owner)
+        {
+        }
+
+        public AutomationPeer Resolve(IRawElementProviderSimple provider) => PeerFromProvider(provider);
     }
 }

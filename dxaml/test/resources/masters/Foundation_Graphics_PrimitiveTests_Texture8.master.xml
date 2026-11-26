@@ -41,7 +41,7 @@
                   <ColorBrush Color="Argb {0, 1, 1, 1}" />
                 </wucSpriteVisual>
                 <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="150" OffsetY="20" OffsetZ="0">
-                  <SurfaceBrush Transform="1112_2122 dxdy {2, 0, 0, 2, 10, 10}" />
+                  <SurfaceBrush Transform="dxdy {10, 10}" />
                 </wucSpriteVisual>
               </Visual>
             </Visual>

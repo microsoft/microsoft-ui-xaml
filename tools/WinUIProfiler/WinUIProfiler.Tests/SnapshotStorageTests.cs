@@ -22,6 +22,9 @@ internal static class SnapshotStorageTests
             await RetentionFailureAsync(Path.Combine(directory, "retention-failure.sqlite"));
             await AtomicRetentionAsync(Path.Combine(directory, "insert-rollback.sqlite"), failInsert: true);
             await AtomicRetentionAsync(Path.Combine(directory, "fit-rollback.sqlite"), failInsert: false);
+            await CpuRetentionAsync(Path.Combine(directory, "cpu-retention.sqlite"));
+            await CpuCommitFailureAsync(Path.Combine(directory, "cpu-commit-failure.sqlite"), failCpu: true);
+            await CpuCommitFailureAsync(Path.Combine(directory, "main-commit-failure.sqlite"), failCpu: false);
             await EscapedDocumentAsync(Path.Combine(directory, "escaped.sqlite"));
             await ProcessRoutingAsync(directory);
             await StartupFailureAsync(directory);
@@ -205,12 +208,7 @@ internal static class SnapshotStorageTests
                 [new("ElementId", (long)i), new("PeerHandle", 0x1000L + i), new("Text", new string('x', 256))]));
         await writer.SaveSnapshotAsync(Capture(1_000_000), path + ".json");
         var originalStatus = writer.Status;
-        var capture = Capture(2_000_000, padding: new string('x', 48_000));
-        capture = capture with
-        {
-            XamlNodes = capture.XamlNodes.Concat(Enumerable.Range(1, 8).Select(i =>
-                capture.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i })).ToArray()
-        };
+        var capture = LargeCapture(2_000_000);
         using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
         {
             connection.Open();
@@ -302,12 +300,7 @@ internal static class SnapshotStorageTests
         var retained = Capture(0);
         await writer.SaveSnapshotAsync(retained, path + ".json");
         var originalStatus = writer.Status;
-        var rejected = Capture(2_000_000, padding: new string('x', 48_000));
-        rejected = rejected with
-        {
-            XamlNodes = rejected.XamlNodes.Concat(Enumerable.Range(1, 8).Select(i =>
-                rejected.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i })).ToArray()
-        };
+        var rejected = LargeCapture(2_000_000);
         using (var connection = new SqliteConnection($"Data Source={path};Pooling=False"))
         {
             connection.Open();
@@ -319,9 +312,8 @@ internal static class SnapshotStorageTests
                     CREATE TRIGGER FailSnapshot BEFORE INSERT ON TreeSnapshots
                     BEGIN
                         SELECT CASE
-                            WHEN (SELECT COUNT(*) FROM Events) = 1000 OR (SELECT COUNT(*) FROM CpuSamples) <> 0
-                                OR (SELECT COUNT(*) FROM TreeSnapshots) <> 0
-                            THEN RAISE(ABORT, 'fixture did not trim snapshots, samples and events')
+                            WHEN (SELECT COUNT(*) FROM Events) = 1000 OR (SELECT COUNT(*) FROM TreeSnapshots) <> 0
+                            THEN RAISE(ABORT, 'fixture did not trim snapshots and events')
                             ELSE RAISE(ABORT, 'injected atomic insertion failure')
                         END;
                     END
@@ -335,18 +327,88 @@ internal static class SnapshotStorageTests
         Require(writer.Status == originalStatus,
             "A rejected snapshot must restore its exposed recording status before reporting failure.");
         writer.Close("Test complete");
-        using var restored = SessionFile.Open(path);
+        using var restored = SessionFile.Open(path, includeCpu: true);
         Require(SessionFile.ReadTreeSnapshots(path).SingleOrDefault()?.CaptureId == retained.CaptureId &&
             Sql.Scalar(restored, "SELECT COUNT(*) FROM Events") == (failInsert ? 1000 : 1) &&
             Sql.Scalar(restored, "SELECT COUNT(*) FROM Objects") == (failInsert ? 1000 : 0) &&
-            Sql.Scalar(restored, "SELECT COUNT(*) FROM CpuSamples") == (failInsert ? 10 : 0) &&
-            Sql.Scalar(restored, "SELECT COUNT(*) FROM CallStacks") == (failInsert ? 1 : 0) &&
-            Sql.Scalar(restored, "SELECT COUNT(*) FROM CodeAddresses") == (failInsert ? 1 : 0) &&
+            (failInsert
+                ? Sql.Scalar(restored, "SELECT COUNT(*) FROM CpuSamples") == 10 &&
+                    Sql.Scalar(restored, "SELECT COUNT(*) FROM CallStacks") == 1 &&
+                    Sql.Scalar(restored, "SELECT COUNT(*) FROM CodeAddresses") == 1 &&
+                    Sql.Scalar(restored, "SELECT Trimmed FROM cpu.CpuSessionInfo") == 0
+                : CpuProfileReader.ReadSampling(path) is null && !File.Exists(CpuSchema.PathFor(path))) &&
             SessionFile.ReadInfo(path).CompleteFromSeq is null,
             "An insertion or final-fit rejection must roll back all retention, including snapshots, events, objects and CPU stacks.");
         Require(ReferenceEquals(writer.Failure, error) &&
             error.Message.Contains(failInsert ? "injected atomic insertion failure" : "cannot fit"),
             "A rollback after retention must stop the writer rather than reuse its modified cached indexes.");
+    }
+
+    private static async Task CpuRetentionAsync(string path)
+    {
+        using var writer = SessionWriter.Create(path, Source(), 1024 * 1024);
+        for (var index = 0; index < 5_000; index++)
+            writer.PostSample(new(index + 1, 42, 7, [new(null, 0x10000UL + (ulong)index)]), wait: true);
+        await writer.SaveSnapshotAsync(Capture(0), path + ".json");
+        var before = CpuProfileReader.ReadSampling(path)!.Samples;
+        var capture = LargeCapture(1_000_000);
+        await writer.SaveSnapshotAsync(capture, path + ".json");
+        writer.SetCpuSampling(new(1.0, false, 5_000, []), null);
+        writer.Close("Test complete");
+        var bytes = new FileInfo(path).Length + new FileInfo(CpuSchema.PathFor(path)).Length;
+        Require(writer.Failure is null && bytes <= writer.LimitBytes && writer.Status.FileBytes == bytes &&
+            SessionFile.ReadTreeSnapshots(path).Single().CaptureId == capture.CaptureId &&
+            CpuProfileReader.ReadSampling(path) is { Samples: > 0, Note: CpuSampleIndex.TrimmedNote } sampling &&
+            sampling.Samples < before,
+            "Snapshot retention must reclaim CPU storage and respect the shared two-file budget without losing the saved capture.");
+    }
+
+    private static async Task CpuCommitFailureAsync(string path, bool failCpu)
+    {
+        using var fault = new CpuStorageFailureTests.WriteFault(path, cpu: failCpu);
+        using var writer = SessionWriter.Create(path, Source(), 1024 * 1024);
+        for (var i = 1; i <= 1000; i++)
+            writer.Process(i, new(1000 + i, i, 42, 7, XamlProvider.Xaml, true, "Tick", 0,
+                [new("Text", new string('x', 400))]));
+        writer.PostSample(new(1001, 42, 7, [new(null, 0x1234)]), wait: true);
+        writer.PostSample(new(5000, 42, 7, [new(null, 0x1234)]), wait: true);
+        var retained = Capture(0);
+        await writer.SaveSnapshotAsync(retained, path + ".json");
+        var originalStatus = writer.Status;
+        var capture = LargeCapture(2_000_000);
+        fault.Arm();
+        var error = await ThrowsAsync<SqliteException>(() => writer.SaveSnapshotAsync(capture, path + ".json")
+            .WaitAsync(TimeSpan.FromSeconds(10)));
+        Require(fault.Fired && error.SqliteErrorCode == 10 && ReferenceEquals(writer.Failure, error),
+            "A snapshot commit failure must report the original WAL error and stop recording.");
+        if (!failCpu)
+            Require(writer.Status == originalStatus, "A failed main commit must restore the pre-retention status.");
+        var failedStatus = writer.Status;
+        writer.Close("Test complete");
+        using var connection = SessionFile.Open(path, includeCpu: true);
+        Require(Sql.Scalar(connection, "SELECT COUNT(*) FROM cpu.CpuSamples") == 2,
+            "CPU cleanup must roll back when either commit fails.");
+        if (failCpu)
+        {
+            var bytes = (Sql.Scalar(connection, "PRAGMA main.page_count") + Sql.Scalar(connection, "PRAGMA cpu.page_count")) *
+                Sql.Scalar(connection, "PRAGMA main.page_size");
+            Require(bytes != originalStatus.FileBytes, "The committed snapshot must change the combined storage size in this fixture.");
+            Require(failedStatus.FileBytes == bytes && writer.Status.FileBytes == bytes,
+                $"After CPU rollback, storage status must show {bytes} committed bytes, not {failedStatus.FileBytes}.");
+            Require(SessionFile.ReadTreeSnapshots(path).Single().CaptureId == capture.CaptureId &&
+                Sql.Scalar(connection, "SELECT CompleteFromQpc FROM SessionInfo") > 1001 &&
+                writer.Status.StoredEvents == Sql.Scalar(connection, "SELECT COUNT(*) FROM Events") &&
+                CpuProfileReader.ReadSampling(path) is { Samples: 1, Note: CpuProfileReader.FilteredNote },
+                "A failed CPU commit must preserve main's committed capture/cutoff and hide stale CPU history after reopening.");
+        }
+        else
+        {
+            Require(SessionFile.ReadTreeSnapshots(path).Single().CaptureId == retained.CaptureId &&
+                Sql.Scalar(connection, "SELECT COUNT(*) FROM Events") == 1000 &&
+                SessionFile.ReadInfo(path).CompleteFromSeq is null &&
+                CpuProfileReader.ReadSampling(path) is { Samples: 2, Note: null },
+                "A failed main commit must preserve all original captures, events and CPU history.");
+        }
     }
 
     private static async Task StartupFailureAsync(string directory)
@@ -394,6 +456,16 @@ internal static class SnapshotStorageTests
             Require(SessionFile.ReadTreeSnapshots(group.SnapshotRecordingPath!).Count == 1,
                 "An insertion failure without retention must remain recoverable.");
         }
+    }
+
+    private static TreeSnapshotDocument LargeCapture(long endQpc)
+    {
+        var capture = Capture(endQpc, padding: new string('x', 48_000));
+        return capture with
+        {
+            XamlNodes = capture.XamlNodes.Concat(Enumerable.Range(1, 8).Select(i =>
+                capture.XamlNodes[1] with { Id = (ulong)i, ChildIndex = i })).ToArray()
+        };
     }
 
     private static TreeSnapshotDocument Capture(long endQpc, bool changed = false, string padding = "")

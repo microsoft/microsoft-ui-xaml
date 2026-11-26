@@ -161,7 +161,7 @@ private:
     // Directional expand/collapse for the keyboard, routed through the owner like the chevron.
 
     // Installs a generated display element as a cell's content, wiring the ContentPresenter Content
-    // binding a template column needs. GenerateElement alone is not a complete cell.
+    // binding a template column needs. GenerateDisplayElement alone is not a complete cell.
     void AttachCellContent(const winrt::Grid& cellWrapper, const winrt::FrameworkElement& cellElement);
 
     void OnCellsHostContextRequested(winrt::ContextRequestedEventArgs const& args);

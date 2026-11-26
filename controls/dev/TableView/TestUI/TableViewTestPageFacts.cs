@@ -63,6 +63,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.TableViewShared
         // Removes the fixture cell menus (and ContextMenuTable's Age tooltip) that make plain text cells actionable.
         internal const string InactiveCellsCheckBox = "InactiveCellsCheckBox";
         internal const string CanUserResizeColumnsCheckBox = "CanUserResizeColumnsCheckBox";
+        internal const string CanUserReorderColumnsCheckBox = "CanUserReorderColumnsCheckBox";
         internal const string HideColumnHeadersCheckBox = "HideColumnHeadersCheckBox";
         internal const string EmptyBasicCheckBox = "EmptyBasicCheckBox";
         internal const string EmptyStateButton = "EmptyStateButton";

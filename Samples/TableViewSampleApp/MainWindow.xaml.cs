@@ -32,6 +32,7 @@ public sealed partial class MainWindow : Window
         ["FileExplorer"] = typeof(FileExplorerPage),
         ["FileProperties"] = typeof(FilePropertiesPage),
         ["ColumnLifecycle"] = typeof(ColumnLifecyclePage),
+        ["ColumnReorder"] = typeof(ColumnReorderPage),
         ["Selection"] = typeof(SelectionPage),
         ["ColumnLayout"] = typeof(ColumnLayoutPage),
         ["Sort"] = typeof(SortPage),

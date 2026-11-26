@@ -77,8 +77,6 @@ public:
         bool mustKeepHardwareSurfaces = false
         );
 
-    void UsePreviousHardwareSurface(_In_ CImageSource* previous);
-
     _Ret_maybenull_ IPALSurface* GetSoftwareSurface() { return m_pImageSurfaceWrapper->GetSoftwareSurface(); }
 
     virtual _Check_return_ HRESULT GetSoftwareSurfaceForPrinting(

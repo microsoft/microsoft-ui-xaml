@@ -1071,6 +1071,15 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void OnCanUserReorderColumnsToggled(object sender, RoutedEventArgs e)
+        {
+            if (BasicTableView != null)
+            {
+                BasicTableView.CanUserReorderColumns = ((CheckBox)sender).IsChecked == true;
+                RtlTableView.CanUserReorderColumns = BasicTableView.CanUserReorderColumns;
+            }
+        }
+
         private void OnHideColumnHeadersToggled(object sender, RoutedEventArgs e)
         {
             var visibility = ((CheckBox)sender).IsChecked == true ? TableViewHeadersVisibility.None : TableViewHeadersVisibility.Column;
@@ -1223,7 +1232,7 @@ namespace MUXControlsTestApp
         // MinWidth == MaxWidth pins the column, which withdraws its resize gripper.
         private void OnToggleNameCanResizeClick(object sender, RoutedEventArgs e)
         {
-            NameColumn.CanResize = !NameColumn.CanResize;
+            NameColumn.CanUserResize = !NameColumn.CanUserResize;
         }
 
         // Template is Star too, so Score keeps a later Star column to trade with and stays resizable.

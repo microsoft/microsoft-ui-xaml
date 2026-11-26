@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System.Diagnostics;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,11 +10,21 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
+using WinUITools.Telemetry;
 
 namespace WinUIProfiler.Mcp;
 
 internal static class Program
 {
+    // The server's tool names. Usage events name only these, never what a client sent.
+    private static readonly HashSet<string> ToolNames =
+    [
+        .. typeof(Program).Assembly.GetTypes()
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+            .Select(method => method.GetCustomAttribute<McpServerToolAttribute>()?.Name)
+            .OfType<string>()
+    ];
+
     /// <summary>
     /// Serializes tool arguments and results. XAML trees nest far deeper than the default limit of 64. Dictionary keys,
     /// such as event field names, keep their case.
@@ -66,11 +78,19 @@ internal static class Program
 
     private static async Task RunServerAsync()
     {
+        UsageTelemetry.Initialize("profiler", "mcp", ServerVersion.Value, onByDefault: true);
+        // Standard output carries the MCP protocol, so the first-run notice goes to standard error with the host's logs.
+        if (UsageTelemetry.TakeNotice() is { } notice)
+        {
+            Console.Error.WriteLine(notice);
+        }
+
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
         AddServer(builder.Services).WithStdioServerTransport();
         using var host = builder.Build();
         await host.RunAsync().ConfigureAwait(false);
+        await UsageTelemetry.FlushAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
     }
 
     private static IMcpServerBuilder AddServer(IServiceCollection services) =>
@@ -80,5 +100,35 @@ internal static class Program
                 Name = ServerVersion.ServerName,
                 Version = ServerVersion.Value,
             })
-            .WithToolsFromAssembly(typeof(Program).Assembly, ToolSerializerOptions);
+            .WithToolsFromAssembly(typeof(Program).Assembly, ToolSerializerOptions)
+            .WithRequestFilters(filters => filters.AddCallToolFilter(TrackToolCall));
+
+    // Sends one usage event for each tool call: the tool's name, outcome and duration, never its arguments or result.
+    private static McpRequestHandler<CallToolRequestParams, CallToolResult> TrackToolCall(
+        McpRequestHandler<CallToolRequestParams, CallToolResult> next) =>
+        async (request, cancellationToken) =>
+        {
+            var started = Stopwatch.GetTimestamp();
+            var outcome = "failed";
+            try
+            {
+                var result = await next(request, cancellationToken).ConfigureAwait(false);
+                outcome = result.IsError == true ? "failed" : "success";
+                return result;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                outcome = "cancelled";
+                throw;
+            }
+            finally
+            {
+                var name = request.Params?.Name;
+                UsageTelemetry.Track("Profiler.McpToolCall", new Dictionary<string, string>
+                {
+                    ["mcpTool"] = name is not null && ToolNames.Contains(name) ? name : "unknown",
+                    ["outcome"] = outcome,
+                }, new Dictionary<string, double> { ["durationMs"] = Stopwatch.GetElapsedTime(started).TotalMilliseconds });
+            }
+        };
 }

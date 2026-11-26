@@ -2477,7 +2477,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         tableView.SortByColumn(tableView.Columns[0], SortDirection.None);
                         break;
                     default:
-                        var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                        var provider = CreateColumnHeaderPeer(tableView, tableView.Columns[0])
                             .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                         provider.Invoke();
                         break;
@@ -2879,7 +2879,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[0])
+                var provider = CreateColumnHeaderPeer(tableView, tableView.Columns[0])
                     .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
 
                 if (provider == null)
@@ -3175,7 +3175,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // Call on the UI thread.
         internal static void InvokeHeader(TableView tableView, int columnIndex)
         {
-            var provider = new TableViewColumnHeaderAutomationPeer(tableView, tableView.Columns[columnIndex])
+            var provider = CreateColumnHeaderPeer(tableView, tableView.Columns[columnIndex])
                 .GetPattern(PatternInterface.Invoke) as IInvokeProvider;
             if (provider == null)
             {

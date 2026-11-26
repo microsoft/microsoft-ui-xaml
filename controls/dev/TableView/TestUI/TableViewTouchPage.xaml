@@ -63,6 +63,7 @@
                                 AutomationProperties.Name="TouchScrollingTableView"
                                 AutomationProperties.AutomationId="TouchScrollingTableView"
                                 GridLinesVisibility="All"
+                                CanUserReorderColumns="True"
                                 Height="300"
                                 Width="360"
                                 HorizontalAlignment="Left"

@@ -2647,8 +2647,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 realizedRow = FindVisualChildrenByType<TableViewRow>(table).First();
                 Verify.AreEqual(TableViewDensity.Standard, table.Density);
                 Verify.AreEqual(32.0, realizedRow.MinHeight);
-                Verify.AreEqual(0, (int)TableViewDensity.Compact);
-                Verify.AreEqual(1, (int)TableViewDensity.Standard);
+                Verify.AreEqual(1, (int)TableViewDensity.Compact);
+                Verify.AreEqual(0, (int)TableViewDensity.Standard);
                 Verify.AreEqual(2, (int)TableViewDensity.Comfortable);
             });
 

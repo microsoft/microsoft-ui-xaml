@@ -71,7 +71,7 @@ TableViewColumn::TableViewColumn()
     // Defaults let initial ActualWidth equal Width without clamping.
 }
 
-winrt::FrameworkElement TableViewColumn::GenerateElement(const winrt::IInspectable& dataItem)
+winrt::FrameworkElement TableViewColumn::GenerateDisplayElement(const winrt::IInspectable& dataItem)
 {
     // Forward to the overridable display-cell factory.
     return overridable().GenerateElementCore(dataItem);
@@ -207,7 +207,7 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnFrozenEdgeChanged(*this);
         }
     }
-    else if (property == s_CanResizeProperty)
+    else if (property == s_CanUserResizeProperty)
     {
         // Adds or removes this column's gripper, so the header band has to be rebuilt.
         if (auto owner = GetOwningTableView())
@@ -309,11 +309,21 @@ void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
 // column would then have no way to invalidate its cells without editing this file. This mirrors
 // WPF, where DataGridColumn owns the notification and each derived column routes its own property
 // callbacks into it.
-void TableViewColumn::NotifyCellContentChanged(bool resetAutoWidth)
+void TableViewColumn::NotifyCellContentChanged()
+{
+    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
+}
+
+void TableViewColumn::NotifyCellContentChangedInternal(bool resetAutoWidth)
 {
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this, resetAutoWidth);
+    }
+    else if (m_hasBeenOwned)
+    {
+        // Rows of a table it left may keep its cells; the next live owner regenerates them.
+        QueueCellContentChangeInternal(resetAutoWidth);
     }
 }
 
@@ -332,7 +342,7 @@ void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Dat
     m_displayMemberBinding.set(value);
     UpdateSortKeyGeneration();
 
-    NotifyCellContentChanged(true /* resetAutoWidth */);
+    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
     // The binding path can make the column sortable, which makes its header actionable.
     if (auto const owner = GetOwningTableView())
     {
@@ -352,7 +362,7 @@ void TableViewColumn::CellToolTipBinding(const winrt::Microsoft::UI::Xaml::Data:
 
     // Realized cells carry the previous binding. A tooltip does not change what the cell displays,
     // so the Auto width keeps its history.
-    NotifyCellContentChanged(false /* resetAutoWidth */);
+    NotifyCellContentChangedInternal(false /* resetAutoWidth */);
 }
 
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
@@ -370,6 +380,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
         }
         m_owningTableView = winrt::make_weak(owner);
         UpdateSortKeyGeneration();
+        m_hasBeenOwned = true;
         // These have no generated change callback: a menu makes cells actionable, a sort key the header.
         if (!m_cellContextFlyoutToken)
         {
@@ -403,11 +414,15 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
                     });
             }
         }
+        // A change still pending when the column left is rescheduled by the new owner once it has
+        // updated its column tracking (TableView::ScheduleReattachedColumnCellRegeneration).
         return true;
     }
     else
     {
         m_owningTableView = nullptr;
+        // The old owner's post must not run; the change stays pending for the next owner.
+        InvalidateCellContentChangePostInternal();
         return true;
     }
 }

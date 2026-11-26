@@ -24,7 +24,7 @@ private static TableViewColumn LockedRole(GridLength width)
 {
     var column = Text(LockedRoleHeader, nameof(Person.Role), width);
     // Per-column opt-out of the resize gripper. Setting Width from code still applies.
-    column.CanResize = false;
+    column.CanUserResize = false;
     return column;
 }
 

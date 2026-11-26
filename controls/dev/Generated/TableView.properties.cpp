@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableView.g.cpp"
 
 GlobalDependencyProperty TableViewProperties::s_AlternatingRowBackgroundProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_CanUserReorderColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_CanUserResizeColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_CanUserSortColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ColumnHeaderStyleProperty{ nullptr };
@@ -30,7 +31,8 @@ GlobalDependencyProperty TableViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_SelectionModeProperty{ nullptr };
 
 TableViewProperties::TableViewProperties()
-    : m_selectionChangedEventSource{static_cast<TableView*>(this)}
+    : m_columnReorderedEventSource{static_cast<TableView*>(this)}
+    , m_selectionChangedEventSource{static_cast<TableView*>(this)}
     , m_sortedEventSource{static_cast<TableView*>(this)}
     , m_sortingEventSource{static_cast<TableView*>(this)}
 {
@@ -49,6 +51,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnAlternatingRowBackgroundPropertyChanged));
+    }
+    if (!s_CanUserReorderColumnsProperty)
+    {
+        s_CanUserReorderColumnsProperty =
+            InitializeDependencyProperty(
+                L"CanUserReorderColumns",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnCanUserReorderColumnsPropertyChanged));
     }
     if (!s_CanUserResizeColumnsProperty)
     {
@@ -209,6 +222,7 @@ void TableViewProperties::EnsureProperties()
 void TableViewProperties::ClearProperties()
 {
     s_AlternatingRowBackgroundProperty = nullptr;
+    s_CanUserReorderColumnsProperty = nullptr;
     s_CanUserResizeColumnsProperty = nullptr;
     s_CanUserSortColumnsProperty = nullptr;
     s_ColumnHeaderStyleProperty = nullptr;
@@ -231,6 +245,14 @@ void TableViewProperties::OnAlternatingRowBackgroundPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnAlternatingRowBackgroundPropertyChanged(args);
+}
+
+void TableViewProperties::OnCanUserReorderColumnsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnCanUserReorderColumnsPropertyChanged(args);
 }
 
 void TableViewProperties::OnCanUserResizeColumnsPropertyChanged(
@@ -340,6 +362,19 @@ void TableViewProperties::AlternatingRowBackground(winrt::Brush const& value)
 winrt::Brush TableViewProperties::AlternatingRowBackground()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_AlternatingRowBackgroundProperty));
+}
+
+void TableViewProperties::CanUserReorderColumns(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_CanUserReorderColumnsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewProperties::CanUserReorderColumns()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_CanUserReorderColumnsProperty));
 }
 
 void TableViewProperties::CanUserResizeColumns(bool value)
@@ -522,6 +557,16 @@ void TableViewProperties::SelectionMode(winrt::TableViewSelectionMode const& val
 winrt::TableViewSelectionMode TableViewProperties::SelectionMode()
 {
     return ValueHelper<winrt::TableViewSelectionMode>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_SelectionModeProperty));
+}
+
+winrt::event_token TableViewProperties::ColumnReordered(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewColumnReorderedEventArgs> const& value)
+{
+    return m_columnReorderedEventSource.add(value);
+}
+
+void TableViewProperties::ColumnReordered(winrt::event_token const& token)
+{
+    m_columnReorderedEventSource.remove(token);
 }
 
 winrt::event_token TableViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value)
