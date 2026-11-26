@@ -11,30 +11,38 @@ delegate Object TableViewKeySelector(Object item);
 
 [MUX_PREVIEW]
 [webhosthidden]
-delegate String TableViewIdentitySelector(Object item);
+delegate String TableViewGroupIdentitySelector(Object item);
 
 [MUX_PREVIEW]
 [webhosthidden]
 runtimeclass TableViewSource
 {
     Boolean IsLiveShaping { get; set; };
+    Object Source { get; };
 
     TableViewSource Filter(TableViewPredicate predicate);
-    // Do not remove the [default_overload]/[method_name] metadata on GroupBy/Sort: it is frozen ABI, and
+    // Do not remove the [default_overload]/[method_name] metadata on the overloads below: it is frozen ABI, and
     // without it MIDL renames the overloads (GroupBy2/Sort2).
     [default_overload] [method_name("GroupBy")]
     TableViewSource GroupBy(TableViewKeySelector keySelector);
     [method_name("GroupByWithIdentity")]
-    TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewIdentitySelector groupIdentitySelector);
+    TableViewSource GroupBy(TableViewKeySelector keySelector, TableViewGroupIdentitySelector groupIdentitySelector);
+    TableViewSource SortGroups(SortDirection direction);
     [method_name("SortByPath")]
     TableViewSource Sort(String sortMemberPath, SortDirection direction);
     [default_overload] [method_name("Sort")]
     TableViewSource Sort(TableViewKeySelector keySelector, SortDirection direction);
+    [method_name("ThenSortByPath")]
+    TableViewSource ThenSort(String sortMemberPath, SortDirection direction);
+    [default_overload] [method_name("ThenSort")]
+    TableViewSource ThenSort(TableViewKeySelector keySelector, SortDirection direction);
     TableViewSource ParentBy(TableViewKeySelector keySelector, TableViewKeySelector parentKeySelector);
     TableViewSource ClearFilter();
     TableViewSource ClearGroupBy();
     TableViewSource ClearSort();
     TableViewSource ClearParentBy();
+    void Refresh();
+    Windows.Foundation.IClosable DeferRefresh();
 
     static TableViewSource From(Object items);
 }

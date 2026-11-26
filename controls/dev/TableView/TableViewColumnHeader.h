@@ -34,7 +34,6 @@ public:
     winrt::TableViewColumn Column() const { return m_column.get(); }
 
     void SetSortableInternal(bool sortable, double indicatorReserve);
-    bool IsSortableInternal() const { return m_isSortable; }
     void SetSortDirectionInternal(winrt::SortDirection direction);
 
     // Returns the gripper only while it is hosted: an unhosted gripper cannot drag.
@@ -65,6 +64,8 @@ public:
 
 private:
     void UpdateVisualStates(bool useTransitions);
+    // A direction set on a column the user cannot sort is still displayed.
+    bool ShowsSortIndicator() const noexcept { return m_isSortable || m_sortDirection != winrt::SortDirection::None; }
     void UpdateContentReserve();
     void UpdateContentPadding();
     void HostSortIndicator();

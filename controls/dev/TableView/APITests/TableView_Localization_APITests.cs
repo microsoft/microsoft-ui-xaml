@@ -358,7 +358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableView(MakeItems(), headers: new[] { "Name", "Role" });
                 tableView.CanUserSortColumns = true;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
 

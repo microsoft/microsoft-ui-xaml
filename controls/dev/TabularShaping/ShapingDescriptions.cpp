@@ -45,7 +45,7 @@ namespace ShapingHelpers
             }
             for (size_t i = 0; i < a.size(); ++i)
             {
-                if (a[i].PropertyName != b[i].PropertyName)
+                if (a[i].PropertyName != b[i].PropertyName || a[i].Direction != b[i].Direction)
                 {
                     return false;
                 }
@@ -235,6 +235,7 @@ namespace ShapingHelpers
                 }
             }
 
+            StableSortBucketsByKey(buckets, spec.Groups.front().Direction);
             state.Buckets = std::move(buckets);
             state.IsGrouped = true;
         }
@@ -305,7 +306,12 @@ namespace ShapingHelpers
         // The incremental paths read FilteredSource and Buckets as authoritative. Against a state
         // that has never been fully shaped they would produce an empty, apparently-valid
         // projection with no error signal, so establish membership first instead.
-        auto const work = state.HasProjection ? delta.RequiredWork : ShapingWork::FullReshape;
+        auto work = state.HasProjection ? delta.RequiredWork : ShapingWork::FullReshape;
+        // Without a group sort direction, group order follows the item sort, so a sort change re-buckets.
+        if (work == ShapingWork::ReSortWithinBuckets && state.IsGrouped)
+        {
+            work = ShapingWork::ReBucket;
+        }
 
         switch (work)
         {
@@ -315,40 +321,23 @@ namespace ShapingHelpers
         case ShapingWork::FullReshape:
             state.FilteredSource = state.Source;
             ApplyFilters(state.FilteredSource, spec.Filters, contained);
-            state.Items = state.FilteredSource;
-            Bucketize(state, spec, contained);
             break;
 
         case ShapingWork::ReBucket:
-            // Membership is unchanged, but the order must come from FilteredSource, not from the
-            // flattened Items: those are still clustered by the PREVIOUS grouping, which would
-            // make both the new bucket order and the stable sort's tie order depend on it.
-            state.Items = state.FilteredSource;
-            Bucketize(state, spec, contained);
-            break;
-
         case ShapingWork::ReSortWithinBuckets:
-            if (!state.IsGrouped)
-            {
-                // Ungrouped, so there are no buckets to sort within and Items carries whatever
-                // order the last reshape left. Re-seat it on source order so the stable sort
-                // breaks ties consistently with a full reshape of the same spec.
-                state.Items = state.FilteredSource;
-            }
+            // Re-seated on FilteredSource, not on the flattened Items (clustered and ordered by the
+            // PREVIOUS shape), so bucket order and the stable sort's ties match a full reshape.
             break;
         }
 
+        // Sorted before bucketing: buckets keep that order within each group, and with no group
+        // sort direction a group sits where its first item lands (WPF ListCollectionView).
+        state.Items = state.FilteredSource;
+        SortWithinRange(state.Items, spec.Sorts, contained);
+        Bucketize(state, spec, contained);
         if (state.IsGrouped)
         {
-            for (auto& bucket : state.Buckets)
-            {
-                SortWithinRange(bucket.Items, spec.Sorts, contained);
-            }
             FlattenBucketsInto(state.Buckets, state.Items);
-        }
-        else
-        {
-            SortWithinRange(state.Items, spec.Sorts, contained);
         }
 
         state.HasProjection = true;

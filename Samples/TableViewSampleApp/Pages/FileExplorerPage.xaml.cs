@@ -355,7 +355,7 @@ public sealed partial class FileExplorerPage : SamplePageBase
         RefreshReadouts();
     }
 
-    // A sort declared BEFORE GroupBy orders the groups: newest first reads Today, Yesterday, ...
+    // Grouped by date, sort newest first: groups follow their first row, so they read Today, Yesterday, ...
     protected override void OnShapingApplying(ShapingApplyingEventArgs e)
     {
         if (e.Mode is "grouped" or "groupedHierarchy" && e.Key == nameof(FileSystemEntry.DateModified))

@@ -35,10 +35,9 @@ Each item notes the MLP/v1 vs deferred status and the delivering PR.
 ### Core control & data model
 - Explicit column model (no auto-generation). — **PR2**
 - `ObservableCollection`-backed `ItemsSource`; incremental add/remove/update. — **PR2** render · **PR3** shaped (sort/group)
-- Read-only: cells are display-only and there is no edit mode (see [Editing](#editing)). — **PR2**
+- Read-only: cells are display-only and there is no edit mode in V1 (see [Editing](#editing)). — **PR2**
 - Custom cell templates (`TableViewTemplateColumn`). — **PR2**
-- Text cells through `TableViewColumn.DisplayMemberBinding`: a read-only `TextBlock` per cell, padded for `Density`, with the binding's `Path` as the default sort key. — **PR2**
-- Editable text column (`TableViewTextColumn`). — *not part of TableView*
+- Built-in text column (`TableViewTextColumn`); a text cell is a `TableViewTemplateColumn` with a bound `TextBlock` and `SortMemberPath`. — *deferred to V2*
 - Grouped/banded sections, declared on the data source as `TableViewSource.GroupBy(keySelector)` rather than as a separate `GroupedItemsSource` property. — **PR3, shipped**
 
 ### Column capabilities
@@ -104,9 +103,10 @@ the source publishes, so the same engine serves an app that never touches `Table
 
 ### Editing
 
-Not part of TableView. TableView is a read-only table with no editing API and no edit mode: no
-`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`
-(and their args and `TableViewEditAction`) or `CellEditingTemplate`, and no built-in text column or `TextBox` editor. The named
+Deferred to V2 / future DataGrid. TableView V1 has no editing API and no edit mode: no
+`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/
+`CellEditEnded` (and their args and `TableViewEditAction`), `CellEditingTemplate` or
+`CommitCellEditCore`, and no built-in text column or `TextBox` editor. The named
 scenarios need at most an app-owned rename of one field, which composes from a
 `TableViewTemplateColumn` and app code; see
 [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance).
@@ -116,7 +116,7 @@ scenarios need at most an app-owned rename of one field, which composes from a
 - Cell editing: gestures (double-click / double-tap, `F2`, `Enter`, `Esc`, focus-loss commit),
   a programmatic `BeginEdit` and current-cell surface, vetoable and async-deferrable edit events,
   `INotifyDataErrorInfo` validation, buffered rollback, per-row editors, row transactions, and
-  editing a11y announcements. — *not part of TableView; editing scenarios belong to a DataGrid-class control*
+  editing a11y announcements. — *deferred to V2 / future DataGrid*
 
 ### Virtualization & performance
 - Row virtualization (realize only visible rows + cache). — **PR2**
@@ -159,6 +159,8 @@ scenarios need at most an app-owned rename of one field, which composes from a
 
 The whole `TableView` is one tab stop: the column header row. `Tab` and `Shift+Tab` land on the
 header in the current column, else the first actionable one; the next `Tab` leaves the table.
+While a cell is being edited, `Tab` / `Shift+Tab` instead commit and edit the next / previous
+editable cell (see Editing); only past the last (first) editable cell does focus leave the table.
 `Down` moves into the rows (the remembered row if in view, else the selected row, else the first row
 in view; a row selected after the remembered one wins), and `Up` from the first row returns to the
 header row. When no header is actionable or headers are hidden, the rows are the stop, entered in

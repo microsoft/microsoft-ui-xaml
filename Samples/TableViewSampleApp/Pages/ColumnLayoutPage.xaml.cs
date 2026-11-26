@@ -59,7 +59,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Header = header,
             DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
             Width = width,
-            CanSort = false,
+            CanUserSort = false,
         };
     // </snippet>
 
@@ -71,7 +71,7 @@ public sealed partial class ColumnLayoutPage : SamplePageBase
             Header = header,
             CellTemplate = (DataTemplate)Application.Current.Resources[templateKey],
             Width = width,
-            CanSort = false,
+            CanUserSort = false,
         };
     // </snippet>
 

@@ -3892,7 +3892,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserSortColumns = true;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
 
@@ -3913,9 +3913,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     "Invoke must be withheld while CanUserSortColumns is false.");
 
                 tableView.CanUserSortColumns = true;
-                column.CanSort = false;
+                column.CanUserSort = false;
                 Verify.IsNull(CreateColumnHeaderPeer(tableView, column).GetPattern(PatternInterface.Invoke),
-                    "Invoke must be withheld while the column's CanSort is false.");
+                    "Invoke must be withheld while the column's CanUserSort is false.");
             });
         }
 
@@ -3937,7 +3937,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[3]).GetPattern(PatternInterface.Invoke),
-                    "A column with CanSort but no sort key must not offer Invoke.");
+                    "A column with CanUserSort but no sort key must not offer Invoke.");
                 tableView.CanUserResizeColumns = false;
             });
 
@@ -3980,7 +3980,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 LoadContent(tableView);
             });
 
@@ -4004,7 +4004,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 tableView.Columns[0].HeaderContextFlyout = new MenuFlyout();
                 LoadContent(tableView);
             });
@@ -4306,11 +4306,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateTableViewShell(MakeItems(), 500, 300);
                 var fixedColumn = MakeTextTemplateColumn("Name", width: new GridLength(120));
-                fixedColumn.CanSort = false;
+                fixedColumn.CanUserSort = false;
                 fixedColumn.MinWidth = 120;
                 fixedColumn.MaxWidth = 120;
                 var starColumn = MakeTextTemplateColumn("Role", width: new GridLength(1, GridUnitType.Star));
-                starColumn.CanSort = false;
+                starColumn.CanUserSort = false;
                 tableView.Columns.Add(fixedColumn);
                 tableView.Columns.Add(starColumn);
                 LoadContent(tableView);
@@ -4348,8 +4348,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserResizeColumns = false;
-                tableView.Columns[0].CanSort = false;
-                tableView.Columns[1].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
+                tableView.Columns[1].CanUserSort = false;
                 LoadContent(tableView);
             });
 
@@ -4460,7 +4460,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserSortColumns = true;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 var disabledStyle = new Style(typeof(TableViewColumnHeader));
                 disabledStyle.Setters.Add(new Setter(Control.IsEnabledProperty, false));
                 tableView.Columns[0].HeaderStyle = disabledStyle;
@@ -4951,7 +4951,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNotNull(oldTransform, "Baseline: a resizable column's header peer must offer Transform.");
 
                 // Opting another column out of sorting rebuilds every header.
-                tableView.Columns[2].CanSort = false;
+                tableView.Columns[2].CanUserSort = false;
             });
 
             IdleSynchronizer.Wait();
@@ -5035,8 +5035,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateAutomationTable();
                 tableView.CanUserSortColumns = true;
-                tableView.Columns[0].CanSort = true;
-                tableView.Columns[1].CanSort = false;
+                tableView.Columns[0].CanUserSort = true;
+                tableView.Columns[1].CanUserSort = false;
                 LoadContent(tableView);
             });
 
@@ -5074,7 +5074,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the group header peer advertises ExpandCollapse whether or not the group is expandable.")]
+        [TestProperty("Description", "Verifies the group header peer keeps advertising ExpandCollapse as its group collapses.")]
         public void VerifyGroupHeaderPeerExposesExpandCollapseUnconditionally()
         {
             TableView tableView = null;
@@ -5089,29 +5089,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var header = GetGroupHeader(tableView, 0);
+                // ExpandCollapse is unconditional (a non-expandable group reports LeafNode rather than
+                // dropping the pattern). Every group GroupBy produces has members, so the pattern is
+                // checked across the real expand/collapse states.
                 var peer = GetGroupHeaderPeer(tableView, 0);
-
-                // Spelled out in the IDL itself (TableView.idl:649-655): "ExpandCollapse is
-                // unconditional (a non-expandable group reports LeafNode rather than dropping the
-                // pattern)", with the in-box Expander / NavigationViewItem precedent named. One of the
-                // strongest expectations in this category.
                 Verify.IsNotNull(peer.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider,
-                    "An expandable group header must advertise ExpandCollapse.");
+                    "An expanded group header must advertise ExpandCollapse.");
+                Verify.IsTrue(GetGroupHeader(tableView, 0).IsExpandable, "A group with members is expandable.");
 
-                header.IsExpandable = false;
+                tableView.CollapseGroup(GetGroupInfo(tableView, 0).Key);
                 tableView.UpdateLayout();
 
-                var notExpandable = GetGroupHeaderPeer(tableView, 0);
-                var provider = notExpandable.GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
-                if (provider == null)
-                {
-                    Verify.Fail("A non-expandable group header must still advertise ExpandCollapse; a pattern that appears and disappears as data changes forces AT clients to re-query.");
-                    return;
-                }
-
-                Verify.AreEqual(ExpandCollapseState.LeafNode, provider.ExpandCollapseState,
-                    "A non-expandable group must report LeafNode rather than dropping the pattern.");
+                var provider = GetGroupHeaderPeer(tableView, 0).GetPattern(PatternInterface.ExpandCollapse) as IExpandCollapseProvider;
+                Verify.IsNotNull(provider, "A collapsed group header must still advertise ExpandCollapse.");
+                Verify.AreEqual(ExpandCollapseState.Collapsed, provider?.ExpandCollapseState ?? ExpandCollapseState.LeafNode,
+                    "A collapsed group must report Collapsed, not LeafNode.");
             });
         }
 
@@ -5131,9 +5123,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                var header = GetGroupHeader(tableView, 0);
-                header.IsExpandable = true;
-                header.IsExpanded = true;
+                var key = GetGroupInfo(tableView, 0).Key;
+                tableView.ExpandGroup(key);
                 tableView.UpdateLayout();
 
                 var provider = GetExpandCollapseProvider(tableView, 0);
@@ -5146,15 +5137,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 // is the failure this guards.
                 Verify.AreEqual(ExpandCollapseState.Expanded, provider.ExpandCollapseState, "An expanded group must report Expanded.");
 
-                header.IsExpanded = false;
+                tableView.CollapseGroup(key);
                 tableView.UpdateLayout();
                 Verify.AreEqual(ExpandCollapseState.Collapsed, GetExpandCollapseProvider(tableView, 0).ExpandCollapseState,
                     "A collapsed group must report Collapsed.");
-
-                header.IsExpandable = false;
-                tableView.UpdateLayout();
-                Verify.AreEqual(ExpandCollapseState.LeafNode, GetExpandCollapseProvider(tableView, 0).ExpandCollapseState,
-                    "A group that cannot expand must report LeafNode regardless of IsExpanded.");
             });
         }
 

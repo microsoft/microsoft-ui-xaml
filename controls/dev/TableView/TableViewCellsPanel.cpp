@@ -114,6 +114,7 @@ void TableViewCellsPanel::InvalidateMeasuredWidths()
 
 winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSize)
 {
+    TableView::ElementLayoutScope const layoutScope;
     const float infinity = std::numeric_limits<float>::infinity();
     float width = 0.0f;
     float height = 0.0f;
@@ -223,6 +224,7 @@ winrt::Size TableViewCellsPanel::MeasureOverride(winrt::Size const& availableSiz
 
 winrt::Size TableViewCellsPanel::ArrangeOverride(winrt::Size const& finalSize)
 {
+    TableView::ElementLayoutScope const layoutScope;
     float x = 0.0f;
     float leadLeft = 0.0f;
     float leadWidth = -1.0f;

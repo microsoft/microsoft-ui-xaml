@@ -95,7 +95,7 @@ public sealed partial class VirtualizationPage : SamplePageBase
             Header = "Department",
             Width = new GridLength((double)Application.Current.Resources["ColWidthChip"]),
             DisplayMemberBinding = new Binding { Path = new PropertyPath(nameof(Person.Department)) },
-            CanSort = false,
+            CanUserSort = false,
         };
 
         var columns = PeopleTable.Columns;

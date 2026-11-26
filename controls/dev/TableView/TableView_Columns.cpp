@@ -147,6 +147,20 @@ void TableView::TrackColumnsFromVector(winrt::IObservableVector<winrt::TableView
         auto col = columns.GetAt(i);
         const bool ownsColumn = TrySetColumnOwnerForTracking(*this, col);
         m_trackedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? col : nullptr });
+        if (ownsColumn)
+        {
+            AdoptColumnSortDirection(col);
+        }
+    }
+}
+
+// A column that arrives already showing a direction is lit as if the app had just set it; the
+// last one to arrive wins, as with consecutive writes.
+void TableView::AdoptColumnSortDirection(winrt::TableViewColumn const& column)
+{
+    if (auto const direction = column.SortDirection(); direction != winrt::SortDirection::None)
+    {
+        OnColumnSortDirectionSetByApp(column, direction);
     }
 }
 
@@ -268,6 +282,10 @@ void TableView::OnColumnsVectorChanged(
             m_trackedColumns.insert(
                 m_trackedColumns.begin() + std::min<size_t>(index, m_trackedColumns.size()),
                 tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? col : nullptr });
+            if (ownsColumn)
+            {
+                AdoptColumnSortDirection(col);
+            }
         }
         break;
     }
@@ -323,6 +341,10 @@ void TableView::OnColumnsVectorChanged(
                     }
                 }
                 m_trackedColumns[index] = tracker_ref<winrt::TableViewColumn>{ this, ownsColumn ? newCol : nullptr };
+                if (ownsColumn)
+                {
+                    AdoptColumnSortDirection(newCol);
+                }
             }
         }
         break;

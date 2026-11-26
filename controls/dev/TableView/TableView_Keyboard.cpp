@@ -1140,7 +1140,7 @@ winrt::TableViewColumn TableView::ResolveHeaderSortKeyTarget(const winrt::KeyRou
 
     winrt::FrameworkElement headerCell{ nullptr };
     auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
-    if (!column || !column.CanSort())
+    if (!column || !column.CanUserSort())
     {
         return nullptr;
     }
@@ -1195,7 +1195,7 @@ bool TableView::TryHandleHeaderSortKey(const winrt::KeyRoutedEventArgs& args)
         return true;
     }
 
-    if (!ToggleSortDirection(column))
+    if (!ToggleSortDirectionFromUserInput(column))
     {
         return false;
     }
@@ -1229,7 +1229,7 @@ bool TableView::TryHandleHeaderSortKeyUp(const winrt::KeyRoutedEventArgs& args)
         return false;
     }
 
-    if (!ToggleSortDirection(armed))
+    if (!ToggleSortDirectionFromUserInput(armed))
     {
         return false;
     }
@@ -2099,11 +2099,7 @@ void TableView::CancelReshapeFocusRestore()
 // (a page PreviewKeyDown tunnels ahead of ours; a press-mode control inside the table bubbles first).
 void TableView::CancelReshapeFocusRestoreForUserInput()
 {
-    if (m_reshapeFocusArmedThisTurn)
-    {
-        return;
-    }
-    if (m_pendingReshapeFocusRow >= 0)
+    if (m_pendingReshapeFocusRow >= 0 && !m_reshapeFocusArmedThisTurn)
     {
         CancelReshapeFocusRestore();
     }

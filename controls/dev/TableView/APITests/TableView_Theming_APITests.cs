@@ -3359,7 +3359,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     tableView.Density = testCase.Density;
                     // Sortable headers add the sort indicator's width to their trailing padding; this
                     // test is about density padding, so compare against an unsortable header.
-                    tableView.Columns[0].CanSort = false;
+                    tableView.Columns[0].CanUserSort = false;
                     LoadContent(tableView);
                 });
 
@@ -3987,7 +3987,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 tableView.IsTextScaleFactorEnabled = false;
-                tableView.Columns[0].CanSort = false;
+                tableView.Columns[0].CanUserSort = false;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -5932,8 +5932,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                                 {
                                     case "TableOff": tableView.CanUserSortColumns = false; break;
                                     case "TableOn": tableView.CanUserSortColumns = true; break;
-                                    case "ColumnOff": tableView.Columns[0].CanSort = false; break;
-                                    case "ColumnOn": tableView.Columns[0].CanSort = true; break;
+                                    case "ColumnOff": tableView.Columns[0].CanUserSort = false; break;
+                                    case "ColumnOn": tableView.Columns[0].CanUserSort = true; break;
                                 }
                             });
                         }
@@ -5944,7 +5944,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             var presenter = GetHeaderPresenter(tableView, 0);
                             var background = (Border)header.FindVisualChildByName("PART_Background");
                             var glyph = (Control)header.FindVisualChildByName("TableViewSortIndicator");
-                            var sortable = tableView.CanUserSortColumns && tableView.Columns[0].CanSort && tableView.IsEnabled;
+                            var sortable = tableView.CanUserSortColumns && tableView.Columns[0].CanUserSort && tableView.IsEnabled;
                             var context = $"{theme}, strong={strong}, {scenario}";
                             Verify.IsTrue(header.IsLoaded, $"Header is loaded: {context}");
                             Verify.AreEqual(tableView.IsEnabled, header.IsEnabled, $"Header inherits enabled state: {context}");
@@ -6188,7 +6188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6232,7 +6232,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 EnsureTabularControlsResources();
                 SetApplicationResource("TabularSurfaceRowForegroundDisabledBrush", new SolidColorBrush(disabled));
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6291,7 +6291,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 tableView = CreateThemingTable();
                 tableView.RequestedTheme = ElementTheme.Light;
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6498,7 +6498,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 tableView = CreateThemingTable();
-                tableView.Columns[0].CanSort = true;
+                tableView.Columns[0].CanUserSort = true;
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -6784,7 +6784,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                             tableView.RequestedTheme = theme;
                             tableView.Density = density.Density;
                             tableView.FlowDirection = flow;
-                            tableView.Columns[1].CanSort = false;
+                            tableView.Columns[1].CanUserSort = false;
                             LoadContent(tableView);
                         });
                         IdleSynchronizer.Wait();

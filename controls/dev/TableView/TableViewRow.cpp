@@ -151,7 +151,6 @@ TableViewRow::TableViewRow()
                 row->RefreshCellVisualGeometry();
             }
         });
-
     // auto_revoke owns this self-event subscription until row destruction.
     m_dataContextChangedRevoker = DataContextChanged(
         winrt::auto_revoke,
@@ -225,6 +224,18 @@ void TableViewRow::OnIsEnabledChanged(
     const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
     UpdateVisualState(true /* useTransitions */);
+}
+
+winrt::Size TableViewRow::MeasureOverride(winrt::Size const& availableSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::MeasureOverride(availableSize);
+}
+
+winrt::Size TableViewRow::ArrangeOverride(winrt::Size const& finalSize)
+{
+    TableView::ElementLayoutScope const layoutScope;
+    return __super::ArrangeOverride(finalSize);
 }
 
 void TableViewRow::OnApplyTemplate()

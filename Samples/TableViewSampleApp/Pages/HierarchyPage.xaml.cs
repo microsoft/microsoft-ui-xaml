@@ -115,7 +115,7 @@ public sealed partial class HierarchyPage : SamplePageBase
             return; // snippet:skip
         } // snippet:skip
 
-        // A key-selector sort adds an axis rather than replacing one, so clear the previous axis first.
+        // Sort replaces every item sort level, so ClearSort only matters for the unsorted choice.
         Source.ClearSort();
         switch (((ComboBox)sender).SelectedIndex)
         {
@@ -130,7 +130,6 @@ public sealed partial class HierarchyPage : SamplePageBase
                 break;
         }
 
-        OnSortRedeclared(); // snippet:skip
         SetLastAction("Sort -> " + SortLabel);
     }
     // </snippet>

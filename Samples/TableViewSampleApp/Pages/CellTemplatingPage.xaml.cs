@@ -244,6 +244,12 @@ public sealed partial class CellTemplatingPage : SamplePageBase
             return;
         }
 
+        var index = PeopleTable.IndexOf(person);
+        if (index >= 0)
+        {
+            PeopleTable.StartBringItemIntoView(index, null);
+        }
+
         BeginRoleEdit(person);
     }
 

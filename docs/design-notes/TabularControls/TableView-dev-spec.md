@@ -3,7 +3,7 @@
 
 # Description
 
-`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is a read-only table: cell editing is not part of TableView (see [Editing](#editing)).
+`TableView` is a virtualized tabular control that ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`. It renders an `ItemsSource` as rows and generates one cell per realized row and column from `Columns`. It is read-only: cell editing is deferred to V2 / a future DataGrid (see [Editing](#editing)).
 
 It provides column width sizing, row virtualization, leading frozen columns, single-row selection, single-column, control-driven sorting, filtering, single-level grouping, hierarchical rows, column resize, opt-in user column reorder (proposed, pending API review), cell-level keyboard navigation and a UIA grid/table model.
 
@@ -22,9 +22,9 @@ It provides column width sizing, row virtualization, leading frozen columns, sin
 
 **Groups are a separate container kind.** A group header is a `TableViewGroupHeader` interleaved into the flat row list, not a nesting level, so `TableViewRow` never needs an "am I a header?" branch. Hierarchical rows also stay a flat list: each row carries its level and expansion state, and its lead cell is indented.
 
-**`TableViewRow` is public and unsealed** although its properties are read-only. It is the realized row container (like `ListViewItem`), and the public row and cell automation peer constructors take it.
+**`TableViewRow` is public and unsealed** although its properties are read-only. It is the realized row container (like `ListViewItem`), and the public row automation peer constructor takes it.
 
-**Text cells and template cells.** A plain text cell is `TableViewColumn.DisplayMemberBinding` (WPF `GridViewColumn` shape): the column generates a read-only, density-padded, ellipsis-trimmed `TextBlock` bound against the row item, and the binding's `Path` is the default sort key. `TableViewTemplateColumn` hosts any other visual through `CellTemplate`; `DisplayMemberBinding` takes precedence when both are set. TableView has no `TableViewTextColumn` and no editable text cell (API spec, [TableViewTextColumn is not part of TableView](../../api-specs/TableView/TableView-spec.md#tableviewtextcolumn-is-not-part-of-tableview)). A column with neither renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
+**One built-in column type.** `TableViewTemplateColumn` hosts any visual through `CellTemplate`; a text cell is `TableViewColumn.DisplayMemberBinding` text or a template whose root is a bound `TextBlock`. A built-in text column is deferred to V2 (API spec, TableViewTextColumn (deferred)). Without a `CellTemplate` or `DisplayMemberBinding` it renders an empty cell, not `ToString()`, as in WPF, so type names never leak into cells. Zero-configuration display belongs to a future `AutoGenerateColumns`.
 
 # Functional spec link
 
@@ -55,14 +55,14 @@ Arrows show data flow, not ownership: `TableView` holds a `TableViewSource`, whi
 | `TableViewColumn` | unsealed `DependencyObject` | Width, header, sort, freeze, read-only, cell factory (`GenerateElementCore`). |
 | `TableViewTemplateColumn` | unsealed column | Templated cells, including text cells. |
 | `TableViewRow` | unsealed `Control` | Realized data row. `IsSelected`, `Level`, `IsExpandable`, `IsExpanded` are read-only. |
-| `TableViewGroupHeader` | unsealed `ContentControl` | Realized group band. Raises `ToggleRequested`. |
+| `TableViewGroupHeader` | unsealed `ContentControl` | Realized group band. `IsExpanded`/`IsExpandable` are read-only; activation calls the owning `TableView`, which raises `GroupExpanding`/`GroupCollapsed`. |
 | `TableViewColumnHeader` | sealed `ContentControl` | One per column, created only by `TableView`. |
 | `TableViewCellsPanel` | unsealed `Panel` | Hosts header and row cells and keeps columns aligned. |
-| `TableViewSource` | sealed | `Filter`, `Sort`, `GroupBy`, `ParentBy`, live shaping. |
+| `TableViewSource` | sealed | `Filter`, `Sort`/`ThenSort`, `GroupBy`/`SortGroups`, `ParentBy`, `Refresh`/`DeferRefresh`, live shaping. |
 | `TableViewGroupInfo` | `INotifyPropertyChanged` | Group-header content. |
-| Five automation peers | unsealed | See [Accessibility](#accessibility). |
+| Five automation peers | unsealed; each public constructor takes only the owner element (the cell peer validates that its `FrameworkElement` is a TableView cell) | See [Accessibility](#accessibility). |
 
-The full surface, including event args and enums, is in `TableView.idl`, `TableViewSource.idl` and `TabularShaping/SortDirection.idl`, and in the [API spec](../../api-specs/TableView/TableView-spec.md).
+The full surface, including event args and enums, is in `TableView.idl`, `TableViewSource.idl` and `TabularShaping/SortDirection.idl`, and in the [API spec](../../api-specs/TableView/TableView-spec.md). The proposed stable surface, its contracts and parity are reviewed in the [API review](TableView-API-Review.md).
 
 ## Key internal components
 
@@ -234,16 +234,16 @@ Shaping is declared on the **source**, never on the control. `TableView` renders
 
 **One control sort axis in force.** The two front-ends reconcile instead of stacking:
 
-- `TableView.SortByColumn`, `ToggleSortDirection` and header clicks declare the control's axis, keyed on column identity so columns sharing a `SortMemberPath` stay separate. The column's read-only `SortDirection` draws the chevron.
-- `TableViewSource.Sort(path, …)` lights the column whose sort path matches. `Sort(keySelector, …)` is keyed on the delegate instance and shows no chevron: the same instance re-sorts or, with `None`, removes its axis, while any other instance with `None` changes nothing and with a direction adds a tie-breaker.
+- `TableView.SortByColumn`, `ToggleSortDirection` and header clicks declare the control's axis, keyed on column identity so columns sharing a `SortMemberPath` stay separate. The column's `SortDirection` draws the chevron. It is settable but display only: an app write moves the chevron (clearing it on other columns) and never reshapes.
+- `TableViewSource.Sort(path, …)` lights the column whose sort path matches. `Sort(keySelector, …)` shows no chevron. Both `Sort` overloads replace every item sort level; `ThenSort` appends one (a `ThenSort` on an existing path updates that level in place). An app `ThenSort` after a header sort keeps the header sort primary and lit; the column's axis is dropped only when a foreign level precedes it. A `SortDirection` preset in XAML or before attach is applied when the column joins `Columns` (last added wins).
 - Sorting through the control clears app-declared axes, and a source sort clears the control's axis. Otherwise an older axis could outrank a newer one while the chevron showed the loser.
-- `TableViewSource` may declare several ordered source axes; the first declared is primary, as in WPF `SortDescriptions`.
+- `TableViewSource` may declare several ordered item sort levels through `Sort` + `ThenSort`; the first is primary, as in WPF `SortDescriptions`.
 
-A sort declared before `GroupBy` orders the groups; one declared after orders rows within each group. Filtering runs first, and an emptied group disappears.
+Group order never depends on call order. `SortGroups(None)` (the default) orders groups by the position of each group's first item in the filtered, item-sorted sequence (source order without an item sort), as WPF `ListCollectionView` does, so a header sort can reorder groups. `SortGroups(Ascending/Descending)` pins key order, and item sort levels then order rows only within groups. `SortGroups` survives `GroupBy` replacement, `ClearGroupBy`, `ClearSort` and column sorts; a header sort on grouped data replaces the item levels and keeps it. Filtering runs first, and an emptied group disappears. `DeferRefresh()` batches shaping calls into one reshape at the outermost close; `Refresh()` reshapes on demand.
 
 **Group identity fails fast.** Each group key needs a stable, non-empty string identity. Boxed scalars (`IPropertyValue`) have a built-in one; other keys need `GroupBy(keySelector, groupIdentitySelector)`. A null, empty or throwing identity, or two keys colliding without a selector, throws `E_INVALIDARG` when the projection is built. Row identity degrades instead, deliberately: it comes from app data the app may not control, while a bad group identity comes from a selector the app just wrote, and a silently ungrouped table gives no diagnostic.
 
-**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, new groups take the current default, and a collapse survives a re-sort, filter or regroup. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist.
+**Expansion is intent keyed by identity.** `RowExpansionModel` stores only exceptions to a default, outside the groups, so `ExpandAllGroups`/`CollapseAllGroups` just move the default, `ExpandGroup`/`CollapseGroup` record one exception by group identity (resolved as `GroupBy` does, including its identity selector), new groups take the current default, and a collapse survives a re-sort, filter or regroup. Each such move still runs a synchronous projection rebuild over all groups and rows on the UI thread. `RetainOnly` prunes identities that no longer exist. `GroupExpanding` is raised synchronously before the state change, and the direction is pinned once it is raised: nested requests for the same identity are no-ops, bulk requests made during a raise are queued, and after the handler the state and source generation are re-checked; a request during layout posts the whole operation (weak ref, alive check); a refresh deferral is held on the source while the handler runs, and the group is re-resolved by identity afterwards. Group-event handler exceptions are contained and logged.
 
 **Toggle.** The whole group band is the toggle target. Re-publishing destroys the realized header, so `TableView` queues the expansion by identity with a generation stamp, and restores focus by identity so a collapse does not drop focus to the top. A header's `Content` is a `TableViewGroupInfo` updated in place.
 
@@ -257,7 +257,7 @@ Selection is single, row-scoped, and follows keyboard focus. Pointer selection a
 
 ## Editing
 
-Not part of TableView. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`, `TableViewEditAction`, `CellEditingTemplate`) and no built-in `TextBox` editor; `DisplayMemberBinding` text cells are read-only. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); the editing features TableView does not have are listed under [Editing is not part of TableView](../../api-specs/TableView/TableView-spec.md#editing-is-not-part-of-tableview).
+Deferred to V2 / a future DataGrid. TableView has no edit mode, no editing API (`IsReadOnly`, `IsEditing`, `CommitEdit`/`CancelEdit`, `BeginningEdit`/`CellEditEnding`/`CellEditEnded`, `TableViewEditAction`, `CellEditingTemplate`, `CommitCellEditCore`) and no built-in `TextBox` editor. The removed implementation (edit state machine, gesture layer, menu suppression while editing, live-shaping hold, and the settable cell `IValueProvider`) is recoverable from history when V2 revisits editing. Controls in a `CellTemplate` are always live and app-bound. The rename-in-place pattern is guidance in the API spec's [Rename-in-place guidance](../../api-specs/TableView/TableView-spec.md#rename-in-place-guidance); deferred editing features are listed under [Deferred to V2 / future DataGrid](../../api-specs/TableView/TableView-spec.md#deferred-to-v2--future-datagrid).
 
 ## Keyboard navigation
 
@@ -291,8 +291,8 @@ Keyboard handling follows the WAI-ARIA treegrid model. `TableView` handles bubbl
 |---|---|---|
 | Table | `DataGrid` | `Grid`, `Table`, `ItemContainer`; `Selection` unless `SelectionMode` is `None`; `Scroll` from the body scroller. Bounds exclude cache rows. |
 | Row | `DataItem` | `SelectionItem` unless `SelectionMode` is `None`; `ExpandCollapse` for tree rows; `ScrollItem`; `VirtualizedItem` while virtualized. |
-| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `VirtualizedItem`. No `Value` pattern: cells are read-only and the cell text is the peer's `Name`. |
-| Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with `CanResize` false while pinned. |
+| Cell | `DataItem` ("cell") | `GridItem`, `TableItem`; `VirtualizedItem`. The peer implements `IValueProvider` read-only but does not offer `Value`. |
+| Column header | `HeaderItem` | `Invoke` (sort) when sortable; `Transform` (resize) when resizable, with the pattern's `CanResize` false while pinned. |
 | Group header | `Group` | `ExpandCollapse` always (empty groups report `LeafNode`), `GridItem`, `ScrollItem`. |
 
 The column-header peer implements `ITransformProvider`, though the IDL lists only `IInvokeProvider`.
@@ -329,7 +329,7 @@ Strings come from the `Microsoft.UI.Xaml.Controls.Tabular/Resources` PRI subtree
 
 Brushes come from `TabularSurfaces_themeresources.xaml` and re-resolve on theme changes. Disabled selection indicators reuse `AccentFillColorDisabledBrush` in Light/Dark; High Contrast tokens reuse shared `SystemColor*ColorBrush` resources. `TableView.xaml` does not redeclare them, which would shadow their High Contrast values.
 
-XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A generated text cell without an owning table uses Standard density's Medium fallback metrics. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
+XAML resources are authoritative for visual metrics. `TableViewFallbackMetrics.h` centralizes native density, typography, hierarchy and header-size defaults used when resources are missing or unusable. A `DisplayMemberBinding` column without an owning table uses Standard density's Medium fallback metrics for its generated text. The High Contrast gridline fallback honors the system-color resource first and otherwise reads the current system GrayText color, never a fixed palette color.
 
 Density padding resources must have finite, non-negative edges; invalid values are logged and replaced with the matching fallback metrics before optical alignment. Generated column-header padding and group-header density metrics use bindings with boxed scalar sources, without a back-reference to the header. Ownership is determined by binding identity rather than value equality, so an app local value or binding wins even when it equals the current density value. Group-header text padding receives the optical adjustment only while density still owns its padding. Column headers recheck ownership during measure because replacing a binding with an equal effective value does not raise a property-change notification or invalidate layout; the presenter reflects that override on the next measure pass.
 
@@ -360,8 +360,9 @@ High Contrast pairs ButtonText with ButtonFace at rest, including the matching i
 and retains Highlight/HighlightText during hover/pressed. Disabled sections use GrayText on ButtonFace.
 Do not substitute Window for ButtonFace: custom High Contrast schemes can give them different colors.
 
-The built-in text factory records font ownership on the element. An app FontSize change or
-binding relinquishes it; custom factory elements are unstamped. Reentrant density changes replay after the current restamp; changed font metrics
+The `DisplayMemberBinding` text factory records font ownership on the element. An app FontSize change or
+binding relinquishes it; custom factory elements are unstamped. Reentrant density changes replay
+after the current restamp; changed font metrics
 invalidate both column and cell-panel width caches.
 
 Section-header bottom dividers use `TabularSurfaceGroupHeaderBorderBrush`, matching the body's
@@ -382,13 +383,13 @@ without an extra top rule.
 
 A sortable header's `CommonStates` change only the fill, so a `ColumnHeaderStyle`/`HeaderStyle` foreground survives hover; in High Contrast, `HighContrastStates` also swap the foreground. Headers default to secondary regular text over a transparent band. `HeaderEdgeStates` round only exposed top corners on the separate `PART_Background`; corners touching header gridlines stay square, including the bottom corners. The `TableViewHeaderLeftCornerRadius`, `TableViewHeaderRightCornerRadius`, and `TableViewHeaderSingleCornerRadius` tokens control those shapes. Row `CornerRadius` feeds the background, whole-row selection outline, and focus visual without rounding the content container.
 
-Horizontal separators occupy the effective top/bottom border strip inside the unchanged row slot. `PART_RowChrome` excludes that strip from the backplate, selection outline, and native-focus target; section headers use the same part for their backplate and focus. Content, editors, and cell hit targets keep their full-height layout. Template roots retain a transparent hit surface across the entire slot. Row `FocusVisualMargin` remains `0,-1,0,-1`; cell margins are adjusted from the arranged cell and chrome bounds so row and cell focus agree after fractional-DPI rounding. Updates follow cell arrangement, chrome/row size changes, and row focus-margin changes. Templates without `PART_RowChrome` retain full-row focus geometry. Terminal-gridline suppression also removes the corresponding chrome inset.
+Horizontal separators occupy the effective top/bottom border strip inside the unchanged row slot. `PART_RowChrome` excludes that strip from the backplate, selection outline, and native-focus target; section headers use the same part for their backplate and focus. Content and cell hit targets keep their full-height layout. Template roots retain a transparent hit surface across the entire slot. Row `FocusVisualMargin` remains `0,-1,0,-1`; cell margins are adjusted from the arranged cell and chrome bounds so row and cell focus agree after fractional-DPI rounding. Updates follow cell arrangement, chrome/row size changes, and row focus-margin changes. Templates without `PART_RowChrome` retain full-row focus geometry. Terminal-gridline suppression also removes the corresponding chrome inset.
 
 The default template's `PART_LayoutRoot` exposes the arranged inner frame, including fractional-DPI border rounding. Terminal separators compare against that actual edge instead of subtracting the unrounded public thickness. At the vertical scroll limit, the comparison allows one pixel of combined viewport/content rounding; larger empty areas retain the final data separator. A transparent or absent outer brush does not replace a bottom separator. Trailing column dividers at the viewport edge remain suppressed regardless of outer-brush visibility; columns ending before that edge retain their dividers. Border-style changes and settled scrolling refresh this state without changing row heights or padding. Older/custom templates without `PART_LayoutRoot` retain the nominal border-inset comparison.
 
-The selection outline's `3,2,3,2` `TableViewSelectionIndicatorMargin` is relative to this visual area, abutting the inner native focus stroke along straight edges without covering either native 2px + 1px stroke. Its interior height is the arranged chrome height minus 6px, rather than the full row height minus 6px. The contrasting secondary focus stroke supplies visual separation; there is no additional empty gap. Corner radii are unchanged, so the curved portions leave additional space. Toggling gridlines does not add a pixel to the density height. Built-in text editors subtract their border thickness from cell padding to preserve text alignment. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
+The selection outline's `3,2,3,2` `TableViewSelectionIndicatorMargin` is relative to this visual area, abutting the inner native focus stroke along straight edges without covering either native 2px + 1px stroke. Its interior height is the arranged chrome height minus 6px, rather than the full row height minus 6px. The contrasting secondary focus stroke supplies visual separation; there is no additional empty gap. Corner radii are unchanged, so the curved portions leave additional space. Toggling gridlines does not add a pixel to the density height. Cells and the header `PART_Root` are `Grid`s, which clip when rounded, so `AttachFocusCornerRadius` rounds them only while the keyboard focus rect shows.
 
-Text uses the same divider-free center as selection. `RefreshCellVisualGeometry` offsets the authored text padding by the difference between the arranged chrome and full-row centers; layout restamps use the same offset. Built-in editors subtract their border thickness from that padding and center the internal text view against a fixed density-height target. Metric refreshes follow density, border and text-view size changes, so fallback-font growth and shrinkage do not accumulate extra height. The editor frame and hit target retain the full row height. Section `PART_ContentHost` applies the chrome-center offset while preserving the header's public `Padding`. Offsets are bounded by the available padding; rows without separators use the authored padding.
+Text uses the same divider-free center as selection. `RefreshCellVisualGeometry` offsets the authored text padding by the difference between the arranged chrome and full-row centers; layout restamps use the same offset. Metric refreshes follow density and border changes. Cell hit targets retain the full row height. Section `PART_ContentHost` applies the chrome-center offset while preserving the header's public `Padding`. Offsets are bounded by the available padding; rows without separators use the authored padding.
 
 **Later:** per-element `RowStyle` (on `TableViewRow`) and `CellStyle` (on the `TableViewCell` wrapper), as in WPF, rather than a monolithic `TableStyle`, so standard `Style` machinery applies without a property explosion.
 
@@ -417,7 +418,7 @@ Code comments link here; keep the reasons intact.
 - **`SortDirection` namespace.** `TabularShaping/SortDirection.idl` declares it into `Microsoft.UI.Xaml.Controls.Tabular`. It must not go into `Microsoft.UI.Xaml.Data`, which the Windows App SDK also owns: a C# consumer of both winmds binds that namespace to the SDK's copy and fails with `CS0234`.
 - **Tabular metadata IDL.** `Microsoft.UI.Xaml.Controls.Tabular.idl` is a renamed copy of MUXC's metadata IDL that produces `XamlControlsTabularXamlMetaDataProvider` and `TabularControlsResources`, avoiding duplicate runtime classes. It does not redeclare `Microsoft.UI.Xaml.CustomAttributes`, which come from MUXC's winmd (see `Tabular.ProjectImports.targets`), and must stay the first `@(Midl)` entry so its `MUX_*` macros reach every later IDL.
 - **Private namespace.** `MU_PRIVATE_CONTROLS_NAMESPACE` equals MUXC's value (`Microsoft.UI.Private.Controls`); a Tabular child namespace breaks cppwinrt, which includes a parent that is never generated. It is safe because this build never references MUXC's private winmd. That namespace, not `[MUX_INTERNAL]`, keeps `ResizeGripper` and its peer out of shipped winmds.
-- **Frozen overloads.** `[default_overload]`/`[method_name]` on `TableViewSource.GroupBy` (`GroupBy`, `GroupByWithIdentity`) and `Sort` (`SortByPath`, `Sort`) are frozen ABI; without them MIDL emits `GroupBy2`/`Sort2`.
+- **Frozen overloads.** `[default_overload]`/`[method_name]` on `TableViewSource.GroupBy` (`GroupBy`, `GroupByWithIdentity`) and `Sort` (`SortByPath`, `Sort`) and `ThenSort` (`ThenSortByPath`, `ThenSort`) are frozen ABI; without them MIDL emits `GroupBy2`/`Sort2`/`ThenSort2`.
 - **`TableViewSource` is sealed** because `TableView` drives the concrete type, so an override would be bypassed. Unsealing later is compatible; sealing later is not.
 - **`TableView` is unsealed** so apps can derive from it, consistent with other MUXC controls such as `ItemsView`, `ItemsRepeater`, `NavigationView` and `TabView`. (`ReferenceTracker` does not require it: the sealed `TableViewColumnHeader` and `TableViewSource` use it too.) `TableViewColumn` has a public constructor so apps can derive columns.
 - **`TableViewRowTemplateSelector`** is projected only because `ItemTemplateWrapper` is in another DLL. It is `[MUX_INTERNAL]`, and unsealed with a constructor because MIDL requires that for a member-less class.
@@ -566,10 +567,10 @@ Each starts at 1, the first release.
 
 These contracts are documented only here; they belong in the [API spec](../../api-specs/TableView/TableView-spec.md).
 
-- **Sort methods.** `SortByColumn(column, None)` clears, even when `CanSort` is `false`. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, the column cannot sort (`CanSort=False`, or no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `CanUserSortColumns=False` gates only header clicks. `TableView.ClearSort()` returns `false` when only an app delegate axis is active; use `TableViewSource.ClearSort()`.
-- **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. Setting `CanSort=False` on a column sorted by the control clears that sort with both events; a column lit only by `TableViewSource.Sort(...)` keeps the app's sort and raises neither.
+- **Sort methods.** `SortByColumn` and `ToggleSortDirection` ignore `CanUserSort` and `CanUserSortColumns`, which gate user input only (pointer, keyboard, UIA Invoke). Turning any `CanUser*` flag off, column or table level, does not clear the active sort (WPF parity). `SortByColumn(column, None)` clears. `ToggleSortDirection` walks the column's `SortCycle`. Both return `false`, changing nothing, when `Sorting` is canceled, the column cannot sort (no sort path and no `CustomSortComparer`), rows lack identity, or the source is refused. `TableView.ClearSort()` clears column sorts and the item sort levels on the effective `TableViewSource`, keeps `SortGroups`, and returns `true` if anything was cleared.
+- **Sort events.** `Sorting` is raised first and is cancellable, letting the app own the order and light the chevron with `TableViewSource.Sort(path, …)`. `Sorted` follows. A null `Column` means clear-all. An app that owns the order can instead set the column's display-only `SortDirection`.
 - **`SortCycle`** is per column. Its first direction is the opening one; the `*None` variants add a step back to source order.
-- **`SortMemberPath`.** When empty, an app-derived column can supply a path through the overridable `GetSortMemberPathCore()`; otherwise the column sorts only through `CustomSortComparer`. `CustomSortComparer` wins over the path and must be a pure function.
+- **`SortMemberPath`.** When empty, an app-derived column can supply a path through the overridable `GetSortMemberPathCore()`; otherwise the column sorts only through `CustomSortComparer`. `CustomSortComparer` wins over the path and must be a pure function. An exception from it aborts a header sort or `SortByColumn` before commit: the previous sort and chevron stay, `Sorting` was raised and `Sorted` is not, and the fault is reported.
 - **`TableViewSource`.** `From` accepts `IVector<Object>`, `IBindableVector`, `IIterable<Object>` or `IBindableIterable`. Null items, predicate or key selector throw `E_INVALIDARG`; `groupIdentitySelector` may be null. Use `ClearFilter()` to remove a filter. `ParentBy` errors are in the [hierarchy API spec](Hierarchical-Data-Rows-API-Spec.md).
 - **Context flyouts.** First match wins. Cell: a `ContextFlyout` in the cell content, `CellContextFlyout`, the row's `ContextFlyout`, `TableView.ContextFlyout`. Header: a `ContextFlyout` in the header content, `HeaderContextFlyout`, `TableView.ContextFlyout`. Opening one focuses its target and does not change selection. When the table resolves the request (keyboard, or pointer on padding), a text control inside the content counts only with a locally set `ContextFlyout` (not a Style setter), and nested `TableView`s and items inside a nested items host are skipped.
 - **`TableViewRow.Level`** is 1-based for tree rows and `0` otherwise, matching `AutomationProperties.Level`.
@@ -580,11 +581,11 @@ These contracts are documented only here; they belong in the [API spec](../../ap
 - **Fixed columns wider than the viewport** collapse `*` columns to `MinWidth`, as in WPF.
 - **Width-dependent height.** An `Auto` cell that fits its column is not re-measured at the final width.
 - **Resize differs from WPF** next to `Pixel`/`Auto` neighbors: WPF assigns the neighbor a width, while `TableView` only redistributes `*` space, so those layouts pin rather than overflow.
-- **Grouping** is single-level, with no per-group expand or collapse by key.
+- **Grouping** is single-level.
 
 ## Non-goals and deferred work
 
 - **Not yet implemented:** trailing frozen columns, multi-select, `RowStyle`/`CellStyle`.
 - **Deferred:** `Auto` shrink, multi-column sort, clipboard, incremental loading.
-- **Not part of TableView:** cell editing and `TableViewTextColumn` (see [Editing](#editing)); editing scenarios belong to a DataGrid-class control.
+- **Deferred to V2 / future DataGrid:** cell editing (see [Editing](#editing)).
 - **Non-goals:** column virtualization, row headers, marquee selection, spreadsheet-style interaction.

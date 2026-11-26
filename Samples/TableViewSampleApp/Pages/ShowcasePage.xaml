@@ -56,7 +56,7 @@
                 SelectionMode="Single"
                 VerticalAlignment="Stretch"
                 MinHeight="320">
-                <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanSort="False"/>
+                <tv:TableViewTemplateColumn x:Name="AvatarColumn" Header="Photo" Width="56" CellTemplate="{StaticResource AvatarTemplate}" CanUserSort="False"/>
                 <tv:TableViewColumn x:Name="NameColumn" Header="Name" Width="*" MinWidth="140" DisplayMemberBinding="{Binding FullName}"/>
                 <tv:TableViewTemplateColumn x:Name="DepartmentColumn" Header="Department" Width="130" CellTemplate="{StaticResource ShowcaseDepartmentPillTemplate}" SortMemberPath="Department"/>
                 <tv:TableViewTemplateColumn x:Name="ActiveColumn" Header="Active" Width="84" CellTemplate="{StaticResource ActiveCheckBoxTemplate}" SortMemberPath="IsActive" CanUserResize="False" HeaderToolTip="Fixed width: this column sets CanUserResize to False."/>
@@ -66,7 +66,7 @@
                 <tv:TableViewTemplateColumn x:Name="OfficeColumn" Header="Office" Width="150" CellTemplate="{StaticResource OfficeComboTemplate}" SortMemberPath="Office" Visibility="Collapsed"/>
                 <tv:TableViewColumn x:Name="EmailColumn" Header="Email" Width="220" Visibility="Collapsed" DisplayMemberBinding="{Binding Email}"/>
                 <tv:TableViewColumn x:Name="RoleColumn" Header="Role" Width="200" Visibility="Collapsed" DisplayMemberBinding="{Binding Role}"/>
-                <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanSort="False" Visibility="Collapsed"/>
+                <tv:TableViewTemplateColumn x:Name="DetailsColumn" Header="Details" Width="96" CellTemplate="{StaticResource DetailsButtonTemplate}" CanUserSort="False" Visibility="Collapsed"/>
             </tv:TableView>
             <!-- /snippet -->
         </controls:SamplePresenter.Example>
@@ -129,7 +129,7 @@
                 <controls:ShapingOptions
                     x:Name="Shaping"
                     AutomationIdPrefix="Showcase"
-                    Description="Grouped, a header sort applied after grouping orders the rows within each group (a sort applied before grouping orders the groups too), and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
+                    Description="Grouped, a header sort orders the rows within each group and the groups follow their first rows, and live updates keep running. TableViewSource.GroupBy reshapes the same source in place rather than rebuilding it, so the control can keep the sort, the selection and the scroll position.">
                     <ComboBoxItem Content="Department" Tag="Department"/>
                     <ComboBoxItem Content="Role" Tag="Role"/>
                     <ComboBoxItem Content="Active" Tag="IsActive"/>

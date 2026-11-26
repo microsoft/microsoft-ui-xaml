@@ -7,7 +7,7 @@ private static TableViewColumn Text(string header, string path, GridLength width
         Header = header,
         DisplayMemberBinding = new Binding { Path = new PropertyPath(path) },
         Width = width,
-        CanSort = false,
+        CanUserSort = false,
     };
 
 // Template columns use the shared cells from Templates\PersonCellTemplates.xaml.
@@ -17,7 +17,7 @@ private static TableViewTemplateColumn Templated(string header, string templateK
         Header = header,
         CellTemplate = (DataTemplate)Application.Current.Resources[templateKey],
         Width = width,
-        CanSort = false,
+        CanUserSort = false,
     };
 
 private static TableViewColumn LockedRole(GridLength width)

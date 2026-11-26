@@ -38,6 +38,7 @@ public:
 
     winrt::IInspectable Key();
     int32_t ItemCount();
+    // Internal, not projected.
     int32_t Level();
     bool IsExpandable();
     bool IsExpanded();

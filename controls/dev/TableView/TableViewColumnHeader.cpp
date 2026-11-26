@@ -128,7 +128,7 @@ void TableViewColumnHeader::OnApplyTemplate()
 void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorReserve)
 {
     m_isSortable = sortable;
-    m_indicatorReserve = sortable ? indicatorReserve : 0.0;
+    m_indicatorReserve = indicatorReserve;
     UpdateContentReserve();
     HostSortIndicator();
     UpdateVisualStates(false /* useTransitions */);
@@ -136,7 +136,13 @@ void TableViewColumnHeader::SetSortableInternal(bool sortable, double indicatorR
 
 void TableViewColumnHeader::SetSortDirectionInternal(winrt::SortDirection direction)
 {
+    const bool wasShown = ShowsSortIndicator();
     m_sortDirection = direction;
+    if (wasShown != ShowsSortIndicator())
+    {
+        UpdateContentReserve();
+        HostSortIndicator();
+    }
     UpdateVisualStates(true /* useTransitions */);
 }
 
@@ -211,7 +217,7 @@ void TableViewColumnHeader::UpdateContentReserve()
     if (auto const presenter = m_contentPresenter.get())
     {
         auto margin = m_templateContentMargin;
-        if (m_isSortable)
+        if (ShowsSortIndicator())
         {
             margin.Right += m_indicatorReserve;
             if (auto const host = m_sortIndicatorHost.get())
@@ -235,7 +241,7 @@ void TableViewColumnHeader::HostSortIndicator()
         return;
     }
 
-    if (!m_isSortable)
+    if (!ShowsSortIndicator())
     {
         host.Child(nullptr);
         return;

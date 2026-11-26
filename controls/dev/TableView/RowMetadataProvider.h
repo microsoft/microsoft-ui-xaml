@@ -68,6 +68,10 @@ public:
     void CollapseAllRows() override;
     void ExpandSubtree(winrt::hstring const& key) override;
 
+    std::vector<TableViewGroupExpansionInfo> GetGroupExpansionInfos() override;
+    winrt::hstring GetGroupExpansionIdentity(winrt::IInspectable const& group) override;
+    bool TryGetGroupExpansionInfo(winrt::hstring const& identity, TableViewGroupExpansionInfo& info) override;
+
     bool IsHierarchicalSource() const override
     {
         return m_sourceKind == SourceKind::Hierarchical || m_sourceKind == SourceKind::GroupedHierarchical;
