@@ -86,6 +86,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return reinterpret_cast<uintptr_t>(identity.Get());
         }
 
+        // Returns a guard that releases the left mouse button over the Thumb if the test leaves the pressed interval
+        // early (a failed wait or verification), so the button is not left pressed for the following tests. It must
+        // not throw while the stack unwinds. Call release() on it after the normal MouseButtonUp.
+        auto ReleaseMouseOnExit(xaml_primitives::Thumb^ thumb)
+        {
+            return wil::scope_exit([thumb]()
+            {
+                try
+                {
+                    TestServices::InputHelper->MouseButtonUp(thumb, 0, 0, MouseButton::Left);
+                }
+                catch (...)
+                {
+                }
+            });
+        }
+
         uint64_t GetBits(double value)
         {
             uint64_t bits = 0;
@@ -206,6 +223,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             AttachDragHandlers(thumb, observations, startedRegistration, deltaRegistration, completedRegistration);
 
             TestServices::InputHelper->MouseButtonDown(thumb, 0, 0, MouseButton::Left);
+            auto mouseReleaseGuard = ReleaseMouseOnExit(thumb);
             TestServices::WindowHelper->WaitForIdle();
 
             RunOnUIThread([&]()
@@ -232,6 +250,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
             const auto& last = offsetsFromCenter.back();
             TestServices::InputHelper->MouseButtonUp(thumb, last.first, last.second, MouseButton::Left);
+            mouseReleaseGuard.release();
             observations->completedEvent->WaitForDefault();
             TestServices::WindowHelper->WaitForIdle();
 
@@ -528,6 +547,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
 
         TestServices::InputHelper->MouseButtonDown(thumb, 0, 0, MouseButton::Left);
+        auto mouseReleaseGuard = ReleaseMouseOnExit(thumb);
         TestServices::WindowHelper->WaitForIdle();
         TestServices::InputHelper->MoveMouse(thumb, 35, -25);
         TestServices::WindowHelper->WaitForIdle();
@@ -557,6 +577,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::InputHelper->MoveMouse(thumb, 60, 45);
         TestServices::WindowHelper->WaitForIdle();
         TestServices::InputHelper->MouseButtonUp(thumb, 60, 45, MouseButton::Left);
+        mouseReleaseGuard.release();
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
@@ -583,6 +604,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         AttachDragHandlers(thumb, observations, startedRegistration, deltaRegistration, completedRegistration);
 
         TestServices::InputHelper->MouseButtonDown(thumb, 0, 0, MouseButton::Left);
+        auto mouseReleaseGuard = ReleaseMouseOnExit(thumb);
         TestServices::WindowHelper->WaitForIdle();
         TestServices::InputHelper->MoveMouse(thumb, -20, 30);
         TestServices::WindowHelper->WaitForIdle();
@@ -610,6 +632,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         LOG_OUTPUT(L"Releasing the pointer on the disabled Thumb does not complete the drag again.");
         TestServices::InputHelper->MouseButtonUp(thumb, -20, 30, MouseButton::Left);
+        mouseReleaseGuard.release();
         TestServices::WindowHelper->WaitForIdle();
 
         RunOnUIThread([&]()
