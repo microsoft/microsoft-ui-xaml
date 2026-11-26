@@ -48,6 +48,7 @@
 #include <ReentrancyGuard.h>
 #include <Windowing.h>
 #include <RenderingBackend.h>
+#include <ImmediateRenderingPolicy.h>
 
 #undef max
 #undef min
@@ -66,6 +67,10 @@ using namespace Focus;
 #define ExitOnSetContactFailure(x) if (x) { goto Cleanup; }
 
 using namespace RuntimeFeatureBehavior;
+
+// ---- DManip ticking (scroll physics) ----
+static FILE* GetDManipLogFile();
+static int64_t DManipLogMicroseconds();
 
 CInputServices::CInputServices(_In_ CCoreServices *pCoreService)
     : m_pVisualTree(pCoreService->GetMainVisualTree())
@@ -7383,7 +7388,8 @@ CInputServices::StopInertialViewportWithoutCompositorPeer(
 
     IFC_RETURN(pViewport->GetCurrentStatus(currentStatus));
 
-    if (currentStatus == XcpDMViewportInertia && pViewport->GetManipulatedElementNoRef()->GetCompositionPeer() == nullptr)
+    if (currentStatus == XcpDMViewportInertia && pViewport->GetManipulatedElementNoRef()->GetCompositionPeer() == nullptr
+        && ImmediateRenderingPolicy::ShouldStopPeerlessInertia(RenderingBackend::IsImmediateModeActive(), RenderingBackend::IsDManipTickingActive()))
     {
 #ifdef DM_DEBUG
         if (m_fIsDMInfoTracingEnabled)
@@ -7430,6 +7436,13 @@ CInputServices::ProcessDirectManipulationViewportStatusUpdate(
     IFCPTR(pViewport);
 
     TraceDmViewportStatusInfo((UINT64)pViewport, oldStatus, newStatus);
+
+    if (FILE* log = GetDManipLogFile())
+    {
+        fprintf(log, "status %lld %lu %p %d %d\n", static_cast<long long>(DManipLogMicroseconds()), GetCurrentThreadId(),
+            static_cast<void*>(pViewport), static_cast<int>(oldStatus), static_cast<int>(newStatus));
+        fflush(log);
+    }
 
 #ifdef DM_DEBUG
     if (m_fIsDMInfoTracingEnabled)
@@ -8602,6 +8615,109 @@ static DirtyFlags DirectManipulationValuesDirtyFlags()
         ? DirtyFlags::Render | DirtyFlags::Bounds
         : DirtyFlags::Render | DirtyFlags::Bounds | DirtyFlags::Independent;
 }
+
+// ---- DManip ticking (scroll physics) ----
+// Diagnostics: WINUI_IMMEDIATE_DMANIP_LOG=<path.txt> appends one line per tick ("tick <us> <tid> <moving> <updates>
+// <total>"), per ticked viewport ("vp <us> <viewport> <status> <tx> <ty> <zoom>") and per DManip status change
+// ("status <us> <tid> <viewport> <old> <new>"). Read by RenderBench S33 and the DManip ticking spike.
+static FILE* GetDManipLogFile()
+{
+    static FILE* s_file = []() -> FILE*
+    {
+        wchar_t buffer[MAX_PATH] = {};
+        const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_DMANIP_LOG", buffer, ARRAYSIZE(buffer));
+        FILE* file = nullptr;
+        if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
+        {
+            return file;
+        }
+        return nullptr;
+    }();
+    return s_file;
+}
+
+static int64_t DManipLogMicroseconds()
+{
+    static const int64_t s_frequency = []
+    {
+        LARGE_INTEGER f{};
+        QueryPerformanceFrequency(&f);
+        return f.QuadPart;
+    }();
+    LARGE_INTEGER now{};
+    QueryPerformanceCounter(&now);
+    return now.QuadPart * 1000000 / s_frequency;
+}
+
+// Immediate rendering backends have no DComp manipulation compositor ticking DManip (it only ticks content bound to
+// DComp visuals), so the UI-thread frame ticks each service whose viewport moves, before the viewport changes are
+// processed: ProcessDirectManipulationViewportChanges then reads this frame's transform (ViewChanging, dirty flags),
+// the immediate walk paints it through CUIElement::GetLocalTransform, and RequestAdditionalFrame keeps frames coming
+// until every viewport is Ready again. Nothing runs while all viewports are idle.
+_Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRendering()
+{
+    if (!RenderingBackend::IsDManipTickingActive() || m_pViewports == nullptr || m_pViewports->size() == 0)
+    {
+        return S_OK;
+    }
+
+    FILE* const log = GetDManipLogFile();
+    std::vector<IPALDirectManipulationService*> ticked;
+    uint32_t moving = 0;
+    for (XUINT32 i = 0; i < m_pViewports->size(); ++i)
+    {
+        CDMViewport* pViewport = nullptr;
+        IFC_RETURN(m_pViewports->get_item(i, pViewport));
+        if (pViewport == nullptr || pViewport->GetNeedsUnregistration() || pViewport->GetDMContainerNoRef() == nullptr)
+        {
+            continue;
+        }
+        xref_ptr<IPALDirectManipulationService> spService;
+        IFC_RETURN(GetDMService(pViewport->GetDMContainerNoRef(), spService.ReleaseAndGetAddressOf()));
+        if (!spService)
+        {
+            continue;
+        }
+        // DManip's own status: XAML's processed status lags by a tick when a wheel or ZoomToRect just started.
+        XDMViewportStatus status = XcpDMViewportBuilding;
+        if (FAILED(spService->GetViewportStatus(pViewport, status)))
+        {
+            continue;
+        }
+        const ImmediateRenderingPolicy::DManipStatus policyStatus = static_cast<ImmediateRenderingPolicy::DManipStatus>(status);
+        if (!ImmediateRenderingPolicy::ShouldTickDManip(true, true, &policyStatus, 1))
+        {
+            continue;
+        }
+        ++moving;
+        if (std::find(ticked.begin(), ticked.end(), spService.get()) == ticked.end())
+        {
+            IFC_RETURN(spService->TickUpdateManager());
+            ticked.push_back(spService.get());
+            ++m_immediateDManipUpdates;
+        }
+        if (log)
+        {
+            XFLOAT tx = 0, ty = 0, uncompressedZoom = 1, zoomX = 1, zoomY = 1;
+            IGNOREHR(spService->GetPrimaryContentTransform(pViewport, tx, ty, uncompressedZoom, zoomX, zoomY));
+            fprintf(log, "vp %lld %p %d %.3f %.3f %.5f\n", static_cast<long long>(DManipLogMicroseconds()),
+                static_cast<void*>(pViewport), static_cast<int>(status), tx, ty, zoomX);
+        }
+    }
+
+    if (log && moving > 0)
+    {
+        fprintf(log, "tick %lld %lu %u %zu %llu\n", static_cast<long long>(DManipLogMicroseconds()), GetCurrentThreadId(),
+            moving, ticked.size(), static_cast<unsigned long long>(m_immediateDManipUpdates));
+        fflush(log);
+    }
+    if (moving > 0)
+    {
+        // Keep frames coming while DManip moves even if XAML's queued status still says Ready.
+        IFC_RETURN(RequestAdditionalFrame());
+    }
+    return S_OK;
+}
 //------------------------------------------------------------------------
 //
 //  Method:   ProcessDirectManipulationViewportValuesUpdate
@@ -9121,6 +9237,7 @@ CInputServices::ProcessUIThreadTick()
     if (isDirectManipulationSupported)
     {
         IFC_RETURN(InitializeDirectManipulationContainers());
+        IFC_RETURN(TickDirectManipulationForImmediateRendering());
         IFC_RETURN(ProcessDirectManipulationViewportChanges());
         IFC_RETURN(RefreshDirectManipulationHandlerWantsNotifications());
     }

@@ -90,6 +90,11 @@ struct IPALDirectManipulationService : public IObject
     virtual _Check_return_ HRESULT GetCompositorSecondaryClipContent(_In_ IObject* pViewport, _In_ IObject* pSecondaryClipContent, _Outptr_ IObject** ppCompositorSecondaryClipContent) = 0;
     virtual _Check_return_ HRESULT ResetCompositor() = 0;
 
+    // ---- DManip ticking (scroll physics) ----
+    // Immediate rendering backends: advance DirectManipulation (inertia, animated ZoomToRect, contact updates) by one
+    // frame, the job of the DComp manipulation compositor in Composition. No-op when the service has no update manager.
+    virtual _Check_return_ HRESULT TickUpdateManager() = 0;
+
     virtual _Check_return_ HRESULT EnsureSharedContentTransform(_In_ ixp::ICompositor* compositor, _In_ IObject* pContent, _In_ XDMContentType contentType, _Outptr_result_nullonfailure_ IUnknown** sharedPrimaryTransform, _Outptr_result_maybenull_ IUnknown** sharedSecondaryTransform) = 0;
     virtual _Check_return_ HRESULT ReleaseSharedContentTransform(_In_ IObject* pContent, _In_ XDMContentType contentType) = 0;
     virtual _Check_return_ HRESULT RemoveSharedContentTransformMapping(_In_ IObject* pContent) = 0;

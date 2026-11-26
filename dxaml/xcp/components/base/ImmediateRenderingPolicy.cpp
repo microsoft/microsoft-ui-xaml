@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cwchar>
 
 namespace ImmediateRenderingPolicy
 {
@@ -535,6 +536,63 @@ namespace ImmediateRenderingPolicy
         *dx = static_cast<int32_t>(rx);
         *dy = static_cast<int32_t>(ry);
         return true;
+    }
+
+    ScrollPresentation ClassifyScrollerChange(const ScrollerFrame& previous, const ScrollerFrame& current, float viewportWidth,
+        float viewportHeight, _Out_ int32_t* dx, _Out_ int32_t* dy) noexcept
+    {
+        if (TryGetScrollBlitDelta(previous, current, viewportWidth, viewportHeight, dx, dy))
+        {
+            return ScrollPresentation::Blit;
+        }
+        const bool sameZoom = previous.zoom > 0 && std::fabs(current.zoom - previous.zoom) <= 1e-4f * previous.zoom;
+        if (sameZoom && std::fabs(current.offsetX - previous.offsetX) < 0.01f && std::fabs(current.offsetY - previous.offsetY) < 0.01f)
+        {
+            return ScrollPresentation::Unchanged;
+        }
+        return ScrollPresentation::Repaint;
+    }
+
+    // ---- DManip ticking (scroll physics) ----
+
+    bool ParseDManipTickSetting(_In_opt_z_ const wchar_t* text) noexcept
+    {
+        if (text == nullptr)
+        {
+            return true;
+        }
+        return !(_wcsicmp(text, L"0") == 0 || _wcsicmp(text, L"false") == 0 || _wcsicmp(text, L"off") == 0);
+    }
+
+    bool IsDManipStatusMoving(DManipStatus status) noexcept
+    {
+        return status == DManipStatus::Running || status == DManipStatus::Inertia || status == DManipStatus::AutoRunning;
+    }
+
+    bool ShouldTickDManip(bool immediateMode, bool tickingEnabled, _In_reads_(count) const DManipStatus* statuses, uint32_t count) noexcept
+    {
+        if (!immediateMode || !tickingEnabled)
+        {
+            return false;
+        }
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            if (IsDManipStatusMoving(statuses[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool ShouldStopPeerlessInertia(bool immediateMode, bool tickingEnabled) noexcept
+    {
+        return !(immediateMode && tickingEnabled);
+    }
+
+    bool ShouldTweenAnimatedChangeView(bool immediateMode, bool tickingEnabled) noexcept
+    {
+        return immediateMode && !tickingEnabled;
     }
 
     // ---- imaging ----

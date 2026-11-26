@@ -1463,6 +1463,11 @@ private:
     // Called at each UI tick to handle any potential viewport status or transform updates.
     _Check_return_ HRESULT ProcessDirectManipulationViewportChanges();
 
+    // ---- DManip ticking (scroll physics) ----
+    // Immediate rendering backends: calls IDirectManipulationUpdateManager::Update for every service with a moving
+    // viewport, standing in for the DComp manipulation compositor. No-op in Composition or when nothing moves.
+    _Check_return_ HRESULT TickDirectManipulationForImmediateRendering();
+
     // Handles any potential viewport status or transform updates.
     _Check_return_ HRESULT ProcessDirectManipulationViewportChanges(
             _In_ CDMViewport* pViewport);
@@ -1595,6 +1600,8 @@ private:
 
     // Registered DM viewports
     xvector<CDMViewport*>* m_pViewports;
+    // ---- DManip ticking (scroll physics) ----
+    uint64_t m_immediateDManipUpdates = 0;
     xvector<CDMCrossSlideViewport*>* m_pCrossSlideViewports;
     xvector<CSecondaryContentRelationship*>* m_pSecondaryContentRelationshipsToBeApplied;
 

@@ -3043,6 +3043,29 @@ Cleanup:
     return hr;
 }
 
+// ---- DManip ticking (scroll physics) ----
+// Called once per immediate frame while a viewport of this service moves. The shared DComp manipulation compositor
+// stays bound (viewports are created with its frame info provider and in automatic update mode); it only ticks
+// content bound to DComp visuals, which immediate islands never create, so without this call inertia and animated
+// ZoomToRect never progress. Spike diagnostic: WINUI_IMMEDIATE_DMANIP_FRAMEINFO=0 passes a null frame info provider
+// (DManip then samples the current time) instead of the compositor's.
+_Check_return_ HRESULT
+CDirectManipulationService::TickUpdateManager()
+{
+    if (m_pDMUpdateManager == nullptr)
+    {
+        return S_OK;
+    }
+    static const bool s_useFrameInfo = []
+    {
+        wchar_t value[8] = {};
+        const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_DMANIP_FRAMEINFO", value, ARRAYSIZE(value));
+        return !(length > 0 && length < ARRAYSIZE(value) && value[0] == L'0');
+    }();
+    IFC_RETURN(m_pDMUpdateManager->Update(s_useFrameInfo ? m_pDMFrameInfoProvider : nullptr));
+    return S_OK;
+}
+
 // Primary and Secondary transforms are both created by DManip's DComp device.  Primary is always created, Secondary is
 // only present if overpan mode is none.
 _Check_return_ HRESULT

@@ -546,6 +546,8 @@ internal static class InputInjection
         public uint KeyStates;
         public ulong PerformanceCount;
         public int ButtonChangeType;
+        // POINTER_INFO is 8-byte aligned (96 bytes): touchFlags starts after 4 bytes of padding.
+        public int Padding;
         public uint TouchFlags, TouchMask;
         public int ContactLeft, ContactTop, ContactRight, ContactBottom;
         public int RawLeft, RawTop, RawRight, RawBottom;

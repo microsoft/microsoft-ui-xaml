@@ -33,6 +33,12 @@ namespace ImmediateRenderingPolicyTests
         // ---- scrolling ----
         TEST_METHOD(ScrollBlitNeedsWholePixelTranslation);
         TEST_METHOD(ScrollBlitRefusesZoomChange);
+        TEST_METHOD(ScrollerChangeClassification);
+        // ---- DManip ticking (scroll physics) ----
+        TEST_METHOD(DManipTickSettingParsing);
+        TEST_METHOD(DManipTickStartsWhenViewportMoves);
+        TEST_METHOD(DManipTickStopsWhenIdle);
+        TEST_METHOD(DManipTickingReplacesInertiaJumpAndTween);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

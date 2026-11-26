@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include <RenderingBackend.h>
+#include <ImmediateRenderingPolicy.h>
 #include <TraceLoggingProvider.h>
 #include <atomic>
 #include <iterator>
@@ -257,6 +258,18 @@ namespace RenderingBackend
             return ParseTrimWhenHiddenSetting(length == 0 || length >= ARRAYSIZE(buffer) ? nullptr : buffer);
         }();
         return ShouldTrimWhenHidden(GetProcessSelection().effective, s_enabled);
+    }
+
+    bool IsDManipTickingActive() noexcept
+    {
+        static const bool s_active = []()
+        {
+            wchar_t buffer[16] = {};
+            const auto length = GetEnvironmentVariableW(ImmediateRenderingPolicy::DManipTickVariableName, buffer, ARRAYSIZE(buffer));
+            return IsImmediateModeActive()
+                && ImmediateRenderingPolicy::ParseDManipTickSetting(length == 0 || length >= ARRAYSIZE(buffer) ? nullptr : buffer);
+        }();
+        return s_active;
     }
 
     const GUID& GetProviderId() noexcept

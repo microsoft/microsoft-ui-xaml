@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -40,6 +40,7 @@
 #include <XamlOneCoreTransforms.h>
 #include "DispatcherTimer.g.h"
 #include <RenderingBackend.h>
+#include <ImmediateRenderingPolicy.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -16958,7 +16959,10 @@ _Check_return_ HRESULT ScrollViewer::TryStartImmediateViewTween(
 {
     *pStarted = false;
 
-    if (!RenderingBackend::IsImmediateModeActive() || (!pHorizontalOffset && !pVerticalOffset && !pZoomFactor))
+    // ---- DManip ticking (scroll physics) ----: with the immediate frame loop ticking DManip, DManip animates the
+    // change itself (like Composition); the tween is the fallback when ticking is disabled.
+    if (!ImmediateRenderingPolicy::ShouldTweenAnimatedChangeView(RenderingBackend::IsImmediateModeActive(), RenderingBackend::IsDManipTickingActive())
+        || (!pHorizontalOffset && !pVerticalOffset && !pZoomFactor))
     {
         return S_OK;
     }

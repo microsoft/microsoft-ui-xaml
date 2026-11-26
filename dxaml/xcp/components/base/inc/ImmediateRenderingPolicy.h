@@ -162,6 +162,41 @@ namespace ImmediateRenderingPolicy
     bool TryGetScrollBlitDelta(const ScrollerFrame& previous, const ScrollerFrame& current, float viewportWidth,
         float viewportHeight, _Out_ int32_t* dx, _Out_ int32_t* dy) noexcept;
 
+    // How a scroller's pixels are presented in a frame: unchanged (no damage from scrolling), moved with ScrollPixels
+    // (whole-pixel translation at the same zoom; *dx/*dy set), or repainted (zoom change, sub-pixel or large move).
+    enum class ScrollPresentation { Unchanged, Blit, Repaint };
+    ScrollPresentation ClassifyScrollerChange(const ScrollerFrame& previous, const ScrollerFrame& current, float viewportWidth,
+        float viewportHeight, _Out_ int32_t* dx, _Out_ int32_t* dy) noexcept;
+
+    // ---- DManip ticking (scroll physics) ----
+
+    // In Composition the DComp manipulation compositor ticks DirectManipulation's update manager every frame and
+    // applies viewport transforms to the manipulated visuals. Immediate islands have no such visuals, so the immediate
+    // frame loop ticks IDirectManipulationUpdateManager::Update itself while a viewport moves, and the walk paints the
+    // live content transform. WINUI_IMMEDIATE_DMANIP_TICK=0 (or false/off) restores the previous behaviour for A/B
+    // measurement: inertia jumps to its end and animated ChangeView uses the UI-thread tween.
+    constexpr const wchar_t* DManipTickVariableName = L"WINUI_IMMEDIATE_DMANIP_TICK";
+    bool ParseDManipTickSetting(_In_opt_z_ const wchar_t* text) noexcept;
+
+    // Mirrors XDMViewportStatus (pal\inc\paltypes.h) / DIRECTMANIPULATION_STATUS.
+    enum class DManipStatus : uint32_t { Building, Enabled, Disabled, Running, Inertia, Ready, Suspended, AutoRunning };
+
+    // True when DManip moves the viewport's content between frames and needs Update ticks: a contact pans or pinches
+    // (Running), inertia, an animated ZoomToRect (wheel, keyboard, BringIntoView, ChangeView) or auto-scroll run.
+    bool IsDManipStatusMoving(DManipStatus status) noexcept;
+
+    // Whether the immediate frame loop calls Update this frame: an immediate mode with ticking enabled and at least
+    // one moving viewport. False when every viewport is Ready/Enabled/Disabled, so a settled window costs nothing.
+    bool ShouldTickDManip(bool immediateMode, bool tickingEnabled, _In_reads_(count) const DManipStatus* statuses, uint32_t count) noexcept;
+
+    // Without ticking an inertial viewport whose element has no composition peer never progresses, so XAML jumps it to
+    // the inertia end (CInputServices::StopInertialViewportWithoutCompositorPeer). With immediate ticking it animates.
+    bool ShouldStopPeerlessInertia(bool immediateMode, bool tickingEnabled) noexcept;
+
+    // Animated ChangeView/ScrollTo/ZoomTo in immediate modes: DManip's own animation when ticking, otherwise the
+    // ScrollViewer UI-thread tween (fallback).
+    bool ShouldTweenAnimatedChangeView(bool immediateMode, bool tickingEnabled) noexcept;
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

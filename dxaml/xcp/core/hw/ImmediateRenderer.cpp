@@ -143,7 +143,7 @@ namespace
             FILE* file = nullptr;
             if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
             {
-                fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus reused\n");
+                fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus reused scrollrepaint\n");
                 return file;
             }
             return nullptr;
@@ -4032,6 +4032,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         int32_t dx, dy;
     };
     std::vector<Blit> blits;
+    uint32_t scrollRepaints = 0;
     std::unordered_map<const CUIElement*, const ScrollerInfo*> scrollers;
     std::unordered_map<const CUIElement*, std::pair<float, float>> deltas;
     for (const ScrollerInfo& s : list.scrollers)
@@ -4057,10 +4058,15 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             const RectF v = IntersectRect({ std::ceil(s.viewport.left), std::ceil(s.viewport.top),
                 std::floor(s.viewport.right), std::floor(s.viewport.bottom) }, surface);
             int32_t idx = 0, idy = 0;
-            if (IsEmptyRect(v) || !ImmediateRenderingPolicy::TryGetScrollBlitDelta(
+            const ImmediateRenderingPolicy::ScrollPresentation presentation = IsEmptyRect(v)
+                ? ImmediateRenderingPolicy::ScrollPresentation::Repaint
+                : ImmediateRenderingPolicy::ClassifyScrollerChange(
                     { prev->second.offsetX, prev->second.offsetY, prev->second.zoom }, { s.offsetX, s.offsetY, s.zoom },
-                    v.right - v.left, v.bottom - v.top, &idx, &idy))
+                    v.right - v.left, v.bottom - v.top, &idx, &idy);
+            if (presentation != ImmediateRenderingPolicy::ScrollPresentation::Blit)
             {
+                // Zoom (pinch, ZoomToFactor), sub-pixel or viewport-sized moves: the moved records repaint the viewport.
+                scrollRepaints += presentation == ImmediateRenderingPolicy::ScrollPresentation::Repaint ? 1 : 0;
                 continue;
             }
             const float rdx = static_cast<float>(idx);
@@ -4450,12 +4456,12 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
                 damagePixels += static_cast<double>(d.right - d.left) * (d.bottom - d.top);
             }
         }
-        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld %u\n", frameNumber, reinterpret_cast<void*>(surfaceId),
+        fprintf(statsFile, "%u %p %zu %u %u %u %zu %zu %d %d %zu %.0f %d %lld %lld %u %u\n", frameNumber, reinterpret_cast<void*>(surfaceId),
             list.records.size(), m_elementsVisited - visitedBefore, m_elementsRendered - renderedBefore,
             m_elementsCulled - culledBefore, list.commands.size(), blits.size(), blits.empty() ? 0 : blits[0].dx,
             blits.empty() ? 0 : blits[0].dy, fullDamage ? 0 : damage.size(), damagePixels, fullDamage ? 1 : 0,
             static_cast<long long>(paintStart - walkStart), static_cast<long long>(paintEnd - paintStart),
-            m_subtreesReused - reusedBefore);
+            m_subtreesReused - reusedBefore, scrollRepaints);
         fflush(statsFile);
     }
 

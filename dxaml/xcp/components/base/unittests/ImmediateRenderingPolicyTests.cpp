@@ -378,6 +378,73 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(-20, dx);
     }
 
+    void PolicyTests::ScrollerChangeClassification()
+    {
+        int32_t dx = 0, dy = 0;
+        // DManip inertia frame: pure whole-pixel translation -> blit.
+        VERIFY_IS_TRUE(ScrollPresentation::Blit == ClassifyScrollerChange({ 0, -100, 1 }, { 0, -117, 1 }, 400, 300, &dx, &dy));
+        VERIFY_ARE_EQUAL(-17, dy);
+        // Settled (same transform as last frame): nothing to present for this scroller.
+        VERIFY_IS_TRUE(ScrollPresentation::Unchanged == ClassifyScrollerChange({ 0, -117, 1 }, { 0, -117.001f, 1 }, 400, 300, &dx, &dy));
+        // Pinch frame: zoom changed -> repaint the viewport.
+        VERIFY_IS_TRUE(ScrollPresentation::Repaint == ClassifyScrollerChange({ 0, 0, 1 }, { -10, -10, 1.1f }, 400, 300, &dx, &dy));
+        // Zoom-only change around the origin still repaints.
+        VERIFY_IS_TRUE(ScrollPresentation::Repaint == ClassifyScrollerChange({ 0, 0, 1 }, { 0, 0, 0.9f }, 400, 300, &dx, &dy));
+        // Jump larger than the viewport (Home/End): repaint.
+        VERIFY_IS_TRUE(ScrollPresentation::Repaint == ClassifyScrollerChange({ 0, 0, 1 }, { 0, -5000, 1 }, 400, 300, &dx, &dy));
+    }
+
+    // ---- DManip ticking (scroll physics) ----
+
+    void PolicyTests::DManipTickSettingParsing()
+    {
+        VERIFY_IS_TRUE(ParseDManipTickSetting(nullptr));
+        VERIFY_IS_TRUE(ParseDManipTickSetting(L"1"));
+        VERIFY_IS_TRUE(ParseDManipTickSetting(L"on"));
+        VERIFY_IS_FALSE(ParseDManipTickSetting(L"0"));
+        VERIFY_IS_FALSE(ParseDManipTickSetting(L"FALSE"));
+        VERIFY_IS_FALSE(ParseDManipTickSetting(L"off"));
+    }
+
+    void PolicyTests::DManipTickStartsWhenViewportMoves()
+    {
+        // One viewport starts a touch pan, inertia, an animated ZoomToRect (wheel/keyboard/BringIntoView) or auto-scroll.
+        for (DManipStatus moving : { DManipStatus::Running, DManipStatus::Inertia, DManipStatus::AutoRunning })
+        {
+            const DManipStatus statuses[] = { DManipStatus::Ready, moving, DManipStatus::Enabled };
+            VERIFY_IS_TRUE(IsDManipStatusMoving(moving));
+            VERIFY_IS_TRUE(ShouldTickDManip(true, true, statuses, ARRAYSIZE(statuses)));
+            // Composition ticks through the DComp manipulation compositor; disabled ticking never ticks.
+            VERIFY_IS_FALSE(ShouldTickDManip(false, true, statuses, ARRAYSIZE(statuses)));
+            VERIFY_IS_FALSE(ShouldTickDManip(true, false, statuses, ARRAYSIZE(statuses)));
+        }
+    }
+
+    void PolicyTests::DManipTickStopsWhenIdle()
+    {
+        // All viewports settled (or a cross-slide viewport suspended waiting for its threshold): no Update calls.
+        const DManipStatus idle[] = { DManipStatus::Ready, DManipStatus::Enabled, DManipStatus::Disabled, DManipStatus::Building, DManipStatus::Suspended };
+        VERIFY_IS_FALSE(ShouldTickDManip(true, true, idle, ARRAYSIZE(idle)));
+        VERIFY_IS_FALSE(ShouldTickDManip(true, true, nullptr, 0));
+        for (DManipStatus status : idle)
+        {
+            VERIFY_IS_FALSE(IsDManipStatusMoving(status));
+        }
+    }
+
+    void PolicyTests::DManipTickingReplacesInertiaJumpAndTween()
+    {
+        // Immediate + ticking: inertia animates (no jump to its end) and animated ChangeView uses DManip's animation.
+        VERIFY_IS_FALSE(ShouldStopPeerlessInertia(true, true));
+        VERIFY_IS_FALSE(ShouldTweenAnimatedChangeView(true, true));
+        // Immediate without ticking: previous behaviour (jump, UI-thread tween).
+        VERIFY_IS_TRUE(ShouldStopPeerlessInertia(true, false));
+        VERIFY_IS_TRUE(ShouldTweenAnimatedChangeView(true, false));
+        // Composition: unchanged (peerless inertia is stopped, no tween).
+        VERIFY_IS_TRUE(ShouldStopPeerlessInertia(false, true));
+        VERIFY_IS_FALSE(ShouldTweenAnimatedChangeView(false, true));
+    }
+
     // ---- imaging ----
 
     void PolicyTests::AppCompositionBrushFallsBack()

@@ -88,6 +88,11 @@ namespace RenderingBackend
     // ShouldTrimWhenHidden for the process selection and environment. Cached.
     bool IsTrimWhenHiddenEnabled() noexcept;
 
+    // ---- DManip ticking (scroll physics) ----
+    // True when the process renders immediately and WINUI_IMMEDIATE_DMANIP_TICK is not 0/false/off: the immediate frame
+    // loop ticks DirectManipulation (ImmediateRenderingPolicy::ShouldTickDManip). Cached.
+    bool IsDManipTickingActive() noexcept;
+
     // ---- ETW: provider "Microsoft-WinUI-RenderingBackend" {d18ce99c-dd66-5390-18da-068546739801} ----
     namespace Keywords
     {
