@@ -2208,6 +2208,7 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
 
     void MoCoGroupingIntegrationTests::ReorderKeepsCollectionIntactWhenInsertFails()
     {
+#ifdef MUX_PRERELEASE
         for (const bool refuses : { false, true })
         {
             TestCleanupWrapper cleanup;
@@ -2257,6 +2258,10 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
                 VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(list->Items->GetAt(list->SelectedIndex))->Data()));
             });
         }
+#else
+        // The stable build keeps the original move, which does not put back an item whose InsertAt failed.
+        LOG_OUTPUT(L"Skipped: the failed-move handling is prerelease only.");
+#endif
     }
 
     void MoCoGroupingIntegrationTests::ReorderIsOffOverSortedView()

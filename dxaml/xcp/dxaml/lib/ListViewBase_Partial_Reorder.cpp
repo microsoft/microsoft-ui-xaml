@@ -475,6 +475,10 @@ _Check_return_ HRESULT ListViewBase::OnDropGesture(
         ASSERT(m_tpPrimaryDraggedContainer != nullptr);
         IFC(DXamlCore::GetCurrent()->GetDragDrop()->Drop(pointer != NULL /* shouldFireEvent */));
         IFC(UpdateDragGrabbedItems(FALSE));
+#ifdef MUX_PRERELEASE
+        // The drop decides again: a view sorted or filtered during the drag is not reordered.
+        m_isItemsSourceShapedDuringDragValid = false;
+#endif
         IFC(DropCausesReorder(&dropCausesReorder));
 
         if (!dropCausesReorder)
@@ -1121,6 +1125,10 @@ IFACEMETHODIMP ListViewBase::OnDrop(
     {
         BOOLEAN dropCausesReorder = FALSE;
 
+#ifdef MUX_PRERELEASE
+        // The drop decides again: a view sorted or filtered during the drag is not reordered.
+        m_isItemsSourceShapedDuringDragValid = false;
+#endif
         IFC(DropCausesReorder(&dropCausesReorder));
         if (dropCausesReorder)
         {
@@ -1604,6 +1612,9 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
             // TODO/REVISIT: This can be slow if the underlying
             // data source is array-based. We can't really detect this though,
             // since the data is provided externally.
+#ifdef MUX_PRERELEASE
+            // With the shaping API, a move can also fail half done or reshape the view; the stable build keeps the
+            // original move below unchanged.
             if (insertIndex != realItemIndex)
             {
                 // Whether or not the item we're reordering is selected.
@@ -1623,7 +1634,6 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 auto getViewIndex = [&](INT sourceIndex, _In_ IInspectable* pItem, _Out_ INT* pViewIndex) -> HRESULT
                 {
                     *pViewIndex = sourceIndex;
-#ifdef MUX_PRERELEASE
                     if (isViewReshaped && pItem)
                     {
                         UINT index = 0;
@@ -1635,9 +1645,6 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                         }
                         *pViewIndex = found ? static_cast<INT>(index) : -1;
                     }
-#else
-                    UNREFERENCED_PARAMETER(pItem);
-#endif
                     return S_OK;
                 };
 
@@ -1645,7 +1652,6 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                 {
                     if (isViewReshaped)
                     {
-#ifdef MUX_PRERELEASE
                         HRESULT trackedHr = S_OK;
                         if (pTrackedIndex1 && *pTrackedIndex1 >= 0)
                         {
@@ -1656,9 +1662,6 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                             trackedHr = getViewIndex(*pTrackedIndex2, spTrackedItem2.Get(), pTrackedIndex2);
                         }
                         return trackedHr;
-#else
-                        return S_OK;
-#endif
                     }
 
                     UpdateTrackedIndex(
@@ -1681,9 +1684,7 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                     IFC(spItemSourceVector->get_Size(&sizeBeforeMove));
                     IFC(spItemSourceVector->RemoveAt(realItemIndex));
                     hr = spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get());
-#ifdef MUX_PRERELEASE
                     isViewReshaped = spReorderedView && spReorderedView->IsShaped() && !spReorderedView->PresentsSourceOrder();
-#endif
                     if (FAILED(hr))
                     {
                         // A collection can insert the item and then fail (a change handler failed), so only an item
@@ -1709,9 +1710,7 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                                 TRACE(TraceAlways, L"ListViewBase::ReorderItemsTo: putting back an item whose move failed with 0x%08X failed with 0x%08X; the item is no longer in the collection.", insertHr, rollbackHr);
                                 finalIndex = -1;
                             }
-#ifdef MUX_PRERELEASE
                             isViewReshaped = spReorderedView && spReorderedView->IsShaped() && !spReorderedView->PresentsSourceOrder();
-#endif
                         }
 
                         // The item did not move: tracked indices only change if the view does.
@@ -1753,6 +1752,48 @@ _Check_return_ HRESULT ListViewBase::ReorderItemsTo(
                     break;
                 }
             }
+
+#else
+            if (insertIndex != realItemIndex)
+            {
+                // Whether or not the item we're reordering is selected.
+                BOOLEAN isCurrentReorderedItemSelected = FALSE;
+
+                // Not used. The index of the item we're reordering in the selected items list, if applicable.
+                UINT currentReorderedItemIndexInSelection = 0;
+
+                // The item we're reordering.
+                ctl::ComPtr<IInspectable> spCurrentItem;
+
+                // Update tracked indices, if necessary.
+                UpdateTrackedIndex(
+                    realItemIndex,
+                    insertIndex,
+                    pTrackedIndex1);
+
+                UpdateTrackedIndex(
+                    realItemIndex,
+                    insertIndex,
+                    pTrackedIndex2);
+
+                IFC(m_selection.Has(realItemIndex, currentReorderedItemIndexInSelection, isCurrentReorderedItemSelected));
+                IFC(spItemSourceVector->GetAt(realItemIndex, &spCurrentItem));
+                {
+                    auto peggedCurrentItem = ctl::make_autopeg(spCurrentItem.Get());
+                    IFC(spItemSourceVector->RemoveAt(realItemIndex));
+                    IFC(spItemSourceVector->InsertAt(insertIndex, spCurrentItem.Get()));
+                }
+
+                // This remove-then-insert step will clear any selection on the current item.
+                // If this item was selected, we need to re-select it.
+                if (isCurrentReorderedItemSelected)
+                {
+                    // call the Selector::SelectOneItemInternal
+                    IFC(SelectOneItemInternal(insertIndex, spCurrentItem.Get(), TRUE /* clearOldSelection */));
+                }
+            }
+
+#endif
 
             numItemsReorderedSoFar++;
         }
