@@ -133,13 +133,12 @@ interface ICollectionViewShaping
     Boolean CanGroup { get; };
 };
 
-// WPF's CollectionViewGroup, as an interface the groups of a view implement: the computed groups of a shaping view
-// and the groups of an IsSourceGrouped view (Name = the app's group object, always bottom level).
+// What WPF's CollectionViewGroup adds to ICollectionViewGroup, as an interface the groups of a view implement: the
+// computed groups of a shaping view and the groups of an IsSourceGrouped view (always bottom level). WPF's Name and
+// Items are ICollectionViewGroup.Group and GroupItems (and, for bindings, the group's Name and Items properties).
 [contract(Microsoft.UI.Xaml.WinUIContract, 12)] [feature(Feature_ExperimentalApi)]
-interface ICollectionViewGroup2
+interface ICollectionViewGroup2 requires ICollectionViewGroup
 {
-    Object Name { get; };
-    IObservableVector<Object> Items { get; };              // subgroups, or the items at the bottom level
     Int32 ItemCount { get; };                              // leaves; the computed group raises PropertyChanged for it
     Boolean IsBottomLevel { get; };
 };
@@ -185,7 +184,7 @@ All of these change the experimental API only; the shipped `CollectionViewSource
 | `CollectionViewSource.Filter` **event** (`FilterEventHandler`, `FilterEventArgs.Item` / `Accepted`) | `CollectionViewSource.Filter` event (`FilterEventHandler`, `FilterEventArgs`) | Same name (it was `FilterRequested` while the CVS also had a `Filter` delegate property). As in WPF, `Accepted` starts `true`, each handler may change it, and adding or removing a handler refilters. **While it has handlers the event wins** over the view's `Filter` delegate (WPF replaces `view.Filter` with the event's wrapper); removing the last handler hands filtering back to the delegate. A CVS whose only rule is a handler shapes its view. It can be hooked in markup (`<CollectionViewSource Filter="OnFilter">`). |
 | `ICollectionView.Refresh()` | `CollectionViewSource.Refresh()` and `ICollectionViewShaping.Refresh()` | `ICollectionView` is frozen, so the verb lives on CVS and on the opt-in view interface. |
 | `ICollectionView.SortDescriptions` / `GroupDescriptions` / `Filter` | `ICollectionViewShaping` on the shaped `View` | `SortDescriptions` and `GroupDescriptions` are the CVS's objects: one set of descriptors, reachable from `ItemsSource` alone. |
-| `CollectionViewGroup.Name` | `Key` and `Name` on the group object; `ICollectionViewGroup2.Name` | `Key` matches the `IGrouping<K,T>` idiom WinUI samples already use. |
+| `CollectionViewGroup.Name` | `Key` and `Name` on the group object (bindings); `ICollectionViewGroup.Group` (code) | `Key` matches the `IGrouping<K,T>` idiom WinUI samples already use. `ICollectionViewGroup2` does not repeat it (round A): `Group` already is the name. |
 | `ICollectionView.DeferRefresh()` → `IDisposable` | `DeferRefresh()` → `IClosable` on CVS and `ICollectionViewShaping` | Implemented. Nested deferrals count; changes made while one is open (descriptors, `Filter`, `CustomSort`, `Refresh`, source changes) recompute once, when the last closes. C# `using` and C++/CX `delete` close it. An unclosed deferral defers forever, as in WPF. |
 | `ListCollectionView.CustomSort` (`IComparer`) | `CustomSort` property of type `CollectionViewComparer` on CVS and `ICollectionViewShaping` | Implemented. A delegate, not an interface, so a C++/WinRT lambda or a C# method group works and nothing needs reflection (AOT-safe). As in WPF, setting it clears `SortDescriptions`, and adding a `SortDescription` clears it. Ties keep source order. A comparer that fails fails the change and leaves the view's rows. |
 | `PropertyGroupDescription.Converter` (`IValueConverter`) | `Converter` (settable; also a constructor parameter) | As in WPF, `Convert(value, typeof(object), level, culture)`: the parameter is the boxed level (0 for the first description) and the language is the view's `Culture` (empty when unset, where WPF passes a null `CultureInfo`). A computed bucket (for example a date range) needs no model property. |
@@ -199,7 +198,7 @@ All of these change the experimental API only; the shipped `CollectionViewSource
 | `ListCollectionView` fine-grained `Add` / `Remove` / `Replace` | Incremental updates on **flat and grouped** shaped views | Implemented for sort + filter + `CustomSort`, with or without groups. See "Source changes". |
 | `ICollectionView.Groups` (null while not grouping), the view kept when grouping starts or stops, `ItemsControl.IsGrouping` following it | `ICollectionView.CollectionGroups` of a shaping view: null while flat, else **one** `IObservableVector` for the view's lifetime; the view raises `PropertyChanged("CollectionGroups")` and then a `Reset` when grouping starts or stops; ListView, GridView, `ItemsControl` and TableView regroup the same `ItemsSource` | Implemented. A regroup is one `Reset` of `CollectionGroups`, raised once the groups are complete, then one `Reset` of the view (WPF raises `Reset` on `Groups`). WinRT `ICollectionView` has no `GroupDescriptions`, so the null/non-null switch plus `PropertyChanged` is the signal (see "Grouping keeps the view"). |
 | `ListCollectionView.AddItemToGroups` / `RemoveItemFromGroups` | Grouped incremental updates | Implemented. An item joins its bottom-level group at its sorted position; a group it starts is inserted among its siblings (by the group order, else before the first sibling whose first item sorts after it, as WPF's `FindIndex` with a seed); a group it empties is removed. |
-| Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group, and code reads them through `ICollectionViewGroup2` (WPF's `CollectionViewGroup` members). |
+| Several `GroupDescriptions` (nested `CollectionViewGroup`s, `IsBottomLevel`, `Items`, `ItemCount`) | Multi-level groups | Implemented. Each group is an `ICollectionViewGroup` whose `GroupItems` are its subgroups (WPF `Items`) above the bottom level, else its items. `CollectionGroups` and the view's items stay single level (the view enumerates leaves, as WPF's does), so ListView and GridView show the first level with all its leaves; TableView renders every level. Bindings see `Key`, `Name`, `Items`, `ItemCount` and `IsBottomLevel` on a group. Code reads WPF's `Name` and `Items` through `ICollectionViewGroup` (`Group`, `GroupItems`) and `ItemCount` and `IsBottomLevel` through `ICollectionViewGroup2`, which requires `ICollectionViewGroup`. |
 | `ICollectionViewLiveShaping` (implemented by `ListCollectionView`) | `ICollectionViewLiveShaping`, implemented by the view a CVS creates over a vector | Implemented; see "Live shaping". A separate interface, as in WPF, rather than members on `ICollectionViewShaping`. |
 | `CanChangeLiveSorting` / `CanChangeLiveFiltering` / `CanChangeLiveGrouping` | Same names | Always `true`, as on `ListCollectionView`. |
 | `IsLiveSorting` / `IsLiveFiltering` / `IsLiveGrouping` (`bool?`) | Same names, `IReference<Boolean>` | WPF's `bool?` is WinRT's `IReference<Boolean>` (C# sees `bool?`). As on `ListCollectionView` the value is never null and setting null throws (`ArgumentNullException` in WPF, `E_INVALIDARG` here); the nullable type is kept so a view that cannot tell (WPF's `null`) can implement the interface. Default `false`. |
@@ -219,7 +218,7 @@ behavior), **Deviate** (a better design for WinUI/WinRT, with the reason) or **S
 | `ICollectionView.CanSort` / `CanFilter` / `CanGroup` | Match | `ICollectionViewShaping.CanSort` / `CanFilter` / `CanGroup`; `true` on the framework's view | Consumers ported from WPF (DataGrid) check them; TableView sorts through the view only when `CanSort` (else it raises `Sorting` only, as for a view without the interface). |
 | `CollectionViewSource.GetDefaultView(object)` / `IsDefaultView(ICollectionView)` | Skip | `CollectionViewSource` | Skipped by choice: WinUI controls don't use default views; WPF's lifetime isn't GC-safe with native sources (see "Default view lifetime"); use `CollectionViewSource`. Can be added later if `ItemsControl` gains default-view support. |
 | `CollectionViewSource.Culture` (DP) | Match | `Culture` `DependencyProperty` (`CultureProperty`), a `String` | Bindable and settable in markup as in WPF. The CVS keeps its own value and applies it to its views (it used to forward to `View`). |
-| `CollectionViewGroup` (abstract class: `Name`, `Items`, `ItemCount`, `IsBottomLevel`, `PropertyChanged`) | Deviate | `ICollectionViewGroup2` on every group, plus `INotifyPropertyChanged` on computed groups | An interface: groups are created by views, a public composable class would add a framework type and an ABI hop per member for no app use, and the name `CollectionViewGroup` is the framework's internal `IsSourceGrouped` group class. |
+| `CollectionViewGroup` (abstract class: `Name`, `Items`, `ItemCount`, `IsBottomLevel`, `PropertyChanged`) | Deviate | `ICollectionViewGroup2` (`ItemCount`, `IsBottomLevel`; `requires ICollectionViewGroup`) on every group, plus `INotifyPropertyChanged` on computed groups. `Name` and `Items`: available via `ICollectionViewGroup.Group` and `GroupItems` | An interface: groups are created by views, a public composable class would add a framework type and an ABI hop per member for no app use, and the name `CollectionViewGroup` is the framework's internal `IsSourceGrouped` group class. A "2" interface adds only what v1 lacks, so `Name`/`Items` are not repeated (round A, A-3); `GetIids` lists it on every group that answers it. |
 | `GroupDescription.GroupNameFromItem` returning an `ICollection` (item in several groups) | Match (behavior), Deviate (cost) | A group name that is iterable (`IBindableIterable`, `IIterable<Object>`, `IIterable<String>`; a string is not) puts the item in a group for each element; an empty collection in none | WPF tracks each item's groups for incremental changes; here, while any item is in several groups, a source change or live restore on the grouped view recomputes it (one `Reset`). Tags-style grouping is rare and the incremental bookkeeping would cost every grouped view. |
 | `GroupDescription.OnPropertyChanged` / `PropertyChanged` | Match (method), Skip (event) | `protected void OnPropertyChanged(PropertyChangedEventArgs)` regroups the views that use the description | A subclass whose own state changes its grouping announces it, as in WPF. Views are told internally, so no public event is added (WPF's is protected too). |
 | `ICollectionView.Contains`, `IsEmpty`; `CollectionView.Count`, `GetItemAt`, `IndexOf` | Skip | `IVector.IndexOf` / `GetAt` / `Size` | WinRT's `ICollectionView` is an `IObservableVector`: `Contains` is `IndexOf`'s `found`, `IsEmpty` is `Size == 0`. |
@@ -383,7 +382,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
     for app code a dispatcher callback runs; unhandled, it ends the app. WPF lets it propagate from
     `CollectionChanged`. Only a failure that carries error info (an exception app code threw) is reported; a bare
     `HRESULT` from a framework listener of the view is contained without a report (a `CollectionViewContainedFailure`
-    TraceLogging event records it). "Carries error info" is a heuristic: a framework listener that originates error
+    TraceLogging event records it: a local diagnostic event at warning level, with no Microsoft telemetry keyword or
+    privacy tag, so it is not uploaded and needs no data review; round A, RA-6). "Carries error info" is a heuristic: a framework listener that originates error
     info is reported too. The report runs inside the
     source's change notification, so an `UnhandledException` handler that changes the same source re-enters it (an
     `ObservableCollection` throws). `E_OUTOFMEMORY` and `RPC_E_WRONG_THREAD` are not contained: they stop the change.
@@ -420,8 +420,8 @@ Property names use the same path syntax and resolution as `{Binding Path=...}`, 
   - A source change made while a live sort edit waits for its restore is applied incrementally: the binary search
     skips the edited items, whose places are stale (WPF's `FindPosition`), and the restore then places them.
   - Moves keep the realized rows, keyboard focus, scroll position and the UIA tree, so the restore prefers them to a
-    `Reset` by cost: a move costs two vector shifts (about 2 ns a row each at 100k items since P-2, estimated; about 14 ns
-    measured before it, fre) and two raised changes
+    `Reset` by cost: a move costs two vector shifts (about 14 ns a row each at 100k items, measured before P-2 on fre;
+    the cost model keeps that value until P-2 is measured, see "Batch 6") and two raised changes
     (about 30 µs each); a flat re-sort with a `Reset` about 1.4 µs a row, a grouped recompute about 13 µs a row. While the k
     changed items' moves cost less than twice a `Reset`, or fit a budget of 50 ms, each is moved. Otherwise a flat
     view re-sorts once on its cached keys (reading only the changed items) and raises the fewest moves that reach the
@@ -650,7 +650,7 @@ shared view. Editing (`IEditableCollectionView`) is out of scope: TableView does
 | After a recompute | Before first / after last kept, else item followed, else first | Same | Match | Batch 1 |
 | `CurrentChanging` on a recompute | One, non-cancelable, before recomputing | Same (was a cancelable one after the `Reset`, up to three pairs with a transient "before first") | Match | Handlers save state with the old currency; selection no longer flickers through "nothing" |
 | Currency when the `Reset` is raised | Already placed | Same (was stale) | Match | A `VectorChanged` handler reads consistent currency |
-| A `Reset` handler moves the currency | Kept (WPF's `Selector` reselects the current item) | Overruled once, non-cancelable | Deviate | WinUI's `Selector` unselects a moved item on `Reset` and moves currency to "nothing"; without this a sort would drop a synchronized ListView's selection |
+| A `Reset` handler moves the currency | Kept (WPF's `Selector` reselects the current item) | Kept when it moved to an item (an app's `MoveCurrentTo`); overruled once, non-cancelable, when it moved before the first item | Deviate (before-first only) | WinUI's `Selector` unselects a moved item on `Reset` and moves currency to "nothing" (before the first item); without this a sort would drop a synchronized ListView's selection. Any other move is the app's and stays (round A, A-9) |
 | Order of the currency events | `CurrentChanged`, then `PropertyChanged` | `PropertyChanged`, then `CurrentChanged` | Deviate | `CollectionView`'s order, one order for every view |
 | Live move of the current item | `Move`: currency moves, only `CurrentPosition` raised | Same, over `ItemRemoved` + `ItemInserted` (was two `CurrentChanging`/`CurrentChanged` pairs) | Match | WinRT has no `Move`; the pair is folded back into one |
 | Current item dropped by live filtering | To the item now at its place, or the last | Same (was the first item) | Match | Same rule as a removal |
@@ -958,7 +958,8 @@ What is still O(n) per change, and why it stays for now:
   leaves) keeps each item's `TrackerPtr` in a slot that does not move while the item stays, with the order as a
   vector of slot numbers (`StableTrackerPtrVector`, see "Batch 6"). An insert or a remove still moves the later
   entries of three integer arrays (the order, the source indices and the sort key slots) and scans the source
-  indices: O(n) memory moves of 4-byte values, about 2 ns a row, not O(n) lock-taking `TrackerPtr` moves. A live move
+  indices: O(n) memory moves of 4-byte values (expected a few ns a row; not measured yet), not O(n) lock-taking
+  `TrackerPtr` moves. A live move
   is therefore O(n) with a small constant, plus O(log m) compares. An order-statistic tree (WPF's
   `LiveShapingTree`) would make it O(log n), but at 100k rows the integer moves (~0.1–0.2 ms) are already below the
   cost of raising the two changes and of the consumers' handling of them, so it is not done.
@@ -1019,8 +1020,9 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   making `TrackerPtrVector` itself relocate cheaply because that changes a lifetime primitive every collection in
   the framework uses. Expected: a flat `Add`/`Remove`/`Replace` at 100k from ~1.4 ms to ~0.1–0.2 ms (what is left
   is the integer scans and moves above and raising the change); a live move likewise; a grouped change no longer
-  moves its group's tracker pointers. The live restore's cost model (`c_nsPerShiftedRow`, 14 → 2 ns) prefers moves
-  over a `Reset` for about 7× more rows; it is an estimate to recalibrate from the new numbers.
+  moves its group's tracker pointers. The live restore's cost model keeps `c_nsPerShiftedRow` at the measured 14 ns
+  (round A, A-4: batch 6 had lowered it to an estimated 2 ns, which would prefer moves over a `Reset` for about 7×
+  more rows, with different focus, scroll and UIA outcomes, before anything was measured).
   **TODO: recalibrate from bench.** Measure the post-P-2 per-row shift cost with `CollectionViewPerfBenchmarks`
   (amd64fre) and update `c_nsPerShiftedRow` and the move-versus-`Reset` row counts in Behavior (computed at 14 ns).
 - **P-5.** The tracker shift it listed is gone (P-2). The flat `std::find`, the source-index renumbering and burst
@@ -1077,14 +1079,31 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   no longer presents source order, so the rest of a multi-item move stops and selection and focus follow the moved
   item to where the view shows it. If an `InsertAt` fails without inserting (the collection is one item short), the
   item is put back where it was; if it inserted and then failed (a change handler failed), it is left at its new
-  place. Either way the error reaches the caller. Over a source that raises no changes, a shaped view
+  place. Either way the error reaches the caller. This failure handling, like the rest of the reorder change, is
+  `MUX_PRERELEASE` only (round A, A-1): the stable build keeps `main`'s plain `RemoveAt` + `IFC(InsertAt)` move.
+  The drop decides again whether the source is sorted or filtered (RA-2), so a view an app sorts during the drag is
+  not reordered. Over a source that raises no changes, a shaped view
   never writes through: writes fail and leave the source unchanged.
 - **Full refresh cost.** `Refresh()`, a descriptor change and a source `Reset` recompute fully and raise `Reset`;
   selection and scroll position follow `Reset` semantics. Source `Add` / `Remove` / `Replace` are incremental on flat
   and grouped views.
 - **Group objects.** A group is an internal `CollectionViewGroupInternal` that implements `ICollectionViewGroup`,
-  `ICollectionViewGroup2` (`Name`, `Items`, `ItemCount`, `IsBottomLevel`) and `ICustomPropertyProvider` (so bindings
-  see `Key` too). A group `CustomSort` gets the names, not the groups, as before.
+  `ICollectionViewGroup2` (`ItemCount`, `IsBottomLevel`) and `ICustomPropertyProvider` (so bindings see `Key`,
+  `Name`, `Items`, `ItemCount` and `IsBottomLevel`). A group `CustomSort` gets the names, not the groups, as before.
+- **Items in several groups.** Once any item has a collection-valued group name, every later source change and live
+  restore of that view is a full recompute (O(n log n) a change, one `Reset`) until a recompute builds a group tree
+  without such items. The group tree marks such an item with its own marker, not the null that means "filtered
+  out", so no future reader of the per-item leaf table mistakes one for the other.
+- **Inconsistent comparers.** An app `CustomSort` (on the view, or a TableView column's `CustomSortComparer`) that is
+  not an order, or whose items change while the view sorts, cannot corrupt the view: those sorts use a bounds-safe
+  stable merge sort (`SafeStableSort`) that reads and writes only inside the range whatever the comparer returns, and
+  a final pass over neighbours reports an order it finds inconsistent as `E_INVALIDARG` ("The comparer returned
+  inconsistent results...", WPF's `InvalidOperationException` from `Array.Sort`); the view keeps its previous output,
+  as for a comparer that throws. Detection is best effort: an inconsistency that happens to leave neighbours in order
+  is not reported, and the view then shows that order. `SortDescriptions` compare cached keys with a total order
+  (`CompareSortKeys`, then the unique source index), so they keep `std::stable_sort`; a group `CustomSort` places
+  groups by bounded binary search or scan. Cost: an already-sorted input takes about 2n comparisons (one per run join
+  and the final check); otherwise the final check adds n − 1 to the merge sort's.
 - **Deferral lifetime.** A `DeferRefresh` deferral that is never closed keeps the view stale (WPF behaves the same).
   It holds the view (or, for a deferral taken on the CVS, the CVS) strongly until closed.
 - **API shape.** The `GroupDescription` base, the CVS `Filter` event and the enum names were settled in the
@@ -1117,6 +1136,18 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   container, so selection and focus on it follow their remove semantics (focus stays in the list, on the row that
   took the removed one's place); TableView keeps the selection and keyboard focus on the item (see "Live shaping"
   in the TableView section).
+- **Presented-list storage re-entrancy.** `StableTrackerPtrVector` frees a removed item's slot and takes it out of the
+  order before the item is released (and `SetAt` releases the replaced item last), so code the release runs, even one
+  that clears the list, sees a consistent list; every slot is bounds-checked before use (`TrackerPtrVector` only
+  asserts) and the iterator fails fast on a slot past the end (round A, A-2).
+- **Failed reorder, prerelease only (round A, RA-3).** When an `InsertAt` fails and the collection is one item short,
+  the item is looked for at the insert index by pointer identity, so a boxed value item (a new box on each `GetAt`)
+  whose `InsertAt` inserted and then failed while a handler removed another item is inserted again. A failed reorder
+  re-selects the item, which raises one more `SelectionChanged` while the error still propagates. Both are on the
+  failure path only.
+- **Sort key probe lifetime (TableView, round A, RA-4).** `SortMemberPathResolver` clears its probe's `DataContext`
+  on the next dispatcher turn, so the last row item it read stays alive until then; a same-turn `GC.Collect` and
+  weak-reference check after a key read sees it alive. No test relies on that today.
 
 ## Regeneration
 

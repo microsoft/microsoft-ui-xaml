@@ -780,7 +780,7 @@ Grouping itself is declared on the data (`CollectionViewSource.GroupDescriptions
 | `GroupExpanding` | event (`TableViewGroupExpandingEventArgs`: `GroupKey`) | Raised synchronously before a group expands. Not cancellable. Once raised, the direction is pinned: a handler that calls `ExpandGroup` on the same group is a no-op. |
 | `GroupCollapsed` | event (`TableViewGroupCollapsedEventArgs`: `GroupKey`) | Raised after a group collapses. |
 
-`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily). An exception thrown by a group-event handler is contained and logged.
+`GroupExpanding` and `GroupCollapsed` are raised for every group whose state changes, from any source: pointer, keyboard, UI Automation, `ExpandGroup`/`CollapseGroup`, and the bulk methods (once per group that changes). A request made during layout is posted whole to the next turn, so the events are never raised during measure or arrange or after the state has already changed. Handlers may change the source (for example to load the group's rows lazily). An exception thrown by a group-event handler propagates, as `Sorting`'s and `Sorted`'s do: to the caller of `ExpandGroup`/`CollapseGroup` or the bulk methods, and through `Application.UnhandledException` for a request posted from layout. A throwing `GroupExpanding` handler stops that expansion (a bulk expansion expands nothing); a throwing `GroupCollapsed` handler is raised after the group collapsed, and the later groups of a bulk collapse are not reported.
 
 Expansion is stored as intent keyed by a group's **key**, so it survives a reshape (sort, filter, or refresh) that re-creates every group object. Setting the bulk state also resets per-group exceptions, which is what makes "collapse all, then expand two, then re-sort" behave the way the user expects.
 
@@ -968,7 +968,7 @@ Base class for TableView columns.
 | `ActualWidth` | `Double` | `120` | Read-only realized width. |
 | `FrozenEdge` | `TableViewFrozenEdge` | `None` | Pins only when the column is in the contiguous leading prefix. Later `Leading` columns are ignored. |
 | `CanUserSort` | `Boolean` | `true` | Whether the user can sort by this column's header. Gates user input only: `SortByColumn` and `ToggleSortDirection` ignore it, and turning it off does not clear an active sort. The table-level `CanUserSortColumns` and `CanUserResizeColumns` follow the same rule. |
-| `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. |
+| `SortDirection` | `SortDirection` | `None` | The header's sort arrow. **Display only**: the control sets it when it sorts; an app that sorts itself (for example after cancelling `Sorting`) can set it. Setting it never reshapes data, and a non-`None` value clears the arrow on other columns. If a column's `CustomSortComparer` throws during a header sort or `SortByColumn`, the sort is aborted before commit: the previous sort and arrow stay, and `Sorted` is not raised. A value set in XAML or before the column is added is applied when it joins `Columns`. Bind it `TwoWay` or not at all: the control's own write goes through a `TwoWay` binding but replaces a `OneWay` binding or a style setter (WinUI has no `SetCurrentValue`). |
 | `DisplayMemberBinding` | `Binding` | `null` | Read-only text for each cell without a template, as WPF's `GridViewColumn.DisplayMemberBinding`. Each cell is a `TextBlock` whose `Text` takes this binding against its row's item; it is vertically centred, padded for `Density`, and trimmed with an ellipsis. Its `Path` is the sort key when `SortMemberPath` is empty. Takes precedence over a `TableViewTemplateColumn`'s `CellTemplate`, which is ignored while this is set (WPF `GridViewColumn` precedence: `DisplayMemberBinding`, then `CellTemplate`). Display-only: V1 has no cell editing. A CLR property, not a DP, so XAML hands the `Binding` object over rather than evaluating it against the column; changing it regenerates realized cells, with the timing of `NotifyCellContentChanged`. |
 | `Visibility` | `Visibility` | `Visible` | Column visibility. |
 
@@ -985,7 +985,7 @@ Methods:
 
 A header is user-sortable only when its column has a sort key: a `CustomSortComparer`, a `SortMemberPath`, or, when `SortMemberPath` is empty, the `Path` of a `DisplayMemberBinding` that sets no `Source`, `RelativeSource` or `ElementName`. A keyless column shows no sort arrow, does not sort when its header is clicked, and its header exposes no Invoke pattern. A column with no sort key (no `SortMemberPath` or other sort path, and no `CustomSortComparer`) has a non-sortable header — matches WPF `DataGrid`.
 
-Changing the key of a column whose sort TableView wrote to the view (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`) is reconciled against the key that sort was written with. A sort the app put on the view itself (its `SortDescriptions`, or a `CollectionViewSource` it shaped) is the app's, and a key change does not touch it, nor does one on a column whose `SortDirection` the app set for display. Changing a sorted column's key:
+Changing the key of a column whose sort TableView wrote to the view (`SortMemberPath`, `DisplayMemberBinding` or `CustomSortComparer`) is reconciled against the key that sort was written with. A sort the app put on the view itself (its `SortDescriptions` or `CustomSort`, or a `CollectionViewSource` it shaped) is the app's, and a key change does not touch it, nor does one on a column whose `SortDirection` the app set for display. Changing a sorted column's key:
 
 - Outside a sort, re-sorts the rows in place, immediately, with one `Sorting`/`Sorted` pair in the existing `SortDirection`: the new key replaces the view's `SortDescriptions` or `CustomSort` under one `DeferRefresh`; if a deferred reconcile is already pending for the table, the change is applied with it on the next dispatcher turn instead. Cancelling that `Sorting` keeps the current state: the arrow stays and the rows keep the previous key's order. If the column is left with no sort key, its sort is cleared with one `Sorting`/`Sorted` pair for `None`.
 - From a `Sorting` handler for that column, is used by that sort. If the handler cancels the sort (or a clear), the key is not applied: the column keeps the new key and the arrow, and the rows keep their order, until the key changes again.
@@ -1615,6 +1615,10 @@ row with `UIA_E_INVALIDOPERATION`; `Select()` may replace it.
 
 # API Details
 
+The IDL of `controls/dev/TableView/TableView.idl` and `controls/dev/TabularShaping/SortDirection.idl`, with
+`MU_XC_NAMESPACE` expanded and the implementation attributes (`MUX_PROPERTY_CHANGED_CALLBACK`, `MUX_DEFAULT_VALUE`)
+left out. The `[MUX_INTERNAL]` `TableViewRowTemplateSelector` is not public API and is not listed.
+
 ```idl
 namespace Microsoft.UI.Xaml.Controls.Tabular
 {
@@ -1657,6 +1661,29 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     };
 
     [MUX_PREVIEW, webhosthidden]
+    enum SortDirection
+    {
+        None = 0,
+        Ascending = 1,
+        Descending = 2,
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    enum TableViewSortCycle
+    {
+        AscendingDescending = 0,
+        AscendingDescendingNone = 1,
+        DescendingAscending = 2,
+        DescendingAscendingNone = 3,
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    interface ITableViewSortComparer
+    {
+        Int32 Compare(Object left, Object right);
+    };
+
+    [MUX_PREVIEW, webhosthidden]
     runtimeclass TableViewGroupInfo : Microsoft.UI.Xaml.Data.INotifyPropertyChanged
     {
         Object Key { get; };
@@ -1665,6 +1692,29 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Boolean IsExpanded { get; };
         String KeyText { get; };
         String ItemCountText { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewSortingEventArgs
+    {
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+        Microsoft.UI.Xaml.Controls.Tabular.SortDirection Direction { get; };
+        Boolean Cancel;
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewSortedEventArgs
+    {
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+        Microsoft.UI.Xaml.Controls.Tabular.SortDirection Direction { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewColumnReorderedEventArgs
+    {
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+        Int32 OldIndex { get; };
+        Int32 NewIndex { get; };
     };
 
     [MUX_PREVIEW, webhosthidden]
@@ -1700,34 +1750,44 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Microsoft.UI.Xaml.DataTemplate HeaderTemplate;
         Microsoft.UI.Xaml.Controls.DataTemplateSelector HeaderTemplateSelector;
         Object HeaderToolTip;
+        Microsoft.UI.Xaml.Style HeaderStyle;
         Microsoft.UI.Xaml.GridLength Width;
         Double MinWidth;
         Double MaxWidth;
+        Boolean CanUserResize;
         Double ActualWidth { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge FrozenEdge;
         Microsoft.UI.Xaml.Visibility Visibility;
         Boolean CanUserSort;
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle SortCycle;
+        String SortMemberPath;
+        Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer CustomSortComparer;
         Microsoft.UI.Xaml.Controls.Tabular.SortDirection SortDirection;
-
-        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
-        protected void NotifyCellContentChanged();
 
         Microsoft.UI.Xaml.Data.Binding DisplayMemberBinding;
         Microsoft.UI.Xaml.Data.Binding CellToolTipBinding;
         Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase CellContextFlyout;
         Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase HeaderContextFlyout;
 
+        overridable String GetSortMemberPathCore();
+        overridable Microsoft.UI.Xaml.FrameworkElement GenerateElementCore(Object dataItem);
+        protected void NotifyCellContentChanged();
+
         static Microsoft.UI.Xaml.DependencyProperty HeaderProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderTemplateSelectorProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderToolTipProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty HeaderStyleProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CanUserSortProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty SortCycleProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty SortMemberPathProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SortDirectionProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty CellContextFlyoutProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeaderContextFlyoutProperty { get; };
@@ -1744,6 +1804,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
     };
 
     [MUX_PREVIEW, webhosthidden]
+    runtimeclass TableViewColumnHeader : Microsoft.UI.Xaml.Controls.ContentControl
+    {
+        Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn Column { get; };
+    };
+
+    [MUX_PREVIEW, webhosthidden]
     unsealed runtimeclass TableViewCellsPanel : Microsoft.UI.Xaml.Controls.Panel
     {
         TableViewCellsPanel();
@@ -1755,8 +1821,14 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         TableViewRow();
 
         Boolean IsSelected { get; };
+        Int32 Level { get; };
+        Boolean IsExpandable { get; };
+        Boolean IsExpanded { get; };
 
         static Microsoft.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty LevelProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandableProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty IsExpandedProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden, contentproperty("Columns")]
@@ -1770,10 +1842,12 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn> Columns { get; };
         Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility HeadersVisibility;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility GridLinesVisibility;
+        Boolean CanUserResizeColumns;
         Microsoft.UI.Xaml.Media.Brush RowBackground;
         Microsoft.UI.Xaml.Media.Brush AlternatingRowBackground;
         Microsoft.UI.Xaml.DataTemplate EmptyTemplate;
         Microsoft.UI.Xaml.DataTemplate GroupHeaderTemplate;
+        Microsoft.UI.Xaml.Style ColumnHeaderStyle;
         Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity Density;
 
         // ----- Selection -----
@@ -1790,6 +1864,23 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         void StartBringItemIntoView(Int32 index, Microsoft.UI.Xaml.BringIntoViewOptions options);
 
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs> SelectionChanged;
+
+        // ----- Sorting -----
+
+        Boolean CanUserSortColumns;
+
+        Boolean SortByColumn(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column, Microsoft.UI.Xaml.Controls.Tabular.SortDirection direction);
+        Boolean ToggleSortDirection(Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn column);
+        Boolean ClearSort();
+
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewSortingEventArgs> Sorting;
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewSortedEventArgs> Sorted;
+
+        // ----- Column reordering -----
+
+        Boolean CanUserReorderColumns;
+
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.Tabular.TableView, Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnReorderedEventArgs> ColumnReordered;
 
         // ----- Grouping and hierarchy -----
 
@@ -1809,14 +1900,18 @@ namespace Microsoft.UI.Xaml.Controls.Tabular
         static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty GroupHeaderTemplateProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty ColumnHeaderStyleProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty DensityProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectionModeProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectedItemProperty { get; };
         static Microsoft.UI.Xaml.DependencyProperty SelectedIndexProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserSortColumnsProperty { get; };
+        static Microsoft.UI.Xaml.DependencyProperty CanUserReorderColumnsProperty { get; };
     };
 
     [MUX_PREVIEW, webhosthidden]
