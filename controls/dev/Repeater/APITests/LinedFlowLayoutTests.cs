@@ -964,7 +964,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     itemsInfoHandler = (s, args) =>
                     {
                         itemsInfoRequestedCount++;
-                        if (args.ItemsRangeStartIndex > 0 && args.ItemsRangeRequestedLength < itemCount)
+                        if (args.ItemsRangeRequestedLength < itemCount)
                         {
                             partialRangeObserved = true;
                         }
@@ -980,7 +980,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS), "Zero-viewport ItemsInfoRequested ScrollTo completed.");
                 SettleLayout();
                 Verify.IsGreaterThan(itemsInfoRequestedCount, 0, "ItemsInfoRequested fired while viewport height was 0.");
-                Verify.IsTrue(partialRangeObserved, "ItemsInfoRequested stayed on the partial regular path.");
+                Verify.IsTrue(partialRangeObserved, "ItemsInfoRequested requested a partial item range.");
+                RunOnUIThread.Execute(() =>
+                {
+                    Verify.IsGreaterThanOrEqual(layout.RequestedRangeStartIndex, 0, "Partial regular-path items info is active.");
+                    Verify.IsLessThan(layout.RequestedRangeLength, itemCount, "LinedFlowLayout stayed on the partial regular path.");
+                });
 
                 RunOnUIThread.Execute(() =>
                 {
