@@ -7643,49 +7643,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
-        private const string SelectionTipPrefix = "TiP NavigationViewSelectionTest: ";
-        private readonly List<string> m_selectionTipOutcomes = new List<string>();
+        private string m_tipPrefix;
+        private readonly List<string> m_tipOutcomes = new List<string>();
 
-        private void OnSelectionTipLoggingMessage(object sender, Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs args)
+        private void OnTipLoggingMessage(object sender, Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs args)
         {
-            int index = args.Message.IndexOf(SelectionTipPrefix);
+            int index = args.Message.IndexOf(m_tipPrefix);
             if (index >= 0)
             {
-                lock (m_selectionTipOutcomes)
+                lock (m_tipOutcomes)
                 {
-                    m_selectionTipOutcomes.Add(args.Message.Substring(index + SelectionTipPrefix.Length).Trim());
+                    m_tipOutcomes.Add(args.Message.Substring(index + m_tipPrefix.Length).Trim());
                 }
             }
         }
 
-        // Runs uiAction with NavigationView logging on and returns the NavigationViewSelectionTest outcomes it traced, in order.
-        private List<string> CaptureSelectionTipOutcomes(Action uiAction)
+        // Runs uiAction with NavigationView logging on and returns the outcomes the TiP test tipTestName traced, in order.
+        // Some outcomes come from later dispatcher work or async events, so it waits up to 5s for expectedCount of them.
+        private List<string> CaptureTipOutcomes(string tipTestName, Action uiAction, int expectedCount = 0)
         {
-            lock (m_selectionTipOutcomes)
+            lock (m_tipOutcomes)
             {
-                m_selectionTipOutcomes.Clear();
+                m_tipOutcomes.Clear();
             }
+            m_tipPrefix = "TiP " + tipTestName + ": ";
 
             using (new PrivateLoggingHelper("NavigationView", isLoggingInfoLevel: true, isLoggingVerboseLevel: false))
             {
-                Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage += OnSelectionTipLoggingMessage;
+                Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage += OnTipLoggingMessage;
                 try
                 {
                     RunOnUIThread.Execute(uiAction);
                     IdleSynchronizer.Wait();
+                    for (int attempt = 0; attempt < 50; attempt++)
+                    {
+                        lock (m_tipOutcomes)
+                        {
+                            if (m_tipOutcomes.Count >= expectedCount)
+                            {
+                                break;
+                            }
+                        }
+                        Thread.Sleep(100);
+                        IdleSynchronizer.Wait();
+                    }
                 }
                 finally
                 {
-                    Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage -= OnSelectionTipLoggingMessage;
+                    Microsoft.UI.Private.Controls.MUXControlsTestHooks.LoggingMessage -= OnTipLoggingMessage;
                 }
             }
 
-            lock (m_selectionTipOutcomes)
+            lock (m_tipOutcomes)
             {
-                var outcomes = new List<string>(m_selectionTipOutcomes);
-                Log.Comment("NavigationViewSelectionTest outcomes: " + string.Join(" | ", outcomes));
+                var outcomes = new List<string>(m_tipOutcomes);
+                Log.Comment(tipTestName + " outcomes: " + string.Join(" | ", outcomes));
                 return outcomes;
             }
+        }
+
+        private List<string> CaptureSelectionTipOutcomes(Action uiAction)
+        {
+            return CaptureTipOutcomes("NavigationViewSelectionTest", uiAction);
+        }
+
+        // Outcomes look like "Succeeded (scenario_completed); open, app": outcome (reason); direction, trigger.
+        private List<string> CapturePaneTipOutcomes(Action uiAction, int expectedCount)
+        {
+            return CaptureTipOutcomes("NavigationViewPaneTest", uiAction, expectedCount);
+        }
+
+        // Lets the check of a pane change made during setup (e.g. the first ClosePane in LeftCompact) run before a capture.
+        private NavigationView SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode paneDisplayMode)
+        {
+            var navView = SetupNavigationView(paneDisplayMode);
+            Thread.Sleep(200);
+            IdleSynchronizer.Wait();
+            return navView;
         }
 
         [TestMethod]
@@ -7921,6 +7955,137 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(first, navView.SelectedItem);
                 Verify.IsTrue(((NavigationViewItem)otherNavView.SelectedItem).IsSelected);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyPaneTipSucceedsForIsPaneOpenInLeftModes()
+        {
+            foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                Log.Comment("PaneDisplayMode: " + paneDisplayMode);
+                var navView = SetupNavigationViewForPaneTip(paneDisplayMode);
+                bool wasOpen = false;
+                RunOnUIThread.Execute(() => wasOpen = navView.IsPaneOpen);
+
+                // One change per capture, so each check runs before the next change.
+                foreach (var isOpen in new[] { !wasOpen, wasOpen })
+                {
+                    var outcomes = CapturePaneTipOutcomes(() => navView.IsPaneOpen = isOpen, 1);
+
+                    Verify.AreEqual(1, outcomes.Count, "One NavigationViewPaneTest run per IsPaneOpen change");
+                    Verify.AreEqual("Succeeded (scenario_completed); " + (isOpen ? "open" : "close") + ", app", outcomes[0]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void VerifyPaneTipSucceedsForPaneToggleButton()
+        {
+            var navView = SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode.LeftCompact);
+
+            var outcomes = CapturePaneTipOutcomes(() => InvokePaneToggleButton(navView), 1);
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed); open, toggle_button", outcomes[0]);
+
+            outcomes = CapturePaneTipOutcomes(() => InvokePaneToggleButton(navView), 1);
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed); close, toggle_button", outcomes[0]);
+        }
+
+        [TestMethod]
+        public void VerifyPaneTipIgnoresLightDismissCancelledByApp()
+        {
+            var navView = SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode.LeftMinimal);
+            bool cancelClosing = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView.PaneClosing += (sender, args) => args.Cancel = cancelClosing;
+                navView.IsPaneOpen = true;
+            });
+            IdleSynchronizer.Wait();
+            Thread.Sleep(200);
+            IdleSynchronizer.Wait();
+
+            // Invoking the SplitView's light-dismiss layer is the same as a tap outside the overlay pane.
+            Action lightDismiss = () =>
+            {
+                var lightDismissLayer = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(navView, "LightDismissLayer");
+                var invokeProvider = (IInvokeProvider)FrameworkElementAutomationPeer.CreatePeerForElement(lightDismissLayer).GetPattern(PatternInterface.Invoke);
+                invokeProvider.Invoke();
+            };
+
+            var outcomes = CapturePaneTipOutcomes(lightDismiss, 1);
+
+            // The app kept the pane open: the run is ignored, not failed.
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Ignored (cancelled); close, split_view", outcomes[0]);
+            RunOnUIThread.Execute(() => Verify.IsTrue(navView.IsPaneOpen));
+
+            cancelClosing = false;
+            outcomes = CapturePaneTipOutcomes(lightDismiss, 1);
+
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Succeeded (scenario_completed); close, split_view", outcomes[0]);
+            RunOnUIThread.Execute(() => Verify.IsFalse(navView.IsPaneOpen));
+        }
+
+        [TestMethod]
+        public void VerifyPaneTipIgnoresTopModeAndHiddenPane()
+        {
+            var navView = SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode.Top);
+
+            var outcomes = CapturePaneTipOutcomes(() => navView.IsPaneOpen = true, 1);
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Ignored (pane_not_shown); open, app", outcomes[0]);
+
+            navView = SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode.Left);
+
+            // NavigationView closes the pane when it is hidden.
+            outcomes = CapturePaneTipOutcomes(() => navView.IsPaneVisible = false, 1);
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Ignored (pane_not_shown); close, layout", outcomes[0]);
+
+            outcomes = CapturePaneTipOutcomes(() => navView.IsPaneOpen = true, 1);
+            Verify.AreEqual(1, outcomes.Count);
+            Verify.AreEqual("Ignored (pane_not_shown); open, app", outcomes[0]);
+        }
+
+        [TestMethod]
+        public void VerifyPaneTipSupersedesOpenAndReportsCloseLostInPaneOpening()
+        {
+            var navView = SetupNavigationViewForPaneTip(NavigationViewPaneDisplayMode.LeftCompact);
+            bool closeInPaneOpening = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(navView.IsPaneOpen);
+                navView.PaneOpening += (sender, args) =>
+                {
+                    if (closeInPaneOpening)
+                    {
+                        closeInPaneOpening = false;
+                        navView.IsPaneOpen = false;
+                    }
+                };
+            });
+
+            var outcomes = CapturePaneTipOutcomes(() => navView.IsPaneOpen = true, 2);
+
+            // The close from PaneOpening replaces the open before the open is checked, so the open is ignored.
+            // The close is then checked and fails: PaneOpening is raised while the two-way binding is still pushing
+            // IsPaneOpen = true to the SplitView, and the SplitView ends with IsPaneOpen = true after the reentrant false.
+            // The pane stays open on screen while NavigationView.IsPaneOpen is false. This is a real state mismatch,
+            // not a false failure.
+            Verify.AreEqual(2, outcomes.Count);
+            Verify.AreEqual("Ignored (superseded); open, app", outcomes[0]);
+            Verify.AreEqual("Failed (pane_state_mismatch); close, app", outcomes[1]);
+            RunOnUIThread.Execute(() =>
+            {
+                var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                Verify.IsFalse(navView.IsPaneOpen);
+                Verify.IsTrue(splitView.IsPaneOpen, "The SplitView pane is still open");
             });
         }
     }

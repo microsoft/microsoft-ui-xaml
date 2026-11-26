@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -322,7 +322,15 @@ private:
 
     void OpenPane();
     void ClosePane();
+    void SetIsPaneOpenFromNavigationView(bool isOpen);
     bool AttemptClosePaneLightly();
+
+    // NavigationViewPaneTest (TiP)
+    void StartPaneTipRun();
+    void CompletePaneTipRun(uint32_t changeCount);
+    NavigationViewTip::PaneTipReason CheckPaneForTip();
+    void IgnorePendingPaneTipRun(NavigationViewTip::PaneTipReason reason) noexcept;
+    void ReportPaneTipRequest(bool isOpening, NavigationViewTip::PaneTipReason reason);
     void SetPaneToggleButtonAutomationName();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
@@ -524,6 +532,12 @@ private:
     std::optional<winrt::IInspectable> m_itemPendingUnselection;
     // Incremented by every ChangeSelection so an outer call can detect that a reentrant one completed the selection.
     uint32_t m_selectionChangeGeneration{ 0 };
+
+    // NavigationViewPaneTest: the run waiting for its check, the number of IsPaneOpen changes so far (a check is
+    // only valid for the change that scheduled it), and what is asking for the current open or close.
+    std::optional<NavigationViewTip::PaneRun> m_paneTipRun;
+    uint32_t m_isPaneOpenChangeCount{ 0 };
+    NavigationViewTip::PaneTipTrigger m_paneTipTrigger{ NavigationViewTip::PaneTipTrigger::app };
 
     TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
 
