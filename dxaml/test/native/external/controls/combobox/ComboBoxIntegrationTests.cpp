@@ -1204,6 +1204,13 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         auto comboBox = SetupBasicComboBoxTest();
 
+        auto selectionChangedEvent = std::make_shared<Event>();
+        auto selectionChangedRegistration = CreateSafeEventRegistration(xaml_controls::ComboBox, SelectionChanged);
+        selectionChangedRegistration.Attach(comboBox, [selectionChangedEvent]()
+        {
+            selectionChangedEvent->Set();
+        });
+
         RunOnUIThread([&]()
         {
             comboBox->Focus(xaml::FocusState::Programmatic);
@@ -1216,17 +1223,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
 
         LOG_OUTPUT(L"Select the first item with the mouse wheel");
+        selectionChangedEvent->Reset();
         TestServices::InputHelper->ScrollMouseWheel(comboBox, -1);
+        selectionChangedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
         ComboBoxHelper::VerifySelectedIndex(comboBox, 0);
 
         LOG_OUTPUT(L"Select the second item with the mouse wheel");
+        selectionChangedEvent->Reset();
         TestServices::InputHelper->ScrollMouseWheel(comboBox, -1);
+        selectionChangedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
         ComboBoxHelper::VerifySelectedIndex(comboBox, 1);
 
         LOG_OUTPUT(L"Select the first item again by scrolling the mouse wheel back the other way");
+        selectionChangedEvent->Reset();
         TestServices::InputHelper->ScrollMouseWheel(comboBox, 1);
+        selectionChangedEvent->WaitForDefault();
         TestServices::WindowHelper->WaitForIdle();
         ComboBoxHelper::VerifySelectedIndex(comboBox, 0);
     }
