@@ -982,10 +982,11 @@ BaseContentRenderer::BorderHWRenderHelper(
         XTHICKNESS ninegrid;
         const bool canDrawWithNinegrid = HWWalk::GetNinegridForBorderElement(pFrameworkElement, false /* forceIntegerInsets */, &ninegrid);
 
-        if (CBorder::HasNonZeroThickness(ninegrid))
+        // Without a nine grid the border thickness covers the whole element, so there's no hollow center and the
+        // border is a solid rectangle (see CFrameworkElement::CreateBorderGeometriesAndBrushClipsCommon). An element
+        // with no area draws nothing, like an empty mask.
+        if (CBorder::HasNonZeroThickness(ninegrid) && (canDrawWithNinegrid || !IsEmptyRectF(bounds)))
         {
-            // Without a nine grid the border thickness covers the whole element, so there's no hollow center and the
-            // border is a solid rectangle (see CFrameworkElement::CreateBorderGeometriesAndBrushClipsCommon).
             BrushParams emptyBrushParams;
             IFC_RETURN(GeneralImageRenderContent(
                 bounds,
