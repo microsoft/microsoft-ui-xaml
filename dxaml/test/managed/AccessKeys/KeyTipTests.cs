@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 using System;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 
 using WEX.Logging.Interop;
 using WEX.TestExecution;
@@ -884,6 +887,217 @@ that spans multiple lines. BlahBlahBlahBlah</Hyperlink>
                 Log.Comment("Scene should be empty");
                 TestServices.Utilities.VerifyUIElementTree("1");
             }
+        }
+
+        [TestMethod]
+        [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        [TestProperty("Hosting:Mode", "WPF")]
+        [TestProperty("IsolationLevel", "Method")]
+        [TestProperty("Description", "Validates KeyTips stay consistent when access keys are added while an old KeyTip popup window is being destroyed.")]
+        public void KeyTipsAreUpdatedWhenAccessKeysAreAddedDuringKeyTipPopupTeardown()
+        {
+            XamlRoot xamlRoot = null;
+            UIExecutor.Execute(() =>
+            {
+                xamlRoot = TestServices.WindowHelper.WindowContent.XamlRoot;
+            });
+
+            using (new KeyTipHelper(xamlRoot))
+            {
+                StackPanel root = null;
+
+                UIExecutor.Execute(() =>
+                {
+                    root = (StackPanel)XamlMarkup.XamlReader.Load(@"
+                    <StackPanel Margin='10' Padding='10' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                    </StackPanel>");
+
+                    foreach (char c in "ABCDEF")
+                    {
+                        root.Children.Add(CreateAccessKeyButton("A" + c));
+                    }
+
+                    TestServices.WindowHelper.WindowContent = root;
+                });
+                TestServices.WindowHelper.WaitForIdle();
+
+                using (var displayModeEventTester = EventTester<object, object>.FromStaticEvent<AccessKeyManager>("IsDisplayModeEnabledChanged"))
+                {
+                    Log.Comment("Pressing ALT key to show KeyTips");
+                    TestServices.KeyboardHelper.Alt();
+                    displayModeEventTester.Wait();
+                }
+
+                // Don't use KeyTipHelper to look at the popups yet. Getting the popups through the public API keeps
+                // them alive, and this test needs KeyTipManager to release the last reference to the old popups.
+                Log.Comment("Waiting for the KeyTip popup windows to be shown");
+                if (!WaitUntil(() => GetVisiblePopupWindowCount() >= 6, TimeSpan.FromSeconds(5)))
+                {
+                    Log.Warning(string.Format("Hit timeout waiting for KeyTip popup windows. Visible popup windows: {0}", GetVisiblePopupWindowCount()));
+                }
+
+                IntPtr hook = IntPtr.Zero;
+                bool accessKeysAdded = false;
+                Exception hookException = null;
+                using (var accessKeysAddedEvent = new ManualResetEvent(false))
+                {
+                    // Stands in for app or system code that runs while a KeyTip popup window is being destroyed and
+                    // adds more elements with access keys. KeyTipManager must handle the new KeyTips at that point.
+                    NativeMethods.HookProc hookProc = (code, wParam, lParam) =>
+                    {
+                        if (code >= 0 && !accessKeysAdded)
+                        {
+                            var message = Marshal.PtrToStructure<NativeMethods.CWPSTRUCT>(lParam);
+                            // Windowed KeyTip popups are hosted in a window whose class name contains "Popup".
+                            if (message.Message == NativeMethods.WM_NCDESTROY &&
+                                GetWindowClassName(message.Hwnd).Contains("Popup"))
+                            {
+                                accessKeysAdded = true;
+                                try
+                                {
+                                    // Add enough access keys that KeyTipManager's list of KeyTips has to grow.
+                                    foreach (char c in "GHIJKLMNOPQRSTUV")
+                                    {
+                                        root.Children.Add(CreateAccessKeyButton("A" + c));
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    hookException = e;
+                                }
+                                accessKeysAddedEvent.Set();
+                            }
+                        }
+                        return NativeMethods.CallNextHookEx(IntPtr.Zero, code, wParam, lParam);
+                    };
+
+                    UIExecutor.Execute(() =>
+                    {
+                        hook = NativeMethods.SetWindowsHookEx(NativeMethods.WH_CALLWNDPROC, hookProc, IntPtr.Zero, NativeMethods.GetCurrentThreadId());
+                    });
+                    Verify.AreNotEqual(IntPtr.Zero, hook, "Failed to install the window message hook");
+
+                    try
+                    {
+                        Log.Comment("Pressing 'A' to replace the KeyTips with filtered KeyTips");
+                        TestServices.KeyboardHelper.PressKeySequence("a");
+                        Verify.IsTrue(accessKeysAddedEvent.WaitOne(TimeSpan.FromSeconds(5)), "Access keys should be added while an old KeyTip popup window is destroyed");
+                        TestServices.WindowHelper.WaitForIdle();
+                    }
+                    finally
+                    {
+                        UIExecutor.Execute(() =>
+                        {
+                            NativeMethods.UnhookWindowsHookEx(hook);
+                        });
+                        GC.KeepAlive(hookProc);
+                    }
+                }
+
+                if (hookException != null)
+                {
+                    Verify.Fail("Failed to add access keys: " + hookException);
+                }
+
+                Log.Comment("The old KeyTips should be hidden, and the filtered KeyTips should be shown");
+                string[] oldKeyTips = { "AA", "AB", "AC", "AD", "AE", "AF" };
+                // "G" is the filtered KeyTip of "AG", the first access key added while the old popup window was destroyed.
+                // KeyTips for the later ones may be clipped by the window size, so only "G" is checked.
+                string[] filteredKeyTips = { "A", "B", "C", "D", "E", "F", "G" };
+                string keyTips = string.Empty;
+                bool keyTipsUpdated = WaitUntil(() =>
+                {
+                    keyTips = KeyTipHelper.GetKeyTipsString();
+                    string[] currentKeyTips = keyTips.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    return !currentKeyTips.Intersect(oldKeyTips).Any() && !filteredKeyTips.Except(currentKeyTips).Any();
+                }, TimeSpan.FromSeconds(5));
+
+                Verify.IsTrue(keyTipsUpdated, string.Format("KeyTips should not contain stale KeyTips. KeyTips are '{0}'", keyTips));
+            }
+        }
+
+        private static Button CreateAccessKeyButton(string accessKey)
+        {
+            return new Button() { Content = accessKey, AccessKey = accessKey, KeyTipPlacementMode = KeyTipPlacementMode.Center };
+        }
+
+        private static bool WaitUntil(Func<bool> predicate, TimeSpan timeout)
+        {
+            DateTime startTime = DateTime.Now;
+            while (!predicate())
+            {
+                if (DateTime.Now.Subtract(startTime) >= timeout)
+                {
+                    return false;
+                }
+                KeyTipHelper.Sleep(100);
+            }
+            return true;
+        }
+
+        private static int GetVisiblePopupWindowCount()
+        {
+            int count = 0;
+            UIExecutor.Execute(() =>
+            {
+                NativeMethods.EnumThreadWindows(NativeMethods.GetCurrentThreadId(), (hwnd, lParam) =>
+                {
+                    if (NativeMethods.IsWindowVisible(hwnd) && GetWindowClassName(hwnd).Contains("Popup"))
+                    {
+                        count++;
+                    }
+                    return true;
+                }, IntPtr.Zero);
+            });
+            return count;
+        }
+
+        private static string GetWindowClassName(IntPtr hwnd)
+        {
+            var className = new StringBuilder(256);
+            return NativeMethods.GetClassName(hwnd, className, className.Capacity) > 0 ? className.ToString() : string.Empty;
+        }
+
+        private static class NativeMethods
+        {
+            public const int WH_CALLWNDPROC = 4;
+            public const uint WM_NCDESTROY = 0x0082;
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct CWPSTRUCT
+            {
+                public IntPtr LParam;
+                public IntPtr WParam;
+                public uint Message;
+                public IntPtr Hwnd;
+            }
+
+            public delegate IntPtr HookProc(int code, IntPtr wParam, IntPtr lParam);
+            public delegate bool EnumThreadWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+            [DllImport("user32.dll", SetLastError = true)]
+            public static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+            [DllImport("user32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadWindowsProc lpfn, IntPtr lParam);
+
+            [DllImport("user32.dll")]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool IsWindowVisible(IntPtr hwnd);
+
+            [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+            public static extern int GetClassName(IntPtr hwnd, StringBuilder lpClassName, int nMaxCount);
+
+            [DllImport("kernel32.dll")]
+            public static extern uint GetCurrentThreadId();
         }
 
         [TestMethod]
