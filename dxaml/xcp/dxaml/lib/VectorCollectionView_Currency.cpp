@@ -147,7 +147,10 @@ _Check_return_ HRESULT VectorCollectionView::EndRefreshCurrency(_Inout_ Currency
         return S_OK;
     }
 
-    // In CollectionView's order: the properties, then CurrentChanged.
+    // In CollectionView's order: the properties, then CurrentChanged. A Reset handler's own move (MoveCurrentTo, which
+    // is respected) raised its CurrentChanging and CurrentChanged inside this scope, so the scope's CurrentChanging is
+    // answered by two CurrentChanged: the handler's and this one, with the properties diffed against the scope's start.
+    // That is intended (a listener sees the final currency last); do not drop this one when the handler raised its own.
     IFC_RETURN(get_IsCurrentAfterLastImpl(&isAfterLast));
     if (nowPosition != pScope->position)
     {

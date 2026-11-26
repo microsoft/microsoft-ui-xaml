@@ -344,8 +344,20 @@ namespace DirectUI::ShapingEngine
             return S_OK;
         }
 
+        // As in RemoveAt, every item is released last, once the list is empty: TrackerPtrVector::Clear releases while it
+        // walks its own storage, and a release that re-enters (InsertAt, Append) would grow that storage under it.
         void Clear()
         {
+            std::vector<ctl::ComPtr<T>> releasedLast;
+            releasedLast.reserve(m_slots.Size());
+            for (UINT slot = 0; slot < m_slots.Size(); ++slot)
+            {
+                ctl::ComPtr<T> spItem;
+                if (SUCCEEDED(m_slots.GetAt(slot, spItem.ReleaseAndGetAddressOf())) && spItem)
+                {
+                    releasedLast.push_back(std::move(spItem));
+                }
+            }
             m_order.clear();
             m_freeSlots.clear();
             m_slots.Clear();
@@ -510,12 +522,26 @@ namespace DirectUI::ShapingEngine
         public xaml_data::ICollectionViewGroup2,
         public xaml_data::INotifyPropertyChanged
     {
-        BEGIN_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
-            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICustomPropertyProvider)
-            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICollectionViewGroup)
-            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::ICollectionViewGroup2)
-            INTERFACE_ENTRY(CollectionViewGroupInternal, xaml_data::INotifyPropertyChanged)
-        END_INTERFACE_MAP(CollectionViewGroupInternal, InternalList)
+    protected:
+        // Not BEGIN_INTERFACE_MAP: ICollectionViewGroup2 is reported only while the experimental API is enabled, as
+        // CollectionViewGroup reports it (the feature is a run-time check). Read once, so QueryInterfaceImpl and GetIids
+        // agree for the group's lifetime.
+        INT GetImplementedIIDsCount() override
+        {
+            return (m_isGroup2Exposed ? 4 : 3) + InternalList::GetImplementedIIDsCount();
+        }
+
+        void CopyIIDsToArray(INT first, IID* pResult) override
+        {
+            pResult[first++] = __uuidof(xaml_data::ICustomPropertyProvider);
+            pResult[first++] = __uuidof(xaml_data::ICollectionViewGroup);
+            if (m_isGroup2Exposed)
+            {
+                pResult[first++] = __uuidof(xaml_data::ICollectionViewGroup2);
+            }
+            pResult[first++] = __uuidof(xaml_data::INotifyPropertyChanged);
+            InternalList::CopyIIDsToArray(first, pResult);
+        }
 
     public:
         _Check_return_ HRESULT InitializeGroup(_In_opt_ IInspectable* pKey, _In_opt_ CollectionViewGroupInternal* pParent, bool isBottomLevel)
@@ -916,7 +942,7 @@ namespace DirectUI::ShapingEngine
             {
                 *ppObject = static_cast<xaml_data::ICollectionViewGroup*>(this);
             }
-            else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)))
+            else if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)) && m_isGroup2Exposed)
             {
                 *ppObject = static_cast<xaml_data::ICollectionViewGroup2*>(this);
             }
@@ -932,6 +958,9 @@ namespace DirectUI::ShapingEngine
             AddRefOuter();
             return S_OK;
         }
+
+        // Whether QueryInterfaceImpl and GetIids answer ICollectionViewGroup2 (see GetImplementedIIDsCount).
+        const bool m_isGroup2Exposed = !!Feature_ExperimentalApi::IsEnabled();
 
         // The subgroups, typed, and as the observable list GroupItems presents (the root's is the InternalList).
         // A tracked reference, so the reference tracker walk reaches nested groups (their keys and handlers).

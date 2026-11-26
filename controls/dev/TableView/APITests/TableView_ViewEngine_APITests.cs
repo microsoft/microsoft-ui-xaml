@@ -522,9 +522,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 };
 
                 target = view.First(item => ((EngineRow)item).Name == "Kai");
+                var log = new List<string>();
+                view.CurrentChanging += (sender, args) => log.Add("changing");
+                view.CurrentChanged += (sender, args) => log.Add("changed");
                 cvs.SortDescriptions[0] = new SortDescription("Score", CollectionViewSortDirection.Descending); // Bo Kai Lin Eve Ada
                 Verify.AreEqual("Kai", ((EngineRow)view.CurrentItem)?.Name, "The handler's MoveCurrentTo sticks.");
                 Verify.AreEqual(1, view.CurrentPosition);
+                // By design (VectorCollectionView::EndRefreshCurrency): the handler's move raises its own CurrentChanged inside
+                // the refresh, and the refresh then raises its CurrentChanged with the final currency.
+                Log.Comment($"Currency events: {string.Join(" ", log)}");
+                Verify.AreEqual(2, log.Count(entry => entry == "changed"), "A respected MoveCurrentTo in a Reset handler is followed by the refresh's own CurrentChanged.");
+                log.Clear();
 
                 target = null;
                 moveToBeforeFirst = true;

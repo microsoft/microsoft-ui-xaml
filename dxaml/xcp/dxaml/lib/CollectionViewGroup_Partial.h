@@ -9,8 +9,8 @@ namespace DirectUI
 {
     class GroupedDataCollectionView;
 
-    // WPF's CollectionViewGroup for a group of an IsSourceGrouped view: Name is the app's group object, and the group
-    // is always a bottom-level group.
+    // WPF's CollectionViewGroup for a group of an IsSourceGrouped view: the app's group object is Group, its items are
+    // GroupItems, and the group is always a bottom-level group.
     PARTIAL_CLASS(CollectionViewGroup),
         public xaml_data::ICollectionViewGroup2
     {
@@ -27,7 +27,8 @@ namespace DirectUI
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         // GetIids reports ICollectionViewGroup2 when QueryInterfaceImpl answers it (the feature is a run-time check, so
-        // it cannot be a static interface-map entry).
+        // it cannot be a static interface-map entry). Both read m_isGroup2Exposed, so GetIids sizes and fills its array
+        // from one answer.
         INT GetImplementedIIDsCount() override;
         void CopyIIDsToArray(INT first, IID* pResult) override;
 
@@ -71,5 +72,8 @@ namespace DirectUI
         TrackerPtr<IInspectable> m_tpGroupItems;
 
         ctl::EventPtr<VectorChangedEventCallback> m_epVectorChangedHandler;
+
+        // Feature_ExperimentalApi, read once at construction (QueryInterfaceImpl, GetIids).
+        const bool m_isGroup2Exposed;
     };
 }

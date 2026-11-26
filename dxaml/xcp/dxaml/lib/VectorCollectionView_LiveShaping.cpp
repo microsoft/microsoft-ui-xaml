@@ -927,7 +927,8 @@ namespace
     // plans and raises the change in ~30 us. 14 ns a row was measured while the presented list moved a TrackerPtr a
     // row; batch 6 keeps TrackerPtrs in stable slots and should cost less, but that is not measured yet, so the
     // measured value stays.
-    // TODO: recalibrate c_nsPerShiftedRow from BenchIncrementalChanges / BenchLiveSortingTick on amd64fre.
+    // TODO: recalibrate c_nsPerShiftedRow from BenchIncrementalChanges / BenchLiveSortingTick on amd64fre (bench pending
+    // in the PR #12654 pipeline).
     // A flat re-sort on the cached keys announced as a Reset costs ~1.4 us a row, and a grouped recompute ~13 us a
     // row. Moves keep the realized rows, focus, scroll position and UIA tree, so they are preferred until they cost
     // twice a Reset, or while they fit a budget of a few frames.

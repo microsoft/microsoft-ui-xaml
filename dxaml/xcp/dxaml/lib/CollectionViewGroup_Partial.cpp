@@ -13,6 +13,7 @@ using namespace xaml_data;
 using namespace xaml_interop;
 
 CollectionViewGroup::CollectionViewGroup()
+    : m_isGroup2Exposed(!!Feature_ExperimentalApi::IsEnabled())
 {
 }
 
@@ -42,7 +43,7 @@ CollectionViewGroup::get_GroupItemsImpl(_Outptr_ wfc::IObservableVector<IInspect
 
 HRESULT CollectionViewGroup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)) && Feature_ExperimentalApi::IsEnabled())
+    if (InlineIsEqualGUID(iid, __uuidof(xaml_data::ICollectionViewGroup2)) && m_isGroup2Exposed)
     {
         *ppObject = static_cast<xaml_data::ICollectionViewGroup2*>(this);
         AddRefOuter();
@@ -54,12 +55,12 @@ HRESULT CollectionViewGroup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void**
 
 INT CollectionViewGroup::GetImplementedIIDsCount()
 {
-    return CollectionViewGroupGenerated::GetImplementedIIDsCount() + (Feature_ExperimentalApi::IsEnabled() ? 1 : 0);
+    return CollectionViewGroupGenerated::GetImplementedIIDsCount() + (m_isGroup2Exposed ? 1 : 0);
 }
 
 void CollectionViewGroup::CopyIIDsToArray(INT first, IID* pResult)
 {
-    if (Feature_ExperimentalApi::IsEnabled())
+    if (m_isGroup2Exposed)
     {
         pResult[first++] = __uuidof(xaml_data::ICollectionViewGroup2);
     }
