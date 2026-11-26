@@ -7,6 +7,32 @@ public sealed record SessionDllLoad(long Sequence, double? LoadTimeMilliseconds,
 
 public static partial class SessionFile
 {
+    // Changes whenever DllLoads can: a DLL event is stored or trimmed, or hard fault capture starts. Null when the
+    // recording predates the DLL tables. Reading it costs a few index lookups, so a live view can poll it.
+    public static string? ReadDllChangeToken(string path)
+    {
+        using var connection = Open(path);
+        if (Sql.Scalar(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'HardFaults'") == 0)
+        {
+            return null;
+        }
+
+        using var command = Command(connection, null, """
+            SELECT (SELECT MIN(Seq) FROM DllImageEvents), (SELECT MAX(Seq) FROM DllImageEvents),
+                (SELECT MIN(Seq) FROM HardFaults), (SELECT MAX(Seq) FROM HardFaults), HardFaultCaptureEnabled,
+                StartQpc, QpcFrequency
+            FROM SessionInfo
+            """);
+        using var reader = command.ExecuteReader();
+        if (!reader.Read())
+        {
+            return "";
+        }
+
+        return string.Join(',', Enumerable.Range(0, reader.FieldCount)
+            .Select(i => Convert.ToString(reader.GetValue(i), System.Globalization.CultureInfo.InvariantCulture)));
+    }
+
     // Null means the recording predates the DLLs view; an empty list means no loads were observed.
     public static IReadOnlyList<SessionDllLoad>? ReadDllLoads(string path)
     {

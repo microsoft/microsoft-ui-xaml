@@ -300,12 +300,14 @@ public sealed class TraceReplay : IAsyncDisposable
         }
     }
 
+    // DLL events go straight to the pipeline: a hard fault held until its thread's process was known arrives after later
+    // events, and the DLLs tab orders them by Qpc, so they are not counted as out of order.
     private void OnCapturedEvent(ProfilerEvent profilerEvent)
     {
         if (halted) return;
         try
         {
-            PostInTimeOrder(profilerEvent);
+            Post(profilerEvent);
         }
         catch (Exception error)
         {

@@ -82,6 +82,20 @@ internal static class SessionSchema
             FrameId INTEGER NOT NULL REFERENCES Frames (FrameId),
             Bucket TEXT NOT NULL);     -- Xaml, Composition or Other
         CREATE INDEX FrameContents ON FrameEvents (FrameId);
+        CREATE TABLE DllImageEvents (  -- the target's image loads and unloads (DllIndex)
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            Qpc INTEGER NOT NULL,
+            IsLoad INTEGER NOT NULL,
+            Source TEXT NOT NULL,      -- KernelImage (the classic kernel's events) or KernelProcess (Kernel-Process's)
+            ImageBase INTEGER NOT NULL,
+            ImageSize INTEGER NOT NULL,
+            DllPath TEXT);
+        CREATE INDEX DllImagesByBase ON DllImageEvents (ImageBase, Qpc);
+        CREATE TABLE HardFaults (      -- the target's hard page faults (DllIndex); Seq can be later than Qpc's order
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            Qpc INTEGER NOT NULL,
+            Address INTEGER NOT NULL); -- user-mode addresses only
+        CREATE INDEX HardFaultsByAddress ON HardFaults (Address, Qpc);
         -- The events the InterestingRows view reads, found by type instead of a scan of every event.
         CREATE INDEX EventsByType ON Events (TypeId);
         CREATE TABLE GraphicsObjects (
@@ -224,33 +238,24 @@ internal static class SessionSchema
         CREATE VIEW DllLoads AS
         -- One row per observed DLL mapping. LoadTimeMs is a timestamp, not a duration. FaultCount counts retained hard
         -- faults in this mapping's address range and lifetime, or is null if capture is unknown or unavailable.
-        WITH ImageEvents AS MATERIALIZED (
-            SELECT e.Seq, e.Qpc,
-                (t.Provider = 'KernelProcess' AND t.EventId = 5 OR t.Provider = 'KernelImage' AND t.Opcode = 10) AS IsLoad,
-                json_extract(d.Fields, '$.ImageName') AS DllPath,
-                json_extract(d.Fields, '$.ImageBase') AS ImageBase,
-                json_extract(d.Fields, '$.ImageSize') AS ImageSize
-            FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId JOIN EventDetails d ON d.Seq = e.Seq
-            WHERE NOT t.Launcher AND (
-                t.Provider = 'KernelImage' AND t.Opcode IN (2, 10) OR
-                t.Provider = 'KernelProcess' AND t.EventId IN (5, 6) AND NOT EXISTS (
-                    SELECT 1 FROM EventTypes c JOIN Events ce ON ce.TypeId = c.TypeId
-                    WHERE c.Provider = 'KernelImage' AND c.Opcode = 10 AND NOT c.Launcher))
-        ), Mappings AS (
-            SELECT *, LEAD(Qpc) OVER (PARTITION BY ImageBase ORDER BY Qpc, Seq) AS EndQpc
-            FROM ImageEvents WHERE ImageBase > 0
-        ), Faults AS MATERIALIZED (
-            SELECT e.Qpc, json_extract(e.Payload, '$[0]') AS Address
-            FROM EventTypes t JOIN Events e ON e.TypeId = t.TypeId
-            WHERE t.Provider = 'KernelMemory' AND t.Opcode = 32 AND NOT t.Launcher
+        -- A trace can have both the classic kernel's image events and Kernel-Process's. Each source's mapping lasts
+        -- from its load to that source's next event at the same base; a Kernel-Process mapping that overlaps a classic
+        -- one at the same base is the same mapping and is not listed again.
+        WITH Mappings AS MATERIALIZED (
+            SELECT *, LEAD(Qpc) OVER (PARTITION BY Source, ImageBase ORDER BY Qpc, Seq) AS EndQpc
+            FROM DllImageEvents WHERE ImageBase > 0
         )
         SELECT m.Seq, m.Qpc, (m.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS LoadTimeMs, m.DllPath,
-            CASE WHEN s.HardFaultCaptureEnabled OR EXISTS (SELECT 1 FROM Faults) THEN (
-                SELECT COUNT(*) FROM Faults f WHERE f.Qpc >= m.Qpc AND (m.EndQpc IS NULL OR f.Qpc < m.EndQpc)
-                    AND f.Address >= m.ImageBase AND f.Address - m.ImageBase < m.ImageSize
+            CASE WHEN s.HardFaultCaptureEnabled OR EXISTS (SELECT 1 FROM HardFaults) THEN (
+                SELECT COUNT(*) FROM HardFaults f
+                WHERE f.Address >= m.ImageBase AND f.Address < m.ImageBase + m.ImageSize
+                    AND f.Qpc >= m.Qpc AND (m.EndQpc IS NULL OR f.Qpc < m.EndQpc)
             ) END AS FaultCount
         FROM Mappings m CROSS JOIN SessionInfo s
-        WHERE m.IsLoad AND m.ImageSize > 0 AND m.DllPath LIKE '%.dll';
+        WHERE m.IsLoad AND m.ImageSize > 0 AND m.DllPath LIKE '%.dll' AND NOT (m.Source = 'KernelProcess' AND EXISTS (
+            SELECT 1 FROM Mappings c
+            WHERE c.Source = 'KernelImage' AND c.IsLoad AND c.ImageBase = m.ImageBase
+                AND (m.EndQpc IS NULL OR c.Qpc < m.EndQpc) AND (c.EndQpc IS NULL OR m.Qpc < c.EndQpc)));
         CREATE VIEW TickEvents AS
         -- The events of each tick (EventDetails' columns), read through the tick's index: a tick's events are
         -- SELECT ... FROM TickEvents WHERE TickId = :tick ORDER BY Seq.
@@ -438,9 +443,11 @@ internal static class SessionSchema
         FROM Found r;
         CREATE VIEW InterestingRowEvents AS
         -- The events of each interesting row: its thread's events from StartSeq to StopSeq. For a region, RowType is 'Region'
-        -- and RowStartSeq is its RegionId. A focus change that another thread wrote is not among them.
+        -- and RowStartSeq is its RegionId. A focus change that another thread wrote is not among them, nor are the kernel's
+        -- image and hard fault events, which arrive out of order (see DllLoads).
         SELECT r.Type AS RowType, r.StartSeq AS RowStartSeq, r.RegionId, d.*
-        FROM InterestingRows r JOIN EventDetails d ON d.ThreadId = r.ThreadId AND d.Seq BETWEEN r.StartSeq AND r.StopSeq;
+        FROM InterestingRows r JOIN EventDetails d ON d.ThreadId = r.ThreadId AND d.Seq BETWEEN r.StartSeq AND r.StopSeq
+        WHERE d.Provider NOT IN ('KernelProcess', 'KernelImage', 'KernelMemory');
         CREATE VIEW FrameList AS
         -- The Frames tab's list, in order (ListIndex). ItemType Tick: every tick, with the region that ends with it (RegionId).
         -- Region: every region, right above the tick it ends with, or by its start when no tick has its stop as last event.

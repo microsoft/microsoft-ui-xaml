@@ -67,6 +67,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly ObjectIndex objects;
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
+    private readonly DllIndex dlls;
     private SqliteConnection? cpuConnection;
     private CpuSampleIndex? cpu;
     // What SetCpuSampling gave, stored when the file is closed.
@@ -128,6 +129,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects = new(connection);
         frames = new(connection);
         graphics = new(connection);
+        dlls = new(connection);
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
@@ -604,8 +606,12 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 insertEvent.Parameters["$type"].Value = typeId;
                 insertEvent.Parameters["$payload"].Value = payloads[i];
                 insertEvent.ExecuteNonQuery();
-                // The indexes describe the target's objects and UI threads.
-                if (!launcher && profilerEvent.Provider is not (XamlProvider.KernelProcess or XamlProvider.KernelImage or XamlProvider.KernelMemory))
+                // The indexes describe the target's objects, UI threads and DLLs.
+                if (!launcher && XamlProviders.IsDllProvider(profilerEvent.Provider))
+                {
+                    dlls.Add(sequence, profilerEvent, transaction);
+                }
+                else if (!launcher)
                 {
                     objects.Add(sequence, typeId, profilerEvent, transaction);
                     frames.Add(sequence, typeId, profilerEvent, transaction);
@@ -792,6 +798,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         objects.Trim(cutoff, current);
         frames.Trim(cutoff, current);
         graphics.Trim(cutoff, current);
+        dlls.Trim(cutoff, current);
         Sql.Execute(connection, "DELETE FROM Events WHERE Seq < $cutoff", current, ("$cutoff", cutoff));
         // The launcher's events can be stored after later events of the process (LaunchWatcher), so the time is the
         // process's first event from the cutoff, or else the cutoff's.
@@ -890,6 +897,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             objects.Dispose();
             frames.Dispose();
             graphics.Dispose();
+            dlls.Dispose();
             cpu?.Dispose();
             cpuConnection?.Dispose();
             insertEvent.Dispose();

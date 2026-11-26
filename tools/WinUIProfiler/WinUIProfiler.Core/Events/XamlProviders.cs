@@ -58,10 +58,15 @@ public static class XamlProviders
     public static bool TryGet(Guid providerId, out XamlProvider provider) =>
         XamlProviderIds.TryGetValue(providerId, out provider);
 
-    // Whether the profiler reads the provider's events anyway.
+    // Whether the profiler reads the provider's events anyway. Not Kernel-Process: the profiler reads only its image
+    // events, so a marker configuration can still list it for its other events.
     public static bool IsBuiltIn(Guid providerId) =>
-        providerId == Direct3D11 || providerId == DxgKrnl || providerId == Win32k || providerId == KernelProcess ||
+        providerId == Direct3D11 || providerId == DxgKrnl || providerId == Win32k ||
         XamlProviderIds.ContainsKey(providerId);
+
+    // The providers the DLLs tab reads. Milestones cannot name them as built-in providers.
+    public static bool IsDllProvider(XamlProvider provider) =>
+        provider is XamlProvider.KernelProcess or XamlProvider.KernelImage or XamlProvider.KernelMemory;
 
     // The provider's ETW ID; Guid.Empty for Marker, whose events carry their provider.
     public static Guid IdOf(XamlProvider provider) => provider switch

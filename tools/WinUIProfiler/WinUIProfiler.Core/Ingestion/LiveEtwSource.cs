@@ -174,7 +174,7 @@ public sealed class LiveEtwSource : IDisposable
             var direct3DEnabled = EnableProviders(session, options, launcherOptions, enabled);
             var gpuMemoryEnabled = EnableGpuMemory(session);
             EnableFocus(session);
-            EnableImages(session);
+            EnableImages(session, enabled);
             return new(session, enabled, direct3DEnabled, gpuMemoryEnabled);
         }
         catch
@@ -212,6 +212,12 @@ public sealed class LiveEtwSource : IDisposable
 
         foreach (var marker in markers)
         {
+            // EnableImages enables Kernel-Process once with the marker's settings too: a second enable would replace them.
+            if (marker.Provider.Id == XamlProviders.KernelProcess)
+            {
+                continue;
+            }
+
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
                 marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
         }
@@ -268,18 +274,30 @@ public sealed class LiveEtwSource : IDisposable
         }
     }
 
-    private static void EnableImages(TraceEventSession session)
+    private static void EnableImages(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers)
     {
         try
         {
             // Kernel providers do not accept process scope filters. Filter by payload PID when reading instead.
-            session.EnableProvider(XamlProviders.KernelProcess, TraceEventLevel.Informational, 0x40,
-                new TraceEventProviderOptions { EventIDsToEnable = [5, 6] });
+            var (level, keywords, eventIds) = ImageSettings(markers);
+            session.EnableProvider(XamlProviders.KernelProcess, (TraceEventLevel)level, keywords,
+                eventIds is null ? null : new TraceEventProviderOptions { EventIDsToEnable = [.. eventIds] });
         }
         catch (Exception error) when (error is not OutOfMemoryException)
         {
             Trace.TraceWarning($"Could not enable the kernel's image load and unload events: {error.Message}");
         }
+    }
+
+    // Image load and unload (events 5 and 6, keyword WINEVENT_KEYWORD_IMAGE 0x40). A marker that lists Kernel-Process
+    // gets its own level and keywords as well, and every event ID.
+    internal static (byte Level, ulong Keywords, int[]? EventIds) ImageSettings(IReadOnlyCollection<MarkerProviderSettings> markers)
+    {
+        const byte Informational = 4;
+        const ulong ImageKeyword = 0x40;
+        return markers.FirstOrDefault(marker => marker.Provider.Id == XamlProviders.KernelProcess) is { } marker
+            ? (Math.Max(marker.Level, Informational), marker.Keywords | ImageKeyword, null)
+            : (Informational, ImageKeyword, [5, 6]);
     }
 
     // The kernel writes a process's current GPU memory usage and budget when the process opens a GPU adapter, and

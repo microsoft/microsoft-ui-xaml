@@ -704,7 +704,7 @@ internal static partial class CliApplication
                 }
 
                 writer.Process(++sequence, profilerEvent);
-            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null);
+            }, writer.SetProcessStart, cancellationToken, cpuSamples ? writer : null, dllEvents: true);
         }
         finally
         {

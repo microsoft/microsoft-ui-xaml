@@ -20,6 +20,7 @@ public sealed partial class DllsView : UserControl
     private SessionSource? source;
     private string? path;
     private IReadOnlyList<SessionDllLoad>? displayed;
+    private string? displayedToken;
     private int revision;
     private bool loaded;
     private bool reading;
@@ -60,6 +61,7 @@ public sealed partial class DllsView : UserControl
             path = source?.Path;
             revision++;
             displayed = null;
+            displayedToken = null;
             Status.Text = "";
             DllList.ItemsSource = null;
             DllList.Visibility = Visibility.Collapsed;
@@ -111,8 +113,17 @@ public sealed partial class DllsView : UserControl
         var current = revision;
         try
         {
-            var rows = await Task.Run(() => SessionFile.ReadDllLoads(file));
+            // Polled every second while live: skip the full read when no DLL event was stored or trimmed since the last.
+            var previousToken = displayedToken;
+            var previousRows = displayed;
+            var (token, rows) = await Task.Run(() =>
+            {
+                var token = SessionFile.ReadDllChangeToken(file);
+                return token is not null && token == previousToken && previousRows is not null
+                    ? (token, previousRows) : (token, SessionFile.ReadDllLoads(file));
+            });
             if (current != revision) return;
+            displayedToken = token;
             ReadError.IsOpen = false;
             if (rows is null)
             {

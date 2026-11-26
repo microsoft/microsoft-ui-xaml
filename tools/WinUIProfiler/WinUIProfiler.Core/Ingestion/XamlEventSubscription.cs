@@ -143,7 +143,11 @@ internal static class XamlEventSubscription
                     match(data, XamlProvider.KernelProcess, null, owner);
                 }
 
-                return;
+                // A marker configuration may list Kernel-Process too; its events then reach it as marker events.
+                if (!markerIds.ContainsKey(XamlProviders.KernelProcess))
+                {
+                    return;
+                }
             }
 
             MarkerProviderSettings? marker = null;
@@ -193,7 +197,7 @@ internal static class XamlEventSubscription
             {
                 var classic = unknown.IsClassicProvider;
                 var provider = classic ? unknown.TaskGuid : unknown.ProviderGuid;
-                if (XamlProviders.IsBuiltIn(provider) || markers.ContainsKey(provider))
+                if (XamlProviders.IsBuiltIn(provider) || provider == XamlProviders.KernelProcess || markers.ContainsKey(provider))
                 {
                     return false;
                 }

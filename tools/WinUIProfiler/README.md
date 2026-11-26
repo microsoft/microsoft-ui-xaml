@@ -105,6 +105,13 @@ and observed lifetime. Live hard-fault capture requires administrator rights; an
 ETL must include kernel hard-fault events. A live recording with hard-fault capture
 enabled shows zero when no faults were observed for a DLL. A dash means capture
 was unavailable or could not be confirmed. DLLs already loaded before capture are not listed.
+The writer indexes image events in `DllImageEvents` and hard faults in `HardFaults`,
+so the view reads in time proportional to the matching rows. When an image is seen
+from both the Kernel-Process and classic kernel image sources, the classic row is
+kept for that mapping; mappings seen by only one source are kept as they are. A hard
+fault whose thread's process is not yet known is held until the thread is identified.
+Kernel image, process and memory events are excluded from region event lists.
+The CLI's `record` command also stores DLL loads for the selected process from an ETL.
 
 Run the event compatibility, DirectX capture/storage and snapshot resource regression checks from this directory:
 
