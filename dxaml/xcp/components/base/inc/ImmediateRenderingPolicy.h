@@ -212,6 +212,12 @@ namespace ImmediateRenderingPolicy
     uint32_t GetBlitDamageOutsideCover(const RenderingBackend::RectF& bounds, const RenderingBackend::RectF& cover,
         const RenderingBackend::RectF& blit, int32_t dx, int32_t dy, _Out_writes_to_(8, return) RenderingBackend::RectF* out) noexcept;
 
+    // Makes damage rects pairwise disjoint (painters sum damaged pixels) and at most maxCount. Overlapping rects are
+    // unioned when that adds at most 25% more pixels; otherwise the later one is split around the earlier one
+    // (a blit's exposed strip crossing a thin ring stays two thin strips instead of the viewport's bounding box).
+    // Over maxCount, the pair whose union grows least is merged.
+    void CoalesceDamageRects(_Inout_ std::vector<RenderingBackend::RectF>& rects, uint32_t maxCount);
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

@@ -352,51 +352,11 @@ namespace
         return name;
     }
 
-    // Coalesces damage: overlapping rects merge, then the smallest-growth pairs merge until at most maxCount remain.
+    // Coalesces damage into at most maxCount disjoint rects. ---- scrollgaps ---- overlaps are split rather than unioned
+    // when the union would paint many extra pixels (ImmediateRenderingPolicy::CoalesceDamageRects).
     void CoalesceDamage(_Inout_ std::vector<RectF>& rects, uint32_t maxCount)
     {
-        bool merged = true;
-        while (merged)
-        {
-            merged = false;
-            for (size_t i = 0; i < rects.size() && !merged; ++i)
-            {
-                for (size_t j = i + 1; j < rects.size(); ++j)
-                {
-                    if (RectsIntersect(rects[i], rects[j]))
-                    {
-                        rects[i] = UnionRect(rects[i], rects[j]);
-                        rects.erase(rects.begin() + j);
-                        merged = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        auto area = [](const RectF& r) { return static_cast<double>(r.right - r.left) * (r.bottom - r.top); };
-        while (rects.size() > maxCount)
-        {
-            size_t bestI = 0, bestJ = 1;
-            double bestGrowth = DBL_MAX;
-            for (size_t i = 0; i < rects.size(); ++i)
-            {
-                for (size_t j = i + 1; j < rects.size(); ++j)
-                {
-                    const double growth = area(UnionRect(rects[i], rects[j])) - area(rects[i]) - area(rects[j]);
-                    if (growth < bestGrowth)
-                    {
-                        bestGrowth = growth;
-                        bestI = i;
-                        bestJ = j;
-                    }
-                }
-            }
-            rects[bestI] = UnionRect(rects[bestI], rects[bestJ]);
-            rects.erase(rects.begin() + bestJ);
-            // A merge can create new overlaps; keep the set disjoint so painters can sum damaged pixels.
-            CoalesceDamage(rects, UINT32_MAX);
-        }
+        ImmediateRenderingPolicy::CoalesceDamageRects(rects, maxCount);
     }
 
     bool IsDeviceLost(HRESULT hr) noexcept

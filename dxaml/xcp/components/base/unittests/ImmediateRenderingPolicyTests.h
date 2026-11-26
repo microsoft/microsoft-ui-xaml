@@ -42,6 +42,7 @@ namespace ImmediateRenderingPolicyTests
         // ---- scrollgaps ----
         TEST_METHOD(DManipUpdatesRightAfterHandledInput);
         TEST_METHOD(BlitDamageSkipsUniformInterior);
+        TEST_METHOD(DamageCoalescingKeepsThinStripsThin);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

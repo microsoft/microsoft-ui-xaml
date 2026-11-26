@@ -5,6 +5,8 @@
 #include <ImmediateRenderingPolicy.h>
 #include <algorithm>
 #include <array>
+#include <cfloat>
+#include <vector>
 #include <cmath>
 #include <cwchar>
 
@@ -641,6 +643,88 @@ namespace ImmediateRenderingPolicy
         subtract(intersect(bounds, blit));
         subtract(intersect({ bounds.left + fx, bounds.top + fy, bounds.right + fx, bounds.bottom + fy }, blit));
         return count;
+    }
+
+    void CoalesceDamageRects(_Inout_ std::vector<RectF>& rects, uint32_t maxCount)
+    {
+        auto area = [](const RectF& r) { return static_cast<double>(r.right - r.left) * (r.bottom - r.top); };
+        auto intersects = [](const RectF& a, const RectF& b) { return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; };
+        auto unite = [](const RectF& a, const RectF& b)
+        {
+            return RectF{ std::min(a.left, b.left), std::min(a.top, b.top), std::max(a.right, b.right), std::max(a.bottom, b.bottom) };
+        };
+        // split: subtract instead of union when the union would paint extra pixels. The over-cap phase uses union only
+        // (every merge lowers the count, so it terminates).
+        auto disjoint = [&](bool split)
+        {
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                for (size_t i = 0; i < rects.size() && !changed; ++i)
+                {
+                    for (size_t j = i + 1; j < rects.size(); ++j)
+                    {
+                        const RectF a = rects[i];
+                        const RectF b = rects[j];
+                        if (!intersects(a, b))
+                        {
+                            continue;
+                        }
+                        const RectF u = unite(a, b);
+                        const RectF k{ std::max(a.left, b.left), std::max(a.top, b.top), std::min(a.right, b.right), std::min(a.bottom, b.bottom) };
+                        if (!split || area(u) <= 1.25 * (area(a) + area(b) - area(k)))
+                        {
+                            rects[i] = u;
+                            rects.erase(rects.begin() + j);
+                        }
+                        else
+                        {
+                            // b minus a: up to four pieces, none of which intersects a.
+                            const RectF parts[] = {
+                                { b.left, b.top, b.right, k.top },
+                                { b.left, k.bottom, b.right, b.bottom },
+                                { b.left, k.top, k.left, k.bottom },
+                                { k.right, k.top, b.right, k.bottom },
+                            };
+                            rects.erase(rects.begin() + j);
+                            for (const RectF& p : parts)
+                            {
+                                if (p.left < p.right && p.top < p.bottom)
+                                {
+                                    rects.push_back(p);
+                                }
+                            }
+                        }
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        };
+
+        disjoint(true);
+        while (rects.size() > maxCount)
+        {
+            size_t bestI = 0, bestJ = 1;
+            double bestGrowth = DBL_MAX;
+            for (size_t i = 0; i < rects.size(); ++i)
+            {
+                for (size_t j = i + 1; j < rects.size(); ++j)
+                {
+                    const double growth = area(unite(rects[i], rects[j])) - area(rects[i]) - area(rects[j]);
+                    if (growth < bestGrowth)
+                    {
+                        bestGrowth = growth;
+                        bestI = i;
+                        bestJ = j;
+                    }
+                }
+            }
+            rects[bestI] = unite(rects[bestI], rects[bestJ]);
+            rects.erase(rects.begin() + bestJ);
+            disjoint(false);
+        }
     }
 
     // ---- imaging ----

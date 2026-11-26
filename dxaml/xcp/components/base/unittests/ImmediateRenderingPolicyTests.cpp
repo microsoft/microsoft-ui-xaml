@@ -4,7 +4,9 @@
 #include "precomp.h"
 #include "ImmediateRenderingPolicyTests.h"
 #include <ImmediateRenderingPolicy.h>
+#include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace ImmediateRenderingPolicyTests
 {
@@ -507,6 +509,54 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(0u, GetBlitDamageOutsideCover(RectF{ -10, -10, 900, 700 }, RectF{ -10, -10, 900, 700 }, viewport, 0, -10, out));
         // Not in the blit at all: nothing.
         VERIFY_ARE_EQUAL(0u, GetBlitDamageOutsideCover(RectF{ 900, 0, 950, 50 }, RectF{}, viewport, 0, -10, out));
+    }
+
+    void PolicyTests::DamageCoalescingKeepsThinStripsThin()
+    {
+        using RenderingBackend::RectF;
+        auto area = [](const RectF& r) { return (r.right - r.left) * (r.bottom - r.top); };
+        auto intersects = [](const RectF& a, const RectF& b) { return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom; };
+        auto inside = [](const std::vector<RectF>& rs, float x, float y)
+        {
+            return std::any_of(rs.begin(), rs.end(), [&](const RectF& r) { return x >= r.left && x < r.right && y >= r.top && y < r.bottom; });
+        };
+
+        // A blit 10px up: the exposed bottom strip and a 2px ring around the viewport overlap at the corners. Their
+        // bounding box is the whole viewport; the coalesced set must stay disjoint, cover them and stay thin.
+        const std::vector<RectF> input = {
+            { 0, 590, 884, 600 }, { 0, 0, 884, 2 }, { 0, 588, 884, 600 }, { 0, 0, 2, 600 }, { 882, 0, 884, 600 },
+        };
+        std::vector<RectF> rects = input;
+        CoalesceDamageRects(rects, 32);
+        float total = 0;
+        for (size_t i = 0; i < rects.size(); i++)
+        {
+            total += area(rects[i]);
+            for (size_t j = i + 1; j < rects.size(); j++)
+            {
+                VERIFY_IS_FALSE(intersects(rects[i], rects[j]));
+            }
+        }
+        VERIFY_IS_TRUE(total < 884 * 600 / 10);
+        for (const RectF& r : input)
+        {
+            VERIFY_IS_TRUE(inside(rects, r.left, r.top) && inside(rects, r.right - 1, r.bottom - 1));
+        }
+
+        // Heavily overlapping rects merge into their union (no extra pixels painted).
+        rects = { { 0, 0, 100, 100 }, { 10, 10, 110, 110 } };
+        CoalesceDamageRects(rects, 32);
+        VERIFY_ARE_EQUAL(1u, static_cast<uint32_t>(rects.size()));
+        VERIFY_ARE_EQUAL(110.0f * 110.0f, area(rects[0]));
+
+        // Over the cap: merged down to maxCount, still disjoint.
+        rects.clear();
+        for (int i = 0; i < 10; i++)
+        {
+            rects.push_back({ i * 20.0f, 0, i * 20.0f + 10, 10 });
+        }
+        CoalesceDamageRects(rects, 4);
+        VERIFY_IS_TRUE(rects.size() <= 4);
     }
 
     // ---- imaging ----
