@@ -8,6 +8,13 @@ public static partial class MetricsCalculator
     // S28: the first 20 navigations create every page type once (first-use cost); growth is fitted from here on.
     public const int NavChurnFitFrom = 20;
 
+    // S33 per-step values copied into the summary.
+    static readonly string[] ScrollPhysicsKeys =
+    [
+        "Injected", "Samples", "MotionMs", "UpdateHz", "P95IntervalMs", "FinalOffset", "FinalZoom", "MotionCpuMsPerSecond",
+        "IdleCpuMsPerSecond", "IdleDManipUpdates", "MotionDManipUpdates", "BlockScreenChanges", "BlockDManipUpdates", "OffsetJumpAfterBlock",
+    ];
+
     // Least-squares fit of y = slope * x + intercept; null with fewer than two distinct x values.
     public static LinearFit? Fit(IReadOnlyList<(double X, double Y)> points)
     {
@@ -235,6 +242,24 @@ public static partial class MetricsCalculator
                 Put("PeakMB", steps.Where(s => s.PeakPrivateMB is not null).Select(s => s.PeakPrivateMB!.Value).DefaultIfEmpty(double.NaN).Max());
                 Put("PanCpuMsPerSecond", Median(steps.Where(s => s.Name.Contains("pan", StringComparison.Ordinal) && s.CpuMsPerSecond is not null)
                     .Select(s => s.CpuMsPerSecond!.Value)));
+                break;
+            }
+            case SceneId.ScrollPhysics:
+            {
+                // "<step>.<value>" for the trajectory and cost values the scene reports; the cross-backend trajectory
+                // comparison is done on trajectory.csv by the report.
+                foreach (var step in steps)
+                {
+                    foreach (var key in ScrollPhysicsKeys)
+                    {
+                        if (step.Values?.TryGetValue(key, out double value) == true)
+                        {
+                            Put($"{step.Name}.{key}", value);
+                        }
+                    }
+                }
+                Put("PeakMB", steps.Where(s => s.PeakPrivateMB is not null).Select(s => s.PeakPrivateMB!.Value).DefaultIfEmpty(double.NaN).Max());
+                Put("PrivateMB", Median(steps.Where(s => s.PrivateMBMedian is not null).Select(s => s.PrivateMBMedian!.Value)));
                 break;
             }
         }

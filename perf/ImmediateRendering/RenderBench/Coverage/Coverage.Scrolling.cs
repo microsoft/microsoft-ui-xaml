@@ -1,4 +1,4 @@
-﻿using Microsoft.UI;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -584,34 +584,105 @@ internal static class InputInjection
         return SendInput(1, [input], System.Runtime.InteropServices.Marshal.SizeOf<MouseInput>()) == 1;
     }
 
-    public static async Task<bool> DragAsync(Window window, Windows.Foundation.Point start, double dx, double dy, int steps = 12)
+    // INPUT with the KEYBDINPUT union member (x64: wVk at 8, dwFlags at 12, total size 40).
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Explicit, Size = 40)]
+    private struct KeyInput
+    {
+        [System.Runtime.InteropServices.FieldOffset(0)] public uint Type;
+        [System.Runtime.InteropServices.FieldOffset(8)] public ushort VirtualKey;
+        [System.Runtime.InteropServices.FieldOffset(10)] public ushort Scan;
+        [System.Runtime.InteropServices.FieldOffset(12)] public uint Flags;
+        [System.Runtime.InteropServices.FieldOffset(16)] public uint Time;
+        [System.Runtime.InteropServices.FieldOffset(24)] public nint ExtraInfo;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "SendInput")]
+    private static extern uint SendKeyInput(uint count, KeyInput[] inputs, int size);
+
+    // A key press (down and up) to the focused window; vk is a VK_* code (0x22 VK_NEXT, 0x23 VK_END, 0x24 VK_HOME).
+    public static bool Key(ushort vk)
+    {
+        uint extended = vk is >= 0x21 and <= 0x28 ? 1u /*KEYEVENTF_EXTENDEDKEY*/ : 0u;
+        var inputs = new[]
+        {
+            new KeyInput { Type = 1 /*INPUT_KEYBOARD*/, VirtualKey = vk, Flags = extended },
+            new KeyInput { Type = 1, VirtualKey = vk, Flags = extended | 2 /*KEYEVENTF_KEYUP*/ },
+        };
+        return SendKeyInput(2, inputs, System.Runtime.InteropServices.Marshal.SizeOf<KeyInput>()) == 2;
+    }
+
+    private static PointerTouchInfo Contact(uint id, int x, int y, uint flags) => new()
+    {
+        PointerType = 2 /*PT_TOUCH*/,
+        PointerId = id,
+        PointerFlags = flags,
+        PixelLocation = new Point32 { X = x, Y = y },
+        TouchMask = 0x5 /*CONTACTAREA|PRESSURE*/,
+        ContactLeft = x - 2, ContactTop = y - 2, ContactRight = x + 2, ContactBottom = y + 2,
+        Pressure = 512,
+    };
+
+    // Injects frame 0..frames-1 on a background thread at exact 16 ms intervals (Task.Delay jitter changes the release
+    // velocity, and so the inertia distance, from run to run). Screen points are computed on the caller's thread.
+    private static Task<bool> InjectTimedAsync(int frames, Func<int, PointerTouchInfo[]> contacts)
+    {
+        var all = Enumerable.Range(0, frames).Select(contacts).ToArray();
+        return Task.Run(() =>
+        {
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            for (int i = 0; i < frames; i++)
+            {
+                double due = i * 16.0;
+                while (clock.Elapsed.TotalMilliseconds < due - 2)
+                {
+                    Thread.Sleep(1);
+                }
+                while (clock.Elapsed.TotalMilliseconds < due)
+                {
+                    Thread.SpinWait(50);
+                }
+                if (!InjectTouchInput((uint)all[i].Length, all[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    // Two-finger pinch centered on `center`: the contacts move apart horizontally from fromDistance to toDistance DIPs.
+    public static Task<bool> PinchAsync(Window window, Windows.Foundation.Point center, double fromDistance, double toDistance, int steps = 15)
+    {
+        if (!InitializeTouchInjection(2, 3 /*TOUCH_FEEDBACK_NONE*/))
+        {
+            return Task.FromResult(false);
+        }
+        return InjectTimedAsync(steps + 2, i =>
+        {
+            double t = Math.Min(i, steps) / (double)steps;
+            double half = (fromDistance + (toDistance - fromDistance) * t) / 2;
+            var a = ToScreen(window, new Windows.Foundation.Point(center.X - half, center.Y));
+            var b = ToScreen(window, new Windows.Foundation.Point(center.X + half, center.Y));
+            uint flags = i == 0 ? 0x10006u : i <= steps ? 0x20006u : 0x40000u;
+            return [Contact(0, a.X, a.Y, flags), Contact(1, b.X, b.Y, flags)];
+        });
+    }
+
+    public static Task<bool> DragAsync(Window window, Windows.Foundation.Point start, double dx, double dy, int steps = 12)
     {
         if (!InitializeTouchInjection(1, 3 /*TOUCH_FEEDBACK_NONE*/))
         {
-            return false;
+            return Task.FromResult(false);
         }
         var from = ToScreen(window, start);
         var to = ToScreen(window, new Windows.Foundation.Point(start.X + dx, start.Y + dy));
-        for (int i = 0; i <= steps + 1; i++)
+        return InjectTimedAsync(steps + 2, i =>
         {
             double t = Math.Min(i, steps) / (double)steps;
             int x = from.X + (int)Math.Round((to.X - from.X) * t);
             int y = from.Y + (int)Math.Round((to.Y - from.Y) * t);
-            var contact = new PointerTouchInfo
-            {
-                PointerType = 2 /*PT_TOUCH*/,
-                PointerFlags = i == 0 ? 0x10006u /*DOWN|INRANGE|INCONTACT*/ : i <= steps ? 0x20006u /*UPDATE|INRANGE|INCONTACT*/ : 0x40000u /*UP*/,
-                PixelLocation = new Point32 { X = x, Y = y },
-                TouchMask = 0x5 /*CONTACTAREA|PRESSURE*/,
-                ContactLeft = x - 2, ContactTop = y - 2, ContactRight = x + 2, ContactBottom = y + 2,
-                Pressure = 512,
-            };
-            if (!InjectTouchInput(1, [contact]))
-            {
-                return false;
-            }
-            await Task.Delay(16);
-        }
-        return true;
+            // DOWN|INRANGE|INCONTACT, then UPDATE|INRANGE|INCONTACT, then UP.
+            return [Contact(0, x, y, i == 0 ? 0x10006u : i <= steps ? 0x20006u : 0x40000u)];
+        });
     }
 }

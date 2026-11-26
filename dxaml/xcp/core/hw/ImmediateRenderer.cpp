@@ -6,6 +6,7 @@
 #include "ImmediateRenderer.Materials.h"
 #include "ImmediateRenderer.Shapes.h"
 #include <GdiPlusPainter.h>
+#include <share.h>
 #include <RenderingResourceDiagnostics.h>
 #include <XamlProfilerTracing.h>
 #include <d3d11.h>
@@ -141,7 +142,7 @@ namespace
             wchar_t buffer[MAX_PATH] = {};
             const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS", buffer, ARRAYSIZE(buffer));
             FILE* file = nullptr;
-            if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
+            if (length > 0 && length < ARRAYSIZE(buffer) && (file = _wfsopen(buffer, L"w", _SH_DENYNO)) != nullptr)
             {
                 fprintf(file, "frame island elements visited painted culled commands blits blitdx blitdy damagerects damagepx full walkus paintus reused scrollrepaint\n");
                 return file;

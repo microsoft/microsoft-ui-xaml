@@ -34,6 +34,7 @@ public enum SceneId
     Resize,      // S30: 150 programmatic resizes, then settle
     Minimal,     // S31: 320x200 tray-style window, one TextBlock and one Button
     LargeCanvas, // S32: 10,000x10,000 zoomable canvas, scripted pans and zooms
+    ScrollPhysics, // S33: DManip/InteractionTracker scroll physics from real wheel, touch, pinch and keyboard input
 }
 
 // How scripted interactions reach the app. Auto resolves at run time (see BenchRunner.ResolveInputMode).
@@ -108,14 +109,16 @@ public static class SceneCatalog
         new(SceneId.Minimal, "minimal", "S31", "Minimal", new(0, 0, 0, 0, 0), "320x200 window with one TextBlock and one Button"),
         new(SceneId.LargeCanvas, "largecanvas", "S32", "LargeCanvas", new(0, 0, 0, 0, 3_000),
             "10,000x10,000 canvas of 3k shapes; pans at zoom 0.25, 1 and 4"),
+        new(SceneId.ScrollPhysics, "scrollphysics", "S33", "ScrollPhysics", new(0, 0, 0, 0, 300),
+            "wheel, flick, pinch, PgDn, snap, BringIntoView, ScrollView; flick with a 200 ms UI-thread block"),
     ];
 
-    // Backend decision scenes (S24..S32): step sweeps whose length is set by the scene, not by --duration.
+    // Backend decision scenes (S24..S33): step sweeps whose length is set by the scene, not by --duration.
     public static bool IsDecisionScene(SceneId id) => id >= SceneId.WindowSize;
 
     public static SceneInfo Get(SceneId id) => All.First(s => s.Id == id);
 
-    public const string PlanIdRange = "s1..s32 (no s17/s18)";
+    public const string PlanIdRange = "s1..s33 (no s17/s18)";
 
     // Accepts the CLI name ("datagrid"), the enum name, or the test-plan id ("s8"); never a number.
     public static bool TryParse(string text, out SceneId id)

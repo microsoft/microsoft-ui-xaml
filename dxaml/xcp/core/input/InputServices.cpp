@@ -49,6 +49,7 @@
 #include <Windowing.h>
 #include <RenderingBackend.h>
 #include <ImmediateRenderingPolicy.h>
+#include <share.h>
 
 #undef max
 #undef min
@@ -8627,7 +8628,7 @@ static FILE* GetDManipLogFile()
         wchar_t buffer[MAX_PATH] = {};
         const DWORD length = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_DMANIP_LOG", buffer, ARRAYSIZE(buffer));
         FILE* file = nullptr;
-        if (length > 0 && length < ARRAYSIZE(buffer) && _wfopen_s(&file, buffer, L"w") == 0)
+        if (length > 0 && length < ARRAYSIZE(buffer) && (file = _wfsopen(buffer, L"w", _SH_DENYNO)) != nullptr)
         {
             return file;
         }

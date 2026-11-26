@@ -77,6 +77,7 @@ static class SceneFactory
         SceneId.Resize => new ResizeScene(options),
         SceneId.Minimal => new MinimalScene(options),
         SceneId.LargeCanvas => new LargeCanvasScene(options),
+        SceneId.ScrollPhysics => new ScrollPhysicsScene(options),
         _ => new SettingsScene(options),
     };
 }

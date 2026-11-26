@@ -33,7 +33,7 @@ static class DecisionScenesTests
         [
             ("winsize", SceneId.WindowSize, "S24"), ("density", SceneId.Density, "S25"), ("windowcount", SceneId.WindowCount, "S26"),
             ("background", SceneId.Background, "S27"), ("navchurn", SceneId.NavChurn, "S28"), ("sustained", SceneId.Sustained, "S29"),
-            ("resize", SceneId.Resize, "S30"), ("minimal", SceneId.Minimal, "S31"), ("largecanvas", SceneId.LargeCanvas, "S32"),
+            ("resize", SceneId.Resize, "S30"), ("minimal", SceneId.Minimal, "S31"), ("largecanvas", SceneId.LargeCanvas, "S32"), ("scrollphysics", SceneId.ScrollPhysics, "S33"),
         ];
         foreach (var (text, scene, planId) in cases)
         {
