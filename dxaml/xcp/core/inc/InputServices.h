@@ -1467,6 +1467,8 @@ private:
     // Immediate rendering backends: calls IDirectManipulationUpdateManager::Update for every service with a moving
     // viewport, standing in for the DComp manipulation compositor. No-op in Composition or when nothing moves.
     _Check_return_ HRESULT TickDirectManipulationForImmediateRendering();
+    // ---- scrollgaps ---- Update right after DManip handled input so its animation clock starts now (no 1-frame lag).
+    _Check_return_ HRESULT UpdateDirectManipulationAfterInput(_In_ CDMViewport* pViewport, _In_ IPALDirectManipulationService* pService, bool handled);
 
     // Handles any potential viewport status or transform updates.
     _Check_return_ HRESULT ProcessDirectManipulationViewportChanges(

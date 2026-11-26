@@ -595,6 +595,16 @@ namespace ImmediateRenderingPolicy
         return immediateMode && !tickingEnabled;
     }
 
+    // ---- scrollgaps ----
+    bool ShouldUpdateDManipAfterInput(bool immediateMode, bool tickingEnabled, bool handled, DManipStatus status) noexcept
+    {
+        if (!immediateMode || !tickingEnabled || !handled)
+        {
+            return false;
+        }
+        return status != DManipStatus::Building && status != DManipStatus::Disabled && status != DManipStatus::Suspended;
+    }
+
     // ---- imaging ----
 
     uint32_t ComputeNineGridCells(const RectF& dest, float sourceWidth, float sourceHeight, const NineGridInsets& insets,

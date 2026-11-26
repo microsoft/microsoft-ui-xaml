@@ -445,6 +445,27 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_IS_FALSE(ShouldTweenAnimatedChangeView(false, true));
     }
 
+    // ---- scrollgaps ----
+
+    void PolicyTests::DManipUpdatesRightAfterHandledInput()
+    {
+        // Wheel/keyboard ProcessInput or animated ZoomToRect just handled: whatever DManip reports right after (still
+        // Ready/Enabled before the first Update, or already Running/Inertia), Update now so the animation clock starts.
+        for (DManipStatus status : { DManipStatus::Enabled, DManipStatus::Ready, DManipStatus::Running, DManipStatus::Inertia, DManipStatus::AutoRunning })
+        {
+            VERIFY_IS_TRUE(ShouldUpdateDManipAfterInput(true, true, true, status));
+            // Unhandled input, Composition (the compositor ticks) and disabled ticking: no extra Update.
+            VERIFY_IS_FALSE(ShouldUpdateDManipAfterInput(true, true, false, status));
+            VERIFY_IS_FALSE(ShouldUpdateDManipAfterInput(false, true, true, status));
+            VERIFY_IS_FALSE(ShouldUpdateDManipAfterInput(true, false, true, status));
+        }
+        // DManip is not running the viewport.
+        for (DManipStatus status : { DManipStatus::Building, DManipStatus::Disabled, DManipStatus::Suspended })
+        {
+            VERIFY_IS_FALSE(ShouldUpdateDManipAfterInput(true, true, true, status));
+        }
+    }
+
     // ---- imaging ----
 
     void PolicyTests::AppCompositionBrushFallsBack()

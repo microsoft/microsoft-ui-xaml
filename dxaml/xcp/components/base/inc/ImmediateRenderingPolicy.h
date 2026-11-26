@@ -197,6 +197,13 @@ namespace ImmediateRenderingPolicy
     // ScrollViewer UI-thread tween (fallback).
     bool ShouldTweenAnimatedChangeView(bool immediateMode, bool tickingEnabled) noexcept;
 
+    // ---- scrollgaps ----
+    // Start latency: DManip starts a wheel/keyboard/ZoomToRect animation's clock at the first Update. Composition's
+    // compositor updates on its next tick, so content moves in the first frame; the immediate frame tick alone starts
+    // the clock one frame later. So immediate modes call Update right after DManip handled the input (ProcessInput or
+    // an animated BringIntoViewport). Not for viewports DManip is not running (Building / Disabled / Suspended).
+    bool ShouldUpdateDManipAfterInput(bool immediateMode, bool tickingEnabled, bool handled, DManipStatus status) noexcept;
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

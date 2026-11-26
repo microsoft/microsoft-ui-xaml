@@ -6922,6 +6922,9 @@ CInputServices::ProcessInputMessageWithDirectManipulation(
                 // the scroll completes.
                 pViewport->SetRequestReplayPointerUpdateWhenInertiaCompletes(TRUE);
             }
+
+            // ---- scrollgaps ---- immediate modes: start DManip's animation clock now (wheel, keyboard, touch).
+            IFC(UpdateDirectManipulationAfterInput(pViewport, pDirectManipulationService, !!fHandled));
         }
     }
 
@@ -8717,6 +8720,34 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
         // Keep frames coming while DManip moves even if XAML's queued status still says Ready.
         IFC_RETURN(RequestAdditionalFrame());
     }
+    return S_OK;
+}
+
+// ---- scrollgaps ---- See ImmediateRenderingPolicy::ShouldUpdateDManipAfterInput. DManip raises status changes through
+// CDirectManipulationViewportEventHandler, which only queues them for the UI thread tick, so this does not re-enter.
+_Check_return_ HRESULT CInputServices::UpdateDirectManipulationAfterInput(
+    _In_ CDMViewport* pViewport,
+    _In_ IPALDirectManipulationService* pService,
+    bool handled)
+{
+    if (!handled || !RenderingBackend::IsDManipTickingActive())
+    {
+        return S_OK;
+    }
+    XDMViewportStatus status = XcpDMViewportBuilding;
+    IFC_RETURN(pService->GetViewportStatus(pViewport, status));
+    if (!ImmediateRenderingPolicy::ShouldUpdateDManipAfterInput(true, true, handled, static_cast<ImmediateRenderingPolicy::DManipStatus>(status)))
+    {
+        return S_OK;
+    }
+    IFC_RETURN(pService->TickUpdateManager());
+    ++m_immediateDManipUpdates;
+    if (FILE* const log = GetDManipLogFile())
+    {
+        fprintf(log, "kick %lld %p %d\n", static_cast<long long>(DManipLogMicroseconds()), static_cast<void*>(pViewport), static_cast<int>(status));
+        fflush(log);
+    }
+    IFC_RETURN(RequestAdditionalFrame());
     return S_OK;
 }
 //------------------------------------------------------------------------
@@ -13010,6 +13041,8 @@ CInputServices::BringIntoViewport(
                 if (newStatus == XcpDMViewportInertia)
                 {
                     fHandled = TRUE;
+                    // ---- scrollgaps ---- immediate modes: start the ZoomToRect animation clock now.
+                    IFC(UpdateDirectManipulationAfterInput(pViewport, pDirectManipulationService, true));
                     // Set our target offsets into the viewort so that we can pull them out to
                     // know where the element is going to end up.
                     pViewport->SetTargetTranslation(-bounds.X, -bounds.Y);
