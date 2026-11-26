@@ -676,6 +676,30 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "The pane toggle button's 16x16 hamburger AnimatedIcon is laid out on whole pixels in the left pane modes, so its pixel-aligned bars stay crisp (#7048).")]
+        public void VerifyPaneToggleButtonIconIsOnWholePixels()
+        {
+            foreach (var mode in new[] { NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
+            {
+                var navView = SetupNavigationView(mode);
+                RunOnUIThread.Execute(() =>
+                {
+                    var toggleButton = (Button)VisualTreeUtils.FindVisualChildByName(navView, "TogglePaneButton");
+                    var icon = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(toggleButton, "Icon");
+                    Verify.IsTrue(icon is AnimatedIcon, mode + ": the pane toggle button draws an AnimatedIcon");
+
+                    var scale = icon.XamlRoot.RasterizationScale;
+                    var origin = icon.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+                    Log.Comment(mode + ": icon at " + origin + ", " + icon.ActualWidth + "x" + icon.ActualHeight + ", RasterizationScale " + scale);
+                    Verify.AreEqual(16.0, icon.ActualWidth, mode + ": icon width");
+                    Verify.AreEqual(16.0, icon.ActualHeight, mode + ": icon height");
+                    Verify.IsLessThan(Math.Abs(origin.X * scale - Math.Round(origin.X * scale)), 0.01, mode + ": icon X is on a whole pixel");
+                    Verify.IsLessThan(Math.Abs(origin.Y * scale - Math.Round(origin.Y * scale)), 0.01, mode + ": icon Y is on a whole pixel");
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyPaneDisplayModeAndDisplayModeMapping()
         {
             var navView = SetupNavigationView();
