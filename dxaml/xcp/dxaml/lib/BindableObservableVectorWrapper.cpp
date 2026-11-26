@@ -379,22 +379,22 @@ BindableObservableVectorWrapper::ProcessCollectionChange(_In_ INotifyCollectionC
 
     switch (action)
     {
-    case wxaml_interop::NotifyCollectionChangedAction_Add:
+    case xaml_interop::NotifyCollectionChangedAction_Add:
         IFC(pArgs->get_NewStartingIndex(&index));
         IFC(RaiseVectorChanged(wfc::CollectionChange_ItemInserted, index));
         break;
 
-    case wxaml_interop::NotifyCollectionChangedAction_Remove:
+    case xaml_interop::NotifyCollectionChangedAction_Remove:
         IFC(pArgs->get_OldStartingIndex(&index));
         IFC(RaiseVectorChanged(wfc::CollectionChange_ItemRemoved, index));
         break;
 
-    case wxaml_interop::NotifyCollectionChangedAction_Replace:
+    case xaml_interop::NotifyCollectionChangedAction_Replace:
         IFC(pArgs->get_NewStartingIndex(&index));
         IFC(RaiseVectorChanged(wfc::CollectionChange_ItemChanged, index));
         break;
 
-    case wxaml_interop::NotifyCollectionChangedAction_Move:
+    case xaml_interop::NotifyCollectionChangedAction_Move:
         if (OptionalChangeState::IsCollectionMoveNotificationsEnabled())
         {
             IFC(ProcessCollectionMove(pArgs));
@@ -405,7 +405,7 @@ BindableObservableVectorWrapper::ProcessCollectionChange(_In_ INotifyCollectionC
         }
         break;
 
-    case wxaml_interop::NotifyCollectionChangedAction_Reset:
+    case xaml_interop::NotifyCollectionChangedAction_Reset:
         IFC(RaiseVectorChanged(wfc::CollectionChange_Reset, 0));
         break;
     }
