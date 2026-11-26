@@ -1337,7 +1337,9 @@ without change, then idles 1.5 s. The trajectory goes to 	rajectory.csv and the 
 | bringintoview | StartBringIntoView with AnimationDesired to a row 2400 px down |
 | changeview | ChangeView(null, 2400, null, false) |
 | sv-wheel, sv-flick | Wheel notch and touch flick on a MUXC ScrollView |
-| flick-blocked | Touch flick; the UI thread sleeps 200 ms during inertia while a sampler thread reads back a viewport column |
+| flick-blocked | Touch flick; the UI thread sleeps 200 ms during inertia while a sampler thread reads back a viewport column. Run with `WINUI_IMMEDIATE_OFFTHREAD_SCROLL` off and on |
+| overpan | Touch drag of a ScrollViewer past its top extent, then release; the gutter above row 0 is read back from the screen (`overpan-screen` trajectory, `OverpanMaxPx`) |
+| sv-overpan | The same on a MUXC ScrollView |
 
 ### Running
 
@@ -1356,6 +1358,11 @@ WINUI_IMMEDIATE_STATS), C:\mux-ir\analyze-s33.ps1 (fidelity, summary.json), C:\m
 - **Update Hz / p95 interval**: offset updates per second and the p95 interval during motion.
 - **Motion / idle CPU**: process CPU ms/s during motion and during the 1.5 s idle.
 - **DManip updates**: Update calls during motion and after settle (native log).
+- **Blit / repaint frames**: motion frames that scrolled by blit vs repainted the viewport (stats file).
+- **Bounce**: the screen-sampled gutter compared with every Composition run; max deviation raw and after the best
+  0-64 ms shift, and the peak gutter difference in px.
+- **Blocked screen changes**: screen samples that changed during the 200 ms UI block, out of the samples taken (each
+  readback takes ~50 ms, so 4-7 fit).
 
 ### Results
 
@@ -1405,3 +1412,31 @@ and two F10 transition pages fail in the immediate modes by timing; the baseline
 
 The first full run (coverage-dmanip) crashed with 0xC000027B at shutdown on the seven ScrollPresenter pages. This was
 fixed by detaching the hit-test proxies when the island is removed.
+
+### Scroll gaps results
+
+Branch `user/neeverma/immediate-rendering-scrollgaps`. The full report is `C:\mux-ir\results\scroll-gaps-s33.html`; the
+per-step data is `scroll-gaps-s33-data.csv`. S33 ran with 3 repetitions per mode (median) on the console session with OS
+animations on, once with the opt-in off (`scrollgaps-final-off`) and once with `WINUI_IMMEDIATE_OFFTHREAD_SCROLL=1`
+(`scrollgaps-final-on`). This session ran at ~55 Hz, while the earlier DManip results ran at ~32 Hz, so compare CPU only
+against Composition in the same run.
+
+| Gap | Target | Result (G = GDI+, D = D2D-SW) |
+|---|---|---|
+| 2 Start latency | Lag ≤8 ms vs Comp; PgDn / wheel / BringIntoView raw fidelity ≥95% | Partly met. Lag 24–36 → 0–12 ms. Raw PgDn 41/38 → 74/77 %, wheel-3 17/17 → 83/70 %, BringIntoView 68/71 → 71/81 %. Comp's own wheel-3 raw fidelity across runs is 71–75 % |
+| 5 GDI+ ScrollView flick CPU | Within 20 % of Comp | Met. 313 vs 277 ms/s (opt-in off), 312 vs 379 (on); was 499 vs 171. 80–83 blit frames; fidelity 97–100 % |
+| 4 Proxy coverage | Wheel and flick under perspective, hand-off transform and windowed popup | Met. The three F9 proxy pages pass in all modes |
+| 3 Overpan bounce | Within 2 px of Comp | Missed, within noise. Max deviation after shift: ScrollViewer 8.3 / 10.6 px, ScrollView 18.8 / 27.1 px, against Comp-vs-Comp 8.0 / 13.7 |
+| 1 Blocked UI thread | ≥5/7 screen samples move | Partly met (opt-in). 4/5 in G and D (Comp 4/5); 0/5 and 0/4 with it off |
+
+- **Native and kit tests.** `C:\mux-ir\validate-branch.ps1 -Backend scrollgaps -TestFilter 'ImmediateRenderingPolicyTests::*' -Mux -Stage -Kit`:
+  35/35 native tests and 126 kit tests passed (0 failed, 1 skipped). After the windowed popup fix, `-Mux -Stage` gave 35/35.
+- **Coverage.** `Run-Coverage.ps1 -Pages '*,!F9*' -Results C:\mux-ir\results\coverage-scrollgaps-final -DeleteBmps`
+  (animations off): 180/180 in each mode. F9 with animations on: 22/22 in each mode (`coverage-scrollgaps-f9-animations-fix`).
+  - The first F9 run crashed `ScrollView-Proxy-WindowedPopup` with 0xC000027B (RO_E_CLOSED) in GDI+ and D2D-SW. The hand-off visual was still parented under the popup's island when that island disposed it. Fix: `CPopup::ReleaseDCompResourcesForWindowedPopup` now removes the popup's hit proxies.
+  - Popup and windowing pages rerun with the fix (`coverage-scrollgaps-popupfix`): 27/27 in each mode.
+- **Sanity subset** (opt-in off; `Run-RenderBench.ps1 -Modes gdiplus,d2d-sw -InputMode programmatic -Quick`; S3, S4 and S8 with 2 repetitions, S1, S23 and S24 with 1; DManip bench vs this branch, `C:\mux-ir\results\scrollgaps-sanity`). All 44 gates pass. Most cells are within ±1 MB, but the <1 MB budget is **missed** in four cells (steady median):
+  - Gallery D2D-SW +5.3 MB. This is consistent across 5 runs after the change (91.1–92.6 vs 85.8–86.6 before), while peak dropped 105.9 → 100.8. The `WINUI_IMMEDIATE_STATS` paint, damage and full-frame totals match the DManip build to within 2 %. The cause was not isolated.
+  - DataGrid D2D-SW +2.2 MB. The per-run ranges overlap.
+  - Inbox GDI+ +1.9 MB, from one outlier run.
+  - AppShell GDI+ +1.2 MB.
