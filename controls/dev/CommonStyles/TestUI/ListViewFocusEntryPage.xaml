@@ -11,6 +11,22 @@
                 <Button Content="Second button" />
             </StackPanel>
         </DataTemplate>
+        <DataTemplate x:Key="FocusEntryListTemplate">
+            <ListView x:Name="FocusEntryList" Width="600" Height="150" HorizontalAlignment="Left"
+                      Padding="0" BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                      ScrollViewer.HorizontalScrollMode="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollMode="Disabled"
+                      ShowsScrollingPlaceholders="False">
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Vertical" MaximumRowsOrColumns="1"
+                                       ItemWidth="200" ItemHeight="100" CacheLength="0" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            </ListView>
+        </DataTemplate>
     </local:TestPage.Resources>
     <StackPanel Spacing="8">
         <TextBlock Text="Reset, select and position item 11, then Tab or Shift+Tab into the list. Focus must target the selected item without scrolling another item first. The usual focus padding still applies."
@@ -43,20 +59,7 @@
             <Button x:Name="FocusListFromCode" Content="Focus list from code" Click="FocusListFromCode_Click" />
             <Button x:Name="BeforeListFocusTarget" Content="Before list" Click="LeaveListFocusTarget_Click" />
         </StackPanel>
-        <ListView x:Name="FocusEntryList" Width="600" Height="150" HorizontalAlignment="Left"
-                  Padding="0" BorderThickness="0"
-                  ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                  ScrollViewer.HorizontalScrollMode="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                  ScrollViewer.VerticalScrollMode="Disabled"
-                  ShowsScrollingPlaceholders="False">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsWrapGrid Orientation="Vertical" MaximumRowsOrColumns="1"
-                                   ItemWidth="200" ItemHeight="100" CacheLength="0" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-        </ListView>
+        <Border x:Name="FocusEntryListHost" HorizontalAlignment="Left" />
         <Button x:Name="AfterListFocusTarget" Content="After list" Click="LeaveListFocusTarget_Click" />
         <TextBlock Text="Offset / offset changes / offset when an item got focus / offset history / selected index / focused index" />
         <StackPanel Orientation="Horizontal" Spacing="16">
@@ -67,6 +70,7 @@
             <TextBlock x:Name="FocusEntrySelectedIndex" Text="-1" />
             <TextBlock x:Name="FocusEntryFocusedIndex" Text="-1" />
             <TextBlock x:Name="FocusEntryFocusedElementType" Text="" />
+            <TextBlock x:Name="FocusEntryListEverFocused" Text="False" />
         </StackPanel>
     </StackPanel>
 </local:TestPage>
