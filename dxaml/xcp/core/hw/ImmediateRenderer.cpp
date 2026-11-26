@@ -4516,6 +4516,16 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         {
             ownDamage.push_back(b.rect);
         }
+        if (statsFile && GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS_DAMAGE", nullptr, 0) != 0)
+        {
+            // ---- scrollgaps ---- diagnostic: every raw damage rect before coalescing.
+            fprintf(statsFile, "# raw %zu:", damage.size());
+            for (const RectF& r : damage)
+            {
+                fprintf(statsFile, " %.0f,%.0f,%.0f,%.0f", r.left, r.top, r.right, r.bottom);
+            }
+            fprintf(statsFile, "\n");
+        }
         if (!UnionPresentedDamage())
         {
             CoalesceDamage(damage, c_maxDamageRects);
