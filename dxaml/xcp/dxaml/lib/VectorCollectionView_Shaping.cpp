@@ -627,19 +627,30 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
     if (!spSort->comparer.IsEmpty())
     {
-        // A CustomSort that fails ends the sort and the recompute; the previous output stays.
-        HRESULT hrCompare = S_OK;
+        // A CustomSort that fails, or that the sort finds inconsistent, ends the sort and the recompute; the previous
+        // output stays. The SortDescriptions compare cached keys with a total order (CompareSortKeys, then the
+        // unique source index), so they keep std::stable_sort; app code can make the order inconsistent only through
+        // a CustomSort, which takes the bounds-safe sort.
         const auto& sort = *spSort;
-        std::stable_sort(entries.begin(), entries.end(), [&sort, &hrCompare](const Entry& left, const Entry& right)
+        if (sort.comparer.HasCustomSort())
         {
-            int result = 0;
-            if (SUCCEEDED(hrCompare))
+            IFC_RETURN(SafeStableSort(entries, [&sort](const Entry& left, const Entry& right, bool* pIsBefore) -> HRESULT
             {
-                hrCompare = sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result);
-            }
-            return SUCCEEDED(hrCompare) && result < 0;
-        });
-        IFC_RETURN(hrCompare);
+                int result = 0;
+                IFC_RETURN(sort.comparer.Compare(left.item.Get(), nullptr, left.sourceIndex, right.item.Get(), nullptr, right.sourceIndex, &result));
+                *pIsBefore = result < 0;
+                return S_OK;
+            }));
+        }
+        else
+        {
+            std::stable_sort(entries.begin(), entries.end(), [&sort](const Entry& left, const Entry& right)
+            {
+                int result = 0;
+                VERIFYHR(sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result));
+                return result < 0;
+            });
+        }
     }
 
     if (!spRoot)

@@ -1147,19 +1147,36 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
 
                 HRESULT hrCompare = S_OK;
                 const auto& sort = *spSort;
-                auto isBefore = [&sort, &hrCompare](const Entry& left, const Entry& right)
+                auto compareEntries = [&sort](const Entry& left, const Entry& right, bool* pIsBefore) -> HRESULT
                 {
                     int result = 0;
+                    IFC_RETURN(sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result));
+                    *pIsBefore = result < 0;
+                    return S_OK;
+                };
+                auto isBefore = [&compareEntries, &hrCompare](const Entry& left, const Entry& right)
+                {
+                    bool result = false;
                     if (SUCCEEDED(hrCompare))
                     {
-                        hrCompare = sort.comparer.Compare(left.item.Get(), sort.keys.At(left.slot), left.sourceIndex, right.item.Get(), sort.keys.At(right.slot), right.sourceIndex, &result);
+                        hrCompare = compareEntries(left, right, &result);
                     }
-                    return SUCCEEDED(hrCompare) && result < 0;
+                    return SUCCEEDED(hrCompare) && result;
                 };
+                // A CustomSort runs app code, so its order may be inconsistent: it takes the bounds-safe sort. The
+                // SortDescriptions compare cached keys with a total order, so they keep std::stable_sort.
+                const bool isAppOrder = sort.comparer.HasCustomSort();
 
                 if (isSorting)
                 {
-                    std::stable_sort(entries.begin(), entries.end(), isBefore);
+                    if (isAppOrder)
+                    {
+                        IFC_RETURN(SafeStableSort(entries, compareEntries));
+                    }
+                    else
+                    {
+                        std::stable_sort(entries.begin(), entries.end(), isBefore);
+                    }
                 }
                 else
                 {
@@ -1177,10 +1194,27 @@ _Check_return_ HRESULT VectorCollectionView::RestoreLiveShaping()
                         const auto landingAt = std::upper_bound(entries.begin(), joining, *it, isBefore) - entries.begin();
                         joinerSlots.emplace_back(static_cast<size_t>(landingAt), static_cast<size_t>(it - entries.begin()));
                     }
-                    std::stable_sort(joinerSlots.begin(), joinerSlots.end(), [&](const auto& left, const auto& right)
+                    IFC_RETURN(hrCompare);
+                    auto compareJoiners = [&](const std::pair<size_t, size_t>& left, const std::pair<size_t, size_t>& right, bool* pIsBefore) -> HRESULT
                     {
-                        return left.first != right.first ? left.first < right.first : isBefore(entries[left.second], entries[right.second]);
-                    });
+                        if (left.first != right.first)
+                        {
+                            *pIsBefore = left.first < right.first;
+                            return S_OK;
+                        }
+                        return compareEntries(entries[left.second], entries[right.second], pIsBefore);
+                    };
+                    if (isAppOrder)
+                    {
+                        IFC_RETURN(SafeStableSort(joinerSlots, compareJoiners));
+                    }
+                    else
+                    {
+                        std::stable_sort(joinerSlots.begin(), joinerSlots.end(), [&](const auto& left, const auto& right)
+                        {
+                            return left.first != right.first ? left.first < right.first : isBefore(entries[left.second], entries[right.second]);
+                        });
+                    }
 
                     std::vector<Entry> merged;
                     merged.reserve(entries.size());

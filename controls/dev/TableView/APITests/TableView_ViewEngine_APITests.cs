@@ -1084,6 +1084,88 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSort that is not an order (random results), or that changes the values it compares while the view sorts, never corrupts the view: on the recompute, the live restore, a group's CustomSort and the live filter's joiners the view either sorts or reports the inconsistency, and it always holds each accepted item exactly once.")]
+        public void VerifyInconsistentCustomSortKeepsViewIntact()
+        {
+            var random = new Random(12654);
+            CollectionViewComparer randomOrder = (left, right) => random.Next(3) - 1;
+            CollectionViewComparer mutatingOrder = (left, right) =>
+            {
+                var leftRow = (EngineRow)left;
+                leftRow.Score = random.Next(50);
+                return leftRow.Score.CompareTo(((EngineRow)right).Score);
+            };
+
+            foreach (var count in new[] { 2, 3, 17, 33, 64, 257, 1000 })
+            {
+                foreach (var mode in new[] { "random", "mutating" })
+                {
+                    var context = $"{mode} comparer over {count} rows";
+                    var comparer = mode == "random" ? randomOrder : mutatingOrder;
+                    ObservableCollection<EngineRow> rows = null;
+                    CollectionViewSource sorted = null;
+                    CollectionViewSource grouped = null;
+                    CollectionViewSource filtered = null;
+                    UnhandledErrors unhandled = null;
+                    RunOnUIThread.Execute(() =>
+                    {
+                        rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, count).Select(i => new EngineRow(i, $"r{i}", random.Next(50), (i % 4).ToString())));
+                        unhandled = new UnhandledErrors();
+
+                        sorted = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
+                        sorted.LiveSortingProperties.Add("Score");
+                        var thrown = ThrownTypeName(() => ((ICollectionViewShaping)sorted.View).CustomSort = comparer);
+                        Log.Comment($"{context}: setting the CustomSort: {thrown}; reported: {unhandled.Messages.Count}");
+                        VerifyHoldsEachRowOnce(sorted.View, rows, true, $"{context}, recompute");
+                        if (mode == "random" && count >= 64)
+                        {
+                            Verify.IsTrue(thrown != "no exception" || unhandled.Messages.Count > 0, $"{context}: the inconsistent order is reported.");
+                        }
+
+                        grouped = new CollectionViewSource { Source = rows };
+                        var team = new PropertyGroupDescription("Team") { CustomSort = randomOrder };
+                        Log.Comment($"{context}: grouping with a random group order: {ThrownTypeName(() => grouped.GroupDescriptions.Add(team))}");
+                        VerifyHoldsEachRowOnce(grouped.View, rows, true, $"{context}, group order");
+
+                        filtered = new CollectionViewSource { Source = rows, IsLiveFilteringRequested = true };
+                        filtered.LiveFilteringProperties.Add("Score");
+                        var filteredShaping = (ICollectionViewShaping)filtered.View;
+                        Log.Comment($"{context}: filtering: {ThrownTypeName(() => { filteredShaping.Filter = item => ((EngineRow)item).Score >= 25; filteredShaping.CustomSort = randomOrder; })}");
+
+                        // Live restores: the sorted view re-sorts the edited rows, the filtered view takes the rows that
+                        // now pass among the kept ones (joiners).
+                        foreach (var row in rows.Where((row, index) => index % 3 == 0).ToList())
+                        {
+                            row.Score = 25 + random.Next(25);
+                        }
+                    });
+                    IdleSynchronizer.Wait();
+                    RunOnUIThread.Execute(() =>
+                    {
+                        unhandled.Dispose();
+                        Log.Comment($"{context}: reported after the live restores: {unhandled.Messages.Count}");
+                        VerifyHoldsEachRowOnce(sorted.View, rows, true, $"{context}, live sort");
+                        VerifyHoldsEachRowOnce(grouped.View, rows, true, $"{context}, live group order");
+                        VerifyHoldsEachRowOnce(filtered.View, rows, false, $"{context}, live filter");
+                    });
+                }
+            }
+        }
+
+        // The view holds no row twice and nothing outside the source; an unfiltered view holds every row. (A filtered
+        // view is not checked against the filter: the comparers edit scores, and a restore they fail keeps its output.)
+        private static void VerifyHoldsEachRowOnce(ICollectionView view, IList<EngineRow> rows, bool isComplete, string context)
+        {
+            var held = view.Select(item => ((EngineRow)item).Id).ToList();
+            Verify.AreEqual(held.Count, held.Distinct().Count(), $"{context}: no row is held twice.");
+            Verify.IsTrue(held.All(id => rows.Any(row => row.Id == id)), $"{context}: every held row is in the source.");
+            if (isComplete)
+            {
+                Verify.AreEqual(rows.Count, held.Count, $"{context}: every row is held.");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a handler that refreshes the view on each of its changes ends after a bounded number of recomputes, without an exception reaching the source.")]
         public void VerifyEndlessRefreshFromHandlerIsBounded()
         {

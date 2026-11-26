@@ -1366,6 +1366,89 @@ namespace DirectUI::ShapingEngine
         std::wstring m_localeName;
     };
 
+    // A stable merge sort for orders that call app code (a CustomSort, a group's CustomSort). std::stable_sort assumes
+    // a strict weak ordering and can step outside the range when the comparer is inconsistent (random results, items
+    // that change while it runs); this sort reads and writes only inside [0, size) whatever the comparer returns, so
+    // such a comparer gives some permutation of the items, never a corrupted range. isBefore(left, right, &result)
+    // can fail: the first failure ends the sort. A final pass checks each pair of neighbours and reports an order it
+    // finds inconsistent as E_INVALIDARG (WPF: InvalidOperationException from Array.Sort). On failure the items are
+    // unchanged. Already-ordered runs are joined with one comparison, so a sorted input costs about 2n comparisons.
+    template <typename T, typename IsBefore>
+    _Check_return_ HRESULT SafeStableSort(_Inout_ std::vector<T>& items, IsBefore&& isBefore)
+    {
+        const size_t count = items.size();
+        if (count < 2)
+        {
+            return S_OK;
+        }
+
+        std::vector<size_t> order(count);
+        std::vector<size_t> merged(count);
+        for (size_t i = 0; i < count; ++i)
+        {
+            order[i] = i;
+        }
+
+        for (size_t width = 1; width < count; width = (width <= count / 2) ? width * 2 : count)
+        {
+            for (size_t begin = 0; begin < count; begin += std::min(2 * width, count - begin))
+            {
+                const size_t middle = begin + std::min(width, count - begin);
+                const size_t end = middle + std::min(width, count - middle);
+                size_t left = begin;
+                size_t right = middle;
+                size_t out = begin;
+                if (right < end)
+                {
+                    bool isOutOfOrder = false;
+                    IFC_RETURN(isBefore(items[order[right]], items[order[right - 1]], &isOutOfOrder));
+                    if (!isOutOfOrder)
+                    {
+                        left = middle;
+                        right = end;
+                        std::copy(order.begin() + begin, order.begin() + end, merged.begin() + begin);
+                        out = end;
+                    }
+                }
+                while (left < middle && right < end)
+                {
+                    bool isRightFirst = false;
+                    IFC_RETURN(isBefore(items[order[right]], items[order[left]], &isRightFirst));
+                    merged[out++] = isRightFirst ? order[right++] : order[left++];
+                }
+                while (left < middle)
+                {
+                    merged[out++] = order[left++];
+                }
+                while (right < end)
+                {
+                    merged[out++] = order[right++];
+                }
+            }
+            std::swap(order, merged);
+        }
+
+        for (size_t i = 1; i < count; ++i)
+        {
+            bool isOutOfOrder = false;
+            IFC_RETURN(isBefore(items[order[i]], items[order[i - 1]], &isOutOfOrder));
+            if (isOutOfOrder)
+            {
+                static constexpr WCHAR c_message[] = L"The comparer returned inconsistent results: it does not define an order, or the items changed while the view was sorted.";
+                IFC_RETURN(ErrorHelper::OriginateError(E_INVALIDARG, ARRAYSIZE(c_message) - 1, c_message));
+            }
+        }
+
+        std::vector<T> sorted;
+        sorted.reserve(count);
+        for (const size_t index : order)
+        {
+            sorted.push_back(std::move(items[index]));
+        }
+        items = std::move(sorted);
+        return S_OK;
+    }
+
     // The decoded sort keys of the presented items, FieldCount per slot. An item keeps its slot while it moves,
     // so the incremental and live paths compare against cached keys and only the slot numbers move.
     class SortKeyStore
@@ -2351,17 +2434,15 @@ namespace DirectUI::ShapingEngine
                 entries.push_back(std::move(entry));
             }
 
-            HRESULT hrCompare = S_OK;
-            std::stable_sort(entries.begin(), entries.end(), [&groupSort, &hrCompare](const Entry& left, const Entry& right)
+            // Only group SortDescriptions reach here (IsGroupOrderVariable excludes a group CustomSort): cached keys
+            // with a total order (CompareSortKeys), no app code, so std::stable_sort cannot see an inconsistent order.
+            ASSERT(!groupSort.HasCustomSort());
+            std::stable_sort(entries.begin(), entries.end(), [&groupSort](const Entry& left, const Entry& right)
             {
                 int result = 0;
-                if (SUCCEEDED(hrCompare))
-                {
-                    hrCompare = groupSort.Compare(ctl::as_iinspectable(left.spGroup.Get()), left.keys.data(), 0, ctl::as_iinspectable(right.spGroup.Get()), right.keys.data(), 0, &result);
-                }
-                return SUCCEEDED(hrCompare) && result < 0;
+                VERIFYHR(groupSort.Compare(ctl::as_iinspectable(left.spGroup.Get()), left.keys.data(), 0, ctl::as_iinspectable(right.spGroup.Get()), right.keys.data(), 0, &result));
+                return result < 0;
             });
-            IFC_RETURN(hrCompare);
 
             bool isChanged = false;
             for (size_t i = 0; i < entries.size(); ++i)
