@@ -224,16 +224,13 @@ namespace ImmediateRenderingPolicy
 
     // Gap 1 (opt-in, WINUI_IMMEDIATE_OFFTHREAD_SCROLL=1): while the UI thread is blocked during DManip inertia, the render
     // thread translates the scroller's content, walked by the last UI frame with an overscan clip, along an extrapolated
-    // inertia curve. (DManip itself cannot be ticked off the UI thread: Update returns UI_E_WRONG_THREAD.)
+    // approach to DManip's inertia end. (DManip itself cannot be ticked off the UI thread: Update returns UI_E_WRONG_THREAD.)
     bool IsOffThreadScrollEnabled(_In_opt_z_ const wchar_t* value) noexcept;
     // The walk clip of a moving scroller's content (DIPs): the viewport grown by `extent` viewports on every side.
     RenderingBackend::RectF ComputeOffThreadOverscanClip(const RenderingBackend::RectF& viewport, float extent) noexcept;
-    // Velocity (DIPs/s) from the DManip translation change (dx, dy) between two walks `elapsedUs` apart. False when the
-    // interval is not frame-like (same frame or a stale sample) or the zoom changed by `zoomRatio`.
-    bool ComputeOffThreadVelocity(int64_t elapsedUs, float dx, float dy, float zoomRatio, _Out_ RenderingBackend::PointF* velocity) noexcept;
-    // Inertia displacement (DIPs, whole device pixels at `scale`) `elapsedSeconds` after a walk at `velocity`, with
-    // exponential velocity decay `decay` (1/s), clamped to ±(maxDx, maxDy) (the overscan).
-    void ComputeOffThreadInertiaDelta(RenderingBackend::PointF velocity, double elapsedSeconds, float decay, float maxDx, float maxDy,
+    // Inertia displacement (DIPs, whole device pixels at `scale`) `elapsedSeconds` after a walk that was `remaining` DIPs
+    // short of the inertia end: remaining (1 - e^(-decay t)), clamped to ±(maxDx, maxDy) (the overscan).
+    void ComputeOffThreadInertiaDelta(RenderingBackend::PointF remaining, double elapsedSeconds, float decay, float maxDx, float maxDy,
         float scale, _Out_ RenderingBackend::PointF* delta) noexcept;
 
     // ---- imaging ----

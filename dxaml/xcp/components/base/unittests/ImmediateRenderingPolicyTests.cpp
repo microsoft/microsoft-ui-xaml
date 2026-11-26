@@ -548,27 +548,22 @@ namespace ImmediateRenderingPolicyTests
 
     void PolicyTests::OffThreadInertiaExtrapolates()
     {
-        PointF v{ 99, 99 };
-        // Velocity (DIPs/s) from the transforms of two consecutive walks, only from frame-like intervals.
-        VERIFY_IS_TRUE(ComputeOffThreadVelocity(16000, 0, -40, 1, &v));
-        VERIFY_ARE_EQUAL(0.0f, v.x);
-        VERIFY_ARE_EQUAL(-2500.0f, v.y);
-        VERIFY_IS_FALSE(ComputeOffThreadVelocity(500, 0, -40, 1, &v));      // same frame
-        VERIFY_IS_FALSE(ComputeOffThreadVelocity(200000, 0, -40, 1, &v));   // stale sample
-        VERIFY_IS_FALSE(ComputeOffThreadVelocity(16000, 0, -40, 1.25f, &v)); // zooming is not a translation
-
         PointF d{ 99, 99 };
-        // Exponential velocity decay (DManip touch inertia decays at ~2/s): v/k (1 - e^-kt), whole device pixels.
-        ComputeOffThreadInertiaDelta({ 0, -2400 }, 0.33, 2.0f, 2000, 2000, 1.5f, &d);
-        const float expected = -2400.0f / 2.0f * (1.0f - std::exp(-0.66f));
+        // Exponential approach to DManip's inertia end: remaining (1 - e^-kt), whole device pixels. S33 touch flick:
+        // 562 of the remaining 1034 DIPs in 0.33 s (k ~ 2.4/s).
+        ComputeOffThreadInertiaDelta({ 0, -1034 }, 0.33, 2.4f, 2000, 2000, 1.5f, &d);
+        const float expected = -1034.0f * (1.0f - std::exp(-2.4f * 0.33f));
         VERIFY_ARE_EQUAL(0.0f, d.x);
         VERIFY_ARE_EQUAL(std::round(expected * 1.5f) / 1.5f, d.y);
-        VERIFY_IS_TRUE(d.y < -570 && d.y > -590);
+        VERIFY_IS_TRUE(d.y < -540 && d.y > -580);
+        // Converges on the end, never past it.
+        ComputeOffThreadInertiaDelta({ 0, -1034 }, 30, 2.4f, 2000, 2000, 1, &d);
+        VERIFY_ARE_EQUAL(-1034.0f, d.y);
         // Never further than the overscan, so the viewport never shows unwalked content.
-        ComputeOffThreadInertiaDelta({ 300, -2400 }, 1.0, 2.0f, 20, 500, 1, &d);
+        ComputeOffThreadInertiaDelta({ 300, -2400 }, 10, 2.4f, 20, 500, 1, &d);
         VERIFY_ARE_EQUAL(20.0f, d.x);
         VERIFY_ARE_EQUAL(-500.0f, d.y);
-        ComputeOffThreadInertiaDelta({ 0, -2400 }, 0, 2.0f, 500, 500, 1, &d);
+        ComputeOffThreadInertiaDelta({ 0, -2400 }, 0, 2.4f, 500, 500, 1, &d);
         VERIFY_ARE_EQUAL(0.0f, d.y);
     }
 

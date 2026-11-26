@@ -753,19 +753,7 @@ namespace ImmediateRenderingPolicy
         return RectF{ viewport.left - width * extent, viewport.top - height * extent, viewport.right + width * extent, viewport.bottom + height * extent };
     }
 
-    bool ComputeOffThreadVelocity(int64_t elapsedUs, float dx, float dy, float zoomRatio, _Out_ PointF* velocity) noexcept
-    {
-        *velocity = {};
-        if (elapsedUs < 4000 || elapsedUs > 100000 || std::fabs(zoomRatio - 1.0f) > 1e-4f)
-        {
-            return false;
-        }
-        velocity->x = dx * 1e6f / static_cast<float>(elapsedUs);
-        velocity->y = dy * 1e6f / static_cast<float>(elapsedUs);
-        return true;
-    }
-
-    void ComputeOffThreadInertiaDelta(PointF velocity, double elapsedSeconds, float decay, float maxDx, float maxDy,
+    void ComputeOffThreadInertiaDelta(PointF remaining, double elapsedSeconds, float decay, float maxDx, float maxDy,
         float scale, _Out_ PointF* delta) noexcept
     {
         *delta = {};
@@ -773,9 +761,9 @@ namespace ImmediateRenderingPolicy
         {
             return;
         }
-        const float travel = static_cast<float>((1.0 - std::exp(-decay * elapsedSeconds)) / decay);
-        const float dx = std::min(maxDx, std::max(-maxDx, velocity.x * travel));
-        const float dy = std::min(maxDy, std::max(-maxDy, velocity.y * travel));
+        const float progress = static_cast<float>(1.0 - std::exp(-decay * elapsedSeconds));
+        const float dx = std::min(maxDx, std::max(-maxDx, remaining.x * progress));
+        const float dy = std::min(maxDy, std::max(-maxDy, remaining.y * progress));
         delta->x = std::round(dx * scale) / scale;
         delta->y = std::round(dy * scale) / scale;
     }

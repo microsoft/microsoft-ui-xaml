@@ -566,17 +566,9 @@ namespace ImmediateRenderingDetail
             std::vector<Command> overscan;
             RectF viewport;          // DIPs, island space
             float maxDx = 0, maxDy = 0; // DIPs: the overscan beyond each edge
-            RenderingBackend::PointF velocity; // DIPs/s of the content when walked (DManip inertia)
+            RenderingBackend::PointF remaining; // DIPs from the walked position to DManip's inertia end
         };
         std::vector<OffThreadScroller> offThreadScrollers;
-        // DManip transform of each running/inertial scroller when walked (velocity for the next walk).
-        struct OffThreadSample
-        {
-            const void* viewport = nullptr;
-            int64_t qpc = 0;
-            float tx = 0, ty = 0, zoom = 1;
-        };
-        std::vector<OffThreadSample> offThreadSamples;
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -3753,36 +3745,23 @@ int ImmediateRenderer::BeginOffThreadScroller(
         return -1;
     }
     xref_ptr<IPALDirectManipulationCompositorService> compositorService;
-    if (FAILED(service->GetCompositorService(compositorService.ReleaseAndGetAddressOf())) || !compositorService)
+    if (status != XcpDMViewportInertia || FAILED(service->GetCompositorService(compositorService.ReleaseAndGetAddressOf())) || !compositorService)
     {
         return -1;
     }
-    bool inertial = false;
-    DisplayList::OffThreadSample sample;
-    float uncompressedZoom = 1, zoomY = 1;
-    if (FAILED(compositorService->GetCompositorContentTransform(compositorContent.get(), contentType, inertial, sample.tx, sample.ty,
-            uncompressedZoom, sample.zoom, zoomY)))
-    {
-        return -1;
-    }
-    sample.viewport = viewport;
-    sample.qpc = QpcMicroseconds();
-    list.offThreadSamples.push_back(sample);
     // Only inertia is extrapolated: while a finger or the wheel drives DManip, its input waits for the UI thread too.
-    if (status != XcpDMViewportInertia || m_previousOffThreadSamples == nullptr)
+    bool inertial = false;
+    float tx = 0, ty = 0, uncompressedZoom = 1, zoomX = 1, zoomY = 1;
+    float endX = 0, endY = 0, endZoom = 1;
+    if (FAILED(compositorService->GetCompositorContentTransform(compositorContent.get(), contentType, inertial, tx, ty,
+            uncompressedZoom, zoomX, zoomY))
+        || service->GetContentInertiaEndTransform(viewport, endX, endY, endZoom) != S_OK
+        || std::fabs(endZoom - zoomX) > 1e-4f * std::max(1.0f, zoomX))
     {
         return -1;
     }
     DisplayList::OffThreadScroller scroller;
-    const auto& previousSamples = m_previousOffThreadSamples->offThreadSamples;
-    const auto previous = std::find_if(previousSamples.begin(), previousSamples.end(),
-        [&](const DisplayList::OffThreadSample& s) { return s.viewport == sample.viewport; });
-    if (previous == previousSamples.end()
-        || !ImmediateRenderingPolicy::ComputeOffThreadVelocity(sample.qpc - previous->qpc, sample.tx - previous->tx, sample.ty - previous->ty,
-            previous->zoom > 0 ? sample.zoom / previous->zoom : 0, &scroller.velocity))
-    {
-        return -1;
-    }
+    scroller.remaining = { endX - tx, endY - ty };
     scroller.viewport = childCtx.clip;
     scroller.maxDx = (childCtx.clip.right - childCtx.clip.left) * c_offThreadOverscan;
     scroller.maxDy = (childCtx.clip.bottom - childCtx.clip.top) * c_offThreadOverscan;
@@ -4378,8 +4357,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         DisplayList previous = std::move(state.previousWalk);
         state.previousWalk = DisplayList();
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
-        m_previousOffThreadSamples = &previous; // ---- scrollgaps ---- gap 1
-        auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; m_previousOffThreadSamples = nullptr; });
+        auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
         m_pendingFallback = nullptr;
         std::vector<std::pair<std::wstring, std::wstring>> deferredUnsupported;
         m_deferredUnsupported = &deferredUnsupported;

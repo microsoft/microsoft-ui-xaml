@@ -36,7 +36,7 @@ namespace II = ImmediateIndependent;
 namespace
 {
     constexpr uint32_t c_offThreadStillPeriods = 8;    // ---- scrollgaps ---- render periods a still scroller keeps ticking
-    constexpr float c_offThreadInertiaDecay = 2.0f;    // ---- scrollgaps ---- 1/s: DManip touch inertia velocity decay (S33 fit)
+    constexpr float c_offThreadInertiaDecay = 2.4f;    // ---- scrollgaps ---- 1/s: approach to DManip's inertia end (S33 touch flick fit)
 constexpr int64_t c_uiIdleMicroseconds = 34000;   // render thread presents once the UI thread missed ~2 frames
     constexpr auto c_renderThreadPeriod = std::chrono::milliseconds(16);
     constexpr uint32_t c_curveSamples = 64;
@@ -666,8 +666,8 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
 
     // ---- scrollgaps ---- gap 1: the UI thread is blocked during DManip inertia. DManip cannot be ticked here (Update
     // returns UI_E_WRONG_THREAD off the thread that created its manager), so each scroller's overscan commands are
-    // translated along the inertia curve extrapolated from its velocity when walked. The next UI frame repaints at
-    // DManip's actual position.
+    // translated along an exponential approach to DManip's inertia end, from where the last walk painted. The next UI
+    // frame repaints at DManip's actual position.
     if (!list.offThreadScrollers.empty())
     {
         if (independent.offThreadDeltas.size() != list.offThreadScrollers.size())
@@ -679,11 +679,11 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
         {
             const DisplayList::OffThreadScroller& scroller = list.offThreadScrollers[si];
             RenderingBackend::PointF d{};
-            ImmediateRenderingPolicy::ComputeOffThreadInertiaDelta(scroller.velocity, elapsed, c_offThreadInertiaDecay,
+            ImmediateRenderingPolicy::ComputeOffThreadInertiaDelta(scroller.remaining, elapsed, c_offThreadInertiaDecay,
                 scroller.maxDx, scroller.maxDy, scale, &d);
             if (FILE* log = GetOffThreadLogFile())
             {
-                fprintf(log, "rt %lld %lu %.1f %.1f %.1f\n", static_cast<long long>(now), GetCurrentThreadId(), d.x, d.y, scroller.velocity.y);
+                fprintf(log, "rt %lld %lu %.1f %.1f %.1f\n", static_cast<long long>(now), GetCurrentThreadId(), d.x, d.y, scroller.remaining.y);
                 fflush(log);
             }
             RenderingBackend::PointF& last = independent.offThreadDeltas[si];
