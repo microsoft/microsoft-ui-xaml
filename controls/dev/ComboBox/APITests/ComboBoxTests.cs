@@ -344,6 +344,348 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        // Scenario: Open non-editable and editable ComboBoxes with 256 rows of alternating heights and growing widths,
+        //   scroll down past the initial realized range, adjust MaxDropDownHeight while scrolled (including expanding
+        //   into uncached indices), and verify live Visibility.Collapsed and item-replacement cache invalidation.
+        // Expected: Scrolling to wider rows widens the popup without oscillating or jumping PopupBorder height,
+        //   changing MaxDropDownHeight while scrolled converges without triggering AG_E_LAYOUT_CYCLE, and live
+        //   visibility or item-replacement changes still resize the popup.
+        // Failure means: ComboBox::GetItemLayoutHeight re-entered an oscillating MaxHeight feedback loop when items
+        //   near SelectedIndex were virtualized out, or failed to invalidate cached heights on item updates.
+        [TestMethod]
+        public void VerifyScrolledComboBoxWithVaryingItemSizesDoesNotLayoutCycle()
+        {
+            ComboBox comboBox = null;
+            Border popupBorder = null;
+            ScrollViewer popupScrollViewer = null;
+            double initialActualWidth = 0.0;
+            double initialActualHeight = 0.0;
+            double initialMaxHeight = 0.0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                comboBox = new ComboBox
+                {
+                    Width = 240,
+                    MaxDropDownHeight = 385,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(20),
+                };
+
+                for (int i = 0; i < 256; i++)
+                {
+                    var border = new Border
+                    {
+                        Height = (i % 2 == 0) ? 14.0 : 40.0,
+                        Width = 200.0 + i,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Child = new TextBlock
+                        {
+                            Text = $"Row {i}",
+                            VerticalAlignment = VerticalAlignment.Center,
+                        },
+                    };
+                    comboBox.Items.Add(border);
+                }
+
+                comboBox.SelectedIndex = 0;
+                Content = comboBox;
+                Content.UpdateLayout();
+                comboBox.IsDropDownOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(comboBox.XamlRoot).Last();
+                popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
+                popupScrollViewer = TestUtilities.FindDescendents<ScrollViewer>(popup).Where(e => e.Name == "ScrollViewer").Single();
+
+                initialActualWidth = popupBorder.ActualWidth;
+                initialActualHeight = popupBorder.ActualHeight;
+                initialMaxHeight = popupBorder.MaxHeight;
+                Log.Comment($"Initial open: ActualWidth={initialActualWidth}, ActualHeight={initialActualHeight}, MaxHeight={initialMaxHeight}");
+                Verify.IsGreaterThan(initialActualHeight, 100.0);
+
+                // Exercise both odd and even visible-start parities so whichever parity aligns with
+                // CarouselPanel's before-buffer boundary triggers the A <-> B feedback loop when unfixed.
+                Verify.IsTrue(popupScrollViewer.ChangeView(null, 25.55, null, true));
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(popupScrollViewer.ChangeView(null, 26.55, null, true));
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"After scroll to 26.55: Offset={popupScrollViewer.VerticalOffset}, ActualWidth={popupBorder.ActualWidth}, ActualHeight={popupBorder.ActualHeight}, MaxHeight={popupBorder.MaxHeight}");
+                Verify.IsTrue(comboBox.IsDropDownOpen);
+                Verify.IsTrue(popupScrollViewer.VerticalOffset >= 20.0, $"Expected VerticalOffset >= 20, got {popupScrollViewer.VerticalOffset}");
+                Verify.IsNull(comboBox.ContainerFromIndex(2), "Item 2 beyond the focused/next-focusable pair should be virtualized out after scrolling to offset 26.55.");
+                Verify.IsGreaterThan(popupBorder.ActualWidth, initialActualWidth, "Scrolling to wider rows should still widen the popup.");
+                Verify.AreEqual(initialMaxHeight, popupBorder.MaxHeight, "Scrolling to wider rows must not jump PopupBorder.MaxHeight.");
+                Verify.IsLessThan(global::System.Math.Abs(popupBorder.ActualHeight - initialActualHeight), 1.0,
+                    $"Expected stable ActualHeight={initialActualHeight}, got {popupBorder.ActualHeight}");
+
+                // Changing MaxDropDownHeight while scrolled down (with initial items virtualized out) must still
+                // update popup height cleanly without entering a layout cycle.
+                comboBox.MaxDropDownHeight = 240.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"After MaxDropDownHeight=240 while scrolled: ActualHeight={popupBorder.ActualHeight}, MaxHeight={popupBorder.MaxHeight}");
+                Verify.IsTrue(comboBox.IsDropDownOpen);
+                Verify.IsLessThan(popupBorder.ActualHeight, 280.0, "Updated MaxDropDownHeight should constrain the open popup.");
+
+                comboBox.IsDropDownOpen = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Editable ComboBox variant with alternating heights and growing widths.
+            ComboBox editableComboBox = null;
+            RunOnUIThread.Execute(() =>
+            {
+                editableComboBox = new ComboBox
+                {
+                    Width = 240,
+                    MaxDropDownHeight = 385,
+                    IsEditable = true,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(20),
+                };
+
+                for (int i = 0; i < 256; i++)
+                {
+                    var border = new Border
+                    {
+                        Height = (i % 2 == 0) ? 14.0 : 40.0,
+                        Width = 200.0 + i,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Child = new TextBlock
+                        {
+                            Text = $"EditableRow {i}",
+                            VerticalAlignment = VerticalAlignment.Center,
+                        },
+                    };
+                    editableComboBox.Items.Add(border);
+                }
+
+                Content = editableComboBox;
+                Content.UpdateLayout();
+                editableComboBox.IsDropDownOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(editableComboBox.XamlRoot).Last();
+                popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
+                popupScrollViewer = TestUtilities.FindDescendents<ScrollViewer>(popup).Where(e => e.Name == "ScrollViewer").Single();
+                initialActualWidth = popupBorder.ActualWidth;
+                initialMaxHeight = popupBorder.MaxHeight;
+
+                Verify.IsTrue(popupScrollViewer.ChangeView(null, 25.55, null, true));
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(editableComboBox.IsDropDownOpen);
+                Verify.IsNull(editableComboBox.ContainerFromIndex(0), "Editable item 0 should be virtualized out after scrolling.");
+                Verify.IsGreaterThan(popupBorder.ActualWidth, initialActualWidth, "Editable popup should widen when scrolling to wider rows.");
+                Verify.AreEqual(initialMaxHeight, popupBorder.MaxHeight, "Editable popup MaxHeight should stay stable while scrolling.");
+
+                editableComboBox.IsDropDownOpen = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Scrolled expansion with alternating-height unrealized items: open short so only the first few items
+            // are cached, scroll far enough that items 2..14 are virtualized out, then expand MaxDropDownHeight
+            // across both scroll parities so uncached indices exercise the latched fallback height without cycling.
+            ComboBox scrolledExpandComboBox = null;
+            RunOnUIThread.Execute(() =>
+            {
+                scrolledExpandComboBox = new ComboBox
+                {
+                    Width = 240,
+                    MaxDropDownHeight = 140,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(20),
+                };
+
+                for (int i = 0; i < 256; i++)
+                {
+                    var border = new Border
+                    {
+                        Height = (i % 2 == 0) ? 14.0 : 40.0,
+                        Width = 200.0 + i,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        Child = new TextBlock
+                        {
+                            Text = $"ExpandRow {i}",
+                            VerticalAlignment = VerticalAlignment.Center,
+                        },
+                    };
+                    scrolledExpandComboBox.Items.Add(border);
+                }
+
+                scrolledExpandComboBox.SelectedIndex = 0;
+                Content = scrolledExpandComboBox;
+                Content.UpdateLayout();
+                scrolledExpandComboBox.IsDropDownOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(scrolledExpandComboBox.XamlRoot).Last();
+                popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
+                popupScrollViewer = TestUtilities.FindDescendents<ScrollViewer>(popup).Where(e => e.Name == "ScrollViewer").Single();
+                initialActualHeight = popupBorder.ActualHeight;
+
+                Verify.IsTrue(popupScrollViewer.ChangeView(null, 40.5, null, true));
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsNull(scrolledExpandComboBox.ContainerFromIndex(2), "Item 2 beyond the focused/next-focusable pair should be virtualized out at offset 40.5.");
+                Verify.IsNull(scrolledExpandComboBox.ContainerFromIndex(14), "Item 14 should be unrealized at offset 40.5.");
+
+                scrolledExpandComboBox.MaxDropDownHeight = 385.0;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            double expandedMaxHeight = 0.0;
+            double expandedActualWidth = 0.0;
+            RunOnUIThread.Execute(() =>
+            {
+                expandedMaxHeight = popupBorder.MaxHeight;
+                expandedActualWidth = popupBorder.ActualWidth;
+                Log.Comment($"After scrolled MaxDropDownHeight expansion at 40.5: InitialHeight={initialActualHeight}, ExpandedHeight={popupBorder.ActualHeight}, MaxHeight={expandedMaxHeight}, Width={expandedActualWidth}");
+                Verify.IsTrue(scrolledExpandComboBox.IsDropDownOpen);
+                Verify.IsGreaterThan(popupBorder.ActualHeight, initialActualHeight + 100.0,
+                    "Expanding MaxDropDownHeight while scrolled should still grow the popup.");
+
+                // Scroll to the opposite parity (45.5 vs 40.5) and wider rows while expanded to verify
+                // the latched fallback height keeps MaxHeight stable across width-driven ArrangePopup calls.
+                Verify.IsTrue(popupScrollViewer.ChangeView(null, 45.5, null, true));
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"After opposite-parity scroll to 45.5: ActualWidth={popupBorder.ActualWidth}, MaxHeight={popupBorder.MaxHeight}");
+                Verify.IsTrue(scrolledExpandComboBox.IsDropDownOpen);
+                Verify.IsGreaterThan(popupBorder.ActualWidth, expandedActualWidth,
+                    "Opposite-parity scroll should widen the expanded popup.");
+                Verify.AreEqual(expandedMaxHeight, popupBorder.MaxHeight,
+                    "Latched fallback height should prevent MaxHeight jumps across opposite-parity scrolls.");
+
+                scrolledExpandComboBox.IsDropDownOpen = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+
+            // Dynamic item visibility change while open and cache invalidation across close/replace/reopen.
+            ComboBox dynamicComboBox = null;
+            ComboBoxItem itemToCollapse1 = null;
+            ComboBoxItem itemToCollapse2 = null;
+            RunOnUIThread.Execute(() =>
+            {
+                dynamicComboBox = new ComboBox
+                {
+                    Width = 240,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    Margin = new Thickness(20),
+                };
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var item = new ComboBoxItem { Content = $"DynamicItem {i}" };
+                    if (i == 3) { itemToCollapse1 = item; }
+                    if (i == 4) { itemToCollapse2 = item; }
+                    dynamicComboBox.Items.Add(item);
+                }
+
+                dynamicComboBox.SelectedIndex = 0;
+                Content = dynamicComboBox;
+                Content.UpdateLayout();
+                dynamicComboBox.IsDropDownOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(dynamicComboBox.XamlRoot).Last();
+                popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
+                initialActualHeight = popupBorder.ActualHeight;
+
+                itemToCollapse1.Visibility = Visibility.Collapsed;
+                itemToCollapse2.Visibility = Visibility.Collapsed;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment($"After collapsing 2 of 5 items while open: InitialHeight={initialActualHeight}, NewHeight={popupBorder.ActualHeight}");
+                Verify.IsTrue(dynamicComboBox.IsDropDownOpen);
+                Verify.IsLessThan(popupBorder.ActualHeight, initialActualHeight - 40.0,
+                    "Collapsing items while the dropdown is open should still shrink the popup.");
+
+                // Close, replace with taller items, and reopen to verify cached item heights are invalidated.
+                dynamicComboBox.IsDropDownOpen = false;
+                Content.UpdateLayout();
+                dynamicComboBox.Items.Clear();
+                for (int i = 0; i < 5; i++)
+                {
+                    dynamicComboBox.Items.Add(new Border
+                    {
+                        Height = 60.0,
+                        Width = 200.0,
+                        Child = new TextBlock { Text = $"TallItem {i}" },
+                    });
+                }
+                dynamicComboBox.SelectedIndex = 0;
+                dynamicComboBox.IsDropDownOpen = true;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(dynamicComboBox.XamlRoot).Last();
+                popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
+                Log.Comment($"After replacing items with taller rows and reopening: InitialHeight={initialActualHeight}, ReopenedHeight={popupBorder.ActualHeight}");
+                Verify.IsTrue(dynamicComboBox.IsDropDownOpen);
+                Verify.IsGreaterThan(popupBorder.ActualHeight, initialActualHeight + 40.0,
+                    "Replacing items and reopening should invalidate cached heights and grow the popup.");
+
+                dynamicComboBox.IsDropDownOpen = false;
+                Content = null;
+            });
+            IdleSynchronizer.Wait();
+        }
+
         private ComboBox SetupComboBox(bool useContent = true)
         {
             ComboBox comboBox = null;

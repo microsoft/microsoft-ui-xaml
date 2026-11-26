@@ -526,7 +526,7 @@ namespace DirectUI
         // ********************************************************************
 
         bool m_IsPointerOverDropDownOverlay         : 1;
-        // bool m_unused2                           : 1;
+        bool m_hasArrangedOpenPopup                 : 1;
         // bool m_unused3                           : 1;
         // bool m_unused4                           : 1;
         // bool m_unused5                           : 1;
@@ -714,6 +714,11 @@ private: // members to support small form factor mode
         TrackerPtr<xaml_controls::IContentPresenter> m_requiredHeaderContentPresenterPart;
         TrackerPtr<xaml_animation::IStoryboard> m_overlayOpeningStoryboard;
         TrackerPtr<xaml_animation::IStoryboard> m_overlayClosingStoryboard;
+
+        void ResetItemLayoutHeightCache();
+
+        containers::vector_map<INT, DOUBLE> m_cachedItemLayoutHeights;
+        DOUBLE m_fallbackItemLayoutHeight = 0.0;
 
         int m_indexToRestoreOnCancel{ -1 };
         int m_indexForcedToUnselectedVisual = -1;

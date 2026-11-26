@@ -80,6 +80,7 @@ ComboBox::ComboBox()
     , m_isEditModeConfigured(false)
     , m_shouldMoveFocusToTextBox(false)
     , m_IsPointerOverDropDownOverlay(false)
+    , m_hasArrangedOpenPopup(false)
 {
     m_inputDeviceTypeUsedToOpen = DirectUI::InputDeviceType::None;
     m_previousInputDeviceTypeUsedToOpen = DirectUI::InputDeviceType::None;
@@ -551,6 +552,8 @@ _Check_return_ HRESULT ComboBox::SetupElementPopup()
 
         // ComboBoxes should always use a windowed popup to break out of the bounds of the main island/window.
         IFC_RETURN(m_tpPopupPart.Cast<Popup>()->put_ShouldConstrainToRootBounds(false));
+
+        ResetItemLayoutHeightCache();
 
         if (m_tpElementPopupChild)
         {
@@ -1298,6 +1301,16 @@ _Check_return_ HRESULT ComboBox::OnPropertyChanged2(_In_ const PropertyChangedPa
 
     case KnownPropertyIndex::ItemsControl_DisplayMemberPath:
         m_spPropertyPathListener.Reset();
+        ResetItemLayoutHeightCache();
+        break;
+
+    case KnownPropertyIndex::ItemsControl_ItemTemplate:
+    case KnownPropertyIndex::ItemsControl_ItemTemplateSelector:
+    case KnownPropertyIndex::ItemsControl_ItemContainerStyle:
+    case KnownPropertyIndex::ItemsControl_ItemContainerStyleSelector:
+    case KnownPropertyIndex::Control_FontSize:
+    case KnownPropertyIndex::Control_FontFamily:
+        ResetItemLayoutHeightCache();
         break;
 
     case KnownPropertyIndex::ComboBox_Text:
@@ -1645,6 +1658,7 @@ _Check_return_ HRESULT ComboBox::OnOpen()
     }
 
     m_isClosingDueToCancel = false;
+    ResetItemLayoutHeightCache();
 
     if (m_tpPopupPart)
     {
@@ -1855,6 +1869,7 @@ ComboBox::FinishClosingDropDown()
 
     m_isExpanded = false;
     m_isDropDownClosing = false;
+    ResetItemLayoutHeightCache();
     m_previousInputDeviceTypeUsedToOpen = m_inputDeviceTypeUsedToOpen;
     m_inputDeviceTypeUsedToOpen = DirectUI::InputDeviceType::None;
 
@@ -3777,6 +3792,7 @@ _Check_return_ HRESULT ComboBox::OnItemsChanged(
     // Cache the new item count
     IFC(GetItemCount(m_itemCount));
     IFC(get_IsDropDownOpen(&isDropDownOpen));
+    ResetItemLayoutHeightCache();
 
     IFC(ComboBoxGenerated::OnItemsChanged(e));
 
@@ -4656,6 +4672,13 @@ IFACEMETHODIMP ComboBox::ArrangeOverride(
     return S_OK;
 }
 
+void ComboBox::ResetItemLayoutHeightCache()
+{
+    m_cachedItemLayoutHeights.clear();
+    m_fallbackItemLayoutHeight = 0.0;
+    m_hasArrangedOpenPopup = false;
+}
+
 _Check_return_ HRESULT ComboBox::GetItemLayoutHeight(
     _In_ INT index,
     _In_ wf::Size availableSize,
@@ -4673,6 +4696,22 @@ _Check_return_ HRESULT ComboBox::GetItemLayoutHeight(
 
     if (spUIElement == nullptr)
     {
+        // Reuse the height previously measured for this index while the dropdown is open,
+        // or a latched fallback height, rather than re-sampling CarouselPanel's first realized
+        // child whose index shifts with PopupBorder.MaxHeight and can trigger a layout cycle.
+        const auto cachedHeight = m_cachedItemLayoutHeights.find(index);
+        if (cachedHeight != m_cachedItemLayoutHeights.end())
+        {
+            itemHeight = cachedHeight->second;
+            return S_OK;
+        }
+
+        if (m_fallbackItemLayoutHeight > 0.0)
+        {
+            itemHeight = m_fallbackItemLayoutHeight;
+            return S_OK;
+        }
+
         // Get the first child from the carousel panel and then it will also
         // apply the visual state properly with the input mode.
         IFC_RETURN(GetRealizedFirstChildFromCarouselPanel(&spUIElement));
@@ -4708,6 +4747,24 @@ _Check_return_ HRESULT ComboBox::GetItemLayoutHeight(
     }
 
     itemHeight = desiredSize.Height;
+
+    if (spUIElement != nullptr)
+    {
+        CUIElement* pUIElementCore = static_cast<CUIElement*>(spUIElement.Cast<UIElement>()->GetHandle());
+        const bool isMeasureDirty = pUIElementCore->GetIsMeasureDirty() || pUIElementCore->GetIsOnMeasureDirtyPath();
+
+        if (!isMeasureDirty)
+        {
+            if (spContainer != nullptr)
+            {
+                m_cachedItemLayoutHeights[index] = itemHeight;
+            }
+            else if (m_hasArrangedOpenPopup && itemHeight > 0.0)
+            {
+                m_fallbackItemLayoutHeight = itemHeight;
+            }
+        }
+    }
 
     return S_OK;
 }
@@ -5554,6 +5611,10 @@ _Check_return_ HRESULT ComboBox::ArrangePopup(
     }
 
     m_bShouldCenterSelectedItem = false;
+    if (childHeight > 0.0)
+    {
+        m_hasArrangedOpenPopup = true;
+    }
 
     return S_OK;
 }
