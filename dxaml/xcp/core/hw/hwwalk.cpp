@@ -3273,15 +3273,25 @@ HWWalk::IsShapeMaskRequiredForRectangle(
     CBrush * pBorderBrush = CBorder::HasNonZeroThickness(pFrameworkElement->GetBorderThickness()) ? pFrameworkElement->GetBorderBrush() : nullptr;
 
     // Borders can often be drawn as simple SpriteVisuals, like Rectangles.
-    // We will fallback to using a rasterized mask to render the shape if the Border has rounded corners and a
-    // BorderBrush or BackgroundBrush. Square borders that are all border are drawn as a solid rectangle instead
-    // (see BaseContentRenderer::BorderHWRenderHelper).
+    // We will fallback to using a rasterized mask to render the shape if any of the following are true:
+    //      1. The Border has rounded corners and a BorderBrush or BackgroundBrush.
+    //      2. The Border has a BorderBrush that cannot be drawn as a hollow ninegrid, unless it has no background and
+    //         its border thickness covers the whole element. That border is a solid rectangle, which
+    //         BaseContentRenderer::BorderHWRenderHelper draws without a mask.
     bool hasRoundedCorners = (cornerRadius.topLeft > 0.0f)
                            || (cornerRadius.topRight > 0.0f)
                            || (cornerRadius.bottomRight > 0.0f)
                            || (cornerRadius.bottomLeft > 0.0f);
 
-    return hasRoundedCorners && (pBackgroundBrush != nullptr || pBorderBrush != nullptr);
+    XTHICKNESS unusedNinegrid;
+    return (pBackgroundBrush != nullptr && hasRoundedCorners)
+        // Force integer insets when we calculate the nine grid here. This is the method that determines
+        // whether we need a mask, and if we do then we'll be calculating the nine grid while forcing
+        // integer insets, so keep the calculations consistent.
+        || (pBorderBrush != nullptr
+            && (hasRoundedCorners
+                || (!GetNinegridForBorderElement(pFrameworkElement, true /* forceIntegerInsets */, &unusedNinegrid)
+                    && (pBackgroundBrush != nullptr || GetNinegridForBorderElement(pFrameworkElement, false /* forceIntegerInsets */, &unusedNinegrid)))));
 }
 
 //
@@ -3375,8 +3385,8 @@ HWWalk::IsShapeMaskRequiredForRectangle(
         //
         // If the border completely overlaps the background, there's no overdraw benefit from using a nine grid. There are
         // also cases where the nine grid we calculate would actually be larger than the element (see picture in banner).
-        // We skip using a nine grid in those cases as well. Rounded borders then use an unstretched mask, and square
-        // borders are drawn as a solid rectangle.
+        // We skip using a nine grid in those cases as well. In those cases we just use an unstretched mask, except
+        // for square borders without a background, which are drawn as a solid rectangle.
         //
         return width > (ninegrid->left + ninegrid->right)
             && height > (ninegrid->top + ninegrid->bottom);
