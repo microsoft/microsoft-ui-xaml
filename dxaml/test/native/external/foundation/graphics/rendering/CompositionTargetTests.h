@@ -55,6 +55,10 @@ public:
 
     BEGIN_TEST_METHOD(RenderingDoesNotStarveInput)
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(RenderingNeedsVisibleWindowAndDisplayOn)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify frames render only while the window is visible and the display is on, whichever notification arrives last.")
+    END_TEST_METHOD()
 };
 
 } } } } } }
