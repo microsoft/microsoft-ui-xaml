@@ -12875,17 +12875,7 @@ CInputServices::BringIntoViewport(
                 hr = pDirectManipulationService->BringIntoViewport(pViewport, bounds, fAnimate);
                 if (hr == HRESULT_FROM_WIN32(ERROR_INVALID_STATE))
                 {
-                    // DManip's ZoomToRect returns ERROR_INVALID_STATE when the viewport is not enabled or was
-                    // abandoned. The view did not change, so report the request as not handled. The DManip calls
-                    // below, including the configuration restore, would fail the same way on an abandoned viewport.
-#ifdef DM_DEBUG
-                    if (m_fIsDMInfoTracingEnabled)
-                    {
-                        IGNOREHR(gps->DebugTrace(static_cast<XDebugTraceType>(XCP_TRACE_DM_INPUT_MANAGER | DMIM_DBG) /*traceType*/,
-                            L"                   Skipping operation because ZoomToRect returned ERROR_INVALID_STATE."));
-                    }
-#endif // DM_DEBUG
-
+                    // The view could not be changed. Like the other early exits in this method, *pfHandled stays FALSE.
                     hr = S_OK;
                     goto Cleanup;
                 }
