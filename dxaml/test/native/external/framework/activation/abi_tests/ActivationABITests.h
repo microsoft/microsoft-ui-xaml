@@ -34,8 +34,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that FrameworkView.Initialize on a secondary (non-main) view keeps the view, registers one Activated handler and keeps Application.Current, and that Uninitialize removes that exact registration and releases the view.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(FrameworkViewInitializeMainViewKeepsApplication)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that FrameworkView.Initialize on the main view, on a thread that already has XAML and an Application, succeeds without replacing Application.Current, registers the Activated handler and dispatches a Launch activation to the Application. That existing state makes main-view and secondary-view initialization indistinguishable, so it does not check which one ran.")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(FrameworkViewActivatedDispatchesEachActivationKindToItsArgs)
             TEST_METHOD_PROPERTY(L"Description", L"Verifies that the Activated handler registered by FrameworkView queries exactly the typed activation args interface that matches each ActivationKind, uses the generic IActivatedEventArgs for LockScreen, LockScreenComponent and other kinds, succeeds, and releases the args.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(FrameworkViewActivatedReturnsTypedArgsFailures)
+            TEST_METHOD_PROPERTY(L"Description", L"Verifies that the Activated handler returns E_NOINTERFACE (without reading the launch arguments for Launch) when the args lack the typed interface their ActivationKind needs, returns the Application's E_INVALIDARG when the typed args of a non-Launch kind are null, releases the args, and keeps handling later activations.")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(FrameworkViewInitializeReturnsIsMainFailure)
