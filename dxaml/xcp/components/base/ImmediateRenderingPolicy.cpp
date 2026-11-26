@@ -585,17 +585,6 @@ namespace ImmediateRenderingPolicy
         return false;
     }
 
-    uint32_t DManipPresentLeadMs(int64_t previousTickMicroseconds, int64_t nowMicroseconds) noexcept
-    {
-        const int64_t gap = nowMicroseconds - previousTickMicroseconds;
-        if (previousTickMicroseconds <= 0 || gap <= 0 || gap > 100000)
-        {
-            return 16;
-        }
-        const int64_t ms = (gap + 500) / 1000;
-        return static_cast<uint32_t>(ms < 8 ? 8 : (ms > 50 ? 50 : ms));
-    }
-
     bool ShouldStopPeerlessInertia(bool immediateMode, bool tickingEnabled) noexcept
     {
         return !(immediateMode && tickingEnabled);

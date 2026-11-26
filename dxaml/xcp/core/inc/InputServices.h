@@ -1602,7 +1602,6 @@ private:
     xvector<CDMViewport*>* m_pViewports;
     // ---- DManip ticking (scroll physics) ----
     uint64_t m_immediateDManipUpdates = 0;
-    int64_t m_lastImmediateDManipTickUs = 0;
     xvector<CDMCrossSlideViewport*>* m_pCrossSlideViewports;
     xvector<CSecondaryContentRelationship*>* m_pSecondaryContentRelationshipsToBeApplied;
 
