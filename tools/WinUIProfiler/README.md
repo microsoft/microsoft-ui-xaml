@@ -103,6 +103,12 @@ Run the event compatibility, DirectX capture/storage and snapshot resource regre
 dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj
 ```
 
+For only native GUI metric persistence, identity, close-drain and bounded-retention checks:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --metric-storage-tests
+```
+
 These check object timelines across new TraceLogging and legacy manifest events,
 and verify that migrated performance regions distinguish Start/Stop without
 also matching legacy manifest events. Snapshot checks cover allocator deltas,
@@ -698,7 +704,17 @@ unsigned JSON numbers too. When querying a handle, use JSON's `->` operator
 to retain its exact JSON text; `json_extract`/`->>` can round integers above
 SQLite's signed 64-bit range.
 
-A session file is limited to 500 MB, CPU samples included. Before a batch would
+The GUI's native CPU/GPU/memory acquisitions are stored in `ProcessMetrics`,
+not just its rolling two-minute graph. Each acquisition has five rows sharing
+`AcquisitionId` and `Qpc`, with `ProcessId`, `CreationTimeFileTime` and `InstanceId`
+identifying the process instance. `Metric` is `cpu`, `gpu`, `workingSet`,
+`privateWorkingSet` or `privateCommit`; `Value` uses `Unit` `percent` or `MiB`.
+`Source` preserves the native acquisition source. An unavailable value is SQL
+NULL with `UnavailableReason`, never a measured zero. QPC uses
+`SessionInfo.QpcFrequency`. Older recordings without this table have no native
+metric evidence; readers must not synthesize zeros.
+
+A session file is limited to 500 MB, native metrics and CPU samples included. Before a batch would
 take it past the limit, the oldest data is deleted: the oldest events, with the
 CPU samples from before the first event left, or else, when samples are older
 than every event, the oldest samples. The call stacks and code addresses no
@@ -711,6 +727,12 @@ lifetimes and referenced parent devices retain continuity and are marked
 same time, for example with the CLI; when the session ends, it is left as a
 single `.sqlite` file. A write error stops the recording, keeps what was saved,
 and the panel shows why. Session files are not deleted by the profiler.
+Native metrics share the bounded session writer queue with events, applying
+backpressure rather than dropping acquisitions. Retention deletes whole metric
+acquisitions, also removing metrics before trimmed event evidence.
+`ProcessMetricRetention.CompleteFromQpc` records the earliest complete retained
+metric boundary (no row means no metric trimming). Metric sampling stops before
+the writer drains and finalizes the standalone SQLite file.
 
 ETW timestamps an event separately in each session that receives it, so the
 same event recorded by `logman` and by the app differs by a few microseconds.

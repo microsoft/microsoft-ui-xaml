@@ -11,13 +11,20 @@ description: Interpret profiler-backed workstream evidence and actual WinUI expe
    Treat missing/unsupported evidence as unknown, not zero. Do not pair IDs/handles across recordings.
    Tick cadence is not present timing; nested spans are not additive CPU time.
 3. Query the declared `winui-profiler` and `ui-profiler-evidence` read-only MCPs for scoped
-   evidence/drilldowns when needed. Check the cited current application code. Preserve its behavior,
+   evidence/drilldowns when needed. Read the report's application/control/framework coverage,
+   runtime/source parity caveats, source-read provenance and per-item validation requirements.
+   Native `recommend` items require a `ui-profiler/native-trial/v1` context and the separate native
+   check, never the app check. Inspect current source for the declared target. Preserve its behavior,
    accessibility and build settings. Do not remove work just to improve a number.
 4. Implement only this recommendation's behavior-preserving fix in its fresh original-source working
-   copy. Use every necessary explicitly approved existing C#/XAML file, not an arbitrary two-file cap.
+   copy. App trials permit only approved existing app C#/XAML. Native trials permit only approved
+   existing source in the declared `controls\dev` or `dxaml\xcp` layer. Never change app usage in
+   a native trial. Use its exact approved scope, not an arbitrary two-file cap.
    Do not import other trials' fixes or add profiler/harness references.
 5. Do not run shell commands, build, UI actions or captures. ADE's verification owns the only
-   candidate capture for this recommendation. It reuses the original baseline for source-matched checks.
+   candidate capture for this recommendation. App trials reuse the original baseline. Native checks
+   build a source-matched private native baseline/candidate pair under the separately approved
+   two-capture budget; the old discovery runtime is not that baseline.
 6. Treat a single-pair comparison as observed evidence. Call out regressions, missing attribution,
    incomplete data, and remaining uncertainty rather than asserting a proven root cause or speedup.
    Deferring work can move its cost to a later interaction; a faster tick is not a universal win.

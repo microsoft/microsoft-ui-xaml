@@ -201,6 +201,49 @@ class AnalysisTests(unittest.TestCase):
         finally:
             db.close()
 
+    def test_native_runtime_comparison_requires_bound_source_and_loaded_runtime(self):
+        before = analyze_in_memory(self.measurement, self.actions, self.engine)
+        after = copy.deepcopy(before)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            for role, report in (("baseline", before), ("candidate", after)):
+                deployment = root / role
+                deployment.mkdir()
+                binary = deployment / "Microsoft.ui.xaml.dll"
+                binary.write_bytes(("Synthetic native test fixture " + role).encode())
+                digest = profiler.sha256(binary)
+                manifest = deployment / "runtime.json"
+                profiler.write_json(manifest, {
+                    "schema": "ui-profiler/native-runtime/v1", "level": "control",
+                    "source": {"sha256": role},
+                    "files": [{"path": "Microsoft.ui.xaml.dll", "source": str(binary), "sha256": digest}]})
+                report["inputs"]["frameworkSha256"] = digest
+                report["nativeRuntime"] = {
+                    "trialId": "synthetic-trial", "trialDirectory": str(root), "level": "control",
+                    "sourceSha256": role, "manifest": profiler.reference(manifest),
+                    "loadedBefore": [profiler.reference(binary)], "loadedAfter": [profiler.reference(binary)]}
+            self.assertTrue(profiler.validate_native_pair(before, after))
+            self.assertTrue(profiler.comparison_rows(before, after))
+            for changed in ("trialId", "trialDirectory", "level"):
+                invalid = copy.deepcopy(after)
+                invalid["nativeRuntime"][changed] = "different"
+                with self.subTest(changed=changed), self.assertRaises(ValueError):
+                    profiler.comparison_rows(before, invalid)
+            invalid = copy.deepcopy(after)
+            invalid["inputs"]["executableSha256"] = "changed-app"
+            with self.assertRaisesRegex(ValueError, "also change the application"):
+                profiler.comparison_rows(before, invalid)
+            invalid = copy.deepcopy(after)
+            invalid["nativeRuntime"]["loadedAfter"] = []
+            with self.assertRaisesRegex(ValueError, "verified before and after"):
+                profiler.comparison_rows(before, invalid)
+            del after["nativeRuntime"]
+            with self.assertRaises(ValueError):
+                profiler.comparison_rows(before, after)
+            del before["nativeRuntime"]
+            with self.assertRaisesRegex(ValueError, "frameworkSha256"):
+                profiler.comparison_rows(before, after)
+
     def test_cpu_recursion_and_drops_are_separate_from_event_loss(self):
         report = analyze_in_memory(self.measurement, self.actions, self.engine)
         self.assertEqual(metric(report, "cpuStacks", "uiThread.inclusive:app!Recursive")["value"], 2)

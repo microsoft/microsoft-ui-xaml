@@ -16,12 +16,15 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
     private readonly NativeMemorySampler memory;
     private readonly NativeGpuSampler gpu;
     private readonly MetricPollingWorker worker;
+    private readonly Action<MetricReading>? persist;
     private readonly TaskCompletionSource firstSample = new(TaskCreationOptions.RunContinuationsAsynchronously);
-    internal ProcessMetricSession(string nativeLibrary, ProcessInstanceKey target, MetricHistory history)
+    internal ProcessMetricSession(string nativeLibrary, ProcessInstanceKey target, MetricHistory history,
+        Action<MetricReading>? persist = null)
     {
         target.Validate();
         this.target = target;
         this.history = history;
+        this.persist = persist;
         process = OpenProcess(0x00101000, false, target.ProcessId);
         if (process.IsInvalid)
         {
@@ -67,9 +70,11 @@ internal sealed class ProcessMetricSession : IAsyncDisposable
             throw new IOException("The selected metric target exited or its process identity changed.");
         }
 
-        history.Add(new(target,
+        var reading = new MetricReading(target,
 Stopwatch.GetTimestamp(),
-[ToValue(ProcessMetric.Cpu, cpuSample.Sample.ProcessUtilization, cpuSample.Sample.Source), ToValue(ProcessMetric.Gpu, gpuSample.Sample.Utilization, gpuSample.Sample.Source), ToValue(ProcessMetric.WorkingSet, memorySample.TotalWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateWorkingSet, memorySample.PrivateWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateCommit, memorySample.PrivateCommit, memorySample.Source)]));
+[ToValue(ProcessMetric.Cpu, cpuSample.Sample.ProcessUtilization, cpuSample.Sample.Source), ToValue(ProcessMetric.Gpu, gpuSample.Sample.Utilization, gpuSample.Sample.Source), ToValue(ProcessMetric.WorkingSet, memorySample.TotalWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateWorkingSet, memorySample.PrivateWorkingSet, memorySample.Source), ToValue(ProcessMetric.PrivateCommit, memorySample.PrivateCommit, memorySample.Source)]);
+        history.Add(reading);
+        persist?.Invoke(reading);
         firstSample.TrySetResult();
     }
 

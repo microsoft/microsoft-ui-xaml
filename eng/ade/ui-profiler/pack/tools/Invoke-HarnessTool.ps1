@@ -39,7 +39,7 @@ function Require-Preview {
     Assert-InvestigationState $script:context @('planning')
     if (!$script:request.allowPreview) { throw 'The user did not authorize preview interaction.' }
     if (!$script:context.preview -or $script:context.preview.closed) { throw 'Launch the owned unrecorded preview first.' }
-    if ([DateTime]::Parse($script:context.preview.openedUtc).ToUniversalTime().AddMinutes(10) -lt [DateTime]::UtcNow) {
+    if (([DateTime]$script:context.preview.openedUtc).ToUniversalTime().AddMinutes(10) -lt [DateTime]::UtcNow) {
         Close-OwnedApplication $script:context.preview.identity $script:context.preview.executable
         $script:context.preview.closed = $true
         Save-Context
@@ -86,6 +86,17 @@ if ($Operation -eq 'Initialize') {
         if (!$request.ContainsKey($key)) { $request[$key] = $false }
         if ($request[$key] -isnot [bool]) { throw "A boolean authorization is required: $key" }
     }
+    if (!$request.ContainsKey('captureBackend')) { $request.captureBackend = 'Cli' }
+    if ($request.captureBackend -notin @('Gui', 'Cli')) { throw 'Unsupported capture backend.' }
+    if ($request.captureBackend -eq 'Gui') {
+        if (!$request.profilerGui -or ![IO.Path]::IsPathFullyQualified($request.profilerGui) -or
+            !(Test-Path -LiteralPath $request.profilerGui -PathType Leaf) -or
+            [IO.Path]::GetFileName($request.profilerGui) -ine 'WinUIProfiler.App.exe') {
+            throw 'GUI capture requires an existing absolute WinUIProfiler.App.exe; no CLI fallback.'
+        }
+        Assert-RunDirectory $directory @((Split-Path $request.profilerGui -Parent))
+        Assert-GuiProfilerDeployment $request.profilerGui
+    }
     if ($request.ContainsKey('strategy') -and $request.strategy -ne 'independent') { throw 'Only independent trials are supported.' }
     if ($request.ContainsKey('candidatePolicy') -and $request.candidatePolicy -ne 'one-per-approved-recommendation') {
         throw 'The recorded candidate authorization differs from the independent trial policy.'
@@ -96,6 +107,10 @@ if ($Operation -eq 'Initialize') {
     $request.directory = $directory
     if (!$request.contractsSha256) { $request.contractsSha256 = Get-Sha256 (Join-Path $plugin 'CONTRACTS.md') }
     Assert-FileHash (Join-Path $plugin 'CONTRACTS.md') $request.contractsSha256
+    if ($request.intentPolicy) {
+        if ($request.intentPolicy -ne 'single-run/v1') { throw 'Only the single-run intent policy is supported.' }
+        Assert-FileHash (Join-Path $plugin 'pack\knowledge\intent-catalog.md') $request.intentCatalogSha256
+    }
     Assert-RunDirectory $directory @($request.applicationRepository, $request.knowledgeRepository,
         $request.expertHome, (Split-Path $request.profilerCli -Parent), (Split-Path $request.dotnet -Parent))
     foreach ($relative in @('winui-expert.agent.md', 'rag\rag.py')) {
@@ -121,6 +136,9 @@ try {
         }
         Assert-FileHash $context.request.path $context.request.sha256
         Assert-FileHash $context.contracts.path $context.contracts.sha256
+        if ($context.PSObject.Properties['intentCatalog']) {
+            Assert-FileHash $context.intentCatalog.path $context.intentCatalog.sha256
+        }
         Assert-FileHash $context.scenarioScript $context.scenarioScriptSha256
         if ($context.recommendations) { Assert-FileHash $context.recommendations.path $context.recommendations.sha256 }
         if ($context.report) { Assert-FileHash $context.report.path $context.report.sha256 }
@@ -141,7 +159,11 @@ try {
     $data = switch ($Operation) {
         'Contracts' {
             @{ path = $context.contracts.path; sha256 = $context.contracts.sha256
-                text = Get-Content -LiteralPath $context.contracts.path -Raw }
+                text = Get-Content -LiteralPath $context.contracts.path -Raw
+                intentCatalog = if ($context.PSObject.Properties['intentCatalog']) {
+                    @{ path = $context.intentCatalog.path; sha256 = $context.intentCatalog.sha256
+                        text = Get-Content -LiteralPath $context.intentCatalog.path -Raw }
+                } else { $null } }
         }
         'Initialize' {
             if (Test-Path -LiteralPath $contextPath) { throw 'This directory already has an investigation; use its status, not a second request.' }
@@ -184,18 +206,37 @@ try {
                 adeLauncher = $launcher; adeLauncherSha256 = Get-Sha256 $launcher
                 baseline = $null; analysis = $null; expert = $null; preview = $null; protectedPaths = @()
                 nativeMcp = $null
-                recommendations = $null; trials = @(); report = $null
+                recommendations = $null; trials = @(); report = $null; controlAnalysis = $null
+                targetControl = if ($request.targetControl) { $request.targetControl } else { '' }
+            }
+            if ($request.intentPolicy) {
+                $catalogPath = Join-Path $pack 'knowledge\intent-catalog.md'
+                Assert-FileHash $catalogPath $request.intentCatalogSha256
+                $context | Add-Member -NotePropertyName intentCatalog -NotePropertyValue @{
+                    path = $catalogPath; sha256 = $request.intentCatalogSha256
+                }
+            }
+            if ($request.captureBackend -eq 'Gui') {
+                $context | Add-Member -NotePropertyName guiCapture -NotePropertyValue @{
+                    executable = [IO.Path]::GetFullPath($request.profilerGui)
+                    payloadSha256 = Get-ProfilerHash $request.profilerGui
+                    driver = @{ path = Join-Path $pack 'tools\Gui-Profiler.ps1'
+                        sha256 = Get-Sha256 (Join-Path $pack 'tools\Gui-Profiler.ps1') }
+                    reader = @{ path = Join-Path $pack 'tools\Read-GuiRecording.py'
+                        sha256 = Get-Sha256 (Join-Path $pack 'tools\Read-GuiRecording.py') }
+                }
             }
             Save-Context
-            @{ directory = $directory; userScenario = $request.scenario; projects = @(Get-Projects)
+            @{ directory = $directory; userScenario = $request.scenario; targetControl = $context.targetControl; projects = @(Get-Projects)
                 requestSha256 = $context.request.sha256; sourceSha256 = $sourceHash
                 allowPreview = $request.allowPreview; allowMeasurements = $request.allowMeasurements }
         }
         'Inspect' {
             @{ projects = @(Get-Projects); source = Join-Path $directory 'baseline-source'
                 instructions = @($files | Where-Object { $_ -match '(^|/)(AGENTS\.md|copilot-instructions\.md)$' })
-                scenario = $request.scenario; buildAdapter = 'unpackaged self-contained .NET WinUI, win-x64'
-                actions = @('type-text', 'keys', 'invoke', 'assert', 'expand', 'collapse') }
+                scenario = $request.scenario; targetControl = $context.targetControl
+                buildAdapter = 'unpackaged self-contained .NET WinUI, win-x64'
+                actions = @('type-text', 'keys', 'invoke', 'select', 'assert', 'expand', 'collapse') }
         }
         'Preview' {
             Assert-InvestigationState $context @('planning')
@@ -313,6 +354,13 @@ try {
             Assert-InvestigationState $context @('measured')
             Assert-FileHash $context.baseline.path $context.baseline.sha256
             $context.analysis = Export-MeasurementAnalysis $context.baseline.path (Join-Path $directory 'baseline-analysis') $context.profilerCli
+            if ($context.scenario.PSObject.Properties['intent']) {
+                $context.targetControl = $context.scenario.intent.target.control
+            }
+            if ($context.targetControl) {
+                $context.controlAnalysis = Export-ControlAnalysis $context.analysis.path $context.targetControl `
+                    (Join-Path $directory 'baseline-control') $context.profilerCli
+            }
             $context.state = 'analyzed'
             Save-Context
             @{ analysis = $context.analysis; summary = Join-Path $directory 'baseline-analysis\analysis.md' }
@@ -329,6 +377,7 @@ try {
                 AnalysisPath = $context.analysis.path; Directory = $expertDirectory; GitHubAccount = $context.githubAccount
                 ScenarioPath = $context.scenarioPath; McpConfigPath = $mcpPath
                 ContractsPath = $context.contracts.path
+                ControlAnalysisPath = if ($context.controlAnalysis) { $context.controlAnalysis.path } else { '' }
             }
             [void](& "$PSScriptRoot\Get-Recommendation.ps1" @arguments)
             $path = Join-Path $expertDirectory 'provenance.json'
@@ -344,7 +393,8 @@ try {
             Save-Context
             @{ report = $context.report; provenance = $context.expert
                 recommendations = @($report.rows | ForEach-Object {
-                    @{ id = $_.id; title = $_.title; verdict = $_.verdict; state = $_.state; fileCount = $_.files.Count }
+                    @{ id = $_.id; title = $_.title; level = $_.level; repository = $_.repository
+                        verdict = $_.verdict; state = $_.state; fileCount = $_.files.Count }
                 }) }
         }
         'Propose' {
@@ -368,6 +418,9 @@ try {
                 throw 'Select an actionable id from the frozen expert recommendation report.'
             }
             $entry = $entries[0]
+            if ($entry.PSObject.Properties['level'] -and $entry.level -ne 'application') {
+                throw 'Control/framework recommendations cannot use the app-only coding/build/capture workflow.'
+            }
             $trialDirectory = Join-Path (Join-Path $directory 'trials') $entry.id
             if (Test-Path -LiteralPath $trialDirectory) {
                 throw 'This recommendation already has a proposed, partial or spent trial; do not overwrite or retry it.'

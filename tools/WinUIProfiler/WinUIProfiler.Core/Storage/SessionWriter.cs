@@ -12,6 +12,7 @@ using Microsoft.Data.Sqlite;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
+using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
 using WinUIProfiler.Engine.Target;
 
@@ -39,7 +40,11 @@ public sealed record TraceProcessStart(long Qpc, string? Name, int LauncherProce
 
 // CompleteFromSeconds is set once older events were dropped to stay within the limit: the file holds every event
 // from that many seconds after the recording started.
-public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds);
+public sealed record RecordingStatus(string Path, long StoredEvents, long FileBytes, long LimitBytes, double? CompleteFromSeconds,
+    SessionWriterDiagnostics? Queue = null);
+
+public sealed record SessionWriterDiagnostics(int Capacity, int Depth, int HighWaterMark, long BackpressureCount,
+    double BackpressureMilliseconds, long Batches, double EncodingMilliseconds, double TransactionMilliseconds);
 
 // Writes a session's events to its SQLite file from a writer thread, one transaction per batch, with the object index
 // (ObjectIndex), the frame index (FrameIndex) and graphics lifetimes (GraphicsIndex) in the same transactions. Process waits while the writer is
@@ -68,6 +73,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private readonly FrameIndex frames;
     private readonly GraphicsIndex graphics;
     private readonly CpuSampleIndex cpu;
+    private readonly ProcessMetricIndex metrics;
+    private readonly long? processCreatedFileTime;
+    private readonly object metricGate = new();
+    private ProcessInstanceKey? metricProcess;
+    private long lastMetricQpc = -1;
     // What SetCpuSampling gave, stored when the file is closed.
     private CpuSamplingResult? cpuSampling;
     private long droppedSamples;
@@ -94,6 +104,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     private TraceProcessStart? pendingProcessStart;
     private volatile Exception? failure;
     private int closed;
+    private int highWaterMark;
+    private long backpressureCount;
+    private long backpressureTicks;
+    private long batches;
+    private long encodingTicks;
+    private long transactionTicks;
+    private readonly object diagnosticsGate = new();
+    private SessionWriterDiagnostics? finalDiagnostics;
 
     private SessionWriter(string path, SqliteConnection connection, SessionStart start, long limitBytes)
     {
@@ -102,6 +120,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         this.connection = connection;
         processId = start.ProcessId;
         source = start;
+        processCreatedFileTime = start.ProcessCreatedUtc?.ToFileTimeUtc();
         derivesFrequency = start.QpcFrequency is null;
         qpcFrequency = start.QpcFrequency ?? 0;
         startQpc = start.StartQpc ?? 0;
@@ -128,6 +147,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         graphics = new(connection);
         cpu = new(connection);
         emptyFileBytes = (Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) * pageSize;
+        metrics = new(connection);
         writer = new(Run) { IsBackground = true, Name = "WinUIProfiler session writer" };
         writer.Start();
     }
@@ -149,7 +169,22 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             var frequency = Interlocked.Read(ref qpcFrequency);
             double? completeFromSeconds = completeFrom != 0 && frequency != 0
                 ? (completeFrom - Interlocked.Read(ref startQpc)) / (double)frequency : null;
-            return new(Path, stored, Interlocked.Read(ref fileBytes), LimitBytes, completeFromSeconds);
+            return new(Path, stored, Interlocked.Read(ref fileBytes), LimitBytes, completeFromSeconds, Diagnostics);
+        }
+    }
+
+    public SessionWriterDiagnostics Diagnostics
+    {
+        get
+        {
+            lock (diagnosticsGate)
+            {
+                return finalDiagnostics ?? new(queue.BoundedCapacity, queue.Count, Volatile.Read(ref highWaterMark),
+                    Interlocked.Read(ref backpressureCount),
+                    Interlocked.Read(ref backpressureTicks) * 1000.0 / Stopwatch.Frequency,
+                    Interlocked.Read(ref batches), Interlocked.Read(ref encodingTicks) * 1000.0 / Stopwatch.Frequency,
+                    Interlocked.Read(ref transactionTicks) * 1000.0 / Stopwatch.Frequency);
+            }
         }
     }
 
@@ -232,7 +267,27 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
     {
         if (failure is null)
         {
-            queue.Add(new(sequence, profilerEvent, null));
+            var item = new QueueItem(sequence, profilerEvent, null);
+            if (!queue.TryAdd(item))
+            {
+                ObserveDepth(queue.BoundedCapacity);
+                Interlocked.Increment(ref backpressureCount);
+                var started = Stopwatch.GetTimestamp();
+                queue.Add(item);
+                Interlocked.Add(ref backpressureTicks, Stopwatch.GetTimestamp() - started);
+            }
+            ObserveDepth(queue.Count);
+        }
+    }
+
+    private void ObserveDepth(int depth)
+    {
+        var previous = Volatile.Read(ref highWaterMark);
+        while (depth > previous)
+        {
+            var observed = Interlocked.CompareExchange(ref highWaterMark, depth, previous);
+            if (observed == previous) break;
+            previous = observed;
         }
     }
 
@@ -254,8 +309,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             }
             else if (!queue.TryAdd(new(0, null, sample)))
             {
+                ObserveDepth(queue.BoundedCapacity);
                 Interlocked.Increment(ref droppedSamples);
             }
+            ObserveDepth(queue.Count);
         }
         catch (Exception error) when (error is InvalidOperationException or ObjectDisposedException)
         {
@@ -311,8 +368,40 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         internal TaskCompletionSource Completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
+    // Native acquisitions apply backpressure, never the CPU stack sampler's drop-on-full policy.
+    internal void PostMetrics(MetricReading reading)
+    {
+        ArgumentNullException.ThrowIfNull(reading);
+        lock (metricGate)
+        {
+            if (reading.Process.ProcessId != processId ||
+                reading.Process.CreationTimeFileTime != processCreatedFileTime)
+                throw new ArgumentException("Metric acquisition belongs to another recorded process.");
+            var values = MetricHistory.ValidateReading(reading, metricProcess ?? reading.Process);
+            if (reading.TimestampQpc < lastMetricQpc)
+                throw new ArgumentException("Metric timestamps must be ordered.");
+            if (values.Any(value => value.Source.Length > 4096 || value.UnavailableReason?.Length > 4096))
+                throw new ArgumentException("Metric provenance exceeds the bounded acquisition size.");
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref closed) != 0, this);
+            if (failure is { } before) throw new IOException("Session metric persistence failed.", before);
+            var item = new QueueItem(0, null, null, Metrics: reading with { Values = values });
+            if (!queue.TryAdd(item))
+            {
+                ObserveDepth(queue.BoundedCapacity);
+                Interlocked.Increment(ref backpressureCount);
+                var started = Stopwatch.GetTimestamp();
+                queue.Add(item);
+                Interlocked.Add(ref backpressureTicks, Stopwatch.GetTimestamp() - started);
+            }
+            ObserveDepth(queue.Count);
+            if (failure is { } after) throw new IOException("Session metric persistence failed.", after);
+            metricProcess ??= reading.Process;
+            lastMetricQpc = reading.TimestampQpc;
+        }
+    }
+
     private readonly record struct QueueItem(long Sequence, ProfilerEvent? Event, CompletedSample? Sample,
-        SnapshotWrite? Snapshot = null);
+        SnapshotWrite? Snapshot = null, MetricReading? Metrics = null);
 
     // For a recorded trace: when the process was created and by which process, from the kernel's process start event.
     // Stored with the next batch of events, or when the file is closed; a later call replaces it. The process's name is
@@ -329,13 +418,14 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         var batch = new List<(long Sequence, ProfilerEvent Event)>(BatchSize);
         var samples = new List<CompletedSample>();
         var snapshots = new List<SnapshotWrite>();
+        var readings = new List<MetricReading>();
         try
         {
             while (queue.TryTake(out var first, Timeout.Infinite))
             {
                 Add(first);
                 var started = Stopwatch.GetTimestamp();
-                while (batch.Count + samples.Count + snapshots.Count < BatchSize)
+                while (batch.Count + samples.Count + snapshots.Count + readings.Count < BatchSize)
                 {
                     var remaining = BatchInterval - Stopwatch.GetElapsedTime(started);
                     if (remaining <= TimeSpan.Zero || !queue.TryTake(out var next, remaining))
@@ -356,6 +446,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
                 {
                     WriteSamples(samples);
                     samples.Clear();
+                }
+                if (readings.Count > 0)
+                {
+                    WriteMetrics(readings);
+                    readings.Clear();
                 }
                 foreach (var snapshot in snapshots) WriteSnapshot(snapshot);
                 snapshots.Clear();
@@ -378,6 +473,10 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             if (item.Snapshot is { } snapshot)
             {
                 snapshots.Add(snapshot);
+            }
+            else if (item.Metrics is { } reading)
+            {
+                readings.Add(reading);
             }
             else if (item.Sample is { } sample)
             {
@@ -446,6 +545,26 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         }
     }
 
+    private void WriteMetrics(List<MetricReading> readings)
+    {
+        // One finite acquisition per transaction also bounds an unusually large provenance payload.
+        foreach (var reading in readings)
+        {
+            var incoming = ProcessMetricIndex.IncomingBytes(reading);
+            TrimIfNeeded(incoming);
+            if ((Sql.Scalar(connection, "PRAGMA page_count") - Sql.Scalar(connection, "PRAGMA freelist_count")) *
+                pageSize + incoming > LimitBytes * TrimAt)
+                throw new IOException("No room remains within the session's metric recording limit.");
+            using var transaction = connection.BeginTransaction();
+            metrics.Add(reading, transaction);
+            // Event batches may advance retention before this queued acquisition is written.
+            if (Interlocked.Read(ref completeFromQpc) is > 0 and var cutoff)
+                metrics.TrimBefore(cutoff, transaction);
+            transaction.Commit();
+        }
+        Interlocked.Exchange(ref fileBytes, Sql.Scalar(connection, "PRAGMA page_count") * pageSize);
+    }
+
     private void WriteSamples(List<CompletedSample> samples)
     {
         TrimIfNeeded(cpu.IncomingBytes(samples));
@@ -464,6 +583,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
 
     private void Write(List<(long Sequence, ProfilerEvent Event)> batch)
     {
+        var started = Stopwatch.GetTimestamp();
         // Encode first, so room for the whole batch is made before it is written and the file stays within the limit.
         var payloads = new string[batch.Count];
         long incomingBytes = 0;
@@ -477,6 +597,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             incomingBytes += payload.WrittenCount + RowOverheadBytes + GraphicsIndex.EstimatedBytes(batch[i].Event);
         }
 
+        Interlocked.Add(ref encodingTicks, Stopwatch.GetTimestamp() - started);
+        started = Stopwatch.GetTimestamp();
         TrimIfNeeded(incomingBytes);
         using (var transaction = connection.BeginTransaction())
         {
@@ -505,6 +627,8 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             UpdateTimeBase(batch, transaction);
             transaction.Commit();
         }
+        Interlocked.Add(ref transactionTicks, Stopwatch.GetTimestamp() - started);
+        Interlocked.Increment(ref batches);
 
         if (Interlocked.Read(ref oldestSequence) == 0)
         {
@@ -640,7 +764,13 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             var firstSample = cpu.FirstQpc(transaction);
             var snapshotTimes = Sql.Longs(connection, "SELECT EndQpc FROM TreeSnapshots ORDER BY EndQpc, CaptureId LIMIT 1", transaction);
             long? firstSnapshot = snapshotTimes.Count == 0 ? null : snapshotTimes[0];
-            if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
+            var firstMetric = metrics.FirstQpc(transaction);
+            if (firstMetric is { } metricQpc && (firstEvent is null || metricQpc <= firstEvent) &&
+                (firstSample is null || metricQpc <= firstSample) && (firstSnapshot is null || metricQpc <= firstSnapshot))
+            {
+                if (!metrics.TrimOldest(transaction)) return trimmed;
+            }
+            else if (firstSnapshot is not null && (firstEvent is null || firstSnapshot <= firstEvent) &&
                 (firstSample is null || firstSnapshot <= firstSample))
             {
                 TrimSnapshot(transaction);
@@ -688,6 +818,7 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
         {
             cpu.Prune(current);
         }
+        metrics.TrimBefore(qpc, current);
         owned?.Commit();
 
         Interlocked.Exchange(ref oldestSequence, cutoff);
@@ -757,7 +888,11 @@ public sealed class SessionWriter : IEventProcessor, IDisposable
             insertEvent.Dispose();
             insertType.Dispose();
             connection.Dispose();
-            queue.Dispose();
+            lock (diagnosticsGate)
+            {
+                finalDiagnostics = Diagnostics;
+                queue.Dispose();
+            }
         }
     }
 

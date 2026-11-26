@@ -33,7 +33,7 @@ public sealed record ConnectionProgress(string State, string Detail);
 // FromProcessStart is true when the session was listening before the target was created, so its startup is
 // included; otherwise the counts start when the profiler connected.
 public sealed record EtwStatus(bool FromProcessStart, long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, int LostEvents,
-    long DroppedEvents);
+    long DroppedEvents, EventPipelineDiagnostics? Queue = null);
 
 [SupportedOSPlatform("windows")]
 public sealed class TargetConnection : IAsyncDisposable
@@ -83,7 +83,7 @@ public sealed class TargetConnection : IAsyncDisposable
     public Task Completion => lifetime ?? Task.CompletedTask;
     public EtwStatus? Etw => recordings?.Primary is { } primary && etw is { } source
         ? new(etwFromProcessStart, primary.XamlEvents, primary.ProfilerEvents, primary.GpuMemoryEvents, source.EventsLost,
-            primary.DroppedEvents) : null;
+            primary.DroppedEvents, primary.Queue) : null;
     // Set when the ETW session could not start or stopped with an error; process metrics keep working.
     public string? EtwError
     {
@@ -318,8 +318,7 @@ public sealed class TargetConnection : IAsyncDisposable
         Changed?.Invoke(this, EventArgs.Empty);
         History = new(Scope.Process, Stopwatch.Frequency);
         sampling = new(Path.GetFullPath(Path.Combine(options.PayloadDirectory, "..", "WinUIProfiler.Native.dll")),
-            Scope.Process,
-History);
+            Scope.Process, History, reading => recordings?.PostMetrics(reading));
         sampling.Start();
         var first = await Task.WhenAny(sampling.FirstSample, sampling.Completion).WaitAsync(token).ConfigureAwait(false);
         await first.ConfigureAwait(false);
@@ -756,21 +755,11 @@ History);
             errors.Add(error);
         }
 
-        try
-        {
-            recordings?.Close(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected",
-                etw?.EventsLost);
-        }
-        catch (Exception error)
-        {
-            errors.Add(error);
-        }
-
-        SaveStartupRecordings(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected");
         if (sampling is not null)
         {
             try
             {
+                // Native graph acquisitions use the recording queue too; stop them before its final drain.
                 await sampling.DisposeAsync().ConfigureAwait(false);
 
             }
@@ -786,6 +775,17 @@ History);
             }
             sampling = null;
         }
+        try
+        {
+            recordings?.Close(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected",
+                etw?.EventsLost);
+        }
+        catch (Exception error)
+        {
+            errors.Add(error);
+        }
+
+        SaveStartupRecordings(targetExited ? "Target exited" : Failure is not null ? "Connection failed" : "Disconnected");
         if (nativeLaunch is not null) nativeLaunch.Dispose();
         else target?.Dispose();
         if (errors.Count > 0)

@@ -22,12 +22,32 @@ evidence exports, actual expert invocation and ADE handoff. The coding session h
 permission and must not execute them itself. Failed/reserved captures are not idempotent retries.
 `Compare-Evidence.ps1` supports offline reanalysis into a fresh directory without new captures.
 
-`recommend_fix` retains the complete ranked expert report. Every actionable id receives an independent
+`recommend_fix` requires application, control and framework investigation coverage, actual source
+reads at all three levels, runtime/source parity caveats and per-item validation plans.
+`ui-profiler/recommendations/v2` distinguishes application `propose` from native `recommend` entries.
+Native entries stay visible as `target-workflow-required`; their MUX-relative scope is confined to
+`controls\dev` or `dxaml\xcp`. This does not authorize an app trial or claim native candidate execution.
+Legacy v1 reports remain readable.
+
+`scripts\Start-RecommendationTrials.ps1` creates new independent app/native ADE proposals from
+that report. `NativeTrials.psm1` enforces exact-hash approvals, target-aware source scopes,
+source-built native baseline/candidate pairs and serialized execution. `NativeRuntime.psm1`
+owns fixed native build plans and private runtime/resource staging; `Measure-NativeTrial.ps1`
+is the trusted native check. The app check remains separate. Discovery inputs stay immutable.
+Source preflight decodes NUL-delimited Git listings as UTF-8 independently of the caller's
+console encoding, preserving non-ASCII filenames and excluded sample-submodule bindings.
+
+Every application/propose id receives an independent
 ADE coding subagent/session/workstream, explicit approved file scope and original-source working copy.
 There is no two-file cap and no cumulative patch import. A shared frozen baseline/analysis/native
 deployment is reused; builds/profiling are sequential with one candidate budget per approved id.
 `recommendations-report.md`/`.json` retain every recommendation/status and hash-bound per-trial
 multidimensional comparison, including failures/insufficient evidence, not only winning fixes.
+
+`scripts\Start-Investigation.ps1 -Phase Investigate -Directory <new-report-directory>
+-SourceInvestigation <existing-v3-investigation>` runs the actual three-level expert against
+existing hash-verified baseline/analysis evidence. It takes zero captures, authorizes no edits and
+never changes the sealed source investigation. Its read-only context supports `-Phase Report` only.
 
 The servers require the Python dependencies in `requirements.txt`; the analyzer itself uses
 only the standard library. Tools run with the engineer's rights, **not inside an OS sandbox**.

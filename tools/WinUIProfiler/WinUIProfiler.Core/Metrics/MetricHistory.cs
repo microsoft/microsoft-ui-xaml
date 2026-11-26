@@ -66,7 +66,36 @@ public sealed class MetricHistory
 
     public void Add(MetricReading reading)
     {
+        var values = ValidateReading(reading, process);
+        lock (gate)
+        {
+            if (reading.TimestampQpc < lastQpc)
+            {
+                throw new ArgumentException("Metric timestamps must be ordered.");
+            }
+
+            foreach (var value in values)
+            {
+                var series = points[value.Metric];
+                series.Enqueue(new(reading.TimestampQpc, value.Value, value.Source, value.UnavailableReason));
+                while (series.Count > MaximumPoints || series.Count > 0 && series.Peek().TimestampQpc < reading.TimestampQpc - windowQpc)
+                {
+                    series.Dequeue();
+                }
+            }
+
+            firstTimestampQpc ??= reading.TimestampQpc;
+            lastQpc = reading.TimestampQpc;
+            totalSamples++;
+        }
+
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    internal static MetricValue[] ValidateReading(MetricReading reading, ProcessInstanceKey process)
+    {
         ArgumentNullException.ThrowIfNull(reading);
+        reading.Process.Validate();
         if (reading.Process != process)
         {
             throw new ArgumentException("Metric sample belongs to another process instance.");
@@ -105,29 +134,7 @@ public sealed class MetricHistory
             }
         }
 
-        lock (gate)
-        {
-            if (reading.TimestampQpc < lastQpc)
-            {
-                throw new ArgumentException("Metric timestamps must be ordered.");
-            }
-
-            foreach (var value in values)
-            {
-                var series = points[value.Metric];
-                series.Enqueue(new(reading.TimestampQpc, value.Value, value.Source, value.UnavailableReason));
-                while (series.Count > MaximumPoints || series.Count > 0 && series.Peek().TimestampQpc < reading.TimestampQpc - windowQpc)
-                {
-                    series.Dequeue();
-                }
-            }
-
-            firstTimestampQpc ??= reading.TimestampQpc;
-            lastQpc = reading.TimestampQpc;
-            totalSamples++;
-        }
-
-        Changed?.Invoke(this, EventArgs.Empty);
+        return values;
     }
 
     public IReadOnlyList<MetricSeries> Snapshot()

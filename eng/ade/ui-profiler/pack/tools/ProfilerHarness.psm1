@@ -21,27 +21,116 @@ function Assert-FileHash([string]$Path, [string]$Expected) {
     }
 }
 
+function Assert-SupplementalEvidenceBinding($Binding) {
+    Assert-FileHash $Binding.path $Binding.sha256
+    foreach ($reference in @($Binding.content.originalMeasurement, $Binding.content.originalDatabase) + @($Binding.content.inputs)) {
+        Assert-FileHash $reference.path $reference.sha256
+    }
+}
+
+function Get-SupplementalEvidenceBinding([string]$Path, [string]$MeasurementPath, $Measurement) {
+    $path = [IO.Path]::GetFullPath($Path)
+    $sha256 = Get-Sha256 $path
+    $content = Read-JsonFile $path
+    if ($content.schema -cne 'ui-profiler/supplemental-evidence/v1' -or
+        $content.provider -cne 'MUX WinUIProfiler' -or
+        ($content.captures -isnot [int] -and $content.captures -isnot [long]) -or $content.captures -ne 0 -or
+        [IO.Path]::GetFullPath($content.originalMeasurement.path) -ne [IO.Path]::GetFullPath($MeasurementPath) -or
+        $content.originalMeasurement.sha256 -cne (Get-Sha256 $MeasurementPath) -or
+        [IO.Path]::GetFullPath($content.originalDatabase.path) -ne [IO.Path]::GetFullPath($Measurement.database.path) -or
+        $content.originalDatabase.sha256 -cne $Measurement.database.sha256 -or
+        @($content.inputs).Count -lt 1 -or @($content.inputs).Count -gt 16) {
+        throw 'Supplemental discovery evidence must derive from the same unchanged MUX WinUIProfiler recording, with zero new captures.'
+    }
+    $root = [IO.Path]::GetDirectoryName($path).TrimEnd('\') + '\'
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($reference in $content.inputs) {
+        if (![IO.Path]::IsPathRooted($reference.path) -or $reference.sha256 -cnotmatch '^[a-f0-9]{64}$') {
+            throw 'Supplemental inputs require absolute paths and SHA-256 hashes.'
+        }
+        $inputPath = [IO.Path]::GetFullPath($reference.path)
+        if (!$inputPath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase) -or !$seen.Add($inputPath)) {
+            throw 'Supplemental inputs must be unique files inside the supplemental evidence directory.'
+        }
+        $ancestor = $inputPath
+        while ($ancestor -and ($ancestor + '\').StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+            if ([IO.File]::GetAttributes($ancestor) -band [IO.FileAttributes]::ReparsePoint) {
+                throw 'Supplemental evidence links require a separate adapter.'
+            }
+            $ancestor = [IO.Path]::GetDirectoryName($ancestor)
+        }
+    }
+    $binding = @{ path = $path; sha256 = $sha256; content = $content }
+    Assert-SupplementalEvidenceBinding $binding
+    $binding
+}
+
+function Get-RepositoryGitListing([string]$RepositoryPath, [switch]$Stage) {
+    $start = [Diagnostics.ProcessStartInfo]::new((Get-Command git -CommandType Application).Source)
+    $start.UseShellExecute = $false
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.StandardOutputEncoding = [Text.UTF8Encoding]::new($false, $true)
+    foreach ($argument in @('-C', $RepositoryPath, '-c', 'core.longpaths=true', '-c', 'core.quotepath=false',
+        'ls-files', '-z')) { $start.ArgumentList.Add($argument) }
+    $arguments = if ($Stage) { @('--stage') } else { @('--cached', '--others', '--exclude-standard') }
+    foreach ($argument in $arguments) { $start.ArgumentList.Add($argument) }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $start
+    try {
+        [void]$process.Start()
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        if (!$process.WaitForExit(60000)) { $process.Kill($true); throw 'Git source enumeration timed out.' }
+        $text = $stdout.GetAwaiter().GetResult()
+        [void]$stderr.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) { throw 'Cannot enumerate the indexed Git source repository.' }
+        $text.Split([char]0, [StringSplitOptions]::RemoveEmptyEntries)
+    } finally { $process.Dispose() }
+}
+
 function Get-RepositoryFiles([string]$RepositoryPath) {
-    $files = @(git -C $RepositoryPath -c core.quotepath=false ls-files --cached --others --exclude-standard)
-    if ($LASTEXITCODE -ne 0 -or $files.Count -eq 0) { throw 'An indexed Git source repository is required.' }
+    $files = @(Get-RepositoryGitListing $RepositoryPath)
+    if ($files.Count -eq 0) { throw 'An indexed Git source repository is required.' }
     $files
+}
+
+function Get-NativeSampleSubmodules([string]$RepositoryPath) {
+    $entries = @(Get-RepositoryGitListing $RepositoryPath -Stage)
+    foreach ($entry in $entries) {
+        if ($entry -notmatch '^160000 ') { continue }
+        if ($entry -notmatch '^160000 ([a-f0-9]{40,64}) 0\t(.+)$' -or
+            !$Matches[2].StartsWith('Samples/', [StringComparison]::Ordinal)) {
+            throw 'Native build-input or unmerged submodules require a separate source adapter.'
+        }
+        @{ path = $Matches[2]; revision = $Matches[1] }
+    }
+}
+
+function Get-NativeRepositoryFiles([string]$RepositoryPath) {
+    $sampleSubmodules = @(Get-NativeSampleSubmodules $RepositoryPath | ForEach-Object path)
+    @(Get-RepositoryFiles $RepositoryPath | Where-Object { $_ -notin $sampleSubmodules })
 }
 
 function Get-SourceHash([string]$RepositoryPath, [string[]]$Files = @()) {
     if ($Files.Count -eq 0) { $Files = @(Get-RepositoryFiles $RepositoryPath) }
     $root = [IO.Path]::GetFullPath($RepositoryPath).TrimEnd('\') + '\'
     $hash = [Security.Cryptography.IncrementalHash]::CreateHash([Security.Cryptography.HashAlgorithmName]::SHA256)
+    $fileHash = [Security.Cryptography.SHA256]::Create()
     try {
         foreach ($relative in ($Files | Sort-Object -CaseSensitive)) {
-            $path = [IO.Path]::GetFullPath((Join-Path $root $relative.Replace('/', '\')))
+            $path = [IO.Path]::GetFullPath([IO.Path]::Combine($root, $relative.Replace('/', '\')))
             if (!$path.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { throw 'Source path escapes the repository.' }
-            if ((Get-Item -LiteralPath $path).Attributes -band [IO.FileAttributes]::ReparsePoint) {
+            if ([IO.File]::GetAttributes($path) -band [IO.FileAttributes]::ReparsePoint) {
                 throw "Source links require a separate adapter: $relative"
             }
-            $hash.AppendData([Text.Encoding]::UTF8.GetBytes("$relative`0$(Get-Sha256 $path)`n"))
+            $stream = [IO.File]::OpenRead($path)
+            try { $digest = [Convert]::ToHexString($fileHash.ComputeHash($stream)).ToLowerInvariant() }
+            finally { $stream.Dispose() }
+            $hash.AppendData([Text.Encoding]::UTF8.GetBytes("$relative`0$digest`n"))
         }
         [Convert]::ToHexString($hash.GetHashAndReset()).ToLowerInvariant()
-    } finally { $hash.Dispose() }
+    } finally { $fileHash.Dispose(); $hash.Dispose() }
 }
 
 function Get-ProfilerHash([string]$ProfilerCli) {
@@ -49,6 +138,19 @@ function Get-ProfilerHash([string]$ProfilerCli) {
     $files = @([IO.Directory]::EnumerateFiles($root, '*', [IO.SearchOption]::AllDirectories) |
         ForEach-Object { [IO.Path]::GetRelativePath($root, $_).Replace('\', '/') })
     Get-SourceHash $root $files
+}
+
+function Assert-GuiProfilerDeployment([string]$Executable) {
+    $root = Split-Path $Executable -Parent
+    foreach ($relative in @('WinUIProfiler.App.exe', 'WinUIProfiler.Core.dll', 'Microsoft.UI.Xaml.dll',
+        'WinUIProfiler.Native.dll', 'ConnectionPayloads\manifest.json',
+        'ConnectionPayloads\x64\WinUIProfiler.Injector.exe', 'ConnectionPayloads\x64\WinUIProfiler.Tap.dll',
+        'NativeLauncher\manifest.json', 'NativeLauncher\x64\ProfilerLauncher.exe',
+        'NativeLauncher\x64\ProfilerRedirect.dll')) {
+        if (!(Test-Path -LiteralPath (Join-Path $root $relative) -PathType Leaf)) {
+            throw "Incomplete GUI deployment: $relative. Build/stage the complete MUX GUI payload before preparation."
+        }
+    }
 }
 
 function Copy-ApplicationSource([string]$RepositoryPath, [string]$Destination, [string[]]$Files) {
@@ -61,7 +163,8 @@ function Copy-ApplicationSource([string]$RepositoryPath, [string]$Destination, [
     }
 }
 
-function New-LoggedProcess([string]$Executable, [string[]]$Arguments, [string]$Directory) {
+function New-LoggedProcess([string]$Executable, [string[]]$Arguments, [string]$Directory,
+    [Text.Encoding]$StandardInputEncoding = $null) {
     $info = [Diagnostics.ProcessStartInfo]::new()
     $info.FileName = $Executable
     $info.WorkingDirectory = $Directory
@@ -69,6 +172,7 @@ function New-LoggedProcess([string]$Executable, [string[]]$Arguments, [string]$D
     $info.RedirectStandardOutput = $true
     $info.RedirectStandardError = $true
     $info.RedirectStandardInput = $true
+    if ($null -ne $StandardInputEncoding) { $info.StandardInputEncoding = $StandardInputEncoding }
     foreach ($argument in $Arguments) { $info.ArgumentList.Add($argument) }
     $process = [Diagnostics.Process]::new()
     $process.StartInfo = $info
@@ -77,14 +181,24 @@ function New-LoggedProcess([string]$Executable, [string[]]$Arguments, [string]$D
 }
 
 function Invoke-LoggedProcess([string]$Executable, [string[]]$Arguments, [string]$Directory,
-    [string]$LogPath, [int]$TimeoutSeconds = 900) {
-    $process = New-LoggedProcess $Executable $Arguments $Directory
+    [string]$LogPath, [int]$TimeoutSeconds = 900, [AllowEmptyString()][string]$InputText) {
+    $hasInput = $PSBoundParameters.ContainsKey('InputText')
+    $encoding = if ($hasInput) { [Text.UTF8Encoding]::new($false) } else { $null }
+    $process = New-LoggedProcess $Executable $Arguments $Directory -StandardInputEncoding $encoding
     $stdout = $process.StandardOutput.ReadToEndAsync()
     $stderr = $process.StandardError.ReadToEndAsync()
-    $process.StandardInput.Close()
+    $watch = [Diagnostics.Stopwatch]::StartNew()
     try {
-        if (!$process.WaitForExit($TimeoutSeconds * 1000)) {
-            Stop-Process -Id $process.Id -ErrorAction SilentlyContinue
+        if ($hasInput) {
+            $write = $process.StandardInput.WriteAsync($InputText)
+            if (!$write.Wait($TimeoutSeconds * 1000)) {
+                throw "Timed out writing process input: $Executable. See $LogPath"
+            }
+            [void]$write.GetAwaiter().GetResult()
+        }
+        $process.StandardInput.Close()
+        $remaining = [int][Math]::Max(0, $TimeoutSeconds * 1000 - $watch.ElapsedMilliseconds)
+        if (!$process.WaitForExit($remaining)) {
             throw "Timed out: $Executable. See $LogPath"
         }
         $text = $stdout.GetAwaiter().GetResult()
@@ -92,7 +206,10 @@ function Invoke-LoggedProcess([string]$Executable, [string[]]$Arguments, [string
         [IO.File]::WriteAllText($LogPath, "$text`n$errors")
         if ($process.ExitCode -ne 0) { throw "Exit $($process.ExitCode): $Executable. See $LogPath`n$errors" }
         $text
-    } finally { $process.Dispose() }
+    } finally {
+        if (!$process.HasExited) { Stop-Process -Id $process.Id }
+        $process.Dispose()
+    }
 }
 
 function Build-Application($Context, [string]$RepositoryPath, [string]$OutputDirectory) {
@@ -173,14 +290,25 @@ function Assert-MinimalCandidate([string]$RepositoryPath, [string[]]$ProtectedPa
     }
 }
 
-function Assert-ScopedCandidate([string]$RepositoryPath, [string[]]$AllowedPaths) {
+function Assert-ScopedCandidate([string]$RepositoryPath, [string[]]$AllowedPaths,
+    [ValidateSet('application', 'control', 'framework')][string]$Level = 'application') {
     if (!$AllowedPaths -or @($AllowedPaths | Select-Object -Unique).Count -ne $AllowedPaths.Count) {
         throw 'A unique, explicitly approved candidate file scope is required.'
     }
     $allowed = @($AllowedPaths | ForEach-Object {
         $path = $_.Replace('\', '/')
         if ([IO.Path]::IsPathRooted($_) -or $path -match '(^|/)\.\.(/|$)|:|[*?]' -or
-            $path -notmatch '\.(cs|xaml)$') { throw 'Invalid approved source-file scope.' }
+            ($Level -eq 'application' -and $path -notmatch '\.(cs|xaml)$') -or
+            ($Level -ne 'application' -and $path -notmatch '\.(cpp|h|hpp|inl|idl|xaml|cs)$')) {
+            throw 'Invalid approved source-file scope.'
+        }
+        if ($Level -ne 'application') {
+            $prefix = if ($Level -eq 'control') { 'controls/dev/' } else { 'dxaml/xcp/' }
+            if (!$path.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase) -or
+                @($path.Split('/') | Where-Object { $_ -eq '.github' -or $_ -match '(?i)tests?$' }).Count) {
+                throw 'Native file scope escapes its implementation layer or changes protected tests/instructions.'
+            }
+        }
         $path
     })
     $changes = @(git -C $RepositoryPath -c core.quotepath=false diff --name-status ade-baseline)
@@ -218,6 +346,7 @@ function Assert-TrialContext($Context) {
     $report = Read-JsonFile $Context.recommendations.path
     $entry = @($report.recommendations | Where-Object id -eq $Context.recommendationId)
     if ($entry.Count -ne 1 -or $entry[0].verdict -ne 'propose' -or
+        ($entry[0].PSObject.Properties['level'] -and $entry[0].level -ne 'application') -or
         (ConvertTo-Json @($entry[0].files | ForEach-Object path) -Compress) -cne
         (ConvertTo-Json @($Context.allowedPaths) -Compress)) {
         throw 'The trial does not match its frozen recommendation and approved file scope.'
@@ -285,7 +414,20 @@ function Write-RecommendationReport($Context) {
     $rows = @(
         foreach ($entry in $recommendations.recommendations) {
             $trial = @($Context.trials | Where-Object id -eq $entry.id) | Select-Object -First 1
-            $state = if ($entry.verdict -eq 'propose') { 'pending' } else { 'insufficient-evidence' }
+            $level = if ($entry.PSObject.Properties['level']) { $entry.level } else { 'application' }
+            if ($level -notin @('application', 'control', 'framework') -or
+                ($level -eq 'application' -and $entry.verdict -eq 'recommend')) {
+                throw 'Invalid recommendation level or execution eligibility.'
+            }
+            if ($level -ne 'application' -and ($trial -or $entry.verdict -eq 'propose')) {
+                throw 'Control/framework recommendations require a target-specific workflow, not an app trial.'
+            }
+            $state = switch ($entry.verdict) {
+                'propose' { 'pending' }
+                'recommend' { 'target-workflow-required' }
+                'insufficient-evidence' { 'insufficient-evidence' }
+                default { throw 'Unsupported recommendation verdict.' }
+            }
             $outcome = $null
             $outcomeReference = $null
             $summaryMetrics = @()
@@ -317,7 +459,9 @@ function Write-RecommendationReport($Context) {
                 }
             }
             @{
-                id = $entry.id; title = $entry.title; state = $state; verdict = $entry.verdict
+                id = $entry.id; title = $entry.title; state = $state; verdict = $entry.verdict; level = $level
+                repository = if ($level -eq 'application') { 'application' } else { 'mux' }
+                validation = if ($entry.PSObject.Properties['validation']) { @($entry.validation) } else { @() }
                 summary = $entry.summary; files = @($entry.files | ForEach-Object path)
                 observations = $entry.observations; hypotheses = $entry.hypotheses; risks = $entry.risks
                 trial = $trial; outcome = $outcome; outcomeReference = $outcomeReference
@@ -325,23 +469,45 @@ function Write-RecommendationReport($Context) {
             }
         }
     )
+    $layered = $recommendations.schema -in @('ui-profiler/recommendations/v2', 'ui-profiler/recommendations/v3')
     $report = @{
-        schema = 'ui-profiler/recommendation-report/v1'; strategy = 'independent'
+        schema = if ($recommendations.schema -eq 'ui-profiler/recommendations/v3') { 'ui-profiler/recommendation-report/v3' }
+            elseif ($layered) { 'ui-profiler/recommendation-report/v2' } else { 'ui-profiler/recommendation-report/v1' }
+        strategy = 'independent'
         baseline = $Context.baseline; sourceRevision = $Context.originalRevision
         recommendations = $Context.recommendations; rows = $rows
         summary = $recommendations.summary; risks = $recommendations.risks
         interpretation = 'Each candidate starts from original source and is compared with the same frozen baseline. Results are observational; variants are not combined.'
     }
+    if ($layered) {
+        $report.coverage = $recommendations.coverage
+        $report.runtimeSourceParity = $recommendations.runtimeSourceParity
+    }
+    if ($recommendations.PSObject.Properties['detailedAnalysis']) { $report.detailedAnalysis = $recommendations.detailedAnalysis }
     $path = Join-Path $Context.directory 'recommendations-report.json'
     Write-JsonFile $path $report
-    $markdown = "# Independent recommendation trials`n`n$($recommendations.summary)`n`n$($report.interpretation)`n`n"
+    $markdown = "# Performance investigations and independent recommendation trials`n`n$($recommendations.summary)`n`n$($report.interpretation)`n`n"
+    if ($layered) {
+        $markdown += "Runtime/source parity: $($report.runtimeSourceParity)`n`n"
+        foreach ($level in @('application', 'control', 'framework')) {
+            $markdown += "## $level investigation`n`n$($report.coverage.$level)`n`n"
+            if ($report.ContainsKey('detailedAnalysis')) {
+                $layer = $report.detailedAnalysis.$level
+                $markdown += "Question: $($layer.question)`n`n"
+                foreach ($section in @('time', 'cpu', 'memory', 'modelAnalysis', 'unverified', 'validation')) {
+                    $markdown += "### $section`n`n"
+                    foreach ($item in $layer.$section) { $markdown += "- $item`n" }
+                }
+            }
+        }
+    }
     $markdown += "Baseline: $($Context.baseline.path) (SHA-256 $($Context.baseline.sha256)).`n`n"
-    $markdown += "| Recommendation | Status | Scoped files | Comparison |`n|---|---|---:|---|`n"
+    $markdown += "| Recommendation | Level / repository | Status | Scoped files | Comparison |`n|---|---|---|---:|---|`n"
     foreach ($row in $rows) {
         $comparison = if ($row.outcome -and $row.outcome.state -eq 'verified-comparison') {
             "$($row.outcome.comparison.path) - $($row.outcome.counts | ConvertTo-Json -Compress)"
         } else { 'Not measured; no improvement claimed.' }
-        $markdown += "| $($row.id): $($row.title.Replace('|', '\|')) | $($row.state) | $($row.files.Count) | $comparison |`n"
+        $markdown += "| $($row.id): $($row.title.Replace('|', '\|')) | $($row.level) / $($row.repository) | $($row.state) | $($row.files.Count) | $comparison |`n"
     }
     foreach ($row in $rows) {
         $markdown += "`n## $($row.id): $($row.title)`n`n$($row.summary)`n`n"
@@ -357,7 +523,7 @@ function Write-RecommendationReport($Context) {
             }
             $markdown += "`nFull dimensions, CSV, provenance and unavailable states: $($row.outcome.comparison.path).`n`n"
         }
-        foreach ($section in @('files', 'observations', 'hypotheses', 'risks')) {
+        foreach ($section in @('files', 'observations', 'hypotheses', 'validation', 'risks')) {
             $markdown += "### $section`n`n"
             foreach ($item in $row[$section]) { $markdown += "- $item`n" }
         }
@@ -372,7 +538,8 @@ function Write-RecommendationReport($Context) {
 function Assert-RecommendationReport($Context) {
     Assert-FileHash $Context.report.path $Context.report.sha256
     $report = Read-JsonFile $Context.report.path
-    if ($report.schema -ne 'ui-profiler/recommendation-report/v1' -or
+    if ($report.schema -notin @('ui-profiler/recommendation-report/v1', 'ui-profiler/recommendation-report/v2',
+            'ui-profiler/recommendation-report/v3') -or
         $report.strategy -ne 'independent' -or $report.baseline.sha256 -ne $Context.baseline.sha256 -or
         $report.recommendations.sha256 -ne $Context.recommendations.sha256) {
         throw 'The recommendation report is not bound to this investigation.'
@@ -436,6 +603,21 @@ function Assert-FrozenScenario($Context) {
     Assert-FileHash $Context.scenarioScript $Context.scenarioScriptSha256
     if ($null -ne $Context.PSObject.Properties['request']) {
         Assert-FileHash $Context.request.path $Context.request.sha256
+        $request = Read-JsonFile $Context.request.path
+        $requestedGui = $request.PSObject.Properties['captureBackend'] -and $request.captureBackend -eq 'Gui'
+        $boundGui = $Context.PSObject.Properties['guiCapture'] -and $null -ne $Context.guiCapture
+        if ([bool]$requestedGui -ne [bool]$boundGui -or ($requestedGui -and
+            [IO.Path]::GetFullPath($request.profilerGui) -ne $Context.guiCapture.executable)) {
+            throw 'The frozen capture backend differs from the original request; no fallback is permitted.'
+        }
+    }
+    if ($Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture) {
+        foreach ($reference in @($Context.guiCapture.driver, $Context.guiCapture.reader)) {
+            Assert-FileHash $reference.path $reference.sha256
+        }
+        if ((Get-ProfilerHash $Context.guiCapture.executable) -ne $Context.guiCapture.payloadSha256) {
+            throw 'The frozen GUI profiler payload changed.'
+        }
     }
 }
 
@@ -587,6 +769,13 @@ function Assert-Measurement($Measurement) {
     }
     Assert-FileHash $Measurement.database.path $Measurement.database.sha256
     Assert-FileHash $Measurement.actions.path $Measurement.actions.sha256
+    if ($Measurement.PSObject.Properties['capture'] -and $Measurement.capture) {
+        if ($Measurement.capture.backend -ne 'gui' -or
+            $Measurement.capture.profiler.payloadSha256 -cnotmatch '^[a-f0-9]{64}$' -or
+            $Measurement.capture.sourceRecording.sha256 -ne $Measurement.database.sha256) {
+            throw 'GUI measurement lacks consistent capture/SQLite provenance.'
+        }
+    }
     if ($Measurement.schema -eq 'ui-profiler/measurement/v2') {
         if (@($Measurement.evidence).Count -eq 0) { throw 'Measurement v2 requires its secondary evidence hashes.' }
         foreach ($evidence in $Measurement.evidence) { Assert-FileHash $evidence.path $evidence.sha256 }
@@ -610,6 +799,12 @@ function Compare-TimingMeasurements($Baseline, $Candidate) {
     Assert-Measurement $Candidate
     foreach ($name in @('scenarioSha256', 'profilerSha256', 'frameworkSha256')) {
         if ($Baseline.$name -ne $Candidate.$name) { throw "Incomparable inputs: $name" }
+    }
+    $baselineGui = $Baseline.PSObject.Properties['capture'] -and $null -ne $Baseline.capture
+    $candidateGui = $Candidate.PSObject.Properties['capture'] -and $null -ne $Candidate.capture
+    if ([bool]$baselineGui -ne [bool]$candidateGui -or ($baselineGui -and
+        $Baseline.capture.profiler.payloadSha256 -ne $Candidate.capture.profiler.payloadSha256)) {
+        throw 'Incomparable GUI/CLI capture backends or GUI payloads.'
     }
     $beforeActions = Read-JsonFile $Baseline.actions.path
     $afterActions = Read-JsonFile $Candidate.actions.path
@@ -669,6 +864,67 @@ function Export-MeasurementAnalysis([string]$MeasurementPath, [string]$Directory
         '--engine', (Join-Path $queries 'engine.json'), '--directory', $Directory)
     [void](Invoke-LoggedProcess $python $arguments $Directory (Join-Path $Directory 'analyze.log') 300)
     @{ path = $reportPath; sha256 = Get-Sha256 $reportPath; manifestPath = Join-Path $Directory 'manifest.json' }
+}
+
+function Export-ControlAnalysis([string]$AnalysisPath, [string]$TargetControl, [string]$Directory, [string]$ProfilerCli) {
+    if ([string]::IsNullOrWhiteSpace($TargetControl) -or $TargetControl.Length -gt 256) {
+        throw 'Control analysis requires an explicit bounded control type, not an app-specific default.'
+    }
+    $python = (Get-Command python -ErrorAction Stop).Path
+    [void](Invoke-LoggedProcess $python @("$PSScriptRoot\Analyze-Control.py", '--analysis', $AnalysisPath,
+        '--control', $TargetControl, '--directory', $Directory, '--profiler-cli', $ProfilerCli) `
+        (Split-Path $AnalysisPath -Parent) "$Directory.log" 300)
+    $path = Join-Path $Directory 'control-analysis.json'
+    @{ path = $path; sha256 = Get-Sha256 $path }
+}
+
+function Export-TrialControlComparison($Context) {
+    $target = if ($Context.PSObject.Properties['targetControl']) { $Context.targetControl } else { '' }
+    if (!$target -and $Context.scenario.PSObject.Properties['intent']) { $target = $Context.scenario.intent.target.control }
+    if (!$target) { return $null }
+    $directory = Join-Path $Context.directory 'multidimensional'
+    $before = Export-ControlAnalysis (Join-Path $directory 'baseline\analysis.json') $target `
+        (Join-Path $Context.directory 'baseline-control') $Context.profilerCli
+    $after = Export-ControlAnalysis (Join-Path $directory 'candidate\analysis.json') $target `
+        (Join-Path $Context.directory 'candidate-control') $Context.profilerCli
+    $path = Join-Path $Context.directory 'control-comparison.json'
+    Write-JsonFile $path @{
+        schema = 'ui-profiler/control-comparison/v1'; target = $target; baseline = $before; candidate = $after
+        metrics = @(Compare-ControlAnalysis (Read-JsonFile $before.path) (Read-JsonFile $after.path))
+        interpretation = 'Same requested control type; object identities remain process-local. Template spans are nested elapsed time, not exclusive CPU; owned bytes remain unknown unless captured.'
+    }
+    @{ path = $path; sha256 = Get-Sha256 $path }
+}
+
+function Compare-ControlAnalysis($Baseline, $Candidate) {
+    if ($Baseline.schema -ne 'ui-profiler/control-analysis/v1' -or
+        $Candidate.schema -ne 'ui-profiler/control-analysis/v1') { throw 'Unsupported control evidence schema.' }
+    $before = $Baseline.time.perInstanceCapabilities.templating
+    $after = $Candidate.time.perInstanceCapabilities.templating
+    foreach ($metric in @(
+        @{ name = 'template.observedPairs'; field = 'observedPairs'; unit = 'count' },
+        @{ name = 'template.nestedElapsed.sum'; field = 'sum'; unit = 'ms' },
+        @{ name = 'template.nestedElapsed.max'; field = 'max'; unit = 'ms' }
+    )) {
+        $values = @($before, $after) | ForEach-Object {
+            if ($_.status -ne 'available') { $null }
+            elseif ($metric.field -eq 'observedPairs') { $_.observedPairs }
+            else { $_.observedElapsed.($metric.field) }
+        }
+        $delta = $null
+        $reduction = $null
+        if ($null -ne $values[0] -and $null -ne $values[1]) {
+            foreach ($value in $values) {
+                if (![double]::IsFinite([double]$value)) { throw 'Nonfinite control measurement.' }
+            }
+            $delta = $values[1] - $values[0]
+            if ($values[0] -ne 0) { $reduction = -100 * $delta / $values[0] }
+        }
+        @{ metric = $metric.name; unit = $metric.unit; scope = 'recording; observed indexed instances'
+            baseline = $values[0]; candidate = $values[1]; delta = $delta; reductionPercent = $reduction
+            baselineStatus = $before.status; candidateStatus = $after.status
+            interpretation = 'Observed aggregate only; nested spans are not exclusive CPU or guaranteed savings. No cross-process identity join.' }
+    }
 }
 
 function Compare-Measurements([string]$BaselinePath, [string]$CandidatePath, [string]$Directory, [string]$ProfilerCli) {
@@ -733,6 +989,12 @@ function Receive-ProfilerOutput($Pump) {
     }
 }
 
+function Complete-ProfilerOutput($Pump) {
+    if ($null -ne $Pump.pending) { throw 'Drain all profiler output before closing its evidence stream.' }
+    $Pump.writer.Dispose()
+    $Pump.writer = $null
+}
+
 function Request-ProfilerSnapshot($Pump, [int]$TimeoutSeconds = 30) {
     $count = @($Pump.items | Where-Object type -eq snapshot).Count
     $Pump.process.StandardInput.WriteLine('snapshot')
@@ -747,9 +1009,53 @@ function Request-ProfilerSnapshot($Pump, [int]$TimeoutSeconds = 30) {
     }
 }
 
-function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [string[]]$SourceFiles = @()) {
+function Assert-LoadedNativeRuntime($Identity, [string]$DeploymentDirectory, [string]$ManifestPath) {
+    $manifest = Read-JsonFile $ManifestPath
+    $target = Get-Process -Id $Identity.processId -ErrorAction Stop
+    try {
+        if ($target.StartTime.ToUniversalTime().ToFileTimeUtc() -ne $Identity.creationTimeFileTime) {
+            throw 'The native runtime process instance changed.'
+        }
+        $modules = @($target.Modules)
+        $loaded = @(
+            foreach ($file in $manifest.files | Where-Object { $_.path -like '*.dll' }) {
+                $matches = @($modules | Where-Object ModuleName -eq ([IO.Path]::GetFileName($file.path)))
+                foreach ($module in $matches) {
+                    $expected = [IO.Path]::GetFullPath((Join-Path $DeploymentDirectory $file.path))
+                    if ($module.FileName -ne $expected) { throw "The app loaded a non-private native module: $($module.ModuleName)" }
+                    Assert-FileHash $module.FileName $file.sha256
+                    @{ path = $module.FileName; sha256 = $file.sha256 }
+                }
+            }
+        )
+        if (!@($loaded | Where-Object { [IO.Path]::GetFileName($_.path) -ieq 'Microsoft.ui.xaml.dll' }).Count) {
+            throw 'The source-built private Microsoft.ui.xaml.dll was not loaded.'
+        }
+        $loaded
+    } finally { $target.Dispose() }
+}
+
+function Get-ScenarioTimeoutSeconds($Scenario) {
+    $steps = @($Scenario.steps)
+    if ($steps.Count -lt 1 -or $steps.Count -gt 32) { throw 'A scenario needs between 1 and 32 steps.' }
+    $milliseconds = 30000L
+    foreach ($step in $steps) {
+        $settle = $step.settleMilliseconds
+        if (($settle -isnot [int] -and $settle -isnot [long]) -or $settle -lt 0 -or $settle -gt 2000) {
+            throw 'Each scenario settle wait must be an integer between 0 and 2000 milliseconds.'
+        }
+        # Replay allows 15 seconds to resolve a selector and five for its state transition.
+        $milliseconds += 20000L + $settle
+    }
+    [int][Math]::Max(90, [Math]::Ceiling($milliseconds / 1000.0))
+}
+
+function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [string[]]$SourceFiles = @(),
+    [string]$RuntimeManifestPath = '') {
     if ($Role -notin @('baseline', 'candidate')) { throw 'Unknown capture role.' }
     Assert-FrozenScenario $Context
+    $scenarioTimeoutSeconds = Get-ScenarioTimeoutSeconds $Context.scenario
+    $recordingTimeoutSeconds = 90 + $scenarioTimeoutSeconds + 30
     if ((Get-ProfilerHash $Context.profilerCli) -ne $Context.profilerSha256) { throw 'Profiler payload changed.' }
     $sourceHash = Get-SourceHash $RepositoryPath $SourceFiles
     $directory = Join-Path $Context.directory $Role
@@ -761,10 +1067,30 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
         foreach ($name in @('scenarioSha256', 'profilerSha256')) {
             if ($cached.$name -ne $Context.$name) { throw "Cached evidence belongs to different inputs: $name" }
         }
+        if ($Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture -and
+            (!$cached.PSObject.Properties['capture'] -or !$cached.capture -or
+             $cached.capture.profiler.payloadSha256 -ne $Context.guiCapture.payloadSha256)) {
+            throw 'Cached evidence belongs to a different capture backend or GUI payload.'
+        }
+        if ($RuntimeManifestPath -and (!$cached.nativeRuntime -or
+            $cached.nativeRuntime.manifest.sha256 -ne (Get-Sha256 $RuntimeManifestPath))) {
+            throw 'Cached native evidence belongs to a different source-built runtime.'
+        }
         return $cached
     }
     Assert-InteractiveDesktop
     $executable = Build-Application $Context $RepositoryPath (Join-Path $directory 'app')
+    if ($RuntimeManifestPath) {
+        Import-Module "$PSScriptRoot\NativeRuntime.psm1" -Force -DisableNameChecking
+        $originalDeployment = Join-Path $directory 'original-app'
+        Copy-Deployment (Split-Path $executable -Parent) $originalDeployment
+        Write-JsonFile (Join-Path (Split-Path $executable -Parent) '.ui-profiler-private-deployment.json') @{
+            schema = 'ui-profiler/private-deployment/v1'
+            originalDirectory = $originalDeployment; executable = [IO.Path]::GetFileName($executable)
+        }
+        [void](Install-NativeRuntime -DeploymentDirectory (Split-Path $executable -Parent) -ManifestPath $RuntimeManifestPath)
+        [void](Assert-NativeRuntime -DeploymentDirectory (Split-Path $executable -Parent) -ManifestPath $RuntimeManifestPath)
+    }
     if ((Get-SourceHash $RepositoryPath $SourceFiles) -ne $sourceHash) {
         throw 'The build changed source files; resolve that before capturing.'
     }
@@ -776,11 +1102,21 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
     $identity = $null
     $pump = $null
     $errors = $null
+    $automationOut = $null
+    $automationErrors = $null
+    $captureComplete = $false
     try {
         $arguments = @('live', '--exe', $executable, '--working-directory', (Split-Path $executable -Parent),
             '--trust-local-binaries', '--session-directory', $directory, '--snapshot-directory', $directory,
-            '--interactive', '--duration', '120', '--json')
-        $process = New-LoggedProcess $Context.profilerCli $arguments $directory
+            '--interactive', '--duration', [string]$recordingTimeoutSeconds, '--json')
+        if ($Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture) {
+            $process = New-LoggedProcess (Get-Command pwsh -ErrorAction Stop).Path @(
+                '-NoProfile', '-NonInteractive', '-File', $Context.guiCapture.driver.path,
+                '-GuiPath', $Context.guiCapture.executable, '-Executable', $executable,
+                '-Directory', $directory, '-LifetimeSeconds', [string]$recordingTimeoutSeconds) $directory
+        } else {
+            $process = New-LoggedProcess $Context.profilerCli $arguments $directory
+        }
         $errors = $process.StandardError.ReadToEndAsync()
         $pump = @{
             process = $process
@@ -814,6 +1150,10 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
                 throw 'The profiler did not launch the task-owned executable.'
             }
         } finally { $target.Dispose() }
+        $loadedBefore = @()
+        if ($RuntimeManifestPath) {
+            $loadedBefore = @(Assert-LoadedNativeRuntime $identity (Split-Path $executable -Parent) $RuntimeManifestPath)
+        }
         $actionPath = Join-Path $directory 'actions.json'
         $automation = New-LoggedProcess 'powershell.exe' @('-NoProfile', '-NonInteractive', '-File', $Context.scenarioScript,
             '-ProcessId', [string]$identity.processId, '-CreationTimeFileTime', [string]$identity.creationTimeFileTime,
@@ -824,12 +1164,20 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
         $timeout.Restart()
         while (!$automation.HasExited) {
             Receive-ProfilerOutput $pump
-            if ($process.HasExited -or $timeout.Elapsed.TotalSeconds -gt 90) { throw 'Scenario or recording stopped before verification.' }
+            if ($process.HasExited) { throw 'Profiler stopped before scenario verification; see live.ndjson and live.stderr.log.' }
+            if ($timeout.Elapsed.TotalSeconds -gt $scenarioTimeoutSeconds) {
+                throw "Scenario timed out after $scenarioTimeoutSeconds seconds; see actions.json and automation.log. The capture budget remains spent."
+            }
             Start-Sleep -Milliseconds 20
         }
         [IO.File]::WriteAllText((Join-Path $directory 'automation.log'),
             $automationOut.GetAwaiter().GetResult() + "`n" + $automationErrors.GetAwaiter().GetResult())
         if ($automation.ExitCode -ne 0) { throw "Scenario failed. See $directory\automation.log" }
+        $loadedAfter = @()
+        if ($RuntimeManifestPath) {
+            [void](Assert-NativeRuntime -DeploymentDirectory (Split-Path $executable -Parent) -ManifestPath $RuntimeManifestPath)
+            $loadedAfter = @(Assert-LoadedNativeRuntime $identity (Split-Path $executable -Parent) $RuntimeManifestPath)
+        }
         Request-ProfilerSnapshot $pump
         $process.StandardInput.WriteLine('stop')
         $process.StandardInput.Flush()
@@ -871,7 +1219,7 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
             $queryArguments = @('events', $database, '--frame', [string]$frame.FrameId, '--count', '100')
             [void](Invoke-ProfilerQuery $Context.profilerCli $queryArguments $directory "tick-$($frame.FrameId)")
         }
-        $pump.writer.Flush()
+        Complete-ProfilerOutput $pump
         $evidence = @()
         $queryNames = @('info', 'frames', 'clock-anchor', 'interesting', 'cpu', 'launch', 'summary', 'objects', 'frame-list') +
             @($slowest | ForEach-Object { "tick-$($_.FrameId)" })
@@ -881,6 +1229,14 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
         }
         foreach ($path in $pump.summary.snapshotPaths) {
             $evidence += @{ kind = 'snapshot'; path = $path; sha256 = Get-Sha256 $path }
+        }
+        if ($Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture) {
+            if ($pump.summary.captureBackend -ne 'gui' -or
+                $pump.summary.gui.executable -ne $Context.guiCapture.executable) {
+                throw 'Expected an owned GUI capture; CLI evidence cannot satisfy this request.'
+            }
+            $guiPath = Join-Path $directory 'gui-identity.json'
+            $evidence += @{ kind = 'gui-capture'; path = $guiPath; sha256 = Get-Sha256 $guiPath }
         }
         $livePath = Join-Path $directory 'live.ndjson'
         $evidence += @{ kind = 'native-stream'; path = $livePath; sha256 = Get-Sha256 $livePath }
@@ -909,9 +1265,27 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
             queries = @('info', 'frames', 'dump --max 1', 'interesting', 'cpu', 'launch', 'summary', 'objects',
                 'frames --list', 'events --frame ID --count 100')
         }
+        if ($RuntimeManifestPath) {
+            $runtime = Read-JsonFile $RuntimeManifestPath
+            $measurement | Add-Member -NotePropertyName nativeRuntime -NotePropertyValue @{
+                trialId = $Context.recommendationId; trialDirectory = $Context.directory; level = $runtime.level
+                manifest = @{ path = $RuntimeManifestPath; sha256 = Get-Sha256 $RuntimeManifestPath }
+                sourceSha256 = $runtime.source.sha256
+                loadedBefore = $loadedBefore; loadedAfter = $loadedAfter
+            }
+            $measurement.evidence += @{ kind = 'native-runtime'; path = $RuntimeManifestPath; sha256 = Get-Sha256 $RuntimeManifestPath }
+        }
+        if ($Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture) {
+            $measurement | Add-Member -NotePropertyName capture -NotePropertyValue @{
+                backend = 'gui'; profiler = $Context.guiCapture
+                process = $pump.summary.gui; sourceRecording = $pump.summary.sourceRecording
+                metricSource = 'Finalized GUI SQLite ProcessMetrics; not chart text or external sampling.'
+            }
+        }
         Assert-Measurement $measurement
         Write-JsonFile $reportPath $measurement
         Write-JsonFile (Join-Path $directory 'capture-budget.json') @{ state = 'complete'; sourceSha256 = $sourceHash }
+        $captureComplete = $true
         $measurement
     } catch {
         Write-JsonFile (Join-Path $directory 'capture-budget.json') @{ state = 'failed'; sourceSha256 = $sourceHash; error = $_.Exception.Message }
@@ -919,6 +1293,10 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
     } finally {
         if ($null -ne $automation) {
             if (!$automation.HasExited) { Stop-Process -Id $automation.Id -ErrorAction SilentlyContinue }
+            if ($null -ne $automationOut -and $automationOut.Wait(5000) -and $automationErrors.Wait(5000)) {
+                [IO.File]::WriteAllText((Join-Path $directory 'automation.log'),
+                    $automationOut.GetAwaiter().GetResult() + "`n" + $automationErrors.GetAwaiter().GetResult())
+            }
             $automation.Dispose()
         }
         if ($null -ne $process) {
@@ -939,16 +1317,23 @@ function Invoke-Measurement($Context, [string]$RepositoryPath, [string]$Role, [s
             }
             $process.Dispose()
         }
-        if ($null -ne $pump) { $pump.writer.Dispose() }
+        if ($null -ne $pump -and $null -ne $pump.writer) { $pump.writer.Dispose() }
+        if (!$captureComplete -and $Context.PSObject.Properties['guiCapture'] -and $Context.guiCapture -and
+            (Test-Path -LiteralPath (Join-Path $directory 'gui-identity.json'))) {
+            Close-OwnedApplication (Read-JsonFile (Join-Path $directory 'gui-identity.json')) $Context.guiCapture.executable
+        }
         Close-OwnedApplication $identity $executable
     }
 }
 
 Export-ModuleMember -Function Read-JsonFile, Write-JsonFile, Get-Sha256, Assert-FileHash, Get-RepositoryFiles,
-    Get-SourceHash, Get-ProfilerHash, Copy-ApplicationSource, New-LoggedProcess, Invoke-LoggedProcess,
+    Get-SupplementalEvidenceBinding, Assert-SupplementalEvidenceBinding,
+    Get-NativeSampleSubmodules, Get-NativeRepositoryFiles,
+    Get-SourceHash, Get-ProfilerHash, Assert-GuiProfilerDeployment, Copy-ApplicationSource, New-LoggedProcess, Invoke-LoggedProcess,
     Build-Application, Copy-Deployment, Reserve-Capture, Get-TickStatistics, Assert-Measurement,
     Compare-TimingMeasurements, Compare-Measurements, Export-MeasurementAnalysis, Invoke-ProfilerQuery,
-    Receive-ProfilerOutput, Request-ProfilerSnapshot, Invoke-Measurement, Assert-MinimalCandidate, Assert-InteractiveDesktop,
+    Export-ControlAnalysis, Export-TrialControlComparison,
+    Receive-ProfilerOutput, Complete-ProfilerOutput, Request-ProfilerSnapshot, Get-ScenarioTimeoutSeconds, Invoke-Measurement, Assert-MinimalCandidate, Assert-InteractiveDesktop,
     Assert-RunDirectory, Assert-OriginalSource, Assert-InvestigationState, Assert-FrozenScenario,
     New-ProfilerMcpConfiguration, Build-ProfilerMcp, Invoke-AdeRuntime, Close-OwnedApplication,
     Assert-ScopedCandidate, Assert-TrialContext, Assert-TrialReference, Write-RecommendationReport, Assert-RecommendationReport

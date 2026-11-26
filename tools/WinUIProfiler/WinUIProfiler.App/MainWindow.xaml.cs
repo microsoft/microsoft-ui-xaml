@@ -250,6 +250,7 @@ public sealed partial class MainWindow : Window
     {
         foreach (var pair in new (DependencyObject Element, string Key)[]
         {
+            (Root, "StatusAutomation"),
             (Mode, "ModeAutomation"),
             (ArgumentsText, "ArgumentsAutomation"),
             (WorkingDirectoryText, "DirectoryAutomation"),
@@ -378,6 +379,21 @@ public sealed partial class MainWindow : Window
             ConnectionStatus.Visibility = model.TracePath is not null || model.IsBusy || model.State == "Failed"
                 ? Visibility.Visible : Visibility.Collapsed;
             AutomationProperties.SetItemStatus(ConnectionStatus, model.State);
+            AutomationProperties.SetItemStatus(Root, JsonSerializer.Serialize(new
+            {
+                schema = "winui-profiler/gui-session/v1",
+                state = model.State,
+                scope = model.Connection?.Scope,
+                etwState = model.Etw is not null && model.EtwError is null ? "available" : "unavailable",
+                etw = model.Etw,
+                etwError = model.EtwError,
+                recordingState = model.Recording is not null && model.RecordingError is null ? "available" : "unavailable",
+                recording = model.Recording,
+                recordingError = model.RecordingError,
+                error = model.ErrorMessage,
+                ready = SnapshotButton.IsEnabled,
+                snapshot = new { busy = snapshotOperation is not null || initialSnapshotPending, path = snapshot?.Path }
+            }));
             // The status bar stays open, so screen readers aren't told when it changes.
             var traceEnd = model.State is "TraceFinished" or "TraceStopped" or "TraceFailed";
             if (traceEnd && !traceEndShown)

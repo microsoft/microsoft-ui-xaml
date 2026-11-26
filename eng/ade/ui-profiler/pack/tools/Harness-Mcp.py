@@ -102,7 +102,7 @@ def validate_step(step):
     object_keys(step, ("id", "action", "selector", "settleMilliseconds"), ("text", "keys"))
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", text(step["id"], "step id", 80)):
         raise ValueError("A step id must be a lowercase slug")
-    if text(step["action"], "action", 32) not in {"type-text", "keys", "invoke", "assert", "expand", "collapse"}:
+    if text(step["action"], "action", 32) not in {"type-text", "keys", "invoke", "select", "assert", "expand", "collapse"}:
         raise ValueError("Unsupported UI action; shell commands and arbitrary scripts are not actions")
     validate_selector(step["selector"])
     integer(step["settleMilliseconds"], "settleMilliseconds", 0, 2000)
@@ -132,8 +132,68 @@ def selector_observed(selector, observations):
     return False
 
 
+def validate_intent(intent, steps):
+    object_keys(intent, (
+        "schema", "question", "family", "target", "setup", "action", "stepCount",
+        "repetitions", "waits", "validRunChecks", "metrics", "healthy",
+        "regressionChecks", "evidenceRules",
+    ))
+    if intent["schema"] != "ui-profiler/intent/v1":
+        raise ValueError("Unsupported intent schema")
+    for field in ("question", "setup", "action", "healthy"):
+        text(intent[field], field, 4000)
+    if text(intent["family"], "family", 32) not in {
+        "creation", "idle", "theme", "state-change", "heavy", "launch", "lifetime", "gpu-memory", "custom",
+    }:
+        raise ValueError("Unsupported intent family")
+    object_keys(intent["target"], ("application", "control", "level"))
+    text(intent["target"]["application"], "application")
+    if text(intent["target"]["level"], "target level", 32) not in {"application", "control", "framework"}:
+        raise ValueError("Unsupported intent target level")
+    if intent["target"]["level"] == "control" or intent["target"]["control"] != "":
+        text(intent["target"]["control"], "control")
+    integer(intent["stepCount"], "stepCount", len(steps), len(steps))
+    integer(intent["repetitions"], "repetitions", 1, 1)
+    for field, maximum in (("waits", 32), ("validRunChecks", 16), ("metrics", 32), ("regressionChecks", 16)):
+        if not isinstance(intent[field], list) or not 1 <= len(intent[field]) <= maximum:
+            raise ValueError(f"{field} needs 1..{maximum} entries")
+    for field in ("validRunChecks", "regressionChecks"):
+        for check in intent[field]:
+            text(check, field, 4000)
+    for wait in intent["waits"]:
+        object_keys(wait, ("kind", "value", "completion"))
+        kind = text(wait["kind"], "wait kind", 32)
+        if kind == "presented-frames":
+            raise ValueError("presented-frames waits are unsupported; record an unsupported metric and validity limitation")
+        if kind not in {"delay", "state"}:
+            raise ValueError("Unsupported intent wait kind")
+        integer(wait["value"], "wait value", 0 if kind == "delay" else 1, 2000)
+        text(wait["completion"], "wait completion", 4000)
+        if kind == "delay" and wait["value"] not in {step["settleMilliseconds"] for step in steps}:
+            raise ValueError("A delay must describe an existing step's settleMilliseconds")
+    for metric in intent["metrics"]:
+        object_keys(metric, ("name", "scope", "availability", "interpretation"))
+        text(metric["name"], "metric name")
+        text(metric["interpretation"], "metric interpretation", 4000)
+        if text(metric["scope"], "metric scope", 32) not in {"process", "action", "control", "framework"}:
+            raise ValueError("Unsupported intent metric scope")
+        if text(metric["availability"], "metric availability", 32) not in {
+            "supported", "partial", "unsupported", "not-captured",
+        }:
+            raise ValueError("Unsupported intent metric availability")
+    if intent["evidenceRules"] != ["measured", "code-observation", "unverified"]:
+        raise ValueError("evidenceRules must be measured, code-observation, unverified in canonical order")
+    # Intent is descriptive metadata; only validated scenario steps drive replay and its budgets.
+    return copy.deepcopy(intent)
+
+
 def freeze_plan(plan, request, projects, observations):
-    object_keys(plan, ("build", "window", "steps"))
+    object_keys(plan, ("build", "window", "steps"), ("intent",))
+    if "intentPolicy" in request:
+        if request["intentPolicy"] != "single-run/v1":
+            raise ValueError("Unsupported intent policy")
+        if "intent" not in plan:
+            raise ValueError("The single-run/v1 policy requires intent")
     build = validate_build(plan["build"])
     if build["project"].casefold() not in {str(PureWindowsPath(p)).casefold() for p in projects}:
         raise ValueError("The selected project is not a tracked application project")
@@ -146,7 +206,7 @@ def freeze_plan(plan, request, projects, observations):
     for step in steps:
         if not selector_observed(step["selector"], observations):
             raise ValueError(f"Selector for {step['id']} was not uniquely resolved during the unrecorded preview")
-    return {
+    result = {
         "schema": "ui-profiler/scenario/v1",
         "name": "user-scenario",
         "description": text(request["scenario"], "scenario", 8000),
@@ -154,6 +214,9 @@ def freeze_plan(plan, request, projects, observations):
         "window": copy.deepcopy(plan["window"]),
         "steps": steps,
     }
+    if "intent" in plan:
+        result["intent"] = validate_intent(plan["intent"], steps)
+    return result
 
 
 def parse_agent_events(raw, required_server=None, required_tool=None, expected_database=None):
@@ -202,9 +265,14 @@ def parse_agent_events(raw, required_server=None, required_tool=None, expected_d
     return {"answer": answers[-1], "queries": calls}
 
 
-def validate_recommendation(value, source):
-    object_keys(value, ("schema", "summary", "recommendations", "risks"))
-    if value["schema"] != "ui-profiler/recommendations/v1":
+def validate_recommendation(value, source, knowledge_source=None):
+    schema = value.get("schema") if isinstance(value, dict) else None
+    layered = schema in ("ui-profiler/recommendations/v2", "ui-profiler/recommendations/v3")
+    detailed = schema == "ui-profiler/recommendations/v3"
+    object_keys(value, ("schema", "summary", "recommendations", "risks") +
+                (("coverage", "runtimeSourceParity") if layered else ()) +
+                (("detailedAnalysis",) if detailed else ()))
+    if schema not in ("ui-profiler/recommendations/v1", "ui-profiler/recommendations/v2", "ui-profiler/recommendations/v3"):
         raise ValueError("Unsupported expert recommendation schema/verdict")
     if len(json.dumps(value, allow_nan=False).encode("utf-8")) > 1024 * 1024:
         raise ValueError("The recommendation report exceeds its one-MiB payload budget")
@@ -217,9 +285,36 @@ def validate_recommendation(value, source):
     if not isinstance(recommendations, list) or not 1 <= len(recommendations) <= 64:
         raise ValueError("The bounded recommendation report needs 1..64 entries")
     root = Path(source).resolve(strict=True)
+    levels = {"application", "control", "framework"}
+    knowledge = None
+    if detailed:
+        object_keys(value["detailedAnalysis"], levels)
+        fields = ("time", "cpu", "memory", "modelAnalysis", "unverified", "validation")
+        for level in levels:
+            analysis = value["detailedAnalysis"][level]
+            object_keys(analysis, ("question", *fields))
+            text(analysis["question"], f"{level} question", 4000)
+            for field in fields:
+                if not isinstance(analysis[field], list) or not 1 <= len(analysis[field]) <= 16:
+                    raise ValueError(f"{level} {field} needs 1..16 entries")
+                for entry in analysis[field]:
+                    text(entry, f"{level} {field}", 4000)
+    if layered:
+        object_keys(value["coverage"], levels)
+        for level in levels:
+            text(value["coverage"][level], f"{level} coverage", 4000)
+        text(value["runtimeSourceParity"], "runtime/source parity", 4000)
+        if not knowledge_source:
+            raise ValueError("Three-level recommendations require the MUX source repository")
+        knowledge = Path(knowledge_source).resolve(strict=True)
     identifiers = set()
     for recommendation in recommendations:
-        object_keys(recommendation, ("id", "title", "verdict", "summary", "observations", "hypotheses", "files", "risks"))
+        object_keys(recommendation, ("id", "title", "verdict", "summary", "observations", "hypotheses", "files", "risks") +
+                    (("level", "validation") if layered else ()))
+        level = recommendation.get("level", "application")
+        text(level, "recommendation level", 32)
+        if level not in levels:
+            raise ValueError("A recommendation level must be application, control or framework")
         identifier = text(recommendation["id"], "recommendation id", 80)
         if (not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", identifier) or identifier in identifiers
                 or re.fullmatch(r"con|prn|aux|nul|com[1-9]|lpt[1-9]", identifier)):
@@ -227,23 +322,29 @@ def validate_recommendation(value, source):
         identifiers.add(identifier)
         text(recommendation["title"], "title", 256)
         text(recommendation["summary"], "summary", 4000)
-        if recommendation["verdict"] not in {"propose", "insufficient-evidence"}:
+        verdicts = {"propose", "insufficient-evidence"} if level == "application" else {"recommend", "insufficient-evidence"}
+        if recommendation["verdict"] not in verdicts:
             raise ValueError("Unsupported recommendation verdict")
-        for field in ("observations", "hypotheses", "risks"):
+        for field in ("observations", "hypotheses", "risks") + (("validation",) if layered else ()):
             if not isinstance(recommendation[field], list) or not 1 <= len(recommendation[field]) <= 16:
                 raise ValueError(f"{field} needs 1..16 entries")
             for entry in recommendation[field]:
                 text(entry, field, 4000)
         files = recommendation["files"]
-        if not isinstance(files, list) or (recommendation["verdict"] == "propose") != bool(files):
-            raise ValueError("A proposed fix needs an explicit file scope; insufficient evidence authorizes no files")
+        if not isinstance(files, list) or (recommendation["verdict"] != "insufficient-evidence") != bool(files):
+            raise ValueError("A recommendation needs an explicit file scope; insufficient evidence authorizes no files")
         resolved = set()
         for item in files:
             object_keys(item, ("path", "change"))
             path = PureWindowsPath(relative_path(item["path"]))
-            target = root.joinpath(*path.parts).resolve(strict=True)
-            if not target.is_relative_to(root) or not target.is_file() or target.suffix.lower() not in {".cs", ".xaml"}:
-                raise ValueError("The expert may recommend changes only to existing app C#/XAML files")
+            repository = root if level == "application" else knowledge
+            target = repository.joinpath(*path.parts).resolve(strict=True)
+            suffixes = {".cs", ".xaml"} if level == "application" else {".cpp", ".h", ".hpp", ".inl", ".idl", ".xaml", ".cs"}
+            prefix = {"control": ("controls", "dev"), "framework": ("dxaml", "xcp")}.get(level)
+            if (not target.is_relative_to(repository) or not target.is_file() or target.suffix.lower() not in suffixes
+                    or (prefix and (tuple(part.lower() for part in path.parts[:2]) != prefix
+                                    or not target.is_relative_to(repository.joinpath(*prefix).resolve(strict=True))))):
+                raise ValueError("The recommendation must target existing source in its declared repository and layer")
             if target in resolved or any(part.lower() == ".github" or part.lower().endswith(("test", "tests"))
                                          for part in path.parts):
                 raise ValueError("Duplicate or protected expert file")
@@ -252,11 +353,57 @@ def validate_recommendation(value, source):
     return value
 
 
+def validate_source_coverage(raw, source, knowledge_source):
+    roots = {"application": Path(source).resolve(strict=True),
+             "control": Path(knowledge_source).resolve(strict=True) / "controls" / "dev",
+             "framework": Path(knowledge_source).resolve(strict=True) / "dxaml" / "xcp"}
+    coverage = {level: {} for level in roots}
+    events = [json.loads(line) for line in raw.splitlines() if line.strip()]
+    starts = {event["data"]["toolCallId"]: event["data"] for event in events
+              if event.get("type") == "tool.execution_start" and "toolCallId" in event.get("data", {})}
+    for event in events:
+        data = event.get("data", {})
+        if event.get("type") != "tool.execution_complete" or data.get("success") is not True:
+            continue
+        start = starts.get(data.get("toolCallId"), {})
+        if start.get("mcpServerName") or start.get("toolName") != "view":
+            continue
+        arguments = start.get("arguments")
+        if not isinstance(arguments, dict):
+            continue
+        path = arguments.get("path")
+        if not isinstance(path, str):
+            continue
+        target = Path(path).resolve()
+        if not target.is_file() or target.suffix.lower() not in {".cs", ".xaml", ".cpp", ".h", ".hpp", ".inl", ".idl"}:
+            continue
+        for level, root in roots.items():
+            if target.is_relative_to(root):
+                coverage[level][str(target)] = {
+                    "path": str(target), "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                    "toolCallId": data["toolCallId"],
+                }
+    if any(not reads for reads in coverage.values()):
+        raise ValueError("The expert must successfully read actual application, control and framework source")
+    return {level: list(reads.values()) for level, reads in coverage.items()}
+
+
+def read_contract_reference(reference, directory, filename):
+    expected = Path(directory) / "pack" / "knowledge" / filename
+    if Path(reference["path"]) != expected or expected.is_symlink():
+        raise ValueError("The frozen contract reference has an unexpected path")
+    raw = expected.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != reference["sha256"]:
+        raise ValueError("The frozen contract content changed")
+    return {**reference, "text": raw.decode("utf-8-sig")}
+
+
 class Harness:
     def __init__(self, request=None):
         self.request = request or {}
         self.active_previews = set()
         self.contracts_sha256 = ""
+        self.intent_catalog_sha256 = ""
 
     def resolve_directory(self, directory=None):
         directory = directory or self.request.get("directory")
@@ -278,16 +425,25 @@ class Harness:
             result = subprocess.run(
                 ["pwsh", "-NoProfile", "-NonInteractive", "-File",
                  str(ROOT / "Invoke-HarnessTool.ps1"), "-Operation", operation, "-ArgumentsPath", str(path)],
-                capture_output=True, encoding="utf-8", timeout=1800, check=False,
+                stdin=subprocess.DEVNULL, capture_output=True, encoding="utf-8", timeout=1800, check=False,
                 env={**os.environ, "PATH": str(Path(sys.executable).parent) + os.pathsep + os.environ.get("PATH", "")},
             )
         lines = [
-            line.removeprefix("UI-PROFILER-RESULT: ") for line in result.stdout.splitlines()
+            line.removeprefix("UI-PROFILER-RESULT: ") for line in result.stdout.split("\n")
             if line.startswith("UI-PROFILER-RESULT: ")
         ]
         if result.returncode or not lines:
             raise RuntimeError(f"{operation} failed; no success was recorded.\n{result.stderr[-6000:]}")
-        report = json.loads(lines[-1])
+        try:
+            report = json.loads(lines[-1])
+        except json.JSONDecodeError as error:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", prefix=f"{operation.lower()}-invalid-json-",
+                suffix=".stdout.log", dir=directory, delete=False,
+            ) as diagnostic:
+                diagnostic.write(result.stdout)
+                diagnostic_path = diagnostic.name
+            raise ValueError(f"{operation} returned invalid JSON; raw output: {diagnostic_path}") from error
         object_keys(report, ("schema", "operation", "state", "data"))
         if report["schema"] != "ui-profiler/tool-result/v1" or report["operation"] != operation or report["state"] not in STATES:
             raise ValueError("Invalid harness tool output")
@@ -325,23 +481,38 @@ def create_server(request=None):
 
         This is guidance, not permission to override deterministic validation, freeze, capture or
         approval gates. The source contract path is fixed; the caller cannot supply another file.
+        data.intentCatalog contains the additive planning catalog (path, sha256, text).
         """
         selected = directory or harness.request.get("directory")
         if selected:
             selected = harness.resolve_directory(selected)
         if selected and (Path(selected) / "context.json").is_file():
-            return harness.call("Contracts", selected)
+            status = harness.call("Status", selected)
+            metadata = json.loads((Path(selected) / "context.json").read_text(encoding="utf-8-sig"))
+            data = read_contract_reference(metadata["contracts"], selected, "harness-contracts.md")
+            data["intentCatalog"] = (
+                read_contract_reference(metadata["intentCatalog"], selected, "intent-catalog.md")
+                if metadata.get("intentCatalog") else None
+            )
+            return {"schema": "ui-profiler/tool-result/v1", "operation": "Contracts",
+                    "state": status["state"], "data": data}
         path = ROOT.parents[1] / "CONTRACTS.md"
         raw = path.read_bytes()
+        catalog = ROOT.parent / "knowledge" / "intent-catalog.md"
+        catalog_raw = catalog.read_bytes()
         harness.contracts_sha256 = hashlib.sha256(raw).hexdigest()
+        harness.intent_catalog_sha256 = hashlib.sha256(catalog_raw).hexdigest()
         return {"schema": "ui-profiler/tool-result/v1", "operation": "Contracts", "state": "planning",
                 "data": {"path": str(path), "sha256": harness.contracts_sha256,
-                         "text": raw.decode("utf-8-sig")}}
+                         "text": raw.decode("utf-8-sig"),
+                         "intentCatalog": {"path": str(catalog), "sha256": harness.intent_catalog_sha256,
+                                           "text": catalog_raw.decode("utf-8-sig")}}}
 
     @server.tool(annotations=controlled)
     def begin(
         directory: str = "", application_repository: str = "", scenario: str = "",
         knowledge_repository: str = "", expert_home: str = "", profiler_cli: str = "",
+        profiler_gui: str = "", capture_backend: str = "",
         dotnet: str = "", ade_copilot_cli: str = "", github_account: str = "",
         allow_preview: bool = False, allow_measurements: bool = False,
     ) -> ToolResult:
@@ -354,6 +525,7 @@ def create_server(request=None):
             "directory": directory, "applicationRepository": application_repository,
             "scenario": scenario, "knowledgeRepository": knowledge_repository,
             "expertHome": expert_home, "profilerCli": profiler_cli, "dotnet": dotnet,
+            "profilerGui": profiler_gui, "captureBackend": capture_backend,
             "adeCopilotCli": ade_copilot_cli, "githubAccount": github_account,
             "allowPreview": allow_preview, "allowMeasurements": allow_measurements,
         }
@@ -363,11 +535,17 @@ def create_server(request=None):
         if selected.get("contractsSha256", harness.contracts_sha256) != harness.contracts_sha256:
             raise ValueError("The contracts changed since the original request; use a new investigation")
         selected["contractsSha256"] = harness.contracts_sha256
+        if selected.get("intentCatalogSha256", harness.intent_catalog_sha256) != harness.intent_catalog_sha256:
+            raise ValueError("The intent catalog changed since the original request; use a new investigation")
+        if selected.get("intentPolicy") == "single-run/v1":
+            selected["intentCatalogSha256"] = harness.intent_catalog_sha256
         for key, value in supplied.items():
             if value and key in selected and selected[key] != value:
                 raise ValueError(f"{key} differs from the original user request")
             if value:
                 selected[key] = value
+        if not harness.request:
+            selected.setdefault("captureBackend", "Gui")
         for key in ("directory", "applicationRepository", "scenario", "knowledgeRepository", "expertHome", "profilerCli"):
             text(selected.get(key), key, 8000 if key == "scenario" else 1024)
         directory = selected.pop("directory")
@@ -399,8 +577,9 @@ def create_server(request=None):
         """Perform one safe UIA step on the owned preview; no capture. Then inspect_ui to observe it.
 
         A step has id, action, selector, settleMilliseconds and text/keys only when needed.
-        Actions: type-text, keys, invoke, assert, expand, collapse. Selector: name/automationId/
+        Actions: type-text, keys, invoke, select, assert, expand, collapse. Selector: name/automationId/
         className, optional controlType/index. Only navigation keys/Ctrl+A, no scripts/shortcuts.
+        select uses SelectionItemPattern on the owned element; it rejects an already selected item.
         """
         return harness.call("Act", directory, step=validate_step(step))
 
@@ -408,11 +587,15 @@ def create_server(request=None):
     def freeze_scenario(plan: dict, directory: str = "") -> ToolResult:
         """Validate and freeze a run-local plan derived from the user's language and observed UI.
 
-        plan has build, window, steps (1..32). Every selector must have resolved in a preview
+        plan has build, window, steps (1..32), and optional validated ui-profiler/intent/v1
+        metadata. intent is required for request.intentPolicy=single-run/v1; unknown policies fail.
+        Read data.intentCatalog from harness_contracts. Intent cannot supply executable options,
+        replace steps, increase budgets or assert presented-frame waits; repetitions must be 1.
+        Every selector must have resolved in a preview
         inspection; ambiguous matches require an index. User text is preserved, not model-rewritten.
         Closes only the owned preview. The exact plan/hash is replayed at both measurements.
         """
-        object_keys(plan, ("build", "window", "steps"))
+        object_keys(plan, ("build", "window", "steps"), ("intent",))
         return harness.call("Freeze", directory, plan=plan)
 
     @server.tool(annotations=controlled)
@@ -435,7 +618,9 @@ def create_server(request=None):
         """Keep the actual expert's full ranked recommendation report against the shared baseline.
 
         Requires a successful real profiler evidence MCP call and a nonempty structured transcript.
-        Each actionable item is an independent trial, never a cumulative fix. Insufficient-evidence
+        Investigates application, control and framework source. Only application/propose items
+        become independent app trials; native recommend items retain target-workflow-required status.
+        Insufficient-evidence
         entries stay in the report without authorizing edits. No app edit or additional capture.
         """
         return harness.call("Recommend", directory)
@@ -498,6 +683,8 @@ def main():
     parser.add_argument("--required-tool")
     parser.add_argument("--recommendation")
     parser.add_argument("--application-source")
+    parser.add_argument("--knowledge-source")
+    parser.add_argument("--source-coverage")
     parser.add_argument("--probe-mcp")
     parser.add_argument("--expected-database")
     args = parser.parse_args()
@@ -508,7 +695,11 @@ def main():
         print(json.dumps(asyncio.run(probe_mcp(args.probe_mcp)), allow_nan=False))
     elif args.recommendation:
         value = json.loads(Path(args.recommendation).read_text(encoding="utf-8-sig"))
-        print(json.dumps(validate_recommendation(value, args.application_source), allow_nan=False))
+        print(json.dumps(validate_recommendation(value, args.application_source, args.knowledge_source), allow_nan=False))
+    elif args.source_coverage:
+        print(json.dumps(validate_source_coverage(
+            Path(args.source_coverage).read_text(encoding="utf-8-sig"), args.application_source, args.knowledge_source
+        ), allow_nan=False))
     elif args.parse_agent_events:
         print(json.dumps(parse_agent_events(
             Path(args.parse_agent_events).read_text(encoding="utf-8-sig"),

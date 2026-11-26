@@ -4,12 +4,14 @@ using Microsoft.Data.Sqlite;
 using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Ingestion;
+using WinUIProfiler.Engine.Metrics;
 using WinUIProfiler.Engine.Processing;
 
 namespace WinUIProfiler.Engine.Storage;
 
 internal sealed record ProcessRecordingStatus(SessionStart Source, bool IsPrimary, RecordingStatus? Recording,
-    long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, long DroppedEvents, string? Error);
+    long XamlEvents, long ProfilerEvents, long GpuMemoryEvents, long DroppedEvents, string? Error,
+    EventPipelineDiagnostics Queue);
 
 // Each writer indexes process-local addresses and frames. Never feed another target process into that writer,
 // where it would otherwise be mistaken for an external launcher.
@@ -89,14 +91,15 @@ internal sealed class ProcessRecordingGroup : IDisposable
         .Select(recording => recording.Writer?.Path)
         .OfType<string>()
         .ToArray();
-    internal Exception? Failure => recordings.Values.Select(recording => recording.Pipeline.Failure).FirstOrDefault(error => error is not null);
+    internal Exception? Failure => recordings.Values.Select(recording => recording.Pipeline.Failure ?? recording.Writer?.Failure)
+        .FirstOrDefault(error => error is not null);
     internal string? RecordingError => recordings.Values.FirstOrDefault(recording => recording.Error is not null) is { } failed
         ? $"PID {failed.Source.ProcessId}: {failed.Error}" : null;
 
     private ProcessRecordingStatus Status(Recording recording) => new(recording.Source,
         recording.Source.ProcessId == primaryProcessId, recording.Writer?.Status,
         recording.Counter.XamlEvents, recording.Counter.ProfilerEvents, recording.Counter.GpuMemoryEvents,
-        recording.Pipeline.DroppedEvents, recording.Error);
+        recording.Pipeline.DroppedEvents, recording.Error, recording.Pipeline.Diagnostics);
 
     internal void Post(ProfilerEvent profilerEvent)
     {
@@ -150,6 +153,18 @@ internal sealed class ProcessRecordingGroup : IDisposable
         Close("ETW could not start");
     }
 
+    internal void PostMetrics(MetricReading reading)
+    {
+        if (reading.Process.ProcessId != primaryProcessId)
+            throw new ArgumentException("GUI metrics must belong to the primary recorded process.");
+        if (Volatile.Read(ref closed) != 0)
+            throw new ObjectDisposedException(nameof(ProcessRecordingGroup));
+        var recording = recordings[primaryProcessId];
+        if (recording.Error is { } error)
+            throw new IOException(error);
+        recording.Writer?.PostMetrics(reading);
+    }
+
     // What the CPU sampling recorded, or why there is none (summary null), for every session file. Call before Close.
     internal void SetCpuSampling(CpuSamplingSummary? summary, string? note)
     {
@@ -167,7 +182,11 @@ internal sealed class ProcessRecordingGroup : IDisposable
         {
             try { recording.Pipeline.Dispose(); }
             catch (Exception error) { failures.Add(error); }
-            try { recording.Writer?.Close(reason, lostEvents, recording.Pipeline.DroppedEvents); }
+            try
+            {
+                recording.Writer?.Close(reason, lostEvents, recording.Pipeline.DroppedEvents);
+                if (recording.Writer?.Failure is { } failure) failures.Add(failure);
+            }
             catch (Exception error) { failures.Add(error); }
         }
         if (failures.Count > 0) throw new AggregateException("Closing process recordings failed.", failures);

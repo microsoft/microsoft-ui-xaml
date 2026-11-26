@@ -17,7 +17,7 @@ $exe = Join-Path $runtime 'ade.exe'
 if (!(Test-Path -LiteralPath $exe -PathType Leaf)) { throw 'ADE 0.1.0 is required for its real boundary contract tests.' }
 $launcher = [IO.Path]::GetFullPath("$PSScriptRoot\..\scripts\ade.ps1")
 $pwsh = (Get-Command pwsh -ErrorAction Stop).Source
-$temp = (New-Item -ItemType Directory (Join-Path $PSScriptRoot ('ui-profiler-contracts-' + [Guid]::NewGuid().ToString('N')))).FullName
+$temp = (New-Item -ItemType Directory (Join-Path ([IO.Path]::GetTempPath()) ('upc-' + [Guid]::NewGuid().ToString('N')))).FullName
 $passed = 0
 $saved = @{}
 foreach ($name in @('GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_COMMITTER_NAME', 'GIT_COMMITTER_EMAIL')) {
@@ -64,6 +64,12 @@ function Fixture([string]$Name, [string]$Body, [string]$Type = 'bug', [string]$T
             [IO.File]::WriteAllText((Join-Path $repo 'View.xaml'), 'original-view')
             [IO.File]::WriteAllText((Join-Path $repo 'Other.cs'), 'outside-original')
         }
+        git -C $repo init -q
+        if ($LASTEXITCODE -ne 0) { throw 'Could not initialize the owned synthetic repository.' }
+        git -C $repo add -A
+        if ($LASTEXITCODE -ne 0) { throw 'Could not index synthetic baseline files.' }
+        git -C $repo -c core.hooksPath=NUL commit -qm "Synthetic contract baseline`n`nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`nCopilot-Session: fe7e0679-84a3-41a3-9fa9-3342fe4afcda"
+        if ($LASTEXITCODE -ne 0) { throw 'Could not commit the owned synthetic baseline.' }
     }
     [IO.File]::WriteAllText((Join-Path $pack 'knowledge\contract.md'), 'Synthetic harness contract fixture; no model, app build, UI or capture.')
     $adapter = Join-Path $root 'test-adapter.ps1'
@@ -131,7 +137,8 @@ function Approve-Fixture($Case) {
 }
 function Run-Fixture($Case) { Platform @('run', '--run', $Case.proposal.runId, '--runs-dir', $Case.runs) }
 function Require-FixtureApproval($Case, [string]$RejectedHash = ('0' * 64)) {
-    Expect $Case.proposal.ok 'The inert SCRIPT proposal was not approvable.'
+    Expect $Case.proposal.ok ("The inert SCRIPT proposal was not approvable: " +
+        ($Case.proposal | ConvertTo-Json -Depth 10 -Compress))
     $statePath = Join-Path $Case.proposal.runDir 'state.json'
     $round = (Read-JsonFile $statePath).round
     Expect ($null -ne $round -and $round -eq 0) 'A fresh proposal already consumed a coding round.'

@@ -7,20 +7,30 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Processing;
 
+public sealed record EventPipelineDiagnostics(int Capacity, int Depth, int HighWaterMark, long AcceptedEvents,
+    long ProcessedEvents, long DroppedEvents, double ElapsedSeconds, double ProcessingMilliseconds);
+
 // Moves events from the ETW reader thread to one processing thread, which runs every processor in order. A live
 // session's events are dropped when the queue is full (Post); a trace's reader waits for room instead, so none is
 // dropped (ForTrace, PostBlocking).
 public sealed class EventPipeline : IDisposable
 {
-    // About 42 MB at the ~320 bytes per event measured on a real trace; holds more than a second of a
-    // startup burst (75,757 events in one second of a WinUI 3 Gallery launch were measured).
-    public const int DefaultCapacity = 131_072;
+    // About 84 MB at the ~320 bytes per event measured on a real trace; gives live bursts room
+    // while the processors catch up. Sustained overload still drops events.
+    public const int DefaultCapacity = 262_144;
 
     private readonly BlockingCollection<ProfilerEvent> queue;
     private readonly IReadOnlyList<IEventProcessor> processors;
     private readonly Thread thread;
     private readonly bool trace;
     private long droppedEvents;
+    private long acceptedEvents;
+    private long processedEvents;
+    private long processingTicks;
+    private int highWaterMark;
+    private readonly long started = Stopwatch.GetTimestamp();
+    private readonly object diagnosticsGate = new();
+    private EventPipelineDiagnostics? finalDiagnostics;
     private int disposed;
 
     public EventPipeline(IReadOnlyList<IEventProcessor> processors, int capacity = DefaultCapacity)
@@ -49,6 +59,37 @@ public sealed class EventPipeline : IDisposable
 
     public Exception? Failure { get; private set; }
 
+    public EventPipelineDiagnostics Diagnostics
+    {
+        get
+        {
+            lock (diagnosticsGate)
+            {
+                return finalDiagnostics ?? new(queue.BoundedCapacity, queue.Count, Volatile.Read(ref highWaterMark),
+                    Interlocked.Read(ref acceptedEvents), Interlocked.Read(ref processedEvents), DroppedEvents,
+                    Stopwatch.GetElapsedTime(started).TotalSeconds,
+                    Interlocked.Read(ref processingTicks) * 1000.0 / Stopwatch.Frequency);
+            }
+        }
+    }
+
+    private void Accepted()
+    {
+        Interlocked.Increment(ref acceptedEvents);
+        ObserveDepth(queue.Count);
+    }
+
+    private void ObserveDepth(int depth)
+    {
+        var previous = Volatile.Read(ref highWaterMark);
+        while (depth > previous)
+        {
+            var observed = Interlocked.CompareExchange(ref highWaterMark, depth, previous);
+            if (observed == previous) break;
+            previous = observed;
+        }
+    }
+
     // Never blocks the ETW reader: when the queue is full, the event is dropped and counted.
     public void Post(ProfilerEvent profilerEvent)
     {
@@ -59,7 +100,12 @@ public sealed class EventPipeline : IDisposable
 
         if (!queue.TryAdd(profilerEvent))
         {
+            ObserveDepth(queue.BoundedCapacity);
             Interlocked.Increment(ref droppedEvents);
+        }
+        else
+        {
+            Accepted();
         }
     }
 
@@ -82,6 +128,7 @@ public sealed class EventPipeline : IDisposable
                 Thread.Sleep(1);
             }
 
+            Accepted();
             return true;
         }
         catch (InvalidOperationException) when (queue.IsAddingCompleted)
@@ -98,10 +145,13 @@ public sealed class EventPipeline : IDisposable
             foreach (var profilerEvent in queue.GetConsumingEnumerable())
             {
                 sequence++;
+                var processingStarted = Stopwatch.GetTimestamp();
                 foreach (var processor in processors)
                 {
                     processor.Process(sequence, profilerEvent);
                 }
+                Interlocked.Add(ref processingTicks, Stopwatch.GetTimestamp() - processingStarted);
+                Interlocked.Increment(ref processedEvents);
             }
         }
         catch (Exception error)
@@ -127,6 +177,10 @@ public sealed class EventPipeline : IDisposable
 
         queue.CompleteAdding();
         thread.Join();
-        queue.Dispose();
+        lock (diagnosticsGate)
+        {
+            finalDiagnostics = Diagnostics;
+            queue.Dispose();
+        }
     }
 }

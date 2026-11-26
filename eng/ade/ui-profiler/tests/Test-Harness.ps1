@@ -2,6 +2,9 @@
 #Requires -Version 7
 $ErrorActionPreference = 'Stop'
 Import-Module "$PSScriptRoot\..\pack\tools\ProfilerHarness.psm1" -Force -DisableNameChecking
+& powershell.exe -NoProfile -NonInteractive -File "$PSScriptRoot\Test-UiSelection.ps1"
+if ($LASTEXITCODE -ne 0) { throw 'UIA selection replay tests failed.' }
+& "$PSScriptRoot\Test-GuiOwnership.ps1"
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('ui-profiler-tests-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory $temp | Out-Null
 $passed = 0
@@ -31,11 +34,39 @@ function New-Fixture([string]$Name, [double]$P95) {
     }
 }
 try {
+    Expect ((Get-ScenarioTimeoutSeconds @{ steps = @(@{ settleMilliseconds = 0 }) }) -eq 90) `
+        'Short scenarios lost their existing minimum timeout.'
+    $longScenario = @{ steps = @(1..32 | ForEach-Object { @{ settleMilliseconds = 2000 } }) }
+    Expect ((Get-ScenarioTimeoutSeconds $longScenario) -eq 734) `
+        'The full legal plan must include selector, transition and settle time for every step.'
+    foreach ($invalid in @($null, -1, 2001, 0.5, '1000', $true)) {
+        Expect-Failure { Get-ScenarioTimeoutSeconds @{ steps = @(@{ settleMilliseconds = $invalid }) } }
+    }
+    Expect-Failure { Get-ScenarioTimeoutSeconds @{ steps = @() } }
+    Expect-Failure { Get-ScenarioTimeoutSeconds @{ steps = @(1..33 | ForEach-Object { @{ settleMilliseconds = 0 } }) } }
+    $passed++
+
     $before = New-Fixture 'before' 20
     $after = New-Fixture 'after' 15
     $comparison = Compare-TimingMeasurements $before $after
     $row = $comparison.metrics | Where-Object metric -eq p95TickMs
     Expect ($row.delta -eq -5 -and $row.reductionPercent -eq 25) 'Incorrect observed delta/percentage.'
+    $passed++
+
+    $guiBefore = New-Fixture 'gui-before' 20
+    $guiAfter = New-Fixture 'gui-after' 15
+    foreach ($measurement in @($guiBefore, $guiAfter)) {
+        $measurement | Add-Member NoteProperty capture @{
+            backend = 'gui'; profiler = @{ payloadSha256 = $before.database.sha256 }
+            sourceRecording = @{ sha256 = $measurement.database.sha256 }
+        }
+    }
+    [void](Compare-TimingMeasurements $guiBefore $guiAfter)
+    Expect-Failure { Compare-TimingMeasurements $before $guiAfter }
+    $guiAfter.capture.profiler.payloadSha256 = Get-Sha256 $PSCommandPath
+    Expect-Failure { Compare-TimingMeasurements $guiBefore $guiAfter }
+    $guiAfter.capture.sourceRecording.sha256 = 'wrong'
+    Expect-Failure { Assert-Measurement $guiAfter }
     $passed++
 
     $before.metrics.p95TickMs = 0
@@ -147,12 +178,23 @@ for line in sys.stdin:
         Expect ($pump.items.Count -eq 1) 'Synthetic connection did not publish its initial snapshot.'
         Request-ProfilerSnapshot $pump 5
         Expect ($pump.items.Count -eq 2 -and $pump.items[1].data.path -eq 'end.json') 'End snapshot did not use the existing connection.'
+        Expect-Failure { Complete-ProfilerOutput $pump }
         $fake.StandardInput.WriteLine('stop')
         $fake.StandardInput.Flush()
         Expect ($fake.WaitForExit(5000)) 'Synthetic connection did not stop.'
+        while ($null -ne $pump.pending) {
+            Expect ($pump.pending.Wait(5000)) 'Synthetic output did not drain.'
+            Receive-ProfilerOutput $pump
+        }
+        Complete-ProfilerOutput $pump
+        $streamPath = Join-Path $temp 'synthetic.ndjson'
+        $streamHash = Get-Sha256 $streamPath
+        Expect ($streamHash.Length -eq 64) 'Finalized stream could not be hashed.'
+        $streamItems = @(Get-Content -LiteralPath $streamPath | ForEach-Object { $_ | ConvertFrom-Json })
+        Expect ($streamItems.Count -eq 2 -and $streamItems[1].data.path -eq 'end.json') 'Finalization lost captured output.'
     } finally {
         if (!$fake.HasExited) { Stop-Process -Id $fake.Id }
-        $pump.writer.Dispose()
+        if ($null -ne $pump.writer) { $pump.writer.Dispose() }
         $fake.Dispose()
     }
     $passed++
@@ -296,10 +338,22 @@ for line in sys.stdin:
     Expect-Failure { Write-RecommendationReport $reportContext }
     $passed++
     Write-Output "$passed focused harness tests passed; zero captures."
+    & "$PSScriptRoot\Test-ProcessInput.ps1"
+    & "$PSScriptRoot\Test-Continuation.ps1"
+    & "$PSScriptRoot\Test-ExpertSupplement.ps1"
+    & "$PSScriptRoot\Test-ThreeLevelReport.ps1"
+    & "$PSScriptRoot\Test-NativeRuntime.ps1"
+    & "$PSScriptRoot\Test-NativeTrials.ps1"
+    & "$PSScriptRoot\Test-RecommendationTrials.ps1"
+    & "$PSScriptRoot\Test-ProfiledDraftPr.ps1"
     & python -B "$PSScriptRoot\Test-Analysis.py"
     if ($LASTEXITCODE -ne 0) { throw 'Multidimensional evidence tests failed.' }
+    & python -B "$PSScriptRoot\Test-ControlAnalysis.py"
+    if ($LASTEXITCODE -ne 0) { throw 'Control-scoped evidence tests failed.' }
     & python -B "$PSScriptRoot\Test-AgentContracts.py"
     if ($LASTEXITCODE -ne 0) { throw 'Agent/tool contract tests failed.' }
+    & python -B "$PSScriptRoot\Test-GuiRecording.py"
+    if ($LASTEXITCODE -ne 0) { throw 'GUI SQLite evidence tests failed.' }
     & "$PSScriptRoot\Test-Contracts.ps1"
 } finally {
     Remove-Item -LiteralPath $temp -Recurse -Force

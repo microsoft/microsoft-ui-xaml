@@ -791,11 +791,50 @@ class Analysis:
             "steps": [{key: step.get(key) for key in ("id", "action", "from", "to")} for step in self.actions["steps"]],
             "capabilities": self.capabilities, "scopeAvailability": self.scopes,
             "metrics": self.metrics, "details": self.details,
+            **({"nativeRuntime": self.measurement["nativeRuntime"]} if self.measurement.get("nativeRuntime") else {}),
         }
 
 
+def validate_native_pair(before, after):
+    runtimes = [report.get("nativeRuntime") for report in (before, after)]
+    if not any(runtimes):
+        return False
+    if not all(isinstance(runtime, dict) for runtime in runtimes):
+        raise ValueError("Both native measurements must retain private-runtime provenance")
+    for name in ("trialId", "trialDirectory", "level"):
+        if not runtimes[0].get(name) or runtimes[0][name] != runtimes[1].get(name):
+            raise ValueError("Different independent native trial: " + name)
+    if runtimes[0]["level"] not in ("control", "framework"):
+        raise ValueError("Invalid native trial level")
+    for name in ("sourceSha256", "executableSha256"):
+        if not before["inputs"].get(name) or before["inputs"][name] != after["inputs"].get(name):
+            raise ValueError("A native trial cannot also change the application: " + name)
+    for report, runtime in zip((before, after), runtimes):
+        verify_references([runtime["manifest"]])
+        manifest = load_json(runtime["manifest"]["path"])
+        if (manifest["schema"] != "ui-profiler/native-runtime/v1" or manifest["level"] != runtime["level"]
+                or manifest["source"]["sha256"] != runtime["sourceSha256"]):
+            raise ValueError("Native source/runtime provenance mismatch")
+        verify_references([{"path": item["source"], "sha256": item["sha256"]} for item in manifest["files"]])
+        framework = [item for item in manifest["files"]
+                     if pathlib.PureWindowsPath(item["path"]).name.casefold() == "microsoft.ui.xaml.dll"]
+        if len(framework) != 1 or framework[0]["sha256"] != report["inputs"]["frameworkSha256"]:
+            raise ValueError("Measured framework differs from the built native runtime")
+        for stage in ("loadedBefore", "loadedAfter"):
+            loaded = runtime.get(stage, [])
+            verify_references(loaded)
+            main = [item for item in loaded
+                    if pathlib.PureWindowsPath(item["path"]).name.casefold() == "microsoft.ui.xaml.dll"]
+            if len(main) != 1 or main[0]["sha256"] != framework[0]["sha256"]:
+                raise ValueError("Private runtime was not verified before and after the scenario")
+    return True
+
+
 def comparison_rows(before, after):
+    native_pair = validate_native_pair(before, after)
     for name in ("scenarioSha256", "profilerSha256", "frameworkSha256", "captureSchema"):
+        if name == "frameworkSha256" and native_pair:
+            continue
         if before["inputs"].get(name) != after["inputs"].get(name):
             raise ValueError("Incomparable inputs: " + name)
     for name in ("dpi", "width", "height"):
@@ -977,6 +1016,17 @@ def compare(before_path, after_path, directory):
         "counts": dict(collections.Counter(row["change"] for row in rows)),
         "baselineAnalysis": str(before_path), "candidateAnalysis": str(after_path),
     }
+    native_inputs = []
+    if before.get("nativeRuntime"):
+        result["nativeRuntime"] = {"baseline": before["nativeRuntime"], "candidate": after["nativeRuntime"]}
+        result["interpretation"] += " Native runtime changes are intentional; application source and executable are unchanged."
+        for report in (before, after):
+            runtime = report["nativeRuntime"]
+            native_inputs.append(reference(runtime["manifest"]["path"], "native-runtime"))
+            manifest = load_json(runtime["manifest"]["path"])
+            native_inputs.extend(reference(item["source"], "native-runtime") for item in manifest["files"])
+            native_inputs.extend(reference(item["path"], "loaded-native-runtime")
+                                 for stage in ("loadedBefore", "loadedAfter") for item in runtime[stage])
     directory.mkdir(parents=True, exist_ok=True)
     json_path, md_path, csv_path = (directory / name for name in ("comparison.json", "comparison.md", "comparison.csv"))
     write_json(json_path, result)
@@ -988,7 +1038,8 @@ def compare(before_path, after_path, directory):
         writer.writerows(rows)
     seal(directory, [reference(before_path.parent / "manifest.json", "evidence-manifest"),
                      reference(after_path.parent / "manifest.json", "evidence-manifest"),
-                     reference(before_path), reference(after_path), reference(__file__, "analyzer")], [json_path, md_path, csv_path])
+                     reference(before_path), reference(after_path), reference(__file__, "analyzer")] + native_inputs,
+         [json_path, md_path, csv_path])
     return json_path
 
 

@@ -15,6 +15,24 @@ using WinUIProfiler.Contracts;
 using WinUIProfiler.Cli;
 using XamlTimeline;
 
+if (args is ["--metric-storage-tests"])
+{
+    ProcessMetricStorageTests.Run();
+    return;
+}
+
+if (args is ["--queue-tests"])
+{
+    await QueueDiagnosticsTests.RunAsync();
+    return;
+}
+
+if (args is ["--diagnose-queue", var recording, var outputDirectory])
+{
+    await QueueDiagnosticsTests.DiagnoseAsync(Path.GetFullPath(recording), Path.GetFullPath(outputDirectory));
+    return;
+}
+
 if (args is ["--cli-tests", var suite])
 {
     if (suite == "live") await CliLiveTests.RunAsync();
@@ -58,6 +76,7 @@ if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, 
 }
 
 const long element = 0x1234;
+await QueueDiagnosticsTests.RunAsync();
 var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-EventCompatibility-{Guid.NewGuid():N}.sqlite");
 var visualPath = Path.ChangeExtension(path, "visuals.sqlite");
 var typePath = Path.ChangeExtension(path, "types.sqlite");

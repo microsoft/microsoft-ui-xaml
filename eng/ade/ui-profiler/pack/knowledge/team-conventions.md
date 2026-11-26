@@ -12,11 +12,18 @@ always: true
 - Use only the MUX `tools\WinUIProfiler` CLI and its complete native payload. SQLite recordings are
   immutable evidence, not orchestration state or team knowledge.
 - The WinUI expert's measured observations and source-grounded recommendations arrive in workstream
-  notes. Apply only this recommendation's behavior-preserving fix in its fresh original-source working
-  copy, across all explicitly approved existing C#/XAML files. Never import a sibling trial's patch.
+  notes, covering application, control and framework separately with runtime/source parity caveats.
+  Application/propose entries enter the app runner. Native/recommend entries enter only the
+  independent native-trial runner with a separately approved source-matched runtime/capture pair.
+  A discovery report's target-workflow-required state does not mean insufficient evidence.
+  Apply only this recommendation's behavior-preserving fix in its fresh original-source working
+  copy, across its exact approved source scope. App scopes are C#/XAML; native scopes are existing
+  implementation files under the declared control/framework layer. Never import a sibling patch.
 - The coding session has no shell or URL permission. Do not run builds, UI actions, or captures yourself.
   ADE's verification owns this subagent's build and sole candidate capture; other trials are independent.
-- One original baseline is shared by all trials; each approved recommendation gets one candidate capture.
+- App trials share the original baseline and each gets one candidate capture. Each independent native
+  trial explicitly approves one source-built baseline and one candidate capture; the discovery
+  baseline cannot establish parity with a newly built native runtime.
   Candidate profiling is serialized. Cached verification must match the exact source,
   scenario, profiler closure, framework, and evidence hashes. Never bypass or reset the capture budget.
 - UI tick duration is elapsed time, not CPU time or proof of a dropped frame. CPU stacks may be absent.

@@ -5,6 +5,8 @@
     xmlns:vm="using:WinUIProfiler.App.ViewModels"
     xmlns:views="using:WinUIProfiler.App.Views">
     <Grid x:Name="Root" Padding="24" RowSpacing="12"
+          AutomationProperties.AutomationId="ProfilerSession"
+          AutomationProperties.AccessibilityView="Content"
           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.Resources>
             <DataTemplate x:Key="SnapshotChoiceTemplate" x:DataType="vm:SnapshotHistoryEntry">

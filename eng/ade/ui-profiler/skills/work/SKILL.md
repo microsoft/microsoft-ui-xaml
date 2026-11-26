@@ -19,7 +19,8 @@ not a model interpretation, decide whether an action is permitted.
 ## Collect the user's inputs
 
 Collect a clean independent application Git repository, the user's scenario verbatim, current
-MUX source, complete MUX profiler CLI deployment, .NET SDK and the actual `WinUI_Expert_Agent`
+MUX source, complete MUX profiler GUI deployment (GUI capture is the default),
+CLI deployment for read-only SQLite exports, .NET SDK and the actual `WinUI_Expert_Agent`
 profile/RAG bundle. Use a short, fresh run directory outside every input root, and an existing
 licensed GitHub credential. Require explicit preview and measurement authorization: one shared baseline
 and one candidate per separately approved recommendation in the finite frozen report.
@@ -48,10 +49,16 @@ collected paths, verbatim scenario and explicit permissions to `begin`. Then:
    preserves the request, verifies observations and closes only the owned preview.
 
 No application-specific action sequence is prescribed. Allowed actions are `type-text`, bounded
-navigation `keys`/Ctrl+A, `invoke`, `assert`, `expand` and `collapse`; never arbitrary scripts.
+navigation `keys`/Ctrl+A, `invoke`, `select`, `assert`, `expand` and `collapse`; never arbitrary scripts.
+Use `select` for an observed SelectionItemPattern item, not an InvokePattern substitute or
+global keyboard workaround. An already selected item is a rejected no-op; assert the destination
+content separately because selected state alone does not prove page readiness.
 At most 32 plan steps, one ten-minute preview, 64 actions and 64 inspections are permitted.
 Use `investigation_status` to read actual state, hashes, spent budgets and failures.
 Call harness operations sequentially; their exclusive operation lock is not a parallel task queue.
+GUI mode drives only its owned WinUIProfiler window, then finalizes and hash-binds its SQLite.
+Process gauges must be retained in that database, not inferred from live charts.
+Missing or changed GUI inputs cannot silently switch to CLI recording.
 
 ## Evidence, expert and proposal
 
@@ -60,11 +67,18 @@ With a frozen plan and measurement consent, call `measure_baseline` once, then
 Call `recommend_fix`: it invokes the actual WinUI expert with current source/KB and both
 read-only servers: unchanged `winui-profiler` for original recording queries, and the plugin's
 `ui-profiler-evidence` for bounded, hash-verified multidimensional drilldowns.
-The expert must make successful real calls to both and return a validated ranked recommendation report.
+The expert must make successful real calls to both and return a validated v3 ranked recommendation report.
+Require explicit application/control/framework coverage, relevant source reads at each level,
+runtime/source parity limitations, identical deep time/CPU/memory/model-analysis/unverified/validation
+sections, and per-item level, repository-relative scope and validation. Model/source reasoning is
+allowed; measurements must come only from MUX WinUIProfiler.
+Control/framework `recommend` entries stay visible as `target-workflow-required`: they need a
+separate native build/private-runtime validation workflow, not an app proposal. Do not equate
+that execution restriction with insufficient evidence.
 Keep every item, including insufficient-evidence items with no file scope; those cannot become proposals.
-Each actionable item is an independently testable variant of the ORIGINAL source, not a cumulative fix.
+Each application `propose` item is an independent variant of the ORIGINAL source, not a cumulative fix.
 
-Call `propose_fix(recommendation_id)` for each actionable id. Every trial has a fresh ADE `change`
+Call `propose_fix(recommendation_id)` only for each application/propose id. Every trial has a fresh ADE `change`
 workstream/pack and later coding subagent/session, original-source working copy and shared baseline.
 There is no arbitrary two-file cap: every changed existing C#/XAML file must belong to that
 recommendation's explicitly approved scope. All other files are protected.

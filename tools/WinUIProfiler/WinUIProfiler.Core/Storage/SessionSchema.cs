@@ -56,6 +56,23 @@ internal static class SessionSchema
             ThreadId INTEGER NOT NULL,
             TypeId INTEGER NOT NULL REFERENCES EventTypes (TypeId),
             Payload TEXT NOT NULL);    -- JSON array of the field values
+        -- Native GUI graph acquisitions, independent of the graph's rolling two-minute display window.
+        -- Older version-1 recordings can lack this table: that means missing evidence, not measured zero.
+        CREATE TABLE ProcessMetrics (
+            AcquisitionId INTEGER NOT NULL,
+            Qpc INTEGER NOT NULL,
+            ProcessId INTEGER NOT NULL,
+            CreationTimeFileTime INTEGER,
+            InstanceId TEXT NOT NULL,
+            Metric TEXT NOT NULL,      -- cpu, gpu, workingSet, privateWorkingSet, privateCommit
+            Value REAL,               -- measured zero is 0; unavailable is NULL with UnavailableReason
+            Unit TEXT NOT NULL,       -- percent or MiB
+            Source TEXT NOT NULL,
+            UnavailableReason TEXT,
+            PRIMARY KEY (AcquisitionId, Metric)) WITHOUT ROWID;
+        CREATE INDEX ProcessMetricsByQpc ON ProcessMetrics (Qpc);
+        CREATE TABLE ProcessMetricRetention (
+            CompleteFromQpc INTEGER NOT NULL); -- absent row means no metric acquisitions have been trimmed
         CREATE TABLE Objects (         -- UI elements and composition visuals the events mention (ObjectIndex)
             ObjectId INTEGER PRIMARY KEY,
             Kind TEXT NOT NULL,        -- Element or Visual (ObjectKind)

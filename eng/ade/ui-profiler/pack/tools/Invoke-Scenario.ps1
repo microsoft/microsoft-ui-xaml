@@ -145,6 +145,18 @@ try {
             }
             'keys' { Send-TargetKeys $element $step.keys }
             'invoke' { $element.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
+            'select' {
+                $pattern = $element.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern)
+                $entry.from = [string]$pattern.Current.IsSelected
+                if ($pattern.Current.IsSelected) { throw 'Requested selection transition is a no-op.' }
+                $pattern.Select()
+                $wait.Restart()
+                while (!$pattern.Current.IsSelected -and $wait.Elapsed.TotalSeconds -lt 5) {
+                    Start-Sleep -Milliseconds 20
+                }
+                $entry.to = [string]$pattern.Current.IsSelected
+                if (!$pattern.Current.IsSelected) { throw 'UI item did not become selected.' }
+            }
             'assert' { }
             { $_ -in 'expand', 'collapse' } {
                 $pattern = $element.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)

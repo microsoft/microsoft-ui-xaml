@@ -37,6 +37,7 @@ $candidate = Invoke-Measurement $context $RepositoryPath 'candidate'
 $candidatePath = Join-Path $context.directory 'candidate\measurement.json'
 $comparisonDirectory = Join-Path $context.directory 'multidimensional'
 $comparison = Compare-Measurements $context.baseline.path $candidatePath $comparisonDirectory $context.profilerCli
+[void](Export-TrialControlComparison $context)
 if ($context.schema -in @('ui-profiler/investigation/v2', 'ui-profiler/trial/v1')) { Assert-OriginalSource $context }
 Write-Output "Multidimensional comparison: $comparisonDirectory\comparison.md"
 Write-Output ($comparison.counts | ConvertTo-Json -Compress)
