@@ -205,7 +205,6 @@ class CDirectManipulationService final :
 
         _Check_return_ HRESULT ResetCompositor() override;
         _Check_return_ HRESULT TickUpdateManager() override;
-        _Check_return_ HRESULT ProcessDeferredViewportStatusChanges(_Out_ uint32_t* count) override;
 
         _Check_return_ HRESULT EnsureSharedContentTransform(_In_ ixp::ICompositor* compositor, _In_ IObject* pContent, _In_ XDMContentType contentType, _Outptr_result_nullonfailure_ IUnknown** sharedPrimaryTransform, _Outptr_result_maybenull_ IUnknown** sharedSecondaryTransform) override;
 

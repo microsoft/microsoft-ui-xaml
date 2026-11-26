@@ -209,6 +209,8 @@ private:
     uint32_t m_subtreesReused = 0;
     // Previous frame's display list of the island being walked: clean subtrees reuse their commands from it.
     ImmediateRenderingDetail::DisplayList* m_previousWalk = nullptr;
+    // ---- scrollgaps ---- gap 1: previous frame's DManip samples of the island being walked (set even on full damage).
+    const ImmediateRenderingDetail::DisplayList* m_previousOffThreadSamples = nullptr;
     // Fallback trigger found by the current walk (static reason string) and the element's class name.
     const wchar_t* m_pendingFallback = nullptr;
     std::wstring m_pendingFallbackClass;

@@ -8667,7 +8667,6 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
 
     FILE* const log = GetDManipLogFile();
     std::vector<IPALDirectManipulationService*> ticked;
-    std::vector<IPALDirectManipulationService*> drained;
     uint32_t moving = 0;
     for (XUINT32 i = 0; i < m_pViewports->size(); ++i)
     {
@@ -8682,17 +8681,6 @@ _Check_return_ HRESULT CInputServices::TickDirectManipulationForImmediateRenderi
         if (!spService)
         {
             continue;
-        }
-        // ---- scrollgaps ---- gap 1: status changes raised while the render thread ticked DManip (UI thread blocked).
-        if (std::find(drained.begin(), drained.end(), spService.get()) == drained.end())
-        {
-            drained.push_back(spService.get());
-            uint32_t deferred = 0;
-            IFC_RETURN(spService->ProcessDeferredViewportStatusChanges(&deferred));
-            if (log && deferred > 0)
-            {
-                fprintf(log, "deferred %lld %lu %u\n", static_cast<long long>(DManipLogMicroseconds()), GetCurrentThreadId(), deferred);
-            }
         }
         // DManip's own status: XAML's processed status lags by a tick when a wheel or ZoomToRect just started.
         XDMViewportStatus status = XcpDMViewportBuilding;

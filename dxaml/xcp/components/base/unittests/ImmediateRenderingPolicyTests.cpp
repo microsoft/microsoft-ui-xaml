@@ -546,19 +546,30 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_IS_TRUE(empty.right <= empty.left);
     }
 
-    void PolicyTests::OffThreadScrollDeltaIsTranslationOnly()
+    void PolicyTests::OffThreadInertiaExtrapolates()
     {
-        PointF delta{ 99, 99 };
-        // Content moved up by 37.3 DIPs at scale 1.5: whole device pixels (like the scrolled content's snapped origin).
-        VERIFY_IS_TRUE(ComputeOffThreadScrollDelta(0, -100, 1, 0, -137.3f, 1, 500, 500, 1.5f, &delta));
-        VERIFY_ARE_EQUAL(0.0f, delta.x);
-        VERIFY_ARE_EQUAL(std::round(-37.3f * 1.5f) / 1.5f, delta.y);
-        // Clamped to the overscan so the viewport never shows unwalked content.
-        VERIFY_IS_TRUE(ComputeOffThreadScrollDelta(0, 0, 1, 30, -900, 1, 20, 500, 1, &delta));
-        VERIFY_ARE_EQUAL(20.0f, delta.x);
-        VERIFY_ARE_EQUAL(-500.0f, delta.y);
-        // A zoom change is not a translation of the cached content.
-        VERIFY_IS_FALSE(ComputeOffThreadScrollDelta(0, 0, 1, 0, -10, 1.25f, 500, 500, 1, &delta));
+        PointF v{ 99, 99 };
+        // Velocity (DIPs/s) from the transforms of two consecutive walks, only from frame-like intervals.
+        VERIFY_IS_TRUE(ComputeOffThreadVelocity(16000, 0, -40, 1, &v));
+        VERIFY_ARE_EQUAL(0.0f, v.x);
+        VERIFY_ARE_EQUAL(-2500.0f, v.y);
+        VERIFY_IS_FALSE(ComputeOffThreadVelocity(500, 0, -40, 1, &v));      // same frame
+        VERIFY_IS_FALSE(ComputeOffThreadVelocity(200000, 0, -40, 1, &v));   // stale sample
+        VERIFY_IS_FALSE(ComputeOffThreadVelocity(16000, 0, -40, 1.25f, &v)); // zooming is not a translation
+
+        PointF d{ 99, 99 };
+        // Exponential velocity decay (DManip touch inertia decays at ~2/s): v/k (1 - e^-kt), whole device pixels.
+        ComputeOffThreadInertiaDelta({ 0, -2400 }, 0.33, 2.0f, 2000, 2000, 1.5f, &d);
+        const float expected = -2400.0f / 2.0f * (1.0f - std::exp(-0.66f));
+        VERIFY_ARE_EQUAL(0.0f, d.x);
+        VERIFY_ARE_EQUAL(std::round(expected * 1.5f) / 1.5f, d.y);
+        VERIFY_IS_TRUE(d.y < -570 && d.y > -590);
+        // Never further than the overscan, so the viewport never shows unwalked content.
+        ComputeOffThreadInertiaDelta({ 300, -2400 }, 1.0, 2.0f, 20, 500, 1, &d);
+        VERIFY_ARE_EQUAL(20.0f, d.x);
+        VERIFY_ARE_EQUAL(-500.0f, d.y);
+        ComputeOffThreadInertiaDelta({ 0, -2400 }, 0, 2.0f, 500, 500, 1, &d);
+        VERIFY_ARE_EQUAL(0.0f, d.y);
     }
 
     void PolicyTests::DamageCoalescingKeepsThinStripsThin()

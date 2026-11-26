@@ -46,7 +46,7 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(UnboundedClipEdgeIgnoresScrollOffset);
         TEST_METHOD(OffThreadScrollIsOptIn);
         TEST_METHOD(OffThreadOverscanGrowsViewport);
-        TEST_METHOD(OffThreadScrollDeltaIsTranslationOnly);
+        TEST_METHOD(OffThreadInertiaExtrapolates);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

@@ -3066,17 +3066,6 @@ CDirectManipulationService::TickUpdateManager()
     return S_OK;
 }
 
-// ---- scrollgaps ----
-_Check_return_ HRESULT CDirectManipulationService::ProcessDeferredViewportStatusChanges(_Out_ uint32_t* count)
-{
-    *count = 0;
-    if (m_pUIThreadViewportEventHandler != nullptr)
-    {
-        IFC_RETURN(static_cast<CDirectManipulationViewportEventHandler*>(m_pUIThreadViewportEventHandler)->ProcessDeferredStatusChanges(count));
-    }
-    return S_OK;
-}
-
 // Primary and Secondary transforms are both created by DManip's DComp device.  Primary is always created, Secondary is
 // only present if overpan mode is none.
 _Check_return_ HRESULT

@@ -36,6 +36,7 @@ namespace II = ImmediateIndependent;
 namespace
 {
     constexpr uint32_t c_offThreadStillPeriods = 8;    // ---- scrollgaps ---- render periods a still scroller keeps ticking
+    constexpr float c_offThreadInertiaDecay = 2.0f;    // ---- scrollgaps ---- 1/s: DManip touch inertia velocity decay (S33 fit)
 constexpr int64_t c_uiIdleMicroseconds = 34000;   // render thread presents once the UI thread missed ~2 frames
     constexpr auto c_renderThreadPeriod = std::chrono::milliseconds(16);
     constexpr uint32_t c_curveSamples = 64;
@@ -663,9 +664,10 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
         independent.lastBounds[li] = bounds;
     }
 
-    // ---- scrollgaps ---- gap 1: tick DManip (the UI thread is blocked) and translate each moving scroller's overscan
-    // commands by its transform change since the walk. Status changes this raises are queued for the UI thread
-    // (CDirectManipulationViewportEventHandler::OnViewportStatusChanged).
+    // ---- scrollgaps ---- gap 1: the UI thread is blocked during DManip inertia. DManip cannot be ticked here (Update
+    // returns UI_E_WRONG_THREAD off the thread that created its manager), so each scroller's overscan commands are
+    // translated along the inertia curve extrapolated from its velocity when walked. The next UI frame repaints at
+    // DManip's actual position.
     if (!list.offThreadScrollers.empty())
     {
         if (independent.offThreadDeltas.size() != list.offThreadScrollers.size())
@@ -676,36 +678,12 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
         for (size_t si = 0; si < list.offThreadScrollers.size(); ++si)
         {
             const DisplayList::OffThreadScroller& scroller = list.offThreadScrollers[si];
-            bool inertial = false;
-            float tx = 0, ty = 0, uncompressedZoom = 1, zoomX = 1, zoomY = 1;
-            HRESULT hrTick = scroller.service->UpdateCompositorContentTransform(scroller.content.get(), 0);
-            if (SUCCEEDED(hrTick))
-            {
-                hrTick = scroller.service->GetCompositorContentTransform(scroller.content.get(), scroller.contentType, inertial, tx, ty, uncompressedZoom, zoomX, zoomY);
-            }
-            if (FAILED(hrTick))
-            {
-                if (FILE* log = GetOffThreadLogFile())
-                {
-                    fprintf(log, "rtfail %lld %lu 0x%08lx\n", static_cast<long long>(now), GetCurrentThreadId(), static_cast<unsigned long>(hrTick));
-                    fflush(log);
-                }
-                continue;
-            }
             RenderingBackend::PointF d{};
-            if (!ImmediateRenderingPolicy::ComputeOffThreadScrollDelta(scroller.tx0, scroller.ty0, scroller.zoom0, tx, ty, zoomX,
-                    scroller.maxDx, scroller.maxDy, scale, &d))
-            {
-                if (FILE* log = GetOffThreadLogFile())
-                {
-                    fprintf(log, "rtzoom %lld %.4f %.4f\n", static_cast<long long>(now), scroller.zoom0, zoomX);
-                    fflush(log);
-                }
-                continue;
-            }
+            ImmediateRenderingPolicy::ComputeOffThreadInertiaDelta(scroller.velocity, elapsed, c_offThreadInertiaDecay,
+                scroller.maxDx, scroller.maxDy, scale, &d);
             if (FILE* log = GetOffThreadLogFile())
             {
-                fprintf(log, "rt %lld %lu %.1f %.1f %.2f\n", static_cast<long long>(now), GetCurrentThreadId(), d.x, d.y, ty);
+                fprintf(log, "rt %lld %lu %.1f %.1f %.1f\n", static_cast<long long>(now), GetCurrentThreadId(), d.x, d.y, scroller.velocity.y);
                 fflush(log);
             }
             RenderingBackend::PointF& last = independent.offThreadDeltas[si];

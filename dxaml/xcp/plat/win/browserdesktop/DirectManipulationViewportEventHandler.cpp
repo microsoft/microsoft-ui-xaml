@@ -111,39 +111,11 @@ CDirectManipulationViewportEventHandler::OnViewportStatusChanged(
     if (m_pDMService)
     {
         IFCPTR(pDMViewport);
-        // ---- scrollgaps ---- gap 1: the immediate render thread may tick DManip (IDirectManipulationUpdateManager::Update)
-        // while the UI thread is blocked. XAML's status processing is UI-thread state: queue it for the UI thread.
-        if (m_deferOffThread && GetCurrentThreadId() != m_uiThreadId)
-        {
-            AcquireSRWLockExclusive(&m_deferredLock);
-            m_deferredStatusChanges.push_back(DeferredStatusChange{ pDMViewport, current, previous });
-            ReleaseSRWLockExclusive(&m_deferredLock);
-            goto Cleanup;
-        }
         IFC(m_pDMService->NotifyViewportStatusUpdate(pDMViewport, previous, current));
     }
 
 Cleanup:
     RRETURN(hr);
-}
-
-_Check_return_ HRESULT
-CDirectManipulationViewportEventHandler::ProcessDeferredStatusChanges(_Out_ uint32_t* count)
-{
-    m_deferOffThread = true;
-    std::vector<DeferredStatusChange> changes;
-    AcquireSRWLockExclusive(&m_deferredLock);
-    changes.swap(m_deferredStatusChanges);
-    ReleaseSRWLockExclusive(&m_deferredLock);
-    *count = static_cast<uint32_t>(changes.size());
-    for (const DeferredStatusChange& change : changes)
-    {
-        if (m_pDMService)
-        {
-            IFC_RETURN(m_pDMService->NotifyViewportStatusUpdate(change.viewport, change.previous, change.current));
-        }
-    }
-    return S_OK;
 }
 
 //------------------------------------------------------------------------

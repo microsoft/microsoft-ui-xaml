@@ -566,12 +566,17 @@ namespace ImmediateRenderingDetail
             std::vector<Command> overscan;
             RectF viewport;          // DIPs, island space
             float maxDx = 0, maxDy = 0; // DIPs: the overscan beyond each edge
-            xref_ptr<IPALDirectManipulationCompositorService> service;
-            xref_ptr<IObject> content;
-            XDMContentType contentType = XcpDMContentTypePrimary;
-            float tx0 = 0, ty0 = 0, zoom0 = 1; // DManip transform the walk painted
+            RenderingBackend::PointF velocity; // DIPs/s of the content when walked (DManip inertia)
         };
         std::vector<OffThreadScroller> offThreadScrollers;
+        // DManip transform of each running/inertial scroller when walked (velocity for the next walk).
+        struct OffThreadSample
+        {
+            const void* viewport = nullptr;
+            int64_t qpc = 0;
+            float tx = 0, ty = 0, zoom = 1;
+        };
+        std::vector<OffThreadSample> offThreadSamples;
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -3747,20 +3752,37 @@ int ImmediateRenderer::BeginOffThreadScroller(
     {
         return -1;
     }
-    DisplayList::OffThreadScroller scroller;
-    if (FAILED(service->GetCompositorService(scroller.service.ReleaseAndGetAddressOf())) || !scroller.service)
+    xref_ptr<IPALDirectManipulationCompositorService> compositorService;
+    if (FAILED(service->GetCompositorService(compositorService.ReleaseAndGetAddressOf())) || !compositorService)
     {
         return -1;
     }
     bool inertial = false;
+    DisplayList::OffThreadSample sample;
     float uncompressedZoom = 1, zoomY = 1;
-    if (FAILED(scroller.service->GetCompositorContentTransform(compositorContent.get(), contentType, inertial, scroller.tx0, scroller.ty0,
-            uncompressedZoom, scroller.zoom0, zoomY)))
+    if (FAILED(compositorService->GetCompositorContentTransform(compositorContent.get(), contentType, inertial, sample.tx, sample.ty,
+            uncompressedZoom, sample.zoom, zoomY)))
     {
         return -1;
     }
-    scroller.content = std::move(compositorContent);
-    scroller.contentType = contentType;
+    sample.viewport = viewport;
+    sample.qpc = QpcMicroseconds();
+    list.offThreadSamples.push_back(sample);
+    // Only inertia is extrapolated: while a finger or the wheel drives DManip, its input waits for the UI thread too.
+    if (status != XcpDMViewportInertia || m_previousOffThreadSamples == nullptr)
+    {
+        return -1;
+    }
+    DisplayList::OffThreadScroller scroller;
+    const auto& previousSamples = m_previousOffThreadSamples->offThreadSamples;
+    const auto previous = std::find_if(previousSamples.begin(), previousSamples.end(),
+        [&](const DisplayList::OffThreadSample& s) { return s.viewport == sample.viewport; });
+    if (previous == previousSamples.end()
+        || !ImmediateRenderingPolicy::ComputeOffThreadVelocity(sample.qpc - previous->qpc, sample.tx - previous->tx, sample.ty - previous->ty,
+            previous->zoom > 0 ? sample.zoom / previous->zoom : 0, &scroller.velocity))
+    {
+        return -1;
+    }
     scroller.viewport = childCtx.clip;
     scroller.maxDx = (childCtx.clip.right - childCtx.clip.left) * c_offThreadOverscan;
     scroller.maxDy = (childCtx.clip.bottom - childCtx.clip.top) * c_offThreadOverscan;
@@ -4356,7 +4378,8 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         DisplayList previous = std::move(state.previousWalk);
         state.previousWalk = DisplayList();
         m_previousWalk = (state.fullDamage || DisableIncrementalWalk()) ? nullptr : &previous;
-        auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; });
+        m_previousOffThreadSamples = &previous; // ---- scrollgaps ---- gap 1
+        auto clearPrevious = wil::scope_exit([&] { m_previousWalk = nullptr; m_previousOffThreadSamples = nullptr; });
         m_pendingFallback = nullptr;
         std::vector<std::pair<std::wstring, std::wstring>> deferredUnsupported;
         m_deferredUnsupported = &deferredUnsupported;
