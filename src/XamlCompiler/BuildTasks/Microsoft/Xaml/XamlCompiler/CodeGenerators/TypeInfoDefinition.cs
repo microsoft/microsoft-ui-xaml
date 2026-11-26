@@ -320,7 +320,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 
             foreach (var typeInfo in this.TypeInfos)
             {
-                bool hasGeneratedCodeReference = typeInfo.HasActivator || typeInfo.IsCollection || typeInfo.IsDictionary || typeInfo.HasEnumValues;
+                // Member getters/setters reference the type even when it has no activator (e.g. a bindable type
+                // without a default constructor in a namespace the app's pch doesn't include).
+                bool hasGeneratedCodeReference = typeInfo.HasActivator || typeInfo.IsCollection || typeInfo.IsDictionary || typeInfo.HasEnumValues || typeInfo.HasMembers;
 
                 if (hasGeneratedCodeReference)
                 {
