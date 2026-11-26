@@ -578,6 +578,12 @@ void ImmediateRenderer::RenderThreadMain()
             any = true;
             if (now - state.independent.lastUiQpc >= c_uiIdleMicroseconds && !state.independent.paintedFinal)
             {
+                if (FILE* log = state.previousWalk.offThreadScrollers.empty() ? nullptr : GetOffThreadLogFile())
+                {
+                    fprintf(log, "rtframe %lld %lu %lld\n", static_cast<long long>(now), GetCurrentThreadId(),
+                        static_cast<long long>(now - state.independent.lastUiQpc));
+                    fflush(log);
+                }
                 RenderIndependentFrame(entry.first, state, now);
             }
         }
@@ -672,15 +678,29 @@ void ImmediateRenderer::RenderIndependentFrame(_In_ CXamlIslandRoot* island, _In
             const DisplayList::OffThreadScroller& scroller = list.offThreadScrollers[si];
             bool inertial = false;
             float tx = 0, ty = 0, uncompressedZoom = 1, zoomX = 1, zoomY = 1;
-            if (FAILED(scroller.service->UpdateCompositorContentTransform(scroller.content.get(), 0))
-                || FAILED(scroller.service->GetCompositorContentTransform(scroller.content.get(), scroller.contentType, inertial, tx, ty, uncompressedZoom, zoomX, zoomY)))
+            HRESULT hrTick = scroller.service->UpdateCompositorContentTransform(scroller.content.get(), 0);
+            if (SUCCEEDED(hrTick))
             {
+                hrTick = scroller.service->GetCompositorContentTransform(scroller.content.get(), scroller.contentType, inertial, tx, ty, uncompressedZoom, zoomX, zoomY);
+            }
+            if (FAILED(hrTick))
+            {
+                if (FILE* log = GetOffThreadLogFile())
+                {
+                    fprintf(log, "rtfail %lld %lu 0x%08lx\n", static_cast<long long>(now), GetCurrentThreadId(), static_cast<unsigned long>(hrTick));
+                    fflush(log);
+                }
                 continue;
             }
             RenderingBackend::PointF d{};
             if (!ImmediateRenderingPolicy::ComputeOffThreadScrollDelta(scroller.tx0, scroller.ty0, scroller.zoom0, tx, ty, zoomX,
                     scroller.maxDx, scroller.maxDy, scale, &d))
             {
+                if (FILE* log = GetOffThreadLogFile())
+                {
+                    fprintf(log, "rtzoom %lld %.4f %.4f\n", static_cast<long long>(now), scroller.zoom0, zoomX);
+                    fflush(log);
+                }
                 continue;
             }
             if (FILE* log = GetOffThreadLogFile())
