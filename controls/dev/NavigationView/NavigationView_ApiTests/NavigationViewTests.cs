@@ -7485,6 +7485,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies that resizing a NavigationView with IsPaneVisible=false below OpenPaneLength never renders a frame with the content pushed aside (screen blink, ADO 47131770).")]
         public void VerifyPaneInvisibleContentDoesNotShiftWhileResizing()
         {
+            var failures = new List<string>();
             foreach (var paneDisplayMode in new[] { NavigationViewPaneDisplayMode.Auto, NavigationViewPaneDisplayMode.Left, NavigationViewPaneDisplayMode.LeftCompact, NavigationViewPaneDisplayMode.LeftMinimal })
             {
                 Log.Comment($"PaneDisplayMode={paneDisplayMode}");
@@ -7497,9 +7498,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(0.0, splitView.CompactPaneLength, "Precondition: an invisible pane has no compact strip");
                 });
 
-                var openPaneLengths = ResizeAndVerifyContentNeverShifts(navView, null /* onSizeChanged */);
-                Verify.AreEqual(1, openPaneLengths.Count, "RootSplitView.OpenPaneLength must not track the width while the pane is invisible");
+                // Check every mode before failing, so a RED run reports all of them.
+                var (displacedFrames, openPaneLengths) = ResizeAndCountShiftedContentFrames(navView, null /* onSizeChanged */);
+                if (displacedFrames != 0 || openPaneLengths.Count != 1)
+                {
+                    failures.Add($"{paneDisplayMode}: {displacedFrames} frames with the content shifted, {openPaneLengths.Count} RootSplitView.OpenPaneLength values");
+                }
             }
+
+            Verify.AreEqual(0, failures.Count, "With the pane invisible, the content must stay at x=0 on every rendered frame and RootSplitView.OpenPaneLength must not track the width: " + string.Join("; ", failures));
         }
 
         [TestMethod]
@@ -7512,7 +7519,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Log.Comment($"PaneDisplayMode={paneDisplayMode}");
                 var navView = SetupPaneInvisibleNavigationView(paneDisplayMode, 400.0);
-                ResizeAndVerifyContentNeverShifts(navView, nv => nv.IsPaneVisible = !nv.IsPaneVisible);
+                var (displacedFrames, _) = ResizeAndCountShiftedContentFrames(navView, nv => nv.IsPaneVisible = !nv.IsPaneVisible);
+                Verify.AreEqual(0, displacedFrames, "The content must stay at x=0 on every rendered frame");
             }
         }
 
@@ -7525,7 +7533,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment($"PaneDisplayMode={paneDisplayMode}");
                 var navView = SetupPaneInvisibleNavigationView(paneDisplayMode, 600.0);
                 SplitView splitView = null;
-                RunOnUIThread.Execute(() => { splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView"); });
+                RunOnUIThread.Execute(() =>
+                {
+                    splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
+                    // Start visible, so every step's hide is a real change.
+                    navView.IsPaneVisible = true;
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
 
                 // Each step: hide the pane, change the width and the app's OpenPaneLength, then show the pane.
                 var steps = new[]
@@ -7685,9 +7700,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Changes the NavigationView width once per rendered frame (like dragging the window edge) from 400 down to 200 and
-        // back, and verifies on every rendered frame that the content is at x=0. Returns the RootSplitView.OpenPaneLength
-        // values seen on those frames.
-        private static HashSet<double> ResizeAndVerifyContentNeverShifts(NavigationView navView, Action<NavigationView> onSizeChanged)
+        // back, and checks on every rendered frame whether the content is at x=0. Returns the number of frames with the content
+        // shifted and the RootSplitView.OpenPaneLength values seen on the frames.
+        private static (int, HashSet<double>) ResizeAndCountShiftedContentFrames(NavigationView navView, Action<NavigationView> onSizeChanged)
         {
             int frameCount = 0;
             var badFrames = new List<string>();
@@ -7702,7 +7717,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     var splitView = (SplitView)VisualTreeUtils.FindVisualChildByName(navView, "RootSplitView");
                     var contentRoot = (FrameworkElement)VisualTreeUtils.FindVisualChildByName(splitView, "ContentRoot");
 
-                    // CompositionTarget.Rendering runs before the frame's layout, so it sees the tree as the previous frame rendered it.
+                    // Rendering is raised once per frame, just before the frame is rendered. The ADO 47131770 repro matched the shifted
+                    // states seen here with the frames that showed the blink on screen.
                     renderingHandler = (s, e) =>
                     {
                         frameCount++;
@@ -7747,7 +7763,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         Log.Comment($"  displaced: {badFrame}");
                     }
                     Verify.IsGreaterThan(frameCount, widths.Count, "Precondition: frames were rendered during the resize");
-                    Verify.AreEqual(0, badFrames.Count, "The content must stay at x=0 on every rendered frame");
                 });
             }
             finally
@@ -7764,7 +7779,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 });
             }
-            return openPaneLengths;
+            return (badFrames.Count, openPaneLengths);
         }
 
         private static void WaitForFrames(Func<int> framesSinceStart, int count)
