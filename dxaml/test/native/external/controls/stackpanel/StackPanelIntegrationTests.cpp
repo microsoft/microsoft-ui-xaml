@@ -532,6 +532,52 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void StackPanelIntegrationTests::VerifySnapPointsChangedAfterRemovingOneOfTwoHandlers()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::StackPanel^ stackPanel = nullptr;
+        auto removedHandlerEvent = std::make_shared<Event>();
+        auto removedHandlerRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, VerticalSnapPointsChanged);
+        auto remainingHandlerEvent = std::make_shared<Event>();
+        auto remainingHandlerRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, VerticalSnapPointsChanged);
+
+        RunOnUIThread([&]()
+        {
+            stackPanel = ref new xaml_controls::StackPanel();
+            stackPanel->Orientation = Orientation::Vertical;
+            stackPanel->Children->Append(CreateRectangle(50, 25));
+            TestServices::WindowHelper->WindowContent = stackPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            removedHandlerRegistration.Attach(stackPanel, ref new wf::EventHandler<Platform::Object^>([removedHandlerEvent](Platform::Object^, Platform::Object^)
+            {
+                removedHandlerEvent->Set();
+            }));
+            remainingHandlerRegistration.Attach(stackPanel, ref new wf::EventHandler<Platform::Object^>([remainingHandlerEvent](Platform::Object^, Platform::Object^)
+            {
+                remainingHandlerEvent->Set();
+            }));
+
+            LOG_OUTPUT(L"Remove one of the two VerticalSnapPointsChanged handlers.");
+            removedHandlerRegistration.Detach();
+
+            stackPanel->Children->Append(CreateRectangle(50, 25));
+        });
+
+        LOG_OUTPUT(L"Wait for VerticalSnapPointsChanged on the remaining handler.");
+        remainingHandlerEvent->WaitForDefault();
+        VERIFY_IS_FALSE(removedHandlerEvent->HasFired());
+
+        RunOnUIThread([&]()
+        {
+            remainingHandlerRegistration.Detach();
+        });
+    }
+
     void StackPanelIntegrationTests::ValidateReorderListViewWithStackPanel()
     {
         // Leak: PVLStaggerFunction is leaked, resulting in 75KB???of leaked memory

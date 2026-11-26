@@ -692,7 +692,7 @@ CarouselPanel::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
     IFC(CarouselPanelGenerated::remove_HorizontalSnapPointsChanged(tToken));
 
     IFC(GetHorizontalSnapPointsChangedEventSourceNoRef(&pEventSource));
-    if (pEventSource->HasHandlers())
+    if (!pEventSource->HasHandlers())
     {
         IFC(SetSnapPointsChangeNotificationsRequirement(
             true /*isForHorizontalSnapPoints*/,
@@ -748,7 +748,7 @@ CarouselPanel::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
     IFC(CarouselPanelGenerated::remove_VerticalSnapPointsChanged(tToken));
 
     IFC(GetVerticalSnapPointsChangedEventSourceNoRef(&pEventSource));
-    if (pEventSource->HasHandlers())
+    if (!pEventSource->HasHandlers())
     {
         IFC(SetSnapPointsChangeNotificationsRequirement(
             false /*isForHorizontalSnapPoints*/,

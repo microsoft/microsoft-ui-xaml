@@ -215,7 +215,7 @@ StackPanel::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
     IFC(StackPanelGenerated::remove_HorizontalSnapPointsChanged(tToken));
 
     IFC(GetHorizontalSnapPointsChangedEventSourceNoRef(&pEventSource));
-    if (pEventSource->HasHandlers())
+    if (!pEventSource->HasHandlers())
     {
         IFC(CoreImports::StackPanel_SetSnapPointsChangeNotificationsRequirement(
             static_cast<CStackPanel*>(GetHandle()),
@@ -273,7 +273,7 @@ StackPanel::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
     IFC(StackPanelGenerated::remove_VerticalSnapPointsChanged(tToken));
 
     IFC(GetVerticalSnapPointsChangedEventSourceNoRef(&pEventSource));
-    if (pEventSource->HasHandlers())
+    if (!pEventSource->HasHandlers())
     {
         IFC(CoreImports::StackPanel_SetSnapPointsChangeNotificationsRequirement(
             static_cast<CStackPanel*>(GetHandle()),
