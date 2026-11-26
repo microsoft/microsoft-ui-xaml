@@ -576,6 +576,13 @@ void ViewManager::EnsureFirstLastRealizedIndices()
 
 void ViewManager::OnLayoutChanging()
 {
+    // FocusManager updates GetFocusedElement synchronously while GotFocus/LostFocus
+    // are delivered asynchronously. Subscribe to focus events and sync focus pinning
+    // before OnLayoutChanged clears realized elements, so a newly focused child is
+    // pinned (not recycled) and will be unpinned when focus later leaves.
+    EnsureEventSubscriptions();
+    UpdateFocusedElement();
+
     if (m_owner->ItemsSourceView() &&
         m_owner->ItemsSourceView().HasKeyIndexMapping())
     {

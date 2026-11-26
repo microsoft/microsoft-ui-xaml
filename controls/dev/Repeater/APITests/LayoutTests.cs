@@ -174,6 +174,123 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "UniformGridLayout must preserve a focused scroller-selected anchor when switching layouts before async GotFocus arrives, without leaking a focus pin.")]
+        public void UniformGridLayoutReusesFocusedAnchorWhenLayoutSwitchesBeforeGotFocus()
+        {
+            ItemsRepeater repeater = null;
+            ScrollView scrollView = null;
+            Button outsideButton = null;
+            Button anchor = null;
+            int anchorRequestedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 100).ToList(),
+                    Layout = new StackLayout(),
+                    ItemTemplate = GetDataTemplate("<Button Width='170' Height='68' Content='{Binding}'/>")
+                };
+                scrollView = new ScrollView()
+                {
+                    Width = 620,
+                    Height = 450,
+                    VerticalAnchorRatio = 0.5,
+                    Content = repeater
+                };
+                outsideButton = new Button() { Content = "Outside" };
+                var root = new StackPanel();
+                root.Children.Add(outsideButton);
+                root.Children.Add(scrollView);
+                Content = root;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                anchor = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(anchor);
+                Verify.AreNotSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                Verify.IsTrue(anchor.Focus(FocusState.Programmatic));
+
+                TypedEventHandler<ScrollView, ScrollingAnchorRequestedEventArgs> anchorRequestedHandler = (sender, args) =>
+                {
+                    args.AnchorElement = anchor;
+                    anchorRequestedCount++;
+                };
+                scrollView.AnchorRequested += anchorRequestedHandler;
+
+                // Switch layout synchronously on the same UI tick before queued GotFocus is dispatched.
+                try
+                {
+                    repeater.Layout = new UniformGridLayout() { MinItemWidth = 180, MinItemHeight = 84 };
+
+                    repeater.InvalidateMeasure();
+                    Content.UpdateLayout();
+                }
+                finally
+                {
+                    scrollView.AnchorRequested -= anchorRequestedHandler;
+                }
+
+                Verify.IsGreaterThan(anchorRequestedCount, 0, "The scroller must have supplied the recommended anchor.");
+                Verify.AreSame(anchor, FocusManager.GetFocusedElement(repeater.XamlRoot));
+                Verify.AreSame(anchor, repeater.TryGetElement(0));
+                Verify.AreEqual(0, repeater.GetElementIndex(anchor));
+                var bounds = LayoutInformation.GetLayoutSlot(anchor);
+                Verify.IsGreaterThan(bounds.Width, 0.0);
+                Verify.IsGreaterThan(bounds.Height, 0.0);
+                Verify.IsLessThan(Math.Abs(bounds.Y), 1.0, "The focused anchor must be arranged in the first row.");
+            });
+
+            // Wait for idle so any queued async GotFocus flushes before moving focus away;
+            // a double-pin bug would keep item zero pinned when scrolling away below.
+            IdleSynchronizer.Wait();
+
+            using (var outsideGotFocus = new AutoResetEvent(false))
+            using (var scrollCompleted = new AutoResetEvent(false))
+            {
+                RoutedEventHandler outsideGotFocusHandler = (sender, args) => outsideGotFocus.Set();
+                TypedEventHandler<ScrollView, ScrollingScrollCompletedEventArgs> scrollCompletedHandler = (sender, args) => scrollCompleted.Set();
+
+                try
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        outsideButton.GotFocus += outsideGotFocusHandler;
+                        Verify.IsTrue(outsideButton.Focus(FocusState.Programmatic));
+                    });
+
+                    Verify.IsTrue(outsideGotFocus.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for focus to leave the repeater.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        scrollView.ScrollCompleted += scrollCompletedHandler;
+                        scrollView.ScrollTo(0, 2000, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
+                    });
+
+                    Verify.IsTrue(scrollCompleted.WaitOne(TimeSpan.FromSeconds(5)), "Waiting for scroll away from item zero.");
+                    IdleSynchronizer.Wait();
+
+                    RunOnUIThread.Execute(() =>
+                    {
+                        Verify.IsNull(repeater.TryGetElement(0), "Unfocused item zero must be recycled after scrolling away (no leaked pin).");
+                    });
+                }
+                finally
+                {
+                    RunOnUIThread.Execute(() =>
+                    {
+                        outsideButton.GotFocus -= outsideGotFocusHandler;
+                        scrollView.ScrollCompleted -= scrollCompletedHandler;
+                    });
+                }
+            }
+        }
+
+        [TestMethod]
         public void ValidateMappingAndAutoRecycling()
         {
             ItemsRepeater repeater = null;
