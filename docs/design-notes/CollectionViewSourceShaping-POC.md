@@ -1103,11 +1103,11 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
   each "before" the other; that is a tie, and the rows come out in order with ties in some order (round B, B-1/RB-1:
   round A's final neighbour pass reported it as `E_INVALIDARG`, so any duplicate key failed the sort and a TableView
   header tap threw). Only a comparer that fails (throws) ends the sort; the view then keeps its previous output. A chk
-  build checks neighbours after the sort and traces an order the comparer contradicts outright (the later neighbour is
-    before the earlier one and not also after it) as the `CollectionViewContainedFailure` event with
-  `E_INVALIDARG` and a debugger message; fre makes no comparison after the merge. TableView also contains an
-  `E_INVALIDARG` that an app's own view raises from a column comparer's sort as a comparer fault (the previous sort
-  stays, no exception from the header). `SortDescriptions` compare cached keys with a total order
+  build running under a debugger checks neighbours after the sort and traces an order the comparer contradicts
+  outright (the later neighbour is before the earlier one and not also after it) as the
+  `CollectionViewContainedFailure` event with `E_INVALIDARG` and a debugger message; without a debugger, and in fre,
+  no comparison is made after the merge (round C, C-2). TableView contains only a column comparer that throws; an
+  `E_INVALIDARG` from the view itself propagates like any other failure of the view (round C, RC-1). `SortDescriptions` compare cached keys with a total order
   (`CompareSortKeys`, then the unique source index), so they keep `std::stable_sort`; a group `CustomSort` places
   groups by bounded binary search or scan. Cost: an already-sorted input takes about 2n comparisons (one per run
   join); otherwise the merge sort's n log n.
@@ -1159,10 +1159,33 @@ Batch 6 (code complete, not yet measured; the expected effect is stated, and the
 - **App groups are app objects (round B, SB-3).** TableView reads an app view's nested groups (`GroupItems` that are
   groups) with an explicit stack: a group seen before (a group that contains itself, or a cycle) is skipped, and
   levels below 64 are shown as leaves, so a malformed group graph cannot overflow the stack.
-- **`ICollectionViewGroup2` gating.** The view's computed groups (`CollectionViewGroupInternal`) answer
-  `ICollectionViewGroup2` in `QueryInterface` and `GetIids` only while `Feature_ExperimentalApi` is enabled, as
-  `CollectionViewGroup` does; both classes read the feature once, at construction, so `GetIids` sizes and fills its
-  array from one answer (round B, B-6, RB-4).
+- **`ICollectionViewGroup2` exposure (round C, RC-4).** The view's computed groups (`CollectionViewGroupInternal`) and
+  `CollectionViewGroup` answer `ICollectionViewGroup2` in `QueryInterface` and `GetIids` when `Feature_ExperimentalApi`
+  is enabled, reading the feature once, at construction, so `GetIids` sizes and fills its array from one answer
+  (round B, B-6, RB-4). This is not a run-time switch: in C++ `Feature_ExperimentalApi::IsEnabled()` is a compile-time
+  `true` in every build (`FeatureFlags.h`); only the IDL `feature` hides the interface from the stable WinMD. So a
+  stable `IsSourceGrouped` group also answers `ICollectionViewGroup2` and lists its IID, as the generated
+  experimental interfaces of other classes do (`CollectionViewSource.g.h`). Gating it on `MUX_PRERELEASE` instead
+  would make stable `GetIids` equal main's; it is left as generated classes do it.
+- **TableView reads app groups while app code can change them (round C, SC-1).** Reading an app view's groups calls
+  app code (`GroupItems`, `Group`, a group's enumerator), which can swap the view's `CollectionGroups` and raise
+  `PropertyChanged("CollectionGroups")`. The walks over the read groups iterate a copy, and the re-attach that event
+  asks for is deferred while the groups are being attached, read or published or the rows updated, and runs once they
+  unwind (then the rows update for the new groups). Group cycle detection holds each visited group for the walk, so
+  a vector that hands out a new group object per `GetAt` cannot reuse a freed group's address (RC-2).
+- **Sort containment (round C, RC-1).** Only a column `CustomSortComparer` that throws is contained when TableView
+  sorts through a view (logged; the previous sort and arrow stay). Any other failure of the view, whatever its
+  `HRESULT` (an app view's `DeferRefresh`, `CustomSort` setter or `Refresh`, a `Filter` or group converter that throws
+  `ArgumentException`), propagates as before: the platform view no longer fails an inconsistent comparer, so no
+  `E_INVALIDARG` is attributed to the comparer.
+- **Direction flipped on the view (round C, RC-3).** A sort TableView wrote is keyed on its column only while the
+  view still holds what it wrote, including its direction: an app that flips the description's `Direction` in place
+  makes the sort the app's, and a later key change on the column does not re-sort. A direction written to the
+  column itself (by the app, a style or a binding) already makes the sort display-only (`m_sortDisplaySetByApp`), so
+  key changes do not re-sort it either.
+- **Inconsistent-order diagnostics (round C, C-2).** chk traces an order an inconsistent `CustomSort` contradicts only
+  under a debugger, so a chk run calls the app's comparer exactly as fre does (no extra calls, no comparer failure a
+  caller such as TableView counts); a failure in that pass is ignored and its error info cleared.
 - **Failed reorder, prerelease only (round A, RA-3).** When an `InsertAt` fails and the collection is one item short,
   the item is looked for at the insert index by pointer identity, so a boxed value item (a new box on each `GetAt`)
   whose `InsertAt` inserted and then failed while a handler removed another item is inserted again. A failed reorder
