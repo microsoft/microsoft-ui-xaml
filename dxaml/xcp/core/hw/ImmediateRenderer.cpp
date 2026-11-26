@@ -45,6 +45,7 @@
 #include <LocalTransformBuilder.h>
 #include <ImmediateAnimations.h>
 #include <InputServices.h> // ---- scrollgaps ----
+#include <queue>
 #include "DMViewport.h"
 
 using namespace RenderingBackend;
