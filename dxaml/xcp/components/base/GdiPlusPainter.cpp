@@ -3039,7 +3039,19 @@ namespace RenderingBackend
 
                     Surface& layer = *m_layers[depth];
                     layer.graphics->Flush(Gdiplus::FlushIntentionSync);
-                    if (record.mask && !ApplyRoundedMask(layer, record))
+                    // ---- scrollgaps ---- children drew only inside the damage: mask and composite just those parts of
+                    // the layer (two thin strips of a scrolled viewport, not their bounding box).
+                    std::vector<PixelRect>& regions = m_layerRegions;
+                    regions.clear();
+                    for (const PixelRect& damage : m_damage)
+                    {
+                        const PixelRect region = Intersect(damage, record.bounds);
+                        if (!region.IsEmpty())
+                        {
+                            regions.push_back(region);
+                        }
+                    }
+                    if (record.mask && !ApplyRoundedMask(layer, record, regions))
                     {
                         return;
                     }
@@ -3064,14 +3076,17 @@ namespace RenderingBackend
                     }
 
                     // Identity transform, integer rects, nearest-neighbor sampling, and half pixel offset: a 1:1 copy.
-                    const PixelRect& b = record.bounds;
-                    const INT width = b.right - b.left;
-                    const INT height = b.bottom - b.top;
                     SetDeviceTransform(parent);
-                    Record(parent.DrawImage(layer.bitmap.get(), Gdiplus::Rect(b.left, b.top, width, height), b.left - layer.rect.left, b.top - layer.rect.top,
-                        width, height, Gdiplus::UnitPixel, attributes));
+                    for (const PixelRect& b : regions)
+                    {
+                        const INT width = b.right - b.left;
+                        const INT height = b.bottom - b.top;
+                        Record(parent.DrawImage(layer.bitmap.get(), Gdiplus::Rect(b.left, b.top, width, height), b.left - layer.rect.left, b.top - layer.rect.top,
+                            width, height, Gdiplus::UnitPixel, attributes));
+                        m_stats.layerPixels += static_cast<uint64_t>(width) * height;
+                        m_stats.paintedPixels += VisibleArea(b);
+                    }
                     SetWorldTransform(parent);
-                    m_stats.paintedPixels += VisibleArea(b);
                 }
 
                 // ---- clips3d ----
@@ -3233,24 +3248,27 @@ namespace RenderingBackend
                 // coverage. Under an axis-aligned transform (the common case) coverage is computed exactly; otherwise the
                 // shape is filled (under the transform current at push) into the mask surface with GDI+ antialiasing,
                 // which underestimates coverage on shallow arcs.
-                bool ApplyRoundedMask(Surface& layer, const LayerRecord& record) noexcept
+                bool ApplyRoundedMask(Surface& layer, const LayerRecord& record, const std::vector<PixelRect>& regions) noexcept
                 {
                     const PixelRect& b = record.bounds;
                     auto scaleRows = [&](auto&& coverageAt)
                     {
-                        for (int32_t y = b.top; y < b.bottom; ++y)
+                        for (const PixelRect& r : regions)
                         {
-                            uint8_t* destination = layer.At(b.left, y);
-                            for (int32_t x = b.left; x < b.right; ++x, destination += 4)
+                            for (int32_t y = r.top; y < r.bottom; ++y)
                             {
-                                const uint32_t alpha = coverageAt(x, y);
-                                if (alpha == 255)
+                                uint8_t* destination = layer.At(r.left, y);
+                                for (int32_t x = r.left; x < r.right; ++x, destination += 4)
                                 {
-                                    continue;
-                                }
-                                for (int channel = 0; channel < 4; ++channel)
-                                {
-                                    destination[channel] = static_cast<uint8_t>((destination[channel] * alpha + 127) / 255);
+                                    const uint32_t alpha = coverageAt(x, y);
+                                    if (alpha == 255)
+                                    {
+                                        continue;
+                                    }
+                                    for (int channel = 0; channel < 4; ++channel)
+                                    {
+                                        destination[channel] = static_cast<uint8_t>((destination[channel] * alpha + 127) / 255);
+                                    }
                                 }
                             }
                         }
@@ -4672,6 +4690,7 @@ namespace RenderingBackend
                 Matrix3x2F m_userTransform{};
                 std::vector<PixelRect> m_damage;
                 PixelRect m_damageBounds{};
+                std::vector<PixelRect> m_layerRegions; // ---- scrollgaps ---- PopLayer scratch: damage parts of the layer
                 std::vector<PixelRect> m_clipStack;
                 std::vector<LayerRecord> m_layerStack;
                 std::vector<StackEntry> m_stack;

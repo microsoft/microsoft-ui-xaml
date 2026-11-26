@@ -835,6 +835,30 @@ namespace RenderingBackendTests
         VERIFY_IS_TRUE(IsPremultiplied(unwound.At(2, 2), 255, 255, 255, 255, 1));
     }
 
+    void GdiPlusPainterTests::RoundedClipLayerWorksOnlyOnDamage()
+    {
+        // ---- scrollgaps ---- A rounded clip around a scrolled viewport (ScrollView's PART_Root) with two thin damage
+        // strips at its top and bottom: the layer is masked and composited per damage rect, not over their bounding box.
+        auto painter = CreateGdiPlus();
+        if (!painter) return;
+        Paint(*painter, [](IImmediatePainter& p) { p.Clear(c_white); });
+        const RectF strips[] = { { 0, 0, 64, 4 }, { 0, 60, 64, 64 } };
+        const auto stats = Paint(*painter, [](IImmediatePainter& p)
+        {
+            p.PushRoundedRectangleClip({ 0, 0, 64, 64 }, 8, 8);
+            p.FillRectangle({ 0, 0, 64, 64 }, c_black);
+            p.PopRoundedRectangleClip();
+        }, strips, ARRAYSIZE(strips));
+        Log::Comment(String().Format(L"layer pixels: %llu", stats.layerPixels));
+        VERIFY_ARE_EQUAL(2ull * 64 * 4, stats.layerPixels, L"only the damaged strips are masked and composited");
+        const auto image = Read(*painter);
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(32, 2), 0, 0, 0, 255, 1), L"damaged strip drawn");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(32, 62), 0, 0, 0, 255, 1), L"damaged strip drawn");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(0, 0), 255, 255, 255, 255, 1), L"rounded corner masked");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(63, 63), 255, 255, 255, 255, 1), L"rounded corner masked");
+        VERIFY_IS_TRUE(IsPremultiplied(image.At(32, 32), 255, 255, 255, 255, 1), L"undamaged pixels untouched");
+    }
+
     void GdiPlusPainterTests::SquarePixelAlignedRoundedClipNeedsNoLayer()
     {
         auto painter = CreateGdiPlus();

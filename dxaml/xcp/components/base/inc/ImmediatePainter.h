@@ -209,6 +209,7 @@ namespace RenderingBackend
         uint64_t paintedPixels = 0;
         uint32_t primitiveCount = 0;   // fills, strokes, and text runs issued this frame
         uint32_t damageRectCount = 0;
+        uint64_t layerPixels = 0;      // ---- scrollgaps ---- CPU painters: layer pixels masked and composited this frame
     };
 
     struct ResourceInventory

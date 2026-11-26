@@ -42,6 +42,7 @@ namespace RenderingBackendTests
         TEST_METHOD(RoundedClipIsAntialiasedInsideOpacityLayer);
         TEST_METHOD(RoundedClipSharesStackWithClipsAndLayers);
         TEST_METHOD(SquarePixelAlignedRoundedClipNeedsNoLayer);
+        TEST_METHOD(RoundedClipLayerWorksOnlyOnDamage);
         TEST_METHOD(PathCacheIsSteadyAndBounded);
         TEST_METHOD(GlyphRunFontCacheIsSteadyAndBounded);
         TEST_METHOD(GlyphRunRightToLeftAdvancesLeftwards);
