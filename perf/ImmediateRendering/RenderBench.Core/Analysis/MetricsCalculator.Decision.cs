@@ -12,7 +12,7 @@ public static partial class MetricsCalculator
     static readonly string[] ScrollPhysicsKeys =
     [
         "Injected", "Samples", "MotionMs", "UpdateHz", "P95IntervalMs", "FinalOffset", "FinalZoom", "MotionCpuMsPerSecond",
-        "IdleCpuMsPerSecond", "IdleDManipUpdates", "MotionDManipUpdates", "BlockScreenChanges", "BlockDManipUpdates", "OffsetJumpAfterBlock",
+        "IdleCpuMsPerSecond", "IdleDManipUpdates", "MotionDManipUpdates", "BlockScreenChanges", "BlockScreenSamples", "BlockDManipUpdates", "OffsetJumpAfterBlock",
     ];
 
     // Least-squares fit of y = slope * x + intercept; null with fewer than two distinct x values.

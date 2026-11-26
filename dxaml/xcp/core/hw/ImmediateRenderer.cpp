@@ -556,6 +556,14 @@ namespace ImmediateRenderingDetail
         int64_t snapshotQpc = 0;  // QPC (microseconds) when the walk sampled the animation clocks
         // ---- clips3d ----
         std::vector<IImmediatePainter::Matrix4x4F> perspective; // PushPerspective: key
+        // ---- dmanip ---- ScrollPresenter hand-off visuals (VisualInteractionSource sources) and their island placement
+        // (physical pixels): ImmediateRenderer::SyncHitProxies keeps them hit-testable under the island sprite.
+        struct HitProxyEntry
+        {
+            ComPtr<WUComp::IVisual> visual;
+            float x = 0, y = 0, scaleX = 1, scaleY = 1;
+        };
+        std::vector<HitProxyEntry> hitProxies;
 
         ElementRecord& Record(_In_ const CUIElement* element)
         {
@@ -628,7 +636,142 @@ struct ImmediateRenderer::IslandState
     std::vector<WindowedPopup> popups;
     bool windowedPopup = false; // this state paints a windowed popup's window
     IndependentIsland independent;
+
+    // ---- dmanip ---- InteractionTracker input redirection (ScrollPresenter wheel and TryRedirectForManipulation)
+    // hit-tests the island's Composition tree, which in immediate mode is only this sprite. Each walked ScrollPresenter's
+    // hand-off visual is parented under the sprite through a positioner at its island placement, with a transparent
+    // sprite child sized to it (RelativeSizeAdjustment) as the hit target. Nothing is drawn.
+    struct HitProxy
+    {
+        ComPtr<WUComp::IVisual> handOff;
+        ComPtr<WUComp::IVisual> positioner;
+        ComPtr<WUComp::IVisual> hit;
+        bool seen = false;
+    };
+    std::unordered_map<WUComp::IVisual*, HitProxy> hitProxies;
+
+    static void RemoveChild(_In_opt_ WUComp::IVisual* parent, _In_opt_ WUComp::IVisual* child) noexcept
+    {
+        ComPtr<WUComp::IContainerVisual> container;
+        ComPtr<WUComp::IVisualCollection> children;
+        if (parent && child && SUCCEEDED(parent->QueryInterface(IID_PPV_ARGS(&container))) && SUCCEEDED(container->get_Children(&children)))
+        {
+            IGNOREHR(children->Remove(child));
+        }
+    }
+
+    void RemoveHitProxy(_Inout_ HitProxy& proxy) noexcept
+    {
+        RemoveChild(proxy.handOff.Get(), proxy.hit.Get());
+        RemoveChild(proxy.positioner.Get(), proxy.handOff.Get());
+        ComPtr<WUComp::IVisual> root;
+        if (sprite && SUCCEEDED(sprite.As(&root)))
+        {
+            RemoveChild(root.Get(), proxy.positioner.Get());
+        }
+    }
+
+    ~IslandState()
+    {
+        for (auto& entry : hitProxies)
+        {
+            RemoveHitProxy(entry.second);
+        }
+    }
 };
+
+namespace
+{
+    // ---- dmanip ---- MUXC ScrollPresenter (core type info carries the short class name).
+    bool IsScrollPresenter(_In_ const CUIElement* element) noexcept
+    {
+        const xstring_ptr name = element->GetClassName();
+        static constexpr wchar_t c_suffix[] = L"ScrollPresenter";
+        constexpr size_t suffixLength = ARRAYSIZE(c_suffix) - 1;
+        const size_t length = name.IsNullOrEmpty() ? 0 : name.GetCount();
+        return length >= suffixLength && wcscmp(name.GetBuffer() + length - suffixLength, c_suffix) == 0;
+    }
+}
+
+// ---- dmanip ---- Parents the walked ScrollPresenter hand-off visuals under the island sprite (IslandState::HitProxy)
+// and drops the ones no longer walked.
+void ImmediateRenderer::SyncHitProxies(_In_ DCompTreeHost* dcompTreeHost, _Inout_ IslandState& state) noexcept
+{
+    const auto& entries = state.previousWalk.hitProxies;
+    if (entries.empty() && state.hitProxies.empty())
+    {
+        return;
+    }
+    ComPtr<WUComp::IVisual> root;
+    ComPtr<WUComp::IContainerVisual> rootContainer;
+    ComPtr<WUComp::IVisualCollection> rootChildren;
+    if (!state.sprite || FAILED(state.sprite.As(&root)) || FAILED(root.As(&rootContainer)) || FAILED(rootContainer->get_Children(&rootChildren)))
+    {
+        return;
+    }
+    for (auto& entry : state.hitProxies)
+    {
+        entry.second.seen = false;
+    }
+    WUComp::ICompositor* compositor = dcompTreeHost->GetCompositor();
+    for (const auto& entry : entries)
+    {
+        auto found = state.hitProxies.find(entry.visual.Get());
+        if (found == state.hitProxies.end())
+        {
+            IslandState::HitProxy proxy;
+            proxy.handOff = entry.visual;
+            ComPtr<WUComp::IContainerVisual> positioner;
+            ComPtr<WUComp::ISpriteVisual> hit;
+            ComPtr<WUComp::ICompositionColorBrush> transparent;
+            ComPtr<WUComp::ICompositionBrush> brush;
+            ComPtr<WUComp::IVisualCollection> children;
+            ComPtr<WUComp::IContainerVisual> handOffContainer;
+            ComPtr<WUComp::IVisual2> hitVisual2;
+            if (FAILED(compositor->CreateContainerVisual(&positioner))
+                || FAILED(compositor->CreateSpriteVisual(&hit))
+                || FAILED(compositor->CreateColorBrushWithColor({ 0, 0, 0, 0 }, &transparent))
+                || FAILED(transparent.As(&brush))
+                || FAILED(hit->put_Brush(brush.Get()))
+                || FAILED(positioner.As(&proxy.positioner))
+                || FAILED(hit.As(&proxy.hit))
+                || FAILED(hit.As(&hitVisual2))
+                || FAILED(hitVisual2->put_RelativeSizeAdjustment({ 1, 1 }))
+                || FAILED(entry.visual.As(&handOffContainer)))
+            {
+                continue;
+            }
+            // A hand-off visual parented elsewhere (Composition fallback) is left alone.
+            if (FAILED(positioner->get_Children(&children)) || FAILED(children->InsertAtTop(entry.visual.Get())))
+            {
+                continue;
+            }
+            ComPtr<WUComp::IVisualCollection> handOffChildren;
+            if (FAILED(handOffContainer->get_Children(&handOffChildren)) || FAILED(handOffChildren->InsertAtTop(proxy.hit.Get()))
+                || FAILED(rootChildren->InsertAtTop(proxy.positioner.Get())))
+            {
+                state.RemoveHitProxy(proxy);
+                continue;
+            }
+            found = state.hitProxies.emplace(entry.visual.Get(), std::move(proxy)).first;
+        }
+        found->second.seen = true;
+        IGNOREHR(found->second.positioner->put_Offset({ entry.x, entry.y, 0 }));
+        IGNOREHR(found->second.positioner->put_Scale({ entry.scaleX, entry.scaleY, 1 }));
+    }
+    for (auto it = state.hitProxies.begin(); it != state.hitProxies.end();)
+    {
+        if (!it->second.seen)
+        {
+            state.RemoveHitProxy(it->second);
+            it = state.hitProxies.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
 
 ImmediateRenderer::ImmediateRenderer(Mode mode) noexcept
     : m_mode(mode)
@@ -3122,6 +3265,20 @@ void ImmediateRenderer::Walk(
     {
         probe.active = false;
     }
+    // ---- dmanip ---- InteractionTracker hit-test proxy (IslandState::HitProxy).
+    if (hasHandOff && !hasHandOffTransform && !ctx.has3D && !ctx.inLayer && IsScrollPresenter(element))
+    {
+        DisplayList::HitProxyEntry proxy;
+        element->GetStoredHandOffVisual(proxy.visual.ReleaseAndGetAddressOf());
+        if (proxy.visual)
+        {
+            proxy.x = ctx.world.GetDx() * ctx.scale;
+            proxy.y = ctx.world.GetDy() * ctx.scale;
+            proxy.scaleX = ctx.world.GetM11() * ctx.scale;
+            proxy.scaleY = ctx.world.GetM22() * ctx.scale;
+            list.hitProxies.push_back(std::move(proxy));
+        }
+    }
     if (probe.active)
     {
         ++list.uncacheable;
@@ -3932,6 +4089,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderIsland(
 
     if (!fellBack && SUCCEEDED(hr))
     {
+        SyncHitProxies(dcompTreeHost, state);
         // The island's display list is state.previousWalk once presented.
         hr = RenderWindowedPopups(dcompTreeHost, state, state.previousWalk, frameNumber, &fellBack);
     }

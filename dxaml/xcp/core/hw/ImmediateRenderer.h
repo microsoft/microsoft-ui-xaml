@@ -86,6 +86,7 @@ public:
 private:
     struct IslandState;
 
+    void SyncHitProxies(_In_ DCompTreeHost* dcompTreeHost, _Inout_ IslandState& state) noexcept;
     _Check_return_ HRESULT EnsureDevice();
     _Check_return_ HRESULT EnsureIslandResources(
         _In_ DCompTreeHost* dcompTreeHost,

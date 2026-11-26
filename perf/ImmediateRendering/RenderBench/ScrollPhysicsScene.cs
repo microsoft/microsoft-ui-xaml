@@ -21,9 +21,10 @@ namespace RenderBench;
 //   Injected, Samples, StartLatencyMs, MotionMs, UpdateHz, P95IntervalMs, MaxIntervalMs, FinalOffset, FinalZoom,
 //   MotionCpuMsPerSecond, IdleCpuMsPerSecond, PrivateMB, PeakPrivateMB, and from the native logs when set
 //   (WINUI_IMMEDIATE_DMANIP_LOG, WINUI_IMMEDIATE_STATS): MotionDManipUpdates, IdleDManipUpdates, MotionPaintedFrames,
-//   IdlePaintedFrames. The blocked step adds BlockScreenChanges (distinct screen samples of the viewport while the UI
-//   thread sleeps), BlockDManipUpdates and OffsetJumpAfterBlock; the unblocked flick reports the same two values for the 200 ms
-//   after the same delay (the screen sampler's reference).
+//   IdlePaintedFrames. The blocked step adds BlockScreenChanges/BlockScreenSamples (screen readbacks of a viewport column
+//   that differed from the previous one, and the readback count, while the UI thread sleeps; one readback takes ~50 ms on
+//   a GPU-less VM), BlockDManipUpdates and OffsetJumpAfterBlock; the unblocked flick reports the same values for the
+//   200 ms after the same delay (the sampler's reference).
 // The trajectory of every step is written to trajectory.csv next to --screenshot (step,ms since input,offset,zoom).
 sealed class ScrollPhysicsScene : DecisionScene, IScene
 {
@@ -166,7 +167,19 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
     [DllImport("user32.dll")]
     static extern int ReleaseDC(nint hwnd, nint dc);
     [DllImport("gdi32.dll")]
-    static extern uint GetPixel(nint dc, int x, int y);
+    static extern nint CreateCompatibleDC(nint dc);
+    [DllImport("gdi32.dll")]
+    static extern nint CreateCompatibleBitmap(nint dc, int width, int height);
+    [DllImport("gdi32.dll")]
+    static extern nint SelectObject(nint dc, nint obj);
+    [DllImport("gdi32.dll")]
+    static extern bool DeleteObject(nint obj);
+    [DllImport("gdi32.dll")]
+    static extern bool DeleteDC(nint dc);
+    [DllImport("gdi32.dll")]
+    static extern bool BitBlt(nint dst, int x, int y, int width, int height, nint src, int srcX, int srcY, uint rop);
+    [DllImport("gdi32.dll")]
+    static extern int GetBitmapBits(nint bitmap, int bytes, byte[] bits);
     [DllImport("user32.dll")]
     static extern bool ClientToScreen(nint hwnd, ref ScreenPoint point);
     [DllImport("user32.dll")]
@@ -384,6 +397,7 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         if (name is "flick-blocked" or "flick")
         {
             Value("BlockScreenChanges", blockChanges);
+            Value("BlockScreenSamples", _lastScreenSamples);
             Value("BlockDManipUpdates", blockTicks);
             Value("OffsetJumpAfterBlock", blockJump);
         }
@@ -409,19 +423,28 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
             var client = new ScreenPoint();
             ClientToScreen(host.Hwnd, ref client);
             int x = client.X + (int)(origin.X * scale);
-            var ys = Enumerable.Range(0, 8).Select(k => client.Y + (int)((origin.Y + 20 + k * (target.ActualHeight - 40) / 7) * scale)).ToArray();
-            _where = $"{x},{ys[0]}..{ys[^1]}";
+            int top = client.Y + (int)((origin.Y + 20) * scale);
+            int height = Math.Max(8, (int)((target.ActualHeight - 40) * scale));
+            const int width = 4;
+            _where = $"{x},{top}+{height}";
             _thread = new Thread(() =>
             {
-                nint dc = GetDC(0);
+                nint screen = GetDC(0);
+                nint memory = CreateCompatibleDC(screen);
+                nint bitmap = CreateCompatibleBitmap(screen, width, height);
+                nint old = SelectObject(memory, bitmap);
+                var bits = new byte[width * height * 4];
                 ulong previous = 0;
                 bool first = true;
                 while (!_stop.IsSet)
                 {
+                    // One readback per sample: per-pixel GetPixel on the screen DC takes tens of ms on this VM.
+                    BitBlt(memory, 0, 0, width, height, screen, x, top, 0x00CC0020 /* SRCCOPY */);
+                    GetBitmapBits(bitmap, bits.Length, bits);
                     ulong hash = 1469598103934665603;
-                    foreach (int y in ys)
+                    foreach (byte b in bits)
                     {
-                        hash = (hash ^ GetPixel(dc, x, y)) * 1099511628211;
+                        hash = (hash ^ b) * 1099511628211;
                     }
                     if (!first && hash != previous)
                     {
@@ -429,14 +452,17 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
                     }
                     if (first)
                     {
-                        _firstPixel = GetPixel(dc, x, ys[0]);
+                        _firstPixel = BitConverter.ToUInt32(bits, 0);
                     }
                     _samples++;
                     previous = hash;
                     first = false;
-                    Thread.Sleep(4);
+                    Thread.Sleep(2);
                 }
-                ReleaseDC(0, dc);
+                SelectObject(memory, old);
+                DeleteObject(bitmap);
+                DeleteDC(memory);
+                ReleaseDC(0, screen);
             }) { IsBackground = true };
             _thread.Start();
         }
@@ -449,11 +475,15 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
             return _changes;
         }
 
+        public int Samples => _samples;
+
         public void Dispose() => _stop.Dispose();
     }
 
     // Samples the screen for ms while the UI thread sleeps (block) or awaits (free); returns the screen changes and the
     // DManip ticks logged meanwhile.
+    int _lastScreenSamples;
+
     async Task<(int ScreenChanges, int Ticks)> SampleScreenAsync(ISceneHost host, FrameworkElement target, int ms, bool block)
     {
         long fromUs = QpcMicroseconds();
@@ -466,6 +496,8 @@ sealed class ScrollPhysicsScene : DecisionScene, IScene
         {
             await Task.Delay(ms);
         }
-        return (sampler.Stop(), CountTicks(fromUs, QpcMicroseconds()));
+        int changes = sampler.Stop();
+        _lastScreenSamples = sampler.Samples;
+        return (changes, CountTicks(fromUs, QpcMicroseconds()));
     }
 }
