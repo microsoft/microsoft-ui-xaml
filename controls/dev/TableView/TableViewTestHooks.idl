@@ -1,0 +1,20 @@
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+// Drives a column header reorder drag without pointer input, so API tests are deterministic. The parameters are
+// Object: the test app projects the Tabular types itself, so typed parameters would not match its TableView.
+[MUX_INTERNAL]
+[webhosthidden]
+[default_interface]
+runtimeclass TableViewTestHooks
+{
+    // A press on the column's header and the start of its manipulation; false if no drag starts.
+    static Boolean BeginColumnReorderDrag(Object tableView, Object column);
+    // A ManipulationDelta with the given physical cumulative translation.
+    static Boolean UpdateColumnReorderDrag(Object tableView, Double translationX);
+    // A ManipulationCompleted with the given physical cumulative translation: drops the column.
+    static Boolean CompleteColumnReorderDrag(Object tableView, Double translationX);
+    static Boolean IsColumnReorderDragging(Object tableView);
+}
+
+}

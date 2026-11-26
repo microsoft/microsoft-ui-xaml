@@ -50,13 +50,20 @@ winrt::Microsoft::UI::Xaml::Data::Binding TableViewTextColumn::Binding()
 
 void TableViewTextColumn::Binding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
 {
-    m_binding.set(value);
-    // Rebuild realized cells so the new Binding is applied immediately;
-    // virtualized rows pick it up when realized.
-    if (auto owner = GetOwningTableView())
+    const uint32_t request = ++m_bindingRequest;
+    // Before the swap, so the close validates the property the open editor writes.
+    if (auto const owner = GetOwningTableView())
     {
-        winrt::get_self<TableView>(owner)->OnColumnCellTemplateChanged(*this);
+        winrt::get_self<TableView>(owner)->EndEditOfChangedColumn(*this);
     }
+    // The close ran app code (a setter, a PropertyChanged handler) that set a newer Binding; it stays.
+    if (m_bindingRequest != request)
+    {
+        return;
+    }
+    m_binding.set(value);
+    // Rebuild realized cells so the new Binding is applied; virtualized rows pick it up when realized.
+    NotifyCellContentChangedInternal(true /* resetAutoWidth */);
 }
 
 winrt::FrameworkElement TableViewTextColumn::GenerateElementCore(const winrt::IInspectable& /*dataItem*/)

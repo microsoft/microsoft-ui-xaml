@@ -26,15 +26,29 @@ namespace
         return column ? winrt::get_self<TableViewColumn>(column)->AutomationIdentity() : 0;
     }
 
-    winrt::TableView OwnerForPublicConstructor(winrt::TableView const& table, winrt::TableViewColumn const& column)
+    winrt::TableViewColumn ColumnOfHeader(winrt::TableViewColumnHeader const& header)
     {
-        if (table && column &&
-            winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == table)
-        {
-            return table;
-        }
+        return header ? winrt::get_self<TableViewColumnHeader>(header)->Column() : nullptr;
+    }
 
-        throw winrt::hresult_invalid_argument();
+    winrt::TableView TableOfHeader(winrt::TableViewColumnHeader const& header)
+    {
+        return header ? winrt::get_self<TableViewColumnHeader>(header)->GetOwningTableView() : nullptr;
+    }
+
+    winrt::TableViewColumnHeader HeaderForPublicConstructor(winrt::TableViewColumnHeader const& header)
+    {
+        if (!TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(header))
+        {
+            throw winrt::hresult_invalid_argument();
+        }
+        return header;
+    }
+
+    template <typename T>
+    winrt::weak_ref<T> WeakOrNull(T const& value)
+    {
+        return value ? winrt::make_weak(value) : winrt::weak_ref<T>{ nullptr };
     }
 
     // The format supplies its own separator; a first part written as a sentence would otherwise read "..".
@@ -58,25 +72,37 @@ namespace
     }
 }
 
-TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
-    winrt::TableView const& owner,
-    winrt::TableViewColumn const& column)
-    : ReferenceTracker(OwnerForPublicConstructor(owner, column))
-    , m_column(winrt::make_weak(column))
-    , m_table(winrt::make_weak(owner))
-    , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
+TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(winrt::TableViewColumnHeader const& owner)
+    : ReferenceTracker(HeaderForPublicConstructor(owner))
+    , m_column(WeakOrNull(ColumnOfHeader(owner)))
+    , m_table(WeakOrNull(TableOfHeader(owner)))
+    , m_columnAutomationIdentity(AutomationIdentityForColumn(ColumnOfHeader(owner)))
 {
 }
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
-    winrt::FrameworkElement const& header,
-    winrt::TableView const& table,
+    winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
-    : ReferenceTracker(header)
-    , m_column(winrt::make_weak(column))
-    , m_table(winrt::make_weak(table))
+    : ReferenceTracker(owner)
+    , m_column(WeakOrNull(column))
+    , m_table(WeakOrNull(owner))
     , m_columnAutomationIdentity(AutomationIdentityForColumn(column))
 {
+}
+
+bool TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(winrt::TableViewColumnHeader const& header)
+{
+    auto const column = ColumnOfHeader(header);
+    auto const table = TableOfHeader(header);
+    uint32_t index = 0;
+    if (!column || !table || winrt::get_self<TableViewColumn>(column)->GetOwningTableView() != table ||
+        !table.Columns().IndexOf(column, index))
+    {
+        return false;
+    }
+    // A header being built is not in the host yet; one the host has replaced is stale.
+    auto const current = TableViewCellsPanel::CellForColumn(winrt::get_self<TableView>(table)->GetHeaderHostInternal(), column);
+    return !current || current == header;
 }
 
 hstring TableViewColumnHeaderAutomationPeer::GetClassNameCore()
@@ -219,6 +245,11 @@ hstring TableViewColumnHeaderAutomationPeer::GetSortAndToolTipHelpText()
 
 winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)
 {
+    if (IsHeaderReplaced())
+    {
+        return __super::GetPatternCore(patternInterface);
+    }
+
     if (patternInterface == winrt::PatternInterface::Invoke && IsSortableColumn())
     {
         return *this;
@@ -284,6 +315,7 @@ void TableViewColumnHeaderAutomationPeer::SetFocusCore()
 
 void TableViewColumnHeaderAutomationPeer::Invoke()
 {
+    ThrowIfHeaderReplaced();
     if (!IsEnabled())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
@@ -311,7 +343,7 @@ bool TableViewColumnHeaderAutomationPeer::CanMove()
 
 bool TableViewColumnHeaderAutomationPeer::CanResize()
 {
-    if (!IsResizableColumn())
+    if (!IsResizableColumn() || IsHeaderReplaced())
     {
         return false;
     }
@@ -332,6 +364,7 @@ void TableViewColumnHeaderAutomationPeer::Move(double, double)
 
 void TableViewColumnHeaderAutomationPeer::Resize(double width, double)
 {
+    ThrowIfHeaderReplaced();
     if (!IsEnabled())
     {
         throw winrt::hresult_error(UIA_E_ELEMENTNOTENABLED);
@@ -424,14 +457,21 @@ bool TableViewColumnHeaderAutomationPeer::IsOffscreenCore()
 
 void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
 {
+    // A collapsed column's header has no menu, whichever peer is asked: raising the request on the
+    // collapsed header element would bubble to the table and open its menu instead.
+    auto const column = m_column.get();
+    if (column && !IsVisibleColumn(column))
+    {
+        return;
+    }
+
     if (!IsTableViewOwned())
     {
         __super::ShowContextMenuCore();
         return;
     }
 
-    auto const column = m_column.get();
-    if (!column || !IsVisibleColumn(column))
+    if (!column)
     {
         return;
     }
@@ -442,6 +482,20 @@ void TableViewColumnHeaderAutomationPeer::ShowContextMenuCore()
         {
             peer.ShowContextMenu();
         }
+    }
+}
+
+// A header-owned peer whose header the table has replaced acts on nothing.
+bool TableViewColumnHeaderAutomationPeer::IsHeaderReplaced()
+{
+    return !IsTableViewOwned() && !GetHeaderElement();
+}
+
+void TableViewColumnHeaderAutomationPeer::ThrowIfHeaderReplaced()
+{
+    if (IsHeaderReplaced())
+    {
+        throw winrt::hresult_error(UIA_E_ELEMENTNOTAVAILABLE);
     }
 }
 
@@ -467,7 +521,7 @@ bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
 bool TableViewColumnHeaderAutomationPeer::IsResizableColumn()
 {
     auto const column = m_column.get();
-    if (!column || !column.CanResize() || !IsVisibleColumn(column))
+    if (!column || !column.CanUserResize() || !IsVisibleColumn(column))
     {
         return false;
     }

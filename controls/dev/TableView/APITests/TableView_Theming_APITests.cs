@@ -2582,21 +2582,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 foreach (var theme in new[] { ElementTheme.Light, ElementTheme.Dark })
                 foreach (var density in DensityCases)
                 {
-                    var column = new TableViewTextColumn();
-                    var detachedText = (TextBlock)column.GenerateElement(null);
+                    var column = new TextProbeColumn();
+                    var detachedText = (TextBlock)column.Generate();
                     Verify.AreEqual(new Thickness(12, 5, 12, 7), detachedText.Padding,
                         "A column without an owner must use Standard text padding.");
                     Verify.AreEqual(14.0, detachedText.FontSize);
 
                     var table = new TableView { RequestedTheme = theme, Density = density.Density };
                     table.Columns.Add(column);
-                    var ownedText = (TextBlock)column.GenerateElement(null);
+                    var ownedText = (TextBlock)column.Generate();
                     Verify.AreEqual(density.TextPadding, ownedText.Padding,
                         $"An attached column must use its owner's {density.Density} metrics in {theme}.");
                     Verify.AreEqual(density.FontSize, ownedText.FontSize);
 
                     table.Columns.Remove(column);
-                    detachedText = (TextBlock)column.GenerateElement(null);
+                    detachedText = (TextBlock)column.Generate();
                     Verify.AreEqual(new Thickness(12, 5, 12, 7), detachedText.Padding,
                         "Removing a column must restore Standard defaults, not its previous owner's density.");
                     Verify.AreEqual(14.0, detachedText.FontSize);
@@ -2617,10 +2617,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.Resources["TableViewCellTextPadding" + density.ResourceSuffix] = "Not a Thickness";
                     table.Resources[density.Density == TableViewDensity.Compact
                         ? "TableViewCellFontSizeSmall" : "TableViewCellFontSize"] = "Not a Double";
-                    var column = new TableViewTextColumn();
+                    var column = new TextProbeColumn();
                     table.Columns.Add(column);
 
-                    var text = (TextBlock)column.GenerateElement(null);
+                    var text = (TextBlock)column.Generate();
                     Verify.AreEqual(density.TextPadding, text.Padding,
                         $"An unusable resource must fall back to {density.Density} text padding in {theme}.");
                     Verify.AreEqual(density.FontSize, text.FontSize,
@@ -2647,8 +2647,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 realizedRow = FindVisualChildrenByType<TableViewRow>(table).First();
                 Verify.AreEqual(TableViewDensity.Standard, table.Density);
                 Verify.AreEqual(32.0, realizedRow.MinHeight);
-                Verify.AreEqual(0, (int)TableViewDensity.Compact);
-                Verify.AreEqual(1, (int)TableViewDensity.Standard);
+                Verify.AreEqual(1, (int)TableViewDensity.Compact);
+                Verify.AreEqual(0, (int)TableViewDensity.Standard);
                 Verify.AreEqual(2, (int)TableViewDensity.Comfortable);
             });
 
@@ -7233,6 +7233,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
+    }
+
+    // Exposes the text column's generated display cell.
+    internal partial class TextProbeColumn : TableViewTextColumn
+    {
+        public FrameworkElement Generate() => GenerateElementCore(null);
     }
 
     internal static class TableViewThemingTestHelpers

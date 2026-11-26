@@ -491,7 +491,7 @@ bool TableView::BeginColumnReorderDrag()
     ++m_columnReorderGeneration;
     // Set before capturing: a header cell losing its capture re-enters the pointer handlers.
     state.dragging = true;
-    if (state.pointer.PointerDeviceType() == winrt::Microsoft::UI::Input::PointerDeviceType::Mouse)
+    if (state.pointer && state.pointer.PointerDeviceType() == winrt::Microsoft::UI::Input::PointerDeviceType::Mouse)
     {
         host.CapturePointer(state.pointer);
     }
@@ -727,7 +727,7 @@ void TableView::EndColumnReorderDrag(bool commit)
         auto const bodyScroller = m_bodyScroller.get();
         TableViewCellsPanel::ApplyFrozenColumnLayout(host, bodyScroller ? bodyScroller.HorizontalOffset() : 0.0, ComputeLeadingFrozenWidth());
     }
-    if (auto const host = m_columnReorderHookedHost.get(); host && host.XamlRoot())
+    if (auto const host = m_columnReorderHookedHost.get(); host && host.XamlRoot() && state.pointer)
     {
         host.ReleasePointerCapture(state.pointer);
     }
@@ -735,4 +735,33 @@ void TableView::EndColumnReorderDrag(bool commit)
     {
         TryReorderColumn(column, ColumnReorderSlotAt(state));
     }
+}
+
+bool TableView::BeginColumnReorderDragForTesting(const winrt::TableViewColumn& column)
+{
+    auto const row = m_headerRow.get();
+    auto const cell = row && column ? TableViewCellsPanel::CellForColumn(m_headerHost.get(), column) : nullptr;
+    if (!cell || !m_columnReorderHookedHost.get() || (m_columnReorder && m_columnReorder->dragging) || !CanUserMoveColumnInternal(column))
+    {
+        return false;
+    }
+    // As OnHeaderHostPointerPressedForReorder records a press at the header's middle; no pointer, so nothing is captured.
+    ColumnReorderDragState state;
+    state.column = winrt::make_weak(column);
+    state.pressX = cell.TransformToVisual(row).TransformPoint({ static_cast<float>(cell.ActualWidth() / 2.0), 0.0f }).X;
+    state.pointerX = state.pressX;
+    m_suppressHeaderTap = false;
+    m_columnReorder = std::move(state);
+    return BeginColumnReorderDrag();
+}
+
+// As ManipulationCompleted.
+bool TableView::CompleteColumnReorderDragForTesting(double translationX)
+{
+    if (!UpdateColumnReorderDrag(translationX, false /* preview */))
+    {
+        return false;
+    }
+    EndColumnReorderDrag(true /* commit */);
+    return true;
 }

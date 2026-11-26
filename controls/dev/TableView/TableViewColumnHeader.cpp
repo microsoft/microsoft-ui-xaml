@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewColumnHeader.h"
 #include "TableView.h"
+#include "TableViewColumn.h"
 #include "TableViewContextMenu.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "SharedHelpers.h"
@@ -56,14 +57,15 @@ void TableViewColumnHeader::SetOwnerInternal(winrt::TableView const& table, winr
 
 winrt::AutomationPeer TableViewColumnHeader::OnCreateAutomationPeer()
 {
-    auto const table = m_table.get();
-    auto const column = m_column.get();
-    if (!table || !column)
+    // A header whose column has left its table, or that a rebuild replaced, gets the base peer, as
+    // the public constructor would reject it.
+    auto const header = get_strong().as<winrt::TableViewColumnHeader>();
+    if (!TableViewColumnHeaderAutomationPeer::DescribesColumnHeader(header))
     {
         return __super::OnCreateAutomationPeer();
     }
 
-    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(*this, table, column);
+    winrt::AutomationPeer const peer = winrt::make<TableViewColumnHeaderAutomationPeer>(header);
     m_automationPeer = winrt::make_weak(peer);
     return peer;
 }
@@ -402,12 +404,16 @@ void TableViewColumnHeader::OnPointerExited(winrt::PointerRoutedEventArgs const&
     __super::OnPointerExited(args);
     m_isPointerOver = false;
     m_isPressed = false;
+    m_focusOnRelease = false;
     UpdateVisualStates(true /* useTransitions */);
 }
 
 void TableViewColumnHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerPressed(args);
+    m_focusOnRelease = !args.Handled() &&
+        (args.Pointer().PointerDeviceType() != winrt::Microsoft::UI::Input::PointerDeviceType::Mouse ||
+            args.GetCurrentPoint(*this).Properties().IsLeftButtonPressed());
     m_isPressed = true;
     UpdateVisualStates(true /* useTransitions */);
 }
@@ -415,6 +421,13 @@ void TableViewColumnHeader::OnPointerPressed(winrt::PointerRoutedEventArgs const
 void TableViewColumnHeader::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerReleased(args);
+    // A click focuses the header, as a press focuses a row's cell. Otherwise the header row's
+    // ScrollViewer focuses itself on this release, which lands on the first header, and keys then
+    // act on that header's column. Not on press, so a reorder drag leaves focus where it was.
+    if (std::exchange(m_focusOnRelease, false) && !args.Handled() && !m_isReorderDragging && IsTabStop() && AllowFocusOnInteraction())
+    {
+        Focus(winrt::FocusState::Pointer);
+    }
     m_isPressed = false;
     UpdateVisualStates(true /* useTransitions */);
 }
@@ -442,6 +455,7 @@ void TableViewColumnHeader::ResetPointerState(winrt::PointerRoutedEventArgs cons
 
     m_isPointerOver = false;
     m_isPressed = false;
+    m_focusOnRelease = false;
     UpdateVisualStates(true /* useTransitions */);
 }
 

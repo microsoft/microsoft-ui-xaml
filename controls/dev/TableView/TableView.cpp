@@ -3591,8 +3591,21 @@ void TableView::RebuildHeadersCore()
     removingFocused = focusedAtTeardown && winrt::VisualTreeHelper::GetParent(focusedAtTeardown) != host;
     ReleaseHeaderCells(host);
     removingFocused = true;
+    std::vector<winrt::TableViewColumnHeader> discardedHeaders;
+    for (auto const& child : host.Children())
+    {
+        if (auto const header = child.try_as<winrt::TableViewColumnHeader>())
+        {
+            discardedHeaders.push_back(header);
+        }
+    }
     host.Children().Clear();
     removingFocused = false;
+    // A peer may outlive its header; detached, it can no longer act on the column.
+    for (auto const& header : discardedHeaders)
+    {
+        winrt::get_self<TableViewColumnHeader>(header)->SetOwnerInternal(nullptr, nullptr);
+    }
 
     m_rebuildingHeaders = true;
     auto const rebuildingGuard = wil::scope_exit([this]() noexcept { m_rebuildingHeaders = false; });
@@ -3661,7 +3674,7 @@ void TableView::RebuildHeadersCore()
                 header.Style(headerStyle);
             }
 
-            const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
+            const bool headerIsResizable = CanUserResizeColumns() && column.CanUserResize();
             const bool headerIsSortable = canUserSortColumns && column.CanSort();
             if (!styleSetsCornerRadius)
             {
@@ -4796,7 +4809,7 @@ bool TableView::IsColumnResizeAllowed(const winrt::TableViewColumn& column)
 {
     return column &&
         CanUserResizeColumns() &&
-        column.CanResize() &&
+        column.CanUserResize() &&
         column.Visibility() == winrt::Visibility::Visible &&
         winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this;
 }
@@ -4899,6 +4912,6 @@ void TableView::OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPro
         return;
     }
 
-    ExpireLockedColumnHolds();
+    // Gates user input only: resize holds and authored shares survive the toggle.
     RebuildHeaders();
 }
