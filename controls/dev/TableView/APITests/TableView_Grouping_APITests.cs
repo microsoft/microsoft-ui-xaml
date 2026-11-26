@@ -1527,14 +1527,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a throwing GroupExpanding handler is contained: raised once, the group still expands, and focus stays in the table.")]
+        [TestProperty("Description", "Verifies a throwing GroupExpanding handler's exception reaches the caller, as Sorting's does: raised once, the group does not expand, and focus stays in the table; a throwing GroupCollapsed handler's exception reaches the caller after the group collapsed.")]
         [TestProperty("data:Route", "{Peer, ExpandGroup}")]
-        public void VerifyThrowingGroupExpandingHandlerIsContained()
+        public void VerifyThrowingGroupHandlerPropagates()
         {
             var route = ((string)TestContext.DataRow["Route"]).Trim();
             TableView tableView = null;
             Exception escaped = null;
             var raised = 0;
+            var throwing = true;
 
             RunOnUIThread.Execute(() =>
             {
@@ -1554,7 +1555,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 tableView.GroupExpanding += (s, e) =>
                 {
                     raised++;
-                    throw new InvalidOperationException("GroupExpanding handler fault");
+                    if (throwing)
+                    {
+                        throw new InvalidOperationException("GroupExpanding handler fault");
+                    }
                 };
                 try
                 {
@@ -1582,10 +1586,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsNull(escaped, $"{route}: a handler fault must not escape the expand request.");
+                Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
+                Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
                 Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
-                Verify.IsTrue(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: the group must still expand.");
-                Verify.IsTrue(GetProjectedLabels(tableView, includeCount: false).Contains("Asha"), $"{route}: the expanded group's rows must show.");
+                Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: a throwing GroupExpanding stops the expansion.");
                 var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
                 var inTable = false;
                 for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
@@ -1593,6 +1597,27 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     inTable |= ReferenceEquals(current, tableView);
                 }
                 Verify.IsTrue(inTable, $"{route}: focus must stay inside the table.");
+
+                throwing = false;
+                tableView.ExpandAllGroups();
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                escaped = null;
+                tableView.GroupCollapsed += (s, e) => throw new InvalidOperationException("GroupCollapsed handler fault");
+                try
+                {
+                    tableView.CollapseGroup("Designer");
+                }
+                catch (Exception e)
+                {
+                    escaped = e;
+                }
+                Verify.IsNotNull(escaped, $"{route}: the GroupCollapsed handler's exception reaches the caller.");
+                Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: the group collapsed before GroupCollapsed was raised.");
             });
         }
 

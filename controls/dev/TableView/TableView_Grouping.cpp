@@ -65,12 +65,6 @@ namespace
         winrt::Windows::Foundation::IClosable m_deferral{ nullptr };
     };
 
-    void LogGroupHandlerThrow(wchar_t const* eventName)
-    {
-        TVDiag::LogRetailF(L"[TableView] Consumer %ls handler threw (HRESULT 0x%08X); the expansion continues.",
-            eventName, static_cast<unsigned int>(winrt::to_hresult()));
-    }
-
     // Every step can fail on a locale-starved or self-contained host, and this runs during
     // measure, so nothing is allowed to escape.
     winrt::hstring LocalizedOrFallback(std::wstring_view resourceName, std::wstring_view fallback) noexcept
@@ -1194,7 +1188,9 @@ void TableView::RaiseGroupExpandingFor(winrt::hstring const& identity, winrt::II
     RaiseGroupExpanding(groupKey);
 }
 
-// A throwing handler is contained and logged; the expansion goes ahead.
+// A handler's exception propagates to the caller, as Sorting's and Sorted's do (a request posted from layout reports it
+// through Application.UnhandledException). GroupExpanding is raised before the change, so a throwing handler stops
+// the expansion; the callers' scope guards restore focus and end the deferral.
 void TableView::RaiseGroupExpanding(winrt::IInspectable const& groupKey)
 {
     if (!m_groupExpandingEventSource)
@@ -1202,16 +1198,8 @@ void TableView::RaiseGroupExpanding(winrt::IInspectable const& groupKey)
         return;
     }
     auto const args = winrt::make<TableViewGroupExpandingEventArgs>(groupKey);
-    try
-    {
-        m_groupExpandingEventSource(*this, args);
-    }
-    catch (...)
-    {
-        NoteRecoveredAppFault(TableViewTip::Operation::GroupExpansion, TableViewTip::Stage::Expansion,
-            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
-        LogGroupHandlerThrow(L"GroupExpanding");
-    }
+    try { m_groupExpandingEventSource(*this, args); }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 }
 
 void TableView::RaiseGroupCollapsed(winrt::IInspectable const& groupKey)
@@ -1220,17 +1208,10 @@ void TableView::RaiseGroupCollapsed(winrt::IInspectable const& groupKey)
     {
         return;
     }
+    // Raised after the change, which a throwing handler does not undo.
     auto const args = winrt::make<TableViewGroupCollapsedEventArgs>(groupKey);
-    try
-    {
-        m_groupCollapsedEventSource(*this, args);
-    }
-    catch (...)
-    {
-        NoteRecoveredAppFault(TableViewTip::Operation::GroupExpansion, TableViewTip::Stage::Expansion,
-            TableViewTip::AppFaultKind::Callback, winrt::to_hresult());
-        LogGroupHandlerThrow(L"GroupCollapsed");
-    }
+    try { m_groupCollapsedEventSource(*this, args); }
+    catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 }
 
 // Restamps every realized row; rows that kept their index after a reshape are stale.
