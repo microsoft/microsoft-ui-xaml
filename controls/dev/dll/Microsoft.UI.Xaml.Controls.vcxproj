@@ -40,7 +40,7 @@
       <_MuxcTipStubReason Condition="'$(MuxcTIPProductionVersion)' == ''">$(MuxcTIPPackagesConfig) is missing or names no Microsoft.Windows.TestInProduction version</_MuxcTipStubReason>
       <_MuxcTipStubReason Condition="'$(MuxcTIPProductionVersion)' != ''">Microsoft.Windows.TestInProduction $(MuxcTIPProductionVersion) is not restored ($(MuxcTIPProductionTargetsFile) does not exist); restore $(MuxcTIPPackagesConfig) into $(NugetPackageDirectory)</_MuxcTipStubReason>
     </PropertyGroup>
-    <Warning Condition="'$(IsInternalWinUIBuild)' == 'true' and '$(TF_BUILD)' != '' and '$(TestInProductionIsReal)' != 'true' and '$(UseTestInProductionStub)' != 'true'"
+    <Error Condition="'$(IsInternalWinUIBuild)' == 'true' and '$(TF_BUILD)' != '' and '$(TestInProductionIsReal)' != 'true' and '$(UseTestInProductionStub)' != 'true'"
            Text="MUXC TiP would build with the public stub and report nothing: $(_MuxcTipStubReason). Set UseTestInProductionStub=true to choose the stub on purpose." />
   </Target>
   <ItemDefinitionGroup>

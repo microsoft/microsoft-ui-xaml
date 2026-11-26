@@ -17,6 +17,7 @@ namespace NavigationViewTip
             switch (reason)
             {
             case SelectionTipReason::scenario_completed: return "scenario_completed";
+            case SelectionTipReason::scenario_not_completed: return "scenario_not_completed";
             case SelectionTipReason::selected_item_mismatch: return "selected_item_mismatch";
             case SelectionTipReason::selected_container_not_selected: return "selected_container_not_selected";
             case SelectionTipReason::previous_container_still_selected: return "previous_container_still_selected";

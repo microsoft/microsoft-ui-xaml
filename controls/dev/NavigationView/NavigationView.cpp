@@ -2782,6 +2782,12 @@ NavigationViewTip::SelectionTipReason NavigationView::CheckSelectionForTip(const
                 {
                     return container;
                 }
+                // A container with no visual parent is not on screen (for example, a child of a collapsed
+                // parent), so it is not judged. ChangeSelection treats it the same way (isUnrealizedDescendant).
+                if (!winrt::VisualTreeHelper::GetParent(container))
+                {
+                    return nullptr;
+                }
                 auto const containerImpl = winrt::get_self<NavigationViewItem>(container);
                 auto const owner = containerImpl->GetNavigationView();
                 if (owner && winrt::get_self<NavigationView>(owner) == this && containerImpl->IsInNavigationViewMenu())

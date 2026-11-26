@@ -7718,10 +7718,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var parent = (NavigationViewItem)navView.MenuItems[0];
                 Verify.IsFalse(parent.IsExpanded);
                 navView.SelectedItem = parent.MenuItems[0];
+                // The child, still not in the visual tree, is now the previous item.
+                navView.SelectedItem = navView.MenuItems[1];
             });
 
-            Verify.AreEqual(1, outcomes.Count);
+            // The explicit child has no visual parent, so it is not judged as either the next or the previous item.
+            Verify.AreEqual(2, outcomes.Count);
             Verify.AreEqual("Succeeded (scenario_completed)", outcomes[0]);
+            Verify.AreEqual("Succeeded (scenario_completed)", outcomes[1]);
         }
 
         [TestMethod]

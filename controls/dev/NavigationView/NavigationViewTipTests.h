@@ -12,6 +12,7 @@ namespace NavigationViewTip
     enum class SelectionTipReason : unsigned short
     {
         scenario_completed = 1,
+        scenario_not_completed = 2,             // The run completed without the scenario_completed flag (fail closed).
 
         // Failures: the selection NavigationView just applied is not what the app or user sees.
         selected_item_mismatch = 10,            // SelectedItem is not the item that was selected.
@@ -41,7 +42,6 @@ namespace NavigationViewTip
 
     // One run per selection change (NavigationView::ChangeSelection). Passes when, after NavigationView has
     // applied the selection and raised its events, SelectedItem and the realized containers' IsSelected agree.
-    // Measure: https://microsoft.visualstudio.com/OS/_workitems/edit/65470603
     TIP_declare_test(NavigationViewSelectionTest, 65470603)
     {
         TIP_set_data_version(1);
@@ -59,6 +59,7 @@ namespace NavigationViewTip
         void evaluate()
         {
             TIP_fail_if_complete_not_called();
+            TIP_fail_if(!state().is_flag_set(reason::scenario_completed), reason::scenario_not_completed);
             TIP_succeed(reason::scenario_completed);
         }
 
