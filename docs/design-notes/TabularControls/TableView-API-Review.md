@@ -34,7 +34,7 @@ Data shaping moves to `CollectionViewSource` (§2.1). These are the TableView me
 | | Member | Reason |
 |---|---|---|
 | Added | `TableView.ItemKeyPath`, `ParentKeyPath` (`String` DPs) | Hierarchical rows from a flat collection or a `CollectionViewSource` view, by property path. Replaces `TableViewSource.ParentBy` (§2.6). |
-| Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` | Map an item to the selection index space and reveal it; previously no way to select or show "this record" after shaping. |
+| Added | `TableView.IndexOf(Object)`, `StartBringItemIntoView(Int32, BringIntoViewOptions)` | Map an item to its row index in the table's displayed rows (group header rows and tree order included, which the view's own `IndexOf` cannot give) and reveal it; previously no way to select or show "this record" after shaping. |
 | Added | `TableView.ExpandGroup(Object)`, `CollapseGroup(Object)`, `GroupExpanding`, `GroupCollapsed` + args (`GroupKey`) | Per-group programmatic expansion and a notification for every group state change. |
 | Changed | `TableViewColumn.SortDirection` `{ get; }` → `{ get; set; }` | App-owned (e.g. server) sorts can show the arrow. Display only. |
 | Changed | A header sort of a `CollectionViewSource` view writes the view's `SortDescriptions` (`CustomSort` for a `CustomSortComparer` column) | The view, not the table, owns the shape; the column arrow follows the view's primary sort description. |
@@ -140,7 +140,7 @@ Hierarchy is declared on TableView (`ItemKeyPath` / `ParentKeyPath`, §2.6) and 
 | `SelectedItem` | `Object` (read-only DP) | |
 | `SelectedIndex` | `Int32` (read-only DP), `-1` | Index in the **displayed projection**. |
 | `Select(Int32)`, `Deselect(Int32)`, `IsSelected(Int32)`, `DeselectAll()` | | `ItemsView` names. `Select(<0)` clears. `Deselect` only clears if `index` is selected. `DeselectAll` works in any mode. |
-| `IndexOf(Object)` | `Int32` | Item → projection index; `-1` for null, not present, filtered out, or under a collapsed group/parent. Value-typed items (boxed numbers, strings) match by value; reference items by identity. Duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded` and after `Unloaded` (reads the source projection). A `TableViewGroupInfo` is not a data item. |
+| `IndexOf(Object)` | `Int32` | Item → row index in the table's displayed rows: group header rows take an index, tree rows count in tree order, rows under a collapsed group or parent are absent. Not the bound view's or collection's `IndexOf` (no header rows, collapsed rows included); the two agree only for a flat source with no groups and no hierarchy. `-1` for null, not present, filtered out, or under a collapsed group/parent. Value-typed items (boxed numbers, strings) match by value; reference items by identity. Duplicates, including equal boxed values, resolve to the first displayed match. Works before `Loaded` and after `Unloaded` (reads the source projection). A `TableViewGroupInfo` is not a data item. |
 | `StartBringItemIntoView(Int32, BringIntoViewOptions)` | `void` | `ItemsView` shape. Out-of-range → `E_INVALIDARG`; `options` may be null. Asynchronous; realizes the row and lays it out before bringing its real bounds into view (ItemsView pattern); accounts for the sticky header and frozen columns; safe before `Loaded`. A pending request is cancelled when `ItemsSource` or the projection changes, or on `Unloaded`. |
 | `SelectionChanged` | `TypedEventHandler<TableView, SelectionChangedEventArgs>` | Platform args; raised once after the selection settles; not raised for index shifts. |
 
@@ -222,7 +222,7 @@ Classification: **P** = parity, **I** = intentional difference (§4), **G** = ga
 | Capability | TableView | Precedent | Class |
 |---|---|---|---|
 | Where shaping lives | `CollectionViewSource` (`SortDescriptions`, `Filter`, `GroupDescriptions`) | WPF `ICollectionView`/`CollectionViewSource`. WCT ACV. 3P: descriptor collections on the grid. Qt proxy model, JavaFX `SortedList`/`FilteredList`. | P (WPF) |
-| Index mapping | `TableView.IndexOf` (projection) | WPF `CollectionView.IndexOf`/`GetItemAt`/`Count`; ACV `IndexOf`; `ItemsSourceView.IndexOf`; Swing `convertRowIndexToModel/View`; Qt `mapToSource/FromSource`; JavaFX `getSourceIndex`/`getViewIndex`. | P (item→view); view→item, `Count` G |
+| Index mapping | `TableView.IndexOf` (displayed rows, including group header rows) | WPF `CollectionView.IndexOf`/`GetItemAt`/`Count`; ACV `IndexOf`; `ItemsSourceView.IndexOf`; Swing `convertRowIndexToModel/View`; Qt `mapToSource/FromSource`; JavaFX `getSourceIndex`/`getViewIndex`. | P (item→view); view→item, `Count` G |
 | Tree from flat list | `TableView.ItemKeyPath` / `ParentKeyPath` | DevExpress `KeyFieldName`/`ParentFieldName`; AG Grid `treeDataParentIdField`; Syncfusion `SfTreeGrid` (unv.); MUI `getTreeDataPath`. | P (DevExpress); filter-keeps-ancestors G |
 
 ### 3.2 Columns
