@@ -43,6 +43,7 @@ namespace ImmediateRenderingPolicyTests
         TEST_METHOD(DManipUpdatesRightAfterHandledInput);
         TEST_METHOD(BlitDamageSkipsUniformInterior);
         TEST_METHOD(DamageCoalescingKeepsThinStripsThin);
+        TEST_METHOD(UnboundedClipEdgeIgnoresScrollOffset);
         // ---- imaging ----
         TEST_METHOD(AppCompositionBrushFallsBack);
         TEST_METHOD(NineGridCellsMapInsets);

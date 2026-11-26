@@ -511,6 +511,19 @@ namespace ImmediateRenderingPolicyTests
         VERIFY_ARE_EQUAL(0u, GetBlitDamageOutsideCover(RectF{ 900, 0, 950, 50 }, RectF{}, viewport, 0, -10, out));
     }
 
+    void PolicyTests::UnboundedClipEdgeIgnoresScrollOffset()
+    {
+        // ---- scrollgaps ---- content signatures hash clip edges relative to the scroll origin; an unbounded edge
+        // (±1e7) minus the offset changed every scroll frame, so all scrolled content looked changed and blits repainted.
+        VERIFY_ARE_EQUAL(QuantizeRelativeClipEdge(-1e7f, 0.0f), QuantizeRelativeClipEdge(-1e7f, -314.0f));
+        VERIFY_ARE_EQUAL(QuantizeRelativeClipEdge(1e7f, 0.0f), QuantizeRelativeClipEdge(1e7f, -2.0f));
+        VERIFY_ARE_NOT_EQUAL(QuantizeRelativeClipEdge(-1e7f, 0.0f), QuantizeRelativeClipEdge(1e7f, 0.0f));
+        // Bounded edges stay relative: moving with the content keeps the value, moving against it changes it.
+        VERIFY_ARE_EQUAL(QuantizeRelativeClipEdge(100.0f, 40.0f), QuantizeRelativeClipEdge(60.0f, 0.0f));
+        VERIFY_ARE_EQUAL(static_cast<int64_t>(60 * 256), QuantizeRelativeClipEdge(100.0f, 40.0f));
+        VERIFY_ARE_NOT_EQUAL(QuantizeRelativeClipEdge(100.0f, 40.0f), QuantizeRelativeClipEdge(100.0f, 0.0f));
+    }
+
     void PolicyTests::DamageCoalescingKeepsThinStripsThin()
     {
         using RenderingBackend::RectF;

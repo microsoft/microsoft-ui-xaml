@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cfloat>
+#include <cstdint>
 #include <vector>
 #include <cmath>
 #include <cwchar>
@@ -725,6 +726,15 @@ namespace ImmediateRenderingPolicy
             rects.erase(rects.begin() + bestJ);
             disjoint(false);
         }
+    }
+
+    int64_t QuantizeRelativeClipEdge(float edge, float origin) noexcept
+    {
+        if (!(std::fabs(edge) < 1e6f))
+        {
+            return edge > 0 ? INT64_MAX : INT64_MIN;
+        }
+        return std::llround((static_cast<double>(edge) - origin) * 256.0);
     }
 
     // ---- imaging ----

@@ -218,6 +218,10 @@ namespace ImmediateRenderingPolicy
     // Over maxCount, the pair whose union grows least is merged.
     void CoalesceDamageRects(_Inout_ std::vector<RenderingBackend::RectF>& rects, uint32_t maxCount);
 
+    // Quantized (1/256) clip edge relative to scrolled content's origin, for content signatures. Unbounded edges
+    // (|edge| >= 1e6) hash as a fixed sentinel: "unbounded minus the scroll offset" must not change as content scrolls.
+    int64_t QuantizeRelativeClipEdge(float edge, float origin) noexcept;
+
     // ---- imaging ----
 
     // Image.NineGrid (DIPs).

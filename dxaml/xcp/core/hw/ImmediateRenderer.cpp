@@ -1165,8 +1165,11 @@ namespace
         const int64_t values[] = {
             Quantize(m.GetM11()), Quantize(m.GetM12()), Quantize(m.GetM21()), Quantize(m.GetM22()),
             Quantize(m.GetDx() - ctx.offsetX), Quantize(m.GetDy() - ctx.offsetY),
-            Quantize(ctx.contentClip.left - ctx.offsetX), Quantize(ctx.contentClip.top - ctx.offsetY),
-            Quantize(ctx.contentClip.right - ctx.offsetX), Quantize(ctx.contentClip.bottom - ctx.offsetY),
+            // ---- scrollgaps ---- unbounded edges must not depend on the offset (see the policy)
+            ImmediateRenderingPolicy::QuantizeRelativeClipEdge(ctx.contentClip.left, ctx.offsetX),
+            ImmediateRenderingPolicy::QuantizeRelativeClipEdge(ctx.contentClip.top, ctx.offsetY),
+            ImmediateRenderingPolicy::QuantizeRelativeClipEdge(ctx.contentClip.right, ctx.offsetX),
+            ImmediateRenderingPolicy::QuantizeRelativeClipEdge(ctx.contentClip.bottom, ctx.offsetY),
         };
         fnv.Add(values, sizeof(values));
     }
@@ -1401,8 +1404,11 @@ namespace
                 fnv.Add(run.offsets.data(), run.offsets.size() * sizeof(GlyphOffset));
                 fnv.AddValue(run.useColorFont);
                 // Glyph-run clips (trimming) are in glyph space; hash them relative to the content origin.
-                const RectF relClip = OffsetRect(clip, -ctx.offsetX, -ctx.offsetY);
-                const int64_t q[] = { Quantize(relClip.left), Quantize(relClip.right) };
+                // ---- scrollgaps ---- edges that are just the viewport's (which moves against scrolled content) hash
+                // the content clip instead.
+                const int64_t q[] = {
+                    ImmediateRenderingPolicy::QuantizeRelativeClipEdge(clip.left > ctx.clip.left ? clip.left : ctx.contentClip.left, ctx.offsetX),
+                    ImmediateRenderingPolicy::QuantizeRelativeClipEdge(clip.right < ctx.clip.right ? clip.right : ctx.contentClip.right, ctx.offsetX) };
                 fnv.Add(q, sizeof(q));
             }
             else if (command.type == CommandType::FillPath || command.type == CommandType::StrokePath
