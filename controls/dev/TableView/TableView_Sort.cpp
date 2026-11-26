@@ -901,6 +901,15 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
     }
     catch (...)
     {
+        // A view that rejects the column's comparer as inconsistent (E_INVALIDARG from its sort: the platform view keeps
+        // an inconsistent order instead, but an app's view may not) is handled as a comparer that threw: contained, so
+        // a header tap never throws out of the input handler.
+        const HRESULT hr = winrt::to_hresult();
+        if (!faults->count && customSort && hr == E_INVALIDARG)
+        {
+            faults->count = 1;
+            faults->firstError = hr;
+        }
         if (!faults->count)
         {
             throw;

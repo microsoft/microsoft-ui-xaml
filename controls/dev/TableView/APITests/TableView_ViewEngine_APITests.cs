@@ -1163,7 +1163,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a CustomSort that is not an order (random results), or that changes the values it compares while the view sorts, never corrupts the view: on the recompute, the live restore, a group's CustomSort and the live filter's joiners the view either sorts or reports the inconsistency, and it always holds each accepted item exactly once.")]
+        [TestProperty("Description", "Verifies a CustomSort that is not an order (random results), or that changes the values it compares while the view sorts, never corrupts the view: on the recompute, the live restore, a group's CustomSort and the live filter's joiners the view sorts to some order without an error, and it always holds each accepted item exactly once.")]
         public void VerifyInconsistentCustomSortKeepsViewIntact()
         {
             var random = new Random(12654);
@@ -1196,10 +1196,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         var thrown = ThrownTypeName(() => ((ICollectionViewShaping)sorted.View).CustomSort = comparer);
                         Log.Comment($"{context}: setting the CustomSort: {thrown}; reported: {unhandled.Messages.Count}");
                         VerifyHoldsEachRowOnce(sorted.View, rows, true, $"{context}, recompute");
-                        if (mode == "random" && count >= 64)
-                        {
-                            Verify.IsTrue(thrown != "no exception" || unhandled.Messages.Count > 0, $"{context}: the inconsistent order is reported.");
-                        }
+                        // Not an error (WPF's Array.Sort keeps such an order too, unless introsort runs past the range).
+                        Verify.AreEqual("no exception", thrown, $"{context}: the view keeps the order an inconsistent comparer gives.");
 
                         grouped = new CollectionViewSource { Source = rows };
                         var team = new PropertyGroupDescription("Team") { CustomSort = randomOrder };
@@ -1229,6 +1227,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     });
                 }
             }
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSort that never returns 0 (a > b ? 1 : -1, a common app comparer) sorts rows with duplicate keys without an error, on the recompute and on a live restore.")]
+        public void VerifyCustomSortThatNeverReturnsZeroSortsDuplicateKeys()
+        {
+            ObservableCollection<EngineRow> rows = null;
+            ICollectionView view = null;
+            UnhandledErrors unhandled = null;
+            RunOnUIThread.Execute(() =>
+            {
+                rows = new ObservableCollection<EngineRow>(Enumerable.Range(0, 40).Select(i => new EngineRow(i, $"r{i}", (i * 7) % 5, "X")));
+                var cvs = new CollectionViewSource { Source = rows, IsLiveSortingRequested = true };
+                cvs.LiveSortingProperties.Add("Score");
+                view = cvs.View;
+                unhandled = new UnhandledErrors();
+                Verify.AreEqual("no exception", ThrownTypeName(() => ((ICollectionViewShaping)view).CustomSort =
+                    (left, right) => ((EngineRow)left).Score > ((EngineRow)right).Score ? 1 : -1));
+                VerifyHoldsEachRowOnce(view, rows, true, "recompute");
+                var scores = view.Select(item => ((EngineRow)item).Score).ToList();
+                Verify.IsTrue(scores.SequenceEqual(scores.OrderBy(score => score)), $"The recompute sorts by Score: {string.Join(" ", scores)}");
+
+                rows[3].Score = 4;
+                rows[17].Score = 0;
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                unhandled.Dispose();
+                Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is reported: {string.Join(" | ", unhandled.Messages)}");
+                VerifyHoldsEachRowOnce(view, rows, true, "live restore");
+                var scores = view.Select(item => ((EngineRow)item).Score).ToList();
+                Verify.IsTrue(scores.SequenceEqual(scores.OrderBy(score => score)), $"The live restore sorts by Score: {string.Join(" ", scores)}");
+            });
         }
 
         // The view holds no row twice and nothing outside the source; an unfiltered view holds every row. (A filtered

@@ -2426,6 +2426,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a CustomSortComparer that never returns 0 (a > b ? 1 : -1, a common app comparer) sorts rows with duplicate keys from a header Invoke, the path a header tap takes: no exception, the arrow lit and the rows in order.")]
+        public void VerifyComparerThatNeverReturnsZeroSortsDuplicateKeys()
+        {
+            TableView tableView = null;
+            int sortedCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView = CreateSortTable();
+                tableView.Columns[1].CustomSortComparer = new NeverEqualRoleComparer();
+                tableView.Sorted += (s, e) => sortedCount++;
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var roles = RowValues(tableView, person => person.Role);
+                Verify.IsTrue(roles.Count != roles.Distinct().Count(), "Precondition: some rows share a Role.");
+                Verify.AreEqual("no exception", TableViewTreeTestHelpers.ThrownTypeName(() => InvokeHeader(tableView, 1)),
+                    "The header Invoke must not throw.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(SortDirection.Ascending, tableView.Columns[1].SortDirection, "The sort is applied and its column lit.");
+                Verify.AreEqual(1, sortedCount, "Sorted is raised.");
+                var roles = RowValues(tableView, person => person.Role);
+                VerifySequence(roles.OrderBy(role => role, StringComparer.Ordinal).ToArray(), roles, "the rows are in Role order");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies setting a throwing CustomSortComparer on the column the table sorted keeps its arrow and row order.")]
         public void VerifyThrowingComparerSetOnLitColumnKeepsSort()
         {
@@ -3260,6 +3296,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     internal sealed partial class ThrowingSortComparer : ITableViewSortComparer
     {
         public int Compare(object left, object right) => throw new InvalidOperationException("Comparer fault");
+    }
+
+    // Never returns 0: two equal roles compare as "before" both ways, which apps commonly write.
+    internal sealed partial class NeverEqualRoleComparer : ITableViewSortComparer
+    {
+        public int Compare(object left, object right)
+            => string.CompareOrdinal((left as ShapedPerson)?.Role, (right as ShapedPerson)?.Role) > 0 ? 1 : -1;
     }
 
     // Orders by name length first, then ordinally. Deliberately not alphabetical, so a default

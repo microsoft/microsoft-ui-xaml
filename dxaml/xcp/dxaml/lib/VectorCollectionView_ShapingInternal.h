@@ -84,6 +84,14 @@ namespace DirectUI::ShapingEngine
     // A diagnostics event (VectorCollectionView_Shaping.cpp) for a contained failure that is not reported.
     void TraceContainedFailure(HRESULT hr, HRESULT capturedHr, bool hasErrorInfo);
 
+    // chk only (SafeStableSort): a CustomSort contradicted the order the sort produced. Not a failure: the view keeps
+    // that order, so this is only traced (the event above, with E_INVALIDARG) and written to the debugger.
+    inline void TraceInconsistentOrder()
+    {
+        TraceContainedFailure(E_INVALIDARG, S_OK, false);
+        ::OutputDebugStringW(L"CollectionView: the CustomSort returned inconsistent results (it does not define an order, or the items changed while the view sorted); the view keeps the order the sort produced.\n");
+    }
+
     // A source change or a live restore no app caller waits for: the first failure of app code during it, with the
     // error info the app's code left (its message and stack), reported once the view is consistent again.
     class ContainedFailureReport
@@ -1396,9 +1404,12 @@ namespace DirectUI::ShapingEngine
     // a strict weak ordering and can step outside the range when the comparer is inconsistent (random results, items
     // that change while it runs); this sort reads and writes only inside [0, size) whatever the comparer returns, so
     // such a comparer gives some permutation of the items, never a corrupted range. isBefore(left, right, &result)
-    // can fail: the first failure ends the sort. A final pass checks each pair of neighbours and reports an order it
-    // finds inconsistent as E_INVALIDARG (WPF: InvalidOperationException from Array.Sort). On failure the items are
-    // unchanged. Already-ordered runs are joined with one comparison, so a sorted input costs about 2n comparisons.
+    // can fail: the first failure ends the sort, and the items are unchanged. An inconsistent comparer is not a
+    // failure: its permutation is kept, as WPF's Array.Sort keeps one (it throws only when introsort happens to run
+    // past the range, which cannot happen here). A comparer that never returns 0 (a > b ? 1 : -1) is the common case:
+    // equal items are then "before" each other both ways, a tie. Already-ordered runs are joined with one comparison,
+    // so a sorted input costs about 2n comparisons and no comparison is made after the merge (in chk, a final pass
+    // traces an order the comparer contradicts outright; see TraceInconsistentOrder).
     template <typename T, typename IsBefore>
     _Check_return_ HRESULT SafeStableSort(_Inout_ std::vector<T>& items, IsBefore&& isBefore)
     {
@@ -1454,16 +1465,25 @@ namespace DirectUI::ShapingEngine
             std::swap(order, merged);
         }
 
+#if DBG
+        // Diagnostics only (chk): a neighbour the comparer puts strictly before the one the merge placed first, and not
+        // also after it (a tie). Its failures are ignored; the sort already succeeded.
         for (size_t i = 1; i < count; ++i)
         {
-            bool isOutOfOrder = false;
-            IFC_RETURN(isBefore(items[order[i]], items[order[i - 1]], &isOutOfOrder));
-            if (isOutOfOrder)
+            bool isLaterFirst = false;
+            bool isEarlierFirst = false;
+            if (FAILED(isBefore(items[order[i]], items[order[i - 1]], &isLaterFirst)) ||
+                (isLaterFirst && FAILED(isBefore(items[order[i - 1]], items[order[i]], &isEarlierFirst))))
             {
-                static constexpr WCHAR c_message[] = L"The comparer returned inconsistent results: it does not define an order, or the items changed while the view was sorted.";
-                IFC_RETURN(ErrorHelper::OriginateError(E_INVALIDARG, ARRAYSIZE(c_message) - 1, c_message));
+                break;
+            }
+            if (isLaterFirst && !isEarlierFirst)
+            {
+                TraceInconsistentOrder();
+                break;
             }
         }
+#endif
 
         std::vector<T> sorted;
         sorted.reserve(count);

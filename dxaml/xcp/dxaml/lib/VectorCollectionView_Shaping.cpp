@@ -628,10 +628,10 @@ _Check_return_ HRESULT VectorCollectionView::RefreshOverride(bool isSkippedWhenU
 
     if (!spSort->comparer.IsEmpty())
     {
-        // A CustomSort that fails, or that the sort finds inconsistent, ends the sort and the recompute; the previous
-        // output stays. The SortDescriptions compare cached keys with a total order (CompareSortKeys, then the
-        // unique source index), so they keep std::stable_sort; app code can make the order inconsistent only through
-        // a CustomSort, which takes the bounds-safe sort.
+        // A CustomSort that fails ends the sort and the recompute; the previous output stays. One that is inconsistent
+        // gives some order of the items (SafeStableSort). The SortDescriptions compare cached keys with a total order
+        // (CompareSortKeys, then the unique source index), so they keep std::stable_sort; app code can make the order
+        // inconsistent only through a CustomSort, which takes the bounds-safe sort.
         const auto& sort = *spSort;
         if (sort.comparer.HasCustomSort())
         {
