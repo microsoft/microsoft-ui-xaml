@@ -903,6 +903,30 @@ uint32_t ImmediateRenderer::OnIslandHidden(_In_ CXamlIslandRoot* island) noexcep
     TraceResourceInventory(m_mode, 0, 0, 0, 0);
     return 0;
 }
+void ImmediateRenderer::OnIslandRemoved(_In_ CXamlIslandRoot* island) noexcept
+{
+    std::lock_guard<std::recursive_mutex> lock(m_independent->mutex);
+    m_hiddenSinceUs.erase(island);
+    auto found = m_islands.find(island);
+    if (found == m_islands.end())
+    {
+        return;
+    }
+    IslandState& state = *found->second;
+    for (auto& popup : state.popups)
+    {
+        if (popup.surface && popup.surface->sprite)
+        {
+            DetachWindowedPopupVisual(popup.popup.get(), popup.surface->sprite.Get());
+        }
+    }
+    if (state.painter)
+    {
+        IGNOREHR(state.painter->SetPresentationSwapChain(nullptr));
+    }
+    m_islands.erase(found); // ~IslandState removes the hit proxies
+}
+
 void ImmediateRenderer::PruneIslands(_In_ DCompTreeHost* dcompTreeHost)
 {
     PruneFallenBack(dcompTreeHost);

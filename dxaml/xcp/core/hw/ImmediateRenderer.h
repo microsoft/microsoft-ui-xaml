@@ -48,6 +48,11 @@ public:
     // Drops state for islands that are no longer registered with the DCompTreeHost.
     void PruneIslands(_In_ DCompTreeHost* dcompTreeHost);
 
+    // ---- dmanip ---- Drops an island's state when it is removed, before its ContentIsland closes: the island's
+    // Composition tree is disposed with it, and the ScrollPresenter hand-off visuals parented under it as hit-test
+    // proxies must be detached first (XAML detaches from them when the elements are destroyed later).
+    void OnIslandRemoved(_In_ CXamlIslandRoot* island) noexcept;
+
     // Releases painters, swap chains, devices and visuals (device lost / compositor recreated). Recreated on demand.
     void ReleaseResources() noexcept;
 

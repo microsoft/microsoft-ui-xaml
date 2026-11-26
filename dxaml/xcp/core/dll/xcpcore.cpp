@@ -11837,6 +11837,11 @@ void CCoreServices::RemoveXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot)
         xamlIslandRoot->Release();
     }
 
+    if (m_immediateRenderer != nullptr)
+    {
+        m_immediateRenderer->OnIslandRemoved(xamlIslandRoot);
+    }
+
     m_pNWWindowRenderTarget->GetDCompTreeHost()->RemoveXamlIslandTarget(xamlIslandRoot);
 
     if (m_inputServices
