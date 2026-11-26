@@ -4,8 +4,11 @@
 #pragma once
 
 #include "palnetwork.h"
+#include "Request.h"
 #include <xref_ptr.h>
 #include <vector_map.h>
+#include <queue>
+#include <memory>
 #include <vector>
 #include <CompactInlineVector.h>
 
@@ -127,6 +130,17 @@ public:
 
     _Check_return_ HRESULT RaiseLoadedEvent();
 
+    _Check_return_ HRESULT QueueLifecycleEvent(
+        _In_ CDependencyObject* sender,
+        _In_ EventHandle event);
+
+    bool ShouldRaiseLifecycleEvents() const
+    {
+        return !m_isRaisingLifecycleEvents && !m_pendingLifecycleEvents.empty();
+    }
+
+    _Check_return_ HRESULT RaiseLifecycleEvents();
+
 
     void Reset()
     {
@@ -219,7 +233,8 @@ private:
                         CEventArgs *pArgs,
                         EVENTPFN pfnScriptCallback,
                         bool& bFired,
-                        _In_opt_ CDependencyObject *pSenderOverride = nullptr);
+                        _In_opt_ CDependencyObject *pSenderOverride = nullptr,
+                        _In_ XUINT32 additionalFlags = 0);
 
     static void FilterEligibleHandlers(
         const gsl::span<REQUEST>& handlers,
@@ -230,6 +245,12 @@ private:
     static bool IsLoadedEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Loaded; }
     static bool IsLoadingEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Loading; }
     static bool IsUnloadedEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Unloaded; }
+
+    static bool IsLifecycleEvent(_In_ EventHandle event)
+    {
+        return event.index == KnownEventIndex::FrameworkElement_Loaded2 ||
+            event.index == KnownEventIndex::FrameworkElement_Unloaded2;
+    }
 
     static bool IsSyncInputEvent(_In_ EventHandle hEvent)
     {
@@ -294,12 +315,28 @@ private:
 
     _Check_return_ HRESULT RaiseLoadedEventForObject(_In_ CDependencyObject* pLoadedEventObject, _In_ CEventArgs* loadedArgs);
 
+    _Check_return_ HRESULT RaiseSynchronousLifecycleEvent(
+        const gsl::span<const REQUEST>& requests,
+        _In_ CDependencyObject* sender,
+        _In_ CEventArgs* args);
+
     CXcpDispatcher* GetXcpDispatcher(_In_ CDependencyObject* pLoadedEventObject);
 
     _Check_return_ HRESULT GetParentForRoutedEventBubbling(EventHandle hEvent, _In_ CDependencyObject* currentObject, _In_ CDependencyObject** parentObject);
 
 private:
+    struct PendingLifecycleEvent
+    {
+        ~PendingLifecycleEvent();
+
+        xref_ptr<CDependencyObject> sender;
+        TempRequests requests;
+        bool isSenderPegged = false;
+    };
+
     std::vector<xref_ptr<CUIElement>> m_topDownPathToSource;
+    std::queue<std::unique_ptr<PendingLifecycleEvent>> m_pendingLifecycleEvents;
+    bool m_isRaisingLifecycleEvents = false;
 
     XUINT32                     m_cRef;
     IPALQueue                  *m_pSlowQueue;

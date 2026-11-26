@@ -6596,6 +6596,18 @@ CCoreServices::NWDrawTree(
             IFC(pLayoutManager->UpdateLayout(uLayoutWidth, uLayoutHeight));
         }
 
+        auto raisePendingLifecycleEvents = [&]() -> HRESULT
+        {
+            while (m_pEventManager && m_pEventManager->ShouldRaiseLifecycleEvents())
+            {
+                IFC_RETURN(m_pEventManager->RaiseLifecycleEvents());
+                IFC_RETURN(pLayoutManager->UpdateLayout(uLayoutWidth, uLayoutHeight));
+            }
+            return S_OK;
+        };
+
+        IFC(raisePendingLifecycleEvents());
+
         // Call the user code per-frame callback (synchronous; doesn't call into managed unless someone is listening)
         //
         // IMPORTANT: This is a synchronous callout to app code that could change state.
@@ -6654,6 +6666,9 @@ CCoreServices::NWDrawTree(
 
         // do a dirty walk that will effect layout on elements
         IFC(pLayoutManager->TransitionLayout());
+
+        // Rendering callbacks, phased work, and transition cleanup can enqueue more occurrences.
+        IFC(raisePendingLifecycleEvents());
 
         // Let GetLayoutTickForTransition know that we're done processing transitions this tick. Any transitions scheduled now will be processed NEXT tick.
         pLayoutManager->IncrementLayoutCounter();

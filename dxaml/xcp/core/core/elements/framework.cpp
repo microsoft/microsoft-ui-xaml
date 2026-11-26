@@ -2504,6 +2504,14 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
         }
      }
 
+    if (params.fIsLive && !core->IsShuttingDown())
+    {
+        if (auto eventManager = core->GetEventManager())
+        {
+            IFC_RETURN(eventManager->QueueLifecycleEvent(this, KnownEventIndex::FrameworkElement_Loaded2));
+        }
+    }
+
     // Apply style when element is live in the tree
     if (params.fIsLive)
     {
@@ -2575,6 +2583,7 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
             xref_ptr<CEventArgs> spUnloadedArgs;
             spUnloadedArgs = make_xref<CRoutedEventArgs>();
             pEventManager->Raise(EventHandle(KnownEventIndex::FrameworkElement_Unloaded), FALSE, this, spUnloadedArgs);
+            IFC_RETURN(pEventManager->QueueLifecycleEvent(this, KnownEventIndex::FrameworkElement_Unloaded2));
         }
     }
 

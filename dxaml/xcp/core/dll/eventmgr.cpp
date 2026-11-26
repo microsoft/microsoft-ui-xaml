@@ -14,6 +14,14 @@
 #include "XamlTelemetry.h"
 #include "MetadataAPI.h"
 
+CEventManager::PendingLifecycleEvent::~PendingLifecycleEvent()
+{
+    if (isSenderPegged)
+    {
+        sender->UnpegManagedPeer(true /*isShutdownException*/);
+    }
+}
+
 //------------------------------------------------------------------------
 //
 //  Method:   CEventManager::Create
@@ -82,6 +90,8 @@ _Check_return_ HRESULT
 CEventManager::Disable()
 {
     m_pCore = NULL;
+    decltype(m_pendingLifecycleEvents) pendingEvents;
+    std::swap(pendingEvents, m_pendingLifecycleEvents);
     return S_OK;
 }
 
@@ -100,6 +110,12 @@ HRESULT
 CEventManager::ClearRequests()
 {
     HRESULT hr = S_OK;
+
+    while (!m_pendingLifecycleEvents.empty())
+    {
+        decltype(m_pendingLifecycleEvents) currentLifecycleEvents;
+        std::swap(currentLifecycleEvents, m_pendingLifecycleEvents);
+    }
 
     while (!m_loadedEventObjects.empty())
     {
@@ -430,6 +446,127 @@ _Check_return_ HRESULT CEventManager::RaiseLoadedEvent()
     return S_OK;
 }
 
+_Check_return_ HRESULT CEventManager::QueueLifecycleEvent(
+    _In_ CDependencyObject* sender,
+    _In_ EventHandle event)
+{
+    ASSERT(IsLifecycleEvent(event));
+
+    if (!m_pCore || m_pCore->IsShuttingDown())
+    {
+        return S_OK;
+    }
+
+    TempRequests requests;
+    // Capture recipients before Leave disables registrations, without coalescing occurrences.
+    // Public event-source delegate membership is still resolved by the existing callback path.
+    FilterEligibleHandlers(sender->GetEventHandlers(), event, true /*refire*/, &requests);
+    if (!requests.empty())
+    {
+        auto pendingEvent = std::make_unique<PendingLifecycleEvent>();
+        pendingEvent->sender = sender;
+        pendingEvent->requests = std::move(requests);
+
+        if (sender->HasManagedPeer())
+        {
+            IFC_RETURN(sender->PegManagedPeer(true /*isShutdownException*/, &pendingEvent->isSenderPegged));
+        }
+
+        if (!m_isRaisingLifecycleEvents && m_pendingLifecycleEvents.empty())
+        {
+            IFC_RETURN(RequestAdditionalFrame());
+        }
+        m_pendingLifecycleEvents.push(std::move(pendingEvent));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CEventManager::RaiseLifecycleEvents()
+{
+    ASSERT(!m_isRaisingLifecycleEvents);
+    m_isRaisingLifecycleEvents = true;
+    auto resetRaising = wil::scope_exit([&]
+    {
+        m_isRaisingLifecycleEvents = false;
+        if (ShouldRaiseLifecycleEvents() && m_pCore && !m_pCore->IsShuttingDown())
+        {
+            VERIFYHR(RequestAdditionalFrame());
+        }
+    });
+
+    while (!m_pendingLifecycleEvents.empty())
+    {
+        if (!m_pCore || m_pCore->IsShuttingDown())
+        {
+            decltype(m_pendingLifecycleEvents) pendingEvents;
+            std::swap(pendingEvents, m_pendingLifecycleEvents);
+            break;
+        }
+
+        auto pendingEvent = std::move(m_pendingLifecycleEvents.front());
+        m_pendingLifecycleEvents.pop();
+
+        xref_ptr<CEventArgs> args = make_xref<CRoutedEventArgs>();
+        IFC_RETURN(RaiseSynchronousLifecycleEvent(pendingEvent->requests, pendingEvent->sender.get(), args.get()));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT CEventManager::RaiseSynchronousLifecycleEvent(
+    const gsl::span<const REQUEST>& requests,
+    _In_ CDependencyObject* sender,
+    _In_ CEventArgs* args)
+{
+    std::optional<bool> previousMessageReentrancyGuard;
+    CXcpDispatcher* dispatcher = nullptr;
+
+    auto messageReentrancyGuard = wil::scope_exit([&]
+    {
+        if (dispatcher && previousMessageReentrancyGuard.has_value())
+        {
+            dispatcher->SetMessageReentrancyGuard(previousMessageReentrancyGuard.value());
+        }
+    });
+
+    // WebView2.OnLoaded makes a call to EBWebView's put_isVisible,
+    // which calls ShowWindow and can cause reentrancy. Here, we check
+    // if the loaded event object is a WV2, and if so, we exempt it from
+    // reentrancy checks.
+    if (sender->GetTypeIndex() == KnownTypeIndex::Panel)
+    {
+        ctl::ComPtr<DirectUI::DependencyObject> peer;
+        IFC_RETURN(DirectUI::DXamlServices::TryGetPeer(sender, &peer));
+        if (peer)
+        {
+            ctl::ComPtr<IHwndComponentHost> host = peer.AsOrNull<IHwndComponentHost>();
+            if (host != nullptr)
+            {
+                dispatcher = GetXcpDispatcher(sender);
+                if (dispatcher)
+                {
+                    previousMessageReentrancyGuard = dispatcher->GetMessageReentrancyGuard();
+                    dispatcher->SetMessageReentrancyGuard(false);
+                }
+            }
+        }
+    }
+
+    IFCEXPECT_RETURN(m_pfnScriptCallbackSync);
+
+    bool fired = false;
+    IFC_RETURN(RaiseHelper(
+        requests,
+        sender,
+        args,
+        m_pfnScriptCallbackSync,
+        fired,
+        nullptr,
+        EVENT_SYNC_LOADED));
+    return S_OK;
+}
+
 //------------------------------------------------------------------------
 //
 //  Method:   CEventManager::Raise
@@ -609,7 +746,8 @@ HRESULT CEventManager::RaiseHelper(const gsl::span<const REQUEST>& requests,
                                 CEventArgs *pArgs,
                                 EVENTPFN pfnScriptCallback,
                                 bool& bFired,
-                                _In_opt_ CDependencyObject *pSenderOverride)
+                                _In_opt_ CDependencyObject *pSenderOverride,
+                                _In_ XUINT32 additionalFlags)
 {
     bFired = FALSE;
 
@@ -642,6 +780,7 @@ HRESULT CEventManager::RaiseHelper(const gsl::span<const REQUEST>& requests,
         if (m_pfnScriptCallbackAsync)
         {
             XUINT32 flags = request.m_bHandledEventsToo ? EVENT_HANDLEDEVENTSTOO : 0;
+                    flags |= additionalFlags;
                     flags |= IsSyncInputEvent(request.m_hEvent) ? EVENT_SYNC_INPUT : 0;
                     flags |= (IsLoadedEvent(request.m_hEvent) || IsLoadingEvent(request.m_hEvent)) ? EVENT_SYNC_LOADED : 0;
 
