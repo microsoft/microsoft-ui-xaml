@@ -4311,6 +4311,11 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
         // ---- scrollgaps ---- diagnostic: WINUI_IMMEDIATE_STATS_DAMAGE=1 (with WINUI_IMMEDIATE_STATS) logs raw damage
         // rects larger than a quarter of the island with the element and the reason ("# damage ...").
         static const bool s_logDamage = GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS_DAMAGE", nullptr, 0) != 0;
+        static const bool s_logAllDamage = []
+        {
+            wchar_t value[4] = {};
+            return GetEnvironmentVariableW(L"WINUI_IMMEDIATE_STATS_DAMAGE", value, ARRAYSIZE(value)) == 1 && value[0] == L'2';
+        }();
         const CUIElement* damageOwner = nullptr;
         const char* damageReason = "strip";
         auto add = [&](const RectF& r)
@@ -4319,7 +4324,7 @@ _Check_return_ HRESULT ImmediateRenderer::RenderSurface(
             {
                 return;
             }
-            if (s_logDamage && statsFile && (r.right - r.left) * (r.bottom - r.top) * 4 > surface.right * surface.bottom)
+            if (s_logDamage && statsFile && (s_logAllDamage || (r.right - r.left) * (r.bottom - r.top) * 4 > surface.right * surface.bottom))
             {
                 const xstring_ptr name = damageOwner ? damageOwner->GetClassName() : xstring_ptr();
                 fwprintf(statsFile, L"# damage %s %S %.0f,%.0f,%.0f,%.0f\n", name.IsNullOrEmpty() ? L"-" : name.GetBuffer(), damageReason,
