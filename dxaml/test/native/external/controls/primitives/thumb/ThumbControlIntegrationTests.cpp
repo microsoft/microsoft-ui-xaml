@@ -356,6 +356,132 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void ThumbControlIntegrationTests::RemovingLastDragStartedAndCompletedHandlersSilencesThemUntilReadded()
+    {
+        TestCleanupWrapper cleanup;
+
+        struct HandlerCounts
+        {
+            int startedRemoved = 0;
+            int completedRemoved = 0;
+            int delta = 0;
+            int startedAddedAgain = 0;
+            int completedAddedAgain = 0;
+        };
+
+        xaml_primitives::Thumb^ thumb = nullptr;
+        auto counts = std::make_shared<HandlerCounts>();
+        auto completedEvent = std::make_shared<Event>();
+
+        RunOnUIThread([&]()
+        {
+            thumb = CreateThumbInRootGrid();
+
+            thumb->DragDelta += ref new xaml_primitives::DragDeltaEventHandler(
+                [counts](Platform::Object^, xaml_primitives::DragDeltaEventArgs^) { ++counts->delta; });
+
+            auto startedToken = thumb->DragStarted += ref new xaml_primitives::DragStartedEventHandler(
+                [counts](Platform::Object^, xaml_primitives::DragStartedEventArgs^) { ++counts->startedRemoved; });
+            auto completedToken = thumb->DragCompleted += ref new xaml_primitives::DragCompletedEventHandler(
+                [counts](Platform::Object^, xaml_primitives::DragCompletedEventArgs^) { ++counts->completedRemoved; });
+
+            // These remove the only DragStarted and DragCompleted handlers.
+            thumb->DragStarted -= startedToken;
+            thumb->DragCompleted -= completedToken;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Drag the thumb with no DragStarted or DragCompleted handler registered.");
+        MouseDragAndRelease(thumb, 30, 0);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // The drag really happened (DragDelta fired and it ended), but the removed handlers were not called.
+            VERIFY_IS_GREATER_THAN(counts->delta, 0);
+            VERIFY_IS_FALSE(thumb->IsDragging);
+            VERIFY_ARE_EQUAL(0, counts->startedRemoved);
+            VERIFY_ARE_EQUAL(0, counts->completedRemoved);
+
+            thumb->DragStarted += ref new xaml_primitives::DragStartedEventHandler(
+                [counts](Platform::Object^, xaml_primitives::DragStartedEventArgs^) { ++counts->startedAddedAgain; });
+            thumb->DragCompleted += ref new xaml_primitives::DragCompletedEventHandler(
+                [counts, completedEvent](Platform::Object^, xaml_primitives::DragCompletedEventArgs^)
+                {
+                    ++counts->completedAddedAgain;
+                    completedEvent->Set();
+                });
+        });
+
+        LOG_OUTPUT(L"Drag again after adding new DragStarted and DragCompleted handlers.");
+        MouseDragAndRelease(thumb, 30, 0);
+        completedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, counts->startedAddedAgain);
+            VERIFY_ARE_EQUAL(1, counts->completedAddedAgain);
+            VERIFY_ARE_EQUAL(0, counts->startedRemoved);
+            VERIFY_ARE_EQUAL(0, counts->completedRemoved);
+        });
+    }
+
+    void ThumbControlIntegrationTests::DragStartedHandlerFailureCancelsDrag()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_primitives::Thumb^ thumb = nullptr;
+        auto log = std::make_shared<DragLog>();
+        auto failingStartedCount = std::make_shared<int>(0);
+        auto completedEvent = std::make_shared<Event>();
+        ::Windows::Foundation::EventRegistrationToken failingToken = {};
+
+        RunOnUIThread([&]()
+        {
+            thumb = CreateThumbInRootGrid();
+            AttachDragLog(thumb, log, std::make_shared<Event>(), completedEvent);
+            failingToken = thumb->DragStarted += ref new xaml_primitives::DragStartedEventHandler(
+                [failingStartedCount](Platform::Object^, xaml_primitives::DragStartedEventArgs^)
+                {
+                    ++*failingStartedCount;
+                    throw ref new Platform::FailureException();
+                });
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        LOG_OUTPUT(L"Drag the thumb while a DragStarted handler fails.");
+        MouseDragAndRelease(thumb, 30, 0);
+        completedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // The failed DragStarted cancels the drag that the press started.
+            VERIFY_ARE_EQUAL(1, *failingStartedCount);
+            VERIFY_ARE_EQUAL(1, log->completedCount);
+            VERIFY_IS_TRUE(log->lastCompletedCanceled);
+            VERIFY_ARE_EQUAL(0, log->deltaCount);
+            VERIFY_IS_FALSE(thumb->IsDragging);
+
+            thumb->DragStarted -= failingToken;
+        });
+
+        LOG_OUTPUT(L"Drag again without the failing handler.");
+        MouseDragAndRelease(thumb, 30, 0);
+        completedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *failingStartedCount);
+            VERIFY_ARE_EQUAL(2, log->completedCount);
+            VERIFY_IS_FALSE(log->lastCompletedCanceled);
+            VERIFY_IS_GREATER_THAN(log->deltaCount, 0);
+            VERIFY_IS_FALSE(thumb->IsDragging);
+        });
+    }
+
     void ThumbControlIntegrationTests::FocusStatesFollowThumbFocus()
     {
         TestCleanupWrapper cleanup;

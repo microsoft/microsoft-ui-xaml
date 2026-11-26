@@ -30,9 +30,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(RemovedDragHandlersAreNotInvoked)
-            TEST_METHOD_PROPERTY(L"Description", L"Validates that removed DragStarted, DragDelta and DragCompleted handlers are not invoked, and that DragDelta can be handled again after its last handler was removed.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
         END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(RemovingLastDragStartedAndCompletedHandlersSilencesThemUntilReadded)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that after the only DragStarted and DragCompleted handlers are removed, a drag does not invoke them, and that handlers added afterwards are invoked.")
+            TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+        END_TEST_METHOD()
+
+                    BEGIN_TEST_METHOD(DragStartedHandlerFailureCancelsDrag)
+                        TEST_METHOD_PROPERTY(L"Description", L"Validates that a Thumb cancels the drag it started (DragCompleted with Canceled=true, IsDragging false) when a DragStarted handler fails, and drags normally once that handler is removed.")
+                        TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
+                    END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(FocusStatesFollowThumbFocus)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a focusable Thumb goes to the Focused visual state when it gets focus and back to Unfocused when it loses focus.")
