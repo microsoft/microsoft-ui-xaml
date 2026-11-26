@@ -740,16 +740,20 @@ XamlDiagnostics::TryGetExistingElementVisual(
     {
         IFC_RETURN(E_NOTFOUND);
     }
-    if (object->GetAssociatedThreadId() != GetCurrentThreadId())
+    // The handle's registration thread can differ from the object's owning thread, so check the object itself.
+    ctl::ComPtr<IInspectable> backingObject(object->GetBackingObject().Get());
+    const auto dependencyObject = backingObject.AsOrNull<DirectUI::DependencyObject>();
+    if (!dependencyObject)
     {
-        IFC_RETURN(RPC_E_WRONG_THREAD);
+        return S_OK;
     }
+    IFC_RETURN(dependencyObject->CheckThread());
 
-    wrl::ComPtr<xaml::IUIElement> uiElement;
-    IFC_RETURN(object->GetBackingObject().As(&uiElement));
-    const auto core = DiagnosticsInterop::ConvertToCore(uiElement.Get());
-    const auto coreElement = do_pointer_cast<CUIElement>(core.get());
-    IFCPTR_RETURN(coreElement);
+    const auto coreElement = do_pointer_cast<CUIElement>(dependencyObject->GetHandle());
+    if (!coreElement)
+    {
+        return S_OK;
+    }
     if (const auto peer = coreElement->GetCompositionPeer())
     {
         if (const auto existingVisual = peer->GetHandOffVisual())

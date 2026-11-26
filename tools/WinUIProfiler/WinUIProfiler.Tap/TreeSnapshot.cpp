@@ -277,6 +277,7 @@ namespace WinUIProfiler::Tap
         {
             ComPtr<IXamlDiagnostics> Diagnostics;
             ComPtr<ResourceSnapshotAbi::DiagnosticsPrivate> PrivateDiagnostics;
+            bool HasPrivateDiagnostics{};
             Handle Stop;
             Handle Done{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
             const ULONGLONG Deadline = GetTickCount64() + DeadlineMs;
@@ -653,6 +654,7 @@ namespace WinUIProfiler::Tap
                             "Standard IVisualTreeService is unavailable (no private bridge fallback)." :
                             "Standard tree discovery/subscription failed or produced no realized roots.";
                     job->Diagnostics.Reset();
+                    job->PrivateDiagnostics.Reset();
                 }
                 callback.Reset();
                 service.Reset();
@@ -700,6 +702,7 @@ namespace WinUIProfiler::Tap
             job->Diagnostics = diagnostics;
             const auto mappingStatus = diagnostics->QueryInterface(IID_PPV_ARGS(&job->PrivateDiagnostics));
             if (FAILED(mappingStatus) && mappingStatus != E_NOINTERFACE) Fail(mappingStatus);
+            job->HasPrivateDiagnostics = job->PrivateDiagnostics != nullptr;
             if (stop)
             {
                 HANDLE duplicate{};
@@ -754,7 +757,7 @@ namespace WinUIProfiler::Tap
                 "\"Open popup children are separate visual subtrees, without fabricated logical parent links.\","
                 "\"GetElementVisual is requested only for XamlRoot content and open popup roots without an existing peer visual, never descendants. It may materialize root handout visuals; no adorners are requested.\","
                 "\"Composition includes descendants exposed by ContainerVisual.Children and public ancestors of root handouts, not disconnected descendant handouts or private compositor trees.\","
-                + Quote(job->PrivateDiagnostics ?
+                + Quote(job->HasPrivateDiagnostics ?
                     "Existing XAML composition peers are correlated to their primary visuals when reachable in the captured composition hierarchy. Elements without peers and additional visuals without a direct primary-visual mapping remain unlinked." :
                     "Read-only descendant correlation is unavailable: the target runtime does not support the matching IXamlDiagnosticsPrivate contract. Correlations are root-only; no descendant handouts are created.") + ","
                 "\"No core/HWCompNode or lifetime-ID mapping is exposed; addresses are debugger metadata only.\","

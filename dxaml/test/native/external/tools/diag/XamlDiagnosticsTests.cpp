@@ -326,6 +326,47 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_NULL(visual.Get());
         }
 
+        void XamlDiagnosticsTests::TestGetExistingElementVisualOwnerThread()
+        {
+            auto cleanup = XamlDiagnosticsTestHelpers::SetupGridAndWait();
+
+            InstanceHandle rectangleHandle = 0;
+            InstanceHandle rowHandle = 0;
+            auto unregister = wil::scope_exit([&]
+            {
+                if (rectangleHandle != 0u) m_tap->UnregisterInstance(rectangleHandle);
+                if (rowHandle != 0u) m_tap->UnregisterInstance(rowHandle);
+            });
+
+            xaml_shapes::Rectangle^ rectangle = nullptr;
+            RowDefinition^ row = nullptr;
+            RunOnUIThread([&]
+            {
+                rectangle = ref new xaml_shapes::Rectangle();
+                row = ref new RowDefinition();
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // Registered from the test thread, but owned by the UI thread.
+            VERIFY_SUCCEEDED(m_tap->RegisterInstance(reinterpret_cast<IInspectable*>(rectangle), &rectangleHandle));
+            VERIFY_SUCCEEDED(m_tap->RegisterInstance(reinterpret_cast<IInspectable*>(row), &rowHandle));
+
+            RunOnUIThread([&]
+            {
+                wrl::ComPtr<IInspectable> visual;
+                VERIFY_SUCCEEDED(m_tap->TryGetExistingElementVisual(rectangleHandle, &visual));
+                VERIFY_IS_NULL(visual.Get());
+                VERIFY_SUCCEEDED(m_tap->TryGetExistingElementVisual(rowHandle, &visual));
+                VERIFY_IS_NULL(visual.Get());
+            });
+
+            wrl::ComPtr<IInspectable> visual;
+            VERIFY_ARE_EQUAL(RPC_E_WRONG_THREAD, m_tap->TryGetExistingElementVisual(rectangleHandle, &visual));
+            VERIFY_IS_NULL(visual.Get());
+            VERIFY_ARE_EQUAL(RPC_E_WRONG_THREAD, m_tap->TryGetExistingElementVisual(rowHandle, &visual));
+            VERIFY_IS_NULL(visual.Get());
+        }
+
         void XamlDiagnosticsTests::TestHitTest()
         {
             // We need to reset the window content here so this test is reliable. The tree is in a weird state where there
