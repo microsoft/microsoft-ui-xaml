@@ -4621,14 +4621,15 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         }
 
         UpdatePaneToggleButtonVisibility();
+        // The pane length isn't updated in Top mode or while the pane is invisible, so it can be stale here. Update it
+        // before UpdatePaneDisplayMode raises DisplayModeChanged and opens the pane (which also refreshes the toggle size).
+        UpdateOpenPaneLength(ActualWidth());
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
         UpdatePaneVisibility();
         UpdateVisualState();
         UpdatePaneButtonsWidths();
         UpdateBackAndCloseButtonsVisibility();
-        // The pane length isn't updated in Top mode or while the pane is invisible, so it can be stale here.
-        UpdateOpenPaneLength(ActualWidth());
     }
     else if (property == s_IsPaneVisibleProperty)
     {
