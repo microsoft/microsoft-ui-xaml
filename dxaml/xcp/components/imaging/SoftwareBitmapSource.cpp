@@ -363,6 +363,13 @@ _Check_return_ HRESULT CSoftwareBitmapSource::PrepareCopyParams(
     // then configure it to output a software surface.
     if (!spImageCopyParams)
     {
+        // Toss the old hardware surface, like OnSoftwareBitmapImageAvailable does for device lost, so
+        // UpdateHardwareResources keeps the update flag and this software surface is uploaded on resume.
+        if (core->IsSuspended() && m_pImageSurfaceWrapper->HasHardwareSurfaces())
+        {
+            m_pImageSurfaceWrapper->ReleaseHardwareResources();
+        }
+
         spImageCopyParams = make_xref<ImageCopyParams>(
             m_spSoftwareBitmap);
 

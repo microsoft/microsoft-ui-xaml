@@ -649,4 +649,99 @@ void CompositionTargetTests::RenderingDoesNotStarveInput()
     pointerPressedEvent->WaitForDefault();
 }
 
+void CompositionTargetTests::RenderingNeedsVisibleWindowAndDisplayOn()
+{
+    // Synopsis:
+    // Change content every tick and count CompositionTarget.Rendered while delivering
+    // display status and visibility notifications in different orders:
+    //   display off, then a visibility notification for the visible window -> no frames
+    //   window hidden, then the display turns on                         -> no frames
+    //   window shown with the display on                                 -> frames resume
+    const auto& wh = TestServices::WindowHelper;
+    ::Windows::Foundation::EventRegistrationToken renderedEventToken = {};
+
+    // Only touched on the UI thread. Declared before cleanup so it outlives the Rendered handler.
+    int renderedCount = 0;
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (renderedEventToken.Value != 0)
+        {
+            RunOnUIThread([&]()
+            {
+                CompositionTarget::Rendered::remove(renderedEventToken);
+            });
+        }
+
+        wh->SimulateXamlVisibilityChanged(true);
+        wh->SimulateDisplayStatusChanged(true);
+
+        wh->ResetWindowContentAndWaitForIdle();
+    });
+
+    // Start from a known display state, whatever the machine reports.
+    wh->SimulateDisplayStatusChanged(true);
+
+    xaml_shapes::Rectangle^ rect = nullptr;
+    RunOnUIThread([&]()
+    {
+        rect = ref new xaml_shapes::Rectangle();
+        rect->Width = 100;
+        rect->Height = 100;
+        rect->Fill = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
+
+        Canvas^ rootCanvas = ref new Canvas();
+        rootCanvas->Children->Append(rect);
+        wh->WindowContent = rootCanvas;
+    });
+    wh->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        renderedEventToken = CompositionTarget::Rendered::add(
+            ref new ::Windows::Foundation::EventHandler<RenderedEventArgs^>([&](Platform::Object^, RenderedEventArgs^)
+        {
+            renderedCount++;
+        }));
+    });
+
+    // Changes the rectangle on each tick and returns how many frames were rendered.
+    auto countFramesWhileChanging = [&]()
+    {
+        int before = 0;
+        RunOnUIThread([&]() { before = renderedCount; });
+
+        for (int i = 0; i < 3; i++)
+        {
+            RunOnUIThread([&]()
+            {
+                rect->Fill = ref new xaml_media::SolidColorBrush((i % 2 == 0) ? mu::Colors::Green : mu::Colors::Blue);
+            });
+            wh->SynchronouslyTickUIThread(1);
+        }
+
+        int after = 0;
+        RunOnUIThread([&]() { after = renderedCount; });
+        LOG_OUTPUT(L"  frames rendered: %d", after - before);
+        return after - before;
+    };
+
+    LOG_OUTPUT(L"> Window visible, display on");
+    VERIFY_IS_GREATER_THAN(countFramesWhileChanging(), 0);
+
+    LOG_OUTPUT(L"> Display off, then a visibility notification for the visible window");
+    wh->SimulateDisplayStatusChanged(false);
+    wh->SimulateXamlVisibilityChanged(true);
+    VERIFY_ARE_EQUAL(0, countFramesWhileChanging());
+
+    LOG_OUTPUT(L"> Window hidden, then the display turns on");
+    wh->SimulateXamlVisibilityChanged(false);
+    wh->SimulateDisplayStatusChanged(true);
+    VERIFY_ARE_EQUAL(0, countFramesWhileChanging());
+
+    LOG_OUTPUT(L"> Window shown with the display on");
+    wh->SimulateXamlVisibilityChanged(true);
+    VERIFY_IS_GREATER_THAN(countFramesWhileChanging(), 0);
+}
+
 } } } } } }

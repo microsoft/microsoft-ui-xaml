@@ -253,6 +253,8 @@ namespace DirectUI
         IFACEMETHOD(ClearShadowPolicyOverrides)() override;
 
         IFACEMETHOD(SetXamlVisibilityOverride)(_In_ BOOLEAN isVisible) override;
+        IFACEMETHOD(SimulateDisplayStatusChanged)(_In_ BOOLEAN isDisplayOn) override;
+        IFACEMETHOD(SimulateXamlVisibilityChanged)(_In_ BOOLEAN isVisible) override;
 
         IFACEMETHOD(SetBrushForXamlRoot)(
             _In_ xaml_media::IXamlCompositionBrushBase* xcbb,
