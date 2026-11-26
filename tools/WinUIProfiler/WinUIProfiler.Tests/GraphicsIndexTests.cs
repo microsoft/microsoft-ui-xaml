@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.Data.Sqlite;
+using WinUIProfiler.Contracts;
 using WinUIProfiler.Engine.Events;
 using WinUIProfiler.Engine.Storage;
 
@@ -13,6 +14,7 @@ internal static class GraphicsIndexTests
 
     internal static void Run()
     {
+        RunComposition();
         UnsignedHandleSearch();
         KindChangingStops();
         HistoricalObservations();
@@ -46,6 +48,14 @@ internal static class GraphicsIndexTests
         RefinedGlobalEnds();
         SinglePassGraphicsTrim();
         TrimmedLifetimes();
+    }
+
+    internal static void RunComposition()
+    {
+        CompositionLifetimes();
+        CompositionSequenceCandidates();
+        CompositionRetention();
+        CompositionSnapshots();
     }
 
     private static void UnsignedHandleSearch()
@@ -1595,7 +1605,9 @@ internal static class GraphicsIndexTests
                     AND TargetId = (SELECT GraphicsObjectId FROM GraphicsObjects
                         WHERE Kind = 'AdapterAllocation' AND StartQpc = 5000)
                     """) == (otherLifetime ? 0 : 1),
-                    "Refining a reuse end must remove its superseded bound, but preserve independent retained and trimmed ends.");
+                    $"Refining a reuse end must remove its superseded bound, but preserve independent retained and trimmed ends " +
+                    $"(other lifetime: {otherLifetime}; trim: {trim}; keep refined: {keepRefined}; " +
+                    $"complete from: {Sql.Scalar(connection, "SELECT COALESCE(CompleteFromSeq, 0) FROM SessionInfo")}).");
                 if (trim)
                 {
                     Expect(Sql.Scalar(connection, "SELECT CompleteFromSeq FROM SessionInfo") > 5,
@@ -1606,7 +1618,8 @@ internal static class GraphicsIndexTests
                 if (!trim || keepRefined)
                     Expect(Count(connection, "GraphicsObjects", "StartQpc = 1000 AND StopQpc = 3000 AND EndQpc = 3000") == 1,
                         "Retained lifetime ends must remain refinable rather than becoming permanent trimmed-history bounds.");
-            }, limitBytes: trim ? 1024 * 1024 : SessionWriter.DefaultLimitBytes);
+                // Leave room for one encoded writer batch and the schema while still forcing the original evidence to trim.
+            }, limitBytes: trim ? 2 * 1024 * 1024 : SessionWriter.DefaultLimitBytes);
         }
         Console.WriteLine("Passed: refined global ends preserve independent history without freezing retained reuse boundaries.");
     }
@@ -1700,6 +1713,269 @@ internal static class GraphicsIndexTests
         }
         Console.WriteLine("Passed: rolling retention prunes closed graphics history and preserves open lifetime continuity.");
     }
+
+    private static void CompositionLifetimes()
+    {
+        WithRecording(
+        [
+            NativeComposition(1, Device, 0xf1234567, 2),
+            NativeComposition(30, Device, 0xf1234567, 0x20342520) with { ThreadId = 70 },
+            NativeComposition(1, Device, 0xf1234567, 3),
+            NativeComposition(30, Device, 0xf1234567, 0x20342530),
+            NativeComposition(1, Device + 1, 0xf1234567, 2),
+            NativeComposition(30, Device + 2, 0xf1234567, 0x20342520),
+            NativeComposition(1, Device + 1, 0xf1234568, 2),
+            Direct3D(12, Device + 1),
+            NativeComposition(1, 0, 1, 2),
+            NativeComposition(30, Device, 0, 0x20342520),
+            NativeComposition(1, Device, 1, 2) with { ProcessId = 11 }
+        ], connection =>
+        {
+            var recording = SessionFile.ReadComposition(connection.DataSource);
+            Expect(recording.NativeCreationObservations == 5 && recording.NativeReleaseObservations == 4 &&
+                recording.MatchedReleaseObservations == 2 && recording.NativeLifetimes.Count == 5,
+                "Native counts must include unkeyed observations, exclude launcher events and distinguish unmatched releases.");
+            var generations = recording.NativeLifetimes.Where(row => row.ResourcePointer == Hex(Device)).ToArray();
+            Expect(generations.Length == 2 && generations[0].NativeResourceId != generations[1].NativeResourceId &&
+                generations.All(row => row.Status == "ReleaseObserved" && row.ObservedDurationMilliseconds == 1),
+                "Reused native pointer/handle pairs must have distinct generations with their own observed endpoints.");
+            Expect(generations[0] is
+            {
+                CreationChannel: "0x0000000000000002", ReleaseChannel: "0x0000000020342520",
+                ResourceType: 180, CreateShared: false, OpenShared: false
+            } &&
+                generations[0].ResourceHandle == Hex(0xf1234567),
+                "Original unsigned IDs, channel domains, resource types and sharing metadata must remain separate and exact.");
+            Expect(recording.NativeLifetimes.Count(row => row.Status == "EndNotObserved") == 2 &&
+                recording.NativeLifetimes.Single(row => row.Status == "ReleaseObservedCreationUnknown").CreationSeq is null &&
+                Count(connection, "GraphicsObjects", "Kind = 'Texture2D' AND StopSeq IS NULL") == 1 &&
+                SessionFile.ReadObjects(connection.DataSource).Count == 0,
+                "Missing endpoints, different native handles and D3D/XAML pointer domains must not fabricate native releases.");
+        });
+
+        WithRecording(
+        [
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 },
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 3_000 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 2_000 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 4_000 }
+        ], connection =>
+        {
+            var lifetimes = SessionFile.ReadComposition(connection.DataSource).NativeLifetimes;
+            Expect(lifetimes.Count == 2 && lifetimes[0] is { CreationSeq: 1, ReleaseSeq: 3 } &&
+                lifetimes[1] is { CreationSeq: 2, ReleaseSeq: 4 } && lifetimes.All(row => row.Status == "ReleaseObserved"),
+                "Delayed native releases must close the matching historical generation, not its replacement.");
+        });
+        WithRecording(
+        [
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 2_000 },
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 }
+        ], connection =>
+        {
+            var recording = SessionFile.ReadComposition(connection.DataSource);
+            Expect(recording.NativeLifetimes is [{ CreationSeq: 2, ReleaseSeq: 1, Status: "ReleaseObserved" }] &&
+                recording.MatchedReleaseObservations == 1,
+                "A delayed creation can complete unique native release-only history without inventing another generation.");
+        });
+        WithRecording(
+        [
+            NativeComposition(1, Device, 1, 2),
+            NativeComposition(1, Device, 1, 2)
+        ], connection =>
+        {
+            var lifetimes = SessionFile.ReadComposition(connection.DataSource).NativeLifetimes;
+            Expect(lifetimes.Count == 2 && lifetimes.All(row => row.Status == "EndNotObserved" && row.ReleaseSeq is null) &&
+                lifetimes[0].BoundReason == "HandleReuse",
+                "An intervening creation bounds reused identity without fabricating a native release.");
+        });
+        WithRecording(
+        [
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 3_000 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 4_000 },
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 }
+        ], connection =>
+        {
+            var recording = SessionFile.ReadComposition(connection.DataSource);
+            Expect(recording.NativeLifetimes.Count == 3 && recording.MatchedReleaseObservations == 0 &&
+                recording.NativeLifetimes.All(row => row.CreationSeq is null || row.ReleaseSeq is null),
+                "Multiple plausible historical native releases must remain ambiguous rather than manufacture a complete lifetime.");
+        });
+        Console.WriteLine("Passed: native composition releases match process-local identity generations, not channel representations or COM destruction.");
+    }
+
+    private static void CompositionSequenceCandidates()
+    {
+        WithRecording(
+        [
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 },
+            WinUIComposition() with { TimestampQpc = 1_100 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 2_000, ThreadId = 70 },
+            WinUIComposition() with { TimestampQpc = 2_100 },
+            NativeComposition(1, Device + 1, 2, 2) with { TimestampQpc = 3_000 },
+            NativeComposition(1, Device + 2, 3, 2) with { TimestampQpc = 3_100 },
+            WinUIComposition() with { TimestampQpc = 3_200 },
+            WinUIComposition() with { TimestampQpc = 3_250 },
+            NativeComposition(1, Device + 3, 4, 2) with { TimestampQpc = 4_000, ThreadId = 70 },
+            WinUIComposition() with { TimestampQpc = 4_100 },
+            NativeComposition(1, Device + 4, 5, 2) with { TimestampQpc = 5_000 },
+            WinUIComposition() with { TimestampQpc = 7_000 },
+            NativeComposition(1, Device + 5, 6, 2) with { TimestampQpc = 7_100 },
+            WinUIComposition() with { TimestampQpc = 7_110, Fields =
+                [new("ResourceName", "Composition.ContainerVisual"), new("HasLifetime", true)] },
+            WinUIComposition() with { TimestampQpc = 7_120, Provider = XamlProvider.XamlDiagnostics },
+            WinUIComposition() with { TimestampQpc = 7_130, TraceLogging = false },
+            WinUIComposition() with { TimestampQpc = 7_140, Fields =
+                [new("ResourceName", "Direct2D.Factory"), new("HasLifetime", false)] },
+            WinUIComposition() with { TimestampQpc = 7_150 },
+            NativeComposition(1, Device + 6, 7, 2) with { TimestampQpc = 8_000 },
+            NativeComposition(30, Device + 6, 7, 0x20342520) with { TimestampQpc = 8_100 },
+            WinUIComposition() with { TimestampQpc = 8_200 },
+            NativeComposition(1, Device + 7, 8, 2) with { TimestampQpc = 9_000, ProcessId = 11 },
+            WinUIComposition() with { TimestampQpc = 9_100 }
+        ], connection =>
+        {
+            var recording = SessionFile.ReadComposition(connection.DataSource);
+            var observations = recording.WinUICreations;
+            Expect(observations.Count == 9 && observations.Count(row => row.Correlation == "InferredSequence") == 2 &&
+                observations.Count(row => row.Correlation == "Ambiguous") == 1 &&
+                observations.Count(row => row.Correlation == "Unattributed") == 6,
+                "Only creation-only WinUI Composition counters may infer a unique recent same-thread native candidate.");
+            Expect(observations[0] is
+            {
+                CreationSeq: 1, ReleaseSeq: 3, CandidateCount: 1,
+                Correlation: "InferredSequence", NativeStatus: "ReleaseObserved", GapMilliseconds: 0.1
+            },
+                "An inferred WinUI/native creation link must carry the ID-matched native release, even on a different thread.");
+            Expect(observations.Single(row => row.WinUISeq == 7) is
+            {
+                CandidateCount: 2, NativeResourceId: null,
+                Correlation: "Ambiguous", NativeStatus: null
+            } &&
+                Count(connection, "WinUICompositionCandidates", "WinUISeq = 7") == 2,
+                "Multiple native creations remain visible candidates, never a nearest-event ownership assertion.");
+            Expect(observations.Where(row => row.Correlation == "Unattributed").All(row => row.NativeResourceId is null) &&
+                observations.Single(row => row.WinUISeq == 18) is { CreationSeq: 13, NativeStatus: "EndNotObserved" },
+                "A creation cannot be borrowed across counters, threads, processes, long gaps or already-ended generations.");
+            Expect(Count(connection, "QueryCatalog", "Name LIKE '%Composition%'") == 3,
+                "The native lifetime and inferred-attribution views must be discoverable in the shared query catalog.");
+        });
+        WithRecording(
+        [
+            WinUIComposition() with { TimestampQpc = 1_100 },
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 2_000 }
+        ], connection =>
+        {
+            Expect(SessionFile.ReadComposition(connection.DataSource).WinUICreations is
+                [{ Correlation: "InferredSequence", CreationSeq: 2, ReleaseSeq: 3 }],
+                "Sequence candidates use event-clock order, not an assumption that provider arrivals were already ordered.");
+        });
+        Console.WriteLine("Passed: WinUI/native sequence attribution distinguishes inferred, ambiguous and unattributed observations.");
+    }
+
+    private static void CompositionRetention()
+    {
+        List<ProfilerEvent> events =
+        [
+            NativeComposition(1, Device, 1, 2),
+            NativeComposition(30, Device, 1, 0x20342520),
+            NativeComposition(1, Device + 1, 2, 2),
+            WinUIComposition()
+        ];
+        events.AddRange(Enumerable.Range(0, 6_000).Select(_ =>
+            new ProfilerEvent(0, 0, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0,
+                [new("Value", new string('x', 256))])));
+        events.Add(WinUIComposition());
+        events.Add(NativeComposition(30, Device + 1, 2, 0x20342520));
+        WithRecording(events, connection =>
+        {
+            var recording = SessionFile.ReadComposition(connection.DataSource);
+            Expect(recording.Session.CompleteFromSeq > 4 && recording.NativeCreationObservations == 0 &&
+                recording.NativeReleaseObservations == 1 && recording.MatchedReleaseObservations == 1,
+                "Rolling retention must actually trim raw creations while preserving known open native identity continuity.");
+            Expect(recording.NativeLifetimes is [{ CreationSeq: 3, ReleaseSeq: 6006, Status: "ReleaseObserved", Trimmed: true }] &&
+                recording.WinUICreations is [{ WinUISeq: 6005, Correlation: "Unattributed", NativeResourceId: null }],
+                "Closed native history must leave with its evidence, and missing raw creation evidence must not fabricate new WinUI attribution.");
+        }, limitBytes: 1024 * 1024);
+        Console.WriteLine("Passed: native composition continuity survives trimming without retaining stale WinUI sequence associations.");
+    }
+
+    private static void CompositionSnapshots()
+    {
+        var created = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        TreeSnapshotDocument Snapshot(long qpc) => new(1, Guid.NewGuid(), 10, created.ToFileTimeUtc(),
+            1_000_000, 1_000, qpc, [], [], [], [], []);
+        WithRecording(
+        [
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 1_000 },
+            WinUIComposition() with { TimestampQpc = 1_100 },
+            NativeComposition(30, Device, 1, 0x20342520) with { TimestampQpc = 2_000 },
+            NativeComposition(1, Device + 1, 2, 2) with { TimestampQpc = 2_500 },
+            WinUIComposition() with { TimestampQpc = 2_600 },
+            NativeComposition(1, Device, 1, 2) with { TimestampQpc = 2_800 },
+            NativeComposition(30, Device + 2, 3, 0x20342520) with { TimestampQpc = 1_400 }
+        ], connection =>
+        {
+            Sql.Execute(connection, "UPDATE SessionInfo SET Source = 'Live', ProcessCreatedUtc = $created",
+                null, ("$created", created.ToString("O", CultureInfo.InvariantCulture)));
+            var before = SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(1_500));
+            var after = SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(2_750));
+            Expect(before.Available && before.Recording is
+            { NativeCreationObservations: 1, NativeReleaseObservations: 1, MatchedReleaseObservations: 0 } &&
+                before.Recording.NativeLifetimes.Count == 2 && before.Recording.WinUICreations.Count == 1,
+                "Snapshot counts must include only prior evidence, including an orphan release, not future creations or reuse.");
+            var original = before.Recording!.NativeLifetimes.Single(row => row.CreationSeq == 1);
+            Expect(original.Status == "EndNotObserved" && original.ReleaseSeq is null && original.ReleaseQpc is null &&
+                original.ReleaseMilliseconds is null && original.ReleaseChannel is null && original.BoundQpc is null &&
+                before.Recording.WinUICreations.Single() is { NativeStatus: "EndNotObserved", ReleaseSeq: null },
+                "A later release must not leak into native state, WinUI inference, original channel fields or reuse bounds.");
+            Expect(after.Available && after.Recording is
+            { NativeCreationObservations: 2, NativeReleaseObservations: 2, MatchedReleaseObservations: 1 } &&
+                after.Recording.NativeLifetimes.Single(row => row.NativeResourceId == original.NativeResourceId) is
+                { Status: "ReleaseObserved", ReleaseSeq: 3, ReleaseQpc: 2_000 } &&
+                after.Recording.WinUICreations.Single(row => row.WinUISeq == 2).ReleaseSeq == 3,
+                "A later snapshot must show the same native generation's observed release without including future reuse.");
+            Expect(SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(1_500) with { ProcessId = 11 }).Status
+                    == SnapshotCompositionStatus.DifferentProcess &&
+                SessionFile.ReadCompositionSnapshot(connection.DataSource,
+                    Snapshot(1_500) with { CreationTimeFileTime = created.ToFileTimeUtc() + 1 }).Status
+                    == SnapshotCompositionStatus.DifferentProcess &&
+                SessionFile.ReadCompositionSnapshot(connection.DataSource,
+                    Snapshot(1_500) with { QpcFrequency = 10_000_000 }).Status == SnapshotCompositionStatus.DifferentClock &&
+                SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(999)).Status
+                    == SnapshotCompositionStatus.OutsideRecording,
+                "Snapshot evidence must fail closed for another process incarnation, clock or pre-recording timestamp.");
+            Sql.Execute(connection, "UPDATE SessionInfo SET CompleteFromQpc = 2000");
+            Expect(SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(1_500)).Status
+                == SnapshotCompositionStatus.HistoryTrimmed, "Trimmed snapshot history must not be replaced with newer state.");
+            Sql.Execute(connection, "UPDATE SessionInfo SET Source = 'Trace', CompleteFromQpc = NULL");
+            Expect(SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(1_500)).Status
+                == SnapshotCompositionStatus.DifferentClock, "Trace replay must not borrow a live snapshot's clock.");
+        });
+        WithRecording([new(1_000, 1, 10, 7, XamlProvider.Xaml, false, "UnrelatedEvent", 0, [])], connection =>
+        {
+            Sql.Execute(connection, "UPDATE SessionInfo SET Source = 'Live', ProcessCreatedUtc = $created",
+                null, ("$created", created.ToString("O", CultureInfo.InvariantCulture)));
+            Expect(SessionFile.ReadCompositionSnapshot(connection.DataSource, Snapshot(1_500)).Status
+                == SnapshotCompositionStatus.NoEvents, "No native evidence must remain unknown, not a fabricated empty lifetime count.");
+        });
+        Expect(SessionFile.ReadCompositionSnapshot(null, Snapshot(1_500)).Status == SnapshotCompositionStatus.NotRecorded,
+            "A snapshot without an associated recording must not fabricate Composition evidence.");
+        Console.WriteLine("Passed: selected-snapshot Composition state excludes future events and validates process, clock and retention.");
+    }
+
+    private static ProfilerEvent NativeComposition(int id, ulong pointer, uint handle, uint channel) =>
+        new(0, 0, 10, 7, XamlProvider.DirectComposition, false, id == 1 ? "RESOURCE_CREATION" : "RESOURCE_RELEASE", 0,
+            id == 1
+                ? [new("channelHandle", channel), new("resourceHandle", handle), new("resourcePointer", pointer),
+                    new("resourceType", 180U), new("createShared", false), new("openShared", false),
+                    new("externalHandleAndChannel", 0xffff000000000001UL)]
+                : [new("channelHandle", channel), new("resourceHandle", handle), new("resourcePointer", pointer)],
+            EventId: id, Version: 0);
+
+    private static ProfilerEvent WinUIComposition() => new(0, 0, 10, 7, XamlProvider.XamlProfiler, true,
+        "GraphicsResourceCreated", 0,
+        [new("ResourceKind", 0), new("ResourceName", "Composition.ContainerVisual"), new("HasLifetime", false)]);
 
     private static ProfilerEvent Direct3D(int id, ulong handle, ulong parent = 0, uint kernelResource = 0)
     {

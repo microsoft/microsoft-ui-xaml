@@ -51,7 +51,7 @@ units, missing-value sentinels and busiest-engine validation remain enforced.
 Native compile-time size assertions protect the x64 and ARM64 layouts.
 
 This is the executable/connection/metrics baseline, not the full profiler.
-While connected, the app saves the target's XAML and Direct3D11 ETW events, and
+While connected, the app saves the target's XAML, Direct3D11 and DirectComposition ETW events, and
 the kernel's GPU memory, allocation and window focus events for it, to a session file. It can also read
 them from a recorded trace (`.etl`) into a session file. The Launch tab shows
 the launch's milestones, including an app's own (see
@@ -135,6 +135,76 @@ dimensions and a shared texture, then checks real provider decoding, creation
 phases, processed lifetimes and kernel-allocation links.
 It owns and stops only its unique test ETW session
 and deletes its temporary recording.
+
+For existing native composition creation/release capture, run:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Tests\WinUIProfiler.Tests.csproj -- --composition-integration
+```
+
+This opt-in test needs ETW permissions. It creates and releases real system
+DirectComposition visuals, verifies live and recorded event decoding, preserves
+the native payloads, and checks process filtering and XAML-only process discovery.
+It stops only its own ETW sessions and removes its temporary recordings.
+
+The profiler enables `Microsoft-Windows-DirectComposition`
+(`c44219d0-f344-11df-a5e2-b307dfd72085`) at Verbose level, keyword `0x1`, for
+resource creation (event ID 1) and release (event ID 30). These client-side events
+are captured for the selected application process, not by selecting `dwm.exe`.
+Both native creation call sites use ID 1; every observation is retained alongside
+WinUI events with its original PID, TID, QPC, event identity and payload.
+No compositor changes or new per-composition-object tracking fields are required.
+
+Native releases are matched to creation generations by the process-local
+`resourcePointer` and `resourceHandle` pair. The creation's `channelHandle`
+is a channel ID; the release's is a channel pointer representation. Both are
+retained separately, not equated. Reuse creates a new `NativeResourceId`
+(a graphics-index surrogate, not a public COM or XAML ID). A native resource/proxy
+release is not proof of final COM destruction or GPU retirement. A missing release
+remains `EndNotObserved`, including when reuse bounds the old generation.
+
+`WinUICompositionLifetimes` associates creation-only WinUI Composition counters
+with native creation observations. It looks backward on the same thread, after
+the preceding WinUI Composition counter, within a conservative 1 ms window.
+A single candidate is `InferredSequence`, **not confirmed ownership**. Multiple
+candidates are `Ambiguous`, with no selected native ID; all candidates remain in
+`WinUICompositionCandidates`. No candidate is `Unattributed`. Already-ended
+generations and trimmed raw creations are not borrowed. The WinRT and proxy-slot
+creation paths do not guarantee three events for one object, and this inference
+does not map native resources to XAML tree elements.
+
+Inspect both sides with the CLI:
+
+```powershell
+dotnet run --project .\WinUIProfiler.Cli -- composition capture.sqlite --count 20
+dotnet run --project .\WinUIProfiler.Cli -- composition capture.sqlite --view native --count 20 --json
+dotnet run --project .\WinUIProfiler.Cli -- composition capture.sqlite --resource <NativeResourceId> --json
+```
+
+Counts describe retained creation/release observations, not live objects or leaks.
+Open native identity metadata survives rolling retention and is marked `Trimmed`;
+closed history leaves with its evidence. Sessions written before this index remain
+readable by existing commands; re-import the original ETL to use `composition`.
+The focused, non-elevated correlation regressions run with `--composition-tests`;
+the opt-in `--composition-integration` test additionally verifies real native matches.
+
+In the app, open a **particular snapshot** from its history, then expand
+**Resources > Composition lifetimes (recorded ETW)**. The native and WinUI lists,
+creation/release counts, and **Released by snapshot** filter include only evidence
+through that snapshot's end QPC. Later releases and pointer reuse do not appear as
+already observed in an earlier snapshot. Select a row to see original pointer/handle
+values, separate creation/release channels, event sequence numbers and confidence.
+Search by name, native ID, pointer, handle or evidence state.
+
+This is process-wide recording evidence at the selected snapshot, not an
+automatic ownership join to the selected XAML or Composition tree node. The reader
+requires the snapshot's associated live recording, matching process ID **and
+creation time**, QPC frequency, and retained history. Missing or older recordings,
+trace-clock mismatch and trimmed snapshot history remain unavailable rather than
+substituting newer state or inventing zero objects. **Refresh** incorporates newly
+flushed observations but keeps the same snapshot timestamp cutoff. The main window
+does not acquire another tab; snapshot comparisons keep their existing resources
+and textures rather than pretending native IDs across recordings are comparable.
 
 To validate the opt-in surface-to-texture producer against real app captures, start
 recording before launching the same WinUI workload twice, with Direct3D11 and the
@@ -656,9 +726,10 @@ recorded-ETL replay remains supported as before.
 | `ObjectEvents` | One row per mention: `Seq`, `ObjectId`, and the index of the event's field that holds the object's address. An event can mention several objects, such as `ChildAdded`'s parent and child. `-1 - i` marks a visual whose parent, in field `i`, had its children cleared |
 | `Frames` | One row per tick on a UI thread: thread, frame number, start and end (see below) |
 | `FrameEvents` | One row per UI-thread event: `Seq`, the `FrameId` of its tick, and its bucket: `Xaml`, `Composition` or `Other` |
-| `GraphicsObjects` | Process-local device, buffer, texture and allocation lifetimes: surrogate `GraphicsObjectId`, kind, original handle/qualifier, observations, nullable Start/Stop, end bound/reason and `Trimmed`. Also holds kind-specific device/resource/allocation handles, optional owning `DeviceId`, and exact unsigned decimal-text `SizeBytes` |
+| `GraphicsObjects` | Process-local device, buffer, texture, allocation and native Composition resource/proxy lifetimes: surrogate `GraphicsObjectId`, kind, original handle/qualifier, observations, nullable Start/Stop, end bound/reason and `Trimmed`. Also holds kind-specific handles/metadata, optional owning `DeviceId`, and exact unsigned decimal-text `SizeBytes` |
 | `GraphicsObjectEvents` | Raw-event evidence for each graphics lifetime: `Seq`, `GraphicsObjectId`, and Start/Stop/Rundown/Reference role |
 | `GraphicsLinks` | Resource-to-device-allocation and device-allocation-to-adapter-allocation relationships, their original bridge handle/qualifier, observed interval `[StartSeq, EndSeq)`, end reason and `Trimmed` |
+| `WinUICompositionCreations` | Retained creation-only WinUI Composition counters, their original Seq/QPC/thread and resource kind/name; these carry no native identity |
 
 JSON has no Infinity or NaN, so those values are stored as the strings
 `"Infinity"`, `"-Infinity"` and `"NaN"`; the field type restores the number.
@@ -698,7 +769,8 @@ The relationship view leaves an unobserved adapter allocation's bridge fields
 null; the latest declared kernel handles remain in `GraphicsObjects`,
 separate from historical correlation intervals.
 
-Only actual Start/Stop events establish creation/destruction times.
+Only actual Start/Stop events establish creation/destruction times for DirectX;
+CompositionResource's Stop instead means native resource/proxy release.
 Rundown identifies an existing object, a resource can establish a
 reference-only device, and a Stop without a Start has unknown creation.
 `FirstSeq`/`FirstQpc` retain the first-arrival observation, while
@@ -793,6 +865,9 @@ SELECT sql FROM cpu.sqlite_master WHERE type = 'view';
 | `CpuFrames` | Every node of the sampled call stacks, with its frame and its caller's node | `cpu`, agents |
 | `GraphicsLifetimes` | Process-local graphics lifetimes, observed/unknown endpoints, reuse bounds, trimming and capture-loss counts | SQLite analysis |
 | `GraphicsResourceAllocations` | Resource → device allocation → optional adapter allocation, restricted to overlapping observed link intervals | SQLite analysis |
+| `CompositionLifetimes` | Native resource/proxy generations, observed releases, unknown ends, separate channel representations and capture completeness | `composition --view native`, SQLite analysis |
+| `WinUICompositionCandidates` | All bounded same-thread WinUI/native creation candidates, ranked by proximity; not confirmed ownership | SQLite analysis |
+| `WinUICompositionLifetimes` | One row per WinUI Composition creation counter, its inference confidence and a selected native generation only for a single candidate | `composition`, SQLite analysis |
 | `QueryCatalog` | The views and an example query each | Agents |
 
 ```sql

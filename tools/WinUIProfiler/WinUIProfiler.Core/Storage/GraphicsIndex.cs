@@ -7,13 +7,14 @@ using WinUIProfiler.Engine.Events;
 
 namespace WinUIProfiler.Engine.Storage;
 
-// Process-local DirectX lifetimes and explicit handle correlations. Like ObjectIndex and FrameIndex, this runs on
-// the writer thread in the raw event's transaction. No timestamp/thread heuristic associates kernel and runtime devices.
+// Process-local graphics lifetimes and explicit handle correlations. Like ObjectIndex and FrameIndex, this runs on
+// the writer thread in the raw event's transaction. WinUI Composition creation counters are separate observations;
+// only the shared composition views infer their association with native resources.
 internal sealed class GraphicsIndex : IDisposable
 {
-    private enum Kind { Device, Buffer, Texture1D, Texture2D, Texture3D, AdapterAllocation, DeviceAllocation }
+    private enum Kind { Device, Buffer, Texture1D, Texture2D, Texture3D, AdapterAllocation, DeviceAllocation, CompositionResource }
     private enum Phase { Start, Stop, Rundown, Reference }
-    private enum IdentitySpace { Device, Resource, AdapterAllocation, DeviceAllocation }
+    private enum IdentitySpace { Device, Resource, AdapterAllocation, DeviceAllocation, CompositionResource }
     private readonly record struct Identity(IdentitySpace Space, ulong Handle, ulong Qualifier = 0);
     private readonly record struct GlobalIdentity(ulong Adapter, ulong Allocation);
 
@@ -97,6 +98,8 @@ internal sealed class GraphicsIndex : IDisposable
     private readonly SqliteCommand deviceReference;
     private readonly SqliteCommand resource;
     private readonly SqliteCommand allocation;
+    private readonly SqliteCommand composition;
+    private readonly SqliteCommand winUICreation;
     private readonly SqliteCommand insertLink;
     private readonly SqliteCommand endLink;
     private readonly SqliteCommand disjointLinks;
@@ -104,7 +107,8 @@ internal sealed class GraphicsIndex : IDisposable
     private long objectCount;
 
     // Allow room for lifetime metadata, evidence and correlation rows before the writer trims a batch.
-    internal static int EstimatedBytes(ProfilerEvent data) => TypeOf(data) is null ? 0 : 1_000;
+    internal static int EstimatedBytes(ProfilerEvent data) =>
+        TypeOf(data) is not null ? 1_000 : WinUICompositionName(data) is not null ? 300 : 0;
 
     internal GraphicsIndex(SqliteConnection connection)
     {
@@ -191,6 +195,21 @@ internal sealed class GraphicsIndex : IDisposable
             """, ("$id", SqliteType.Integer), ("$adapter", SqliteType.Text), ("$device", SqliteType.Text),
             ("$global", SqliteType.Text), ("$thunkAllocation", SqliteType.Text), ("$thunkResource", SqliteType.Text),
             ("$kernel", SqliteType.Text), ("$shared", SqliteType.Text), ("$size", SqliteType.Text));
+        composition = Sql.Prepare(connection, """
+            UPDATE GraphicsObjects SET channelHandle = COALESCE(channelHandle, $creationChannel),
+                releaseChannelHandle = COALESCE(releaseChannelHandle, $releaseChannel),
+                resourceType = COALESCE(resourceType, $type),
+                createShared = COALESCE(createShared, $createShared), openShared = COALESCE(openShared, $openShared),
+                externalHandleAndChannel = COALESCE(externalHandleAndChannel, $external)
+            WHERE GraphicsObjectId = $id
+            """, ("$id", SqliteType.Integer), ("$creationChannel", SqliteType.Text), ("$releaseChannel", SqliteType.Text),
+            ("$type", SqliteType.Integer), ("$createShared", SqliteType.Integer), ("$openShared", SqliteType.Integer),
+            ("$external", SqliteType.Text));
+        winUICreation = Sql.Prepare(connection, """
+            INSERT INTO WinUICompositionCreations (Seq, Qpc, ThreadId, ResourceKind, ResourceName)
+            VALUES ($seq, $qpc, $thread, $kind, $name)
+            """, ("$seq", SqliteType.Integer), ("$qpc", SqliteType.Integer), ("$thread", SqliteType.Integer),
+            ("$kind", SqliteType.Integer), ("$name", SqliteType.Text));
         insertLink = Sql.Prepare(connection, """
             INSERT INTO GraphicsLinks (SourceId, TargetId, Kind, Handle, Qualifier, StartSeq)
             VALUES ($source, $target, $kind, $handle, $qualifier, $seq)
@@ -209,11 +228,20 @@ internal sealed class GraphicsIndex : IDisposable
                 WHERE s.GraphicsObjectId = GraphicsLinks.SourceId
                     AND (s.EndQpc < t.StartQpc OR t.EndQpc < s.StartQpc))
             """, ("$id", SqliteType.Integer));
-        commands = [insertObject, observeObject, endObject, history, globalEnds, insertEvent, device, deviceReference, resource, allocation, insertLink, endLink, disjointLinks];
+        commands = [insertObject, observeObject, endObject, history, globalEnds, insertEvent, device, deviceReference, resource,
+            allocation, composition, winUICreation, insertLink, endLink, disjointLinks];
     }
 
     internal void Add(long sequence, long typeId, ProfilerEvent data, SqliteTransaction transaction)
     {
+        if (WinUICompositionName(data) is { } name)
+        {
+            winUICreation.Transaction = transaction;
+            Set(winUICreation, ("$seq", sequence), ("$qpc", data.TimestampQpc), ("$thread", data.ThreadId),
+                ("$kind", data.Fields.FirstOrDefault(field => field.Name == "ResourceKind").Value), ("$name", name));
+            winUICreation.ExecuteNonQuery();
+            return;
+        }
         var shape = ShapeOf(typeId, data);
         if (shape is null) return;
         foreach (var command in commands) command.Transaction = transaction;
@@ -222,16 +250,32 @@ internal sealed class GraphicsIndex : IDisposable
             Kind.Device => new Identity(IdentitySpace.Device, shape.Handle(data, "pID3D11Device")),
             Kind.AdapterAllocation => new(IdentitySpace.AdapterAllocation, shape.Handle(data, "hVidMmGlobalAlloc"), shape.Handle(data, "pDxgAdapter")),
             Kind.DeviceAllocation => new(IdentitySpace.DeviceAllocation, shape.Handle(data, "hVidMmAlloc"), shape.Handle(data, "hDevice")),
+            Kind.CompositionResource => new(IdentitySpace.CompositionResource, shape.Handle(data, "resourcePointer"),
+                shape.Handle(data, "resourceHandle")),
             _ => new(IdentitySpace.Resource, shape.Handle(data, "pID3D11Resource"))
         };
-        if (identity.Handle == 0) return; // Unkeyed events remain available in the raw tables.
+        if (identity.Handle == 0 || shape.Kind == Kind.CompositionResource && identity.Qualifier == 0)
+            return; // Unkeyed events remain available in the raw tables.
 
         var parentHandle = shape.Kind is >= Kind.Buffer and <= Kind.Texture3D ? shape.Handle(data, "pID3D11Device") : 0;
         (Lifetime Lifetime, bool Latest)? parent = null;
         if (parentHandle != 0)
             parent = Observe(new(IdentitySpace.Device, parentHandle), Kind.Device, Phase.Reference, sequence, data.TimestampQpc);
         var (tracked, latest) = Observe(identity, shape.Kind, shape.Phase, sequence, data.TimestampQpc, parent?.Lifetime.Id);
-        if (shape.Kind == Kind.Device)
+        if (shape.Kind == Kind.CompositionResource)
+        {
+            // Creation names a channel ID; release names a channel pointer. Neither is the cross-event identity.
+            var creation = shape.Phase == Phase.Start;
+            Set(composition, ("$id", tracked.Id),
+                ("$creationChannel", creation ? shape.HandleText(data, "channelHandle") : null),
+                ("$releaseChannel", creation ? null : shape.HandleText(data, "channelHandle")),
+                ("$type", creation ? shape.Value(data, "resourceType") : null),
+                ("$createShared", creation ? shape.Value(data, "createShared") : null),
+                ("$openShared", creation ? shape.Value(data, "openShared") : null),
+                ("$external", creation ? shape.HandleText(data, "externalHandleAndChannel") : null));
+            composition.ExecuteNonQuery();
+        }
+        else if (shape.Kind == Kind.Device)
         {
             if (latest) SaveDevice(tracked.Id, data, shape);
         }
@@ -324,8 +368,19 @@ internal sealed class GraphicsIndex : IDisposable
         (XamlProvider.Direct3D11, >= 3 and <= 17) => ((Kind)((data.EventId.Value - 3) / 3), (Phase)((data.EventId.Value - 3) % 3)),
         (XamlProvider.DxgKrnl, >= 33 and <= 35) => (Kind.AdapterAllocation, (Phase)(data.EventId.Value - 33)),
         (XamlProvider.DxgKrnl, >= 36 and <= 38) => (Kind.DeviceAllocation, (Phase)(data.EventId.Value - 36)),
+        (XamlProvider.DirectComposition, 1) => (Kind.CompositionResource, Phase.Start),
+        (XamlProvider.DirectComposition, 30) => (Kind.CompositionResource, Phase.Stop),
         _ => null
     };
+
+    private static string? WinUICompositionName(ProfilerEvent data)
+    {
+        if (data.Provider != XamlProvider.XamlProfiler || !data.TraceLogging || data.Name != "GraphicsResourceCreated" ||
+            data.Fields.FirstOrDefault(field => field.Name == "HasLifetime").Value is not false)
+            return null;
+        return data.Fields.FirstOrDefault(field => field.Name == "ResourceName").Value is string name &&
+            name.StartsWith("Composition.", StringComparison.Ordinal) ? name : null;
+    }
 
     private (Lifetime Lifetime, bool Latest) Observe(Identity identity, Kind kind, Phase phase, long sequence, long qpc, long? deviceId = null)
     {
@@ -612,6 +667,7 @@ internal sealed class GraphicsIndex : IDisposable
     {
         Sql.Execute(connection, """
             DELETE FROM GraphicsObjectEvents WHERE Seq < $cutoff;
+            DELETE FROM WinUICompositionCreations WHERE Seq < $cutoff;
             DELETE FROM GraphicsLinks WHERE EndSeq < $cutoff;
             UPDATE GraphicsLinks SET Trimmed = 1 WHERE StartSeq < $cutoff;
             UPDATE GraphicsObjects SET Trimmed = 1 WHERE FirstSeq < $cutoff;

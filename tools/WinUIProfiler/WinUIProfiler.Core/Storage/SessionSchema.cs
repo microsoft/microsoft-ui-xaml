@@ -85,7 +85,7 @@ internal static class SessionSchema
         CREATE INDEX EventsByType ON Events (TypeId);
         CREATE TABLE GraphicsObjects (
             GraphicsObjectId INTEGER PRIMARY KEY,
-            Kind TEXT NOT NULL,        -- Device, Buffer, Texture1D/2D/3D, DeviceAllocation or AdapterAllocation
+            Kind TEXT NOT NULL,        -- Device, Buffer, Texture1D/2D/3D, DeviceAllocation, AdapterAllocation or CompositionResource
             Handle TEXT NOT NULL,      -- original unsigned handle, as 0x plus 16 hex digits; never a SQLite REAL
             Qualifier TEXT NOT NULL,   -- kernel device for a device allocation, adapter for an adapter allocation, empty otherwise
             FirstSeq INTEGER NOT NULL,
@@ -97,7 +97,7 @@ internal static class SessionSchema
             FirstObservation TEXT NOT NULL, -- Start, Rundown, Reference or Stop
             StartSeq INTEGER,          -- only an observed Start establishes creation
             StartQpc INTEGER,
-            StopSeq INTEGER,           -- only an observed Stop establishes destruction
+            StopSeq INTEGER,           -- an observed Stop; CompositionResource means native resource/proxy release, not COM destruction
             StopQpc INTEGER,
             EndSeq INTEGER,            -- also bounds a lifetime when handle reuse reveals a missing Stop
             EndQpc INTEGER,
@@ -120,7 +120,14 @@ internal static class SessionSchema
             hThunkResource TEXT,
             hDxgResource TEXT,         -- not D3D11's hKMResource
             hDxgSharedResource TEXT,
-            SizeBytes TEXT);           -- allocSize as exact unsigned decimal text; null when unknown
+            SizeBytes TEXT,            -- allocSize as exact unsigned decimal text; null when unknown
+            -- CompositionResource: Handle is resourcePointer and Qualifier is resourceHandle, not channelHandle.
+            channelHandle TEXT,        -- creation's channel ID
+            releaseChannelHandle TEXT, -- release's channel pointer; deliberately not equated with channelHandle
+            resourceType INTEGER,
+            createShared INTEGER,
+            openShared INTEGER,
+            externalHandleAndChannel TEXT);
         CREATE INDEX GraphicsIdentity ON GraphicsObjects (Kind, Handle, Qualifier);
         CREATE INDEX GraphicsEnds ON GraphicsObjects (EndSeq);
         CREATE INDEX GraphicsResourceDevices ON GraphicsObjects (DeviceId);
@@ -130,6 +137,13 @@ internal static class SessionSchema
             Role TEXT NOT NULL,        -- Start, Stop, Rundown or Reference
             PRIMARY KEY (Seq, GraphicsObjectId)) WITHOUT ROWID;
         CREATE INDEX GraphicsObjectTimeline ON GraphicsObjectEvents (GraphicsObjectId, Seq);
+        CREATE TABLE WinUICompositionCreations (
+            Seq INTEGER PRIMARY KEY REFERENCES Events (Seq),
+            Qpc INTEGER NOT NULL,
+            ThreadId INTEGER NOT NULL,
+            ResourceKind INTEGER,
+            ResourceName TEXT NOT NULL); -- creation-only GraphicsResourceCreated counters, never wrapper destructions
+        CREATE INDEX WinUICompositionThread ON WinUICompositionCreations (ThreadId, Qpc, Seq);
         CREATE TABLE GraphicsLinks (
             SourceId INTEGER NOT NULL REFERENCES GraphicsObjects ON DELETE CASCADE,
             TargetId INTEGER NOT NULL REFERENCES GraphicsObjects ON DELETE CASCADE,
@@ -483,6 +497,63 @@ internal static class SessionSchema
             CASE WHEN g.StopQpc >= g.StartQpc THEN (g.StopQpc - g.StartQpc) * 1000.0 / s.QpcFrequency END AS DurationMs,
             s.LostByEtw, s.DroppedByProfiler
         FROM GraphicsObjects g CROSS JOIN SessionInfo s;
+        CREATE VIEW CompositionLifetimes AS
+        -- Native creation/release observations keyed by process, resourcePointer and resourceHandle, with a new
+        -- NativeResourceId per lifetime generation. Channel representations are retained separately, not joined.
+        -- EndNotObserved includes reuse bounds; neither a missing release nor ReleaseObserved proves COM/GPU lifetime.
+        SELECT g.GraphicsObjectId AS NativeResourceId, s.ProcessId, g.Handle AS ResourcePointer,
+            g.Qualifier AS ResourceHandle, g.resourceType AS ResourceType, g.createShared AS CreateShared,
+            g.openShared AS OpenShared, g.channelHandle AS CreationChannel, g.releaseChannelHandle AS ReleaseChannel,
+            g.externalHandleAndChannel AS ExternalHandleAndChannel,
+            g.StartSeq AS CreationSeq, g.StartQpc AS CreationQpc, g.StopSeq AS ReleaseSeq, g.StopQpc AS ReleaseQpc,
+            (g.StartQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS CreationMs,
+            (g.StopQpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS ReleaseMs,
+            CASE WHEN g.StopQpc >= g.StartQpc THEN (g.StopQpc - g.StartQpc) * 1000.0 / s.QpcFrequency END AS ObservedDurationMs,
+            CASE WHEN g.StopSeq IS NOT NULL AND g.StartSeq IS NOT NULL THEN 'ReleaseObserved'
+                WHEN g.StopSeq IS NOT NULL THEN 'ReleaseObservedCreationUnknown' ELSE 'EndNotObserved' END AS Status,
+            g.EndSeq AS BoundSeq, g.EndQpc AS BoundQpc, g.EndReason AS BoundReason, g.Trimmed,
+            s.LostByEtw, s.DroppedByProfiler
+        FROM GraphicsObjects g CROSS JOIN SessionInfo s
+        WHERE g.Kind = 'CompositionResource';
+        CREATE VIEW WinUICompositionCandidates AS
+        -- Heuristic, not an identity bridge: native creations on the same thread, after the preceding WinUI
+        -- creation counter and at most 1 ms before this one. All candidates remain visible; rank 1 is only nearest.
+        -- Raw creation evidence must still be retained, and its native generation must not have ended before WinUI.
+        WITH WinUI AS (
+            SELECT *, LAG(Qpc) OVER (PARTITION BY ThreadId ORDER BY Qpc, Seq) AS PreviousQpc,
+                LAG(Seq) OVER (PARTITION BY ThreadId ORDER BY Qpc, Seq) AS PreviousSeq
+            FROM WinUICompositionCreations),
+        Native AS MATERIALIZED (
+            SELECT g.GraphicsObjectId, e.Seq, e.Qpc, e.ThreadId, g.EndQpc
+            FROM GraphicsObjects g JOIN GraphicsObjectEvents ge ON ge.GraphicsObjectId = g.GraphicsObjectId
+                AND ge.Role = 'Start'
+            JOIN Events e ON e.Seq = ge.Seq
+            WHERE g.Kind = 'CompositionResource'),
+        Candidates AS (
+            SELECT w.Seq AS WinUISeq, n.GraphicsObjectId AS NativeResourceId, n.Seq AS NativeCreationSeq, n.Qpc AS NativeCreationQpc,
+                (w.Qpc - n.Qpc) * 1000.0 / s.QpcFrequency AS GapMs
+            FROM WinUI w JOIN Native n ON n.ThreadId = w.ThreadId CROSS JOIN SessionInfo s
+            WHERE (n.Qpc < w.Qpc OR (n.Qpc = w.Qpc AND n.Seq < w.Seq))
+                AND (w.PreviousQpc IS NULL OR n.Qpc > w.PreviousQpc OR
+                    (n.Qpc = w.PreviousQpc AND n.Seq > w.PreviousSeq))
+                AND (w.Qpc - n.Qpc) * 1000.0 / s.QpcFrequency <= 1.0
+                AND (n.EndQpc IS NULL OR w.Qpc <= n.EndQpc))
+        SELECT *, ROW_NUMBER() OVER (PARTITION BY WinUISeq ORDER BY NativeCreationQpc DESC, NativeCreationSeq DESC) AS CandidateRank,
+            COUNT(*) OVER (PARTITION BY WinUISeq) AS CandidateCount
+        FROM Candidates;
+        CREATE VIEW WinUICompositionLifetimes AS
+        -- One row per WinUI creation-only Composition counter. A single candidate is InferredSequence, never confirmed
+        -- ownership; multiple candidates stay Ambiguous, with no selected ID. Native release status remains independent.
+        SELECT w.Seq AS WinUISeq, s.ProcessId, w.ThreadId, w.ResourceKind, w.ResourceName,
+            (w.Qpc - s.StartQpc) * 1000.0 / s.QpcFrequency AS WinUIMs, COALESCE(c.CandidateCount, 0) AS CandidateCount,
+            CASE WHEN c.CandidateCount = 1 THEN 'InferredSequence' WHEN c.CandidateCount > 1 THEN 'Ambiguous'
+                ELSE 'Unattributed' END AS Correlation,
+            g.NativeResourceId, g.ResourcePointer, g.ResourceHandle, g.ResourceType, g.CreationSeq, g.ReleaseSeq,
+            g.CreationMs, g.ReleaseMs, CASE WHEN c.CandidateCount = 1 THEN c.GapMs END AS GapMs,
+            g.Status AS NativeStatus, g.Trimmed AS NativeTrimmed
+        FROM WinUICompositionCreations w CROSS JOIN SessionInfo s
+        LEFT JOIN WinUICompositionCandidates c ON c.WinUISeq = w.Seq AND c.CandidateRank = 1
+        LEFT JOIN CompositionLifetimes g ON g.NativeResourceId = c.NativeResourceId AND c.CandidateCount = 1;
         CREATE VIEW GraphicsResourceAllocations AS
         -- Resource -> device allocation -> adapter allocation, only while the observed links overlap. A missing adapter
         -- allocation stays null (for example a shared allocation owned by another process); it is not fabricated.
@@ -548,6 +619,15 @@ internal static class SessionSchema
                 'WITH RECURSIVE s (Node, Depth) AS (SELECT :stack, 0 UNION ALL SELECT f.ParentId, s.Depth + 1 FROM s JOIN CpuFrames f ON f.StackId = s.Node WHERE f.ParentId IS NOT NULL) SELECT s.Depth, f.Frame FROM s JOIN CpuFrames f ON f.StackId = s.Node ORDER BY s.Depth'),
             ('GraphicsLifetimes', 'Observed DirectX lifetimes, unknown endpoints, handle reuse and capture completeness', 'GraphicsObjectId',
                 'SELECT * FROM GraphicsLifetimes WHERE Kind = ''Texture2D'' ORDER BY FirstSeq'),
+            ('CompositionLifetimes', 'Native composition resource/proxy releases, generation identities and unknown endpoints',
+                'NativeResourceId (a GraphicsObjectId, not a COM object ID)',
+                'SELECT * FROM CompositionLifetimes ORDER BY CreationQpc, NativeResourceId'),
+            ('WinUICompositionCandidates', 'All same-thread sequence candidates within 1 ms; never confirmed WinUI ownership',
+                'WinUISeq, NativeCreationSeq',
+                'SELECT * FROM WinUICompositionCandidates WHERE WinUISeq = :seq ORDER BY CandidateRank'),
+            ('WinUICompositionLifetimes', 'WinUI creation counters with inferred, ambiguous or missing native associations',
+                'WinUISeq',
+                'SELECT * FROM WinUICompositionLifetimes ORDER BY WinUISeq'),
             ('GraphicsResourceAllocations', 'Time-bounded process-local resource and allocation correlations',
                 'ResourceId, DeviceAllocationId, AdapterAllocationId, StartSeq',
                 'SELECT * FROM GraphicsResourceAllocations WHERE ResourceId = :resource ORDER BY StartSeq'),

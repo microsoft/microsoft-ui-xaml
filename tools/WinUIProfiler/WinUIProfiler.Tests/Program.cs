@@ -49,6 +49,33 @@ if (args is ["--graphics-probe"])
     return;
 }
 
+if (args is ["--composition-integration"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Composition integration requires Windows.");
+    GraphicsCaptureIntegration.RunComposition();
+    return;
+}
+
+if (args is ["--composition-probe"])
+{
+    if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Composition integration requires Windows.");
+    GraphicsCaptureIntegration.ExerciseDirectComposition();
+    return;
+}
+
+if (args is ["--composition-tests"])
+{
+    GraphicsIndexTests.RunComposition();
+    CliQueryTests.RunComposition();
+    return;
+}
+
+if (args is ["--graphics-tests"])
+{
+    GraphicsIndexTests.Run();
+    return;
+}
+
 if (args is ["--surface-texture-integration", var enabledTrace, var enabledPid, var disabledTrace, var disabledPid])
 {
     if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Surface texture integration requires Windows.");
@@ -1187,30 +1214,56 @@ Console.WriteLine("Passed: D3D11 resource/device coverage and DxgKrnl allocation
 }
 Console.WriteLine("Passed: live/offline memory counters exclude allocations without losing budget, usage or legacy counts.");
 
-foreach (var reverse in new[] { false, true })
+foreach (var graphicsProvider in new[] { XamlProvider.Direct3D11, XamlProvider.DirectComposition })
 {
-    (XamlProvider Provider, double Time)[] observations =
-    [
-        (XamlProvider.Direct3D11, 1), (XamlProvider.Xaml, 2), (XamlProvider.Direct3D11, 3)
-    ];
-    if (reverse) Array.Reverse(observations);
-    var tally = new OfflineEtlSource.ProcessTally(10, null, observations[0].Time);
-    foreach (var (provider, time) in observations) tally.Count(provider, time, null);
-    tally.Count(XamlProvider.Win32k, 0, null);
-    tally.Count(XamlProvider.Win32k, 4, null);
-    Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
-        tally.XamlEvents == 1 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
-        "D3D events must extend both process time bounds without changing counts or Win32k focus semantics.");
+    foreach (var reverse in new[] { false, true })
+    {
+        (XamlProvider Provider, double Time)[] observations =
+        [
+            (graphicsProvider, 1), (XamlProvider.Xaml, 2), (graphicsProvider, 3)
+        ];
+        if (reverse) Array.Reverse(observations);
+        var tally = new OfflineEtlSource.ProcessTally(10, null, observations[0].Time);
+        foreach (var (provider, time) in observations) tally.Count(provider, time, null);
+        tally.Count(XamlProvider.Win32k, 0, null);
+        tally.Count(XamlProvider.Win32k, 4, null);
+        Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
+            tally.XamlEvents == 1 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
+            "Native graphics events must extend both process time bounds without changing counts or Win32k focus semantics.");
+    }
 }
+foreach (var graphicsProvider in new[] { XamlProvider.Direct3D11, XamlProvider.DirectComposition })
 {
     var tally = new OfflineEtlSource.ProcessTally(10, null, 2);
-    tally.Count(XamlProvider.Direct3D11, 1, 12);
-    tally.Count(XamlProvider.Direct3D11, 3, 13);
+    tally.Count(graphicsProvider, 1, 12);
+    tally.Count(graphicsProvider, 3, 13);
     Expect(tally.FirstMilliseconds == 1 && tally.LastMilliseconds == 3 &&
         tally.XamlEvents == 0 && tally.ProfilerEvents == 0 && tally.GpuMemoryEvents == 0,
-        "D3D-only processes must track their event bounds without becoming eligible for the XAML process list.");
+        "Graphics-only processes must track their event bounds without becoming eligible for the XAML process list.");
 }
-Console.WriteLine("Passed: D3D events extend offline process bounds in either order without affecting discovery or counters.");
+Console.WriteLine("Passed: native graphics events extend offline process bounds in either order without affecting discovery or counters.");
+
+foreach (var filter in new[]
+{
+    new Microsoft.Diagnostics.Tracing.Session.TraceEventProviderOptions { ProcessIDFilter = [10, 11] },
+    new Microsoft.Diagnostics.Tracing.Session.TraceEventProviderOptions { ProcessNameFilter = ["App.exe"] }
+})
+{
+    Expect(LiveEtwSource.EnableDirectComposition(options =>
+    {
+        Expect(options.ProcessIDFilter == filter.ProcessIDFilter && options.ProcessNameFilter == filter.ProcessNameFilter &&
+            options.EventIDsToEnable.SequenceEqual([1, 30]) && filter.EventIDsToEnable is null,
+            "Composition event filtering must preserve launch/PID selection without modifying the XAML provider's options.");
+    }, filter), "Composition event selection must enable successfully.");
+    Expect(!LiveEtwSource.EnableDirectComposition(_ => throw new InvalidOperationException("Provider unavailable."), filter),
+        "An optional composition provider failure must not prevent XAML recording.");
+    ExpectThrows<InvalidOperationException>(() => LiveEtwSource.EnableDirectComposition(
+        _ => throw new InvalidOperationException("Filter update failed."), filter, previouslyEnabled: true),
+        "An enabled composition provider's filter update must fail closed.");
+    ExpectThrows<OutOfMemoryException>(() => LiveEtwSource.EnableDirectComposition(
+        _ => throw new OutOfMemoryException(), filter), "Composition provider handling must not suppress resource exhaustion.");
+}
+Console.WriteLine("Passed: composition creation/release filtering preserves launch/PID options and fails closed on filter updates.");
 
 foreach (var failure in new Guid?[] { null, XamlProviders.Direct3D11, XamlProviders.DxgKrnl })
 {
@@ -1295,7 +1348,22 @@ try
         ], EventId: 33, Version: 3),
         new(4000, 4, 10, 7, XamlProvider.Direct3D11, false, "D3D11CoreCreateDevice/Stop", 2, [], EventId: 21, Version: 0),
         new(5000, 5, 10, 7, XamlProvider.Direct3D11, false, "Device/Stop", 2,
-            [new("pID3D11Device", deviceId)], EventId: 4, Version: 0)
+            [new("pID3D11Device", deviceId)], EventId: 4, Version: 0),
+        new(6000, 6, 10, 7, XamlProvider.DirectComposition, false, "ResourceCreation", 0,
+        [
+            new("channelHandle", 1U), new("resourceHandle", kernelResource),
+            new("resourcePointer", resourceId)
+        ], EventId: 1, Version: 0),
+        new(6001, 6.001, 10, 7, XamlProvider.DirectComposition, false, "ResourceCreation", 0,
+        [
+            new("channelHandle", 1U), new("resourceHandle", kernelResource),
+            new("resourcePointer", resourceId + 1)
+        ], EventId: 1, Version: 0),
+        new(7000, 7, 10, 70, XamlProvider.DirectComposition, false, "ResourceRelease", 0,
+        [
+            new("channelHandle", 2U), new("resourceHandle", kernelResource),
+            new("resourcePointer", resourceId + 1)
+        ], EventId: 30, Version: 0)
     ];
     using (var writer = SessionWriter.Create(graphicsPath, new(10, "GraphicsTests", null, 1_000_000, 0, SessionCoverage.Trace)))
     {
@@ -1344,6 +1412,13 @@ try
                 Expect(fields.AsObject().Count == 0,
                     "Fieldless device-creation phases must expose an empty JSON object.");
             }
+            if (i >= 8)
+            {
+                Expect(fields["resourcePointer"]!.GetValue<ulong>() == (i == 8 ? resourceId : resourceId + 1) &&
+                    fields["resourceHandle"]!.GetValue<uint>() == kernelResource &&
+                    fields["channelHandle"]!.GetValue<uint>() == (i == 10 ? 2U : 1U),
+                    "Both composition creation observations and the release must preserve their original pointer, handle and channel domains.");
+            }
         }
     }
     Expect(Sql.Scalar(connection,
@@ -1358,6 +1433,8 @@ try
         var columns = output.ToString().Split(Environment.NewLine)[0].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         Expect(columns.Count(column => column == "Direct3D11") == 1 && columns.Count(column => column == "DxgKrnl") == 1,
             "CLI summaries must label Direct3D11 separately rather than duplicate the DxgKrnl column.");
+        Expect(columns.Count(column => column == "DComp") == 1,
+            "CLI summaries must label native composition separately from kernel graphics events.");
         output.GetStringBuilder().Clear();
         Expect(CliApplication.Run(["dump", graphicsPath, "--max", "1"], output, error, CancellationToken.None) == 0 &&
             output.ToString().Contains("Direct3D11", StringComparison.Ordinal) &&

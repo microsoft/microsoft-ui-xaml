@@ -54,9 +54,11 @@ public sealed partial class SnapshotResourceView : UserControl
     }
 
     public SnapshotTextureView Textures => TextureSnapshot;
+    public SnapshotCompositionView Composition => CompositionLifetimes;
 
     public void Show(SnapshotResourceCapture? before, SnapshotResourceCapture? after, bool comparison)
     {
+        CompositionLifetimeGroup.Visibility = comparison ? Visibility.Collapsed : Visibility.Visible;
         Status.Visibility = Visibility.Visible;
         Status.Text = comparison ? Format("SnapshotResourceStatusFormat", CaptureStatus(before), CaptureStatus(after))
             : CaptureStatus(after);

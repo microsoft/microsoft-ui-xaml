@@ -76,6 +76,11 @@
                                           HorizontalContentAlignment="Stretch" />
                         <ItemsControl x:Name="UnknownValues" ItemTemplate="{StaticResource ResourceRowTemplate}" />
                     </StackPanel>
+                    <Expander x:Name="CompositionLifetimeGroup" x:Uid="SnapshotCompositionLifetimeHeading"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                              AutomationProperties.AutomationId="CompositionLifetimesGroup" Visibility="Collapsed">
+                        <views:SnapshotCompositionView x:Name="CompositionLifetimes" MaxHeight="480" />
+                    </Expander>
                     <Expander x:Uid="SnapshotTextureHeading" HorizontalAlignment="Stretch"
                               HorizontalContentAlignment="Stretch" AutomationProperties.AutomationId="TexturesGroup">
                         <views:SnapshotTextureView x:Name="TextureSnapshot" MaxHeight="480" />

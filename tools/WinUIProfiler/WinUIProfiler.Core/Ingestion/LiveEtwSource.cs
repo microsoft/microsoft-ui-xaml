@@ -21,6 +21,8 @@ public sealed class LiveEtwSource : IDisposable
     private const ulong GpuResourceKeyword = 0x40;
     // Microsoft-Windows-Direct3D11 Devices (0x2) and Resources (0x4).
     private const ulong Direct3D11Keywords = 0x6;
+    // Microsoft-Windows-DirectComposition resource creation and release.
+    private const ulong DirectCompositionKeyword = 0x1;
     // Microsoft-Windows-Win32k Focus keyword, which only its focus change event has.
     private const ulong FocusKeyword = 0x2000;
     internal const string SessionPrefix = "WinUIProfiler-";
@@ -34,15 +36,17 @@ public sealed class LiveEtwSource : IDisposable
     private readonly bool gpuMemoryEnabled;
     private int eventsLost;
     private bool direct3DEnabled;
+    private bool directCompositionEnabled;
     private bool reading;
     private bool disposed;
 
     private LiveEtwSource(TraceEventSession session, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled,
-        bool gpuMemoryEnabled)
+        bool directCompositionEnabled, bool gpuMemoryEnabled)
     {
         this.session = session;
         this.markers = markers;
         this.direct3DEnabled = direct3DEnabled;
+        this.directCompositionEnabled = directCompositionEnabled;
         this.gpuMemoryEnabled = gpuMemoryEnabled;
         reader = new(Read) { IsBackground = true, Name = "WinUIProfiler ETW reader" };
     }
@@ -135,7 +139,8 @@ public sealed class LiveEtwSource : IDisposable
 
             // Other processes with the same executable name, and the launchers, stop writing to the session.
             var options = new TraceEventProviderOptions { ProcessIDFilter = [.. selected.Keys] };
-            direct3DEnabled = EnableProviders(session, options, options, markers, direct3DEnabled);
+            (direct3DEnabled, directCompositionEnabled) =
+                EnableProviders(session, options, options, markers, direct3DEnabled, directCompositionEnabled);
             XamlEventSubscription.SubscribeProcesses(session.Source, selected, markers, sink, launcherProcessId);
             CaptureGraphicsState(options);
             reader.Start();
@@ -171,10 +176,10 @@ public sealed class LiveEtwSource : IDisposable
         {
             // Open the consumer side before enabling, so events written before reading starts are kept.
             _ = session.Source;
-            var direct3DEnabled = EnableProviders(session, options, launcherOptions, enabled);
+            var graphics = EnableProviders(session, options, launcherOptions, enabled);
             var gpuMemoryEnabled = EnableGpuMemory(session);
             EnableFocus(session);
-            return new(session, enabled, direct3DEnabled, gpuMemoryEnabled);
+            return new(session, enabled, graphics.Direct3D, graphics.DirectComposition, gpuMemoryEnabled);
         }
         catch
         {
@@ -198,8 +203,9 @@ public sealed class LiveEtwSource : IDisposable
     // so it is enabled for every process, and XamlEventSubscription keeps the target's events, and for a launcher
     // provider the launcher's. ETW enables a provider that has not registered yet when it does, so an app's provider
     // needs no special order.
-    private static bool EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
-        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled = false)
+    private static (bool Direct3D, bool DirectComposition) EnableProviders(TraceEventSession session, TraceEventProviderOptions options,
+        TraceEventProviderOptions launcherOptions, IReadOnlyList<MarkerProviderSettings> markers, bool direct3DEnabled = false,
+        bool directCompositionEnabled = false)
     {
         foreach (var provider in XamlProviders.XamlIds)
         {
@@ -208,13 +214,36 @@ public sealed class LiveEtwSource : IDisposable
 
         var enabled = EnableDirect3D(
             () => session.EnableProvider(XamlProviders.Direct3D11, TraceEventLevel.Verbose, Direct3D11Keywords, options), direct3DEnabled);
+        var compositionEnabled = EnableDirectComposition(
+            filtered => session.EnableProvider(XamlProviders.DirectComposition, TraceEventLevel.Verbose,
+                DirectCompositionKeyword, filtered), options, directCompositionEnabled);
 
         foreach (var marker in markers)
         {
             session.EnableProvider(marker.Provider.Id, (TraceEventLevel)marker.Level, marker.Keywords,
                 marker.Provider.Id == Win32kTraceLogging ? null : marker.Launcher ? launcherOptions : options);
         }
-        return enabled;
+        return (enabled, compositionEnabled);
+    }
+
+    internal static bool EnableDirectComposition(Action<TraceEventProviderOptions> enable, TraceEventProviderOptions options,
+        bool previouslyEnabled = false)
+    {
+        try
+        {
+            enable(new()
+            {
+                ProcessIDFilter = options.ProcessIDFilter,
+                ProcessNameFilter = options.ProcessNameFilter,
+                EventIDsToEnable = [1, 30]
+            });
+            return true;
+        }
+        catch (Exception error) when (error is not OutOfMemoryException && !previouslyEnabled)
+        {
+            Trace.TraceWarning($"Could not enable DirectComposition resource events: {error.Message}");
+            return false;
+        }
     }
 
     internal static bool EnableDirect3D(Action enable, bool previouslyEnabled = false)

@@ -16,6 +16,157 @@ using WinUIProfiler.Engine.Storage;
 [SupportedOSPlatform("windows")]
 internal static class GraphicsCaptureIntegration
 {
+    internal static void RunComposition()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-CompositionCapture-{Guid.NewGuid():N}.etl");
+        var storedPath = Path.ChangeExtension(path, "sqlite");
+        var live = new ConcurrentQueue<ProfilerEvent>();
+        try
+        {
+            var capture = LiveEtwSource.Start(Environment.ProcessId, [], data =>
+            {
+                if (data.Provider == XamlProvider.DirectComposition) live.Enqueue(data);
+            });
+            using (capture)
+            {
+                ExerciseDirectComposition();
+                var timeout = Stopwatch.StartNew();
+                while (timeout.Elapsed < TimeSpan.FromSeconds(10) && live.Count(data => data.EventId == 30) < 3)
+                    Thread.Sleep(100);
+            }
+            Expect(capture.Failure is null && capture.EventsLost == 0, "Live composition capture must finish without loss or reader failure.");
+            VerifyCompositionEvents(live.ToArray(), "live");
+
+            int otherProcess;
+            using (var session = new TraceEventSession($"WinUIProfiler-CompositionFilter-{Environment.ProcessId}-{Guid.NewGuid():N}", path))
+            {
+                Expect(LiveEtwSource.EnableDirectComposition(filtered =>
+                    session.EnableProvider(XamlProviders.DirectComposition, TraceEventLevel.Verbose, 0x1, filtered),
+                    new() { ProcessIDFilter = [Environment.ProcessId] }),
+                    "The installed composition provider must enable with resource-event and PID filters.");
+                ExerciseDirectComposition();
+                var start = new ProcessStartInfo(Environment.ProcessPath!)
+                {
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+                if (string.Equals(Path.GetFileNameWithoutExtension(Environment.ProcessPath), "dotnet", StringComparison.OrdinalIgnoreCase))
+                    start.ArgumentList.Add(typeof(GraphicsCaptureIntegration).Assembly.Location);
+                start.ArgumentList.Add("--composition-probe");
+                using var probe = Process.Start(start) ?? throw new InvalidOperationException("Could not start the composition filter probe.");
+                otherProcess = probe.Id;
+                if (!probe.WaitForExit(TimeSpan.FromSeconds(30)))
+                {
+                    probe.Kill(entireProcessTree: true);
+                    probe.WaitForExit();
+                    throw new TimeoutException("The composition filter probe did not exit.");
+                }
+                Expect(probe.ExitCode == 0,
+                    $"The composition filter probe failed: {probe.StandardOutput.ReadToEnd()} {probe.StandardError.ReadToEnd()}");
+                session.Stop();
+            }
+
+            var recorded = new List<ProfilerEvent>();
+            var read = OfflineEtlSource.Read(path, Environment.ProcessId, [], recorded.Add);
+            Expect(read.EventsLost == 0, "Recorded composition capture must have no ETW loss.");
+            VerifyCompositionEvents(recorded, "recorded");
+            var otherEvents = 0;
+            var unrelatedIds = 0;
+            using (var source = new ETWTraceEventSource(path))
+            {
+                source.AllEvents += data =>
+                {
+                    if (data.ProviderGuid != XamlProviders.DirectComposition) return;
+                    if (data.ProcessID == otherProcess) otherEvents++;
+                    if ((int)data.ID is not (1 or 30)) unrelatedIds++;
+                };
+                source.Process();
+            }
+            Expect(otherEvents == 0 && unrelatedIds == 0, "Composition capture must exclude other processes and unrelated event IDs.");
+            Expect(OfflineEtlSource.ListProcesses(path).Processes.Count == 0,
+                "Composition-only processes must not be advertised as XAML applications.");
+
+            using (var writer = SessionWriter.Create(storedPath,
+                new(Environment.ProcessId, "CompositionCaptureIntegration", null, Stopwatch.Frequency, null, SessionCoverage.Trace)))
+            {
+                for (var i = 0; i < recorded.Count; i++) writer.Process(i + 1, recorded[i]);
+                writer.Close("Composition integration complete", read.EventsLost, droppedByProfiler: 0);
+                Expect(writer.Failure is null, "Real composition events must be recorded without a writer failure.");
+            }
+            var restored = new List<ProfilerEvent>();
+            SessionFile.Read(storedPath, restored.Add);
+            Expect(restored.Count == recorded.Count && restored.Zip(recorded).All(pair =>
+                pair.First.TimestampQpc == pair.Second.TimestampQpc && pair.First.ThreadId == pair.Second.ThreadId &&
+                pair.First.ProcessId == pair.Second.ProcessId && pair.First.ProviderId == pair.Second.ProviderId &&
+                pair.First.EventId == pair.Second.EventId && pair.First.Version == pair.Second.Version &&
+                pair.First.Fields.SequenceEqual(pair.Second.Fields)),
+                "Native identities, timestamps, threads and all original payloads must round-trip in recording order.");
+            Expect(SessionFile.ReadObjects(storedPath).Count == 0, "Native resource pointers must not be indexed as XAML elements.");
+            var lifetimes = SessionFile.ReadComposition(storedPath);
+            Expect(lifetimes.MatchedReleaseObservations >= 3 &&
+                lifetimes.NativeLifetimes.Count(row => row.Status == "ReleaseObserved") >= 3 &&
+                lifetimes.WinUICreations.Count == 0,
+                "Real native proxy releases must close their identity generations without inventing WinUI ownership.");
+            using var output = new StringWriter();
+            using var error = new StringWriter();
+            Expect(CliApplication.Run(["dump", storedPath, "--max", "100"], output, error, CancellationToken.None) == 0 &&
+                output.ToString().Contains("DComp", StringComparison.Ordinal) &&
+                !output.ToString().Contains("DxgKrnl", StringComparison.Ordinal),
+                $"Composition events must have their own CLI provider label: {error}");
+            Console.WriteLine($"Passed: real live/recorded composition creates/releases, native payload round-trip, PID/event filtering " +
+                $"and XAML-only discovery (live: {live.Count}; recorded: {recorded.Count}).");
+        }
+        finally
+        {
+            foreach (var file in new[] { path, storedPath, storedPath + "-wal", storedPath + "-shm" }) File.Delete(file);
+        }
+    }
+
+    private static void VerifyCompositionEvents(IReadOnlyList<ProfilerEvent> events, string source)
+    {
+        Expect(events.All(data => data.ProviderId == XamlProviders.DirectComposition && data.EventId is 1 or 30 &&
+            data.ProcessId == Environment.ProcessId), $"{source} capture must preserve the native event identity and owner process.");
+        var creations = events.Where(data => data.EventId == 1).Select(ResourceKey).ToHashSet();
+        var released = events.Where(data => data.EventId == 30).Select(ResourceKey).Count(creations.Contains);
+        Expect(creations.Count >= 3 && released >= 3,
+            $"{source} capture must decode at least three real proxy creation/release pairs (creates: {creations.Count}; releases: {released}).");
+    }
+
+    private static (ulong Pointer, ulong Handle) ResourceKey(ProfilerEvent data) =>
+        (UnsignedField(data, "resourcePointer"), UnsignedField(data, "resourceHandle"));
+
+    private static ulong UnsignedField(ProfilerEvent data, string name) =>
+        Convert.ToUInt64(data.Fields.Single(field => string.Equals(field.Name, name, StringComparison.OrdinalIgnoreCase)).Value);
+
+    internal static void ExerciseDirectComposition()
+    {
+        var initialized = CoInitializeEx(0, 0);
+        if (initialized < 0 && initialized != unchecked((int)0x80010106)) Marshal.ThrowExceptionForHR(initialized);
+        nint device = 0;
+        List<nint> visuals = [];
+        try
+        {
+            var iid = new Guid("c37ea93a-e7aa-450d-b16f-9746cb0407f3");
+            Marshal.ThrowExceptionForHR(DCompositionCreateDevice(0, in iid, out device));
+            // IDCompositionDevice::CreateVisual is slot 7, after IUnknown and the four preceding device methods.
+            var create = Marshal.GetDelegateForFunctionPointer<CreateCompositionVisual>(
+                Marshal.ReadIntPtr(Marshal.ReadIntPtr(device), 7 * nint.Size));
+            for (var i = 0; i < 3; i++)
+            {
+                Marshal.ThrowExceptionForHR(create(device, out var visual));
+                visuals.Add(visual);
+            }
+        }
+        finally
+        {
+            foreach (var visual in visuals) Marshal.Release(visual);
+            if (device != 0) Marshal.Release(device);
+            if (initialized >= 0) CoUninitialize();
+        }
+    }
+
     internal static void Run()
     {
         var path = Path.Combine(Path.GetTempPath(), $"WinUIProfiler-GraphicsCapture-{Guid.NewGuid():N}.sqlite");
@@ -44,7 +195,8 @@ internal static class GraphicsCaptureIntegration
                 {
                     try { session.Source.Process(); }
                     catch (Exception error) { readerFailure = error; }
-                }) { IsBackground = true, Name = "Graphics integration ETW reader" };
+                })
+                { IsBackground = true, Name = "Graphics integration ETW reader" };
                 reader.Start();
                 try
                 {
@@ -138,7 +290,10 @@ internal static class GraphicsCaptureIntegration
                 filteredFrom = Stopwatch.GetTimestamp();
                 var start = new ProcessStartInfo(Environment.ProcessPath!)
                 {
-                    UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
                 };
                 if (string.Equals(Path.GetFileNameWithoutExtension(Environment.ProcessPath), "dotnet", StringComparison.OrdinalIgnoreCase))
                     start.ArgumentList.Add(typeof(GraphicsCaptureIntegration).Assembly.Location);
@@ -248,6 +403,21 @@ internal static class GraphicsCaptureIntegration
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     private delegate int CreateResource(nint device, nint description, nint initialData, out nint resource);
+
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    private delegate int CreateCompositionVisual(nint device, out nint visual);
+
+    [DllImport("dcomp.dll", ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int DCompositionCreateDevice(nint dxgiDevice, in Guid iid, out nint device);
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern int CoInitializeEx(nint reserved, uint flags);
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static extern void CoUninitialize();
 
     [DllImport("d3d11.dll", ExactSpelling = true)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

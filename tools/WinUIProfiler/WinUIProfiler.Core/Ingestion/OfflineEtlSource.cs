@@ -251,6 +251,7 @@ public static class OfflineEtlSource
                 case XamlProvider.Win32k:
                     return;
                 case XamlProvider.Direct3D11:
+                case XamlProvider.DirectComposition:
                     // Track time without making graphics-only processes eligible for the XAML process list.
                     break;
                 default:
