@@ -425,6 +425,7 @@ void TableView::EndPendingTabEditMove()
     ++m_tabEditMoveGeneration;
     if (std::exchange(m_tabEditMovePending, false) && !IsEditing())
     {
+        ReleaseCellRegenerationsAfterEdit();
         if (auto const source = m_activeSource.get())
         {
             // Posted, and re-checks the hold when it runs.

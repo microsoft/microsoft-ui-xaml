@@ -356,6 +356,13 @@ public:
 
     // TableViewTemplateColumn calls this when CellTemplate changes so realized rows regenerate cells.
     void OnColumnCellTemplateChanged(const winrt::TableViewColumn& column, bool resetAutoWidth = true);
+    // Posts (or, outside a live tree, runs) the regeneration without ending the edited column's edit.
+    void ScheduleColumnCellRegeneration(const winrt::TableViewColumn& column, bool resetAutoWidth, bool postOffTree = false);
+    void ScheduleReattachedColumnCellRegeneration(const winrt::TableViewColumn& column);
+    void ScheduleReattachedColumnCellRegenerations();
+    void RegenerateColumnCells(const winrt::TableViewColumn& column, bool resetAutoWidth);
+    void RegenerateColumnCellsFromPost(const winrt::TableViewColumn& column);
+    void EndEditOfChangedColumn(const winrt::TableViewColumn& column);
 
     // TableViewColumn calls this when Header / HeaderTemplate / HeaderTemplateSelector changes so
     // headers re-render and Auto columns recompute their content width.
@@ -561,6 +568,9 @@ public:
     void QueueReshapeAfterEditCloses(TableViewTip::Operation operation, std::function<void()> apply);
     void ClearCoalescedEditReshape();
     void DrainCoalescedEditReshape();
+    // Re-requests the cell regenerations an open edit held back.
+    void ReleaseCellRegenerationsAfterEdit();
+    void HoldCellRegenerationUntilEditCloses(const winrt::TableViewColumn& column);
     void QueueDeferredEditReshapeDrain();
     void FlushDeferredEditReshapes();
     // In a catch: reports the deferred reshape that threw as a recovered app fault.
@@ -863,9 +873,12 @@ private:
     bool m_editSourceWritten{ false };
 
     // True while a forced teardown arrived during the Beginning window, where EndCurrentEdit cannot
-    // close the edit. BeginEdit re-checks it and unwinds instead of promoting to Editing over a row
-    // that has already been recycled onto a different item.
+    // close the edit, or the edited column's content changed after its editor began generating.
+    // BeginEdit re-checks it and unwinds instead of promoting to Editing.
     bool m_abandonPendingBeginEdit{ false };
+
+    // True once BeginningEdit has returned and the editor is being generated from the column.
+    bool m_pendingBeginEditGeneratingEditor{ false };
 
     // True only while a queued reshape is replaying, so the drain is not re-entered by it.
     bool m_isApplyingCoalescedEditReshape{ false };
@@ -889,6 +902,8 @@ private:
     // replay order matches arrival order.
     std::deque<DeferredEditReshape> m_pendingEditReshapes;
     std::deque<DeferredEditReshape> m_reshapesAfterEditCloses;
+    // Columns whose posted cell regeneration found an edit open; regenerated once it closes.
+    std::vector<winrt::weak_ref<winrt::TableViewColumn>> m_cellRegenerationsAfterEdit;
     bool m_editReshapeDrainQueued{ false };
     TableViewTip::Operation m_failedEditReshapeOperation{ TableViewTip::Operation::Sort };
 
@@ -913,6 +928,13 @@ private:
     tracker_ref<winrt::IInspectable> m_currentEditItem{ this };
     tracker_ref<winrt::TableViewColumn> m_currentEditColumn{ this };
     tracker_ref<winrt::TableViewRow> m_currentEditRow{ this };
+    // The property the open editor writes, fixed when it is generated: a Binding set while the edit
+    // closes must not redirect that edit's validation or rollback.
+    winrt::hstring m_currentEditPropertyPath;
+    winrt::hstring EditingPropertyPathOf(winrt::TableViewColumn const& column);
+    // Nonzero while an edit close transfers, validates or rolls back its value. A content change of the
+    // edited column made by app code it runs does not start another close.
+    uint32_t m_editValueTransferDepth{ 0 };
 
     // Whatever the column's PrepareCellForEdit handed back, returned to it on cancel.
     tracker_ref<winrt::IInspectable> m_editUneditedValue{ this };
@@ -1565,9 +1587,9 @@ private:
     // Collapses the gripper of every pinned column; it stays in the tree for keyboard resize lookup.
     void RefreshResizeGripperAvailability();
     void FreezeColumnsBeforeResize(const winrt::TableViewColumn& column, ColumnResizeDragState& state);
-    // Hash of the hold inputs a user resize does not change: the viewport width, CanUserResizeColumns, the
-    // Columns identities, and each column's authored Width, MinWidth (and whether it is local), MaxWidth,
-    // Visibility and CanResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
+    // Hash of the hold inputs a user resize does not change: the viewport width, the Columns identities,
+    // and each column's authored Width, MinWidth (and whether it is local), MaxWidth, Visibility and
+    // CanUserResize. Auto measurements and the RasterizationScale are not hashed; ResolveColumnWidths
     // checks Auto growth separately.
     size_t LockedColumnHoldsSignature();
     void ClearLockedColumnHolds(bool invalidate);
@@ -1764,6 +1786,11 @@ public:
     bool CanUserMoveColumnInternal(const winrt::TableViewColumn& column);
     void CancelColumnReorderDrag();
     void QueueCancelColumnReorderDrag();
+    // For TableViewTestHooks: a press on the column's header and its manipulation, without a pointer.
+    bool BeginColumnReorderDragForTesting(const winrt::TableViewColumn& column);
+    bool UpdateColumnReorderDragForTesting(double translationX) { return UpdateColumnReorderDrag(translationX); }
+    bool CompleteColumnReorderDragForTesting(double translationX);
+    bool IsColumnReorderDraggingForTesting() const noexcept { return m_columnReorder && m_columnReorder->dragging; }
 
 private:
     // The visible owned columns other than the moving one; own is its slot among them, [min, max] the allowed slots.

@@ -2664,6 +2664,488 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies a cell-content change while an edit is open keeps the edit open and regenerates the cells once it closes.")]
+        public void VerifyCellContentChangeWaitsForOpenEdit()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+                ((TableViewTextColumn)tableView.Columns[1]).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "A cell-content change must not close the open edit.");
+                Verify.AreEqual(0, actions.Count, "A cell-content change must not raise CellEditEnding.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 1), "The regeneration must wait for the edit to close.");
+                Verify.IsTrue(tableView.CommitEdit(), "The held edit must commit.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Zed", items[0].Name, "The commit must write the pending value.");
+                Verify.AreEqual("Zed", GetCellText(tableView, 0, 1), "Once the edit closes, the changed column must regenerate.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a cell-content change held by an open edit applies once a forced close ends the edit.")]
+        public void VerifyCellContentChangeAppliesAfterForcedClose()
+        {
+            var items = new ObservableCollection<EditablePerson>(MakeEditableItems());
+            var tableView = LoadEditableTable(items);
+            var edited = items[0];
+            var actions = OpenEditHoldingValidValue(tableView, edited, "Zed");
+
+            RunOnUIThread.Execute(() =>
+                ((TableViewTextColumn)tableView.Columns[1]).Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the change is held by the open edit.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 1), "Precondition: the regeneration waits for the edit to close.");
+                items.Remove(edited);
+            });
+            IdleSynchronizer.Wait();
+
+            VerifyForcedClose(tableView, actions, TableViewEditAction.Cancel, edited, "Asha", "a removed item must not receive the pending value");
+            RunOnUIThread.Execute(() =>
+                Verify.AreEqual("Diego", GetCellText(tableView, 0, 1), "Once the forced close ends the edit, the held change must apply."));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing the Binding of the column being edited ends the edit, as a rebuild of its row does, and regenerates its cells.")]
+        public void VerifyBindingChangeOfEditedColumnEndsEdit()
+        {
+            VerifyContentChangeOfEditedColumnEndsEdit(
+                column => column.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay },
+                "Designer");
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies changing the CellEditingTemplate of the column being edited ends the edit, as a rebuild of its row does.")]
+        public void VerifyCellEditingTemplateChangeOfEditedColumnEndsEdit()
+        {
+            VerifyContentChangeOfEditedColumnEndsEdit(column => column.CellEditingTemplate = MakeCustomEditorTemplate(), null);
+        }
+
+        // The open editor was generated from the edited column's previous content, so it cannot wait.
+        private void VerifyContentChangeOfEditedColumnEndsEdit(Action<TableViewTextColumn> change, string expectedCellText)
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                change((TableViewTextColumn)tableView.Columns[0]);
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit at once.");
+                Verify.AreEqual("Zed", items[0].Name, "The close must commit the pending value through the open editor.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Commit, actions[0], "A valid pending value must be committed.");
+                Verify.AreEqual("Zed", items[0].Name, "The committed value must stay on the item.");
+                Verify.AreEqual("Designer", items[0].Role, "The close must not write the column's new property.");
+                Verify.AreEqual(expectedCellText ?? "Zed", GetCellText(tableView, 0, 0), "The edited column must show its regenerated content.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an edit opened right after a Binding change, before its posted regeneration runs, stays open with the new editor.")]
+        public void VerifyBindingChangeThenBeginEditKeepsEdit()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = new List<TableViewEditAction>();
+            bool veto = true;
+
+            RunOnUIThread.Execute(() =>
+            {
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    actions.Add(e.EditAction);
+                    e.Cancel = veto;
+                };
+                ((TableViewTextColumn)tableView.Columns[0]).Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Lead");
+                veto = false;
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the vetoed commit keeps the edit open.");
+                actions.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The posted regeneration must not close an edit opened after the change.");
+                Verify.AreEqual(0, actions.Count, "No CellEditEnding may be raised.");
+                Verify.AreEqual("Diego", GetCellText(tableView, 1, 0), "The regeneration must wait for the edit to close.");
+                Verify.IsTrue(tableView.CommitEdit(), "The edit must commit.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Lead", items[0].Role, "The editor must write through the new Binding.");
+                Verify.AreEqual("Asha", items[0].Name, "The previous Binding's property must be untouched.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Once the edit closes, the column must regenerate.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an edit opened after a held change is released, but before the release runs, ends on a newer change and every row shows the newest content.")]
+        public void VerifyNewerChangeOfColumnEditedBeforeHeldReleaseApplies()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = new List<TableViewEditAction>();
+            bool veto = true;
+            TableViewTextColumn role = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                role = (TableViewTextColumn)tableView.Columns[1];
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    actions.Add(e.EditAction);
+                    e.Cancel = veto;
+                };
+                CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Zed");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the Name edit stays open.");
+                role.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 1), "Precondition: the change waits for the Name edit.");
+                veto = false;
+                Verify.IsTrue(tableView.CommitEdit(), "Precondition: the Name edit commits, releasing the held change.");
+
+                // Opened from the held Binding before the release runs, then changed again.
+                veto = true;
+                CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 1), "Ops");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the Role column edit stays open.");
+                veto = false;
+                actions.Clear();
+
+                role.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end its edit at once.");
+                Verify.AreEqual("Ops", items[1].Name, "The close must commit through the Binding the editor was created from.");
+                Verify.AreEqual("Engineer", items[1].Role, "The close must not write the new Binding's property.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Commit, actions[0], "A valid pending value must be committed.");
+                Verify.AreEqual("Zed", items[0].Name, "The first edit's commit must stay on the item.");
+                Verify.AreEqual("[Designer]", GetCellText(tableView, 0, 1), "The newer change must apply, not the released older one.");
+                Verify.AreEqual("[Engineer]", GetCellText(tableView, 1, 1), "The newer change must apply to the edited row too.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change of the edited column made after its editor is generated abandons the opening edit and writes nothing.")]
+        public void VerifyBindingChangeWhileEditorOpensAbandonsEdit()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            int beginnings = 0, endings = 0;
+            bool armed = false, changed = false;
+            TableViewTextColumn name = null;
+            Action change = () =>
+            {
+                if (armed && !changed)
+                {
+                    changed = true;
+                    name.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                }
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = (TableViewTextColumn)tableView.Columns[0];
+                // The editor's binding copies the converter, so it runs while the editor is generated.
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new CallbackConverter(change) };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "Precondition: the column shows Name.");
+                tableView.BeginningEdit += (s, e) => { beginnings++; armed = true; };
+                tableView.CellEditEnding += (s, e) => endings++;
+                tableView.GettingFocus += (s, e) => { if (e.NewFocusedElement is TextBox) { change(); } };
+
+                var error = CaptureSetValue(GetValueProvider(tableView, items[0], columnIndex: 0), "Zed");
+                Verify.IsTrue(changed, "Precondition: the Binding changed after BeginningEdit, while the editor was opening.");
+                Verify.IsNotNull(error, "The abandoned edit must not accept the value.");
+                Verify.IsFalse(tableView.IsEditing, "The opening edit must be abandoned.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "The edit must stay abandoned.");
+                Verify.AreEqual(1, beginnings, "BeginningEdit is raised once for the abandoned open.");
+                Verify.AreEqual(0, endings, "An edit that never opened raises no CellEditEnding.");
+                Verify.AreEqual(0, FindVisualChildrenByType<TextBox>(GetRowForItem(tableView, items[0])).Count(), "The display cell must return.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cell must show the new Binding's value.");
+                Verify.AreEqual("Asha", items[0].Name, "The old Binding's property must not be written.");
+                Verify.AreEqual("Designer", items[0].Role, "The new Binding's property must not be written.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding set by a source PropertyChanged handler during the close a Binding change forces is kept over the older outer request.")]
+        public void VerifyBindingSetDuringForcedCloseWins()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            Binding newer = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = (TableViewTextColumn)tableView.Columns[0];
+                newer = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                items[0].PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(EditablePerson.Name) && name.Binding != newer)
+                    {
+                        name.Binding = newer;
+                    }
+                };
+
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit at once.");
+                Verify.AreEqual("Zed", items[0].Name, "Precondition: the close committed the pending value.");
+                Verify.IsTrue(ReferenceEquals(newer, name.Binding), "The Binding set during the close is newer and must be kept.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Commit, actions[0], "A valid pending value must be committed.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the newest Binding.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the newest Binding.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding set by ConvertBack during the close a Binding change forces does not close the edit again, and the edit is validated against the property it writes.")]
+        public void VerifyBindingSetByConvertBackDuringForcedCloseDoesNotRecurse()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            TableViewTextColumn name = null;
+            Binding newer = null;
+            bool armed = false;
+            int convertBacks = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                name = (TableViewTextColumn)tableView.Columns[0];
+                name.Binding = new Binding
+                {
+                    Path = new PropertyPath("Name"),
+                    Mode = BindingMode.OneWay,
+                    Converter = new CallbackConverter(() => { }, () =>
+                    {
+                        // Without the guard every set starts another close, which calls ConvertBack again.
+                        if (armed && tableView.IsEditing)
+                        {
+                            convertBacks++;
+                            newer = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay };
+                            name.Binding = newer;
+                        }
+                    }),
+                };
+            });
+            IdleSynchronizer.Wait();
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Only the edited Name property is rejected, so validating Role would wrongly commit.
+                items[0].RejectPrefix = "Z";
+                armed = true;
+                name.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+                Verify.IsFalse(tableView.IsEditing, "A change to the edited column must end the edit at once.");
+                Verify.AreEqual(1, convertBacks, "The close must transfer the value once.");
+                Verify.IsTrue(ReferenceEquals(newer, name.Binding), "The Binding set during the close must be kept.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(TableViewEditAction.Cancel, actions[0], "The edit must be validated against the Name property it writes.");
+                Verify.AreEqual("Asha", items[0].Name, "The rejected value must be rolled back.");
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the Binding set during the close.");
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the Binding set during the close.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change made by a CellEditEnding handler during CancelEdit lets the cancel finish, writes nothing, and applies the Binding afterwards.")]
+        public void VerifyBindingSetByCellEditEndingDuringCancelKeepsCancel()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Cancel, changeTemplate: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a CellEditingTemplate change made by a CellEditEnding handler during CancelEdit lets the cancel finish and writes nothing.")]
+        public void VerifyEditingTemplateSetByCellEditEndingDuringCancelKeepsCancel()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Cancel, changeTemplate: true);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a Binding change made by a CellEditEnding handler during CommitEdit lets the commit finish once and applies the Binding afterwards.")]
+        public void VerifyBindingSetByCellEditEndingDuringCommitCommitsOnce()
+        {
+            VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction.Commit, changeTemplate: false);
+        }
+
+        private void VerifyColumnChangeByCellEditEndingKeepsAction(TableViewEditAction action, bool changeTemplate)
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            DataTemplate editor = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var name = (TableViewTextColumn)tableView.Columns[0];
+                editor = MakeCustomEditorTemplate();
+                tableView.CellEditEnding += (s, e) =>
+                {
+                    if (changeTemplate) { name.CellEditingTemplate = editor; }
+                    else { name.Binding = new Binding { Path = new PropertyPath("Role"), Mode = BindingMode.OneWay }; }
+                    Verify.IsTrue(tableView.IsEditing, "The change must not close the edit under the handler.");
+                };
+
+                Verify.IsTrue(action == TableViewEditAction.Commit ? tableView.CommitEdit() : tableView.CancelEdit(), "The edit must close with its own action.");
+                Verify.IsFalse(tableView.IsEditing, "The edit must close.");
+                Verify.AreEqual(action == TableViewEditAction.Commit ? "Zed" : "Asha", items[0].Name, "Only a commit may write the pending value.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(1, actions.Count, "The close must raise CellEditEnding exactly once.");
+                Verify.AreEqual(action, actions[0], "The close must keep its action.");
+                Verify.IsFalse(tableView.IsEditing, "No edit may be left open.");
+                if (changeTemplate)
+                {
+                    Verify.IsTrue(ReferenceEquals(editor, tableView.Columns[0].CellEditingTemplate), "The new template must be kept.");
+                    Verify.AreEqual(0, FindVisualChildrenByType<ToggleSwitch>(GetProjectedRow(tableView, 0)).Count(), "The display cell must return.");
+                    Verify.AreEqual("Asha", GetCellText(tableView, 0, 0), "The display cell must show the item.");
+                }
+                else
+                {
+                    Verify.AreEqual("Designer", GetCellText(tableView, 0, 0), "The cells must show the new Binding.");
+                    Verify.AreEqual("Engineer", GetCellText(tableView, 1, 0), "Every realized row must show the new Binding.");
+                }
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies reassigning a column whose Binding change is held does not end an edit of that column opened after the change.")]
+        public void VerifyColumnReassignKeepsEditOpenedAfterHeldChange()
+        {
+            var items = MakeEditableItems();
+            var tableView = LoadEditableTable(items);
+            var actions = OpenEditHoldingValidValue(tableView, items[0], "Zed");
+            TableViewTextColumn role = null;
+            bool veto = false;
+
+            RunOnUIThread.Execute(() =>
+            {
+                role = (TableViewTextColumn)tableView.Columns[1];
+                tableView.CellEditEnding += (s, e) => e.Cancel = e.Cancel || veto;
+                role.Binding = new Binding { Path = new PropertyPath("Name"), Mode = BindingMode.OneWay, Converter = new GroupKeyBracketConverter() };
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Engineer", GetCellText(tableView, 1, 1), "Precondition: the change waits for the Name edit.");
+                Verify.IsTrue(tableView.CommitEdit(), "Precondition: the Name edit commits.");
+                actions.Clear();
+
+                // Opened from the new Binding; the vetoed commit keeps it open.
+                veto = true;
+                CaptureSetValue(GetValueProvider(tableView, items[1], columnIndex: 1), "Ops");
+                Verify.IsTrue(tableView.IsEditing, "Precondition: the Role column edit stays open.");
+                actions.Clear();
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual("Designer", GetCellText(tableView, 0, 1), "Precondition: the change still waits for the Role column edit.");
+                tableView.Columns[1] = role;
+                Verify.IsTrue(tableView.IsEditing, "Reassigning the column must not end an edit opened after its change.");
+                Verify.AreEqual(0, actions.Count, "Reassigning the column must not raise CellEditEnding.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(tableView.IsEditing, "The edit must stay open after the reassignment settles.");
+                Verify.AreEqual(0, actions.Count, "No CellEditEnding may be raised.");
+                Verify.AreEqual("Diego", items[1].Name, "Nothing may be committed.");
+                veto = false;
+                Verify.IsTrue(tableView.CancelEdit(), "The edit must stay cancelable.");
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(tableView.IsEditing, "The edit must close.");
+                Verify.AreEqual("Diego", items[1].Name, "The cancel must write nothing.");
+                Verify.AreEqual("[Zed]", GetCellText(tableView, 0, 1), "Once the edit closes, the held change must apply.");
+                Verify.AreEqual("[Diego]", GetCellText(tableView, 1, 1), "The held change must apply to the edited row too.");
+            });
+        }
+
+        private sealed class CallbackConverter : IValueConverter
+        {
+            private readonly Action m_onConvert;
+            private readonly Action m_onConvertBack;
+
+            public CallbackConverter(Action onConvert, Action onConvertBack = null)
+            {
+                m_onConvert = onConvert;
+                m_onConvertBack = onConvertBack;
+            }
+
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                m_onConvert();
+                return value;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                m_onConvertBack?.Invoke();
+                return value;
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies filtering the edited item out of the projection force-closes the edit as a Cancel and writes nothing to it.")]
         public void VerifyForcedCloseCancelsWhenEditedItemIsFilteredOut()
         {
@@ -3431,6 +3913,73 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsFalse(table.IsEditing, "No editor may open in the locked column.");
                 Verify.IsFalse(ReferenceEquals(focused, GetRowCell(row, 1)), "Focus must not move to the locked Role cell.");
                 Verify.IsTrue(ReferenceEquals(focused, GetRowCell(row, 0)), "Focus must return to the Name cell that was edited.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies an editor opened by F2 right after a CellEditingTemplate change, before its posted regeneration runs, stays open.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyCellEditingTemplateChangeThenF2KeepsEdit()
+        {
+            if (!CanInjectKeys())
+            {
+                return;
+            }
+
+            var (table, items, _) = CreateTableAfterButton(3);
+            int endings = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                table.CellEditEnding += (s, e) => endings++;
+                // An ancestor sees the key first, so the change and the editor open in one turn.
+                ((UIElement)table.Parent).PreviewKeyDown += (s, e) =>
+                {
+                    if (e.Key == global::Windows.System.VirtualKey.F2 && table.Columns[0].CellEditingTemplate == null)
+                    {
+                        table.Columns[0].CellEditingTemplate = MakeCustomEditorTemplate();
+                    }
+                };
+            });
+            OpenEditor(table, items[0], 0);
+            VerifyCustomEditorStaysOpen(table, items, () => endings);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a BeginningEdit handler can give the column being edited a CellEditingTemplate and the edit opens with it.")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public void VerifyBeginningEditCanSetEditedColumnTemplate()
+        {
+            if (!CanInjectKeys())
+            {
+                return;
+            }
+
+            var (table, items, _) = CreateTableAfterButton(3);
+            int endings = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                table.CellEditEnding += (s, e) => endings++;
+                table.BeginningEdit += (s, e) => e.Column.CellEditingTemplate = MakeCustomEditorTemplate();
+            });
+            OpenEditor(table, items[0], 0);
+            VerifyCustomEditorStaysOpen(table, items, () => endings);
+        }
+
+        private static void VerifyCustomEditorStaysOpen(TableView table, List<EditablePerson> items, Func<int> endings)
+        {
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsTrue(table.IsEditing, "The posted regeneration must not close an edit opened from the new template.");
+                Verify.AreEqual(0, endings(), "No CellEditEnding may be raised.");
+                Verify.AreEqual(1, FindVisualChildrenByType<ToggleSwitch>(GetRowForItem(table, items[0])).Count(), "The editor must come from the new template.");
+                Verify.IsTrue(table.CancelEdit(), "The edit must cancel.");
+            });
+            IdleSynchronizer.Wait();
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsFalse(table.IsEditing, "The edit must close.");
+                Verify.AreEqual(0, FindVisualChildrenByType<ToggleSwitch>(GetRowForItem(table, items[0])).Count(), "The display cell must return.");
             });
         }
     }

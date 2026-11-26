@@ -92,6 +92,8 @@ private:
     winrt::SortDirection m_sortDirection{ winrt::SortDirection::None };
     bool m_isPointerOver{ false };
     bool m_isPressed{ false };
+    // An unhandled primary press; its release focuses the header.
+    bool m_focusOnRelease{ false };
     bool m_isReorderDragging{ false };
     winrt::weak_ref<winrt::TextBlock> m_ownedText{ nullptr };
     winrt::Thickness m_textPadding{};
