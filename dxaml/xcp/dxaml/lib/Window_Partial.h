@@ -7,6 +7,8 @@
 #include <WindowImpl.h>
 #include <Microsoft.UI.Xaml.Window.h>
 
+class CContentRoot;
+
 namespace DirectUI
 {
     PARTIAL_CLASS(Window),
@@ -96,6 +98,7 @@ namespace DirectUI
         static bool AtlasRequest(uint32_t width, uint32_t height, PixelFormat pixelFormat);
 
         static _Check_return_ HRESULT ShrinkApplicationViewVisibleBounds(_In_ Window* pCurrentWindow, _Inout_ wf::Rect* pApplicationViewVisibleBounds);
+        static _Check_return_ HRESULT ShrinkVisibleBoundsForTesting(_In_ CContentRoot* contentRoot, _Inout_ wf::Rect* visibleBounds);
 
         // --------------------------------------------------
         // internal instance methods

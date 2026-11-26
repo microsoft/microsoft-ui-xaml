@@ -656,7 +656,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a Canvas")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void BringFocusedMenuFlyoutItemIntoViewWithRootCanvas()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: true);
@@ -664,7 +664,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
         [TestMethod]
         [TestProperty("Description", "Bring newly focused MenuFlyoutItem into view when root element is a ScrollViewer")]
-        [TestProperty("Hosting:Mode", "UAP")]
+        [TestProperty("Hosting:Mode", "WPF")]
         public void BringFocusedMenuFlyoutItemIntoViewWithRootScrollViewer()
         {
             BringFocusedMenuFlyoutItemIntoView(useRootCanvas: false);
@@ -678,6 +678,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
                 Button button = null;
                 MenuFlyoutItem menuFlyoutItem1 = null;
+                MenuFlyoutItem menuFlyoutItem7 = null;
                 ScrollViewer scrollViewer = null;
 
                 UIExecutor.Execute(() =>
@@ -704,6 +705,9 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
                     menuFlyoutItem1 = stackPanel.FindName("menuFlyoutItem1") as MenuFlyoutItem;
                     Verify.IsNotNull(menuFlyoutItem1);
+
+                    menuFlyoutItem7 = stackPanel.FindName("menuFlyoutItem7") as MenuFlyoutItem;
+                    Verify.IsNotNull(menuFlyoutItem7);
 
                     if (useRootCanvas)
                     {
@@ -745,6 +749,7 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
                         scrollViewer = menuFlyoutItem1.GetParentOfType<ScrollViewer>();
                         Verify.IsNotNull(scrollViewer);
+                        Verify.IsTrue(scrollViewer.ScrollableHeight > 0);
                     });
 
                     for (uint item = 1; item < 7; item++)
@@ -763,7 +768,9 @@ namespace Microsoft.UI.Xaml.Tests.Focus
 
                     UIExecutor.Execute(() =>
                     {
-                        Verify.AreEqual(511.0, scrollViewer.VerticalOffset);
+                        Verify.AreEqual(FocusState.Keyboard, menuFlyoutItem7.FocusState);
+                        Verify.IsTrue(menuFlyoutItem7.ActualHeight <= scrollViewer.ViewportHeight);
+                        Verify.AreEqual(scrollViewer.ScrollableHeight, scrollViewer.VerticalOffset);
                     });
                 }
                 finally

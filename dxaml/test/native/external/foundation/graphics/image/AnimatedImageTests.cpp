@@ -172,8 +172,6 @@ void AnimatedImageTests::SimpleImageElement()
         auto testImage = ref new xaml_controls::Image();
         testImage->Stretch = xaml_media::Stretch::Fill;
 
-        TestServices::WindowHelper->WindowContent = testImage;
-
         bitmapImage = ref new xaml_imaging::BitmapImage();
         waiter.Attach(bitmapImage);
 
@@ -182,6 +180,8 @@ void AnimatedImageTests::SimpleImageElement()
 
         VERIFY_IS_FALSE(bitmapImage->IsAnimatedBitmap, L"IsAnimatedBitmap is assumed false until image is loaded");
         VERIFY_IS_FALSE(bitmapImage->IsPlaying, L"IsPlaying is assumed false until image is loaded");
+
+        TestServices::WindowHelper->WindowContent = testImage;
     });
 
     waiter.WaitOpened();

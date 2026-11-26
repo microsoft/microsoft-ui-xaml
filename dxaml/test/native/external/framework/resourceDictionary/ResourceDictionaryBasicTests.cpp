@@ -4088,7 +4088,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                 RunOnUIThread([&]()
                 {
                     Platform::String^ xamlString =
-                        L"<Page xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                        L"<Page RequestedTheme='Light' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
                         L"      xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
                         L"    <Page.Resources>"
                         L"      <ResourceDictionary>"
@@ -4148,6 +4148,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                     brush = safe_cast<SolidColorBrush^>(button4_backgroundshouldchange->Background);
                     VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
 
+                    VERIFY_ARE_EQUAL(ElementTheme::Light, page->ActualTheme);
                     page->RequestedTheme = ElementTheme::Dark;
 
                     brush = safe_cast<SolidColorBrush^>(button1->Background);

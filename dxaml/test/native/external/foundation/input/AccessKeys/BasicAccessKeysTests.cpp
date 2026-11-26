@@ -1139,17 +1139,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
-        void BasicAccessKeysTests::WindowMoveEndsAKSequence()
+        void BasicAccessKeysTests::WindowMoveRepositionsKeyTips()
         {
-            TestCleanupWrapper cleanup;
+            TestCleanupWrapper cleanup([]()
+            {
+                TestServices::WindowHelper->MaximizeDesktopWindow();
+                TestServices::WindowHelper->WaitForIdle();
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            TestServices::WindowHelper->SetDesktopWindowSize(600, 500);
+            TestServices::WindowHelper->MoveDesktopWindow(50, 50);
+            TestServices::WindowHelper->WaitForIdle();
 
             xaml_controls::StackPanel^ rootPanel;
             xaml_controls::Button^ button = nullptr;
 
+            auto accessKeyShownEvent = std::make_shared<Event>();
+            auto accessKeyShownRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayRequested);
             std::shared_ptr<Event> accessKeyHiddenEvent = std::make_shared<Event>();
             auto accessKeyHiddenRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayDismissed);
-
-            wf::Rect windowBounds;
 
             RunOnUIThread([&]()
             {
@@ -1160,6 +1169,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TestServices::WindowHelper->WindowContent = rootPanel;
                 button = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+                accessKeyShownRegistration.Attach(button, [accessKeyShownEvent]()
+                {
+                    accessKeyShownEvent->Set();
+                });
                 accessKeyHiddenRegistration.Attach(button, [&]()
                 {
                     LOG_OUTPUT(L"AccessKeyHidden event fired!");
@@ -1169,46 +1182,90 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             AccessKeyTestHelper::TryMovingFocusToXamlForInit();
 
-            RunOnUIThread([&]()
-            {
-                windowBounds = TestServices::WindowHelper->WindowBounds;
-                TestServices::WindowHelper->MoveWindow((int)windowBounds.X+10, (int)windowBounds.Y, (int)windowBounds.Width, (int)windowBounds.Height);
-                LOG_OUTPUT(L"Moving window to (%.2f, %.2f, %.2f, %.2f).",
-                    windowBounds.X + 10,
-                    windowBounds.Y,
-                    windowBounds.Width + windowBounds.X + 10,
-                    windowBounds.Height + windowBounds.Y);
-            });
-            TestServices::WindowHelper->WaitForIdle();
+            const auto hwnd = ::GetAncestor(reinterpret_cast<HWND>(TestServices::WindowHelper->GetUIAWindowHandle()), GA_ROOT);
+            RECT before = {};
+            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &before));
 
             LOG_OUTPUT(L"Entering access key mode");
             TestServices::KeyboardHelper->Alt();
+            accessKeyShownEvent->WaitForDefault();
             TestServices::WindowHelper->WaitForIdle();
+            VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
 
-            RunOnUIThread([&]()
+            auto getKeyTipWindow = [&]()
             {
-                LOG_OUTPUT(L"Moving window to (%.2f, %.2f, %.2f, %.2f).",
-                    windowBounds.X,
-                    windowBounds.Y,
-                    windowBounds.Width + windowBounds.X,
-                    windowBounds.Height + windowBounds.Y);
-               TestServices::WindowHelper->MoveWindow((int)windowBounds.X, (int)windowBounds.Y, (int)windowBounds.Width, (int)windowBounds.Height);
-            });
+                HWND keyTipWindow = nullptr;
+                RunOnUIThread([&]()
+                {
+                    auto popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(button->XamlRoot);
+                    VERIFY_ARE_EQUAL(1u, popups->Size);
+                    auto popup = popups->GetAt(0);
+                    VERIFY_IS_TRUE(popup->IsOpen);
+                    auto border = safe_cast<xaml_controls::Border^>(popup->Child);
+                    auto textBlock = safe_cast<xaml_controls::TextBlock^>(border->Child);
+                    VERIFY_IS_TRUE(textBlock->Text->Equals(L"1"));
+                    keyTipWindow = reinterpret_cast<HWND>(TestServices::WindowHelper->Popup_GetWindow(popup));
+                });
+                VERIFY_IS_NOT_NULL(keyTipWindow);
+                VERIFY_IS_TRUE(::IsWindowVisible(keyTipWindow));
+                return keyTipWindow;
+            };
 
+            const auto keyTipWindow = getKeyTipWindow();
+            RECT keyTipBefore = {};
+            VERIFY_IS_TRUE(::GetWindowRect(keyTipWindow, &keyTipBefore));
+            VERIFY_IS_GREATER_THAN(keyTipBefore.right, keyTipBefore.left);
+            VERIFY_IS_GREATER_THAN(keyTipBefore.bottom, keyTipBefore.top);
+
+            auto verifyMove = [&](int deltaX, int deltaY)
+            {
+                TestServices::WindowHelper->MoveDesktopWindow(before.left + deltaX, before.top + deltaY);
+                TestServices::WindowHelper->WaitForIdle();
+                VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
+                VERIFY_ARE_EQUAL(keyTipWindow, getKeyTipWindow());
+
+                RECT after = {};
+                VERIFY_IS_TRUE(::GetWindowRect(hwnd, &after));
+                VERIFY_ARE_EQUAL(before.left + deltaX, after.left);
+                VERIFY_ARE_EQUAL(before.top + deltaY, after.top);
+                VERIFY_ARE_EQUAL(before.right - before.left, after.right - after.left);
+                VERIFY_ARE_EQUAL(before.bottom - before.top, after.bottom - after.top);
+
+                RECT keyTipAfter = {};
+                VERIFY_IS_TRUE(::GetWindowRect(keyTipWindow, &keyTipAfter));
+                VERIFY_ARE_EQUAL(keyTipBefore.left + deltaX, keyTipAfter.left);
+                VERIFY_ARE_EQUAL(keyTipBefore.top + deltaY, keyTipAfter.top);
+                VERIFY_ARE_EQUAL(keyTipBefore.right + deltaX, keyTipAfter.right);
+                VERIFY_ARE_EQUAL(keyTipBefore.bottom + deltaY, keyTipAfter.bottom);
+            };
+
+            verifyMove(0, 0);
+            verifyMove(10, 20);
+            verifyMove(0, 0);
+
+            TestServices::KeyboardHelper->Escape();
             accessKeyHiddenEvent->WaitForDefault();
         }
 
         void BasicAccessKeysTests::WindowResizeEndsAKSequence()
         {
-            TestCleanupWrapper cleanup;
+            TestCleanupWrapper cleanup([]()
+            {
+                TestServices::WindowHelper->MaximizeDesktopWindow();
+                TestServices::WindowHelper->WaitForIdle();
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            TestServices::WindowHelper->SetDesktopWindowSize(600, 500);
+            TestServices::WindowHelper->WaitForIdle();
 
             xaml_controls::StackPanel^ rootPanel;
             xaml_controls::Button^ button = nullptr;
 
+            auto accessKeyShownEvent = std::make_shared<Event>();
+            auto accessKeyShownRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayRequested);
             std::shared_ptr<Event> accessKeyHiddenEvent = std::make_shared<Event>();
             auto accessKeyHiddenRegistration = CreateSafeEventRegistration(xaml_controls::Button, AccessKeyDisplayDismissed);
-
-            wf::Rect windowBounds;
 
             RunOnUIThread([&]()
             {
@@ -1219,6 +1276,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 TestServices::WindowHelper->WindowContent = rootPanel;
                 button = safe_cast<xaml_controls::Button^>(rootPanel->FindName(L"button1"));
+                accessKeyShownRegistration.Attach(button, [accessKeyShownEvent]()
+                {
+                    accessKeyShownEvent->Set();
+                });
                 accessKeyHiddenRegistration.Attach(button, [&]()
                 {
                     LOG_OUTPUT(L"AccessKeyHidden event fired!");
@@ -1228,29 +1289,23 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             TestServices::WindowHelper->WaitForIdle();
             AccessKeyTestHelper::TryMovingFocusToXamlForInit();
 
-            RunOnUIThread([&]()
-            {
-                windowBounds = TestServices::WindowHelper->WindowBounds;
-                LOG_OUTPUT(L"Window size was (%.2f, %.2f).",
-                    windowBounds.Width,
-                    windowBounds.Height);
-
-            });
-            TestServices::WindowHelper->WaitForIdle();
+            const auto hwnd = ::GetAncestor(reinterpret_cast<HWND>(TestServices::WindowHelper->GetUIAWindowHandle()), GA_ROOT);
+            RECT before = {};
+            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &before));
 
             LOG_OUTPUT(L"Entering access key mode");
             TestServices::KeyboardHelper->Alt();
+            accessKeyShownEvent->WaitForDefault();
             TestServices::WindowHelper->WaitForIdle();
+            VERIFY_IS_FALSE(accessKeyHiddenEvent->HasFired());
 
-            RunOnUIThread([&]()
-            {
-                ::Windows::Foundation::Size newSize(windowBounds.Width / 2, windowBounds.Height / 2);
-
-                LOG_OUTPUT(L"Resizing Window to (%.2f, %.2f).",
-                    windowBounds.Width/2,
-                    windowBounds.Height/2);
-                TestServices::WindowHelper->SetWindowSizeOverride(newSize);
-            });
+            const auto width = (before.right - before.left) / 2;
+            const auto height = (before.bottom - before.top) / 2;
+            TestServices::WindowHelper->SetDesktopWindowSize(width, height);
+            RECT after = {};
+            VERIFY_IS_TRUE(::GetWindowRect(hwnd, &after));
+            VERIFY_ARE_EQUAL(width, after.right - after.left);
+            VERIFY_ARE_EQUAL(height, after.bottom - after.top);
 
             accessKeyHiddenEvent->WaitForDefault();
         }

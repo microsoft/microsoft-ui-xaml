@@ -669,15 +669,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void ListViewIntegrationTests::BringItemIntoShrunkViewWithGamepad()
     {
-        TestCleanupWrapper cleanup([]()
+        xaml::XamlRoot^ testXamlRoot = nullptr;
+        TestCleanupWrapper cleanup([&]()
         {
+            if (testXamlRoot != nullptr)
+            {
+                TestServices::Utilities->ShrinkXamlIslandVisibleBounds(testXamlRoot, false);
+                testXamlRoot = nullptr;
+            }
             TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
-            TestServices::Utilities->ShrinkApplicationViewVisibleBounds(false);
         });
 
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
-
-        TestServices::Utilities->ShrinkApplicationViewVisibleBounds(true);
 
         std::shared_ptr<Event> rootLoadedEvent = std::make_shared<Event>();
 
@@ -713,6 +716,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         RunOnUIThread([&]()
         {
+            testXamlRoot = rootPage->XamlRoot;
+            VERIFY_IS_NOT_NULL(testXamlRoot);
+            TestServices::Utilities->ShrinkXamlIslandVisibleBounds(testXamlRoot, true);
+            auto bounds = TestServices::WindowHelper->VisibleBounds;
+            LOG_OUTPUT(L"Shrunk visible bounds: (%f, %f, %f, %f).", bounds.X, bounds.Y, bounds.Width, bounds.Height);
+            VERIFY_ARE_EQUAL(bounds.X, 100.0f);
+            VERIFY_ARE_EQUAL(bounds.Y, 40.0f);
+            VERIFY_ARE_EQUAL(bounds.Width, testXamlRoot->Size.Width - 100.0f);
+            VERIFY_ARE_EQUAL(bounds.Height, testXamlRoot->Size.Height - 40.0f);
+
             auto controlTemplateRoot = safe_cast<FrameworkElement^>(xaml_media::VisualTreeHelper::GetChild(listView, 0));
             scrollViewer = safe_cast<xaml_controls::ScrollViewer^>(controlTemplateRoot->FindName(L"ScrollViewer"));
 

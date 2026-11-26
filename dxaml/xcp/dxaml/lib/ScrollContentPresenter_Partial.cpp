@@ -1167,6 +1167,7 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
     }
     else
     {
+        const auto localRectangle = rectangle;
         ctl::ComPtr<xaml_media::IGeneralTransform> spChildTransform;
         BOOLEAN isScrollClient = FALSE;
         BOOLEAN handled = FALSE;
@@ -1229,8 +1230,21 @@ _Check_return_ HRESULT ScrollContentPresenter::MakeVisibleImpl(
                         {
                             ASSERT(zoomFactor == targetZoomFactor);
 
-                            rectangle.X += static_cast<FLOAT>(horizontalOffset - targetHorizontalOffset);
-                            rectangle.Y += static_cast<FLOAT>(verticalOffset - targetVerticalOffset);
+                            // Use the same stable manipulation target for both the rectangle and the viewport.
+                            // Sampling a compositor transform and a later DManip current view introduces drift.
+                            xref_ptr<ITransformer> targetTransform;
+                            IFC_RETURN(static_cast<CUIElement*>(spVisualAsDO.Cast<DependencyObject>()->GetHandle())->TransformToAncestor(
+                                static_cast<CUIElement*>(GetHandle()),
+                                targetTransform.ReleaseAndGetAddressOf(),
+                                TransformRetrievalOptions::IncludePropertiesSetInComposition | TransformRetrievalOptions::UseManipulationTargets));
+                            const XRECTF localBounds = { localRectangle.X, localRectangle.Y, localRectangle.Width, localRectangle.Height };
+                            XRECTF targetBounds;
+                            IFC_RETURN(CTransformer::TransformBounds(targetTransform.get(), &localBounds, &targetBounds));
+                            rectangle = {
+                                targetBounds.X - sizeHeaders.width,
+                                targetBounds.Y - sizeHeaders.height,
+                                targetBounds.Width,
+                                targetBounds.Height };
 
                             horizontalOffset = targetHorizontalOffset;
                             verticalOffset = targetVerticalOffset;

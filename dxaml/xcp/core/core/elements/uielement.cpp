@@ -2732,7 +2732,8 @@ CUIElement::GetClickablePointRasterizedClient(_Out_ XPOINTF *pPoint)
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
 CUIElement::GetTransformer(
-    _Outptr_result_maybenull_ ITransformer** ppTransformer
+    _Outptr_result_maybenull_ ITransformer** ppTransformer,
+    TransformRetrievalOptions transformRetrievalOptions
     )
 {
     HRESULT hr = S_OK;
@@ -2743,7 +2744,7 @@ CUIElement::GetTransformer(
     XUINT32 uiTransformerCount = 0;
 
     CMILMatrix matLocal;
-    if (!GetLocalTransform(TransformRetrievalOptions::IncludePropertiesSetInComposition, &matLocal))
+    if (!GetLocalTransform(transformRetrievalOptions, &matLocal))
     {
         pTransformer = new CMatrixTransformer(matLocal);
         ++uiTransformerCount;
@@ -3263,13 +3264,16 @@ CUIElement::TransformToVisual(
 //  aggregate transform.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CUIElement::AggregateElementTransform(_In_ CUIElement* pElement, _In_ CAggregateTransformer* pAggregate)
+_Check_return_ HRESULT CUIElement::AggregateElementTransform(
+    _In_ CUIElement* pElement,
+    _In_ CAggregateTransformer* pAggregate,
+    TransformRetrievalOptions transformRetrievalOptions)
 {
     HRESULT hr = S_OK;
     ITransformer* pTransformer = NULL;
 
     // Get transformer to transform from immediate parent to current
-    IFC(pElement->GetTransformer(&pTransformer));
+    IFC(pElement->GetTransformer(&pTransformer, transformRetrievalOptions));
 
     // Add it to the compound
     IFC(pAggregate->Add(pTransformer));
@@ -3292,14 +3296,16 @@ Cleanup:
 _Check_return_ HRESULT
 CUIElement::TransformToAncestor(
     _In_ const CUIElement *pAncestor,
-    _Outptr_ ITransformer** ppTransformer
+    _Outptr_ ITransformer** ppTransformer,
+    TransformRetrievalOptions transformRetrievalOptions
     )
 {
     RRETURN(GetTransformToAncestorCommon(
         pAncestor,
         TRUE,   // fPublicParentsOnly
         FALSE,  // fStopAtParentWithIntermediate
-        ppTransformer
+        ppTransformer,
+        transformRetrievalOptions
         ));
     // TODO: Merge: This one doesn't allow private parents. Is this intentional?
 }
@@ -3366,7 +3372,8 @@ CUIElement::GetTransformToAncestorCommon(
     _In_opt_ const CUIElement *pAncestor,
     bool fPublicParentsOnly,
     bool fStopAtParentWithIntermediate,
-    _Outptr_ ITransformer** ppTransformer
+    _Outptr_ ITransformer** ppTransformer,
+    TransformRetrievalOptions transformRetrievalOptions
     )
 {
     HRESULT hr = S_OK;
@@ -3387,7 +3394,7 @@ CUIElement::GetTransformToAncestorCommon(
             break;
         }
 
-        IFC(AggregateElementTransform(pElement, pAggregate));
+        IFC(AggregateElementTransform(pElement, pAggregate, transformRetrievalOptions));
 
         pElement = pElement->GetUIElementAdjustedParentInternal(!!fPublicParentsOnly);
 
