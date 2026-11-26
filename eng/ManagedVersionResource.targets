@@ -56,8 +56,10 @@
             source.AppendLine("32512 ICON \"" + escape(IconPath) + "\"");
 
         var text = source.ToString();
+        var stampPath = SourcePath + ".stamp";
         ResourceChanged = !File.Exists(ResourcePath) || !File.Exists(SourcePath) ||
-            File.ReadAllText(SourcePath) != text;
+            !File.Exists(stampPath) || File.ReadAllText(SourcePath) != text ||
+            File.ReadAllText(stampPath) != text;
         foreach (var input in new[] { ManifestPath, IconPath })
         {
             if (!String.IsNullOrEmpty(input))
@@ -70,6 +72,8 @@
         if (ResourceChanged)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(SourcePath));
+            // Failed or interrupted regeneration must not validate an older or partial resource.
+            File.Delete(stampPath);
             File.WriteAllText(SourcePath, text, Encoding.Unicode);
             ResourceCompiler = "rc.exe";
             var sdkRoot = String.IsNullOrEmpty(WindowsSdkDirectory)
@@ -107,6 +111,7 @@
     <PropertyGroup>
       <_WindowsAppSDKManagedVersionResource>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', '$(MSBuildProjectName).Version.res'))</_WindowsAppSDKManagedVersionResource>
       <_WindowsAppSDKManagedVersionSource>$([System.IO.Path]::ChangeExtension('$(_WindowsAppSDKManagedVersionResource)', '.rc'))</_WindowsAppSDKManagedVersionSource>
+      <_WindowsAppSDKManagedVersionStamp>$(_WindowsAppSDKManagedVersionSource).stamp</_WindowsAppSDKManagedVersionStamp>
       <_WindowsAppSDKIsExecutable>false</_WindowsAppSDKIsExecutable>
       <_WindowsAppSDKIsExecutable Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">true</_WindowsAppSDKIsExecutable>
       <_WindowsAppSDKOriginalManifest>$(Win32Manifest)</_WindowsAppSDKOriginalManifest>
@@ -143,8 +148,11 @@
     </WriteWindowsAppSDKManagedVersionResource>
     <Exec Condition="'$(_WindowsAppSDKManagedResourceChanged)' == 'true'"
           Command="&quot;$(_WindowsAppSDKResourceCompiler)&quot; /nologo /fo &quot;$(_WindowsAppSDKManagedVersionResource)&quot; &quot;$(_WindowsAppSDKManagedVersionSource)&quot;" />
+    <Copy Condition="'$(_WindowsAppSDKManagedResourceChanged)' == 'true'"
+          SourceFiles="$(_WindowsAppSDKManagedVersionSource)"
+          DestinationFiles="$(_WindowsAppSDKManagedVersionStamp)" />
     <ItemGroup>
-      <FileWrites Include="$(_WindowsAppSDKManagedVersionSource);$(_WindowsAppSDKManagedVersionResource)" />
+      <FileWrites Include="$(_WindowsAppSDKManagedVersionSource);$(_WindowsAppSDKManagedVersionResource);$(_WindowsAppSDKManagedVersionStamp)" />
     </ItemGroup>
     <PropertyGroup>
       <Win32Resource>$(_WindowsAppSDKManagedVersionResource)</Win32Resource>
