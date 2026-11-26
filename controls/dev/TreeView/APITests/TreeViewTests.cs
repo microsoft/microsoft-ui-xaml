@@ -693,13 +693,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         // Scenario: Single selection (Node mode including null-Content node and reentrant veto, Content mode
-        //   with nested items, VectorChanged/SelectedItemProperty reentrant redirects and node removal, and
-        //   child removal/replacement under a selected parent); toggle TreeViewItem.IsSelected and clear ItemsSource.
+        //   with nested items, VectorChanged/SelectedItemProperty reentrant redirects, cyclic callback cap,
+        //   ItemRemoved fallback, node removal, and child removal/replacement under a selected parent) plus
+        //   Multiple-mode reentrant drift and SelectAll/Clear parity; toggle TreeViewItem.IsSelected and clear ItemsSource.
         // Expected: SelectionChanged observes updated SelectedNode/SelectedNodes and SelectedItem/SelectedItems;
-        //   reentrant redirects coalesce into one settled notification; removing unselected children in Single mode
-        //   preserves parent selection while removing the selected node clears it.
-        // Failure means: TreeView::OnListControlSelectionChanged or ViewModel::SelectedNodeChildrenChanged failed to
-        //   synchronize or coalesce single-selection state across reentrant callbacks.
+        //   reentrant redirects coalesce and cyclic callbacks reconcile without tearing SelectedNode/SelectedItem;
+        //   removing unselected children in Single mode preserves parent selection; Multiple-mode bulk and drifted
+        //   removals keep SelectedNodes and SelectedItems aligned.
+        // Failure means: TreeView::OnListControlSelectionChanged, ViewModel::SelectedNodeChildrenChanged, or
+        //   SelectedTreeNodeVector/SelectedItemsVector failed to keep selection state synchronized.
         [TestMethod]
         public void TreeViewSelectedNodeInSelectionChangedSingleMode()
         {
@@ -1064,6 +1066,133 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(crossItems[1], crossVectorTreeView.SelectedItem);
                 Verify.IsFalse(crossTvi0.IsSelected);
                 Verify.IsTrue(crossTvi1.IsSelected);
+
+                // Cyclic SelectedItemProperty callback bouncing SelectedNode between A and B must terminate cleanly
+                // and still leave SelectedNode and SelectedItem synchronized when SelectionChanged fires.
+                var cyclicTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var cyclicItems = CreateTreeViewItemsSource();
+                cyclicTreeView.ItemsSource = cyclicItems;
+                Content = cyclicTreeView;
+                Content.UpdateLayout();
+
+                TreeViewNode cyclicObservedNode = null;
+                object cyclicObservedItem = null;
+                int cyclicEventCount = 0;
+                cyclicTreeView.SelectionChanged += (s, e) =>
+                {
+                    cyclicEventCount++;
+                    cyclicObservedNode = s.SelectedNode;
+                    cyclicObservedItem = s.SelectedItem;
+                };
+
+                long cyclicCallbackToken = cyclicTreeView.RegisterPropertyChangedCallback(
+                    TreeView.SelectedItemProperty,
+                    (sender, dp) =>
+                    {
+                        var tv = (TreeView)sender;
+                        if (ReferenceEquals(tv.SelectedItem, cyclicItems[0]))
+                        {
+                            tv.SelectedNode = tv.RootNodes[1];
+                        }
+                        else if (ReferenceEquals(tv.SelectedItem, cyclicItems[1]))
+                        {
+                            tv.SelectedNode = tv.RootNodes[0];
+                        }
+                    });
+
+                try
+                {
+                    var cyclicTvi0 = (TreeViewItem)cyclicTreeView.ContainerFromNode(cyclicTreeView.RootNodes[0]);
+                    cyclicTvi0.IsSelected = true;
+                    Verify.AreEqual(1, cyclicEventCount);
+                    Verify.IsNotNull(cyclicObservedNode);
+                    Verify.AreEqual(cyclicObservedNode.Content, cyclicObservedItem);
+                    Verify.AreEqual(cyclicObservedNode, cyclicTreeView.SelectedNode);
+                    Verify.AreEqual(cyclicObservedItem, cyclicTreeView.SelectedItem);
+                }
+                finally
+                {
+                    cyclicTreeView.UnregisterPropertyChangedCallback(TreeView.SelectedItemProperty, cyclicCallbackToken);
+                }
+
+                // Re-entrant ItemRemoved callback selecting a fallback node must remove the original item by identity
+                // rather than removing the fallback item via a stale positional index.
+                var fallbackTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Single };
+                var fallbackNode0 = new TreeViewNode { Content = "Fallback0" };
+                var fallbackNode1 = new TreeViewNode { Content = "Fallback1" };
+                fallbackTreeView.RootNodes.Add(fallbackNode0);
+                fallbackTreeView.RootNodes.Add(fallbackNode1);
+                Content = fallbackTreeView;
+                Content.UpdateLayout();
+
+                var fallbackTvi0 = (TreeViewItem)fallbackTreeView.ContainerFromNode(fallbackNode0);
+                fallbackTvi0.IsSelected = true;
+                bool selectFallbackOnRemove = true;
+                ((IObservableVector<TreeViewNode>)fallbackTreeView.SelectedNodes).VectorChanged += (s, e) =>
+                {
+                    if (selectFallbackOnRemove && e.CollectionChange == CollectionChange.ItemRemoved)
+                    {
+                        selectFallbackOnRemove = false;
+                        fallbackTreeView.SelectedNode = fallbackNode1;
+                    }
+                };
+                fallbackTvi0.IsSelected = false;
+                Verify.AreEqual(fallbackNode1, fallbackTreeView.SelectedNode);
+                Verify.AreEqual(1, fallbackTreeView.SelectedNodes.Count);
+                Verify.AreEqual(fallbackNode1, fallbackTreeView.SelectedItem);
+                Verify.AreEqual(1, fallbackTreeView.SelectedItems.Count);
+                Verify.AreEqual(fallbackNode1, fallbackTreeView.SelectedItems[0]);
+
+                // Multiple mode: SelectAll + single-item uncheck + Clear in Content mode (where m_originNode has null Content)
+                // and re-entrant ItemRemoved append followed by non-reentrant removal in Node mode must keep
+                // SelectedNodes and SelectedItems aligned without index-drift corruption.
+                var multiContentTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
+                var multiContentItems = CreateTreeViewItemsSource();
+                multiContentTreeView.ItemsSource = multiContentItems;
+                Content = multiContentTreeView;
+                Content.UpdateLayout();
+
+                multiContentTreeView.SelectAll();
+                Verify.IsTrue(multiContentTreeView.SelectedItems.Contains(multiContentItems[0]));
+                Verify.IsTrue(multiContentTreeView.SelectedItems.Contains(multiContentItems[1]));
+                multiContentTreeView.SelectedItems.Remove(multiContentItems[0]);
+                Verify.IsFalse(multiContentTreeView.SelectedItems.Contains(multiContentItems[0]));
+                Verify.IsTrue(multiContentTreeView.SelectedItems.Contains(multiContentItems[1]));
+                multiContentTreeView.SelectedNodes.Clear();
+                Verify.AreEqual(0, multiContentTreeView.SelectedNodes.Count);
+                Verify.AreEqual(0, multiContentTreeView.SelectedItems.Count);
+
+                var multiDriftTreeView = new TreeView { Width = 400, Height = 400, SelectionMode = TreeViewSelectionMode.Multiple };
+                var driftN0 = new TreeViewNode { Content = "Drift0" };
+                var driftN1 = new TreeViewNode { Content = "Drift1" };
+                var driftN2 = new TreeViewNode { Content = "Drift2" };
+                multiDriftTreeView.RootNodes.Add(driftN0);
+                multiDriftTreeView.RootNodes.Add(driftN1);
+                multiDriftTreeView.RootNodes.Add(driftN2);
+                Content = multiDriftTreeView;
+                Content.UpdateLayout();
+
+                multiDriftTreeView.SelectedNodes.Add(driftN0);
+                multiDriftTreeView.SelectedNodes.Add(driftN1);
+                bool appendDriftN2 = true;
+                ((IObservableVector<TreeViewNode>)multiDriftTreeView.SelectedNodes).VectorChanged += (s, e) =>
+                {
+                    if (appendDriftN2 && e.CollectionChange == CollectionChange.ItemRemoved)
+                    {
+                        appendDriftN2 = false;
+                        multiDriftTreeView.SelectedNodes.Add(driftN2);
+                    }
+                };
+                multiDriftTreeView.SelectedNodes.Remove(driftN0);
+                // Now remove driftN1 non-reentrantly even if SelectedNodes and SelectedItems order drifted.
+                multiDriftTreeView.SelectedNodes.Remove(driftN1);
+                Verify.AreEqual(1, multiDriftTreeView.SelectedNodes.Count);
+                Verify.AreEqual(driftN2, multiDriftTreeView.SelectedNodes[0]);
+                Verify.AreEqual(1, multiDriftTreeView.SelectedItems.Count);
+                Verify.AreEqual(driftN2, multiDriftTreeView.SelectedItems[0]);
+                multiDriftTreeView.SelectedNodes.Clear();
+                Verify.AreEqual(0, multiDriftTreeView.SelectedNodes.Count);
+                Verify.AreEqual(0, multiDriftTreeView.SelectedItems.Count);
             });
         }
 

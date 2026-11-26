@@ -358,7 +358,11 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
                     }
 
                     const auto selectedNodes = SelectedNodes();
-                    if (selectedNodes.Size() > 0)
+                    if (selectedNodes.Size() == 1)
+                    {
+                        selectedNodes.RemoveAt(0);
+                    }
+                    else if (selectedNodes.Size() > 1)
                     {
                         selectedNodes.Clear();
                     }
@@ -378,6 +382,7 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
                 if (!isNestedSync)
                 {
                     // Synchronize SelectedItem with SelectedNode, repeating if a callback redirects selection.
+                    // Bound the loop to guard against cyclic callbacks.
                     for (int syncPass = 0; syncPass < 8 && SelectionMode() == winrt::TreeViewSelectionMode::Single; ++syncPass)
                     {
                         const auto currentSelectedNode = SelectedNode();
@@ -388,6 +393,28 @@ void TreeView::OnListControlSelectionChanged(const winrt::IInspectable& sender, 
                         }
 
                         SelectedItem(newSelectedItem);
+                    }
+
+                    // If a cyclic SelectedItemProperty callback prevented convergence within the pass limit,
+                    // align SelectedNode with SelectedItem (or clear SelectedItem if unresolvable) so
+                    // SelectionChanged does not observe a mismatched pair.
+                    if (SelectionMode() == winrt::TreeViewSelectionMode::Single)
+                    {
+                        const auto currentSelectedNode = SelectedNode();
+                        const auto expectedSelectedItem = currentSelectedNode ? viewModel->ItemFromNode(currentSelectedNode) : nullptr;
+                        const auto currentSelectedItem = SelectedItem();
+                        if (currentSelectedItem != expectedSelectedItem)
+                        {
+                            const auto syncedNode = currentSelectedItem ? viewModel->NodeFromItem(currentSelectedItem) : nullptr;
+                            if (SelectedNode() != syncedNode)
+                            {
+                                SelectedNode(syncedNode);
+                            }
+                            if (currentSelectedItem && !syncedNode && SelectedItem() != nullptr)
+                            {
+                                SelectedItem(nullptr);
+                            }
+                        }
                     }
                 }
             }
