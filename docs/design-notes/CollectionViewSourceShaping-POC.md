@@ -721,8 +721,16 @@ cvs.Refresh();                                                                  
   (with or without a `SortMemberPath`; the comparer wins, as in the control's own sort) sorts the view through its
   `CustomSort` instead: TableView wraps the column's comparer, negated for descending, and installs it under one
   `DeferRefresh`, which also clears `SortDescriptions`. If the comparer throws, TableView puts the view's previous
-  `SortDescriptions` / `CustomSort` back, so the previous order and arrow stay. Setting a new `CustomSortComparer` on
-  the sorted column re-sorts the view.
+  `SortDescriptions` / `CustomSort` back, so the previous order and arrow stay.
+- **Sort-key changes.** Changing the key of the column TableView sorted the view by (`CustomSortComparer`,
+  `SortMemberPath`, `DisplayMemberBinding`) is reconciled against the key that sort was written with (#12420's
+  sort-key reconcile, kept on the view): outside a sort it re-writes the view's sort in place with one
+  `Sorting`/`Sorted` pair, or clears it when the column has no key left; a change made from a `Sorting` or `Sorted`
+  handler, or while the column was out of `Columns`, is applied on the next dispatcher turn; a key a cancelled
+  `Sorting` declined is not applied until it changes again. A sort the app wrote to the view itself is not keyed on
+  a column and is left alone. #12420's source-reclaim re-rank has no counterpart: the view, not the table, owns the
+  sort and keeps applying it while the table is unloaded, and there is no owning table to hand it back to. See the
+  API spec's "Sort keys".
 - **Sort arrow.** The arrow follows the view's primary `SortDescription`, including a sort the app or another
   consumer applies to the view directly (`TableView` listens to `SortDescriptions.VectorChanged`). While the view
   still sorts with the `CustomSort` TableView installed, the comparer column stays lit. A `CustomSort` the app

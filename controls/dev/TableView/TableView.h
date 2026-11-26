@@ -608,8 +608,11 @@ public:
     void OnColumnSortDirectionSetByApp(const winrt::TableViewColumn& column, winrt::SortDirection direction);
     // The lit direction is the app's (set through SortDirection, or its own source sort), not one this table applied.
     bool IsSortLitOnlyByAppInternal() const { return IsSortLitOnlyByApp(); }
-    // Re-applies the column's current direction in one request (a new CustomSortComparer).
-    bool ResortColumnInternal(const winrt::TableViewColumn& column);
+    // A column's sort key (CustomSortComparer, SortMemberPath, DisplayMemberBinding) changed: re-sorts
+    // a column this table sorted on its new key, or clears its sort when it has no key left.
+    void OnColumnSortKeyChanged(const winrt::TableViewColumn& column);
+    // The chevron and click handler are stamped at header-build time; rebuilds when sortability changed.
+    void RefreshHeaderSortability(const winrt::TableViewColumn& column);
     void RaiseColumnSortStateAutomationChanged(const winrt::TableViewColumn& column, winrt::SortDirection oldDirection);
 
     // Republishes every realized header chevron from its column's SortDirection DP. A push rather
@@ -1147,11 +1150,61 @@ private:
     // clear (a column leaving, CanUserSortColumns turning off) removes only a sort this table wrote.
     bool CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const;
     bool SyncCollectionViewSort(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool explicitClear);
+    // resort: a key reconcile offering the column's current key; re-sorts even in the same direction,
+    // and a cancel declines that key.
     bool SortByColumnInternal(const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip,
         bool requireCanSort = true, bool resort = false);
     bool ClearSortInternal(bool measureTip, bool explicitClear = false);
+    // The bodies of ToggleSortDirection and ClearSortInternal, run inside one sort transition.
+    bool ToggleSortDirectionCore(const winrt::TableViewColumn& column);
+    bool ClearSortCore(bool measureTip, bool explicitClear);
     // The lit column's direction was set by the app through SortDirection, not applied by this table.
-    bool IsSortLitOnlyByApp() const;    bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction);
+    bool IsSortLitOnlyByApp() const;
+    // offersKey: the request re-sorts the trigger on its current key, so a cancel declines that key.
+    bool RaiseSortingAndCheckCanceled(const winrt::TableViewColumn& trigger, winrt::SortDirection direction, bool offersKey = false);
+
+    // Sorting and Sorted handlers may change a column's sort key. A change made inside a transition
+    // only marks the table dirty; once the outermost transition ends, a reconcile on the next
+    // dispatcher turn compares the sorted column's key with the key the view's sort was written with
+    // (m_installedSortKey) and with the key a cancelled Sorting declined. A decline lasts only while
+    // the column's key still equals it.
+    template <typename F> bool RunSortTransition(F&& transition);
+    void ScheduleSortKeyReconcile(bool allowSynchronous);
+    void ReconcileSortKeys();
+    void ReconcileSortKey(const winrt::TableViewColumn& column);
+    void RecordDeclinedSortKey(const winrt::TableViewColumn& column);
+    void ForgetDeclinedSortKeys(const winrt::TableViewColumn& column = nullptr);
+    // Forgets the column's decline once its key moved off it; true if the key is still declined.
+    bool IsSortKeyStillDeclined(const winrt::TableViewColumn& column);
+    // The installed key is this column's: the view's sort is one this table wrote for it.
+    bool IsInstalledSortKeyFor(const winrt::TableViewColumn& column) const;
+    struct DeclinedSortKey
+    {
+        winrt::weak_ref<winrt::TableViewColumn> Column;
+        winrt::hstring MemberPath;
+        // Weak: the decline must not keep the app's comparer alive. Dead means expired.
+        winrt::weak_ref<winrt::ITableViewSortComparer> Comparer;
+        // Only for a comparer that can't be weakly referenced; compared, never called.
+        winrt::ITableViewSortComparer StrongComparer{ nullptr };
+        bool HasComparer{ false };
+        // Any later key change, even one made while the column was out of the table, ends the decline.
+        uint32_t Generation{ 0 };
+    };
+    // The key the view's current sort was written with: a SortDescription path, or the column's
+    // comparer (compared by identity), and the column's key generation at that time.
+    struct InstalledSortKey
+    {
+        winrt::weak_ref<winrt::TableViewColumn> Column;
+        winrt::hstring MemberPath;
+        winrt::ITableViewSortComparer Comparer{ nullptr };
+        uint32_t Generation{ 0 };
+    };
+    std::optional<InstalledSortKey> m_installedSortKey;
+    std::vector<DeclinedSortKey> m_declinedSortKeys;
+    uint32_t m_sortTransitionDepth{ 0 };
+    bool m_sortKeysDirty{ false };
+    bool m_sortKeyReconcileQueued{ false };
+    bool m_reconcilingSortKeys{ false };
     // Single funnel for "the sort state has been written to the columns": reshapes, restores the
     // selection, raises Sorted, and announces.
     // A non-null trigger is always an explicit request; a null one is explicit only when asked.
@@ -1175,9 +1228,14 @@ private:
     // clear runs is a move: the column gets its sort back and the clear finds nothing to do.
     void RestoreSortOfMovedColumn(const winrt::TableViewColumn& column);
     // Any other change to the sort or to the columns while the column is out makes the restore stale.
-    void CancelPendingSortRestore() { m_sortedColumnPendingRemoval = nullptr; }
+    void CancelPendingSortRestore()
+    {
+        m_sortedColumnPendingRemoval = nullptr;
+        m_sortedColumnPendingRemovalDeclined.reset();
+    }
     winrt::weak_ref<winrt::TableViewColumn> m_sortedColumnPendingRemoval;
     winrt::SortDirection m_sortedColumnPendingRemovalDirection{ winrt::SortDirection::None };
+    std::optional<DeclinedSortKey> m_sortedColumnPendingRemovalDeclined;
 
     // v1 is single-column sort, so this holds at most one entry. It stays a vector because the
     // clear/purge walks are written against the collection and multi-column sort is the expected

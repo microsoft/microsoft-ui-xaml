@@ -257,20 +257,12 @@ void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& va
     }
 
     m_customSortComparer = value;
+    UpdateSortKeyGeneration();
     if (auto owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
-    }
-
-    // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
-    // the active direction rather than leaving the rows in the old comparer's order.
-    // A direction the app set, or the app's own source sort, is not this table's to re-sort.
-    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None &&
-        !winrt::get_self<TableView>(owner)->IsSortLitOnlyByAppInternal())
-    {
-        // One request, no intermediate clear: a comparer that throws while ranking leaves the
-        // previous order and arrow in place.
-        winrt::get_self<TableView>(owner)->ResortColumnInternal(*this);
+        // Re-sorts a sorted column in the new comparer's order rather than leaving the old one.
+        winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*this);
     }
 }
 
@@ -295,6 +287,18 @@ winrt::hstring TableViewColumn::GetSortMemberPathCore()
     }
 
     return {};
+}
+
+void TableViewColumn::UpdateSortKeyGeneration()
+{
+    auto const comparer = m_customSortComparer;
+    auto const path = comparer ? winrt::hstring{} : TableViewColumn::GetSortMemberPathCore();
+    if (comparer != m_sortKeyComparer || path != m_sortKeyPath)
+    {
+        m_sortKeyComparer = comparer;
+        m_sortKeyPath = path;
+        ++m_sortKeyGeneration;
+    }
 }
 
 void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
@@ -341,13 +345,20 @@ winrt::Microsoft::UI::Xaml::Data::Binding TableViewColumn::DisplayMemberBinding(
 
 void TableViewColumn::DisplayMemberBinding(const winrt::Microsoft::UI::Xaml::Data::Binding& value)
 {
+    if (m_displayMemberBinding.get() == value)
+    {
+        return;
+    }
+
     m_displayMemberBinding.set(value);
+    UpdateSortKeyGeneration();
 
     NotifyCellContentChangedInternal(true /* resetAutoWidth */);
     // The binding path can make the column sortable, which makes its header actionable.
     if (auto const owner = GetOwningTableView())
     {
         winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+        winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*this);
     }
 }
 
@@ -379,6 +390,7 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             return false;
         }
         m_owningTableView = winrt::make_weak(owner);
+        UpdateSortKeyGeneration();
         m_hasBeenOwned = true;
         // These have no generated change callback: a menu makes cells actionable, a sort key the header.
         if (!m_cellContextFlyoutToken)
@@ -395,12 +407,20 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
             for (winrt::DependencyProperty const& property : std::initializer_list<winrt::DependencyProperty>{ s_SortMemberPathProperty, s_HeaderContextFlyoutProperty })
             {
                 RegisterPropertyChangedCallback(property,
-                    [weakThis = get_weak()](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+                    [weakThis = get_weak(), isSortPath = property == s_SortMemberPathProperty](winrt::DependencyObject const&, winrt::DependencyProperty const&)
                     {
                         auto const strongThis = weakThis.get();
+                        if (strongThis && isSortPath)
+                        {
+                            strongThis->UpdateSortKeyGeneration();
+                        }
                         if (auto const owner = strongThis ? strongThis->GetOwningTableView() : nullptr)
                         {
                             winrt::get_self<TableView>(owner)->RefreshHeaderTabStopsInternal();
+                            if (isSortPath)
+                            {
+                                winrt::get_self<TableView>(owner)->OnColumnSortKeyChanged(*strongThis);
+                            }
                         }
                     });
             }

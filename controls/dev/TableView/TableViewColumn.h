@@ -134,6 +134,10 @@ public:
     // enums, so a {Binding} between them silently does nothing.
     void SetSortStateInternal(winrt::SortDirection direction);
 
+    // Internal - sorting: advances whenever the effective sort key changes, with or without an
+    // owner, so a table can tell a key changed while the column was out of it.
+    uint32_t SortKeyGenerationInternal() const noexcept { return m_sortKeyGeneration; }
+
     // Internal — Auto size-to-content. The owning TableView pulls measured widths from the header
     // and realized row panels; ResolveColumnWidths keeps the grow-only max of the row widths and of
     // the header width separately, so hiding the headers drops only the header term. Both reset on
@@ -157,6 +161,8 @@ public:
 private:
     // Write the resolved, clamped width into the read-only ActualWidth DP.
     void UpdateActualWidth();
+    // The override is app code and not called here; its own inputs never notify anyway.
+    void UpdateSortKeyGeneration();
 
     // Monotonic maxima of the pulled realized-row cell and header measured widths for an Auto column
     // (0 until first pull; the header term is 0 while headers are hidden).
@@ -177,6 +183,9 @@ private:
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
     int64_t m_cellContextFlyoutToken{ 0 };
     winrt::ITableViewSortComparer m_customSortComparer{ nullptr };
+    winrt::hstring m_sortKeyPath;
+    winrt::ITableViewSortComparer m_sortKeyComparer{ nullptr };
+    uint32_t m_sortKeyGeneration{ 0 };
     uint32_t m_automationIdentity{ 0 };
 };
 

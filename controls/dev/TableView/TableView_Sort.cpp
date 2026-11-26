@@ -15,6 +15,7 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewColumn.h"
+#include "TableViewColumnHeader.h"
 #include "TableViewSortingEventArgs.h"
 #include "TableViewSortedEventArgs.h"
 #include "TableViewAutomationHelpers.h"
@@ -62,6 +63,27 @@ namespace
         }
 
         return column.CustomSortComparer() || HasResolvedSortMemberPath(column);
+    }
+
+    struct SortKey
+    {
+        winrt::hstring MemberPath;
+        winrt::ITableViewSortComparer Comparer{ nullptr };
+    };
+
+    // A comparer ignores the path, and is compared by identity.
+    SortKey EffectiveSortKey(const winrt::TableViewColumn& column)
+    {
+        if (auto comparer = column.CustomSortComparer())
+        {
+            return { {}, std::move(comparer) };
+        }
+        return { column.GetSortMemberPathCore(), nullptr };
+    }
+
+    bool IsSameSortKey(const SortKey& key, const winrt::hstring& memberPath, const winrt::ITableViewSortComparer& comparer)
+    {
+        return key.Comparer ? key.Comparer == comparer : !comparer && key.MemberPath == memberPath;
     }
 }
 
@@ -127,65 +149,311 @@ bool TableView::ToggleSortDirectionFromUserInput(const winrt::TableViewColumn& c
     return ToggleSortDirection(column);
 }
 
-bool TableView::ResortColumnInternal(const winrt::TableViewColumn& column)
+template <typename F>
+bool TableView::RunSortTransition(F&& transition)
 {
-    // On a view, only a sort this table wrote is re-applied; the app's sort stays the app's.
-    if (!column || column.SortDirection() == winrt::SortDirection::None || (m_rowFlattener && !m_collectionViewSortByTable))
+    const bool outermost = m_sortTransitionDepth == 0;
+    bool result;
+    {
+        // Declared first so it runs after the depth is restored: a throwing handler must not
+        // strand the changes made before it threw.
+        auto reconcileOnThrow = wil::scope_exit([this, outermost]() noexcept
+        {
+            if (outermost)
+            {
+                ScheduleSortKeyReconcile(false);
+            }
+        });
+        ++m_sortTransitionDepth;
+        auto const leave = wil::scope_exit([this]() noexcept { --m_sortTransitionDepth; });
+        result = transition();
+        reconcileOnThrow.release();
+    }
+
+    if (outermost)
+    {
+        ScheduleSortKeyReconcile(true);
+    }
+    return result;
+}
+
+// Posted rather than run inline so a follow-up re-sort never runs inside, or recurses from, the
+// sort whose handler changed the key. A handler that changes the key on every Sorted keeps
+// re-sorting once per turn; that is an app error. Only the synchronous pass can throw.
+void TableView::ScheduleSortKeyReconcile(bool allowSynchronous)
+{
+    if (!m_sortKeysDirty || m_sortTransitionDepth || m_reconcilingSortKeys || m_sortKeyReconcileQueued)
+    {
+        return;
+    }
+
+    try
+    {
+        if (auto const queue = winrt::DispatcherQueue::GetForCurrentThread())
+        {
+            m_sortKeyReconcileQueued = queue.TryEnqueue([weakThis = get_weak()]()
+            {
+                if (auto const strongThis = weakThis.get())
+                {
+                    strongThis->m_sortKeyReconcileQueued = false;
+                    // A transition in progress schedules it again when it ends.
+                    if (!strongThis->m_sortTransitionDepth)
+                    {
+                        strongThis->ReconcileSortKeys();
+                    }
+                }
+            });
+            if (m_sortKeyReconcileQueued)
+            {
+                return;
+            }
+        }
+    }
+    catch (...)
+    {
+    }
+
+    // No dispatcher: one pass right after the outermost transition. Changes made by its own
+    // handlers stay dirty for the next one.
+    if (allowSynchronous)
+    {
+        ReconcileSortKeys();
+    }
+}
+
+void TableView::ReconcileSortKeys()
+{
+    m_sortKeysDirty = false;
+    m_reconcilingSortKeys = true;
+    auto const reschedule = wil::scope_exit([this]() noexcept
+    {
+        m_reconcilingSortKeys = false;
+        ScheduleSortKeyReconcile(false);
+    });
+
+    for (auto const& column : SnapshotSortedColumns())
+    {
+        // An earlier re-sort in this pass may have moved it, or unsorted it.
+        if (winrt::get_self<TableViewColumn>(column)->GetOwningTableView() == *this &&
+            column.SortDirection() != winrt::SortDirection::None)
+        {
+            ReconcileSortKey(column);
+        }
+    }
+}
+
+bool TableView::IsInstalledSortKeyFor(const winrt::TableViewColumn& column) const
+{
+    // The app's own sort on the view (it wrote SortDescriptions or CustomSort itself) is not keyed on a column.
+    return column && m_collectionViewSortByTable && m_installedSortKey && m_installedSortKey->Column.get() == column;
+}
+
+void TableView::ReconcileSortKey(const winrt::TableViewColumn& column)
+{
+    // Only a sort this table wrote to the view for the column is keyed on it.
+    if (!IsInstalledSortKeyFor(column))
+    {
+        return;
+    }
+
+    auto const key = EffectiveSortKey(column);
+    if (IsSameSortKey(key, m_installedSortKey->MemberPath, m_installedSortKey->Comparer))
+    {
+        ForgetDeclinedSortKeys(column);
+        return;
+    }
+    if (IsSortKeyStillDeclined(column))
+    {
+        return;
+    }
+
+    if (!CanSortColumn(column))
+    {
+        SortByColumnInternal(column, winrt::SortDirection::None, false, false, true /* resort */);
+        return;
+    }
+
+    // One Sorting/Sorted pair in the current direction; a cancelled Sorting keeps the current order.
+    SortByColumnInternal(column, column.SortDirection(), true, true, true /* resort */);
+}
+
+// The key the handler left: a later change to the same key is not a new request.
+void TableView::RecordDeclinedSortKey(const winrt::TableViewColumn& column)
+{
+    if (!column || column.SortDirection() == winrt::SortDirection::None)
+    {
+        return;
+    }
+    auto key = EffectiveSortKey(column);
+    ForgetDeclinedSortKeys(column);
+    DeclinedSortKey declined{ winrt::make_weak(column), std::move(key.MemberPath) };
+    declined.Generation = winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal();
+    if (key.Comparer)
+    {
+        try
+        {
+            declined.Comparer = winrt::make_weak(key.Comparer);
+        }
+        catch (...)
+        {
+            declined.StrongComparer = key.Comparer;
+        }
+        declined.HasComparer = true;
+    }
+    m_declinedSortKeys.push_back(std::move(declined));
+}
+
+bool TableView::IsSortKeyStillDeclined(const winrt::TableViewColumn& column)
+{
+    auto const it = std::find_if(m_declinedSortKeys.begin(), m_declinedSortKeys.end(),
+        [&column](auto const& declined) { return declined.Column.get() == column; });
+    if (it == m_declinedSortKeys.end())
     {
         return false;
     }
-    return SortByColumnInternal(column, column.SortDirection(), true, true, true /* resort */);
+
+    auto const key = EffectiveSortKey(column);
+    const bool stillDeclined =
+        it->Generation == winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal() &&
+        (it->HasComparer
+            ? key.Comparer && key.Comparer == (it->StrongComparer ? it->StrongComparer : it->Comparer.get())
+            : !key.Comparer && key.MemberPath == it->MemberPath);
+    if (!stillDeclined)
+    {
+        m_declinedSortKeys.erase(it);
+    }
+    return stillDeclined;
+}
+
+// Null forgets every column's.
+void TableView::ForgetDeclinedSortKeys(const winrt::TableViewColumn& column)
+{
+    if (!column)
+    {
+        m_declinedSortKeys.clear();
+        return;
+    }
+    m_declinedSortKeys.erase(std::remove_if(m_declinedSortKeys.begin(), m_declinedSortKeys.end(),
+        [&column](auto const& declined)
+        {
+            auto const declinedColumn = declined.Column.get();
+            return !declinedColumn || declinedColumn == column;
+        }), m_declinedSortKeys.end());
+}
+
+void TableView::RefreshHeaderSortability(const winrt::TableViewColumn& column)
+{
+    // The chevron and the click handler are stamped at header-build time.
+    auto const host = m_headerHost.get();
+    if (!host || !column)
+    {
+        return;
+    }
+
+    for (auto const& child : host.Children())
+    {
+        auto const header = child.try_as<winrt::TableViewColumnHeader>();
+        auto const headerImpl = header ? winrt::get_self<TableViewColumnHeader>(header) : nullptr;
+        if (headerImpl && headerImpl->Column() == column)
+        {
+            if (headerImpl->IsSortableInternal() != IsColumnUserSortableInternal(column))
+            {
+                QueueRebuildHeaders();
+            }
+            return;
+        }
+    }
+}
+
+void TableView::OnColumnSortKeyChanged(const winrt::TableViewColumn& column)
+{
+    // Queued first so it still runs when a Sorting or Sorted handler throws.
+    RefreshHeaderSortability(column);
+
+    // Checked on every change, also a deferred one: moving off the declined key ends the decline.
+    if (column)
+    {
+        IsSortKeyStillDeclined(column);
+    }
+
+    if (!column || column.SortDirection() == winrt::SortDirection::None)
+    {
+        return;
+    }
+
+    // A posted reconcile covers it too.
+    if (m_sortTransitionDepth || m_sortKeyReconcileQueued || m_reconcilingSortKeys)
+    {
+        m_sortKeysDirty = true;
+        return;
+    }
+
+    ReconcileSortKey(column);
 }
 
 bool TableView::SortByColumnInternal(
     const winrt::TableViewColumn& column, winrt::SortDirection direction, bool measureTip, bool requireCanSort, bool resort)
 {
-    // Only a clear may skip the sort-key check.
-    requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
-    if (!CanSortColumnNow(column, requireCanSort))
+    return RunSortTransition([&]()
     {
-        return false;
-    }
-
-    if (direction == winrt::SortDirection::None && m_sortedColumns.empty())
-    {
-        return false;
-    }
-
-    // A direction the app only displayed has not ordered the rows yet; a resort re-ranks a new comparer.
-    if (m_sortedColumns.size() == 1 && !m_sortDisplaySetByApp && !resort)
-    {
-        if (auto sortedColumn = m_sortedColumns.front().get())
+        // Only a clear may skip the sort-key check.
+        requireCanSort = requireCanSort || direction != winrt::SortDirection::None;
+        if (!CanSortColumnNow(column, requireCanSort))
         {
-            if (sortedColumn == column && sortedColumn.SortDirection() == direction)
+            return false;
+        }
+
+        if (direction == winrt::SortDirection::None && m_sortedColumns.empty())
+        {
+            return false;
+        }
+
+        // A direction the app only displayed has not ordered the rows yet.
+        if (m_sortedColumns.size() == 1 && !m_sortDisplaySetByApp && !resort)
+        {
+            if (auto sortedColumn = m_sortedColumns.front().get())
             {
-                return false;
+                if (sortedColumn == column && sortedColumn.SortDirection() == direction)
+                {
+                    // Re-sorts in place on a key the view's sort was not written with, e.g. a declined one.
+                    if (!IsInstalledSortKeyFor(column) ||
+                        IsSameSortKey(EffectiveSortKey(column), m_installedSortKey->MemberPath, m_installedSortKey->Comparer))
+                    {
+                        return false;
+                    }
+                    resort = true;
+                }
             }
         }
-    }
 
-    if (RaiseSortingAndCheckCanceled(column, direction))
-    {
-        return false;
-    }
+        if (RaiseSortingAndCheckCanceled(column, direction, resort))
+        {
+            return false;
+        }
 
-    // A view that cannot take the sort through ICollectionViewShaping owns its order: the Sorting handler
-    // is where the app sorts it.
-    if (m_rowFlattener && !CanSortThroughCollectionView(column, direction))
-    {
-        return false;
-    }
+        // A view that cannot take the sort through ICollectionViewShaping owns its order: the Sorting handler
+        // is where the app sorts it.
+        if (m_rowFlattener && !CanSortThroughCollectionView(column, direction))
+        {
+            return false;
+        }
 
-    // The Sorting handler is app code that can change the rows.
-    if (!IsSortRequestStillValid(column, requireCanSort))
-    {
-        return false;
-    }
+        // The Sorting handler is app code that can change the rows.
+        if (!IsSortRequestStillValid(column, requireCanSort))
+        {
+            return false;
+        }
 
-    return RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
+        return RecomputeSortDPsAndRaiseInternal(column, measureTip, false, direction);
+    });
 }
 
 bool TableView::ToggleSortDirection(const winrt::TableViewColumn& column)
+{
+    return RunSortTransition([&]() { return ToggleSortDirectionCore(column); });
+}
+
+bool TableView::ToggleSortDirectionCore(const winrt::TableViewColumn& column)
 {
     if (!CanSortColumnNow(column))
     {
@@ -260,6 +528,11 @@ bool TableView::IsSortLitOnlyByApp() const
 
 bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
 {
+    return RunSortTransition([&]() { return ClearSortCore(measureTip, explicitClear); });
+}
+
+bool TableView::ClearSortCore(bool measureTip, bool explicitClear)
+{
     CancelPendingSortRestore();
     if (!IsSortClearStillValid())
     {
@@ -291,6 +564,7 @@ bool TableView::ClearSortInternal(bool measureTip, bool explicitClear)
             winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(winrt::SortDirection::None);
         }
     }
+    ForgetDeclinedSortKeys();
 
     // Null trigger: Sorted fires with Column=null to signal a full clear.
     RecomputeSortDPsAndRaiseInternal(nullptr, measureTip, explicitClear);
@@ -308,6 +582,9 @@ void TableView::ResetSortStateForNewItemsSource()
     // from scratch, and the data set is already gone by the time a handler could react, so this is
     // not a cancellable Sorting nor a Sorted the app could act on.
     CancelPendingSortRestore();
+    ForgetDeclinedSortKeys();
+    // The installed key belongs to the view being discarded.
+    m_installedSortKey.reset();
     if (m_sortedColumns.empty())
     {
         m_sortDisplaySetByApp = false;
@@ -421,6 +698,7 @@ void TableView::EndSortStateUpdate() noexcept
 void TableView::ApplySingleColumnSortState(const winrt::TableViewColumn& column, winrt::SortDirection direction)
 {
     CancelPendingSortRestore();
+    ForgetDeclinedSortKeys();
     auto const update = BeginSortStateUpdate();
     auto const lit = SnapshotSortedColumns();
     m_sortedColumns.clear();
@@ -442,18 +720,47 @@ void TableView::ApplySingleColumnSortState(const winrt::TableViewColumn& column,
 
 bool TableView::RaiseSortingAndCheckCanceled(
     const winrt::TableViewColumn& trigger,
-    winrt::SortDirection direction)
+    winrt::SortDirection direction,
+    bool offersKey)
 {
     if (!m_sortingEventSource)
     {
         return false;
     }
 
+    // The keys this Sorting is about, to tell a key the handler changed from one deferred earlier.
+    std::vector<std::pair<winrt::TableViewColumn, SortKey>> keysBefore;
+    if (trigger)
+    {
+        keysBefore.emplace_back(trigger, EffectiveSortKey(trigger));
+    }
+    else
+    {
+        for (auto const& column : SnapshotSortedColumns())
+        {
+            keysBefore.emplace_back(column, EffectiveSortKey(column));
+        }
+    }
+
     auto args = winrt::make_self<TableViewSortingEventArgs>(trigger, direction);
     try { m_sortingEventSource(*this, *args); }
     catch (...) { TableViewTip::RethrowAppFault(TableViewTip::AppFaultKind::Callback); }
 
-    return args->Cancel();
+    const bool canceled = args->Cancel();
+    if (canceled)
+    {
+        // At any depth: the handler's own key change must not re-sort what it just cancelled.
+        // Any other pending change stays dirty for the reconcile.
+        for (auto const& [column, before] : keysBefore)
+        {
+            if ((offersKey && column == trigger) ||
+                !IsSameSortKey(EffectiveSortKey(column), before.MemberPath, before.Comparer))
+            {
+                RecordDeclinedSortKey(column);
+            }
+        }
+    }
+    return canceled;
 }
 
 bool TableView::CanSortThroughCollectionView(const winrt::TableViewColumn& column, winrt::SortDirection direction) const
@@ -478,12 +785,14 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
     namespace data = winrt::Microsoft::UI::Xaml::Data;
     data::SortDescription description{ nullptr };
     data::CollectionViewComparer customSort{ nullptr };
+    winrt::ITableViewSortComparer installedComparer{ nullptr };
     auto const faults = std::make_shared<TableViewTip::ContainedFaults>();
     if (trigger && direction != winrt::SortDirection::None)
     {
         const bool descending = direction == winrt::SortDirection::Descending;
         if (auto const comparer = trigger.CustomSortComparer())
         {
+            installedComparer = comparer;
             customSort = data::CollectionViewComparer{ [comparer, descending, faults](winrt::IInspectable const& x, winrt::IInspectable const& y) -> int32_t
             {
                 try
@@ -592,6 +901,17 @@ bool TableView::SyncCollectionViewSort(const winrt::TableViewColumn& trigger, wi
 
     m_collectionViewCustomSort = customSort;
     m_collectionViewSortByTable = static_cast<bool>(customSort) || static_cast<bool>(description);
+    if (m_collectionViewSortByTable)
+    {
+        // The key the view now sorts with: a later change to the column's key is reconciled against it.
+        m_installedSortKey = InstalledSortKey{ winrt::make_weak(trigger),
+            description ? description.PropertyName() : winrt::hstring{}, installedComparer,
+            winrt::get_self<TableViewColumn>(trigger)->SortKeyGenerationInternal() };
+    }
+    else
+    {
+        m_installedSortKey.reset();
+    }
     RefreshRowsPipeline();
     UpdateEmptyState();
     OnRowsReorderedBySort();
@@ -685,6 +1005,7 @@ bool TableView::PurgeColumnFromSortState(const winrt::TableViewColumn& removedCo
     {
         auto const update = BeginSortStateUpdate();
         winrt::get_self<TableViewColumn>(removedColumn)->SetSortStateInternal(winrt::SortDirection::None);
+        ForgetDeclinedSortKeys(removedColumn);
     }
 
     bool removedAny = false;
@@ -975,6 +1296,13 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
     const bool wasSorted = std::any_of(m_sortedColumns.begin(), m_sortedColumns.end(),
         [&column](auto const& sorted) { return sorted.get() == column; });
     const auto direction = column.SortDirection();
+    auto const declined = std::find_if(m_declinedSortKeys.begin(), m_declinedSortKeys.end(),
+        [&column](auto const& entry) { return entry.Column.get() == column; });
+    std::optional<DeclinedSortKey> pendingDeclined;
+    if (declined != m_declinedSortKeys.end())
+    {
+        pendingDeclined = *declined;
+    }
     if (!PurgeColumnFromSortState(column))
     {
         return;
@@ -984,6 +1312,7 @@ void TableView::PurgeLeavingColumnFromSortState(const winrt::TableViewColumn& co
     {
         m_sortedColumnPendingRemoval = winrt::make_weak(column);
         m_sortedColumnPendingRemovalDirection = direction;
+        m_sortedColumnPendingRemovalDeclined = std::move(pendingDeclined);
     }
     QueueClearSortAfterColumnRemoval();
 }
@@ -995,6 +1324,7 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
         return;
     }
     m_sortedColumnPendingRemoval = nullptr;
+    auto declined = std::exchange(m_sortedColumnPendingRemovalDeclined, std::nullopt);
 
     // A sort applied since the removal replaced this one. A column that lost its sort key while
     // detached never told the table; one lit only by the app's source sort keeps it, as when attached.
@@ -1005,6 +1335,22 @@ void TableView::RestoreSortOfMovedColumn(const winrt::TableViewColumn& column)
 
     winrt::get_self<TableViewColumn>(column)->SetSortStateInternal(m_sortedColumnPendingRemovalDirection);
     m_sortedColumns.push_back(tracker_ref<winrt::TableViewColumn>{ this, column });
+    if (declined)
+    {
+        m_declinedSortKeys.push_back(std::move(*declined));
+    }
+
+    // A key change while detached reached no table: apply it on the next turn, unless still declined.
+    if (!IsInstalledSortKeyFor(column) || IsSortKeyStillDeclined(column))
+    {
+        return;
+    }
+    if (winrt::get_self<TableViewColumn>(column)->SortKeyGenerationInternal() != m_installedSortKey->Generation ||
+        !IsSameSortKey(EffectiveSortKey(column), m_installedSortKey->MemberPath, m_installedSortKey->Comparer))
+    {
+        m_sortKeysDirty = true;
+        ScheduleSortKeyReconcile(false);
+    }
 }
 
 // A notification rather than a live region: there is no announcement-only element in the template.
