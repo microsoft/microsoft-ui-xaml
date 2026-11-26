@@ -7,7 +7,6 @@
          <!-- ignore experimental warnings and obselete api usage -->
     <NoWarn>0108,0618,0628,8305</NoWarn>
     <LangVersion>preview</LangVersion>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 
     <!-- Causes loading of winrt dependencies from CoreWebView2 SDK package - required for any usage from WinUI3/WinAppSDK.
          Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir).
