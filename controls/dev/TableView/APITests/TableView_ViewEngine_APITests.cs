@@ -1115,28 +1115,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        // Application.UnhandledException while it is attached (handled, so the app keeps running).
-        private sealed class UnhandledErrors : IDisposable
-        {
-            public UnhandledErrors()
-            {
-                Microsoft.UI.Xaml.Application.Current.UnhandledException += OnUnhandledException;
-            }
-
-            public List<string> Messages { get; } = new List<string>();
-
-            public void Dispose()
-            {
-                Microsoft.UI.Xaml.Application.Current.UnhandledException -= OnUnhandledException;
-            }
-
-            private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
-            {
-                Messages.Add(e.Message ?? string.Empty);
-                e.Handled = true;
-            }
-        }
-
         [TestMethod]
         [TestProperty("Description", "Verifies a CustomSort that throws during a live restore leaves the view equal to a fresh view, and that a Refresh whose Filter throws throws to its caller and keeps the previous items.")]
         public void VerifyThrowingAppCodeInLiveRestoreAndRefresh()

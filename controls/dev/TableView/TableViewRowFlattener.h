@@ -238,9 +238,12 @@ private:
     int32_t FindNodeRowIndex(winrt::IInspectable const& item, int32_t from = 0) const;
     // Renumbers the visible rows of one sibling list (roots when parentRow is -1) after it changed.
     void RenumberSiblingRows(int32_t parentRow, int32_t depth, int32_t siblingCount);
-    // Tree rows, node rows and index maps are only correct as a set; mutate only through these.
-    void InsertTreeRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& nodeRows);
-    void RemoveTreeRows(int32_t index, int32_t count);
+    // Tree rows, node rows and index maps are only correct as a set; mutate only through these. False when a handler
+    // of a row change replaced or released the tree (see m_treeGeneration): the caller stops, and the rebuild that
+    // the new tree asked for (m_treeRowsPending) or the release publishes the rows.
+    bool InsertTreeRows(int32_t index, std::vector<winrt::IInspectable> const& items, std::vector<NodeRow> const& nodeRows);
+    bool RemoveTreeRows(int32_t index, int32_t count);
+    bool IsSameTree(uint64_t generation, winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows) const noexcept;
     void OnTreeRowsPublished();
     void EnsureItemIndex() const;
     void EnsureNodeKeyIndex() const;
@@ -348,6 +351,10 @@ private:
     bool m_treeRowsPending{ false };
     // Set by ClearTreeIndex; notifying loops check it after each mutation (a handler may retract the tree).
     bool m_treeDetached{ false };
+    // Bumped by SetTreeIndex and ClearTreeIndex (so by ReleaseTree too). A handler of a row change can release the
+    // tree and declare a new one before it returns, which clears m_treeDetached again and empties m_nodeRows: the
+    // notifying loops compare this and the m_treeRows they started on, not only m_treeDetached.
+    uint64_t m_treeGeneration{ 0 };
 
     // Tree under a grouped view: one group per bucket of roots, whose rows are the roots and their visible
     // descendants (re-sliced from the tree rows on every expansion change).

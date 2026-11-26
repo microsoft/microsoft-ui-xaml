@@ -1150,51 +1150,83 @@ std::vector<TableViewRowFlattener::GroupSlice> TableViewRowFlattener::ReadGroupS
 }
 
 // A multi-level view (WPF: nested CollectionViewGroups): a group whose GroupItems are groups is followed by its
-// subgroups' slices, one level deeper, depth first.
+// subgroups' slices, one level deeper, depth first. An explicit stack, not recursion: the groups are app objects, and
+// one that contains itself (or a cycle of them) is shown once, as is anything deeper than c_maxGroupDepth.
 void TableViewRowFlattener::AppendSubgroupSlices(
     winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup const& group,
     GroupSlice&& slice,
     std::vector<GroupSlice>& slices)
 {
-    auto const children = group.GroupItems();
-    auto const firstChild = (children && children.Size() > 0) ? children.GetAt(0) : nullptr;
-    if (!firstChild || !firstChild.try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>())
-    {
-        slices.push_back(std::move(slice));
-        return;
-    }
+    using winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup;
+    static constexpr size_t c_maxGroupDepth{ 64 };
 
-    auto const identity = slice.Identity;
-    auto const level = slice.Level;
-    auto const childCount = children.Size();
-    slice.IsBottomLevel = false;
-    slices.push_back(std::move(slice));
-
-    std::unordered_set<winrt::hstring> identities;
-    for (uint32_t i = 0; i < childCount; ++i)
+    struct Frame
     {
-        auto const subgroup = children.GetAt(i).try_as<winrt::Microsoft::UI::Xaml::Data::ICollectionViewGroup>();
-        if (!subgroup)
+        winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> Children{ nullptr };
+        uint32_t Count{ 0 };
+        uint32_t Next{ 0 };
+        winrt::hstring Identity;
+        int32_t Level{ 0 };
+        std::unordered_set<winrt::hstring> Identities;
+    };
+    std::vector<Frame> stack;
+    std::unordered_set<uintptr_t> visited;
+
+    // Appends the slice; a group whose items are groups also opens a frame for its subgroups.
+    auto const open = [&stack, &visited, &slices](ICollectionViewGroup const& current, GroupSlice&& currentSlice)
+    {
+        visited.insert(CanonicalAddress(current));
+        auto const children = current.GroupItems();
+        auto const firstChild = (children && children.Size() > 0) ? children.GetAt(0) : nullptr;
+        if (!firstChild || !firstChild.try_as<ICollectionViewGroup>() || stack.size() >= c_maxGroupDepth)
+        {
+            slices.push_back(std::move(currentSlice));
+            return;
+        }
+
+        Frame frame;
+        frame.Children = children;
+        frame.Count = children.Size();
+        frame.Identity = currentSlice.Identity;
+        frame.Level = currentSlice.Level;
+        currentSlice.IsBottomLevel = false;
+        slices.push_back(std::move(currentSlice));
+        stack.push_back(std::move(frame));
+    };
+
+    open(group, std::move(slice));
+    while (!stack.empty())
+    {
+        auto& frame = stack.back();
+        if (frame.Next >= frame.Count)
+        {
+            stack.pop_back();
+            continue;
+        }
+
+        auto const subgroup = frame.Children.GetAt(frame.Next++).try_as<ICollectionViewGroup>();
+        if (!subgroup || visited.contains(CanonicalAddress(subgroup)))
         {
             continue;
         }
 
         GroupSlice child;
         child.Key = GroupKey(subgroup);
-        auto const childIdentity = identity + L"/" + IdentityForKey(child.Key);
+        auto const childIdentity = frame.Identity + L"/" + IdentityForKey(child.Key);
         child.Identity = childIdentity;
-        for (uint32_t suffix = 2; identities.contains(child.Identity); ++suffix)
+        for (uint32_t suffix = 2; frame.Identities.contains(child.Identity); ++suffix)
         {
             child.Identity = childIdentity + L"#" + winrt::to_hstring(suffix);
         }
-        identities.insert(child.Identity);
-        child.Level = level + 1;
+        frame.Identities.insert(child.Identity);
+        child.Level = frame.Level + 1;
         // Not observed: every change below a top-level group reaches its leaves last, and those are observed.
         if (auto const leaves = subgroup.Group().try_as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>())
         {
             child.Items = ShapingHelpers::EnumerateInspectableItems(leaves);
         }
-        AppendSubgroupSlices(subgroup, std::move(child), slices);
+        // May grow the stack: frame is not used after this.
+        open(subgroup, std::move(child));
     }
 }
 
@@ -1475,6 +1507,7 @@ void TableViewRowFlattener::SetTreeIndex(std::shared_ptr<ShapingHelpers::ParentK
     auto const keepAlive = shared_from_this();
 
     m_treeDetached = false;
+    ++m_treeGeneration;
     m_treeIndex = std::move(index);
     m_rootSegments = std::move(rootSegments);
 
@@ -1516,6 +1549,7 @@ void TableViewRowFlattener::ClearTreeIndex()
     // No rebuild: the repeater may still be bound mid-teardown, so an empty Reset is a hazard. The rows and
     // node rows stay as they are until the rows are swapped.
     m_treeDetached = true;
+    ++m_treeGeneration;
     m_treeIndexIsCurrent = false;
     m_treeIndex.reset();
     m_treeStructure.reset();
@@ -1986,8 +2020,7 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
 
         // Node row first, so the row reads collapsed when RemoveTreeRows notifies.
         m_nodeRows[static_cast<size_t>(index)].IsExpanded = false;
-        RemoveTreeRows(index + 1, runEnd - (index + 1));
-        if (!m_treeDetached)
+        if (RemoveTreeRows(index + 1, runEnd - (index + 1)))
         {
             OnTreeRowsPublished();
         }
@@ -2011,8 +2044,7 @@ bool TableViewRowFlattener::TryApplyNodeExpansionSplice(winrt::hstring const& no
     }
 
     m_nodeRows[static_cast<size_t>(index)].IsExpanded = true;
-    InsertTreeRows(index + 1, built, nodeRows);
-    if (!m_treeDetached)
+    if (InsertTreeRows(index + 1, built, nodeRows))
     {
         OnTreeRowsPublished();
     }
@@ -2093,19 +2125,19 @@ bool TableViewRowFlattener::TryPublishTreeRowsAsSplice(std::vector<winrt::IInspe
 
     for (auto const& step : steps)
     {
-        if (step.RemoveCount > 0)
+        // A handler that released or replaced the tree ends the splice; the new tree's rebuild is pending.
+        if (step.RemoveCount > 0 && !RemoveTreeRows(static_cast<int32_t>(step.At), static_cast<int32_t>(step.RemoveCount)))
         {
-            RemoveTreeRows(static_cast<int32_t>(step.At), static_cast<int32_t>(step.RemoveCount));
+            return true;
         }
-        if (step.InsertCount > 0 && !m_treeDetached)
+        if (step.InsertCount > 0)
         {
             const std::vector<winrt::IInspectable> items(built.begin() + step.InsertFrom, built.begin() + step.InsertFrom + step.InsertCount);
             const std::vector<NodeRow> rows(nodeRows.begin() + step.InsertFrom, nodeRows.begin() + step.InsertFrom + step.InsertCount);
-            InsertTreeRows(static_cast<int32_t>(step.At), items, rows);
-        }
-        if (m_treeDetached)
-        {
-            return true;
+            if (!InsertTreeRows(static_cast<int32_t>(step.At), items, rows))
+            {
+                return true;
+            }
         }
     }
 
@@ -2293,6 +2325,12 @@ bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex, std::pair<std:
     auto const structure = m_treeStructure;
     auto const generation = m_declarationGeneration;
 
+    // A Replace inserts after its removal, whose handlers may have released the tree.
+    if (!index || !structure || m_treeDetached)
+    {
+        return false;
+    }
+
     auto const item = m_view.GetAt(viewIndex);
     if (!item)
     {
@@ -2444,11 +2482,12 @@ bool TableViewRowFlattener::TryInsertTreeNode(uint32_t viewIndex, std::pair<std:
     row.Depth = depth;
     row.SiblingIndex = static_cast<int32_t>(position) + 1;
     row.SiblingCount = siblingCount;
-    InsertTreeRows(at, { item }, { row });
-    if (!m_treeDetached)
+    if (!InsertTreeRows(at, { item }, { row }))
     {
-        RenumberSiblingRows(parentRow, depth, siblingCount);
+        // A handler released or replaced the tree; its rebuild (or the release) shows the rows.
+        return false;
     }
+    RenumberSiblingRows(parentRow, depth, siblingCount);
     return true;
 }
 
@@ -2538,16 +2577,23 @@ bool TableViewRowFlattener::TryRemoveTreeNode(uint32_t viewIndex)
     }
     if (row >= 0)
     {
-        RemoveTreeRows(row, 1);
-        if (!m_treeDetached)
+        if (!RemoveTreeRows(row, 1))
         {
-            RenumberSiblingRows(parentRow, depth, siblingCount);
+            // A handler released or replaced the tree: a Replace must not go on to insert into it (TryInsertTreeNode).
+            return false;
         }
+        RenumberSiblingRows(parentRow, depth, siblingCount);
     }
     return true;
 }
 
-void TableViewRowFlattener::InsertTreeRows(
+bool TableViewRowFlattener::IsSameTree(
+    uint64_t generation, winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable> const& rows) const noexcept
+{
+    return !m_treeDetached && generation == m_treeGeneration && winrt::get_abi(rows) == winrt::get_abi(m_treeRows);
+}
+
+bool TableViewRowFlattener::InsertTreeRows(
     int32_t index,
     std::vector<winrt::IInspectable> const& items,
     std::vector<NodeRow> const& nodeRows)
@@ -2555,27 +2601,44 @@ void TableViewRowFlattener::InsertTreeRows(
     MUX_ASSERT(items.size() == nodeRows.size());
 
     // One row at a time, node row before its row: InsertAt notifies synchronously and handlers read node
-    // rows by index.
+    // rows by index. A handler can release the tree and declare another (ClearHierarchy then SetHierarchy), whose
+    // node rows are empty until its deferred rebuild: the loop stops at the first sign of that, and never inserts
+    // past the end.
+    auto const generation = m_treeGeneration;
+    auto const rows = m_treeRows;
     uint32_t insertAt = static_cast<uint32_t>(index);
-    for (size_t i = 0; i < items.size() && !m_treeDetached; ++i)
+    for (size_t i = 0; i < items.size(); ++i)
     {
+        if (!IsSameTree(generation, rows) || index < 0 || insertAt > m_nodeRows.size() || insertAt > rows.Size())
+        {
+            return false;
+        }
         m_nodeRows.insert(m_nodeRows.begin() + insertAt, nodeRows[i]);
         m_indexByNodeKeyValid = false;
         m_indexByItemValid = false;
-        m_treeRows.InsertAt(insertAt++, items[i]);
+        rows.InsertAt(insertAt++, items[i]);
     }
+    return IsSameTree(generation, rows);
 }
 
-void TableViewRowFlattener::RemoveTreeRows(int32_t index, int32_t count)
+bool TableViewRowFlattener::RemoveTreeRows(int32_t index, int32_t count)
 {
-    // From the end, so remaining rows keep their indices until removed.
-    for (int32_t i = index + count - 1; i >= index && !m_treeDetached; --i)
+    // From the end, so remaining rows keep their indices until removed. As in InsertTreeRows, a handler that
+    // replaced the tree stops the loop before a stale index reaches the new (empty) node rows.
+    auto const generation = m_treeGeneration;
+    auto const rows = m_treeRows;
+    for (int32_t i = index + count - 1; i >= index; --i)
     {
+        if (!IsSameTree(generation, rows) || i < 0 || static_cast<size_t>(i) >= m_nodeRows.size() || static_cast<uint32_t>(i) >= rows.Size())
+        {
+            return false;
+        }
         m_nodeRows.erase(m_nodeRows.begin() + i);
         m_indexByNodeKeyValid = false;
         m_indexByItemValid = false;
-        m_treeRows.RemoveAt(static_cast<uint32_t>(i));
+        rows.RemoveAt(static_cast<uint32_t>(i));
     }
+    return IsSameTree(generation, rows);
 }
 
 TableViewRowFlattener::NodeRow const* TableViewRowFlattener::TryGetNodeRow(int32_t index) const

@@ -723,6 +723,100 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Verifies a rows repeater handler (ElementClearing, ElementIndexChanged) that clears and declares the relation again while a collapse removes a node's visible descendants (three rows) ends the collapse safely: nothing is thrown, and the rows are the new relation's collapsed roots.")]
+        public void VerifyRelationRedeclaredFromRepeaterHandlerDuringCollapse()
+        {
+            var tableView = Place(MakeTree());
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            var armed = false;
+            var fired = 0;
+            UnhandledErrors unhandled = null;
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, FullTree, "precondition: every row expanded");
+                unhandled = new UnhandledErrors();
+                Action redeclare = () =>
+                {
+                    if (!armed)
+                    {
+                        return;
+                    }
+                    armed = false;
+                    fired++;
+                    tableView.ItemKeyPath = "";
+                    tableView.ItemKeyPath = IdPath;
+                };
+                var repeater = GetRowsRepeater(tableView);
+                repeater.ElementClearing += (s, e) => redeclare();
+                repeater.ElementIndexChanged += (s, e) => redeclare();
+                armed = true;
+                // Ada's visible descendants (Ben, Dan, Cy) leave one row at a time; the first notification re-declares.
+                ToggleTreeRow(tableView, "Ada", false);
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                unhandled.Dispose();
+                Verify.AreEqual(1, fired, "A repeater handler re-declared the relation during the collapse.");
+                Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown: {string.Join(" | ", unhandled.Messages)}");
+                VerifyTree(tableView, Roots, "a relation declared again starts collapsed");
+                Verify.AreEqual(3, GetProjectedCount(tableView), "Each root is projected once.");
+            });
+            Toggle(tableView, "Ada", true);
+            RunOnUIThread.Execute(() => VerifyTree(tableView, "Ada1- Ben2+ Cy2 Eve1+ Gus1", "the new tree expands"));
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Verifies a rows repeater handler that clears the relation while a Replace removes the old row ends the Replace before it inserts the new row into the released tree: nothing is thrown, and the rows end flat with the new row.")]
+        public void VerifyRelationClearedFromRepeaterHandlerDuringReplace()
+        {
+            ObservableCollection<TreeEmployee> list = null;
+            RunOnUIThread.Execute(() => list = MakeTree());
+            var tableView = Place(list);
+            RunOnUIThread.Execute(() => tableView.ExpandAllRows());
+            SettleLayout(tableView);
+
+            var armed = false;
+            var fired = 0;
+            string thrown = null;
+            UnhandledErrors unhandled = null;
+            RunOnUIThread.Execute(() =>
+            {
+                VerifyTree(tableView, FullTree, "precondition: every row expanded");
+                unhandled = new UnhandledErrors();
+                Action clear = () =>
+                {
+                    if (!armed)
+                    {
+                        return;
+                    }
+                    armed = false;
+                    fired++;
+                    tableView.ItemKeyPath = "";
+                };
+                var repeater = GetRowsRepeater(tableView);
+                repeater.ElementClearing += (s, e) => clear();
+                repeater.ElementIndexChanged += (s, e) => clear();
+                armed = true;
+                // Dan is a visible leaf: the Replace removes its row, then inserts Dov's.
+                thrown = ThrownTypeName(() => list[3] = new TreeEmployee { Id = 8, ManagerId = 2, Name = "Dov", Dept = "Eng" });
+            });
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                unhandled.Dispose();
+                Verify.AreEqual(1, fired, "A repeater handler cleared the relation during the Replace.");
+                Verify.AreEqual("no exception", thrown, "The Replace does not throw.");
+                Verify.AreEqual(0, unhandled.Messages.Count, $"Nothing is thrown later: {string.Join(" | ", unhandled.Messages)}");
+                VerifyTree(tableView, "Ada Ben Cy Dov Eve Fay Gus", "the relation cleared during the Replace");
+            });
+        }
+
         #endregion
 
         #region 3.8 Chevron and template

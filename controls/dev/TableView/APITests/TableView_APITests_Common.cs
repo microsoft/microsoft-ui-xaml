@@ -743,6 +743,29 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     }
     // The default row item: two plain, non-notifying string properties. Tests that need change
     // notification, validation, or grouping keys use the richer items defined by their own area.
+    // Application.UnhandledException while it is attached (handled, so the app keeps running). Create and dispose it on
+    // the UI thread.
+    internal sealed class UnhandledErrors : IDisposable
+    {
+        public UnhandledErrors()
+        {
+            Application.Current.UnhandledException += OnUnhandledException;
+        }
+
+        public List<string> Messages { get; } = new List<string>();
+
+        public void Dispose()
+        {
+            Application.Current.UnhandledException -= OnUnhandledException;
+        }
+
+        private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Messages.Add(e.Message ?? string.Empty);
+            e.Handled = true;
+        }
+    }
+
     internal sealed class Person
     {
         public string Name { get; set; }

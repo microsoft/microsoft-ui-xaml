@@ -1447,6 +1447,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies an app's grouped ICollectionView whose group contains itself loads: the cycle is followed once, so the subgroups are shown without unbounded recursion and no row is shown twice.")]
+        public void VerifyAppViewGroupThatContainsItselfLoads()
+        {
+            TableView tableView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                var people = MakeShapedPeople().Cast<object>().ToList();
+                var leaf = new AppViewGroup { Group = "Leaf" };
+                foreach (var person in people)
+                {
+                    leaf.GroupItems.Add(person);
+                }
+                var cycle = new AppViewGroup { Group = "Cycle" };
+                cycle.GroupItems.Add(cycle);
+                cycle.GroupItems.Add(leaf);
+                // A top-level group whose Group is a group with subgroups: a multi-level view, as CollectionViewSource's.
+                var top = new AppViewGroup { Group = cycle };
+                foreach (var person in people)
+                {
+                    top.GroupItems.Add(person);
+                }
+                var groups = new AppObservableVector<object>();
+                groups.Add(top);
+                tableView = CreateBindingTable(new AppCollectionView(people, groups));
+                LoadContent(tableView);
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var elements = GetProjectedElements(tableView);
+                var headers = elements.OfType<TableViewGroupHeader>().Count();
+                var rows = elements.OfType<TableViewRow>().Select(row => row.DataContext).ToList();
+                Log.Comment($"Projected: {headers} group headers, {rows.Count} rows.");
+                Verify.IsGreaterThan(headers, 0, "The groups are shown.");
+                Verify.AreEqual(rows.Count, rows.Distinct().Count(), "No row is shown twice.");
+            });
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Verifies a header click on an app's own ICollectionView, which has no ICollectionViewShaping, raises Sorting for the app to sort, and neither reorders the rows nor lights the arrow.")]
         public void VerifyHeaderSortOnAppCollectionViewRaisesSortingWithoutReordering()
         {
@@ -2129,23 +2171,33 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public uint Index { get; }
     }
 
+    // An app's group (ICollectionViewGroup) whose Group and GroupItems are set by the test, so a group can contain
+    // itself.
+    internal sealed partial class AppViewGroup : ICollectionViewGroup
+    {
+        public object Group { get; set; }
+        public global::Windows.Foundation.Collections.IObservableVector<object> GroupItems { get; } = new AppObservableVector<object>();
+    }
+
     // An app's own read-only ICollectionView over a fixed list (like a toolkit view): no
-    // ICollectionViewShaping, no groups, and it never changes.
+    // ICollectionViewShaping, it never changes, and it has the groups it is given (none by default).
     internal sealed partial class AppCollectionView : ICollectionView
     {
         private readonly List<object> m_items;
+        private readonly global::Windows.Foundation.Collections.IObservableVector<object> m_groups;
         private int m_current;
 
-        public AppCollectionView(IEnumerable<object> items)
+        public AppCollectionView(IEnumerable<object> items, global::Windows.Foundation.Collections.IObservableVector<object> groups = null)
         {
             m_items = items.ToList();
+            m_groups = groups;
         }
 
         public event EventHandler<object> CurrentChanged { add { } remove { } }
         public event CurrentChangingEventHandler CurrentChanging { add { } remove { } }
         public event global::Windows.Foundation.Collections.VectorChangedEventHandler<object> VectorChanged { add { } remove { } }
 
-        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => null;
+        public global::Windows.Foundation.Collections.IObservableVector<object> CollectionGroups => m_groups;
         public object CurrentItem => m_current >= 0 && m_current < m_items.Count ? m_items[m_current] : null;
         public int CurrentPosition => m_current;
         public bool HasMoreItems => false;
