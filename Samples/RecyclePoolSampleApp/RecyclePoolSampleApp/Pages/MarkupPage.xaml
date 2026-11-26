@@ -1,0 +1,102 @@
+<Page
+    x:Class="RecyclePoolSampleApp.Pages.MarkupPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:RecyclePoolSampleApp.Common"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Page.Resources>
+        <!--
+            RecyclingElementFactory is [contentproperty("Templates")], and Templates is an
+            IMap<String, DataTemplate>, so the templates go straight into the element's content and
+            x:Key supplies the template key. No code-behind sets any of this up.
+        -->
+        <muxc:RecyclingElementFactory x:Key="MarkupFactory">
+            <muxc:RecyclingElementFactory.RecyclePool>
+                <muxc:RecyclePool />
+            </muxc:RecyclingElementFactory.RecyclePool>
+
+            <DataTemplate x:Key="Header">
+                <Border Background="#2F5D8C" CornerRadius="4" Padding="10" Margin="0,0,0,4">
+                    <TextBlock Text="{Binding Label}" Foreground="White"
+                               Style="{StaticResource BodyStrongTextBlockStyle}" />
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="Item">
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10" Margin="16,0,0,4">
+                    <TextBlock Text="{Binding Label}" />
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="Footer">
+                <Border Background="#2F7D5A" CornerRadius="4" Padding="6" Margin="0,0,0,10">
+                    <TextBlock Text="{Binding Label}" Foreground="White" FontSize="12" />
+                </Border>
+            </DataTemplate>
+        </muxc:RecyclingElementFactory>
+    </Page.Resources>
+
+    <Grid Padding="16" ColumnSpacing="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="460" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Spacing="4">
+            <TextBlock Text="XAML markup" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="The whole factory - its RecyclePool and all three keyed templates - is declared in Page.Resources and handed to ItemsRepeater.ItemTemplate with a StaticResource. The only code-behind is the SelectTemplateKey handler, which markup cannot express." />
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+            <ScrollViewer x:Name="Scroller" Padding="8">
+                <muxc:ItemsRepeater x:Name="Repeater"
+                                    ItemTemplate="{StaticResource MarkupFactory}">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:StackLayout />
+                    </muxc:ItemsRepeater.Layout>
+                </muxc:ItemsRepeater>
+            </ScrollViewer>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1">
+            <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Scroll down" Click="OnScrollDown" />
+                    <Button Content="Scroll to top" Click="OnScrollTop" />
+                </StackPanel>
+
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap"
+                           FontFamily="Consolas"
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Parsed from markup" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="StateText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Markup used" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock FontFamily="Consolas" FontSize="12" TextWrapping="Wrap"
+                                   Text="&lt;muxc:RecyclingElementFactory x:Key=&quot;MarkupFactory&quot;&gt;&#x0a;  &lt;muxc:RecyclingElementFactory.RecyclePool&gt;&#x0a;    &lt;muxc:RecyclePool /&gt;&#x0a;  &lt;/muxc:RecyclingElementFactory.RecyclePool&gt;&#x0a;  &lt;DataTemplate x:Key=&quot;Header&quot;&gt; ... &lt;/DataTemplate&gt;&#x0a;  &lt;DataTemplate x:Key=&quot;Item&quot;&gt;   ... &lt;/DataTemplate&gt;&#x0a;  &lt;DataTemplate x:Key=&quot;Footer&quot;&gt; ... &lt;/DataTemplate&gt;&#x0a;&lt;/muxc:RecyclingElementFactory&gt;" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
