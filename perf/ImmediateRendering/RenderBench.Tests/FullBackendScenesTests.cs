@@ -77,7 +77,7 @@ static class FullBackendScenesTests
         Equal(SceneId.Form, SceneCatalog.All[9].Id, "S10 before the new scenes");
         Equal(string.Join(",", cases.Select(c => c.PlanId)), string.Join(",", SceneCatalog.All.Skip(10).Take(11).Select(s => s.PlanId)),
             "execution order");
-        Expect(BenchOptions.Usage.Contains("s1..s32"), "usage names the plan id range");
+        Expect(BenchOptions.Usage.Contains("s1..s33"), "usage names the plan id range");
     }
 
     static void OutOfScopeScenesRejected()

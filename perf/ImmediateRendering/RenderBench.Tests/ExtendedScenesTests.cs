@@ -60,7 +60,7 @@ static class ExtendedScenesTests
             Equal(planId, SceneCatalog.Get(scene).PlanId, $"{text} plan id");
             Equal(text, SceneCatalog.Get(scene).CliName, $"{text} cli name");
         }
-        Equal(30, SceneCatalog.All.Count, "catalog size (S1-S32 without the out-of-scope S17/S18)");
+        Equal(31, SceneCatalog.All.Count, "catalog size (S1-S33 without the out-of-scope S17/S18)");
         Equal(SceneId.Settings, SceneCatalog.All[0].Id, "S1 first");
         Equal(SceneId.Dashboard, SceneCatalog.All[1].Id, "S2 second");
     }
@@ -68,7 +68,7 @@ static class ExtendedScenesTests
     static void RejectsNumericAndUnknownScenes()
     {
         Expect(!BenchOptions.TryParse(["--scene", "3"], out _, out _), "numeric scene");
-        Expect(!BenchOptions.TryParse(["--scene", "s33"], out _, out _), "unknown plan id");
+        Expect(!BenchOptions.TryParse(["--scene", "s34"], out _, out _), "unknown plan id");
         Expect(!BenchOptions.TryParse(["--scene", "grid"], out _, out var error), "unknown name");
         Expect(error!.Contains("inbox"), $"error lists valid scenes: {error}");
     }
