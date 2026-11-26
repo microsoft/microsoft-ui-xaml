@@ -143,14 +143,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyGroupHeaderPeersDoNotKeepTheTableAlive()
         {
             var items = Enumerable.Range(0, 80).Select(i => new Person { Name = $"Person {i}", Role = $"G{i / 10}" }).ToList();
-            TableViewSource source = null;
+            Microsoft.UI.Xaml.Data.CollectionViewSource source = null;
             var tracked = new Dictionary<string, WeakReference>();
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(items);
-                source.GroupBy(item => (object)((Person)item).Role);
-                CreateAndLoadTable(source, tracked);
+                source = TableViewTreeTestHelpers.MakeShapingView(items, "Role");
+                CreateAndLoadTable(source.View, tracked);
             });
             SettleAfterLoad();
 

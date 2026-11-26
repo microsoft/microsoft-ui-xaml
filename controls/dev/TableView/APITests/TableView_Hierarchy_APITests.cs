@@ -908,9 +908,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies section-only alignment leaves ParentBy first-cell and chevron indentation unchanged at all three levels, with or without sections and in LTR/RTL.")]
         public void VerifySectionAlignmentDoesNotChangeParentByIndentation()
         {
-            TableViewSource source = null;
-            RunOnUIThread.Execute(() => source = Tree(MakeTree()));
-            var table = Place(source);
+            CollectionViewSource source = null;
+            RunOnUIThread.Execute(() => source = MakeShapingView(MakeTree()));
+            var table = Place(source.View);
             foreach (var grouped in new[] { false, true })
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })
@@ -919,8 +919,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     table.FlowDirection = flow;
                     table.Density = density;
-                    if (grouped) { source.GroupBy(ByDept); }
-                    else { source.ClearGroupBy(); }
+                    source.GroupDescriptions.Clear();
+                    if (grouped) { source.GroupDescriptions.Add(new PropertyGroupDescription("Dept")); }
                     table.ExpandAllRows();
                 });
                 SettleLayout(table);

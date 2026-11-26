@@ -1162,7 +1162,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyHeldRowPeerNeverActsOnReplacementItem()
         {
             var people = MakeNamedPeople(60);
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             TableView tableView = null;
             TableViewRow container = null;
             NamedPerson heldItem = null;
@@ -1172,8 +1172,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(people);
-                tableView = CreateNamedPeopleTable(source);
+                source = new CollectionViewSource { Source = people };
+                tableView = CreateNamedPeopleTable(source.View);
                 LoadContent(tableView);
             });
 
@@ -1188,7 +1188,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(held.GetName().StartsWith(heldItem.Name + ","), $"Precondition: the held peer names {heldItem.Name}, saw '{held.GetName()}'.");
                 selection = (ISelectionItemProvider)held.GetPattern(PatternInterface.SelectionItem);
                 scrollItem = (IScrollItemProvider)held.GetPattern(PatternInterface.ScrollItem);
-                source.Filter(new TableViewPredicate(o => o != heldItem));
+                ((ICollectionViewShaping)source.View).Filter = o => o != heldItem;
             });
 
             IdleSynchronizer.Wait();
@@ -1812,8 +1812,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies a held tree row element expands and collapses its own item and stays the row's element across the toggle (#12444).")]
         public void VerifyTreeRowElementExpandsItsOwnItemAndSurvivesTheToggle()
         {
-            var tableView = PlaceTreeTable(() => TableViewSource.From(TableViewTreeTestHelpers.MakeTree())
-                .ParentBy(TableViewTreeTestHelpers.ById, TableViewTreeTestHelpers.ByManager));
+            var tableView = PlaceTreeTable(() => TableViewTreeTestHelpers.MakeTree());
             AutomationPeer held = null;
             IExpandCollapseProvider heldProvider = null;
 
@@ -1850,14 +1849,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies held row elements never describe another item after a sort, and every row's current element names its own item (#12444).")]
         public void VerifyHeldRowElementsNeverRetargetAfterSort()
         {
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             TableView tableView = null;
             var held = new List<(NamedPerson item, AutomationPeer element)>();
 
             RunOnUIThread.Execute(() =>
             {
-                source = TableViewSource.From(MakeNamedPeople(40));
-                tableView = CreateNamedPeopleTable(source);
+                source = new CollectionViewSource { Source = MakeNamedPeople(40) };
+                tableView = CreateNamedPeopleTable(source.View);
                 LoadContent(tableView);
             });
             IdleSynchronizer.Wait();
@@ -1870,7 +1869,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     held.Add(((NamedPerson)row.DataContext, RowPeerOf(row)));
                 }
                 Verify.IsTrue(held.Count > 1, "Precondition: several rows must be realized.");
-                source.Sort("Name", SortDirection.Descending);
+                source.SortDescriptions.Add(new SortDescription("Name", CollectionViewSortDirection.Descending));
             });
             IdleSynchronizer.Wait();
 
@@ -1943,9 +1942,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         private static TableView CreateManyGroupsTable()
         {
-            var source = TableViewSource.From(Enumerable.Range(0, 80).Select(i => new Person { Name = $"P{i}", Role = $"G{i / 10}" }).ToList());
-            source.GroupBy(item => (object)((Person)item).Role);
-            var tableView = CreateTableViewShell(source, 600, 300);
+            var source = TableViewTreeTestHelpers.MakeShapingView(Enumerable.Range(0, 80).Select(i => new Person { Name = $"P{i}", Role = $"G{i / 10}" }).ToList(), "Role");
+            var tableView = CreateTableViewShell(source.View, 600, 300);
             tableView.Columns.Add(MakeTextTemplateColumn("Name"));
             return tableView;
         }

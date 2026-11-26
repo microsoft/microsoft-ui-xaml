@@ -570,7 +570,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     var items = Enumerable.Range(0, 40)
                         .Select(i => new Person { Name = $"Person {i}", Role = "Engineer" }).ToList();
-                    table = CreateTableView(itemsSource: TableViewSource.From(items), height: 241.3333333333333);
+                    table = CreateTableView(itemsSource: items, height: 241.3333333333333);
                     table.Density = density;
                     table.RequestedTheme = ElementTheme.Light;
                     table.HighContrastAdjustment = ElementHighContrastAdjustment.None;
@@ -2847,7 +2847,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySectionAlignmentClearsAndMovesWithFirstVisibleCell()
         {
             TableView table = null;
-            TableViewSource source = null;
+            CollectionViewSource source = null;
             Grid root = null;
             RunOnUIThread.Execute(() =>
             {
@@ -2857,8 +2857,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     column.Width = new GridLength(200);
                 }
-                source = TableViewSource.From(MakeItems());
-                table.ItemsSource = source;
+                source = new CollectionViewSource { Source = MakeItems() };
+                table.ItemsSource = source.View;
                 root = new Grid { FlowDirection = FlowDirection.LeftToRight };
                 root.Children.Add(table);
                 LoadContent(root);
@@ -2886,7 +2886,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.RequestedTheme = theme;
                     table.FlowDirection = flow;
                     table.Density = density.Density;
-                    source.ClearGroupBy();
+                    source.GroupDescriptions.Clear();
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2894,7 +2894,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     firstStart = TextStart(CellText(0));
                     secondStart = TextStart(CellText(1));
                     Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 0).Padding.Left);
-                    source.GroupBy(item => ((Person)item).Role);
+                    source.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2920,7 +2920,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Verify.AreEqual(0.0, GetRowCell(GetRealizedRows(table).First(), 1).Padding.Left,
                         "Restoring the first column clears the second column's reservation.");
-                    source.ClearGroupBy();
+                    source.GroupDescriptions.Clear();
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
@@ -2939,7 +2939,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             foreach (var density in DensityCases)
             {
                 TableView table = null;
-                TableViewSource source = null;
+                CollectionViewSource source = null;
                 double flatWidth = 0;
                 RunOnUIThread.Execute(() =>
                 {
@@ -2949,18 +2949,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     table.Density = density.Density;
                     table.Columns[0].Width = GridLength.Auto;
                     table.Columns[1].Width = new GridLength(200);
-                    source = TableViewSource.From(new List<Person>
+                    source = new CollectionViewSource { Source = new List<Person>
                     {
                         new Person { Name = "A section row with a long name", Role = "Design" }
-                    });
-                    table.ItemsSource = source;
+                    } };
+                    table.ItemsSource = source.View;
                     LoadContent(table);
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
                 {
                     flatWidth = table.Columns[0].ActualWidth;
-                    source.GroupBy(item => ((Person)item).Role);
+                    source.GroupDescriptions.Add(new PropertyGroupDescription("Role"));
                 });
                 SettleLayout(table);
                 RunOnUIThread.Execute(() =>
