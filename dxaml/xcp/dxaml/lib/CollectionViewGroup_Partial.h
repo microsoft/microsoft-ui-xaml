@@ -20,13 +20,16 @@ namespace DirectUI
         ~CollectionViewGroup() override;
 
         // ICollectionViewGroup2
-        IFACEMETHOD(get_Name)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
-        IFACEMETHOD(get_Items)(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override;
         IFACEMETHOD(get_ItemCount)(_Out_ INT32* pValue) override;
         IFACEMETHOD(get_IsBottomLevel)(_Out_ BOOLEAN* pValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+
+        // GetIids reports ICollectionViewGroup2 when QueryInterfaceImpl answers it (the feature is a run-time check, so
+        // it cannot be a static interface-map entry).
+        INT GetImplementedIIDsCount() override;
+        void CopyIIDsToArray(INT first, IID* pResult) override;
 
     public:
 

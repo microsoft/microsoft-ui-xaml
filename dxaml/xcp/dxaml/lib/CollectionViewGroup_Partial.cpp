@@ -52,20 +52,18 @@ HRESULT CollectionViewGroup::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void**
     return CollectionViewGroupGenerated::QueryInterfaceImpl(iid, ppObject);
 }
 
-IFACEMETHODIMP CollectionViewGroup::get_Name(_Outptr_result_maybenull_ IInspectable** ppValue)
+INT CollectionViewGroup::GetImplementedIIDsCount()
 {
-    ARG_VALIDRETURNPOINTER(ppValue);
-    IFC_RETURN(CheckThread());
-    IFC_RETURN(get_GroupImpl(ppValue));
-    return S_OK;
+    return CollectionViewGroupGenerated::GetImplementedIIDsCount() + (Feature_ExperimentalApi::IsEnabled() ? 1 : 0);
 }
 
-IFACEMETHODIMP CollectionViewGroup::get_Items(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue)
+void CollectionViewGroup::CopyIIDsToArray(INT first, IID* pResult)
 {
-    ARG_VALIDRETURNPOINTER(ppValue);
-    IFC_RETURN(CheckThread());
-    IFC_RETURN(get_GroupItemsImpl(ppValue));
-    return S_OK;
+    if (Feature_ExperimentalApi::IsEnabled())
+    {
+        pResult[first++] = __uuidof(xaml_data::ICollectionViewGroup2);
+    }
+    CollectionViewGroupGenerated::CopyIIDsToArray(first, pResult);
 }
 
 IFACEMETHODIMP CollectionViewGroup::get_ItemCount(_Out_ INT32* pValue)
@@ -90,6 +88,8 @@ IFACEMETHODIMP CollectionViewGroup::get_ItemCount(_Out_ INT32* pValue)
 IFACEMETHODIMP CollectionViewGroup::get_IsBottomLevel(_Out_ BOOLEAN* pValue)
 {
     ARG_VALIDRETURNPOINTER(pValue);
+    *pValue = FALSE;
+    IFC_RETURN(CheckThread());
     *pValue = TRUE;
     return S_OK;
 }

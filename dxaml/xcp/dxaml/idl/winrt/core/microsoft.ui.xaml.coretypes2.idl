@@ -2032,10 +2032,8 @@ namespace Microsoft.UI.Xaml.Data
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
-    interface ICollectionViewGroup2 
+    interface ICollectionViewGroup2 requires Microsoft.UI.Xaml.Data.ICollectionViewGroup
     {
-        Object Name{ get; };
-        Windows.Foundation.Collections.IObservableVector<Object> Items{ get; };
         Int32 ItemCount{ get; };
         Boolean IsBottomLevel{ get; };
     };

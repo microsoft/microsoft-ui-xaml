@@ -805,8 +805,11 @@ namespace Microsoft.UI.Xaml.Data
         Windows.Foundation.Boolean CanGroup { get; }
     }
 
-    // WPF's CollectionViewGroup (Name, Items, ItemCount, IsBottomLevel) for the groups of an ICollectionView. An
-    // interface rather than WPF's abstract class: the groups are created by the view, and an app's view can implement it.
+    // What WPF's CollectionViewGroup adds to ICollectionViewGroup for the groups of an ICollectionView: ItemCount and
+    // IsBottomLevel. WPF's Name and Items are ICollectionViewGroup.Group and GroupItems (and, for bindings, the group's
+    // Name and Items custom properties). An interface rather than WPF's abstract class: the groups are created by the
+    // view, and an app's view can implement it.
+    [Implements(typeof(Microsoft.UI.Xaml.Data.ICollectionViewGroup))]
     [DXamlIdlGroup("coretypes2")]
     [HideFromOldCodeGen]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
@@ -815,18 +818,10 @@ namespace Microsoft.UI.Xaml.Data
     {
         [PropertyKind(PropertyKind.PropertyOnly)]
         [OrderHint(0)]
-        Windows.Foundation.Object Name { get; }
-
-        [PropertyKind(PropertyKind.PropertyOnly)]
-        [OrderHint(1)]
-        Windows.Foundation.Collections.IObservableVector<Windows.Foundation.Object> Items { get; }
-
-        [PropertyKind(PropertyKind.PropertyOnly)]
-        [OrderHint(2)]
         Windows.Foundation.Int32 ItemCount { get; }
 
         [PropertyKind(PropertyKind.PropertyOnly)]
-        [OrderHint(3)]
+        [OrderHint(1)]
         Windows.Foundation.Boolean IsBottomLevel { get; }
     }
 

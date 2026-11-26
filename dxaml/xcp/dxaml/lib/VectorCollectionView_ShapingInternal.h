@@ -819,19 +819,8 @@ namespace DirectUI::ShapingEngine
             return S_OK;
         }
 
-        // ICollectionViewGroup2 (WPF: CollectionViewGroup)
-        IFACEMETHODIMP get_Name(_Outptr_result_maybenull_ IInspectable** ppValue) override
-        {
-            ARG_VALIDRETURNPOINTER(ppValue);
-            return m_tpKey.CopyTo(ppValue);
-        }
-
-        IFACEMETHODIMP get_Items(_Outptr_ wfc::IObservableVector<IInspectable*>** ppValue) override
-        {
-            ARG_VALIDRETURNPOINTER(ppValue);
-            return get_GroupItems(ppValue);
-        }
-
+        // ICollectionViewGroup2 (WPF: CollectionViewGroup.ItemCount and IsBottomLevel; its Name and Items are
+        // ICollectionViewGroup.Group and GroupItems)
         IFACEMETHODIMP get_ItemCount(_Out_ INT32* pValue) override
         {
             ARG_VALIDRETURNPOINTER(pValue);

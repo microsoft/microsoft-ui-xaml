@@ -4091,18 +4091,18 @@ namespace Framework { namespace DataBinding {
             shaping->Culture = L"en-US";
             VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
 
-            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup): Name, Items, ItemCount, IsBottomLevel.");
+            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup.ItemCount and IsBottomLevel), which requires ICollectionViewGroup (WPF Name and Items are Group and GroupItems).");
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
             auto top = safe_cast<ICollectionViewGroup2^>(cvs->View->CollectionGroups->GetAt(0));
-            VERIFY_ARE_EQUAL(1, safe_cast<int32>(top->Name));
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(top->Group));
             VERIFY_ARE_EQUAL(2, top->ItemCount);
             VERIFY_IS_FALSE(top->IsBottomLevel);
-            VERIFY_ARE_EQUAL(2u, top->Items->Size);
-            auto bottom = safe_cast<ICollectionViewGroup2^>(top->Items->GetAt(0));
+            VERIFY_ARE_EQUAL(2u, top->GroupItems->Size);
+            auto bottom = safe_cast<ICollectionViewGroup2^>(top->GroupItems->GetAt(0));
             VERIFY_IS_TRUE(bottom->IsBottomLevel);
             VERIFY_ARE_EQUAL(1, bottom->ItemCount);
-            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(bottom->Name)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(bottom->Group)->Data());
 
             LOG_OUTPUT(L"An IsSourceGrouped view's groups answer it too.");
             auto groupedSource = ref new Platform::Collections::Vector<Object^>();
@@ -4116,9 +4116,22 @@ namespace Framework { namespace DataBinding {
             sourceGrouped->ItemsPath = ref new PropertyPath(L"ObjectProperty");
             sourceGrouped->Source = groupedSource;
             auto sourceGroup = safe_cast<ICollectionViewGroup2^>(sourceGrouped->View->CollectionGroups->GetAt(0));
-            VERIFY_IS_TRUE(sourceGroup->Name == firstGroup);
+            VERIFY_IS_TRUE(sourceGroup->Group == firstGroup);
             VERIFY_ARE_EQUAL(4, sourceGroup->ItemCount);
             VERIFY_IS_TRUE(sourceGroup->IsBottomLevel);
+            {
+                LOG_OUTPUT(L"GetIids reports ICollectionViewGroup2 on a group that answers it.");
+                ULONG iidCount = 0;
+                IID* iids = nullptr;
+                VERIFY_SUCCEEDED(reinterpret_cast<IInspectable*>(sourceGroup)->GetIids(&iidCount, &iids));
+                bool isListed = false;
+                for (ULONG i = 0; i < iidCount; ++i)
+                {
+                    isListed = isListed || InlineIsEqualGUID(iids[i], __uuidof(ICollectionViewGroup2^));
+                }
+                CoTaskMemFree(iids);
+                VERIFY_IS_TRUE(isListed);
+            }
 
             LOG_OUTPUT(L"A group name that is a collection puts the item in each of its groups, as in WPF.");
             auto tagged = ref new Platform::Collections::Vector<Object^>();
@@ -4141,29 +4154,29 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(2u, tagGroups->Size);
             auto red = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(0));
             auto blue = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(1));
-            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(red->Name)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"x", ShapingNamesOf(red->Items)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(blue->Name)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"xy", ShapingNamesOf(blue->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(red->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"x", ShapingNamesOf(red->GroupItems)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(blue->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"xy", ShapingNamesOf(blue->GroupItems)->Data());
             VERIFY_ARE_EQUAL(3u, tags->View->Size);
 
             LOG_OUTPUT(L"A source change while an item is in several groups recomputes the groups.");
             auto added = MakeShapingItem(L"w", 0);
             added->ObjectProperty = L"red";
             tagged->Append(added);
-            VERIFY_ARE_STRINGS_EQUAL(L"xw", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(0))->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"xw", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(0))->GroupItems)->Data());
             tagged->RemoveAt(0);
             VERIFY_ARE_EQUAL(2u, tags->View->CollectionGroups->Size);
-            VERIFY_ARE_STRINGS_EQUAL(L"w", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(1))->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"w", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(tags->View->CollectionGroups->GetAt(1))->GroupItems)->Data());
 
             LOG_OUTPUT(L"GroupDescription.OnPropertyChanged regroups the views that use the description.");
             auto threshold = ref new ThresholdGroupDescription();
             auto byThreshold = ref new CollectionViewSource();
             byThreshold->Source = MakeShapingSource(); // b1 d2 a1 c0
             byThreshold->GroupDescriptions->Append(threshold);
-            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(1))->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"d", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(1))->GroupItems)->Data());
             threshold->Threshold = 1;
-            VERIFY_ARE_STRINGS_EQUAL(L"bda", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(0))->Items)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"bda", ShapingNamesOf(safe_cast<ICollectionViewGroup2^>(byThreshold->View->CollectionGroups->GetAt(0))->GroupItems)->Data());
         });
     }
 
