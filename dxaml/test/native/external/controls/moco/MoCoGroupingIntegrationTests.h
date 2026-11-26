@@ -160,6 +160,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates keyboard reorder does nothing on a ListView with CanReorderItems over a sorted CollectionViewSource view, as over a grouped one")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(DropOverAppViewSortedDuringDragDoesNotReorder)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates a drag over a ListView whose ItemsSource is the app's own ICollectionViewShaping view, which a DragOver handler sorts mid-drag, reorders nothing on the drop")
+        END_TEST_METHOD()
+
         //
         // Platform:Desktop
         //

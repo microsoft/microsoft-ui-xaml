@@ -1527,13 +1527,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a throwing GroupExpanding handler's exception reaches the caller, as Sorting's does: raised once, the group does not expand, and focus stays in the table; a throwing GroupCollapsed handler's exception reaches the caller after the group collapsed.")]
+        [TestProperty("Description", "Verifies a throwing GroupExpanding handler's exception reaches the caller, as Sorting's does: raised once, the group does not expand, and focus stays in the table. ExpandGroup throws to its caller; the automation peer's Expand posts the expansion, so the exception reaches Application.UnhandledException instead. A throwing GroupCollapsed handler's exception reaches the caller after the group collapsed.")]
         [TestProperty("data:Route", "{Peer, ExpandGroup}")]
         public void VerifyThrowingGroupHandlerPropagates()
         {
             var route = ((string)TestContext.DataRow["Route"]).Trim();
             TableView tableView = null;
             Exception escaped = null;
+            UnhandledErrors unhandled = null;
             var raised = 0;
             var throwing = true;
 
@@ -1564,6 +1565,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (route == "Peer")
                     {
+                        // Posted to the dispatcher: the handler runs on a later turn, outside this try.
+                        unhandled = new UnhandledErrors();
                         GetExpandCollapseProvider(tableView, 0).Expand();
                     }
                     else
@@ -1586,8 +1589,18 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
-                Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
+                if (route == "Peer")
+                {
+                    unhandled.Dispose();
+                    Verify.IsNull(escaped, "Peer: Expand posts the expansion, so nothing is thrown to its caller.");
+                    Verify.AreEqual(1, unhandled.Messages.Count, $"Peer: the handler's exception reaches Application.UnhandledException once: {string.Join(" | ", unhandled.Messages)}");
+                    Verify.IsTrue(unhandled.Messages[0].Contains("GroupExpanding handler fault"), $"Peer: it is the handler's exception: {unhandled.Messages[0]}");
+                }
+                else
+                {
+                    Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
+                    Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
+                }
                 Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
                 Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: a throwing GroupExpanding stops the expansion.");
                 var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;

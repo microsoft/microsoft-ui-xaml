@@ -2311,4 +2311,227 @@ void MoCoGroupingIntegrationTests::AddToEmptyGroupAtBegining()
         });
     }
 
+#ifdef MUX_PRERELEASE
+    // ICollectionViewShaping::DeferRefresh's return type (Windows.Foundation.IClosable), which C++/CX does not name.
+    using RefreshDeferral = decltype(std::declval<xaml_data::ICollectionViewShaping^>()->DeferRefresh());
+
+    // The app's own view (ICollectionView with ICollectionViewShaping, as a toolkit view): it presents its source in
+    // order and only records the rules it is given, so a ListView sees it as sorted once it has a SortDescription.
+    // Changes (a reorder's RemoveAt and InsertAt) go to the source, whose changes it raises as its own.
+    ref class RecordingShapingView sealed : public xaml_data::ICollectionView, public xaml_data::ICollectionViewShaping
+    {
+    internal:
+        RecordingShapingView(Platform::Collections::Vector<Platform::Object^>^ source)
+            : _source(source), _currentPosition(-1)
+        {
+            _sortDescriptions = ref new Platform::Collections::Vector<xaml_data::SortDescription^>();
+            _groupDescriptions = ref new Platform::Collections::Vector<xaml_data::GroupDescription^>();
+            Platform::WeakReference weakThis(this);
+            _source->VectorChanged += ref new wfc::VectorChangedEventHandler<Platform::Object^>(
+                [weakThis](wfc::IObservableVector<Platform::Object^>^, wfc::IVectorChangedEventArgs^ args)
+            {
+                if (auto strongThis = weakThis.Resolve<RecordingShapingView>())
+                {
+                    strongThis->VectorChanged(strongThis, args);
+                }
+            });
+        }
+
+    public:
+        // ICollectionViewShaping
+        property wfc::IObservableVector<xaml_data::SortDescription^>^ SortDescriptions
+        {
+            virtual wfc::IObservableVector<xaml_data::SortDescription^>^ get() { return _sortDescriptions; }
+        }
+        property wfc::IObservableVector<xaml_data::GroupDescription^>^ GroupDescriptions
+        {
+            virtual wfc::IObservableVector<xaml_data::GroupDescription^>^ get() { return _groupDescriptions; }
+        }
+        property xaml_data::CollectionViewFilter^ Filter
+        {
+            virtual xaml_data::CollectionViewFilter^ get() { return _filter; }
+            virtual void set(xaml_data::CollectionViewFilter^ value) { _filter = value; }
+        }
+        property xaml_data::CollectionViewComparer^ CustomSort
+        {
+            virtual xaml_data::CollectionViewComparer^ get() { return _customSort; }
+            virtual void set(xaml_data::CollectionViewComparer^ value) { _customSort = value; }
+        }
+        property Platform::Object^ SourceCollection
+        {
+            virtual Platform::Object^ get() { return _source; }
+        }
+        property Platform::String^ Culture
+        {
+            virtual Platform::String^ get() { return _culture; }
+            virtual void set(Platform::String^ value) { _culture = value; }
+        }
+        property bool CanSort { virtual bool get() { return true; } }
+        property bool CanFilter { virtual bool get() { return true; } }
+        property bool CanGroup { virtual bool get() { return false; } }
+        virtual void Refresh() {}
+        // Not used by a ListView.
+        virtual RefreshDeferral DeferRefresh() { throw ref new Platform::NotImplementedException(); }
+
+        // ICollectionView
+        property Platform::Object^ CurrentItem
+        {
+            virtual Platform::Object^ get()
+            {
+                return (_currentPosition >= 0 && _currentPosition < static_cast<int>(_source->Size)) ? _source->GetAt(_currentPosition) : nullptr;
+            }
+        }
+        property int CurrentPosition { virtual int get() { return _currentPosition; } }
+        property bool IsCurrentAfterLast { virtual bool get() { return _currentPosition >= static_cast<int>(_source->Size); } }
+        property bool IsCurrentBeforeFirst { virtual bool get() { return _currentPosition < 0; } }
+        property wfc::IObservableVector<Platform::Object^>^ CollectionGroups
+        {
+            virtual wfc::IObservableVector<Platform::Object^>^ get() { return nullptr; }
+        }
+        property bool HasMoreItems { virtual bool get() { return false; } }
+        virtual event wf::EventHandler<Platform::Object^>^ CurrentChanged;
+        virtual event xaml_data::CurrentChangingEventHandler^ CurrentChanging;
+        virtual bool MoveCurrentTo(Platform::Object^ item)
+        {
+            unsigned int index = 0;
+            return item ? (_source->IndexOf(item, &index) && MoveCurrentToPosition(static_cast<int>(index))) : MoveCurrentToPosition(-1);
+        }
+        virtual bool MoveCurrentToPosition(int index)
+        {
+            if (index < -1 || index >= static_cast<int>(_source->Size))
+            {
+                return false;
+            }
+            _currentPosition = index;
+            CurrentChanged(this, nullptr);
+            return true;
+        }
+        virtual bool MoveCurrentToFirst() { return MoveCurrentToPosition(0); }
+        virtual bool MoveCurrentToLast() { return MoveCurrentToPosition(static_cast<int>(_source->Size) - 1); }
+        virtual bool MoveCurrentToNext() { return MoveCurrentToPosition(_currentPosition + 1); }
+        virtual bool MoveCurrentToPrevious() { return MoveCurrentToPosition(_currentPosition - 1); }
+        virtual wf::IAsyncOperation<xaml_data::LoadMoreItemsResult>^ LoadMoreItemsAsync(unsigned int)
+        {
+            throw ref new Platform::NotImplementedException();
+        }
+
+        // IObservableVector<Object^>
+        virtual event wfc::VectorChangedEventHandler<Platform::Object^>^ VectorChanged;
+        virtual wfc::IIterator<Platform::Object^>^ First() { return _source->First(); }
+        virtual property unsigned int Size { unsigned int get() { return _source->Size; } }
+        virtual Platform::Object^ GetAt(unsigned int index) { return _source->GetAt(index); }
+        virtual wfc::IVectorView<Platform::Object^>^ GetView() { return _source->GetView(); }
+        virtual bool IndexOf(Platform::Object^ value, unsigned int* index) { return _source->IndexOf(value, index); }
+        virtual void SetAt(unsigned int index, Platform::Object^ value) { _source->SetAt(index, value); }
+        virtual void InsertAt(unsigned int index, Platform::Object^ value) { _source->InsertAt(index, value); }
+        virtual void RemoveAt(unsigned int index) { _source->RemoveAt(index); }
+        virtual void Append(Platform::Object^ value) { _source->Append(value); }
+        virtual void RemoveAtEnd() { _source->RemoveAtEnd(); }
+        virtual void Clear() { _source->Clear(); }
+        virtual unsigned int GetMany(unsigned int startIndex, Platform::WriteOnlyArray<Platform::Object^>^ items) { return _source->GetMany(startIndex, items); }
+        virtual void ReplaceAll(const Platform::Array<Platform::Object^>^ items) { _source->ReplaceAll(items); }
+
+    private:
+        Platform::Collections::Vector<Platform::Object^>^ _source;
+        Platform::Collections::Vector<xaml_data::SortDescription^>^ _sortDescriptions;
+        Platform::Collections::Vector<xaml_data::GroupDescription^>^ _groupDescriptions;
+        xaml_data::CollectionViewFilter^ _filter;
+        xaml_data::CollectionViewComparer^ _customSort;
+        Platform::String^ _culture;
+        int _currentPosition;
+    };
+#endif
+
+    void MoCoGroupingIntegrationTests::DropOverAppViewSortedDuringDragDoesNotReorder()
+    {
+#ifdef MUX_PRERELEASE
+        TestCleanupWrapper cleanup;
+        xaml_controls::ListView^ list = nullptr;
+        RecordingShapingView^ view = nullptr;
+        Platform::Collections::Vector<Platform::Object^>^ source = nullptr;
+        Microsoft::UI::Xaml::FrameworkElement^ first = nullptr;
+        ::Windows::Foundation::Point overPoint = { 0, 0 };
+        ::Windows::Foundation::Point dropPoint = { 0, 0 };
+        auto dragStarts = std::make_shared<int>(0);
+        auto sortedDuringDrag = std::make_shared<bool>(false);
+        auto dragCompletedRegistration = CreateSafeEventRegistration(xaml_controls::ListViewBase, DragItemsCompleted);
+        auto dragCompleted = std::make_shared<Event>();
+
+        RunOnUIThread([&]()
+        {
+            list = ref new xaml_controls::ListView();
+            list->Width = 400;
+            list->Height = 600;
+            source = ref new Platform::Collections::Vector<Platform::Object^>();
+            for (auto name : { L"apple", L"banana", L"avocado", L"cherry", L"blueberry" })
+            {
+                source->Append(ref new Platform::String(name));
+            }
+            view = ref new RecordingShapingView(source);
+            list->ItemsSource = view;
+            list->CanDragItems = true;
+            list->CanReorderItems = true;
+            list->AllowDrop = true;
+            list->DragItemsStarting += ref new xaml_controls::DragItemsStartingEventHandler([dragStarts](Platform::Object^, xaml_controls::DragItemsStartingEventArgs^)
+            {
+                ++*dragStarts;
+            });
+            // handledEventsToo: the list handles its own DragOver. The first one the drag raises sorts the app's view.
+            auto weakView = Platform::WeakReference(view);
+            list->AddHandler(Microsoft::UI::Xaml::UIElement::DragOverEvent, ref new Microsoft::UI::Xaml::DragEventHandler(
+                [sortedDuringDrag, weakView](Platform::Object^, Microsoft::UI::Xaml::DragEventArgs^)
+            {
+                auto strongView = weakView.Resolve<RecordingShapingView>();
+                if (!*sortedDuringDrag && strongView)
+                {
+                    *sortedDuringDrag = true;
+                    strongView->SortDescriptions->Append(ref new xaml_data::SortDescription(L"", xaml_data::CollectionViewSortDirection::Descending));
+                }
+            }), true /* handledEventsToo */);
+            dragCompletedRegistration.Attach(list,
+                ref new wf::TypedEventHandler<xaml_controls::ListViewBase^, xaml_controls::DragItemsCompletedEventArgs^>(
+                [dragCompleted](xaml_controls::ListViewBase^, xaml_controls::DragItemsCompletedEventArgs^)
+            {
+                dragCompleted->Set();
+            }));
+            auto rootPanel = ref new xaml_controls::Grid();
+            rootPanel->Children->Append(list);
+            test_infra::TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            first = safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(0));
+            overPoint = ControlHelper::GetCenterOfElement(safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(2)));
+            dropPoint = ControlHelper::GetCenterOfElement(safe_cast<Microsoft::UI::Xaml::FrameworkElement^>(list->ContainerFromIndex(3)));
+        });
+
+        LOG_OUTPUT(L"The view is unsorted when the drag starts; a DragOver handler sorts it; the drop decides again and reorders nothing.");
+        TestServices::InputHelper->MouseButtonDown(first, 0, 0, test_infra::MouseButton::Left);
+        TestServices::InputHelper->MoveMouse(overPoint);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        TestServices::InputHelper->MoveMouse(dropPoint);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        TestServices::InputHelper->MouseButtonUp(dropPoint, test_infra::MouseButton::Left);
+        test_infra::TestServices::WindowHelper->WaitForIdle();
+        dragCompleted->WaitForDefault();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_ARE_EQUAL(1, *dragStarts, L"Precondition: the drag started.");
+            VERIFY_IS_TRUE(*sortedDuringDrag, L"Precondition: a DragOver handler sorted the view during the drag.");
+            VERIFY_ARE_EQUAL(5u, source->Size);
+            VERIFY_ARE_EQUAL(0, wcscmp(L"apple", safe_cast<Platform::String^>(source->GetAt(0))->Data()), L"The source order is unchanged.");
+            VERIFY_ARE_EQUAL(0, wcscmp(L"banana", safe_cast<Platform::String^>(source->GetAt(1))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"avocado", safe_cast<Platform::String^>(source->GetAt(2))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"cherry", safe_cast<Platform::String^>(source->GetAt(3))->Data()));
+            VERIFY_ARE_EQUAL(0, wcscmp(L"blueberry", safe_cast<Platform::String^>(source->GetAt(4))->Data()));
+        });
+#else
+        // The stable build has no shaping API; its reorder is main's.
+        LOG_OUTPUT(L"Skipped: reorder over a sorted view is refused in prerelease builds only.");
+#endif
+    }
+
 }}}}}}
