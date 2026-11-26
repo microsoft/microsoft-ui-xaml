@@ -934,13 +934,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             VerifyGutterRequest(tableView, recorder, "Bob", expandable: false, "Bob after losing Fin");
 
             // Scroll a taller tree so containers are recycled; one that hosted an expandable row must
-            // now host a leaf, and its gutter must follow.
+            // now host a leaf, and its gutter must follow. Roots have zero to two children at random:
+            // with exactly one child each, rows alternate expandable/leaf, and when the realized row
+            // count is even a container that leaves the top is reused for a row of the same kind.
             RunOnUIThread.Execute(() =>
             {
+                var random = new Random(12654);
                 for (var i = 0; i < 40; i++)
                 {
                     list.Add(new LiveRow { Id = 100 + i, Name = $"R{i}", Score = 100 + i, Team = "Z" });
-                    list.Add(new LiveRow { Id = 200 + i, Name = $"C{i}", Score = 1, Team = "Z", ParentId = 100 + i });
+                    for (var j = random.Next(3); j > 0; j--)
+                    {
+                        list.Add(new LiveRow { Id = 1000 + i * 10 + j, Name = $"C{i}.{j}", Score = j, Team = "Z", ParentId = 100 + i });
+                    }
                 }
             });
             SettleLayout(tableView);
@@ -958,7 +964,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             string reusedName = null;
             TableViewRow reused = null;
-            for (var offset = 400.0; offset <= 2400.0 && reusedName == null; offset += 400.0)
+            double scrollable = 0;
+            RunOnUIThread.Execute(() => scrollable = GetBodyScroller(tableView).ScrollableHeight);
+            for (var offset = 400.0; offset < scrollable && reusedName == null; offset += 400.0)
             {
                 ScrollBodyTo(tableView, ScrollAxis.Vertical, offset);
                 RunOnUIThread.Execute(() =>
@@ -1019,8 +1027,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifySectionAlignmentDoesNotChangeParentByIndentation()
         {
             CollectionViewSource source = null;
-            RunOnUIThread.Execute(() => source = MakeShapingView(MakeTree()));
-            var table = Place(source.View);
+            ICollectionView view = null;
+            RunOnUIThread.Execute(() =>
+            {
+                source = MakeShapingView(MakeTree());
+                view = source.View;
+            });
+            var table = Place(view);
             foreach (var grouped in new[] { false, true })
             foreach (var flow in new[] { FlowDirection.LeftToRight, FlowDirection.RightToLeft })
             foreach (var density in new[] { TableViewDensity.Comfortable, TableViewDensity.Standard, TableViewDensity.Compact })

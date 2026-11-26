@@ -1695,7 +1695,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(SortIndicatorDirection.Ascending, FindSortIndicator(tableView, 0)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Ascending, ShownSortDirection(tableView, 0),
                     "The header arrow must show the set direction.");
                 Verify.AreNotEqual(helpTextBefore, CreateColumnHeaderPeer(tableView, tableView.Columns[0]).GetHelpText(),
                     "The header's UIA help text must report the set direction.");
@@ -1709,9 +1709,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.None, tableView.Columns[0].SortDirection, "Lighting another column must clear this one.");
-                Verify.AreEqual(SortIndicatorDirection.None, FindSortIndicator(tableView, 0)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.None, ShownSortDirection(tableView, 0),
                     "The cleared column's arrow must be off.");
-                Verify.AreEqual(SortIndicatorDirection.Descending, FindSortIndicator(tableView, 1)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Descending, ShownSortDirection(tableView, 1),
                     "The newly set column must show its arrow.");
                 VerifySequence(SourceOrderNames, RowValues(tableView, person => person.Name), "still no reshape");
 
@@ -2358,7 +2358,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(SortIndicatorDirection.Descending, FindSortIndicator(tableView, 2)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Descending, ShownSortDirection(tableView, 2),
                     "Precondition: the preset direction shows its arrow.");
                 InvokeHeader(tableView, 0);
             });
@@ -2369,7 +2369,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(SortDirection.None, preset.SortDirection, "Sorting another column must clear the preset column.");
                 Verify.AreEqual(1, tableView.Columns.Count(c => c.SortDirection != SortDirection.None), "Exactly one column may be lit.");
-                Verify.AreEqual(SortIndicatorDirection.None, FindSortIndicator(tableView, 2)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.None, ShownSortDirection(tableView, 2),
                     "The preset column's arrow must be cleared.");
                 preset.SortDirection = SortDirection.Ascending;
                 Verify.IsTrue(tableView.ClearSort(), "ClearSort must report clearing the sort.");
@@ -2380,7 +2380,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(tableView.Columns.All(c => c.SortDirection == SortDirection.None), "ClearSort must clear every column, including an app-set one.");
-                Verify.AreEqual(SortIndicatorDirection.None, FindSortIndicator(tableView, 2)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.None, ShownSortDirection(tableView, 2),
                     "No arrow may remain.");
             });
         }
@@ -2433,7 +2433,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                         SortDirection.Descending => SortIndicatorDirection.Descending,
                         _ => SortIndicatorDirection.None,
                     };
-                    Verify.AreEqual(expected, FindSortIndicator(tableView, i)?.Direction ?? SortIndicatorDirection.None,
+                    Verify.AreEqual(expected, ShownSortDirection(tableView, i),
                         $"Column {i}'s arrow must match its SortDirection.");
                 }
             });
@@ -2555,7 +2555,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, $"{route}: the previous sort must stay lit.");
                 Verify.AreEqual(SortDirection.None, tableView.Columns[1].SortDirection, $"{route}: the failed sort must not light its column.");
-                Verify.AreEqual(SortIndicatorDirection.Ascending, FindSortIndicator(tableView, 0)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Ascending, ShownSortDirection(tableView, 0),
                     $"{route}: the previous arrow must stay.");
                 VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), $"{route}: the previous order must survive");
                 Verify.AreEqual(1, sortingCount, "Sorting is raised before the comparer runs.");
@@ -2628,7 +2628,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(SortDirection.Descending, tableView.Columns[0].SortDirection, "The column must stay lit.");
-                Verify.AreEqual(SortIndicatorDirection.Descending, FindSortIndicator(tableView, 0)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Descending, ShownSortDirection(tableView, 0),
                     "The arrow must stay.");
                 VerifySequence(Enumerable.Reverse(NameAscendingOrder).ToList(), RowValues(tableView, person => person.Name),
                     "the previous order must survive the failed re-sort");
@@ -3126,7 +3126,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(0, sortEvents, "Closing the gate must raise no Sorting or Sorted.");
                 Verify.AreEqual(SortDirection.Ascending, tableView.Columns[0].SortDirection, "The applied sort must stay.");
                 VerifySequence(NameAscendingOrder, RowValues(tableView, person => person.Name), "the rows must stay sorted");
-                Verify.AreEqual(SortIndicatorDirection.Ascending, FindSortIndicator(tableView, 0)?.Direction ?? SortIndicatorDirection.None,
+                Verify.AreEqual(SortIndicatorDirection.Ascending, ShownSortDirection(tableView, 0),
                     "The arrow must keep showing the applied sort.");
                 Verify.IsNull(CreateColumnHeaderPeer(tableView, tableView.Columns[0]).GetPattern(PatternInterface.Invoke),
                     "The rebuilt header must not offer Invoke while the gate is closed.");
@@ -3527,6 +3527,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         // "TableViewSortIndicator" by TableView::AppendSortIndicatorVisual.
         internal static SortIndicator FindSortIndicator(TableView tableView, int columnIndex)
             => FindVisualChildrenByType<SortIndicator>(GetHeaderCell(tableView, columnIndex)).FirstOrDefault();
+
+        // The arrow a header shows: its glyph's direction while the header is in a sorted visual state, else None. An
+        // unsorted sortable header keeps an (Ascending) glyph in its collapsed host so the hover hint can fade in.
+        internal static SortIndicatorDirection ShownSortDirection(TableView tableView, int columnIndex)
+        {
+            var header = GetHeaderCell(tableView, columnIndex);
+            var root = header != null && Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(header) > 0
+                ? Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(header, 0) as FrameworkElement
+                : null;
+            var state = root == null ? null
+                : VisualStateManager.GetVisualStateGroups(root).FirstOrDefault(group => group.Name == "SortStates")?.CurrentState?.Name;
+            return state == "SortAscending" || state == "SortDescending"
+                ? FindSortIndicator(tableView, columnIndex)?.Direction ?? SortIndicatorDirection.None
+                : SortIndicatorDirection.None;
+        }
 
         // Call on the UI thread.
         internal static void InvokeHeader(TableView tableView, int columnIndex)

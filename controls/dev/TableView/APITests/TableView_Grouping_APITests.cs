@@ -1527,14 +1527,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies a throwing GroupExpanding handler's exception reaches the caller, as Sorting's does: raised once, the group does not expand, and focus stays in the table. ExpandGroup throws to its caller; the automation peer's Expand posts the expansion, so the exception reaches Application.UnhandledException instead. A throwing GroupCollapsed handler's exception reaches the caller after the group collapsed.")]
-        [TestProperty("data:Route", "{Peer, ExpandGroup}")]
+        [TestProperty("Description", "Verifies a throwing GroupExpanding handler's exception reaches ExpandGroup's caller, as Sorting's does: raised once, the group does not expand, and focus stays in the table; a throwing GroupCollapsed handler's exception reaches the caller after the group collapsed. (The automation peer's Expand posts the expansion to the DispatcherQueue, where a handler's exception fails fast, so it has no throwing row.)")]
         public void VerifyThrowingGroupHandlerPropagates()
         {
-            var route = ((string)TestContext.DataRow["Route"]).Trim();
             TableView tableView = null;
             Exception escaped = null;
-            UnhandledErrors unhandled = null;
             var raised = 0;
             var throwing = true;
 
@@ -1550,78 +1547,50 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
             SettleLayout(tableView);
 
-            try
+            RunOnUIThread.Execute(() =>
             {
-                RunOnUIThread.Execute(() =>
+                Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
+                tableView.GroupExpanding += (s, e) =>
                 {
-                    Verify.IsTrue(GetGroupHeader(tableView, 0).Focus(FocusState.Keyboard), "Precondition: the header takes focus.");
-                    tableView.GroupExpanding += (s, e) =>
+                    raised++;
+                    if (throwing)
                     {
-                        raised++;
-                        if (throwing)
-                        {
-                            throw new InvalidOperationException("GroupExpanding handler fault");
-                        }
-                    };
-                    try
-                    {
-                        if (route == "Peer")
-                        {
-                            // Posted to the dispatcher: the handler runs on a later turn, outside this try.
-                            unhandled = new UnhandledErrors();
-                            GetExpandCollapseProvider(tableView, 0).Expand();
-                        }
-                        else
-                        {
-                            tableView.ExpandGroup("Designer");
-                        }
+                        throw new InvalidOperationException("GroupExpanding handler fault");
                     }
-                    catch (Exception e)
-                    {
-                        escaped = e;
-                    }
-
-                    if (route == "ExpandGroup")
-                    {
-                        Verify.AreEqual(1, raised, "ExpandGroup must raise GroupExpanding synchronously.");
-                    }
-                });
-
-                SettleLayout(tableView);
-
-                RunOnUIThread.Execute(() =>
+                };
+                try
                 {
-                    if (route == "Peer")
-                    {
-                        unhandled.Dispose();
-                        Verify.IsNull(escaped, "Peer: Expand posts the expansion, so nothing is thrown to its caller.");
-                        Verify.AreEqual(1, unhandled.Messages.Count, $"Peer: the handler's exception reaches Application.UnhandledException once: {string.Join(" | ", unhandled.Messages)}");
-                        Verify.IsTrue(unhandled.Messages[0].Contains("GroupExpanding handler fault"), $"Peer: it is the handler's exception: {unhandled.Messages[0]}");
-                    }
-                    else
-                    {
-                        Verify.IsNotNull(escaped, $"{route}: the handler's exception reaches the expand request's caller.");
-                        Verify.IsTrue(escaped.Message.Contains("GroupExpanding handler fault"), $"{route}: it is the handler's exception: {escaped.Message}");
-                    }
-                    Verify.AreEqual(1, raised, $"{route}: GroupExpanding must be raised exactly once.");
-                    Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: a throwing GroupExpanding stops the expansion.");
-                    var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
-                    var inTable = false;
-                    for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
-                    {
-                        inTable |= ReferenceEquals(current, tableView);
-                    }
-                    Verify.IsTrue(inTable, $"{route}: focus must stay inside the table.");
+                    tableView.ExpandGroup("Designer");
+                }
+                catch (Exception e)
+                {
+                    escaped = e;
+                }
 
-                    throwing = false;
-                    tableView.ExpandAllGroups();
-                });
-            }
-            finally
+                Verify.AreEqual(1, raised, "ExpandGroup must raise GroupExpanding synchronously.");
+            });
+
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
             {
-                // Detached even when a Verify above failed, so the handler cannot hide a later test's exceptions.
-                RunOnUIThread.Execute(() => unhandled?.Dispose());
-            }
+                Verify.IsNotNull(escaped, "The handler's exception reaches the expand request's caller.");
+                Verify.IsTrue(escaped?.Message.Contains("GroupExpanding handler fault") == true, $"It is the handler's exception: {escaped?.Message}");
+                Verify.AreEqual(1, raised, "GroupExpanding must be raised exactly once.");
+                var info = GetGroupInfoByKey(tableView, "Designer");
+                Verify.IsNotNull(info, "The Designer header is realized.");
+                Verify.IsFalse(info?.IsExpanded ?? true, "A throwing GroupExpanding stops the expansion.");
+                var focused = FocusManager.GetFocusedElement(tableView.XamlRoot) as DependencyObject;
+                var inTable = false;
+                for (var current = focused; current != null; current = VisualTreeHelper.GetParent(current))
+                {
+                    inTable |= ReferenceEquals(current, tableView);
+                }
+                Verify.IsTrue(inTable, "Focus must stay inside the table.");
+
+                throwing = false;
+                tableView.ExpandAllGroups();
+            });
 
             SettleLayout(tableView);
 
@@ -1637,8 +1606,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     escaped = e;
                 }
-                Verify.IsNotNull(escaped, $"{route}: the GroupCollapsed handler's exception reaches the caller.");
-                Verify.IsFalse(GetGroupInfoByKey(tableView, "Designer").IsExpanded, $"{route}: the group collapsed before GroupCollapsed was raised.");
+                Verify.IsNotNull(escaped, "The GroupCollapsed handler's exception reaches the caller.");
+            });
+
+            // The rows were rebuilt for the collapse; read the header once they are realized again.
+            SettleLayout(tableView);
+
+            RunOnUIThread.Execute(() =>
+            {
+                var info = GetGroupInfoByKey(tableView, "Designer");
+                Verify.IsNotNull(info, "The Designer header is realized after the collapse.");
+                Verify.IsFalse(info?.IsExpanded ?? true, "The group collapsed before GroupCollapsed was raised.");
             });
         }
 

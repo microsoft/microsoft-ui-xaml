@@ -1616,10 +1616,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(3, GroupHeaderCount(tableView), "Precondition: one header per department.");
                 Action swap = () =>
                 {
-                    if (swaps++ > 0)
+                    // Each old group's hook fires as the walk (over a copy of the old groups) reads it; only the
+                    // first read swaps.
+                    if (swaps > 0)
                     {
                         return;
                     }
+                    swaps++;
                     // New groups, one per role, while the old ones are being walked.
                     var byRole = new AppObservableVector<object>();
                     foreach (var role in people.GroupBy(person => ((ShapedPerson)person).Role))

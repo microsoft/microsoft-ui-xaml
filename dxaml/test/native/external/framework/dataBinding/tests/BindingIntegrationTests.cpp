@@ -4091,18 +4091,22 @@ namespace Framework { namespace DataBinding {
             shaping->Culture = L"en-US";
             VERIFY_ARE_STRINGS_EQUAL(L"sv-SE", cvs->Culture->Data());
 
-            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup.ItemCount and IsBottomLevel), which requires ICollectionViewGroup (WPF Name and Items are Group and GroupItems).");
+            LOG_OUTPUT(L"Groups answer ICollectionViewGroup2 (WPF CollectionViewGroup.ItemCount and IsBottomLevel), which requires ICollectionViewGroup. The WPF group is a CollectionGroups entry's Group (the entry's GroupItems are its leaves); it is its own Group, and its Name custom property is WPF's Name.");
+            auto nameOf = [](Object^ group)
+            {
+                return safe_cast<ICustomPropertyProvider^>(group)->GetCustomProperty(L"Name")->GetValue(group);
+            };
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"Int32Property"));
             cvs->GroupDescriptions->Append(ref new PropertyGroupDescription(L"StringProperty"));
-            auto top = safe_cast<ICollectionViewGroup2^>(cvs->View->CollectionGroups->GetAt(0));
-            VERIFY_ARE_EQUAL(1, safe_cast<int32>(top->Group));
+            auto top = safe_cast<ICollectionViewGroup2^>(safe_cast<ICollectionViewGroup^>(cvs->View->CollectionGroups->GetAt(0))->Group);
+            VERIFY_ARE_EQUAL(1, safe_cast<int32>(nameOf(top)));
             VERIFY_ARE_EQUAL(2, top->ItemCount);
             VERIFY_IS_FALSE(top->IsBottomLevel);
             VERIFY_ARE_EQUAL(2u, top->GroupItems->Size);
             auto bottom = safe_cast<ICollectionViewGroup2^>(top->GroupItems->GetAt(0));
             VERIFY_IS_TRUE(bottom->IsBottomLevel);
             VERIFY_ARE_EQUAL(1, bottom->ItemCount);
-            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(bottom->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"a", safe_cast<String^>(nameOf(bottom->Group))->Data());
 
             LOG_OUTPUT(L"An IsSourceGrouped view's groups answer it too.");
             auto groupedSource = ref new Platform::Collections::Vector<Object^>();
@@ -4154,9 +4158,9 @@ namespace Framework { namespace DataBinding {
             VERIFY_ARE_EQUAL(2u, tagGroups->Size);
             auto red = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(0));
             auto blue = safe_cast<ICollectionViewGroup2^>(tagGroups->GetAt(1));
-            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(red->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"red", safe_cast<String^>(nameOf(red->Group))->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"x", ShapingNamesOf(red->GroupItems)->Data());
-            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(blue->Group)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"blue", safe_cast<String^>(nameOf(blue->Group))->Data());
             VERIFY_ARE_STRINGS_EQUAL(L"xy", ShapingNamesOf(blue->GroupItems)->Data());
             VERIFY_ARE_EQUAL(3u, tags->View->Size);
 
@@ -5468,12 +5472,12 @@ namespace Framework { namespace DataBinding {
             auto view = cvs->View;
             VERIFY_ARE_STRINGS_EQUAL(L"0000", HandlerCountsOf(source)->Data());
 
-            LOG_OUTPUT(L"Live sorting observes each source item once per live property.");
+            LOG_OUTPUT(L"Live sorting observes each source item with one PropertyChanged handler, whatever the number of live properties that are plain names on an INotifyPropertyChanged item.");
             cvs->IsLiveSortingRequested = true;
             VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
             cvs->LiveSortingProperties->Append(L"Value");
             cvs->LiveSortingProperties->Append(L"Name");
-            VERIFY_ARE_STRINGS_EQUAL(L"2222", HandlerCountsOf(source)->Data());
+            VERIFY_ARE_STRINGS_EQUAL(L"1111", HandlerCountsOf(source)->Data());
             cvs->LiveSortingProperties->Clear();
 
             LOG_OUTPUT(L"A removed item is no longer observed; an added one is.");
