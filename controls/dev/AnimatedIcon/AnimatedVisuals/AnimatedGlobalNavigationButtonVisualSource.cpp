@@ -9,7 +9,12 @@
 //           LottieGen -Language Cppwinrt -WinUIVersion 2.4 -InputFile AnimatedGlobalNavigationButtonVisualSource.json
 //       
 //       Input file:
-//           AnimatedGlobalNavigationButtonVisualSource.json (37639 bytes created 23:37-07:00 Oct 5 2021)
+//           AnimatedGlobalNavigationButtonVisualSource.json (102230 bytes created 20:17+05:30 Nov 26 2026)
+//       
+//       Source:
+//           AnimatedGlobalNavigationButtonVisualSource.json next to this file. It was rebuilt in 2026 from the
+//           2021 LottieGen output (the original .json was not checked in) and its bars were moved onto
+//           whole pixels at 16x16 (#7048). See README.md in this folder to regenerate.
 //       
 //       LottieGen source:
 //           http://aka.ms/Lottie
@@ -345,7 +350,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Controls - 02 - Hamburger - 04 - PointerOverToPressed Controls - 02 - Hamburger -
     // 05 - PressedToNormal Controls - 02 - Hamburger - 06 - PressedToPointerOver
     // - - - Layer: Right Caps 2 Right Caps 2 Right Caps 2 Right Caps 2
-    // - - ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
+    // - - ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -5.013>
     winrt::com_ptr<CanvasGeometry> Geometry_07()
     {
         winrt::com_ptr<ID2D1PathGeometry> path{ nullptr };
@@ -478,11 +483,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.Scale({ 3.0F, 3.0F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_00());
-        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
+        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -5.013>
         shapes.Append(SpriteShape_01());
         // ShapeGroup: Group 1 Group 1 Group 1 Group 1
         shapes.Append(SpriteShape_02());
@@ -501,11 +506,11 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ -7.5F, -5.0F });
-        result.Scale({ 2.75F, 2.75F });
+        result.Scale({ 3.0F, 3.0F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_03());
-        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
+        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -5.013>
         shapes.Append(SpriteShape_04());
         // ShapeGroup: Group 1 Group 1 Group 1 Group 1
         shapes.Append(SpriteShape_05());
@@ -524,16 +529,16 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     {
         const auto result = _c.CreateContainerShape();
         result.CenterPoint({ 0.0480000004F, -5.0F });
-        result.Offset({ 23.9559994F, 29.0F });
+        result.Offset({ 23.9559994F, 27.5F });
         const auto shapes = result.Shapes();
         // ShapeGroup: Group 3 Group 3 Group 3 Group 3 Offset:<0, -10>
         shapes.Append(SpriteShape_06());
-        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
+        // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -5.013>
         shapes.Append(SpriteShape_07());
         // ShapeGroup: Group 1 Group 1 Group 1 Group 1
         shapes.Append(SpriteShape_08());
         StartProgressBoundAnimation(result, L"Scale.X", ScaleXScalarAnimation_2p749_to_2p749(), _rootProgress);
-        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_2p75_to_2p75(), _rootProgress);
+        StartProgressBoundAnimation(result, L"Scale.Y", ScaleYScalarAnimation_3_to_3(), _rootProgress);
         return result;
     }
 
@@ -587,7 +592,7 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // 02 - Hamburger - 04 - PointerOverToPressed Controls - 02 - Hamburger - 05 -
     // PressedToNormal Controls - 02 - Hamburger - 06 - PressedToPointerOver
     // - Layer: Right Caps 2 Right Caps 2 Right Caps 2 Right Caps 2
-    // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -4.85>
+    // ShapeGroup: Group 2 Group 2 Group 2 Group 2 Offset:<0, -5.013>
     CompositionPathGeometry PathGeometry_07()
     {
         return _c.CreatePathGeometry(CompositionPath(CanvasGeometryToIGeometrySource2D(Geometry_07())));
@@ -662,9 +667,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1 Path 1 Path 1
     CompositionSpriteShape SpriteShape_01()
     {
-        // Offset:<0, -4.85>
+        // Offset:<0, -5.013>
         const auto geometry = PathGeometry_01();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -5.01300001F }, _themeColor_Foreground);
         return result;
     }
 
@@ -709,9 +714,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1 Path 1 Path 1
     CompositionSpriteShape SpriteShape_04()
     {
-        // Offset:<0, -4.85>
+        // Offset:<0, -5.013>
         const auto geometry = PathGeometry_04();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -5.01300001F }, _themeColor_Foreground);
         return result;
     }
 
@@ -756,9 +761,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1 Path 1 Path 1
     CompositionSpriteShape SpriteShape_07()
     {
-        // Offset:<0, -4.85>
+        // Offset:<0, -5.013>
         const auto geometry = PathGeometry_07();
-        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -4.8499999F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, -5.01300001F }, _themeColor_Foreground);
         return result;
     }
 
@@ -784,9 +789,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_09()
     {
-        // Offset:<24.383, 10.25>, Scale:<2.75, 2.75>
+        // Offset:<22.508, 7.5>, Scale:<3, 3>
         const auto geometry = _pathGeometry_00;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 22.5079994F, 7.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -797,9 +802,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_10()
     {
-        // Offset:<24.383, 24.4125>, Scale:<2.75, 2.75>
+        // Offset:<22.508, 22.461>, Scale:<3, 3>
         const auto geometry = _pathGeometry_01;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 22.5079994F, 22.4610004F }, _themeColor_Foreground);
         return result;
     }
 
@@ -810,9 +815,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_11()
     {
-        // Offset:<24.383, 37.75>, Scale:<2.75, 2.75>
+        // Offset:<22.508, 37.5>, Scale:<3, 3>
         const auto geometry = _pathGeometry_02;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 24.3829994F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 22.5079994F, 37.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -823,9 +828,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_12()
     {
-        // Offset:<23.629, 10.25>, Scale:<2.75, 2.75>
+        // Offset:<25.504, 7.5>, Scale:<3, 3>
         const auto geometry = _pathGeometry_03;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 25.5039997F, 7.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -836,9 +841,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_13()
     {
-        // Offset:<23.629, 24.4125>, Scale:<2.75, 2.75>
+        // Offset:<25.504, 22.461>, Scale:<3, 3>
         const auto geometry = _pathGeometry_04;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 25.5039997F, 22.4610004F }, _themeColor_Foreground);
         return result;
     }
 
@@ -849,9 +854,9 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_14()
     {
-        // Offset:<23.629, 37.75>, Scale:<2.75, 2.75>
+        // Offset:<25.504, 37.5>, Scale:<3, 3>
         const auto geometry = _pathGeometry_05;
-        const auto result = CreateSpriteShape(geometry, { 2.75F, 0.0F, 0.0F, 2.75F, 23.6289997F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 3.0F, 0.0F, 0.0F, 3.0F, 25.5039997F, 37.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -862,10 +867,10 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_15()
     {
-        // Offset:<23.872047, 10.25>, Rotation:-0.009138340298435101 degrees,
-        // Scale:<2.749, 2.75>
+        // Offset:<23.872047, 7.5>, Rotation:-0.009138340298435101 degrees,
+        // Scale:<2.749, 2.9999998>
         const auto geometry = PathGeometry_09();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 10.25F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 3.0F, 23.8720474F, 7.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -876,10 +881,10 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_16()
     {
-        // Offset:<23.872047, 24.4125>, Rotation:-0.009138340298435101 degrees,
-        // Scale:<2.749, 2.75>
+        // Offset:<23.872047, 22.461>, Rotation:-0.009138340298435101 degrees,
+        // Scale:<2.749, 2.9999998>
         const auto geometry = PathGeometry_10();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 24.4125004F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 3.0F, 23.8720474F, 22.4610004F }, _themeColor_Foreground);
         return result;
     }
 
@@ -890,10 +895,10 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // Path 1 Path 1
     CompositionSpriteShape SpriteShape_17()
     {
-        // Offset:<23.872047, 37.75>, Rotation:-0.009138340298435101 degrees,
-        // Scale:<2.749, 2.75>
+        // Offset:<23.872047, 37.5>, Rotation:-0.009138340298435101 degrees,
+        // Scale:<2.749, 2.9999998>
         const auto geometry = PathGeometry_11();
-        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 2.75F, 23.8720474F, 37.75F }, _themeColor_Foreground);
+        const auto result = CreateSpriteShape(geometry, { 2.74900007F, 0.0F, 0.0F, 3.0F, 23.8720474F, 37.5F }, _themeColor_Foreground);
         return result;
     }
 
@@ -1058,30 +1063,30 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     // PressedToNormal Controls - 02 - Hamburger - 06 - PressedToPointerOver
     // Layer: Right Caps 2 Right Caps 2 Right Caps 2 Right Caps 2
     // Scale
-    ScalarKeyFrameAnimation ScaleYScalarAnimation_2p75_to_2p75()
+    ScalarKeyFrameAnimation ScaleYScalarAnimation_3_to_3()
     {
         // Frame 0.
-        const auto result = CreateScalarKeyFrameAnimation(0.0F, 2.75F, _stepThenHoldEasingFunction);
+        const auto result = CreateScalarKeyFrameAnimation(0.0F, 3.0F, _stepThenHoldEasingFunction);
         // Frame 10.
-        result.InsertKeyFrame(0.125F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.125F, 3.0F, _holdThenStepEasingFunction);
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, 2.75F, CubicBezierEasingFunction_3());
+        result.InsertKeyFrame(0.237499997F, 3.0F, CubicBezierEasingFunction_3());
         // Frame 30.
-        result.InsertKeyFrame(0.375F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, 3.0F, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, 2.75F, _cubicBezierEasingFunction_3);
+        result.InsertKeyFrame(0.487500012F, 3.0F, _cubicBezierEasingFunction_3);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, 3.0F, _holdThenStepEasingFunction);
         // Frame 48.
-        result.InsertKeyFrame(0.600000024F, 2.73294997F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.600000024F, 2.98140001F, _cubicBezierEasingFunction_1);
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, 2.75F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737500012F, 3.0F, _cubicBezierEasingFunction_2);
         // Frame 60.
-        result.InsertKeyFrame(0.75F, 2.75F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, 3.0F, _holdThenStepEasingFunction);
         // Frame 68.
-        result.InsertKeyFrame(0.850000024F, 2.73294997F, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.850000024F, 2.98140001F, _cubicBezierEasingFunction_1);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, 2.75F, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987500012F, 3.0F, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1157,27 +1162,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_0()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5079994F, 29.0F }, StepThenHoldEasingFunction());
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 37.5079994F, 27.5F }, StepThenHoldEasingFunction());
         // Frame 10.
-        result.InsertKeyFrame(0.125F, { 37.5079994F, 29.0F }, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(0.125F, { 37.5079994F, 27.5F }, HoldThenStepEasingFunction());
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, { 27.5079994F, 29.0F }, CubicBezierEasingFunction_0());
+        result.InsertKeyFrame(0.237499997F, { 27.5079994F, 27.5F }, CubicBezierEasingFunction_0());
         // Frame 30.
-        result.InsertKeyFrame(0.375F, { 37.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, { 37.5079994F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, { 27.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.487500012F, { 27.5079994F, 27.5F }, _cubicBezierEasingFunction_0);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, { 27.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, { 27.5079994F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 48.
-        result.InsertKeyFrame(0.600000024F, { 38.5040016F, 29.0F }, CubicBezierEasingFunction_1());
+        result.InsertKeyFrame(0.600000024F, { 38.5040016F, 27.5F }, CubicBezierEasingFunction_1());
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, { 37.5079994F, 29.0F }, CubicBezierEasingFunction_2());
+        result.InsertKeyFrame(0.737500012F, { 37.5079994F, 27.5F }, CubicBezierEasingFunction_2());
         // Frame 60.
-        result.InsertKeyFrame(0.75F, { 27.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, { 27.5079994F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 68.
-        result.InsertKeyFrame(0.850000024F, { 38.5040016F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.850000024F, { 38.5040016F, 27.5F }, _cubicBezierEasingFunction_1);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, { 37.5079994F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987500012F, { 37.5079994F, 27.5F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
@@ -1192,27 +1197,27 @@ class AnimatedGlobalNavigationButtonVisualSource_AnimatedVisual : public winrt::
     Vector2KeyFrameAnimation OffsetVector2Animation_1()
     {
         // Frame 0.
-        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5039997F, 29.0F }, _stepThenHoldEasingFunction);
+        const auto result = CreateVector2KeyFrameAnimation(0.0F, { 10.5039997F, 27.5F }, _stepThenHoldEasingFunction);
         // Frame 10.
-        result.InsertKeyFrame(0.125F, { 10.5039997F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.125F, { 10.5039997F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 19.
-        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.237499997F, { 20.5079994F, 27.5F }, _cubicBezierEasingFunction_0);
         // Frame 30.
-        result.InsertKeyFrame(0.375F, { 10.5039997F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.375F, { 10.5039997F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 39.
-        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 29.0F }, _cubicBezierEasingFunction_0);
+        result.InsertKeyFrame(0.487500012F, { 20.5079994F, 27.5F }, _cubicBezierEasingFunction_0);
         // Frame 40.
-        result.InsertKeyFrame(0.5F, { 20.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, { 20.5079994F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 48.
-        result.InsertKeyFrame(0.600000024F, { 9.50800037F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.600000024F, { 9.50800037F, 27.5F }, _cubicBezierEasingFunction_1);
         // Frame 59.
-        result.InsertKeyFrame(0.737500012F, { 10.5039997F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.737500012F, { 10.5039997F, 27.5F }, _cubicBezierEasingFunction_2);
         // Frame 60.
-        result.InsertKeyFrame(0.75F, { 20.5079994F, 29.0F }, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.75F, { 20.5079994F, 27.5F }, _holdThenStepEasingFunction);
         // Frame 68.
-        result.InsertKeyFrame(0.850000024F, { 9.50800037F, 29.0F }, _cubicBezierEasingFunction_1);
+        result.InsertKeyFrame(0.850000024F, { 9.50800037F, 27.5F }, _cubicBezierEasingFunction_1);
         // Frame 79.
-        result.InsertKeyFrame(0.987500012F, { 10.5039997F, 29.0F }, _cubicBezierEasingFunction_2);
+        result.InsertKeyFrame(0.987500012F, { 10.5039997F, 27.5F }, _cubicBezierEasingFunction_2);
         return result;
     }
 
