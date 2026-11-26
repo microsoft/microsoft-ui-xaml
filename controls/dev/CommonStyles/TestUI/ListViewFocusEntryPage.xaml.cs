@@ -14,7 +14,9 @@ namespace MUXControlsTestApp
     [TopLevelTestPage(Name = "ListView Focus Entry")]
     public sealed partial class ListViewFocusEntryPage : TestPage
     {
+        private ListView _focusEntryList;
         private ScrollViewer _scrollViewer;
+        private bool _isVertical;
         private double _lastOffset;
         private int _offsetChanges;
         private int _disabledIndex = -1;
@@ -23,24 +25,14 @@ namespace MUXControlsTestApp
         // Animated views can settle a fraction of a pixel away from the requested offset, which is not a visible move.
         private const double OffsetTolerance = 0.5;
 
-        private double CurrentOffset => VerticalScrolling.IsChecked == true ?
-            _scrollViewer.VerticalOffset : _scrollViewer.HorizontalOffset;
+        private double CurrentOffset => _scrollViewer == null ? 0 :
+            (_isVertical ? _scrollViewer.VerticalOffset : _scrollViewer.HorizontalOffset);
 
         public ListViewFocusEntryPage()
         {
             InitializeComponent();
-            FocusEntryList.ItemsSource = Enumerable.Range(1, 39).Select(value => value.ToString()).ToList();
-            FocusEntryList.ContainerContentChanging += (sender, args) =>
-            {
-                if (!args.InRecycleQueue && args.Phase == 0 && args.ItemContainer is Control itemContainer)
-                {
-                    itemContainer.IsEnabled = args.ItemIndex != _disabledIndex;
-                }
-            };
-            FocusEntryList.SelectionChanged += (sender, args) =>
-            {
-                FocusEntrySelectedIndex.Text = FocusEntryList.SelectedIndex.ToString(CultureInfo.InvariantCulture);
-            };
+            _focusEntryList = CreateFocusEntryList(itemCount: 39);
+            FocusEntryListHost.Child = _focusEntryList;
             GotFocus += (sender, args) =>
             {
                 var focusedElement = FocusManager.GetFocusedElement(XamlRoot) as DependencyObject;
@@ -48,7 +40,7 @@ namespace MUXControlsTestApp
                 var item = focusedElement.FindVisualParentByType<ListViewItem>();
                 if (item != null)
                 {
-                    FocusEntryFocusedIndex.Text = FocusEntryList.IndexFromContainer(item).ToString(CultureInfo.InvariantCulture);
+                    FocusEntryFocusedIndex.Text = _focusEntryList.IndexFromContainer(item).ToString(CultureInfo.InvariantCulture);
                     FocusEntryOffsetAtFocus.Text = CurrentOffset.ToString(CultureInfo.InvariantCulture);
                 }
                 else
@@ -58,9 +50,40 @@ namespace MUXControlsTestApp
             };
             Loaded += (sender, args) =>
             {
-                _scrollViewer = FocusEntryList.FindVisualChildByType<ScrollViewer>();
-                _scrollViewer.ViewChanged += OnViewChanged;
+                if (_scrollViewer == null)
+                {
+                    _scrollViewer = _focusEntryList.FindVisualChildByType<ScrollViewer>();
+                    _scrollViewer.ViewChanged += OnViewChanged;
+                }
             };
+        }
+
+        private ListView CreateFocusEntryList(int itemCount)
+        {
+            var list = (ListView)((DataTemplate)Resources["FocusEntryListTemplate"]).LoadContent();
+            list.ItemsSource = Enumerable.Range(1, itemCount).Select(value => value.ToString()).ToList();
+            list.ContainerContentChanging += (sender, args) =>
+            {
+                if (!args.InRecycleQueue && args.Phase == 0 && args.ItemContainer is Control itemContainer)
+                {
+                    itemContainer.IsEnabled = args.ItemIndex != _disabledIndex;
+                }
+            };
+            list.SelectionChanged += (sender, args) =>
+            {
+                if (list == _focusEntryList)
+                {
+                    FocusEntrySelectedIndex.Text = list.SelectedIndex.ToString(CultureInfo.InvariantCulture);
+                }
+            };
+            list.GotFocus += (sender, args) =>
+            {
+                if (list == _focusEntryList)
+                {
+                    FocusEntryListEverFocused.Text = "True";
+                }
+            };
+            return list;
         }
 
         private void OnViewChanged(object sender, ScrollViewerViewChangedEventArgs args)
@@ -94,26 +117,55 @@ namespace MUXControlsTestApp
 
         private void ResetFocusEntryList_Click(object sender, RoutedEventArgs args)
         {
+            // Move focus off the old ListView before replacing it so focus-on-removal cannot land inside the new one.
+            BeforeListFocusTarget.Focus(FocusState.Programmatic);
+
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.ViewChanged -= OnViewChanged;
+                _scrollViewer = null;
+            }
+
             _disabledIndex = -1;
             _resetDiagnosticsAtOffset = null;
+            _lastOffset = 0;
+
             bool vertical = VerticalScrolling.IsChecked == true;
-            FocusEntryList.Width = vertical ? 200 : 600;
-            FocusEntryList.Height = vertical ? 300 : 150;
-            ScrollViewer.SetHorizontalScrollMode(FocusEntryList, vertical ? ScrollMode.Disabled : ScrollMode.Auto);
-            ScrollViewer.SetVerticalScrollMode(FocusEntryList, vertical ? ScrollMode.Auto : ScrollMode.Disabled);
-            ScrollViewer.SetHorizontalScrollBarVisibility(FocusEntryList, vertical ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Hidden);
-            ScrollViewer.SetVerticalScrollBarVisibility(FocusEntryList, vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled);
-            var panel = (ItemsWrapGrid)FocusEntryList.ItemsPanelRoot;
+            _isVertical = vertical;
+
+            // Recreate the ListView so ResetWithoutFocus exercises a control that has never had
+            // a focused item and no ScrollViewer offset carries over between orientations.
+            var list = CreateFocusEntryList(FiveItems.IsChecked == true ? 5 : 39);
+            list.Width = vertical ? 200 : 600;
+            list.Height = vertical ? 300 : 150;
+            ScrollViewer.SetHorizontalScrollMode(list, vertical ? ScrollMode.Disabled : ScrollMode.Auto);
+            ScrollViewer.SetVerticalScrollMode(list, vertical ? ScrollMode.Auto : ScrollMode.Disabled);
+            ScrollViewer.SetHorizontalScrollBarVisibility(list, vertical ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Hidden);
+            ScrollViewer.SetVerticalScrollBarVisibility(list, vertical ? ScrollBarVisibility.Hidden : ScrollBarVisibility.Disabled);
+            list.ItemTemplate = FocusableChildren.IsChecked == true ?
+                (DataTemplate)Resources["FocusableChildrenTemplate"] : null;
+
+            FocusEntryListEverFocused.Text = "False";
+            _focusEntryList = list;
+            FocusEntryListHost.Child = list;
+            list.UpdateLayout();
+
+            var panel = (ItemsWrapGrid)list.ItemsPanelRoot;
             panel.Orientation = vertical ? Orientation.Horizontal : Orientation.Vertical;
             panel.CacheLength = CacheLength.SelectedIndex == 0 ? 0 : 2;
-            FocusEntryList.ItemTemplate = FocusableChildren.IsChecked == true ?
-                (DataTemplate)Resources["FocusableChildrenTemplate"] : null;
-            FocusEntryList.ItemsSource = Enumerable.Range(1, FiveItems.IsChecked == true ? 5 : 39).Select(value => value.ToString()).ToList();
-            FocusEntryList.SelectedIndex = 0;
-            FocusEntryList.UpdateLayout();
+            list.SelectedIndex = 0;
+            list.UpdateLayout();
+
+            _scrollViewer = list.FindVisualChildByType<ScrollViewer>();
+            _scrollViewer.ViewChanged += OnViewChanged;
+
+            FocusEntryOffset.Text = "0";
+            FocusEntryFocusedIndex.Text = "-1";
+            FocusEntryFocusedElementType.Text = "";
+
             if (ResetWithoutFocus.IsChecked != true)
             {
-                ((ListViewItem)FocusEntryList.ContainerFromIndex(0)).Focus(FocusState.Keyboard);
+                ((ListViewItem)list.ContainerFromIndex(0)).Focus(FocusState.Keyboard);
             }
             ResetDiagnostics();
         }
@@ -124,9 +176,9 @@ namespace MUXControlsTestApp
             Control anchor = sender == PrepareFocusEntryAfter ? AfterListFocusTarget : BeforeListFocusTarget;
             anchor.Focus(FocusState.Keyboard);
 
-            bool vertical = VerticalScrolling.IsChecked == true;
+            bool vertical = _isVertical;
             double itemSize = vertical ? 100 : 200;
-            double viewportSize = vertical ? FocusEntryList.Height : FocusEntryList.Width;
+            double viewportSize = vertical ? _focusEntryList.Height : _focusEntryList.Width;
             int position = FocusEntryPosition.SelectedIndex;
             double offset =
                 position == 0 ? 10 * itemSize :
@@ -137,7 +189,7 @@ namespace MUXControlsTestApp
                 position == 6 ? 11 * itemSize - viewportSize + 20 :
                 10.5 * itemSize;
 
-            FocusEntryList.SelectedIndex = 10;
+            _focusEntryList.SelectedIndex = 10;
             if (Math.Abs(CurrentOffset - offset) < OffsetTolerance)
             {
                 ResetDiagnostics();
@@ -157,8 +209,8 @@ namespace MUXControlsTestApp
             Control anchor = sender == DisableSelectedItemFocusBefore ? BeforeListFocusTarget : AfterListFocusTarget;
             anchor.Focus(FocusState.Keyboard);
 
-            _disabledIndex = FocusEntryList.SelectedIndex;
-            if (FocusEntryList.ContainerFromIndex(_disabledIndex) is Control container)
+            _disabledIndex = _focusEntryList.SelectedIndex;
+            if (_focusEntryList.ContainerFromIndex(_disabledIndex) is Control container)
             {
                 container.IsEnabled = false;
             }
@@ -166,7 +218,7 @@ namespace MUXControlsTestApp
 
         private void FocusListFromCode_Click(object sender, RoutedEventArgs args)
         {
-            FocusEntryList.Focus(FocusState.Keyboard);
+            _focusEntryList.Focus(FocusState.Keyboard);
         }
 
         private void LeaveListFocusTarget_Click(object sender, RoutedEventArgs args)
